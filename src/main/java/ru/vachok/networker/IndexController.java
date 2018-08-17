@@ -1,7 +1,7 @@
 package ru.vachok.networker;
 
 
-
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -36,6 +36,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
+import static ru.vachok.networker.ApplicationConfiguration.logger;
+
 
 /**
  * The type Index controller.
@@ -57,6 +59,7 @@ public class IndexController {
     private MessageToUser messageToUser = new MessageCons();
     @Value("${error.message}")
     private String errMessage;
+    private Logger logger = ApplicationConfiguration.logger();
 
 
     /**
@@ -172,7 +175,7 @@ public class IndexController {
             messageToUser.infoNoTitles(q);
             if (q.contains("ftp")) new FtpCheck();
         }
-        System.out.println(new Date(time) + " was - " + remoteAddr);
+        logger().info(new Date(time) + " was - " + remoteAddr);
         String message = "Привет землянин... Твоя сессия идёт " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - request.getSession().getCreationTime()) + " сек...\n" + request.getSession().getMaxInactiveInterval() + " getMaxInactiveInterval\n" + request.getSession().getId() + " ID сессии\n" + "запрошен URL: " + request.getRequestURL().toString();
         Cookie[] requestCookies = request.getCookies();
         File dirCOOK = new File("cook");
@@ -188,7 +191,7 @@ public class IndexController {
             cookie.setValue(remoteAddr + runtime.availableProcessors() + " processors\n" + runtime.freeMemory() + "/" + runtime.totalMemory() + " memory\n" + model.asMap().toString().replaceAll(", " , "\n"));
             cookie.setComment(remoteAddr + " ip\n" + sb.toString());
             if (mkdir) {
-                System.out.println(dirCOOK.getAbsolutePath());
+                logger().info(dirCOOK.getAbsolutePath());
             }
             try (FileOutputStream outputStream = new FileOutputStream(dirCOOK.getAbsolutePath() + "\\cook" + System.currentTimeMillis() + ".txt")) {
                 String s = "Domain: " + cookie.getDomain() + " name: " + cookie.getName() + " comment: " + cookie.getComment() + "\n" + cookie.getPath() + "\n" + cookie.getValue() + "\n" + new Date(System.currentTimeMillis());
@@ -197,7 +200,7 @@ public class IndexController {
             }
         }
         model.addAttribute("message" , message);
-        System.out.println("dirCOOK = " + dirCOOK.getAbsolutePath());
+        logger().info("dirCOOK = " + dirCOOK.getAbsolutePath());
         return "index";
     }
 

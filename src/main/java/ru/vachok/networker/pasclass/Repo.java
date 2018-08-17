@@ -42,7 +42,8 @@ public class Repo implements Serializable {
     public static Repo getI( long timeSt , String remAddr ) throws IOException {
         boolean newFile = oSer.createNewFile();
         if (newFile) {
-            try (FileInputStream fileInputStream = new FileInputStream(oSer); ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream)) {
+            try (FileInputStream fileInputStream = new FileInputStream(oSer);
+                 ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream)) {
                 iAm = (Repo) objectInputStream.readObject();
                 oSer.deleteOnExit();
             } catch (IOException | ClassNotFoundException e) {
@@ -67,6 +68,7 @@ public class Repo implements Serializable {
             System.out.println("x = " + x);
             System.out.println("y = " + y);
         });
+        writeO();
         return visMap;
     }
 
