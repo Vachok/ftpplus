@@ -7,7 +7,9 @@ import ru.vachok.messenger.MessageToUser;
 
 
 /**
- * The type Person form.
+ * <h1>Тест-форма</h1>
+ <p>
+ (templates/addPerson.html)
  *
  * @since 11.08.2018 (21:29)
  */
@@ -18,17 +20,20 @@ public class PersonForm {
      */
     private static final String SOURCE_CLASS = PersonForm.class.getSimpleName();
     /**
-     * {@link }
+     * {@link MessageCons}
      */
     private static MessageToUser messageToUser = new MessageCons();
+    /**
+     * <b>Имя</b>
+     */
     private String firstName;
     private String lastName;
 
 
     /**
-     * Gets first name.
+     * <b>Геттер имени</b>
      *
-     * @return the first name
+     * @return имя
      */
     public String getFirstName() {
         return firstName;
@@ -36,9 +41,9 @@ public class PersonForm {
 
 
     /**
-     * Sets first name.
+     *<b>Сеттер имени</b>
      *
-     * @param firstName the first name
+     * @param firstName фамилия
      */
     public void setFirstName( String firstName ) {
         this.firstName = firstName;
@@ -46,7 +51,7 @@ public class PersonForm {
 
 
     /**
-     * Gets last name.
+     * <b>Геттер фамилии</b>
      *
      * @return the last name
      */
@@ -56,7 +61,7 @@ public class PersonForm {
 
 
     /**
-     * Sets last name.
+     * <b>Сеттер фамилии</b>
      *
      * @param lastName the last name
      */

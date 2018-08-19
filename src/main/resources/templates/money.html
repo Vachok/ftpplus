@@ -1,0 +1,30 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title></title>
+    <link rel="stylesheet" type="text/css" th:href="@{css/main.css}"/>
+</head>
+<body>
+<h1>Посчитаем бабло...</h1>
+<h2 th:utext="${userName}">..!..</h2>
+
+<!--
+
+   In Thymeleaf the equivalent of
+   JSP's ${pageContext.request.contextPath}/edit.html
+   would be @{/edit.html}
+
+   -->
+
+<form th:action="@{/takeMyMoney}"
+      th:object="takeMyMoney" method="post">
+    <input type="text" name="startMoney" th:field="${startMoney}"/>
+    <br/>
+    <input type="submit" value="Create"/>
+    <a th:href="@{/}">Назад</a>
+
+</form>
+</body>
+
+</html>

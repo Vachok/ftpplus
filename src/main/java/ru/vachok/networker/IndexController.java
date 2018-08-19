@@ -1,18 +1,15 @@
 package ru.vachok.networker;
 
 
+
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.pasclass.Person;
-import ru.vachok.networker.pasclass.PersonForm;
 import ru.vachok.networker.pasclass.Repo;
 import ru.vachok.networker.pasclass.Visitor;
 import ru.vachok.networker.workers.FtpCheck;
@@ -27,6 +24,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -46,19 +44,10 @@ import static ru.vachok.networker.ApplicationConfiguration.logger;
 public class IndexController {
 
     private static final Map<String, String> SHOW_ME = new ConcurrentHashMap<>();
-    private static final List<Person> persons = new ArrayList<>();
     private static final int EXPIRY = 90;
 
-    static {
-        Person v = new Person("Ivan" , "Vachok");
-        Person o = new Person("Olga" , "Barsuchok");
-        persons.add(v);
-        persons.add(o);
-    }
-
     private MessageToUser messageToUser = new MessageCons();
-    @Value("${error.message}")
-    private String errMessage;
+
     private Logger logger = ApplicationConfiguration.logger();
 
 
@@ -108,7 +97,8 @@ public class IndexController {
     @ResponseBody
     public Stream<String> addrInLocale( HttpServletRequest httpServletRequest , HttpServletResponse httpServletResponse ) throws IOException {
         String re = "redirect:https://vachok.testquality.com/project/3260/plan/6672/test/86686";
-
+        Cookie cooki = new Cookie("hi" , re);
+        httpServletResponse.addCookie(cooki);
         ServletInputStream in = httpServletRequest.getInputStream();
         byte[] bs = new byte[0];
         while (in.isReady()) {
@@ -126,6 +116,8 @@ public class IndexController {
         String s = LocalDateTime.of(2018 , 10 , 14 , 7 , 0).format(DateTimeFormatter.ofPattern("dd/MM/yy"));
         String command = "\"C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\wmplayer.exe\"";
         Runtime.getRuntime().exec(command);
+        Map<String, String> getEnv = System.getenv();
+        getEnv.forEach(( x , y ) -> namesFile.add(x + "////" + y));
         namesFile.add(re);
         namesFile.add(new String(bs , "UTF-8"));
         namesFile.add(s);
@@ -183,8 +175,23 @@ public class IndexController {
         Enumeration<String> attributeNames = request.getSession().getAttributeNames();
         StringBuilder sb = new StringBuilder();
         while (attributeNames.hasMoreElements()) sb.append(attributeNames.nextElement());
+        if (requestCookies != null) {
+            setCookies(requestCookies , dirCOOK , remoteAddr , mkdir , sb , model);
+        }
+
+        model.addAttribute("message" , message);
+        logger().info("dirCOOK = " + dirCOOK.getAbsolutePath());
+        return "index";
+    }
+
+
+    private void setCookies( Cookie[] requestCookies , File dirCOOK , String remoteAddr , boolean mkdir , StringBuilder sb , Model model ) {
         for (Cookie cookie : requestCookies) {
-            cookie.setDomain(InetAddress.getLocalHost().getHostName());
+            try {
+                cookie.setDomain(InetAddress.getLocalHost().getHostName());
+            } catch (UnknownHostException e) {
+                logger.error(e.getMessage() + "\n" + Arrays.toString(e.getStackTrace()).replaceAll(", " , "\n"));
+            }
             cookie.setMaxAge(EXPIRY);
             cookie.setPath(dirCOOK.getAbsolutePath());
             Runtime runtime = Runtime.getRuntime();
@@ -197,61 +204,9 @@ public class IndexController {
                 String s = "Domain: " + cookie.getDomain() + " name: " + cookie.getName() + " comment: " + cookie.getComment() + "\n" + cookie.getPath() + "\n" + cookie.getValue() + "\n" + new Date(System.currentTimeMillis());
                 byte[] bytes = s.getBytes();
                 outputStream.write(bytes , 0 , bytes.length);
+            } catch (IOException e) {
+                logger.error(e.getMessage() + "\n" + Arrays.toString(e.getStackTrace()).replaceAll(", " , " "));
             }
         }
-        model.addAttribute("message" , message);
-        logger().info("dirCOOK = " + dirCOOK.getAbsolutePath());
-        return "index";
-    }
-
-
-    /**
-     * Person list string.
-     *
-     * @param model the model
-     * @return the string
-     */
-    @RequestMapping(value = {"/personList"}, method = RequestMethod.GET)
-    public String personList( Model model ) {
-        model.addAttribute("personList" , persons);
-        return "personList";
-    }
-
-
-    /**
-     * Show add person page string.
-     *
-     * @param model the model
-     * @return the string
-     */
-    @RequestMapping(value = {"/addPerson"}, method = RequestMethod.GET)
-    public String showAddPersonPage( Model model ) {
-
-        PersonForm personForm = new PersonForm();
-        model.addAttribute("personForm" , personForm);
-
-        return "addPerson";
-    }
-
-
-    /**
-     * Save person string.
-     *
-     * @param model      the model
-     * @param personForm the person form
-     * @return the string
-     */
-    @RequestMapping(value = {"/addPerson"}, method = RequestMethod.POST)
-    public String savePerson( Model model , @ModelAttribute("personForm") PersonForm personForm ) {
-        String firstName = personForm.getFirstName();
-        String lastName = personForm.getLastName();
-        if (firstName != null && firstName.length() > 0 && lastName != null && lastName.length() > 0) {
-            Person newPerson = new Person(firstName , lastName);
-            persons.add(newPerson);
-            newPerson.writeToWriter();
-            return "redirect:/personList";
-        }
-        model.addAttribute("errorMessage" , errMessage);
-        return "addPerson";
     }
 }
