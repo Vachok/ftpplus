@@ -1,4 +1,4 @@
-package ru.vachok.networker;
+package ru.vachok.networker.web;
 
 
 import org.slf4j.Logger;

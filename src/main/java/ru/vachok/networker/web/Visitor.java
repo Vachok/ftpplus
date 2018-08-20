@@ -1,8 +1,4 @@
-package ru.vachok.networker.pasclass;
-
-
-
-import java.io.IOException;
+package ru.vachok.networker.web;
 
 
 /**
@@ -18,15 +14,6 @@ public class Visitor {
      * The Rem addr.
      */
     String remAddr;
-    private Repo repo;
-
-    {
-        try {
-            repo = Repo.getI(timeSt , remAddr);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
     /**
      * Instantiates a new Visitor.

@@ -1,4 +1,4 @@
-package ru.vachok.networker.workers;
+package ru.vachok.networker.logic;
 
 
 

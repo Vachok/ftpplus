@@ -1,4 +1,4 @@
-package ru.vachok.networker.workers;
+package ru.vachok.networker.logic;
 
 
 import org.springframework.boot.web.servlet.error.ErrorController;

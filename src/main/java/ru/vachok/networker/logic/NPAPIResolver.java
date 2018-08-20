@@ -1,15 +1,13 @@
-package ru.vachok.networker.workers;
-
+package ru.vachok.networker.logic;
 
 
 import org.apache.catalina.servlet4preview.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import ru.vachok.networker.ApplicationConfiguration;
+import ru.vachok.networker.web.ApplicationConfiguration;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 
 
 /**
@@ -22,7 +20,7 @@ public class NPAPIResolver {
 
 
    @GetMapping("/npapi")
-   public void npapi( HttpServletRequest httpServletRequest , HttpServletResponse response ) throws IOException {
+   public void npapi(HttpServletRequest httpServletRequest, HttpServletResponse response) {
       String loggerName = logger.getName();
 
    }

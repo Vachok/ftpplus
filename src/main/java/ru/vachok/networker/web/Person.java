@@ -1,4 +1,4 @@
-package ru.vachok.networker.pasclass;
+package ru.vachok.networker.web;
 
 
 

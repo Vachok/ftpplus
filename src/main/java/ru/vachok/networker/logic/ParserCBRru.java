@@ -1,10 +1,10 @@
-package ru.vachok.networker.workers;
+package ru.vachok.networker.logic;
 
 
 
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.pasclass.ConstantsFor;
+import ru.vachok.networker.ConstantsFor;
 
 import java.io.IOException;
 import java.io.InputStream;

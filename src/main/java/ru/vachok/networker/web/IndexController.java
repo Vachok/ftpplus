@@ -1,5 +1,4 @@
-package ru.vachok.networker;
-
+package ru.vachok.networker.web;
 
 
 import org.slf4j.Logger;
@@ -10,12 +9,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.pasclass.Repo;
-import ru.vachok.networker.pasclass.Visitor;
-import ru.vachok.networker.workers.FtpCheck;
-import ru.vachok.networker.workers.SaverByOlder;
+import ru.vachok.networker.logic.FtpCheck;
+import ru.vachok.networker.logic.SaverByOlder;
 
-import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -25,6 +21,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
+import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -34,7 +32,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
-import static ru.vachok.networker.ApplicationConfiguration.logger;
+import static ru.vachok.networker.web.ApplicationConfiguration.logger;
 
 
 /**
@@ -59,11 +57,10 @@ public class IndexController {
      * @return the map
      *
      * @throws IOException      the io exception
-     * @throws ServletException the servlet exception
      */
     @RequestMapping("/docs")
     @ResponseBody
-    public Map<String, String> mapToShow( HttpServletRequest httpServletRequest , HttpServletResponse httpServletResponse ) throws IOException, ServletException {
+    public Map<String, String> mapToShow(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws IOException {
         ExecutorService executorService = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor());
         Runnable r = new SaverByOlder(SHOW_ME);
         SHOW_ME.put("addr" , httpServletRequest.getRemoteAddr());
@@ -79,10 +76,8 @@ public class IndexController {
             executorService.execute(r);
         }
         executorService.execute(r);
-        Repo.getI(httpServletRequest.getSession().getCreationTime() , httpServletRequest.getRemoteAddr());
         return SHOW_ME;
     }
-
 
     /**
      * Addr in locale stream.
@@ -105,7 +100,7 @@ public class IndexController {
             in.read(bs);
         }
 
-        messageToUser.info("HTTP Servlets Controller" , httpServletRequest.getServletPath() + re , "1 КБ resp: " + new String(bs , "UTF-8"));
+       messageToUser.info("HTTP Servlets Controller", httpServletRequest.getServletPath() + re, "1 КБ resp: " + new String(bs, StandardCharsets.UTF_8));
         File[] files = new File("g:\\myEX\\").listFiles();
         int length = files.length;
         List<String> namesFile = new ArrayList<>();
@@ -119,7 +114,7 @@ public class IndexController {
         Map<String, String> getEnv = System.getenv();
         getEnv.forEach(( x , y ) -> namesFile.add(x + "////" + y));
         namesFile.add(re);
-        namesFile.add(new String(bs , "UTF-8"));
+       namesFile.add(new String(bs, StandardCharsets.UTF_8));
         namesFile.add(s);
         namesFile.add(httpServletRequest.toString());
         namesFile.add(httpServletRequest.getSession().getServletContext().getServerInfo());
@@ -158,7 +153,7 @@ public class IndexController {
      * @return the string
      */
     @RequestMapping(value = {"/" , "/index"}, method = RequestMethod.GET)
-    public String index( Model model , HttpServletRequest request ) throws IOException {
+    public String index(Model model, HttpServletRequest request) {
         long time = request.getSession().getCreationTime();
         String remoteAddr = request.getRemoteAddr();
         String q = request.getQueryString();
@@ -184,13 +179,12 @@ public class IndexController {
         return "index";
     }
 
-
-    private void setCookies( Cookie[] requestCookies , File dirCOOK , String remoteAddr , boolean mkdir , StringBuilder sb , Model model ) {
+   private void setCookies(Cookie[] requestCookies, File dirCOOK, String remoteAddr, boolean mkdir, StringBuilder sb, Model model) {
         for (Cookie cookie : requestCookies) {
             try {
                 cookie.setDomain(InetAddress.getLocalHost().getHostName());
             } catch (UnknownHostException e) {
-                logger.error(e.getMessage() + "\n" + Arrays.toString(e.getStackTrace()).replaceAll(", " , "\n"));
+               logger.error(MessageFormat.format("{0}\n{1}", e.getMessage(), Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n")));
             }
             cookie.setMaxAge(EXPIRY);
             cookie.setPath(dirCOOK.getAbsolutePath());
@@ -201,11 +195,12 @@ public class IndexController {
                 logger().info(dirCOOK.getAbsolutePath());
             }
             try (FileOutputStream outputStream = new FileOutputStream(dirCOOK.getAbsolutePath() + "\\cook" + System.currentTimeMillis() + ".txt")) {
-                String s = "Domain: " + cookie.getDomain() + " name: " + cookie.getName() + " comment: " + cookie.getComment() + "\n" + cookie.getPath() + "\n" + cookie.getValue() + "\n" + new Date(System.currentTimeMillis());
+               String s = "Domain: " + cookie.getDomain() + " name: " + cookie.getName() +
+                     " comment: " + cookie.getComment() + "\n" + cookie.getPath() + "\n" + cookie.getValue() + "\n" + new Date(System.currentTimeMillis());
                 byte[] bytes = s.getBytes();
                 outputStream.write(bytes , 0 , bytes.length);
             } catch (IOException e) {
-                logger.error(e.getMessage() + "\n" + Arrays.toString(e.getStackTrace()).replaceAll(", " , " "));
+               logger.error(MessageFormat.format("{0}\n{1}", e.getMessage(), Arrays.toString(e.getStackTrace()).replaceAll(", ", " ")));
             }
         }
     }

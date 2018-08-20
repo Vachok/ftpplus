@@ -1,4 +1,4 @@
-package ru.vachok.networker.pasclass;
+package ru.vachok.networker.web;
 
 
 
@@ -9,7 +9,7 @@ import ru.vachok.messenger.MessageToUser;
 /**
  * <h1>Тест-форма</h1>
  <p>
- (templates/addPerson.html)
+ (WEB-INF/addPerson.html)
  *
  * @since 11.08.2018 (21:29)
  */
