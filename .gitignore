@@ -61,7 +61,6 @@ gradlew.bat
 /props/
 4.tmp
 modules/money/out/
-modules/money/src/main/
 show.me
 startmetest.log
 /persons.txt
@@ -70,11 +69,8 @@ docs/
 spring.srctrlbm
 spring.srctrldb
 spring.srctrlprj
-src/New Folder/
 /informer.srctrldb
 /informer.srctrlprj
 /informer.srctrlbm
 /cook/
 /file.f
-/modules/build.gradle
-/modules/settings.gradle

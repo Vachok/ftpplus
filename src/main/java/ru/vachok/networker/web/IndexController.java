@@ -4,6 +4,7 @@ package ru.vachok.networker.web;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -133,7 +134,7 @@ public class IndexController {
      * @throws IOException the io exception
      */
     @RequestMapping("/stop")
-    public void exitApp( HttpServletRequest httpServletRequest ) throws IOException {
+    public void exitApp( HttpServletRequest httpServletRequest , HttpServletResponse response ) throws IOException {
         String s = httpServletRequest.getRequestURL().toString();
         messageToUser.infoNoTitles(s);
         String q = httpServletRequest.getQueryString();
@@ -141,7 +142,10 @@ public class IndexController {
             messageToUser.infoNoTitles(q);
             if (q.contains("full")) Runtime.getRuntime().exec("shutdown /p /f");
             if (q.contains("restart")) Runtime.getRuntime().exec("shutdown /r /f");
-        } else System.exit(0);
+        } else {
+            response.sendRedirect("http://10.10.111.57/e");
+            System.exit(0);
+        }
     }
 
 
@@ -177,6 +181,12 @@ public class IndexController {
         model.addAttribute("message" , message);
         logger().info("dirCOOK = " + dirCOOK.getAbsolutePath());
         return "index";
+    }
+
+
+    @GetMapping("/f")
+    public String f() {
+        return "redirect:http://10.10.111.57:8881/ftp";
     }
 
    private void setCookies(Cookie[] requestCookies, File dirCOOK, String remoteAddr, boolean mkdir, StringBuilder sb, Model model) {
