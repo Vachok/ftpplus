@@ -23,7 +23,6 @@ public class HomeCtl implements FaceOfControllers {
    }
 
    @Override
-   @GetMapping ("/home")
    public void proCess(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, ServletContext servletContext, ITemplateEngine iTemplateEngine) throws Exception {
       WebContext ctx = new WebContext(httpServletRequest, httpServletResponse, servletContext, httpServletRequest.getLocale());
       iTemplateEngine.process("home", ctx, httpServletResponse.getWriter());
