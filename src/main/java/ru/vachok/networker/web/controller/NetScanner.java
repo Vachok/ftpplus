@@ -1,6 +1,8 @@
 package ru.vachok.networker.web.controller;
 
 
+import org.apache.catalina.servlet4preview.http.HttpServletRequest;
+import org.apache.catalina.servlet4preview.http.ServletMapping;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -11,7 +13,6 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 
 
 /**
@@ -21,29 +22,37 @@ public class NetScanner {
 
    @GetMapping ("/netscan")
    @ResponseBody
-   public Stream<String> ip() {
+   public List<String> ip(HttpServletRequest request) {
+      ServletMapping servletMapping = request.getServletMapping();
+      List<String> ip = new ArrayList<>();
       try{
-         return getPCNames().sorted();
+         ip = getPCNames();
+         ip.add(servletMapping.getServletName());
       }
       catch(IOException e){
          ApplicationConfiguration.logger().error(e.getMessage(), e);
 
       }
+      return ip;
    }
 
-   private Stream<String> getPCNames() throws IOException {
+   private List<String> getPCNames() throws IOException {
       List<String> pcNames = new ArrayList<>();
-      String nameCount = "000";
-      InetAddress inetAddress = null;
+      String nameCount = "045";
+      InetAddress inetAddress;
       try{
-         inetAddress = InetAddress.getByName("do0" + nameCount);
+         for(int i = 0; i < 200; i++){
+            nameCount = String.format("%04d", i);
+            inetAddress = InetAddress.getByName("do" + nameCount + ".eatmeat.ru");
+            boolean reachable = inetAddress.isReachable(500);
+            String e = inetAddress.toString() + " online " + reachable;
+            pcNames.add(e);
+            ApplicationConfiguration.logger().info(e);
+         }
       }
-      catch(UnknownHostException e){
-         ApplicationConfiguration.logger().error(e.getMessage(), e);
+      catch(UnknownHostException ignore){
+         return pcNames;
       }
-      boolean reachable = inetAddress.isReachable(500);
-      pcNames.add(inetAddress.toString() + " online " + reachable);
-
-      return pcNames.parallelStream();
+      return pcNames;
    }
 }
