@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.Arrays;
 import java.util.Date;
 
 
@@ -24,10 +26,10 @@ public class ErrCtrl implements ErrorController {
     private String errStr;
 
 
-    public static void stackErr( Exception e ) {
+    @ResponseBody
+    public static String stackErr( Exception e ) {
         ErrCtrl errCtrl = new ErrCtrl();
-        errCtrl.errStr = e.getMessage() + " \n" + e.getStackTrace();
-        errCtrl.getErrorPath();
+        return errCtrl.err(e);
     }
 
 
@@ -44,7 +46,8 @@ public class ErrCtrl implements ErrorController {
 
     @RequestMapping("/error")
     @ResponseBody
-    public String err( HttpServletRequest request ) {
-        return errStr + new Date().toString() + " \n" + request.getQueryString();
+    public String err(Exception e) {
+       errStr = e.getMessage()+"<p>"+ Arrays.toString(e.getStackTrace()).replaceAll(", ", "<p>");
+       return errStr + new Date().toString() +"<p> <h1>ERROR</h1><p>";
     }
 }

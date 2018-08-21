@@ -33,6 +33,7 @@ ext {
 dependencies {
 	compile fileTree('lib\\')
 	compile('org.springframework.boot:spring-boot-starter-web')
+	compile('org.springframework.boot:spring-boot-starter-thymeleaf')
 	compile('org.springframework.cloud:spring-cloud-gcp-starter')
 	// https://mvnrepository.com/artifact/org.springframework.integration/spring-integration-ftp
 	compile group: 'org.springframework.integration', name: 'spring-integration-ftp', version: '5.0.7.RELEASE'

@@ -58,7 +58,7 @@ public class ParserCBRru {
             }
         } catch (IOException e) {
             Logger.getLogger(SOURCE_CLASS).log(Level.WARNING , String.format("%s%n%n%s" , e.getMessage() , Arrays.toString(e.getStackTrace()).replaceAll(", " , "\n").replace("{" , "").replace("}" , "")));
-            new ErrControl().internError(e);
+            new ru.vachok.networker.logic.ErrControl().internError(e);
         }
     }
 

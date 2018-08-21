@@ -1,9 +1,9 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8"/>
-    <title>Welcome</title>
-    <link rel="stylesheet" type="text/css" th:href="@{/css/style.css}"/>
+    <title th:text="${date}">ХЗ</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link rel="stylesheet" type="text/css" media="all" href="css/main.css" th:href="@{css/main.css}"/>
 </head>
 <body>
 <h1>Welcome</h1>
@@ -16,14 +16,10 @@
    would be @{/edit.html}
 
    -->
+<p th:text="${timeleft}"/>
+<p th:text="${google}"/>
+<a th:href="@{/netscan}">Сканировать сеть с записью в базу.</a>
 
-<a th:href="@{/f}">FTP == FTP...</a>
-<p>
-    <a th:href="@{/stop?full}">ВЫКЛЮЧИТЬ ПК</a>
-<p>
-    <a th:href="@{/stop?restart}">REBOOT ПК</a>
-<p>
-    <a th:href="@{/idea}">IntelligiIdea</a>
 <p>
     <a th:href="@{/stop}">Exit app</a>
 

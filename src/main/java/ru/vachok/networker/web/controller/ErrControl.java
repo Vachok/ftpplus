@@ -34,7 +34,11 @@ public class ErrControl implements ErrorController {
     public String errHandle( HttpServletRequest httpServletRequest) {
         Integer statCode = ( Integer ) httpServletRequest.getAttribute("javax.servlet.error.status_code");
         Exception exception = ( Exception ) httpServletRequest.getAttribute("javax.servlet.error.exception");
-        return String.format("<html><body><h2>Вы попали в \"Научно-Исследовательский Институт Химии " +
+       return String.format("<html xmlns:th=\"http://www.thymeleaf.org\"><head>\n" +
+             "    <meta charset=\"UTF-8\"/>\n" +
+             "    <link rel=\"stylesheet\" type=\"text/css\" th:href=\"@{templates/static/css/main.css}\"/>\n" +
+             "    <title>НИИХуЯ</title>\n" +
+             "</head>\n<body><h2>Вы попали в \"Научно-Исследовательский Институт Химии " +
                 "Удобрений и Ядов\"</h2><div>Status " +
                 "code: <b>%s</b></div>" + "<div" +
                 ">Exception " +
