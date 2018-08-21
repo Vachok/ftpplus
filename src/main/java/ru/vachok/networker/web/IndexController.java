@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.logic.FtpCheck;
 import ru.vachok.networker.logic.GoogleCred;
 import ru.vachok.networker.logic.SaverByOlder;
@@ -24,6 +25,10 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -51,6 +56,7 @@ public class IndexController {
    private MessageToUser messageToUser = new MessageCons();
 
    private Logger logger = ApplicationConfiguration.logger();
+   private static final Connection c = new RegRuMysql().getDefaultConnection("u0466446_liferpg");
 
 
    /**
@@ -160,6 +166,10 @@ public class IndexController {
     */
    @RequestMapping (value = {"/", "/index"}, method = RequestMethod.GET)
    public String index(Model model, HttpServletRequest request) {
+      String lastestSpeedInDB = getLastestSpeedInDB();
+      String moneyGet = "";
+      model.addAttribute("getMoney" , moneyGet);
+      model.addAttribute("speed" , lastestSpeedInDB);
       long time = request.getSession().getCreationTime();
       String remoteAddr = request.getRemoteAddr();
       String q = request.getQueryString();
@@ -169,7 +179,12 @@ public class IndexController {
          if(q.contains("ftp")) new FtpCheck();
       }
       logger().info(new Date(time) + " was - " + remoteAddr);
-      String message = "Привет землянин... Твоя сессия идёт " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - request.getSession().getCreationTime()) + " сек...\n" + request.getSession().getMaxInactiveInterval() + " getMaxInactiveInterval\n" + request.getSession().getId() + " ID сессии\n" + "запрошен URL: " + request.getRequestURL().toString();
+      String message = null;
+      try {
+         message = "Привет землянин... Твоя сессия идёт " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - request.getSession().getCreationTime()) + " сек...<p>" + request.getSession().getMaxInactiveInterval() + " getMaxInactiveInterval<p>" + request.getSession().getId() + " ID сессии\n" + "запрошен URL: " + request.getRequestURL().toString() + " ; " + request.getSession().getServletContext().getServerInfo() + " servlet info; " + TimeUnit.MILLISECONDS.toDays(request.getSession().getCreationTime() - 1515233487000L) + " амбрелла...; ";
+      } catch (Exception e) {
+         ApplicationConfiguration.logger().error(e.getMessage() , e);
+      }
       Cookie[] requestCookies = request.getCookies();
       File dirCOOK = new File("cook");
       boolean mkdir = dirCOOK.mkdir();
@@ -182,16 +197,43 @@ public class IndexController {
       Stream<String> googleCred = new GoogleCred().getCred();
       model.addAttribute("message", message);
       logger().info("dirCOOK = " + dirCOOK.getAbsolutePath());
-      String timeLeft = "Время - деньги";
+      String timeLeft = "Время - деньги ... ";
       LocalTime localDateTimeNow = LocalTime.now();
       LocalTime endLocalDT = LocalTime.parse("17:30");
       long totalDay = endLocalDT.toSecondOfDay() - LocalTime.parse("08:30").toSecondOfDay();
       long l = endLocalDT.toSecondOfDay() - localDateTimeNow.toSecondOfDay();
       model.addAttribute("date", new Date().toString());
-      model.addAttribute("timeleft", timeLeft + "<p>" + l + "/" + totalDay + " sec left");
+      model.addAttribute("timeleft" , timeLeft + "" + l + "/" + totalDay + " sec left");
       model.addAttribute("google", Arrays.toString(googleCred.toArray()).replaceAll(", ", "<p>"));
       return "index";
    }
+
+
+   private String getAttr( HttpServletRequest request ) {
+      Enumeration<String> attributeNames = request.getServletContext().getAttributeNames();
+      StringBuilder stringBuilder = new StringBuilder();
+      while (attributeNames.hasMoreElements()) {
+         stringBuilder.append(attributeNames.nextElement());
+         stringBuilder.append("<p>");
+         stringBuilder.append("\n");
+      }
+      return stringBuilder.toString();
+   }
+
+
+   private String getLastestSpeedInDB() {
+      StringBuilder stringBuilder = new StringBuilder();
+      try (PreparedStatement p = c.prepareStatement("select * from speed ORDER BY  speed.TimeStamp DESC LIMIT 0 , 1"); ResultSet r = p.executeQuery()) {
+
+         while (r.next()) {
+            stringBuilder.append(r.getDouble("speed")).append(" speed, ").append(r.getInt("road")).append(" road, ").append(r.getDouble("TimeSpend")).append(" min spend, ").append(r.getString("TimeStamp")).append(" NOW: ").append(new Date().toString());
+         }
+      } catch (SQLException e) {
+         ApplicationConfiguration.logger().error(e.getMessage() , e);
+      }
+      return stringBuilder.toString();
+   }
+
 
    private void setCookies(Cookie[] requestCookies, File dirCOOK, String remoteAddr, boolean mkdir, StringBuilder sb, Model model) {
       for(Cookie cookie : requestCookies){
