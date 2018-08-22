@@ -10,4 +10,12 @@
 <textarea th:text="${greetings}">.</textarea>
 <a href="http://velkomnet">Velkomnet )</a>
 </body>
+<footer>
+    <link>
+    <a th:href="@{/exit}">Выйти из меня...</a><br>
+    <link>
+    <a th:href="@{/exit?shutdown}">Выключить систему...</a><br>
+    <link>
+    <a th:href="@{/exit?restart}">Перегруз системы...</a><br>
+</footer>
 </html>

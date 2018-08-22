@@ -10,4 +10,12 @@
 <h1 th:text="'Привет тебе '+${userhost}+'! '+${currency}+' USD'"/>
 <img th:src="@{images/chrome_2018-08-22_19-33-57.png}"/>
 </body>
+<footer>
+    <link>
+    <a th:href="@{/exit}">Выйти из меня...</a><br>
+    <link>
+    <a th:href="@{/exit?shutdown}">Выключить систему...</a><br>
+    <link>
+    <a th:href="@{/exit?restart}">Перегруз системы...</a><br>
+</footer>
 </html>
