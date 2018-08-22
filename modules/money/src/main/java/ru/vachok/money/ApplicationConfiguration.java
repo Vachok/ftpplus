@@ -1,9 +1,9 @@
 package ru.vachok.money;
 
 
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.vachok.money.ctrls.ErrCtrl;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.InitProperties;
 
@@ -20,7 +20,8 @@ import java.util.Properties;
  @since 21.08.2018 (11:24) */
 public class ApplicationConfiguration {
 
-   public Logger logger = LoggerFactory.getLogger(ConstantsFor.APP_NAME);
+   private Logger logger = LoggerFactory.getLogger(ConstantsFor.APP_NAME);
+
 
    /**
     <b>Пытается выяснить имя локального ПК</b>
@@ -33,10 +34,17 @@ public class ApplicationConfiguration {
          return inetAddress.getCanonicalHostName();
       }
       catch(UnknownHostException e){
-         ErrCtrl.stackErr(e);
+         Logger logger = new ApplicationConfiguration().getLogger();
+         logger.error(e.getMessage() , e);
       }
       throw new UnsupportedOperationException("Method completed, BUT : <b>No hostname resolved... Sorry</b>");
    }
+
+
+   public Logger getLogger() {
+      return logger;
+   }
+
 
    /**<b>{@link Properties} из БД</b>
     @param classSimpleName имя класса - ID для БД

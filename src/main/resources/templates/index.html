@@ -6,31 +6,8 @@
     <link rel="stylesheet" type="text/css" media="all" href="css/main.css" th:href="@{css/main.css}"/>
 </head>
 <body>
-<h1>Welcome</h1>
-<h5 th:utext="${message}">..!..</h5>
-
-<p th:text="${timeleft}"/>
-
-<!--
-<form action="#" th:action="@{/getmoney}" th:object="${getMoney}" method="post">
-    <input type="text" th:field="*{enterMoney}" /></form>>
--->
-<p th:text="${google}"/>
-<p>
-<a th:href="@{/netscan}">Сканировать сеть с записью в базу.</a>
-<p>
-<a th:href="@{http://10.10.111.57:8881/ftp}">Сканировать FTP</a>
-<p>
-<h5 th:text="${speed}">.</h5>
-
-<p>
-    <a th:href="@{/stop}">Exit app</a>
-<p>
-    <a th:href="@{/stop?reboot}">Reboot</a>
-<p>
-    <a th:href="@{/stop?full}">OFF</a>
-
-
+<
+<textarea th:text="${greetings}">.</textarea>
+<a href="http://velkomnet">Velkomnet )</a>
 </body>
-
 </html>

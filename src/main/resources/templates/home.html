@@ -1,23 +1,31 @@
-<!DOCTYPE html>
-
+<!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
-
 <head>
-    <title>Good Thymes Virtual Grocery</title>
+    <title th:text="${date}">ХЗ</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-    <link rel="stylesheet" type="text/css" media="all" href="../../css/main.css" th:href="@{/css/main.css}"/>
+    <link rel="stylesheet" type="text/css" media="all" href="css/main.css" th:href="@{css/main.css}"/>
 </head>
-
 <body>
+<h1>Welcome</h1>
+<h5 th:utext="${message}">..!..</h5>
 
-<p>Please select an option</p>
-<ol>
-    <li><a href="product/list.html" th:href="@{/product/list}">Product List</a></li>
-</ol>
+<p th:text="${timeleft}"/>
 
-<p>Now you are looking at a <span th:text="'working web application'">template file</span>.</p>
+<p th:text="${google}"/>
+<p>
+    <a th:href="@{/netscan}">Сканировать сеть с записью в базу.</a>
+<p>
+    <a th:href="@{http://10.10.111.57:8881/ftp}">Сканировать FTP</a>
+<p>
+<h5 th:text="${speed}">.</h5>
 
-<div th:insert="~{footer::copy}">&copy; 2011 The Static Templates</div>
+<p>
+    <a th:href="@{/stop}">Exit app</a>
+<p>
+    <a th:href="@{/stop?reboot}">Reboot</a>
+<p>
+    <a th:href="@{/stop?full}">OFF</a>
+
 
 </body>
 

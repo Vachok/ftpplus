@@ -79,5 +79,9 @@ FtpConnect_25.prn
 FtpConnect_27.prn
 FtpHomeCamCheck.properties
 InitProperties.properties
-src/New Folder/
-
+PhotoFiltre/
+ssh_err.txt
+ssh_out.txt
+HomePCFilesCheck.properties
+modules/money/HomePCFilesCheck.properties
+putty.exe

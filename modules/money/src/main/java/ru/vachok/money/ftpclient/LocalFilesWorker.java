@@ -3,8 +3,9 @@ package ru.vachok.money.ftpclient;
 
 
 import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import ru.vachok.money.ApplicationConfiguration;
 import ru.vachok.money.ConstantsFor;
-import ru.vachok.money.ctrls.ErrCtrl;
 import ru.vachok.money.logic.DecoderEnc;
 import ru.vachok.money.logic.Utilit;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
@@ -68,7 +69,7 @@ public class LocalFilesWorker implements Callable<String> {
             }
             txtWorker(filesWithNames);
         } else {
-            new ErrCtrl().err(null);
+            throw new UnknownError("Я ХЗ");
         }
     }
 
@@ -78,7 +79,8 @@ public class LocalFilesWorker implements Callable<String> {
         try {
             FileUtils.touch(txtFile);
         } catch (IOException e) {
-            ErrCtrl.stackErr(e);
+            Logger logger = new ApplicationConfiguration().getLogger();
+            logger.error(e.getMessage() , e);
         }
     }
 }

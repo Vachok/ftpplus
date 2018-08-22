@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="ru">
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link rel="stylesheet" type="text/css" media="all" href="css/main.css" th:href="@{css/main.css}"/>
+    <title>FTP Scan. Результат</title>
+</head>
+<body>
+<h4 th:utext="${call}"></h4>
+<h4 th:utext="${call1}"></h4>
+<ul th:utext="${ftp}">.</ul>
+</body>
+</html>
