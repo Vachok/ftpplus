@@ -1,17 +1,13 @@
 package ru.vachok.networker.logic;
 
 
-
-import ru.vachok.messenger.MessageCons;
-import ru.vachok.messenger.MessageToUser;
+import org.slf4j.Logger;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.web.ApplicationConfiguration;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.Arrays;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 
 /**
@@ -25,10 +21,8 @@ public class ParserCBRru {
      * Simple Name класса, для поиска настроек
      */
     private static final String SOURCE_CLASS = ParserCBRru.class.getSimpleName();
-    /**
-     * {@link }
-     */
-    private static MessageToUser messageToUser = new MessageCons();
+
+   private static final Logger LOGGER = ApplicationConfiguration.logger();
 
 
     private ParserCBRru() {
@@ -57,8 +51,7 @@ public class ParserCBRru {
                 }
             }
         } catch (IOException e) {
-            Logger.getLogger(SOURCE_CLASS).log(Level.WARNING , String.format("%s%n%n%s" , e.getMessage() , Arrays.toString(e.getStackTrace()).replaceAll(", " , "\n").replace("{" , "").replace("}" , "")));
-            new ru.vachok.networker.logic.ErrControl().internError(e);
+           LOGGER.error(e.getMessage(), e);
         }
     }
 

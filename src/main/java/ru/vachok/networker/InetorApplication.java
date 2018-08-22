@@ -2,12 +2,14 @@ package ru.vachok.networker;
 
 
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 
 /**
  * The type Inetor application.
  */
+@EnableAutoConfiguration
 @SpringBootApplication
 public class InetorApplication {
 
