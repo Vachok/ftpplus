@@ -27,7 +27,6 @@ public class ErrCtrl implements ErrorController {
      */
     private static final String SOURCE_CLASS = ErrCtrl.class.getSimpleName();
     private static Logger logger = new ApplicationConfiguration().getLogger();
-    private String errStr;
 
 
     /**
@@ -43,7 +42,7 @@ public class ErrCtrl implements ErrorController {
 
     @GetMapping("/error")
     public String err( Exception e , Model model ) {
-        this.errStr = "<p>" + Arrays.toString(e.getStackTrace()).replaceAll(", " , "<br>") + "</p>";
+        String errStr = "<p>" + Arrays.toString(e.getStackTrace()).replaceAll(", " , "<br>") + "</p>";
         String eM = e.getMessage();
         model.addAttribute("error" , errStr);
         model.addAttribute("eMessage" , eM);
@@ -53,7 +52,7 @@ public class ErrCtrl implements ErrorController {
 
     @GetMapping("/exit")
     public void exitApp( HttpServletRequest httpServletRequest , HttpServletResponse response ) throws IOException {
-        ConstantsFor.setMyPC(httpServletRequest.getRemoteAddr().contains("10.10.111.") || httpServletRequest.getRemoteAddr().contains("0:0:0:0:0"));
+        ConstantsFor.setMyPC(httpServletRequest.getRemoteAddr().contains("10.10.111.") || httpServletRequest.getRemoteAddr().contains("0:0:0:0"));
         String s = httpServletRequest.getRequestURL().toString();
         String q = httpServletRequest.getQueryString();
         logger.info(String.format("%s%n%s" , s , q));

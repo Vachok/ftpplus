@@ -85,3 +85,4 @@ ssh_out.txt
 HomePCFilesCheck.properties
 modules/money/HomePCFilesCheck.properties
 putty.exe
+/modules/money/DataSourceSelectorReg.log

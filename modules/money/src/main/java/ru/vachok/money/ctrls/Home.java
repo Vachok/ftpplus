@@ -1,9 +1,11 @@
 package ru.vachok.money.ctrls;
 
 
+
 import org.slf4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import ru.vachok.messenger.MessageCons;
@@ -151,6 +153,21 @@ public class Home {
             logger.error(MessageFormat.format("{0}\n{1}", e.getMessage(), Arrays.toString(e.getStackTrace()).replaceAll(", ", " ")));
          }
       }
+   }
+
+
+   @GetMapping("/net")
+   public String netChk( Model model ) {
+      String traceRt = "TRACE";
+      try {
+         InetAddress inetAddressNAT = InetAddress.getByName("srv-nat.eatmeat.ru");
+         InetAddress inetAddressGIT = InetAddress.getByName("srv-git.eatmeat.ru");
+         traceRt = Arrays.toString(inetAddressGIT.getAddress()) + "<p>" + Arrays.toString(inetAddressNAT.getAddress());
+      } catch (UnknownHostException e) {
+         logger.error(e.getMessage() , e);
+      }
+      model.addAttribute("trace" , traceRt);
+      return "net";
    }
 
 }

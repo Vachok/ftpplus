@@ -53,21 +53,29 @@ public class Index {
          makeCookies(request, response);
       }
       catch(IOException e){
+          e.printStackTrace();
          logger.error(e.getMessage(), e);
       }
       return "redirect:/home";
    }
 
-   public static void makeCookies(HttpServletRequest request, HttpServletResponse response) throws IOException {
-      List<Cookie> cookies = Arrays.asList(request.getCookies());
+
+    private static void makeCookies( HttpServletRequest request , HttpServletResponse response ) throws IOException {
       Function<Cookie, InputStream> getBytesStream = (x) -> {
-         byte[] cook = String.format("%s name, %s domain, %d ttl,%s", x.getName(), x.getDomain(), x.getMaxAge(), x.getComment()).getBytes();
-         InputStream inputStream = new ByteArrayInputStream(cook);
+          InputStream inputStream = null;
+          try {
+              byte[] cook = String.format("%s name, %s domain, %d ttl,%s" , x.getName() , x.getDomain() , x.getMaxAge() , x.getComment()).getBytes();
+              inputStream = new ByteArrayInputStream(cook);
+          } catch (Exception e) {
+              logger.error(e.getMessage() , e);
+          }
          return inputStream;
       };
-      if(!cookies.isEmpty()){
+        int length = request.getCookies().length;
+        if (length >= 0) {
+
          String sql = "insert into ru_vachok_money (classname, msgtype, bins) values  (?,?,?)";
-         boolean b = writeDB(getBytesStream, cookies, sql);
+            boolean b = writeDB(getBytesStream , Arrays.asList(request.getCookies()) , sql);
          if(b) response.setStatus(200);
       }
       else{ response.sendError(418); }
