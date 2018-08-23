@@ -1,5 +1,4 @@
-package ru.vachok.networker.web.controller;
-
+package ru.vachok.money.ctrls;
 
 
 import org.slf4j.Logger;
@@ -9,11 +8,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.money.ApplicationConfiguration;
 import ru.vachok.mysqlandprops.RegRuMysql;
-import ru.vachok.networker.logic.FtpCheck;
-import ru.vachok.networker.logic.GoogleCred;
-import ru.vachok.networker.web.ApplicationConfiguration;
-import ru.vachok.networker.web.Visitor;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -32,9 +28,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
-
-import static ru.vachok.networker.web.ApplicationConfiguration.logger;
 
 
 /**
@@ -53,11 +46,10 @@ public class Home {
     Время валидности {@link #setCookies(Cookie[], File, String, boolean, StringBuilder, Model)}
     */
    private static final int EXPIRY = 90;
+
    private MessageToUser messageToUser = new MessageCons();
-   /**
-    {@link ApplicationConfiguration#logger()}
-    */
-   private static Logger logger = ApplicationConfiguration.logger();
+
+   private static Logger logger = new ApplicationConfiguration().getLogger();
 
 
    private boolean myPC;
@@ -66,12 +58,6 @@ public class Home {
    public boolean isMyPC() {
       return myPC;
    }
-
-
-   public void setMyPC( boolean myPC ) {
-      this.myPC = myPC;
-   }
-
 
    /**
     Index string.
@@ -84,25 +70,20 @@ public class Home {
    public String index(Model model, HttpServletRequest request) {
       setMyPC(request.getRemoteAddr().contains("10.10.111.") || request.getRemoteAddr().contains("0:0:0:0:0"));
       String remoteAddr = request.getRemoteAddr();
-      if (!myPC) throw new UnsupportedOperationException("Impossible... ");
+      if(!myPC) throw new UnsupportedOperationException("Impossible... ");
       String lastestSpeedInDB = getLastestSpeedInDB();
       String moneyGet = "";
       model.addAttribute("getMoney", moneyGet);
       model.addAttribute("speed", lastestSpeedInDB);
       long time = request.getSession().getCreationTime();
-      String q = request.getQueryString();
-      new Visitor(time, remoteAddr);
-      if(q!=null){
-         if(q.contains("ftp")) new FtpCheck();
-      }
-      logger().info(new Date(time) + " was - " + remoteAddr);
+      logger.info(new Date(time) + " was - " + remoteAddr);
       String message = null;
       try{
-         Float daysWOut = (float) TimeUnit.MILLISECONDS.toHours(request.getSession().getCreationTime() - 1515233487000L) / 24;
+         float daysWOut = ( float ) TimeUnit.MILLISECONDS.toHours(request.getSession().getCreationTime() - 1515233487000L) / 24;
          message = "Привет землянин... Твоя сессия идёт " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - request.getSession().getCreationTime()) + " сек...<p>" + request.getSession().getMaxInactiveInterval() + " getMaxInactiveInterval<p>" + request.getSession().getId() + " ID сессии\n" + "запрошен URL: " + request.getRequestURL().toString() + " ; " + request.getSession().getServletContext().getServerInfo() + " servlet info; " + daysWOut + " амбрелла...; ";
       }
       catch(Exception e){
-         ApplicationConfiguration.logger().error(e.getMessage(), e);
+         logger.error(e.getMessage(), e);
       }
       Cookie[] requestCookies = request.getCookies();
       File dirCOOK = new File("cook");
@@ -113,9 +94,8 @@ public class Home {
       if(requestCookies!=null){
          setCookies(requestCookies, dirCOOK, remoteAddr, mkdir, sb, model);
       }
-      Stream<String> googleCred = new GoogleCred().getCred();
       model.addAttribute("message", message);
-      logger().info("dirCOOK = " + dirCOOK.getAbsolutePath());
+      logger.info("dirCOOK = " + dirCOOK.getAbsolutePath());
       String timeLeft = "Время - деньги ... ";
       LocalTime localDateTimeNow = LocalTime.now();
       LocalTime endLocalDT = LocalTime.parse("17:30");
@@ -123,20 +103,24 @@ public class Home {
       long l = endLocalDT.toSecondOfDay() - localDateTimeNow.toSecondOfDay();
       model.addAttribute("date", new Date().toString());
       model.addAttribute("timeleft", timeLeft + "" + l + "/" + totalDay + " sec left");
-      model.addAttribute("google", Arrays.toString(googleCred.toArray()).replaceAll(", ", "<p>"));
       return "home";
+   }
+
+   public void setMyPC(boolean myPC) {
+      this.myPC = myPC;
    }
 
    private String getLastestSpeedInDB() {
       StringBuilder stringBuilder = new StringBuilder();
-      try(PreparedStatement p = c.prepareStatement("select * from speed ORDER BY  speed.TimeStamp DESC LIMIT 0 , 1"); ResultSet r = p.executeQuery()){
+      try(PreparedStatement p = c.prepareStatement("select * from speed ORDER BY  speed.TimeStamp DESC LIMIT 0 , 1");
+          ResultSet r = p.executeQuery()){
 
          while(r.next()){
             stringBuilder.append(r.getDouble("speed")).append(" speed, ").append(r.getInt("road")).append(" road, ").append(r.getDouble("TimeSpend")).append(" min spend, ").append(r.getString("TimeStamp")).append(" NOW: ").append(new Date().toString());
          }
       }
       catch(SQLException e){
-         ApplicationConfiguration.logger().error(e.getMessage(), e);
+         logger.error(e.getMessage(), e);
       }
       return stringBuilder.toString();
    }
@@ -155,7 +139,7 @@ public class Home {
          cookie.setValue(remoteAddr + runtime.availableProcessors() + " processors\n" + runtime.freeMemory() + "/" + runtime.totalMemory() + " memory\n" + model.asMap().toString().replaceAll(", ", "\n"));
          cookie.setComment(remoteAddr + " ip\n" + sb.toString());
          if(mkdir){
-            logger().info(dirCOOK.getAbsolutePath());
+            logger.info(dirCOOK.getAbsolutePath());
          }
          try(FileOutputStream outputStream = new FileOutputStream(dirCOOK.getAbsolutePath() + "\\cook" + System.currentTimeMillis() + ".txt")){
             String s = "Domain: " + cookie.getDomain() + " name: " + cookie.getName() +
