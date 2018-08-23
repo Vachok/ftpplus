@@ -21,7 +21,7 @@ public class ParseCurrency {
    public String getTodayUSD() {
       URL url;
       File kursFile=new File("cbr.html");
-      String todayUSD = "no currency";
+      String todayUSD;
       try{
          url = new URL("https://www.cbr.ru/currency_base/daily/");
          todayUSD = url.toURI().toString();
