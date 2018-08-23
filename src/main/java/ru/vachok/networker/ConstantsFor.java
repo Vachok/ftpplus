@@ -23,4 +23,10 @@ public enum ConstantsFor {
     public static final int TIMEOUT_2 = 2000;
 
     public static final String SRV_NAT = "192.168.13.30";
+    private boolean myPc;
+
+
+    public void setPc( boolean b ) {
+        this.myPc = b;
+    }
 }

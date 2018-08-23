@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" xmlns="http://www.w3.org/1999/html">
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
@@ -7,8 +7,22 @@
     <title>НИИХуЯ</title>
 </head>
 <body>
-<h2><p th:text="${err}"/></h2>
+<h2 th:text="${error}"/>
 <p th:text="${eMessage}"/>
+<link>
+<a th:href="@{/exit}">Выйти из меня...</a><br>
+<link>
+<a th:href="@{/exit?shutdown}">Выключить систему...</a><br>
+<link>
+<a th:href="@{/exit?restart}">Перегруз системы...</a><br>
 <img th:src="@{images/banner.jpg}">
 </body>
+<footer>
+    <link>
+    <a th:href="@{/exit}">Выйти из меня...</a><br>
+    <link>
+    <a th:href="@{/exit?shutdown}">Выключить систему...</a><br>
+    <link>
+    <a th:href="@{/exit?restart}">Перегруз системы...</a><br>
+</footer>
 </html>

@@ -69,7 +69,7 @@ public class FtpHomeCamCheck implements FtpConnect, Callable<String>, Runnable {
 
     @Override
     public String call() {
-        return connect();
+        return "<p>" + connect();
     }
 
 
@@ -96,7 +96,7 @@ public class FtpHomeCamCheck implements FtpConnect, Callable<String>, Runnable {
         properties.setProperty("size2downMeg" , sizeAll + "");
         FtpHomeCamCheck.messageToUser.info(FtpHomeCamCheck.SOURCE_CLASS , new UTF8().toAnotherEnc("Всего в мегабайтах, после последней проверки: ") , sizeAll + "/(LO: " + lo + ")");
         if (lo != 0) eSend(messageToSend(sizeAll , lo));
-        return FtpHomeCamCheck.SOURCE_CLASS + new W1251().toAnotherEnc("\nВсего в мегабайтах, после последней проверки: " + "\n") + sizeAll + "/(LO: " + lo + ")";
+        return FtpHomeCamCheck.SOURCE_CLASS + new W1251().toAnotherEnc("Всего в мегабайтах, после последней проверки:" + " " + "<br>") + sizeAll + "/(LO: " + lo + ")";
     }
 
 

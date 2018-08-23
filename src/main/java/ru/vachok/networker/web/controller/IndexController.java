@@ -137,7 +137,9 @@ public class IndexController {
 
    @RequestMapping ("/")
    public String indexModel(HttpServletRequest request, HttpServletResponse response, Model model) {
-      if(!request.getRemoteAddr().contains("10.200.213.")) return "redirect:/home";
+      if (request.getRemoteAddr().contains("0:0:0:0:0") || request.getRemoteAddr().contains("10.10.111."))
+         return "redirect:/home";
+      if (!request.getRemoteAddr().contains("10.200.213.")) return "redirect:/error";
       String usersInet = new ListInternetUsers().call();
       model.addAttribute("greetings", usersInet);
       return "index";

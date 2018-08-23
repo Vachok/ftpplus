@@ -34,7 +34,7 @@ public class ErrControl implements ErrorController {
    public String errHandle(HttpServletRequest httpServletRequest, Model model) {
       Integer statCode = ( Integer ) httpServletRequest.getAttribute("javax.servlet.error.status_code");
       Exception exception = ( Exception ) httpServletRequest.getAttribute("javax.servlet.error.exception");
-      String eMessage = "Скорее всего, этой страницы просто нет";
+       String eMessage = "Скорее всего, этой страницы просто нет, " + httpServletRequest.getRemoteAddr() + ".";
       String err = "К сожалению, вынужден признать, тут ошибка... " + statCode;
       if(exception!=null){
          eMessage = exception.getMessage().split("\\Q:\\E")[1];

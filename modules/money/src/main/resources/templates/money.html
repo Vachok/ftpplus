@@ -1,11 +1,21 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
 <html lang="ru">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <title>Счётчик денег</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link rel="stylesheet" type="text/css" media="all" href="css/style.css" th:href="@{css/style.css}"/>
+    <title>Деньги и время...</title>
 </head>
 <body>
-<p th:text="'Привет тебе юзер! '+${currency}+' USD'" />
+<h1 th:text="'Привет тебе '+${userhost}+'! '+${currency}+' USD'"/>
+<img th:src="@{images/chrome_2018-08-22_19-33-57.png}"/>
 </body>
+<footer>
+    <link>
+    <a th:href="@{/exit}">Выйти из меня...</a><br>
+    <link>
+    <a th:href="@{/exit?shutdown}">Выключить систему...</a><br>
+    <link>
+    <a th:href="@{/exit?restart}">Перегруз системы...</a><br>
+</footer>
 </html>

@@ -82,3 +82,6 @@ InitProperties.properties
 PhotoFiltre/
 ssh_err.txt
 ssh_out.txt
+HomePCFilesCheck.properties
+modules/money/HomePCFilesCheck.properties
+putty.exe

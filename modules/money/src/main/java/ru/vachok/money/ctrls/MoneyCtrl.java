@@ -6,13 +6,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.servlet.ModelAndView;
 import ru.vachok.money.ConstantsFor;
 import ru.vachok.money.logic.ParseCurrency;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 
 /**
@@ -28,9 +25,11 @@ public class MoneyCtrl {
 
 
     @GetMapping("/money")
-    public String money(@RequestParam (value = "currency", required = false, defaultValue="") String currency, Model model) {
+    public String money( @RequestParam(value = "currency", required = false, defaultValue = "") String currency , Model model , HttpServletRequest request ) {
+        ConstantsFor.setMyPC(request.getRemoteAddr().contains("10.10.111.") || request.getRemoteAddr().contains("0:0" + ":0:0:0"));
         currency = new ParseCurrency().getTodayUSD();
         model.addAttribute("currency", currency);
+        model.addAttribute("userhost" , request.getRemoteHost());
         return "money";
     }
 

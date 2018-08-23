@@ -1,11 +1,14 @@
 package ru.vachok.networker.web.controller;
 
 
+
 import org.slf4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import ru.vachok.messenger.MessageCons;
+import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.logic.FtpCheck;
 import ru.vachok.networker.logic.GoogleCred;
@@ -50,11 +53,25 @@ public class Home {
     Время валидности {@link #setCookies(Cookie[], File, String, boolean, StringBuilder, Model)}
     */
    private static final int EXPIRY = 90;
-
+   private MessageToUser messageToUser = new MessageCons();
    /**
     {@link ApplicationConfiguration#logger()}
     */
    private static Logger logger = ApplicationConfiguration.logger();
+
+
+   private boolean myPC;
+
+
+   public boolean isMyPC() {
+      return myPC;
+   }
+
+
+   public void setMyPC( boolean myPC ) {
+      this.myPC = myPC;
+   }
+
 
    /**
     Index string.
@@ -65,8 +82,9 @@ public class Home {
     */
    @RequestMapping (value = {"/home"}, method = RequestMethod.GET)
    public String index(Model model, HttpServletRequest request) {
+      setMyPC(request.getRemoteAddr().contains("10.10.111.") || request.getRemoteAddr().contains("0:0:0:0:0"));
       String remoteAddr = request.getRemoteAddr();
-      if(!remoteAddr.contains("10.10.111.")) throw new UnsupportedOperationException("Impossible... ");
+      if (!myPC) throw new UnsupportedOperationException("Impossible... ");
       String lastestSpeedInDB = getLastestSpeedInDB();
       String moneyGet = "";
       model.addAttribute("getMoney", moneyGet);
@@ -80,7 +98,8 @@ public class Home {
       logger().info(new Date(time) + " was - " + remoteAddr);
       String message = null;
       try{
-         message = "Привет землянин... Твоя сессия идёт " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - request.getSession().getCreationTime()) + " сек...<p>" + request.getSession().getMaxInactiveInterval() + " getMaxInactiveInterval<p>" + request.getSession().getId() + " ID сессии\n" + "запрошен URL: " + request.getRequestURL().toString() + " ; " + request.getSession().getServletContext().getServerInfo() + " servlet info; " + TimeUnit.MILLISECONDS.toDays(request.getSession().getCreationTime() - 1515233487000L) + " амбрелла...; ";
+         Float daysWOut = (float) TimeUnit.MILLISECONDS.toHours(request.getSession().getCreationTime() - 1515233487000L) / 24;
+         message = "Привет землянин... Твоя сессия идёт " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - request.getSession().getCreationTime()) + " сек...<p>" + request.getSession().getMaxInactiveInterval() + " getMaxInactiveInterval<p>" + request.getSession().getId() + " ID сессии\n" + "запрошен URL: " + request.getRequestURL().toString() + " ; " + request.getSession().getServletContext().getServerInfo() + " servlet info; " + daysWOut + " амбрелла...; ";
       }
       catch(Exception e){
          ApplicationConfiguration.logger().error(e.getMessage(), e);

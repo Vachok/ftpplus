@@ -2,7 +2,8 @@ package ru.vachok.money.logic;
 
 
 
-import ru.vachok.money.ctrls.ErrCtrl;
+import org.slf4j.Logger;
+import ru.vachok.money.ApplicationConfiguration;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -25,7 +26,8 @@ public class Utilit {
             InetAddress inetAddress = InetAddress.getLocalHost();
             return inetAddress.getHostName();
         } catch (UnknownHostException e) {
-            ErrCtrl.stackErr(e);
+            Logger logger = new ApplicationConfiguration().getLogger();
+            logger.error(e.getMessage() , e);
         }
         return ret;
     }
