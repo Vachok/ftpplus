@@ -1,7 +1,7 @@
 package ru.vachok.networker.web.controller;
 
-
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -9,10 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.logic.SaverByOlder;
 import ru.vachok.networker.logic.ssh.ListInternetUsers;
-import ru.vachok.networker.web.ApplicationConfiguration;
-import ru.vachok.networker.web.beans.ThisPC;
 
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.Cookie;
@@ -35,12 +32,9 @@ import java.util.concurrent.Executors;
 public class IndexController {
 
    private static final Map<String, String> SHOW_ME = new ConcurrentHashMap<>();
-
-   private static String pcName = new ThisPC().getPcName();
-
+   private static Logger logger = LoggerFactory.getLogger("Index");
    private MessageToUser messageToUser = new MessageCons();
 
-   private Logger logger = ApplicationConfiguration.logger();
 
    /**
     Map to show map.
@@ -54,7 +48,6 @@ public class IndexController {
    @ResponseBody
    public Map<String, String> mapToShow(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws IOException {
       ExecutorService executorService = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor());
-      Runnable r = new SaverByOlder(SHOW_ME);
       SHOW_ME.put("addr", httpServletRequest.getRemoteAddr());
       SHOW_ME.put("host", httpServletRequest.getRequestURL().toString());
       SHOW_ME.forEach((x, y) -> messageToUser.info(this.getClass().getSimpleName(), x, y));
@@ -63,9 +56,7 @@ public class IndexController {
       if(s!=null){
          SHOW_ME.put(this.toString(), s);
          if(s.contains("go")) httpServletResponse.sendRedirect("http://ftpplus.vachok.ru/docs");
-         executorService.execute(r);
       }
-      executorService.execute(r);
       return SHOW_ME;
    }
 
@@ -91,7 +82,7 @@ public class IndexController {
          }
       }
       catch(IOException e){
-         ApplicationConfiguration.logger().error(e.getMessage(), e);
+         logger.error(e.getMessage() , e);
       }
       messageToUser.info("HTTP Servlets Controller", httpServletRequest.getServletPath() + re, "1 КБ resp: " + new String(bs, StandardCharsets.UTF_8));
       String s = LocalDateTime.of(2018, 10, 14, 7, 0).format(DateTimeFormatter.ofPattern("dd/MM/yy"));
@@ -137,9 +128,6 @@ public class IndexController {
 
    @RequestMapping ("/")
    public String indexModel(HttpServletRequest request, HttpServletResponse response, Model model) {
-      if (request.getRemoteAddr().contains("0:0:0:0:0") || request.getRemoteAddr().contains("10.10.111."))
-         return "redirect:/home";
-      if (!request.getRemoteAddr().contains("10.200.213.")) return "redirect:/error";
       String usersInet = new ListInternetUsers().call();
       model.addAttribute("greetings", usersInet);
       return "index";
@@ -147,10 +135,7 @@ public class IndexController {
 
    @GetMapping ("/f")
    public String f(HttpServletResponse httpServletResponse) {
-      if(pcName.equalsIgnoreCase("home")){
-         return "redirect:http://10.10.111.57:8881/ftp";
-      }
-      else{ throw new UnsupportedOperationException("Impossible here... " + pcName); }
+      throw new UnsupportedOperationException("Impossible here... ");
    }
 
    private String getAttr(HttpServletRequest request) {

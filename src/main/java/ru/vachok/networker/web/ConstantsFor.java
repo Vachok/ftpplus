@@ -1,4 +1,5 @@
-package ru.vachok.networker;
+package ru.vachok.networker.web;
+
 
 
 import java.io.File;

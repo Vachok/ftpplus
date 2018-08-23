@@ -5,7 +5,7 @@ import org.apache.catalina.servlet4preview.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import ru.vachok.networker.web.ApplicationConfiguration;
+import ru.vachok.networker.ApplicationConfiguration;
 
 import javax.servlet.http.HttpServletResponse;
 

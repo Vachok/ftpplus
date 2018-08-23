@@ -5,7 +5,7 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
-import ru.vachok.networker.web.ApplicationConfiguration;
+import ru.vachok.networker.ApplicationConfiguration;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;

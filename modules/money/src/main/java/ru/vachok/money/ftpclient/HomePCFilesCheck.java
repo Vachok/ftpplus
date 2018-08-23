@@ -72,7 +72,7 @@ public class HomePCFilesCheck implements Callable<Stream<String>> {
         long l = 0;
         for (File f : locVideoFiles) {
             l = l + f.length();
-            String retStr = ("Размер файла " + f.getName() + f.length() / ConstantsFor.MEGABYTE + " Megabytes.\n" + "Всего: " + l / ConstantsFor.MEGABYTE);
+            String retStr = ("\nРазмер файла " + f.getName() + f.length() / ConstantsFor.MEGABYTE + " Megabytes.\n" + "  Всего: " + l / ConstantsFor.MEGABYTE);
             toReturn.add(retStr);
             messageToUser.infoNoTitles(retStr);
         }

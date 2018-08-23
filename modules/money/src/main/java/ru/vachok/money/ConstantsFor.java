@@ -25,6 +25,8 @@ public enum ConstantsFor {
     public static final int YEAR_BIRTH = 1984;
     public static final float FILES_TO_ENC_BLOCK = 111.0f;
     public static final String DB_PREFIX = "u0466446_";
+    public static final int MONTH_BIRTH = 1;
+    public static final int DAY_OF_B_MONTH = 7;
     private static boolean myPC;
 
 

@@ -2,7 +2,7 @@ package ru.vachok.networker.web.beans;
 
 
 import org.slf4j.Logger;
-import ru.vachok.networker.web.ApplicationConfiguration;
+import ru.vachok.networker.ApplicationConfiguration;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;

@@ -95,9 +95,9 @@
 	body, input, select, textarea {
 		color: rgba(255, 255, 255, 0.75);
 		font-family: "Source Sans Pro", sans-serif;
-		font-size: 10pt;
+		font-size: 12pt;
 		font-weight: 300;
-		line-height: 1.65;
+		line-height: 1.25;
 	}
 
 		@media screen and (max-width: 1680px) {
@@ -369,10 +369,10 @@
 		color: inherit;
 		display: block;
 		outline: 0;
-		padding: 50 1em;
+		padding: 50 6em;
 		text-decoration: none;
-		width: 40%;
-		height: 50%;
+		width: 72%;
+		height: 350%;
 	}
 
 		input[type="text"]:invalid,

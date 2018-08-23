@@ -1,8 +1,9 @@
 package ru.vachok.networker.logic;
 
 
-import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.web.ApplicationConfiguration;
+
+import ru.vachok.networker.ApplicationConfiguration;
+import ru.vachok.networker.web.ConstantsFor;
 
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.IIOByteBuffer;

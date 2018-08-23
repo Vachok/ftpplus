@@ -1,14 +1,15 @@
 package ru.vachok.networker.logic.ssh;
 
 
+
 import com.jcraft.jsch.*;
 import org.slf4j.Logger;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.InitProperties;
-import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.web.ApplicationConfiguration;
+import ru.vachok.networker.ApplicationConfiguration;
+import ru.vachok.networker.web.ConstantsFor;
 
 import java.io.File;
 import java.io.FileOutputStream;

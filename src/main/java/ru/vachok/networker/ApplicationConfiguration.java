@@ -1,4 +1,5 @@
-package ru.vachok.networker.web;
+package ru.vachok.networker;
+
 
 
 import org.slf4j.Logger;
@@ -11,8 +12,8 @@ import org.springframework.context.annotation.ComponentScan;
 public class ApplicationConfiguration {
 
 
-   @Bean
-   public static Logger logger() {
-      return LoggerFactory.getLogger("ru.vachok");
-   }
+    @Bean
+    public static Logger logger() {
+        return LoggerFactory.getLogger("ru.vachok");
+    }
 }

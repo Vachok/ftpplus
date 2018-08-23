@@ -8,7 +8,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.RegRuMysql;
-import ru.vachok.networker.web.ApplicationConfiguration;
+import ru.vachok.networker.ApplicationConfiguration;
 
 import java.io.IOException;
 import java.net.InetAddress;

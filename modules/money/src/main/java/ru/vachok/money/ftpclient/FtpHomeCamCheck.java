@@ -90,8 +90,10 @@ public class FtpHomeCamCheck implements FtpConnect, Callable<String>, Runnable {
             sizeAll += ftpFile.getSize();
         }
         sizeAll = sizeAll / ConstantsFor.MEGABYTE;
-        Object size2downMeg1 = properties.getOrDefault("size2downMeg" , "1");
-        size2downMeg = Long.parseUnsignedLong(size2downMeg1.toString());
+        String size2downMeg1 = properties.getProperty("size2downMeg");
+        if (size2downMeg1 != null) {
+            size2downMeg = Long.parseUnsignedLong(size2downMeg1);
+        } else size2downMeg = 1L;
         long lo = sizeAll - size2downMeg;
         properties.setProperty("size2downMeg" , sizeAll + "");
         FtpHomeCamCheck.messageToUser.info(FtpHomeCamCheck.SOURCE_CLASS , new UTF8().toAnotherEnc("Всего в мегабайтах, после последней проверки: ") , sizeAll + "/(LO: " + lo + ")");

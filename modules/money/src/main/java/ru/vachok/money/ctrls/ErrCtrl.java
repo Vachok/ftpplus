@@ -8,7 +8,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.money.ApplicationConfiguration;
-import ru.vachok.money.ConstantsFor;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -52,15 +51,12 @@ public class ErrCtrl implements ErrorController {
 
     @GetMapping("/exit")
     public void exitApp( HttpServletRequest httpServletRequest , HttpServletResponse response ) throws IOException {
-        ConstantsFor.setMyPC(httpServletRequest.getRemoteAddr().contains("10.10.111.") || httpServletRequest.getRemoteAddr().contains("0:0:0:0"));
         String s = httpServletRequest.getRequestURL().toString();
         String q = httpServletRequest.getQueryString();
-        logger.info(String.format("%s%n%s" , s , q));
         if (q != null) {
             if (q.contains("shutdown")) Runtime.getRuntime().exec("shutdown /p /f");
             if (q.contains("restart")) Runtime.getRuntime().exec("shutdown /r /f");
         } else {
-            response.sendRedirect("http://10.10.111.57/e");
             System.exit(0);
         }
     }

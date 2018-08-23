@@ -1,9 +1,10 @@
 package ru.vachok.networker.logic;
 
 
+
 import org.slf4j.Logger;
-import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.web.ApplicationConfiguration;
+import ru.vachok.networker.ApplicationConfiguration;
+import ru.vachok.networker.web.ConstantsFor;
 
 import java.io.IOException;
 import java.io.InputStream;

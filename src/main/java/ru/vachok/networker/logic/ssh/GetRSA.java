@@ -3,7 +3,7 @@ package ru.vachok.networker.logic.ssh;
 
 import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.RegRuMysql;
-import ru.vachok.networker.web.ApplicationConfiguration;
+import ru.vachok.networker.ApplicationConfiguration;
 
 import java.io.InputStream;
 import java.sql.Connection;
