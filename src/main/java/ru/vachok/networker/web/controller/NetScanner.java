@@ -3,12 +3,13 @@ package ru.vachok.networker.web.controller;
 
 
 import org.apache.catalina.servlet4preview.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.RegRuMysql;
-import ru.vachok.networker.ApplicationConfiguration;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -27,6 +28,7 @@ import java.util.List;
 @Controller
 public class NetScanner {
 
+    private static Logger logger = LoggerFactory.getLogger(NetScanner.class.getName());
 
     @GetMapping("/netscan")
     public String getPCNames( HttpServletRequest request , Model model ) throws IOException {
@@ -36,7 +38,7 @@ public class NetScanner {
         String qer = request.getQueryString();
         String namePref = "do";
         if (qer != null) {
-            ApplicationConfiguration.logger().info(qer);
+            logger.info(qer);
             namePref = qer;
         }
         for (int i = 1; i < 350; i++) {
@@ -48,16 +50,16 @@ public class NetScanner {
             } catch (UnknownHostException e) {
                 continue;
             }
-            boolean reachable = inetAddress.isReachable(100);
+            boolean reachable = inetAddress.isReachable(800);
             String e = inetAddress.toString();
             if (!reachable) {
                 String onLines = ("<b> online </b><i>" + false + "</i>");
                 pcNames.add(e + "<b>" + onLines + "</b>");
-                ApplicationConfiguration.logger().warn(e + " " + onLines);
+                logger.warn(e + " " + onLines);
             } else {
                 String onLines = ("<b> online </b>" + true);
                 pcNames.add(e + "<b>" + onLines + "</b>");
-                ApplicationConfiguration.logger().warn(e + " " + onLines);
+                logger.warn(e + " " + onLines);
             }
         }
         boolean b = writeDB(pcNames);
@@ -80,12 +82,12 @@ public class NetScanner {
                     p.setBoolean(3 , onLine);
                     p.executeUpdate();
                 } catch (SQLException e) {
-                    ApplicationConfiguration.logger().error(e.getMessage() , e);
+                    logger.error(e.getMessage() , e);
                 }
             });
             return true;
         } catch (SQLException e) {
-            ApplicationConfiguration.logger().error(e.getMessage() , e);
+            logger.error(e.getMessage() , e);
             return false;
         }
     }
