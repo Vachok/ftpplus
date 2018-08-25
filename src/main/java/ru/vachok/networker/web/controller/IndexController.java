@@ -9,7 +9,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.mysqlandprops.RegRuMysql;
+import ru.vachok.networker.InetorApplication;
 import ru.vachok.networker.logic.ssh.ListInternetUsers;
+import ru.vachok.networker.web.ConstantsFor;
 
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.Cookie;
@@ -17,6 +20,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -32,6 +38,7 @@ import java.util.concurrent.Executors;
 public class IndexController {
 
    private static final Map<String, String> SHOW_ME = new ConcurrentHashMap<>();
+   private static final String SOURCE_CLASS = IndexController.class.getName();
    private static Logger logger = LoggerFactory.getLogger("Index");
    private MessageToUser messageToUser = new MessageCons();
 
@@ -130,6 +137,8 @@ public class IndexController {
    public String indexModel(HttpServletRequest request, HttpServletResponse response, Model model) {
       String usersInet = new ListInternetUsers().call();
       model.addAttribute("greetings", usersInet);
+      boolean b = InetorApplication.dataSender(response , request , SOURCE_CLASS);
+      model.addAttribute("dbsend", b+" db");
       return "index";
    }
 
@@ -148,5 +157,4 @@ public class IndexController {
       }
       return stringBuilder.toString();
    }
-
 }

@@ -29,6 +29,7 @@ import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 
@@ -166,7 +167,9 @@ public class Home {
       } catch (UnknownHostException e) {
          logger.error(e.getMessage() , e);
       }
+      List<File> bsdUpd = new FreeBSD().getPortmasterL();
       model.addAttribute("trace" , traceRt);
+      model.addAttribute("files" , Arrays.toString(bsdUpd.toArray()));
       return "net";
    }
 

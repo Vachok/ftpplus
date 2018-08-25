@@ -120,8 +120,8 @@ public class Index {
                 String cookieInfo = cookie.getName() + " name; " + cookie.getValue() + " value; " + maxAge + " cookie delete is " + delete;
                 logger.info(cookieInfo);
             }
-            return "home";
+            return "redirect:/ftp";
         }
-        return "redirect:/ftp";
+        return "home";
     }
 }

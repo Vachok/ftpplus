@@ -4,6 +4,7 @@ package ru.vachok.networker.logic;
 
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.DBMessanger;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -26,7 +27,7 @@ public class SaverByOlder implements Runnable {
     /**
      * {@link }
      */
-    private static MessageToUser messageToUser = new MessageCons();
+    private static MessageToUser messageToUser = new DBMessanger();
     private Map<String, String> showMe;
 
 

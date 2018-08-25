@@ -16,7 +16,7 @@ apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
 
 group = 'ru.vachok.money'
-version = '0.0.1-SNAPSHOT'
+version = '0.0.9-SNAPSHOT'
 sourceCompatibility = 1.8
 
 repositories {
@@ -31,7 +31,7 @@ ext {
 }
 
 dependencies {
-	compile fileTree('lib\\')
+	compile fileTree('G:\\My_Proj\\FtpClientPlus\\lib')
 	compile('org.springframework.boot:spring-boot-starter-web')
 	compile('org.springframework.boot:spring-boot-starter-thymeleaf')
 	compile('org.springframework.cloud:spring-cloud-gcp-starter')

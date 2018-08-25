@@ -8,6 +8,7 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.messenger.MessagesNull;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ApplicationConfiguration;
+import ru.vachok.networker.DBMessanger;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -26,7 +27,7 @@ public class Putty extends Thread {
     private static final Logger LOGGER = ApplicationConfiguration.logger();
     private static final int TIMEOUT_2 = 2000;
 
-    private static MessageToUser messageToUser = new MessagesNull();
+    private static MessageToUser messageToUser = new DBMessanger();
 
 
     @SuppressWarnings({"SingleStatementInBlock" , "InjectedReferences"})

@@ -86,3 +86,4 @@ HomePCFilesCheck.properties
 modules/money/HomePCFilesCheck.properties
 putty.exe
 /modules/money/DataSourceSelectorReg.log
+/MailMessages.properties

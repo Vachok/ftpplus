@@ -27,6 +27,10 @@ public enum ConstantsFor {
     public static final String DB_PREFIX = "u0466446_";
     public static final int MONTH_BIRTH = 1;
     public static final int DAY_OF_B_MONTH = 7;
+    public static final double NRIGA = 32.2;
+    public static final double A107 = 21.6;
+    public static final int INITIAL_DELAY = 30;
+    public static final int DELAY = 300;
     private static boolean myPC;
 
 

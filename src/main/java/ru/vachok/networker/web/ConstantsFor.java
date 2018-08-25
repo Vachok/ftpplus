@@ -16,6 +16,7 @@ public enum ConstantsFor {
     public static final int MBYTE = 1024 * 1024;
     public static final float USD_IN_14 = 34.26f;
     public static final float E_IN_14 = 46.9f;
+    public static final String DB_PREFIX = "u0466446_";
 
     public static final File SSH_ERR = new File("ssh_err.txt");
 

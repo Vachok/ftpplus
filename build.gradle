@@ -19,7 +19,7 @@ apply plugin: 'io.spring.dependency-management'
 
 group = 'ru.vachok.networker'
 version = '0.0.2-SNAPSHOT'
-sourceCompatibility = 8
+sourceCompatibility = 1.8
 
 repositories {
 	maven {
