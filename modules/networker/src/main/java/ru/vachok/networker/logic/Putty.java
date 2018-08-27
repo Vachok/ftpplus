@@ -5,7 +5,6 @@ package ru.vachok.networker.logic;
 
 import org.slf4j.Logger;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.messenger.MessagesNull;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ApplicationConfiguration;
 import ru.vachok.networker.DBMessanger;

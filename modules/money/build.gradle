@@ -26,7 +26,20 @@ repositories {
     maven { url "https://repo.spring.io/milestone" }
 }
 
-
+sourceSets {
+    main {
+        resources {
+            srcDirs = ["src/main/java", "src/main/resources"]
+            includes = ["**/*.fxml", "**/*.css", "**/*.properties", "**/*.png","**/*.html","**/*.sql","**/*.jar"]
+        }
+    }
+    test{
+        resources{
+            srcDirs = ["src/test/java", "src/test/resources"]
+            includes = ["**/*.fxml", "**/*.css", "**/*.properties", "**/*.png","**/*.jar"]
+        }
+    }
+}
 ext {
     springCloudGcpVersion = '1.0.0.RELEASE'
     springCloudVersion = 'Finchley.SR1'

@@ -1,4 +1,4 @@
-package ru.vachok.networker.logic;
+package ru.vachok.money.logic;
 
 
 
