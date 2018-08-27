@@ -1,6 +1,10 @@
 package ru.vachok.money;
 
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
+
 /**
  * @since 20.08.2018 (11:31)
  */
@@ -35,7 +39,13 @@ public enum ConstantsFor {
 
 
     public static boolean isMyPC() {
-        return myPC;
+       try{
+          myPC = InetAddress.getLocalHost().getHostAddress().contains("10.10.111");
+       }
+       catch(UnknownHostException e){
+          ApplicationConfiguration.getLogger().error(ConstantsFor.class.getSimpleName());
+       }
+       return myPC;
     }
 
 

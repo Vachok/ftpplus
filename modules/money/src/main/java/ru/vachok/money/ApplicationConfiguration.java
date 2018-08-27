@@ -14,15 +14,14 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Properties;
 
+import static ru.vachok.money.ConstantsFor.APP_NAME;
+
 
 /**
  <h1>Конфигуратор</h1>
 
  @since 21.08.2018 (11:24) */
 public class ApplicationConfiguration {
-
-   private Logger logger = LoggerFactory.getLogger(ConstantsFor.APP_NAME + "-" + pcName());
-
 
    /**
     <b>Пытается выяснить имя локального ПК</b>
@@ -35,15 +34,12 @@ public class ApplicationConfiguration {
          return inetAddress.getCanonicalHostName();
       }
       catch(UnknownHostException e){
-         Logger logger = new ApplicationConfiguration().getLogger();
-         logger.error(e.getMessage() , e);
+         getLogger().error(ApplicationConfiguration.class.getSimpleName(), e.getMessage(), e);
       }
       throw new UnsupportedOperationException("Method completed, BUT : <b>No hostname resolved... Sorry</b>");
    }
-
-
-   public Logger getLogger() {
-      return logger;
+   public static Logger getLogger(){
+      return LoggerFactory.getLogger(pcName()+" "+APP_NAME);
    }
 
 
@@ -63,7 +59,7 @@ public class ApplicationConfiguration {
             properties.load(fileInputStream);
          }
          catch(IOException e){
-            logger.error(e.getMessage(), e);
+            getLogger().error(e.getMessage(), e);
          }
          new DBRegProperties(classSimpleName).createNewTableInDB();
          initProperties.setProps(properties);
@@ -72,6 +68,6 @@ public class ApplicationConfiguration {
    }
 
    static Marker marker() {
-      return MarkerFactory.getMarker(ConstantsFor.APP_NAME + "-" + pcName());
+      return MarkerFactory.getMarker(APP_NAME + "-" + pcName());
    }
 }

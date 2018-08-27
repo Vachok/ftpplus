@@ -37,7 +37,7 @@ public class ErrControl implements ErrorController {
        String eMessage = "Скорее всего, этой страницы просто нет, " + httpServletRequest.getRemoteAddr() + ".";
       String err = "К сожалению, вынужден признать, тут ошибка... " + statCode;
       if(exception!=null){
-         eMessage = exception.getMessage().split("\\Q:\\E")[1];
+         eMessage = exception.getMessage();
          StackTraceElement[] stackTrace = exception.getStackTrace();
          model.addAttribute("eMessage", eMessage);
          model.addAttribute("stackTrace", stackTrace);
