@@ -38,7 +38,7 @@ public class Index {
 
     private static final Connection u0466446Webapp = new RegRuMysql().getDefaultConnection("u0466446_webapp");
 
-    private static Logger logger = new ApplicationConfiguration().getLogger();
+    private static Logger logger = ApplicationConfiguration.getLogger();
 
     private static Marker marker = ApplicationConfiguration.marker();
 

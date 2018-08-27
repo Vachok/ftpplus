@@ -2,7 +2,6 @@ package ru.vachok.money.logic;
 
 
 
-import org.slf4j.Logger;
 import ru.vachok.money.ApplicationConfiguration;
 
 import java.io.UnsupportedEncodingException;
@@ -24,8 +23,7 @@ public class W1251 implements DecoderEnc {
         try {
             return new String(s.getBytes() , "Windows-1251");
         } catch (UnsupportedEncodingException e) {
-            Logger logger = new ApplicationConfiguration().getLogger();
-            logger.error(e.getMessage() , e);
+            ApplicationConfiguration.getLogger().error(e.getMessage() , e);
         }
         return s;
     }

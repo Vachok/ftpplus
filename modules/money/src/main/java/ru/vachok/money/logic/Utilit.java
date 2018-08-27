@@ -26,7 +26,8 @@ public class Utilit {
             InetAddress inetAddress = InetAddress.getLocalHost();
             return inetAddress.getHostName();
         } catch (UnknownHostException e) {
-            Logger logger = new ApplicationConfiguration().getLogger();
+            new ApplicationConfiguration();
+            Logger logger = ApplicationConfiguration.getLogger();
             logger.error(e.getMessage() , e);
         }
         return ret;
