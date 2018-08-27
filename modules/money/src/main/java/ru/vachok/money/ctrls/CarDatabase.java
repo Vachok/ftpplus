@@ -7,21 +7,19 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.money.ApplicationConfiguration;
 import ru.vachok.money.ConstantsFor;
+import ru.vachok.money.logic.ArrsShower;
 import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.RegRuMysql;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
-import java.util.stream.Stream;
+import java.util.stream.IntStream;
 
 
 /**
@@ -42,24 +40,37 @@ public class CarDatabase {
 
 
     @GetMapping("/chkcar")
-    public String chkCar( HttpServletRequest request , HttpServletResponse response , Model model ) {
-
-        String hiString = new Date() + request.getRemoteHost() + ":" + request.getRemotePort();
-        List<String> cursorS = new ArrayList<>();
-        try (Connection c = dataConnectTo.getDefaultConnection(ConstantsFor.DB_PREFIX + "car"); ResultSet schemas = c.getMetaData().getSchemas()) {
-            dataConnectTo.getSavepoint(c);
-            while (schemas.next()) {
-                cursorS.add(schemas.getCursorName());
-            }
-        } catch (SQLException e) {
-        }
+    public String showEngineTMP( Model model ) {
         Function<String, String> addBR = ( x ) -> {
             x = x + "<br>";
             return x;
         };
-        Stream<String> stringStream = cursorS.stream().map(addBR);
-        model.addAttribute("helloMe" , hiString);
-        model.addAttribute("dbStat" , Arrays.toString(stringStream.toArray()));
+        Map<String, String> engineTempStream = chkCar();
+        List<String> fromMap = new ArrayList<>();
+        engineTempStream.forEach(( x , y ) -> fromMap.add(x + " out " + y + " coolant"));
+        model.addAttribute("helloMe" , new Date().getTime());
+        model.addAttribute("dbStat" , new ArrsShower(fromMap).strFromArr());
         return "car_db";
+    }
+
+
+    public Map<String, String> chkCar() {
+        IntStream.Builder engineTempStream = IntStream.builder();
+        Map<String, String> integerIntegerHashMap = new HashMap<>();
+        String sql = "select * from obdrawdata limit 1000";
+        try (Connection c = dataConnectTo.getDefaultConnection(ConstantsFor.DB_PREFIX + "car"); PreparedStatement p = c.prepareStatement(sql); ResultSet schemas = p.executeQuery()) {
+            dataConnectTo.getSavepoint(c);
+            while (schemas.next()) {
+                try {
+                    integerIntegerHashMap.put(schemas.getString("GPS Time") , schemas.getString("Engine Coolant " + "Temperature" + "(°C)"));
+                } catch (NumberFormatException | NoSuchElementException e) {
+                    ApplicationConfiguration.getLogger().error(e.getMessage() , e);
+                }
+            }
+        } catch (SQLException e) {
+            ApplicationConfiguration.getLogger().error(e.getMessage() , e);
+        }
+        System.out.println("integerIntegerHashMap = " + integerIntegerHashMap.size());
+        return integerIntegerHashMap;
     }
 }

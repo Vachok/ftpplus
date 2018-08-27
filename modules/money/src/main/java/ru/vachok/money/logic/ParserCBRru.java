@@ -3,8 +3,7 @@ package ru.vachok.money.logic;
 
 
 import org.slf4j.Logger;
-import ru.vachok.networker.ApplicationConfiguration;
-import ru.vachok.networker.web.ConstantsFor;
+import ru.vachok.money.ApplicationConfiguration;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,7 +22,7 @@ public class ParserCBRru {
      */
     private static final String SOURCE_CLASS = ParserCBRru.class.getSimpleName();
 
-   private static final Logger LOGGER = ApplicationConfiguration.logger();
+    private static Logger logger = ApplicationConfiguration.getLogger();
 
 
     private ParserCBRru() {
@@ -43,7 +42,7 @@ public class ParserCBRru {
 
     private void parseCbr() {
         URL url;
-        byte siteBytes[] = new byte[ConstantsFor.MBYTE];
+
         try {
             url = new URL("http://cbr.ru/currency_base/daily/");
             try (InputStream inputStream = url.openStream()) {
@@ -52,7 +51,7 @@ public class ParserCBRru {
                 }
             }
         } catch (IOException e) {
-           LOGGER.error(e.getMessage(), e);
+            logger.error(e.getMessage() , e);
         }
     }
 
