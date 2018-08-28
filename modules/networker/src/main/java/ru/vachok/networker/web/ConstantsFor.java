@@ -32,6 +32,8 @@ public enum ConstantsFor {
     public static final int APC = 350;
     public static final int TDPC = 15;
 
+    public static final int TIMEOUT_650 = 650;
+
 
     public String getPC( HttpServletRequest request ) {
       return request.getRemoteAddr();

@@ -42,8 +42,8 @@ public class NetScanner {
         for (String pcName : getCycleNames(qer)) {
             try {
                 byName = InetAddress.getByName(pcName);
-                reachable = byName.isReachable(800);
-                if (reachable) {
+                reachable = byName.isReachable(ConstantsFor.TIMEOUT_650);
+                if(!reachable){
                     String onLines = ("<b> online </b> <i>" + false + "</i>");
                     pcNames.add(pcName + ":" + byName.getHostAddress() + " <b>" + onLines + " </b>");
                     logger.warn(pcName + " " + onLines);
