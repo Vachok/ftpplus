@@ -1,15 +1,13 @@
 package ru.vachok.money.moneypack;
 
 
-
 import java.util.List;
 
 
 /**
- * <b>Сервисный класс</b>
- *
- * @since 20.08.2018 (11:29)
- */
+ <b>Сервисный класс</b>
+
+ @since 20.08.2018 (11:29) */
 public class BankService {
 
     public BankService() {
@@ -22,7 +20,7 @@ public class BankService {
     }
 
 
-    public Banking findID( Integer idBanking ) {
+    public Banking findID(Integer idBanking) {
         return BankRepository.getInstance().findID(idBanking);
     }
 }

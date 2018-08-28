@@ -1,12 +1,10 @@
 package ru.vachok.money.moneypack;
 
 
-
 /**
- * <b>Банковские продукты</b>
- *
- * @since 20.08.2018 (11:31)
- */
+ <b>Банковские продукты</b>
+
+ @since 20.08.2018 (11:31) */
 public class Banking {
 
     private Integer idBanking = null;
@@ -16,7 +14,7 @@ public class Banking {
     private double value = 0.0;
 
 
-    public Banking( String product , int value ) {
+    public Banking(String product, int value) {
         this.product = product;
         this.value = value;
     }
@@ -27,7 +25,7 @@ public class Banking {
     }
 
 
-    void setIdBanking( Integer idBanking ) {
+    void setIdBanking(Integer idBanking) {
         this.idBanking = idBanking;
     }
 
@@ -37,7 +35,7 @@ public class Banking {
     }
 
 
-    void setProduct( String product ) {
+    void setProduct(String product) {
         this.product = product;
     }
 
@@ -47,7 +45,7 @@ public class Banking {
     }
 
 
-    void setValue( double value ) {
+    void setValue(double value) {
         this.value = value;
     }
 }

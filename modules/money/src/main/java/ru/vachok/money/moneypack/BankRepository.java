@@ -1,10 +1,9 @@
 package ru.vachok.money.moneypack;
 
 
-
+import ru.vachok.money.ApplicationConfiguration;
 import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.RegRuMysql;
-import ru.vachok.networker.ApplicationConfiguration;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -17,10 +16,9 @@ import java.util.Map;
 
 
 /**
- * <b>Репозиторий банков</b>
- *
- * @since 20.08.2018 (11:33)
- */
+ <b>Репозиторий банков</b>
+
+ @since 20.08.2018 (11:33) */
 public class BankRepository {
 
     private static BankRepository ourInstance = new BankRepository();
@@ -36,15 +34,18 @@ public class BankRepository {
         super();
         this.bankingMapByID = new LinkedHashMap<>();
         String sql = "select * from Banking";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql); ResultSet resultSet = preparedStatement.executeQuery()) {
-            while (resultSet.next()) {
-                bankingMapByID.put(resultSet.getInt("idvisit") , new Banking(resultSet.getNString("product") , resultSet.getInt("value")));
+        try(PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            ResultSet resultSet = preparedStatement.executeQuery()){
+            while(resultSet.next()){
+                bankingMapByID.put(resultSet.getInt("idvisit"),
+                    new Banking(resultSet.getNString("product"),
+                        resultSet.getInt("value")));
             }
-        } catch (SQLException e) {
-            ApplicationConfiguration.logger().error(e.getMessage() , e);
+        }
+        catch(SQLException e){
+            ApplicationConfiguration.getLogger().error(e.getMessage(), e);
         }
     }
-
 
     public static BankRepository getInstance() {
         return ourInstance;
@@ -56,7 +57,7 @@ public class BankRepository {
     }
 
 
-    public Banking findID( final Integer idBanking ) {
+    public Banking findID(final Integer idBanking) {
         return this.bankingMapByID.get(idBanking);
     }
 }

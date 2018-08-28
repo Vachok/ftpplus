@@ -47,7 +47,7 @@ public class Index {
     private static CookieMaker cookieMaker = new CookieMaker();
 
 
-    private static InputStream makeCookies( HttpServletRequest request , HttpServletResponse response ) throws IOException, HttpMediaTypeNotSupportedException {
+    private static InputStream makeCookies(HttpServletRequest request, HttpServletResponse response) throws HttpMediaTypeNotSupportedException {
         String remoteHost = request.getRemoteHost();
         String id = request.getSession().getId();
         Cookie sessionHost = new Cookie(id , remoteHost);
@@ -107,7 +107,6 @@ public class Index {
                 try {
                     cookieFile = new File(cookiePath);
                 } catch (Exception e) {
-                    logger.error(e.getMessage() , e);
                     continue;
                 }
                 long cookieStamp = cookieFile.lastModified();

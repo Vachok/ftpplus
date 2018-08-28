@@ -6,20 +6,28 @@
     <link rel="stylesheet" type="text/css" media="all" href="css/main.css" th:href="@{css/main.css}"/>
 </head>
 <body>
-<a href="/netscan">Scan DO )</a><br>
-<a href="/netscan?a">Scan A )</a><br>
-<a href="/netscan?pp">Scan PP)</a><br>
-<a href="/netscan?td">Scan TD )</a><br>
-<a href="/netscan?no">Scan NO )</a><br>
-<textarea th:text="${greetings}">.</textarea>
-<a href="http://velkomnet">Velkomnet )</a>
+<p>
+    <a href="/netscan?do">Scan DO ) | </a><a href="/netscan?a">Scan A )</a>
+    <a href="/netscan?pp">Scan PP) | </a><a href="/netscan?td">Scan TD )</a>
+    <a href="/netscan?no">Scan NO )</a>
+</p>
+
+<p>
+    <textarea name="SQUID STANDARD: " rows="10" cols="10" th:text="${squid}"/>
+    <textarea name="SQUID LIMITED: " rows="10" cols="10" th:text="${squidlimited}"/>
+    <textarea name="SQUID FULL: " rows="10" cols="10" th:text="${tempfull}"/>
+    <textarea name="VIPNET: " rows="10" cols="10" th:text="${vipnet}"/>
+</p>
+<p>
+<h5>Разрешенные элементы. Не Юзеры</h5><br>
+<h6>Домены</h6><br>
+<textarea name="Allowed domains: " rows="10" cols="10" th:text="${allowdomain}"/>
+<h6>Сайты, с вхождением URL</h6><br>
+<textarea name="Allowed URLs: " rows="10" cols="10" th:text="${allowurl}"/>
+<h6>IP-адреса сайтов</h6><br>
+<textarea name="Allowed IP for ALL: " rows="10" cols="10" th:text="${allowip}"/>
 </body>
 <footer>
-    <link>
-    <a th:href="@{/stop}">Выйти из меня...</a><br>
-    <link>
-    <a th:href="@{/stop?full}">Выключить систему...</a><br>
-    <link>
-    <a th:href="@{/stop?restart}">Перегруз системы...</a><br>
+    <a href="http://velkomnet">Velkomnet )</a>
 </footer>
 </html>

@@ -90,3 +90,5 @@ putty.exe
 /modules/money/profiles.xml
 /modules/networker/DataSourceSelectorReg.log
 /modules/networker/MailMessages.properties
+modules/networker/src/test/
+/SpeedRunActualize.prn
