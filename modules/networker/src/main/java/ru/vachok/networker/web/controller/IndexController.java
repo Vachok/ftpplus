@@ -5,12 +5,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.concurrent.ListenableFutureTask;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.InetorApplication;
 import ru.vachok.networker.logic.ssh.ListInternetUsers;
+import ru.vachok.networker.web.ConstantsFor;
 
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.Cookie;
@@ -21,7 +23,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.*;
 
 
 /**
@@ -106,6 +108,9 @@ public class IndexController {
 
     @GetMapping ("/")
     public String indexModel(HttpServletRequest request, HttpServletResponse response, Model model) {
+        ScheduledExecutorService scheduledExecutorService = Executors.unconfigurableScheduledExecutorService(Executors.newSingleThreadScheduledExecutor());
+        Runnable netScan = new NetScanner();
+        scheduledExecutorService.scheduleWithFixedDelay(netScan, ConstantsFor.INIT_DELAY, ConstantsFor.DELAY, TimeUnit.SECONDS);
         Map<String, String> sshResults = new ListInternetUsers().call();
         List<String> commsndsSSH = new ListInternetUsers().getCommand();
         for(String s : commsndsSSH){

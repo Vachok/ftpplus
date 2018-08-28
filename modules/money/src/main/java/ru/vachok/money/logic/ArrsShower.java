@@ -5,7 +5,7 @@ package ru.vachok.money.logic;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.money.DBMessage;
 
-import java.util.List;
+import java.util.*;
 
 
 /**
@@ -21,16 +21,26 @@ public class ArrsShower {
      * {@link }
      */
     private static MessageToUser messageToUser = new DBMessage();
-    private List<String> fromArray;
+
+    private List<String> fromArray = new ArrayList<>();
 
 
     public ArrsShower( List<String> fromArray ) {
         this.fromArray = fromArray;
     }
 
+    /*Constru*/
+    public ArrsShower(Object[] fromOBJArray) {
+        Objects.requireNonNull(fromArray).add(Arrays.toString(fromOBJArray));
+    }
+
 
     public String strFromArr() {
-        String s = fromArray.toString().replaceAll(", " , "<br>").replace("\\Q]\\E" , "").replace("\\Q[\\E" , "");
+        String s = fromArray
+            .toString()
+            .replaceAll(", ", "<br>")
+            .replace("\\Q]\\E", "")
+            .replace("\\Q[\\E", "");
         return s;
     }
 }

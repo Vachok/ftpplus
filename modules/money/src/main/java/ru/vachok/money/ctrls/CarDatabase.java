@@ -5,11 +5,8 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.money.ApplicationConfiguration;
-import ru.vachok.money.ConstantsFor;
-import ru.vachok.money.DBMessage;
+import ru.vachok.money.*;
 import ru.vachok.money.logic.ArrsShower;
 import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.RegRuMysql;
@@ -19,8 +16,8 @@ import java.text.MessageFormat;
 import java.util.*;
 import java.util.Date;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 
 /**
@@ -47,13 +44,15 @@ public class CarDatabase {
     public String showEngineTMP(Model model) {
         Map<String, String> engineTempStream = chkCar();
         List<String> fromMap = new ArrayList<>();
+        Stream<Double> attributeValue = new SpeedRunActualize().speedsOn(1);
+        model.addAttribute("roadStat", new StringBuilder().append(attributeValue.mapToDouble(x -> {
+            return x * 5;
+        }).count()).append(" speeds").toString());
         engineTempStream.forEach((x, y) -> fromMap.add(x + " out " + y + " coolant"));
         model.addAttribute("helloMe", new Date().getTime());
         model.addAttribute("dbStat", new ArrsShower(fromMap).strFromArr());
         return "car_db";
     }
-
-
     public Map<String, String> chkCar() {
         IntStream.Builder engineTempStream = IntStream.builder();
         Map<String, String> integerIntegerHashMap = new HashMap<>();

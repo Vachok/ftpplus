@@ -27,7 +27,7 @@ import java.util.List;
 /**
  @since 21.08.2018 (14:40) */
 @Controller
-public class NetScanner {
+public class NetScanner implements Runnable {
 
     private static Logger logger = ApplicationConfiguration.logger();
 
@@ -63,6 +63,13 @@ public class NetScanner {
         pcNames.add(pcsString + " WRITE TO DB");
         model.addAttribute("pc", pcsString);
         return "netscan";
+    }
+
+    @Override
+    public void run() {
+        for(String s:ConstantsFor.PC_PREFIXES){
+            getCycleNames(s);
+        }
     }
 
     private Collection<String> getCycleNames(String userQuery) {

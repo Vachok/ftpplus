@@ -39,6 +39,10 @@ public enum ConstantsFor {
 
     public static final int TIMEOUT_650 = 650;
 
+    public static final long INIT_DELAY = 2;
+
+    public static final long DELAY = 3600;
+
 
     public String getPC(HttpServletRequest request) {
         return request.getRemoteAddr();
