@@ -35,7 +35,9 @@ public enum ConstantsFor {
     public static final double A107 = 21.6;
     public static final int INITIAL_DELAY = 30;
     public static final int DELAY = 300;
+    public static String scheduleSpeedAct;
     private static boolean myPC;
+
 
 
     public static boolean isMyPC() {

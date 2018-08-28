@@ -23,7 +23,7 @@ import java.util.logging.Logger;
  <p>
  В данной реализации из e-mail. {@link #run()}
  @since 29.07.2018 (11:42) */
-public class SpeedRunActualize implements Runnable {
+public class SpeedRunActualize implements Callable<String> {
 
    /**
     {@linkplain SpeedRunActualize}
@@ -55,11 +55,14 @@ public class SpeedRunActualize implements Runnable {
     @see MailMessages
     */
    @Override
-   public void run() {
+   public String call() {
       Thread.currentThread().setName("SpeedRunActualize.run");
       Map<Date, String> mailMessages = getMailMessages();
       messageToUser.infoNoTitles(mailMessages.toString());
       checkDates(mailMessages);
+      String s = avgInfo(0) + " in a107" + avgInfo(1) + "in riga";
+      return s;
+
    }
 
    /**<b>Получить сообщения из ПЯ</b>.
@@ -203,7 +206,8 @@ public class SpeedRunActualize implements Runnable {
    /**
     * <h2>Среднее по Бетонке</h2>
     */
-   public void avgInfo(int road) {
+   public String avgInfo( int road ) {
+      double avg = 0.0;
       try(PreparedStatement ps = DEF_CON.prepareStatement("select * from speed where Road = ?")){
          ps.setInt(1, road);
          try(ResultSet r = ps.executeQuery()){
@@ -215,7 +219,10 @@ public class SpeedRunActualize implements Runnable {
                speedAv += r.getDouble("Speed");
                timeAv += r.getDouble("TimeSpend");
             }
-            if(ind!=0){ messageToUser.info("Time and speed. avgInfo.", (speedAv / ind) + " speed", (timeAv / ind) + " time. Counter = " + ind); }
+            if (ind != 0) {
+               String s2 = (timeAv / ind) + " time. Counter = " + ind;
+               return "Time and speed. avgInfo." + "  " + (speedAv / ind) + " speed" + s2;
+            }
             else{ throw new UnsupportedOperationException(new UTF8().toAnotherEnc("Деление на 0")); }
          }
       }
@@ -224,6 +231,7 @@ public class SpeedRunActualize implements Runnable {
                                                                   + Arrays.toString(e.getStackTrace()).replaceAll(", ",
                "\n").replace("{", "").replace("}", "")));
       }
+      return "No AVG";
    }
 
    /**

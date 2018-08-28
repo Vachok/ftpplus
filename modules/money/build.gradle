@@ -18,7 +18,7 @@ plugins {
 }
 
 group = 'ru.vachok.money'
-version = '0.0.9-SNAPSHOT'
+version = '0.1-SNAPSHOT'
 sourceCompatibility = 1.8
 
 repositories {
@@ -26,7 +26,20 @@ repositories {
     maven { url "https://repo.spring.io/milestone" }
 }
 
-
+sourceSets {
+    main {
+        resources {
+            srcDirs = ["src/main/java", "src/main/resources"]
+            includes = ["**/*.fxml", "**/*.css", "**/*.properties", "**/*.png","**/*.html","**/*.sql","**/*.jar"]
+        }
+    }
+    test{
+        resources{
+            srcDirs = ["src/test/java", "src/test/resources"]
+            includes = ["**/*.fxml", "**/*.css", "**/*.properties", "**/*.png","**/*.jar"]
+        }
+    }
+}
 ext {
     springCloudGcpVersion = '1.0.0.RELEASE'
     springCloudVersion = 'Finchley.SR1'
@@ -34,10 +47,10 @@ ext {
 
 dependencies {
 //	compile fileTree('G:\\My_Proj\\FtpClientPlus\\lib')
-    compile fileTree('C:\\Users\\ikudryashov\\IdeaProjects\\spring\\lib')
+    compile fileTree('\\lib')
     compile('org.springframework.boot:spring-boot-starter-web')
     compile('org.springframework.boot:spring-boot-starter-thymeleaf')
-    compile('org.springframework.cloud:spring-cloud-gcp-starter')
+//    compile('org.springframework.cloud:spring-cloud-gcp-starter')
     // https://mvnrepository.com/artifact/org.springframework.integration/spring-integration-ftp
     compile group: 'org.springframework.integration', name: 'spring-integration-ftp', version: '5.0.7.RELEASE'
     // https://mvnrepository.com/artifact/commons-io/commons-io

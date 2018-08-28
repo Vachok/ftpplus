@@ -1,0 +1,47 @@
+buildscript {
+	ext {
+		springBootVersion = '2.0.4.RELEASE'
+	}
+	repositories {
+		mavenCentral()
+	}
+	dependencies {
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+	}
+}
+plugins {
+    id "com.gradle.build-scan" version "1.16"
+    id 'java'
+    id 'idea'
+    id "org.springframework.boot" version "2.0.4.RELEASE"
+    id "io.spring.dependency-management" version "1.0.6.RELEASE"
+}
+
+group = 'ru.vachok.networker'
+version = '0.1-SNAPSHOT'
+sourceCompatibility = 1.8
+
+repositories {
+	maven {
+		url "https://plugins.gradle.org/m2/"
+	}
+	mavenCentral()
+}
+
+dependencies {
+	compile fileTree ('\\lib')
+	compile('org.springframework.boot:spring-boot-starter-thymeleaf')
+	compile('org.springframework.boot:spring-boot-starter-web')
+    // https://mvnrepository.com/artifact/com.jcraft/jsch
+    compile group: 'com.jcraft', name: 'jsch', version: '0.1.54'
+	// https://mvnrepository.com/artifact/org.springframework/spring-jdbc
+	compile group: 'org.springframework', name: 'spring-jdbc', version: '5.0.8.RELEASE'
+	// https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-devtools
+	compile group: 'org.springframework.boot', name: 'spring-boot-devtools', version: '2.0.4.RELEASE'
+	// https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-test
+	testCompile group: 'org.springframework.boot', name: 'spring-boot-test', version: '2.0.4.RELEASE'
+}
+buildScan {
+    termsOfServiceUrl = 'https://gradle.com/terms-of-service'
+    termsOfServiceAgree = 'yes'
+}

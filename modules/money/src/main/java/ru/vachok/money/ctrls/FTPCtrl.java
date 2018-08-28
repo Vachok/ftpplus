@@ -26,9 +26,9 @@ public class FTPCtrl {
      */
     private static final String SOURCE_CLASS = FTPCtrl.class.getSimpleName();
 
-
     @GetMapping("/ftp")
     public String ftpMe( HttpServletResponse response , Model model ) {
+
         if (ConstantsFor.isMyPC()) {
             long l = TimeUnit.MILLISECONDS.
                     toMinutes(System.currentTimeMillis() - new Calendar.Builder().setDate(ConstantsFor.YEAR_BIRTH , 0 , 7).build().getTimeInMillis());
@@ -51,7 +51,8 @@ public class FTPCtrl {
             sb.append(object.toString()).append("<br>");
         }
         sb.append("</p>");
-        model.addAttribute("ftp" , sb.toString());
+        model.addAttribute("ftp" , ConstantsFor.scheduleSpeedAct + "<p>" + sb.toString());
+
         return "ftp";
     }
 }
