@@ -92,3 +92,4 @@ putty.exe
 /modules/networker/MailMessages.properties
 modules/networker/src/test/
 /SpeedRunActualize.prn
+/app.log

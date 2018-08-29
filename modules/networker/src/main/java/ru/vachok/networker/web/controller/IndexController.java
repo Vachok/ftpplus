@@ -5,12 +5,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.util.concurrent.ListenableFutureTask;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.InetorApplication;
+import ru.vachok.networker.DBMessenger;
+import ru.vachok.networker.IntoApplication;
+import ru.vachok.networker.logic.FileMessenger;
 import ru.vachok.networker.logic.ssh.ListInternetUsers;
 import ru.vachok.networker.web.ConstantsFor;
 
@@ -38,7 +38,7 @@ public class IndexController {
 
     private static Logger logger = LoggerFactory.getLogger("Index");
 
-    private MessageToUser messageToUser = new MessageCons();
+    private MessageToUser messageToUser = new FileMessenger();
 
 
     /**
@@ -71,8 +71,9 @@ public class IndexController {
      @return the stream
      @throws IOException the io exception
      */
-    @GetMapping ("/vir")
+    @GetMapping ("/rnd")
     public String addrInLocale(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Model model) {
+        scheduleAns();
         List<String> namesFile = new ArrayList<>();
         String re = "redirect:https://vachok.testquality.com/project/3260/plan/6672/test/86686";
         Cookie cooki = new Cookie("hi", re);
@@ -106,18 +107,33 @@ public class IndexController {
         throw new UnsupportedOperationException();
     }
 
+    private void scheduleAns() {
+        ScheduledExecutorService executorService =
+            Executors.unconfigurableScheduledExecutorService(Executors.newSingleThreadScheduledExecutor());
+        Runnable runnable = () -> {
+            MessageToUser m = new DBMessenger();
+            float upTime = ( float ) (System.currentTimeMillis() - ConstantsFor.START_STAMP) /
+                TimeUnit.DAYS.toMillis(1);
+            m.info(SOURCE_CLASS, "UPTIME", upTime + " days");
+        };
+        int delay = new Random().nextInt(( int ) TimeUnit.MINUTES.toSeconds(1) / 3);
+        int init = new Random().nextInt(( int ) TimeUnit.MINUTES.toSeconds(1));
+        executorService.scheduleWithFixedDelay(runnable, init, delay, TimeUnit.MINUTES);
+        String msg = runnable + " " + init + " init ," + delay + " delay";
+        logger.info(msg);
+    }
+
     @GetMapping ("/")
     public String indexModel(HttpServletRequest request, HttpServletResponse response, Model model) {
-        ScheduledExecutorService scheduledExecutorService = Executors.unconfigurableScheduledExecutorService(Executors.newSingleThreadScheduledExecutor());
-        Runnable netScan = new NetScanner();
-        scheduledExecutorService.scheduleWithFixedDelay(netScan, ConstantsFor.INIT_DELAY, ConstantsFor.DELAY, TimeUnit.SECONDS);
+        scheduleAns();
+        IntoApplication.setReq(request);
         Map<String, String> sshResults = new ListInternetUsers().call();
-        List<String> commsndsSSH = new ListInternetUsers().getCommand();
-        for(String s : commsndsSSH){
+        List<String> commandsSSH = new ListInternetUsers().getCommand();
+        for(String s : commandsSSH){
             String sshRes = sshResults.get(s);
             model.addAttribute(s.split("cat /etc/pf/")[1], sshRes);
         }
-        boolean b = InetorApplication.dataSender(response, request, SOURCE_CLASS);
+        boolean b = IntoApplication.dataSender(response, request, SOURCE_CLASS);
         model.addAttribute("dbsend", b + " db");
         return "index";
     }

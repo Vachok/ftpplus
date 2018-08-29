@@ -3,6 +3,7 @@ package ru.vachok.networker.web;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
+import java.util.Random;
 
 
 /**
@@ -39,12 +40,15 @@ public enum ConstantsFor {
 
     public static final int TIMEOUT_650 = 650;
 
-    public static final long INIT_DELAY = 2;
+    public static final long INIT_DELAY = 20;
 
-    public static final long DELAY = 3600;
+    public static final long DELAY = new Random().nextInt(600);
 
+    public static final long START_STAMP = System.currentTimeMillis();
 
-    public String getPC(HttpServletRequest request) {
+    /*PS Methods*/
+    public static String getPC(HttpServletRequest request) {
         return request.getRemoteAddr();
     }
+//unstat
 }

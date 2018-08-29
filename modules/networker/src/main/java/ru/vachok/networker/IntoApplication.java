@@ -1,20 +1,24 @@
 package ru.vachok.networker;
 
 
-import org.slf4j.Logger;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.EMailAndDB.SpeedRunActualize;
 import ru.vachok.mysqlandprops.RegRuMysql;
+import ru.vachok.networker.logic.StringFromArr;
 import ru.vachok.networker.web.ConstantsFor;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -25,11 +29,20 @@ import java.util.concurrent.TimeUnit;
  */
 @EnableAutoConfiguration
 @SpringBootApplication
-public class InetorApplication {
+public class IntoApplication {
 
-   private static Logger logger = ApplicationConfiguration.logger();
+    private static HttpServletRequest req;
 
+    private static final MessageToUser DB_MSG = new DBMessenger();
 
+    private static final String SOURCE_CLASS = IntoApplication.class.getSimpleName();
+
+    /*Get&*/
+    public static void setReq(HttpServletRequest req) {
+        IntoApplication.req = req;
+    }
+
+    /*PS Methods*/
    /**
     The entry point of application.
     <a href="https://goo.gl/K93z2L">APP Engine</a>
@@ -37,16 +50,30 @@ public class InetorApplication {
     @param args the input arguments
     */
    public static void main(String[] args) {
-      SpringApplication.run(InetorApplication.class, args);
+       SpringApplication.run(IntoApplication.class, args);
       speedRun();
+       float hours = TimeUnit.MILLISECONDS.toHours(System.currentTimeMillis() - ConstantsFor.START_STAMP);
+       DB_MSG.info(IntoApplication.class.getSimpleName(), "INFO", +hours + " h\n" + "Started at " +
+           new Date(ConstantsFor.START_STAMP).toString() + "\n" +
+           getInetAddr());
    }
 
-   private static void speedRun() {
+    private static void speedRun() {
       Runnable speedRunActualize = new SpeedRunActualize();
       ScheduledExecutorService executorService =
             Executors.unconfigurableScheduledExecutorService(Executors.newSingleThreadScheduledExecutor());
-      executorService.scheduleWithFixedDelay(speedRunActualize, 10, 300, TimeUnit.SECONDS);
-   }
+        executorService.scheduleWithFixedDelay(speedRunActualize, ConstantsFor.INIT_DELAY, ConstantsFor.DELAY, TimeUnit.SECONDS);
+    }
+
+    private static String getInetAddr() {
+        try{
+            return InetAddress.getLocalHost().getHostAddress() + " " + InetAddress.getLocalHost().getHostName();
+        }
+        catch(UnknownHostException e){
+            DB_MSG.errorAlert(SOURCE_CLASS, "Inet Address", new StringFromArr().fromArr(e.getStackTrace()));
+        }
+        throw new UnsupportedOperationException();
+    }
 
    public static boolean dataSender(HttpServletResponse response, HttpServletRequest request, String srcClass) {
       String sql = "insert into ru_vachok_networker (classname, msgtype, msgvalue) values (?,?,?)";
@@ -62,8 +89,9 @@ public class InetorApplication {
          return true;
       }
       catch(SQLException e){
-         InetorApplication.logger.error(e.getMessage(), e);
+          DB_MSG.errorAlert(IntoApplication.class.getSimpleName(), e.getMessage(), new StringFromArr().fromArr(e.getStackTrace()));
          return false;
       }
    }
+//unstat
 }

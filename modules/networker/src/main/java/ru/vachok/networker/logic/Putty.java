@@ -1,18 +1,13 @@
 package ru.vachok.networker.logic;
 
 
-
-
 import org.slf4j.Logger;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ApplicationConfiguration;
-import ru.vachok.networker.DBMessanger;
+import ru.vachok.networker.DBMessenger;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.*;
@@ -26,7 +21,7 @@ public class Putty extends Thread {
     private static final Logger LOGGER = ApplicationConfiguration.logger();
     private static final int TIMEOUT_2 = 2000;
 
-    private static MessageToUser messageToUser = new DBMessanger();
+    private static MessageToUser messageToUser = new DBMessenger();
 
 
     @SuppressWarnings({"SingleStatementInBlock" , "InjectedReferences"})

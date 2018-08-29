@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.DBMessanger;
+import ru.vachok.networker.DBMessenger;
 import ru.vachok.networker.web.Person;
 import ru.vachok.networker.web.PersonForm;
 
@@ -30,7 +30,7 @@ public class NamesAndSur {
     /**
      * {@link }
      */
-    private static MessageToUser messageToUser = new DBMessanger();
+    private static MessageToUser messageToUser = new DBMessenger();
     private List<Person> persons = new ArrayList<>();
     @Value("${error.message}")
     private String errMessage;

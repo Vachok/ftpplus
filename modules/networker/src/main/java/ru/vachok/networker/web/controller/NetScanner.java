@@ -6,11 +6,13 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ApplicationConfiguration;
+import ru.vachok.networker.logic.FileMessenger;
+import ru.vachok.networker.logic.StringFromArr;
 import ru.vachok.networker.web.ConstantsFor;
-import ru.vachok.networker.web.beans.ToStringFrom;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -31,6 +33,7 @@ public class NetScanner implements Runnable {
 
     private static Logger logger = ApplicationConfiguration.logger();
 
+    private static final MessageToUser MESSAGE_TO_USER = new FileMessenger();
 
     @GetMapping ("/netscan")
     public String getPCNames(HttpServletRequest request, Model model) throws IOException {
@@ -69,6 +72,7 @@ public class NetScanner implements Runnable {
     public void run() {
         for(String s:ConstantsFor.PC_PREFIXES){
             getCycleNames(s);
+            MESSAGE_TO_USER.infoNoTitles(s);
         }
     }
 
@@ -91,6 +95,7 @@ public class NetScanner implements Runnable {
     }
 
 
+    /*Private metsods*/
     private String writeDB(Collection<String> pcNames) {
         DataConnectTo dataConnectTo = new RegRuMysql();
         List<String> list = new ArrayList<>();
@@ -108,7 +113,7 @@ public class NetScanner implements Runnable {
                 if(x.contains("200.206")) pcSerment = "Здание склада 5";
                 if(x.contains("200.207")) pcSerment = "Сырокопоть";
                 if(x.contains("200.208")) pcSerment = "Участок убоя";
-                if(x.contains("200.209")) pcSerment = pcSerment;
+                if(x.contains("200.209")) pcSerment = "Да ладно?";
                 if(x.contains("200.210")) pcSerment = "Мастера колб";
                 if(x.contains("200.212")) pcSerment = "Мастера деликатесов";
                 if(x.contains("200.213")) pcSerment = "2й этаж. АДМ.";
@@ -130,10 +135,11 @@ public class NetScanner implements Runnable {
                     list.add(x1 + " " + x2 + " " + pcSerment + " " + onLine);
                 }
                 catch(SQLException e){
+                    MESSAGE_TO_USER.errorAlert(this.getClass().getSimpleName(), e.getMessage(), new StringFromArr().fromArr(e.getStackTrace()));
                     logger.error(e.getMessage(), e);
                 }
             });
-            return new ToStringFrom().fromArr(list);
+            return new StringFromArr().fromArr(list);
         }
         catch(SQLException e){
             logger.error(e.getMessage(), e);

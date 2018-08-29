@@ -15,12 +15,12 @@ import java.sql.SQLException;
 /**
  * @since 26.08.2018 (12:29)
  */
-public class DBMessanger implements MessageToUser {
+public class DBMessenger implements MessageToUser {
 
     /**
      * Simple Name класса, для поиска настроек
      */
-    private static final String SOURCE_CLASS = DBMessanger.class.getSimpleName();
+    private static final String SOURCE_CLASS = DBMessenger.class.getSimpleName();
     private static final DataConnectTo REG_RU_MYSQL = new RegRuMysql();
 
 
@@ -30,8 +30,9 @@ public class DBMessanger implements MessageToUser {
     }
 
 
-    private void dbSend( String s , String s1 , String s2 ) {
-        String sql = "insert into networker (classname, msgtype, msgvalue) values (?,?,?)";
+    /*Private metsods*/
+    private void dbSend(String s , String s1 , String s2 ) {
+        String sql = "insert into ru_vachok_networker (classname, msgtype, msgvalue) values (?,?,?)";
         try (Connection c = REG_RU_MYSQL.getDefaultConnection(ConstantsFor.DB_PREFIX+"webapp");
              PreparedStatement p = c.prepareStatement(sql);){
             p.setString(1,s);
