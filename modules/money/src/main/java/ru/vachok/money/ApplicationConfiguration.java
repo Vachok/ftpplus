@@ -1,10 +1,9 @@
 package ru.vachok.money;
 
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.slf4j.Marker;
-import org.slf4j.MarkerFactory;
+import org.slf4j.*;
+import ru.vachok.messenger.MessageToUser;
+import ru.vachok.messenger.email.ESender;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.InitProperties;
 
@@ -12,7 +11,10 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
+import java.util.function.BiConsumer;
 
 import static ru.vachok.money.ConstantsFor.APP_NAME;
 
@@ -70,4 +72,11 @@ public class ApplicationConfiguration {
    static Marker marker() {
       return MarkerFactory.getMarker(APP_NAME + "-" + pcName());
    }
+
+    public static BiConsumer<String, String> sendMeEmail = (x, y) -> {
+        List<String> RCPT = new ArrayList<>();
+        RCPT.add("143500@gmail.com");
+        MessageToUser messageToUser = new ESender(RCPT);
+        messageToUser.info(ConstantsFor.APP_NAME, x, y);
+    };
 }

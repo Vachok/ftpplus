@@ -17,13 +17,8 @@
     <a th:href="@{http://10.10.111.57:8881/ftp}">Сканировать FTP</a>
 <p>
 <h5 th:text="${speed}">.</h5>
-
 <p>
-    <a th:href="@{/stop}">Exit app</a>
-<p>
-    <a th:href="@{/stop?reboot}">Reboot</a>
-<p>
-    <a th:href="@{/stop?full}">OFF</a>
+<h5 th:text="${mail}"></h5>
 
 
 </body>
@@ -31,7 +26,8 @@
     <h5>
         <a href="mailto:bot@chess.vachok.ru">Ivan AKA Vachok
         </a><br>
-        <a href="/home">Return</a>
+        <a href="/home">Return</a><br>
+        <a th:href="@{/exit}">Exit app</a>
     </h5>
 </footer>
 </html>

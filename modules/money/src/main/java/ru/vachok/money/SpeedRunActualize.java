@@ -1,8 +1,8 @@
 package ru.vachok.money;
 
 
-import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.messenger.email.ESender;
 import ru.vachok.money.logic.UTF8;
 import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.RegRuMysql;
@@ -32,7 +32,7 @@ public class SpeedRunActualize implements Callable<String> {
      <h3>Сообщения пользователю</h3>
      {@link #messageToUser}
      */
-    private final MessageToUser messageToUser = new MessageCons();
+    private final MessageToUser messageToUser = new DBMessage();
 
     private static final String SPEED = "Speed";
 
@@ -161,7 +161,9 @@ public class SpeedRunActualize implements Callable<String> {
                 }
                 if(ind!=0){
                     String s2 = (timeAv / ind) + " time. Counter = " + ind;
-                    return "Time and SPEED. avgInfo." + "  " + (speedAv / ind) + " SPEED" + s2;
+                    String s = " Time and SPEED. avgInfo. " + "  " + (speedAv / ind) + " SPEED " + s2;
+                    ConstantsFor.ok.accept(SOURCE_CLASS, s);
+                    return s;
                 }
                 else{
                     throw new UnsupportedOperationException(new UTF8().toAnotherEnc("Деление на 0"));
@@ -272,9 +274,10 @@ public class SpeedRunActualize implements Callable<String> {
     /*Private metsods*/
 
     /**
-     <h2>Среднее по Новориге</h2>
+     <b>Среднее по Новориге</b>
      */
     private void rigA() {
+        MessageToUser emailMe = new ESender("143500@gmail.com");
         try(PreparedStatement ps1 = DEF_CON.prepareStatement("select * from speed where Road = 1");
             ResultSet r1 = ps1.executeQuery()){
             /*Riga*/
@@ -287,7 +290,8 @@ public class SpeedRunActualize implements Callable<String> {
                 timeAv += r1.getDouble("TimeSpend");
             }
             if(ind!=0){
-                messageToUser.info("Time and SPEED. NovoRiga.", speedAv / ind + " SPEED", timeAv / ind + " time. Counter = " + ind);
+                String s2 = timeAv / ind + " time. Counter = " + ind;
+                messageToUser.info("Time and SPEED. NovoRiga.", speedAv / ind + " SPEED", s2);
             }
             else{
                 throw new UnsupportedOperationException(new UTF8().toAnotherEnc("Деление на 0"));
