@@ -93,3 +93,17 @@ putty.exe
 modules/networker/src/test/
 /SpeedRunActualize.prn
 /app.log
+/chess.properties
+ESender.properties
+chess.properties
+modules/money/build
+modules/money/build/libs/DataSourceSelectorReg.log
+modules/money/build/libs/ESender.properties
+modules/money/build/libs/MailMessages.properties
+modules/money/build/libs/chess.properties
+modules/money/build/libs/money-0.18-SNAPSHOT.jar
+modules/money/build/libs/regru.obj
+modules/money/build/resources/
+modules/money/build/tmp/
+modules/networker/build/
+regru.obj
