@@ -1,9 +1,8 @@
 package ru.vachok.networker;
 
 
-
-import ru.vachok.messenger.MessageCons;
-import ru.vachok.messenger.MessageToUser;
+import org.slf4j.Logger;
+import ru.vachok.networker.config.AppComponents;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -15,18 +14,11 @@ import java.io.IOException;
  * @since 11.08.2018 (21:14)
  */
 public class Person {
-
-    /**
-     * Simple Name класса, для поиска настроек
-     */
-    private static final String SOURCE_CLASS = Person.class.getSimpleName();
-    /**
-     * {@link }
-     */
-    private static MessageToUser messageToUser = new MessageCons();
     private String firstName;
     private String lastName;
 
+    /*Fields*/
+    private static final Logger LOGGER = AppComponents.logger();
 
 
     /**
@@ -97,7 +89,7 @@ public class Person {
             }
             fileWriter.append("\n");
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error(e.getMessage(), e);
         }
     }
 }

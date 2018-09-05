@@ -1,12 +1,10 @@
 package ru.vachok.networker.controller;
 
 
-import org.slf4j.Logger;
 import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import ru.vachok.networker.config.AppComponents;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -19,8 +17,6 @@ import java.nio.file.AccessDeniedException;
  */
 @Controller
 public class ErrControl implements ErrorController {
-
-    private static final Logger LOGGER = AppComponents.logger();
 
     @Override
     public String getErrorPath() {

@@ -9,12 +9,10 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
  @since 30.08.2018 (13:22) */
 public class AppCtx {
 
-    private final AppComponents appComponents = new AppComponents();
+    private AnnotationConfigApplicationContext configApplicationContext = new AnnotationConfigApplicationContext();
 
-    private AnnotationConfigApplicationContext appCtx = new AnnotationConfigApplicationContext();
-
-    public ApplicationContext getAppCtx() {
-        appCtx.scan("ru.vachok.networker.beans");
-        return appCtx;
+    public ApplicationContext getConfigApplicationContext() {
+        configApplicationContext.scan("ru.vachok.networker.beans");
+        return configApplicationContext;
     }
 }

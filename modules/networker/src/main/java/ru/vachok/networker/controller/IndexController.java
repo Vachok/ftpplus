@@ -6,6 +6,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.IntoApplication;
@@ -71,7 +72,8 @@ public class IndexController {
      @throws IOException the io exception
      */
     @GetMapping ("/rnd")
-    public String addrInLocale(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Model model) {
+    @ResponseBody
+    public void addrInLocale(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Model model) {
         scheduleAns();
         List<String> namesFile = new ArrayList<>();
         String re = "redirect:https://vachok.testquality.com/project/3260/plan/6672/test/86686";
@@ -81,7 +83,9 @@ public class IndexController {
         try(ServletInputStream in = httpServletRequest.getInputStream()){
 
             while(in.isReady()){
-                in.read(bs);
+                int read = in.read(bs);
+                String msg = read + " bytes were read";
+                logger.info(msg);
             }
         }
         catch(IOException e){
@@ -103,7 +107,7 @@ public class IndexController {
         for(String name : namesFile){
             model.addAttribute("virTxt", name);
         }
-        throw new UnsupportedOperationException();
+        model.addAttribute("attr", getAttr(httpServletRequest));
     }
 
     private void scheduleAns() {
@@ -125,7 +129,6 @@ public class IndexController {
     @GetMapping ("/")
     public String indexModel(HttpServletRequest request, HttpServletResponse response, Model model) {
         scheduleAns();
-        IntoApplication.setReq(request);
         Map<String, String> sshResults = new ListInternetUsers().call();
         List<String> commandsSSH = new ListInternetUsers().getCommand();
         for(String s : commandsSSH){

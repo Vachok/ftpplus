@@ -2,10 +2,8 @@ package ru.vachok.networker.logic;
 
 
 import org.apache.catalina.servlet4preview.http.HttpServletRequest;
-import org.slf4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import ru.vachok.networker.config.AppComponents;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -16,13 +14,9 @@ import javax.servlet.http.HttpServletResponse;
 @Controller
 public class NPAPIResolver {
 
-    private Logger logger = AppComponents.logger();
-
-
    @GetMapping("/npapi")
    public void npapi(HttpServletRequest httpServletRequest, HttpServletResponse response) {
-      String loggerName = logger.getName();
-
+       throw new UnsupportedOperationException("Not Ready 05.09.2018 (22:16)"); //todo 05.09.2018 (22:16)
    }
 }
 

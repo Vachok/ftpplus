@@ -1,11 +1,6 @@
 package ru.vachok.networker;
 
 
-
-import ru.vachok.messenger.MessageCons;
-import ru.vachok.messenger.MessageToUser;
-
-
 /**
  * <h1>Тест-форма</h1>
  <p>
@@ -15,14 +10,6 @@ import ru.vachok.messenger.MessageToUser;
  */
 public class PersonForm {
 
-    /**
-     * Simple Name класса, для поиска настроек
-     */
-    private static final String SOURCE_CLASS = PersonForm.class.getSimpleName();
-    /**
-     * {@link MessageCons}
-     */
-    private static MessageToUser messageToUser = new MessageCons();
     /**
      * <b>Имя</b>
      */

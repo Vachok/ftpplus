@@ -27,6 +27,13 @@ import java.util.List;
 @Service ("netscan")
 public class NetScannerSvc {
 
+    /*Fields*/
+
+    /**
+     Префиксы имён ПК Велком.
+     */
+    private static final String[] PC_PREFIXES = {"do", "pp", "td", "no", "a"};
+
     private static Logger logger = AppComponents.logger();
 
     private String qer;
@@ -71,7 +78,7 @@ public class NetScannerSvc {
     }
 
     public void runSvc() {
-        for(String s : ConstantsFor.PC_PREFIXES){
+        for(String s : PC_PREFIXES){
             getCycleNames(s);
             MESSAGE_TO_USER.infoNoTitles(s);
         }

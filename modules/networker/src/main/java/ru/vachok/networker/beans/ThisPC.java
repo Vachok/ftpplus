@@ -20,12 +20,14 @@ public class ThisPC {
       return pcName;
    }
 
-   {
-      try{
-         pcName = InetAddress.getLocalHost().getHostName();
-      }
-      catch(UnknownHostException e){
-         LOGGER.error(e.getMessage(), e);
-      }
-   }
+    /*Instances*/
+    public ThisPC() {
+        try{
+            pcName = InetAddress.getLocalHost().getHostName();
+        }
+        catch(UnknownHostException e){
+            LOGGER.error(e.getMessage(), e);
+        }
+    }
+
 }

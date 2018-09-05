@@ -26,8 +26,6 @@ public enum ConstantsFor {
 
     public static final String SRV_NAT = "192.168.13.30";
 
-    public static final String[] PC_PREFIXES = {"do", "pp", "td", "no", "a"};
-
     public static final int NOPC = 50;
 
     public static final int PPPC = 70;

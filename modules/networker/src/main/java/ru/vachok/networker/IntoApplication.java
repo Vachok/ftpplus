@@ -30,16 +30,9 @@ import java.util.concurrent.TimeUnit;
 @SpringBootApplication
 public class IntoApplication {
 
-    private static HttpServletRequest req;
-
     private static final MessageToUser DB_MSG = new DBMessenger();
 
     private static final String SOURCE_CLASS = IntoApplication.class.getSimpleName();
-
-    /*Get&*/
-    public static void setReq(HttpServletRequest req) {
-        IntoApplication.req = req;
-    }
 
     /*PS Methods*/
 

@@ -16,7 +16,7 @@ import java.util.function.BiConsumer;
  @since 21.08.2018 (15:57) */
 public class PhotoConverter {
 
-    private File photosDirectory = new File("c:\\Users\\ikudryashov\\Documents\\ShareX\\Screenshots\\2018-08\\pers\\");
+    private File photosDirectory = new File("c:\\Users\\ikudryashov\\Documents\\ShareX\\Screenshots\\2018-08\\pers\\"); //fixme refactor 05.09.2018 (22:18)
 
     private BiConsumer<String, BufferedImage> imageBiConsumer = (x, y) -> {
         File outFile = new File(x + ".jpg");

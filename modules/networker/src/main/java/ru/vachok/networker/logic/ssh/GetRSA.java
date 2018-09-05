@@ -5,6 +5,7 @@ import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.config.AppComponents;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.sql.*;
 
@@ -23,8 +24,16 @@ public class GetRSA implements Runnable {
             ResultSet r = p.executeQuery()){
             while(r.next()){
                 InputStream pem = r.getBinaryStream("pem");
+                byte[] pemBytes;
+                while(pem.available() > 0){
+                    pemBytes = new byte[pem.read()];
+                    int read = pem.read(pemBytes);
+                    String msg = read + " bytes were read";
+                    AppComponents.logger().info(msg);
+                }
             }
-        } catch(SQLException e){
+        }
+        catch(SQLException | IOException e){
             AppComponents.logger().error(e.getMessage(), e);
         }
     }

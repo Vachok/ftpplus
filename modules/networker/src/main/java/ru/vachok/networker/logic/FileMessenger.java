@@ -27,7 +27,7 @@ public class FileMessenger implements MessageToUser {
 
     static {
         try{
-            if(log.createNewFile() & !log.exists()){
+            if(log.createNewFile() && !log.exists()){
                 long lastMod = log.lastModified();
                 if((System.currentTimeMillis() - lastMod) > TimeUnit.DAYS.toMillis(1)){
                     String msg = log.getAbsolutePath() + " is more then 1 day!";

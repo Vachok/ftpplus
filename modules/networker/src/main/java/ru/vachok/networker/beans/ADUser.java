@@ -78,7 +78,7 @@ public class ADUser {
     public void initUser() {
         File fileFromActDirectory = new File("adusers.txt");
         try(Scanner scanner = new Scanner(fileFromActDirectory)){
-
+            throw new UnsupportedOperationException("Not ready 05.09.2018 (21:56)"); //todo 05.09.2018 (21:56)
         } catch(IOException e){
             logger.error(e.getMessage(), e);
         }
