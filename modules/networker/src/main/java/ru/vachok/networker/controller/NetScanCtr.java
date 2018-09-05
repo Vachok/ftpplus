@@ -1,0 +1,35 @@
+package ru.vachok.networker.controller;
+
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import ru.vachok.networker.beans.NetScannerSvc;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.Date;
+
+
+/**
+ @since 30.08.2018 (12:55) */
+@Controller
+public class NetScanCtr {
+
+    private NetScannerSvc netScannerSvc;
+
+    /*Instance*/
+    @Autowired
+    public NetScanCtr(NetScannerSvc netScannerSvc) {
+        this.netScannerSvc = netScannerSvc;
+    }
+
+    @GetMapping ("/netscan")
+    public String netScan(HttpServletRequest request, Model model) {
+        netScannerSvc.setQer(request.getQueryString());
+        String pcNames = netScannerSvc.getPCNames();
+        model.addAttribute("date", new Date().toString());
+        model.addAttribute("pc", pcNames);
+        return "netscan";
+    }
+}

@@ -1,11 +1,12 @@
-package ru.vachok.networker;
+package ru.vachok.networker.beans;
 
 
 
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.RegRuMysql;
-import ru.vachok.networker.web.ConstantsFor;
+import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.config.AppComponents;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -34,13 +35,13 @@ public class DBMessenger implements MessageToUser {
     private void dbSend(String s , String s1 , String s2 ) {
         String sql = "insert into ru_vachok_networker (classname, msgtype, msgvalue) values (?,?,?)";
         try (Connection c = REG_RU_MYSQL.getDefaultConnection(ConstantsFor.DB_PREFIX+"webapp");
-             PreparedStatement p = c.prepareStatement(sql);){
+             PreparedStatement p = c.prepareStatement(sql)){
             p.setString(1,s);
             p.setString(2,s1);
             p.setString(3,s2);
             p.executeUpdate();
         }catch (SQLException e){
-            ApplicationConfiguration.logger().error(e.getMessage(), e);
+            AppComponents.logger().error(e.getMessage(), e);
         }
     }
 

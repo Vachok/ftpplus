@@ -5,7 +5,7 @@ import org.apache.catalina.servlet4preview.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import ru.vachok.networker.ApplicationConfiguration;
+import ru.vachok.networker.config.AppComponents;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -16,7 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 @Controller
 public class NPAPIResolver {
 
-   private Logger logger = ApplicationConfiguration.logger();
+    private Logger logger = AppComponents.logger();
 
 
    @GetMapping("/npapi")

@@ -1,37 +1,44 @@
 package ru.vachok.networker.logic;
 
 
+import ru.vachok.networker.config.AppComponents;
 
-import ru.vachok.networker.ApplicationConfiguration;
-import ru.vachok.networker.web.ConstantsFor;
-
-import javax.imageio.stream.FileImageInputStream;
-import javax.imageio.stream.IIOByteBuffer;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.BiConsumer;
 
 
 /**
  @since 21.08.2018 (15:57) */
 public class PhotoConverter {
 
-   File photosDirectory = new File("c:\\Users\\ikudryashov\\Documents\\ShareX\\Screenshots\\2018-08\\pers\\");
+    private File photosDirectory = new File("c:\\Users\\ikudryashov\\Documents\\ShareX\\Screenshots\\2018-08\\pers\\");
 
-   public static void main(String[] args) {
+    private BiConsumer<String, BufferedImage> imageBiConsumer = (x, y) -> {
+        File outFile = new File(x + ".jpg");
+        try{
+            ImageIO.write(y, "jpg", outFile);
+        } catch(IOException e){
+            AppComponents.logger().error(e.getMessage(), e);
+        }
+    };
 
-   }
-
-   private void convertFoto() {
-      for(File f : photosDirectory.listFiles()){
-         try(FileImageInputStream imageInputStream = new FileImageInputStream(f)){
-            while(imageInputStream.read() > 0){
-               byte[] iBytes;
-               imageInputStream.readBytes(new IIOByteBuffer(new byte[ConstantsFor.MBYTE], 0, ConstantsFor.MBYTE), imageInputStream.read());
+    public Map<String, BufferedImage> convertFoto() {
+        File[] fotoFiles = photosDirectory.listFiles();
+        Map<String, BufferedImage> filesList = new HashMap<>();
+        try{
+            for(File f : fotoFiles){
+                filesList.put(f.getName().split("\\Q.\\E")[0], ImageIO.read(f));
             }
-         }
-         catch(IOException e){
-            ApplicationConfiguration.logger().error(e.getMessage(), e);
-         }
-      }
-   }
+        } catch(IOException e){
+            AppComponents.logger().error(e.getMessage(), e);
+        }
+        filesList.forEach(imageBiConsumer);
+        return filesList;
+    }
+
 }

@@ -4,8 +4,8 @@ package ru.vachok.networker.logic;
 import org.slf4j.Logger;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
-import ru.vachok.networker.ApplicationConfiguration;
-import ru.vachok.networker.DBMessenger;
+import ru.vachok.networker.beans.DBMessenger;
+import ru.vachok.networker.config.AppComponents;
 
 import java.io.*;
 import java.nio.file.Path;
@@ -18,7 +18,7 @@ public class Putty extends Thread {
 
     private static final String SOURCE_CLASS = Putty.class.getSimpleName();
 
-    private static final Logger LOGGER = ApplicationConfiguration.logger();
+    private static final Logger LOGGER = AppComponents.logger();
     private static final int TIMEOUT_2 = 2000;
 
     private static MessageToUser messageToUser = new DBMessenger();

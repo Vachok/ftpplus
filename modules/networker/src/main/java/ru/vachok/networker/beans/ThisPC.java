@@ -1,8 +1,8 @@
-package ru.vachok.networker.web.beans;
+package ru.vachok.networker.beans;
 
 
 import org.slf4j.Logger;
-import ru.vachok.networker.ApplicationConfiguration;
+import ru.vachok.networker.config.AppComponents;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -12,7 +12,7 @@ import java.net.UnknownHostException;
  @since 22.08.2018 (9:59) */
 public class ThisPC {
 
-   private static final Logger LOGGER = ApplicationConfiguration.logger();
+    private static final Logger LOGGER = AppComponents.logger();
 
    private String pcName;
 

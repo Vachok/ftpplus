@@ -1,18 +1,17 @@
-package ru.vachok.networker.web.controller;
+package ru.vachok.networker.controller;
 
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.DBMessenger;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.IntoApplication;
-import ru.vachok.networker.logic.FileMessenger;
+import ru.vachok.networker.beans.DBMessenger;
+import ru.vachok.networker.config.AppComponents;
 import ru.vachok.networker.logic.ssh.ListInternetUsers;
-import ru.vachok.networker.web.ConstantsFor;
 
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.Cookie;
@@ -36,9 +35,9 @@ public class IndexController {
 
     private static final String SOURCE_CLASS = IndexController.class.getName();
 
-    private static Logger logger = LoggerFactory.getLogger("Index");
+    private static Logger logger = AppComponents.logger();
 
-    private MessageToUser messageToUser = new FileMessenger();
+    private MessageToUser messageToUser = new DBMessenger();
 
 
     /**

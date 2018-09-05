@@ -3,7 +3,7 @@ package ru.vachok.networker.logic.ssh;
 
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.web.ConstantsFor;
+import ru.vachok.networker.ConstantsFor;
 
 import java.io.File;
 import java.util.ArrayList;

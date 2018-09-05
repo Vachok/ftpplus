@@ -3,7 +3,7 @@ package ru.vachok.networker.logic;
 
 import org.slf4j.Logger;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.ApplicationConfiguration;
+import ru.vachok.networker.config.AppComponents;
 
 import java.io.*;
 import java.util.concurrent.TimeUnit;
@@ -21,7 +21,7 @@ public class FileMessenger implements MessageToUser {
     /**
      {@link }
      */
-    private static final Logger LOGGER = ApplicationConfiguration.logger();
+    private static final Logger LOGGER = AppComponents.logger();
 
     private static final File log = new File("app.log");
 

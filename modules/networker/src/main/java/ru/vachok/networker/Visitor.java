@@ -1,4 +1,4 @@
-package ru.vachok.networker.web;
+package ru.vachok.networker;
 
 
 /**

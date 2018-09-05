@@ -1,4 +1,4 @@
-package ru.vachok.networker.web.beans;
+package ru.vachok.networker.beans;
 
 
 /**

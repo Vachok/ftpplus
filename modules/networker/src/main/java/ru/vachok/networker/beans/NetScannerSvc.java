@@ -1,22 +1,18 @@
-package ru.vachok.networker.web.controller;
+package ru.vachok.networker.beans;
 
 
-import org.apache.catalina.servlet4preview.http.HttpServletRequest;
 import org.slf4j.Logger;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.RegRuMysql;
-import ru.vachok.networker.ApplicationConfiguration;
+import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.config.AppComponents;
 import ru.vachok.networker.logic.FileMessenger;
 import ru.vachok.networker.logic.StringFromArr;
-import ru.vachok.networker.web.ConstantsFor;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -28,16 +24,24 @@ import java.util.List;
 
 /**
  @since 21.08.2018 (14:40) */
-@Controller
-public class NetScanner implements Runnable {
+@Service ("netscan")
+public class NetScannerSvc {
 
-    private static Logger logger = ApplicationConfiguration.logger();
+    private static Logger logger = AppComponents.logger();
+
+    private String qer;
 
     private static final MessageToUser MESSAGE_TO_USER = new FileMessenger();
 
-    @GetMapping ("/netscan")
-    public String getPCNames(HttpServletRequest request, Model model) throws IOException {
-        String qer = request.getQueryString();
+    public String getQer() {
+        return qer;
+    }
+
+    public void setQer(String qer) {
+        this.qer = qer;
+    }
+
+    public String getPCNames() {
         Collection<String> pcNames = new ArrayList<>();
         boolean reachable;
         InetAddress byName;
@@ -57,20 +61,17 @@ public class NetScanner implements Runnable {
                     String format = MessageFormat.format("{0} {1}", pcName, onLines);
                     logger.warn(format);
                 }
-            }
-            catch(UnknownHostException | NullPointerException ignore){
+            } catch(IOException ignore){
                 //
             }
         }
         String pcsString = writeDB(pcNames);
         pcNames.add(pcsString + " WRITE TO DB");
-        model.addAttribute("pc", pcsString);
         return "netscan";
     }
 
-    @Override
-    public void run() {
-        for(String s:ConstantsFor.PC_PREFIXES){
+    public void runSvc() {
+        for(String s : ConstantsFor.PC_PREFIXES){
             getCycleNames(s);
             MESSAGE_TO_USER.infoNoTitles(s);
         }
@@ -94,8 +95,8 @@ public class NetScanner implements Runnable {
         return list;
     }
 
+    /*Private methods*/
 
-    /*Private metsods*/
     private String writeDB(Collection<String> pcNames) {
         DataConnectTo dataConnectTo = new RegRuMysql();
         List<String> list = new ArrayList<>();

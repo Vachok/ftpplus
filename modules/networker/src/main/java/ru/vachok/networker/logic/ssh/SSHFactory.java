@@ -1,26 +1,19 @@
 package ru.vachok.networker.logic.ssh;
 
 
-
 import com.jcraft.jsch.*;
 import org.slf4j.Logger;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.InitProperties;
-import ru.vachok.networker.ApplicationConfiguration;
-import ru.vachok.networker.web.ConstantsFor;
+import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.config.AppComponents;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.*;
 
 
@@ -31,7 +24,7 @@ import java.util.concurrent.*;
  */
 public class SSHFactory implements Callable<String> {
 
-   private static final Logger LOGGER = ApplicationConfiguration.logger();
+    private static final Logger LOGGER = AppComponents.logger();
 
    private static final String SOURCE_CLASS = SSHFactory.class.getSimpleName();
 
