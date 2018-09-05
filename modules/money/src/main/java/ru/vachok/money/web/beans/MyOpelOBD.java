@@ -1,20 +1,17 @@
 package ru.vachok.money.web.beans;
 
 
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
-import ru.vachok.messenger.MessageToUser;
-import ru.vachok.messenger.email.ESender;
+import ru.vachok.money.ApplicationConfiguration;
 import ru.vachok.money.ConstantsFor;
-import ru.vachok.money.DBMessage;
 import ru.vachok.money.SpeedRunActualize;
-import ru.vachok.money.logic.TForms;
 import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.RegRuMysql;
 
 import java.sql.*;
 import java.text.MessageFormat;
 import java.util.*;
-import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -27,21 +24,7 @@ public class MyOpelOBD {
 
     /*Fields*/
 
-    /**
-     Simple Name класса, для поиска настроек
-     */
-    private static final String SOURCE_CLASS = MyOpelOBD.class.getSimpleName();
-
-    private static BiConsumer<String, String> doblMSG = (x, y) -> {
-        for(MessageToUser messageToUser : messagesToUser){
-            messageToUser.info(ConstantsFor.APP_NAME + MyOpelOBD.SOURCE_CLASS, x, y);
-        }
-    };
-
-    /**
-     {@link }
-     */
-    private static MessageToUser[] messagesToUser = {new ESender("143500@gmail.com"), new DBMessage()};
+    private static final Logger LOGGER = ApplicationConfiguration.getLogger();
 
     private static DataConnectTo dataConnectTo = new RegRuMysql();
 
@@ -57,19 +40,18 @@ public class MyOpelOBD {
         Map<String, String> integerIntegerHashMap = new HashMap<>();
         String sql = "select * from obdrawdata limit 1000";
         try(Connection c = dataConnectTo.getDefaultConnection(ConstantsFor.DB_PREFIX + "car");
-            PreparedStatement p = c.prepareStatement(sql); ResultSet schemas = p.executeQuery()){
+            PreparedStatement p = c.prepareStatement(sql);
+            ResultSet schemas = p.executeQuery()){
             String s = schemas.getMetaData().getColumnCount() + " columns";
             while(schemas.next()){
-                try{
-                    integerIntegerHashMap.put(schemas.getString("GPS Time"), schemas.getString("Engine Coolant " + "Temperature" + "(°C)"));
-                }
-                catch(NumberFormatException | NoSuchElementException e){
-                    doblMSG.accept(e.getMessage(), TForms.toStringFromArray(e.getStackTrace()));
-                }
+                integerIntegerHashMap.put(schemas
+                    .getString("GPS Time"), schemas
+                    .getString("Engine Coolant " + "Temperature" + "(°C)"));
+
             }
         }
-        catch(SQLException e){
-            doblMSG.accept(e.getMessage(), TForms.toStringFromArray(e.getStackTrace()));
+        catch(SQLException | NumberFormatException | NoSuchElementException e){
+            ApplicationConfiguration.getLogger().error(e.getMessage(), e);
         }
         String format = MessageFormat.format("integerIntegerHashMap = {0}", integerIntegerHashMap.size());
         BiFunction<String, String, String> addBR = (x, y) -> {

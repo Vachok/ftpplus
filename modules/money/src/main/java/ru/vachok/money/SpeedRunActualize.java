@@ -1,6 +1,8 @@
 package ru.vachok.money;
 
 
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.messenger.email.ESender;
 import ru.vachok.money.logic.UTF8;
@@ -23,9 +25,10 @@ import java.util.stream.Stream;
 /**
  <b>Добавляет данные о ср. скорости в базу.</b>
  <p>
- В данной реализации из e-mail. {@link #run()}
+ В данной реализации из e-mail.
 
  @since 29.07.2018 (11:42) */
+@Service
 public class SpeedRunActualize implements Callable<String> {
 
     /**
@@ -62,6 +65,7 @@ public class SpeedRunActualize implements Callable<String> {
      @see MailMessages
      */
     @Override
+    @Scheduled (fixedDelay = 10000)
     public String call() {
         Thread.currentThread().setName("SpeedRunActualize.run");
         Map<Date, String> mailMessages = getMailMessages();

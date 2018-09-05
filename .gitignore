@@ -107,3 +107,5 @@ modules/money/build/resources/
 modules/money/build/tmp/
 modules/networker/build/
 regru.obj
+modules/money/logs/
+modules/networker/app.log
