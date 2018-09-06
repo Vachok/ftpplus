@@ -9,10 +9,12 @@ import ru.vachok.networker.beans.NetScannerSvc;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
+import java.util.List;
 
 
 /**
- @since 30.08.2018 (12:55) */
+ * @since 30.08.2018 (12:55)
+ */
 @Controller
 public class NetScanCtr {
 
@@ -24,12 +26,17 @@ public class NetScanCtr {
         this.netScannerSvc = netScannerSvc;
     }
 
-    @GetMapping ("/netscan")
+    @GetMapping("/netscan")
     public String netScan(HttpServletRequest request, Model model) {
-        netScannerSvc.setQer(request.getQueryString());
-        String pcNames = netScannerSvc.getPCNames();
-        model.addAttribute("date", new Date().toString());
-        model.addAttribute("pc", pcNames);
-        return "netscan";
+        if (request.getQueryString() != null) {
+            netScannerSvc.setQer(request.getQueryString());
+            List<String> pcNames = netScannerSvc.getPCNames(request.getQueryString());
+            model.addAttribute("date", new Date().toString());
+            model.addAttribute("pc", new TForms().fromArray(pcNames));
+            return "netscan";
+        } else {
+            model.addAttribute("pc", new TForms().fromArray(netScannerSvc.getPCsAsync()));
+            return "netscan";
+        }
     }
 }

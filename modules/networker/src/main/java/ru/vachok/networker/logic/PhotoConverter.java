@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.function.BiConsumer;
 
 
@@ -16,7 +17,9 @@ import java.util.function.BiConsumer;
  @since 21.08.2018 (15:57) */
 public class PhotoConverter {
 
-    private File photosDirectory = new File("c:\\Users\\ikudryashov\\Documents\\ShareX\\Screenshots\\2018-08\\pers\\"); //fixme refactor 05.09.2018 (22:18)
+    private static final String SOURCE_CLASS = PhotoConverter.class.getSimpleName();
+
+    private static Properties p = new Properties();
 
     private BiConsumer<String, BufferedImage> imageBiConsumer = (x, y) -> {
         File outFile = new File(x + ".jpg");
@@ -28,6 +31,7 @@ public class PhotoConverter {
     };
 
     public Map<String, BufferedImage> convertFoto() {
+        File photosDirectory = new File(p.getProperty("dirwithfoto"));
         File[] fotoFiles = photosDirectory.listFiles();
         Map<String, BufferedImage> filesList = new HashMap<>();
         try{
@@ -40,5 +44,4 @@ public class PhotoConverter {
         filesList.forEach(imageBiConsumer);
         return filesList;
     }
-
 }

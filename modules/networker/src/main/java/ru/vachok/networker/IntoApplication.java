@@ -5,6 +5,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.beans.DBMessenger;
@@ -24,10 +25,11 @@ import java.util.concurrent.TimeUnit;
 
 
 /**
- The type Inetor application.
+ * The type Inetor application.
  */
 @EnableAutoConfiguration
 @SpringBootApplication
+@EnableScheduling
 public class IntoApplication {
 
     private static final MessageToUser DB_MSG = new DBMessenger();
@@ -37,10 +39,10 @@ public class IntoApplication {
     /*PS Methods*/
 
     /**
-     The entry point of application.
-     <a href="https://goo.gl/K93z2L">APP Engine</a>
-
-     @param args the input arguments
+     * The entry point of application.
+     * <a href="https://goo.gl/K93z2L">APP Engine</a>
+     *
+     * @param args the input arguments
      */
     public static void main(String[] args) {
         SpringApplication.run(IntoApplication.class, args);
@@ -52,15 +54,14 @@ public class IntoApplication {
     private static void infoForU() {
         float hours = TimeUnit.MILLISECONDS.toHours(System.currentTimeMillis() - ConstantsFor.START_STAMP);
         DB_MSG.info(IntoApplication.class.getSimpleName(), "INFO", +hours + " h\n" + "Started at " +
-                                                                   new Date(ConstantsFor.START_STAMP).toString() + "\n" +
-                                                                   getInetAddr());
+            new Date(ConstantsFor.START_STAMP).toString() + "\n" +
+            getInetAddr());
     }
 
     private static String getInetAddr() {
-        try{
+        try {
             return InetAddress.getLocalHost().getHostAddress() + " " + InetAddress.getLocalHost().getHostName();
-        }
-        catch(UnknownHostException e){
+        } catch (UnknownHostException e) {
             DB_MSG.errorAlert(SOURCE_CLASS, "Inet Address", new StringFromArr().fromArr(e.getStackTrace()));
         }
         throw new UnsupportedOperationException();
@@ -68,21 +69,19 @@ public class IntoApplication {
 
     public static boolean dataSender(HttpServletResponse response, HttpServletRequest request, String srcClass) {
         String sql = "insert into ru_vachok_networker (classname, msgtype, msgvalue) values (?,?,?)";
-        try(Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.DB_PREFIX + "webapp");
-            PreparedStatement p = c.prepareStatement(sql)){
+        try (Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.DB_PREFIX + "webapp");
+             PreparedStatement p = c.prepareStatement(sql)) {
             p.setString(1, srcClass);
             p.setString(2, "request");
             p.setString(3, request.getRemoteHost() +
-                           "\n" + request.getRemoteAddr() +
-                           "\n" + Arrays.toString(request.getCookies()) +
-                           "\n" + request.getServletContext().getServerInfo());
+                "\n" + request.getRemoteAddr() +
+                "\n" + Arrays.toString(request.getCookies()) +
+                "\n" + request.getServletContext().getServerInfo());
             p.executeUpdate();
             return true;
-        } catch(SQLException e){
+        } catch (SQLException e) {
             DB_MSG.errorAlert(IntoApplication.class.getSimpleName(), e.getMessage(), new StringFromArr().fromArr(e.getStackTrace()));
             return false;
         }
     }
-
-    //unstat
 }
