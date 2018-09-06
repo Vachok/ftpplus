@@ -126,7 +126,7 @@ public class IndexController {
         logger.info(msg);
     }
 
-    @GetMapping ("/")
+    @GetMapping ("/pf")
     public String indexModel(HttpServletRequest request, HttpServletResponse response, Model model) {
         scheduleAns();
         Map<String, String> sshResults = new ListInternetUsers().call();

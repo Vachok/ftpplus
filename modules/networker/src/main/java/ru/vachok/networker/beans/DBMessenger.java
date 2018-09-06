@@ -1,7 +1,7 @@
 package ru.vachok.networker.beans;
 
 
-
+import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.RegRuMysql;
@@ -16,6 +16,7 @@ import java.sql.SQLException;
 /**
  * @since 26.08.2018 (12:29)
  */
+@Service ("MessageToUser")
 public class DBMessenger implements MessageToUser {
 
     /**
@@ -23,7 +24,6 @@ public class DBMessenger implements MessageToUser {
      */
     private static final String SOURCE_CLASS = DBMessenger.class.getSimpleName();
     private static final DataConnectTo REG_RU_MYSQL = new RegRuMysql();
-
 
     @Override
     public void errorAlert( String s , String s1 , String s2 ) {
@@ -60,12 +60,12 @@ public class DBMessenger implements MessageToUser {
 
     @Override
     public void infoTimer( int i , String s ) {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("07.09.2018 (0:11)");
     }
 
 
     @Override
     public String confirm( String s , String s1 , String s2 ) {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("07.09.2018 (0:11)");
     }
 }

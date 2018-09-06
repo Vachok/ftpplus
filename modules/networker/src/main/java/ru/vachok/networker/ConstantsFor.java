@@ -44,6 +44,10 @@ public enum ConstantsFor {
 
     public static final long START_STAMP = System.currentTimeMillis();
 
+    public static final String APP_NAME = "ru_vachok_networker-";
+
+    public static long KBYTE = 1024;
+
     /*PS Methods*/
     public static String getPC(HttpServletRequest request) {
         return request.getRemoteAddr();

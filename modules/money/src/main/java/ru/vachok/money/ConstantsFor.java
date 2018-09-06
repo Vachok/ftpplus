@@ -33,6 +33,8 @@ public enum ConstantsFor {
      */
     public static final String APP_NAME = ConstantsFor.class.getPackage().getName().replaceAll("\\Q.\\E", "_") + "-";
 
+    public static final long START_STAMP = System.currentTimeMillis();
+
     public static BiConsumer<String, String> toDBAndMail = (x, y) -> {
         MessageToUser[] messagesToUser = {new ESender("143500@gmail.com"), new DBMessage()};
         for(MessageToUser messageToUser : messagesToUser){
