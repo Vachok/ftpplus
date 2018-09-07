@@ -26,7 +26,7 @@ public class PhotoConverter {
         try{
             ImageIO.write(y, "jpg", outFile);
         } catch(IOException e){
-            AppComponents.logger().error(e.getMessage(), e);
+            AppComponents.getLogger().error(e.getMessage(), e);
         }
     };
 
@@ -39,7 +39,7 @@ public class PhotoConverter {
                 filesList.put(f.getName().split("\\Q.\\E")[0], ImageIO.read(f));
             }
         } catch(IOException e){
-            AppComponents.logger().error(e.getMessage(), e);
+            AppComponents.getLogger().error(e.getMessage(), e);
         }
         filesList.forEach(imageBiConsumer);
         return filesList;

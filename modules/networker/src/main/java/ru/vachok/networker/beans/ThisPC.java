@@ -12,7 +12,7 @@ import java.net.UnknownHostException;
  @since 22.08.2018 (9:59) */
 public class ThisPC {
 
-    private static final Logger LOGGER = AppComponents.logger();
+    private static final Logger LOGGER = AppComponents.getLogger();
 
    private String pcName;
 

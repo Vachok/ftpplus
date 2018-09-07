@@ -15,7 +15,7 @@ import ru.vachok.networker.beans.NetScannerSvc;
 public class AppComponents {
 
     @Bean
-    public static Logger logger() {
+    public static Logger getLogger() {
         return LoggerFactory.getLogger("ru_vachok_networker");
     }
 

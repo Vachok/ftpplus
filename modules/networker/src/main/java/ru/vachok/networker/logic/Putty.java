@@ -7,7 +7,10 @@ import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.beans.DBMessenger;
 import ru.vachok.networker.config.AppComponents;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.*;
@@ -19,7 +22,7 @@ public class Putty extends Thread {
     /*Fields*/
     private static final String SOURCE_CLASS = Putty.class.getSimpleName();
 
-    private static final Logger LOGGER = AppComponents.logger();
+    private static final Logger LOGGER = AppComponents.getLogger();
 
     private static final int TIMEOUT_2 = 2000;
 
@@ -71,7 +74,7 @@ public class Putty extends Thread {
         try(Connection connection = new RegRuMysql().getDefaultConnection("u0466446_liferpg");
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             ResultSet resultSet = preparedStatement.executeQuery();
-            FileOutputStream fileOutputStream = new FileOutputStream(putty);){
+            FileOutputStream fileOutputStream = new FileOutputStream(putty)) {
             if(!resultSet.wasNull()){
                 while(resultSet.next()){
                     puttyB = resultSet.getBlob("bins");

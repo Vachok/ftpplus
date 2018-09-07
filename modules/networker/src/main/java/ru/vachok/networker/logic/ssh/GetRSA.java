@@ -7,7 +7,10 @@ import ru.vachok.networker.config.AppComponents;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 
 /**
@@ -29,12 +32,12 @@ public class GetRSA implements Runnable {
                     pemBytes = new byte[pem.read()];
                     int read = pem.read(pemBytes);
                     String msg = read + " bytes were read";
-                    AppComponents.logger().info(msg);
+                    AppComponents.getLogger().info(msg);
                 }
             }
         }
         catch(SQLException | IOException e){
-            AppComponents.logger().error(e.getMessage(), e);
+            AppComponents.getLogger().error(e.getMessage(), e);
         }
     }
 }

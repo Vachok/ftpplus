@@ -18,7 +18,7 @@ plugins {
 }
 
 group = 'ru.vachok.networker'
-version = '0.17'
+version = '0.174'
 sourceCompatibility = 1.8
 
 repositories {
@@ -30,6 +30,7 @@ repositories {
 
 dependencies {
 	compile fileTree ('\\lib')
+    compile("org.springframework.boot:spring-boot-devtools")
 	compile('org.springframework.boot:spring-boot-starter-thymeleaf')
 	compile('org.springframework.boot:spring-boot-starter-web')
     // https://mvnrepository.com/artifact/com.jcraft/jsch

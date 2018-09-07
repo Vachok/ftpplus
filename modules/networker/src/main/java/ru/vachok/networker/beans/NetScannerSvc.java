@@ -2,7 +2,6 @@ package ru.vachok.networker.beans;
 
 
 import org.slf4j.Logger;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.DataConnectTo;
@@ -38,7 +37,7 @@ public class NetScannerSvc {
 
     private static final String SOURCE_CLASS = NetScannerSvc.class.getSimpleName();
 
-    private static Logger logger = AppComponents.logger();
+    private static Logger logger = AppComponents.getLogger();
 
     private String qer;
 
@@ -83,7 +82,6 @@ public class NetScannerSvc {
         return pcNames;
     }
 
-    @Scheduled(fixedDelayString = "2160000")
     public List<String> getPCsAsync() {
         List<String> pcNames = new ArrayList<>();
         final long startMethod = System.currentTimeMillis();

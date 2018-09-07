@@ -13,7 +13,7 @@ import java.util.Scanner;
  @since 30.08.2018 (10:11) */
 public class ADUser {
 
-    private Logger logger = AppComponents.logger();
+    private Logger logger = AppComponents.getLogger();
 
     private String defaultDomainName = "EATMEAT";
 

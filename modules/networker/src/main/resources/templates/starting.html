@@ -1,11 +1,18 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title th:text=${starttime}>ХЗ</title>
+    <title th:text=${yourip}>ХЗ</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <link rel="stylesheet" type="text/css" media="all" href="css/main.css" th:href="@{css/main.css}"/>
 </head>
 <body>
-<ol th:utext="${logdb}"/>
+<form th:action="@{/matrix}" th:object="${Matrix}" method="POST">
+    Интересуемая должность:
+    <input type="text" th:field="*{workPos}"/>
+    <br>
+    <input type="submit" value="Запрос"/>
+    <br>
+</form>
+<div th:if="${logdb}" ul th:utext="${logdb}"/>
 </body>
 </html>

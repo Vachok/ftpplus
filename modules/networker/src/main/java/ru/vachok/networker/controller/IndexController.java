@@ -23,7 +23,10 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -36,7 +39,7 @@ public class IndexController {
 
     private static final String SOURCE_CLASS = IndexController.class.getName();
 
-    private static Logger logger = AppComponents.logger();
+    private static Logger logger = AppComponents.getLogger();
 
     private MessageToUser messageToUser = new DBMessenger();
 

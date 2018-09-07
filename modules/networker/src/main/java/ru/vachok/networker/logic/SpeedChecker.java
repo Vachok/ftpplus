@@ -7,7 +7,10 @@ import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.config.AppComponents;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -51,10 +54,10 @@ public class SpeedChecker extends Thread {
             ResultSet r = p.executeQuery()){
             while (r.last()) {
                 double timeSpend = r.getDouble("TimeSpend");
-                AppComponents.logger().warn(timeSpend + " time spend");
+                AppComponents.getLogger().warn(timeSpend + " time spend");
             }
         } catch (SQLException e) {
-            AppComponents.logger().error(e.getMessage(), e);
+            AppComponents.getLogger().error(e.getMessage(), e);
         }
     }
 

@@ -11,11 +11,17 @@ import ru.vachok.mysqlandprops.EMailAndDB.MailMessages;
 import ru.vachok.networker.config.AppComponents;
 import ru.vachok.networker.logic.PhotoConverter;
 
-import javax.mail.*;
+import javax.mail.Flags;
+import javax.mail.Folder;
+import javax.mail.Message;
+import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletRequest;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Random;
 
 
 /**
@@ -23,7 +29,7 @@ import java.util.*;
 @Controller
 public class ExecExtApps {
 
-    private static final Logger LOGGER = AppComponents.logger();
+    private static final Logger LOGGER = AppComponents.getLogger();
 
     @RequestMapping ("/idea")
     @ResponseBody

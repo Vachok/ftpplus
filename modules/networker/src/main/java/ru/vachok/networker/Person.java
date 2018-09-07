@@ -18,7 +18,7 @@ public class Person {
     private String lastName;
 
     /*Fields*/
-    private static final Logger LOGGER = AppComponents.logger();
+    private static final Logger LOGGER = AppComponents.getLogger();
 
 
     /**

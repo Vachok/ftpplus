@@ -1,6 +1,7 @@
 package ru.vachok.networker;
 
 
+import org.slf4j.Logger;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -36,6 +37,7 @@ public class IntoApplication {
 
     private static final String SOURCE_CLASS = IntoApplication.class.getSimpleName();
 
+    private static final Logger LOGGER = AppComponents.getLogger();
     /*PS Methods*/
 
     /**
@@ -56,11 +58,13 @@ public class IntoApplication {
         DB_MSG.info(IntoApplication.class.getSimpleName(), "INFO", +hours + " h\n" + "Started at " +
             new Date(ConstantsFor.START_STAMP).toString() + "\n" +
             getInetAddr());
+        LOGGER.info(getInetAddr() + ":8880" + " " + "http://localhost:8880");
+        DB_MSG.info(ConstantsFor.APP_NAME, "ver. = " + ConstantsFor.APP_VER, IntoApplication.class.getSimpleName());
     }
 
     private static String getInetAddr() {
         try {
-            return InetAddress.getLocalHost().getHostAddress() + " " + InetAddress.getLocalHost().getHostName();
+            return InetAddress.getLocalHost().getCanonicalHostName() + " \nIP: http://" + InetAddress.getLocalHost().getHostAddress();
         } catch (UnknownHostException e) {
             DB_MSG.errorAlert(SOURCE_CLASS, "Inet Address", new StringFromArr().fromArr(e.getStackTrace()));
         }

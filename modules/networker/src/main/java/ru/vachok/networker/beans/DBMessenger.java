@@ -41,7 +41,7 @@ public class DBMessenger implements MessageToUser {
             p.setString(3,s2);
             p.executeUpdate();
         }catch (SQLException e){
-            AppComponents.logger().error(e.getMessage(), e);
+            AppComponents.getLogger().error(e.getMessage(), e);
         }
     }
 
