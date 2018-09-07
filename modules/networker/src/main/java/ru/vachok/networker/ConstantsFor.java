@@ -46,6 +46,10 @@ public enum ConstantsFor {
 
     public static final String APP_NAME = "ru_vachok_networker-";
 
+    public static final String APP_VER = System.getProperties().getProperty("sun.java.command").split("networker-")[1].replace(".jar", "");
+
+    private static final String SOURCE_CLASS = ConstantsFor.class.getSimpleName();
+
     public static long KBYTE = 1024;
 
     /*PS Methods*/

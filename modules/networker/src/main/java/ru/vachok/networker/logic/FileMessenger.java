@@ -5,7 +5,10 @@ import org.slf4j.Logger;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.config.AppComponents;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 
@@ -21,7 +24,7 @@ public class FileMessenger implements MessageToUser {
     /**
      {@link }
      */
-    private static final Logger LOGGER = AppComponents.logger();
+    private static final Logger LOGGER = AppComponents.getLogger();
 
     private static final File log = new File("app.log");
 

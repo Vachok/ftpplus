@@ -23,7 +23,7 @@ public class DataBases {
      */
     private static final String SOURCE_CLASS = DataBases.class.getSimpleName();
 
-    private static final Logger LOGGER = AppComponents.logger();
+    private static final Logger LOGGER = AppComponents.getLogger();
 
     /**
      {@link }
@@ -46,7 +46,7 @@ public class DataBases {
         DataConnectTo d = new RegRuMysql();
         try(Connection c = d.getDefaultConnection("u0466446_webapp");
             PreparedStatement p = c.prepareStatement(String.format("select * from %s ORDER BY timewhen DESC LIMIT 0 , 50", logTableName));
-            ResultSet r = p.executeQuery();
+            ResultSet r = p.executeQuery()
         ){
             while(r.next()){
                 lastLogsList.put(++ind + ") " + r.getString("classname") + " - " + r.getString("msgtype"),

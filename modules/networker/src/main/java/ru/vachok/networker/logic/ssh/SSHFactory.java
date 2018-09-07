@@ -10,10 +10,16 @@ import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.config.AppComponents;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Properties;
 import java.util.concurrent.*;
 
 
@@ -25,7 +31,7 @@ import java.util.concurrent.*;
 public class SSHFactory implements Callable<String> {
 
     /*Fields*/
-    private static final Logger LOGGER = AppComponents.logger();
+    private static final Logger LOGGER = AppComponents.getLogger();
 
     private static final String SOURCE_CLASS = SSHFactory.class.getSimpleName();
 
