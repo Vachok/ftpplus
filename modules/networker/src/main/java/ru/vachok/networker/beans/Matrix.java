@@ -3,16 +3,11 @@ package ru.vachok.networker.beans;
 
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.config.AppComponents;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -36,19 +31,19 @@ public class Matrix {
         this.workPos = workPos;
     }
 
-    @GetMapping("/matrix")
+
     public String getWorkPosition(String sql) {
         Map<String, String> doljAndAccess = new ConcurrentHashMap<>();
         try (PreparedStatement statement = c.prepareStatement(sql);
              ResultSet r = statement.executeQuery()) {
             while (r.next()) {
-                doljAndAccess.put(r.getString("Doljnost"),
-                    r.getInt("fullinet") + " - fullinet, <br>" +
-                        r.getInt("stdinet") + " - stdinet, <br>" +
-                        r.getInt("limitinet") + " - limitinet, <br>" +
-                        r.getInt("owaasync") + " - owa and async, <br>" +
+                doljAndAccess.put("<h5>" + r.getString("Doljnost") + ":</h5><br>",
+                    r.getInt("fullinet") + " полный достув в интернет, <br>" +
+                        r.getInt("stdinet") + " - доступ с ограничениями (mail.ru и тп). Стандарт для большинства, <br>" +
+                        r.getInt("limitinet") + " - досту только к определённым спискам сайтов, <br>" +
+                        r.getInt("owaasync") + " - owa and async (почта удалённо), <br>" +
                         r.getInt("VPN") + " - VPN, <br>" +
-                        r.getInt("sendmail") + " - sendmail. <br>");
+                        r.getInt("sendmail") + " - отправка за пределы компании. <br>");
             }
         } catch (SQLException e) {
             LOGGER.error(e.getMessage(), e);
@@ -56,9 +51,5 @@ public class Matrix {
         String s = new TForms().fromArray(doljAndAccess);
         this.workPos = s;
         return s;
-    }
-
-    public void showResults(Model model) {
-        model.addAttribute("workPos", workPos);
     }
 }

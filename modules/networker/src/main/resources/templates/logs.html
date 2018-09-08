@@ -1,13 +1,12 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title th:text="${headtitle}">ХЗ</title>
+    <title th:text="${date}">ХЗ</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <link rel="stylesheet" type="text/css" media="all" href="css/main.css" th:href="@{css/main.css}"/>
 </head>
 <body>
-<a href="/">На главную</a>
-<ol th:utext="${workPos}"/>
-<a href="/?eth">На главную (почти)</a>
+<a href="/">ГЛАВНАЯ!</a>
+<ol th:if="${logdb}" ul th:utext="${logdb}"/>
 </body>
 </html>
