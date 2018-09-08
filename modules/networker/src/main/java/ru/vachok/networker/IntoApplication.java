@@ -8,6 +8,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.mysqlandprops.EMailAndDB.SpeedRunActualize;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.beans.DBMessenger;
 import ru.vachok.networker.config.AppComponents;
@@ -22,6 +23,8 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 
@@ -58,8 +61,11 @@ public class IntoApplication {
         DB_MSG.info(IntoApplication.class.getSimpleName(), "INFO", +hours + " h\n" + "Started at " +
             new Date(ConstantsFor.START_STAMP).toString() + "\n" +
             getInetAddr());
-        LOGGER.info(getInetAddr() + ":8880" + " " + "http://localhost:8880");
-        DB_MSG.info(ConstantsFor.APP_NAME, "ver. = " + ConstantsFor.APP_VER, IntoApplication.class.getSimpleName());
+        String msg = getInetAddr() + ":8880" + " " + "http://localhost:8880";
+        LOGGER.info(msg);
+        ScheduledExecutorService executorService =
+            Executors.unconfigurableScheduledExecutorService(Executors.newSingleThreadScheduledExecutor());
+        executorService.scheduleWithFixedDelay(new SpeedRunActualize(), 10, 300, TimeUnit.SECONDS);
     }
 
     private static String getInetAddr() {

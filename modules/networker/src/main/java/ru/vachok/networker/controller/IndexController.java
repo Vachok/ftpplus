@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.messenger.email.ESender;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.beans.DBMessenger;
@@ -23,10 +24,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 
 /**
@@ -35,6 +33,7 @@ import java.util.concurrent.TimeUnit;
 @Controller
 public class IndexController {
 
+    /*Fields*/
     private static final Map<String, String> SHOW_ME = new ConcurrentHashMap<>();
 
     private static final String SOURCE_CLASS = IndexController.class.getName();
@@ -61,7 +60,9 @@ public class IndexController {
         String s = httpServletRequest.getQueryString();
         if(s!=null){
             SHOW_ME.put(this.toString(), s);
-            if(s.contains("go")) httpServletResponse.sendRedirect("http://ftpplus.vachok.ru/docs");
+            if(s.contains("go")){
+                httpServletResponse.sendRedirect("http://ftpplus.vachok.ru/docs");
+            }
         }
         return SHOW_ME;
     }
@@ -131,15 +132,26 @@ public class IndexController {
 
     @GetMapping ("/pf")
     public String indexModel(HttpServletRequest request, HttpServletResponse response, Model model) {
-        scheduleAns();
+        long metricStart = System.currentTimeMillis();
         Map<String, String> sshResults = new ListInternetUsers().call();
         List<String> commandsSSH = new ListInternetUsers().getCommand();
         for(String s : commandsSSH){
+            new Thread(() -> {
             String sshRes = sshResults.get(s);
-            model.addAttribute(s.split("cat /etc/pf/")[1], sshRes);
+                model.addAttribute(s.split("cat /etc/pf/")[1], sshRes);
+            }).start();
         }
         boolean b = IntoApplication.dataSender(response, request, SOURCE_CLASS);
         model.addAttribute("dbsend", b + " db");
+        String msg = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - metricStart) + " elapsed sec.";
+        logger.info(msg);
+        MessageToUser mailMSG = new ESender("143500@gmail.com");
+        new Thread(() -> mailMSG.info(SOURCE_CLASS,
+            (( float ) (TimeUnit.MILLISECONDS
+                            .toSeconds(System
+                                .currentTimeMillis() - ConstantsFor.START_STAMP)) / 60f) +
+                " min uptime", msg)).start();
+
         return "index";
     }
 

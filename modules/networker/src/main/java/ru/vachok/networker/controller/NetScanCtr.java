@@ -36,7 +36,8 @@ public class NetScanCtr {
             model.addAttribute("pc", new TForms().fromArray(pcNames));
             return "netscan";
         } else {
-            model.addAttribute("pc", new TForms().fromArray(netScannerSvc.getPCsAsync()));
+            List<String> pCsAsync = netScannerSvc.getPCsAsync();
+            model.addAttribute("pc", new TForms().fromArray(pCsAsync));
             return "netscan";
         }
     }

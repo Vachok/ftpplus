@@ -2,6 +2,7 @@ package ru.vachok.networker.beans;
 
 
 import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.RegRuMysql;
@@ -14,6 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  @since 07.09.2018 (0:39) */
+@Service
 public class DataBases {
 
     /*Fields*/

@@ -36,6 +36,11 @@ import java.util.function.Function;
 @Controller
 public class Index {
 
+    /*Fields*/
+    private static final String SOURCE_CLASS = Index.class.getSimpleName();
+
+    private static final Connection u0466446Webapp = new RegRuMysql().getDefaultConnection("u0466446_webapp");
+
     private static Logger logger = ApplicationConfiguration.getLogger();
 
     private static Marker marker = ApplicationConfiguration.marker();
@@ -43,11 +48,6 @@ public class Index {
     private static DataConnectTo dataConnectTo = new RegRuMysql();
 
     private static CookieMaker cookieMaker = new CookieMaker();
-
-    /*Fields*/
-    private static final String SOURCE_CLASS = Index.class.getSimpleName();
-
-    private static final Connection u0466446Webapp = new RegRuMysql().getDefaultConnection("u0466446_webapp");
 
     @GetMapping ("/")
     public String indexString(HttpServletRequest request, HttpServletResponse response, Model model) {
@@ -69,7 +69,9 @@ public class Index {
                 boolean delete = false;
                 if(( int ) (tStampNow - cookieStamp) > maxAge){
                     delete = cookieFile.delete();
-                    if(!delete) cookieFile.deleteOnExit();
+                    if(!delete){
+                        cookieFile.deleteOnExit();
+                    }
                     response.setStatus(HttpServletResponse.SC_OK);
                 }
                 String cookieInfo = cookie.getName() + " name; " + cookie.getValue() + " value; " + maxAge + " cookie delete is " + delete;
@@ -78,8 +80,11 @@ public class Index {
             return "redirect:/ftp";
         }
         model.addAttribute("mail", mailString);
-
-        new Thread(() -> ConstantsFor.ok.accept(SOURCE_CLASS, "returned home\n " + request.getRemoteHost() + ":" + request.getRemotePort() + "\n" + request.getQueryString())).start();
+        ConstantsFor.ok
+            .accept(SOURCE_CLASS, "returned home\n " +
+                request.getRemoteHost() +
+                ":" + request.getRemotePort() +
+                "\n" + request.getQueryString());
         return "home";
     }
 
@@ -94,7 +99,9 @@ public class Index {
                 stringBuilder.append(" ").append(m.getReceivedDate()).append("<br>");
                 stringBuilder.append(m.getSubject()).append("<br>");
                 if(request.getQueryString()!=null){
-                    if(request.getQueryString().contains("clean")) m.setFlag(Flags.Flag.DELETED, true);
+                    if(request.getQueryString().contains("clean")){
+                        m.setFlag(Flags.Flag.DELETED, true);
+                    }
                 }
             }
             folder.close(true);

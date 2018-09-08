@@ -31,9 +31,9 @@ public class TForms {
         return brStringBuilder.toString();
     }
 
-    public String fromArray(Map<String, String> ru_vachok_ethosdistro) {
+    public String fromArray(Map<String, String> stringStringMap) {
         List<String> list = new ArrayList<>();
-        ru_vachok_ethosdistro.forEach((x, y) -> {
+        stringStringMap.forEach((x, y) -> {
             list.add(x + "    " + y + "<br>\n");
         });
         Collections.sort(list);
