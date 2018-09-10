@@ -18,6 +18,8 @@ public enum ConstantsFor {
      */
     public static final int MBYTE = 1024 * 1024;
 
+    public static final String no0027EatmeatRu = "10.200.213.85";
+
     public static final String DB_PREFIX = "u0466446_";
 
     public static final File SSH_ERR = new File("ssh_err.txt");

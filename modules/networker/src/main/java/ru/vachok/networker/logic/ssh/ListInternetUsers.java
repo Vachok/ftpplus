@@ -46,7 +46,6 @@ public class ListInternetUsers implements Callable<Map<String, String>> {
             return returmCommandResult;
         }
     }
-
     public List<String> getCommand() {
         List<String> comSSH = new ArrayList<>();
         String catSquid = "cat /etc/pf/squid";

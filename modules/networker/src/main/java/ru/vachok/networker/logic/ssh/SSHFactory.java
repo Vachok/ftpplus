@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
+import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.config.AppComponents;
@@ -94,14 +95,13 @@ public class SSHFactory implements Callable<String> {
         InputStream inputStream = null;
         if(channel==null){
             messageToUser.out("SSHFactory_67", ("Channel is NULL!" + "\n\n" + "\nSSHFactory.connect, and ID (lineNum) is 67").getBytes());
-            messageToUser.infoNoTitles(MessageFormat.format("{0} id 82. {1}", SOURCE_CLASS, Objects
-                .requireNonNull(channel).getSession()));
+            messageToUser.infoNoTitles(MessageFormat.format("{0} id 82. {1}", SOURCE_CLASS, " JSch channel==null"));
         }
         else{
             inputStream = channel.getInputStream();
         }
 
-        (( ChannelExec ) channel).setErrStream(new FileOutputStream(ConstantsFor.SSH_ERR));
+        ((ChannelExec) Objects.requireNonNull(channel)).setErrStream(new FileOutputStream(ConstantsFor.SSH_ERR));
 
         byte[] bytes = new byte[ConstantsFor.MBYTE];
         while(inputStream.available() > 0){
@@ -118,7 +118,15 @@ public class SSHFactory implements Callable<String> {
     private Channel chanRespChannel() throws JSchException {
         JSch jSch = new JSch();
         Session session = jSch.getSession(userName, getConnectToSrv());
-        Properties properties = initProperties.getProps();
+        Properties properties;
+        try {
+            properties = initProperties.getProps();
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage(), e);
+            initProperties = new FileProps(SOURCE_CLASS);
+            properties = initProperties.getProps();
+
+        }
         jSch.addIdentity(pem());
         session.setConfig(properties);
         session.connect(ConstantsFor.TIMEOUT_2);
@@ -129,6 +137,7 @@ public class SSHFactory implements Callable<String> {
         (( ChannelExec ) channel).setCommand(commandSSH);
         channel.connect();
         Objects.requireNonNull(channel);
+        initProperties.setProps(properties);
         return channel;
     }
 

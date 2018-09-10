@@ -8,10 +8,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.mysqlandprops.EMailAndDB.SpeedRunActualize;
 import ru.vachok.mysqlandprops.RegRuMysql;
+import ru.vachok.networker.beans.PfLists;
 import ru.vachok.networker.config.AppComponents;
 import ru.vachok.networker.logic.StringFromArr;
+import ru.vachok.networker.services.PfListsSrv;
 
 import javax.servlet.http.HttpServletRequest;
 import java.net.InetAddress;
@@ -21,8 +22,6 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 
@@ -61,9 +60,11 @@ public class IntoApplication {
             myInetAddr());
         String msg = myInetAddr() + ":8880" + " " + "http://localhost:8880";
         LOGGER.info(msg);
-        ScheduledExecutorService executorService =
-            Executors.unconfigurableScheduledExecutorService(Executors.newSingleThreadScheduledExecutor());
-        executorService.scheduleWithFixedDelay(new SpeedRunActualize(), 10, 300, TimeUnit.SECONDS);
+        PfListsSrv.speedAct();
+        Thread thread = new PfLists();
+        thread.start();
+        String s = thread.toString() + thread.hashCode();
+        LOGGER.info(s);
     }
 
     private static String myInetAddr() {

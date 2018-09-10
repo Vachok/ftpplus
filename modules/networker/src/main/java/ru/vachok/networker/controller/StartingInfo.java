@@ -10,9 +10,10 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.beans.DataBases;
-import ru.vachok.networker.beans.Matrix;
+import ru.vachok.networker.beans.PfLists;
 import ru.vachok.networker.config.AppComponents;
+import ru.vachok.networker.services.DataBases;
+import ru.vachok.networker.services.Matrix;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -37,6 +38,8 @@ public class StartingInfo {
     private static final Logger LOGGER = AppComponents.getLogger();
 
     private Matrix matrix;
+
+    private PfLists pfLists;
 
     private DataBases dataBases = new DataBases();
 
@@ -65,8 +68,8 @@ public class StartingInfo {
     }
 
     private Model lastLogsGetter(Model model) {
-        Map<String, String> ru_vachok_ethosdistro = dataBases.getLastLogs("ru_vachok_ethosdistro");
-        String logsFromDB = new TForms().fromArray(ru_vachok_ethosdistro);
+        Map<String, String> vachokEthosdistro = dataBases.getLastLogs("vachokEthosdistro");
+        String logsFromDB = new TForms().fromArray(vachokEthosdistro);
         model.addAttribute("logdb", logsFromDB);
         model.addAttribute("starttime", new Date(ConstantsFor.START_STAMP));
         model.addAttribute("title", metricMatrixStart);

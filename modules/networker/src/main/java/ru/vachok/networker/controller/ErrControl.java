@@ -5,6 +5,7 @@ import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import ru.vachok.networker.ConstantsFor;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -57,7 +58,7 @@ public class ErrControl implements ErrorController {
         String q = httpServletRequest.getQueryString();
         String userIp = httpServletRequest.getRemoteAddr();
         if ((
-            userIp.contains("10.200.213.85") ||
+            userIp.contains(ConstantsFor.no0027EatmeatRu) ||
                 userIp.contains("10.10.111") ||
                 userIp.contains("172.26.43") ||
                 userIp.contains("0:0:0:0:0"))) {
@@ -73,6 +74,7 @@ public class ErrControl implements ErrorController {
             response.setStatus(403);
             throw new AccessDeniedException("Access denied!");
         }
-        return "redirect:/";
+
+        return "redirect:/ok";
     }
 }

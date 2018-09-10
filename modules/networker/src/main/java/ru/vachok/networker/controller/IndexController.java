@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import ru.vachok.messenger.MessageToUser;
@@ -12,8 +13,10 @@ import ru.vachok.messenger.email.ESender;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.DBMessenger;
 import ru.vachok.networker.IntoApplication;
+import ru.vachok.networker.beans.PfLists;
 import ru.vachok.networker.config.AppComponents;
 import ru.vachok.networker.logic.ssh.ListInternetUsers;
+import ru.vachok.networker.services.PfListsSrv;
 
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.Cookie;
@@ -75,7 +78,6 @@ public class IndexController {
      *
      * @param httpServletRequest  the http servlet request
      * @param httpServletResponse the http servlet response
-     * @return the stream
      * @throws IOException the io exception
      */
     @GetMapping("/rnd")
@@ -153,7 +155,12 @@ public class IndexController {
                 .toSeconds(System
                     .currentTimeMillis() - ConstantsFor.START_STAMP)) / 60f) +
                 " min uptime", msg)).start();
+        return "index";
+    }
 
+    @GetMapping("/pfbean")
+    public String pfBean(Model model, @ModelAttribute("PfLists") PfLists pfLists) {
+        model = new PfListsSrv(pfLists).pfListsUpd(model);
         return "index";
     }
 
