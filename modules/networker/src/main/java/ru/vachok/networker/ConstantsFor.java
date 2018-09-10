@@ -3,6 +3,8 @@ package ru.vachok.networker;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Random;
 
 
@@ -46,15 +48,20 @@ public enum ConstantsFor {
 
     public static final String APP_NAME = "ru_vachok_networker-";
 
-    public static final String APP_VER = System.getProperties().getProperty("sun.java.command").split("networker-")[1].replace(".jar", "");
-
-    private static final String SOURCE_CLASS = ConstantsFor.class.getSimpleName();
+    public static final String THIS_PC_NAME = thisPC();
 
     public static long KBYTE = 1024;
 
     /*PS Methods*/
-    public static String getPC(HttpServletRequest request) {
+    public static String getUserPC(HttpServletRequest request) {
         return request.getRemoteAddr();
     }
-//unstat
+
+    private static String thisPC() {
+        try {
+            return InetAddress.getLocalHost().getHostName();
+        } catch (UnknownHostException e) {
+            return "No hostname!";
+        }
+    }
 }

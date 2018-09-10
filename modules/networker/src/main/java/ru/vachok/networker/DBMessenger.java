@@ -1,11 +1,9 @@
-package ru.vachok.networker.beans;
+package ru.vachok.networker;
 
 
-import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.RegRuMysql;
-import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.config.AppComponents;
 
 import java.sql.Connection;
@@ -16,7 +14,6 @@ import java.sql.SQLException;
 /**
  * @since 26.08.2018 (12:29)
  */
-@Service ("MessageToUser")
 public class DBMessenger implements MessageToUser {
 
     /**

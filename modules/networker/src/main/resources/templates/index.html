@@ -6,12 +6,7 @@
     <link rel="stylesheet" type="text/css" media="all" href="css/main.css" th:href="@{css/main.css}"/>
 </head>
 <body>
-<p>
-    <a href="/netscan?do">Scan DO ) | </a><a href="/netscan?a">Scan A )</a>
-    <a href="/netscan?pp">Scan PP) | </a><a href="/netscan?td">Scan TD )</a>
-    <a href="/netscan?no">Scan NO )</a>
-</p>
-
+<a href="/">Главная</a> | <a href="/netscan">Скан ПК</a> | <a href="/?eth">Логи в БД</a>
 <p>
     <textarea name="SQUID STANDARD: " rows="10" cols="10" th:text="${squid}"/>
     <textarea name="SQUID LIMITED: " rows="10" cols="10" th:text="${squidlimited}"/>
@@ -28,6 +23,11 @@
 <textarea name="Allowed IP for ALL: " rows="10" cols="10" th:text="${allowip}"/>
 </body>
 <footer>
+    <p>
+        <a href="/netscan?do">Scan DO ) | </a><a href="/netscan?a">Scan A )</a>
+        <a href="/netscan?pp">Scan PP) | </a><a href="/netscan?td">Scan TD )</a>
+        <a href="/netscan?no">Scan NO )</a>
+    </p>
     <a href="http://velkomnet">Velkomnet )</a>
 </footer>
 </html>

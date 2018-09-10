@@ -6,8 +6,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Scope;
+import ru.vachok.networker.DBMessenger;
 import ru.vachok.networker.beans.ADUser;
-import ru.vachok.networker.beans.DBMessenger;
+import ru.vachok.networker.beans.DataBases;
 import ru.vachok.networker.beans.NetScannerSvc;
 
 
@@ -35,5 +36,11 @@ public class AppComponents {
     @Scope ("singleton")
     public NetScannerSvc netScan(String queryString) {
         return new NetScannerSvc();
+    }
+
+    @Bean
+    @Scope("singleton")
+    public DataBases dataBases() {
+        return new DataBases();
     }
 }

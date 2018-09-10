@@ -1,13 +1,12 @@
-<!DOCTYPE html>
-<html lang="ru" xmlns="http://www.w3.org/1999/html">
+<!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
+    <title th:text="${title}">ХЗ</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <link rel="stylesheet" type="text/css" media="all" href="css/main.css" th:href="@{css/main.css}"/>
-    <title th:text="${opel}"/>
 </head>
 <body>
-<h3 th:utext="${roadStat}"/><br>
-<p th:utext="${dbStat}"/>
+<a href="/">ГЛАВНАЯ!</a>
+<ul th:if="${logdb}" ul th:utext="${logdb}"/>
 </body>
 </html>

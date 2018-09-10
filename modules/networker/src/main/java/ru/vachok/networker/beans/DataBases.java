@@ -2,7 +2,7 @@ package ru.vachok.networker.beans;
 
 
 import org.slf4j.Logger;
-import ru.vachok.messenger.MessageToUser;
+import org.springframework.stereotype.Service;
 import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.config.AppComponents;
@@ -14,21 +14,16 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  @since 07.09.2018 (0:39) */
+@Service("dataBases")
 public class DataBases {
 
     /*Fields*/
-
-    /**
-     Simple Name класса, для поиска настроек
-     */
-    private static final String SOURCE_CLASS = DataBases.class.getSimpleName();
-
     private static final Logger LOGGER = AppComponents.getLogger();
 
     /**
      {@link }
      */
-    private static MessageToUser messageToUser = new FileMessenger();
+    private String logTableName;
 
     static {
         try{
@@ -41,6 +36,7 @@ public class DataBases {
     }
 
     public Map<String, String> getLastLogs(String logTableName) {
+        this.logTableName = logTableName;
         int ind = 10;
         Map<String, String> lastLogsList = new ConcurrentHashMap<>();
         DataConnectTo d = new RegRuMysql();
@@ -57,5 +53,9 @@ public class DataBases {
             LOGGER.error(e.getMessage(), e);
         }
         return lastLogsList;
+    }
+
+    public String getLogTableName() {
+        return logTableName;
     }
 }

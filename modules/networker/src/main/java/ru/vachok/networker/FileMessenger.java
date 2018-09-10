@@ -1,11 +1,9 @@
-package ru.vachok.networker.beans;
+package ru.vachok.networker;
 
 
 import org.slf4j.Logger;
-import org.springframework.stereotype.Service;
 import org.thymeleaf.util.CharArrayWrapperSequence;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.config.AppComponents;
 
 import java.io.BufferedWriter;
@@ -18,7 +16,6 @@ import java.util.concurrent.TimeUnit;
 
 /**
  @since 07.09.2018 (0:12) */
-@Service
 public class FileMessenger extends Thread implements MessageToUser {
 
     /*Fields*/
@@ -30,7 +27,8 @@ public class FileMessenger extends Thread implements MessageToUser {
      */
     private static final String SOURCE_CLASS = FileMessenger.class.getSimpleName();
 
-    private static File logFile = new File((System.currentTimeMillis() - ConstantsFor.START_STAMP) + ConstantsFor.APP_NAME + ".log");
+    private static File logFile = new File((System.currentTimeMillis() - ConstantsFor.START_STAMP) +
+        ConstantsFor.THIS_PC_NAME + ".log");
 
     @Override
     public void errorAlert(String s, String s1, String s2) {
