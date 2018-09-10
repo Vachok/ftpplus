@@ -10,6 +10,7 @@ import ru.vachok.networker.DBMessenger;
 import ru.vachok.networker.beans.ADUser;
 import ru.vachok.networker.beans.DataBases;
 import ru.vachok.networker.beans.NetScannerSvc;
+import ru.vachok.networker.beans.PfLists;
 
 
 @ComponentScan
@@ -42,5 +43,11 @@ public class AppComponents {
     @Scope("singleton")
     public DataBases dataBases() {
         return new DataBases();
+    }
+
+    @Bean
+    @Scope("singleton")
+    public static PfLists pfLists() {
+        return new PfLists();
     }
 }

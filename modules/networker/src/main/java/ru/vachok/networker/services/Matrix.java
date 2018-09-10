@@ -1,4 +1,4 @@
-package ru.vachok.networker.beans;
+package ru.vachok.networker.services;
 
 
 import org.slf4j.Logger;
@@ -7,7 +7,10 @@ import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.config.AppComponents;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 

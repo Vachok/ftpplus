@@ -11,8 +11,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.beans.DataBases;
-import ru.vachok.networker.beans.Matrix;
+import ru.vachok.networker.beans.PfLists;
 import ru.vachok.networker.config.AppComponents;
+import ru.vachok.networker.services.Matrix;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -37,6 +38,8 @@ public class StartingInfo {
     private static final Logger LOGGER = AppComponents.getLogger();
 
     private Matrix matrix;
+
+    private PfLists pfLists;
 
     private DataBases dataBases = new DataBases();
 

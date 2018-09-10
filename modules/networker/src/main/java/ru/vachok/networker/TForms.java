@@ -62,4 +62,14 @@ public class TForms {
         });
         return nStingBuilder.toString();
     }
+
+    public String fromStringBoolean(Map<String, Boolean> call) {
+        brStringBuilder.append("<p>");
+        call.forEach((x, y) -> {
+            LOGGER.info(x + y);
+            brStringBuilder.append(x).append(" - ").append(y).append("<br>");
+        });
+        brStringBuilder.append("</p>");
+        return brStringBuilder.toString();
+    }
 }

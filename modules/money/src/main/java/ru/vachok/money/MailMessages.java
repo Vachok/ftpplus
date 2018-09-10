@@ -1,7 +1,6 @@
 package ru.vachok.money;
 
 
-
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
@@ -9,10 +8,7 @@ import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
 
 import javax.mail.*;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Objects;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -104,7 +100,7 @@ public class MailMessages implements Callable<Message[]> {
         } catch (MessagingException e) {
             Logger.getLogger(SOURCE_CLASS).log(Level.WARNING , String.format("%s%n%n%s" , e.getMessage() , Arrays.toString(e.getStackTrace())));
         }
-        Folder inBox;
+        Folder inBox = null;
         try {
             inBox = Objects.requireNonNull(store).getFolder("Inbox");
             inBox.open(Folder.READ_WRITE);
@@ -113,7 +109,7 @@ public class MailMessages implements Callable<Message[]> {
         } catch (MessagingException e) {
             Logger.getLogger(SOURCE_CLASS).log(Level.WARNING , String.format("%s%n%n%s" , e.getMessage() , Arrays.toString(e.getStackTrace())));
         }
-        throw new UnsupportedOperationException("Inbox not available :(");
+        return inBox;
     }
 
 

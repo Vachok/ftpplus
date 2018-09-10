@@ -47,7 +47,7 @@ public class MyOpel {
     private Map<String, String> chkCar() {
         IntStream.Builder engineTempStream = IntStream.builder();
         Map<String, String> integerIntegerHashMap = new HashMap<>();
-        String sql = "select * from obdrawdata limit 1000";
+        String sql = "select * from obdrawdata limit 100";
         try(Connection c = dataConnectTo.getDefaultConnection(ConstantsFor.DB_PREFIX + "car");
             PreparedStatement p = c.prepareStatement(sql);
             ResultSet schemas = p.executeQuery();
