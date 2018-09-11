@@ -1,4 +1,4 @@
-package ru.vachok.networker.beans;
+package ru.vachok.money.web.beans;
 
 
 import java.util.List;

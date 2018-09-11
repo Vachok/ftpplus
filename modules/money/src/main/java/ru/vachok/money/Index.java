@@ -91,8 +91,8 @@ public class Index {
     private String getMailBox(HttpServletRequest request) {
         MailMessages mailMessages = new MailMessages();
         StringBuilder stringBuilder = new StringBuilder();
-        Folder folder = mailMessages.getInbox();
         try{
+            Folder folder = mailMessages.getInbox();
             Message[] messages = folder.getMessages();
             for(Message m : messages){
                 stringBuilder.append(new TForms().toStringFromArray(m.getFrom()));
@@ -107,7 +107,8 @@ public class Index {
             folder.close(true);
         }
         catch(MessagingException e){
-            logger.error(e.getMessage(), e);
+            logger.error(SOURCE_CLASS + ".getMailbox\n" + e.getMessage(), e);
+            return e.getMessage() + "<br>" + TForms.toStringFromArray(e.getStackTrace());
         }
 
         return stringBuilder.toString();
