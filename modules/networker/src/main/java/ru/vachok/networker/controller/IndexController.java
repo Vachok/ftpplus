@@ -25,7 +25,7 @@ import java.util.concurrent.*;
 
 
 /**
- * The type Index controller.
+ The type Index controller.
  */
 @Controller
 public class IndexController {
@@ -42,12 +42,12 @@ public class IndexController {
     private ApplicationContext appCtx = AppCtx.scanForBeansAndRefreshContext();
 
     /**
-     * Map to show map.
-     *
-     * @param httpServletRequest  the http servlet request
-     * @param httpServletResponse the http servlet response
-     * @return the map
-     * @throws IOException the io exception
+     Map to show map.
+
+     @param httpServletRequest  the http servlet request
+     @param httpServletResponse the http servlet response
+     @return the map
+     @throws IOException the io exception
      */
     @RequestMapping ("/ind")
     public String mapToShow(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Model model) throws IOException {
@@ -56,9 +56,9 @@ public class IndexController {
         SHOW_ME.forEach((x, y) -> messageToUser.info(this.getClass().getSimpleName(), x, y));
         SHOW_ME.put("status", httpServletResponse.getStatus() + " " + httpServletResponse.getBufferSize() + " buff");
         String s = httpServletRequest.getQueryString();
-        if (s != null) {
+        if(s!=null){
             SHOW_ME.put(this.toString(), s);
-            if (s.contains("go")) {
+            if(s.contains("go")){
                 httpServletResponse.sendRedirect("http://ftpplus.vachok.ru/docs");
             }
         }
@@ -68,7 +68,7 @@ public class IndexController {
 
     @GetMapping ("/pflists")
     public String pfBean(Model model, HttpServletRequest request, HttpServletResponse response) {
-
+        scheduleAns();
         PfLists pfLists = appCtx.getBean(PfLists.class);
         model.addAttribute("pfLists", pfLists);
         model.addAttribute("metric", PfListsSrv
@@ -82,23 +82,12 @@ public class IndexController {
         return "pflists";
     }
 
-    private String getAttr(HttpServletRequest request) {
-        Enumeration<String> attributeNames = request.getServletContext().getAttributeNames();
-        StringBuilder stringBuilder = new StringBuilder();
-        while(attributeNames.hasMoreElements()){
-            stringBuilder.append(attributeNames.nextElement());
-            stringBuilder.append("<p>");
-            stringBuilder.append("\n");
-        }
-        return stringBuilder.toString();
-    }
-
     private void scheduleAns() {
         ScheduledExecutorService executorService =
             Executors.unconfigurableScheduledExecutorService(Executors.newSingleThreadScheduledExecutor());
         Runnable runnable = () -> {
             MessageToUser m = new DBMessenger();
-            float upTime = (float) (System.currentTimeMillis() - ConstantsFor.START_STAMP) /
+            float upTime = ( float ) (System.currentTimeMillis() - ConstantsFor.START_STAMP) /
                 TimeUnit.DAYS.toMillis(1);
             m.info(SOURCE_CLASS, "UPTIME", upTime + " days");
             new PfListsSrv().buildFactory();
@@ -108,5 +97,16 @@ public class IndexController {
         executorService.scheduleWithFixedDelay(runnable, init, delay, TimeUnit.MINUTES);
         String msg = runnable + " " + init + " init ," + delay + " delay";
         logger.info(msg);
+    }
+
+    private String getAttr(HttpServletRequest request) {
+        Enumeration<String> attributeNames = request.getServletContext().getAttributeNames();
+        StringBuilder stringBuilder = new StringBuilder();
+        while(attributeNames.hasMoreElements()){
+            stringBuilder.append(attributeNames.nextElement());
+            stringBuilder.append("<p>");
+            stringBuilder.append("\n");
+        }
+        return stringBuilder.toString();
     }
 }
