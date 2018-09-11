@@ -1,4 +1,4 @@
-package ru.vachok.networker.config;
+package ru.vachok.networker.beans;
 
 
 import org.slf4j.Logger;
@@ -7,10 +7,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Scope;
 import ru.vachok.networker.DBMessenger;
-import ru.vachok.networker.beans.ADUser;
-import ru.vachok.networker.beans.PfLists;
 import ru.vachok.networker.services.DataBases;
 import ru.vachok.networker.services.NetScannerSvc;
+import ru.vachok.networker.services.PfListsSrv;
 
 
 @ComponentScan
@@ -24,7 +23,8 @@ public class AppComponents {
     @Bean (initMethod = "initUser", destroyMethod = "rmUser")
     @Scope ("prototype")
     public ADUser adUser() {
-        return new ADUser();
+        ADUser adUser = new ADUser();
+        return adUser;
     }
 
     @Bean (destroyMethod = "dbSend")
@@ -47,7 +47,7 @@ public class AppComponents {
 
     @Bean
     @Scope("singleton")
-    public static PfLists pfLists() {
-        return new PfLists();
+    public PfLists pfLists() {
+        return PfListsSrv.getPfLists();
     }
 }

@@ -2,20 +2,18 @@ package ru.vachok.networker.controller;
 
 
 import org.slf4j.Logger;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.messenger.email.ESender;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.DBMessenger;
-import ru.vachok.networker.IntoApplication;
+import ru.vachok.networker.beans.AppComponents;
 import ru.vachok.networker.beans.PfLists;
-import ru.vachok.networker.config.AppComponents;
-import ru.vachok.networker.logic.ssh.ListInternetUsers;
+import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.services.PfListsSrv;
 
 import javax.servlet.ServletInputStream;
@@ -48,6 +46,9 @@ public class IndexController {
 
     private MessageToUser messageToUser = new DBMessenger();
 
+    private ApplicationContext appCtx = AppCtx.getConfigApplicationContext();
+
+    private PfLists pfLists = PfListsSrv.getPfLists();
 
     /**
      * Map to show map.
@@ -78,7 +79,6 @@ public class IndexController {
      *
      * @param httpServletRequest  the http servlet request
      * @param httpServletResponse the http servlet response
-     * @throws IOException the io exception
      */
     @GetMapping("/rnd")
     @ResponseBody
@@ -134,36 +134,6 @@ public class IndexController {
         logger.info(msg);
     }
 
-    @GetMapping("/pf")
-    public String indexModel(HttpServletRequest request, HttpServletResponse response, Model model) {
-        long metricStart = System.currentTimeMillis();
-        Map<String, String> sshResults = new ListInternetUsers().call();
-        List<String> commandsSSH = new ListInternetUsers().getCommand();
-        for (String s : commandsSSH) {
-            new Thread(() -> {
-                String sshRes = sshResults.get(s);
-                model.addAttribute(s.split("cat /etc/pf/")[1], sshRes);
-            }).start();
-        }
-        boolean b = IntoApplication.dataSender(request, SOURCE_CLASS);
-        model.addAttribute("dbsend", b + " db");
-        String msg = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - metricStart) + " elapsed sec.";
-        logger.info(msg);
-        MessageToUser mailMSG = new ESender("143500@gmail.com");
-        new Thread(() -> mailMSG.info(SOURCE_CLASS,
-            ((float) (TimeUnit.MILLISECONDS
-                .toSeconds(System
-                    .currentTimeMillis() - ConstantsFor.START_STAMP)) / 60f) +
-                " min uptime", msg)).start();
-        return "index";
-    }
-
-    @GetMapping("/pfbean")
-    public String pfBean(Model model, @ModelAttribute("PfLists") PfLists pfLists) {
-        model = new PfListsSrv(pfLists).pfListsUpd(model);
-        return "index";
-    }
-
     private String getAttr(HttpServletRequest request) {
         Enumeration<String> attributeNames = request.getServletContext().getAttributeNames();
         StringBuilder stringBuilder = new StringBuilder();
@@ -173,5 +143,11 @@ public class IndexController {
             stringBuilder.append("\n");
         }
         return stringBuilder.toString();
+    }
+
+    @GetMapping("/pflists")
+    public String pfBean(Model model) {
+        model.addAttribute("squid", pfLists.getStdSquid());
+        return "index";
     }
 }

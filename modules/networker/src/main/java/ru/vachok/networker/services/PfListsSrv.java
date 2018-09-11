@@ -1,41 +1,50 @@
 package ru.vachok.networker.services;
 
 
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.ui.Model;
-import ru.vachok.mysqlandprops.EMailAndDB.SpeedRunActualize;
+import org.springframework.stereotype.Service;
+import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.beans.AppComponents;
 import ru.vachok.networker.beans.PfLists;
+import ru.vachok.networker.config.AppCtx;
+import ru.vachok.networker.logic.ssh.ListInternetUsers;
+import ru.vachok.networker.logic.ssh.SSHFactory;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.List;
 
 /**
  * @since 10.09.2018 (11:49)
  */
+@Service("pflists")
 public class PfListsSrv {
 
-    private PfLists pfLists;
+    private static final Logger LOGGER = AppComponents.getLogger();
+
+    private static PfLists pfLists = AppCtx.getConfigApplicationContext().getBean(PfLists.class);
+
+    private static List<String> sshCom = new ListInternetUsers().getCommands();
 
     @Autowired
-    public PfListsSrv(PfLists pfLists) {
-        this.pfLists = pfLists;
+    public PfListsSrv() {
+        getInfoFromSSH();
     }
 
-    public static void speedAct() {
-        ScheduledExecutorService executorService =
-            Executors.unconfigurableScheduledExecutorService(Executors.newSingleThreadScheduledExecutor());
-        executorService.scheduleWithFixedDelay(new SpeedRunActualize(), 10, 300, TimeUnit.SECONDS);
+    public static PfLists getPfLists() {
+        return pfLists;
     }
 
-    public Model pfListsUpd(Model model) {
-        model.addAttribute("pfLists", pfLists);
-        model.addAttribute("vipnet", pfLists.getVipNet());
-        model.addAttribute("squid", pfLists.getStdSquid());
-        model.addAttribute("squidlimited", pfLists.getLimitSquid());
-        model.addAttribute("tempfull", pfLists.getFullSquid());
-        model.addAttribute("allowdomain", pfLists.getAllowDomain());
-        model.addAttribute("allowurl", pfLists.getAllowURL());
-        return model;
+    public static void setPfLists(PfLists pfLists) {
+        PfListsSrv.pfLists = pfLists;
     }
+
+    private static String buildFactory(String comSSH) {
+        SSHFactory build = new SSHFactory.Builder(ConstantsFor.SRV_NAT, comSSH).build();
+        return build.call();
+    }
+
+    private void getInfoFromSSH() {
+        pfLists.setStdSquid(buildFactory("sudo cat /etc/pf/vipnet"));
+    }
+
 }

@@ -1,11 +1,13 @@
 package ru.vachok.networker.logic;
 
 
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.EMailAndDB.SpeedRunActualize;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.config.AppComponents;
+import ru.vachok.networker.beans.AppComponents;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -18,7 +20,9 @@ import java.util.concurrent.TimeUnit;
 
 /**
  @since 22.08.2018 (9:36) */
-public class SpeedChecker extends Thread {
+@Component
+@Scope("prototype")
+public class SpeedChecker implements Runnable {
 
     private static final DataConnectTo DATA_CONNECT_TO = new RegRuMysql();
 
@@ -36,7 +40,6 @@ public class SpeedChecker extends Thread {
      */
     @Override
     public void run() {
-        speedRun();
         chkForLast();
     }
 

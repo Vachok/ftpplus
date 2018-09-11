@@ -10,7 +10,7 @@ import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.FileMessenger;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.config.AppComponents;
+import ru.vachok.networker.beans.AppComponents;
 import ru.vachok.networker.logic.StringFromArr;
 
 import java.io.IOException;

@@ -4,7 +4,7 @@ package ru.vachok.networker;
 import org.slf4j.Logger;
 import org.thymeleaf.util.CharArrayWrapperSequence;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.config.AppComponents;
+import ru.vachok.networker.beans.AppComponents;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  @since 07.09.2018 (0:12) */
-public class FileMessenger extends Thread implements MessageToUser {
+public class FileMessenger implements MessageToUser {
 
     /*Fields*/
 

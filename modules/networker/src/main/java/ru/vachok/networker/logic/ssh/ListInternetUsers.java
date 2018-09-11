@@ -36,17 +36,18 @@ public class ListInternetUsers implements Callable<Map<String, String>> {
     @Override
     public Map<String, String> call() {
         synchronized(SSH_OUT) {
-            Map<String, String> returmCommandResult = new ConcurrentHashMap<>();
-            List<String> commandsSSH = getCommand();
+            Map<String, String> returnCommandResult = new ConcurrentHashMap<>();
+            List<String> commandsSSH = getCommands();
             for(String commandSSH : commandsSSH){
                 SSHFactory build = new SSHFactory.Builder(ConstantsFor.SRV_NAT, commandSSH).build();
                 String s = build.call();
-                returmCommandResult.put(commandSSH, s);
+                returnCommandResult.put(commandSSH, s);
             }
-            return returmCommandResult;
+            return returnCommandResult;
         }
     }
-    public List<String> getCommand() {
+
+    public List<String> getCommands() {
         List<String> comSSH = new ArrayList<>();
         String catSquid = "cat /etc/pf/squid";
         String catAllowIP = "cat /etc/pf/allowip";

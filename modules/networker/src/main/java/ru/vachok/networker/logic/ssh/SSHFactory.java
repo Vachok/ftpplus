@@ -9,7 +9,7 @@ import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.config.AppComponents;
+import ru.vachok.networker.beans.AppComponents;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -59,21 +59,20 @@ public class SSHFactory implements Callable<String> {
 
     @Override
     public String call() {
-        String retString = this.getCommandSSH() + " " + this.pem();
         try(InputStream connect = connect()){
-            retString = retString + " connect = " + connect().available();
-            byte[] bytes = new byte[ConstantsFor.MBYTE];
+            StringBuilder stringBuilder = new StringBuilder();
             while(connect.available() > 0){
+                byte[] bytes = new byte[connect.read()];
                 int r = connect.read(bytes);
-                messageToUser.infoNoTitles("r = " + r);
+                messageToUser.infoNoTitles("readed " + r + " bytes");
+                stringBuilder.append(new String(bytes, StandardCharsets.UTF_8));
             }
-            retString = retString + " " + new String(bytes, StandardCharsets.UTF_8);
+            return stringBuilder.toString();
         }
         catch(IOException | JSchException e){
             messageToUser.errorAlert(SOURCE_CLASS, " Exception id 123", e.getMessage() + "\n" + Arrays.toString(e.getStackTrace()));
             return e.getMessage();
         }
-        return retString;
     }
 
     /**

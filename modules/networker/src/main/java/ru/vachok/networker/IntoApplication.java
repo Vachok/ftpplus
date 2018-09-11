@@ -9,14 +9,10 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.scheduling.annotation.EnableScheduling;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
-import ru.vachok.networker.beans.PfLists;
-import ru.vachok.networker.config.AppComponents;
+import ru.vachok.networker.beans.AppComponents;
 import ru.vachok.networker.logic.StringFromArr;
-import ru.vachok.networker.services.PfListsSrv;
 
 import javax.servlet.http.HttpServletRequest;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -56,24 +52,7 @@ public class IntoApplication {
     private static void infoForU() {
         float hours = TimeUnit.MILLISECONDS.toHours(System.currentTimeMillis() - ConstantsFor.START_STAMP);
         DB_MSG.info(IntoApplication.class.getSimpleName(), "INFO", +hours + " h\n" + "Started at " +
-            new Date(ConstantsFor.START_STAMP).toString() + "\n" +
-            myInetAddr());
-        String msg = myInetAddr() + ":8880" + " " + "http://localhost:8880";
-        LOGGER.info(msg);
-        PfListsSrv.speedAct();
-        Thread thread = new PfLists();
-        thread.start();
-        String s = thread.toString() + thread.hashCode();
-        LOGGER.info(s);
-    }
-
-    private static String myInetAddr() {
-        try {
-            return InetAddress.getLocalHost().getCanonicalHostName() + " \nIP: http://" + InetAddress.getLocalHost().getHostAddress();
-        } catch (UnknownHostException e) {
-            DB_MSG.errorAlert(SOURCE_CLASS, "Inet Address", new StringFromArr().fromArr(e.getStackTrace()));
-        }
-        throw new UnsupportedOperationException();
+            new Date(ConstantsFor.START_STAMP).toString() + "\n" + ConstantsFor.THIS_PC_NAME);
     }
 
     public static boolean dataSender(HttpServletRequest request, String srcClass) {

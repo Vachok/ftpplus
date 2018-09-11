@@ -1,6 +1,8 @@
 package ru.vachok.networker;
 
 
+import ru.vachok.networker.services.AsyncService;
+
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.net.InetAddress;
@@ -9,16 +11,17 @@ import java.util.Random;
 
 
 /**
- @since 12.08.2018 (16:26) */
+ * @since 12.08.2018 (16:26)
+ */
 public enum ConstantsFor {
     ;
 
     /**
-     <b>1 мегабайт в байтах</b>
+     * <b>1 мегабайт в байтах</b>
      */
     public static final int MBYTE = 1024 * 1024;
 
-    public static final String no0027EatmeatRu = "10.200.213.85";
+    public static final String NO0027_EATMEAT_RU = "10.200.213.85";
 
     public static final String DB_PREFIX = "u0466446_";
 
@@ -53,6 +56,8 @@ public enum ConstantsFor {
     public static final String THIS_PC_NAME = thisPC();
 
     public static long KBYTE = 1024;
+
+    public static AsyncService asyncService = new AsyncService();
 
     /*PS Methods*/
     public static String getUserPC(HttpServletRequest request) {
