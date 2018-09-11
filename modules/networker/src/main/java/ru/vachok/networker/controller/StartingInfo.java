@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.beans.AppComponents;
 import ru.vachok.networker.beans.PfLists;
-import ru.vachok.networker.config.AppComponents;
 import ru.vachok.networker.services.DataBases;
 import ru.vachok.networker.services.Matrix;
 
@@ -68,7 +68,7 @@ public class StartingInfo {
     }
 
     private Model lastLogsGetter(Model model) {
-        Map<String, String> vachokEthosdistro = dataBases.getLastLogs("vachokEthosdistro");
+        Map<String, String> vachokEthosdistro = dataBases.getLastLogs("ru_vachok_ethosdistro");
         String logsFromDB = new TForms().fromArray(vachokEthosdistro);
         model.addAttribute("logdb", logsFromDB);
         model.addAttribute("starttime", new Date(ConstantsFor.START_STAMP));

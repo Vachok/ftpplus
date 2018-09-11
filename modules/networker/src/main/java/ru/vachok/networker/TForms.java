@@ -4,7 +4,7 @@ package ru.vachok.networker;
 import org.slf4j.Logger;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
-import ru.vachok.networker.config.AppComponents;
+import ru.vachok.networker.beans.AppComponents;
 
 import java.io.File;
 import java.util.*;
@@ -71,5 +71,12 @@ public class TForms {
         });
         brStringBuilder.append("</p>");
         return brStringBuilder.toString();
+    }
+
+    public String stringObjectMapParser(Map<String, Object> stringObjectMap) {
+        stringObjectMap.forEach((x, y) -> {
+            nStingBuilder.append(x).append("  ").append(y.toString()).append("\n");
+        });
+        return nStingBuilder.toString();
     }
 }

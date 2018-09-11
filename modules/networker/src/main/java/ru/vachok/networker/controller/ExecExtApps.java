@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import ru.vachok.mysqlandprops.EMailAndDB.MailMessages;
-import ru.vachok.networker.config.AppComponents;
+import ru.vachok.networker.beans.AppComponents;
 import ru.vachok.networker.logic.PhotoConverter;
 
 import javax.mail.Flags;

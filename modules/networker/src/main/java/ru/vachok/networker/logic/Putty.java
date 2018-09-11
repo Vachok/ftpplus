@@ -5,7 +5,7 @@ import org.slf4j.Logger;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.DBMessenger;
-import ru.vachok.networker.config.AppComponents;
+import ru.vachok.networker.beans.AppComponents;
 
 import java.io.File;
 import java.io.FileOutputStream;

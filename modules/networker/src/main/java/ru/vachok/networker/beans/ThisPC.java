@@ -2,7 +2,6 @@ package ru.vachok.networker.beans;
 
 
 import org.slf4j.Logger;
-import ru.vachok.networker.config.AppComponents;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;

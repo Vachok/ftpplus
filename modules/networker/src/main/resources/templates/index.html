@@ -8,26 +8,17 @@
 <body>
 <a href="/">Главная</a> | <a href="/netscan">Скан ПК</a> | <a href="/?eth">Логи в БД</a>
 <p>
-    <textarea name="SQUID STANDARD: " rows="10" cols="10" th:text="${squid}"/>
-    <textarea name="SQUID LIMITED: " rows="10" cols="10" th:text="${squidlimited}"/>
-    <textarea name="SQUID FULL: " rows="10" cols="10" th:text="${tempfull}"/>
-    <textarea name="VIPNET: " rows="10" cols="10" th:text="${vipnet}"/>
-</p>
-<p>
-<h5>Разрешенные элементы. Не Юзеры</h5><br>
-<h6>Домены</h6><br>
-<textarea name="Allowed domains: " rows="10" cols="10" th:text="${allowdomain}"/>
-<h6>Сайты, с вхождением URL</h6><br>
-<textarea name="Allowed URLs: " rows="10" cols="10" th:text="${allowurl}"/>
-<h6>IP-адреса сайтов</h6><br>
-<textarea name="Allowed IP for ALL: " rows="10" cols="10" th:text="${allowip}"/>
+    <main th:text="${constfor}"/>
+    <br>
+
+
 </body>
-<footer>
     <p>
         <a href="/netscan?do">Scan DO ) | </a><a href="/netscan?a">Scan A )</a>
         <a href="/netscan?pp">Scan PP) | </a><a href="/netscan?td">Scan TD )</a>
         <a href="/netscan?no">Scan NO )</a>
     </p>
     <a href="http://velkomnet">Velkomnet )</a>
+
 </footer>
 </html>

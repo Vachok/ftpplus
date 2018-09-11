@@ -2,7 +2,7 @@ package ru.vachok.networker;
 
 
 import org.slf4j.Logger;
-import ru.vachok.networker.config.AppComponents;
+import ru.vachok.networker.beans.AppComponents;
 
 import java.io.FileWriter;
 import java.io.IOException;

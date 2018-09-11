@@ -9,18 +9,12 @@ import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.config.AppComponents;
+import ru.vachok.networker.beans.AppComponents;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.*;
 
 
@@ -36,9 +30,9 @@ public class SSHFactory implements Callable<String> {
 
     private static final String SOURCE_CLASS = SSHFactory.class.getSimpleName();
 
-    private static InitProperties initProperties = new DBRegProperties("general-jsch");
-
     private static MessageToUser messageToUser = new MessageCons();
+
+    private InitProperties initProperties = new DBRegProperties("general-jsch");
 
     private String connectToSrv;
 
@@ -48,32 +42,20 @@ public class SSHFactory implements Callable<String> {
 
     private String userName;
 
-    /*Instances*/
-    private SSHFactory(Builder builder) {
-        this.connectToSrv = builder.connectToSrv;
-        this.commandSSH = builder.commandSSH;
-        this.sessionType = builder.sessionType;
-        this.userName = builder.userName;
-        String pass = builder.pass;
+    public String getSessionType() {
+        return sessionType;
     }
 
-    @Override
-    public String call() {
-        String retString = this.getCommandSSH() + " " + this.pem();
-        try(InputStream connect = connect()){
-            retString = retString + " connect = " + connect().available();
-            byte[] bytes = new byte[ConstantsFor.MBYTE];
-            while(connect.available() > 0){
-                int r = connect.read(bytes);
-                messageToUser.infoNoTitles("r = " + r);
-            }
-            retString = retString + " " + new String(bytes, StandardCharsets.UTF_8);
-        }
-        catch(IOException | JSchException e){
-            messageToUser.errorAlert(SOURCE_CLASS, " Exception id 123", e.getMessage() + "\n" + Arrays.toString(e.getStackTrace()));
-            return e.getMessage();
-        }
-        return retString;
+    public void setSessionType(String sessionType) {
+        this.sessionType = sessionType;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 
     /**
@@ -85,11 +67,11 @@ public class SSHFactory implements Callable<String> {
         return commandSSH;
     }
 
-    private String pem() {
-        File pemFile = new File("a161.pem");
-        return pemFile.getAbsolutePath();
+    public void setCommandSSH(String commandSSH) {
+        this.commandSSH = commandSSH;
     }
 
+    /*Instances*/
     private InputStream connect() throws IOException, JSchException {
         Channel channel = chanRespChannel();
         InputStream inputStream = null;
@@ -101,7 +83,7 @@ public class SSHFactory implements Callable<String> {
             inputStream = channel.getInputStream();
         }
 
-        ((ChannelExec) Objects.requireNonNull(channel)).setErrStream(new FileOutputStream(ConstantsFor.SSH_ERR));
+        (( ChannelExec ) Objects.requireNonNull(channel)).setErrStream(new FileOutputStream(ConstantsFor.SSH_ERR));
 
         byte[] bytes = new byte[ConstantsFor.MBYTE];
         while(inputStream.available() > 0){
@@ -119,9 +101,10 @@ public class SSHFactory implements Callable<String> {
         JSch jSch = new JSch();
         Session session = jSch.getSession(userName, getConnectToSrv());
         Properties properties;
-        try {
+        try{
             properties = initProperties.getProps();
-        } catch (Exception e) {
+        }
+        catch(Exception e){
             LOGGER.error(e.getMessage(), e);
             initProperties = new FileProps(SOURCE_CLASS);
             properties = initProperties.getProps();
@@ -137,12 +120,46 @@ public class SSHFactory implements Callable<String> {
         (( ChannelExec ) channel).setCommand(commandSSH);
         channel.connect();
         Objects.requireNonNull(channel);
-        initProperties.setProps(properties);
         return channel;
     }
 
-    private String getConnectToSrv() {
+    private SSHFactory(Builder builder) {
+        this.connectToSrv = builder.connectToSrv;
+        this.commandSSH = builder.commandSSH;
+        this.sessionType = builder.sessionType;
+        this.userName = builder.userName;
+        String pass = builder.pass;
+    }
+
+    @Override
+    public String call() {
+        String retString = this.getCommandSSH() + " " + this.pem();
+        try(InputStream connect = connect()){
+            retString = retString + " connect = " + connect().available();
+            byte[] bytes = new byte[ConstantsFor.MBYTE];
+            while(connect.available() > 0){
+                int r = connect.read(bytes);
+                messageToUser.infoNoTitles("connect read bytes = " + r);
+            }
+            retString = retString + " " + new String(bytes, StandardCharsets.UTF_8);
+        }
+        catch(IOException | JSchException e){
+            messageToUser.errorAlert(SOURCE_CLASS, " Exception id 123", e.getMessage() + "\n" + Arrays.toString(e.getStackTrace()));
+            return e.getMessage();
+        }
+        return retString;
+    }
+    public String getConnectToSrv() {
         return connectToSrv;
+    }
+
+    public void setConnectToSrv(String connectToSrv) {
+        this.connectToSrv = connectToSrv;
+    }
+
+    private String pem() {
+        File pemFile = new File("a161.pem");
+        return pemFile.getAbsolutePath();
     }
 
     /*END FOR CLASS*/
@@ -247,17 +264,14 @@ public class SSHFactory implements Callable<String> {
             return this;
         }
 
+        /*Instances*/
         @Override
         public Map<String, Boolean> call() throws ExecutionException, InterruptedException {
             Map<String, Boolean> myHashMap = new ConcurrentHashMap<>();
-            Callable<String> callFactory = new SSHFactory(this);
-            Future<String> b = EXECUTOR_SERVICE.submit(callFactory);
-            myHashMap.put(getCommandSSH(), b.get().equalsIgnoreCase("true"));
+            String b = new SSHFactory(this).call();
+            myHashMap.put(getCommandSSH(), b.equalsIgnoreCase("true"));
             return myHashMap;
         }
-
-        /*Instances*/
-
         /**
          Instantiates a new Builder.
 
@@ -282,6 +296,7 @@ public class SSHFactory implements Callable<String> {
         public synchronized SSHFactory build() {
             return new SSHFactory(this);
         }
+
 
         /**
          Gets command ssh.

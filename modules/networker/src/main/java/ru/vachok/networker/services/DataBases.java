@@ -5,7 +5,7 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.RegRuMysql;
-import ru.vachok.networker.config.AppComponents;
+import ru.vachok.networker.beans.AppComponents;
 
 import java.sql.*;
 import java.util.Map;

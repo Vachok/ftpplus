@@ -58,7 +58,7 @@ public class ErrControl implements ErrorController {
         String q = httpServletRequest.getQueryString();
         String userIp = httpServletRequest.getRemoteAddr();
         if ((
-            userIp.contains(ConstantsFor.no0027EatmeatRu) ||
+            userIp.contains(ConstantsFor.NO0027_EATMEAT_RU) ||
                 userIp.contains("10.10.111") ||
                 userIp.contains("172.26.43") ||
                 userIp.contains("0:0:0:0:0"))) {

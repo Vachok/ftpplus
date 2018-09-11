@@ -1,104 +1,98 @@
 package ru.vachok.networker.beans;
 
 
-import org.slf4j.Logger;
-import ru.vachok.networker.config.AppComponents;
-import ru.vachok.networker.logic.ssh.ListInternetUsers;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
-import java.util.Map;
 
 /**
  * @since 10.09.2018 (11:35)
  */
-public class PfLists extends Thread {
-
-    private static Logger logger = AppComponents.getLogger();
-
-    private String vipNet;
-
-    private String stdSquid;
-
-    private String limitSquid;
-
-    private String fullSquid;
-
-    private String allowDomain;
-
-    private Map<String, String> listUsers = new ListInternetUsers().call();
-
-    private String allowURL;
+@Component
+@Scope ("singleton")
+public class PfLists {
 
     public String getVipNet() {
         return vipNet;
     }
 
-    public void setVipNet() {
-        this.vipNet = listUsers.get("cat /etc/pf/vipnet");
-        logger.info(vipNet);
-    }
+    private String vipNet;
 
     public String getStdSquid() {
         return stdSquid;
     }
 
-    public void setStdSquid() {
-        this.stdSquid = listUsers.get("cat /etc/pf/squid");
-        logger.info(stdSquid);
-    }
+    private String stdSquid;
 
     public String getLimitSquid() {
         return limitSquid;
     }
 
-    public void setLimitSquid() {
-        this.limitSquid = listUsers.get("cat /etc/pf/squidlimited");
-        logger.info(limitSquid);
-    }
+    private String limitSquid;
 
     public String getFullSquid() {
         return fullSquid;
     }
 
-    public void setFullSquid() {
-        this.fullSquid = listUsers.get("cat /etc/pf/tempfull");
-        logger.info(fullSquid);
+    private String fullSquid;
+
+    private String pfRules;
+
+    private String pfNat;
+
+    private String uName;
+
+    /*Get&Set*/
+    public void setuName(String uName) {
+        this.uName = uName;
     }
 
-    public String getAllowDomain() {
-        return allowDomain;
+    public String getPfRules() {
+        return pfRules;
     }
 
-    public void setAllowDomain() {
-        this.allowURL = listUsers.get("cat /etc/pf/allowurl");
+    public void setPfRules(String pfRules) {
+        this.pfRules = pfRules;
     }
 
-    public String getAllowURL() {
-        return allowURL;
+    public String getUname() {
+        return uName;
     }
 
-    public void setAllowURL() {
-        this.allowDomain = listUsers.get("cat /etc/pf/allowdomain");
-        logger.info(allowDomain);
+    public String getPfNat() {
+        return pfNat;
+    }
+
+    public void setVipNet(String vipNet) {
+        this.vipNet = vipNet;
+    }
+
+    public void setStdSquid(String stdSquid) {
+        this.stdSquid = stdSquid;
+    }
+
+    public void setLimitSquid(String limitSquid) {
+        this.limitSquid = limitSquid;
+    }
+
+    public void setFullSquid(String fullSquid) {
+        this.fullSquid = fullSquid;
+    }
+
+    public void setPfNat(String pfNat) {
+        this.pfNat = pfNat;
     }
 
     @Override
     public String toString() {
         return "PfLists{" +
-            "vipNet='" + vipNet + '\'' +
-            ", stdSquid='" + stdSquid + '\'' +
+            "fullSquid='" + fullSquid + '\'' +
             ", limitSquid='" + limitSquid + '\'' +
-            ", fullSquid='" + fullSquid + '\'' +
-            ", allowDomain='" + allowDomain + '\'' +
-            ", allowURL='" + allowURL + '\'' +
+            ", pfNat='" + pfNat + '\'' +
+            ", pfRules='" + pfRules + '\'' +
+            ", stdSquid='" + stdSquid + '\'' +
+            ", uName='" + uName + '\'' +
+            ", vipNet='" + vipNet + '\'' +
             '}';
-    }
-
-    @Override
-    public void run() {
-        setLimitSquid();
-        setFullSquid();
-        setStdSquid();
-        setAllowURL();
-        setVipNet();
     }
 }

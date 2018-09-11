@@ -10,7 +10,7 @@ import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.FileMessenger;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.config.AppComponents;
+import ru.vachok.networker.beans.AppComponents;
 import ru.vachok.networker.logic.StringFromArr;
 
 import java.io.IOException;
@@ -19,10 +19,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 
@@ -237,6 +234,7 @@ public class NetScannerSvc {
         if(qer.equals("td")){
             inDex = ConstantsFor.TDPC;
         }
+        new PfListsSrv().buildFactory();
         return inDex;
     }
 }
