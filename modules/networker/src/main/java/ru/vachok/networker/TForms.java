@@ -4,7 +4,7 @@ package ru.vachok.networker;
 import org.slf4j.Logger;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
-import ru.vachok.networker.beans.AppComponents;
+import ru.vachok.networker.componentsrepo.AppComponents;
 
 import java.io.File;
 import java.util.*;
@@ -57,7 +57,8 @@ public class TForms {
         initProperties.setProps(properties);
         nStingBuilder.append("\n");
         properties.forEach((x, y) -> {
-            LOGGER.info(x + " : " + y);
+            String msg = x + " : " + y;
+            LOGGER.info(msg);
             nStingBuilder.append(x).append(" :: ").append(y).append("\n");
         });
         return nStingBuilder.toString();
@@ -66,8 +67,13 @@ public class TForms {
     public String fromStringBoolean(Map<String, Boolean> call) {
         brStringBuilder.append("<p>");
         call.forEach((x, y) -> {
-            LOGGER.info(x + y);
-            brStringBuilder.append(x).append(" - ").append(y).append("<br>");
+            String msg = x + y;
+            LOGGER.info(msg);
+            brStringBuilder
+                .append(x)
+                .append(" - ")
+                .append(y)
+                .append("<br>");
         });
         brStringBuilder.append("</p>");
         return brStringBuilder.toString();
@@ -77,6 +83,22 @@ public class TForms {
         stringObjectMap.forEach((x, y) -> {
             nStingBuilder.append(x).append("  ").append(y.toString()).append("\n");
         });
+        return nStingBuilder.toString();
+    }
+
+    public String fromArray(StackTraceElement[] stackTrace) {
+        for (StackTraceElement stackTraceElement : stackTrace) {
+            nStingBuilder
+                .append("At ")
+                .append(stackTraceElement
+                    .getClassName())
+                .append(" line, class: ")
+                .append(stackTraceElement.getClassName())
+                .append(" occurred disaster!\n")
+                .append(stackTraceElement.getMethodName())
+                .append(" method.\nFile: ")
+                .append(stackTraceElement.getFileName());
+        }
         return nStingBuilder.toString();
     }
 }

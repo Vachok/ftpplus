@@ -7,7 +7,7 @@ import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.EMailAndDB.SpeedRunActualize;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.beans.AppComponents;
+import ru.vachok.networker.componentsrepo.AppComponents;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -29,11 +29,11 @@ public class SpeedChecker implements Runnable {
     /*Methods*/
     /**
      * When an object implementing interface <code>Runnable</code> is used
-     * to create a thread, StartingInfo the thread causes the object's
-     * <code>run</code> method to be called in that separately executing
+     * to create a thread, MatrixCtr the thread causes the object's
+     * <code>dnldRSA</code> method to be called in that separately executing
      * thread.
      * <p>
-     * The general contract of the method <code>run</code> is that it may
+     * The general contract of the method <code>dnldRSA</code> is that it may
      * take any action whatsoever.
      *
      * @see Thread#run()
@@ -63,5 +63,4 @@ public class SpeedChecker implements Runnable {
             AppComponents.getLogger().error(e.getMessage(), e);
         }
     }
-
 }

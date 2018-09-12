@@ -9,13 +9,22 @@ import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.beans.AppComponents;
+import ru.vachok.networker.componentsrepo.AppComponents;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 
 /**
@@ -266,7 +275,7 @@ public class SSHFactory implements Callable<String> {
 
         /*Instances*/
         @Override
-        public Map<String, Boolean> call() throws ExecutionException, InterruptedException {
+        public Map<String, Boolean> call() {
             Map<String, Boolean> myHashMap = new ConcurrentHashMap<>();
             String b = new SSHFactory(this).call();
             myHashMap.put(getCommandSSH(), b.equalsIgnoreCase("true"));

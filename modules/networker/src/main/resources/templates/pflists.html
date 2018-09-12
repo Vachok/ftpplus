@@ -6,19 +6,26 @@
     <link rel="stylesheet" type="text/css" media="all" href="css/main.css" th:href="@{css/main.css}"/>
 </head>
 <body>
-<a href="/">Главная</a> | <a href="/netscan">Скан ПК</a> | <a href="/?eth">Логи в БД</a>
+<a href="/">Главная</a> | <a href="/pflists?renew">Обновление списков</a>
 <p>
-    <textarea name="SQUID STANDARD: " rows="10" cols="10" th:text="${squid}"/>
-    <textarea name="SQUID LIMITED: " rows="10" cols="10" th:text="${squidlimited}"/>
-    <textarea name="SQUID FULL: " rows="10" cols="10" th:text="${tempfull}"/>
-    <textarea name="VIPNET: " rows="10" cols="10" th:text="${vipnet}"/>
+<h4>Обычный доступ</h4>
+<textarea name="SQUID STANDARD: " rows="10" cols="10" th:text="${squid}"/><br>
+<h4>Лимитированный доступ</h4>
+<textarea name="SQUID LIMITED: " rows="10" cols="10" th:text="${squidlimited}"/><br>
+<h4>Полный доступ, через Squid</h4>
+<textarea name="SQUID FULL: " rows="10" cols="10" th:text="${tempfull}"/><br>
+<h4>Полный, прямой доступ</h4>
+<textarea name="VIPNET: " rows="10" cols="10" th:text="${vipnet}"/><br>
 </p>
 <p>
-<h4>NAT now</h4><br>
-<textarea name="pfctl -s nat: " rows="10" cols="10" th:text="${nat}"/>
-<h4>Выполняемые PF-правила</h4><br>
-<textarea name="pfctl -s rules: " rows="10" cols="10" th:text="${rules}"/>
-<h6>IP-адреса сайтов</h6><br>
-<textarea name="Allowed IP for ALL: " rows="10" cols="10" th:text="${allowip}"/>
+<h4>NAT now</h4>
+<textarea name="pfctl -s nat: " rows="10" cols="10" th:text="${nat}"/><br>
+<h4>Выполняемые PF-правила</h4>
+<textarea name="pfctl -s rules: " rows="10" cols="10" th:text="${rules}"/><br>
+<h4>IP-адреса сайтов</h4>
+<textarea name="Allowed IP for ALL: " rows="10" cols="10" th:text="${gitstats}"/><br>
 </body>
+<footer>
+    | <a href="/?eth">Логи в БД</a>
+</footer>
 </html>

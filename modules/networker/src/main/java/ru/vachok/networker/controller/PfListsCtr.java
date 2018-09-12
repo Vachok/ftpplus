@@ -9,10 +9,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.DBMessenger;
-import ru.vachok.networker.beans.AppComponents;
-import ru.vachok.networker.beans.PfLists;
-import ru.vachok.networker.config.AppCtx;
+import ru.vachok.networker.IntoApplication;
+import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.componentsrepo.PfLists;
+import ru.vachok.networker.logic.DBMessenger;
 import ru.vachok.networker.services.PfListsSrv;
 
 import javax.servlet.http.HttpServletRequest;
@@ -20,26 +20,25 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Map;
-import java.util.Random;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 /**
  The type Index controller.
  */
 @Controller
-public class IndexController {
+public class PfListsCtr {
 
     /*Fields*/
     private static final Map<String, String> SHOW_ME = new ConcurrentHashMap<>();
 
-    private static final String SOURCE_CLASS = IndexController.class.getName();
+    private static final String SOURCE_CLASS = PfListsCtr.class.getName();
 
     private static Logger logger = AppComponents.getLogger();
 
     private MessageToUser messageToUser = new DBMessenger();
 
-    private ApplicationContext appCtx = AppCtx.scanForBeansAndRefreshContext();
+    private ApplicationContext appCtx = IntoApplication.getAppCtx();
 
     /**
      Map to show map.
@@ -68,35 +67,19 @@ public class IndexController {
 
     @GetMapping ("/pflists")
     public String pfBean(Model model, HttpServletRequest request, HttpServletResponse response) {
-        scheduleAns();
         PfLists pfLists = appCtx.getBean(PfLists.class);
         model.addAttribute("pfLists", pfLists);
         model.addAttribute("metric", PfListsSrv
-            .getEndDate() + " renew| " + pfLists.getUname().split("FreeBSD")[1]);
+            .getEndDate() + " renew| ");
         model.addAttribute("vipnet", pfLists.getVipNet());
         model.addAttribute("tempfull", pfLists.getFullSquid());
         model.addAttribute("squidlimited", pfLists.getLimitSquid());
         model.addAttribute("squid", pfLists.getStdSquid());
         model.addAttribute("nat", pfLists.getPfNat());
         model.addAttribute("rules", pfLists.getPfRules());
+        model.addAttribute("gitstats", pfLists.getGitStats());
+        if (request.getQueryString() != null) new PfListsSrv();
         return "pflists";
-    }
-
-    private void scheduleAns() {
-        ScheduledExecutorService executorService =
-            Executors.unconfigurableScheduledExecutorService(Executors.newSingleThreadScheduledExecutor());
-        Runnable runnable = () -> {
-            MessageToUser m = new DBMessenger();
-            float upTime = ( float ) (System.currentTimeMillis() - ConstantsFor.START_STAMP) /
-                TimeUnit.DAYS.toMillis(1);
-            m.info(SOURCE_CLASS, "UPTIME", upTime + " days");
-            new PfListsSrv().buildFactory();
-        };
-        int delay = new Random().nextInt(( int ) TimeUnit.MINUTES.toSeconds(17) / 3);
-        int init = new Random().nextInt(( int ) TimeUnit.MINUTES.toSeconds(20));
-        executorService.scheduleWithFixedDelay(runnable, init, delay, TimeUnit.MINUTES);
-        String msg = runnable + " " + init + " init ," + delay + " delay";
-        logger.info(msg);
     }
 
     private String getAttr(HttpServletRequest request) {

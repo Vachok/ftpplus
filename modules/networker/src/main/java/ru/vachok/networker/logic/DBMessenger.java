@@ -1,10 +1,11 @@
-package ru.vachok.networker;
+package ru.vachok.networker.logic;
 
 
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.RegRuMysql;
-import ru.vachok.networker.beans.AppComponents;
+import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.componentsrepo.AppComponents;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

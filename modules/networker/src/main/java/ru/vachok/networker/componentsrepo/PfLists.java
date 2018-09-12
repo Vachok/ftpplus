@@ -1,4 +1,4 @@
-package ru.vachok.networker.beans;
+package ru.vachok.networker.componentsrepo;
 
 
 import org.springframework.context.annotation.Scope;
@@ -39,6 +39,16 @@ public class PfLists {
     private String pfRules;
 
     private String pfNat;
+
+    private String gitStats;
+
+    public String getGitStats() {
+        return gitStats;
+    }
+
+    public void setGitStats(String gitStats) {
+        this.gitStats = gitStats;
+    }
 
     private String uName;
 

@@ -1,7 +1,7 @@
 package ru.vachok.networker.logic;
 
 
-import ru.vachok.networker.beans.AppComponents;
+import ru.vachok.networker.componentsrepo.AppComponents;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;

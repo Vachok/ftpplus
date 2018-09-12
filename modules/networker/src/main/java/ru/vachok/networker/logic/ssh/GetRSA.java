@@ -3,7 +3,7 @@ package ru.vachok.networker.logic.ssh;
 
 import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.RegRuMysql;
-import ru.vachok.networker.beans.AppComponents;
+import ru.vachok.networker.componentsrepo.AppComponents;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,13 +15,12 @@ import java.sql.SQLException;
 
 /**
  @since 22.08.2018 (12:33) */
-public class GetRSA implements Runnable {
+public class GetRSA {
 
-    /*Methods*/
-    @Override
-    public void run() {
+
+    public void dnldRSA() {
         DataConnectTo dataConnectTo = new RegRuMysql();
-        String sql = "select * from sshid where pc is like 'no00%'";
+        String sql = "select * from sshid where pc like 'no00%'";
         try(Connection c = dataConnectTo.getDefaultConnection("u0466446_liferpg");
             PreparedStatement p = c.prepareStatement(sql);
             ResultSet r = p.executeQuery()){

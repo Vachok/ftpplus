@@ -10,17 +10,18 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.scheduling.annotation.EnableScheduling;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
-import ru.vachok.networker.beans.AppComponents;
-import ru.vachok.networker.config.AppCtx;
-import ru.vachok.networker.logic.StringFromArr;
+import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.logic.DBMessenger;
+import ru.vachok.networker.services.PfListsSrv;
 
 import javax.servlet.http.HttpServletRequest;
-import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.Date;
+import java.util.Random;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 
@@ -59,12 +60,10 @@ public class IntoApplication {
     }
 
     private static void infoForU(ApplicationContext appCtx) {
-        float hours = TimeUnit.MILLISECONDS.toHours(System.currentTimeMillis() - ConstantsFor.START_STAMP);
-        String s2 = +hours + " h\n" + "Started at " +
-            new Date(ConstantsFor.START_STAMP).toString() + "\n" + ConstantsFor.THIS_PC_NAME;
-        DB_MSG.info(SOURCE_CLASS, "INFO", s2);
-        String msg = new Date(appCtx.getStartupDate()) + new String(" Я РОДИЛСЯ".getBytes(), StandardCharsets.UTF_8);
+        scheduleAns();
+        String msg = appCtx.getApplicationName() + " app name" + appCtx.getDisplayName() + " app display name\n";
         LOGGER.info(msg);
+
     }
 
     public static boolean dataSender(HttpServletRequest request, String srcClass) {
@@ -81,8 +80,26 @@ public class IntoApplication {
             return true;
         }
         catch(SQLException e){
-            DB_MSG.errorAlert(IntoApplication.class.getSimpleName(), e.getMessage(), new StringFromArr().fromArr(e.getStackTrace()));
+            DB_MSG.errorAlert(IntoApplication.class.getSimpleName(), e.getMessage(), new TForms().fromArray(e.getStackTrace()));
             return false;
         }
     }
+
+    public static void scheduleAns() {
+        ScheduledExecutorService executorService =
+            Executors.unconfigurableScheduledExecutorService(Executors.newSingleThreadScheduledExecutor());
+        Runnable runnable = () -> {
+            float upTime = (float) (System.currentTimeMillis() - ConstantsFor.START_STAMP) /
+                TimeUnit.DAYS.toMillis(1);
+            new PfListsSrv();
+            String msg = upTime + " uptime days";
+            LOGGER.info(msg);
+        };
+        int delay = new Random().nextInt((int) TimeUnit.MINUTES.toSeconds(17) / 3);
+        int init = new Random().nextInt((int) TimeUnit.MINUTES.toSeconds(20));
+        executorService.scheduleWithFixedDelay(runnable, init, delay, TimeUnit.SECONDS);
+        String msg = executorService.toString() + " " + init + " init ," + delay + " delay";
+        LOGGER.info(msg);
+    }
+
 }

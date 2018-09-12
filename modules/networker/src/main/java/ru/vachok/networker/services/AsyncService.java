@@ -8,5 +8,4 @@ import org.springframework.stereotype.Service;
  */
 @Service("asyncservice")
 public class AsyncService {
-
 }

@@ -6,8 +6,8 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.stereotype.Service;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.IntoApplication;
-import ru.vachok.networker.beans.AppComponents;
-import ru.vachok.networker.beans.PfLists;
+import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.componentsrepo.PfLists;
 import ru.vachok.networker.logic.ssh.SSHFactory;
 
 import java.util.Date;
@@ -25,6 +25,7 @@ public class PfListsSrv {
     private static float buildFactoryMetrics;
 
     private static AnnotationConfigApplicationContext ctx = IntoApplication.getAppCtx();
+
     private static final Logger LOGGER = AppComponents.getLogger();
 
     private static Date endDate;
@@ -42,7 +43,7 @@ public class PfListsSrv {
         buildFactory();
     }
 
-    public void buildFactory() {
+    public static void buildFactory() {
         long startMeth = System.currentTimeMillis();
         PfLists pfLists = ctx.getBean(PfLists.class);
 
@@ -66,9 +67,12 @@ public class PfListsSrv {
 
         build.setCommandSSH("pfctl -s rules");
         pfLists.setPfRules(build.call());
+
+        SSHFactory buildGit = new SSHFactory.Builder(ConstantsFor.SRV_GIT, "sudo /etc/stat.script").build();
         long endMeth = System.currentTimeMillis();
+        pfLists.setGitStats(buildGit.call() + "\n" + new Date(endMeth) + " время обновления");
         endDate = new Date(endMeth);
-        buildFactoryMetrics = ( float ) (endMeth - startMeth) / 1000f / 60f;
+        buildFactoryMetrics = (float) (endMeth - startMeth) / 1000f / 60f;
         String msg = buildFactoryMetrics + " min elapsed";
         LOGGER.info(msg);
     }

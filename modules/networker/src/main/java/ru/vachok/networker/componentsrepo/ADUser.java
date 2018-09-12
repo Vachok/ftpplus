@@ -1,4 +1,4 @@
-package ru.vachok.networker.beans;
+package ru.vachok.networker.componentsrepo;
 
 
 import org.slf4j.Logger;

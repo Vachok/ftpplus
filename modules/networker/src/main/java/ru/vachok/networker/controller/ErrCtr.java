@@ -17,7 +17,7 @@ import java.nio.file.AccessDeniedException;
  * The type Err control.
  */
 @Controller
-public class ErrControl implements ErrorController {
+public class ErrCtr implements ErrorController {
 
     @Override
     public String getErrorPath() {

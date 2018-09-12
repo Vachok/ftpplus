@@ -2,81 +2,100 @@ package ru.vachok.networker.logic;
 
 
 import org.slf4j.Logger;
+import org.thymeleaf.util.CharArrayWrapperSequence;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.beans.AppComponents;
+import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.componentsrepo.AppComponents;
 
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 
 /**
- @since 29.08.2018 (22:22) */
+ @since 07.09.2018 (0:12) */
 public class FileMessenger implements MessageToUser {
+
+    /*Fields*/
+
+    private static final Logger LOGGER = AppComponents.getLogger();
 
     /**
      Simple Name класса, для поиска настроек
      */
     private static final String SOURCE_CLASS = FileMessenger.class.getSimpleName();
 
-    /**
-     {@link }
-     */
-    private static final Logger LOGGER = AppComponents.getLogger();
+    private static File logFile = new File((System.currentTimeMillis() - ConstantsFor.START_STAMP) +
+        ConstantsFor.THIS_PC_NAME + ".log");
 
-    private static final File log = new File("app.log");
-
-    static {
-        try{
-            if(log.createNewFile() && !log.exists()){
-                long lastMod = log.lastModified();
-                if((System.currentTimeMillis() - lastMod) > TimeUnit.DAYS.toMillis(1)){
-                    String msg = log.getAbsolutePath() + " is more then 1 day!";
-                    LOGGER.warn(msg);
-                }
-            }
-        }
-        catch(IOException e){
+    private static boolean writeLog(CharSequence charSequence) {
+        String msg = logFile.getAbsolutePath() +
+            " last mod: " +
+            new Date(logFile.lastModified()) +
+            " ; size = " +
+            logFile.getUsableSpace() / ConstantsFor.KBYTE + " kbytes";
+        try (FileWriter fileWriter = new FileWriter(logFile);
+             BufferedWriter bufferedWriter = new BufferedWriter(fileWriter)){
+            boolean newFile = logFile.createNewFile();
+            bufferedWriter.flush();
+            bufferedWriter.newLine();
+            bufferedWriter.append(charSequence);
+            bufferedWriter.flush();
+            boolean b = logFile.setLastModified(System.currentTimeMillis());
+            LOGGER.info(msg);
+        } catch(IOException e){
             LOGGER.error(e.getMessage(), e);
+        }
+        if (TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - logFile.lastModified()) <= 5) {
+            LOGGER.info(msg);
+            return true;
+        } else {
+            LOGGER.warn(msg);
+            return false;
         }
     }
 
     @Override
     public void errorAlert(String s, String s1, String s2) {
-        char[] toWrite = (s + " " + s1 + "\n" + s2).toCharArray();
-        try(FileWriter fileWriter = new FileWriter(log);
-            BufferedWriter bufferedWriter = new BufferedWriter(fileWriter)){
-            bufferedWriter.flush();
-            bufferedWriter.newLine();
-            for(char c : toWrite){
-                bufferedWriter.append(c);
-            }
-            bufferedWriter.flush();
-        }
-        catch(IOException e){
-            LOGGER.error(e.getMessage(), e);
-        }
+        CharSequence firstSeq = new CharArrayWrapperSequence((s + "\n").toCharArray());
+        CharSequence secondSeq = new CharArrayWrapperSequence((s1 + "\n").toCharArray());
+        CharSequence thirdSeq = new CharArrayWrapperSequence((s2 + "\n").toCharArray());
+        String msg = writeLog(firstSeq) + " s writer";
+        LOGGER.warn(msg);
+        String msg1 = writeLog(secondSeq) + " s1 writer";
+        LOGGER.warn(msg1);
+        String msg2 = writeLog(thirdSeq) + " s2 writer";
+        LOGGER.warn(msg2);
     }
 
     @Override
     public void info(String s, String s1, String s2) {
-        errorAlert(s, s1, s2);
+        CharSequence firstSeq = new CharArrayWrapperSequence((s + "\n").toCharArray());
+        CharSequence secondSeq = new CharArrayWrapperSequence((s1 + "\n").toCharArray());
+        CharSequence thirdSeq = new CharArrayWrapperSequence((s2 + "\n").toCharArray());
+        String msg = writeLog(firstSeq) + " s writer";
+        LOGGER.info(msg);
+        String msg1 = writeLog(secondSeq) + " s1 writer";
+        LOGGER.info(msg1);
+        String msg2 = writeLog(thirdSeq) + " s2 writer";
+        LOGGER.info(msg2);
     }
 
     @Override
     public void infoNoTitles(String s) {
-        errorAlert(SOURCE_CLASS, "INFO:", s);
+        info(SOURCE_CLASS, "INFO", s);
     }
 
     @Override
     public void infoTimer(int i, String s) {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("");
     }
 
     @Override
     public String confirm(String s, String s1, String s2) {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("07.09.2018 (0:12)");
     }
 }

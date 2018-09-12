@@ -37,6 +37,8 @@ public enum ConstantsFor {
 
     public static final int PPPC = 70;
 
+    public static final String SRV_GIT = "192.168.13.42";
+
     public static String consString() {
         return "ConstantsFor{" +
             "APC=" + APC +

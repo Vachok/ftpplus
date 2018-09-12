@@ -1,11 +1,11 @@
-package ru.vachok.networker.config;
+package ru.vachok.networker;
 
 
 import org.slf4j.Logger;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
-import ru.vachok.networker.beans.AppComponents;
+import ru.vachok.networker.componentsrepo.AppComponents;
 
 import java.util.concurrent.TimeUnit;
 
@@ -29,11 +29,11 @@ public class AppCtx {
 
     private static AnnotationConfigApplicationContext configApplicationContext = new AnnotationConfigApplicationContext();
 
-    public static AnnotationConfigApplicationContext scanForBeansAndRefreshContext() {
+    static AnnotationConfigApplicationContext scanForBeansAndRefreshContext() {
         long startMeth = System.currentTimeMillis();
-        configApplicationContext.scan("ru.vachok.networker.beans");
+        configApplicationContext.scan("ru.vachok.networker.componentsrepo");
         configApplicationContext.scan("ru.vachok.networker.services");
-        configApplicationContext.scan("ru.vachok.networker.components");
+        configApplicationContext.scan("ru.vachok.networker.config");
         long stopMeth = System.currentTimeMillis();
         AppCtx.methMetricGetCTX = TimeUnit.MILLISECONDS.toSeconds(stopMeth - startMeth);
         String msg = methMetricGetCTX + " second " + SOURCE_CLASS;

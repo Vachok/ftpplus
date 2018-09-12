@@ -8,10 +8,9 @@ import ru.vachok.messenger.email.ESender;
 import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.FileMessenger;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.beans.AppComponents;
-import ru.vachok.networker.logic.StringFromArr;
+import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.logic.FileMessenger;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -19,7 +18,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 
@@ -205,11 +207,11 @@ public class NetScannerSvc {
                     list.add(x1 + " " + x2 + " " + pcSerment + " " + onLine);
                 }
                 catch(SQLException e){
-                    MESSAGE_TO_USER.errorAlert(this.getClass().getSimpleName(), e.getMessage(), new StringFromArr().fromArr(e.getStackTrace()));
+                    MESSAGE_TO_USER.errorAlert(this.getClass().getSimpleName(), e.getMessage(), new TForms().fromArray(e.getStackTrace()));
                     logger.error(e.getMessage(), e);
                 }
             });
-            return new StringFromArr().fromArr(list);
+            return new TForms().fromArray(list);
         }
         catch(SQLException e){
             logger.error(e.getMessage(), e);
@@ -234,7 +236,6 @@ public class NetScannerSvc {
         if(qer.equals("td")){
             inDex = ConstantsFor.TDPC;
         }
-        new PfListsSrv().buildFactory();
         return inDex;
     }
 }

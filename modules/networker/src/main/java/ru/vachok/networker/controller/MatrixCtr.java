@@ -2,6 +2,7 @@ package ru.vachok.networker.controller;
 
 
 import org.slf4j.Logger;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -9,11 +10,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.beans.AppComponents;
-import ru.vachok.networker.beans.PfLists;
+import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.logic.ssh.SSHFactory;
 import ru.vachok.networker.services.DataBases;
 import ru.vachok.networker.services.Matrix;
+import ru.vachok.networker.services.VisitorSrv;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -26,20 +30,22 @@ import java.util.concurrent.TimeUnit;
  * @since 07.09.2018 (0:35)
  */
 @Controller
-public class StartingInfo {
+public class MatrixCtr {
 
     /*Fields*/
 
     /**
      * Simple Name класса, для поиска настроек
      */
-    private static final String SOURCE_CLASS = StartingInfo.class.getSimpleName();
+    private static final String SOURCE_CLASS = MatrixCtr.class.getSimpleName();
 
     private static final Logger LOGGER = AppComponents.getLogger();
 
+    private static AnnotationConfigApplicationContext appCtx = IntoApplication.getAppCtx();
+
     private Matrix matrix;
 
-    private PfLists pfLists;
+    private VisitorSrv visitorSrv = appCtx.getBean(VisitorSrv.class);
 
     private DataBases dataBases = new DataBases();
 
@@ -47,6 +53,7 @@ public class StartingInfo {
 
     @GetMapping("/")
     public String getFirst(HttpServletRequest request, Model model, HttpServletResponse response) {
+        Visitor visitor = visitorSrv.makeVisit(request);
         String userPC = ConstantsFor.getUserPC(request);
         if (request.getQueryString() != null) {
             String queryString = request.getQueryString();
@@ -62,6 +69,7 @@ public class StartingInfo {
             String userIP = userPC + ":" + request.getRemotePort() + "<-" + response.getStatus();
             model.addAttribute("yourip", userIP);
             model.addAttribute("Matrix", new Matrix());
+            model.addAttribute("visit", visitor.getTimeSt() + " timestamp");
             return "starting";
         }
         return "starting";
@@ -96,5 +104,16 @@ public class StartingInfo {
         model.addAttribute("headtitle", matrix.getCountDB() + " позиций   " + TimeUnit.MILLISECONDS.toMinutes(
             System.currentTimeMillis() - ConstantsFor.START_STAMP) + " upTime");
         return "matrix";
+    }
+
+    @GetMapping("/git")
+    public String gitOn(Model model, HttpServletRequest request) {
+
+        SSHFactory gitOner = new SSHFactory.Builder(ConstantsFor.SRV_GIT, "sudo cd /usr/home/ITDept;sudo git instaweb;exit").build();
+        if (request.getQueryString() != null && request.getQueryString().equalsIgnoreCase("reboot")) {
+            gitOner = new SSHFactory.Builder(ConstantsFor.SRV_GIT, "sudo reboot").build();
+        }
+        LOGGER.info(gitOner.call());
+        return "redirect:http://srv-git.eatmeat.ru:1234";
     }
 }

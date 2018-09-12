@@ -14,11 +14,10 @@ public class ThreadConfig {
 
     public TaskExecutor threadPoolTaskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(4);
-        executor.setMaxPoolSize(7);
+        executor.setCorePoolSize(1);
+        executor.setMaxPoolSize(1);
         executor.setThreadNamePrefix(ConstantsFor.APP_NAME + "execution task");
         executor.initialize();
         return executor;
     }
-
 }
