@@ -1,0 +1,24 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${metric}">ХЗ</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link rel="stylesheet" type="text/css" media="all" href="css/main.css" th:href="@{css/main.css}"/>
+</head>
+<body>
+<a href="/">Главная</a> | <a href="/netscan">Скан ПК</a> | <a href="/?eth">Логи в БД</a>
+<p>
+    <textarea name="SQUID STANDARD: " rows="10" cols="10" th:text="${squid}"/>
+    <textarea name="SQUID LIMITED: " rows="10" cols="10" th:text="${squidlimited}"/>
+    <textarea name="SQUID FULL: " rows="10" cols="10" th:text="${tempfull}"/>
+    <textarea name="VIPNET: " rows="10" cols="10" th:text="${vipnet}"/>
+</p>
+<p>
+<h4>NAT now</h4><br>
+<textarea name="pfctl -s nat: " rows="10" cols="10" th:text="${nat}"/>
+<h4>Выполняемые PF-правила</h4><br>
+<textarea name="pfctl -s rules: " rows="10" cols="10" th:text="${rules}"/>
+<h6>IP-адреса сайтов</h6><br>
+<textarea name="Allowed IP for ALL: " rows="10" cols="10" th:text="${allowip}"/>
+</body>
+</html>

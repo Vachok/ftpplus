@@ -19,10 +19,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 
@@ -237,6 +234,7 @@ public class NetScannerSvc {
         if(qer.equals("td")){
             inDex = ConstantsFor.TDPC;
         }
+        new PfListsSrv().buildFactory();
         return inDex;
     }
 }

@@ -47,7 +47,7 @@ public class AppComponents {
 
     @Bean
     @Scope("singleton")
-    public PfLists pfLists() {
-        return PfListsSrv.getPfLists();
+    public PfListsSrv pfLists() {
+        return new PfListsSrv();
     }
 }

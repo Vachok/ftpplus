@@ -7,7 +7,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.DBMessenger;
@@ -16,23 +15,17 @@ import ru.vachok.networker.beans.PfLists;
 import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.services.PfListsSrv;
 
-import javax.servlet.ServletInputStream;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.Enumeration;
+import java.util.Map;
+import java.util.Random;
+import java.util.concurrent.*;
 
 
 /**
- * The type Index controller.
+ The type Index controller.
  */
 @Controller
 public class IndexController {
@@ -46,76 +39,47 @@ public class IndexController {
 
     private MessageToUser messageToUser = new DBMessenger();
 
-    private ApplicationContext appCtx = AppCtx.getConfigApplicationContext();
-
-    private PfLists pfLists = PfListsSrv.getPfLists();
+    private ApplicationContext appCtx = AppCtx.scanForBeansAndRefreshContext();
 
     /**
-     * Map to show map.
-     *
-     * @param httpServletRequest  the http servlet request
-     * @param httpServletResponse the http servlet response
-     * @return the map
-     * @throws IOException the io exception
+     Map to show map.
+
+     @param httpServletRequest  the http servlet request
+     @param httpServletResponse the http servlet response
+     @return the map
+     @throws IOException the io exception
      */
-    @RequestMapping("/docs")
-    public Map<String, String> mapToShow(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws IOException {
+    @RequestMapping ("/ind")
+    public String mapToShow(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Model model) throws IOException {
         SHOW_ME.put("addr", httpServletRequest.getRemoteAddr());
         SHOW_ME.put("host", httpServletRequest.getRequestURL().toString());
         SHOW_ME.forEach((x, y) -> messageToUser.info(this.getClass().getSimpleName(), x, y));
         SHOW_ME.put("status", httpServletResponse.getStatus() + " " + httpServletResponse.getBufferSize() + " buff");
         String s = httpServletRequest.getQueryString();
-        if (s != null) {
+        if(s!=null){
             SHOW_ME.put(this.toString(), s);
-            if (s.contains("go")) {
+            if(s.contains("go")){
                 httpServletResponse.sendRedirect("http://ftpplus.vachok.ru/docs");
             }
         }
-        return SHOW_ME;
+        model.addAttribute("constfor", ConstantsFor.consString());
+        return "index";
     }
 
-    /**
-     * Addr in locale stream.
-     *
-     * @param httpServletRequest  the http servlet request
-     * @param httpServletResponse the http servlet response
-     */
-    @GetMapping("/rnd")
-    @ResponseBody
-    public void addrInLocale(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Model model) {
+    @GetMapping ("/pflists")
+    public String pfBean(Model model, HttpServletRequest request, HttpServletResponse response) {
         scheduleAns();
-        List<String> namesFile = new ArrayList<>();
-        String re = "redirect:https://vachok.testquality.com/project/3260/plan/6672/test/86686";
-        Cookie cooki = new Cookie("hi", re);
-        httpServletResponse.addCookie(cooki);
-        byte[] bs = new byte[0];
-        try (ServletInputStream in = httpServletRequest.getInputStream()) {
-
-            while (in.isReady()) {
-                int read = in.read(bs);
-                String msg = read + " bytes were read";
-                logger.info(msg);
-            }
-        } catch (IOException e) {
-            logger.error(e.getMessage(), e);
-        }
-        messageToUser.info("HTTP Servlets Controller", httpServletRequest.getServletPath() + re, "1 КБ resp: " + new String(bs, StandardCharsets.UTF_8));
-        String s = LocalDateTime.of(2018, 10, 14, 7, 0).format(DateTimeFormatter.ofPattern("dd/MM/yy"));
-        Map<String, String> getEnv = System.getenv();
-        getEnv.forEach((x, y) -> namesFile.add(x + "\n" + y));
-        namesFile.add(re);
-        namesFile.add(new String(bs, StandardCharsets.UTF_8));
-        namesFile.add(s);
-        namesFile.add(httpServletRequest.toString());
-        namesFile.add(httpServletRequest.getSession().getServletContext().getServerInfo());
-        namesFile.add(httpServletRequest.getSession().getServletContext().getServletContextName());
-        namesFile.add(httpServletRequest.getSession().getServletContext().getVirtualServerName());
-        namesFile.add(httpServletRequest.getSession().getServletContext().getContextPath());
-        namesFile.add(Arrays.toString(httpServletResponse.getHeaderNames().toArray()));
-        for (String name : namesFile) {
-            model.addAttribute("virTxt", name);
-        }
-        model.addAttribute("attr", getAttr(httpServletRequest));
+        PfLists pfLists = appCtx.getBean(PfLists.class);
+        model.addAttribute("pfLists", pfLists);
+        model.addAttribute("metric", PfListsSrv
+            .getEndDate() + " renew| " + pfLists.getUname().split("FreeBSD")[1]);
+        model.addAttribute("vipnet", pfLists.getVipNet());
+        model.addAttribute("tempfull", pfLists.getFullSquid());
+        model.addAttribute("squidlimited", pfLists.getLimitSquid());
+        model.addAttribute("squid", pfLists.getStdSquid());
+        model.addAttribute("nat", pfLists.getPfNat());
+        model.addAttribute("rules", pfLists.getPfRules());
+        return "pflists";
     }
 
     private void scheduleAns() {
@@ -123,12 +87,13 @@ public class IndexController {
             Executors.unconfigurableScheduledExecutorService(Executors.newSingleThreadScheduledExecutor());
         Runnable runnable = () -> {
             MessageToUser m = new DBMessenger();
-            float upTime = (float) (System.currentTimeMillis() - ConstantsFor.START_STAMP) /
+            float upTime = ( float ) (System.currentTimeMillis() - ConstantsFor.START_STAMP) /
                 TimeUnit.DAYS.toMillis(1);
             m.info(SOURCE_CLASS, "UPTIME", upTime + " days");
+            new PfListsSrv().buildFactory();
         };
-        int delay = new Random().nextInt((int) TimeUnit.MINUTES.toSeconds(1) / 3);
-        int init = new Random().nextInt((int) TimeUnit.MINUTES.toSeconds(1));
+        int delay = new Random().nextInt(( int ) TimeUnit.MINUTES.toSeconds(17) / 3);
+        int init = new Random().nextInt(( int ) TimeUnit.MINUTES.toSeconds(20));
         executorService.scheduleWithFixedDelay(runnable, init, delay, TimeUnit.MINUTES);
         String msg = runnable + " " + init + " init ," + delay + " delay";
         logger.info(msg);
@@ -137,17 +102,11 @@ public class IndexController {
     private String getAttr(HttpServletRequest request) {
         Enumeration<String> attributeNames = request.getServletContext().getAttributeNames();
         StringBuilder stringBuilder = new StringBuilder();
-        while (attributeNames.hasMoreElements()) {
+        while(attributeNames.hasMoreElements()){
             stringBuilder.append(attributeNames.nextElement());
             stringBuilder.append("<p>");
             stringBuilder.append("\n");
         }
         return stringBuilder.toString();
-    }
-
-    @GetMapping("/pflists")
-    public String pfBean(Model model) {
-        model.addAttribute("squid", pfLists.getStdSquid());
-        return "index";
     }
 }

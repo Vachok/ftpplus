@@ -1,19 +1,16 @@
 package ru.vachok.networker.beans;
 
 
-import org.slf4j.Logger;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-import ru.vachok.networker.logic.ssh.ListInternetUsers;
 
-import java.util.Map;
 
 /**
  * @since 10.09.2018 (11:35)
  */
 @Component
+@Scope ("singleton")
 public class PfLists {
-
-    private static Logger logger = AppComponents.getLogger();
 
     public String getVipNet() {
         return vipNet;
@@ -39,18 +36,31 @@ public class PfLists {
 
     private String fullSquid;
 
-    public String getAllowDomain() {
-        return allowDomain;
+    private String pfRules;
+
+    private String pfNat;
+
+    private String uName;
+
+    /*Get&Set*/
+    public void setuName(String uName) {
+        this.uName = uName;
     }
 
-    private String allowDomain;
+    public String getPfRules() {
+        return pfRules;
+    }
 
-    private Map<String, String> listUsers = new ListInternetUsers().call();
+    public void setPfRules(String pfRules) {
+        this.pfRules = pfRules;
+    }
 
-    private String allowURL;
+    public String getUname() {
+        return uName;
+    }
 
-    public String getAllowURL() {
-        return allowURL;
+    public String getPfNat() {
+        return pfNat;
     }
 
     public void setVipNet(String vipNet) {
@@ -69,20 +79,20 @@ public class PfLists {
         this.fullSquid = fullSquid;
     }
 
-    public void setAllowDomain(String allowDomain) {
-        this.allowDomain = allowDomain;
+    public void setPfNat(String pfNat) {
+        this.pfNat = pfNat;
     }
 
-    public Map<String, String> getListUsers() {
-        return listUsers;
+    @Override
+    public String toString() {
+        return "PfLists{" +
+            "fullSquid='" + fullSquid + '\'' +
+            ", limitSquid='" + limitSquid + '\'' +
+            ", pfNat='" + pfNat + '\'' +
+            ", pfRules='" + pfRules + '\'' +
+            ", stdSquid='" + stdSquid + '\'' +
+            ", uName='" + uName + '\'' +
+            ", vipNet='" + vipNet + '\'' +
+            '}';
     }
-
-    public void setListUsers(Map<String, String> listUsers) {
-        this.listUsers = listUsers;
-    }
-
-    public void setAllowURL(String allowURL) {
-        this.allowURL = allowURL;
-    }
-
 }
