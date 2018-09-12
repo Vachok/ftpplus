@@ -1,8 +1,14 @@
 package ru.vachok.networker.componentsrepo;
 
 
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import ru.vachok.messenger.MessageToUser;
+import ru.vachok.messenger.email.ESender;
+import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.IntoApplication;
+import ru.vachok.networker.TForms;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -79,5 +85,17 @@ public class Visitor {
      */
     public void setRemAddr(String remAddr) {
         this.remAddr = remAddr;
+    }
+
+    public void shutdownHook() {
+        MessageToUser messageToUser = new ESender("143500@gmail.com");
+        visitsMap.forEach((x, y) -> {
+            AnnotationConfigApplicationContext appCtx = IntoApplication.getAppCtx();
+            messageToUser.info(
+                ConstantsFor
+                    .THIS_PC_NAME + " app runned for: " + (System.currentTimeMillis() - ConstantsFor.START_STAMP),
+                new TForms().fromArray(appCtx.getBeanDefinitionNames()),
+                appCtx.getBeanFactory().toString());
+        });
     }
 }

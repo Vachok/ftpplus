@@ -11,6 +11,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.logic.DBMessenger;
 import ru.vachok.networker.services.PfListsSrv;
 
@@ -57,6 +58,8 @@ public class IntoApplication {
         appCtx.refresh();
         SpringApplication.run(IntoApplication.class, args);
         infoForU(appCtx);
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> new Visitor().shutdownHook()));
+        appCtx.registerShutdownHook();
     }
 
     private static void infoForU(ApplicationContext appCtx) {

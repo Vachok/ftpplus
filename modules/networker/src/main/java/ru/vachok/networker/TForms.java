@@ -20,7 +20,7 @@ public class TForms {
 
     private StringBuilder brStringBuilder = new StringBuilder();
 
-    private StringBuilder nStingBuilder = new StringBuilder();
+    private StringBuilder nStringBuilder = new StringBuilder();
 
     public String fromArray(List<String> stringListWithBR) {
         brStringBuilder.append("<p>");
@@ -55,13 +55,13 @@ public class TForms {
     public String fromArray(Properties properties) {
         InitProperties initProperties = new FileProps(ConstantsFor.APP_NAME);
         initProperties.setProps(properties);
-        nStingBuilder.append("\n");
+        nStringBuilder.append("\n");
         properties.forEach((x, y) -> {
             String msg = x + " : " + y;
             LOGGER.info(msg);
-            nStingBuilder.append(x).append(" :: ").append(y).append("\n");
+            nStringBuilder.append(x).append(" :: ").append(y).append("\n");
         });
-        return nStingBuilder.toString();
+        return nStringBuilder.toString();
     }
 
     public String fromStringBoolean(Map<String, Boolean> call) {
@@ -81,14 +81,14 @@ public class TForms {
 
     public String stringObjectMapParser(Map<String, Object> stringObjectMap) {
         stringObjectMap.forEach((x, y) -> {
-            nStingBuilder.append(x).append("  ").append(y.toString()).append("\n");
+            nStringBuilder.append(x).append("  ").append(y.toString()).append("\n");
         });
-        return nStingBuilder.toString();
+        return nStringBuilder.toString();
     }
 
     public String fromArray(StackTraceElement[] stackTrace) {
         for (StackTraceElement stackTraceElement : stackTrace) {
-            nStingBuilder
+            nStringBuilder
                 .append("At ")
                 .append(stackTraceElement
                     .getClassName())
@@ -99,6 +99,13 @@ public class TForms {
                 .append(" method.\nFile: ")
                 .append(stackTraceElement.getFileName());
         }
-        return nStingBuilder.toString();
+        return nStringBuilder.toString();
+    }
+
+    public String fromArray(String[] stringsArray) {
+        for(String s : stringsArray){
+            nStringBuilder.append(s).append("\n");
+        }
+        return nStringBuilder.toString();
     }
 }
