@@ -11,7 +11,6 @@ import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.logic.DBMessenger;
 import ru.vachok.networker.services.DataBases;
 import ru.vachok.networker.services.NetScannerSvc;
-import ru.vachok.networker.services.PfListsSrv;
 import ru.vachok.networker.services.VisitorSrv;
 
 import javax.servlet.http.HttpServletRequest;
@@ -50,10 +49,10 @@ public class AppComponents {
         return new DataBases();
     }
 
-    @Bean
+    @Bean("pflists")
     @Scope("singleton")
-    public PfListsSrv pfLists() {
-        return new PfListsSrv();
+    public PfLists pfLists() {
+        return new PfLists();
     }
 
     @Bean("visitor")

@@ -60,6 +60,7 @@ public class IntoApplication {
         infoForU(appCtx);
         Runtime.getRuntime().addShutdownHook(new Thread(() -> new Visitor().shutdownHook()));
         appCtx.registerShutdownHook();
+        PfListsSrv.buildFactory();
     }
 
     private static void infoForU(ApplicationContext appCtx) {
@@ -92,14 +93,24 @@ public class IntoApplication {
         ScheduledExecutorService executorService =
             Executors.unconfigurableScheduledExecutorService(Executors.newSingleThreadScheduledExecutor());
         Runnable runnable = () -> {
-            float upTime = (float) (System.currentTimeMillis() - ConstantsFor.START_STAMP) /
-                TimeUnit.DAYS.toMillis(1);
-            new PfListsSrv();
-            String msg = upTime + " uptime days";
-            LOGGER.info(msg);
+            Thread.currentThread().setName("id " + System.currentTimeMillis());
+            float upTime = (float) (System.currentTimeMillis() - ConstantsFor.START_STAMP) / TimeUnit.HOURS.toMillis(1);
+            PfListsSrv.buildFactory();
+            String msg = upTime +
+                " uptime days. Active threads = " +
+                Thread.activeCount() + ". This thread = " +
+                Thread.currentThread().getName() + "|" +
+                System.currentTimeMillis();
+            LOGGER.warn(msg);
+            Thread.currentThread().interrupt();
         };
-        int delay = new Random().nextInt((int) TimeUnit.MINUTES.toSeconds(17) / 3);
-        int init = new Random().nextInt((int) TimeUnit.MINUTES.toSeconds(20));
+        int delay = new Random().nextInt((int) TimeUnit.MINUTES.toSeconds(25));
+        int init = new Random().nextInt((int) TimeUnit.MINUTES.toSeconds(6));
+        if (ConstantsFor.THIS_PC_NAME.toLowerCase().contains("no0027") ||
+            ConstantsFor.THIS_PC_NAME.equalsIgnoreCase("home")) {
+            init = 20;
+            delay = 40;
+        }
         executorService.scheduleWithFixedDelay(runnable, init, delay, TimeUnit.SECONDS);
         String msg = executorService.toString() + " " + init + " init ," + delay + " delay";
         LOGGER.info(msg);

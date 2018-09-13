@@ -39,6 +39,8 @@ public enum ConstantsFor {
 
     public static final String SRV_GIT = "192.168.13.42";
 
+    public static final int TIMEOUT_5 = 5000;
+
     public static String consString() {
         return "ConstantsFor{" +
             "APC=" + APC +

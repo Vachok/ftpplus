@@ -69,8 +69,7 @@ public class PfListsCtr {
     public String pfBean(Model model, HttpServletRequest request, HttpServletResponse response) {
         PfLists pfLists = appCtx.getBean(PfLists.class);
         model.addAttribute("pfLists", pfLists);
-        model.addAttribute("metric", PfListsSrv
-            .getEndDate() + " renew| ");
+        model.addAttribute("metric", Thread.activeCount() + " thr, active");
         model.addAttribute("vipnet", pfLists.getVipNet());
         model.addAttribute("tempfull", pfLists.getFullSquid());
         model.addAttribute("squidlimited", pfLists.getLimitSquid());
@@ -78,7 +77,9 @@ public class PfListsCtr {
         model.addAttribute("nat", pfLists.getPfNat());
         model.addAttribute("rules", pfLists.getPfRules());
         model.addAttribute("gitstats", pfLists.getGitStats());
-        if (request.getQueryString() != null) new PfListsSrv();
+        if (request.getQueryString() != null) PfListsSrv.buildFactory();
+        String msg = response.getBufferSize() + " resp buffer";
+        logger.info(msg);
         return "pflists";
     }
 
