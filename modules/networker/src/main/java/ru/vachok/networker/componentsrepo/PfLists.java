@@ -8,8 +8,8 @@ import org.springframework.stereotype.Component;
 /**
  * @since 10.09.2018 (11:35)
  */
-@Component
-@Scope ("singleton")
+@Component("pflists")
+@Scope("singleton")
 public class PfLists {
 
     public String getVipNet() {

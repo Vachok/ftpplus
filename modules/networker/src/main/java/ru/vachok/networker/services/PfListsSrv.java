@@ -16,7 +16,7 @@ import java.util.Date;
 /**
  * @since 10.09.2018 (11:49)
  */
-@Service("pflists")
+@Service
 public class PfListsSrv {
 
     /*Fields*/
@@ -30,6 +30,9 @@ public class PfListsSrv {
 
     private static Date endDate;
 
+    private PfListsSrv() {
+    }
+
     public static float getBuildFactoryMetrics() {
         return buildFactoryMetrics;
     }
@@ -39,14 +42,11 @@ public class PfListsSrv {
     }
 
     /*Instances*/
-    public PfListsSrv() {
-        buildFactory();
-    }
+
 
     public static void buildFactory() {
         long startMeth = System.currentTimeMillis();
         PfLists pfLists = ctx.getBean(PfLists.class);
-
         SSHFactory build = new SSHFactory.Builder(ConstantsFor.SRV_NAT, "uname -a").build();
         pfLists.setuName(build.call());
 

@@ -78,7 +78,7 @@ public class PfListsCtr {
         model.addAttribute("nat", pfLists.getPfNat());
         model.addAttribute("rules", pfLists.getPfRules());
         model.addAttribute("gitstats", pfLists.getGitStats());
-        if (request.getQueryString() != null) new PfListsSrv();
+        if (request.getQueryString() != null) PfListsSrv.buildFactory();
         return "pflists";
     }
 
