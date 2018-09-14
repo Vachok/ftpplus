@@ -7,13 +7,10 @@
     <title>НИИХуЯ</title>
 </head>
 <body>
+<h4 th:text="${errmessage}">
 <textarea th:text="${error}"/>
-<h2 th:text="${eMessage}"/>
-<link>
+    <p>
 <a th:href="@{/exit}">Выйти из меня...</a><br>
-<link>
-<a th:href="@{/exit?shutdown}">Выключить систему...</a><br>
-<link>
 <a th:href="@{/exit?restart}">Перегруз системы...</a><br>
 <img th:src="@{images/banner.jpg}">
 </body>

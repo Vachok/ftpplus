@@ -1,13 +1,19 @@
 package ru.vachok.money;
 
 
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.messenger.email.ESender;
+import ru.vachok.money.config.AppComponents;
+import ru.vachok.money.config.AppCont;
 import ru.vachok.mysqlandprops.DataConnectTo;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -72,6 +78,10 @@ public enum ConstantsFor {
      */
     public static final int KILOBYTE = 1024;
 
+    public static final AnnotationConfigApplicationContext CONTEXT = AppCont.getCtx();
+
+    private static boolean myPC;
+
     public static Function<DataConnectTo, String> dbSpeedCheck = (x) -> {
         List<Integer> integersA107 = new ArrayList<>();
         List<Integer> integersNriga = new ArrayList<>();
@@ -80,7 +90,7 @@ public enum ConstantsFor {
         try(PreparedStatement p = c.prepareStatement("select * from speed where Road = 0");
             PreparedStatement p1 = c.prepareStatement("select * from speed where Road = 1");
             ResultSet r = p.executeQuery();
-            ResultSet r1 = p1.executeQuery();){
+            ResultSet r1 = p1.executeQuery()) {
             while(r.next()){
                 integersA107.add(r.getInt("Speed"));
             }
@@ -96,20 +106,18 @@ public enum ConstantsFor {
         return stringBuilder.toString();
     };
 
-    private static boolean myPC;
+    public static void setMyPC(boolean myPC) {
+        ConstantsFor.myPC = myPC;
+    }
 
     public static boolean isMyPC() {
         try{
             myPC = InetAddress.getLocalHost().getHostName().equalsIgnoreCase("home");
         }
         catch(UnknownHostException e){
-            ApplicationConfiguration.getLogger().error(ConstantsFor.class.getSimpleName());
+            AppComponents.getLogger().error(ConstantsFor.class.getSimpleName());
         }
         return myPC;
-    }
-
-    public static void setMyPC(boolean myPC) {
-        ConstantsFor.myPC = myPC;
     }
 
 }

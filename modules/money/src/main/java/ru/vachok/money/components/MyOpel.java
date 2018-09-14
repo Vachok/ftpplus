@@ -1,14 +1,17 @@
-package ru.vachok.money.web.beans;
+package ru.vachok.money.components;
 
 
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
-import ru.vachok.money.ApplicationConfiguration;
 import ru.vachok.money.ConstantsFor;
+import ru.vachok.money.config.AppComponents;
 import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.RegRuMysql;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,7 +27,7 @@ public class MyOpel {
 
     /*Fields*/
 
-    private static final Logger LOGGER = ApplicationConfiguration.getLogger();
+    private static final Logger LOGGER = AppComponents.getLogger();
 
     private static DataConnectTo dataConnectTo = new RegRuMysql();
 

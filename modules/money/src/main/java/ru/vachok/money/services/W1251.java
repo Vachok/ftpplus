@@ -1,8 +1,8 @@
-package ru.vachok.money.logic;
+package ru.vachok.money.services;
 
 
-
-import ru.vachok.money.ApplicationConfiguration;
+import org.slf4j.Logger;
+import ru.vachok.money.config.AppComponents;
 
 import java.io.UnsupportedEncodingException;
 
@@ -17,13 +17,15 @@ public class W1251 implements DecoderEnc {
      */
     private static final String SOURCE_CLASS = W1251.class.getSimpleName();
 
+    private static final Logger LOGGER = AppComponents.getLogger();
+
 
     @Override
     public String toAnotherEnc( String s ) {
         try {
             return new String(s.getBytes() , "Windows-1251");
         } catch (UnsupportedEncodingException e) {
-            ApplicationConfiguration.getLogger().error(e.getMessage() , e);
+            LOGGER.error(e.getMessage(), e);
         }
         return s;
     }

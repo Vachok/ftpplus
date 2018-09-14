@@ -7,7 +7,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import ru.vachok.money.ConstantsFor;
-import ru.vachok.money.logic.ParseCurrency;
+import ru.vachok.money.services.ParseCurrency;
 
 import javax.servlet.http.HttpServletRequest;
 

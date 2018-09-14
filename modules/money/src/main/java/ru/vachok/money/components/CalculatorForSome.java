@@ -1,4 +1,4 @@
-package ru.vachok.money.web.beans;
+package ru.vachok.money.components;
 
 
 import org.springframework.stereotype.Service;

@@ -1,9 +1,9 @@
-package ru.vachok.money.logic;
+package ru.vachok.money.services;
 
 
 
 import org.slf4j.Logger;
-import ru.vachok.money.ApplicationConfiguration;
+import ru.vachok.money.config.AppComponents;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,7 +28,7 @@ public class ParseCurrency {
          return todayUSD;
       }
       catch(IOException|URISyntaxException e){
-         Logger logger = new ApplicationConfiguration().getLogger();
+          Logger logger = new AppComponents().getLogger();
          logger.error(e.getMessage() , e);
       }
       todayUSD = new String(kursFile.getAbsoluteFile().toString().getBytes(), StandardCharsets.UTF_8);

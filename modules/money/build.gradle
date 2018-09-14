@@ -18,7 +18,7 @@ plugins {
 }
 
 group = 'ru.vachok.money'
-version = '0.20-SNAPSHOT'
+version = '0.21-SNAPSHOT'
 sourceCompatibility = 1.8
 
 repositories {
@@ -40,10 +40,6 @@ sourceSets {
         }
     }
 }
-ext {
-    springCloudGcpVersion = '1.0.0.RELEASE'
-    springCloudVersion = 'Finchley.SR1'
-}
 
 dependencies {
     // https://mvnrepository.com/artifact/org.quartz-scheduler/quartz
@@ -54,18 +50,11 @@ dependencies {
     compile('org.springframework.boot:spring-boot-starter-thymeleaf')
 //    compile('org.springframework.cloud:spring-cloud-gcp-starter')
     // https://mvnrepository.com/artifact/org.springframework.integration/spring-integration-ftp
-    compile group: 'org.springframework.integration', name: 'spring-integration-ftp', version: '5.0.7.RELEASE'
     // https://mvnrepository.com/artifact/commons-io/commons-io
     compile group: 'commons-io', name: 'commons-io', version: '2.6'
-    runtime('org.springframework.boot:spring-boot-devtools')
+    // https://mvnrepository.com/artifact/commons-net/commons-net
+    compile group: 'commons-net', name: 'commons-net', version: '3.6'
     testCompile('org.springframework.boot:spring-boot-starter-test')
-}
-
-dependencyManagement {
-    imports {
-        mavenBom "org.springframework.cloud:spring-cloud-gcp-dependencies:${springCloudGcpVersion}"
-        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
-    }
 }
 buildScan {
     termsOfServiceUrl = 'https://gradle.com/terms-of-service'

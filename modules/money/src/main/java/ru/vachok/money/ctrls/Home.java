@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.money.ApplicationConfiguration;
+import ru.vachok.money.config.AppComponents;
 import ru.vachok.mysqlandprops.RegRuMysql;
 
 import javax.servlet.http.Cookie;
@@ -52,7 +52,7 @@ public class Home {
 
    private MessageToUser messageToUser = new MessageCons();
 
-   private static Logger logger = new ApplicationConfiguration().getLogger();
+    private static Logger logger = AppComponents.getLogger();
 
 
    private boolean myPC;

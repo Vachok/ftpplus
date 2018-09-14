@@ -1,9 +1,10 @@
-package ru.vachok.money.logic;
+package ru.vachok.money.services;
 
 
 
 import org.slf4j.Logger;
-import ru.vachok.money.ApplicationConfiguration;
+import org.springframework.stereotype.Service;
+import ru.vachok.money.config.AppComponents;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,6 +16,7 @@ import java.net.URL;
  *
  * @since 12.08.2018 (16:12)
  */
+@Service("cbrfparsing")
 public class ParserCBRru {
 
     /**
@@ -22,7 +24,7 @@ public class ParserCBRru {
      */
     private static final String SOURCE_CLASS = ParserCBRru.class.getSimpleName();
 
-    private static Logger logger = ApplicationConfiguration.getLogger();
+    private static Logger logger = AppComponents.getLogger();
 
 
     private ParserCBRru() {

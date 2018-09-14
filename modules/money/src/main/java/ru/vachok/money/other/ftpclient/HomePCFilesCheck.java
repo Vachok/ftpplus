@@ -1,12 +1,10 @@
-package ru.vachok.money.ftpclient;
+package ru.vachok.money.other.ftpclient;
 
 
 
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.money.ConstantsFor;
-import ru.vachok.money.logic.DecoderEnc;
-import ru.vachok.money.logic.UTF8;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.DbProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
@@ -39,11 +37,6 @@ public class HomePCFilesCheck implements Callable<Stream<String>> {
     private final MessageToUser messageToUser = new MessageCons();
 
     /**
-     * {@link UTF8}
-     */
-    private final DecoderEnc decoderEncEnc = new UTF8();
-
-    /**
      * @see DbProperties
      */
     private InitProperties initProperties = new DBRegProperties(ConstantsFor.APP_NAME + SOURCE_CLASS);
@@ -68,7 +61,7 @@ public class HomePCFilesCheck implements Callable<Stream<String>> {
         File videoDir = new File("f:\\Video\\Captures\\IPCamera\\IV2405P_00626E6A45EA\\record\\");
         File[] locVideoFiles = videoDir.listFiles();
         List<String> toReturn = new ArrayList<>();
-        messageToUser.info(this.toString() , videoDir.getAbsolutePath() , Objects.requireNonNull(locVideoFiles).length + decoderEncEnc.toAnotherEnc(" кол-во файлов на компе."));
+        messageToUser.info(this.toString(), videoDir.getAbsolutePath(), Objects.requireNonNull(locVideoFiles).length + " кол-во файлов на компе.");
         long l = 0;
         for (File f : locVideoFiles) {
             l = l + f.length();

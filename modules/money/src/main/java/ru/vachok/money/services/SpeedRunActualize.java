@@ -1,11 +1,15 @@
-package ru.vachok.money;
+package ru.vachok.money.services;
 
 
+import org.slf4j.Logger;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.messenger.email.ESender;
-import ru.vachok.money.logic.UTF8;
+import ru.vachok.money.ConstantsFor;
+import ru.vachok.money.DBMessage;
+import ru.vachok.money.MailMessages;
+import ru.vachok.money.config.AppComponents;
 import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.RegRuMysql;
 
@@ -17,8 +21,6 @@ import java.util.Date;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 
@@ -30,6 +32,8 @@ import java.util.stream.Stream;
  @since 29.07.2018 (11:42) */
 @Service
 public class SpeedRunActualize implements Callable<String> {
+
+    private static final Logger LOGGER = AppComponents.getLogger();
 
     /**
      <h3>Сообщения пользователю</h3>
@@ -111,7 +115,6 @@ public class SpeedRunActualize implements Callable<String> {
 
     /**
      <h2>Проверка даты последней записи в БД</h2>
-     {@link #run()}
      Сверка даты полученного письма, с последней записью в БД.
      Период - 22 часа.
      <p>
@@ -170,14 +173,12 @@ public class SpeedRunActualize implements Callable<String> {
                     return s;
                 }
                 else{
-                    throw new UnsupportedOperationException(new UTF8().toAnotherEnc("Деление на 0"));
+                    throw new UnsupportedOperationException("Деление на 0");
                 }
             }
         }
         catch(SQLException e){
-            Logger.getLogger(SOURCE_CLASS).log(Level.WARNING, (SOURCE_CLASS + "\n" + e.getMessage() + "\n\n\n"
-                                                                   + Arrays.toString(e.getStackTrace()).replaceAll(", ",
-                "\n").replace("{", "").replace("}", "")));
+            LOGGER.error(e.getMessage(), e);
         }
         return "No AVG";
     }
@@ -270,7 +271,7 @@ public class SpeedRunActualize implements Callable<String> {
             }
         }
         catch(SQLException e){
-            ApplicationConfiguration.getLogger().error(e.getMessage(), e);
+            LOGGER.error(e.getMessage(), e);
         }
         return doublesList.parallelStream();
     }
@@ -298,13 +299,11 @@ public class SpeedRunActualize implements Callable<String> {
                 messageToUser.info("Time and SPEED. NovoRiga.", speedAv / ind + " SPEED", s2);
             }
             else{
-                throw new UnsupportedOperationException(new UTF8().toAnotherEnc("Деление на 0"));
+                throw new UnsupportedOperationException("Деление на 0");
             }
         }
         catch(SQLException e){
-            Logger.getLogger(SOURCE_CLASS).log(Level.WARNING, (SOURCE_CLASS + "\n" + e.getMessage() + "\n\n\n"
-                                                                   + Arrays.toString(e.getStackTrace()).replaceAll(", ",
-                "\n").replace("{", "").replace("}", "")));
+            LOGGER.error(e.getMessage(), e);
         }
     }
 

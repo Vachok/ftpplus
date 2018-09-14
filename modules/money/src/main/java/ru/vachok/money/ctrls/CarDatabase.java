@@ -6,9 +6,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
-import ru.vachok.money.ApplicationConfiguration;
-import ru.vachok.money.logic.TForms;
-import ru.vachok.money.web.beans.MyOpel;
+import ru.vachok.money.components.MyOpel;
+import ru.vachok.money.config.AppComponents;
+import ru.vachok.money.services.TForms;
 
 
 /**
@@ -21,7 +21,7 @@ public class CarDatabase {
      */
     private static final String SOURCE_CLASS = CarDatabase.class.getSimpleName();
 
-    private static final Logger LOGGER = ApplicationConfiguration.getLogger();
+    private static final Logger LOGGER = AppComponents.getLogger();
     @GetMapping ("/chkcar")
     public String showEngineTMP(Model model, @ModelAttribute MyOpel opel) {
         LOGGER.info(opel.getSpeedStr());

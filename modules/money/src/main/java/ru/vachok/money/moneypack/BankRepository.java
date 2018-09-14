@@ -1,7 +1,7 @@
 package ru.vachok.money.moneypack;
 
 
-import ru.vachok.money.ApplicationConfiguration;
+import ru.vachok.money.config.AppComponents;
 import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.RegRuMysql;
 
@@ -43,7 +43,7 @@ public class BankRepository {
             }
         }
         catch(SQLException e){
-            ApplicationConfiguration.getLogger().error(e.getMessage(), e);
+            AppComponents.getLogger().error(e.getMessage(), e);
         }
     }
 

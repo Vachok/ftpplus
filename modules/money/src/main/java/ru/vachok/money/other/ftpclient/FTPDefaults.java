@@ -1,4 +1,4 @@
-package ru.vachok.money.ftpclient;
+package ru.vachok.money.other.ftpclient;
 
 
 

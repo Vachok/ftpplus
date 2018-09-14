@@ -1,4 +1,4 @@
-package ru.vachok.money.ftpclient;
+package ru.vachok.money.other.ftpclient;
 
 
 
@@ -7,8 +7,7 @@ import org.apache.commons.net.ftp.FTPFile;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.money.ConstantsFor;
-import ru.vachok.money.logic.UTF8;
-import ru.vachok.money.logic.W1251;
+import ru.vachok.money.services.W1251;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
@@ -96,7 +95,7 @@ public class FtpHomeCamCheck implements FtpConnect, Callable<String>, Runnable {
         } else size2downMeg = 1L;
         long lo = sizeAll - size2downMeg;
         properties.setProperty("size2downMeg" , sizeAll + "");
-        FtpHomeCamCheck.messageToUser.info(FtpHomeCamCheck.SOURCE_CLASS , new UTF8().toAnotherEnc("Всего в мегабайтах, после последней проверки: ") , sizeAll + "/(LO: " + lo + ")");
+        FtpHomeCamCheck.messageToUser.info(FtpHomeCamCheck.SOURCE_CLASS, "Всего в мегабайтах, после последней проверки: ", sizeAll + "/(LO: " + lo + ")");
         if (lo != 0) eSend(messageToSend(sizeAll , lo));
         return FtpHomeCamCheck.SOURCE_CLASS + new W1251().toAnotherEnc("Всего в мегабайтах, после последней проверки:" + " " + "<br>") + sizeAll + "/(LO: " + lo + ")";
     }
@@ -171,7 +170,7 @@ public class FtpHomeCamCheck implements FtpConnect, Callable<String>, Runnable {
         Callable<String> locFiles = new LocalFilesWorker();
         Future<String> submit = Executors.newSingleThreadExecutor().submit(locFiles);
         try {
-            return FtpHomeCamCheck.SOURCE_CLASS + "\n" + new UTF8().toAnotherEnc("Всего в мегабайтах, после последней проверки: ") + "\n" + sizeAll + "/(dif: " + difSize + ")" + "\n" + submit.get();
+            return FtpHomeCamCheck.SOURCE_CLASS + "\n" + "Всего в мегабайтах, после последней проверки: " + "\n" + sizeAll + "/(dif: " + difSize + ")" + "\n" + submit.get();
         } catch (InterruptedException | ExecutionException e) {
             messageToUser.errorAlert(SOURCE_CLASS , e.getMessage() , Arrays.toString(e.getStackTrace()));
             Thread.currentThread().interrupt();
@@ -276,8 +275,8 @@ public class FtpHomeCamCheck implements FtpConnect, Callable<String>, Runnable {
         try {
             filesLocal = submit.get();
             messageToUser.infoNoTitles(filesLocal);
-            String s2 = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - l) + new UTF8().toAnotherEnc(" сек.");
-            String s1 = new UTF8().toAnotherEnc("Время");
+            String s2 = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - l) + " сек.";
+            String s1 = "Время";
             messageToUser.info(SOURCE_CLASS + ".run" , s1 , s2);
             eSend(filesLocal + s1 + s2);
         } catch (InterruptedException | ExecutionException e) {

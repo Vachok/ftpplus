@@ -1,13 +1,11 @@
-package ru.vachok.money.ftpclient;
-
+package ru.vachok.money.other.ftpclient;
 
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
-import ru.vachok.money.ApplicationConfiguration;
 import ru.vachok.money.ConstantsFor;
-import ru.vachok.money.logic.DecoderEnc;
-import ru.vachok.money.logic.Utilit;
+import ru.vachok.money.config.AppComponents;
+import ru.vachok.money.services.Utilit;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.InitProperties;
 
@@ -33,8 +31,6 @@ public class LocalFilesWorker implements Callable<String> {
 
     private static final InitProperties initProperties = new DBRegProperties(ConstantsFor.APP_NAME + SOURCE_CLASS);
 
-    private final DecoderEnc decoderUTF = new ru.vachok.money.logic.UTF8();
-
 
     @Override
     public String call() {
@@ -50,8 +46,8 @@ public class LocalFilesWorker implements Callable<String> {
             for (File f : localVidFilesFromFTP) {
                 size += f.length();
             }
-            return size / ConstantsFor.MEGABYTE + decoderUTF.toAnotherEnc(" мегабайт в ") + count + decoderUTF.toAnotherEnc(" файлах на жестком диске.\n" + DIR_VID.getAbsolutePath());
-        } else throw new UnsupportedOperationException(decoderUTF.toAnotherEnc("Это возможно только на домашнем ПК!"));
+            return size / ConstantsFor.MEGABYTE + " мегабайт в " + count + " файлах на жестком диске.\n" + DIR_VID.getAbsolutePath();
+        } else throw new UnsupportedOperationException("Это возможно только на домашнем ПК!");
     }
 
 
@@ -79,7 +75,7 @@ public class LocalFilesWorker implements Callable<String> {
         try {
             FileUtils.touch(txtFile);
         } catch (IOException e) {
-            Logger logger = new ApplicationConfiguration().getLogger();
+            Logger logger = AppComponents.getLogger();
             logger.error(e.getMessage() , e);
         }
     }

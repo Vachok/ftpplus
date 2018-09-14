@@ -6,8 +6,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.money.ConstantsFor;
-import ru.vachok.money.ftpclient.FtpHomeCamCheck;
-import ru.vachok.money.ftpclient.HomePCFilesCheck;
+import ru.vachok.money.other.ftpclient.FtpHomeCamCheck;
+import ru.vachok.money.other.ftpclient.HomePCFilesCheck;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.Calendar;

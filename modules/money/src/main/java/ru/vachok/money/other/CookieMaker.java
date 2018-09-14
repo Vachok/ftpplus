@@ -1,7 +1,8 @@
-package ru.vachok.money;
+package ru.vachok.money.other;
 
 
 import org.slf4j.Logger;
+import ru.vachok.money.config.AppComponents;
 
 import javax.servlet.http.Cookie;
 import java.util.concurrent.TimeUnit;
@@ -11,7 +12,7 @@ import java.util.concurrent.TimeUnit;
  @since 23.08.2018 (12:02) */
 public class CookieMaker {
 
-   private static Logger logger = new ApplicationConfiguration().getLogger();
+    private static Logger logger = AppComponents.getLogger();
 
    private Cookie cookedCookie;
 

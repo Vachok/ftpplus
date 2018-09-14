@@ -6,10 +6,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.money.ApplicationConfiguration;
 import ru.vachok.money.ConstantsFor;
 import ru.vachok.money.DBMessage;
-import ru.vachok.money.logic.TForms;
+import ru.vachok.money.config.AppComponents;
+import ru.vachok.money.services.TForms;
 import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.RegRuMysql;
 
@@ -31,7 +31,7 @@ public class DataBases {
      */
     private static final String SOURCE_CLASS = DataBases.class.getSimpleName();
 
-    private static final Logger LOGGER = ApplicationConfiguration.getLogger();
+    private static final Logger LOGGER = AppComponents.getLogger();
 
     /**
      {@link }
@@ -67,7 +67,7 @@ public class DataBases {
         DataConnectTo d = new RegRuMysql();
         try(Connection c = d.getDefaultConnection("u0466446_liferpg");
             PreparedStatement p = c.prepareStatement(String.format("select * from %s ORDER BY timewhen DESC LIMIT 0 , 50", logTableName));
-            ResultSet r = p.executeQuery();
+            ResultSet r = p.executeQuery()
         ){
             while(r.next()){
                 lastLogsList.put(++ind + ") " + r.getString("classname") + " - " + r.getString("msgtype"),
