@@ -2,20 +2,20 @@ package ru.vachok.money.ctrls;
 
 
 import org.slf4j.Logger;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import ru.vachok.money.ConstantsFor;
 import ru.vachok.money.config.AppComponents;
 import ru.vachok.money.other.CookieMaker;
 import ru.vachok.money.services.MailMessages;
 import ru.vachok.money.services.TForms;
+import ru.vachok.money.services.VisitorSrv;
 import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.RegRuMysql;
 
-import javax.mail.Flags;
-import javax.mail.Folder;
-import javax.mail.Message;
-import javax.mail.MessagingException;
+import javax.mail.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.sql.Connection;
@@ -38,8 +38,12 @@ public class Index {
 
     private static CookieMaker cookieMaker = new CookieMaker();
 
+    private static final AnnotationConfigApplicationContext ctx = ConstantsFor.CONTEXT;
+
     @GetMapping("/")
     public String indexString(HttpServletRequest request, HttpServletResponse response, Model model) {
+        VisitorSrv visitorSrv = ctx.getBean(VisitorSrv.class);
+        visitorSrv.makeVisit(request, response);
         model.addAttribute("title", request.getRemoteAddr() + " " + response.getStatus());
         return "index-start";
     }
