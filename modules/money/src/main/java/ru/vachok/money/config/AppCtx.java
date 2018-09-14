@@ -10,7 +10,7 @@ import ru.vachok.money.ConstantsFor;
  * @since 14.09.2018 (11:17)
  */
 @Configuration
-public class AppCont {
+public class AppCtx {
 
     private static final Logger LOGGER = AppComponents.getLogger();
 

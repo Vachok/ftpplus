@@ -9,6 +9,8 @@ import org.springframework.context.annotation.Scope;
 import ru.vachok.money.ConstantsFor;
 import ru.vachok.money.components.CalculatorForSome;
 import ru.vachok.money.components.MyOpel;
+import ru.vachok.money.services.MailMessages;
+import ru.vachok.money.services.ParserCBRru;
 import ru.vachok.money.services.SpeedRunActualize;
 
 
@@ -47,5 +49,18 @@ public class AppComponents {
     @Scope("prototype")
     public CalculatorForSome calculatorForSome() {
         return new CalculatorForSome();
+    }
+
+    @Bean
+    @Scope("singleton")
+    public MailMessages mailMessages() {
+        return new MailMessages();
+
+    }
+
+    @Bean
+    @Scope("singleton")
+    public ParserCBRru parserCBRru() {
+        return ParserCBRru.getParser();
     }
 }

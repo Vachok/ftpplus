@@ -1,8 +1,9 @@
-package ru.vachok.money;
+package ru.vachok.money.services;
 
 
-
+import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.money.ConstantsFor;
 import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.RegRuMysql;
 
@@ -14,6 +15,7 @@ import java.sql.SQLException;
 /**
  * @since 28.08.2018 (0:30)
  */
+@Service
 public class DBMessage implements MessageToUser {
 
     private String tableName = "ru_vachok_money";

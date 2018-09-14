@@ -1,81 +1,62 @@
 package ru.vachok.money.components;
 
 
-import org.slf4j.Logger;
-import org.springframework.stereotype.Service;
-import ru.vachok.money.ConstantsFor;
-import ru.vachok.money.config.AppComponents;
-import ru.vachok.mysqlandprops.DataConnectTo;
-import ru.vachok.mysqlandprops.RegRuMysql;
-
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.text.MessageFormat;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.function.BiFunction;
-import java.util.stream.IntStream;
+import org.springframework.stereotype.Component;
 
 
 /**
  @since 01.09.2018 (20:26) */
-@Service ("MyOpel")
+@Component
 public class MyOpel {
 
-    /*Fields*/
+    private String carName;
 
-    private static final Logger LOGGER = AppComponents.getLogger();
+    private int carMiletage;
 
-    private static DataConnectTo dataConnectTo = new RegRuMysql();
+    private double avgSpeedA107;
 
-    private Map<String, String> obdDataMap = chkCar();
+    private double avgSpeedRiga;
 
-    private String speedStr = setSpeedStr();
+    private double avgTime;
 
-    public Map<String, String> getObdDataMap() {
-        return obdDataMap;
+    public int getCarMiletage() {
+        return carMiletage;
     }
 
-    public void setObdDataMap(Map<String, String> obdDataMap) {
-        this.obdDataMap = obdDataMap;
+    public void setCarMiletage(int carMiletage) {
+        this.carMiletage = carMiletage;
     }
 
-    public String getSpeedStr() {
-        return speedStr;
+    public double getAvgTime() {
+        return avgTime;
     }
 
-    private Map<String, String> chkCar() {
-        IntStream.Builder engineTempStream = IntStream.builder();
-        Map<String, String> integerIntegerHashMap = new HashMap<>();
-        String sql = "select * from obdrawdata limit 100";
-        try(Connection c = dataConnectTo.getDefaultConnection(ConstantsFor.DB_PREFIX + "car");
-            PreparedStatement p = c.prepareStatement(sql);
-            ResultSet schemas = p.executeQuery();
-            ResultSet metaData = c.getMetaData().getTypeInfo()){
-            while(schemas.next()){
-                integerIntegerHashMap.put(schemas
-                    .getString("GPS Time"), schemas
-                    .getString("Engine Coolant " + "Temperature" + "(°C)"));
-
-            }
-        }
-        catch(SQLException | NumberFormatException | NoSuchElementException e){
-            LOGGER.error(e.getMessage(), e);
-        }
-        String format = MessageFormat.format("integerIntegerHashMap = {0}", integerIntegerHashMap.size());
-        LOGGER.info(format);
-        BiFunction<String, String, String> addBR = (x, y) -> {
-            return x + "<br>" + y + "<br>";
-        };
-        integerIntegerHashMap.replaceAll(addBR);
-        return integerIntegerHashMap;
+    public void setAvgTime(double avgTime) {
+        this.avgTime = avgTime;
     }
 
-    private String setSpeedStr() {
-        return ConstantsFor.dbSpeedCheck.apply(dataConnectTo);
+    public String getCarName() {
+        return carName;
+    }
+
+    public void setCarName(String carName) {
+        this.carName = carName;
+    }
+
+    public double getAvgSpeedA107() {
+        return avgSpeedA107;
+    }
+
+    public void setAvgSpeedA107(double avgSpeedA107) {
+        this.avgSpeedA107 = avgSpeedA107;
+    }
+
+    public double getAvgSpeedRiga() {
+        return avgSpeedRiga;
+    }
+
+    public void setAvgSpeedRiga(double avgSpeedRiga) {
+        this.avgSpeedRiga = avgSpeedRiga;
     }
 
 }

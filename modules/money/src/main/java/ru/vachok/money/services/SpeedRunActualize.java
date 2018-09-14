@@ -7,8 +7,6 @@ import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.messenger.email.ESender;
 import ru.vachok.money.ConstantsFor;
-import ru.vachok.money.DBMessage;
-import ru.vachok.money.MailMessages;
 import ru.vachok.money.config.AppComponents;
 import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.RegRuMysql;

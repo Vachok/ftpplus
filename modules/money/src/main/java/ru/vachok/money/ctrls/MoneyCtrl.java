@@ -1,13 +1,11 @@
 package ru.vachok.money.ctrls;
 
 
-
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import ru.vachok.money.ConstantsFor;
-import ru.vachok.money.services.ParseCurrency;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -27,7 +25,6 @@ public class MoneyCtrl {
     @GetMapping("/moneypack")
     public String money( @RequestParam(value = "currency", required = false, defaultValue = "") String currency , Model model , HttpServletRequest request ) {
         ConstantsFor.setMyPC(request.getRemoteAddr().contains("10.10.111.") || request.getRemoteAddr().contains("0:0:0:0:0"));
-        currency = new ParseCurrency().getTodayUSD();
         model.addAttribute("currency", currency);
         model.addAttribute("userhost" , request.getRemoteHost());
         return "moneypack";

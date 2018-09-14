@@ -1,5 +1,4 @@
-package ru.vachok.money.services;
-
+package ru.vachok.money.other;
 
 
 import org.slf4j.Logger;
@@ -15,23 +14,25 @@ import java.nio.charset.StandardCharsets;
 /**<h1>Парсер курсов валют</h1>
  * @since 21.08.2018 (11:11)
  */
+@Deprecated
 public class ParseCurrency {
 
 
-   public String getTodayUSD() {
+    private String downloadCbrHTML() {
       URL url;
       File kursFile=new File("cbr.html");
-      String todayUSD;
+        String todayAllCurrency;
       try{
          url = new URL("https://www.cbr.ru/currency_base/daily/");
-         todayUSD = url.toURI().toString();
-         return todayUSD;
+          todayAllCurrency = url.toURI().toString();
+          return todayAllCurrency;
       }
       catch(IOException|URISyntaxException e){
-          Logger logger = new AppComponents().getLogger();
+          Logger logger = AppComponents.getLogger();
          logger.error(e.getMessage() , e);
       }
-      todayUSD = new String(kursFile.getAbsoluteFile().toString().getBytes(), StandardCharsets.UTF_8);
-      return todayUSD;
+        todayAllCurrency = new String(kursFile.getAbsoluteFile().toString().getBytes(), StandardCharsets.UTF_8);
+        return todayAllCurrency;
    }
+
 }

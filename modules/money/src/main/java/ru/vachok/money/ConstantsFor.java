@@ -5,7 +5,8 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.messenger.email.ESender;
 import ru.vachok.money.config.AppComponents;
-import ru.vachok.money.config.AppCont;
+import ru.vachok.money.config.AppCtx;
+import ru.vachok.money.services.DBMessage;
 import ru.vachok.mysqlandprops.DataConnectTo;
 
 import java.net.InetAddress;
@@ -78,7 +79,7 @@ public enum ConstantsFor {
      */
     public static final int KILOBYTE = 1024;
 
-    public static final AnnotationConfigApplicationContext CONTEXT = AppCont.getCtx();
+    public static final AnnotationConfigApplicationContext CONTEXT = AppCtx.getCtx();
 
     private static boolean myPC;
 

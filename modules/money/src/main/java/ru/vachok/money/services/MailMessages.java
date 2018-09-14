@@ -1,9 +1,10 @@
-package ru.vachok.money;
+package ru.vachok.money.services;
 
 
+import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.money.services.SpeedRunActualize;
+import ru.vachok.messenger.email.ESender;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
@@ -25,33 +26,36 @@ import java.util.logging.Logger;
  *
  * @since 25.06.2018 (2:41)
  */
+@Service("mailmessages")
 public class MailMessages implements Callable<Message[]> {
 
     private static final String SOURCE_CLASS = MailMessages.class.getSimpleName();
 
-
     private boolean cleanMBox;
 
+    private ESender senderToGmail = new ESender("143500@gmail.com");
 
     /**
      * <b>Конструктор очистки ящика.</b>
      *
      * @param cleanMBox удалить сообщения = true
      */
-    public MailMessages( boolean cleanMBox ) {
+    public MailMessages(boolean cleanMBox) {
         this.cleanMBox = cleanMBox;
         MessageToUser messageToUser = new MessageCons();
-        messageToUser.info(SOURCE_CLASS , "cleanMBox is" , cleanMBox + ".");
+        messageToUser.info(SOURCE_CLASS, "cleanMBox is", cleanMBox + ".");
     }
-
 
     /**
      * <b>Конструктор default</b>
      */
     public MailMessages() {
-        Logger.getLogger(SOURCE_CLASS).log(Level.INFO , this.getClass().getTypeName());
+        Logger.getLogger(SOURCE_CLASS).log(Level.INFO, this.getClass().getTypeName());
     }
 
+    public ESender getSenderToGmail() {
+        return senderToGmail;
+    }
 
     /**
      * <b>Получение массива сообщений из почтового ящика bot@</b>
@@ -73,7 +77,7 @@ public class MailMessages implements Callable<Message[]> {
                 messages = getInbox().getMessages();
             }
         } catch (MessagingException e) {
-            Logger.getLogger(SOURCE_CLASS).log(Level.WARNING , String.format("%s%n%n%s" , e.getMessage() , Arrays.toString(e.getStackTrace())));
+            Logger.getLogger(SOURCE_CLASS).log(Level.WARNING, String.format("%s%n%n%s", e.getMessage(), Arrays.toString(e.getStackTrace())));
         }
         return messages;
     }
@@ -93,25 +97,25 @@ public class MailMessages implements Callable<Message[]> {
 
             @Override
             protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(mailProps.getProperty("user") , mailProps.getProperty("password"));
+                return new PasswordAuthentication(mailProps.getProperty("user"), mailProps.getProperty("password"));
             }
         };
-        Session chkSess = Session.getDefaultInstance(mailProps , authenticator);
+        Session chkSess = Session.getDefaultInstance(mailProps, authenticator);
         Store store = null;
         try {
             store = chkSess.getStore();
-            store.connect(mailProps.getProperty("host") , mailProps.getProperty("user") , mailProps.getProperty("password"));
+            store.connect(mailProps.getProperty("host"), mailProps.getProperty("user"), mailProps.getProperty("password"));
         } catch (MessagingException e) {
-            Logger.getLogger(SOURCE_CLASS).log(Level.WARNING , String.format("%s%n%n%s" , e.getMessage() , Arrays.toString(e.getStackTrace())));
+            Logger.getLogger(SOURCE_CLASS).log(Level.WARNING, String.format("%s%n%n%s", e.getMessage(), Arrays.toString(e.getStackTrace())));
         }
         Folder inBox = null;
         try {
             inBox = Objects.requireNonNull(store).getFolder("Inbox");
             inBox.open(Folder.READ_WRITE);
-            Logger.getLogger(Cleaner.class.getSimpleName()).log(Level.INFO , inBox.getMessageCount() + " inbox size");
+            Logger.getLogger(Cleaner.class.getSimpleName()).log(Level.INFO, inBox.getMessageCount() + " inbox size");
             return inBox;
         } catch (MessagingException e) {
-            Logger.getLogger(SOURCE_CLASS).log(Level.WARNING , String.format("%s%n%n%s" , e.getMessage() , Arrays.toString(e.getStackTrace())));
+            Logger.getLogger(SOURCE_CLASS).log(Level.WARNING, String.format("%s%n%n%s", e.getMessage(), Arrays.toString(e.getStackTrace())));
         }
         return inBox;
     }
@@ -128,7 +132,7 @@ public class MailMessages implements Callable<Message[]> {
     private Properties getSessionProps() {
         InitProperties initProperties = new DBRegProperties("mail-regru");
         Properties sessionProps = initProperties.getProps();
-        sessionProps.setProperty("NewSessionStarted" , new Date().toString());
+        sessionProps.setProperty("NewSessionStarted", new Date().toString());
         saveProps(sessionProps);
         return sessionProps;
     }
@@ -137,12 +141,12 @@ public class MailMessages implements Callable<Message[]> {
     /**
      * <h2>Пробует сохранить настройки в файл и в БД.</h2> {@link #getSessionProps()} .
      * <p>
-     * {@value ConstantsFor#APP_NAME} + {@link MailMessages#SOURCE_CLASS}
+     * + {@link MailMessages#SOURCE_CLASS}
      *
      * @param sessionProps настройки сокдинения.
      * @see InitProperties
      */
-    private void saveProps( Properties sessionProps ) {
+    private void saveProps(Properties sessionProps) {
         InitProperties initProperties = new FileProps(SOURCE_CLASS);
         initProperties.setProps(sessionProps);
         initProperties = new DBRegProperties("ru_vachok_sr-" + SOURCE_CLASS);
@@ -159,12 +163,12 @@ public class MailMessages implements Callable<Message[]> {
     static class Cleaner extends MailMessages {
 
 
-        static Message[] saveToDiskAndDelete( Folder inbox ) throws MessagingException {
+        static Message[] saveToDiskAndDelete(Folder inbox) throws MessagingException {
             Message[] mailMes = inbox.getMessages();
             for (Message message : mailMes) {
-                if (message.getSubject().toLowerCase().contains("speed:")) message.setFlag(Flags.Flag.DELETED , true);
+                if (message.getSubject().toLowerCase().contains("speed:")) message.setFlag(Flags.Flag.DELETED, true);
             }
-            Logger.getLogger(Cleaner.class.getSimpleName()).log(Level.INFO , inbox.getMessageCount() + " inbox size");
+            Logger.getLogger(Cleaner.class.getSimpleName()).log(Level.INFO, inbox.getMessageCount() + " inbox size");
             inbox.close(true);
             return mailMes;
         }

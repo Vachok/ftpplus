@@ -2,10 +2,11 @@ package ru.vachok.money.services;
 
 
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.money.DBMessage;
 
 import javax.mail.Address;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -28,18 +29,6 @@ public class TForms {
     private static MessageToUser messageToUser = new DBMessage();
 
     private List<String> fromArray = new ArrayList<>();
-    /*Constru*/
-    public TForms() {
-
-    }
-
-    public TForms(List<String> fromArray) {
-        this.fromArray = fromArray;
-    }
-
-    public TForms(Object[] fromOBJArray) {
-        Objects.requireNonNull(fromArray).add(Arrays.toString(fromOBJArray));
-    }
 
     /*PS Methods*/
     public static String toStringFromArray(StackTraceElement[] e) {
@@ -47,16 +36,6 @@ public class TForms {
             stringBuilder.append(element.toString()).append("\n");
         }
         return stringBuilder.toString();
-    }
-//unstat
-
-    public String toStringFromArray() {
-        String s = fromArray
-            .toString()
-            .replaceAll(", ", "<br>")
-            .replace("\\Q]\\E", "")
-            .replace("\\Q[\\E", "");
-        return s;
     }
 
     public String toStringFromArray(Map<String, String> map) {
@@ -73,6 +52,13 @@ public class TForms {
     public String toStringFromArray(Address[] from) {
         for(Address fr : from){
             stringBuilder.append(fr.toString()).append("\n");
+        }
+        return stringBuilder.toString();
+    }
+
+    public String toStringFromArray(List<String> stringList) {
+        for (String s : stringList) {
+            stringBuilder.append(s).append("\n");
         }
         return stringBuilder.toString();
     }
