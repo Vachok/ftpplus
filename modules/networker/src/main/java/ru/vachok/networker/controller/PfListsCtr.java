@@ -14,6 +14,7 @@ import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.PfLists;
 import ru.vachok.networker.logic.DBMessenger;
 import ru.vachok.networker.services.PfListsSrv;
+import ru.vachok.networker.services.VisitorSrv;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -39,6 +40,8 @@ public class PfListsCtr {
     private MessageToUser messageToUser = new DBMessenger();
 
     private ApplicationContext appCtx = IntoApplication.getAppCtx();
+
+    private VisitorSrv visitorSrv = appCtx.getBean(VisitorSrv.class);
 
     /**
      Map to show map.
@@ -80,6 +83,7 @@ public class PfListsCtr {
         if (request.getQueryString() != null) PfListsSrv.buildFactory();
         String msg = response.getBufferSize() + " resp buffer";
         logger.info(msg);
+        visitorSrv.makeVisit(request);
         return "pflists";
     }
 

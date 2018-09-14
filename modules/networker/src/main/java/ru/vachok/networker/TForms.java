@@ -108,4 +108,11 @@ public class TForms {
         }
         return nStringBuilder.toString();
     }
+
+    public String mapLongString(Map<Long, String> visitsMap) {
+        visitsMap.forEach((x, y) -> {
+            nStringBuilder.append(x).append(" | ").append(y).append("\n");
+        });
+        return nStringBuilder.toString();
+    }
 }

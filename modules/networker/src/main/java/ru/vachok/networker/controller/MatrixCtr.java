@@ -66,10 +66,17 @@ public class MatrixCtr {
                 return "logs";
             }
         } else {
+            visitorSrv.makeVisit(request);
             String userIP = userPC + ":" + request.getRemotePort() + "<-" + response.getStatus();
             model.addAttribute("yourip", userIP);
             model.addAttribute("Matrix", new Matrix());
-            model.addAttribute("visit", visitor.getTimeSt() + " timestamp");
+            if (ConstantsFor.getUserPC(request).toLowerCase().contains("10.200.213.85")) {
+                model.addAttribute("visit", visitor.toString() +
+                    "\nUNIQ:" + visitorSrv.uniqUsers() + "\n" +
+                    visitor.getDbInfo());
+            } else {
+                model.addAttribute("visit", visitor.getTimeSt() + " timestamp");
+            }
             return "starting";
         }
         return "starting";
@@ -99,6 +106,7 @@ public class MatrixCtr {
 
     @GetMapping("/matrix")
     public String showResults(HttpServletRequest request, Model model) {
+        visitorSrv.makeVisit(request);
         model.addAttribute("Matrix", matrix);
         model.addAttribute("workPos", matrix.getWorkPos());
         model.addAttribute("headtitle", matrix.getCountDB() + " позиций   " + TimeUnit.MILLISECONDS.toMinutes(
@@ -108,7 +116,7 @@ public class MatrixCtr {
 
     @GetMapping("/git")
     public String gitOn(Model model, HttpServletRequest request) {
-
+        visitorSrv.makeVisit(request);
         SSHFactory gitOner = new SSHFactory.Builder(ConstantsFor.SRV_GIT, "sudo cd /usr/home/ITDept;sudo git instaweb;exit").build();
         if (request.getQueryString() != null && request.getQueryString().equalsIgnoreCase("reboot")) {
             gitOner = new SSHFactory.Builder(ConstantsFor.SRV_GIT, "sudo reboot").build();

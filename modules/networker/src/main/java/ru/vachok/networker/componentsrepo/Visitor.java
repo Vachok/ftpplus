@@ -30,6 +30,26 @@ public class Visitor {
      */
     private String remAddr;
 
+    private String visitPlace;
+
+    private String dbInfo;
+
+    public String getVisitPlace() {
+        return visitPlace;
+    }
+
+    public void setVisitPlace(String visitPlace) {
+        this.visitPlace = visitPlace;
+    }
+
+    public String getDbInfo() {
+        return dbInfo;
+    }
+
+    public void setDbInfo(String dbInfo) {
+        this.dbInfo = dbInfo;
+    }
+
     private Map<Long, String> visitsMap = new ConcurrentHashMap<>();
 
     public Map<Long, String> getVisitsMap() {
@@ -45,6 +65,8 @@ public class Visitor {
         return "Visitor{" +
             "timeSt=" + timeSt +
             ", remAddr='" + remAddr + '\'' +
+            ", visitPlace='" + visitPlace + '\'' +
+            ", visitsMap=" + new TForms().mapLongString(visitsMap) +
             '}';
     }
 

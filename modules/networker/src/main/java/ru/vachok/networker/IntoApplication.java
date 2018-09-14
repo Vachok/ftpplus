@@ -100,7 +100,7 @@ public class IntoApplication {
                 " uptime days. Active threads = " +
                 Thread.activeCount() + ". This thread = " +
                 Thread.currentThread().getName() + "|" +
-                System.currentTimeMillis();
+                System.currentTimeMillis() + "\n";
             LOGGER.warn(msg);
             Thread.currentThread().interrupt();
         };
