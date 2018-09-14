@@ -11,16 +11,10 @@ import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.*;
 
 
@@ -47,6 +41,8 @@ public class SSHFactory implements Callable<String> {
     private String sessionType;
 
     private String userName;
+
+    private static Channel respChannel;
 
     public String getSessionType() {
         return sessionType;
@@ -79,22 +75,23 @@ public class SSHFactory implements Callable<String> {
 
     /*Instances*/
     private InputStream connect() throws IOException, JSchException {
-        StringBuilder returnMe = new StringBuilder();
-        Channel channel = chanRespChannel();
-        channel.connect();
-        boolean connected = channel.isConnected();
-        returnMe.append(connected + " channel");
+        chanRespChannel();
+        respChannel.connect();
+        boolean connected = respChannel.isConnected();
         if (!connected) {
             messageToUser.out("SSHFactory_67", ("Channel is NULL!" + "\n\n" + "\nSSHFactory.connect, and ID (lineNum) is 67").getBytes());
             messageToUser.infoNoTitles(MessageFormat.format("{0} id 82. {1}", SOURCE_CLASS, " JSch channel==null"));
+            respChannel.disconnect();
         } else {
-            ((ChannelExec) Objects.requireNonNull(channel)).setErrStream(new FileOutputStream(ConstantsFor.SSH_ERR));
-            return channel.getInputStream();
+            (( ChannelExec ) Objects.requireNonNull(respChannel)).setErrStream(new FileOutputStream(ConstantsFor.SSH_ERR));
+
+            return respChannel.getInputStream();
         }
+        respChannel.disconnect();
         throw new RejectedExecutionException("ХУЙ");
     }
 
-    private Channel chanRespChannel() throws JSchException {
+    private void chanRespChannel() throws JSchException {
         JSch jSch = new JSch();
         Session session = jSch.getSession(userName, getConnectToSrv());
         Properties properties;
@@ -112,10 +109,9 @@ public class SSHFactory implements Callable<String> {
         Objects.requireNonNull(session).setInputStream(System.in);
         String format = MessageFormat.format("{0} {1} connected {2}|SSHFactory.chanRespChannel line 83", session.getServerVersion(), session.getHost(), session.isConnected());
         LOGGER.info(format);
-        Channel channel = session.openChannel(sessionType);
-        ((ChannelExec) channel).setCommand(commandSSH);
-        Objects.requireNonNull(channel);
-        return channel;
+        respChannel = session.openChannel(sessionType);
+        (( ChannelExec ) respChannel).setCommand(commandSSH);
+        Objects.requireNonNull(respChannel);
     }
 
     private SSHFactory(Builder builder) {
@@ -141,6 +137,7 @@ public class SSHFactory implements Callable<String> {
             messageToUser.errorAlert(SOURCE_CLASS, " Exception id 123", e.getMessage() + "\n" + Arrays.toString(e.getStackTrace()));
             return e.getMessage();
         }
+
         return retString;
     }
 
@@ -168,7 +165,8 @@ public class SSHFactory implements Callable<String> {
     public static class Builder implements Callable<Map<String, Boolean>> {
 
         /*Fields*/
-        private static final ExecutorService EXECUTOR_SERVICE = Executors.unconfigurableExecutorService(Executors.newCachedThreadPool());
+        private static final ExecutorService EXECUTOR_SERVICE =
+            Executors.unconfigurableExecutorService(Executors.newCachedThreadPool());
 
         private String userName = "ITDept";
 

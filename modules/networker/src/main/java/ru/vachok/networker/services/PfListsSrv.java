@@ -75,5 +75,6 @@ public class PfListsSrv {
         buildFactoryMetrics = (float) (endMeth - startMeth) / 1000f / 60f;
         String msg = buildFactoryMetrics + " min elapsed";
         LOGGER.info(msg);
+        Thread.currentThread().interrupt();
     }
 }

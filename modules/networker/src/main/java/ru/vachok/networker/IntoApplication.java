@@ -102,7 +102,6 @@ public class IntoApplication {
                 Thread.currentThread().getName() + "|" +
                 System.currentTimeMillis();
             LOGGER.warn(msg);
-            System.gc();
             Thread.currentThread().interrupt();
         };
         int delay = new Random().nextInt((int) TimeUnit.MINUTES.toSeconds(25));
