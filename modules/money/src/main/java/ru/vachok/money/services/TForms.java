@@ -4,9 +4,7 @@ package ru.vachok.money.services;
 import ru.vachok.messenger.MessageToUser;
 
 import javax.mail.Address;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 /**
@@ -29,6 +27,23 @@ public class TForms {
     private static MessageToUser messageToUser = new DBMessage();
 
     private List<String> fromArray = new ArrayList<>();
+
+    public String toStringFromArray(Collection<String> headerNames) {
+        stringBuilder.append("<p>");
+        headerNames.forEach(x -> stringBuilder.append(x).append("<br>"));
+        stringBuilder.append("</p>");
+        return stringBuilder.toString();
+    }
+
+    public String toStringFromArray(Exception e) {
+        stringBuilder.append("<p>");
+        for(StackTraceElement stackTraceElement : e.getStackTrace()){
+            stringBuilder.append(stackTraceElement.getLineNumber() +
+                " line, in " + stackTraceElement.getClassName() + "." + stackTraceElement.getMethodName() + " exception: " +
+                stackTraceElement.toString());
+        }
+        return stringBuilder.toString();
+    }
 
     /*PS Methods*/
     public static String toStringFromArray(StackTraceElement[] e) {
