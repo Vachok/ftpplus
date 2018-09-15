@@ -49,6 +49,7 @@ public class DeviceLocator {
         }
         String country = locale.getCountry() + " " + locale.getLanguage();
         LOGGER.info(country);
+
         geoLocation.append(country).append("</p>");
         return geoLocation.toString();
     }

@@ -43,7 +43,18 @@ public class XmlNode {
         this.value = value;
     }
 
+    @Override
+    public String toString() {
+        return "XmlNode{" +
+            "counter=" + counter +
+            ", event=" + event +
+            ", name='" + name + '\'' +
+            ", value='" + value + '\'' +
+            '}';
+    }
+
     public void setLevel(int event) {
         this.event = event;
     }
+
 }

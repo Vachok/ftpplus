@@ -5,9 +5,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import ru.vachok.money.config.AppComponents;
 import ru.vachok.money.services.ParserCBRru;
-import ru.vachok.money.services.TForms;
-
-import javax.xml.stream.XMLStreamException;
+import ru.vachok.money.services.SpeedRunActualize;
 
 import static org.springframework.boot.SpringApplication.run;
 
@@ -23,11 +21,14 @@ public class MoneyApplication {
     public static void main(String[] args) {
         run(MoneyApplication.class , args);
         ParserCBRru cbrBean = ConstantsFor.CONTEXT.getBean(ParserCBRru.class);
-        try {
-            LOGGER.info(new TForms().toStringFromArray(cbrBean.parseList()));
-        } catch (XMLStreamException e) {
-            LOGGER.error(e.getMessage(), e);
-        }
-        LOGGER.info(cbrBean.usdCur());
+        SpeedRunActualize speedRunActualize = ConstantsFor.CONTEXT.getBean(SpeedRunActualize.class);
+        LOGGER.info(speedRunActualize.call());
+        cbrBean.getMap("table").forEach((x, y) -> {
+            String msg = x + " Integer";
+            LOGGER.info(msg);
+            LOGGER.info(y.toString());
+        });
+        String s = cbrBean.parseTag("table");
+        LOGGER.info(s);
     }
 }

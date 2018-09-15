@@ -5,15 +5,14 @@ import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.messenger.email.ESender;
+import ru.vachok.money.config.AppComponents;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
 
 import javax.mail.*;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Objects;
-import java.util.Properties;
+import java.io.IOException;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -32,6 +31,9 @@ public class MailMessages implements Callable<Message[]> {
     private static final String SOURCE_CLASS = MailMessages.class.getSimpleName();
 
     private boolean cleanMBox;
+
+    /*Fields*/
+    private static final org.slf4j.Logger LOGGER = AppComponents.getLogger();
 
     private ESender senderToGmail = new ESender("143500@gmail.com");
 
@@ -78,6 +80,16 @@ public class MailMessages implements Callable<Message[]> {
             }
         } catch (MessagingException e) {
             Logger.getLogger(SOURCE_CLASS).log(Level.WARNING, String.format("%s%n%n%s", e.getMessage(), Arrays.toString(e.getStackTrace())));
+        }
+        if(messages.length > 0){
+            for(Message m : messages){
+                try{
+                    senderToGmail.info(new TForms().toStringFromArray(m.getFrom()), m.getSubject(), m.getContent().toString());
+                }
+                catch(MessagingException | IOException e){
+                    LOGGER.error(e.getMessage(), e);
+                }
+            }
         }
         return messages;
     }

@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import ru.vachok.money.ConstantsFor;
 import ru.vachok.money.config.AppComponents;
 import ru.vachok.money.other.StaxStreamProcessor;
+import ru.vachok.money.other.XmlNode;
 
 import javax.xml.stream.XMLStreamException;
 import java.io.BufferedInputStream;
@@ -14,93 +15,138 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.RejectedExecutionException;
 
 
 /**
- * <h1>Тянет курсы USD и EURO</h1>
- *
- * @since 12.08.2018 (16:12)
- */
-@Service("parsercb")
+ <h1>Тянет курсы USD и EURO</h1>
+
+ @since 12.08.2018 (16:12) */
+@Service ("parsercb")
 public class ParserCBRru {
 
+    /*Fields*/
+
     /**
-     * Simple Name класса, для поиска настроек
+     Simple Name класса, для поиска настроек
      */
     private static final String SOURCE_CLASS = ParserCBRru.class.getSimpleName();
 
     private static final Logger LOGGER = AppComponents.getLogger();
 
-    private final String spec = "http://cbr.ru/currency_base/daily/";
-
     private URL url = getUrl();
 
-    private URL getUrl() {
-        URL url = null;
-        try {
-            url = new URL(spec);
-            return url;
-        } catch (MalformedURLException e) {
-            LOGGER.info(e.getMessage(), e);
-        }
-        throw new IllegalArgumentException();
+    private InputStream inputStream;
+
+    private final String spec = "http://cbr.ru/currency_base/daily/";
+
+    public InputStream getInputStream() {
+        return inputStream;
     }
 
-    private ParserCBRru() {
+    public void setInputStream(InputStream inputStream) {
+        this.inputStream = inputStream;
     }
 
     public static ParserCBRru getParser() {
-        return new ParserCBRru();
+        try{
+            ParserCBRru parserCBRru = new ParserCBRru();
+            parserCBRru.setInputStream(parserCBRru.getUrl().openStream());
+            return parserCBRru;
+        }
+        catch(IOException e){
+            LOGGER.error(e.getMessage(), e);
+            throw new RejectedExecutionException();
+        }
+    }
+
+    private URL getUrl() {
+
+        try{
+            URL url = new URL(spec);
+            return url;
+        }
+        catch(MalformedURLException e){
+            LOGGER.info(e.getMessage(), e);
+            throw new RejectedExecutionException();
+        }
+    }
+
+    /*Instances*/
+    private ParserCBRru() {
     }
 
     public String usdCur() {
         String usdToday = "USD Today";
-        try {
+        try{
             List<String> list = parseList();
-        } catch (XMLStreamException e) {
+        }
+        catch(XMLStreamException e){
             LOGGER.error(e.getMessage(), e);
         }
         return usdToday;
     }
 
+    private List<String> parseList() throws XMLStreamException {
+        throw new IllegalAccessError();
+    }
+
+    public String parseTag(String table) {
+        String retTag = "";
+        try{
+            StaxStreamProcessor staxStreamProcessor = new StaxStreamProcessor(getUrl().openStream());
+
+            retTag = staxStreamProcessor.readAttribute(table);
+        }
+        catch(XMLStreamException | IOException e){
+            LOGGER.error(e.getMessage(), e);
+            return e.getMessage() + "\n" + new TForms().toStringFromArray(e);
+        }
+        return retTag;
+    }
+
+    public Map<Integer, XmlNode> getMap(String tagName) {
+        try{
+            StaxStreamProcessor staxStreamProcessor = new StaxStreamProcessor(getUrl().openStream());
+            Map<Integer, XmlNode> integerXmlNodeMap = staxStreamProcessor.buildXmlElementsTree();
+            if(integerXmlNodeMap.size() > 2){
+                return integerXmlNodeMap;
+            }
+            else{
+                throw new IllegalStateException();
+            }
+        }
+        catch(XMLStreamException | IOException e){
+            LOGGER.error(e.getMessage(), e);
+            throw new RejectedExecutionException();
+        }
+    }
+
+    public String euroCur() {
+        return "No EURO";
+    }
+
     private String parseCbr() {
 
         StringBuilder stringBuilder = new StringBuilder();
-        try {
+        try{
             url = new URL(spec);
-            try (InputStream inputStream = url.openStream();
-                 BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream)) {
+            try(InputStream inputStream = url.openStream();
+                BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream)){
                 byte[] bytes = new byte[ConstantsFor.MEGABYTE];
-                while (inputStream.available() > 0) {
+                while(inputStream.available() > 0){
                     int read = bufferedInputStream.read(bytes);
 
                 }
                 stringBuilder.append(new String(bytes, StandardCharsets.UTF_8));
                 return stringBuilder.toString();
             }
-        } catch (IOException e) {
+        }
+        catch(IOException e){
             LOGGER.error(e.getMessage(), e);
         }
         return "No Currency!";
-    }
-
-
-    public String euroCur() {
-        return "No EURO";
-    }
-
-    public List<String> parseList() throws XMLStreamException {
-        List<String> list = new ArrayList<>();
-        try (InputStream inputStream = url.openStream()) {
-            StaxStreamProcessor staxStreamProcessor = new StaxStreamProcessor(inputStream);
-            list = staxStreamProcessor.readAllTagNames();
-            LOGGER.info(new TForms().toStringFromArray(list));
-            return list;
-        } catch (IOException e) {
-            LOGGER.info(e.getMessage(), e);
-        }
-        return list;
     }
 }
