@@ -45,6 +45,14 @@ public class TForms {
         return stringBuilder.toString();
     }
 
+    public String mapLongString(Map<Long, String> cookiesToShow) {
+        stringBuilder.append("LongString:\n");
+        cookiesToShow.forEach((x, y) -> {
+            stringBuilder.append(new Date(x)).append(": ").append(y).append("\n");
+        });
+        return stringBuilder.toString();
+    }
+
     /*PS Methods*/
     public static String toStringFromArray(StackTraceElement[] e) {
         for(StackTraceElement element : e){
