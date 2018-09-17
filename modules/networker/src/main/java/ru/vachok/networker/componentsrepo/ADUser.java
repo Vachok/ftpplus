@@ -2,17 +2,18 @@ package ru.vachok.networker.componentsrepo;
 
 
 import org.slf4j.Logger;
+import org.springframework.stereotype.Component;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.Scanner;
 
 
 /**
  @since 30.08.2018 (10:11) */
+@Component("aduser")
 public class ADUser {
 
-    private Logger logger = AppComponents.getLogger();
+
+    private static final Logger LOGGER = AppComponents.getLogger();
 
     private String defaultDomainName = "EATMEAT";
 
@@ -23,6 +24,18 @@ public class ADUser {
     private String userRealName;
 
     private String userSurname;
+
+    @Override
+    public String toString() {
+        return "ADUser{" +
+            "defaultDomainName='" + defaultDomainName + '\'' +
+            ", userDomain='" + userDomain + '\'' +
+            ", userName='" + userName + '\'' +
+            ", userRealName='" + userRealName + '\'' +
+            ", userSurname='" + userSurname + '\'' +
+            ", userPhoto=" + userPhoto +
+            '}';
+    }
 
     private File userPhoto;
 
@@ -72,14 +85,5 @@ public class ADUser {
 
     public void setUserDomain(String userDomain) {
         this.userDomain = userDomain;
-    }
-
-    public void initUser() {
-        File fileFromActDirectory = new File("adusers.txt");
-        try(Scanner scanner = new Scanner(fileFromActDirectory)){
-            throw new UnsupportedOperationException("Not ready 05.09.2018 (21:56)"); //todo 05.09.2018 (21:56)
-        } catch(IOException e){
-            logger.error(e.getMessage(), e);
-        }
     }
 }

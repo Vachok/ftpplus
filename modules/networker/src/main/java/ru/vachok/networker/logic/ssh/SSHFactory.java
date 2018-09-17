@@ -11,11 +11,18 @@ import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.RejectedExecutionException;
 
 
 /**
@@ -23,7 +30,7 @@ import java.util.concurrent.*;
  * <p>
  * Фабрика, для ssh-комманд.
  */
-public class SSHFactory implements Callable<String> {
+public class SSHFactory {
 
     /*Fields*/
     private static final Logger LOGGER = AppComponents.getLogger();
@@ -42,7 +49,7 @@ public class SSHFactory implements Callable<String> {
 
     private String userName;
 
-    private static Channel respChannel;
+    private Channel respChannel;
 
     public String getSessionType() {
         return sessionType;
@@ -83,7 +90,7 @@ public class SSHFactory implements Callable<String> {
             messageToUser.infoNoTitles(MessageFormat.format("{0} id 82. {1}", SOURCE_CLASS, " JSch channel==null"));
             respChannel.disconnect();
         } else {
-            (( ChannelExec ) Objects.requireNonNull(respChannel)).setErrStream(new FileOutputStream(ConstantsFor.SSH_ERR));
+            ((ChannelExec) Objects.requireNonNull(respChannel)).setErrStream(new FileOutputStream(ConstantsFor.SSH_ERR));
 
             return respChannel.getInputStream();
         }
@@ -101,16 +108,16 @@ public class SSHFactory implements Callable<String> {
             LOGGER.error(e.getMessage(), e);
             initProperties = new FileProps(SOURCE_CLASS);
             properties = initProperties.getProps();
-
         }
         jSch.addIdentity(pem());
         session.setConfig(properties);
         session.connect(ConstantsFor.TIMEOUT_5);
         Objects.requireNonNull(session).setInputStream(System.in);
-        String format = MessageFormat.format("{0} {1} connected {2}|SSHFactory.chanRespChannel line 83", session.getServerVersion(), session.getHost(), session.isConnected());
+        String format = MessageFormat.format("{0} {1} connected {2}|SSHFactory.chanRespChannel line 83",
+            session.getServerVersion(), session.getHost(), session.isConnected());
         LOGGER.info(format);
         respChannel = session.openChannel(sessionType);
-        (( ChannelExec ) respChannel).setCommand(commandSSH);
+        ((ChannelExec) respChannel).setCommand(commandSSH);
         Objects.requireNonNull(respChannel);
     }
 
@@ -119,26 +126,23 @@ public class SSHFactory implements Callable<String> {
         this.commandSSH = builder.commandSSH;
         this.sessionType = builder.sessionType;
         this.userName = builder.userName;
-        String pass = builder.pass;
     }
 
-    @Override
     public String call() {
         String retString = this.getCommandSSH() + " " + this.pem();
         try (InputStream connect = connect()) {
             retString = retString + " connect = " + connect().available();
-            byte[] bytes = new byte[ConstantsFor.MBYTE];
+            byte[] bytes = new byte[ConstantsFor.KBYTE * 20];
             while (connect.available() > 0) {
                 int r = connect.read(bytes);
                 messageToUser.infoNoTitles("connect read bytes = " + r);
             }
             retString = retString + " " + new String(bytes, StandardCharsets.UTF_8);
+            return retString;
         } catch (IOException | JSchException e) {
             messageToUser.errorAlert(SOURCE_CLASS, " Exception id 123", e.getMessage() + "\n" + Arrays.toString(e.getStackTrace()));
             return e.getMessage();
         }
-
-        return retString;
     }
 
     public String getConnectToSrv() {
@@ -162,12 +166,9 @@ public class SSHFactory implements Callable<String> {
      * <p>
      * Сам строитель.
      */
-    public static class Builder implements Callable<Map<String, Boolean>> {
+    public static class Builder {
 
         /*Fields*/
-        private static final ExecutorService EXECUTOR_SERVICE =
-            Executors.unconfigurableExecutorService(Executors.newCachedThreadPool());
-
         private String userName = "ITDept";
 
         private String pass;
@@ -258,8 +259,6 @@ public class SSHFactory implements Callable<String> {
             return pass;
         }
 
-        /*Instances*/
-        @Override
         public Map<String, Boolean> call() {
             Map<String, Boolean> myHashMap = new ConcurrentHashMap<>();
             String b = new SSHFactory(this).call();

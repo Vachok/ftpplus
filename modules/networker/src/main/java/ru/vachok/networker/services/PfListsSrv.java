@@ -20,8 +20,6 @@ import java.util.Date;
 @Service
 public class PfListsSrv {
 
-    /*Fields*/
-    private static final String SOURCE_CLASS = PfListsSrv.class.getSimpleName();
 
     private static float buildFactoryMetrics;
 
@@ -47,29 +45,29 @@ public class PfListsSrv {
 
     public static void buildFactory() {
         long startMeth = System.currentTimeMillis();
+
         PfLists pfLists = ctx.getBean(PfLists.class);
-        SSHFactory build = new SSHFactory.Builder(ConstantsFor.SRV_NAT, "uname -a").build();
+        SSHFactory build = new SSHFactory.Builder(ConstantsFor.SRV_NAT, "uname -a;exit").build();
         pfLists.setuName(build.call());
 
-        build.setCommandSSH("sudo cat /etc/pf/vipnet");
+        build.setCommandSSH("sudo cat /etc/pf/vipnet;exit");
         pfLists.setVipNet(build.call());
 
-        build.setCommandSSH("sudo cat /etc/pf/squid");
+        build.setCommandSSH("sudo cat /etc/pf/squid;exit");
         pfLists.setStdSquid(build.call());
 
-        build.setCommandSSH("sudo cat /etc/pf/tempfull");
+        build.setCommandSSH("sudo cat /etc/pf/tempfull;exit");
         pfLists.setFullSquid(build.call());
 
-        build.setCommandSSH("sudo cat /etc/pf/squidlimited");
+        build.setCommandSSH("sudo cat /etc/pf/squidlimited;exit");
         pfLists.setLimitSquid(build.call());
 
-        build.setCommandSSH("pfctl -s nat");
+        build.setCommandSSH("pfctl -s nat;exit");
         pfLists.setPfNat(build.call());
 
-        build.setCommandSSH("pfctl -s rules");
+        build.setCommandSSH("pfctl -s rules;exit");
         pfLists.setPfRules(build.call());
-
-        SSHFactory buildGit = new SSHFactory.Builder(ConstantsFor.SRV_GIT, "sudo /etc/stat.script").build();
+        SSHFactory buildGit = new SSHFactory.Builder(ConstantsFor.SRV_GIT, "sudo /etc/stat.script;exit").build();
         long endMeth = System.currentTimeMillis();
         buildGit.call();
         pfLists.setGitStats(new Date(endMeth) + " время обновления\n" +

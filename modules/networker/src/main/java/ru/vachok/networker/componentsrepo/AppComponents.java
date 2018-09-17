@@ -24,7 +24,7 @@ public class AppComponents {
         return LoggerFactory.getLogger("ru_vachok_networker");
     }
 
-    @Bean (initMethod = "initUser", destroyMethod = "rmUser")
+    @Bean()
     @Scope ("prototype")
     public ADUser adUser() {
         ADUser adUser = new ADUser();

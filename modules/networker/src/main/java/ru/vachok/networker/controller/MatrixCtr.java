@@ -34,11 +34,6 @@ public class MatrixCtr {
 
     /*Fields*/
 
-    /**
-     * Simple Name класса, для поиска настроек
-     */
-    private static final String SOURCE_CLASS = MatrixCtr.class.getSimpleName();
-
     private static final Logger LOGGER = AppComponents.getLogger();
 
     private static AnnotationConfigApplicationContext appCtx = IntoApplication.getAppCtx();
@@ -62,7 +57,7 @@ public class MatrixCtr {
                     userPC.contains("10.200.213") ||
                     userPC.contains("10.10.111"));
             if (queryString.equalsIgnoreCase("eth") && pcAuth) {
-                model = lastLogsGetter(model);
+                lastLogsGetter(model);
                 return "logs";
             }
         } else {
@@ -70,7 +65,8 @@ public class MatrixCtr {
             String userIP = userPC + ":" + request.getRemotePort() + "<-" + response.getStatus();
             model.addAttribute("yourip", userIP);
             model.addAttribute("Matrix", new Matrix());
-            if (ConstantsFor.getUserPC(request).toLowerCase().contains("10.200.213.85")) {
+
+            if (ConstantsFor.getUserPC(request).toLowerCase().contains(ConstantsFor.NO0027)) {
                 model.addAttribute("visit", visitor.toString() +
                     "\nUNIQ:" + visitorSrv.uniqUsers() + "\n" +
                     visitor.getDbInfo());

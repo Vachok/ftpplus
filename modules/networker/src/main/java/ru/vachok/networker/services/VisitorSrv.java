@@ -78,7 +78,7 @@ public class VisitorSrv {
              ResultSet r = p.executeQuery()) {
             String msg = "";
             while (r.next()) {
-                msg = p.getMetaData().getColumnCount() + " collumns";
+                if (r.last()) msg = r.getString("msgtype");
                 LOGGER.info(msg);
             }
             return msg;

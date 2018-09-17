@@ -33,8 +33,6 @@ public class PfListsCtr {
     /*Fields*/
     private static final Map<String, String> SHOW_ME = new ConcurrentHashMap<>();
 
-    private static final String SOURCE_CLASS = PfListsCtr.class.getName();
-
     private static Logger logger = AppComponents.getLogger();
 
     private MessageToUser messageToUser = new DBMessenger();

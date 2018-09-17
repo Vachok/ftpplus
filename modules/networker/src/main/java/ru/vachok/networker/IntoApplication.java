@@ -7,22 +7,25 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.concurrent.ScheduledExecutorTask;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.logic.DBMessenger;
+import ru.vachok.networker.logic.PhotoConverter;
 import ru.vachok.networker.services.PfListsSrv;
 
 import javax.servlet.http.HttpServletRequest;
+import java.security.SecureRandom;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.Random;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 
@@ -36,8 +39,6 @@ public class IntoApplication {
 
     /*Fields*/
     private static final MessageToUser DB_MSG = new DBMessenger();
-
-    private static final String SOURCE_CLASS = IntoApplication.class.getSimpleName();
 
     private static final Logger LOGGER = AppComponents.getLogger();
 
@@ -60,7 +61,8 @@ public class IntoApplication {
         infoForU(appCtx);
         Runtime.getRuntime().addShutdownHook(new Thread(() -> new Visitor().shutdownHook()));
         appCtx.registerShutdownHook();
-        PfListsSrv.buildFactory();
+        List<String> list = new PhotoConverter().psCommands();
+        new TForms().fromArray(list);
     }
 
     private static void infoForU(ApplicationContext appCtx) {
@@ -89,12 +91,11 @@ public class IntoApplication {
         }
     }
 
-    public static void scheduleAns() {
-        ScheduledExecutorService executorService =
-            Executors.unconfigurableScheduledExecutorService(Executors.newSingleThreadScheduledExecutor());
+    private static void scheduleAns() {
+        TaskExecutor executor = new ThreadConfig().threadPoolTaskExecutor();
         Runnable runnable = () -> {
             Thread.currentThread().setName("id " + System.currentTimeMillis());
-            float upTime = (float) (System.currentTimeMillis() - ConstantsFor.START_STAMP) / TimeUnit.HOURS.toMillis(1);
+            float upTime = (float) (System.currentTimeMillis() - ConstantsFor.START_STAMP) / TimeUnit.DAYS.toMillis(1);
             PfListsSrv.buildFactory();
             String msg = upTime +
                 " uptime days. Active threads = " +
@@ -104,16 +105,15 @@ public class IntoApplication {
             LOGGER.warn(msg);
             Thread.currentThread().interrupt();
         };
-        int delay = new Random().nextInt((int) TimeUnit.MINUTES.toSeconds(25));
-        int init = new Random().nextInt((int) TimeUnit.MINUTES.toSeconds(6));
+        int delay = new SecureRandom().nextInt((int) TimeUnit.MINUTES.toSeconds(250));
+        int init = new SecureRandom().nextInt((int) TimeUnit.MINUTES.toSeconds(60));
         if (ConstantsFor.THIS_PC_NAME.toLowerCase().contains("no0027") ||
             ConstantsFor.THIS_PC_NAME.equalsIgnoreCase("home")) {
             init = 20;
             delay = 40;
         }
-        executorService.scheduleWithFixedDelay(runnable, init, delay, TimeUnit.SECONDS);
-        String msg = executorService.toString() + " " + init + " init ," + delay + " delay";
-        LOGGER.info(msg);
+        ScheduledExecutorTask scheduledExecutorTask = new ThreadConfig().taskScheduler(runnable, init, delay);
+        executor.execute(runnable);
     }
 
 }

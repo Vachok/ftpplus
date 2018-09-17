@@ -7,7 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Random;
+import java.security.SecureRandom;
 
 
 /**
@@ -21,7 +21,7 @@ public enum ConstantsFor {
      */
     public static final int MBYTE = 1024 * 1024;
 
-    public static final String NO0027_EATMEAT_RU = "10.200.213.85";
+    public static final String NO0027 = "10.200.213.85";
 
     public static final String DB_PREFIX = "u0466446_";
 
@@ -41,6 +41,26 @@ public enum ConstantsFor {
 
     public static final int TIMEOUT_5 = 5000;
 
+    public static final long DELAY = new SecureRandom().nextInt(600);
+
+    public static final int DOPC = 250;
+
+    public static final int APC = 350;
+
+    public static final int TDPC = 15;
+
+    public static final int TIMEOUT_650 = 650;
+
+    public static final long INIT_DELAY = 20;
+
+    public static int KBYTE = 1024;
+
+    public static final long START_STAMP = System.currentTimeMillis();
+
+    public static final String APP_NAME = "ru_vachok_networker-";
+
+    public static final String THIS_PC_NAME = thisPC();
+
     public static String consString() {
         return "ConstantsFor{" +
             "APC=" + APC +
@@ -52,7 +72,7 @@ public enum ConstantsFor {
             ", INIT_DELAY=" + INIT_DELAY +
             ", KBYTE=" + KBYTE +
             ", MBYTE=" + MBYTE +
-            ", NO0027_EATMEAT_RU='" + NO0027_EATMEAT_RU + '\'' +
+            ", NO0027='" + NO0027 + '\'' +
             ", NOPC=" + NOPC +
             ", PPPC=" + PPPC +
             ", SRV_NAT='" + SRV_NAT + '\'' +
@@ -65,26 +85,6 @@ public enum ConstantsFor {
             ", TIMEOUT_650=" + TIMEOUT_650 +
             '}';
     }
-
-    public static final int DOPC = 250;
-
-    public static final int APC = 350;
-
-    public static final int TDPC = 15;
-
-    public static final int TIMEOUT_650 = 650;
-
-    public static final long INIT_DELAY = 20;
-
-    public static final long DELAY = new Random().nextInt(600);
-
-    public static final long START_STAMP = System.currentTimeMillis();
-
-    public static final String APP_NAME = "ru_vachok_networker-";
-
-    public static final String THIS_PC_NAME = thisPC();
-
-    public static long KBYTE = 1024;
 
     public static AsyncService asyncService = new AsyncService();
 

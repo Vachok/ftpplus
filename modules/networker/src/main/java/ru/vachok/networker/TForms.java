@@ -33,9 +33,7 @@ public class TForms {
 
     public String fromArray(Map<String, String> stringStringMap) {
         List<String> list = new ArrayList<>();
-        stringStringMap.forEach((x, y) -> {
-            list.add(x + "    " + y + "<br>\n");
-        });
+        stringStringMap.forEach((x, y) -> list.add(x + "    " + y + "<br>\n"));
         Collections.sort(list);
         for (String s : list) {
             brStringBuilder.append(s);
@@ -110,9 +108,7 @@ public class TForms {
     }
 
     public String mapLongString(Map<Long, String> visitsMap) {
-        visitsMap.forEach((x, y) -> {
-            nStringBuilder.append(x).append(" | ").append(y).append("\n");
-        });
+        visitsMap.forEach((x, y) -> nStringBuilder.append(x).append(" | ").append(y).append("\n"));
         return nStringBuilder.toString();
     }
 }
