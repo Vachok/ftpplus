@@ -42,6 +42,13 @@ public class PfLists {
 
     private String gitStats;
 
+    private long timeUpd;
+
+    /*Get&Set*/
+    public long getTimeUpd() {
+        return timeUpd;
+    }
+
     public String getGitStats() {
         return gitStats;
     }
@@ -52,7 +59,9 @@ public class PfLists {
 
     private String uName;
 
-    /*Get&Set*/
+    public void setTimeUpd(long timeUpd) {
+        this.timeUpd = timeUpd;
+    }
     public void setuName(String uName) {
         this.uName = uName;
     }

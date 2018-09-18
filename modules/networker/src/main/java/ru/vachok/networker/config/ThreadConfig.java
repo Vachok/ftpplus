@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.concurrent.ScheduledExecutorTask;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 import java.util.concurrent.TimeUnit;
 
@@ -23,12 +24,18 @@ public class ThreadConfig {
         return executor;
     }
 
-    public ScheduledExecutorTask taskScheduler(Runnable r, long delay, long period) {
+    public ScheduledExecutorTask taskScheduler(long delay, long period) {
         ScheduledExecutorTask scheduledExecutorTask = new ScheduledExecutorTask();
         scheduledExecutorTask.setDelay(delay);
         scheduledExecutorTask.setPeriod(period);
         scheduledExecutorTask.setTimeUnit(TimeUnit.SECONDS);
-        scheduledExecutorTask.setRunnable(r);
         return scheduledExecutorTask;
+    }
+
+    public ThreadPoolTaskScheduler threadPoolTaskScheduler() {
+        ThreadPoolTaskScheduler threadPoolTaskScheduler = new ThreadPoolTaskScheduler();
+        threadPoolTaskScheduler.setPoolSize(2);
+        threadPoolTaskScheduler.initialize();
+        return threadPoolTaskScheduler;
     }
 }

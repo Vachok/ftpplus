@@ -50,7 +50,7 @@ public class ActiveDirCtr {
             model.addAttribute("pscommands", photoConverter.psCommands());
         } catch (NullPointerException | IOException e) {
             LOGGER.error(e.getMessage(), e);
-            model.addAttribute("error", "Не верно указан путь до папки с png-файлами.");
+            model.addAttribute("error", "Не верно указан путь до папки с файлами.");
             return "error";
         }
         return "ad";

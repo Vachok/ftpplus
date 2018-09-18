@@ -6,7 +6,6 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.stereotype.Service;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.IntoApplication;
-import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.PfLists;
 import ru.vachok.networker.logic.ssh.SSHFactory;
@@ -43,7 +42,7 @@ public class PfListsSrv {
     /*Instances*/
 
 
-    public static void buildFactory() {
+    public void buildFactory() {
         long startMeth = System.currentTimeMillis();
 
         PfLists pfLists = ctx.getBean(PfLists.class);
@@ -69,11 +68,9 @@ public class PfListsSrv {
         pfLists.setPfRules(build.call());
         SSHFactory buildGit = new SSHFactory.Builder(ConstantsFor.SRV_GIT, "sudo /etc/stat.script;exit").build();
         long endMeth = System.currentTimeMillis();
+        pfLists.setTimeUpd(endMeth);
         buildGit.call();
-        pfLists.setGitStats(new Date(endMeth) + " время обновления\n" +
-            new TForms().fromArray(ctx.getBeanDefinitionNames()));
-        endDate = new Date(endMeth);
-        buildFactoryMetrics = (float) (endMeth - startMeth) / 1000f / 60f;
+        pfLists.setGitStats(new Date(endMeth) + " время обновления\n");
         String msg = buildFactoryMetrics + " min elapsed";
         LOGGER.info(msg);
         Thread.currentThread().interrupt();

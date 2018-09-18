@@ -3,25 +3,27 @@ package ru.vachok.networker.controller;
 
 import org.slf4j.Logger;
 import org.springframework.context.ApplicationContext;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.PfLists;
+import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.logic.DBMessenger;
 import ru.vachok.networker.services.PfListsSrv;
 import ru.vachok.networker.services.VisitorSrv;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
+import java.security.SecureRandom;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.*;
 
 
 /**
@@ -33,43 +35,21 @@ public class PfListsCtr {
     /*Fields*/
     private static final Map<String, String> SHOW_ME = new ConcurrentHashMap<>();
 
-    private static Logger logger = AppComponents.getLogger();
+    private static final Logger LOGGER = AppComponents.getLogger();
 
     private MessageToUser messageToUser = new DBMessenger();
 
-    private ApplicationContext appCtx = IntoApplication.getAppCtx();
+    private static final ApplicationContext APP_CTX = IntoApplication.getAppCtx();
 
-    private VisitorSrv visitorSrv = appCtx.getBean(VisitorSrv.class);
+    private VisitorSrv visitorSrv = APP_CTX.getBean(VisitorSrv.class);
 
-    /**
-     Map to show map.
+    private PfLists pfLists = APP_CTX.getBean(PfLists.class);
 
-     @param httpServletRequest  the http servlet request
-     @param httpServletResponse the http servlet response
-     @return the map
-     @throws IOException the io exception
-     */
-    @RequestMapping ("/ind")
-    public String mapToShow(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Model model) throws IOException {
-        SHOW_ME.put("addr", httpServletRequest.getRemoteAddr());
-        SHOW_ME.put("host", httpServletRequest.getRequestURL().toString());
-        SHOW_ME.forEach((x, y) -> messageToUser.info(this.getClass().getSimpleName(), x, y));
-        SHOW_ME.put("status", httpServletResponse.getStatus() + " " + httpServletResponse.getBufferSize() + " buff");
-        String s = httpServletRequest.getQueryString();
-        if(s!=null){
-            SHOW_ME.put(this.toString(), s);
-            if(s.contains("go")){
-                httpServletResponse.sendRedirect("http://ftpplus.vachok.ru/docs");
-            }
-        }
-        model.addAttribute("constfor", ConstantsFor.consString());
-        return "index";
-    }
+    private PfListsSrv pfListsSrv = APP_CTX.getBean(PfListsSrv.class);
 
     @GetMapping ("/pflists")
     public String pfBean(Model model, HttpServletRequest request, HttpServletResponse response) {
         visitorSrv.makeVisit(request);
-        PfLists pfLists = appCtx.getBean(PfLists.class);
         model.addAttribute("pfLists", pfLists);
         model.addAttribute("metric", Thread.activeCount() + " thr, active");
         model.addAttribute("vipnet", pfLists.getVipNet());
@@ -79,11 +59,21 @@ public class PfListsCtr {
         model.addAttribute("nat", pfLists.getPfNat());
         model.addAttribute("rules", pfLists.getPfRules());
         model.addAttribute("gitstats", pfLists.getGitStats());
-        if (request.getQueryString() != null) {
-            PfListsSrv.buildFactory();
-            return "redirect:/pflists";
+        if(request.getQueryString()!=null){
+            new Thread(() -> pfListsSrv.buildFactory()).start();
         }
-        return "pflists";
+        if(pfLists.getTimeUpd() + TimeUnit.MINUTES.toMillis(7) < System.currentTimeMillis()){
+            LOGGER.warn("5 minutes!!");
+            new Thread(() -> pfListsSrv.buildFactory()).start();
+            return "pflists";
+        }
+        else{
+            String msg = "" + ( float ) (TimeUnit
+                                             .MILLISECONDS.toSeconds(System.currentTimeMillis() - pfLists.getTimeUpd())) / 60;
+            LOGGER.warn(msg);
+            return "pflists";
+        }
+
     }
 
     private String getAttr(HttpServletRequest request) {
@@ -96,4 +86,37 @@ public class PfListsCtr {
         }
         return stringBuilder.toString();
     }
+
+    private void scheduleAns() {
+
+        Runnable runnable = () -> {
+            Thread.currentThread().setName("id " + System.currentTimeMillis());
+            float upTime = ( float ) (System.currentTimeMillis() - ConstantsFor.START_STAMP) / TimeUnit.DAYS.toMillis(1);
+            String msg = upTime +
+                " uptime days. Active threads = " +
+                Thread.activeCount() + ". This thread = " +
+                Thread.currentThread().getName() + "|" +
+                System.currentTimeMillis() + "\n";
+            LOGGER.warn(msg);
+            Thread.currentThread().interrupt();
+        };
+        int delay = new SecureRandom().nextInt(( int ) TimeUnit.MINUTES.toMillis(250));
+        int init = new SecureRandom().nextInt(( int ) TimeUnit.MINUTES.toMillis(60));
+        if(ConstantsFor.THIS_PC_NAME.toLowerCase().contains("no0027") ||
+            ConstantsFor.THIS_PC_NAME.equalsIgnoreCase("home")){
+            init = 20000;
+            delay = 40000;
+        }
+        ThreadPoolTaskScheduler threadPoolTaskScheduler = new ThreadConfig().threadPoolTaskScheduler();
+        ScheduledFuture<?> schedule = threadPoolTaskScheduler.scheduleWithFixedDelay(runnable, new Date(), delay);
+        try{
+            schedule.get(35, TimeUnit.SECONDS);
+        }
+        catch(InterruptedException | ExecutionException | TimeoutException e){
+            long delay1 = schedule.getDelay(TimeUnit.SECONDS);
+            LOGGER.error(e.getMessage() + " " + delay1 + " delay", e);
+            Thread.currentThread().interrupt();
+        }
+    }
+
 }
