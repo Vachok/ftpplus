@@ -16,7 +16,6 @@ import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.logic.DBMessenger;
-import ru.vachok.networker.logic.PhotoConverter;
 import ru.vachok.networker.services.PfListsSrv;
 
 import javax.servlet.http.HttpServletRequest;
@@ -25,7 +24,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 
@@ -61,8 +59,6 @@ public class IntoApplication {
         infoForU(appCtx);
         Runtime.getRuntime().addShutdownHook(new Thread(() -> new Visitor().shutdownHook()));
         appCtx.registerShutdownHook();
-        List<String> list = new PhotoConverter().psCommands();
-        new TForms().fromArray(list);
     }
 
     private static void infoForU(ApplicationContext appCtx) {

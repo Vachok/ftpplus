@@ -1,7 +1,7 @@
 package ru.vachok.networker;
 
 
-import ru.vachok.networker.services.AsyncService;
+import ru.vachok.networker.services.PassGenerator;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
@@ -61,11 +61,15 @@ public enum ConstantsFor {
 
     public static final String THIS_PC_NAME = thisPC();
 
+    public static final String AD_PHOTOS_PATH = "C:\\Users\\ikudryashov\\Documents\\ShareX\\Screenshots\\2018-08\\pers";
+
+    public static PassGenerator passGenerator = new PassGenerator();
+
     public static String consString() {
         return "ConstantsFor{" +
             "APC=" + APC +
             ", APP_NAME='" + APP_NAME + '\'' +
-            ", asyncService=" + asyncService +
+            ", passGenerator=" + passGenerator +
             ", DB_PREFIX='" + DB_PREFIX + '\'' +
             ", DELAY=" + DELAY +
             ", DOPC=" + DOPC +
@@ -85,8 +89,6 @@ public enum ConstantsFor {
             ", TIMEOUT_650=" + TIMEOUT_650 +
             '}';
     }
-
-    public static AsyncService asyncService = new AsyncService();
 
     /*PS Methods*/
     public static String getUserPC(HttpServletRequest request) {

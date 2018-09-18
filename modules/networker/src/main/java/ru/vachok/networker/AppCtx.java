@@ -7,8 +7,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
 import ru.vachok.networker.componentsrepo.AppComponents;
 
-import java.util.concurrent.TimeUnit;
-
 
 /**
  @since 30.08.2018 (13:22) */
@@ -30,14 +28,9 @@ public class AppCtx {
     private static AnnotationConfigApplicationContext configApplicationContext = new AnnotationConfigApplicationContext();
 
     static AnnotationConfigApplicationContext scanForBeansAndRefreshContext() {
-        long startMeth = System.currentTimeMillis();
         configApplicationContext.scan("ru.vachok.networker.componentsrepo");
         configApplicationContext.scan("ru.vachok.networker.services");
         configApplicationContext.scan("ru.vachok.networker.config");
-        long stopMeth = System.currentTimeMillis();
-        AppCtx.methMetricGetCTX = TimeUnit.MILLISECONDS.toSeconds(stopMeth - startMeth);
-        String msg = methMetricGetCTX + " second " + SOURCE_CLASS;
-        LOGGER.info(msg);
         return configApplicationContext;
     }
 }

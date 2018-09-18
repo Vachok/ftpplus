@@ -80,7 +80,6 @@ public class SSHFactory {
         this.commandSSH = commandSSH;
     }
 
-    /*Instances*/
     private InputStream connect() throws IOException, JSchException {
         chanRespChannel();
         respChannel.connect();
@@ -95,7 +94,7 @@ public class SSHFactory {
             return respChannel.getInputStream();
         }
         respChannel.disconnect();
-        throw new RejectedExecutionException("ХУЙ");
+        throw new RejectedExecutionException("ХУЙ FOR YOU!");
     }
 
     private void chanRespChannel() throws JSchException {

@@ -68,6 +68,7 @@ public class PfListsCtr {
 
     @GetMapping ("/pflists")
     public String pfBean(Model model, HttpServletRequest request, HttpServletResponse response) {
+        visitorSrv.makeVisit(request);
         PfLists pfLists = appCtx.getBean(PfLists.class);
         model.addAttribute("pfLists", pfLists);
         model.addAttribute("metric", Thread.activeCount() + " thr, active");
@@ -78,10 +79,10 @@ public class PfListsCtr {
         model.addAttribute("nat", pfLists.getPfNat());
         model.addAttribute("rules", pfLists.getPfRules());
         model.addAttribute("gitstats", pfLists.getGitStats());
-        if (request.getQueryString() != null) PfListsSrv.buildFactory();
-        String msg = response.getBufferSize() + " resp buffer";
-        logger.info(msg);
-        visitorSrv.makeVisit(request);
+        if (request.getQueryString() != null) {
+            PfListsSrv.buildFactory();
+            return "redirect:/pflists";
+        }
         return "pflists";
     }
 

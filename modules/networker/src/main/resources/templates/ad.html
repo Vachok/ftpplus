@@ -6,6 +6,13 @@
     <link rel="stylesheet" type="text/css" media="all" href="css/main.css" th:href="@{css/main.css}"/>
 </head>
 <body>
-
+<form th:action="@{/ad}" th:object="${photoConverter}" method="POST">
+    Путь до папки с фото:
+    <input type="text" th:field="*{adPhotosPath}"/>
+    <br>
+    <input type="submit" value="Set path"/>
+    <br>
+</form>
+<ul th:utext="${pscommands}"/>
 </body>
 </html>

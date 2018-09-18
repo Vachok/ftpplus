@@ -2,26 +2,25 @@ package ru.vachok.networker.controller;
 
 
 import org.slf4j.Logger;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import ru.vachok.mysqlandprops.EMailAndDB.MailMessages;
+import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.componentsrepo.AppComponents;
-import ru.vachok.networker.logic.PhotoConverter;
+import ru.vachok.networker.services.PassGenerator;
+import ru.vachok.networker.services.PhotoConverter;
 
 import javax.mail.Flags;
 import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletRequest;
-import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Map;
-import java.util.Random;
 
 
 /**
@@ -29,6 +28,7 @@ import java.util.Random;
 @Controller
 public class ExecExtApps {
 
+    private static final AnnotationConfigApplicationContext ctx = IntoApplication.getAppCtx();
     private static final Logger LOGGER = AppComponents.getLogger();
 
     @RequestMapping ("/idea")
@@ -79,10 +79,25 @@ public class ExecExtApps {
     }
 
     public Model showRandomFoto(Model model) {
-        PhotoConverter photoConverter = new PhotoConverter();
-        Map<String, BufferedImage> stringBufferedImageMap = photoConverter.convertFoto();
-        ArrayList<BufferedImage> values = ( ArrayList<BufferedImage> ) stringBufferedImageMap.values();
-        model.addAttribute("userimage", values.get(new Random().nextInt(values.size())));
+        PhotoConverter bean = ctx.getBean(PhotoConverter.class);
         return model;
+    }
+
+    @GetMapping("/gen")
+    public String passGen(HttpServletRequest request, Model model) {
+        PassGenerator passGenerator = ctx.getBean(PassGenerator.class);
+        int howMuchBytes = 30;
+        if (request.getQueryString() != null) {
+            try {
+                howMuchBytes = Integer.parseInt(request.getQueryString());
+                model.addAttribute("pass", passGenerator.generatorPass(howMuchBytes));
+            } catch (Exception e) {
+                model.addAttribute("pass", e.getMessage());
+                return "ad";
+            }
+        }
+        model.addAttribute("title", howMuchBytes);
+        model.addAttribute("pass", passGenerator.generatorPass(howMuchBytes));
+        return "ad";
     }
 }
