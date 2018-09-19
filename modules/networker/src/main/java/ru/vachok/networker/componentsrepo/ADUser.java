@@ -4,7 +4,7 @@ package ru.vachok.networker.componentsrepo;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
-import java.io.File;
+import java.awt.image.BufferedImage;
 
 
 /**
@@ -37,7 +37,7 @@ public class ADUser {
             '}';
     }
 
-    private File userPhoto;
+    private BufferedImage userPhoto;
 
     public String getDefaultDomainName() {
         return defaultDomainName;
@@ -71,11 +71,11 @@ public class ADUser {
         this.userSurname = userSurname;
     }
 
-    public File getUserPhoto() {
+    public BufferedImage getUserPhoto() {
         return userPhoto;
     }
 
-    public void setUserPhoto(File userPhoto) {
+    public void setUserPhoto(BufferedImage userPhoto) {
         this.userPhoto = userPhoto;
     }
 

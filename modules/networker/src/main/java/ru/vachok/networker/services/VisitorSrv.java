@@ -9,6 +9,7 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.IntoApplication;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.config.ThreadConfig;
@@ -49,8 +50,7 @@ public class VisitorSrv {
                         .toSeconds(request
                             .getSession().getLastAccessedTime() - request
                             .getSession().getCreationTime()) + " sec spend.\n" +
-                    request.getSession());
-            LOGGER.info(visitor.toString());
+                    new TForms().fromEnum(request.getSession().getServletContext().getAttributeNames()));
         };
         visitor.setDbInfo(
             new Date(appCtx.getStartupDate()) +

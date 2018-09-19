@@ -51,20 +51,20 @@ public class PfListsCtr {
     public String pfBean(Model model, HttpServletRequest request, HttpServletResponse response) {
         visitorSrv.makeVisit(request);
         model.addAttribute("pfLists", pfLists);
-        model.addAttribute("metric", Thread.activeCount() + " thr, active");
+        model.addAttribute("metric", pfLists.getGitStats());
         model.addAttribute("vipnet", pfLists.getVipNet());
         model.addAttribute("tempfull", pfLists.getFullSquid());
         model.addAttribute("squidlimited", pfLists.getLimitSquid());
         model.addAttribute("squid", pfLists.getStdSquid());
         model.addAttribute("nat", pfLists.getPfNat());
         model.addAttribute("rules", pfLists.getPfRules());
-        model.addAttribute("gitstats", pfLists.getGitStats());
+        model.addAttribute("gitstats", Thread.activeCount() + " thr, active");
         if(request.getQueryString()!=null){
             new Thread(() -> pfListsSrv.buildFactory()).start();
         }
-        if(pfLists.getTimeUpd() + TimeUnit.MINUTES.toMillis(7) < System.currentTimeMillis()){
-            LOGGER.warn("5 minutes!!");
-            new Thread(() -> pfListsSrv.buildFactory()).start();
+        if (pfLists.getTimeUpd() + TimeUnit.MINUTES.toMillis(170) < System.currentTimeMillis()) {
+            model.addAttribute("metric", "Требуется обновление!");
+            pfListsSrv.buildFactory();
             return "pflists";
         }
         else{

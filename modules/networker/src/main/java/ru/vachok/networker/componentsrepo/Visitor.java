@@ -66,7 +66,7 @@ public class Visitor {
             "timeSt=" + timeSt +
             ", remAddr='" + remAddr + '\'' +
             ", visitPlace='" + visitPlace + '\'' +
-            ", visitsMap=" + new TForms().mapLongString(visitsMap) +
+            ", dbInfo='" + dbInfo + '\'' +
             '}';
     }
 

@@ -2,7 +2,10 @@ package ru.vachok.networker.services;
 
 
 import org.slf4j.Logger;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.stereotype.Service;
+import ru.vachok.networker.IntoApplication;
+import ru.vachok.networker.componentsrepo.ADUser;
 import ru.vachok.networker.componentsrepo.AppComponents;
 
 import javax.imageio.ImageIO;
@@ -28,7 +31,11 @@ public class PhotoConverter {
      */
     private static final Logger LOGGER = AppComponents.getLogger();
 
-    private String adPhotosPath;
+    private static final AnnotationConfigApplicationContext CTX = IntoApplication.getAppCtx();
+
+    private String adPhotosPath = "c:\\Users\\ikudryashov\\Documents\\ShareX\\Screenshots\\2018-08\\";
+
+    private File adFotoFile;
 
     /**
      * <b>Преобразование PNG-JPG</b>
@@ -36,17 +43,27 @@ public class PhotoConverter {
      */
     private BiConsumer<String, BufferedImage> imageBiConsumer = (x, y) -> {
         File outFile = new File("\\\\srv-mail3\\c$\\newmailboxes\\foto\\" + x + ".jpg");
+        File outImg = new File("images/" + x + ".jpg");
         String fName = "jpg";
         try {
             BufferedImage bufferedImage = new BufferedImage(y.getWidth(), y.getHeight(), BufferedImage.TYPE_INT_RGB);
             bufferedImage.createGraphics().drawImage(y, 0, 0, Color.WHITE, null);
             ImageIO.write(bufferedImage, fName, outFile);
+            CTX.getBean(ADUser.class).setUserPhoto(bufferedImage);
             String msg = outFile.getAbsolutePath() + " written";
             LOGGER.info(msg);
         } catch (IOException e) {
             AppComponents.getLogger().error(e.getMessage(), e);
         }
     };
+
+    public File getAdFotoFile() {
+        return adFotoFile;
+    }
+
+    public void setAdFotoFile(File adFotoFile) {
+        this.adFotoFile = adFotoFile;
+    }
 
     public String getAdPhotosPath() {
         return adPhotosPath;
@@ -65,15 +82,30 @@ public class PhotoConverter {
         Map<String, BufferedImage> filesList = new HashMap<>();
         for (File f : fotoFiles) {
             String key = f.getName().split("\\Q.\\E")[0];
-            if (f.getName().toLowerCase().contains("png")) filesList.put(key, ImageIO.read(f));
-            if (f.getName().toLowerCase().contains("jpg")) filesList.put(key, ImageIO.read(f));
-            if (f.getName().toLowerCase().contains("tiff")) filesList.put(key, ImageIO.read(f));
-            if (f.getName().toLowerCase().contains("gif")) filesList.put(key, ImageIO.read(f));
+            for (String format : ImageIO.getWriterFormatNames()) {
+                if (f.getName().toLowerCase().contains(format)) filesList.put(key, ImageIO.read(f));
+            }
         }
         filesList.forEach(imageBiConsumer);
         return filesList;
     }
 
+    private void fileAsFile() {
+        try {
+            BufferedImage read = ImageIO.read(adFotoFile);
+            LOGGER.info(read.getHeight() + " h/w " + read.getWidth());
+        } catch (IOException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Формирование листа комманд, на основе анализа фотографий.
+     *
+     * @return {@link List} команд для применения в среде PS
+     * @throws IOException
+     * @throws NullPointerException
+     */
     public List<String> psCommands() throws IOException, NullPointerException {
         List<String> commandsAD = new ArrayList<>();
         Map<String, BufferedImage> stringBufferedImageMap = convertFoto();

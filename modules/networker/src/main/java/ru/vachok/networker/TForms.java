@@ -111,4 +111,11 @@ public class TForms {
         visitsMap.forEach((x, y) -> nStringBuilder.append(x).append(" | ").append(y).append("\n"));
         return nStringBuilder.toString();
     }
+
+    public String fromEnum(Enumeration<String> enumStrings) {
+        while (enumStrings.hasMoreElements()) {
+            nStringBuilder.append(enumStrings.nextElement()).append("\n");
+        }
+        return nStringBuilder.toString();
+    }
 }

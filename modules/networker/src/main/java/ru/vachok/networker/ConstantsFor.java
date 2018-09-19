@@ -8,6 +8,7 @@ import java.io.File;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.SecureRandom;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -53,6 +54,8 @@ public enum ConstantsFor {
 
     public static final long INIT_DELAY = 20;
 
+    public static final Long CACHE_TIME_MS = TimeUnit.MINUTES.toMillis(10);
+
     public static int KBYTE = 1024;
 
     public static final long START_STAMP = System.currentTimeMillis();
@@ -61,7 +64,7 @@ public enum ConstantsFor {
 
     public static final String THIS_PC_NAME = thisPC();
 
-    public static final String AD_PHOTOS_PATH = "C:\\Users\\ikudryashov\\Documents\\ShareX\\Screenshots\\2018-08\\pers";
+    public static final String SCREEN_PATH = "C:\\Users\\ikudryashov\\Documents\\ShareX\\Screenshots\\";
 
     public static PassGenerator passGenerator = new PassGenerator();
 
