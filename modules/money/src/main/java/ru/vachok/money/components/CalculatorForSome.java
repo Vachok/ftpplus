@@ -1,7 +1,7 @@
 package ru.vachok.money.components;
 
 
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 
@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  @since 09.09.2018 (14:55) */
-@Service ("CalculatorForSome")
+@Component ("CalculatorForSome")
 public class CalculatorForSome {
 
     /*Fields*/
@@ -21,11 +21,24 @@ public class CalculatorForSome {
      */
     private static final String SOURCE_CLASS = CalculatorForSome.class.getSimpleName();
 
-    public int userInt;
+    private int userInt;
 
-    public double userDouble;
+    private double userDouble;
 
-    public String userInput;
+    private String userInput;
+
+    @Override
+    public String toString() {
+        return "CalculatorForSome{" +
+            "calcDouble=" + calcDouble +
+            ", calcInt=" + calcInt +
+            ", messageToUser=" + messageToUser +
+            ", SOURCE_CLASS='" + SOURCE_CLASS + '\'' +
+            ", userDouble=" + userDouble +
+            ", userInput='" + userInput + '\'' +
+            ", userInt=" + userInt +
+            '}';
+    }
 
     /**
      {@link }

@@ -6,8 +6,9 @@
     <link rel="stylesheet" type="text/css" media="all" href="css/main.css" th:href="@{css/main.css}"/>
 </head>
 <body>
-<form th:action="@{/ok}" th:object="${CalculatorForSome}" method="POST">
-    Интересуемая должность:
+<p th:utext="${inp}"></p>
+<form th:action="@{/calc}" th:object="${CalculatorForSome}" method="POST">
+    Введите что-нибудь:
     <input type="text" th:field="*{userInput}"/>
     <br>
     <input type="submit" value="Считать"/>

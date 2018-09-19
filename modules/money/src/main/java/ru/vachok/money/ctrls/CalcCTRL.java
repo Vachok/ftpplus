@@ -1,18 +1,21 @@
 package ru.vachok.money.ctrls;
 
 
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import ru.vachok.messenger.MessageCons;
-import ru.vachok.messenger.MessageToUser;
+import ru.vachok.money.ConstantsFor;
 import ru.vachok.money.components.CalculatorForSome;
+import ru.vachok.money.services.CalcSrv;
 
 
 /**
  @since 09.09.2018 (15:02) */
+@Controller
 public class CalcCTRL {
 
     /*Fields*/
@@ -25,20 +28,26 @@ public class CalcCTRL {
     /**
      {@link }
      */
-    private static MessageToUser messageToUser = new MessageCons();
+    private static final AnnotationConfigApplicationContext CTX = ConstantsFor.CONTEXT;
 
-    private CalculatorForSome calculatorForSome;
+    private CalcSrv calcSrv = CTX.getBean(CalcSrv.class);
+    private CalculatorForSome calculatorForSome = CTX.getBean(CalculatorForSome.class);
 
-    @PostMapping ("/count")
-    public String okOk(@ModelAttribute ("CalculatorForSome") CalculatorForSome calculatorForSome, BindingResult result) {
+    private String s;
+
+    @PostMapping ("/calc")
+    public String okOk(@ModelAttribute ("CalculatorForSome") CalculatorForSome calculatorForSome, BindingResult result, Model model) {
         this.calculatorForSome = calculatorForSome;
-        this.calculatorForSome.userInput = "OP";
-        return "redirect:/count";
+        this.s = calcSrv.resultCalc(); //fixme 19.09.2018 (22:08)
+        model.addAttribute("result", s);
+        return "calc";
     }
 
-    @GetMapping ("/count")
+    @GetMapping ("/calc")
     public String resultOfCount(Model model) {
-        model.addAttribute("result", calculatorForSome);
+        model.addAttribute("CalculatorForSome", calculatorForSome);
+        model.addAttribute("title", "CALC");
+        model.addAttribute("inp", calculatorForSome.toString());
         return "calc";
     }
 }
