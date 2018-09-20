@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import ru.vachok.mysqlandprops.EMailAndDB.MailMessages;
 import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.componentsrepo.AppComponents;
-import ru.vachok.networker.services.PassGenerator;
-import ru.vachok.networker.services.PhotoConverter;
+import ru.vachok.networker.logic.PassGenerator;
+import ru.vachok.networker.services.PhotoConverterSRV;
 
 import javax.mail.Flags;
 import javax.mail.Folder;
@@ -79,7 +79,7 @@ public class ExecExtApps {
     }
 
     public Model showRandomFoto(Model model) {
-        PhotoConverter bean = ctx.getBean(PhotoConverter.class);
+        PhotoConverterSRV bean = ctx.getBean(PhotoConverterSRV.class);
         return model;
     }
 

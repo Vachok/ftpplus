@@ -31,18 +31,27 @@ public class CalcSrv {
     private static final AnnotationConfigApplicationContext CONTEXT = ConstantsFor.CONTEXT;
 
     public String resultCalc(String userInp) {
-        String result = userInp + " NO RESULT";
         LOGGER.info(userInp);
         if(userInp.equalsIgnoreCase("time")){
-            result = time(result);
+            return time(userInp);
         }
-        return result;
+        if(userInp.toLowerCase().contains("whois:")|| userInp.toLowerCase().contains("wh:")){
+            userInp=userInp.split(":")[1].trim();
+            return whoIs(userInp);
+        }
+        return userInp;
     }
 
-    private String time(String result) {
-        result = System.currentTimeMillis() + " uTime<br>" + ( float ) TimeUnit.MILLISECONDS
+    private String time(String userInp) {
+        LOGGER.info(userInp);
+        return System.currentTimeMillis() + " uTime<br>" + ( float ) TimeUnit.MILLISECONDS
             .toSeconds(System.currentTimeMillis() - ConstantsFor.START_STAMP) / 60 + " min Uptime<br>" +
             new Date(ConstantsFor.START_STAMP);
-        return result;
+
+    }
+    private String whoIs(String userInp){
+        WhoIsWithSRV bean = new WhoIsWithSRV();
+        String s = bean.whoIs(userInp);
+        return s;
     }
 }

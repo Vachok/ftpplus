@@ -1,26 +1,23 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title th:text="${date}">ХЗ</title>
+    <title th:text="${title}">ХЗ</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <link rel="stylesheet" type="text/css" media="all" href="css/main.css" th:href="@{css/main.css}"/>
 </head>
-<body>
+<p>
+<center>
 <h1>Welcome</h1>
-<h5 th:utext="${message}">..!..</h5>
-
-<p th:text="${timeleft}"/>
-
+<h5 th:utext="${geoloc}"/><br>
+<p th:utext="${timeleft}"/><br>
+</center>
 <p>
-    <a th:href="@{/chkcar}">Авто OBD</a>
+    <a href="@{/chkcar}">Авто OBD</a><<br>>
+    <a href="@{/ftp}">Сканировать FTP</a> <br>
+</p>
 <p>
-    <a th:href="@{http://10.10.111.57:8881/ftp}">Сканировать FTP</a>
-<p>
-<h5 th:text="${speed}">.</h5>
-<p>
-<h5 th:text="${mail}"></h5>
-
-
+<h5 th:text="${speed}">.</h5><br>
+<h5 th:text="${mail}"></h5><br></p>
 </body>
 <footer>
     <h5>

@@ -7,6 +7,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Configuration;
 import ru.vachok.money.ConstantsFor;
 import ru.vachok.money.MoneyApplication;
+import ru.vachok.money.other.SpeedRunActualize;
 
 
 /**
@@ -15,20 +16,23 @@ import ru.vachok.money.MoneyApplication;
 @Configuration
 public class AppCtx {
 
-    private static final Logger LOGGER = AppComponents.getLogger();
-
     private static AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
 
     private static SpringApplication application = new SpringApplication();
+    private static final Logger LOGGER = AppComponents.getLogger();
 
     public static AnnotationConfigApplicationContext getCtx() {
         minimalConf();
+        Thread thread = new Thread(()->new SpeedRunActualize().call());
+        thread.setName(SpeedRunActualize.class.getSimpleName());
+        thread.start();
+        String msg = "Thread " + thread.getName() + " is alive: " + thread.isAlive();
+        LOGGER.warn(msg);
         return ctx;
     }
 
-    public static SpringApplication getApplication() {
+    static SpringApplication getApplication() {
         application.setMainApplicationClass(MoneyApplication.class);
-        application.setLogStartupInfo(false);
         return application;
     }
 

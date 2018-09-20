@@ -2,6 +2,7 @@ package ru.vachok.money.services;
 
 
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.money.other.XmlNode;
 
 import javax.mail.Address;
 import java.util.*;
@@ -83,6 +84,32 @@ public class TForms {
         for (String s : stringList) {
             stringBuilder.append(s).append("\n");
         }
+        return stringBuilder.toString();
+    }
+
+    public String enumToString(Enumeration<String> yourEnum) {
+        while (yourEnum.hasMoreElements()){
+            stringBuilder.append(yourEnum.nextElement());
+        }
+        return stringBuilder.toString();
+    }
+
+    public String toStringFromArray(String[] beanDefinitionNames) {
+        stringBuilder.append("<p>");
+        for (String s:beanDefinitionNames){
+            stringBuilder.append(s).append("<br>");
+        }
+        stringBuilder.append("</p>");
+        return stringBuilder.toString();
+    }
+
+    public String mapIntXmlNode(Map<Integer, XmlNode> integerXmlNodeMap) {
+        stringBuilder.append("<p>");
+        integerXmlNodeMap.forEach((x,y)->stringBuilder.append(x)
+        .append(") ")
+        .append(y.toString())
+        .append("<br>"));
+        stringBuilder.append("</p>");
         return stringBuilder.toString();
     }
 }

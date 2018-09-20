@@ -1,7 +1,7 @@
 package ru.vachok.networker;
 
 
-import ru.vachok.networker.services.PassGenerator;
+import ru.vachok.networker.logic.PassGenerator;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;

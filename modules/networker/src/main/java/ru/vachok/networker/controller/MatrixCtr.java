@@ -18,6 +18,7 @@ import ru.vachok.networker.logic.ssh.SSHFactory;
 import ru.vachok.networker.services.DataBases;
 import ru.vachok.networker.services.Matrix;
 import ru.vachok.networker.services.VisitorSrv;
+import ru.vachok.networker.services.WhoIsWithSRV;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -37,6 +38,8 @@ public class MatrixCtr {
     private static final Logger LOGGER = AppComponents.getLogger();
 
     private static AnnotationConfigApplicationContext appCtx = IntoApplication.getAppCtx();
+
+    private static final String MATRIX_STRING_NAME = "matrix";
 
     private Matrix matrix;
 
@@ -88,16 +91,29 @@ public class MatrixCtr {
     }
 
     @PostMapping("/matrix")
-    public String getWorkPosition(@ModelAttribute("Matrix") Matrix matrix, BindingResult result) {
+    public String getWorkPosition(@ModelAttribute("Matrix") Matrix matrix, BindingResult result, Model model) {
         metricMatrixStart = System.currentTimeMillis();
         this.matrix = matrix;
-        LOGGER.info(this.matrix.getWorkPos());
-        String workPosition = this.matrix.
-            getWorkPosition(
-                "select * from matrix where Doljnost like '%" + this.matrix.getWorkPos() + "%';");
-        this.matrix.setWorkPos(workPosition);
-        LOGGER.info(workPosition);
-        return "redirect:/matrix";
+        String workPos = this.matrix.getWorkPos();
+        if (!workPos.toLowerCase().contains("whois:")) {
+            String workPosition = this.matrix.
+                getWorkPosition(
+                    "select * from matrix where Doljnost like '%" + workPos + "%';");
+            this.matrix.setWorkPos(workPosition);
+            LOGGER.info(workPosition);
+            return "redirect:/matrix";
+        } else {
+            try {
+                workPos = workPos.split(":")[1];
+                String s = new WhoIsWithSRV().whoIs(workPos);
+                matrix.setWorkPos(s.replaceAll("\n", "<br>"));
+                model.addAttribute("whois", s);
+            } catch (ArrayIndexOutOfBoundsException e) {
+                model.addAttribute("whois", workPos + "<p>" + e.getMessage());
+                return MATRIX_STRING_NAME;
+            }
+            return "redirect:/matrix";
+        }
     }
 
     @GetMapping("/matrix")
@@ -107,7 +123,7 @@ public class MatrixCtr {
         model.addAttribute("workPos", matrix.getWorkPos());
         model.addAttribute("headtitle", matrix.getCountDB() + " позиций   " + TimeUnit.MILLISECONDS.toMinutes(
             System.currentTimeMillis() - ConstantsFor.START_STAMP) + " upTime");
-        return "matrix";
+        return MATRIX_STRING_NAME;
     }
 
     @GetMapping("/git")

@@ -1,8 +1,7 @@
-package ru.vachok.networker.services;
+package ru.vachok.networker.logic;
 
 
 import org.slf4j.Logger;
-import org.springframework.stereotype.Service;
 import ru.vachok.networker.componentsrepo.AppComponents;
 
 import java.security.SecureRandom;
@@ -10,7 +9,6 @@ import java.security.SecureRandom;
 /**
  * @since 10.09.2018 (11:49)
  */
-@Service("passgen")
 public class PassGenerator {
 
     private static final Logger LOGGER = AppComponents.getLogger();

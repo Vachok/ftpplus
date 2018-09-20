@@ -6,9 +6,10 @@
     <link rel="stylesheet" type="text/css" media="all" href="css/main.css" th:href="@{css/main.css}"/>
 </head>
 <body>
+<a href="/">Главная</a> | <a href="/ftp">FTP</a>
 <p th:utext="${inp}"></p>
 <form th:action="@{/calc}" th:object="${CalculatorForSome}" method="POST">
-    Введите что-нибудь:
+    Введите что-нибудь(? - help):
     <input type="text" th:field="*{userInput}"/>
     <br>
     <input type="submit" value="Считать"/>

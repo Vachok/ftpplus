@@ -14,6 +14,16 @@ import javax.servlet.http.HttpServletResponse;
 @Component
 public class Visitor {
 
+    public String getSessionID() {
+        return sessionID;
+    }
+
+    public void setSessionID(String sessionID) {
+        this.sessionID = sessionID;
+    }
+
+    private String sessionID;
+
     /*Fields*/
 
     /**

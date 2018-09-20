@@ -24,7 +24,7 @@ import java.util.function.BiConsumer;
  * @since 21.08.2018 (15:57)
  */
 @Service("photoConverter")
-public class PhotoConverter {
+public class PhotoConverterSRV {
 
     /**
      * {@link Logger}

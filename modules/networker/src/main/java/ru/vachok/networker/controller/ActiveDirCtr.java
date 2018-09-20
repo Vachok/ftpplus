@@ -13,7 +13,7 @@ import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.ADUser;
 import ru.vachok.networker.componentsrepo.AppComponents;
-import ru.vachok.networker.services.PhotoConverter;
+import ru.vachok.networker.services.PhotoConverterSRV;
 import ru.vachok.networker.services.VisitorSrv;
 
 import javax.imageio.ImageIO;
@@ -38,11 +38,11 @@ public class ActiveDirCtr {
 
     private ADUser adUser = ctx.getBean(ADUser.class);
 
-    private PhotoConverter photoConverter;
+    private PhotoConverterSRV photoConverter;
 
     @GetMapping("/ad")
     public String initUser(Model model, HttpServletRequest request) {
-        this.photoConverter = new PhotoConverter();
+        this.photoConverter = new PhotoConverterSRV();
         visitorSrv.makeVisit(request);
         model.addAttribute("title", visitorSrv.toString());
         model.addAttribute("photoConverter", photoConverter);
@@ -51,7 +51,7 @@ public class ActiveDirCtr {
     }
 
     @PostMapping("/ad")
-    public String setFotoPath(@ModelAttribute("photoConverter") PhotoConverter photoConverter, BindingResult result, Model model) throws NullPointerException {
+    public String setFotoPath(@ModelAttribute("photoConverter") PhotoConverterSRV photoConverter, BindingResult result, Model model) throws NullPointerException {
         this.photoConverter = photoConverter;
         try {
             model.addAttribute("title", "RESULT");

@@ -121,4 +121,11 @@ public enum ConstantsFor {
         return myPC;
     }
 
+    public static String localPc() {
+        try{
+            return InetAddress.getLocalHost().getHostName();
+        }catch (UnknownHostException e){
+            return e.getMessage();
+        }
+    }
 }

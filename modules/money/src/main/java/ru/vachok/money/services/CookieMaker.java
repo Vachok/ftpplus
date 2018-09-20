@@ -5,15 +5,18 @@ import org.slf4j.Logger;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.stereotype.Service;
 import ru.vachok.money.ConstantsFor;
+import ru.vachok.money.components.CookIES;
 import ru.vachok.money.config.AppComponents;
 
 import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
 import java.util.concurrent.TimeUnit;
 
 
 /**
- @since 23.08.2018 (12:02) */
-@Service ("cookiesmaker")
+ * @since 23.08.2018 (12:02)
+ */
+@Service("cookiesmaker")
 public class CookieMaker {
 
     /*Fields*/
@@ -28,21 +31,21 @@ public class CookieMaker {
     private final String vachokRu = "vachok.ru";
 
     Cookie getCookedCookie() {
-      defaultCookie();
-      return cookedCookie;
-   }
+        defaultCookie();
+        return cookedCookie;
+    }
 
-   void setCookedCookie(Cookie cookedCookie) {
-      this.cookedCookie = cookedCookie;
-   }
+    void setCookedCookie(Cookie cookedCookie) {
+        this.cookedCookie = cookedCookie;
+    }
 
     private void defaultCookie() {
         cookedCookie = new Cookie(vachokRu, this.getClass().getPackage().getSpecificationTitle());
         cookedCookie.setDomain(vachokRu);
-      cookedCookie.setMaxAge(( int ) TimeUnit.MINUTES.toSeconds(15));
-      cookedCookie.setSecure(false);
-      cookedCookie.setVersion(cookedCookie.hashCode());
-   }
+        cookedCookie.setMaxAge((int) TimeUnit.MINUTES.toSeconds(15));
+        cookedCookie.setSecure(false);
+        cookedCookie.setVersion(cookedCookie.hashCode());
+    }
 
     public Cookie startSession(String sessionID) {
         Cookie cookieStart = new Cookie(vachokRu, "money");
@@ -56,18 +59,18 @@ public class CookieMaker {
 
     }
 
-   @Override
-   public int hashCode() {
-      return cookedCookie.hashCode();
-   }
+    @Override
+    public int hashCode() {
+        return cookedCookie.hashCode();
+    }
 
-   @Override
-   public boolean equals(Object o) {
-      if(this==o) return true;
-      if(o==null || getClass()!=o.getClass()) return false;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
 
-      CookieMaker that = ( CookieMaker ) o;
+        CookieMaker that = (CookieMaker) o;
 
-      return cookedCookie.equals(that.cookedCookie);
-   }
+        return cookedCookie.equals(that.cookedCookie);
+    }
 }

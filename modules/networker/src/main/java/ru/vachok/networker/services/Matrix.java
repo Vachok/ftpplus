@@ -16,8 +16,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 
 /**
- @since 07.09.2018 (9:45) */
-@Service ("matrix")
+ * @since 07.09.2018 (9:45)
+ */
+@Service("matrix")
 public class Matrix {
 
     /*Fields*/
@@ -47,9 +48,9 @@ public class Matrix {
 
     public String getWorkPosition(String sql) {
         Map<String, String> doljAndAccess = new ConcurrentHashMap<>();
-        try(PreparedStatement statement = c.prepareStatement(sql);
-            ResultSet r = statement.executeQuery()){
-            while(r.next()){
+        try (PreparedStatement statement = c.prepareStatement(sql);
+             ResultSet r = statement.executeQuery()) {
+            while (r.next()) {
                 countDB = countDB + 1;
                 int fullinet = r.getInt("fullinet");
                 int stdinet = r.getInt("stdinet");
@@ -66,8 +67,7 @@ public class Matrix {
                         vpn + " - VPN, <br>" +
                         sendmail + " - отправка за пределы компании.</p>");
             }
-        }
-        catch(SQLException e){
+        } catch (SQLException e) {
             LOGGER.error(e.getMessage(), e);
         }
         String s = new TForms().fromArray(doljAndAccess);

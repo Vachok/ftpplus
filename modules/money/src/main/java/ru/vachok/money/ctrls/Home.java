@@ -38,6 +38,7 @@ import java.util.concurrent.TimeUnit;
 
  @since 22.08.2018 (10:55) */
 @Controller
+@Deprecated
 public class Home {
 
    /**

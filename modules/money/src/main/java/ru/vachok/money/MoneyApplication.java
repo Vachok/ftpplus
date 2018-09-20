@@ -8,7 +8,7 @@ import ru.vachok.money.config.AppComponents;
 import ru.vachok.money.config.AppEventListener;
 import ru.vachok.money.config.AppEvents;
 import ru.vachok.money.services.ParserCBRru;
-import ru.vachok.money.services.SpeedRunActualize;
+import ru.vachok.money.other.SpeedRunActualize;
 
 import static org.springframework.boot.SpringApplication.run;
 
@@ -24,9 +24,7 @@ public class MoneyApplication {
     public static void main(String[] args) {
         run(MoneyApplication.class , args);
         ParserCBRru cbrBean = ConstantsFor.CONTEXT.getBean(ParserCBRru.class);
-        SpeedRunActualize speedRunActualize = ConstantsFor.CONTEXT.getBean(SpeedRunActualize.class);
-        LOGGER.info(speedRunActualize.call());
-        cbrBean.getMap("table").forEach((x, y) -> {
+        cbrBean.getMap().forEach((x, y) -> {
             String msg = x + " Integer";
             LOGGER.info(msg);
             LOGGER.info(y.toString());
