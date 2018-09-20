@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  @since 15.09.2018 (22:08) */
-@Component
+@Component ("cookies")
 public class CookIES {
 
     /*Fields*/

@@ -1,14 +1,15 @@
-package ru.vachok.money.services;
+package ru.vachok.money.other;
 
 
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.messenger.email.ESender;
 import ru.vachok.money.ConstantsFor;
 import ru.vachok.money.components.MessageFromInbox;
 import ru.vachok.money.config.AppComponents;
+import ru.vachok.money.services.SpeedRunActualize;
+import ru.vachok.money.services.TForms;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
@@ -27,7 +28,6 @@ import java.util.logging.Logger;
  {@link SpeedRunActualize}
 
  @since 25.06.2018 (2:41) */
-@Service ("mailmessages")
 public class MailMessages implements Callable<Message[]> {
 
     /*Fields*/

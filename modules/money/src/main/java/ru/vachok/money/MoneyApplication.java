@@ -3,7 +3,10 @@ package ru.vachok.money;
 import org.slf4j.Logger;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ApplicationEvent;
 import ru.vachok.money.config.AppComponents;
+import ru.vachok.money.config.AppEventListener;
+import ru.vachok.money.config.AppEvents;
 import ru.vachok.money.services.ParserCBRru;
 import ru.vachok.money.services.SpeedRunActualize;
 
@@ -30,5 +33,7 @@ public class MoneyApplication {
         });
         String s = cbrBean.parseTag("table");
         LOGGER.info(s);
+        ApplicationEvent applicationEvent = new AppEvents().failedApp();
+        new AppEventListener().onApplicationEvent(applicationEvent);
     }
 }

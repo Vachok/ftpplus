@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Scope;
 import ru.vachok.money.ConstantsFor;
 import ru.vachok.money.components.CalculatorForSome;
 import ru.vachok.money.components.MyOpel;
-import ru.vachok.money.services.MailMessages;
+import ru.vachok.money.other.MailMessages;
 import ru.vachok.money.services.ParserCBRru;
 import ru.vachok.money.services.SpeedRunActualize;
 

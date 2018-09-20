@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  @since 23.08.2018 (12:02) */
-@Service
+@Service ("cookiesmaker")
 public class CookieMaker {
 
     /*Fields*/

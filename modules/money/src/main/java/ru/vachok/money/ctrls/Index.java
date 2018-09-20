@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.money.ConstantsFor;
 import ru.vachok.money.components.Visitor;
 import ru.vachok.money.config.AppComponents;
+import ru.vachok.money.other.MailMessages;
 import ru.vachok.money.services.CookieMaker;
-import ru.vachok.money.services.MailMessages;
 import ru.vachok.money.services.TForms;
 
 import javax.mail.Folder;
@@ -38,9 +38,9 @@ public class Index {
 
     private static final AnnotationConfigApplicationContext ctx = ConstantsFor.CONTEXT;
 
-    private static final MailMessages mailMessages = ctx.getBean(MailMessages.class);
-
     private static CookieMaker cookieMaker = new CookieMaker();
+
+    private MailMessages mailMessages = new MailMessages();
 
     @GetMapping ("/")
     public String indexString(HttpServletRequest request, HttpServletResponse response, Model model) {

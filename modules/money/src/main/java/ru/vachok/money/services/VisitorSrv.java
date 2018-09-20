@@ -8,6 +8,7 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.money.ConstantsFor;
 import ru.vachok.money.config.AppComponents;
 import ru.vachok.money.other.FileMessages;
+import ru.vachok.money.other.MailMessages;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
