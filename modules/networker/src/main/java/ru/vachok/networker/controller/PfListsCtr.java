@@ -8,6 +8,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.mysqlandprops.props.DBRegProperties;
+import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.componentsrepo.AppComponents;
@@ -20,9 +22,7 @@ import ru.vachok.networker.services.VisitorSrv;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.security.SecureRandom;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.*;
 
 
@@ -37,6 +37,8 @@ public class PfListsCtr {
 
     private static final Logger LOGGER = AppComponents.getLogger();
 
+    private static final String SOURCE_CLASS = PfListsCtr.class.getSimpleName();
+
     private MessageToUser messageToUser = new DBMessenger();
 
     private static final ApplicationContext APP_CTX = IntoApplication.getAppCtx();
@@ -49,6 +51,10 @@ public class PfListsCtr {
 
     @GetMapping ("/pflists")
     public String pfBean(Model model, HttpServletRequest request, HttpServletResponse response) {
+        InitProperties initProperties = new DBRegProperties(ConstantsFor.APP_NAME + SOURCE_CLASS);
+        Properties properties = initProperties.getProps();
+        Long lastScan = Long.parseLong(properties.getProperty("pfscan"));
+        initProperties.delProps();
         visitorSrv.makeVisit(request);
         model.addAttribute("pfLists", pfLists);
         model.addAttribute("metric", pfLists.getGitStats());
@@ -59,18 +65,22 @@ public class PfListsCtr {
         model.addAttribute("nat", pfLists.getPfNat());
         model.addAttribute("rules", pfLists.getPfRules());
         model.addAttribute("gitstats", Thread.activeCount() + " thr, active");
-        if(request.getQueryString()!=null){
+        long timeOut = lastScan + TimeUnit.MINUTES.toMillis(15);
+        if(request.getQueryString()!=null && System.currentTimeMillis() > timeOut){
+            properties.setProperty("pfscan", System.currentTimeMillis() + "");
             new Thread(() -> pfListsSrv.buildFactory()).start();
         }
         if (pfLists.getTimeUpd() + TimeUnit.MINUTES.toMillis(170) < System.currentTimeMillis()) {
             model.addAttribute("metric", "Требуется обновление!");
             pfListsSrv.buildFactory();
+            initProperties.setProps(properties);
             return "pflists";
         }
         else{
             String msg = "" + ( float ) (TimeUnit
                                              .MILLISECONDS.toSeconds(System.currentTimeMillis() - pfLists.getTimeUpd())) / 60;
             LOGGER.warn(msg);
+            initProperties.setProps(properties);
             return "pflists";
         }
 

@@ -48,7 +48,7 @@ public class NetScanCtr {
     @GetMapping("/netscan")
     public String netScan(HttpServletRequest request, Model model) {
         String lastscan = properties.getProperty("lastscan");
-        long l = Long.parseLong(lastscan) + TimeUnit.HOURS.toMillis(1);
+        long l = Long.parseLong(lastscan) + TimeUnit.MINUTES.toMillis(25);
         netscanString = "netscan";
         if(l > System.currentTimeMillis()){
             String msg = TimeUnit.MILLISECONDS.toSeconds(l - System.currentTimeMillis()) + " seconds left";
