@@ -6,6 +6,8 @@ import org.springframework.context.ApplicationEvent;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import ru.vachok.money.ConstantsFor;
+
 
 /**
  * @since 14.09.2018 (16:09)
@@ -14,7 +16,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 @EnableAsync
 public class ThrConfigurator {
 
-    private static final Logger LOGGER = AppComponents.getLogger();
+    private static final Logger LOGGER = ConstantsFor.getLogger();
 
     public ThreadPoolTaskExecutor getDefaultExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();

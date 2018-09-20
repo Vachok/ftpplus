@@ -7,7 +7,6 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.messenger.email.ESender;
 import ru.vachok.money.ConstantsFor;
 import ru.vachok.money.components.MessageFromInbox;
-import ru.vachok.money.config.AppComponents;
 import ru.vachok.money.services.TForms;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
@@ -32,7 +31,7 @@ public class MailMessages implements Callable<Message[]> {
     /*Fields*/
     private static final String SOURCE_CLASS = MailMessages.class.getSimpleName();
 
-    private static final org.slf4j.Logger LOGGER = AppComponents.getLogger();
+    private static final org.slf4j.Logger LOGGER = ConstantsFor.getLogger();
 
     private static final AnnotationConfigApplicationContext ctx = ConstantsFor.CONTEXT;
 

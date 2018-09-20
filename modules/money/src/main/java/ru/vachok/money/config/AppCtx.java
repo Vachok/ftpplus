@@ -16,31 +16,30 @@ import ru.vachok.money.other.SpeedRunActualize;
 @Configuration
 public class AppCtx {
 
-    private static AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
+    private static final Logger LOGGER = ConstantsFor.getLogger();
 
-    private static SpringApplication application = new SpringApplication();
-    private static final Logger LOGGER = AppComponents.getLogger();
 
-    public static AnnotationConfigApplicationContext getCtx() {
-        minimalConf();
+    private static void minimalConf() {
         Thread thread = new Thread(()->new SpeedRunActualize().call());
         thread.setName(SpeedRunActualize.class.getSimpleName());
         thread.start();
         String msg = "Thread " + thread.getName() + " is alive: " + thread.isAlive();
-        LOGGER.warn(msg);
-        return ctx;
+        LOGGER.info(msg);
     }
 
     static SpringApplication getApplication() {
+        SpringApplication application = new SpringApplication();
         application.setMainApplicationClass(MoneyApplication.class);
         return application;
     }
 
-    private static void minimalConf() {
+    public static AnnotationConfigApplicationContext getCtx() {
+        AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
         ctx.scan("ru.vachok.money.services");
         ctx.scan("ru.vachok.money.components");
         ctx.setDisplayName(ConstantsFor.APP_NAME);
         ctx.addApplicationListener(new AppEventListener());
         ctx.refresh();
+        return ctx;
     }
 }

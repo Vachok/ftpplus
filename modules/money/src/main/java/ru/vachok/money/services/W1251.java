@@ -2,7 +2,7 @@ package ru.vachok.money.services;
 
 
 import org.slf4j.Logger;
-import ru.vachok.money.config.AppComponents;
+import ru.vachok.money.ConstantsFor;
 
 import java.io.UnsupportedEncodingException;
 
@@ -17,7 +17,7 @@ public class W1251 implements DecoderEnc {
      */
     private static final String SOURCE_CLASS = W1251.class.getSimpleName();
 
-    private static final Logger LOGGER = AppComponents.getLogger();
+    private static final Logger LOGGER = ConstantsFor.getLogger();
 
 
     @Override

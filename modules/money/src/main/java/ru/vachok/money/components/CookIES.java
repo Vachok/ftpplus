@@ -3,7 +3,7 @@ package ru.vachok.money.components;
 
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
-import ru.vachok.money.config.AppComponents;
+import ru.vachok.money.ConstantsFor;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -19,7 +19,7 @@ public class CookIES {
     /**
      {@link }
      */
-    private static final Logger LOGGER = AppComponents.getLogger();
+    private static final Logger LOGGER = ConstantsFor.getLogger();
 
     private String nameCookie;
 

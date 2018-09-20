@@ -1,10 +1,11 @@
 package ru.vachok.money;
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.messenger.email.ESender;
-import ru.vachok.money.config.AppComponents;
 import ru.vachok.money.config.AppCtx;
 import ru.vachok.money.services.DBMessage;
 import ru.vachok.mysqlandprops.DataConnectTo;
@@ -116,9 +117,13 @@ public enum ConstantsFor {
             myPC = InetAddress.getLocalHost().getHostName().equalsIgnoreCase("home");
         }
         catch(UnknownHostException e){
-            AppComponents.getLogger().error(ConstantsFor.class.getSimpleName());
+            getLogger().error(ConstantsFor.class.getSimpleName());
         }
         return myPC;
+    }
+
+    public static Logger getLogger() {
+        return LoggerFactory.getLogger(DB_PREFIX + APP_NAME);
     }
 
     public static String localPc() {

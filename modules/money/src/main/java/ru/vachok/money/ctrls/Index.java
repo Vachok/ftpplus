@@ -8,7 +8,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.money.ConstantsFor;
 
-import ru.vachok.money.config.AppComponents;
 import ru.vachok.money.services.WhoIsWithSRV;
 import ru.vachok.money.services.TimeWorks;
 import ru.vachok.money.services.VisitorSrv;
@@ -23,7 +22,7 @@ import javax.servlet.http.HttpServletResponse;
 @Controller
 public class Index {
 
-    private static final Logger LOGGER = AppComponents.getLogger();
+    private static final Logger LOGGER = ConstantsFor.getLogger();
 
     private static final AnnotationConfigApplicationContext ctx = ConstantsFor.CONTEXT;
 

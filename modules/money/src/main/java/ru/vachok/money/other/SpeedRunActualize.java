@@ -6,7 +6,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.messenger.email.ESender;
 import ru.vachok.money.ConstantsFor;
-import ru.vachok.money.config.AppComponents;
 import ru.vachok.money.services.DBMessage;
 import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.RegRuMysql;
@@ -30,10 +29,10 @@ import java.util.stream.Stream;
  @since 29.07.2018 (11:42) */
 public class SpeedRunActualize implements Callable<String> {
 
-    private static final Logger LOGGER = AppComponents.getLogger();
+    private static final Logger LOGGER = ConstantsFor.getLogger();
 
     /**
-     <h3>Сообщения пользователю</h3>
+     <b>Сообщения пользователю</b>
      {@link #messageToUser}
      */
     private final MessageToUser messageToUser = new DBMessage();
@@ -53,7 +52,7 @@ public class SpeedRunActualize implements Callable<String> {
     private static final DataConnectTo DATA_CONNECT_TO = new RegRuMysql();
 
     /**
-     <h3>Соединение с параметрами по-умолчанию.</h3>
+     <b>Соединение с параметрами по-умолчанию.</b>
      {@link DataConnectTo#getDefaultConnection(String)}
      */
     private static final Connection DEF_CON = DATA_CONNECT_TO.getDefaultConnection("u0466446_liferpg");
@@ -111,7 +110,7 @@ public class SpeedRunActualize implements Callable<String> {
     }
 
     /**
-     <h2>Проверка даты последней записи в БД</h2>
+     <b>Проверка даты последней записи в БД</b>
      Сверка даты полученного письма, с последней записью в БД.
      Период - 22 часа.
      <p>
@@ -147,7 +146,7 @@ public class SpeedRunActualize implements Callable<String> {
     }
 
     /**
-     <h2>Среднее по Бетонке</h2>
+     <b>Среднее по Бетонке</b>
      */
     public String avgInfo(int road) {
         double avg = 0.0;
@@ -159,7 +158,6 @@ public class SpeedRunActualize implements Callable<String> {
                 double timeAv = 0.0;
                 while(r.next()){
                     ind++;
-
                     speedAv += r.getDouble(SPEED);
                     timeAv += r.getDouble("TimeSpend");
                 }
@@ -176,8 +174,8 @@ public class SpeedRunActualize implements Callable<String> {
         }
         catch(SQLException e){
             LOGGER.error(e.getMessage(), e);
+            return e.getMessage();
         }
-        return "No AVG";
     }
 
     /**

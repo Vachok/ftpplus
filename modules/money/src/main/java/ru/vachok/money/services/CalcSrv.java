@@ -5,7 +5,7 @@ import org.slf4j.Logger;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.stereotype.Service;
 import ru.vachok.money.ConstantsFor;
-import ru.vachok.money.config.AppComponents;
+import ru.vachok.money.components.CalculatorForSome;
 
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
@@ -26,30 +26,61 @@ public class CalcSrv {
     /**
      {@link }
      */
-    private static final Logger LOGGER = AppComponents.getLogger();
+    private static final Logger LOGGER = ConstantsFor.getLogger();
 
     private static final AnnotationConfigApplicationContext CONTEXT = ConstantsFor.CONTEXT;
 
+    private CalculatorForSome calculatorForSome = new CalculatorForSome();
+
     public String resultCalc(String userInp) {
-        LOGGER.info(userInp);
+
         if(userInp.equalsIgnoreCase("time")){
             return time(userInp);
         }
-        if(userInp.toLowerCase().contains("whois:")|| userInp.toLowerCase().contains("wh:")){
-            userInp=userInp.split(":")[1].trim();
+        if(userInp.toLowerCase().contains("whois:") || userInp.toLowerCase().contains("wh:")){
+            userInp = userInp.split(":")[1].trim();
             return whoIs(userInp);
         }
-        return userInp;
+        Object o = parseInp(userInp);
+        if(o.equals(null)) return userInp;
+        else{
+        LOGGER.warn(o.toString());
+        return o.toString();}
+    }
+
+    private Object parseInp(String userInp) {
+        String parsedInp;
+        try{
+            parsedInp=userInp.split(" ")[1].trim();
+        }catch(ArrayIndexOutOfBoundsException e){
+            return userInp+" , "+e.getMessage();
+        }
+        try{
+            long parsLong = Long.parseLong(parsedInp);
+            calculatorForSome.setuLong(parsLong);
+            if(userInp.toLowerCase().contains("time")) return new Date(parsLong).toString();
+            else return parsLong;
+        }
+        catch(Exception e){
+            LOGGER.error(e.getMessage(), e);
+            double parsedDouble = Double.parseDouble(parsedInp);
+            calculatorForSome.setUserDouble(parsedDouble);
+            return parsedDouble;
+        }
     }
 
     private String time(String userInp) {
-        LOGGER.info(userInp);
-        return System.currentTimeMillis() + " uTime<br>" + ( float ) TimeUnit.MILLISECONDS
+
+        String s = System.currentTimeMillis() + " uTime<br>" + ( float ) TimeUnit.MILLISECONDS
             .toSeconds(System.currentTimeMillis() - ConstantsFor.START_STAMP) / 60 + " min Uptime<br>" +
             new Date(ConstantsFor.START_STAMP);
-
+        if(calculatorForSome.getuLong() > 0){
+            s = s + "<br>" + new TimeWorks().fromMillisToDate(calculatorForSome.getuLong());
+        }
+        return s;
     }
-    private String whoIs(String userInp){
+
+    private String whoIs(String userInp) {
         WhoIsWithSRV bean = new WhoIsWithSRV();
         String s = bean.whoIs(userInp);
         return s;

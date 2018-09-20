@@ -4,7 +4,7 @@ package ru.vachok.money.other;
 import org.slf4j.Logger;
 import org.thymeleaf.util.CharArrayWrapperSequence;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.money.config.AppComponents;
+import ru.vachok.money.ConstantsFor;
 
 import java.io.*;
 import java.util.concurrent.TimeUnit;
@@ -24,7 +24,7 @@ public class FileMessages implements MessageToUser {
     /**
      {@link }
      */
-    private static final Logger LOGGER = AppComponents.getLogger();
+    private static final Logger LOGGER = ConstantsFor.getLogger();
 
 
     @Override

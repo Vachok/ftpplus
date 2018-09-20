@@ -4,6 +4,7 @@ package ru.vachok.money.config;
 import org.slf4j.Logger;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
+import ru.vachok.money.ConstantsFor;
 
 
 /**
@@ -17,7 +18,7 @@ public class AppEventListener implements ApplicationListener {
      */
     private static final String SOURCE_CLASS = AppEventListener.class.getSimpleName();
 
-    private static final Logger LOGGER = AppComponents.getLogger();
+    private static final Logger LOGGER = ConstantsFor.getLogger();
 
 
     /**

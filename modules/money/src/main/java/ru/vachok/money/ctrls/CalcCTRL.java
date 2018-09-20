@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.money.ConstantsFor;
 import ru.vachok.money.components.CalculatorForSome;
-import ru.vachok.money.config.AppComponents;
 import ru.vachok.money.services.CalcSrv;
 import ru.vachok.money.services.CookieMaker;
 import ru.vachok.money.services.VisitorSrv;
@@ -41,7 +40,7 @@ public class CalcCTRL {
     private CalcSrv calcSrv = CTX.getBean(CalcSrv.class);
     private CalculatorForSome calculatorForSome = CTX.getBean(CalculatorForSome.class);
 
-    private static final Logger LOGGER = AppComponents.getLogger();
+    private static final Logger LOGGER = ConstantsFor.getLogger();
 
 
     @GetMapping ("/calc")
@@ -73,8 +72,9 @@ public class CalcCTRL {
     @PostMapping ("/calc")
     public String okOk(@ModelAttribute ("CalculatorForSome") CalculatorForSome calculatorForSome, BindingResult result, Model model) {
         this.calculatorForSome = calculatorForSome;
-        model.addAttribute("result", calcSrv.resultCalc(calculatorForSome.getUserInput()));
         model.addAttribute("title", CTX.getApplicationName());
+        String uInp = calcSrv.resultCalc(calculatorForSome.getUserInput());
+        model.addAttribute("result", uInp);
         return "ok";
     }
 

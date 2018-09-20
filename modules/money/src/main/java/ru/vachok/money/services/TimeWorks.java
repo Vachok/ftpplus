@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Date;
 
 import static java.time.temporal.ChronoUnit.MINUTES;
 
@@ -24,6 +25,10 @@ public class TimeWorks {
         if(dayOfWeekNow.equalsIgnoreCase("SUNDAY")||dayOfWeekNow.equalsIgnoreCase("SATURDAY"))
             timeLeftString = dayOfWeekNow;
         return timeLeftString;
+    }
+
+    public Date fromMillisToDate(long milSec){
+        return new Date(milSec);
     }
 
 }

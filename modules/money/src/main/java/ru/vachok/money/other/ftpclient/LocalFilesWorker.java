@@ -4,7 +4,6 @@ package ru.vachok.money.other.ftpclient;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import ru.vachok.money.ConstantsFor;
-import ru.vachok.money.config.AppComponents;
 import ru.vachok.money.services.Utilit;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.InitProperties;
@@ -75,7 +74,7 @@ public class LocalFilesWorker implements Callable<String> {
         try {
             FileUtils.touch(txtFile);
         } catch (IOException e) {
-            Logger logger = AppComponents.getLogger();
+            Logger logger = ConstantsFor.getLogger();
             logger.error(e.getMessage() , e);
         }
     }

@@ -3,7 +3,7 @@ package ru.vachok.money.components;
 
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
-import ru.vachok.money.config.AppComponents;
+import ru.vachok.money.ConstantsFor;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;

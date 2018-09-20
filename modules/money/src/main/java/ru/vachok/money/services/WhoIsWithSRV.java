@@ -6,7 +6,6 @@ package ru.vachok.money.services;
     import org.springframework.context.annotation.AnnotationConfigApplicationContext;
     import org.springframework.stereotype.Service;
     import ru.vachok.money.ConstantsFor;
-    import ru.vachok.money.config.AppComponents;
 
     import javax.servlet.http.HttpServletRequest;
     import java.io.IOException;
@@ -27,7 +26,7 @@ public class WhoIsWithSRV {
     /**
      {@link }
      */
-    private static final Logger LOGGER = AppComponents.getLogger();
+    private static final Logger LOGGER = ConstantsFor.getLogger();
 
     private static final AnnotationConfigApplicationContext ctx = ConstantsFor.CONTEXT;
 

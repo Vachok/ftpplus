@@ -2,7 +2,7 @@ package ru.vachok.money.other;
 
 
 import org.slf4j.Logger;
-import ru.vachok.money.config.AppComponents;
+import ru.vachok.money.ConstantsFor;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -24,7 +24,7 @@ public class StaxStreamProcessor implements AutoCloseable {
     /*Fields*/
     private static final XMLInputFactory FACTORY = XMLInputFactory.newInstance();
 
-    private static final Logger LOGGER = AppComponents.getLogger();
+    private static final Logger LOGGER = ConstantsFor.getLogger();
 
     private final XMLStreamReader reader;
 

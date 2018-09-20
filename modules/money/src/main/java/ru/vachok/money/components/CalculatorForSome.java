@@ -1,9 +1,11 @@
 package ru.vachok.money.components;
 
 
+import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.money.ConstantsFor;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -21,12 +23,12 @@ public class CalculatorForSome {
      */
     private static final String SOURCE_CLASS = CalculatorForSome.class.getSimpleName();
 
-    private int userInt;
+    private long uLong;
 
     private double userDouble;
 
     private String userInput;
-
+    private static final Logger LOGGER = ConstantsFor.getLogger();
     @Override
     public String toString() {
         return "CalculatorForSome{" +
@@ -34,9 +36,9 @@ public class CalculatorForSome {
             ", calcInt=" + calcInt +
             ", messageToUser=" + messageToUser +
             ", SOURCE_CLASS='" + SOURCE_CLASS + '\'' +
+            ", uLong=" + uLong +
             ", userDouble=" + userDouble +
             ", userInput='" + userInput + '\'' +
-            ", userInt=" + userInt +
             '}';
     }
 
@@ -65,12 +67,12 @@ public class CalculatorForSome {
         this.calcInt = calcInt;
     }
 
-    public int getUserInt() {
-        return userInt;
+    public long getuLong() {
+        return uLong;
     }
 
-    public void setUserInt(int userInt) {
-        this.userInt = userInt;
+    public void setuLong(long uLong) {
+        this.uLong = uLong;
     }
 
     public double getUserDouble() {
@@ -87,9 +89,5 @@ public class CalculatorForSome {
 
     public void setUserInput(String userInput) {
         this.userInput = userInput;
-    }
-
-    private void showUserIn() {
-        messageToUser.infoNoTitles(userInput);
     }
 }

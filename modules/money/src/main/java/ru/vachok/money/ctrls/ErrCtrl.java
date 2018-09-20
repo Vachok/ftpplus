@@ -7,7 +7,7 @@ import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import ru.vachok.money.config.AppComponents;
+import ru.vachok.money.ConstantsFor;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -26,7 +26,7 @@ public class ErrCtrl implements ErrorController {
      */
     private static final String SOURCE_CLASS = ErrCtrl.class.getSimpleName();
 
-    private static Logger logger = AppComponents.getLogger();
+    private static Logger logger = ConstantsFor.getLogger();
 
 
     /**

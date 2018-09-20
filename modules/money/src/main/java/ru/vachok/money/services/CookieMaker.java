@@ -5,11 +5,8 @@ import org.slf4j.Logger;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.stereotype.Service;
 import ru.vachok.money.ConstantsFor;
-import ru.vachok.money.components.CookIES;
-import ru.vachok.money.config.AppComponents;
 
 import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
 import java.util.concurrent.TimeUnit;
 
 
@@ -20,7 +17,7 @@ import java.util.concurrent.TimeUnit;
 public class CookieMaker {
 
     /*Fields*/
-    private static final Logger LOGGER = AppComponents.getLogger();
+    private static final Logger LOGGER = ConstantsFor.getLogger();
 
     private static final int MAX_AGE = 600;
 
