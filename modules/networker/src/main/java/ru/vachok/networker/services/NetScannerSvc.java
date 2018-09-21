@@ -70,7 +70,7 @@ public class NetScannerSvc {
         messageToUser.info(SOURCE_CLASS, "Scan OK!", elapsedTime);
         pcNames.add(elapsedTime);
         MessageToUser mailMSG = new ESender("143500@gmail.com");
-        Map<String, String> lastLogs = new DataBases().getLastLogs("ru_vachok_ethosdistro");
+        Map<String, String> lastLogs = new DataBasesSRV().getLastLogs("ru_vachok_ethosdistro");
         String retLogs = new TForms().fromArray(lastLogs);
         new Thread(() -> mailMSG.info(SOURCE_CLASS,
             (( float ) (TimeUnit.MILLISECONDS

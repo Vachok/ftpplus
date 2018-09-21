@@ -6,7 +6,7 @@
     <link rel="stylesheet" type="text/css" media="all" href="css/main.css" th:href="@{css/main.css}"/>
 </head>
 <body>
-<form th:action="@{/matrix}" th:object="${Matrix}" method="POST">
+<form th:action="@{/matrix}" th:object="${matrix}" method="POST">
     Интересуемая должность:
     <input type="text" th:field="*{workPos}"/>
     <br>
@@ -21,6 +21,6 @@
 <footer>
     <a href="/pflists">Списки PF</a><br>
     <a href="/netscan">Скан локальных ПК</a>
-    <p th:text="${visit}"/>
+    <p th:utext="${visit}"/>
 </footer>
 </html>

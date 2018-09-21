@@ -15,8 +15,8 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.logic.ssh.SSHFactory;
-import ru.vachok.networker.services.DataBases;
-import ru.vachok.networker.services.Matrix;
+import ru.vachok.networker.services.DataBasesSRV;
+import ru.vachok.networker.services.MatrixSRV;
 import ru.vachok.networker.services.VisitorSrv;
 import ru.vachok.networker.services.WhoIsWithSRV;
 
@@ -41,13 +41,13 @@ public class MatrixCtr {
 
     private static final String MATRIX_STRING_NAME = "matrix";
 
-    private Matrix matrix;
+    private MatrixSRV matrixSRV;
 
     private VisitorSrv visitorSrv;
 
     private long metricMatrixStart = System.currentTimeMillis();
 
-    private DataBases dataBases = new DataBases();
+    private DataBasesSRV dataBasesSRV = new DataBasesSRV();
 
     public MatrixCtr() {
         this.visitorSrv = new VisitorSrv();
@@ -74,7 +74,7 @@ public class MatrixCtr {
             visitorSrv.makeVisit(request);
             String userIP = userPC + ":" + request.getRemotePort() + "<-" + response.getStatus();
             model.addAttribute("yourip", userIP);
-            model.addAttribute("Matrix", new Matrix());
+            model.addAttribute(MATRIX_STRING_NAME, new MatrixSRV());
 
             if (ConstantsFor.getUserPC(request).toLowerCase().contains(ConstantsFor.NO0027) ||
                 ConstantsFor.getUserPC(request).toLowerCase().contains("0:0:0:0")) {
@@ -90,7 +90,7 @@ public class MatrixCtr {
     }
 
     private Model lastLogsGetter(Model model) {
-        Map<String, String> vachokEthosdistro = dataBases.getLastLogs("ru_vachok_ethosdistro");
+        Map<String, String> vachokEthosdistro = dataBasesSRV.getLastLogs("ru_vachok_ethosdistro");
         String logsFromDB = new TForms().fromArray(vachokEthosdistro);
         model.addAttribute("logdb", logsFromDB);
         model.addAttribute("starttime", new Date(ConstantsFor.START_STAMP));
@@ -99,22 +99,22 @@ public class MatrixCtr {
     }
 
     @PostMapping("/matrix")
-    public String getWorkPosition(@ModelAttribute("Matrix") Matrix matrix, BindingResult result, Model model) {
+    public String getWorkPosition(@ModelAttribute(MATRIX_STRING_NAME) MatrixSRV matrixSRV, BindingResult result, Model model) {
         metricMatrixStart = System.currentTimeMillis();
-        this.matrix = matrix;
-        String workPos = this.matrix.getWorkPos();
+        this.matrixSRV = matrixSRV;
+        String workPos = this.matrixSRV.getWorkPos();
         if (!workPos.toLowerCase().contains("whois:")) {
-            String workPosition = this.matrix.
+            String workPosition = this.matrixSRV.
                 getWorkPosition(
                     "select * from matrix where Doljnost like '%" + workPos + "%';");
-            this.matrix.setWorkPos(workPosition);
+            this.matrixSRV.setWorkPos(workPosition);
             LOGGER.info(workPosition);
             return "redirect:/matrix";
         } else {
             try {
                 workPos = workPos.split(":")[1];
                 String s = new WhoIsWithSRV().whoIs(workPos);
-                matrix.setWorkPos(s.replaceAll("\n", "<br>"));
+                matrixSRV.setWorkPos(s.replaceAll("\n", "<br>"));
                 model.addAttribute("whois", s);
             } catch (ArrayIndexOutOfBoundsException e) {
                 model.addAttribute("whois", workPos + "<p>" + e.getMessage());
@@ -128,9 +128,9 @@ public class MatrixCtr {
     @GetMapping("/matrix")
     public String showResults(HttpServletRequest request, Model model) {
         visitorSrv.makeVisit(request);
-        model.addAttribute("Matrix", matrix);
-        model.addAttribute("workPos", matrix.getWorkPos());
-        model.addAttribute("headtitle", matrix.getCountDB() + " позиций   " + TimeUnit.MILLISECONDS.toMinutes(
+        model.addAttribute("matrix", matrixSRV);
+        model.addAttribute("workPos", matrixSRV.getWorkPos());
+        model.addAttribute("headtitle", matrixSRV.getCountDB() + " позиций   " + TimeUnit.MILLISECONDS.toMinutes(
             System.currentTimeMillis() - ConstantsFor.START_STAMP) + " upTime");
         metricMatrixStart = System.currentTimeMillis() - metricMatrixStart;
         return MATRIX_STRING_NAME;
