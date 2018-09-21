@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @since 07.09.2018 (9:45)
  */
 @Service("matrix")
-public class Matrix {
+public class MatrixSRV {
 
     /*Fields*/
     private static final Connection c = new RegRuMysql().getDefaultConnection("u0466446_velkom");

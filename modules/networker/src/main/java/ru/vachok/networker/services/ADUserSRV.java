@@ -16,7 +16,7 @@ import java.util.InputMismatchException;
 import java.util.List;
 
 
-public class SetADUser {
+public class ADUserSRV {
 
     private static final AnnotationConfigApplicationContext ctx = IntoApplication.getAppCtx();
 

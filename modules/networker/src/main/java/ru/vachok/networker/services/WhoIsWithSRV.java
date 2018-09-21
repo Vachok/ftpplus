@@ -3,9 +3,7 @@ package ru.vachok.networker.services;
 
 import org.apache.commons.net.whois.WhoisClient;
 import org.slf4j.Logger;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.stereotype.Service;
-import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 
@@ -30,13 +28,11 @@ public class WhoIsWithSRV {
      */
     private static final Logger LOGGER = AppComponents.getLogger();
 
-    private static final AnnotationConfigApplicationContext ctx = IntoApplication.getAppCtx();
-
     public String whoIs(String inetAddr) {
         StringBuilder geoLocation = new StringBuilder();
         geoLocation.append("<p>");
         Locale locale = Locale.getDefault();
-        geoLocation.append(inetAddr).append("<br>");
+        geoLocation.append("<h3>").append(inetAddr).append("</h3><br>");
         WhoisClient whoisClient = new WhoisClient();
         try {
             geoLocation.append("<p>");
@@ -49,12 +45,13 @@ public class WhoIsWithSRV {
                 "\n" +
                 "% Note: this output has been filtered.\n" +
                 "%       To receive output for a database update, use the \"-B\" flag.\n", "");
+
             if (queryWhoIs.contains("ERROR:101")) {
                 String hostAddress = InetAddress.getByName(inetAddr).getHostAddress();
                 queryWhoIs = new WhoIsWithSRV().whoIs(hostAddress);
+                whoisClient.disconnect();
                 return queryWhoIs;
             }
-
             geoLocation.append(queryWhoIs).append("</p>");
             whoisClient.disconnect();
         } catch (IOException | RuntimeException e) {

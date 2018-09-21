@@ -110,7 +110,7 @@ public class PhotoConverterSRV {
         List<String> commandsAD = new ArrayList<>();
         Map<String, BufferedImage> stringBufferedImageMap = convertFoto();
         Set<String> fileNames = stringBufferedImageMap.keySet();
-        List<String> stringStream = new SetADUser().adFileReader();
+        List<String> stringStream = new ADUserSRV().adFileReader();
         for (String fileName : fileNames) {
             stringStream.forEach(x -> {
                 if (x.toLowerCase().contains("samacc") && x.toLowerCase().contains(fileName)) {

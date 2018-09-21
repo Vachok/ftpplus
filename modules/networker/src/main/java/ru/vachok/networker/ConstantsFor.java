@@ -59,6 +59,8 @@ public enum ConstantsFor {
 
     public static final Long CACHE_TIME_MS = TimeUnit.MINUTES.toMillis(10);
 
+    public static final float ONE_HOUR_IN_MIN = 60f;
+
     public static int KBYTE = 1024;
 
     public static final long START_STAMP = System.currentTimeMillis();

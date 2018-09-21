@@ -14,8 +14,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  @since 07.09.2018 (0:39) */
-@Service("dataBases")
-public class DataBases {
+@Service("databases")
+public class DataBasesSRV {
 
     /*Fields*/
     private static final Logger LOGGER = AppComponents.getLogger();

@@ -75,7 +75,7 @@ public class PfListsSrv {
         long endMeth = System.currentTimeMillis();
         pfLists.setTimeUpd(endMeth);
         buildGit.call();
-        pfLists.setGitStats(new Date(endMeth) + " время обновления\n");
+        pfLists.setGitStats(new Date(endMeth).getTime());
         String msg = buildFactoryMetrics + " min elapsed";
         LOGGER.info(msg);
         Thread.currentThread().interrupt();

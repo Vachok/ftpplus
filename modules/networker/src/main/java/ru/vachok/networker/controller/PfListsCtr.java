@@ -23,10 +23,7 @@ import ru.vachok.networker.services.VisitorSrv;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.security.SecureRandom;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.*;
 
 
@@ -70,7 +67,8 @@ public class PfListsCtr {
         initProperties.delProps();
         visitorSrv.makeVisit(request);
         model.addAttribute("pfLists", pfLists);
-        model.addAttribute("metric", pfLists.getGitStats());
+        model.addAttribute("metric", ( float ) TimeUnit.MILLISECONDS
+            .toSeconds(System.currentTimeMillis() - pfLists.getGitStats()) / ConstantsFor.ONE_HOUR_IN_MIN + " min since upd");
         model.addAttribute("vipnet", pfLists.getVipNet());
         model.addAttribute("tempfull", pfLists.getFullSquid());
         model.addAttribute("squidlimited", pfLists.getLimitSquid());

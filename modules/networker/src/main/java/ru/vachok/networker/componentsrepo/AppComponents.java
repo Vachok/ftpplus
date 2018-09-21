@@ -9,9 +9,10 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Scope;
 import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.logic.DBMessenger;
-import ru.vachok.networker.services.DataBases;
+import ru.vachok.networker.services.DataBasesSRV;
 import ru.vachok.networker.services.NetScannerSvc;
 import ru.vachok.networker.services.VisitorSrv;
+import ru.vachok.networker.services.WhoIsWithSRV;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -45,8 +46,8 @@ public class AppComponents {
 
     @Bean
     @Scope("singleton")
-    public DataBases dataBases() {
-        return new DataBases();
+    public DataBasesSRV dataBases() {
+        return new DataBasesSRV();
     }
 
     @Bean("pflists")
@@ -64,7 +65,13 @@ public class AppComponents {
     }
 
     @Bean
+    @Scope("singleton")
     public VisitorSrv visitorSrv() {
         return new VisitorSrv();
+    }
+
+    @Bean
+    public WhoIsWithSRV whoIsWithSRV() {
+        return new WhoIsWithSRV();
     }
 }

@@ -37,7 +37,7 @@ public class NetScanCtr {
 
     private static Properties properties = initProperties.getProps();
 
-    private String netscanString;
+    private String netscanString = "netscan";
 
     /*Instance*/
     @Autowired
@@ -49,12 +49,10 @@ public class NetScanCtr {
     public String netScan(HttpServletRequest request, Model model) {
         String lastscan = properties.getProperty("lastscan");
         long l = Long.parseLong(lastscan) + TimeUnit.MINUTES.toMillis(25);
-        netscanString = "netscan";
         if(l > System.currentTimeMillis()){
             String msg = TimeUnit.MILLISECONDS.toSeconds(l - System.currentTimeMillis()) + " seconds left";
             LOGGER.warn(msg);
             model.addAttribute("pc", msg);
-            return netscanString;
         }
         else
             if(request.getQueryString()!=null){
@@ -62,14 +60,16 @@ public class NetScanCtr {
             List<String> pcNames = netScannerSvc.getPCNames(request.getQueryString());
             model.addAttribute("date", new Date().toString());
             model.addAttribute("pc", new TForms().fromArray(pcNames));
-                return netscanString;
         } else {
             List<String> pCsAsync = netScannerSvc.getPCsAsync();
+                model.addAttribute("date",
+                    ( float ) TimeUnit.MILLISECONDS
+                        .toSeconds(System.currentTimeMillis() - l) / ConstantsFor.ONE_HOUR_IN_MIN + " ago was last scan");
             model.addAttribute("pc", new TForms().fromArray(pCsAsync));
                 properties.setProperty("lastscan", System.currentTimeMillis() + "");
                 initProperties.delProps();
                 initProperties.setProps(properties);
-                return netscanString;
         }
+        return netscanString;
     }
 }
