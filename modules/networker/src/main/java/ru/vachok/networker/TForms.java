@@ -102,7 +102,7 @@ public class TForms {
 
     public String fromArray(String[] stringsArray) {
         for(String s : stringsArray){
-            nStringBuilder.append(s).append("\n");
+            nStringBuilder.append(s).append("\n<br>");
         }
         return nStringBuilder.toString();
     }
@@ -112,10 +112,24 @@ public class TForms {
         return nStringBuilder.toString();
     }
 
-    public String fromEnum(Enumeration<String> enumStrings) {
+    public String fromEnum(Enumeration<String> enumStrings, boolean br) {
+        nStringBuilder.append("\n");
+        brStringBuilder.append("<p>");
         while (enumStrings.hasMoreElements()) {
-            nStringBuilder.append(enumStrings.nextElement()).append("\n");
+            String str = enumStrings.nextElement();
+            nStringBuilder.append(str).append("\n");
+            brStringBuilder.append(str).append("<br>");
         }
-        return nStringBuilder.toString();
+        nStringBuilder.append("\n");
+        brStringBuilder.append("</p>");
+        if (br) return brStringBuilder.toString();
+        else return nStringBuilder.toString();
+    }
+
+    public String fromArray(Queue<String> stringQueue) {
+        brStringBuilder.append("<p>");
+        while (stringQueue.iterator().hasNext()) brStringBuilder.append(stringQueue.poll()).append("<br>");
+        brStringBuilder.append("</p>");
+        return brStringBuilder.toString();
     }
 }

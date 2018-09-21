@@ -1,6 +1,7 @@
 package ru.vachok.networker;
 
 
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import ru.vachok.networker.logic.PassGenerator;
 
 import javax.servlet.http.HttpServletRequest;
@@ -21,6 +22,8 @@ public enum ConstantsFor {
      * <b>1 мегабайт в байтах</b>
      */
     public static final int MBYTE = 1024 * 1024;
+
+    public static final AutowireCapableBeanFactory BEAN_FACTORY = AppCtx.getBeanFactory();
 
     public static final String NO0027 = "10.200.213.85";
 

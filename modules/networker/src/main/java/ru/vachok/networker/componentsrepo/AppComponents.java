@@ -31,15 +31,15 @@ public class AppComponents {
         return adUser;
     }
 
-    @Bean (destroyMethod = "dbSend")
+    @Bean
     @Scope ("singleton")
     public DBMessenger dbMessenger() {
         return new DBMessenger();
     }
 
-    @Bean (initMethod = "netSvc")
+    @Bean()
     @Scope ("singleton")
-    public NetScannerSvc netScan(String queryString) {
+    public NetScannerSvc netScan() {
         return new NetScannerSvc();
     }
 
@@ -61,5 +61,10 @@ public class AppComponents {
         AnnotationConfigApplicationContext appCtx = IntoApplication.getAppCtx();
         VisitorSrv visitorSrv = appCtx.getBean(VisitorSrv.class);
         return visitorSrv.makeVisit(request);
+    }
+
+    @Bean
+    public VisitorSrv visitorSrv() {
+        return new VisitorSrv();
     }
 }

@@ -28,7 +28,12 @@ public class PfListsSrv {
 
     private static Date endDate;
 
-    private PfListsSrv() {
+    private SSHFactory.Builder ssh;
+
+    public PfListsSrv() {
+        SSHFactory.Builder builder = new SSHFactory.Builder(ConstantsFor.SRV_NAT, "uname -a;exit");
+        this.ssh = builder;
+        ctx.registerBean(builder.getClass());
     }
 
     public static float getBuildFactoryMetrics() {
@@ -46,7 +51,7 @@ public class PfListsSrv {
         long startMeth = System.currentTimeMillis();
 
         PfLists pfLists = ctx.getBean(PfLists.class);
-        SSHFactory build = new SSHFactory.Builder(ConstantsFor.SRV_NAT, "uname -a;exit").build();
+        SSHFactory build = ssh.build();
         pfLists.setuName(build.call());
 
         build.setCommandSSH("sudo cat /etc/pf/vipnet;exit");

@@ -1,10 +1,15 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+    <title th:text="${title}">ХЗ</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link rel="stylesheet" type="text/css" media="all" href="css/main.css" th:href="@{css/main.css}"/>
 </head>
 <body>
-
+<p th:utext="${urls}"/>
+<p th:utext="${context}"></p>
 </body>
+<footer>
+    <h5 align="right" th:utext="${genstamp}"/>
+</footer>
 </html>

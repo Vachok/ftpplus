@@ -35,6 +35,8 @@ public class IntoApplication {
 
     private static final Logger LOGGER = AppComponents.getLogger();
 
+    private static final SpringApplication SPRING_APPLICATION = new SpringApplication();
+
     private static AnnotationConfigApplicationContext appCtx = AppCtx.scanForBeansAndRefreshContext();
 
     public static AnnotationConfigApplicationContext getAppCtx() {
@@ -49,13 +51,11 @@ public class IntoApplication {
      @param args the input arguments
      */
     public static void main(String[] args) {
-        appCtx.refresh();
         SpringApplication.run(IntoApplication.class, args);
         infoForU(appCtx);
         Runtime.getRuntime().addShutdownHook(new Thread(() -> new Visitor().shutdownHook()));
         PfListsSrv pfListsSrv = appCtx.getBean(PfListsSrv.class);
         pfListsSrv.buildFactory();
-        appCtx.registerShutdownHook();
     }
 
     private static void infoForU(ApplicationContext appCtx) {

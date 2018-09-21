@@ -3,11 +3,15 @@ package ru.vachok.networker.logic.ssh;
 
 import com.jcraft.jsch.*;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
+import ru.vachok.networker.AppCtx;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
 
@@ -165,7 +169,9 @@ public class SSHFactory {
      * <p>
      * Сам строитель.
      */
-    public static class Builder {
+    @Service("ssh")
+    @Scope("singleton")
+    public static class Builder extends AppComponents {
 
         /*Fields*/
         private String userName = "ITDept";
@@ -178,12 +184,10 @@ public class SSHFactory {
 
         private String commandSSH;
 
-        /**
-         * Instantiates a new Builder.
-         *
-         * @param connectToSrv the connect to srv
-         * @param commandSSH   the command ssh
-         */
+        protected Builder() {
+
+        }
+
         public Builder(String connectToSrv, String commandSSH) {
             this.commandSSH = commandSSH;
             this.connectToSrv = connectToSrv;
@@ -310,6 +314,12 @@ public class SSHFactory {
         public Builder setCommandSSH(String commandSSH) {
             this.commandSSH = commandSSH;
             return this;
+        }
+
+        public boolean killMe() {
+            AutowireCapableBeanFactory beanFactory = AppCtx.getBeanFactory();
+            beanFactory.destroyBean(this.getClass());
+            return true;
         }
 
     }

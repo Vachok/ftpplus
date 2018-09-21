@@ -32,6 +32,16 @@ public class Visitor {
 
     private String visitPlace;
 
+    @Override
+    public String toString() {
+        return "Visitor{" +
+            "timeSt=" + timeSt +
+            ", remAddr='" + remAddr + '\n' +
+            ", visitPlace='" + visitPlace + '\n' +
+            ", dbInfo='" + dbInfo + '\n' +
+            '}';
+    }
+
     private String dbInfo;
 
     public String getVisitPlace() {
@@ -58,16 +68,6 @@ public class Visitor {
 
     public void setVisitsMap(Map<Long, String> visitsMap) {
         this.visitsMap = visitsMap;
-    }
-
-    @Override
-    public String toString() {
-        return "Visitor{" +
-            "timeSt=" + timeSt +
-            ", remAddr='" + remAddr + '\'' +
-            ", visitPlace='" + visitPlace + '\'' +
-            ", dbInfo='" + dbInfo + '\'' +
-            '}';
     }
 
     /**

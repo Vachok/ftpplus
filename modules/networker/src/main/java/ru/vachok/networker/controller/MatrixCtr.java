@@ -43,11 +43,16 @@ public class MatrixCtr {
 
     private Matrix matrix;
 
-    private VisitorSrv visitorSrv = appCtx.getBean(VisitorSrv.class);
+    private VisitorSrv visitorSrv;
+
+    private long metricMatrixStart = System.currentTimeMillis();
 
     private DataBases dataBases = new DataBases();
 
-    private long metricMatrixStart = 0L;
+    public MatrixCtr() {
+        this.visitorSrv = new VisitorSrv();
+        appCtx.registerBean(visitorSrv.getClass());
+    }
 
     @GetMapping("/")
     public String getFirst(HttpServletRequest request, Model model, HttpServletResponse response) {
@@ -58,9 +63,11 @@ public class MatrixCtr {
             boolean pcAuth = (
                 userPC.toLowerCase().contains("0:0:0:0") ||
                     userPC.contains("10.200.213") ||
-                    userPC.contains("10.10.111"));
+                    userPC.contains("10.10.111") ||
+                    userPC.contains("172.16.200"));
             if (queryString.equalsIgnoreCase("eth") && pcAuth) {
                 lastLogsGetter(model);
+                metricMatrixStart = System.currentTimeMillis() - metricMatrixStart;
                 return "logs";
             }
         } else {
@@ -69,15 +76,16 @@ public class MatrixCtr {
             model.addAttribute("yourip", userIP);
             model.addAttribute("Matrix", new Matrix());
 
-            if (ConstantsFor.getUserPC(request).toLowerCase().contains(ConstantsFor.NO0027)) {
+            if (ConstantsFor.getUserPC(request).toLowerCase().contains(ConstantsFor.NO0027) ||
+                ConstantsFor.getUserPC(request).toLowerCase().contains("0:0:0:0")) {
                 model.addAttribute("visit", visitor.toString() +
                     "\nUNIQ:" + visitorSrv.uniqUsers() + "\n" +
                     visitor.getDbInfo());
             } else {
                 model.addAttribute("visit", visitor.getTimeSt() + " timestamp");
             }
-            return "starting";
         }
+        metricMatrixStart = System.currentTimeMillis() - metricMatrixStart;
         return "starting";
     }
 
@@ -112,6 +120,7 @@ public class MatrixCtr {
                 model.addAttribute("whois", workPos + "<p>" + e.getMessage());
                 return MATRIX_STRING_NAME;
             }
+            metricMatrixStart = System.currentTimeMillis() - metricMatrixStart;
             return "redirect:/matrix";
         }
     }
@@ -123,6 +132,7 @@ public class MatrixCtr {
         model.addAttribute("workPos", matrix.getWorkPos());
         model.addAttribute("headtitle", matrix.getCountDB() + " позиций   " + TimeUnit.MILLISECONDS.toMinutes(
             System.currentTimeMillis() - ConstantsFor.START_STAMP) + " upTime");
+        metricMatrixStart = System.currentTimeMillis() - metricMatrixStart;
         return MATRIX_STRING_NAME;
     }
 
@@ -134,6 +144,7 @@ public class MatrixCtr {
             gitOner = new SSHFactory.Builder(ConstantsFor.SRV_GIT, "sudo reboot").build();
         }
         LOGGER.info(gitOner.call());
+        metricMatrixStart = System.currentTimeMillis() - metricMatrixStart;
         return "redirect:http://srv-git.eatmeat.ru:1234";
     }
 }

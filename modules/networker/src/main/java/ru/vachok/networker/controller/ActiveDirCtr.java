@@ -2,6 +2,7 @@ package ru.vachok.networker.controller;
 
 
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -32,11 +33,20 @@ public class ActiveDirCtr {
 
     private static AnnotationConfigApplicationContext ctx = IntoApplication.getAppCtx();
 
-    private VisitorSrv visitorSrv = ctx.getBean(VisitorSrv.class);
+
+    private VisitorSrv visitorSrv;
+
+    private ADUser adUser;
 
     private static final Logger LOGGER = AppComponents.getLogger();
 
-    private ADUser adUser = ctx.getBean(ADUser.class);
+    @Autowired
+    public ActiveDirCtr() {
+        this.visitorSrv = new VisitorSrv();
+        this.adUser = new ADUser();
+        ctx.registerBean(visitorSrv.getClass());
+        ctx.registerBean(adUser.getClass());
+    }
 
     private PhotoConverterSRV photoConverter;
 

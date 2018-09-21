@@ -2,7 +2,8 @@ package ru.vachok.networker.controller;
 
 
 import org.slf4j.Logger;
-import org.springframework.context.ApplicationContext;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -22,7 +23,10 @@ import ru.vachok.networker.services.VisitorSrv;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.security.SecureRandom;
-import java.util.*;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.*;
 
 
@@ -41,19 +45,28 @@ public class PfListsCtr {
 
     private MessageToUser messageToUser = new DBMessenger();
 
-    private static final ApplicationContext APP_CTX = IntoApplication.getAppCtx();
+    private static final ConfigurableApplicationContext APP_CTX = IntoApplication.getAppCtx();
 
-    private VisitorSrv visitorSrv = APP_CTX.getBean(VisitorSrv.class);
+    private VisitorSrv visitorSrv;
 
-    private PfLists pfLists = APP_CTX.getBean(PfLists.class);
+    private PfLists pfLists;
 
-    private PfListsSrv pfListsSrv = APP_CTX.getBean(PfListsSrv.class);
+    private PfListsSrv pfListsSrv;
+
+    @Autowired
+    public PfListsCtr() {
+        APP_CTX.refresh();
+        this.visitorSrv = APP_CTX.getBean(VisitorSrv.class);
+        this.pfLists = APP_CTX.getBean(PfLists.class);
+        this.pfListsSrv = APP_CTX.getBean(PfListsSrv.class);
+    }
 
     @GetMapping ("/pflists")
     public String pfBean(Model model, HttpServletRequest request, HttpServletResponse response) {
         InitProperties initProperties = new DBRegProperties(ConstantsFor.APP_NAME + SOURCE_CLASS);
         Properties properties = initProperties.getProps();
         Long lastScan = Long.parseLong(properties.getProperty("pfscan"));
+        int aThreadsLast = Integer.parseInt(properties.getProperty("activethreads"));
         initProperties.delProps();
         visitorSrv.makeVisit(request);
         model.addAttribute("pfLists", pfLists);
@@ -64,8 +77,10 @@ public class PfListsCtr {
         model.addAttribute("squid", pfLists.getStdSquid());
         model.addAttribute("nat", pfLists.getPfNat());
         model.addAttribute("rules", pfLists.getPfRules());
-        model.addAttribute("gitstats", Thread.activeCount() + " thr, active");
+        model.addAttribute("gitstats", Thread.activeCount() + " thr, active\nChange: " +
+            (Thread.activeCount() - aThreadsLast));
         long timeOut = lastScan + TimeUnit.MINUTES.toMillis(15);
+        properties.setProperty("activethreads", Thread.activeCount() + "");
         if(request.getQueryString()!=null && System.currentTimeMillis() > timeOut){
             properties.setProperty("pfscan", System.currentTimeMillis() + "");
             new Thread(() -> pfListsSrv.buildFactory()).start();
@@ -77,8 +92,8 @@ public class PfListsCtr {
             return "pflists";
         }
         else{
-            String msg = "" + ( float ) (TimeUnit
-                                             .MILLISECONDS.toSeconds(System.currentTimeMillis() - pfLists.getTimeUpd())) / 60;
+            String msg = "" + (float) (TimeUnit.MILLISECONDS
+                .toSeconds(System.currentTimeMillis() - pfLists.getTimeUpd())) / 60;
             LOGGER.warn(msg);
             initProperties.setProps(properties);
             return "pflists";

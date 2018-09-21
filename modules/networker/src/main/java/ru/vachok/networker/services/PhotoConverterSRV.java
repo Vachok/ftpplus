@@ -33,7 +33,7 @@ public class PhotoConverterSRV {
 
     private static final AnnotationConfigApplicationContext CTX = IntoApplication.getAppCtx();
 
-    private String adPhotosPath = "c:\\Users\\ikudryashov\\Documents\\ShareX\\Screenshots\\2018-08\\";
+    private String adPhotosPath = "c:\\Users\\ikudryashov\\Documents\\ShareX\\Screenshots\\adfoto";
 
     private File adFotoFile;
 

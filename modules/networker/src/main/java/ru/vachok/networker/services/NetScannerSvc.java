@@ -2,6 +2,7 @@ package ru.vachok.networker.services;
 
 
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.messenger.email.ESender;
@@ -10,7 +11,7 @@ import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
-import ru.vachok.networker.logic.FileMessenger;
+import ru.vachok.networker.logic.DBMessenger;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -39,7 +40,12 @@ public class NetScannerSvc {
 
     private static final String SOURCE_CLASS = NetScannerSvc.class.getSimpleName();
 
-    private static final MessageToUser MESSAGE_TO_USER = new FileMessenger();
+    private MessageToUser messageToUser;
+
+    @Autowired
+    public NetScannerSvc() {
+        this.messageToUser = new DBMessenger();
+    }
 
     private static Logger logger = AppComponents.getLogger();
 
@@ -58,10 +64,10 @@ public class NetScannerSvc {
         final long startMethod = System.currentTimeMillis();
         for(String s : PC_PREFIXES){
             pcNames.addAll(getPCNames(s));
-            MESSAGE_TO_USER.info(SOURCE_CLASS, "PC Prefix set to", s + " | Scan starts...");
+            messageToUser.info(SOURCE_CLASS, "PC Prefix set to", s + " | Scan starts...");
         }
         String elapsedTime = "Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethod) + " sec.";
-        MESSAGE_TO_USER.info(SOURCE_CLASS, "Scan OK!", elapsedTime);
+        messageToUser.info(SOURCE_CLASS, "Scan OK!", elapsedTime);
         pcNames.add(elapsedTime);
         MessageToUser mailMSG = new ESender("143500@gmail.com");
         Map<String, String> lastLogs = new DataBases().getLastLogs("ru_vachok_ethosdistro");
@@ -207,7 +213,7 @@ public class NetScannerSvc {
                     list.add(x1 + " " + x2 + " " + pcSerment + " " + onLine);
                 }
                 catch(SQLException e){
-                    MESSAGE_TO_USER.errorAlert(this.getClass().getSimpleName(), e.getMessage(), new TForms().fromArray(e.getStackTrace()));
+                    messageToUser.errorAlert(this.getClass().getSimpleName(), e.getMessage(), new TForms().fromArray(e.getStackTrace()));
                     logger.error(e.getMessage(), e);
                 }
             });

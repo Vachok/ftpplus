@@ -2,6 +2,7 @@ package ru.vachok.networker.services;
 
 
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
@@ -33,7 +34,13 @@ public class VisitorSrv {
 
     private static AnnotationConfigApplicationContext appCtx = IntoApplication.getAppCtx();
 
-    private Visitor visitor = appCtx.getBean(Visitor.class);
+    private Visitor visitor;
+
+    @Autowired
+    public VisitorSrv() {
+        this.visitor = new Visitor();
+        appCtx.register(visitor.getClass());
+    }
 
     public Visitor makeVisit(HttpServletRequest request) {
         visitor.setRemAddr(request.getRemoteAddr());
@@ -43,19 +50,19 @@ public class VisitorSrv {
             viMessageToDB.info(
                 new Date(appCtx.getStartupDate()) +
                     " by: " + visitor.getRemAddr(),
-                request.getSession().getId(),
-                request.getRequestURL() + " getRequestURL\n" +
-                    request.getMethod() + " method\n" +
+                request.getSession().getId() + " session ID\n<br>",
+                request.getRequestURL() + " getRequestURL\n<br>" +
+                    request.getMethod() + " method\n<br>" +
                     TimeUnit.MILLISECONDS
                         .toSeconds(request
                             .getSession().getLastAccessedTime() - request
-                            .getSession().getCreationTime()) + " sec spend.\n" +
-                    new TForms().fromEnum(request.getSession().getServletContext().getAttributeNames()));
+                            .getSession().getCreationTime()) + " sec spend in application\n<br>" +
+                    new TForms().fromEnum(request.getSession().getServletContext().getAttributeNames(), true));
         };
         visitor.setDbInfo(
-            new Date(appCtx.getStartupDate()) +
-                " by: " + visitor.getRemAddr() +
-                request.getSession().getId() +
+            new Date(appCtx.getStartupDate()) + "\n" +
+                " by: " + visitor.getRemAddr() + "\n" +
+                request.getSession().getId() + "\n" +
                 request.getRequestURL() + " getRequestURL\n" +
                 request.getMethod() + " method\n" +
                 TimeUnit.MILLISECONDS
