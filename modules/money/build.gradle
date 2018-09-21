@@ -18,7 +18,7 @@ plugins {
 }
 
 group = 'ru.vachok.money'
-version = '0.212-SNAPSHOT'
+version = '0.220-SNAPSHOT'
 sourceCompatibility = 1.8
 
 repositories {
@@ -26,22 +26,16 @@ repositories {
     maven { url "https://repo.spring.io/milestone" }
 }
 dependencies {
-    // https://mvnrepository.com/artifact/org.quartz-scheduler/quartz
-    compile group: 'org.quartz-scheduler', name: 'quartz', version: '2.3.0'
     compile fileTree('\\lib')
     compile("org.springframework.boot:spring-boot-devtools")
     compile('org.springframework.boot:spring-boot-starter-web')
     compile('org.springframework.boot:spring-boot-starter-thymeleaf')
     // https://mvnrepository.com/artifact/xml-apis/xml-apis
     compile group: 'xml-apis', name: 'xml-apis', version: '2.0.2'
-
-//    compile('org.springframework.cloud:spring-cloud-gcp-starter')
-    // https://mvnrepository.com/artifact/org.springframework.integration/spring-integration-ftp
     // https://mvnrepository.com/artifact/commons-io/commons-io
     compile group: 'commons-io', name: 'commons-io', version: '2.6'
     // https://mvnrepository.com/artifact/commons-net/commons-net
     compile group: 'commons-net', name: 'commons-net', version: '3.6'
-    testCompile('org.springframework.boot:spring-boot-starter-test')
 }
 buildScan {
     termsOfServiceUrl = 'https://gradle.com/terms-of-service'

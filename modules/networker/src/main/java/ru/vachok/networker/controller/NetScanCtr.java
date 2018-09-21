@@ -50,9 +50,10 @@ public class NetScanCtr {
         String lastscan = properties.getProperty("lastscan");
         long l = Long.parseLong(lastscan) + TimeUnit.MINUTES.toMillis(25);
         if(l > System.currentTimeMillis()){
-            String msg = TimeUnit.MILLISECONDS.toSeconds(l - System.currentTimeMillis()) + " seconds left";
+            long l1 = TimeUnit.MILLISECONDS.toSeconds(l - System.currentTimeMillis());
+            String msg = l1 + " seconds (" + ( float ) l1 / ConstantsFor.ONE_HOUR_IN_MIN + " min) left";
             LOGGER.warn(msg);
-            model.addAttribute("pc", msg);
+            model.addAttribute("left", msg);
         }
         else
             if(request.getQueryString()!=null){
