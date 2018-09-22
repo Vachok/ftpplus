@@ -15,12 +15,19 @@ import java.util.Queue;
  */
 @Configuration
 @EnableAsync
-public class AppCtx {
+public class AppCtx extends AnnotationConfigApplicationContext {
 
     /*Fields*/
     private static final String SOURCE_CLASS = AppCtx.class.getSimpleName();
 
     private static Queue<String> outQueue = new PriorityQueue<>();
+
+    private AutowireCapableBeanFactory autowireCapableBeanFactory = this.getAutowireCapableBeanFactory();
+
+    @Override
+    public AutowireCapableBeanFactory getAutowireCapableBeanFactory() {
+        return autowireCapableBeanFactory;
+    }
 
     private static AnnotationConfigApplicationContext configApplicationContext = new AnnotationConfigApplicationContext();
 
@@ -30,6 +37,7 @@ public class AppCtx {
         configApplicationContext.scan("ru.vachok.networker.services");
         configApplicationContext.scan("ru.vachok.networker.config");
         configApplicationContext.setDisplayName(ConstantsFor.APP_NAME);
+
         qAdd();
         outQueue.add(configApplicationContext.getApplicationName());
         return configApplicationContext;
@@ -44,12 +52,6 @@ public class AppCtx {
         stringBuilder.append(msg);
 
         outQueue.add(msg);
-    }
-
-    public static AutowireCapableBeanFactory getBeanFactory() {
-        String msg = "<i>" + SOURCE_CLASS + " return Autowire Capable Bean Factory</i>";
-        outQueue.add(msg);
-        return configApplicationContext.getAutowireCapableBeanFactory();
     }
 
     public static Queue<String> getClassLoaderURLList() {

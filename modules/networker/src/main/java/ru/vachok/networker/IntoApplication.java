@@ -11,7 +11,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.componentsrepo.AppComponents;
-import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.config.ResLoader;
 import ru.vachok.networker.logic.DBMessenger;
 import ru.vachok.networker.services.PfListsSrv;
 
@@ -51,9 +51,11 @@ public class IntoApplication {
      @param args the input arguments
      */
     public static void main(String[] args) {
-        SpringApplication.run(IntoApplication.class, args);
+        SPRING_APPLICATION.setMainApplicationClass(IntoApplication.class);
+        SPRING_APPLICATION.setApplicationContextClass(AppCtx.class);
+        SPRING_APPLICATION.setResourceLoader(new ResLoader());
+        SPRING_APPLICATION.run(IntoApplication.class, args);
         infoForU(appCtx);
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> new Visitor().shutdownHook()));
         PfListsSrv pfListsSrv = appCtx.getBean(PfListsSrv.class);
         pfListsSrv.buildFactory();
     }
@@ -61,7 +63,6 @@ public class IntoApplication {
     private static void infoForU(ApplicationContext appCtx) {
         String msg = appCtx.getApplicationName() + " app name" + appCtx.getDisplayName() + " app display name\n";
         LOGGER.info(msg);
-
     }
 
     public static boolean dataSender(HttpServletRequest request, String srcClass) {

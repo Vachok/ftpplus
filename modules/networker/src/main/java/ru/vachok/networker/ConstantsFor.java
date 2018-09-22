@@ -23,7 +23,7 @@ public enum ConstantsFor {
      */
     public static final int MBYTE = 1024 * 1024;
 
-    public static final AutowireCapableBeanFactory BEAN_FACTORY = AppCtx.getBeanFactory();
+    public static final AutowireCapableBeanFactory BEAN_FACTORY = new AppCtx().getAutowireCapableBeanFactory();
 
     public static final String NO0027 = "10.200.213.85";
 

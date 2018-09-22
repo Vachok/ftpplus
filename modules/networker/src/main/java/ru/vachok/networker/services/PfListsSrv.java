@@ -33,7 +33,6 @@ public class PfListsSrv {
     public PfListsSrv() {
         SSHFactory.Builder builder = new SSHFactory.Builder(ConstantsFor.SRV_NAT, "uname -a;exit");
         this.ssh = builder;
-        ctx.registerBean(builder.getClass());
     }
 
     public static float getBuildFactoryMetrics() {

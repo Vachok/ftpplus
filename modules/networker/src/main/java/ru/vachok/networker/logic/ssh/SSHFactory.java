@@ -11,20 +11,13 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
-import ru.vachok.networker.AppCtx;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.RejectedExecutionException;
 
@@ -317,7 +310,7 @@ public class SSHFactory {
         }
 
         public boolean killMe() {
-            AutowireCapableBeanFactory beanFactory = AppCtx.getBeanFactory();
+            AutowireCapableBeanFactory beanFactory = ConstantsFor.BEAN_FACTORY;
             beanFactory.destroyBean(this.getClass());
             return true;
         }
