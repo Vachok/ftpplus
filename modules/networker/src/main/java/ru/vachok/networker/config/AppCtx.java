@@ -1,10 +1,12 @@
-package ru.vachok.networker;
+package ru.vachok.networker.config;
 
 
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
+import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
 
 import java.util.PriorityQueue;
 import java.util.Queue;
@@ -31,7 +33,7 @@ public class AppCtx extends AnnotationConfigApplicationContext {
 
     private static AnnotationConfigApplicationContext configApplicationContext = new AnnotationConfigApplicationContext();
 
-    static AnnotationConfigApplicationContext scanForBeansAndRefreshContext() {
+    public static AnnotationConfigApplicationContext scanForBeansAndRefreshContext() {
         configApplicationContext.clearResourceCaches();
         configApplicationContext.scan("ru.vachok.networker.componentsrepo");
         configApplicationContext.scan("ru.vachok.networker.services");

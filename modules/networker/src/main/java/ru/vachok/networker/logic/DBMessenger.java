@@ -5,7 +5,6 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.componentsrepo.AppComponents;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -38,8 +37,9 @@ public class DBMessenger implements MessageToUser {
             p.setString(2,s1);
             p.setString(3,s2);
             p.executeUpdate();
-        }catch (SQLException e){
-            AppComponents.getLogger().error(e.getMessage(), e);
+        }
+        catch(SQLException ignore){
+            //
         }
     }
 

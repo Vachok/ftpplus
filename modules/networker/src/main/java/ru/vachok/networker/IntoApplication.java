@@ -11,11 +11,13 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.config.ResLoader;
 import ru.vachok.networker.logic.DBMessenger;
 import ru.vachok.networker.services.PfListsSrv;
 
 import javax.servlet.http.HttpServletRequest;
+import java.rmi.UnexpectedException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -55,9 +57,14 @@ public class IntoApplication {
         SPRING_APPLICATION.setApplicationContextClass(AppCtx.class);
         SPRING_APPLICATION.setResourceLoader(new ResLoader());
         SPRING_APPLICATION.run(IntoApplication.class, args);
-        infoForU(appCtx);
         PfListsSrv pfListsSrv = appCtx.getBean(PfListsSrv.class);
-        pfListsSrv.buildFactory();
+        try{
+            pfListsSrv.buildFactory();
+        }
+        catch(UnexpectedException e){
+            LOGGER.error(e.getMessage(), e);
+        }
+        infoForU(appCtx);
     }
 
     private static void infoForU(ApplicationContext appCtx) {

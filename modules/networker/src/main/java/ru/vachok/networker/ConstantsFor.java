@@ -1,11 +1,14 @@
 package ru.vachok.networker;
 
 
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.logic.PassGenerator;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.SecureRandom;
@@ -22,6 +25,18 @@ public enum ConstantsFor {
      * <b>1 мегабайт в байтах</b>
      */
     public static final int MBYTE = 1024 * 1024;
+
+    private static boolean pingOK = true;
+
+    public static boolean isPingOK() {
+        try{
+            pingOK = InetAddress.getByName("srv-git.eatmeat.ru").isReachable(500);
+        }
+        catch(IOException e){
+            LoggerFactory.getLogger(ConstantsFor.class.getSimpleName()).error(e.getMessage(), e);
+        }
+        return pingOK;
+    }
 
     public static final AutowireCapableBeanFactory BEAN_FACTORY = new AppCtx().getAutowireCapableBeanFactory();
 

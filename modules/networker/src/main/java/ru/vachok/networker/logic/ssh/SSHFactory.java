@@ -137,7 +137,7 @@ public class SSHFactory {
             return retString;
         } catch (IOException | JSchException e) {
             messageToUser.errorAlert(SOURCE_CLASS, " Exception id 123", e.getMessage() + "\n" + Arrays.toString(e.getStackTrace()));
-            return e.getMessage();
+            return e.getMessage() + "<br>\n" + retString;
         }
     }
 

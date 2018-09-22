@@ -5,10 +5,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import ru.vachok.networker.AppCtx;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.services.VisitorSrv;
 
 import javax.servlet.http.HttpServletRequest;
@@ -47,10 +47,7 @@ public class ServiceInfoCtrl {
             model.addAttribute("ping", pingVPN());
             model.addAttribute("urls", new TForms().fromArray(AppCtx.getClassLoaderURLList()));
             model.addAttribute("request", prepareRequest(request));
-            model.addAttribute("visit", visitor.toString() +
-                "\nUNIQ:" + visitorSrv.uniqUsers() + "\n" +
-                visitor.getDbInfo());
-
+            model.addAttribute("visit", visitor.toString());
             model.addAttribute("genstamp", "Generated: " +
                 new Date().getTime() +
                 ". Up: " +
@@ -76,7 +73,7 @@ public class ServiceInfoCtrl {
     private String pingVPN() {
         try{
             InetAddress byName = InetAddress.getByName("srv-git.eatmeat.ru");
-            return "<b>" + byName.isReachable(1000) + "</b> pf.eatmeat.ru<br>";
+            return "<b>" + byName.isReachable(1000) + "</b> srv-git.eatmeat.ru. <i>" + LocalTime.now() + "</i><br>";
         }
         catch(IOException e){
             return e.getMessage();
@@ -87,10 +84,21 @@ public class ServiceInfoCtrl {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("<center><h3>Заголовки</h3></center>");
         stringBuilder.append(new TForms().fromEnum(request.getHeaderNames(), true));
+        stringBuilder.append(request.getHeader("host")).append("<br>");
+        stringBuilder.append(request.getHeader("connection")).append("<br>");
+        stringBuilder.append(request.getHeader("upgrade-insecure-requests")).append("<br>");
+        stringBuilder.append(request.getHeader("user-agent")).append("<br>");
+        stringBuilder.append(request.getHeader("accept")).append("<br>");
+        stringBuilder.append(request.getHeader("referer")).append("<br>");
+        stringBuilder.append(request.getHeader("accept-encoding")).append("<br>");
+        stringBuilder.append(request.getHeader("accept-language")).append("<br>");
+        stringBuilder.append(request.getHeader("cookie")).append("<br>");
         stringBuilder.append("<center><h3>Атрибуты</h3></center>");
         stringBuilder.append(new TForms().fromEnum(request.getAttributeNames(), true));
         stringBuilder.append("<center><h3>Параметры</h3></center>");
-        stringBuilder.append(new TForms().fromEnum(request.getParameterNames(), true));
+        stringBuilder.append(new TForms().mapStrStrArr(request.getParameterMap(), true));
+        stringBuilder.append("<center><h3>Cookies</h3></center>");
+        stringBuilder.append(new TForms().fromArray(request.getCookies(), true));
         return stringBuilder.toString();
     }
 }

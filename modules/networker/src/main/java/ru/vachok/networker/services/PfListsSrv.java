@@ -10,6 +10,7 @@ import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.PfLists;
 import ru.vachok.networker.logic.ssh.SSHFactory;
 
+import java.rmi.UnexpectedException;
 import java.util.Date;
 
 
@@ -46,8 +47,10 @@ public class PfListsSrv {
     /*Instances*/
 
 
-    public void buildFactory() {
-        long startMeth = System.currentTimeMillis();
+    public void buildFactory() throws UnexpectedException {
+        if(!ConstantsFor.isPingOK()){
+            throw new UnexpectedException("No ping");
+        }
 
         PfLists pfLists = ctx.getBean(PfLists.class);
         SSHFactory build = ssh.build();
