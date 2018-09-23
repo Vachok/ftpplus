@@ -56,7 +56,7 @@ public class IntoApplication {
         SPRING_APPLICATION.setMainApplicationClass(IntoApplication.class);
         SPRING_APPLICATION.setApplicationContextClass(AppCtx.class);
         SPRING_APPLICATION.setResourceLoader(new ResLoader());
-        SPRING_APPLICATION.run(IntoApplication.class, args);
+        SpringApplication.run(IntoApplication.class, args);
         PfListsSrv pfListsSrv = appCtx.getBean(PfListsSrv.class);
         try{
             pfListsSrv.buildFactory();
