@@ -22,8 +22,8 @@ public class AppResLoader extends DefaultResourceLoader {
     private static final Logger LOGGER = LoggerFactory.getLogger(SOURCE_CLASS);
 
     @Override
-    public ClassLoader getClassLoader() {
-        this.getClassLoader().getClass().getTypeName();
+    public ClassLoader getClassLoader() throws NullPointerException {
+        LOGGER.info(super.getClassLoader().getClass().getTypeName());
         return super.getClassLoader();
     }
 

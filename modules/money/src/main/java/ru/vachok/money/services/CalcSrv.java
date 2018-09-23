@@ -39,31 +39,14 @@ public class CalcSrv {
             userInp = userInp.split(":")[1].trim();
             return whoIs(userInp);
         }
-        Object o = parseInp(userInp);
-        if(o.equals(null)) return userInp;
+        if(userInp.equalsIgnoreCase("?")){
+            return helpS();
+        }
         else{
-        LOGGER.warn(o.toString());
-        return o.toString();}
-    }
-
-    private Object parseInp(String userInp) {
-        String parsedInp;
-        try{
-            parsedInp=userInp.split(" ")[1].trim();
-        }catch(ArrayIndexOutOfBoundsException e){
-            return userInp+" , "+e.getMessage();
-        }
-        try{
-            long parsLong = Long.parseLong(parsedInp);
-            calculatorForSome.setuLong(parsLong);
-            if(userInp.toLowerCase().contains("time")) return new Date(parsLong).toString();
-            else return parsLong;
-        }
-        catch(Exception e){
-            LOGGER.error(e.getMessage(), e);
-            double parsedDouble = Double.parseDouble(parsedInp);
-            calculatorForSome.setUserDouble(parsedDouble);
-            return parsedDouble;
+            Object o = parseInp(userInp);
+            String msg = o.toString() + "      |   Object returned";
+            LOGGER.warn(msg);
+            return o.toString();
         }
     }
 
@@ -79,8 +62,51 @@ public class CalcSrv {
     }
 
     private String whoIs(String userInp) {
-        WhoIsWithSRV bean = new WhoIsWithSRV();
-        String s = bean.whoIs(userInp);
+        WhoIsWithSRV whoIsWithSRV = new WhoIsWithSRV();
+        String s = whoIsWithSRV.whoIs(userInp);
         return s;
+    }
+
+    private String helpS() {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("<p><h3><center>Помощь</h3></center></h3>");
+        stringBuilder.append("Помоги себе сам, пока не готово.");
+        return stringBuilder.toString();
+    }
+
+    private Object parseInp(String userInp) {
+        String parsedInp;
+        try{
+            parsedInp = userInp.split(" -")[1].trim();
+        }
+        catch(ArrayIndexOutOfBoundsException e){
+            return userInp + " , " + e.getMessage();
+        }
+        try{
+            long parsLong = Long.parseLong(parsedInp);
+            calculatorForSome.setuLong(parsLong);
+            if(userInp.toLowerCase().contains("time")){
+                return new Date(parsLong).toString();
+            }
+            else{
+                return parsLong;
+            }
+        }
+        catch(Exception e){
+            LOGGER.error(e.getMessage(), e);
+            return mbDouble(parsedInp);
+        }
+    }
+
+    private Object mbDouble(String parsedInp) {
+        try{
+            double parsedDouble = Double.parseDouble(parsedInp);
+            calculatorForSome.setUserDouble(parsedDouble);
+            return parsedDouble;
+        }
+        catch(Exception e){
+            LOGGER.error(e.getMessage(), e);
+            return helpS();
+        }
     }
 }

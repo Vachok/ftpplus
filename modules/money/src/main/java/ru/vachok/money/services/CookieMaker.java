@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
 import java.util.concurrent.TimeUnit;
 
 
@@ -49,6 +50,9 @@ public class CookieMaker {
         return cookieStart;
     }
 
+    public boolean isCookiePresent(HttpServletRequest request) {
+        return request.getCookies().length > 0;
+    }
     @Override
     public int hashCode() {
         return cookedCookie.hashCode();
