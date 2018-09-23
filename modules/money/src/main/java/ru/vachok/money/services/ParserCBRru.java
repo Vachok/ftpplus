@@ -2,10 +2,11 @@ package ru.vachok.money.services;
 
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import ru.vachok.money.ConstantsFor;
 import ru.vachok.money.components.EURO;
 import ru.vachok.money.components.UsDollar;
+import ru.vachok.money.config.ConstantsFor;
 
 import javax.xml.stream.XMLStreamException;
 import java.net.MalformedURLException;
@@ -23,7 +24,7 @@ public class ParserCBRru {
 
 
 /*Fields*/
-    private static final Logger LOGGER = ConstantsFor.getLogger();
+private static final Logger LOGGER = LoggerFactory.getLogger(ParserCBRru.class.getSimpleName());
 
     private static final String URL_AS_STRING = "http://cbr.ru/currency_base/daily/";
 

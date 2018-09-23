@@ -1,16 +1,13 @@
 package ru.vachok.money.ctrls;
 
 
-
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import ru.vachok.messenger.MessageCons;
-import ru.vachok.messenger.MessageToUser;
-import ru.vachok.money.ConstantsFor;
 import ru.vachok.mysqlandprops.RegRuMysql;
 
 import javax.servlet.http.Cookie;
@@ -20,16 +17,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.time.LocalTime;
-import java.util.Arrays;
+import java.util.*;
 import java.util.Date;
-import java.util.Enumeration;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 
@@ -51,9 +43,7 @@ public class Home {
     */
    private static final int EXPIRY = 90;
 
-   private MessageToUser messageToUser = new MessageCons();
-
-    private static Logger logger = ConstantsFor.getLogger();
+    private static Logger logger = LoggerFactory.getLogger("deprec");
 
 
    private boolean myPC;
@@ -70,7 +60,7 @@ public class Home {
     @param request the request
     @return the string
     */
-   @RequestMapping (value = {"/home"}, method = RequestMethod.GET)
+   @RequestMapping (value = "/home", method = RequestMethod.GET)
    public String index(Model model, HttpServletRequest request) {
       setMyPC(request.getRemoteAddr().contains("10.10.111.") || request.getRemoteAddr().contains("0:0:0:0:0"));
       String remoteAddr = request.getRemoteAddr();

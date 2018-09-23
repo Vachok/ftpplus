@@ -1,20 +1,13 @@
 package ru.vachok.money.other.ftpclient;
 
 
-
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.money.ConstantsFor;
-import ru.vachok.mysqlandprops.props.DBRegProperties;
-import ru.vachok.mysqlandprops.props.DbProperties;
-import ru.vachok.mysqlandprops.props.FileProps;
-import ru.vachok.mysqlandprops.props.InitProperties;
+import ru.vachok.money.config.ConstantsFor;
+import ru.vachok.mysqlandprops.props.*;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.stream.Stream;
 

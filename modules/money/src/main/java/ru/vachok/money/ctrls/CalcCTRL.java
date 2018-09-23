@@ -2,14 +2,14 @@ package ru.vachok.money.ctrls;
 
 
 import org.slf4j.Logger;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import ru.vachok.money.ConstantsFor;
 import ru.vachok.money.components.CalculatorForSome;
 import ru.vachok.money.services.CalcSrv;
 import ru.vachok.money.services.CookieMaker;
@@ -32,21 +32,30 @@ public class CalcCTRL {
      */
     private static final String SOURCE_CLASS = CalcCTRL.class.getSimpleName();
 
-    /**
-     {@link }
-     */
-    private static final AnnotationConfigApplicationContext CTX = ConstantsFor.CONTEXT;
+    private static final Logger LOGGER = LoggerFactory.getLogger(SOURCE_CLASS);
 
-    private CalcSrv calcSrv = CTX.getBean(CalcSrv.class);
-    private CalculatorForSome calculatorForSome = CTX.getBean(CalculatorForSome.class);
+    private CalcSrv calcSrv;
 
-    private static final Logger LOGGER = ConstantsFor.getLogger();
+    private CalculatorForSome calculatorForSome;
+
+    private VisitorSrv visitorSrv;
+
+    private CookieMaker cookieMaker;
+
+    /*Instances*/
+    @Autowired
+    public CalcCTRL() {
+        this.calculatorForSome = new CalculatorForSome();
+        this.calcSrv = new CalcSrv();
+        this.visitorSrv = new VisitorSrv();
+        this.cookieMaker = new CookieMaker();
+    }
 
 
     @GetMapping ("/calc")
     public String resultOfCount(Model model, HttpServletRequest request, HttpServletResponse response) {
+        visitorSrv.makeVisit(request, response);
         cook(request, response);
-        CTX.getBean(VisitorSrv.class).makeVisit(request, response);
         model.addAttribute("CalculatorForSome", calculatorForSome);
         model.addAttribute("title", "CALC");
         return "calc";
@@ -64,7 +73,6 @@ public class CalcCTRL {
             }
         }
         else{
-            CookieMaker cookieMaker = CTX.getBean(CookieMaker.class);
             response.addCookie(cookieMaker.startSession(request.getSession().getId()));
         }
     }
@@ -72,7 +80,6 @@ public class CalcCTRL {
     @PostMapping ("/calc")
     public String okOk(@ModelAttribute ("CalculatorForSome") CalculatorForSome calculatorForSome, BindingResult result, Model model) {
         this.calculatorForSome = calculatorForSome;
-        model.addAttribute("title", CTX.getApplicationName());
         String uInp = calcSrv.resultCalc(calculatorForSome.getUserInput());
         model.addAttribute("result", uInp);
         return "ok";

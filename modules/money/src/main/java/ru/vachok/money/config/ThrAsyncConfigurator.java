@@ -2,10 +2,10 @@ package ru.vachok.money.config;
 
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import ru.vachok.money.ConstantsFor;
 
 
 /**
@@ -15,7 +15,8 @@ import ru.vachok.money.ConstantsFor;
 @EnableAsync
 public class ThrAsyncConfigurator {
 
-    private static final Logger LOGGER = ConstantsFor.getLogger();
+    /*Fields*/
+    private static final Logger LOGGER = LoggerFactory.getLogger(ThrAsyncConfigurator.class.getSimpleName());
 
     public ThreadPoolTaskExecutor getDefaultExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();

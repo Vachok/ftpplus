@@ -1,11 +1,9 @@
 package ru.vachok.money.components;
 
 
-import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.money.ConstantsFor;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -28,7 +26,6 @@ public class CalculatorForSome {
     private double userDouble;
 
     private String userInput;
-    private static final Logger LOGGER = ConstantsFor.getLogger();
     @Override
     public String toString() {
         return "CalculatorForSome{" +

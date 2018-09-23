@@ -3,7 +3,7 @@ package ru.vachok.money.services;
 
 import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.money.ConstantsFor;
+import ru.vachok.money.config.ConstantsFor;
 import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.RegRuMysql;
 

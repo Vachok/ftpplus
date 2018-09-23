@@ -1,4 +1,4 @@
-package ru.vachok.money;
+package ru.vachok.money.config;
 
 
 import org.slf4j.Logger;
@@ -6,16 +6,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.messenger.email.ESender;
-import ru.vachok.money.config.AppCtx;
 import ru.vachok.money.services.DBMessage;
 import ru.vachok.mysqlandprops.DataConnectTo;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -43,6 +39,8 @@ public enum ConstantsFor {
 
     public static final long START_STAMP = System.currentTimeMillis();
 
+    public static final AnnotationConfigApplicationContext CONTEXT = AppCtx.getCtx();
+
     public static BiConsumer<String, String> toDBAndMail = (x, y) -> {
         MessageToUser[] messagesToUser = {new ESender("143500@gmail.com"), new DBMessage()};
         for(MessageToUser messageToUser : messagesToUser){
@@ -68,8 +66,6 @@ public enum ConstantsFor {
 
     public static final int DELAY = 300;
 
-    public static String scheduleSpeedAct;
-
     public static BiConsumer<String, String> ok = (className, msg) -> new Thread(() -> {
         MessageToUser emailMe = new ESender("143500@gmail.com");
         emailMe.info(ConstantsFor.APP_NAME, className + " ok", msg);
@@ -79,8 +75,6 @@ public enum ConstantsFor {
      Кол-во байт в килобайте
      */
     public static final int KILOBYTE = 1024;
-
-    public static final AnnotationConfigApplicationContext CONTEXT = AppCtx.getCtx();
 
     private static boolean myPC;
 

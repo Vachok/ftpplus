@@ -4,7 +4,6 @@ package ru.vachok.money.config;
 import org.springframework.boot.context.event.ApplicationFailedEvent;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ConfigurableApplicationContext;
-import ru.vachok.money.ConstantsFor;
 
 
 /**

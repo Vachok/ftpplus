@@ -2,17 +2,11 @@ package ru.vachok.money.services;
 
 
 import org.slf4j.Logger;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import ru.vachok.messenger.MessageToUser;
-import ru.vachok.money.ConstantsFor;
-import ru.vachok.money.other.FileMessages;
-import ru.vachok.money.other.MailMessages;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.Date;
-import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -25,9 +19,7 @@ public class VisitorSrv {
     /**
      {@link }
      */
-    private static final Logger LOGGER = ConstantsFor.getLogger();
-
-    private static final AnnotationConfigApplicationContext ctx = ConstantsFor.CONTEXT;
+    private static final Logger LOGGER = LoggerFactory.getLogger(VisitorSrv.class.getSimpleName());
 
     /**
      Simple Name класса, для поиска настроек
@@ -42,26 +34,4 @@ public class VisitorSrv {
         String msg = "SET NEW Session ID" + request.getSession().getId() + " sessionID = " + sessionId;
         LOGGER.warn(msg);
     }
-
-    private void toFile() {
-        MessageToUser messageToUser = new FileMessages();
-        messageToUser.info("http", new Date(System.currentTimeMillis()).toString() + " " +
-            (TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - ConstantsFor.START_STAMP)) +
-            " elapsed", request.getRemoteAddr() +
-            ":" +
-            response.getStatus() +
-            new TForms().toStringFromArray(response.getHeaderNames()));
-    }
-
-    private void toMail() {
-        AnnotationConfigApplicationContext ctx = ConstantsFor.CONTEXT;
-        MailMessages mailBean = ctx.getBean(MailMessages.class);
-        new Thread(() -> mailBean.getSenderToGmail().infoNoTitles(
-            request.getRemoteAddr() +
-                ":" +
-                response.getStatus() +
-                new TForms().toStringFromArray(response.getHeaderNames()))).start();
-        Thread.currentThread().interrupt();
-    }
-
 }

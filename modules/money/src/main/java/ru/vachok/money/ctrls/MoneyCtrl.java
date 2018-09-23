@@ -1,16 +1,15 @@
 package ru.vachok.money.ctrls;
 
 
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import ru.vachok.money.ConstantsFor;
-import ru.vachok.money.services.WhoIsWithSRV;
 import ru.vachok.money.services.ParserCBRru;
+import ru.vachok.money.services.WhoIsWithSRV;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -21,16 +20,17 @@ import javax.servlet.http.HttpServletRequest;
 @Controller
 public class MoneyCtrl {
 
-    /**
-     * Simple Name класса, для поиска настроек
-     */
-    private static final String SOURCE_CLASS = MoneyCtrl.class.getSimpleName();
-    private static final AnnotationConfigApplicationContext CTX = ConstantsFor.CONTEXT;
+    private ParserCBRru parserCBRru;
 
+    private WhoIsWithSRV whoIsWithSRV;
+
+    /*Instances*/
+    @Autowired
+    public MoneyCtrl(ParserCBRru parserCBRru, WhoIsWithSRV whoIsWithSRV) {
+    }
 
     @GetMapping("/money")
     public String money(Model model) {
-        ParserCBRru parserCBRru = CTX.getBean(ParserCBRru.class);
         model.addAttribute("ParserCBRru", parserCBRru);
         model.addAttribute("map", oldInfoCurGet());
         model.addAttribute("currency", "in progress...");
@@ -42,13 +42,11 @@ public class MoneyCtrl {
         StringBuilder sb = new StringBuilder();
         sb.append("<p>").append(ParserCBRru.getWelcomeNewUser());
         sb.append("</p>");
-        sb.append(CTX.getDisplayName());
         return sb.toString();
     }
 
     @PostMapping("/getmoney")
     public String getMoney(@ModelAttribute ParserCBRru parserCBRru, Model model, BindingResult result, HttpServletRequest request){
-        WhoIsWithSRV whoIsWithSRV = CTX.getBean(WhoIsWithSRV.class);
         String s = whoIsWithSRV.whoIs( request.getRemoteAddr());
         model.addAttribute("ParserCBRru", parserCBRru);
         model.addAttribute("result", s);
