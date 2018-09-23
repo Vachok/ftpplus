@@ -7,10 +7,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.money.ConstantsFor;
-
-import ru.vachok.money.services.WhoIsWithSRV;
 import ru.vachok.money.services.TimeWorks;
 import ru.vachok.money.services.VisitorSrv;
+import ru.vachok.money.services.WhoIsWithSRV;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -37,7 +36,7 @@ public class Index {
         model.addAttribute("geoloc", whoIsWithSRV.whoIs(request.getRemoteAddr()));
         LOGGER.info(ConstantsFor.localPc());
 
-        if (ConstantsFor.localPc().equalsIgnoreCase("home")) return "index-start";
-        else return "home";
+        //        if (ConstantsFor.localPc().equalsIgnoreCase("home")) return "index-start";
+        return "home";
     }
 }

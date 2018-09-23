@@ -3,6 +3,7 @@ package ru.vachok.money.config;
 
 import org.slf4j.Logger;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.web.reactive.context.ReactiveWebServerApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Configuration;
 import ru.vachok.money.ConstantsFor;
@@ -14,7 +15,7 @@ import ru.vachok.money.other.SpeedRunActualize;
  * @since 14.09.2018 (11:17)
  */
 @Configuration
-public class AppCtx {
+public class AppCtx extends ReactiveWebServerApplicationContext {
 
     private static final Logger LOGGER = ConstantsFor.getLogger();
 
@@ -42,4 +43,5 @@ public class AppCtx {
         ctx.refresh();
         return ctx;
     }
+
 }
