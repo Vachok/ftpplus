@@ -12,16 +12,17 @@
     <center><h2 th:utext="${left}"></h2></center>
 </a>
 
-<form th:action="@{/ok}" th:object="${thepc}" method="POST">
-    Интересуемая должность:
-    <input type="text" th:field="*{pcname}"/>
+<form th:action="@{/netscan}" th:object="${netScannerSvc}" method="POST">
+    Интересуемый ПК:
+    <input type="text" th:field="*{thePc}"/>
     <br>
     <input type="submit" value="Запрос"/>
     <br>
 </form>
-
+<p th:utext="${thePc}"/>
 <p th:utext="${pc}"/>
 </body>
 <footer>
+    <a href="/">Главная</a> | <a href="/netscan">Netscan</a>
 </footer>
 </html>

@@ -17,15 +17,9 @@ import ru.vachok.networker.logic.DBMessenger;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 
@@ -43,20 +37,62 @@ public class NetScannerSvc {
 
     private static final String SOURCE_CLASS = NetScannerSvc.class.getSimpleName();
 
+    private static Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.DB_PREFIX + "velkom");
+
+    private static Logger logger = AppComponents.getLogger();
+
     private MessageToUser messageToUser;
 
-    private static Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.DB_PREFIX + "velkom");
+    private String thePc;
 
     private LastNetScan lastNetScan;
 
     private Map<String, Boolean> netWork;
 
-    public LastNetScan getLastNetScan() {
-        return lastNetScan;
+    private String qer;
+
+    public String getInfoFromDB() {
+        if(thePc.equals(null) || thePc.isEmpty() || thePc.equals("")){
+            IllegalArgumentException argumentException = new IllegalArgumentException("Must be NOT NULL!");
+            return argumentException.getMessage();
+        }
+        Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.DB_PREFIX + "velkom");
+        try(PreparedStatement preparedStatement = c.prepareStatement("select * from velkompc where NamePP like '%" + thePc + "%'")){
+            try(ResultSet resultSet = preparedStatement.executeQuery()){
+                List<String> timeNow = new ArrayList<>();
+                List<Integer> integersOff = new ArrayList<>();
+                while(resultSet.next()){
+                    int onlineNow = resultSet.getInt("OnlineNow");
+                    if(onlineNow==1){
+                        timeNow.add(resultSet.getString("TimeNow"));
+                    }
+                    else{
+                        integersOff.add(onlineNow);
+                    }
+                    StringBuilder stringBuilder = new StringBuilder();
+                    String namePP = resultSet.getString("NamePP") +
+                        " ok! <br>" +
+                        "OnLines = " +
+                        timeNow.size() +
+                        "<br>Offlines = " +
+                        integersOff.size() +
+                        "<br>TOTAL: " + (integersOff.size() + timeNow.size());
+                    stringBuilder
+                        .append("<p>")
+                        .append(namePP)
+                        .append("</p>");
+                    setThePc(stringBuilder.toString());
+                }
+                Collections.sort(timeNow);
+                setThePc(getThePc() + "Last online: " + timeNow.get(timeNow.size() - 1));
+            }
+        }
+        catch(SQLException | IndexOutOfBoundsException e){
+            setThePc(e.getMessage());
+        }
+        return "ok";
     }
-
-
-    /*Instances*/
+    /*Private methods*/
     @Autowired
     public NetScannerSvc() {
         this.messageToUser = new DBMessenger();
@@ -64,9 +100,9 @@ public class NetScannerSvc {
 
     }
 
-    private static Logger logger = AppComponents.getLogger();
-
-    private String qer;
+    public LastNetScan getLastNetScan() {
+        return lastNetScan;
+    }
 
     public String getQer() {
         return qer;
@@ -98,6 +134,7 @@ public class NetScannerSvc {
         return pcNames;
     }
 
+    /*Instances*/
     public List<String> getPCNames(String prefix) {
         this.netWork = lastNetScan.getNetWork();
         this.qer = prefix;
@@ -109,6 +146,7 @@ public class NetScannerSvc {
             try{
                 byName = InetAddress.getByName(pcName);
                 reachable = byName.isReachable(ConstantsFor.TIMEOUT_650);
+
                 if(!reachable){
                     String onLines = ("online " + false + "");
                     pcNames.add(pcName + ":" + byName.getHostAddress() + " " + onLines + "");
@@ -118,10 +156,10 @@ public class NetScannerSvc {
                 }
                 else{
                     String someMore = getSomeMore(pcName);
-                    String onLines = (" online " + true);
+                    String onLines = (" online " + true + "<br>");
                     pcNames.add(pcName + ":" + byName.getHostAddress() + onLines);
 
-                    netWork.put("<b>" + pcName + "</b><br>" + someMore, true);
+                    netWork.put("<br><b>" + pcName + "</b><br>" + someMore, true);
                     String format = MessageFormat.format("{0} {1} | {2}", pcName, onLines, someMore);
                     logger.info(format);
                 }
@@ -130,11 +168,14 @@ public class NetScannerSvc {
                 //
             }
         }
+        netWork.put("<h4>" + prefix + "     " + pcNames.size() + "</h4>", true);
         String pcsString = writeDB(pcNames);
         logger.info(pcsString);
         pcNames.add("<b>Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethTime) + " sec.</b>");
         return pcNames;
     }
+
+    ;
 
     private String getSomeMore(String pcName) {
         List<Integer> onLine = new ArrayList<>();
@@ -158,28 +199,6 @@ public class NetScannerSvc {
         }
         return offLine.size() + " offline times and " + onLine.size() + " online times.";
     }
-
-    private Collection<String> getCycleNames(String userQuery) {
-        if(userQuery==null){
-            userQuery = "pp";
-        }
-        int inDex = getNamesCount(userQuery);
-        String nameCount;
-        Collection<String> list = new ArrayList<>();
-        int pcNum = 0;
-        for(int i = 1; i < inDex; i++){
-            if(userQuery.equals("no") || userQuery.equals("pp") || userQuery.equals("do")){
-                nameCount = String.format("%04d", ++pcNum);
-            }
-            else{
-                nameCount = String.format("%03d", ++pcNum);
-            }
-            list.add(userQuery + nameCount + ".eatmeat.ru");
-        }
-        return list;
-    }
-
-    /*Private methods*/
 
     private String writeDB(Collection<String> pcNames) {
         DataConnectTo dataConnectTo = new RegRuMysql();
@@ -288,5 +307,33 @@ public class NetScannerSvc {
             inDex = ConstantsFor.TDPC;
         }
         return inDex;
+    }
+
+    public String getThePc() {
+        return thePc;
+    }
+
+    public void setThePc(String thePc) {
+        this.thePc = thePc;
+    }
+
+    private Collection<String> getCycleNames(String userQuery) {
+        if(userQuery==null){
+            userQuery = "pp";
+        }
+        int inDex = getNamesCount(userQuery);
+        String nameCount;
+        Collection<String> list = new ArrayList<>();
+        int pcNum = 0;
+        for(int i = 1; i < inDex; i++){
+            if(userQuery.equals("no") || userQuery.equals("pp") || userQuery.equals("do")){
+                nameCount = String.format("%04d", ++pcNum);
+            }
+            else{
+                nameCount = String.format("%03d", ++pcNum);
+            }
+            list.add(userQuery + nameCount + ".eatmeat.ru");
+        }
+        return list;
     }
 }

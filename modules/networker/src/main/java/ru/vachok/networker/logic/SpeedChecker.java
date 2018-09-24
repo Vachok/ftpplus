@@ -1,18 +1,13 @@
 package ru.vachok.networker.logic;
 
 
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
 import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.EMailAndDB.SpeedRunActualize;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -20,8 +15,6 @@ import java.util.concurrent.TimeUnit;
 
 /**
  @since 22.08.2018 (9:36) */
-@Component
-@Scope("prototype")
 public class SpeedChecker implements Runnable {
 
     private static final DataConnectTo DATA_CONNECT_TO = new RegRuMysql();

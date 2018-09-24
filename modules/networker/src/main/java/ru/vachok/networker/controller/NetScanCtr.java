@@ -5,7 +5,10 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.ConstantsFor;
@@ -15,10 +18,7 @@ import ru.vachok.networker.componentsrepo.LastNetScan;
 import ru.vachok.networker.services.NetScannerSvc;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 
@@ -28,6 +28,7 @@ import java.util.concurrent.TimeUnit;
 public class NetScanCtr {
 
     private NetScannerSvc netScannerSvc;
+
 
     /*Fields*/
     private static final String SOURCE_CLASS = NetScanCtr.class.getSimpleName();
@@ -86,6 +87,19 @@ public class NetScanCtr {
             properties.setProperty("serial", s);
             initProperties.setProps(properties);
         }
+        model
+            .addAttribute("netScannerSvc", netScannerSvc)
+            .addAttribute("thePc", netScannerSvc.getThePc());
+        model.addAttribute("title", "First Scan: 2018-05-05");
         return "netscan";
+    }
+
+    @PostMapping ("/netscan")
+    public void pcNameForInfo(@ModelAttribute NetScannerSvc netScannerSvc, BindingResult result, Model model) {
+        this.netScannerSvc = netScannerSvc;
+        netScannerSvc.getInfoFromDB();
+        String thePc = netScannerSvc.getThePc();
+        model.addAttribute("thePc", thePc);
+        netScannerSvc.setThePc("");
     }
 }

@@ -71,7 +71,7 @@ public enum ConstantsFor {
 
     public static final int TIMEOUT_650 = 650;
 
-    public static final long INIT_DELAY = 20;
+    public static final long INIT_DELAY = 35;
 
     public static final Long CACHE_TIME_MS = TimeUnit.MINUTES.toMillis(10);
 

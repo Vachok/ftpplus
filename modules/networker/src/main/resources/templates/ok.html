@@ -1,14 +1,15 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>OK</title>
+    <title th:text="${title}"></title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <link rel="stylesheet" type="text/css" media="all" href="css/main.css" th:href="@{css/main.css}"/>
 </head>
 <body>
 <h2>
     <a href="/matrix">matrix</a><br>
-    <a href="/netscan">netscan</a>
+    <a href="/netscan"><p th:utext="${thePc}"/></a>
 </h2>
+
 </body>
 </html>

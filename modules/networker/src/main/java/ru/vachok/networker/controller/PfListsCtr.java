@@ -16,9 +16,11 @@ import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.services.PfListsSrv;
 import ru.vachok.networker.services.VisitorSrv;
 
+import javax.naming.TimeLimitExceededException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.rmi.UnexpectedException;
+import java.rmi.UnknownHostException;
 import java.security.SecureRandom;
 import java.time.LocalTime;
 import java.util.*;
@@ -38,6 +40,8 @@ public class PfListsCtr {
 
     private static final String SOURCE_CLASS = PfListsCtr.class.getSimpleName();
 
+    private static final String METRIC_STR = "metric";
+
     private VisitorSrv visitorSrv;
 
     private PfLists pfLists;
@@ -45,8 +49,6 @@ public class PfListsCtr {
     private PfListsSrv pfListsSrv;
 
     private boolean pingOK;
-
-    private static final String METRIC_STR = "metric";
 
 
     /*Instances*/
@@ -57,29 +59,30 @@ public class PfListsCtr {
         this.pfLists = pfLists;
         this.pfListsSrv = appComponents.pfListsSrv(pfLists);
         this.pingOK = ConstantsFor.isPingOK();
+        new Thread(this::run).start();
     }
 
-    @GetMapping("/pflists")
-    public String pfBean(Model model, HttpServletRequest request, HttpServletResponse response) {
+    @GetMapping ("/pflists")
+    public String pfBean(Model model, HttpServletRequest request, HttpServletResponse response) throws UnknownHostException {
         String pflistsStr = "pflists";
-        if (!pingOK) {
+        if(!pingOK){
             model.addAttribute("vipnet", "No ping to srv-git");
             model.addAttribute(METRIC_STR, LocalTime.now().toString());
-            return pflistsStr;
+            throw new UnknownHostException("srv-git");
         }
         InitProperties initProperties = new DBRegProperties(ConstantsFor.APP_NAME + SOURCE_CLASS);
         Properties properties = initProperties.getProps();
         Long lastScan = Long.parseLong(properties.getProperty("pfscan"));
-        int aThreadsLast = Integer.parseInt(properties.getProperty("activethreads"));
-        initProperties.delProps();
+        int aThreadsLast = Integer.parseInt(properties.getProperty("thr"));
+
         try{
             visitorSrv.makeVisit(request);
         }
         catch(Exception e){
             LOGGER.error(e.getMessage(), e);
         }
-        model.addAttribute("pfLists", pfLists);
-        model.addAttribute(METRIC_STR, (float) TimeUnit.MILLISECONDS
+
+        model.addAttribute(METRIC_STR, ( float ) TimeUnit.MILLISECONDS
             .toSeconds(System.currentTimeMillis() - pfLists.getGitStats()) / ConstantsFor.ONE_HOUR_IN_MIN + " min since upd");
         model.addAttribute("vipnet", pfLists.getVipNet());
         model.addAttribute("tempfull", pfLists.getFullSquid());
@@ -90,40 +93,47 @@ public class PfListsCtr {
         model.addAttribute("gitstats", Thread.activeCount() + " thr, active\nChange: " +
             (Thread.activeCount() - aThreadsLast));
         long timeOut = lastScan + TimeUnit.MINUTES.toMillis(15);
+
+        initProperties.delProps();
+        String msg1 = properties.toString() + " DEL! true";
+        LOGGER.warn(msg1);
+        properties.setProperty("pfscan", System.currentTimeMillis() + "");
         properties.setProperty("activethreads", Thread.activeCount() + "");
-        if (request.getQueryString() != null && System.currentTimeMillis() > timeOut) {
-            properties.setProperty("pfscan", System.currentTimeMillis() + "");
+        initProperties.setProps(properties);
+        if(request.getQueryString()!=null && System.currentTimeMillis() > timeOut){
+            model.addAttribute("pfLists", pfLists);
+
             new Thread(() -> {
-                try {
+                try{
                     pfListsSrv.buildFactory();
-                } catch (UnexpectedException e) {
+                }
+                catch(UnexpectedException | TimeLimitExceededException e){
                     LOGGER.error(e.getMessage(), e);
                 }
             }).start();
         }
-        if (pfLists.getTimeUpd() + TimeUnit.MINUTES.toMillis(170) < System.currentTimeMillis()) {
+        if(pfLists.getTimeUpd() + TimeUnit.MINUTES.toMillis(170) < System.currentTimeMillis()){
             model.addAttribute(METRIC_STR, "Требуется обновление!");
-            try {
+            try{
                 pfListsSrv.buildFactory();
-            } catch (UnexpectedException e) {
+            }
+            catch(UnexpectedException | TimeLimitExceededException e){
                 LOGGER.error(e.getMessage(), e);
             }
-            initProperties.setProps(properties);
-
-        } else {
-            String msg = "" + (float) (TimeUnit.MILLISECONDS
-                .toSeconds(System.currentTimeMillis() - pfLists.getTimeUpd())) / 60;
-            LOGGER.warn(msg);
-            initProperties.setProps(properties);
-
         }
+        else{
+            String msg = "" + ( float ) (TimeUnit.MILLISECONDS
+                                             .toSeconds(System.currentTimeMillis() - pfLists.getTimeUpd())) / 60;
+            LOGGER.warn(msg);
+        }
+
         return pflistsStr;
     }
 
     private String getAttr(HttpServletRequest request) {
         Enumeration<String> attributeNames = request.getServletContext().getAttributeNames();
         StringBuilder stringBuilder = new StringBuilder();
-        while (attributeNames.hasMoreElements()) {
+        while(attributeNames.hasMoreElements()){
             stringBuilder.append(attributeNames.nextElement());
             stringBuilder.append("<p>");
             stringBuilder.append("\n");
@@ -131,11 +141,20 @@ public class PfListsCtr {
         return stringBuilder.toString();
     }
 
+    private void run() {
+        try{
+            pfListsSrv.buildFactory();
+        }
+        catch(UnexpectedException | TimeLimitExceededException e){
+            LOGGER.error(e.getMessage(), e);
+        }
+    }
+
     private void scheduleAns() {
 
         Runnable runnable = () -> {
             Thread.currentThread().setName("id " + System.currentTimeMillis());
-            float upTime = (float) (System.currentTimeMillis() - ConstantsFor.START_STAMP) / TimeUnit.DAYS.toMillis(1);
+            float upTime = ( float ) (System.currentTimeMillis() - ConstantsFor.START_STAMP) / TimeUnit.DAYS.toMillis(1);
             String msg = upTime +
                 " uptime days. Active threads = " +
                 Thread.activeCount() + ". This thread = " +
@@ -144,18 +163,19 @@ public class PfListsCtr {
             LOGGER.warn(msg);
             Thread.currentThread().interrupt();
         };
-        int delay = new SecureRandom().nextInt((int) TimeUnit.MINUTES.toMillis(250));
-        int init = new SecureRandom().nextInt((int) TimeUnit.MINUTES.toMillis(60));
-        if (ConstantsFor.THIS_PC_NAME.toLowerCase().contains("no0027") ||
-            ConstantsFor.THIS_PC_NAME.equalsIgnoreCase("home")) {
+        int delay = new SecureRandom().nextInt(( int ) TimeUnit.MINUTES.toMillis(250));
+        int init = new SecureRandom().nextInt(( int ) TimeUnit.MINUTES.toMillis(60));
+        if(ConstantsFor.THIS_PC_NAME.toLowerCase().contains("no0027") ||
+            ConstantsFor.THIS_PC_NAME.equalsIgnoreCase("home")){
             init = 20000;
             delay = 40000;
         }
         ThreadPoolTaskScheduler threadPoolTaskScheduler = new ThreadConfig().threadPoolTaskScheduler();
         ScheduledFuture<?> schedule = threadPoolTaskScheduler.scheduleWithFixedDelay(runnable, new Date(), delay);
-        try {
+        try{
             schedule.get(35, TimeUnit.SECONDS);
-        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+        }
+        catch(InterruptedException | ExecutionException | TimeoutException e){
             long delay1 = schedule.getDelay(TimeUnit.SECONDS);
             LOGGER.error(e.getMessage() + " " + delay1 + " delay", e);
             Thread.currentThread().interrupt();
