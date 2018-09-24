@@ -14,10 +14,7 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.logic.SSHFactory;
-import ru.vachok.networker.services.DataBasesSRV;
-import ru.vachok.networker.services.MatrixSRV;
-import ru.vachok.networker.services.VisitorSrv;
-import ru.vachok.networker.services.WhoIsWithSRV;
+import ru.vachok.networker.services.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -70,7 +67,12 @@ public class MatrixCtr {
                 return "logs";
             }
         } else {
-            visitorSrv.makeVisit(request);
+            try{
+                visitorSrv.makeVisit(request);
+            }
+            catch(Exception e){
+                LOGGER.error(e.getMessage(), e);
+            }
             String userIP = userPC + ":" + request.getRemotePort() + "<-" + response.getStatus();
             model.addAttribute("yourip", userIP);
             model.addAttribute(MATRIX_STRING_NAME, new MatrixSRV());
@@ -87,7 +89,12 @@ public class MatrixCtr {
 
     @GetMapping ("/matrix")
     public String showResults(HttpServletRequest request, Model model) {
-        visitorSrv.makeVisit(request);
+        try{
+            visitorSrv.makeVisit(request);
+        }
+        catch(Exception e){
+            LOGGER.error(e.getMessage(), e);
+        }
         model.addAttribute(MATRIX_STRING_NAME, matrixSRV);
         model.addAttribute("workPos", matrixSRV.getWorkPos());
         model.addAttribute("headtitle", matrixSRV.getCountDB() + " позиций   " + TimeUnit.MILLISECONDS.toMinutes(
@@ -134,7 +141,12 @@ public class MatrixCtr {
 
     @GetMapping("/git")
     public String gitOn(Model model, HttpServletRequest request) {
-        visitorSrv.makeVisit(request);
+        try{
+            visitorSrv.makeVisit(request);
+        }
+        catch(Exception e){
+            LOGGER.error(e.getMessage(), e);
+        }
         SSHFactory gitOner = new SSHFactory.Builder(ConstantsFor.SRV_GIT, "sudo cd /usr/home/ITDept;sudo git instaweb;exit").build();
         if (request.getQueryString() != null && request.getQueryString().equalsIgnoreCase("reboot")) {
             gitOner = new SSHFactory.Builder(ConstantsFor.SRV_GIT, "sudo reboot").build();

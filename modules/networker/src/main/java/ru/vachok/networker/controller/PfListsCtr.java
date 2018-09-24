@@ -21,10 +21,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.rmi.UnexpectedException;
 import java.security.SecureRandom;
 import java.time.LocalTime;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.*;
 
 
@@ -75,7 +72,12 @@ public class PfListsCtr {
         Long lastScan = Long.parseLong(properties.getProperty("pfscan"));
         int aThreadsLast = Integer.parseInt(properties.getProperty("activethreads"));
         initProperties.delProps();
-        visitorSrv.makeVisit(request);
+        try{
+            visitorSrv.makeVisit(request);
+        }
+        catch(Exception e){
+            LOGGER.error(e.getMessage(), e);
+        }
         model.addAttribute("pfLists", pfLists);
         model.addAttribute(METRIC_STR, (float) TimeUnit.MILLISECONDS
             .toSeconds(System.currentTimeMillis() - pfLists.getGitStats()) / ConstantsFor.ONE_HOUR_IN_MIN + " min since upd");

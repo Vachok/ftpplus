@@ -16,57 +16,55 @@ import ru.vachok.networker.logic.DBMessenger;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
+
 /**
- * @since 12.09.2018 (9:44)
- */
-@Service("visitorSrv")
+ @since 12.09.2018 (9:44) */
+@Service ("visitorSrv")
 public class VisitorSrv {
 
+    /*Fields*/
     private static final Logger LOGGER = AppComponents.getLogger();
-
-    public Visitor getVisitor() {
-        return visitor;
-    }
 
     private Visitor visitor;
 
     private CookieShower cookieShower;
 
-    @Autowired
-    public VisitorSrv(CookieShower cookieShower, Visitor visitor) {
-        this.cookieShower = cookieShower;
-        this.visitor = visitor;
+    public Visitor getVisitor() {
+        return visitor;
     }
 
     public CookieShower getCookieShower() {
         return cookieShower;
     }
 
-    public void makeVisit(HttpServletRequest request) {
+    /*Instances*/
+    @Autowired
+    public VisitorSrv(CookieShower cookieShower, Visitor visitor) {
+        this.cookieShower = cookieShower;
+        this.visitor = visitor;
+    }
+
+    public void makeVisit(HttpServletRequest request) throws Exception {
         visitor.setRemAddr(request.getRemoteAddr());
         visitor.setTimeSt(System.currentTimeMillis());
-        Runnable visitMaker = () -> {
-            addCookies(request);
-            MessageToUser viMessageToDB = new DBMessenger();
-            viMessageToDB.info(
-                new Date(ConstantsFor.START_STAMP) +
-                    " by: " + visitor.getRemAddr(),
-                request.getHeader("USER-AGENT".toLowerCase()),
-                request.getCookies().length + " cookies len\n" +
-                    request.getMethod() + " method\n" +
-                    TimeUnit.MILLISECONDS
-                        .toSeconds(request
-                            .getSession().getLastAccessedTime() - request
-                            .getSession().getCreationTime()) + " sec spend in application\n" +
-                    new TForms().fromEnum(request.getSession().getServletContext().getAttributeNames(), true));
-        };
-        visitMaker.run();
+        addCookies(request);
+
+        MessageToUser viMessageToDB = new DBMessenger();
+
+        viMessageToDB.info(
+            new Date(ConstantsFor.START_STAMP) +
+                " by: " + visitor.getRemAddr(),
+            request.getHeader("USER-AGENT".toLowerCase()),
+            request.getCookies().length + " cookies len\n" +
+                request.getMethod() + " method\n" +
+                TimeUnit.MILLISECONDS
+                    .toSeconds(request
+                        .getSession().getLastAccessedTime() - request
+                        .getSession().getCreationTime()) + " sec spend in application\n" +
+                new TForms().fromEnum(request.getSession().getServletContext().getAttributeNames(), true));
         visitor.setDbInfo(
             new Date(ConstantsFor.START_STAMP) + "\n" +
                 " by: " + visitor.getRemAddr() + "\n" +
@@ -81,13 +79,15 @@ public class VisitorSrv {
         LOGGER.info(visitor.toString());
     }
 
-    private void addCookies(HttpServletRequest request) {
+    private void addCookies(HttpServletRequest request) throws Exception {
         Collection<Cookie> cookieCollection = new ArrayList<>();
         cookieCollection.addAll(Arrays.asList(request.getCookies()));
     }
 
     public HttpServletResponse checkSession(HttpServletRequest request, HttpServletResponse response) {
-        if (request.getCookies() == null) response = new CookTheCookie(visitor).addCookie(response);
+        if(request.getCookies()==null){
+            response = new CookTheCookie(visitor).addCookie(response);
+        }
         new CookTheCookie(visitor).addToCollection(request);
         return response;
     }

@@ -1,6 +1,7 @@
 package ru.vachok.networker.controller;
 
 
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -43,7 +44,12 @@ public class ServiceInfoCtrl {
 
     @GetMapping("/serviceinfo")
     public String infoMapping(Model model, HttpServletRequest request) throws AccessDeniedException {
-        visitorSrv.makeVisit(request);
+        try{
+            visitorSrv.makeVisit(request);
+        }
+        catch(Exception e){
+            LoggerFactory.getLogger(ServiceInfoCtrl.class.getSimpleName());
+        }
         if (request.getRemoteAddr().contains("0:0:0:0") ||
             request.getRemoteAddr().contains("10.10.111") ||
             request.getRemoteAddr().contains(ConstantsFor.NO0027)) {

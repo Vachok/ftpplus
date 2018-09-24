@@ -46,7 +46,12 @@ public class ActiveDirCtr {
     @GetMapping("/ad")
     public String initUser(Model model, HttpServletRequest request) {
         this.photoConverter = new PhotoConverterSRV();
-        visitorSrv.makeVisit(request);
+        try{
+            visitorSrv.makeVisit(request);
+        }
+        catch(Exception e){
+            LOGGER.error(e.getMessage(), e);
+        }
         model.addAttribute("title", visitorSrv.toString());
         model.addAttribute("photoConverter", photoConverter);
 
