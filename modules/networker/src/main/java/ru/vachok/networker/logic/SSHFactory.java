@@ -1,9 +1,8 @@
-package ru.vachok.networker.logic.ssh;
+package ru.vachok.networker.logic;
 
 
 import com.jcraft.jsch.*;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageCons;
@@ -14,10 +13,16 @@ import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.RejectedExecutionException;
 
@@ -275,7 +280,19 @@ public class SSHFactory {
 
         @Override
         public String toString() {
-            return "SSH {" + "commandSSH='" + commandSSH + '\'' + ", connectToSrv='" + connectToSrv + '\'' + ", sessionType='" + sessionType + '\'' + ", userName='" + userName + '\'' + '}';
+            return "SSH {" +
+                "commandSSH='" +
+                commandSSH +
+                '\'' +
+                ", connectToSrv='" +
+                connectToSrv +
+                '\'' +
+                ", sessionType='" +
+                sessionType + '\'' +
+                ", userName='" +
+                userName +
+                '\'' +
+                '}';
         }
 
         /**
@@ -308,12 +325,5 @@ public class SSHFactory {
             this.commandSSH = commandSSH;
             return this;
         }
-
-        public boolean killMe() {
-            AutowireCapableBeanFactory beanFactory = ConstantsFor.BEAN_FACTORY;
-            beanFactory.destroyBean(this.getClass());
-            return true;
-        }
-
     }
 }

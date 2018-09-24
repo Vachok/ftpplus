@@ -2,8 +2,6 @@ package ru.vachok.networker.services;
 
 
 import org.slf4j.Logger;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.componentsrepo.ADUser;
 import ru.vachok.networker.componentsrepo.AppComponents;
 
@@ -18,11 +16,9 @@ import java.util.List;
 
 public class ADUserSRV {
 
-    private static final AnnotationConfigApplicationContext ctx = IntoApplication.getAppCtx();
-
     private static final Logger LOGGER = AppComponents.getLogger();
 
-    private ADUser adUser = ctx.getBean(ADUser.class);
+    private ADUser adUser = new ADUser();
 
     public List<String> adFileReader() {
         List<String> strings = new ArrayList<>();

@@ -3,16 +3,12 @@ package ru.vachok.networker.componentsrepo;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Scope;
-import ru.vachok.networker.IntoApplication;
+import ru.vachok.networker.logic.CookTheCookie;
 import ru.vachok.networker.logic.DBMessenger;
-import ru.vachok.networker.services.DataBasesSRV;
-import ru.vachok.networker.services.NetScannerSvc;
-import ru.vachok.networker.services.VisitorSrv;
-import ru.vachok.networker.services.WhoIsWithSRV;
+import ru.vachok.networker.services.*;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -59,19 +55,34 @@ public class AppComponents {
     @Bean("visitor")
     @Scope("prototype")
     public Visitor visitor(HttpServletRequest request) {
-        AnnotationConfigApplicationContext appCtx = IntoApplication.getAppCtx();
-        VisitorSrv visitorSrv = appCtx.getBean(VisitorSrv.class);
-        return visitorSrv.makeVisit(request);
+        return new Visitor(request);
     }
 
     @Bean
     @Scope("singleton")
-    public VisitorSrv visitorSrv() {
-        return new VisitorSrv();
+    public VisitorSrv visitorSrv(CookieShower cookieShower, Visitor visitor) {
+        return new VisitorSrv(cookieShower, visitor);
     }
 
     @Bean
     public WhoIsWithSRV whoIsWithSRV() {
         return new WhoIsWithSRV();
+    }
+
+    @Bean("versioninfo")
+    public VersionInfo versionInfo() {
+        VersionInfo versionInfo = new VersionInfo();
+        versionInfo.setTimeStamp(System.currentTimeMillis() + "");
+        return versionInfo;
+    }
+
+    public PfListsSrv pfListsSrv(PfLists pfLists) {
+        return new PfListsSrv(pfLists);
+    }
+
+    @Bean
+    @Scope("prototype")
+    public CookTheCookie cookTheCookie(Visitor visitor) {
+        return new CookTheCookie(visitor);
     }
 }

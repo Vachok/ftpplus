@@ -7,6 +7,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.CookieShower;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.services.VisitorSrv;
@@ -30,11 +31,14 @@ public class ServiceInfoCtrl {
 
     private Visitor visitor;
 
+    private CookieShower cookieShower;
+
     /*Instances*/
     @Autowired
-    public ServiceInfoCtrl() {
-        this.visitorSrv = new VisitorSrv();
+    public ServiceInfoCtrl(VisitorSrv visitorSrv) {
+        this.visitorSrv = visitorSrv;
         this.visitor = visitorSrv.getVisitor();
+        this.cookieShower = visitorSrv.getCookieShower();
     }
 
     @GetMapping("/serviceinfo")
@@ -57,25 +61,18 @@ public class ServiceInfoCtrl {
     }
 
     private boolean pingBool() {
-        try{
-            if(InetAddress.getByName("srv-git.eatmeat.ru").isReachable(1000)){
-                return true;
-            }
-            else{
-                return false;
-            }
-        }
-        catch(IOException e){
+        try {
+            return InetAddress.getByName("srv-git.eatmeat.ru").isReachable(1000);
+        } catch (IOException e) {
             return false;
         }
     }
 
     private String pingVPN() {
-        try{
+        try {
             InetAddress byName = InetAddress.getByName("srv-git.eatmeat.ru");
             return "<b>" + byName.isReachable(1000) + "</b> srv-git.eatmeat.ru. <i>" + LocalTime.now() + "</i><br>";
-        }
-        catch(IOException e){
+        } catch (IOException e) {
             return e.getMessage();
         }
     }
@@ -83,22 +80,43 @@ public class ServiceInfoCtrl {
     private String prepareRequest(HttpServletRequest request) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("<center><h3>Заголовки</h3></center>");
-        stringBuilder.append(new TForms().fromEnum(request.getHeaderNames(), true));
-        stringBuilder.append(request.getHeader("host")).append("<br>");
-        stringBuilder.append(request.getHeader("connection")).append("<br>");
-        stringBuilder.append(request.getHeader("upgrade-insecure-requests")).append("<br>");
-        stringBuilder.append(request.getHeader("user-agent")).append("<br>");
-        stringBuilder.append(request.getHeader("accept")).append("<br>");
-        stringBuilder.append(request.getHeader("referer")).append("<br>");
-        stringBuilder.append(request.getHeader("accept-encoding")).append("<br>");
-        stringBuilder.append(request.getHeader("accept-language")).append("<br>");
-        stringBuilder.append(request.getHeader("cookie")).append("<br>");
+        String bBr = "</b><br>";
+        stringBuilder
+            .append("HOST: ")
+            .append("<b>").append(request.getHeader("host")).append(bBr);
+        stringBuilder
+            .append("CONNECTION: ")
+            .append("<b>").append(request.getHeader("connection")).append(bBr);
+        stringBuilder
+            .append("upgrade-insecure-requests: ".toUpperCase())
+            .append("<b>").append(request.getHeader("upgrade-insecure-requests")).append(bBr);
+        stringBuilder
+            .append("user-agent: ".toUpperCase())
+            .append("<b>").append(request.getHeader("user-agent")).append(bBr);
+        stringBuilder
+            .append("ACCEPT: ")
+            .append("<b>").append(request.getHeader("accept")).append(bBr);
+        stringBuilder
+            .append("referer: ".toUpperCase())
+            .append("<b>").append(request.getHeader("referer")).append(bBr);
+        stringBuilder
+            .append("accept-encoding: ".toUpperCase())
+            .append("<b>").append(request.getHeader("accept-encoding")).append(bBr);
+        stringBuilder
+            .append("accept-language: ".toUpperCase())
+            .append("<b>").append(request.getHeader("accept-language")).append(bBr);
+        stringBuilder
+            .append("cookie: ".toUpperCase())
+            .append("<b>").append(request.getHeader("cookie")).append(bBr);
+
         stringBuilder.append("<center><h3>Атрибуты</h3></center>");
         stringBuilder.append(new TForms().fromEnum(request.getAttributeNames(), true));
+
         stringBuilder.append("<center><h3>Параметры</h3></center>");
         stringBuilder.append(new TForms().mapStrStrArr(request.getParameterMap(), true));
+
         stringBuilder.append("<center><h3>Cookies</h3></center>");
-        stringBuilder.append(new TForms().fromArray(request.getCookies(), true));
+        stringBuilder.append(cookieShower.showCookie());
         return stringBuilder.toString();
     }
 }

@@ -17,9 +17,15 @@ import ru.vachok.networker.logic.DBMessenger;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 
@@ -55,6 +61,7 @@ public class NetScannerSvc {
     public NetScannerSvc() {
         this.messageToUser = new DBMessenger();
         this.lastNetScan = new LastNetScan();
+
     }
 
     private static Logger logger = AppComponents.getLogger();
@@ -98,7 +105,6 @@ public class NetScannerSvc {
         List<String> pcNames = new ArrayList<>();
         boolean reachable;
         InetAddress byName;
-        int i = 1;
         for(String pcName : getCycleNames(prefix)){
             try{
                 byName = InetAddress.getByName(pcName);
@@ -111,7 +117,6 @@ public class NetScannerSvc {
                     logger.warn(format);
                 }
                 else{
-                    i++;
                     String someMore = getSomeMore(pcName);
                     String onLines = (" online " + true);
                     pcNames.add(pcName + ":" + byName.getHostAddress() + onLines);

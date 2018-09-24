@@ -1,59 +1,67 @@
 package ru.vachok.networker.services;
 
 
-import org.slf4j.Logger;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.IntoApplication;
-import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.PfLists;
-import ru.vachok.networker.logic.ssh.SSHFactory;
+import ru.vachok.networker.logic.SSHFactory;
 
 import java.rmi.UnexpectedException;
 import java.util.Date;
 
 
 /**
- * @since 10.09.2018 (11:49)
- */
+ <h1>Список-выгрузка с сервера доступа в интернет</h1>
+
+ @since 10.09.2018 (11:49) */
 @Service
 public class PfListsSrv {
 
+    /**
+     {@link PfLists}
+     */
+    private PfLists pfLists;
 
-    private static float buildFactoryMetrics;
+    /**
+     {@link SSHFactory.Builder}
+     */
+    private SSHFactory.Builder builder;
 
-    private static AnnotationConfigApplicationContext ctx = IntoApplication.getAppCtx();
-
-    private static final Logger LOGGER = AppComponents.getLogger();
-
-    private static Date endDate;
-
-    private SSHFactory.Builder ssh;
-
-    public PfListsSrv() {
-        SSHFactory.Builder builder = new SSHFactory.Builder(ConstantsFor.SRV_NAT, "uname -a;exit");
-        this.ssh = builder;
+    /**
+     @param pfLists {@link #pfLists}
+     */
+    @Autowired
+    public PfListsSrv(PfLists pfLists) {
+        this.builder = new SSHFactory.Builder(ConstantsFor.SRV_NAT, "uname -a;exit");
+        this.pfLists = pfLists;
     }
 
-    public static float getBuildFactoryMetrics() {
-        return buildFactoryMetrics;
-    }
+    /**
+     <b>Заполнение форм списка PF</b>
+     <p>
+     Тащит информацию с сервера pf.
+     <p>
+     Списки : <br>
+     <i>vipnet</i> <br>
+     <i>squid</i> <br>
+     <i>tempfull</i> <br>
+     <i>squidlimited</i> <br>
+     <p>
+     Также отдаёт информацию напрямую от firewall <br>
+     <i>NAT current</i> <br>
+     <i>rules current</i>
+     <p>
 
-    public static Date getEndDate() {
-        return endDate;
-    }
-
-    /*Instances*/
-
-
+     @see SSHFactory
+     @throws UnexpectedException если нет связи с srv-git. Проверка сети.
+     */
     public void buildFactory() throws UnexpectedException {
-        if(!ConstantsFor.isPingOK()){
+        if (!ConstantsFor.isPingOK()) {
             throw new UnexpectedException("No ping");
         }
 
-        PfLists pfLists = ctx.getBean(PfLists.class);
-        SSHFactory build = ssh.build();
+        SSHFactory build = builder.build();
         pfLists.setuName(build.call());
 
         build.setCommandSSH("sudo cat /etc/pf/vipnet;exit");
@@ -78,8 +86,6 @@ public class PfListsSrv {
         pfLists.setTimeUpd(endMeth);
         buildGit.call();
         pfLists.setGitStats(new Date(endMeth).getTime());
-        String msg = buildFactoryMetrics + " min elapsed";
-        LOGGER.info(msg);
         Thread.currentThread().interrupt();
     }
 }

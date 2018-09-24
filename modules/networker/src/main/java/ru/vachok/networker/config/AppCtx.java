@@ -1,6 +1,7 @@
 package ru.vachok.networker.config;
 
 
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Configuration;
@@ -19,7 +20,6 @@ import java.util.Queue;
 @EnableAsync
 public class AppCtx extends AnnotationConfigApplicationContext {
 
-    /*Fields*/
     private static final String SOURCE_CLASS = AppCtx.class.getSimpleName();
 
     private static Queue<String> outQueue = new PriorityQueue<>();
@@ -28,6 +28,10 @@ public class AppCtx extends AnnotationConfigApplicationContext {
 
     @Override
     public AutowireCapableBeanFactory getAutowireCapableBeanFactory() {
+        for (String s : configApplicationContext.getBeanDefinitionNames()) {
+            LoggerFactory.getLogger(SOURCE_CLASS).info(s);
+        }
+
         return autowireCapableBeanFactory;
     }
 
@@ -39,9 +43,7 @@ public class AppCtx extends AnnotationConfigApplicationContext {
         configApplicationContext.scan("ru.vachok.networker.services");
         configApplicationContext.scan("ru.vachok.networker.config");
         configApplicationContext.setDisplayName(ConstantsFor.APP_NAME);
-
         qAdd();
-        outQueue.add(configApplicationContext.getApplicationName());
         return configApplicationContext;
     }
 
@@ -52,7 +54,6 @@ public class AppCtx extends AnnotationConfigApplicationContext {
             new TForms().fromArray(configApplicationContext.getBeanDefinitionNames()) +
             "</p>";
         stringBuilder.append(msg);
-
         outQueue.add(msg);
     }
 

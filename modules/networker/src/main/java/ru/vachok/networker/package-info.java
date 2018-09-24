@@ -1,5 +1,5 @@
 /**
- * <a href="https://goo.gl/ogsfok">Пришла весна!</a>
+ Spring Boot Application
  *
  * @since 10.08.2018 08 2018 (8:35)
  */

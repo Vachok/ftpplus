@@ -3,14 +3,12 @@ package ru.vachok.networker.controller;
 
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.ADUser;
 import ru.vachok.networker.componentsrepo.AppComponents;
@@ -31,21 +29,16 @@ import java.util.Date;
 @Controller
 public class ActiveDirCtr {
 
-    private static AnnotationConfigApplicationContext ctx = IntoApplication.getAppCtx();
-
+    private ADUser adUser;
 
     private VisitorSrv visitorSrv;
-
-    private ADUser adUser;
 
     private static final Logger LOGGER = AppComponents.getLogger();
 
     @Autowired
-    public ActiveDirCtr() {
-        this.visitorSrv = new VisitorSrv();
-        this.adUser = new ADUser();
-        ctx.registerBean(visitorSrv.getClass());
-        ctx.registerBean(adUser.getClass());
+    public ActiveDirCtr(ADUser adUser, VisitorSrv visitorSrv) {
+        this.adUser = adUser;
+        this.visitorSrv = visitorSrv;
     }
 
     private PhotoConverterSRV photoConverter;

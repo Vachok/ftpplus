@@ -2,10 +2,7 @@ package ru.vachok.networker.services;
 
 
 import org.slf4j.Logger;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.stereotype.Service;
-import ru.vachok.networker.IntoApplication;
-import ru.vachok.networker.componentsrepo.ADUser;
 import ru.vachok.networker.componentsrepo.AppComponents;
 
 import javax.imageio.ImageIO;
@@ -19,7 +16,7 @@ import java.util.function.BiConsumer;
 
 
 /**
- * <h1>Создаёт команды для MS Exchange, чтобы добавить фото пользователей</h1>
+ * <h1>Создаёт команды для MS Power Shell, чтобы добавить фото пользователей</h1>
  *
  * @since 21.08.2018 (15:57)
  */
@@ -31,25 +28,27 @@ public class PhotoConverterSRV {
      */
     private static final Logger LOGGER = AppComponents.getLogger();
 
-    private static final AnnotationConfigApplicationContext CTX = IntoApplication.getAppCtx();
-
+    /**
+     Путь до папки с фото. По-умолчанию c:\Users\ikudryashov\Documents\ShareX\Screenshots\adfoto
+     */
     private String adPhotosPath = "c:\\Users\\ikudryashov\\Documents\\ShareX\\Screenshots\\adfoto";
 
+    /**
+     Файл-фото
+     */
     private File adFotoFile;
 
     /**
-     * <b>Преобразование PNG-JPG</b>
-     * Подготавливает фотографии для импорта в ActiveDirectory. Преобразует png в jpg
+     <b>Преобразование в JPG</b>
+     Подготавливает фотографии для импорта в ActiveDirectory. Преобразует любой понимаемый {@link BufferedImage} формат в jpg.
      */
     private BiConsumer<String, BufferedImage> imageBiConsumer = (x, y) -> {
         File outFile = new File("\\\\srv-mail3\\c$\\newmailboxes\\foto\\" + x + ".jpg");
-        File outImg = new File("images/" + x + ".jpg");
         String fName = "jpg";
         try {
             BufferedImage bufferedImage = new BufferedImage(y.getWidth(), y.getHeight(), BufferedImage.TYPE_INT_RGB);
             bufferedImage.createGraphics().drawImage(y, 0, 0, Color.WHITE, null);
             ImageIO.write(bufferedImage, fName, outFile);
-            CTX.getBean(ADUser.class).setUserPhoto(bufferedImage);
             String msg = outFile.getAbsolutePath() + " written";
             LOGGER.info(msg);
         } catch (IOException e) {

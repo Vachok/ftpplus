@@ -18,7 +18,7 @@ plugins {
 }
 
 group = 'ru.vachok.networker'
-version = '0.208'
+version = '0.209'
 sourceCompatibility = 1.8
 
 repositories {
@@ -38,8 +38,6 @@ dependencies {
 //	compile('org.springframework.boot:spring-boot-starter-actuator')
 // https://mvnrepository.com/artifact/com.github.fonimus/spring-boot-ssh-shell-starter
 //    compile group: 'com.github.fonimus', name: 'spring-boot-ssh-shell-starter', version: '1.0.6'
-    // https://mvnrepository.com/artifact/org.quartz-scheduler/quartz
-    compile group: 'org.quartz-scheduler', name: 'quartz', version: '2.3.0'
     // https://mvnrepository.com/artifact/com.jcraft/jsch
     compile group: 'com.jcraft', name: 'jsch', version: '0.1.54'
 	// https://mvnrepository.com/artifact/org.springframework/spring-jdbc

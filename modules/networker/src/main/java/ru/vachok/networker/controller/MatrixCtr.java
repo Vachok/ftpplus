@@ -2,7 +2,7 @@ package ru.vachok.networker.controller;
 
 
 import org.slf4j.Logger;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -10,12 +10,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.Visitor;
-import ru.vachok.networker.logic.ssh.SSHFactory;
-import ru.vachok.networker.services.*;
+import ru.vachok.networker.logic.SSHFactory;
+import ru.vachok.networker.services.DataBasesSRV;
+import ru.vachok.networker.services.MatrixSRV;
+import ru.vachok.networker.services.VisitorSrv;
+import ru.vachok.networker.services.WhoIsWithSRV;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -34,26 +36,26 @@ public class MatrixCtr {
 
     private static final Logger LOGGER = AppComponents.getLogger();
 
-    private static AnnotationConfigApplicationContext appCtx = IntoApplication.getAppCtx();
-
     private static final String MATRIX_STRING_NAME = "matrix";
 
     private MatrixSRV matrixSRV;
 
     private VisitorSrv visitorSrv;
 
+    private Visitor visitor;
+
     private long metricMatrixStart = System.currentTimeMillis();
 
     private DataBasesSRV dataBasesSRV = new DataBasesSRV();
 
-    public MatrixCtr() {
-        this.visitorSrv = new VisitorSrv();
-        appCtx.registerBean(visitorSrv.getClass());
+    @Autowired
+    public MatrixCtr(VisitorSrv visitorSrv, Visitor visitor) {
+        this.visitorSrv = visitorSrv;
+        this.visitor = visitor;
     }
 
     @GetMapping("/")
-    public String getFirst(HttpServletRequest request, Model model, HttpServletResponse response) {
-        Visitor visitor = visitorSrv.makeVisit(request);
+    public String getFirst(final HttpServletRequest request, Model model, HttpServletResponse response) {
         String userPC = ConstantsFor.getUserPC(request);
         if (request.getQueryString() != null) {
             String queryString = request.getQueryString();

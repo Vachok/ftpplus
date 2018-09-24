@@ -16,6 +16,7 @@ import java.util.concurrent.TimeUnit;
 
 
 /**
+ <h1>Константы</h1>
  * @since 12.08.2018 (16:26)
  */
 public enum ConstantsFor {

@@ -12,6 +12,8 @@ import java.util.*;
 
 
 /**
+ <h1>Помощник для {@link Arrays#toString(int[])}</h1>
+ Делает похожие действия, но сразу так, как нужно для {@link IntoApplication}
  @since 06.09.2018 (9:33) */
 public class TForms {
 
