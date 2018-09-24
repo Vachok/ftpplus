@@ -22,11 +22,10 @@ import ru.vachok.networker.services.VisitorSrv;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.rmi.UnexpectedException;
 import java.security.SecureRandom;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.Map;
-import java.util.Properties;
+import java.time.LocalTime;
+import java.util.*;
 import java.util.concurrent.*;
 
 
@@ -53,16 +52,26 @@ public class PfListsCtr {
 
     private PfListsSrv pfListsSrv;
 
+    private boolean pingOK;
+
+
+    /*Instances*/
     @Autowired
     public PfListsCtr() {
         APP_CTX.refresh();
         this.visitorSrv = APP_CTX.getBean(VisitorSrv.class);
         this.pfLists = APP_CTX.getBean(PfLists.class);
         this.pfListsSrv = APP_CTX.getBean(PfListsSrv.class);
+        this.pingOK = ConstantsFor.isPingOK();
     }
 
     @GetMapping ("/pflists")
     public String pfBean(Model model, HttpServletRequest request, HttpServletResponse response) {
+        if(!pingOK){
+            model.addAttribute("vipnet", "No ping to srv-git");
+            model.addAttribute("metric", LocalTime.now().toString());
+            return "pflists";
+        }
         InitProperties initProperties = new DBRegProperties(ConstantsFor.APP_NAME + SOURCE_CLASS);
         Properties properties = initProperties.getProps();
         Long lastScan = Long.parseLong(properties.getProperty("pfscan"));
@@ -70,7 +79,8 @@ public class PfListsCtr {
         initProperties.delProps();
         visitorSrv.makeVisit(request);
         model.addAttribute("pfLists", pfLists);
-        model.addAttribute("metric", pfLists.getGitStats());
+        model.addAttribute("metric", ( float ) TimeUnit.MILLISECONDS
+            .toSeconds(System.currentTimeMillis() - pfLists.getGitStats()) / ConstantsFor.ONE_HOUR_IN_MIN + " min since upd");
         model.addAttribute("vipnet", pfLists.getVipNet());
         model.addAttribute("tempfull", pfLists.getFullSquid());
         model.addAttribute("squidlimited", pfLists.getLimitSquid());
@@ -83,11 +93,23 @@ public class PfListsCtr {
         properties.setProperty("activethreads", Thread.activeCount() + "");
         if(request.getQueryString()!=null && System.currentTimeMillis() > timeOut){
             properties.setProperty("pfscan", System.currentTimeMillis() + "");
-            new Thread(() -> pfListsSrv.buildFactory()).start();
+            new Thread(() -> {
+                try{
+                    pfListsSrv.buildFactory();
+                }
+                catch(UnexpectedException e){
+                    LOGGER.error(e.getMessage(), e);
+                }
+            }).start();
         }
         if (pfLists.getTimeUpd() + TimeUnit.MINUTES.toMillis(170) < System.currentTimeMillis()) {
             model.addAttribute("metric", "Требуется обновление!");
-            pfListsSrv.buildFactory();
+            try{
+                pfListsSrv.buildFactory();
+            }
+            catch(UnexpectedException e){
+                LOGGER.error(e.getMessage(), e);
+            }
             initProperties.setProps(properties);
             return "pflists";
         }

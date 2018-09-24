@@ -1,12 +1,11 @@
 package ru.vachok.money.other.ftpclient;
 
 
-
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.money.ConstantsFor;
+import ru.vachok.money.config.ConstantsFor;
 import ru.vachok.money.services.W1251;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
@@ -14,10 +13,7 @@ import ru.vachok.mysqlandprops.props.InitProperties;
 
 import java.io.IOException;
 import java.time.LocalTime;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.*;
 
 

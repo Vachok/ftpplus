@@ -2,12 +2,11 @@ package ru.vachok.money.ctrls;
 
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import ru.vachok.messenger.MessageToUser;
-import ru.vachok.money.ConstantsFor;
-import ru.vachok.money.services.DBMessage;
+import ru.vachok.money.config.ConstantsFor;
 import ru.vachok.money.services.TForms;
 import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.RegRuMysql;
@@ -30,12 +29,7 @@ public class DataBases {
      */
     private static final String SOURCE_CLASS = DataBases.class.getSimpleName();
 
-    private static final Logger LOGGER = ConstantsFor.getLogger();
-
-    /**
-     {@link }
-     */
-    private static MessageToUser messageToUser = new DBMessage();
+    private static final Logger LOGGER = LoggerFactory.getLogger(SOURCE_CLASS);
 
     static {
         try{

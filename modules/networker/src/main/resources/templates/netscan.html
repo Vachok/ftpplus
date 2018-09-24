@@ -3,11 +3,14 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title th:text="${date}">ХЗ</title>
+    <title th:text="${title}">ХЗ</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <link rel="stylesheet" type="text/css" media="all" href="css/main.css" th:href="@{css/main.css}"/>
 </head>
 <body>
+<a href="/">
+    <center><h2 th:utext="${left}"></h2></center>
+</a>
 <p th:utext="${pc}"/>
 </body>
 <footer>

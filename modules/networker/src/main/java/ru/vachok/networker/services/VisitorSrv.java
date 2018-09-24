@@ -3,13 +3,12 @@ package ru.vachok.networker.services;
 
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.RegRuMysql;
-import ru.vachok.networker.IntoApplication;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.Visitor;
@@ -17,10 +16,7 @@ import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.logic.DBMessenger;
 
 import javax.servlet.http.HttpServletRequest;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
@@ -32,14 +28,15 @@ public class VisitorSrv {
 
     private static final Logger LOGGER = AppComponents.getLogger();
 
-    private static AnnotationConfigApplicationContext appCtx = IntoApplication.getAppCtx();
+    public Visitor getVisitor() {
+        return visitor;
+    }
 
     private Visitor visitor;
 
     @Autowired
     public VisitorSrv() {
         this.visitor = new Visitor();
-        appCtx.register(visitor.getClass());
     }
 
     public Visitor makeVisit(HttpServletRequest request) {
@@ -48,7 +45,7 @@ public class VisitorSrv {
         Runnable visitMaker = () -> {
             MessageToUser viMessageToDB = new DBMessenger();
             viMessageToDB.info(
-                new Date(appCtx.getStartupDate()) +
+                new Date(ConstantsFor.START_STAMP) +
                     " by: " + visitor.getRemAddr(),
                 request.getSession().getId() + " session ID\n<br>",
                 request.getRequestURL() + " getRequestURL\n<br>" +
@@ -60,7 +57,7 @@ public class VisitorSrv {
                     new TForms().fromEnum(request.getSession().getServletContext().getAttributeNames(), true));
         };
         visitor.setDbInfo(
-            new Date(appCtx.getStartupDate()) + "\n" +
+            new Date(ConstantsFor.START_STAMP) + "\n" +
                 " by: " + visitor.getRemAddr() + "\n" +
                 request.getSession().getId() + "\n" +
                 request.getRequestURL() + " getRequestURL\n" +

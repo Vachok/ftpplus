@@ -2,11 +2,11 @@ package ru.vachok.money.services;
 
 
 import org.slf4j.Logger;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import ru.vachok.money.ConstantsFor;
 
 import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
 import java.util.concurrent.TimeUnit;
 
 
@@ -17,11 +17,9 @@ import java.util.concurrent.TimeUnit;
 public class CookieMaker {
 
     /*Fields*/
-    private static final Logger LOGGER = ConstantsFor.getLogger();
+    private static final Logger LOGGER = LoggerFactory.getLogger(CookieMaker.class.getSimpleName());
 
     private static final int MAX_AGE = 600;
-
-    private static final AnnotationConfigApplicationContext ctx = ConstantsFor.CONTEXT;
 
     private Cookie cookedCookie;
 
@@ -52,10 +50,9 @@ public class CookieMaker {
         return cookieStart;
     }
 
-    public void chkCookies() {
-
+    public boolean isCookiePresent(HttpServletRequest request) {
+        return request.getCookies().length > 0;
     }
-
     @Override
     public int hashCode() {
         return cookedCookie.hashCode();

@@ -1,9 +1,7 @@
 package ru.vachok.money.components;
 
 
-import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
-import ru.vachok.money.ConstantsFor;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -13,13 +11,6 @@ import java.util.concurrent.ConcurrentHashMap;
  @since 15.09.2018 (22:08) */
 @Component ("cookies")
 public class CookIES {
-
-    /*Fields*/
-
-    /**
-     {@link }
-     */
-    private static final Logger LOGGER = ConstantsFor.getLogger();
 
     private String nameCookie;
 

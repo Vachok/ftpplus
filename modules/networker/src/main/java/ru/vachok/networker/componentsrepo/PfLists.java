@@ -40,7 +40,7 @@ public class PfLists {
 
     private String pfNat;
 
-    private String gitStats;
+    private long gitStats;
 
     private long timeUpd;
 
@@ -49,11 +49,11 @@ public class PfLists {
         return timeUpd;
     }
 
-    public String getGitStats() {
+    public long getGitStats() {
         return gitStats;
     }
 
-    public void setGitStats(String gitStats) {
+    public void setGitStats(long gitStats) {
         this.gitStats = gitStats;
     }
 

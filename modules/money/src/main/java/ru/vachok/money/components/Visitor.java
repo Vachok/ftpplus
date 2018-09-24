@@ -1,9 +1,7 @@
 package ru.vachok.money.components;
 
 
-import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
-import ru.vachok.money.ConstantsFor;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -34,7 +32,6 @@ public class Visitor {
     /**
      {@link }
      */
-    private static final Logger LOGGER = AppComponents.getLogger();
 
     private HttpServletRequest request;
 
@@ -50,10 +47,6 @@ public class Visitor {
 
     public static String getSourceClass() {
         return SOURCE_CLASS;
-    }
-
-    public static Logger getLOGGER() {
-        return LOGGER;
     }
 
     public HttpServletRequest getRequest() {

@@ -2,7 +2,7 @@ package ru.vachok.money.other;
 
 
 import org.slf4j.Logger;
-import ru.vachok.money.ConstantsFor;
+import ru.vachok.money.config.ConstantsFor;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;

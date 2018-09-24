@@ -4,7 +4,7 @@ package ru.vachok.money.other;
 import org.slf4j.Logger;
 import org.thymeleaf.util.CharArrayWrapperSequence;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.money.ConstantsFor;
+import ru.vachok.money.config.ConstantsFor;
 
 import java.io.*;
 import java.util.concurrent.TimeUnit;

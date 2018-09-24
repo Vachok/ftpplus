@@ -2,6 +2,7 @@ package ru.vachok.networker.services;
 
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
@@ -11,18 +12,14 @@ import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.componentsrepo.LastNetScan;
 import ru.vachok.networker.logic.DBMessenger;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 
@@ -42,9 +39,22 @@ public class NetScannerSvc {
 
     private MessageToUser messageToUser;
 
+    private static Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.DB_PREFIX + "velkom");
+
+    private LastNetScan lastNetScan;
+
+    private Map<String, Boolean> netWork;
+
+    public LastNetScan getLastNetScan() {
+        return lastNetScan;
+    }
+
+
+    /*Instances*/
     @Autowired
     public NetScannerSvc() {
         this.messageToUser = new DBMessenger();
+        this.lastNetScan = new LastNetScan();
     }
 
     private static Logger logger = AppComponents.getLogger();
@@ -82,11 +92,13 @@ public class NetScannerSvc {
     }
 
     public List<String> getPCNames(String prefix) {
+        this.netWork = lastNetScan.getNetWork();
         this.qer = prefix;
         final long startMethTime = System.currentTimeMillis();
         List<String> pcNames = new ArrayList<>();
         boolean reachable;
         InetAddress byName;
+        int i = 1;
         for(String pcName : getCycleNames(prefix)){
             try{
                 byName = InetAddress.getByName(pcName);
@@ -94,14 +106,19 @@ public class NetScannerSvc {
                 if(!reachable){
                     String onLines = ("online " + false + "");
                     pcNames.add(pcName + ":" + byName.getHostAddress() + " " + onLines + "");
+                    netWork.put(pcName, false);
                     String format = MessageFormat.format("{0} {1}", pcName, onLines);
                     logger.warn(format);
                 }
                 else{
+                    i++;
+                    String someMore = getSomeMore(pcName);
                     String onLines = (" online " + true);
                     pcNames.add(pcName + ":" + byName.getHostAddress() + onLines);
-                    String format = MessageFormat.format("{0} {1}", pcName, onLines);
-                    logger.warn(format);
+
+                    netWork.put("<b>" + pcName + "</b><br>" + someMore, true);
+                    String format = MessageFormat.format("{0} {1} | {2}", pcName, onLines, someMore);
+                    logger.info(format);
                 }
             }
             catch(IOException ignore){
@@ -112,6 +129,29 @@ public class NetScannerSvc {
         logger.info(pcsString);
         pcNames.add("<b>Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethTime) + " sec.</b>");
         return pcNames;
+    }
+
+    private String getSomeMore(String pcName) {
+        List<Integer> onLine = new ArrayList<>();
+        List<Integer> offLine = new ArrayList<>();
+        try(PreparedStatement statement = c.prepareStatement("select * from velkompc where NamePP like ?")){
+            statement.setString(1, pcName);
+            try(ResultSet resultSet = statement.executeQuery()){
+                while(resultSet.next()){
+                    int onlineNow = resultSet.getInt("OnlineNow");
+                    if(onlineNow==1){
+                        onLine.add(onlineNow);
+                    }
+                    if(onlineNow==0){
+                        offLine.add(onlineNow);
+                    }
+                }
+            }
+        }
+        catch(SQLException e){
+            LoggerFactory.getLogger(SOURCE_CLASS).error(e.getMessage(), e);
+        }
+        return offLine.size() + " offline times and " + onLine.size() + " online times.";
     }
 
     private Collection<String> getCycleNames(String userQuery) {

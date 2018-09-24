@@ -9,7 +9,7 @@
 <a href="/">Главная</a> | <a href="/ftp">FTP</a>
 <p th:utext="${inp}"></p>
 <form th:action="@{/calc}" th:object="${CalculatorForSome}" method="POST">
-    Введите что-нибудь(? - help):
+    Введите что-нибудь(введите ? для помощи):
     <input type="text" th:field="*{userInput}"/>
     <br>
     <input type="submit" value="Считать"/>

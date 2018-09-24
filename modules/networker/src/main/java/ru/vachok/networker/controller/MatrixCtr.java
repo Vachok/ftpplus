@@ -15,10 +15,7 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.logic.ssh.SSHFactory;
-import ru.vachok.networker.services.DataBasesSRV;
-import ru.vachok.networker.services.MatrixSRV;
-import ru.vachok.networker.services.VisitorSrv;
-import ru.vachok.networker.services.WhoIsWithSRV;
+import ru.vachok.networker.services.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -78,9 +75,6 @@ public class MatrixCtr {
 
             if (ConstantsFor.getUserPC(request).toLowerCase().contains(ConstantsFor.NO0027) ||
                 ConstantsFor.getUserPC(request).toLowerCase().contains("0:0:0:0")) {
-                model.addAttribute("visit", visitor.toString() +
-                    "\nUNIQ:" + visitorSrv.uniqUsers() + "\n" +
-                    visitor.getDbInfo());
             } else {
                 model.addAttribute("visit", visitor.getTimeSt() + " timestamp");
             }
@@ -89,13 +83,15 @@ public class MatrixCtr {
         return "starting";
     }
 
-    private Model lastLogsGetter(Model model) {
-        Map<String, String> vachokEthosdistro = dataBasesSRV.getLastLogs("ru_vachok_ethosdistro");
-        String logsFromDB = new TForms().fromArray(vachokEthosdistro);
-        model.addAttribute("logdb", logsFromDB);
-        model.addAttribute("starttime", new Date(ConstantsFor.START_STAMP));
-        model.addAttribute("title", metricMatrixStart);
-        return model;
+    @GetMapping ("/matrix")
+    public String showResults(HttpServletRequest request, Model model) {
+        visitorSrv.makeVisit(request);
+        model.addAttribute(MATRIX_STRING_NAME, matrixSRV);
+        model.addAttribute("workPos", matrixSRV.getWorkPos());
+        model.addAttribute("headtitle", matrixSRV.getCountDB() + " позиций   " + TimeUnit.MILLISECONDS.toMinutes(
+            System.currentTimeMillis() - ConstantsFor.START_STAMP) + " upTime");
+        metricMatrixStart = System.currentTimeMillis() - metricMatrixStart;
+        return MATRIX_STRING_NAME;
     }
 
     @PostMapping("/matrix")
@@ -125,15 +121,13 @@ public class MatrixCtr {
         }
     }
 
-    @GetMapping("/matrix")
-    public String showResults(HttpServletRequest request, Model model) {
-        visitorSrv.makeVisit(request);
-        model.addAttribute("matrix", matrixSRV);
-        model.addAttribute("workPos", matrixSRV.getWorkPos());
-        model.addAttribute("headtitle", matrixSRV.getCountDB() + " позиций   " + TimeUnit.MILLISECONDS.toMinutes(
-            System.currentTimeMillis() - ConstantsFor.START_STAMP) + " upTime");
-        metricMatrixStart = System.currentTimeMillis() - metricMatrixStart;
-        return MATRIX_STRING_NAME;
+    Model lastLogsGetter(Model model) {
+        Map<String, String> vachokEthosdistro = dataBasesSRV.getLastLogs("ru_vachok_ethosdistro");
+        String logsFromDB = new TForms().fromArray(vachokEthosdistro);
+        model.addAttribute("logdb", logsFromDB);
+        model.addAttribute("starttime", new Date(ConstantsFor.START_STAMP));
+        model.addAttribute("title", metricMatrixStart);
+        return model;
     }
 
     @GetMapping("/git")

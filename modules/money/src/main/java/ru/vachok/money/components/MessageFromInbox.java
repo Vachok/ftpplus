@@ -2,8 +2,8 @@ package ru.vachok.money.components;
 
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import ru.vachok.money.ConstantsFor;
 
 
 /**
@@ -16,7 +16,7 @@ public class MessageFromInbox {
     /**
      {@link }
      */
-    private static final Logger LOGGER = ConstantsFor.getLogger();
+    private static final Logger LOGGER = LoggerFactory.getLogger(MessageFromInbox.class.getSimpleName());
 
     private String from;
 

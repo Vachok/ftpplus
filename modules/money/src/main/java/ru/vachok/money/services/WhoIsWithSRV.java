@@ -1,16 +1,15 @@
 package ru.vachok.money.services;
 
 
-    import org.apache.commons.net.whois.WhoisClient;
-    import org.slf4j.Logger;
-    import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-    import org.springframework.stereotype.Service;
-    import ru.vachok.money.ConstantsFor;
+import org.apache.commons.net.whois.WhoisClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
-    import javax.servlet.http.HttpServletRequest;
-    import java.io.IOException;
-    import java.net.InetAddress;
-    import java.util.Locale;
+import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.util.Locale;
 
 
 /**
@@ -23,12 +22,11 @@ public class WhoIsWithSRV {
      */
     private static final String SOURCE_CLASS = WhoIsWithSRV.class.getSimpleName();
 
+    /*Fields*/
     /**
      {@link }
      */
-    private static final Logger LOGGER = ConstantsFor.getLogger();
-
-    private static final AnnotationConfigApplicationContext ctx = ConstantsFor.CONTEXT;
+    private static final Logger LOGGER = LoggerFactory.getLogger(SOURCE_CLASS);
 
     public String whoIs(String inetAddr) {
         StringBuilder geoLocation = new StringBuilder();

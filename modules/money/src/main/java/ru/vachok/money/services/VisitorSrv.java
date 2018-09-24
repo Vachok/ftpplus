@@ -2,17 +2,12 @@ package ru.vachok.money.services;
 
 
 import org.slf4j.Logger;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import ru.vachok.messenger.MessageToUser;
-import ru.vachok.money.ConstantsFor;
-import ru.vachok.money.other.FileMessages;
-import ru.vachok.money.other.MailMessages;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.Date;
-import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -25,43 +20,36 @@ public class VisitorSrv {
     /**
      {@link }
      */
-    private static final Logger LOGGER = ConstantsFor.getLogger();
-
-    private static final AnnotationConfigApplicationContext ctx = ConstantsFor.CONTEXT;
-
-    /**
-     Simple Name класса, для поиска настроек
-     */
-
-    private HttpServletRequest request;
-
-    private HttpServletResponse response;
+    private static final Logger LOGGER = LoggerFactory.getLogger(VisitorSrv.class.getSimpleName());
 
     public void makeVisit(HttpServletRequest request, HttpServletResponse response) {
         String sessionId = request.getSession().getId();
         String msg = "SET NEW Session ID" + request.getSession().getId() + " sessionID = " + sessionId;
-        LOGGER.warn(msg);
+        LOGGER.info(msg);
+        if(new CookieMaker().isCookiePresent(request)){
+            StringBuilder sb = new StringBuilder();
+            Cookie[] cookies = request.getCookies();
+            for(Cookie c : cookies){
+                sb
+                    .append("Name: ")
+                    .append(c.getName()).append("\n")
+                    .append("Age: ")
+                    .append(c.getMaxAge()).append("\n")
+                    .append("Comment: ")
+                    .append(c.getComment()).append("\n")
+                    .append("Value")
+                    .append(c.getValue());
+            }
+            new DBMessage().info(VisitorSrv.class.getSimpleName(), "cookies", sb.toString());
+        }
+        else{
+            cookiedResp(response, sessionId);
+        }
     }
 
-    private void toFile() {
-        MessageToUser messageToUser = new FileMessages();
-        messageToUser.info("http", new Date(System.currentTimeMillis()).toString() + " " +
-            (TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - ConstantsFor.START_STAMP)) +
-            " elapsed", request.getRemoteAddr() +
-            ":" +
-            response.getStatus() +
-            new TForms().toStringFromArray(response.getHeaderNames()));
+    private HttpServletResponse cookiedResp(HttpServletResponse response, String sessionId) {
+        Cookie cookie = new CookieMaker().startSession(sessionId);
+        response.addCookie(cookie);
+        return response;
     }
-
-    private void toMail() {
-        AnnotationConfigApplicationContext ctx = ConstantsFor.CONTEXT;
-        MailMessages mailBean = ctx.getBean(MailMessages.class);
-        new Thread(() -> mailBean.getSenderToGmail().infoNoTitles(
-            request.getRemoteAddr() +
-                ":" +
-                response.getStatus() +
-                new TForms().toStringFromArray(response.getHeaderNames()))).start();
-        Thread.currentThread().interrupt();
-    }
-
 }
