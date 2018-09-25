@@ -104,7 +104,7 @@ public class PfListsCtr {
             new Thread(() -> {
                 try {
                     pfListsSrv.buildFactory();
-                } catch (UnexpectedException | TimeLimitExceededException e) {
+                } catch (UnexpectedException e) {
                     LOGGER.error(e.getMessage(), e);
                 }
             }).start();
@@ -113,7 +113,7 @@ public class PfListsCtr {
             model.addAttribute(METRIC_STR, "Требуется обновление!");
             try {
                 pfListsSrv.buildFactory();
-            } catch (UnexpectedException | TimeLimitExceededException e) {
+            } catch (UnexpectedException e) {
                 LOGGER.error(e.getMessage(), e);
             }
         } else {
