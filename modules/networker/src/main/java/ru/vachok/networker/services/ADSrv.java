@@ -28,6 +28,14 @@ public class ADSrv implements Runnable {
 
     private ADUser adUser;
 
+    public ADUser getAdUser() {
+        return adUser;
+    }
+
+    public ADComputer getAdComputer() {
+        return adComputer;
+    }
+
     private ADComputer adComputer;
 
     private String[] userS;
@@ -35,6 +43,10 @@ public class ADSrv implements Runnable {
     private String[] compS;
 
     private AutowireCapableBeanFactory autowireCapableBeanFactory = new AppCtx().getAutowireCapableBeanFactory();
+
+    public Map<ADComputer, ADUser> getAdComputerADUserMap() {
+        return adComputerADUserMap;
+    }
 
     private Map<ADComputer, ADUser> adComputerADUserMap = new ConcurrentHashMap<>();
 
@@ -72,7 +84,6 @@ public class ADSrv implements Runnable {
             userS = userBuilder.toString().split("\n");
             compS = pcBuilder.toString().split("\n");
             userSetter();
-            compsSetter();
         } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
         }
@@ -94,37 +105,39 @@ public class ADSrv implements Runnable {
                 if (s.contains("SID")) adUser.setSID(s.split(": ")[1]);
                 if (s.contains("Surname")) adUser.setSurname(s.split(": ")[1]);
                 if (s.contains("UserPrincipalName")) adUser.setUserPrincipalName(s.split(": ")[1]);
-            } catch (ArrayIndexOutOfBoundsException e) {
-                LOGGER.error(e.getMessage(), e);
+            }
+            catch(ArrayIndexOutOfBoundsException ignore){
+                //
             }
             adUsers.put(indexUser, adUser);
         }
         String msg = adUsers.size() + " adUsers MAP";
         LOGGER.info(msg);
         adUser.setAdUsers(adUsers);
-        autowireCapableBeanFactory.createBean(adUser.getClass());
-    }
-
-    private void compsSetter() {
         Map<Integer, ADComputer> adComputers = adComputer.getAdComputers();
         int index = 0;
         for (String s : compS) {
-            index++;
-            if (s.contains("DistinguishedName")) adComputer.setDistinguishedName(s.split(": ")[1]);
-            if (s.contains("DNSHostName")) adComputer.setDnsHostName(s.split(": ")[1]);
-            if (s.contains("Enabled")) adComputer.setEnabled(s.split(": ")[1]);
-            if (s.contains("Name")) adComputer.setName(s.split(": ")[1]);
-            if (s.contains("ObjectClass")) adComputer.setObjectClass(s.split(": ")[1]);
-            if (s.contains("ObjectGUID")) adComputer.setObjectGUID(s.split(": ")[1]);
-            if (s.contains("SamAccountName")) adComputer.setSamAccountName(s.split(": ")[1]);
-            if (s.contains("SID")) adComputer.setSID(s.split(": ")[1]);
-            if (s.contains("UserPrincipalName")) adComputer.setUserPrincipalName(s.split(": ")[1]);
-            adComputers.put(index, adComputer);
-            LOGGER.info(adComputer.toString());
+            try{
+                index++;
+                if (s.contains("DistinguishedName")) adComputer.setDistinguishedName(s.split(": ")[1]);
+                if (s.contains("DNSHostName")) adComputer.setDnsHostName(s.split(": ")[1]);
+                if (s.contains("Enabled")) adComputer.setEnabled(s.split(": ")[1]);
+                if (s.contains("Name")) adComputer.setName(s.split(": ")[1]);
+                if (s.contains("ObjectClass")) adComputer.setObjectClass(s.split(": ")[1]);
+                if (s.contains("ObjectGUID")) adComputer.setObjectGUID(s.split(": ")[1]);
+                if (s.contains("SamAccountName")) adComputer.setSamAccountName(s.split(": ")[1]);
+                if (s.contains("SID")) adComputer.setSID(s.split(": ")[1]);
+                if (s.contains("UserPrincipalName")) adComputer.setUserPrincipalName(s.split(": ")[1]);
+                adComputers.put(index, adComputer);
+                LOGGER.info(adComputer.toString());
+            }
+            catch(ArrayIndexOutOfBoundsException ignore){
+                //
+            }
         }
-        String msg = adComputers.size() + " adcomps size MAP";
-        LOGGER.info(msg);
+        String msg2 = adComputers.size() + " adcomps size MAP";
+        LOGGER.info(msg2);
         adComputer.setAdComputers(adComputers);
-        autowireCapableBeanFactory.createBean(adComputer.getClass());
+        adComputerADUserMap.put(adComputer, adUser);
     }
 }

@@ -4,6 +4,7 @@ package ru.vachok.networker;
 import org.slf4j.Logger;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
+import ru.vachok.networker.componentsrepo.ADComputer;
 import ru.vachok.networker.componentsrepo.ADUser;
 import ru.vachok.networker.componentsrepo.AppComponents;
 
@@ -211,6 +212,30 @@ public class TForms {
                 .append("<br>");
         }
         brStringBuilder.append("</p>");
+        return brStringBuilder.toString();
+    }
+
+    public String adPCMap(Map<Integer, ADComputer> adComputers) {
+        brStringBuilder.append("<p>");
+        Collection<ADComputer> values = adComputers.values();
+        for(ADComputer ad : values){
+            brStringBuilder
+                .append(ad.toString())
+                .append("<br>");
+        }
+        brStringBuilder.append("</p>");
+        return brStringBuilder.toString();
+    }
+
+    public String adMap(Map<ADComputer, ADUser> adComputerADUserMap) {
+        adComputerADUserMap.forEach((x, y) -> {
+            brStringBuilder.append("<p>");
+            brStringBuilder
+                .append(x.toString())
+                .append("<br>")
+                .append(y.toString())
+                .append("</p>");
+        });
         return brStringBuilder.toString();
     }
 }

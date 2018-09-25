@@ -14,6 +14,7 @@ import ru.vachok.networker.logic.PassGenerator;
 import ru.vachok.networker.services.ADSrv;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Map;
 
 
 /**
@@ -56,9 +57,8 @@ public class UtilitCTRL {
     public String adUsersComps(HttpServletRequest request, Model model) {
         ADSrv adSrv = AppComponents.adSrv();
         adSrv.run();
-        ADUser aduser = (ADUser) autowireCapableBeanFactory.getBean("aduser");
-        ADComputer adComputer = (ADComputer) autowireCapableBeanFactory.getBean("adcomputer");
-        model.addAttribute("users", new TForms().adUsersMap(aduser.getAdUsers()));
-        return "ad";
+        Map<ADComputer, ADUser> adComputerADUserMap = adSrv.getAdComputerADUserMap();
+        model.addAttribute("pcs", new TForms().adMap(adComputerADUserMap));
+        return "ok";
     }
 }

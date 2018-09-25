@@ -112,4 +112,19 @@ public class ADComputer {
     public void setUserPrincipalName(String userPrincipalName) {
         this.userPrincipalName = userPrincipalName;
     }
+
+    @Override
+    public String toString() {
+        return "ADComputer{" +
+            ", distinguishedName='" + distinguishedName + '\'' +
+            ", dnsHostName='" + dnsHostName + '\'' +
+            ", enabled='" + enabled + '\'' +
+            ", name='" + name + '\'' +
+            ", objectClass='" + objectClass + '\'' +
+            ", objectGUID='" + objectGUID + '\'' +
+            ", samAccountName='" + samAccountName + '\'' +
+            ", SID='" + SID + '\'' +
+            ", userPrincipalName='" + userPrincipalName + '\'' +
+            '}';
+    }
 }
