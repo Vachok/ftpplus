@@ -21,11 +21,11 @@ public class AppComponents {
         return LoggerFactory.getLogger("ru_vachok_networker");
     }
 
-    @Bean()
-    @Scope ("prototype")
-    public ADUser adUser() {
+    @Bean
+    public static ADSrv adSrv() {
         ADUser adUser = new ADUser();
-        return adUser;
+        ADComputer adComputer = new ADComputer();
+        return new ADSrv(adUser, adComputer);
     }
 
     @Bean

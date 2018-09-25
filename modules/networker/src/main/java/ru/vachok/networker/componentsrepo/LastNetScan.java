@@ -1,6 +1,8 @@
 package ru.vachok.networker.componentsrepo;
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -18,7 +20,11 @@ public class LastNetScan implements Serializable {
 
     private static File objFile = new File(LastNetScan.class.getSimpleName() + ".obj");
 
+    private static final long serialVersionUID = 1984L;
+
     private Date timeLastScan;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(LastNetScan.class.getName());
 
     private Map<String, Boolean> netWork = new ConcurrentHashMap<>();
 
@@ -40,33 +46,22 @@ public class LastNetScan implements Serializable {
 
     /*Instances*/
     public LastNetScan() {
-        String s = readObject();
-        if(s.equalsIgnoreCase("no object")){
-            netWork.put(s, true);
-        }
     }
 
-    private String readObject() {
-        String s;
-        try(FileInputStream inputStream = new FileInputStream(objFile);){
-            ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
-            Object o = objectInputStream.readObject();
-            s = o.toString();
-            return s;
+    private void readObject(ObjectInputStream in) {
+        try {
+            in.defaultReadObject();
         }
         catch(IOException | ClassNotFoundException e){
-            return e.getMessage();
+            LOGGER.error(e.getMessage(), e);
         }
     }
 
-    public String writeObject() {
-        try(OutputStream outputStream = new FileOutputStream(objFile)){
-            ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
-            objectOutputStream.writeObject(this);
+    private void writeObject(ObjectOutputStream out) {
+        try {
+            out.defaultWriteObject();
+        } catch (IOException e) {
+            LOGGER.error(e.getMessage(), e);
         }
-        catch(IOException e){
-            return e.getMessage();
-        }
-        return objFile.getAbsolutePath();
     }
 }
