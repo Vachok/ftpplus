@@ -80,8 +80,8 @@ public class VisitorSrv {
     }
 
     private void addCookies(HttpServletRequest request) throws Exception {
-        Collection<Cookie> cookieCollection = new ArrayList<>();
-        cookieCollection.addAll(Arrays.asList(request.getCookies()));
+        Collection<Cookie> cookieCollection = new ArrayList<>(Arrays.asList(request.getCookies()));
+        cookieCollection.forEach(x -> LOGGER.info(x.getName()));
     }
 
     public HttpServletResponse checkSession(HttpServletRequest request, HttpServletResponse response) {

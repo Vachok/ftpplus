@@ -11,8 +11,7 @@ import ru.vachok.networker.componentsrepo.ADComputer;
 import ru.vachok.networker.componentsrepo.ADUser;
 import ru.vachok.networker.config.AppCtx;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -58,6 +57,25 @@ public class ADSrv implements Runnable {
 
     @Override
     public void run() {
+        fileRead();
+
+    }
+
+    private void fileRead() {
+
+        try(FileInputStream resourceAsStream = ( FileInputStream ) getClass().getResourceAsStream("/static/texts/computers.txt");
+            BufferedInputStream bufferedInputStream = new BufferedInputStream(resourceAsStream)){
+            byte[] bytes = new byte[ConstantsFor.KBYTE * 500];
+            while(bufferedInputStream.available() > 0){
+                int read = bufferedInputStream.read(bytes, 0, ConstantsFor.KBYTE * 500);
+            }
+        }
+        catch(IOException e){
+            LOGGER.error(e.getMessage(), e);
+        }
+    }
+
+    private void streamRead() {
         StringBuilder userBuilder = new StringBuilder();
         StringBuilder pcBuilder = new StringBuilder();
         try (

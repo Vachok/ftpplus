@@ -18,13 +18,12 @@ import java.util.concurrent.ConcurrentHashMap;
 @Scope ("singleton")
 public class LastNetScan implements Serializable {
 
-    private static File objFile = new File(LastNetScan.class.getSimpleName() + ".obj");
-
     private static final long serialVersionUID = 1984L;
 
-    private Date timeLastScan;
+    /*Fields*/
+    private static final transient Logger LOGGER = LoggerFactory.getLogger(LastNetScan.class.getName());
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(LastNetScan.class.getName());
+    private transient Date timeLastScan;
 
     private Map<String, Boolean> netWork = new ConcurrentHashMap<>();
 
@@ -46,6 +45,7 @@ public class LastNetScan implements Serializable {
 
     /*Instances*/
     public LastNetScan() {
+        LOGGER.info("Serial. Understand 25.09.2018 (20:45)");
     }
 
     private void readObject(ObjectInputStream in) {
