@@ -27,6 +27,15 @@ public enum ConstantsFor {
      */
     public static final int MBYTE = 1024 * 1024;
 
+
+    public static boolean getPcAuth(HttpServletRequest request) {
+        return request.getRemoteAddr().toLowerCase().contains("0:0:0:0") ||
+            request.getRemoteAddr().contains("10.200.213") ||
+            request.getRemoteAddr().contains("10.10.111") ||
+            request.getRemoteAddr().contains("172.16.200");
+    }
+
+
     private static boolean pingOK = true;
 
     public static boolean isPingOK() {

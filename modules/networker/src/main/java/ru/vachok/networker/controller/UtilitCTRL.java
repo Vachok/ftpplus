@@ -1,10 +1,17 @@
 package ru.vachok.networker.controller;
 
 
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.ADComputer;
+import ru.vachok.networker.componentsrepo.ADUser;
+import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.logic.PassGenerator;
+import ru.vachok.networker.services.ADSrv;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -16,6 +23,8 @@ import javax.servlet.http.HttpServletRequest;
  @since 22.08.2018 (10:17) */
 @Controller
 public class UtilitCTRL {
+
+    private AutowireCapableBeanFactory autowireCapableBeanFactory = new AppCtx().getAutowireCapableBeanFactory();
 
     /**
      <b>Генератор случайной последовательности. ("/gen")</b>
@@ -40,6 +49,16 @@ public class UtilitCTRL {
         }
         model.addAttribute("title", howMuchBytes);
         model.addAttribute("pass", passGenerator.generatorPass(howMuchBytes));
+        return "ad";
+    }
+
+    @GetMapping("/ad")
+    public String adUsersComps(HttpServletRequest request, Model model) {
+        ADSrv adSrv = AppComponents.adSrv();
+        adSrv.run();
+        ADUser aduser = (ADUser) autowireCapableBeanFactory.getBean("aduser");
+        ADComputer adComputer = (ADComputer) autowireCapableBeanFactory.getBean("adcomputer");
+        model.addAttribute("users", new TForms().adUsersMap(aduser.getAdUsers()));
         return "ad";
     }
 }

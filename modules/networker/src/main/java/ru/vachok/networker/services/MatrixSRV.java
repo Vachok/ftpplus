@@ -16,8 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 
 /**
- * @since 07.09.2018 (9:45)
- */
+ @since 07.09.2018 (9:45) */
 @Service("matrix")
 public class MatrixSRV {
 
@@ -51,6 +50,7 @@ public class MatrixSRV {
         try (PreparedStatement statement = c.prepareStatement(sql);
              ResultSet r = statement.executeQuery()) {
             while (r.next()) {
+                StringBuilder stringBuilder = new StringBuilder();
                 countDB = countDB + 1;
                 int fullinet = r.getInt("fullinet");
                 int stdinet = r.getInt("stdinet");
@@ -58,14 +58,26 @@ public class MatrixSRV {
                 int owaasync = r.getInt("owaasync");
                 int vpn = r.getInt("VPN");
                 int sendmail = r.getInt("sendmail");
-                //todo  08.09.2018 (20:42) Сделать чтоб не добавлялись нули.
+                if (fullinet == 1) {
+                    stringBuilder.append(" - полный достув в интернет <br>");
+                }
+                if (stdinet == 1) {
+                    stringBuilder.append(" - доступ с ограничениями (mail.ru и тп). Стандарт для большинства <br>");
+                }
+                if (limitinet == 1) {
+                    stringBuilder.append(" - досту только к определённым спискам сайтов <br>");
+                }
+                if (owaasync == 1) {
+                    stringBuilder.append(" - owa and async (почта удалённо) <br>");
+                }
+                if (vpn == 1) {
+                    stringBuilder.append(" - VPN <br>");
+                }
+                if (sendmail == 1) {
+                    stringBuilder.append(" - отправка за пределы компании<br>");
+                }
                 doljAndAccess.put("<p><h5>" + r.getString(2) + " - " + r.getString(3) + ":</h5>",
-                    fullinet + " - полный достув в интернет, <br>" +
-                        stdinet + " - доступ с ограничениями (mail.ru и тп). Стандарт для большинства, <br>" +
-                        limitinet + " - досту только к определённым спискам сайтов, <br>" +
-                        owaasync + " - owa and async (почта удалённо), <br>" +
-                        vpn + " - VPN, <br>" +
-                        sendmail + " - отправка за пределы компании.</p>");
+                    stringBuilder.toString());
             }
         } catch (SQLException e) {
             LOGGER.error(e.getMessage(), e);

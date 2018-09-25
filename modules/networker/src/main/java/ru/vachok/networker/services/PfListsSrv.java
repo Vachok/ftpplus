@@ -3,18 +3,12 @@ package ru.vachok.networker.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.vachok.mysqlandprops.props.DBRegProperties;
-import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.PfLists;
-import ru.vachok.networker.controller.PfListsCtr;
 import ru.vachok.networker.logic.SSHFactory;
 
-import javax.naming.TimeLimitExceededException;
 import java.rmi.UnexpectedException;
 import java.util.Date;
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -62,19 +56,9 @@ public class PfListsSrv {
      @see SSHFactory
      @throws UnexpectedException если нет связи с srv-git. Проверка сети.
      */
-    public void buildFactory() throws UnexpectedException, TimeLimitExceededException {
+    public void buildFactory() throws UnexpectedException {
         if (!ConstantsFor.isPingOK()) {
             throw new UnexpectedException("No ping");
-        }
-        InitProperties initProperties =
-            new DBRegProperties(ConstantsFor.APP_NAME + PfListsCtr.class.getSimpleName());
-        Properties properties = initProperties.getProps();
-        long pfscanTime = Long.parseLong(properties.getProperty("pfscan")) + TimeUnit.MINUTES.toMillis(15);
-        if(pfscanTime > System.currentTimeMillis()){
-            throw new TimeLimitExceededException(
-                ( float ) (TimeUnit.MILLISECONDS.toSeconds(pfscanTime - System.currentTimeMillis()))
-                    / ConstantsFor.ONE_HOUR_IN_MIN + " min"
-            );
         }
         SSHFactory build = builder.build();
         pfLists.setuName(build.call());

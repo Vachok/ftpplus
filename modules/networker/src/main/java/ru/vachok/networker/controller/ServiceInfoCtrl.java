@@ -8,6 +8,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.CookieShower;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.config.AppCtx;
@@ -53,11 +54,11 @@ public class ServiceInfoCtrl {
         if (request.getRemoteAddr().contains("0:0:0:0") ||
             request.getRemoteAddr().contains("10.10.111") ||
             request.getRemoteAddr().contains(ConstantsFor.NO0027)) {
-            model.addAttribute("title", "PF IS " + pingBool() + " now: " + LocalTime.now().toString());
-            model.addAttribute("ping", pingVPN());
+            model.addAttribute("title", "srv-git is " + pingBool() + " now: " + LocalTime.now().toString());
+            model.addAttribute("ping", pingGit());
             model.addAttribute("urls", new TForms().fromArray(AppCtx.getClassLoaderURLList()));
             model.addAttribute("request", prepareRequest(request));
-            model.addAttribute("visit", visitor.toString());
+            model.addAttribute("visit", new AppComponents().versionInfo().toString());
             model.addAttribute("genstamp", "Generated: " +
                 new Date().getTime() +
                 ". Up: " +
@@ -74,7 +75,7 @@ public class ServiceInfoCtrl {
         }
     }
 
-    private String pingVPN() {
+    private String pingGit() {
         try {
             InetAddress byName = InetAddress.getByName("srv-git.eatmeat.ru");
             return "<b>" + byName.isReachable(1000) + "</b> srv-git.eatmeat.ru. <i>" + LocalTime.now() + "</i><br>";

@@ -55,6 +55,8 @@ public class AppCtx extends AnnotationConfigApplicationContext {
             "</p>";
         stringBuilder.append(msg);
         outQueue.add(msg);
+        outQueue.add(AppCtx.CLASSPATH_ALL_URL_PREFIX);
+        outQueue.add(AppCtx.LIFECYCLE_PROCESSOR_BEAN_NAME);
     }
 
     public static Queue<String> getClassLoaderURLList() {

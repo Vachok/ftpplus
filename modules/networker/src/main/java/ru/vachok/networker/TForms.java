@@ -4,6 +4,7 @@ package ru.vachok.networker;
 import org.slf4j.Logger;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
+import ru.vachok.networker.componentsrepo.ADUser;
 import ru.vachok.networker.componentsrepo.AppComponents;
 
 import javax.servlet.http.Cookie;
@@ -199,5 +200,17 @@ public class TForms {
         else{
             return nStringBuilder.toString();
         }
+    }
+
+    public String adUsersMap(Map<Integer, ADUser> adUsers) {
+        brStringBuilder.append("<p>");
+        Collection<ADUser> values = adUsers.values();
+        for (ADUser ad : values) {
+            brStringBuilder
+                .append(ad.toString())
+                .append("<br>");
+        }
+        brStringBuilder.append("</p>");
+        return brStringBuilder.toString();
     }
 }

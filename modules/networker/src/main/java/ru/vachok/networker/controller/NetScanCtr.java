@@ -18,7 +18,10 @@ import ru.vachok.networker.componentsrepo.LastNetScan;
 import ru.vachok.networker.services.NetScannerSvc;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 
@@ -48,24 +51,21 @@ public class NetScanCtr {
         this.netScannerSvc = netScannerSvc;
         this.lastNetScan = netScannerSvc.getLastNetScan();
     }
-
     @GetMapping("/netscan")
     public String netScan(HttpServletRequest request, Model model) {
         lastScanMap = lastNetScan.getNetWork();
         String propertyLastScan = properties.getProperty("lastscan");
         long l = Long.parseLong(propertyLastScan) + TimeUnit.MINUTES.toMillis(25);
         boolean b = (l > System.currentTimeMillis());
-        boolean b1 = lastScanMap.size() < 10;
+        boolean b1 = lastScanMap.size() > 10;
         String titleStr = "title";
-        if (!b1 && b) {
+        if (b1 && b) {
             long l1 = TimeUnit.MILLISECONDS.toSeconds(l - System.currentTimeMillis());
             String msg = l1 + " seconds (" + (float) l1 / ConstantsFor.ONE_HOUR_IN_MIN + " min) left";
             LOGGER.warn(msg);
-            String s = lastNetScan.writeObject();
             model
                 .addAttribute("left", msg)
-                .addAttribute("pc", new TForms().fromArray(lastScanMap, true))
-                .addAttribute(titleStr, s);
+                .addAttribute("pc", new TForms().fromArray(lastScanMap, true));
         } else if (request.getQueryString() != null) {
             netScannerSvc.setQer(request.getQueryString());
             List<String> pcNames = netScannerSvc.getPCNames(request.getQueryString());
@@ -83,17 +83,14 @@ public class NetScanCtr {
                 .addAttribute("pc", new TForms().fromArray(pCsAsync));
             properties.setProperty("lastscan", System.currentTimeMillis() + "");
             initProperties.delProps();
-            String s = lastNetScan.writeObject();
-            properties.setProperty("serial", s);
             initProperties.setProps(properties);
         }
         model
             .addAttribute("netScannerSvc", netScannerSvc)
-            .addAttribute("thePc", netScannerSvc.getThePc());
-        model.addAttribute("title", "First Scan: 2018-05-05");
+            .addAttribute("thePc", netScannerSvc.getThePc())
+            .addAttribute("title", "First Scan: 2018-05-05");
         return "netscan";
     }
-
     @PostMapping ("/netscan")
     public void pcNameForInfo(@ModelAttribute NetScannerSvc netScannerSvc, BindingResult result, Model model) {
         this.netScannerSvc = netScannerSvc;
