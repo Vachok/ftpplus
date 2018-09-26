@@ -3,6 +3,8 @@ package ru.vachok.networker;
 
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import ru.vachok.mysqlandprops.props.DBRegProperties;
+import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.logic.PassGenerator;
 
@@ -12,6 +14,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.SecureRandom;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 
@@ -49,6 +52,27 @@ public enum ConstantsFor {
     }
 
     public static final AutowireCapableBeanFactory BEAN_FACTORY = new AppCtx().getAutowireCapableBeanFactory();
+
+    public static long getBuildStamp() {
+        long buildSt;
+        InitProperties initProperties = new DBRegProperties(APP_NAME + ConstantsFor.class.getSimpleName());
+        Properties props = initProperties.getProps();
+        try{
+            String hostName = InetAddress.getLocalHost().getHostName();
+            if(hostName.equalsIgnoreCase("home")){
+                props.setProperty("build", System.currentTimeMillis() + "");
+                initProperties.delProps();
+                initProperties.setProps(props);
+                return System.currentTimeMillis();
+            }
+            else{
+                return Long.parseLong(props.getProperty("build", "1"));
+            }
+        }
+        catch(UnknownHostException e){
+            return 1L;
+        }
+    }
 
     public static final String NO0027 = "10.200.213.85";
 

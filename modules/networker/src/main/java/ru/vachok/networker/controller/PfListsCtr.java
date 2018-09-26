@@ -23,10 +23,7 @@ import java.rmi.UnexpectedException;
 import java.rmi.UnknownHostException;
 import java.security.SecureRandom;
 import java.time.LocalTime;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.*;
 
 
@@ -77,8 +74,8 @@ public class PfListsCtr {
         }
         InitProperties initProperties = new DBRegProperties(ConstantsFor.APP_NAME + SOURCE_CLASS);
         Properties properties = initProperties.getProps();
-        Long lastScan = Long.parseLong(properties.getProperty("pfscan"));
-        int aThreadsLast = Integer.parseInt(properties.getProperty("thr"));
+        Long lastScan = Long.parseLong(properties.getProperty("pfscan", "1"));
+        int aThreadsLast = Integer.parseInt(properties.getProperty("thr", "1"));
 
         try {
             visitorSrv.makeVisit(request);

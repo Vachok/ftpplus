@@ -203,28 +203,46 @@ public class TForms {
         }
     }
 
-    public String adUsersMap(Map<Integer, ADUser> adUsers) {
+    public String adUsersMap(List<ADUser> adUsers, boolean br) {
         brStringBuilder.append("<p>");
-        Collection<ADUser> values = adUsers.values();
-        for (ADUser ad : values) {
+        nStringBuilder.append("\n");
+        for(ADUser ad : adUsers){
             brStringBuilder
                 .append(ad.toString())
                 .append("<br>");
+            nStringBuilder
+                .append(ad.toString())
+                .append("\n");
         }
         brStringBuilder.append("</p>");
-        return brStringBuilder.toString();
+        nStringBuilder.append("\n");
+        if(br){
+            return brStringBuilder.toString();
+        }
+        else{
+            return nStringBuilder.toString();
+        }
     }
 
-    public String adPCMap(Map<Integer, ADComputer> adComputers) {
+    public String adPCMap(List<ADComputer> adComputers, boolean br) {
         brStringBuilder.append("<p>");
-        Collection<ADComputer> values = adComputers.values();
-        for(ADComputer ad : values){
+        nStringBuilder.append("\n");
+        for(ADComputer ad : adComputers){
             brStringBuilder
                 .append(ad.toString())
                 .append("<br>");
+            nStringBuilder
+                .append(ad.toString())
+                .append("\n\n");
         }
         brStringBuilder.append("</p>");
-        return brStringBuilder.toString();
+        nStringBuilder.append("\n\n\n");
+        if(br){
+            return brStringBuilder.toString();
+        }
+        else{
+            return nStringBuilder.toString();
+        }
     }
 
     public String adMap(Map<ADComputer, ADUser> adComputerADUserMap) {

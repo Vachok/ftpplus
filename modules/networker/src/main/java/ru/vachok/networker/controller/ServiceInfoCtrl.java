@@ -31,15 +31,13 @@ public class ServiceInfoCtrl {
 
     private VisitorSrv visitorSrv;
 
-    private Visitor visitor;
-
     private CookieShower cookieShower;
 
     /*Instances*/
     @Autowired
     public ServiceInfoCtrl(VisitorSrv visitorSrv) {
         this.visitorSrv = visitorSrv;
-        this.visitor = visitorSrv.getVisitor();
+        Visitor visitor = visitorSrv.getVisitor();
         this.cookieShower = visitorSrv.getCookieShower();
     }
 
@@ -58,7 +56,8 @@ public class ServiceInfoCtrl {
             model.addAttribute("ping", pingGit());
             model.addAttribute("urls", new TForms().fromArray(AppCtx.getClassLoaderURLList()));
             model.addAttribute("request", prepareRequest(request));
-            model.addAttribute("visit", new AppComponents().versionInfo().toString());
+            model.addAttribute("visit", AppComponents
+                .versionInfo().toString() + " (current stamp: " + System.currentTimeMillis() + ")");
             model.addAttribute("genstamp", "Generated: " +
                 new Date().getTime() +
                 ". Up: " +

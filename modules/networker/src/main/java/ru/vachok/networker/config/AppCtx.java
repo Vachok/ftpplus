@@ -61,13 +61,16 @@ public class AppCtx extends AnnotationConfigApplicationContext {
 
     public static Queue<String> getClassLoaderURLList() {
         ClassLoader classLoader = configApplicationContext.getClassLoader();
-        ClassLoader parent = classLoader.getParent();
+        ClassLoader parent = classLoader!=null? classLoader.getParent(): null;
 
-        String msg = "<p><h3><center>Class Loaders</center></h3><h4>Loader from context:</h4>" +
-            classLoader.getClass().getTypeName() +
-            "<h4>Loader from parent:</h4><br>" +
-            parent.getClass().getTypeName() +
-            "</p>";
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("<p><h3><center>Class Loaders</center></h3><h4>Loader from context:</h4>");
+        stringBuilder.append(classLoader.getClass().getTypeName());
+        stringBuilder.append("<h4>Loader from " +
+            "parent:</h4><br>");
+        stringBuilder.append(parent.getClass().getTypeName());
+        stringBuilder.append("</p>");
+        String msg = stringBuilder.toString();
         outQueue.add(msg);
         return outQueue;
     }

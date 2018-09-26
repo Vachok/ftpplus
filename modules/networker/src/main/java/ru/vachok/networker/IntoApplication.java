@@ -11,6 +11,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.scheduling.annotation.EnableScheduling;
 import ru.vachok.mysqlandprops.EMailAndDB.SpeedRunActualize;
 import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.componentsrepo.VersionInfo;
 import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.config.ResLoader;
 
@@ -33,6 +34,11 @@ public class IntoApplication {
      {@link AppComponents#getLogger()}
      */
     private static final Logger LOGGER = AppComponents.getLogger();
+
+    /*Fields*/
+    private static final long BUILD_ST = ConstantsFor.getBuildStamp();
+
+    private static final VersionInfo VERSION_INFO = AppComponents.versionInfo();
 
     /**
      {@link SpringApplication}
@@ -59,6 +65,7 @@ public class IntoApplication {
         SPRING_APPLICATION.setResourceLoader(new ResLoader());
         SpringApplication.run(IntoApplication.class, args);
         infoForU(appCtx);
+        VERSION_INFO.setTimeStamp(BUILD_ST + "");
     }
 
     /**

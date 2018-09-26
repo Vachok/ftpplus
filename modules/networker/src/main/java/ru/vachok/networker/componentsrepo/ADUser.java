@@ -244,23 +244,16 @@ public class ADUser {
 
     @Override
     public String toString() {
-        return new StringJoiner(", ", ADUser.class.getSimpleName() + "[", "]")
-            .add("defaultDomainName='" + defaultDomainName + "'")
-            .add("distinguishedName='" + distinguishedName + "'")
-            .add("enabled='" + enabled + "'")
-            .add("givenName='" + givenName + "'")
-            .add("name='" + name + "'")
-            .add("objectClass='" + objectClass + "'")
-            .add("objectGUID='" + objectGUID + "'")
-            .add("samAccountName='" + samAccountName + "'")
-            .add("SID='" + SID + "'")
-            .add("surname='" + surname + "'")
-            .add("userDomain='" + userDomain + "'")
-            .add("userName='" + userName + "'")
-            .add("userPhoto=" + userPhoto)
-            .add("userPrincipalName='" + userPrincipalName + "'")
-            .add("userRealName='" + userRealName + "'")
-            .add("userSurname='" + userSurname + "'")
+        return new StringJoiner("", "\n" + ADUser.class.getSimpleName() + "\n[", "\n----------------")
+            .add("\ndistinguishedName= " + distinguishedName + ";")
+            .add("\nenabled= " + enabled + ";")
+            .add("\ngivenName= " + givenName + ";")
+            .add("\nname= " + name + "'")
+            .add("\nobjectGUID= " + objectGUID + ";")
+            .add("\nsamAccountName= " + samAccountName + ";")
+            .add("\nSID= " + SID + ";")
+            .add("\nsurname= " + surname + "'")
+            .add("\nuserPrincipalName= " + userPrincipalName + ";")
             .toString();
     }
 }

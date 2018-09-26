@@ -10,7 +10,6 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.ADComputer;
 import ru.vachok.networker.componentsrepo.ADUser;
 import ru.vachok.networker.componentsrepo.AppComponents;
-import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.logic.PassGenerator;
 import ru.vachok.networker.logic.SimpleCalculator;
 import ru.vachok.networker.services.ADSrv;
@@ -56,8 +55,12 @@ public class UtilitCTRL {
 
     @GetMapping("/ad")
     public String adUsersComps(HttpServletRequest request, Model model) {
-        if (ConstantsFor.getPcAuth(request)) return adFoto(request, model);
-        else throw new UnsupportedOperationException("Ещё не совсем готово");
+        if(ConstantsFor.getPcAuth(request)){
+            return adFoto(model);
+        }
+        else{
+            throw new UnsupportedOperationException("Ещё не совсем готово");
+        }
     }
 
     public double getSumm(Queue<Double> forCountQueue) {
@@ -68,17 +71,14 @@ public class UtilitCTRL {
         return v;
     }
 
-    private String adFoto(HttpServletRequest request, Model model) {
+    private String adFoto(Model model) {
         ADSrv adSrv = AppComponents.adSrv();
         adSrv.run();
-        ADComputer adComputer = adSrv.getAdComputer();
-        ADUser adUser = adSrv.getAdUser();
-        new AppCtx().getAutowireCapableBeanFactory();
-        List<ADComputer> adComputers = adComputer.getAdComputers();
-        List<ADUser> adUsers = adUser.getAdUsers();
+        List<ADComputer> adComputers = adSrv.getAdComputer().getAdComputers();
+        List<ADUser> adUsers = adSrv.getAdUser().getAdUsers();
         StringBuilder stringBuilder = new StringBuilder();
-        model.addAttribute("pcs", new TForms());
-        model.addAttribute("users", adUsers);
+        model.addAttribute("pcs", new TForms().adPCMap(adComputers, false));
+        model.addAttribute("users", new TForms().adUsersMap(adUsers, false));
         adComputers.forEach((x -> stringBuilder.append(x.toString())));
         stringBuilder.append("<br>");
         return "ok";

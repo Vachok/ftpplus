@@ -17,10 +17,7 @@ import ru.vachok.networker.logic.DBMessenger;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -132,7 +129,7 @@ public class NetScannerSvc {
             String retLogs = new TForms().fromArray(lastLogs);
             mailMSG.info(
                 SOURCE_CLASS,
-                upTime + " min uptime",
+                upTime + " min uptime. " + AppComponents.versionInfo().toString(),
                 retLogs + " \n" + new TForms().fromArray(pcNames));
         }).start();
 

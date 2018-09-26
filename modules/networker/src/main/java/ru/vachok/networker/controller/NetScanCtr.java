@@ -18,10 +18,7 @@ import ru.vachok.networker.componentsrepo.LastNetScan;
 import ru.vachok.networker.services.NetScannerSvc;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 
@@ -54,7 +51,7 @@ public class NetScanCtr {
     @GetMapping("/netscan")
     public String netScan(HttpServletRequest request, Model model) {
         lastScanMap = lastNetScan.getNetWork();
-        String propertyLastScan = properties.getProperty("lastscan");
+        String propertyLastScan = properties.getProperty("lastscan", "1");
         long l = Long.parseLong(propertyLastScan) + TimeUnit.MINUTES.toMillis(25);
         boolean b = (l > System.currentTimeMillis());
         boolean b1 = lastScanMap.size() > 10;

@@ -34,7 +34,7 @@ public class AppComponents {
         return new DBMessenger();
     }
 
-    @Bean()
+    @Bean
     @Scope ("singleton")
     public NetScannerSvc netScan() {
         return new NetScannerSvc();
@@ -70,7 +70,7 @@ public class AppComponents {
     }
 
     @Bean("versioninfo")
-    public VersionInfo versionInfo() {
+    public static VersionInfo versionInfo() {
         VersionInfo versionInfo = new VersionInfo();
         versionInfo.setTimeStamp(System.currentTimeMillis() + "");
         return versionInfo;
@@ -85,4 +85,5 @@ public class AppComponents {
     public CookTheCookie cookTheCookie(Visitor visitor) {
         return new CookTheCookie(visitor);
     }
+
 }
