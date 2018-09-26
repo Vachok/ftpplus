@@ -4,8 +4,8 @@ package ru.vachok.networker.componentsrepo;
 import org.springframework.stereotype.Component;
 
 import java.awt.image.BufferedImage;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -51,7 +51,7 @@ public class ADUser {
 
     private String givenName;
 
-    private Map<Integer, ADUser> adUsers = new ConcurrentHashMap<>();
+    private List<ADUser> adUsers = new ArrayList<>();
 
     public String getUserPrincipalName() {
         return userPrincipalName;
@@ -133,11 +133,11 @@ public class ADUser {
         this.distinguishedName = distinguishedName;
     }
 
-    public Map<Integer, ADUser> getAdUsers() {
+    public List<ADUser> getAdUsers() {
         return adUsers;
     }
 
-    public void setAdUsers(Map<Integer, ADUser> adUsers) {
+    public void setAdUsers(List<ADUser> adUsers) {
         this.adUsers = adUsers;
     }
 

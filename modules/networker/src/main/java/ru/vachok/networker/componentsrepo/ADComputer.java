@@ -3,8 +3,9 @@ package ru.vachok.networker.componentsrepo;
 
 import org.springframework.stereotype.Component;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.ArrayList;
+import java.util.List;
+
 
 /**
  <h1>get-adcomputer</h1>
@@ -31,13 +32,13 @@ public class ADComputer {
 
     private String userPrincipalName;
 
-    private Map<Integer, ADComputer> adComputers = new ConcurrentHashMap<>();
+    private List<ADComputer> adComputers = new ArrayList<>();
 
-    public Map<Integer, ADComputer> getAdComputers() {
+    public List<ADComputer> getAdComputers() {
         return adComputers;
     }
 
-    public void setAdComputers(Map<Integer, ADComputer> adComputers) {
+    public void setAdComputers(List<ADComputer> adComputers) {
         this.adComputers = adComputers;
     }
 
@@ -116,7 +117,7 @@ public class ADComputer {
     @Override
     public String toString() {
         return "ADComputer{" +
-            ", distinguishedName='" + distinguishedName + '\'' +
+            "distinguishedName='" + distinguishedName + '\'' +
             ", dnsHostName='" + dnsHostName + '\'' +
             ", enabled='" + enabled + '\'' +
             ", name='" + name + '\'' +

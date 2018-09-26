@@ -5,7 +5,6 @@ import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.ADComputer;
 import ru.vachok.networker.componentsrepo.ADUser;
 import ru.vachok.networker.componentsrepo.AppComponents;
@@ -14,7 +13,7 @@ import ru.vachok.networker.logic.PassGenerator;
 import ru.vachok.networker.services.ADSrv;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Map;
+import java.util.List;
 
 
 /**
@@ -57,8 +56,15 @@ public class UtilitCTRL {
     public String adUsersComps(HttpServletRequest request, Model model) {
         ADSrv adSrv = AppComponents.adSrv();
         adSrv.run();
-        Map<ADComputer, ADUser> adComputerADUserMap = adSrv.getAdComputerADUserMap();
-        model.addAttribute("pcs", new TForms().adMap(adComputerADUserMap));
+        ADComputer adComputer = adSrv.getAdComputer();
+        ADUser adUser = adSrv.getAdUser();
+        new AppCtx().getAutowireCapableBeanFactory();
+        List<ADComputer> adComputers = adComputer.getAdComputers();
+        List<ADUser> adUsers = adUser.getAdUsers();
+        StringBuilder stringBuilder = new StringBuilder();
+        adComputers.forEach((x -> stringBuilder.append(x.toString())));
+        stringBuilder.append("<br>");
+        model.addAttribute("pcs", stringBuilder.toString());
         return "ok";
     }
 }

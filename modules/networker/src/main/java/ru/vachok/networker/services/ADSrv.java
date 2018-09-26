@@ -6,34 +6,30 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.stereotype.Service;
-import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.ADComputer;
 import ru.vachok.networker.componentsrepo.ADUser;
 import ru.vachok.networker.config.AppCtx;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
 
 /**
  <h1></h1>
 
  @since 25.09.2018 (15:10) */
-@Service("adsrv")
+@Service ("adsrv")
 public class ADSrv implements Runnable {
 
+    /*Fields*/
     private static final Logger LOGGER = LoggerFactory.getLogger(ADSrv.class.getName());
 
     private ADUser adUser;
-
-    public ADUser getAdUser() {
-        return adUser;
-    }
-
-    public ADComputer getAdComputer() {
-        return adComputer;
-    }
 
     private ADComputer adComputer;
 
@@ -43,12 +39,21 @@ public class ADSrv implements Runnable {
 
     private AutowireCapableBeanFactory autowireCapableBeanFactory = new AppCtx().getAutowireCapableBeanFactory();
 
+    private Map<ADComputer, ADUser> adComputerADUserMap = new ConcurrentHashMap<>();
+
+    public ADUser getAdUser() {
+        return adUser;
+    }
+
+    public ADComputer getAdComputer() {
+        return adComputer;
+    }
+
     public Map<ADComputer, ADUser> getAdComputerADUserMap() {
         return adComputerADUserMap;
     }
 
-    private Map<ADComputer, ADUser> adComputerADUserMap = new ConcurrentHashMap<>();
-
+    /*Instances*/
     @Autowired
     public ADSrv(ADUser adUser, ADComputer adComputer) {
         this.adUser = adUser;
@@ -57,105 +62,145 @@ public class ADSrv implements Runnable {
 
     @Override
     public void run() {
-        fileRead();
+        streamRead();
 
     }
 
-    private void fileRead() {
-
-        try(FileInputStream resourceAsStream = ( FileInputStream ) getClass().getResourceAsStream("/static/texts/computers.txt");
-            BufferedInputStream bufferedInputStream = new BufferedInputStream(resourceAsStream)){
-            byte[] bytes = new byte[ConstantsFor.KBYTE * 500];
-            while(bufferedInputStream.available() > 0){
-                int read = bufferedInputStream.read(bytes, 0, ConstantsFor.KBYTE * 500);
+    private void streamRead() {
+        String msg;
+        try(
+            InputStream compInputStream = getClass().getResourceAsStream("/static/texts/computers.txt");
+            InputStream usrInputStream = getClass().getResourceAsStream("/static/texts/users.txt")
+        ){
+            int i = compInputStream.available();
+            msg = "Computers to read " + i + " bytes";
+            byte[] compBytes = new byte[i];
+            while(compInputStream.available() > 0){
+                i = compInputStream.read(compBytes, 0, i);
             }
+            LOGGER.info(msg);
+
+            i = usrInputStream.available();
+            msg = "Bytes to read " + i;
+            byte[] userBytes = new byte[i];
+            while(usrInputStream.available() > 0){
+                i = usrInputStream.read(userBytes, 0, i);
+            }
+            LOGGER.info(msg);
+
+            userS = new String(userBytes, StandardCharsets.UTF_8).split("\n\r");
+            compS = new String(compBytes, StandardCharsets.UTF_8).split("\n\r");
+
+            List<ADUser> adUserList = userSetter();
+
+            adUser.setAdUsers(adUserList);
+            List<ADComputer> adComputers = adComputerSetter();
+            final ADUser adUser = new ADUser();
+            final ADComputer adComputer = new ADComputer();
+            this.adComputer = adComputer;
+            this.adUser = adUser;
+            adComputer.setAdComputers(adComputers);
+            adUser.setAdUsers(adUserList);
         }
         catch(IOException e){
             LOGGER.error(e.getMessage(), e);
         }
-    }
-
-    private void streamRead() {
-        StringBuilder userBuilder = new StringBuilder();
-        StringBuilder pcBuilder = new StringBuilder();
-        try (
-            InputStream compInputStream = getClass().getResourceAsStream("/static/texts/computers.txt");
-            InputStream usrInputStream = getClass().getResourceAsStream("/static/texts/users.txt")) {
-            int i = ConstantsFor.KBYTE;
-            byte[] compBytes = new byte[i];
-            while (compInputStream.available() > 0) {
-                i = compInputStream.read(compBytes, 0, i);
-                pcBuilder.append(new String(compBytes, StandardCharsets.UTF_8));
-            }
-            String msg = "Computers read " + i + " bytes";
-            LOGGER.info(msg);
-
-            int j = ConstantsFor.KBYTE;
-            byte[] userBytes = new byte[j];
-            while (usrInputStream.available() > 0) {
-                j = usrInputStream.read(userBytes, 0, j);
-                userBuilder.append(new String(compBytes, StandardCharsets.UTF_8));
-            }
-            String msg1 = "Users read " + j + " bytes";
-            LOGGER.info(msg1);
-
-            userS = userBuilder.toString().split("\n");
-            compS = pcBuilder.toString().split("\n");
-            userSetter();
-        } catch (IOException e) {
-            LOGGER.error(e.getMessage(), e);
-        }
-    }
-
-    private void userSetter() {
-        Map<Integer, ADUser> adUsers = adUser.getAdUsers();
-        int indexUser = 0;
-        for (String s : userS) {
-            indexUser++;
-            try {
-                if (s.contains("DistinguishedName")) adUser.setDistinguishedName(s.split(": ")[1]);
-                if (s.contains("Enabled")) adUser.setEnabled(s.split(": ")[1]);
-                if (s.contains("GivenName")) adUser.setGivenName(s.split(": ")[1]);
-                if (s.contains("Name")) adUser.setName(s.split(": ")[1]);
-                if (s.contains("ObjectClass")) adUser.setObjectClass(s.split(": ")[1]);
-                if (s.contains("ObjectGUID")) adUser.setObjectGUID(s.split(": ")[1]);
-                if (s.contains("SamAccountName")) adUser.setSamAccountName(s.split(": ")[1]);
-                if (s.contains("SID")) adUser.setSID(s.split(": ")[1]);
-                if (s.contains("Surname")) adUser.setSurname(s.split(": ")[1]);
-                if (s.contains("UserPrincipalName")) adUser.setUserPrincipalName(s.split(": ")[1]);
-            }
-            catch(ArrayIndexOutOfBoundsException ignore){
-                //
-            }
-            adUsers.put(indexUser, adUser);
-        }
-        String msg = adUsers.size() + " adUsers MAP";
+        msg = adComputerADUserMap.size() + " adComputerADUserMap size";
         LOGGER.info(msg);
-        adUser.setAdUsers(adUsers);
-        Map<Integer, ADComputer> adComputers = adComputer.getAdComputers();
-        int index = 0;
-        for (String s : compS) {
+    }
+
+    private List<ADUser> userSetter() {
+        List<ADUser> adUserList = new ArrayList<>();
+        int indexUser = 0;
+        for(String s : userS){
+            this.adUser = new ADUser();
+            indexUser++;
+            String[] sS = s.split("\r\n");
             try{
-                index++;
-                if (s.contains("DistinguishedName")) adComputer.setDistinguishedName(s.split(": ")[1]);
-                if (s.contains("DNSHostName")) adComputer.setDnsHostName(s.split(": ")[1]);
-                if (s.contains("Enabled")) adComputer.setEnabled(s.split(": ")[1]);
-                if (s.contains("Name")) adComputer.setName(s.split(": ")[1]);
-                if (s.contains("ObjectClass")) adComputer.setObjectClass(s.split(": ")[1]);
-                if (s.contains("ObjectGUID")) adComputer.setObjectGUID(s.split(": ")[1]);
-                if (s.contains("SamAccountName")) adComputer.setSamAccountName(s.split(": ")[1]);
-                if (s.contains("SID")) adComputer.setSID(s.split(": ")[1]);
-                if (s.contains("UserPrincipalName")) adComputer.setUserPrincipalName(s.split(": ")[1]);
-                adComputers.put(index, adComputer);
-                LOGGER.info(adComputer.toString());
+                for(String ssStr : sS){
+                    if(ssStr.contains("DistinguishedName")){
+                        this.adUser.setDistinguishedName(ssStr.split(": ")[1]);
+                    }
+                    if(ssStr.contains("Enabled")){
+                        this.adUser.setEnabled(ssStr.split(": ")[1]);
+                    }
+                    if(ssStr.contains("GivenName")){
+                        this.adUser.setGivenName(ssStr.split(": ")[1]);
+                    }
+                    if(ssStr.contains("Name")){
+                        this.adUser.setName(ssStr.split(": ")[1]);
+                    }
+                    if(ssStr.contains("ObjectClass")){
+                        this.adUser.setObjectClass(ssStr.split(": ")[1]);
+                    }
+                    if(ssStr.contains("ObjectGUID")){
+                        this.adUser.setObjectGUID(ssStr.split(": ")[1]);
+                    }
+                    if(ssStr.contains("SamAccountName")){
+                        this.adUser.setSamAccountName(ssStr.split(": ")[1]);
+                    }
+                    if(ssStr.contains("SID")){
+                        this.adUser.setSID(ssStr.split(": ")[1]);
+                    }
+                    if(ssStr.contains("Surname")){
+                        this.adUser.setSurname(ssStr.split(": ")[1]);
+                    }
+                    if(ssStr.contains("UserPrincipalName")){
+                        this.adUser.setUserPrincipalName(ssStr.split(": ")[1]);
+                    }
+                }
             }
-            catch(ArrayIndexOutOfBoundsException ignore){
-                //
+            catch(ArrayIndexOutOfBoundsException e){
+                LOGGER.error(e.getMessage(), e);
             }
+            adUserList.add(this.adUser);
         }
-        String msg2 = adComputers.size() + " adcomps size MAP";
-        LOGGER.info(msg2);
-        adComputer.setAdComputers(adComputers);
-        adComputerADUserMap.put(adComputer, adUser);
+        return adUserList;
+    }
+
+    private List<ADComputer> adComputerSetter() {
+        List<ADComputer> adComputers = new ArrayList<>();
+        int index = 0;
+        for(String s : compS){
+            index++;
+            this.adComputer = new ADComputer();
+            String[] sS = s.split("\r\n");
+            try{
+                for(String ssStr : sS){
+                    if(s.contains("DistinguishedName")){
+                        this.adComputer.setDistinguishedName(ssStr.split(": ")[1]);
+                    }
+                    if(s.contains("DNSHostName")){
+                        this.adComputer.setDnsHostName(ssStr.split(": ")[1]);
+                    }
+                    if(s.contains("Enabled")){
+                        this.adComputer.setEnabled(ssStr.split(": ")[1]);
+                    }
+                    if(s.contains("Name")){
+                        this.adComputer.setName(ssStr.split(": ")[1]);
+                    }
+                    if(s.contains("ObjectClass")){
+                        this.adComputer.setObjectClass(ssStr.split(": ")[1]);
+                    }
+                    if(s.contains("ObjectGUID")){
+                        this.adComputer.setObjectGUID(ssStr.split(": ")[1]);
+                    }
+                    if(s.contains("SamAccountName")){
+                        this.adComputer.setSamAccountName(ssStr.split(": ")[1]);
+                    }
+                    if(s.contains("SID")){
+                        this.adComputer.setSID(ssStr.split(": ")[1]);
+                    }
+                    if(s.contains("UserPrincipalName")){
+                        this.adComputer.setUserPrincipalName(ssStr.split(": ")[1]);
+                    }
+                }
+            }
+            catch(ArrayIndexOutOfBoundsException e){
+                LOGGER.error(e.getMessage(), e);
+            }
+            adComputers.add(this.adComputer);
+        }
+        return adComputers;
     }
 }
