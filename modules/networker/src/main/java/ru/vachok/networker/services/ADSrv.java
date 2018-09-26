@@ -154,6 +154,7 @@ public class ADSrv implements Runnable {
                 LOGGER.error(e.getMessage(), e);
             }
             adUserList.add(this.adUser);
+            LOGGER.info("Adding user: " + indexUser + ") " + adUser.getName());
         }
         return adUserList;
     }
@@ -200,6 +201,7 @@ public class ADSrv implements Runnable {
                 LOGGER.error(e.getMessage(), e);
             }
             adComputers.add(this.adComputer);
+            LOGGER.info("Adding pc: " + index + ") " + adComputer.getName());
         }
         return adComputers;
     }

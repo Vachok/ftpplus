@@ -37,7 +37,7 @@ public class MatrixSRV {
         this.countDB = countDB;
     }
 
-    public String getWorkPos() {
+    public String getWorkPos() throws IllegalStateException {
         return workPos;
     }
 

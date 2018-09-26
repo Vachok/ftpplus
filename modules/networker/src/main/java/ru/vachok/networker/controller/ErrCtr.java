@@ -6,18 +6,24 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
+import java.util.concurrent.TimeUnit;
 
 
 /**
- * The type Err control.
+ The type Err control.
  */
 @Controller
 public class ErrCtr implements ErrorController {
+
+    private static final String H_2_CENTER = "<h2><center>";
+
+    private static final String H_2_CENTER_CLOSE = "</h2></center>";
 
     @Override
     public String getErrorPath() {
@@ -25,33 +31,54 @@ public class ErrCtr implements ErrorController {
     }
 
     /**
-     * Err handle string.
-     *
-     * @param httpServletRequest the http servlet request
-     * @return the string
+     Err handle H_2_CENTER.
+
+     @param httpServletRequest the http servlet request
+     @return the H_2_CENTER
      */
     @GetMapping("/error")
     public String errHandle(HttpServletRequest httpServletRequest, Model model) {
         Integer statCode = (Integer) httpServletRequest.getAttribute("javax.servlet.error.status_code");
         Exception exception = (Exception) httpServletRequest.getAttribute("javax.servlet.error.exception");
-        String eMessage = "Скорее всего, этой страницы просто нет, " + httpServletRequest.getRemoteAddr() + ".";
-        String err = "К сожалению, вынужден признать, тут ошибка... " + statCode;
+        model.addAttribute("eMessage", httpServletRequest
+            .getRequestURL() +
+            " тут нет того, что ищешь.<br>" +
+            H_2_CENTER.replaceAll("2", "4") +
+            httpServletRequest
+                .getSession()
+                .getServletContext()
+                .getVirtualServerName() +
+            H_2_CENTER_CLOSE.replaceAll("2", "4"));
+        model.addAttribute("statcode", H_2_CENTER + statCode + H_2_CENTER_CLOSE);
+
         if (exception != null) {
-            eMessage = exception.getMessage();
+            String eMessage = H_2_CENTER + exception.getMessage() + H_2_CENTER_CLOSE;
+            String eLocalizedMessage = H_2_CENTER + exception.getMessage() + H_2_CENTER_CLOSE;
+            String err = "Научно-Исследовательский Институт Химии Удобрений и Ядов" + statCode;
             StackTraceElement[] stackTrace = exception.getStackTrace();
+            String traceStr = new TForms().fromArray(stackTrace);
+
+            long lastAccessedTime = httpServletRequest.getSession().getLastAccessedTime();
+
+            if (!exception.getMessage().equals(exception.getLocalizedMessage())) eMessage = eMessage + eLocalizedMessage;
+
+            if (ConstantsFor.getPcAuth(httpServletRequest)) model.addAttribute("stackTrace", traceStr);
+
             model.addAttribute("eMessage", eMessage);
-            model.addAttribute("stackTrace", stackTrace);
+            model.addAttribute("statcode", H_2_CENTER + statCode + H_2_CENTER_CLOSE);
+            model.addAttribute("title", TimeUnit.MILLISECONDS
+                .toSeconds(lastAccessedTime - httpServletRequest.getSession().getCreationTime()) + " sec. sess.");
+            model.addAttribute("ref", httpServletRequest.getHeader("referer"));
+            model.addAttribute("err", err);
         }
-        model.addAttribute("eMessage", eMessage);
-        model.addAttribute("err", err);
         return "error";
     }
 
     /**
-     * Exit app.
-     *
-     * @param httpServletRequest the http servlet request
-     * @throws IOException the io exception
+     Exit app.
+
+     @param httpServletRequest the http servlet request
+     @throws IOException the io exception
      */
     @GetMapping("/stop")
     public String exitApp(HttpServletRequest httpServletRequest, HttpServletResponse response) throws IOException {

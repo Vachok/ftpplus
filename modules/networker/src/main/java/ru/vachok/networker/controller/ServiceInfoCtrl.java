@@ -63,6 +63,7 @@ public class ServiceInfoCtrl {
                 new Date().getTime() +
                 ". Up: " +
                 TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - ConstantsFor.START_STAMP));
+            model.addAttribute("back", request.getHeader("REFERER".toLowerCase()));
             return "vir";
         } else throw new AccessDeniedException("Sorry. Denied");
     }
@@ -74,7 +75,6 @@ public class ServiceInfoCtrl {
             return false;
         }
     }
-
     private String pingGit() {
         try {
             InetAddress byName = InetAddress.getByName("srv-git.eatmeat.ru");

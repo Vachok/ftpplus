@@ -13,18 +13,17 @@ import java.util.Locale;
 
 
 /**
- * @since 14.09.2018 (22:46)
- */
+ @since 14.09.2018 (22:46) */
 @Service("locator")
 public class WhoIsWithSRV {
 
     /**
-     * Simple Name класса, для поиска настроек
+     Simple Name класса, для поиска настроек
      */
     private static final String SOURCE_CLASS = WhoIsWithSRV.class.getSimpleName();
 
     /**
-     * {@link }
+     {@link }
      */
     private static final Logger LOGGER = AppComponents.getLogger();
 
@@ -36,24 +35,22 @@ public class WhoIsWithSRV {
         WhoisClient whoisClient = new WhoisClient();
         try {
             geoLocation.append("<p>");
-            whoisClient.connect("whois.ripe.net");
-            String queryWhoIs = whoisClient.query(inetAddr);
-            queryWhoIs = queryWhoIs.replace("% The objects are in RPSL format.\n" +
+            geoLocation.append(whoIsQuery(inetAddr));
+            String replace = geoLocation.toString().replace("% The objects are in RPSL format.\n" +
                 "%\n" +
                 "% The RIPE Database is subject to Terms and Conditions.\n" +
                 "% See http://www.ripe.net/db/support/db-terms-conditions.pdf\n" +
                 "\n" +
                 "% Note: this output has been filtered.\n" +
                 "%       To receive output for a database update, use the \"-B\" flag.\n", "");
-
-            if (queryWhoIs.contains("ERROR:101")) {
+            if (replace.contains("ERROR:101")) {
                 String hostAddress = InetAddress.getByName(inetAddr).getHostAddress();
-                queryWhoIs = new WhoIsWithSRV().whoIs(hostAddress);
+                replace = new WhoIsWithSRV().whoIs(hostAddress);
                 whoisClient.disconnect();
-                return queryWhoIs;
+                return replace;
             }
-            geoLocation.append(queryWhoIs).append("</p>");
-            whoisClient.disconnect();
+            replace = replace + "<p><h4>whois.ripe.net</h4><br>" + whoisClient.query(inetAddr);
+            geoLocation.append(replace).append("</p>");
         } catch (IOException | RuntimeException e) {
             geoLocation.append(e.getMessage()).append("\n").append(new TForms().fromArray(e.getStackTrace()));
         }
@@ -63,5 +60,48 @@ public class WhoIsWithSRV {
         String msg = geoLocation.toString();
         LOGGER.info(msg);
         return msg;
+    }
+
+    private String whoIsQuery(String inetAddr) throws IOException {
+        WhoisClient whoisClient = new WhoisClient();
+        StringBuilder whoIsQBuilder = new StringBuilder();
+        String[] whoisServers = {"whois.ripe.net", "whois.arin.net", "whois.apnic.net", "whois.lacnic.net", "whois.afrinic.net"};
+        for (String whoIsServer : whoisServers) {
+            whoisClient.connect(whoIsServer);
+            whoIsQBuilder
+                .append("<p><h4>")
+                .append(whoIsServer)
+                .append("</h4><br>")
+                .append(whoisClient.query(inetAddr));
+            whoisClient.disconnect();
+        }
+
+        /*
+        whoisClient.connect("whois.arin.net");
+        whoIsQBuilder
+            .append("<p><h4>whois.arin.net</h4><br>")
+            .append(whoisClient.query(inetAddr));
+        whoisClient.disconnect();
+
+        whoisClient.connect("whois.apnic.net");
+        whoIsQBuilder
+            .append("<p><h4>whois.apnic.net</h4><br>")
+            .append(whoisClient.query(inetAddr));
+        whoisClient.disconnect();
+
+        whoisClient.connect("whois.lacnic.net");
+        whoIsQBuilder
+            .append("<p><h4>whois.lacnic.net</h4><br>")
+            .append(whoisClient.query(inetAddr));
+        whoisClient.disconnect();
+
+        whoisClient.connect("whois.afrinic.net");
+        whoIsQBuilder
+            .append("<p><h4>whois.afrinic.net</h4><br>")
+            .append(whoisClient.query(inetAddr));
+        whoisClient.disconnect();*/
+
+        return whoIsQBuilder.toString();
+
     }
 }

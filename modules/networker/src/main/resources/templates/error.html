@@ -3,17 +3,21 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <link rel="stylesheet" type="text/css" media="all" href="red/main.css" th:href="@{css/main.css}"/>
-    <title>НИИХуЯ</title>
+    <title th:text="${title}"></title>
 </head>
-<body bgcolor="#B63E3F">
-<h2 th:text="${error}"/>
-<p th:text="${eMessage}"/>
-<link>
-<a th:href="@{/stop}">Выйти из меня...</a><br>
-<link>
-<a th:href="@{/}">Возврат на главняк</a><br>
-<img th:src="@{images/banner.jpg}">
+<body bgcolor="#B63E3F"/>
+<p th:utext="${eMessage}"/>
+<p th:utext="${statcode}"/>
+<p>
+<center>
+    <a th:href="@{ref}"><img th:src="@{images/banner.jpg}"/></a><br>
+</center>
+</p>
 </body>
 <footer>
+    <a th:href="@{/}">Возврат на главняк</a><br>
+    <p><br>
+        <textarea rows="15" cols="10" th:text="${stackTrace}"/>
+    </p>
 </footer>
 </html>

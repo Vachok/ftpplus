@@ -5,6 +5,7 @@ import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.ADComputer;
 import ru.vachok.networker.componentsrepo.ADUser;
 import ru.vachok.networker.componentsrepo.AppComponents;
@@ -54,6 +55,11 @@ public class UtilitCTRL {
 
     @GetMapping("/ad")
     public String adUsersComps(HttpServletRequest request, Model model) {
+        if (ConstantsFor.getPcAuth(request)) return adFoto(request, model);
+        else throw new UnsupportedOperationException("Ещё не совсем готово");
+    }
+
+    private String adFoto(HttpServletRequest request, Model model) {
         ADSrv adSrv = AppComponents.adSrv();
         adSrv.run();
         ADComputer adComputer = adSrv.getAdComputer();
@@ -62,9 +68,10 @@ public class UtilitCTRL {
         List<ADComputer> adComputers = adComputer.getAdComputers();
         List<ADUser> adUsers = adUser.getAdUsers();
         StringBuilder stringBuilder = new StringBuilder();
+        model.addAttribute("pcs", stringBuilder.toString());
         adComputers.forEach((x -> stringBuilder.append(x.toString())));
         stringBuilder.append("<br>");
-        model.addAttribute("pcs", stringBuilder.toString());
+
         return "ok";
     }
 }

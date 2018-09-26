@@ -21,6 +21,7 @@ import ru.vachok.networker.services.WhoIsWithSRV;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -123,16 +124,23 @@ public class MatrixCtr {
     }
 
     @GetMapping("/matrix")
-    public String showResults(HttpServletRequest request, Model model) {
+    public String showResults(HttpServletRequest request, HttpServletResponse response, Model model) throws IOException {
         new Thread(() -> {
             try {
                 visitorSrv.makeVisit(request);
-            } catch (Exception e) {
+            } catch (IllegalArgumentException | NoSuchMethodException e) {
                 LOGGER.error(e.getMessage(), e);
             }
         }).start();
         model.addAttribute(MATRIX_STRING_NAME, matrixSRV);
-        String workPos = matrixSRV.getWorkPos();
+        String workPos;
+        try {
+            workPos = matrixSRV.getWorkPos();
+        } catch (NullPointerException e) {
+            response.sendError(139, "");
+            throw new IllegalStateException("<br>Строка ввода должности не инициализирована!<br>" +
+                this.getClass().getName() + "<br>");
+        }
         model.addAttribute("workPos", workPos);
         model.addAttribute("headtitle", matrixSRV.getCountDB() + " позиций   " + TimeUnit.MILLISECONDS.toMinutes(
             System.currentTimeMillis() - ConstantsFor.START_STAMP) + " upTime");
