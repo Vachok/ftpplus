@@ -7,7 +7,7 @@
 </head>
 <body>
 <form th:action="@{/matrix}" th:object="${matrix}" method="POST">
-    Интересуемая должность:
+    Введите запрос:
     <input type="text" th:field="*{workPos}"/>
     <br>
     <input type="submit" value="Запрос"/>

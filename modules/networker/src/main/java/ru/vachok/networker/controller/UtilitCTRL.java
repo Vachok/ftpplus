@@ -1,20 +1,23 @@
 package ru.vachok.networker.controller;
 
 
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.ADComputer;
 import ru.vachok.networker.componentsrepo.ADUser;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.logic.PassGenerator;
+import ru.vachok.networker.logic.SimpleCalculator;
 import ru.vachok.networker.services.ADSrv;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.Queue;
 
 
 /**
@@ -24,8 +27,6 @@ import java.util.List;
  @since 22.08.2018 (10:17) */
 @Controller
 public class UtilitCTRL {
-
-    private AutowireCapableBeanFactory autowireCapableBeanFactory = new AppCtx().getAutowireCapableBeanFactory();
 
     /**
      <b>Генератор случайной последовательности. ("/gen")</b>
@@ -59,6 +60,14 @@ public class UtilitCTRL {
         else throw new UnsupportedOperationException("Ещё не совсем готово");
     }
 
+    public double getSumm(Queue<Double> forCountQueue) {
+        SimpleCalculator simpleCalculator = new SimpleCalculator();
+        double v = simpleCalculator.countDoubles(forCountQueue);
+        String msg = v + " = summ";
+        LoggerFactory.getLogger(UtilitCTRL.class.getName()).info(msg);
+        return v;
+    }
+
     private String adFoto(HttpServletRequest request, Model model) {
         ADSrv adSrv = AppComponents.adSrv();
         adSrv.run();
@@ -68,10 +77,10 @@ public class UtilitCTRL {
         List<ADComputer> adComputers = adComputer.getAdComputers();
         List<ADUser> adUsers = adUser.getAdUsers();
         StringBuilder stringBuilder = new StringBuilder();
-        model.addAttribute("pcs", stringBuilder.toString());
+        model.addAttribute("pcs", new TForms());
+        model.addAttribute("users", adUsers);
         adComputers.forEach((x -> stringBuilder.append(x.toString())));
         stringBuilder.append("<br>");
-
         return "ok";
     }
 }

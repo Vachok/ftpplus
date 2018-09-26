@@ -75,33 +75,6 @@ public class WhoIsWithSRV {
                 .append(whoisClient.query(inetAddr));
             whoisClient.disconnect();
         }
-
-        /*
-        whoisClient.connect("whois.arin.net");
-        whoIsQBuilder
-            .append("<p><h4>whois.arin.net</h4><br>")
-            .append(whoisClient.query(inetAddr));
-        whoisClient.disconnect();
-
-        whoisClient.connect("whois.apnic.net");
-        whoIsQBuilder
-            .append("<p><h4>whois.apnic.net</h4><br>")
-            .append(whoisClient.query(inetAddr));
-        whoisClient.disconnect();
-
-        whoisClient.connect("whois.lacnic.net");
-        whoIsQBuilder
-            .append("<p><h4>whois.lacnic.net</h4><br>")
-            .append(whoisClient.query(inetAddr));
-        whoisClient.disconnect();
-
-        whoisClient.connect("whois.afrinic.net");
-        whoIsQBuilder
-            .append("<p><h4>whois.afrinic.net</h4><br>")
-            .append(whoisClient.query(inetAddr));
-        whoisClient.disconnect();*/
-
         return whoIsQBuilder.toString();
-
     }
 }

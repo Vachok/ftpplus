@@ -110,6 +110,40 @@ public class ADComputer {
         return userPrincipalName;
     }
 
+    @Override
+    public int hashCode() {
+        int result = distinguishedName != null ? distinguishedName.hashCode() : 0;
+        result = 31 * result + (dnsHostName != null ? dnsHostName.hashCode() : 0);
+        result = 31 * result + (enabled != null ? enabled.hashCode() : 0);
+        result = 31 * result + (name != null ? name.hashCode() : 0);
+        result = 31 * result + (objectClass != null ? objectClass.hashCode() : 0);
+        result = 31 * result + (objectGUID != null ? objectGUID.hashCode() : 0);
+        result = 31 * result + (samAccountName != null ? samAccountName.hashCode() : 0);
+        result = 31 * result + (SID != null ? SID.hashCode() : 0);
+        result = 31 * result + (userPrincipalName != null ? userPrincipalName.hashCode() : 0);
+        result = 31 * result + (adComputers != null ? adComputers.hashCode() : 0);
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        ADComputer that = (ADComputer) o;
+
+        if (distinguishedName != null ? !distinguishedName.equals(that.distinguishedName) : that.distinguishedName != null) return false;
+        if (dnsHostName != null ? !dnsHostName.equals(that.dnsHostName) : that.dnsHostName != null) return false;
+        if (enabled != null ? !enabled.equals(that.enabled) : that.enabled != null) return false;
+        if (name != null ? !name.equals(that.name) : that.name != null) return false;
+        if (objectClass != null ? !objectClass.equals(that.objectClass) : that.objectClass != null) return false;
+        if (objectGUID != null ? !objectGUID.equals(that.objectGUID) : that.objectGUID != null) return false;
+        if (samAccountName != null ? !samAccountName.equals(that.samAccountName) : that.samAccountName != null) return false;
+        if (SID != null ? !SID.equals(that.SID) : that.SID != null) return false;
+        if (userPrincipalName != null ? !userPrincipalName.equals(that.userPrincipalName) : that.userPrincipalName != null) return false;
+        return adComputers != null ? adComputers.equals(that.adComputers) : that.adComputers == null;
+    }
+
     public void setUserPrincipalName(String userPrincipalName) {
         this.userPrincipalName = userPrincipalName;
     }

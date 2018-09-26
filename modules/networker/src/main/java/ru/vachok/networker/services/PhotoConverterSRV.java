@@ -16,15 +16,14 @@ import java.util.function.BiConsumer;
 
 
 /**
- * <h1>Создаёт команды для MS Power Shell, чтобы добавить фото пользователей</h1>
- *
- * @since 21.08.2018 (15:57)
- */
+ <h1>Создаёт команды для MS Power Shell, чтобы добавить фото пользователей</h1>
+
+ @since 21.08.2018 (15:57) */
 @Service("photoConverter")
 public class PhotoConverterSRV {
 
     /**
-     * {@link Logger}
+     {@link Logger}
      */
     private static final Logger LOGGER = AppComponents.getLogger();
 
@@ -73,7 +72,46 @@ public class PhotoConverterSRV {
     }
 
     /**
-     * @return {@link Map}, где {@link String} - это имя файла, и
+     Формирование листа комманд, на основе анализа фотографий.
+
+     @return {@link List} команд для применения в среде PS
+     @throws IOException
+     @throws NullPointerException
+     */
+    public List<String> psCommands() throws IOException, NullPointerException {
+        ADSrv adSrv = AppComponents.adSrv();
+        new Thread(() -> adSrv.run());
+        List<String> commandsAD = new ArrayList<>();
+        Map<String, BufferedImage> stringBufferedImageMap = convertFoto();
+        Set<String> fileNames = stringBufferedImageMap.keySet();
+        List<String> samAccountNames = new ArrayList<>();
+        adSrv.getAdUser().getAdUsers().forEach((x) -> samAccountNames.add(x.getSamAccountName()));
+        for (String fileName : fileNames) {
+            samAccountNames.forEach(x -> {
+                if (x.toLowerCase().contains("samacc") && x.toLowerCase().contains(fileName)) {
+                    x = x.split("\\Q: \\E")[1];
+                    LOGGER.info(x);
+                    x = "Import-RecipientDataProperty -Identity " +
+                        x +
+                        " -Picture -FileData ([Byte[]] $(Get-Content -Path “C:\\newmailboxes\\foto\\" + fileName + ".jpg” -Encoding Byte -ReadCount 0))";
+                    commandsAD.add(x);
+                }
+            });
+        }
+        return commandsAD;
+    }
+
+    private void fileAsFile() {
+        try {
+            BufferedImage read = ImageIO.read(adFotoFile);
+            LOGGER.info(read.getHeight() + " h/w " + read.getWidth());
+        } catch (IOException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+    }
+
+    /**
+     @return {@link Map}, где {@link String} - это имя файла, и
      */
     private Map<String, BufferedImage> convertFoto() throws IOException, NullPointerException {
         File photosDirectory = new File(this.adPhotosPath);
@@ -87,41 +125,5 @@ public class PhotoConverterSRV {
         }
         filesList.forEach(imageBiConsumer);
         return filesList;
-    }
-
-    private void fileAsFile() {
-        try {
-            BufferedImage read = ImageIO.read(adFotoFile);
-            LOGGER.info(read.getHeight() + " h/w " + read.getWidth());
-        } catch (IOException e) {
-            LOGGER.error(e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Формирование листа комманд, на основе анализа фотографий.
-     *
-     * @return {@link List} команд для применения в среде PS
-     * @throws IOException
-     * @throws NullPointerException
-     */
-    public List<String> psCommands() throws IOException, NullPointerException {
-        List<String> commandsAD = new ArrayList<>();
-        Map<String, BufferedImage> stringBufferedImageMap = convertFoto();
-        Set<String> fileNames = stringBufferedImageMap.keySet();
-        List<String> stringStream = new ADUserSRV().adFileReader();
-        for (String fileName : fileNames) {
-            stringStream.forEach(x -> {
-                if (x.toLowerCase().contains("samacc") && x.toLowerCase().contains(fileName)) {
-                    x = x.split("\\Q: \\E")[1];
-                    LOGGER.info(x);
-                    x = "Import-RecipientDataProperty -Identity " +
-                        x +
-                        " -Picture -FileData ([Byte[]] $(Get-Content -Path “C:\\newmailboxes\\foto\\" + fileName + ".jpg” -Encoding Byte -ReadCount 0))";
-                    commandsAD.add(x);
-                }
-            });
-        }
-        return commandsAD;
     }
 }
