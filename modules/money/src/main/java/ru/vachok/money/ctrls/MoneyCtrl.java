@@ -8,7 +8,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import ru.vachok.money.services.ParserCBRru;
+import ru.vachok.money.components.ParserCBRru;
 import ru.vachok.money.services.WhoIsWithSRV;
 
 import javax.servlet.http.HttpServletRequest;

@@ -1,14 +1,15 @@
 package ru.vachok.money.config;
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Scope;
-import ru.vachok.money.components.CalculatorForSome;
-import ru.vachok.money.components.MyOpel;
+import ru.vachok.money.components.*;
 import ru.vachok.money.other.MailMessages;
 import ru.vachok.money.other.SpeedRunActualize;
-import ru.vachok.money.services.ParserCBRru;
+import ru.vachok.money.services.AppVerSrv;
 
 
 /**
@@ -17,6 +18,8 @@ import ru.vachok.money.services.ParserCBRru;
 @ComponentScan
 public class AppComponents {
 
+    /*Fields*/
+    private static final Logger LOGGER = LoggerFactory.getLogger(AppComponents.class.getSimpleName());
 
 
     @Bean
@@ -51,5 +54,20 @@ public class AppComponents {
     @Scope("singleton")
     public ParserCBRru parserCBRru() {
         return ParserCBRru.getParser();
+    }
+
+    @Bean
+    public AppVerSrv appVerSrv() {
+        return new AppVerSrv(appVersion());
+    }
+
+    @Bean
+    @Scope ("singleton")
+    public static AppVersion appVersion() {
+        final AppVersion appVersion = new AppVersion();
+        final int genericId = AppVersion.GENERIC_ID;
+        String msg = "appVersion wanted! ID this version = " + genericId;
+        LOGGER.warn(msg);
+        return new AppVersion();
     }
 }

@@ -1,0 +1,15 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${title}">ХЗ</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link rel="stylesheet" type="text/css" media="all" href="css/main.css" th:href="@{css/main.css}"/>
+</head>
+<body>
+<h2 align="center">Немного инфо о системе</h2>
+<p th:utext="${ctxinfo}"/>
+</body>
+<footer>
+    <h4><a href="/">Main</a></h4>
+</footer>
+</html>

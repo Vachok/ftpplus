@@ -68,11 +68,12 @@ public class WhoIsWithSRV {
         String[] whoisServers = {"whois.ripe.net", "whois.arin.net", "whois.apnic.net", "whois.lacnic.net", "whois.afrinic.net"};
         for (String whoIsServer : whoisServers) {
             whoisClient.connect(whoIsServer);
+            String query = whoisClient.query(inetAddr);
             whoIsQBuilder
                 .append("<p><h4>")
                 .append(whoIsServer)
                 .append("</h4><br>")
-                .append(whoisClient.query(inetAddr));
+                .append(query);
             whoisClient.disconnect();
         }
         return whoIsQBuilder.toString();

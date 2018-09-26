@@ -1,7 +1,6 @@
 package ru.vachok.money.services;
 
 
-import ru.vachok.messenger.MessageToUser;
 import ru.vachok.money.other.XmlNode;
 
 import javax.mail.Address;
@@ -9,25 +8,12 @@ import java.util.*;
 
 
 /**
- * @since 28.08.2018 (0:28)
- */
+ @since 28.08.2018 (0:28) */
 public class TForms {
 
-
-
-    /*Fields*/
-    /**
-     * Simple Name класса, для поиска настроек
-     */
-    private static final String SOURCE_CLASS = TForms.class.getSimpleName();
-
     private static StringBuilder stringBuilder = new StringBuilder();
-    /**
-     * {@link }
-     */
-    private static MessageToUser messageToUser = new DBMessage();
 
-    private List<String> fromArray = new ArrayList<>();
+    private static StringBuilder nstringBuilder = new StringBuilder();
 
     public String toStringFromArray(Collection<String> headerNames) {
         stringBuilder.append("<p>");
@@ -54,14 +40,6 @@ public class TForms {
         return stringBuilder.toString();
     }
 
-    /*PS Methods*/
-    public static String toStringFromArray(StackTraceElement[] e) {
-        for(StackTraceElement element : e){
-            stringBuilder.append(element.toString()).append("\n");
-        }
-        return stringBuilder.toString();
-    }
-
     public String toStringFromArray(Map<String, String> map) {
         stringBuilder.append("<p>");
         map.forEach((x, y) -> {
@@ -81,22 +59,37 @@ public class TForms {
     }
 
     public String toStringFromArray(List<String> stringList) {
-        for (String s : stringList) {
+        for(String s : stringList){
             stringBuilder.append(s).append("\n");
         }
         return stringBuilder.toString();
     }
 
-    public String enumToString(Enumeration<String> yourEnum) {
-        while (yourEnum.hasMoreElements()){
-            stringBuilder.append(yourEnum.nextElement());
+    public String enumToString(Enumeration<String> yourEnum, boolean br) {
+        stringBuilder.append("<p>");
+        nstringBuilder.append("<p>");
+        while(yourEnum.hasMoreElements()){
+            String str = yourEnum.nextElement();
+            stringBuilder
+                .append(str)
+                .append("<br>");
+            nstringBuilder
+                .append(str)
+                .append("<br>");
         }
-        return stringBuilder.toString();
+        stringBuilder.append("</p>");
+        nstringBuilder.append("</p>");
+        if(br){
+            return stringBuilder.toString();
+        }
+        else{
+            return nstringBuilder.toString();
+        }
     }
 
     public String toStringFromArray(String[] beanDefinitionNames) {
         stringBuilder.append("<p>");
-        for (String s:beanDefinitionNames){
+        for(String s : beanDefinitionNames){
             stringBuilder.append(s).append("<br>");
         }
         stringBuilder.append("</p>");
@@ -105,11 +98,19 @@ public class TForms {
 
     public String mapIntXmlNode(Map<Integer, XmlNode> integerXmlNodeMap) {
         stringBuilder.append("<p>");
-        integerXmlNodeMap.forEach((x,y)->stringBuilder.append(x)
-        .append(") ")
-        .append(y.toString())
-        .append("<br>"));
+        integerXmlNodeMap.forEach((x, y) -> stringBuilder.append(x)
+            .append(") ")
+            .append(y.toString())
+            .append("<br>"));
         stringBuilder.append("</p>");
+        return stringBuilder.toString();
+    }
+
+    /*PS Methods*/
+    public static String toStringFromArray(StackTraceElement[] e) {
+        for(StackTraceElement element : e){
+            stringBuilder.append(element.toString()).append("\n");
+        }
         return stringBuilder.toString();
     }
 }

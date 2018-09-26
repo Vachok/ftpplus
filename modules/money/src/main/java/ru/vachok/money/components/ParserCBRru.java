@@ -1,12 +1,11 @@
-package ru.vachok.money.services;
+package ru.vachok.money.components;
 
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import ru.vachok.money.components.EURO;
-import ru.vachok.money.components.UsDollar;
 import ru.vachok.money.config.ConstantsFor;
+import ru.vachok.money.services.TForms;
 
 import javax.xml.stream.XMLStreamException;
 import java.net.MalformedURLException;

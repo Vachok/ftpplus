@@ -1187,7 +1187,7 @@
 
 		#banner h1 {
 			color: #fff;
-			font-size: 5em;
+			font-size: 9em;
 			font-weight: 400;
 			font-family: 'Passion One', cursive;
 			margin: 0;
@@ -1196,7 +1196,7 @@
 			@media screen and (max-width: 980px) {
 
 				#banner h1 {
-					font-size: 5em;
+					font-size: 9em;
 				}
 
 			}
@@ -1204,7 +1204,7 @@
 			@media screen and (max-width: 736px) {
 
 				#banner h1 {
-					font-size: 3em;
+					font-size: 5em;
 				}
 
 			}

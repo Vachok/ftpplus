@@ -10,7 +10,7 @@ import java.util.StringJoiner;
 
 /**
  @since 24.09.2018 (9:44) */
-@Component("versioninfo")
+@Component ("versioninfo")
 public class VersionInfo {
 
     @Value ("application.name")

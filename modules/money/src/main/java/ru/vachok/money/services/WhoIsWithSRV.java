@@ -68,7 +68,7 @@ public class WhoIsWithSRV {
 
     public String resolveLocation(HttpServletRequest request){
         StringBuilder locResolved = new StringBuilder();
-        locResolved.append(new TForms().enumToString(request.getHeaderNames()));
+        locResolved.append(new TForms().enumToString(request.getHeaderNames(), true));
         return locResolved.toString();
     }
 }
