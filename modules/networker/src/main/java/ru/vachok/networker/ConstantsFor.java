@@ -20,16 +20,19 @@ import java.util.concurrent.TimeUnit;
 
 /**
  <h1>Константы</h1>
- * @since 12.08.2018 (16:26)
- */
+
+ @since 12.08.2018 (16:26) */
 public enum ConstantsFor {
     ;
 
     /**
-     * <b>1 мегабайт в байтах</b>
+     <b>1 мегабайт в байтах</b>
      */
     public static final int MBYTE = 1024 * 1024;
 
+    public static final String MAIL_MSG_FILE_OBJ_NAME = "mailmessage.obj";
+
+    public static final String LASTNETSCAN_FILE = "LastNetScan.obj";
 
     public static boolean getPcAuth(HttpServletRequest request) {
         return request.getRemoteAddr().toLowerCase().contains("0:0:0:0") ||
@@ -42,10 +45,9 @@ public enum ConstantsFor {
     private static boolean pingOK = true;
 
     public static boolean isPingOK() {
-        try{
+        try {
             pingOK = InetAddress.getByName("srv-git.eatmeat.ru").isReachable(500);
-        }
-        catch(IOException e){
+        } catch (IOException e) {
             LoggerFactory.getLogger(ConstantsFor.class.getSimpleName()).error(e.getMessage(), e);
         }
         return pingOK;
@@ -57,19 +59,17 @@ public enum ConstantsFor {
         long buildSt;
         InitProperties initProperties = new DBRegProperties(APP_NAME + ConstantsFor.class.getSimpleName());
         Properties props = initProperties.getProps();
-        try{
+        try {
             String hostName = InetAddress.getLocalHost().getHostName();
-            if(hostName.equalsIgnoreCase("home")){
+            if (hostName.equalsIgnoreCase("home")) {
                 props.setProperty("build", System.currentTimeMillis() + "");
                 initProperties.delProps();
                 initProperties.setProps(props);
                 return System.currentTimeMillis();
-            }
-            else{
+            } else {
                 return Long.parseLong(props.getProperty("build", "1"));
             }
-        }
-        catch(UnknownHostException e){
+        } catch (UnknownHostException e) {
             return 1L;
         }
     }

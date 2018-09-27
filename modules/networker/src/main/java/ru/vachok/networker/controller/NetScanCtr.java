@@ -18,7 +18,11 @@ import ru.vachok.networker.componentsrepo.LastNetScan;
 import ru.vachok.networker.services.NetScannerSvc;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 
@@ -39,14 +43,13 @@ public class NetScanCtr {
 
     private static Properties properties = initProperties.getProps();
 
-    private Map<String, Boolean> lastScanMap;
+    private Map<String, Boolean> lastScanMap = new ConcurrentHashMap<>();
 
-    private LastNetScan lastNetScan;
+    private LastNetScan lastNetScan = AppComponents.lastNetScan();
 
     @Autowired
     public NetScanCtr(NetScannerSvc netScannerSvc) {
         this.netScannerSvc = netScannerSvc;
-        this.lastNetScan = netScannerSvc.getLastNetScan();
     }
     @GetMapping("/netscan")
     public String netScan(HttpServletRequest request, Model model) {

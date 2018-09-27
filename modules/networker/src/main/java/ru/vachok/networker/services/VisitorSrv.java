@@ -8,7 +8,6 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
-import ru.vachok.networker.componentsrepo.CookieShower;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.logic.CookTheCookie;
 import ru.vachok.networker.logic.DBMessenger;
