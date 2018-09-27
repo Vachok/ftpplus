@@ -91,7 +91,6 @@ public class NetScanCtr {
             .addAttribute("netScannerSvc", netScannerSvc)
             .addAttribute("thePc", netScannerSvc.getThePc())
             .addAttribute("title", "First Scan: 2018-05-05");
-        lastNetScan.saveState();
         return "netscan";
     }
 
