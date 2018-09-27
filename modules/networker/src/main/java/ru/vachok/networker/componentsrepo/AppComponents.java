@@ -29,6 +29,12 @@ public class AppComponents {
     }
 
     @Bean
+    @Scope("singleton")
+    public static LastNetScan lastNetScan() {
+        return new LastNetScan();
+    }
+
+    @Bean
     @Scope ("singleton")
     public DBMessenger dbMessenger() {
         return new DBMessenger();
@@ -86,4 +92,9 @@ public class AppComponents {
         return new CookTheCookie(visitor);
     }
 
+    @Bean
+    public MailSRV mailSRV(MailMessage mailMessage) {
+        mailMessage = new MailMessage();
+        return new MailSRV(mailMessage);
+    }
 }

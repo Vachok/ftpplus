@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.messenger.email.ESender;
-import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
@@ -51,12 +50,18 @@ public class NetScannerSvc {
 
     private String qer;
 
+    /*Private methods*/
+    @Autowired
+    public NetScannerSvc() {
+        this.messageToUser = new DBMessenger();
+        this.lastNetScan = AppComponents.lastNetScan();
+    }
+
     public String getInfoFromDB() {
-        if (thePc.equals(null) || thePc.isEmpty() || thePc.equals("")) {
+        if (thePc.isEmpty()) {
             IllegalArgumentException argumentException = new IllegalArgumentException("Must be NOT NULL!");
             return argumentException.getMessage();
         }
-        Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.DB_PREFIX + "velkom");
         try (PreparedStatement preparedStatement = c.prepareStatement("select * from velkompc where NamePP like '%" + thePc + "%'")) {
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 List<String> timeNow = new ArrayList<>();
@@ -89,14 +94,6 @@ public class NetScannerSvc {
             setThePc(e.getMessage());
         }
         return "ok";
-    }
-
-    /*Private methods*/
-    @Autowired
-    public NetScannerSvc() {
-        this.messageToUser = new DBMessenger();
-        this.lastNetScan = new LastNetScan();
-
     }
 
     public LastNetScan getLastNetScan() {
@@ -217,10 +214,8 @@ public class NetScannerSvc {
     }
 
     private String writeDB(Collection<String> pcNames) {
-        DataConnectTo dataConnectTo = new RegRuMysql();
         List<String> list = new ArrayList<>();
-        try (Connection c = dataConnectTo.getDefaultConnection("u0466446_velkom");
-             PreparedStatement p = c.prepareStatement("insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow) values (?,?,?,?)")) {
+        try (PreparedStatement p = c.prepareStatement("insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow) values (?,?,?,?)")) {
             pcNames.stream().sorted().forEach(x -> {
                 String pcSerment = "Я не знаю...";
                 logger.info(x);

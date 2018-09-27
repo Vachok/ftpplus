@@ -7,7 +7,9 @@ import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.componentsrepo.ADComputer;
 import ru.vachok.networker.componentsrepo.ADUser;
 import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.componentsrepo.MailMessage;
 
+import javax.mail.Address;
 import javax.servlet.http.Cookie;
 import java.io.File;
 import java.util.*;
@@ -16,6 +18,7 @@ import java.util.*;
 /**
  <h1>Помощник для {@link Arrays#toString(int[])}</h1>
  Делает похожие действия, но сразу так, как нужно для {@link IntoApplication}
+
  @since 06.09.2018 (9:33) */
 public class TForms {
 
@@ -28,7 +31,7 @@ public class TForms {
 
     public String fromArray(List<String> stringListWithBR) {
         brStringBuilder.append("<p>");
-        for(String s : stringListWithBR){
+        for (String s : stringListWithBR) {
             brStringBuilder.append(s).append("<br>");
         }
         brStringBuilder.append("</p>");
@@ -39,7 +42,7 @@ public class TForms {
         List<String> list = new ArrayList<>();
         stringStringMap.forEach((x, y) -> list.add(x + "    " + y + "<br>\n"));
         Collections.sort(list);
-        for(String s : list){
+        for (String s : list) {
             brStringBuilder.append(s);
             LOGGER.info(s);
         }
@@ -47,11 +50,10 @@ public class TForms {
     }
 
     public String fromArray(File[] dirFiles) {
-        for(File f : dirFiles){
-            if(f.getName().contains(".jar")){
+        for (File f : dirFiles) {
+            if (f.getName().contains(".jar")) {
                 return f.getName().replace(".jar", "");
-            }
-            else{
+            } else {
                 return System.getProperties().getProperty("version");
             }
         }
@@ -93,7 +95,7 @@ public class TForms {
     }
 
     public String fromArray(StackTraceElement[] stackTrace) {
-        for(StackTraceElement stackTraceElement : stackTrace){
+        for (StackTraceElement stackTraceElement : stackTrace) {
             nStringBuilder
                 .append("At ")
                 .append(stackTraceElement
@@ -109,7 +111,7 @@ public class TForms {
     }
 
     public String fromArray(String[] stringsArray) {
-        for(String s : stringsArray){
+        for (String s : stringsArray) {
             nStringBuilder.append(s).append("\n<br>");
         }
         return nStringBuilder.toString();
@@ -123,24 +125,23 @@ public class TForms {
     public String fromEnum(Enumeration<String> enumStrings, boolean br) {
         nStringBuilder.append("\n");
         brStringBuilder.append("<p>");
-        while(enumStrings.hasMoreElements()){
+        while (enumStrings.hasMoreElements()) {
             String str = enumStrings.nextElement();
             nStringBuilder.append(str).append("\n");
             brStringBuilder.append(str).append("<br>");
         }
         nStringBuilder.append("\n");
         brStringBuilder.append("</p>");
-        if(br){
+        if (br) {
             return brStringBuilder.toString();
-        }
-        else{
+        } else {
             return nStringBuilder.toString();
         }
     }
 
     public String fromArray(Queue<String> stringQueue) {
         brStringBuilder.append("<p>");
-        while(stringQueue.iterator().hasNext()){
+        while (stringQueue.iterator().hasNext()) {
             brStringBuilder.append(stringQueue.poll()).append("<br>");
         }
         brStringBuilder.append("</p>");
@@ -155,14 +156,13 @@ public class TForms {
         });
         Collections.sort(stringList);
         brStringBuilder.append("<p>");
-        for(String s : stringList){
+        for (String s : stringList) {
             brStringBuilder.append(s).append("<br>");
             nStringBuilder.append(s).append("\n");
         }
-        if(br){
+        if (br) {
             return brStringBuilder.toString();
-        }
-        else{
+        } else {
             return nStringBuilder.toString();
         }
     }
@@ -172,33 +172,31 @@ public class TForms {
         parameterMap.forEach((x, y) -> {
             brStringBuilder.append("<h4>").append(x).append("</h4><br>");
             int i = 1;
-            for(String s : y){
+            for (String s : y) {
                 brStringBuilder.append(i++).append(")").append(s).append("<br>");
                 nStringBuilder.append(i++).append(")").append(s).append("\n");
             }
             nStringBuilder.append(x).append("\n");
             brStringBuilder.append("</p>");
         });
-        if(br){
+        if (br) {
             return brStringBuilder.toString();
-        }
-        else{
+        } else {
             return nStringBuilder.toString();
         }
     }
 
     public String fromArray(Cookie[] cookies, boolean br) {
         brStringBuilder.append("<p>");
-        for(Cookie c : cookies){
+        for (Cookie c : cookies) {
             brStringBuilder
                 .append(c.getName()).append(" ").append(c.getComment()).append(" ").append(c.getMaxAge()).append("<br>");
             nStringBuilder
                 .append(c.getName()).append(" ").append(c.getComment()).append(" ").append(c.getMaxAge()).append("\n");
         }
-        if(br){
+        if (br) {
             return brStringBuilder.toString();
-        }
-        else{
+        } else {
             return nStringBuilder.toString();
         }
     }
@@ -206,7 +204,7 @@ public class TForms {
     public String adUsersMap(List<ADUser> adUsers, boolean br) {
         brStringBuilder.append("<p>");
         nStringBuilder.append("\n");
-        for(ADUser ad : adUsers){
+        for (ADUser ad : adUsers) {
             brStringBuilder
                 .append(ad.toString())
                 .append("<br>");
@@ -216,10 +214,9 @@ public class TForms {
         }
         brStringBuilder.append("</p>");
         nStringBuilder.append("\n");
-        if(br){
+        if (br) {
             return brStringBuilder.toString();
-        }
-        else{
+        } else {
             return nStringBuilder.toString();
         }
     }
@@ -227,7 +224,7 @@ public class TForms {
     public String adPCMap(List<ADComputer> adComputers, boolean br) {
         brStringBuilder.append("<p>");
         nStringBuilder.append("\n");
-        for(ADComputer ad : adComputers){
+        for (ADComputer ad : adComputers) {
             brStringBuilder
                 .append(ad.toString())
                 .append("<br>");
@@ -237,10 +234,9 @@ public class TForms {
         }
         brStringBuilder.append("</p>");
         nStringBuilder.append("\n\n\n");
-        if(br){
+        if (br) {
             return brStringBuilder.toString();
-        }
-        else{
+        } else {
             return nStringBuilder.toString();
         }
     }
@@ -254,6 +250,52 @@ public class TForms {
                 .append(y.toString())
                 .append("</p>");
         });
+        return brStringBuilder.toString();
+    }
+
+    public String fromArray(Address[] mailAddress, boolean br) {
+        for (Address address : mailAddress) {
+            brStringBuilder
+                .append(address.toString())
+                .append("br");
+            nStringBuilder
+                .append(address.toString())
+                .append("\n");
+        }
+        if (br) return brStringBuilder.toString();
+        else return nStringBuilder.toString();
+    }
+
+    public String fromArray(Throwable[] suppressed) {
+        nStringBuilder.append("suppressed throwable!\n".toUpperCase());
+        for (Throwable throwable : suppressed) {
+            nStringBuilder.append(throwable.getMessage());
+        }
+        return nStringBuilder.toString();
+    }
+
+    public String fromArray(Set cacheSet, boolean br) {
+        brStringBuilder.append("<p>");
+        nStringBuilder.append("\n");
+        for (Object o : cacheSet) {
+            brStringBuilder
+                .append(o.toString())
+                .append("<br>");
+            nStringBuilder
+                .append(o.toString())
+                .append("\n");
+        }
+        if (br) return brStringBuilder.toString();
+        else return brStringBuilder.toString();
+    }
+
+    public String fromMMessage(List<MailMessage> allMails) {
+        brStringBuilder.append("<p><h4>Mail Messages</h4>");
+        for (MailMessage mailMessage : allMails) {
+            brStringBuilder.append(mailMessage.toString());
+            brStringBuilder.append("<br>");
+        }
+        brStringBuilder.append("</p>");
         return brStringBuilder.toString();
     }
 }

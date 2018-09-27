@@ -9,9 +9,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
-import ru.vachok.networker.componentsrepo.CookieShower;
-import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.config.AppCtx;
+import ru.vachok.networker.services.CookieShower;
+import ru.vachok.networker.services.MailSRV;
 import ru.vachok.networker.services.VisitorSrv;
 
 import javax.servlet.http.HttpServletRequest;
@@ -33,12 +33,14 @@ public class ServiceInfoCtrl {
 
     private CookieShower cookieShower;
 
+    private MailSRV mailSRV;
+
     /*Instances*/
     @Autowired
-    public ServiceInfoCtrl(VisitorSrv visitorSrv) {
+    public ServiceInfoCtrl(VisitorSrv visitorSrv, MailSRV mailSRV) {
         this.visitorSrv = visitorSrv;
-        Visitor visitor = visitorSrv.getVisitor();
         this.cookieShower = visitorSrv.getCookieShower();
+        this.mailSRV = mailSRV;
     }
 
     @GetMapping("/serviceinfo")
@@ -52,19 +54,23 @@ public class ServiceInfoCtrl {
         if (request.getRemoteAddr().contains("0:0:0:0") ||
             request.getRemoteAddr().contains("10.10.111") ||
             request.getRemoteAddr().contains(ConstantsFor.NO0027)) {
-            model.addAttribute("title", "srv-git is " + pingBool() + " now: " + LocalTime.now().toString());
-            model.addAttribute("ping", pingGit());
-            model.addAttribute("urls", new TForms().fromArray(AppCtx.getClassLoaderURLList()));
-            model.addAttribute("request", prepareRequest(request));
-            model.addAttribute("visit", AppComponents
-                .versionInfo().toString() + " (current stamp: " + System.currentTimeMillis() + ")");
-            model.addAttribute("genstamp", "Generated: " +
-                new Date().getTime() +
-                ". Up: " +
-                TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - ConstantsFor.START_STAMP));
-            model.addAttribute("back", request.getHeader("REFERER".toLowerCase()));
+            modModMaker(model, request);
             return "vir";
         } else throw new AccessDeniedException("Sorry. Denied");
+    }
+
+    private void modModMaker(Model model, HttpServletRequest request) {
+        model.addAttribute("title", "srv-git is " + pingBool() + " now: " + LocalTime.now().toString());
+        model.addAttribute("ping", pingGit());
+        model.addAttribute("urls", new TForms().fromArray(AppCtx.getClassLoaderURLList()));
+        model.addAttribute("request", prepareRequest(request));
+        model.addAttribute("visit", AppComponents
+            .versionInfo().toString() + " (current stamp: " + System.currentTimeMillis() + ")");
+        model.addAttribute("genstamp", "Generated: " +
+            new Date().getTime() +
+            ". Up: " +
+            TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - ConstantsFor.START_STAMP));
+        model.addAttribute("back", request.getHeader("REFERER".toLowerCase()));
     }
 
     private boolean pingBool() {
@@ -82,7 +88,6 @@ public class ServiceInfoCtrl {
             return e.getMessage();
         }
     }
-
     private String prepareRequest(HttpServletRequest request) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("<center><h3>Заголовки</h3></center>");
@@ -124,5 +129,12 @@ public class ServiceInfoCtrl {
         stringBuilder.append("<center><h3>Cookies</h3></center>");
         stringBuilder.append(cookieShower.showCookie());
         return stringBuilder.toString();
+    }
+
+    @GetMapping("/clsmail")
+    public String mailBox(Model model, HttpServletRequest request) {
+        model.addAttribute("title", "You have " + mailSRV.getBeanMealMessage().getAllMail().size() + " mails");
+        model.addAttribute("mbox", new TForms().fromMMessage(mailSRV.getBeanMealMessage().getAllMail()));
+        return "clsmail";
     }
 }

@@ -16,12 +16,21 @@ public class VersionInfo {
     @Value ("application.name")
     private String appName = ConstantsFor.APP_NAME.replace("-", "");
 
-    @Value ("build.version")
+    @Value("{build.version}")
     private String appVersion;
 
-    @Value ("build.timestamp")
     private String timeStamp;
 
+    @Value("${build.time}")
+    private String buildTime;
+
+    public String getBuildTime() {
+        return buildTime;
+    }
+
+    public void setBuildTime(String buildTime) {
+        this.buildTime = buildTime;
+    }
     public String getAppName() {
         return appName;
     }
@@ -42,16 +51,16 @@ public class VersionInfo {
         return timeStamp;
     }
 
-    /*Get&Set*/
     public void setTimeStamp(final String timeStamp) {
         this.timeStamp = timeStamp;
     }
 
     @Override
     public String toString() {
-        return new StringJoiner("~~", VersionInfo.class.getSimpleName() + "\n", "\n")
+        return new StringJoiner(", ", VersionInfo.class.getSimpleName() + "[", "]")
             .add("appName='" + appName + "'")
             .add("appVersion='" + appVersion + "'")
+            .add("buildTime='" + buildTime + "'")
             .add("timeStamp='" + timeStamp + "'")
             .toString();
     }

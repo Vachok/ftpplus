@@ -1,8 +1,9 @@
-package ru.vachok.networker.componentsrepo;
+package ru.vachok.networker.services;
 
 
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import ru.vachok.networker.componentsrepo.Visitor;
 
 import javax.servlet.http.Cookie;
 import java.util.Collection;
