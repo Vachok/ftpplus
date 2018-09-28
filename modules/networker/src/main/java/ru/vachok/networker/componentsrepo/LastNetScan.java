@@ -63,23 +63,27 @@ public class LastNetScan implements Serializable {
     }
 
     /*Instances*/
-    public LastNetScan lastNetScan() {
-        try {
-            readObject(in);
-        } catch (ClassNotFoundException e) {
+    public LastNetScan() {
+        LOGGER.info("Serial. Understand 25.09.2018 (20:45)");
+    }
+
+    private void readObject(ObjectInputStream in) {
+        try{
+            in.defaultReadObject();
+        }
+        catch(IOException | ClassNotFoundException e){
             LOGGER.error(e.getMessage(), e);
             return new LastNetScan();
         }
         return (LastNetScan) o;
     }
 
-    private void readObject(ObjectInputStream in) throws ClassNotFoundException {
-        this.in = in;
-        try (InputStream inputStream = new FileInputStream(ConstantsFor.LASTNETSCAN_FILE)) {
-            in = new ObjectInputStream(inputStream);
-            this.o = in.readObject();
-        } catch (IOException e) {
-            LoggerFactory.getLogger(MailMessage.class.getSimpleName());
+    private void writeObject(ObjectOutputStream out) {
+        try{
+            out.defaultWriteObject();
+        }
+        catch(IOException e){
+            LOGGER.error(e.getMessage(), e);
         }
     }
 

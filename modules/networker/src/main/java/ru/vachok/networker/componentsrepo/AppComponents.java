@@ -31,7 +31,7 @@ public class AppComponents {
     @Bean
     @Scope("singleton")
     public static LastNetScan lastNetScan() {
-        return new LastNetScan().lastNetScan();
+        return new LastNetScan();
     }
 
     @Bean
