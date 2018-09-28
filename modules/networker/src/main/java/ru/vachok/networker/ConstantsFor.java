@@ -37,6 +37,8 @@ public enum ConstantsFor {
 
     public static final long MY_AGE = ( long ) Year.now().getValue() - 1984;
 
+    public static final int TOTAL_PC = 315;
+
     public static boolean getPcAuth(HttpServletRequest request) {
         return request.getRemoteAddr().toLowerCase().contains("0:0:0:0") ||
             request.getRemoteAddr().contains("10.200.213") ||

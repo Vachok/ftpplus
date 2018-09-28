@@ -66,7 +66,8 @@ public class NetScanCtr {
             model
                 .addAttribute("left", msg)
                 .addAttribute("pc", new TForms().fromArray(netWork, true))
-                .addAttribute("title", netWork.size() + " PCs");
+                .addAttribute("title", (ConstantsFor.TOTAL_PC - netWork.size()) + " PCs");
+            properties.setProperty("totpc", ConstantsFor.TOTAL_PC + "");
         }
         else{
             scanIt(request, model);
