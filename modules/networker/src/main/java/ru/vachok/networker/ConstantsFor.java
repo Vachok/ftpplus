@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.SecureRandom;
+import java.time.Year;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
@@ -33,6 +34,8 @@ public enum ConstantsFor {
     public static final String MAIL_MSG_FILE_OBJ_NAME = "mailmessage.obj";
 
     public static final String LASTNETSCAN_FILE = "LastNetScan.obj";
+
+    public static final long MY_AGE = ( long ) Year.now().getValue() - 1984;
 
     public static boolean getPcAuth(HttpServletRequest request) {
         return request.getRemoteAddr().toLowerCase().contains("0:0:0:0") ||

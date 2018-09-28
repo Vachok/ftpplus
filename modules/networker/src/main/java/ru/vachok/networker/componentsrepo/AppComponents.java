@@ -11,6 +11,7 @@ import ru.vachok.networker.logic.DBMessenger;
 import ru.vachok.networker.services.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Map;
 
 
 @ComponentScan
@@ -30,20 +31,14 @@ public class AppComponents {
 
     @Bean
     @Scope("singleton")
-    public static LastNetScan lastNetScan() {
-        return new LastNetScan();
+    public Map<String, Boolean> lastNetScanMap() {
+        return new LastNetScan().getNetWork();
     }
 
     @Bean
     @Scope ("singleton")
     public DBMessenger dbMessenger() {
         return new DBMessenger();
-    }
-
-    @Bean
-    @Scope ("singleton")
-    public NetScannerSvc netScan() {
-        return new NetScannerSvc(lastNetScan());
     }
 
     @Bean

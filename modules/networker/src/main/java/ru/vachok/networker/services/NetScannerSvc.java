@@ -16,10 +16,7 @@ import ru.vachok.networker.logic.DBMessenger;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -44,6 +41,13 @@ public class NetScannerSvc {
     private static Logger logger = AppComponents.getLogger();
 
     private MessageToUser messageToUser;
+
+    private static final List<String> PC_NAMES = new ArrayList<>();
+
+    public List<String> getPcNames() {
+        getPCsAsync();
+        return PC_NAMES;
+    }
 
     private String thePc;
 
@@ -111,33 +115,30 @@ public class NetScannerSvc {
         this.qer = qer;
     }
 
-    public List<String> getPCsAsync() {
-        final List<String> pcNames = new ArrayList<>();
+    public void getPCsAsync() {
+        new Thread(() -> {
         final long startMethod = System.currentTimeMillis();
         for (String s : PC_PREFIXES) {
-            pcNames.addAll(getPCNames(s));
+            PC_NAMES.addAll(getPCNamesPref(s));
             messageToUser.info(SOURCE_CLASS, "PC Prefix set to", s + " | Scan starts...");
         }
         String elapsedTime = "Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethod) + " sec.";
-        pcNames.add(elapsedTime);
-
+            PC_NAMES.add(elapsedTime);
         new Thread(() -> {
             MessageToUser mailMSG = new ESender("143500@gmail.com");
-            float upTime = (float) (TimeUnit.MILLISECONDS
-                .toSeconds(System.currentTimeMillis() - ConstantsFor.START_STAMP)) / 60f;
+            float upTime = ( float ) (TimeUnit.MILLISECONDS
+                                          .toSeconds(System.currentTimeMillis() - ConstantsFor.START_STAMP)) / 60f;
             Map<String, String> lastLogs = new DataBasesSRV().getLastLogs("ru_vachok_ethosdistro");
             String retLogs = new TForms().fromArray(lastLogs);
             mailMSG.info(
                 SOURCE_CLASS,
                 upTime + " min uptime. " + AppComponents.versionInfo().toString(),
-                retLogs + " \n" + new TForms().fromArray(pcNames));
+                retLogs + " \n" + new TForms().fromArray(PC_NAMES));
         }).start();
-
-        return pcNames;
+        }).start();
     }
 
-    /*Instances*/
-    public List<String> getPCNames(String prefix) {
+    public List<String> getPCNamesPref(String prefix) {
         this.netWork = lastNetScan.getNetWork();
         this.qer = prefix;
         final long startMethTime = System.currentTimeMillis();
@@ -174,6 +175,7 @@ public class NetScannerSvc {
         pcNames.add("<b>Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethTime) + " sec.</b>");
         return pcNames;
     }
+    /*Instances*/
 
     private Collection<String> getCycleNames(String userQuery) {
         if (userQuery == null) {

@@ -4,10 +4,7 @@ package ru.vachok.networker;
 import org.slf4j.Logger;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
-import ru.vachok.networker.componentsrepo.ADComputer;
-import ru.vachok.networker.componentsrepo.ADUser;
-import ru.vachok.networker.componentsrepo.AppComponents;
-import ru.vachok.networker.componentsrepo.MailMessage;
+import ru.vachok.networker.componentsrepo.*;
 
 import javax.mail.Address;
 import javax.servlet.http.Cookie;
@@ -72,7 +69,7 @@ public class TForms {
         return nStringBuilder.toString();
     }
 
-    public String fromStringBoolean(Map<String, Boolean> call) {
+    public String mapStringBoolean(Map<String, Boolean> call) {
         brStringBuilder.append("<p>");
         call.forEach((x, y) -> {
             String msg = x + y;

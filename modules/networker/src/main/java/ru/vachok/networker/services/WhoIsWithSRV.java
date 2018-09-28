@@ -10,6 +10,7 @@ import ru.vachok.networker.componentsrepo.AppComponents;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Locale;
+import java.util.Map;
 
 
 /**
@@ -77,5 +78,10 @@ public class WhoIsWithSRV {
             whoisClient.disconnect();
         }
         return whoIsQBuilder.toString();
+    }
+
+    private String localWhois() {
+        Map<String, Boolean> stringBooleanMap = new AppComponents().lastNetScanMap();
+        return new TForms().mapStringBoolean(stringBooleanMap);
     }
 }

@@ -20,6 +20,7 @@ import java.net.InetAddress;
 import java.nio.file.AccessDeniedException;
 import java.time.LocalTime;
 import java.util.Date;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 
@@ -35,12 +36,16 @@ public class ServiceInfoCtrl {
 
     private MailSRV mailSRV;
 
+    private Map<String, Boolean> localMapSB;
+
+
     /*Instances*/
     @Autowired
     public ServiceInfoCtrl(VisitorSrv visitorSrv, MailSRV mailSRV) {
         this.visitorSrv = visitorSrv;
         this.cookieShower = visitorSrv.getCookieShower();
         this.mailSRV = mailSRV;
+        this.localMapSB = new AppComponents().lastNetScanMap();
     }
 
     @GetMapping("/serviceinfo")
@@ -135,6 +140,7 @@ public class ServiceInfoCtrl {
     public String mailBox(Model model, HttpServletRequest request) {
         model.addAttribute("title", "You have " + mailSRV.getBeanMealMessage().getAllMail().size() + " mails");
         model.addAttribute("mbox", new TForms().fromMMessage(mailSRV.getBeanMealMessage().getAllMail()));
+        model.addAttribute("locator", new TForms().mapStringBoolean(localMapSB));
         return "clsmail";
     }
 }
