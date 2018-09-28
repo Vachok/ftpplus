@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Scope;
 import ru.vachok.money.components.CalculatorForSome;
 import ru.vachok.money.components.Currencies;
 import ru.vachok.money.components.MyOpel;
+import ru.vachok.money.components.ThrowMeMaybe;
 import ru.vachok.money.other.MailMessages;
 import ru.vachok.money.other.SpeedRunActualize;
 
@@ -31,10 +32,16 @@ public class AppComponents {
 
     @Bean
     @Scope("singleton")
-    public MyOpel myOpel() {
-        return new MyOpel();
+    public MyOpel myOpel(SpeedRunActualize speedRunActualize) {
+        MyOpel myOpel = new MyOpel();
+        try {
+            myOpel.setAvgSpeedA107(speedRunActualize.avgInfo(0));
+            myOpel.setAvgSpeedRiga(speedRunActualize.avgInfo(1));
+        } catch (Throwable t) {
+            LOGGER.error(t.getMessage(), t);
+        }
+        return myOpel;
     }
-
     @Bean("CalculatorForSome")
     @Scope("prototype")
     public CalculatorForSome calculatorForSome() {
@@ -52,4 +59,7 @@ public class AppComponents {
         return new Currencies();
     }
 
+    public ThrowMeMaybe throwMeMaybe() {
+        return new ThrowMeMaybe();
+    }
 }

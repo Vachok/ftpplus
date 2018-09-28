@@ -4,7 +4,6 @@ package ru.vachok.money.other;
 import org.slf4j.Logger;
 import org.springframework.scheduling.annotation.Scheduled;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.messenger.email.ESender;
 import ru.vachok.money.ConstantsFor;
 import ru.vachok.money.services.DBMessage;
 import ru.vachok.mysqlandprops.DataConnectTo;
@@ -18,7 +17,6 @@ import java.util.Date;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
-import java.util.stream.Stream;
 
 
 /**
@@ -71,8 +69,7 @@ public class SpeedRunActualize implements Callable<String> {
         Map<Date, String> mailMessages = getMailMessages();
         messageToUser.infoNoTitles(mailMessages.toString());
         checkDates(mailMessages);
-        String s = avgInfo(0) + " in a107" + avgInfo(1) + "in riga";
-        return s;
+        return avgInfo(0) + " in a107" + avgInfo(1) + "in riga";
 
     }
 
@@ -82,7 +79,7 @@ public class SpeedRunActualize implements Callable<String> {
 
      @return {@link Message}[]
      */
-    protected Map<Date, String> getMailMessages() {
+    private Map<Date, String> getMailMessages() {
         Callable<Message[]> mailCall = new MailMessages();
         ExecutorService executorService = Executors.newCachedThreadPool();
         Future<Message[]> submit = executorService.submit(mailCall);
@@ -148,7 +145,7 @@ public class SpeedRunActualize implements Callable<String> {
     /**
      <b>Среднее по Бетонке</b>
      */
-    public String avgInfo(int road) {
+    public Double avgInfo(int road) {
         double avg = 0.0;
         try(PreparedStatement ps = DEF_CON.prepareStatement("select * from speed where Road = ?")){
             ps.setInt(1, road);
@@ -165,7 +162,7 @@ public class SpeedRunActualize implements Callable<String> {
                     String s2 = (timeAv / ind) + " time. Counter = " + ind;
                     String s = " Time and SPEED. avgInfo. " + "  " + (speedAv / ind) + " SPEED " + s2;
                     ConstantsFor.ok.accept(SOURCE_CLASS, s);
-                    return s;
+                    return avg;
                 }
                 else{
                     throw new UnsupportedOperationException("Деление на 0");
@@ -174,8 +171,8 @@ public class SpeedRunActualize implements Callable<String> {
         }
         catch(SQLException e){
             LOGGER.error(e.getMessage(), e);
-            return e.getMessage();
         }
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -236,9 +233,6 @@ public class SpeedRunActualize implements Callable<String> {
                 if(timeStampDB >= iL){
                     ps.executeUpdate();
                 }
-                else{
-                    throw new RejectedExecutionException("Transcended to small - " + timeStampDB + "/" + iL);
-                }
             }
             catch(SQLException e){
                 DATA_CONNECT_TO.setSavepoint(DEF_CON);
@@ -251,55 +245,4 @@ public class SpeedRunActualize implements Callable<String> {
         avgInfo(road.get());
         new MailMessages(true).call();
     }
-
-    public Stream<Double> speedsOn(int road) {
-        List<Double> doublesList = new ArrayList<>();
-        String sql = "select * from speed where Road = ?";
-        try(PreparedStatement p = DEF_CON.prepareStatement(sql)){
-            p.setInt(1, road);
-            {
-                try(ResultSet r = p.executeQuery()){
-                    while(r.next()){
-                        doublesList.add(r.getDouble(SPEED));
-                    }
-                }
-            }
-        }
-        catch(SQLException e){
-            LOGGER.error(e.getMessage(), e);
-        }
-        return doublesList.parallelStream();
-    }
-
-    /*Private metsods*/
-
-    /**
-     <b>Среднее по Новориге</b>
-     */
-    private void rigA() {
-        MessageToUser emailMe = new ESender("143500@gmail.com");
-        try(PreparedStatement ps1 = DEF_CON.prepareStatement("select * from speed where Road = 1");
-            ResultSet r1 = ps1.executeQuery()){
-            /*Riga*/
-            double speedAv = 0.0;
-            double timeAv = 0.0;
-            int ind = 0;
-            while(r1.next()){
-                ind++;
-                speedAv += r1.getDouble(SPEED);
-                timeAv += r1.getDouble("TimeSpend");
-            }
-            if(ind!=0){
-                String s2 = timeAv / ind + " time. Counter = " + ind;
-                messageToUser.info("Time and SPEED. NovoRiga.", speedAv / ind + " SPEED", s2);
-            }
-            else{
-                throw new UnsupportedOperationException("Деление на 0");
-            }
-        }
-        catch(SQLException e){
-            LOGGER.error(e.getMessage(), e);
-        }
-    }
-
 }
