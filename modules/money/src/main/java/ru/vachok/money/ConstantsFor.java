@@ -1,4 +1,4 @@
-package ru.vachok.money.config;
+package ru.vachok.money;
 
 
 import org.slf4j.Logger;
@@ -6,12 +6,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.messenger.email.ESender;
+import ru.vachok.money.config.AppCtx;
 import ru.vachok.money.services.DBMessage;
 import ru.vachok.mysqlandprops.DataConnectTo;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;

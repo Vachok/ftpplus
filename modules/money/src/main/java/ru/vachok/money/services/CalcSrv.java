@@ -4,8 +4,8 @@ package ru.vachok.money.services;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import ru.vachok.money.ConstantsFor;
 import ru.vachok.money.components.CalculatorForSome;
-import ru.vachok.money.config.ConstantsFor;
 
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
@@ -56,7 +56,7 @@ public class CalcSrv {
             .toSeconds(System.currentTimeMillis() - ConstantsFor.START_STAMP) / 60 + " min Uptime<br>" +
             new Date(ConstantsFor.START_STAMP);
         if(calculatorForSome.getuLong() > 0){
-            s = s + "<br>" + new TimeWorks().fromMillisToDate(calculatorForSome.getuLong());
+            s = s + "<br>" + new TimeWorms().fromMillisToDate(calculatorForSome.getuLong());
         }
         return s;
     }

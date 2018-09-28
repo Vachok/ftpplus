@@ -8,7 +8,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import ru.vachok.money.components.ParserCBRru;
+import ru.vachok.money.components.ParserCBRruSRV;
 import ru.vachok.money.services.WhoIsWithSRV;
 
 import javax.servlet.http.HttpServletRequest;
@@ -20,35 +20,27 @@ import javax.servlet.http.HttpServletRequest;
 @Controller
 public class MoneyCtrl {
 
-    private ParserCBRru parserCBRru;
+    private ParserCBRruSRV parserCBRruSRV;
 
     private WhoIsWithSRV whoIsWithSRV;
 
     /*Instances*/
     @Autowired
-    public MoneyCtrl(ParserCBRru parserCBRru, WhoIsWithSRV whoIsWithSRV) {
+    public MoneyCtrl(ParserCBRruSRV parserCBRruSRV, WhoIsWithSRV whoIsWithSRV) {
     }
 
     @GetMapping("/money")
     public String money(Model model) {
-        model.addAttribute("ParserCBRru", parserCBRru);
-        model.addAttribute("map", oldInfoCurGet());
+        model.addAttribute("ParserCBRruSRV", parserCBRruSRV);
         model.addAttribute("currency", "in progress...");
-        model.addAttribute("title", parserCBRru.getUserInput());
+        model.addAttribute("title", parserCBRruSRV.getUserInput());
         return "money";
     }
 
-    private String oldInfoCurGet() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("<p>").append(ParserCBRru.getWelcomeNewUser());
-        sb.append("</p>");
-        return sb.toString();
-    }
-
     @PostMapping("/getmoney")
-    public String getMoney(@ModelAttribute ParserCBRru parserCBRru, Model model, BindingResult result, HttpServletRequest request){
+    public String getMoney(@ModelAttribute ParserCBRruSRV parserCBRruSRV, Model model, BindingResult result, HttpServletRequest request) {
         String s = whoIsWithSRV.whoIs( request.getRemoteAddr());
-        model.addAttribute("ParserCBRru", parserCBRru);
+        model.addAttribute("ParserCBRruSRV", parserCBRruSRV);
         model.addAttribute("result", s);
         return "ok";
     }

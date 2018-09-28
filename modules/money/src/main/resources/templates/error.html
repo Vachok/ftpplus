@@ -7,7 +7,7 @@
     <title>НИИХуЯ</title>
 </head>
 <body>
-<h4 th:text="${errmessage}">
+<h4 th:text="${errmessage}"/>
 <textarea th:text="${error}"/>
     <p>
 <a th:href="@{/exit}">Выйти из меня...</a><br>
@@ -15,11 +15,6 @@
 <img th:src="@{images/banner.jpg}">
 </body>
 <footer>
-    <link>
-    <a th:href="@{/exit}">Выйти из меня...</a><br>
-    <link>
-    <a th:href="@{/exit?shutdown}">Выключить систему...</a><br>
-    <link>
-    <a th:href="@{/exit?restart}">Перегруз системы...</a><br>
+    <a href="/">Main</a> | <a href="/sysinfo">Sys INFO</a>
 </footer>
 </html>

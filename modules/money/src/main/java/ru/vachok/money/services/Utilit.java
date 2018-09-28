@@ -3,7 +3,7 @@ package ru.vachok.money.services;
 
 
 import org.slf4j.Logger;
-import ru.vachok.money.config.ConstantsFor;
+import ru.vachok.money.ConstantsFor;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;

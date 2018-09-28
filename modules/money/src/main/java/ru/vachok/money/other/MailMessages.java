@@ -5,8 +5,8 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.messenger.email.ESender;
+import ru.vachok.money.ConstantsFor;
 import ru.vachok.money.components.MessageFromInbox;
-import ru.vachok.money.config.ConstantsFor;
 import ru.vachok.money.services.TForms;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
@@ -14,7 +14,10 @@ import ru.vachok.mysqlandprops.props.InitProperties;
 
 import javax.mail.*;
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.Objects;
+import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;

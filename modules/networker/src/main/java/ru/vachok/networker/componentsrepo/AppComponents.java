@@ -43,7 +43,7 @@ public class AppComponents {
     @Bean
     @Scope ("singleton")
     public NetScannerSvc netScan() {
-        return new NetScannerSvc();
+        return new NetScannerSvc(lastNetScan());
     }
 
     @Bean

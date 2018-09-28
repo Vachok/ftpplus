@@ -22,11 +22,11 @@ public class VisitorSrv {
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(VisitorSrv.class.getSimpleName());
 
-    public void makeVisit(HttpServletRequest request, HttpServletResponse response) {
+    public void makeVisit(HttpServletRequest request, HttpServletResponse response) throws NullPointerException {
         String sessionId = request.getSession().getId();
         String msg = "SET NEW Session ID" + request.getSession().getId() + " sessionID = " + sessionId;
         LOGGER.info(msg);
-        if(new CookieMaker().isCookiePresent(request)){
+        if (new CookieMaker().isCookiePresent(request) == 0) {
             StringBuilder sb = new StringBuilder();
             Cookie[] cookies = request.getCookies();
             for(Cookie c : cookies){
@@ -41,6 +41,7 @@ public class VisitorSrv {
                     .append(c.getValue());
             }
             new DBMessage().info(VisitorSrv.class.getSimpleName(), "cookies", sb.toString());
+
         }
         else{
             cookiedResp(response, sessionId);

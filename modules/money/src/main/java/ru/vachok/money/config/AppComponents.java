@@ -6,10 +6,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Scope;
-import ru.vachok.money.components.*;
+import ru.vachok.money.components.CalculatorForSome;
+import ru.vachok.money.components.Currencies;
+import ru.vachok.money.components.MyOpel;
 import ru.vachok.money.other.MailMessages;
 import ru.vachok.money.other.SpeedRunActualize;
-import ru.vachok.money.services.AppVerSrv;
 
 
 /**
@@ -25,10 +26,7 @@ public class AppComponents {
     @Bean
     @Scope("singleton")
     public static SpeedRunActualize getSpeedActualizer() {
-        SpeedRunActualize speedRunActualize = new SpeedRunActualize();
-        String msg1 = speedRunActualize.avgInfo(0) + " A107";
-        String msg = speedRunActualize.avgInfo(1) + " Riga";
-        return speedRunActualize;
+        return new SpeedRunActualize();
     }
 
     @Bean
@@ -50,24 +48,8 @@ public class AppComponents {
 
     }
 
-    @Bean
-    @Scope("singleton")
-    public ParserCBRru parserCBRru() {
-        return ParserCBRru.getParser();
+    public Currencies currencies() {
+        return new Currencies();
     }
 
-    @Bean
-    public AppVerSrv appVerSrv() {
-        return new AppVerSrv(appVersion());
-    }
-
-    @Bean
-    @Scope ("singleton")
-    public static AppVersion appVersion() {
-        final AppVersion appVersion = new AppVersion();
-        final int genericId = AppVersion.GENERIC_ID;
-        String msg = "appVersion wanted! ID this version = " + genericId;
-        LOGGER.warn(msg);
-        return new AppVersion();
-    }
 }

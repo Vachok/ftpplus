@@ -5,7 +5,7 @@ import org.slf4j.Logger;
 import org.springframework.scheduling.annotation.Scheduled;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.messenger.email.ESender;
-import ru.vachok.money.config.ConstantsFor;
+import ru.vachok.money.ConstantsFor;
 import ru.vachok.money.services.DBMessage;
 import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.RegRuMysql;

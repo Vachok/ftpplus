@@ -55,9 +55,9 @@ public class NetScannerSvc {
 
     /*Private methods*/
     @Autowired
-    public NetScannerSvc() {
+    public NetScannerSvc(LastNetScan lastNetScan) {
         this.messageToUser = new DBMessenger();
-        this.lastNetScan = AppComponents.lastNetScan();
+        this.lastNetScan =lastNetScan;
     }
 
     public String getInfoFromDB() {
@@ -172,7 +172,6 @@ public class NetScannerSvc {
         String pcsString = writeDB(pcNames);
         logger.info(pcsString);
         pcNames.add("<b>Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethTime) + " sec.</b>");
-        lastNetScan.saveState();
         return pcNames;
     }
 

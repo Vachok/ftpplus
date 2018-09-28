@@ -3,7 +3,7 @@ package ru.vachok.money.other.ftpclient;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
-import ru.vachok.money.config.ConstantsFor;
+import ru.vachok.money.ConstantsFor;
 import ru.vachok.money.services.Utilit;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.InitProperties;

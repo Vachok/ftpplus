@@ -3,6 +3,7 @@ package ru.vachok.money.config;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Configuration;
+import ru.vachok.money.ConstantsFor;
 import ru.vachok.money.MoneyApplication;
 import ru.vachok.money.services.TForms;
 

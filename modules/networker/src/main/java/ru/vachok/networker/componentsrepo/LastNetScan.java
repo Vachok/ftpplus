@@ -16,8 +16,8 @@ import java.util.concurrent.TimeUnit;
 
 /**
  @since 22.09.2018 (13:36) */
-@Component ("lastnetscan")
-@Scope ("singleton")
+@Component("lastnetscan")
+@Scope("singleton")
 public class LastNetScan implements Serializable {
 
     private static final long serialVersionUID = 1984L;
@@ -27,13 +27,8 @@ public class LastNetScan implements Serializable {
 
     private Date timeLastScan;
 
-    private transient Object o;
-
     private Map<String, Boolean> netWork = new ConcurrentHashMap<>();
 
-    private transient ObjectInputStream in;
-
-    private transient ObjectOutputStream out;
 
     public Date getTimeLastScan() {
         return timeLastScan;
@@ -44,22 +39,11 @@ public class LastNetScan implements Serializable {
     }
 
     public Map<String, Boolean> getNetWork() {
-        return this.netWork;
+        return netWork;
     }
 
     public void setNetWork(Map<String, Boolean> netWork) {
         this.netWork = netWork;
-        writeObject(out);
-    }
-
-    private void writeObject(ObjectOutputStream out) {
-        this.out = out;
-        try (OutputStream outputStream = new FileOutputStream(ConstantsFor.LASTNETSCAN_FILE)) {
-            this.out = new ObjectOutputStream(outputStream);
-            this.out.writeObject(this);
-        } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
-        }
     }
 
     /*Instances*/
@@ -67,29 +51,11 @@ public class LastNetScan implements Serializable {
         LOGGER.info("Serial. Understand 25.09.2018 (20:45)");
     }
 
-    private void readObject(ObjectInputStream in) {
-        try{
-            in.defaultReadObject();
-        }
-        catch(IOException | ClassNotFoundException e){
-            LOGGER.error(e.getMessage(), e);
-            return new LastNetScan();
-        }
-        return (LastNetScan) o;
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
     }
 
-    private void writeObject(ObjectOutputStream out) {
-        try{
-            out.defaultWriteObject();
-        }
-        catch(IOException e){
-            LOGGER.error(e.getMessage(), e);
-        }
-    }
-
-    public boolean saveState() {
-        writeObject(out);
-        File file = new File(ConstantsFor.LASTNETSCAN_FILE);
-        return file.canRead() && file.isFile() && file.lastModified() < System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(1);
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        out.defaultWriteObject();
     }
 }

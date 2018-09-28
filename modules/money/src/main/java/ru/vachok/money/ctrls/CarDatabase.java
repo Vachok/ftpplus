@@ -4,8 +4,8 @@ package ru.vachok.money.ctrls;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import ru.vachok.money.components.MyOpel;
+
+import javax.servlet.http.HttpServletRequest;
 
 
 /**
@@ -14,8 +14,10 @@ import ru.vachok.money.components.MyOpel;
 public class CarDatabase {
 
     @GetMapping ("/chkcar")
-    public String showEngineTMP(Model model, @ModelAttribute MyOpel opel) {
-        model.addAttribute("opel", opel);
+    public String showEngineTMP(Model model, HttpServletRequest request) {
+        model.addAttribute("title");
+        model.addAttribute("roadStat");
+        model.addAttribute("dbStat");
         return "car_db";
     }
 

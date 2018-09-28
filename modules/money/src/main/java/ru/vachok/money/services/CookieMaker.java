@@ -50,8 +50,8 @@ public class CookieMaker {
         return cookieStart;
     }
 
-    public boolean isCookiePresent(HttpServletRequest request) {
-        return request.getCookies().length > 0;
+    int isCookiePresent(HttpServletRequest request) {
+        return request.getCookies().length;
     }
     @Override
     public int hashCode() {
