@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Scope;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.logic.CookTheCookie;
 import ru.vachok.networker.logic.DBMessenger;
 import ru.vachok.networker.services.*;
@@ -73,7 +74,10 @@ public class AppComponents {
     @Bean("versioninfo")
     public static VersionInfo versionInfo() {
         VersionInfo versionInfo = new VersionInfo();
-        versionInfo.setTimeStamp(System.currentTimeMillis() + "");
+        if(ConstantsFor.thisPC().equalsIgnoreCase("home") ||
+            ConstantsFor.thisPC().toLowerCase().contains("no0027")){
+            versionInfo.setParams();
+        }
         return versionInfo;
     }
 

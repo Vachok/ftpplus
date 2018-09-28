@@ -14,10 +14,7 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.logic.SSHFactory;
-import ru.vachok.networker.services.DataBasesSRV;
-import ru.vachok.networker.services.MatrixSRV;
-import ru.vachok.networker.services.VisitorSrv;
-import ru.vachok.networker.services.WhoIsWithSRV;
+import ru.vachok.networker.services.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -69,8 +66,9 @@ public class MatrixCtr {
         } else {
             try {
                 visitorSrv.makeVisit(request);
-            } catch (Exception e) {
-                LOGGER.error(e.getMessage(), e);
+            }
+            catch(Exception ignore){
+                //
             }
             String userIP = userPC + ":" + request.getRemotePort() + "<-" + response.getStatus();
             model.addAttribute("yourip", userIP);

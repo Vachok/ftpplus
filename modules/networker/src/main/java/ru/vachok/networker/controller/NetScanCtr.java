@@ -18,6 +18,7 @@ import ru.vachok.networker.componentsrepo.LastNetScan;
 import ru.vachok.networker.services.NetScannerSvc;
 
 import javax.servlet.http.HttpServletRequest;
+import java.security.SecureRandom;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -46,20 +47,26 @@ public class NetScanCtr {
 
     private long l;
 
+    private final int duration;
+
     /*Instances*/
     @Autowired
     public NetScanCtr(NetScannerSvc netScannerSvc, Map<String, Boolean> lastScanMap) {
         this.netScannerSvc = netScannerSvc;
         this.lastScan = netScannerSvc.getLastNetScan();
+        duration = new SecureRandom().nextInt(( int ) ConstantsFor.MY_AGE);
     }
 
     @GetMapping ("/netscan")
     public String netScan(HttpServletRequest request, Model model) {
         String propertyLastScan = properties.getProperty("lastscan", "1");
-        l = Long.parseLong(propertyLastScan) + TimeUnit.MINUTES.toMillis(ConstantsFor.MY_AGE);
+        int duration = this.duration;
+        l = Long.parseLong(propertyLastScan) + TimeUnit.MINUTES.toMillis(duration);
+
         Map<String, Boolean> netWork = lastScan.getNetWork();
-        boolean b1 = netWork.size() > 10;
-        if(b1){
+        boolean b = (l < System.currentTimeMillis());
+        boolean b1 = netWork.size() > 2;
+        if(b1 && !b){
             long l1 = TimeUnit.MILLISECONDS.toSeconds(l - System.currentTimeMillis());
             String msg = l1 + " seconds (" + ( float ) l1 / ConstantsFor.ONE_HOUR_IN_MIN + " min) left";
             LOGGER.warn(msg);
@@ -70,7 +77,7 @@ public class NetScanCtr {
             properties.setProperty("totpc", ConstantsFor.TOTAL_PC + "");
         }
         else{
-            scanIt(request, model);
+            scanIt(request, model, b);
         }
         model
             .addAttribute("netScannerSvc", netScannerSvc)
@@ -79,9 +86,9 @@ public class NetScanCtr {
         return NETSCAN_STR;
     }
 
-    private void scanIt(HttpServletRequest request, Model model) {
+    private void scanIt(HttpServletRequest request, Model model, boolean b) {
 
-        boolean b = (l > System.currentTimeMillis());
+
 
         if(request.getQueryString()!=null){
             netScannerSvc.setQer(request.getQueryString());
@@ -95,7 +102,7 @@ public class NetScanCtr {
                 List<String> pCsAsync = netScannerSvc.getPcNames();
                 model
                     .addAttribute(TITLE_STR, ( float ) TimeUnit.MILLISECONDS
-                        .toSeconds(System.currentTimeMillis() - l) / ConstantsFor.ONE_HOUR_IN_MIN + " was scan")
+                        .toSeconds(System.currentTimeMillis() - this.l) / ConstantsFor.ONE_HOUR_IN_MIN + " was scan")
                     .addAttribute("pc", new TForms().fromArray(pCsAsync));
                 properties.setProperty("lastscan", System.currentTimeMillis() + "");
                 initProperties.delProps();

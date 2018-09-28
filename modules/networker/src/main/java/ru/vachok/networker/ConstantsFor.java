@@ -31,6 +31,7 @@ public enum ConstantsFor {
      */
     public static final int MBYTE = 1024 * 1024;
 
+
     public static final String MAIL_MSG_FILE_OBJ_NAME = "mailmessage.obj";
 
     public static final String LASTNETSCAN_FILE = "LastNetScan.obj";
@@ -38,6 +39,10 @@ public enum ConstantsFor {
     public static final long MY_AGE = ( long ) Year.now().getValue() - 1984;
 
     public static final int TOTAL_PC = 315;
+
+    public static final Float NO_F_HRS = TimeUnit
+        .MILLISECONDS.toMinutes(System.currentTimeMillis() - Long
+            .parseLong(getTheProps().getProperty("lasts", 1515233487000L + ""))) / 60f / 24f;
 
     public static boolean getPcAuth(HttpServletRequest request) {
         return request.getRemoteAddr().toLowerCase().contains("0:0:0:0") ||
@@ -157,7 +162,12 @@ public enum ConstantsFor {
         return request.getRemoteAddr();
     }
 
-    private static String thisPC() {
+    private static Properties getTheProps() {
+        InitProperties initProperties = new DBRegProperties("u0466446_properties-general");
+        return initProperties.getProps();
+    }
+
+    public static String thisPC() {
         try {
             return InetAddress.getLocalHost().getHostName();
         } catch (UnknownHostException e) {

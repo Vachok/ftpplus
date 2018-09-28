@@ -65,7 +65,6 @@ public class IntoApplication {
         SPRING_APPLICATION.setResourceLoader(new ResLoader());
         SpringApplication.run(IntoApplication.class, args);
         infoForU(appCtx);
-        VERSION_INFO.setTimeStamp(BUILD_ST + "");
     }
 
     /**
