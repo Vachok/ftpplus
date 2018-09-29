@@ -9,7 +9,8 @@
 </head>
 <body>
 <a href="/">
-    <center><h2 th:utext="${left}"></h2></center>
+    <center><h2 th:utext="${left}"></h2><br>
+        <h3 th:utext="${newpc}"/></center>
 </a>
 
 <form th:action="@{/netscan}" th:object="${netScannerSvc}" method="POST">
