@@ -36,13 +36,18 @@ public class NetScannerSvc {
 
     private static final String SOURCE_CLASS = NetScannerSvc.class.getSimpleName();
 
-    private static final List<String> PC_NAMES = new ArrayList<>();
-
     private static Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.DB_PREFIX + "velkom");
 
     private static Logger logger = AppComponents.getLogger();
 
     private MessageToUser messageToUser;
+
+    private static final List<String> PC_NAMES = new ArrayList<>();
+
+    public List<String> getPcNames() {
+        getPCsAsync();
+        return PC_NAMES;
+    }
 
     private String thePc;
 
@@ -51,11 +56,6 @@ public class NetScannerSvc {
     private Map<String, Boolean> netWork;
 
     private String qer;
-
-    public List<String> getPcNames() {
-        getPCsAsync();
-        return PC_NAMES;
-    }
 
     public void getPCsAsync() {
         new Thread(() -> {
@@ -81,7 +81,7 @@ public class NetScannerSvc {
     }
 
     public List<String> getPCNamesPref(String prefix) {
-        this.netWork = AppComponents.lastNetScanMap();
+        this.netWork = this.lastNetScan.getNetWork();
         this.qer = prefix;
         final long startMethTime = System.currentTimeMillis();
         List<String> pcNames = new ArrayList<>();

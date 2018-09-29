@@ -52,7 +52,7 @@ public class NetScanCtr {
     /*Instances*/
     @Autowired
     public NetScanCtr(NetScannerSvc netScannerSvc, Map<String, Boolean> lastScanMap) {
-        this.netScannerSvc = AppComponents.netScannerSvc();
+        this.netScannerSvc = netScannerSvc;
         lastScan = netScannerSvc.getLastNetScan();
         duration = new SecureRandom().nextInt(( int ) ConstantsFor.MY_AGE);
     }
@@ -63,7 +63,7 @@ public class NetScanCtr {
         int duration = this.duration;
         l = Long.parseLong(propertyLastScan) + TimeUnit.MINUTES.toMillis(duration);
 
-        Map<String, Boolean> netWork = AppComponents.lastNetScanMap();
+        Map<String, Boolean> netWork = lastScan.getNetWork();
         boolean isSystemTimeBigger = (System.currentTimeMillis() > l);
         boolean isMapSizeBigger = netWork.size() > 2;
         if(isMapSizeBigger){
