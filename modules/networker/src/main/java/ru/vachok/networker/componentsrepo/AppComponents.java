@@ -101,6 +101,7 @@ public class AppComponents {
     @Scope ("singleton")
     public NetScannerSvc netScannerSvc() {
         LastNetScan lastNetScan = new LastNetScan();
+        lastNetScan.setNetWork(lastNetScanMap());
         String msg = lastNetScan.getTimeLastScan() + " timeLastScan";
         getLogger().warn(msg);
         return new NetScannerSvc(lastNetScan);

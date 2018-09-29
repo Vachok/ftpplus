@@ -337,5 +337,6 @@ public class NetScannerSvc {
     public NetScannerSvc(LastNetScan lastNetScan) {
         this.messageToUser = new DBMessenger();
         this.lastNetScan = lastNetScan;
+        getPCsAsync();
     }
 }
