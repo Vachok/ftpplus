@@ -1,6 +1,7 @@
 package ru.vachok.money.components;
 
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -11,6 +12,12 @@ import java.util.StringJoiner;
  */
 @Component("currency")
 public class Currencies {
+
+    private ParserCBRruSRV parserCBRruSRV;
+
+    public ParserCBRruSRV getParserCBRruSRV() {
+        return parserCBRruSRV;
+    }
 
     private static final float USD_2014 = 34.26f;
 
@@ -48,6 +55,12 @@ public class Currencies {
 
     public void setUsDollar(double usDollar) {
         this.usDollar = usDollar;
+    }
+
+    /*Instances*/
+    @Autowired
+    public Currencies(ParserCBRruSRV parserCBRruSRV) {
+        this.parserCBRruSRV = parserCBRruSRV;
     }
 
     @Override

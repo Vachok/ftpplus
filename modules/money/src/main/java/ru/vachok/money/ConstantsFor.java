@@ -3,21 +3,14 @@ package ru.vachok.money;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.messenger.email.ESender;
-import ru.vachok.money.config.AppCtx;
-import ru.vachok.money.services.DBMessage;
 import ru.vachok.mysqlandprops.DataConnectTo;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -42,15 +35,6 @@ public enum ConstantsFor {
     public static final String APP_NAME = ConstantsFor.class.getPackage().getName().replaceAll("\\Q.\\E", "_") + "-";
 
     public static final long START_STAMP = System.currentTimeMillis();
-
-    public static final AnnotationConfigApplicationContext CONTEXT = AppCtx.getCtx();
-
-    public static BiConsumer<String, String> toDBAndMail = (x, y) -> {
-        MessageToUser[] messagesToUser = {new ESender("143500@gmail.com"), new DBMessage()};
-        for(MessageToUser messageToUser : messagesToUser){
-            messageToUser.info(new Date() + " " + ConstantsFor.APP_NAME + " | ", x, y);
-        }
-    };
 
     public static final int YEAR_BIRTH = 1984;
 

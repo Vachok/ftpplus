@@ -1,16 +1,14 @@
-package ru.vachok.money.other;
+package ru.vachok.money.components;
 
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 import ru.vachok.money.ConstantsFor;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.InitProperties;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.security.SecureRandom;
 import java.util.Properties;
 import java.util.StringJoiner;
@@ -18,6 +16,7 @@ import java.util.StringJoiner;
 
 /**
  @since 27.09.2018 (1:02) */
+@Component ("appversion")
 public class AppVersion {
 
     public static final int GENERIC_ID = new SecureRandom().nextInt(1984);

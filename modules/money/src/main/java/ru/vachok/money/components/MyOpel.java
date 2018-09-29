@@ -19,6 +19,16 @@ public class MyOpel {
 
     private double avgTime;
 
+    private String gosNum;
+
+    public String getGosNum() {
+        return gosNum;
+    }
+
+    public void setGosNum(String gosNum) {
+        this.gosNum = gosNum;
+    }
+
     public int getCarMiletage() {
         return carMiletage;
     }

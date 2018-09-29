@@ -10,9 +10,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.money.ConstantsFor;
+import ru.vachok.money.components.Visitor;
 import ru.vachok.money.config.AppCtx;
 import ru.vachok.money.services.TimeWorms;
-import ru.vachok.money.services.VisitorSrv;
 import ru.vachok.money.services.WhoIsWithSRV;
 
 import javax.servlet.http.HttpServletRequest;
@@ -27,20 +27,20 @@ public class Index {
     /*Fields*/
     private static final Logger LOGGER = LoggerFactory.getLogger(Index.class.getSimpleName());
 
-    private TimeWorms timeWorms;
-
-    private VisitorSrv visitorSrv;
-
     private WhoIsWithSRV whoIsWithSRV;
 
     @Value ("version")
     private String appVersion;
 
+    private Visitor visitor;
+
+    private TimeWorms timeWorms;
+
     /*Instances*/
     @Autowired
-    public Index(TimeWorms timeWorms, VisitorSrv visitorSrv, WhoIsWithSRV whoIsWithSRV) {
-        this.visitorSrv = visitorSrv;
+    public Index(WhoIsWithSRV whoIsWithSRV, Visitor visitor, TimeWorms timeWorms) {
         this.whoIsWithSRV = whoIsWithSRV;
+        this.visitor = visitor;
         this.timeWorms = timeWorms;
         ConfigurableEnvironment environment = AppCtx.getCtx().getEnvironment();
         for(String profile : environment.getActiveProfiles()){
@@ -51,7 +51,7 @@ public class Index {
 
     @GetMapping ("/")
     public String indexString(HttpServletRequest request, HttpServletResponse response, Model model) {
-        visitorSrv.makeVisit(request, response);
+        visitor.getVisitorSrv().makeVisit(request, response);
         model.addAttribute("title", request.getRemoteAddr() + " " + response.getStatus());
         model.addAttribute("timeleft", timeWorms.timeLeft());
         model.addAttribute("geoloc", whoIsWithSRV.whoIs(request.getRemoteAddr()));

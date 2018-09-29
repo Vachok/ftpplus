@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.money.components.CalculatorForSome;
+import ru.vachok.money.components.Visitor;
 import ru.vachok.money.services.CalcSrv;
 import ru.vachok.money.services.CookieMaker;
-import ru.vachok.money.services.VisitorSrv;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -38,23 +38,21 @@ public class CalcCTRL {
 
     private CalculatorForSome calculatorForSome;
 
-    private VisitorSrv visitorSrv;
+    private Visitor visitor;
 
     private CookieMaker cookieMaker;
 
     /*Instances*/
     @Autowired
-    public CalcCTRL() {
+    public CalcCTRL(CalculatorForSome calculatorForSome, CalcSrv calcSrv) {
         this.calculatorForSome = new CalculatorForSome();
         this.calcSrv = new CalcSrv();
-        this.visitorSrv = new VisitorSrv();
         this.cookieMaker = new CookieMaker();
     }
 
 
     @GetMapping ("/calc")
     public String resultOfCount(Model model, HttpServletRequest request, HttpServletResponse response) {
-        visitorSrv.makeVisit(request, response);
         cook(request, response);
         model.addAttribute("CalculatorForSome", calculatorForSome);
         model.addAttribute("title", "CALC");

@@ -4,8 +4,8 @@ package ru.vachok.money.ctrls;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import ru.vachok.money.components.AppVersion;
 import ru.vachok.money.config.AppCtx;
-import ru.vachok.money.other.AppVersion;
 
 import javax.servlet.http.HttpServletRequest;
 

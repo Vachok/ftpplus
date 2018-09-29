@@ -16,6 +16,16 @@ import javax.servlet.http.HttpServletResponse;
 public class VisitorSrv {
 
     /*Fields*/
+    private CookieMaker cookieMaker;
+
+    public CookieMaker getCookieMaker() {
+        return cookieMaker;
+    }
+
+    /*Instances*/
+    public VisitorSrv(CookieMaker cookieMaker) {
+        this.cookieMaker = cookieMaker;
+    }
 
     /**
      {@link }

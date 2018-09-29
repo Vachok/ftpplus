@@ -1,7 +1,6 @@
 package ru.vachok.money.other;
 
 
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.messenger.email.ESender;
@@ -14,10 +13,7 @@ import ru.vachok.mysqlandprops.props.InitProperties;
 
 import javax.mail.*;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Objects;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -35,8 +31,6 @@ public class MailMessages implements Callable<Message[]> {
     private static final String SOURCE_CLASS = MailMessages.class.getSimpleName();
 
     private static final org.slf4j.Logger LOGGER = ConstantsFor.getLogger();
-
-    private static final AnnotationConfigApplicationContext ctx = ConstantsFor.CONTEXT;
 
     private boolean cleanMBox;
 
@@ -158,7 +152,7 @@ public class MailMessages implements Callable<Message[]> {
 
 
     /**
-     <h2>Пробует сохранить настройки в файл и в БД.</h2> {@link #getSessionProps()} .
+     <b>Пробует сохранить настройки в файл и в БД.</h2> {@link #getSessionProps()} </b>.
      <p>
      + {@link MailMessages#SOURCE_CLASS}
 

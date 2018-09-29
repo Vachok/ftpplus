@@ -1,7 +1,9 @@
 package ru.vachok.money.components;
 
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import ru.vachok.money.services.VisitorSrv;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -23,6 +25,17 @@ public class Visitor {
     private String sessionID;
 
     /*Fields*/
+    private VisitorSrv visitorSrv;
+
+    public VisitorSrv getVisitorSrv() {
+        return visitorSrv;
+    }
+
+    /*Instances*/
+    @Autowired
+    public Visitor(VisitorSrv visitorSrv) {
+        this.visitorSrv = visitorSrv;
+    }
 
     /**
      Simple Name класса, для поиска настроек
@@ -40,8 +53,6 @@ public class Visitor {
     private String ipAdd;
 
     private long timeStart;
-
-    private String sessionId;
 
     private long lastActivity;
 
@@ -79,14 +90,6 @@ public class Visitor {
 
     public void setTimeStart(long timeStart) {
         this.timeStart = timeStart;
-    }
-
-    public String getSessionId() {
-        return sessionId;
-    }
-
-    public void setSessionId(String sessionId) {
-        this.sessionId = sessionId;
     }
 
     public long getLastActivity() {

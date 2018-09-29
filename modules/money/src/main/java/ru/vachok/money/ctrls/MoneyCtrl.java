@@ -8,6 +8,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import ru.vachok.money.components.Currencies;
 import ru.vachok.money.components.ParserCBRruSRV;
 import ru.vachok.money.services.WhoIsWithSRV;
 
@@ -20,13 +21,18 @@ import javax.servlet.http.HttpServletRequest;
 @Controller
 public class MoneyCtrl {
 
-    private ParserCBRruSRV parserCBRruSRV;
+    private Currencies currencies;
 
     private WhoIsWithSRV whoIsWithSRV;
 
+    private ParserCBRruSRV parserCBRruSRV;
+
     /*Instances*/
     @Autowired
-    public MoneyCtrl(ParserCBRruSRV parserCBRruSRV, WhoIsWithSRV whoIsWithSRV) {
+    public MoneyCtrl(Currencies currencies, WhoIsWithSRV whoIsWithSRV) {
+        this.currencies = currencies;
+        this.whoIsWithSRV = whoIsWithSRV;
+        this.parserCBRruSRV = currencies.getParserCBRruSRV();
     }
 
     @GetMapping("/money")
