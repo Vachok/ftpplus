@@ -43,7 +43,7 @@ public class NetScanCtr {
 
     private static final String TITLE_STR = "TITLE_STR";
 
-    private LastNetScan lastScan;
+    private static LastNetScan lastScan;
 
     private long l;
 
@@ -52,8 +52,8 @@ public class NetScanCtr {
     /*Instances*/
     @Autowired
     public NetScanCtr(NetScannerSvc netScannerSvc, Map<String, Boolean> lastScanMap) {
-        this.netScannerSvc = netScannerSvc;
-        this.lastScan = netScannerSvc.getLastNetScan();
+        this.netScannerSvc = AppComponents.netScannerSvc();
+        lastScan = netScannerSvc.getLastNetScan();
         duration = new SecureRandom().nextInt(( int ) ConstantsFor.MY_AGE);
     }
 
@@ -63,34 +63,39 @@ public class NetScanCtr {
         int duration = this.duration;
         l = Long.parseLong(propertyLastScan) + TimeUnit.MINUTES.toMillis(duration);
 
-        Map<String, Boolean> netWork = lastScan.getNetWork();
-        boolean b = (l < System.currentTimeMillis());
-        boolean b1 = netWork.size() > 2;
-        if(b1 && !b){
-            long l1 = TimeUnit.MILLISECONDS.toSeconds(l - System.currentTimeMillis());
-            String msg = l1 + " seconds (" + ( float ) l1 / ConstantsFor.ONE_HOUR_IN_MIN + " min) left";
+        Map<String, Boolean> netWork = AppComponents.lastNetScanMap();
+        boolean isSystemTimeBigger = (System.currentTimeMillis() > l);
+        boolean isMapSizeBigger = netWork.size() > 2;
+        if(isMapSizeBigger){
+            long timeLeft = TimeUnit.MILLISECONDS.toSeconds(l - System.currentTimeMillis());
+            String msg = timeLeft + " seconds (" + ( float ) timeLeft / ConstantsFor.ONE_HOUR_IN_MIN + " min) left";
             LOGGER.warn(msg);
             model
                 .addAttribute("left", msg)
                 .addAttribute("pc", new TForms().fromArray(netWork, true))
                 .addAttribute("title", (ConstantsFor.TOTAL_PC - netWork.size()) + " PCs");
             properties.setProperty("totpc", ConstantsFor.TOTAL_PC + "");
+            if(isSystemTimeBigger){
+                netWork.clear();
+                String msg1 = "isSystemTimeBigger is " + isMapSizeBigger + " " + netWork.size() + " network map cleared";
+                LOGGER.warn(msg1);
+                scanIt(request, model, isSystemTimeBigger, isMapSizeBigger);
+            }
         }
         else{
-            scanIt(request, model, b);
+            scanIt(request, model, isSystemTimeBigger, isMapSizeBigger);
         }
         model
             .addAttribute("netScannerSvc", netScannerSvc)
             .addAttribute("thePc", netScannerSvc.getThePc())
             .addAttribute(TITLE_STR, "First Scan: 2018-05-05");
+        lastScan.setTimeLastScan(new Date());
         return NETSCAN_STR;
     }
 
-    private void scanIt(HttpServletRequest request, Model model, boolean b) {
+    private void scanIt(HttpServletRequest request, Model model, boolean timeBigger, boolean mapBiggerThatTwo) {
 
-
-
-        if(request.getQueryString()!=null){
+        if(request!=null && request.getQueryString()!=null){
             netScannerSvc.setQer(request.getQueryString());
             List<String> pcNames = netScannerSvc.getPCNamesPref(request.getQueryString());
             model
@@ -98,12 +103,13 @@ public class NetScanCtr {
                 .addAttribute("pc", new TForms().fromArray(pcNames));
         }
         else{
-            if(b){
+            if(timeBigger && !mapBiggerThatTwo){
                 List<String> pCsAsync = netScannerSvc.getPcNames();
                 model
                     .addAttribute(TITLE_STR, ( float ) TimeUnit.MILLISECONDS
                         .toSeconds(System.currentTimeMillis() - this.l) / ConstantsFor.ONE_HOUR_IN_MIN + " was scan")
                     .addAttribute("pc", new TForms().fromArray(pCsAsync));
+                lastScan.setTimeLastScan(new Date());
                 properties.setProperty("lastscan", System.currentTimeMillis() + "");
                 initProperties.delProps();
                 initProperties.setProps(properties);

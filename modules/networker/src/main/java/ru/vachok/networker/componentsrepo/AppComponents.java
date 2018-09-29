@@ -32,8 +32,8 @@ public class AppComponents {
 
     @Bean
     @Scope("singleton")
-    public Map<String, Boolean> lastNetScanMap() {
-        return new LastNetScan().getNetWork();
+    public static Map<String, Boolean> lastNetScanMap() {
+        return netScannerSvc().getLastNetScan().getNetWork();
     }
 
     @Bean
@@ -95,5 +95,16 @@ public class AppComponents {
     public MailSRV mailSRV(MailMessage mailMessage) {
         mailMessage = new MailMessage();
         return new MailSRV(mailMessage);
+    }
+
+    @Bean
+    @Scope ("singleton")
+    public static NetScannerSvc netScannerSvc() {
+        LastNetScan lastNetScan = new LastNetScan();
+        String msg = lastNetScan.getTimeLastScan() + " timeLastScan";
+        getLogger().warn(msg);
+        NetScannerSvc netScannerSvc = new NetScannerSvc(lastNetScan); //fixme 29.09.2018 (10:40)
+        netScannerSvc.getPcNames();
+        return netScannerSvc;
     }
 }

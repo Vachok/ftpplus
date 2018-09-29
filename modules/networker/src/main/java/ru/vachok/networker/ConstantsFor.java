@@ -66,7 +66,6 @@ public enum ConstantsFor {
     public static final AutowireCapableBeanFactory BEAN_FACTORY = new AppCtx().getAutowireCapableBeanFactory();
 
     public static long getBuildStamp() {
-        long buildSt;
         InitProperties initProperties = new DBRegProperties(APP_NAME + ConstantsFor.class.getSimpleName());
         Properties props = initProperties.getProps();
         try {
@@ -104,7 +103,7 @@ public enum ConstantsFor {
 
     public static final int TIMEOUT_5 = 5000;
 
-    public static final long DELAY = new SecureRandom().nextInt(600);
+    public static final long DELAY = new SecureRandom().nextInt(1600);
 
     public static final int DOPC = 250;
 
@@ -114,13 +113,13 @@ public enum ConstantsFor {
 
     public static final int TIMEOUT_650 = 650;
 
-    public static final long INIT_DELAY = 35;
+    public static final long INIT_DELAY = new SecureRandom().nextInt(( int ) MY_AGE);
 
     public static final Long CACHE_TIME_MS = TimeUnit.MINUTES.toMillis(10);
 
     public static final float ONE_HOUR_IN_MIN = 60f;
 
-    public static int KBYTE = 1024;
+    public static final int KBYTE = 1024;
 
     public static final long START_STAMP = System.currentTimeMillis();
 
@@ -130,7 +129,7 @@ public enum ConstantsFor {
 
     public static final String SCREEN_PATH = "C:\\Users\\ikudryashov\\Documents\\ShareX\\Screenshots\\";
 
-    public static PassGenerator passGenerator = new PassGenerator();
+    public static final PassGenerator passGenerator = new PassGenerator();
 
     public static String consString() {
         return "ConstantsFor{" +
