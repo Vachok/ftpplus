@@ -1,13 +1,16 @@
 package ru.vachok.money.ctrls;
 
 
-
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import ru.vachok.money.ConstantsFor;
-import ru.vachok.money.logic.ParseCurrency;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import ru.vachok.money.components.Currencies;
+import ru.vachok.money.components.ParserCBRruSRV;
+import ru.vachok.money.services.WhoIsWithSRV;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -18,26 +21,33 @@ import javax.servlet.http.HttpServletRequest;
 @Controller
 public class MoneyCtrl {
 
-    /**
-     * Simple Name класса, для поиска настроек
-     */
-    private static final String SOURCE_CLASS = MoneyCtrl.class.getSimpleName();
+    private Currencies currencies;
 
+    private WhoIsWithSRV whoIsWithSRV;
 
-    @GetMapping("/moneypack")
-    public String money( @RequestParam(value = "currency", required = false, defaultValue = "") String currency , Model model , HttpServletRequest request ) {
-        ConstantsFor.setMyPC(request.getRemoteAddr().contains("10.10.111.") || request.getRemoteAddr().contains("0:0:0:0:0"));
-        currency = new ParseCurrency().getTodayUSD();
-        model.addAttribute("currency", currency);
-        model.addAttribute("userhost" , request.getRemoteHost());
-        return "moneypack";
+    private ParserCBRruSRV parserCBRruSRV;
+
+    /*Instances*/
+    @Autowired
+    public MoneyCtrl(Currencies currencies, WhoIsWithSRV whoIsWithSRV) {
+        this.currencies = currencies;
+        this.whoIsWithSRV = whoIsWithSRV;
+        this.parserCBRruSRV = currencies.getParserCBRruSRV();
     }
 
+    @GetMapping("/money")
+    public String money(Model model) {
+        model.addAttribute("ParserCBRruSRV", parserCBRruSRV);
+        model.addAttribute("currency", "in progress...");
+        model.addAttribute("title", parserCBRruSRV.getUserInput());
+        return "money";
+    }
 
-
-    public String exitApp() {
-        System.exit(0);
-        return "redirect:http://10.10.111.57:8880/exit";
-
+    @PostMapping("/getmoney")
+    public String getMoney(@ModelAttribute ParserCBRruSRV parserCBRruSRV, Model model, BindingResult result, HttpServletRequest request) {
+        String s = whoIsWithSRV.whoIs( request.getRemoteAddr());
+        model.addAttribute("ParserCBRruSRV", parserCBRruSRV);
+        model.addAttribute("result", s);
+        return "ok";
     }
 }

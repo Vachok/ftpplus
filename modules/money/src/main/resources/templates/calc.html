@@ -1,0 +1,20 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${title}">ХЗ</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link rel="stylesheet" type="text/css" media="all" href="css/main.css" th:href="@{css/main.css}"/>
+</head>
+<body>
+<a href="/">Главная</a> | <a href="/ftp">FTP</a>
+<p th:utext="${inp}"></p>
+<form th:action="@{/calc}" th:object="${CalculatorForSome}" method="POST">
+    Введите что-нибудь(введите ? для помощи):
+    <input type="text" th:field="*{userInput}"/>
+    <br>
+    <input type="submit" value="Считать"/>
+    <br>
+
+</form>
+</body>
+</html>
