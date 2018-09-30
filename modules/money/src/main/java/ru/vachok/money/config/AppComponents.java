@@ -11,6 +11,8 @@ import ru.vachok.money.services.CookieMaker;
 import ru.vachok.money.services.VisitorSrv;
 import ru.vachok.mysqlandprops.EMailAndDB.SpeedRunActualize;
 
+import javax.servlet.http.Cookie;
+
 
 /**
  @since 09.09.2018 (13:02) */
@@ -24,18 +26,29 @@ public class AppComponents {
     }
 
     @Bean
+    public ParserCBRruSRV parserCBRruSRV(){
+        return new ParserCBRruSRV(currencies());
+    }
+
+    @Bean
+    public CookIES cookIES() {
+        Cookie cookie = new Cookie("id", this.appVersion().toString());
+        CookieMaker cookieMaker = new CookieMaker();
+        return new CookIES(cookieMaker);
+    }
+
+    @Bean
+    public AppVersion appVersion() {
+        return new AppVersion();
+    }
+
+    @Bean
     @Scope ("singleton")
     public MyOpel myOpel(SpeedRunActualize speedRunActualize) {
         MyOpel myOpel = new MyOpel();
         myOpel.setCarName("Astra");
         myOpel.setGosNum("A939OO190");
         return myOpel;
-    }
-
-    @Bean ("CalculatorForSome")
-    @Scope ("prototype")
-    public CalculatorForSome calculatorForSome() {
-        return new CalculatorForSome();
     }
 
     @Bean
@@ -47,8 +60,8 @@ public class AppComponents {
 
     @Bean
     @Scope ("prototype")
-    public Currencies currencies(ParserCBRruSRV parserCBRruSRV) {
-        return new Currencies(parserCBRruSRV);
+    public Currencies currencies() {
+        return new Currencies();
     }
 
     @Bean
@@ -64,8 +77,9 @@ public class AppComponents {
         return new CalcSrv(calculatorForSome());
     }
 
-    @Bean
-    public AppVersion appVersion() {
-        return new AppVersion();
+    @Bean ("CalculatorForSome")
+    @Scope ("prototype")
+    public CalculatorForSome calculatorForSome() {
+        return new CalculatorForSome();
     }
 }

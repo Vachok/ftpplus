@@ -8,9 +8,8 @@
 </head>
 <body>
 <h3 th:utext="${currency}"/>
-<p th:utext="${map}"/>
 <center>
-    <form th:action="@{/getmoney}" th:object="${ParserCBRru}" method="POST">
+    <form th:action="@{/getmoney}" th:object="${ParserCBRruSRV}" method="POST">
         Сколько и под какой % вы положили в 2014м?
         <input type="text" th:field="*{userInput}"/>
         <br>

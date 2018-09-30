@@ -8,7 +8,6 @@ import ru.vachok.money.ConstantsFor;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.InitProperties;
 
-import java.io.*;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Properties;
@@ -57,18 +56,17 @@ public class AppVersion {
         this.appVBuild = GENERIC_ID + "." + ConstantsFor.localPc();
         try (FileReader fileReader = new FileReader(file)) {
             BufferedReader reader = new BufferedReader(fileReader);
-
+            setBuildTime(LocalDateTime.now().toString());
             reader.lines().forEach(x -> {
                 if (x.contains(VERSION_STR)) {
                     setAppDisplayVersion(x);
-                    properties.setProperty(VERSION_STR, x);
+                    properties.setProperty(VERSION_STR, x.replace(" = '0.", ""));
                 }
                 if (x.contains(COMPATIBILITY_STR)) {
                     setAppSrcVersion(x);
-                    properties.setProperty(COMPATIBILITY_STR, x);
+                    properties.setProperty(COMPATIBILITY_STR, x.replace("sourceCompatibility = ", ""));
                 }
             });
-            setBuildTime(LocalDateTime.now().toString());
             properties.setProperty("appbuild", appVBuild);
             properties.setProperty("buildtime", System.currentTimeMillis() + "");
 
@@ -81,9 +79,9 @@ public class AppVersion {
 
     private void infoGet() {
         Properties properties = initProperties.getProps();
-        setAppDisplayVersion(properties.getProperty(VERSION_STR));
-        setAppSrcVersion(properties.getProperty(COMPATIBILITY_STR));
-        setAppVBuild(properties.getProperty("appbuild"));
+        setAppDisplayVersion(properties.getProperty(VERSION_STR, "unknown"));
+        setAppSrcVersion(properties.getProperty(COMPATIBILITY_STR, LocalDateTime.now().toString()));
+        setAppVBuild(properties.getProperty("appbuild" ));
         setBuildTime(properties.getProperty("buildtime"));
     }
 
@@ -91,7 +89,7 @@ public class AppVersion {
         return buildTime;
     }
 
-    public void setBuildTime(String buildTime) {
+    public void setBuildTime(final String buildTime) {
         this.buildTime = buildTime;
     }
 

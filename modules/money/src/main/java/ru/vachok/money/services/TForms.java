@@ -4,7 +4,6 @@ package ru.vachok.money.services;
 import ru.vachok.money.other.XmlNode;
 
 import javax.mail.Address;
-import java.util.*;
 
 
 /**
@@ -23,11 +22,15 @@ public class TForms {
     }
 
     public String toStringFromArray(Exception e) {
-        stringBuilder.append("<p>");
         for(StackTraceElement stackTraceElement : e.getStackTrace()){
-            stringBuilder.append(stackTraceElement.getLineNumber() +
-                " line, in " + stackTraceElement.getClassName() + "." + stackTraceElement.getMethodName() + " exception: " +
-                stackTraceElement.toString());
+            stringBuilder
+                .append(stackTraceElement.getLineNumber())
+                .append(" line, in ")
+                .append(stackTraceElement.getClassName())
+                .append(".").append(stackTraceElement.getMethodName())
+                .append(" " +
+                "exception: ").append(stackTraceElement.toString());
+            stringBuilder.append("\n");
         }
         return stringBuilder.toString();
     }

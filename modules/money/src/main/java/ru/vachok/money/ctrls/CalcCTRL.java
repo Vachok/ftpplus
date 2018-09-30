@@ -13,9 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.money.components.CalculatorForSome;
 import ru.vachok.money.components.Visitor;
 import ru.vachok.money.services.CalcSrv;
-import ru.vachok.money.services.CookieMaker;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -40,38 +38,22 @@ public class CalcCTRL {
 
     private Visitor visitor;
 
-    private CookieMaker cookieMaker;
-
     /*Instances*/
     @Autowired
-    public CalcCTRL(CalculatorForSome calculatorForSome, CalcSrv calcSrv) {
+    public CalcCTRL(CalculatorForSome calculatorForSome, CalcSrv calcSrv, Visitor visitor) {
         this.calculatorForSome = calculatorForSome;
         this.calcSrv = calcSrv;
+        this.visitor =visitor;
     }
 
 
     @GetMapping ("/calc")
     public String resultOfCount(Model model, HttpServletRequest request, HttpServletResponse response) {
-        cook(request, response);
+        visitor.setSessionID(request.getSession().getId());
+        visitor.setRequest(request);
         model.addAttribute("CalculatorForSome", calculatorForSome);
         model.addAttribute("title", "CALC");
         return "calc";
-    }
-
-    private void cook(HttpServletRequest request, HttpServletResponse response) {
-        Cookie[] cookies = request.getCookies();
-        if(cookies.length > 0){
-            for(Cookie cookie : cookies){
-                String s = cookie.getName() + "\n" +
-                    cookie.getValue() + " value\n" +
-                    cookie.getComment() + " comment\n" +
-                    cookie.getDomain();
-                LOGGER.warn(s);
-            }
-        }
-        else{
-            response.addCookie(cookieMaker.startSession(request.getSession().getId()));
-        }
     }
 
     @PostMapping ("/calc")

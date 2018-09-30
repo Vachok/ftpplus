@@ -8,7 +8,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import ru.vachok.money.components.Currencies;
 import ru.vachok.money.components.ParserCBRruSRV;
 import ru.vachok.money.services.WhoIsWithSRV;
 
@@ -21,25 +20,22 @@ import javax.servlet.http.HttpServletRequest;
 @Controller
 public class MoneyCtrl {
 
-    private Currencies currencies;
-
     private WhoIsWithSRV whoIsWithSRV;
 
     private ParserCBRruSRV parserCBRruSRV;
 
     /*Instances*/
     @Autowired
-    public MoneyCtrl(Currencies currencies, WhoIsWithSRV whoIsWithSRV) {
-        this.currencies = currencies;
+    public MoneyCtrl(WhoIsWithSRV whoIsWithSRV, ParserCBRruSRV parserCBRruSRV) {
         this.whoIsWithSRV = whoIsWithSRV;
-        this.parserCBRruSRV = currencies.getParserCBRruSRV();
+        this.parserCBRruSRV = parserCBRruSRV;
     }
 
     @GetMapping("/money")
     public String money(Model model) {
         model.addAttribute("ParserCBRruSRV", parserCBRruSRV);
         model.addAttribute("currency", "in progress...");
-        model.addAttribute("title", parserCBRruSRV.getUserInput());
+
         return "money";
     }
 
@@ -47,6 +43,7 @@ public class MoneyCtrl {
     public String getMoney(@ModelAttribute ParserCBRruSRV parserCBRruSRV, Model model, BindingResult result, HttpServletRequest request) {
         String s = whoIsWithSRV.whoIs( request.getRemoteAddr());
         model.addAttribute("ParserCBRruSRV", parserCBRruSRV);
+        model.addAttribute("title", parserCBRruSRV.getUserInput());
         model.addAttribute("result", s);
         return "ok";
     }

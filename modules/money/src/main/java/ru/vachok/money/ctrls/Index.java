@@ -4,7 +4,6 @@ package ru.vachok.money.ctrls;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -32,9 +31,6 @@ public class Index {
     private static final Logger LOGGER = LoggerFactory.getLogger(Index.class.getSimpleName());
 
     private WhoIsWithSRV whoIsWithSRV;
-
-    @Value ("version")
-    private String appVersion;
 
     private Visitor visitor;
 

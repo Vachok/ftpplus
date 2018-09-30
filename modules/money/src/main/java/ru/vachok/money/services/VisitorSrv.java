@@ -36,7 +36,7 @@ public class VisitorSrv {
         String sessionId = request.getSession().getId();
         String msg = "SET NEW Session ID" + request.getSession().getId() + " sessionID = " + sessionId;
         LOGGER.info(msg);
-        if (new CookieMaker().isCookiePresent(request) == 0) {
+        if (CookieMaker.isCookiePresent(request) == 0) {
             StringBuilder sb = new StringBuilder();
             Cookie[] cookies = request.getCookies();
             for(Cookie c : cookies){
@@ -59,7 +59,7 @@ public class VisitorSrv {
     }
 
     private HttpServletResponse cookiedResp(HttpServletResponse response, String sessionId) {
-        Cookie cookie = new CookieMaker().startSession(sessionId);
+        Cookie cookie = CookieMaker.startSession(sessionId);
         response.addCookie(cookie);
         return response;
     }
