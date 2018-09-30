@@ -35,25 +35,28 @@ public class NetScannerSvc {
 
     private static final String SOURCE_CLASS = NetScannerSvc.class.getSimpleName();
 
-    private static Logger logger = AppComponents.getLogger();
-
     private static final String DB_NAME = ConstantsFor.DB_PREFIX + "velkom";
-
-    private List<String> pcNames = new ArrayList<>();
-
-    public List<String> getPcNames() {
-        getPCsAsync();
-        return pcNames;
-    }
 
     private static Connection c = new RegRuMysql().getDefaultConnection(DB_NAME);
 
+    private static Logger logger = AppComponents.getLogger();
+
     private static MessageToUser messageToUser;
+
+    private List<String> pcNames = new ArrayList<>();
+
+    private Map<String, Boolean> netWork;
+
     private String thePc;
 
     private LastNetScan lastNetScan;
 
     private String qer;
+
+    public List<String> getPcNames() {
+        getPCsAsync();
+        return pcNames;
+    }
 
     public void getPCsAsync() {
         new Thread(() -> {
@@ -118,67 +121,6 @@ public class NetScannerSvc {
         return "ok";
     }
 
-    public String getThePc() {
-        return thePc;
-    }
-
-    public void setThePc(String thePc) {
-        this.thePc = thePc;
-    }
-
-    public LastNetScan getLastNetScan() {
-        return lastNetScan;
-    }
-
-    public String getQer() {
-        return qer;
-    }
-
-    public void setQer(String qer) {
-        this.qer = qer;
-    }
-
-    /*Instances*/
-    public List<String> getPCNamesPref(String prefix) {
-        Map<String, Boolean> netWork = this.lastNetScan.getNetWork();
-        this.qer = prefix;
-        final long startMethTime = System.currentTimeMillis();
-        List<String> pcNames = new ArrayList<>();
-        boolean reachable;
-        InetAddress byName;
-        for(String pcName : getCycleNames(prefix)){
-            try{
-                byName = InetAddress.getByName(pcName);
-                reachable = byName.isReachable(ConstantsFor.TIMEOUT_650);
-
-                if(!reachable){
-                    String onLines = ("online " + false + "");
-                    pcNames.add(pcName + ":" + byName.getHostAddress() + " " + onLines + "");
-                    netWork.put(pcName, false);
-                    String format = MessageFormat.format("{0} {1}", pcName, onLines);
-                    logger.warn(format);
-                }
-                else{
-                    String someMore = getSomeMore(pcName);
-                    String onLines = (" online " + true + "<br>");
-                    pcNames.add(pcName + ":" + byName.getHostAddress() + onLines);
-
-                    netWork.put("<br><b>" + pcName + "</b><br>" + someMore, true);
-                    String format = MessageFormat.format("{0} {1} | {2}", pcName, onLines, someMore);
-                    logger.info(format);
-                }
-            }
-            catch(IOException ignore){
-                //
-            }
-        }
-        netWork.put("<h4>" + prefix + "     " + pcNames.size() + "</h4>", true);
-        String pcsString = writeDB(pcNames);
-        logger.info(pcsString);
-        pcNames.add("<b>Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethTime) + " sec.</b>");
-        return pcNames;
-    }
-
     private Collection<String> getCycleNames(String userQuery) {
         if(userQuery==null){
             userQuery = "pp";
@@ -222,6 +164,94 @@ public class NetScannerSvc {
         }
         return offLine.size() + " offline times and " + onLine.size() + " online times.";
     }
+
+    public String getThePc() {
+        return thePc;
+    }
+
+    private int getNamesCount(String qer) {
+        int inDex = 0;
+        if(qer.equals("no")){
+            inDex = ConstantsFor.NOPC;
+        }
+        if(qer.equals("pp")){
+            inDex = ConstantsFor.PPPC;
+        }
+        if(qer.equals("do")){
+            inDex = ConstantsFor.DOPC;
+        }
+        if(qer.equals("a")){
+            inDex = ConstantsFor.APC;
+        }
+        if(qer.equals("td")){
+            inDex = ConstantsFor.TDPC;
+        }
+        return inDex;
+    }
+
+    public void setThePc(String thePc) {
+        this.thePc = thePc;
+    }
+
+    public LastNetScan getLastNetScan() {
+        return lastNetScan;
+    }
+
+    public String getQer() {
+        return qer;
+    }
+
+    public void setQer(String qer) {
+        this.qer = qer;
+    }
+
+    /*Instances*/
+    @Autowired
+    public NetScannerSvc(LastNetScan lastNetScan) {
+        this.lastNetScan = lastNetScan;
+        getPCsAsync();
+        this.netWork = lastNetScan.getNetWork();
+    }
+
+    public List<String> getPCNamesPref(String prefix) {
+        pcNames = new ArrayList<>();
+        this.qer = prefix;
+        final long startMethTime = System.currentTimeMillis();
+        boolean reachable;
+        InetAddress byName;
+        for(String pcName : getCycleNames(prefix)){
+            try{
+                byName = InetAddress.getByName(pcName);
+                reachable = byName.isReachable(ConstantsFor.TIMEOUT_650);
+
+                if(!reachable){
+                    String onLines = ("online " + false + "");
+                    pcNames.add(pcName + ":" + byName.getHostAddress() + " " + onLines + "");
+                    netWork.put(pcName, false);
+                    String format = MessageFormat.format("{0} {1}", pcName, onLines);
+                    logger.warn(format);
+                }
+                else{
+                    String someMore = getSomeMore(pcName);
+                    String onLines = (" online " + true + "<br>");
+                    pcNames.add(pcName + ":" + byName.getHostAddress() + onLines);
+
+                    netWork.put("<br><b>" + pcName + "</b><br>" + someMore, true);
+                    String format = MessageFormat.format("{0} {1} | {2}", pcName, onLines, someMore);
+                    logger.info(format);
+                }
+            }
+            catch(IOException ignore){
+                //
+            }
+        }
+        netWork.put("<h4>" + prefix + "     " + pcNames.size() + "</h4>", true);
+        String pcsString = writeDB(pcNames);
+        logger.info(pcsString);
+        pcNames.add("<b>Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethTime) + " sec.</b>");
+        return pcNames;
+    }
+    /*Private methods*/
 
     private static String writeDB(Collection<String> pcNames) {
         List<String> list = new ArrayList<>();
@@ -300,41 +330,15 @@ public class NetScannerSvc {
                 catch(SQLException e){
                     messageToUser.errorAlert(NetScannerSvc.class.getSimpleName(), e.getMessage(), new TForms().fromArray(e.getStackTrace()));
                     logger.error(e.getMessage(), e);
-                    c = new RegRuMysql().getDefaultConnection(ConstantsFor.DB_PREFIX + "velkom");
+                    c = new RegRuMysql().getDefaultConnection(DB_NAME);
                 }
             });
             return new TForms().fromArray(list);
         }
         catch(SQLException e){
             logger.error(e.getMessage(), e);
-            c = new RegRuMysql().getDefaultConnection(ConstantsFor.DB_PREFIX + "velkom");
+            c = new RegRuMysql().getDefaultConnection(DB_NAME);
             return e.getMessage();
         }
-    }
-
-    private int getNamesCount(String qer) {
-        int inDex = 0;
-        if(qer.equals("no")){
-            inDex = ConstantsFor.NOPC;
-        }
-        if(qer.equals("pp")){
-            inDex = ConstantsFor.PPPC;
-        }
-        if(qer.equals("do")){
-            inDex = ConstantsFor.DOPC;
-        }
-        if(qer.equals("a")){
-            inDex = ConstantsFor.APC;
-        }
-        if(qer.equals("td")){
-            inDex = ConstantsFor.TDPC;
-        }
-        return inDex;
-    }
-    /*Private methods*/
-    @Autowired
-    public NetScannerSvc(LastNetScan lastNetScan) {
-        this.lastNetScan = lastNetScan;
-        getPCsAsync();
     }
 }
