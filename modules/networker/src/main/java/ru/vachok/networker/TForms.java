@@ -146,10 +146,9 @@ public class TForms {
     }
 
     public String fromArray(Map<String, Boolean> stringBooleanMap, boolean br) {
-        String str = " is online - ";
         List<String> stringList = new ArrayList<>();
         stringBooleanMap.forEach((x, y) -> {
-            stringList.add(x + " " + str + " " + y);
+            stringList.add(x + " " + y);
         });
         Collections.sort(stringList);
         brStringBuilder.append("<p>");

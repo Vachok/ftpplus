@@ -11,7 +11,6 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.scheduling.annotation.EnableScheduling;
 import ru.vachok.mysqlandprops.EMailAndDB.SpeedRunActualize;
 import ru.vachok.networker.componentsrepo.AppComponents;
-import ru.vachok.networker.componentsrepo.VersionInfo;
 import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.config.ResLoader;
 import ru.vachok.networker.logic.SystemTrayHelper;
@@ -35,11 +34,6 @@ public class IntoApplication {
      {@link AppComponents#getLogger()}
      */
     private static final Logger LOGGER = AppComponents.getLogger();
-
-    /*Fields*/
-    private static final long BUILD_ST = ConstantsFor.getBuildStamp();
-
-    private static final VersionInfo VERSION_INFO = AppComponents.versionInfo();
 
     /**
      {@link SpringApplication}
@@ -93,5 +87,7 @@ public class IntoApplication {
         ScheduledExecutorService executorService =
             Executors.unconfigurableScheduledExecutorService(Executors.newSingleThreadScheduledExecutor());
         executorService.scheduleWithFixedDelay(speedRun, ConstantsFor.INIT_DELAY, ConstantsFor.DELAY, TimeUnit.SECONDS);
+        String msg = "Initial Delay checker = " + ConstantsFor.INIT_DELAY + "\nDelay = " + ConstantsFor.DELAY;
+        LOGGER.warn(msg);
     }
 }

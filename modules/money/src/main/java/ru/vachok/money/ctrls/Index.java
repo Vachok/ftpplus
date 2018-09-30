@@ -51,7 +51,12 @@ public class Index {
 
     @GetMapping ("/")
     public String indexString(HttpServletRequest request, HttpServletResponse response, Model model) {
-        visitor.getVisitorSrv().makeVisit(request, response);
+        try{
+            visitor.getVisitorSrv().makeVisit(request, response);
+        }
+        catch(Exception e){
+            LOGGER.warn(e.getMessage());
+        }
         model.addAttribute("title", request.getRemoteAddr() + " " + response.getStatus());
         model.addAttribute("timeleft", timeWorms.timeLeft());
         model.addAttribute("geoloc", whoIsWithSRV.whoIs(request.getRemoteAddr()));

@@ -68,7 +68,7 @@ public class NetScanCtr {
             model
                 .addAttribute("left", msg)
                 .addAttribute("pc", new TForms().fromArray(netWork, true))
-                .addAttribute("title", i + " PCs");
+                .addAttribute("title", i + "/" + ConstantsFor.TOTAL_PC + " PCs");
             if(0 > i){
                 model.addAttribute("newpc", "Добавлены компы! " + Math.abs(i) + " шт.");
             }

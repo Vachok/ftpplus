@@ -26,11 +26,14 @@ import java.util.concurrent.TimeUnit;
 public enum ConstantsFor {
     ;
 
+    /*Fields*/
+    private static final InitProperties DB_REG_PROPERTIES = new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
+
+    private static final Properties PROPS = DB_REG_PROPERTIES.getProps();
     /**
      <b>1 мегабайт в байтах</b>
      */
     public static final int MBYTE = 1024 * 1024;
-
 
     public static final String MAIL_MSG_FILE_OBJ_NAME = "mailmessage.obj";
 
@@ -38,7 +41,7 @@ public enum ConstantsFor {
 
     public static final long MY_AGE = ( long ) Year.now().getValue() - 1984;
 
-    public static final int TOTAL_PC = 315;
+    public static final int TOTAL_PC = Integer.parseInt(PROPS.getProperty("totpc", "315"));
 
     public static final Float NO_F_HRS = TimeUnit
         .MILLISECONDS.toMinutes(System.currentTimeMillis() - Long

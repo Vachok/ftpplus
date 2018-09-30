@@ -25,7 +25,7 @@ public class MoneyApplication {
     private static ResourceLoader resourceLoader = new AppResLoader();
 
     public static void main(String[] args) {
-        new SystemTrayHelper().addTray();
+        new SystemTrayHelper().addTrayDefaultMinimum();
         SPRING_APPLICATION.setMainApplicationClass(MoneyApplication.class);
         SPRING_APPLICATION.setLogStartupInfo(true);
         SPRING_APPLICATION.setResourceLoader(resourceLoader);

@@ -84,18 +84,11 @@ public class VersionInfo {
         Properties properties = initProperties.getProps();
         File file = new File("g:\\My_Proj\\FtpClientPlus\\modules\\networker\\build.gradle");
         if(file.exists()){
-            try(
-                FileReader fileReader = new FileReader(file)){
-                BufferedReader reader = new BufferedReader(fileReader);
-                reader.lines().forEach(x -> {
-                    if(x.contains("version = '0.")){
-                        setAppVersion(x.split("'")[1]);
-                    }
-                });
-            }
-            catch(IOException e){
-                LOGGER.error(e.getMessage(), e);
-            }
+            setterVersionFromFiles(file);
+        }
+        else{
+            file = new File(""); //todo 30.09.2018 (19:03)
+            setterVersionFromFiles(file);
         }
         this.appBuild = new SecureRandom().nextInt(( int ) ConstantsFor.MY_AGE) + "." + ConstantsFor.thisPC();
 
@@ -108,5 +101,20 @@ public class VersionInfo {
         initProperties.setProps(properties);
         String msg = this.toString();
         LOGGER.info(msg);
+    }
+
+    private void setterVersionFromFiles(File file) {
+        try(
+            FileReader fileReader = new FileReader(file)){
+            BufferedReader reader = new BufferedReader(fileReader);
+            reader.lines().forEach(x -> {
+                if(x.contains("version = '0.")){
+                    setAppVersion(x.split("'")[1]);
+                }
+            });
+        }
+        catch(IOException e){
+            LOGGER.error(e.getMessage(), e);
+        }
     }
 }
