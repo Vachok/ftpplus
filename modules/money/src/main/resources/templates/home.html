@@ -1,0 +1,28 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${title}">ХЗ</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link rel="stylesheet" type="text/css" media="all" href="css/main.css" th:href="@{css/main.css}"/>
+</head>
+<p>
+<center>
+    <a href="/calc"><h2>Welcome</h2></a>
+<h5 th:utext="${geoloc}"/><br>
+<p th:utext="${timeleft}"/><br>
+</center>
+<p>
+    <a href="/chkcar">Авто OBD</a><<br>>
+    <a href="/ftp">Сканировать FTP</a> <br>
+</p>
+<h5 th:text="${speed}">.</h5><br>
+<h5 th:text="${mail}"></h5><br>
+</body>
+<footer>
+    <h5>
+        <a href="mailto:bot@chess.vachok.ru">Ivan AKA Vachok</a><br>
+        <a href="/home">Return</a><br>
+        <a href="/exit">Exit app</a>
+    </h5>
+</footer>
+</html>

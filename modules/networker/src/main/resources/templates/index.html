@@ -1,0 +1,24 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${userip}">ХЗ</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link rel="stylesheet" type="text/css" media="all" href="css/main.css" th:href="@{css/main.css}"/>
+</head>
+<body>
+<a href="/">Главная</a> | <a href="/netscan">Скан ПК</a> | <a href="/?eth">Логи в БД</a>
+<p>
+    <main th:text="${constfor}"/>
+    <br>
+
+
+</body>
+    <p>
+        <a href="/netscan?do">Scan DO ) | </a><a href="/netscan?a">Scan A )</a>
+        <a href="/netscan?pp">Scan PP) | </a><a href="/netscan?td">Scan TD )</a>
+        <a href="/netscan?no">Scan NO )</a>
+    </p>
+    <a href="http://velkomnet">Velkomnet )</a>
+
+</footer>
+</html>

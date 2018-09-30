@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns="http://www.w3.org/1999/html">
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link rel="stylesheet" type="text/css" media="all" href="css/main.css" th:href="@{css/main.css}"/>
+    <title>НИИХуЯ</title>
+</head>
+<body>
+<h4 th:text="${errmessage}"/>
+<textarea th:text="${error}"/>
+    <p>
+<a th:href="@{/exit}">Выйти из меня...</a><br>
+<a th:href="@{/exit?restart}">Перегруз системы...</a><br>
+<img th:src="@{images/banner.jpg}">
+</body>
+<footer>
+    <a href="/">Main</a> | <a href="/sysinfo">Sys INFO</a>
+</footer>
+</html>
