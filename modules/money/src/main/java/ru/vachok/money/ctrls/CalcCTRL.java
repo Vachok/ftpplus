@@ -45,9 +45,8 @@ public class CalcCTRL {
     /*Instances*/
     @Autowired
     public CalcCTRL(CalculatorForSome calculatorForSome, CalcSrv calcSrv) {
-        this.calculatorForSome = new CalculatorForSome();
-        this.calcSrv = new CalcSrv();
-        this.cookieMaker = new CookieMaker();
+        this.calculatorForSome = calculatorForSome;
+        this.calcSrv = calcSrv;
     }
 
 

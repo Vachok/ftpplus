@@ -14,9 +14,13 @@ import ru.vachok.money.components.Visitor;
 import ru.vachok.money.config.AppCtx;
 import ru.vachok.money.services.TimeWorms;
 import ru.vachok.money.services.WhoIsWithSRV;
+import ru.vachok.mysqlandprops.props.DBRegProperties;
+import ru.vachok.mysqlandprops.props.InitProperties;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -35,6 +39,10 @@ public class Index {
     private Visitor visitor;
 
     private TimeWorms timeWorms;
+
+    private static final InitProperties GENERAL_LIFE = new DBRegProperties("general-life");
+
+    private static final Properties PROPERTIES = GENERAL_LIFE.getProps();
 
     /*Instances*/
     @Autowired
@@ -57,7 +65,9 @@ public class Index {
         catch(Exception e){
             LOGGER.warn(e.getMessage());
         }
-        model.addAttribute("title", request.getRemoteAddr() + " " + response.getStatus());
+        long lasts = System.currentTimeMillis() - Long.parseLong(PROPERTIES.getProperty("lasts"));
+        float hrsWout = ( float ) TimeUnit.MILLISECONDS.toSeconds(lasts) / 60 / 60 / 24;
+        model.addAttribute("title", hrsWout + " days");
         model.addAttribute("timeleft", timeWorms.timeLeft());
         model.addAttribute("geoloc", whoIsWithSRV.whoIs(request.getRemoteAddr()));
 

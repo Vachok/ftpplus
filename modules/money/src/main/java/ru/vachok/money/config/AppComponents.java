@@ -61,7 +61,7 @@ public class AppComponents {
     @Bean
     @Scope ("prototype")
     public CalcSrv calcSrv() {
-        return new CalcSrv();
+        return new CalcSrv(calculatorForSome());
     }
 
     @Bean

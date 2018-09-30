@@ -10,6 +10,7 @@ import ru.vachok.mysqlandprops.props.InitProperties;
 
 import java.io.*;
 import java.security.SecureRandom;
+import java.time.LocalDateTime;
 import java.util.Properties;
 import java.util.StringJoiner;
 
@@ -39,9 +40,16 @@ public class AppVersion {
 
     /*Instances*/
     public AppVersion() {
-        File file = new File("c:\\Users\\ikudryashov\\IdeaProjects\\spring\\modules\\money\\build.gradle");
-        if (file.exists()) infoSet(file);
-        else infoGet();
+        File no0027 = new File("c:\\Users\\ikudryashov\\IdeaProjects\\spring\\modules\\money\\build.gradle");
+        File home = new File("g:\\My_Proj\\FtpClientPlus\\modules\\money\\build.gradle");
+        if(no0027.exists()){
+            infoSet(no0027);
+        }
+        if(home.exists()){
+            infoSet(home);
+        }
+        else
+            infoGet();
     }
 
     private void infoSet(File file) {
@@ -60,7 +68,7 @@ public class AppVersion {
                     properties.setProperty(COMPATIBILITY_STR, x);
                 }
             });
-            setBuildTime(System.currentTimeMillis() + "");
+            setBuildTime(LocalDateTime.now().toString());
             properties.setProperty("appbuild", appVBuild);
             properties.setProperty("buildtime", System.currentTimeMillis() + "");
 

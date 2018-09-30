@@ -3,6 +3,7 @@ package ru.vachok.money.services;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.vachok.money.ConstantsFor;
 import ru.vachok.money.components.CalculatorForSome;
@@ -17,6 +18,13 @@ import java.util.concurrent.TimeUnit;
 public class CalcSrv {
 
     /*Fields*/
+    private CalculatorForSome calculatorForSome;
+
+    /*Instances*/
+    @Autowired
+    public CalcSrv(CalculatorForSome calculatorForSome) {
+        this.calculatorForSome = calculatorForSome;
+    }
 
     /**
      Simple Name класса, для поиска настроек
@@ -28,11 +36,9 @@ public class CalcSrv {
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(SOURCE_CLASS);
 
-    private CalculatorForSome calculatorForSome = new CalculatorForSome();
-
     public String resultCalc(String userInp) {
 
-        if(userInp.equalsIgnoreCase("time")){
+        if(userInp.toLowerCase().contains("time")){
             return time(userInp);
         }
         if(userInp.toLowerCase().contains("whois:") || userInp.toLowerCase().contains("wh:")){
@@ -51,13 +57,15 @@ public class CalcSrv {
     }
 
     private String time(String userInp) {
-
+        userInp = userInp.split(" ")[1];
+        long timeLong = Long.parseLong(userInp);
         String s = System.currentTimeMillis() + " uTime<br>" + ( float ) TimeUnit.MILLISECONDS
             .toSeconds(System.currentTimeMillis() - ConstantsFor.START_STAMP) / 60 + " min Uptime<br>" +
             new Date(ConstantsFor.START_STAMP);
         if(calculatorForSome.getuLong() > 0){
             s = s + "<br>" + new TimeWorms().fromMillisToDate(calculatorForSome.getuLong());
         }
+        s = s + "<br>" + new Date(timeLong).toString() + " result";
         return s;
     }
 
