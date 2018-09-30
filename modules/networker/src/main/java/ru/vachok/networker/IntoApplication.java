@@ -14,6 +14,7 @@ import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.VersionInfo;
 import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.config.ResLoader;
+import ru.vachok.networker.logic.SystemTrayHelper;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -60,6 +61,7 @@ public class IntoApplication {
      @see ru.vachok.networker.controller.MatrixCtr
      */
     public static void main(String[] args) {
+        new SystemTrayHelper().addTray();
         SPRING_APPLICATION.setMainApplicationClass(IntoApplication.class);
         SPRING_APPLICATION.setApplicationContextClass(AppCtx.class);
         SPRING_APPLICATION.setResourceLoader(new ResLoader());
