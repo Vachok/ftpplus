@@ -8,6 +8,7 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import ru.vachok.money.config.AppResLoader;
 import ru.vachok.money.config.ThrAsyncConfigurator;
+import ru.vachok.money.other.SystemTrayHelper;
 import ru.vachok.mysqlandprops.EMailAndDB.SpeedRunActualize;
 
 import static org.springframework.boot.SpringApplication.run;
@@ -24,7 +25,7 @@ public class MoneyApplication {
     private static ResourceLoader resourceLoader = new AppResLoader();
 
     public static void main(String[] args) {
-
+        new SystemTrayHelper().addTray();
         SPRING_APPLICATION.setMainApplicationClass(MoneyApplication.class);
         SPRING_APPLICATION.setLogStartupInfo(true);
         SPRING_APPLICATION.setResourceLoader(resourceLoader);
