@@ -11,7 +11,6 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.services.CookieShower;
-import ru.vachok.networker.services.MailSRV;
 import ru.vachok.networker.services.VisitorSrv;
 
 import javax.servlet.http.HttpServletRequest;
@@ -34,17 +33,14 @@ public class ServiceInfoCtrl {
 
     private CookieShower cookieShower;
 
-    private MailSRV mailSRV;
-
     private Map<String, Boolean> localMapSB;
 
 
     /*Instances*/
     @Autowired
-    public ServiceInfoCtrl(VisitorSrv visitorSrv, MailSRV mailSRV) {
+    public ServiceInfoCtrl(VisitorSrv visitorSrv) {
         this.visitorSrv = visitorSrv;
         this.cookieShower = visitorSrv.getCookieShower();
-        this.mailSRV = mailSRV;
         this.localMapSB = new AppComponents().lastNetScanMap();
     }
 
@@ -139,8 +135,8 @@ public class ServiceInfoCtrl {
 
     @GetMapping("/clsmail")
     public String mailBox(Model model, HttpServletRequest request) {
-        model.addAttribute("title", "You have " + mailSRV.getBeanMealMessage().getAllMail().size() + " mails");
-        model.addAttribute("mbox", new TForms().fromMMessage(mailSRV.getBeanMealMessage().getAllMail()));
+        model.addAttribute("title", "You have another app");
+        model.addAttribute("mbox", "See another APP");
         model.addAttribute("locator", new TForms().mapStringBoolean(localMapSB));
         return "clsmail";
     }

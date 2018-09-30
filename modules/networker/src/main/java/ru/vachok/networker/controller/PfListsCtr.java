@@ -79,7 +79,8 @@ public class PfListsCtr {
 
         try {
             visitorSrv.makeVisit(request);
-        } catch (Exception e) {
+        }
+        catch(IllegalArgumentException | NoSuchMethodException | NullPointerException e){
             LOGGER.error(e.getMessage(), e);
         }
 

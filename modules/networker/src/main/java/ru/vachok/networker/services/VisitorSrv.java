@@ -15,10 +15,7 @@ import ru.vachok.networker.logic.DBMessenger;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 
@@ -52,7 +49,7 @@ public class VisitorSrv {
     public void makeVisit(HttpServletRequest request) throws IllegalArgumentException, NoSuchMethodException {
         visitor.setRemAddr(request.getRemoteAddr());
         visitor.setTimeSt(System.currentTimeMillis());
-        addCookies(request);
+
         MessageToUser viMessageToDB = new DBMessenger();
         viMessageToDB.info(
             new Date(ConstantsFor.START_STAMP) +
@@ -65,7 +62,8 @@ public class VisitorSrv {
                         .getSession().getLastAccessedTime() - request
                         .getSession().getCreationTime()) + " sec spend in application\n" +
                 new TForms().fromEnum(request.getSession().getServletContext().getAttributeNames(), true));
-        try {
+        try{
+            addCookies(request);
             visitor.setDbInfo(
                 new Date(ConstantsFor.START_STAMP) + "\n" +
                     " by: " + visitor.getRemAddr() + "\n" +

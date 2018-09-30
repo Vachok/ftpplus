@@ -14,7 +14,9 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.logic.SSHFactory;
-import ru.vachok.networker.services.*;
+import ru.vachok.networker.services.MatrixSRV;
+import ru.vachok.networker.services.VisitorSrv;
+import ru.vachok.networker.services.WhoIsWithSRV;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -42,8 +44,6 @@ public class MatrixCtr {
     private Visitor visitor;
 
     private long metricMatrixStart = System.currentTimeMillis();
-
-    private DataBasesSRV dataBasesSRV = new DataBasesSRV();
 
     @Autowired
     public MatrixCtr(VisitorSrv visitorSrv, Visitor visitor) {
@@ -87,7 +87,7 @@ public class MatrixCtr {
     }
 
     private void lastLogsGetter(Model model) {
-        Map<String, String> vachokEthosdistro = dataBasesSRV.getLastLogs("ru_vachok_ethosdistro");
+        Map<String, String> vachokEthosdistro = new AppComponents().getLastLogs();
         String logsFromDB = new TForms().fromArray(vachokEthosdistro);
         model.addAttribute("logdb", logsFromDB);
         model.addAttribute("starttime", new Date(ConstantsFor.START_STAMP));

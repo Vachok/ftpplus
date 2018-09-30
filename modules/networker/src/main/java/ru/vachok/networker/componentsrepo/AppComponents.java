@@ -6,13 +6,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Scope;
+import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.logic.CookTheCookie;
 import ru.vachok.networker.logic.DBMessenger;
 import ru.vachok.networker.services.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.sql.*;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 @ComponentScan
@@ -43,9 +46,22 @@ public class AppComponents {
     }
 
     @Bean
-    @Scope("singleton")
-    public DataBasesSRV dataBases() {
-        return new DataBasesSRV();
+    public Map<String, String> getLastLogs() {
+        int ind = 10;
+        Map<String, String> lastLogsList = new ConcurrentHashMap<>();
+        String tbl = "eth";
+        Connection c = new RegRuMysql().getDefaultConnection("u0466446_webapp");
+        try(PreparedStatement p = c.prepareStatement(String.format("select * from %s ORDER BY timewhen DESC LIMIT 0 , 50", tbl));
+            ResultSet r = p.executeQuery()){
+            while(r.next()){
+                lastLogsList.put(++ind + ") " + r.getString("classname") + " - " + r.getString("msgtype"),
+                    r.getString("msgvalue") + " at: " + r.getString("timewhen"));
+            }
+        }
+        catch(SQLException ignore){
+            //
+        }
+        return lastLogsList;
     }
 
     @Bean("pflists")
@@ -89,12 +105,6 @@ public class AppComponents {
     @Scope("prototype")
     public CookTheCookie cookTheCookie(Visitor visitor) {
         return new CookTheCookie(visitor);
-    }
-
-    @Bean
-    public MailSRV mailSRV(MailMessage mailMessage) {
-        mailMessage = new MailMessage();
-        return new MailSRV(mailMessage);
     }
 
     @Bean

@@ -57,28 +57,7 @@ public class NetScannerSvc {
         getPCsAsync();
         return pcNames;
     }
-
-    public void getPCsAsync() {
-        new Thread(() -> {
-            final long startMethod = System.currentTimeMillis();
-            for(String s : PC_PREFIXES){
-                pcNames.addAll(getPCNamesPref(s));
-            }
-            String elapsedTime = "Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethod) + " sec.";
-            pcNames.add(elapsedTime);
-            new Thread(() -> {
-                MessageToUser mailMSG = new ESender("143500@gmail.com");
-                float upTime = ( float ) (TimeUnit.MILLISECONDS
-                                              .toSeconds(System.currentTimeMillis() - ConstantsFor.START_STAMP)) / 60f;
-                Map<String, String> lastLogs = new DataBasesSRV().getLastLogs("ru_vachok_ethosdistro");
-                String retLogs = new TForms().fromArray(lastLogs);
-                mailMSG.info(
-                    SOURCE_CLASS,
-                    upTime + " min uptime. " + AppComponents.versionInfo().toString(),
-                    retLogs + " \n" + new TForms().fromArray(pcNames));
-            }).start();
-        }).start();
-    }
+    /*Instances*/
 
     public String getInfoFromDB() {
         if(thePc.isEmpty()){
@@ -205,7 +184,27 @@ public class NetScannerSvc {
         this.qer = qer;
     }
 
-    /*Instances*/
+    public void getPCsAsync() {
+        new Thread(() -> {
+            final long startMethod = System.currentTimeMillis();
+            for(String s : PC_PREFIXES){
+                pcNames.addAll(getPCNamesPref(s));
+            }
+            String elapsedTime = "Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethod) + " sec.";
+            pcNames.add(elapsedTime);
+            new Thread(() -> {
+                MessageToUser mailMSG = new ESender("143500@gmail.com");
+                float upTime = ( float ) (TimeUnit.MILLISECONDS
+                                              .toSeconds(System.currentTimeMillis() - ConstantsFor.START_STAMP)) / 60f;
+                Map<String, String> lastLogs = new AppComponents().getLastLogs();
+                String retLogs = new TForms().fromArray(lastLogs);
+                mailMSG.info(
+                    SOURCE_CLASS,
+                    upTime + " min uptime. " + AppComponents.versionInfo().toString(),
+                    retLogs + " \n" + new TForms().fromArray(pcNames));
+            }).start();
+        }).start();
+    }
     @Autowired
     public NetScannerSvc(LastNetScan lastNetScan) {
         this.lastNetScan = lastNetScan;
