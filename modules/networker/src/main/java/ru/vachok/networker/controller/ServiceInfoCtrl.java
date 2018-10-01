@@ -66,7 +66,7 @@ public class ServiceInfoCtrl {
 
     private void modModMaker(Model model, HttpServletRequest request) {
         model.addAttribute("title", "srv-git is " + pingBool() + "noF: " +
-            ConstantsFor.NO_F_HRS);
+            ConstantsFor.NO_F_DAYS);
         model.addAttribute("ping", pingGit());
         model.addAttribute("urls", new TForms().fromArray(AppCtx.getClassLoaderURLList()));
         model.addAttribute("request", prepareRequest(request));

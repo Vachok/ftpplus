@@ -11,12 +11,11 @@ import ru.vachok.networker.componentsrepo.ADComputer;
 import ru.vachok.networker.componentsrepo.ADUser;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.logic.PassGenerator;
-import ru.vachok.networker.logic.SimpleCalculator;
 import ru.vachok.networker.services.ADSrv;
+import ru.vachok.networker.services.SimpleCalculator;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
-import java.util.Queue;
 
 
 /**
@@ -63,14 +62,13 @@ public class UtilitCTRL {
         }
     }
 
-    public double getSumm(Queue<Double> forCountQueue) {
+    public double getSumm(List<Double> forCountList) {
         SimpleCalculator simpleCalculator = new SimpleCalculator();
-        double v = simpleCalculator.countDoubles(forCountQueue);
+        double v = simpleCalculator.countDoubles(forCountList);
         String msg = v + " = summ";
         LoggerFactory.getLogger(UtilitCTRL.class.getName()).info(msg);
         return v;
     }
-
     private String adFoto(Model model) {
         ADSrv adSrv = AppComponents.adSrv();
         adSrv.run();

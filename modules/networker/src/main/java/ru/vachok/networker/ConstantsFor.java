@@ -2,10 +2,8 @@ package ru.vachok.networker;
 
 
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.InitProperties;
-import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.logic.PassGenerator;
 
 import javax.servlet.http.HttpServletRequest;
@@ -29,21 +27,17 @@ public enum ConstantsFor {
     /*Fields*/
     private static final InitProperties DB_REG_PROPERTIES = new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
 
-    private static final Properties PROPS = DB_REG_PROPERTIES.getProps();
+    public static final Properties PROPS = DB_REG_PROPERTIES.getProps();
     /**
      <b>1 мегабайт в байтах</b>
      */
     public static final int MBYTE = 1024 * 1024;
 
-    public static final String MAIL_MSG_FILE_OBJ_NAME = "mailmessage.obj";
-
-    public static final String LASTNETSCAN_FILE = "LastNetScan.obj";
-
     public static final long MY_AGE = ( long ) Year.now().getValue() - 1984;
 
     public static final int TOTAL_PC = Integer.parseInt(PROPS.getProperty("totpc", "315"));
 
-    public static final Float NO_F_HRS = TimeUnit
+    public static final Float NO_F_DAYS = TimeUnit
         .MILLISECONDS.toMinutes(System.currentTimeMillis() - Long
             .parseLong(getTheProps().getProperty("lasts", 1515233487000L + ""))) / 60f / 24f;
 
@@ -53,7 +47,6 @@ public enum ConstantsFor {
             request.getRemoteAddr().contains("10.10.111") ||
             request.getRemoteAddr().contains("172.16.200");
     }
-
 
     private static boolean pingOK = true;
 
@@ -65,8 +58,6 @@ public enum ConstantsFor {
         }
         return pingOK;
     }
-
-    public static final AutowireCapableBeanFactory BEAN_FACTORY = new AppCtx().getAutowireCapableBeanFactory();
 
     public static long getBuildStamp() {
         InitProperties initProperties = new DBRegProperties(APP_NAME + ConstantsFor.class.getSimpleName());

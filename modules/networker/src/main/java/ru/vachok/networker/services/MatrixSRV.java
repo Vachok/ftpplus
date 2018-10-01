@@ -4,13 +4,15 @@ package ru.vachok.networker.services;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 import ru.vachok.mysqlandprops.RegRuMysql;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.sql.*;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -78,6 +80,15 @@ public class MatrixSRV {
                 }
                 doljAndAccess.put("<p><h5>" + r.getString(2) + " - " + r.getString(3) + ":</h5>",
                     stringBuilder.toString());
+                Blob changes = r.getBlob("changes");
+                if (changes.length() > ConstantsFor.KBYTE) {
+                    r.getBlob("changes");
+                    try {
+                        doljAndAccess.put("Reason", downBlob(changes.getBytes(1, Math.toIntExact(changes.length()))));
+                    } catch (IOException e) {
+                        LOGGER.error(e.getMessage(), e);
+                    }
+                }
             }
         } catch (SQLException e) {
             LOGGER.error(e.getMessage(), e);
@@ -85,5 +96,16 @@ public class MatrixSRV {
         String s = new TForms().fromArray(doljAndAccess);
         this.workPos = s;
         return s;
+    }
+
+    private String downBlob(byte[] bytes) throws IOException {
+        File file = new File("theBlob.msg");
+        try (FileOutputStream fileOutputStream = new FileOutputStream(file)) {
+            fileOutputStream.write(bytes);
+        }
+        AppComponents.resoCache().setFilePath(file.getAbsolutePath());
+        AppComponents.resoCache().setBytes(bytes);
+
+        throw new UnsupportedEncodingException("Not Implemented");
     }
 }

@@ -22,7 +22,9 @@ import ru.vachok.networker.services.WhoIsWithSRV;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -37,6 +39,8 @@ public class MatrixCtr {
     private static final Logger LOGGER = AppComponents.getLogger();
 
     private static final String MATRIX_STRING_NAME = "matrix";
+
+    private static final String REDIRECT_MATRIX = "redirect:/matrix";
 
     private MatrixSRV matrixSRV;
 
@@ -70,8 +74,7 @@ public class MatrixCtr {
         } else {
             try {
                 visitorSrv.makeVisit(request);
-            }
-            catch(Exception ignore){
+            } catch (Exception ignore) {
                 //
             }
             String userIP = userPC + ":" + request.getRemotePort() + "<-" + response.getStatus();
@@ -103,26 +106,9 @@ public class MatrixCtr {
         metricMatrixStart = System.currentTimeMillis();
         this.matrixSRV = matrixSRV;
         String workPos = this.matrixSRV.getWorkPos();
-        if (!workPos.toLowerCase().contains("whois:")) {
-            String workPosition = this.matrixSRV.
-                getWorkPosition(
-                    "select * from matrix where Doljnost like '%" + workPos + "%';");
-            this.matrixSRV.setWorkPos(workPosition);
-            LOGGER.info(workPosition);
-            return "redirect:/matrix";
-        } else {
-            try {
-                workPos = workPos.split(":")[1];
-                String s = new WhoIsWithSRV().whoIs(workPos);
-                matrixSRV.setWorkPos(s.replaceAll("\n", "<br>"));
-                model.addAttribute("whois", s);
-            } catch (ArrayIndexOutOfBoundsException e) {
-                model.addAttribute("whois", workPos + "<p>" + e.getMessage());
-                return MATRIX_STRING_NAME;
-            }
-            metricMatrixStart = System.currentTimeMillis() - metricMatrixStart;
-            return "redirect:/matrix";
-        }
+        if (workPos.toLowerCase().contains("whois:")) return whois(workPos, model);
+        else if (workPos.toLowerCase().contains("calc:")) return calculateDoubles(workPos, model);
+        else return matrixAccess(workPos);
     }
 
     @GetMapping("/matrix")
@@ -165,4 +151,41 @@ public class MatrixCtr {
         metricMatrixStart = System.currentTimeMillis() - metricMatrixStart;
         return "redirect:http://srv-git.eatmeat.ru:1234";
     }
+
+    private String whois(String workPos, Model model) {
+        try {
+            workPos = workPos.split(":")[1];
+            String s = new WhoIsWithSRV().whoIs(workPos);
+            matrixSRV.setWorkPos(s.replaceAll("\n", "<br>"));
+            model.addAttribute("whois", s);
+        } catch (ArrayIndexOutOfBoundsException e) {
+            model.addAttribute("whois", workPos + "<p>" + e.getMessage());
+            return MATRIX_STRING_NAME;
+        }
+        metricMatrixStart = System.currentTimeMillis() - metricMatrixStart;
+        return REDIRECT_MATRIX;
+    }
+
+    private String calculateDoubles(String workPos, Model model) {
+        List<Double> list = new ArrayList<>();
+        String[] doubles = workPos.split(": ")[1].split(" ");
+        for (String aDouble : doubles) {
+            list.add(Double.parseDouble(aDouble));
+        }
+        double v = new AppComponents().simpleCalculator().countDoubles(list);
+        String pos = v + " Dinner price";
+        matrixSRV.setWorkPos(pos);
+        model.addAttribute("dinner", pos);
+        return REDIRECT_MATRIX;
+    }
+
+    private String matrixAccess(String workPos) {
+        String workPosition = this.matrixSRV.getWorkPosition(String
+            .format("select * from matrix where Doljnost like '%%%s%%';", workPos));
+        this.matrixSRV.setWorkPos(workPosition);
+        LOGGER.info(workPosition);
+        return REDIRECT_MATRIX;
+    }
+
+
 }

@@ -13,7 +13,10 @@ import ru.vachok.networker.logic.DBMessenger;
 import ru.vachok.networker.services.*;
 
 import javax.servlet.http.HttpServletRequest;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -115,5 +118,15 @@ public class AppComponents {
         String msg = lastNetScan.getTimeLastScan() + " timeLastScan";
         getLogger().warn(msg);
         return new NetScannerSvc(lastNetScan);
+    }
+
+    @Bean
+    public static ResoCache resoCache() {
+        return ResoCache.getResoCache();
+    }
+
+    @Bean
+    public SimpleCalculator simpleCalculator() {
+        return new SimpleCalculator();
     }
 }

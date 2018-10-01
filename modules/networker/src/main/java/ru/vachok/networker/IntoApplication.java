@@ -87,4 +87,8 @@ public class IntoApplication {
         String msg = "Initial Delay checker = " + ConstantsFor.INIT_DELAY + "\nDelay = " + ConstantsFor.DELAY;
         LOGGER.warn(msg);
     }
+
+    private static void appPropSetter() {
+        throw new UnsupportedOperationException();
+    }
 }
