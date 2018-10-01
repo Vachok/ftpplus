@@ -17,10 +17,7 @@ import ru.vachok.networker.services.NetScannerSvc;
 
 import javax.servlet.http.HttpServletRequest;
 import java.security.SecureRandom;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 
@@ -42,7 +39,7 @@ public class NetScanCtr {
 
     private static final String TITLE_STR = "TITLE_STR";
 
-    private static LastNetScan lastScan;
+    private LastNetScan lastScan;
 
     private long l;
 
@@ -50,9 +47,9 @@ public class NetScanCtr {
 
     /*Instances*/
     @Autowired
-    public NetScanCtr(NetScannerSvc netScannerSvc) {
+    public NetScanCtr(NetScannerSvc netScannerSvc, LastNetScan lastNetScan) {
         this.netScannerSvc = netScannerSvc;
-        lastScan = netScannerSvc.getLastNetScan();
+        this.lastScan = lastNetScan;
         duration = new SecureRandom().nextInt(( int ) ConstantsFor.MY_AGE);
     }
 

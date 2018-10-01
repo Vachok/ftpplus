@@ -22,10 +22,7 @@ import ru.vachok.networker.services.WhoIsWithSRV;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 
@@ -154,7 +151,7 @@ public class MatrixCtr {
 
     private String whois(String workPos, Model model) {
         try {
-            workPos = workPos.split(":")[1];
+            workPos = workPos.split(": ")[1];
             String s = new WhoIsWithSRV().whoIs(workPos);
             matrixSRV.setWorkPos(s.replaceAll("\n", "<br>"));
             model.addAttribute("whois", s);

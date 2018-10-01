@@ -209,10 +209,10 @@ public class NetScannerSvc {
     public NetScannerSvc(LastNetScan lastNetScan) {
         this.lastNetScan = lastNetScan;
         getPCsAsync();
-        this.netWork = lastNetScan.getNetWork();
     }
 
     public List<String> getPCNamesPref(String prefix) {
+        this.netWork = lastNetScan.getNetWork();
         pcNames = new ArrayList<>();
         this.qer = prefix;
         final long startMethTime = System.currentTimeMillis();

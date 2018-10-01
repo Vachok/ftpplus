@@ -8,10 +8,7 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.sql.*;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -106,6 +103,6 @@ public class MatrixSRV {
         AppComponents.resoCache().setFilePath(file.getAbsolutePath());
         AppComponents.resoCache().setBytes(bytes);
 
-        throw new UnsupportedEncodingException("Not Implemented");
+        throw new UnsupportedEncodingException("Not Implemented"); //todo 01.10.2018 (18:38) blob download
     }
 }
