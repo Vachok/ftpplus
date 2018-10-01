@@ -1,14 +1,18 @@
 package ru.vachok.money;
 
 
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import ru.vachok.money.components.URLContent;
+import ru.vachok.money.config.AppComponents;
 import ru.vachok.money.config.AppResLoader;
 import ru.vachok.money.config.ThrAsyncConfigurator;
 import ru.vachok.money.other.SystemTrayHelper;
+import ru.vachok.money.services.URLParser;
 import ru.vachok.mysqlandprops.EMailAndDB.SpeedRunActualize;
 
 import static org.springframework.boot.SpringApplication.run;
@@ -29,8 +33,19 @@ public class MoneyApplication {
         SPRING_APPLICATION.setMainApplicationClass(MoneyApplication.class);
         SPRING_APPLICATION.setLogStartupInfo(true);
         SPRING_APPLICATION.setResourceLoader(resourceLoader);
-        run(MoneyApplication.class , args);
+        run(MoneyApplication.class, args);
+        urlS();
         startSchedule();
+    }
+
+    private static void urlS() {
+        URLParser urlParser = new AppComponents().urlParser();
+        urlParser.showContents();
+        URLContent urlContent = urlParser.getUrlContent();
+        LoggerFactory.getLogger(MoneyApplication.class.getSimpleName()).info(urlContent.getUrlPermissions());
+        LoggerFactory.getLogger(MoneyApplication.class.getSimpleName()).info(urlContent.getUrlString());
+        LoggerFactory.getLogger(MoneyApplication.class.getSimpleName()).info(urlContent.getContentType());
+        LoggerFactory.getLogger(MoneyApplication.class.getSimpleName()).info(urlContent.getContentObj().toString());
     }
 
     private static void startSchedule() {

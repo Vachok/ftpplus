@@ -26,9 +26,7 @@ public class TForms {
         for(StackTraceElement stackTraceElement : e.getStackTrace()){
             stringBuilder
                 .append(stackTraceElement.getLineNumber())
-                .append(" line, in ")
-                .append(stackTraceElement.getClassName())
-                .append(".").append(stackTraceElement.getMethodName())
+                .append(" line, in ").append(".").append(stackTraceElement.getMethodName())
                 .append(" " +
                 "exception: ").append(stackTraceElement.toString());
             stringBuilder.append("\n");

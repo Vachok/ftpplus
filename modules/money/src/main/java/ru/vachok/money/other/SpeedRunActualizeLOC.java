@@ -5,8 +5,11 @@ import org.slf4j.Logger;
 import org.springframework.scheduling.annotation.Scheduled;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.money.ConstantsFor;
+import ru.vachok.money.components.MyOpel;
+import ru.vachok.money.config.AppComponents;
 import ru.vachok.money.services.DBMessage;
 import ru.vachok.mysqlandprops.DataConnectTo;
+import ru.vachok.mysqlandprops.EMailAndDB.SpeedRunActualize;
 import ru.vachok.mysqlandprops.RegRuMysql;
 
 import javax.mail.Message;
@@ -25,22 +28,24 @@ import java.util.function.BiConsumer;
  В данной реализации из e-mail.
 
  @since 29.07.2018 (11:42) */
-public class SpeedRunActualize implements Callable<String> {
+@Deprecated
+public class SpeedRunActualizeLOC implements Callable<String> {
 
     private static final Logger LOGGER = ConstantsFor.getLogger();
 
+    /*Fields*/
+
+    /**
+     {@linkplain SpeedRunActualizeLOC}
+     */
+    private static final String SOURCE_CLASS = SpeedRunActualizeLOC.class.getSimpleName();
     /**
      <b>Сообщения пользователю</b>
      {@link #messageToUser}
      */
     private final MessageToUser messageToUser = new DBMessage();
 
-    private static final String SPEED = "Speed";
-
-    /**
-     {@linkplain SpeedRunActualize}
-     */
-    private static final String SOURCE_CLASS = SpeedRunActualize.class.getSimpleName();
+    private MyOpel myOpel = new AppComponents().myOpel(new SpeedRunActualize());
 
     /**
      {@link RegRuMysql}
@@ -65,12 +70,11 @@ public class SpeedRunActualize implements Callable<String> {
     @Override
     @Scheduled (fixedDelay = 10000)
     public String call() {
-        Thread.currentThread().setName("SpeedRunActualize.run");
+        Thread.currentThread().setName("SpeedRunActualizeLOC.run");
         Map<Date, String> mailMessages = getMailMessages();
         messageToUser.infoNoTitles(mailMessages.toString());
         checkDates(mailMessages);
-        return avgInfo(0) + " in a107" + avgInfo(1) + "in riga";
-
+        throw new UnsupportedOperationException("Deprecated. 02.10.2018 (1:22)");
     }
 
     /**
@@ -103,7 +107,7 @@ public class SpeedRunActualize implements Callable<String> {
             Thread.currentThread().interrupt();
         }
         throw new UnsupportedOperationException("27.07.2018 (16:33), ***************I CANT MAKE THIS ORDER, SORRY MAN! *********************" +
-            "\n\n" + "*****************     ru.vachok.pbem.chess.utilitar.SpeedRunActualize.getMailMessages      ******************************");
+            "\n\n" + "*****************     ru.vachok.pbem.chess.utilitar.SpeedRunActualizeLOC.getMailMessages      ******************************");
     }
 
     /**
@@ -140,39 +144,6 @@ public class SpeedRunActualize implements Callable<String> {
             DATA_CONNECT_TO.setSavepoint(DEF_CON);
             messageToUser.errorAlert(SOURCE_CLASS, "ID - 58", e.getMessage() + "\n\n" + Arrays.toString(e.getStackTrace()));
         }
-    }
-
-    /**
-     <b>Среднее по Бетонке</b>
-     */
-    public Double avgInfo(int road) {
-        double avg = 0.0;
-        try(PreparedStatement ps = DEF_CON.prepareStatement("select * from speed where Road = ?")){
-            ps.setInt(1, road);
-            try(ResultSet r = ps.executeQuery()){
-                int ind = 0;
-                double speedAv = 0.0;
-                double timeAv = 0.0;
-                while(r.next()){
-                    ind++;
-                    speedAv += r.getDouble(SPEED);
-                    timeAv += r.getDouble("TimeSpend");
-                }
-                if(ind!=0){
-                    String s2 = (timeAv / ind) + " time. Counter = " + ind;
-                    String s = " Time and SPEED. avgInfo. " + "  " + (speedAv / ind) + " SPEED " + s2;
-                    ConstantsFor.ok.accept(SOURCE_CLASS, s);
-                    return avg;
-                }
-                else{
-                    throw new UnsupportedOperationException("Деление на 0");
-                }
-            }
-        }
-        catch(SQLException e){
-            LOGGER.error(e.getMessage(), e);
-        }
-        throw new UnsupportedOperationException();
     }
 
     /**
@@ -242,7 +213,5 @@ public class SpeedRunActualize implements Callable<String> {
             }
         };
         toDB.forEach(biConsumer);
-        avgInfo(road.get());
-        new MailMessages(true).call();
     }
 }

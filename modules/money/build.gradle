@@ -18,7 +18,7 @@ plugins {
 }
 
 group = 'ru.vachok.money'
-version = '0.225-SNAPSHOT'
+version = '0.226-SNAPSHOT'
 sourceCompatibility = 1.8
 
 repositories {

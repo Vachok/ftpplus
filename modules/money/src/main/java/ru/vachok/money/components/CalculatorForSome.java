@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -23,7 +24,7 @@ public class CalculatorForSome {
 
     private long uLong;
 
-    private double userDouble;
+    private List<Double> userDouble;
 
     private String userInput;
     @Override
@@ -72,11 +73,11 @@ public class CalculatorForSome {
         this.uLong = uLong;
     }
 
-    public double getUserDouble() {
+    public List<Double> getUserDouble() {
         return userDouble;
     }
 
-    public void setUserDouble(double userDouble) {
+    public void setUserDouble(List<Double> userDouble) {
         this.userDouble = userDouble;
     }
 

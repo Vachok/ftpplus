@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import ru.vachok.money.ConstantsFor;
 import ru.vachok.money.components.CalculatorForSome;
 
-import java.util.Date;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 
@@ -37,7 +37,6 @@ public class CalcSrv {
     private static final Logger LOGGER = LoggerFactory.getLogger(SOURCE_CLASS);
 
     public String resultCalc(String userInp) {
-
         if(userInp.toLowerCase().contains("time")){
             return time(userInp);
         }
@@ -49,15 +48,23 @@ public class CalcSrv {
             return helpS();
         }
         else{
-            Object o = parseInp(userInp);
-            String msg = o.toString() + "      |   Object returned";
-            LOGGER.warn(msg);
-            return o.toString();
+            return parseInp(userInp);
         }
     }
 
     private String time(String userInp) {
-        userInp = userInp.split(" ")[1];
+        try{
+            userInp = userInp.split(" ")[1];
+        }
+        catch(ArrayIndexOutOfBoundsException e){
+            return new Date().toString() + " = " + new Date().getTime() +
+                "<br>" +
+                new Date(ConstantsFor.START_STAMP) +
+                " start time" +
+                "<br>Uptime = " + ( float ) TimeUnit
+                .MILLISECONDS
+                .toMinutes(System.currentTimeMillis() - ConstantsFor.START_STAMP) / ConstantsFor.ONE_HOUR;
+        }
         long timeLong = Long.parseLong(userInp);
         String s = System.currentTimeMillis() + " uTime<br>" + ( float ) TimeUnit.MILLISECONDS
             .toSeconds(System.currentTimeMillis() - ConstantsFor.START_STAMP) / 60 + " min Uptime<br>" +
@@ -71,8 +78,7 @@ public class CalcSrv {
 
     private String whoIs(String userInp) {
         WhoIsWithSRV whoIsWithSRV = new WhoIsWithSRV();
-        String s = whoIsWithSRV.whoIs(userInp);
-        return s;
+        return whoIsWithSRV.whoIs(userInp);
     }
 
     private String helpS() {
@@ -82,39 +88,33 @@ public class CalcSrv {
         return stringBuilder.toString();
     }
 
-    private Object parseInp(String userInp) {
-        String parsedInp;
+    public String parseInp(String userInp) {
+        List<String> parsedInp = new ArrayList<>();
+        List<Double> doubleList = new ArrayList<>();
+        String[] toParse = {"\\+", "\\-", "\\:", "\\*"};
         try{
-            parsedInp = userInp.split(" -")[1].trim();
+            for(String s : toParse){
+                parsedInp.addAll(Arrays.asList(userInp.split(s)));
+            }
+            if(parsedInp.isEmpty()){
+                throw new ArrayStoreException("Nothing to parse");
+            }
         }
         catch(ArrayIndexOutOfBoundsException e){
-            return userInp + " , " + e.getMessage();
+            return e.getMessage() + "<p>" + new TForms().toStringFromArray(e);
         }
         try{
-            long parsLong = Long.parseLong(parsedInp);
-            calculatorForSome.setuLong(parsLong);
-            if(userInp.toLowerCase().contains("time")){
-                return new Date(parsLong).toString();
+            for(String s : parsedInp){
+                double parsDouble = Double.parseDouble(s);
+                doubleList.add(parsDouble);
             }
-            else{
-                return parsLong;
-            }
-        }
-        catch(Exception e){
-            LOGGER.error(e.getMessage(), e);
-            return mbDouble(parsedInp);
-        }
-    }
+            calculatorForSome.setUserDouble(doubleList);
 
-    private Object mbDouble(String parsedInp) {
-        try{
-            double parsedDouble = Double.parseDouble(parsedInp);
-            calculatorForSome.setUserDouble(parsedDouble);
-            return parsedDouble;
+
         }
-        catch(Exception e){
-            LOGGER.error(e.getMessage(), e);
-            return helpS();
+        catch(Exception ignore){
+            //
         }
+        return Arrays.toString(calculatorForSome.getUserDouble().toArray());
     }
 }

@@ -51,7 +51,9 @@ public class CalcCTRL {
     public String resultOfCount(Model model, HttpServletRequest request, HttpServletResponse response) {
         visitor.setSessionID(request.getSession().getId());
         visitor.setRequest(request);
+
         model.addAttribute("CalculatorForSome", calculatorForSome);
+        calculatorForSome.setUserInput("");
         model.addAttribute("title", "CALC");
         return "calc";
     }

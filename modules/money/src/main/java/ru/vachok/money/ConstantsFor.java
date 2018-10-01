@@ -54,6 +54,8 @@ public enum ConstantsFor {
 
     public static final int DELAY = 300;
 
+    public static final float ONE_HOUR = 60f;
+
     public static BiConsumer<String, String> ok = (className, msg) -> new Thread(() -> {
         MessageToUser emailMe = new ESender("143500@gmail.com");
         emailMe.info(ConstantsFor.APP_NAME, className + " ok", msg);

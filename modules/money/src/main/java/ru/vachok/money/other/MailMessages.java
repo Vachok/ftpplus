@@ -22,7 +22,7 @@ import java.util.logging.Logger;
 /**
  <h1>Получает сообщения</h1>
  <p>
- {@link SpeedRunActualize}
+ {@link SpeedRunActualizeLOC}
 
  @since 25.06.2018 (2:41) */
 public class MailMessages implements Callable<Message[]> {
@@ -170,7 +170,7 @@ public class MailMessages implements Callable<Message[]> {
     /**
      <b>Получение массива сообщений из почтового ящика bot@</b>
      <p>
-     {@link SpeedRunActualize}
+     {@link SpeedRunActualizeLOC}
      <p>
      В зависимости от {@link #cleanMBox}, или
      1.1 {@link Cleaner#saveToDiskAndDelete(Folder)}

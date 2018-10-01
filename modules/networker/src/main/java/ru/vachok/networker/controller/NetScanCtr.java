@@ -33,11 +33,11 @@ public class NetScanCtr {
 
     private static final Logger LOGGER = AppComponents.getLogger();
 
+    private static final String TITLE_STR = "TITLE_STR";
+
     private static Properties properties = new Properties();
 
     private NetScannerSvc netScannerSvc;
-
-    private static final String TITLE_STR = "TITLE_STR";
 
     private LastNetScan lastScan;
 
@@ -87,6 +87,7 @@ public class NetScanCtr {
             .addAttribute("thePc", netScannerSvc.getThePc())
             .addAttribute(TITLE_STR, "First Scan: 2018-05-05");
         lastScan.setTimeLastScan(new Date());
+
         return NETSCAN_STR;
     }
 
@@ -102,20 +103,20 @@ public class NetScanCtr {
         }
         else{
             lastScan.getNetWork().clear();
-                List<String> pCsAsync = netScannerSvc.getPcNames();
-                model
-                    .addAttribute(TITLE_STR, ( float ) TimeUnit.MILLISECONDS
-                        .toSeconds(System.currentTimeMillis() - this.l) / ConstantsFor.ONE_HOUR_IN_MIN + " was scan")
-                    .addAttribute("pc", new TForms().fromArray(pCsAsync));
-                lastScan.setTimeLastScan(new Date());
-                properties.setProperty("lastscan", System.currentTimeMillis() + "");
+            List<String> pCsAsync = netScannerSvc.getPcNames();
+            model
+                .addAttribute(TITLE_STR, ( float ) TimeUnit.MILLISECONDS
+                    .toSeconds(System.currentTimeMillis() - this.l) / ConstantsFor.ONE_HOUR_IN_MIN + " was scan")
+                .addAttribute("pc", new TForms().fromArray(pCsAsync));
+            lastScan.setTimeLastScan(new Date());
+            properties.setProperty("lastscan", System.currentTimeMillis() + "");
+            lastScan.getNetWork().clear();
 
         }
     }
 
     @PostMapping ("/netscan")
     public void pcNameForInfo(@ModelAttribute NetScannerSvc netScannerSvc, BindingResult result, Model model) {
-        this.netScannerSvc = netScannerSvc;
         netScannerSvc.getInfoFromDB();
         String thePc = netScannerSvc.getThePc();
         model.addAttribute("thePc", thePc);
