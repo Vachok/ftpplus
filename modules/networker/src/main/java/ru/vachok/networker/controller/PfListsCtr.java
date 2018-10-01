@@ -19,11 +19,13 @@ import ru.vachok.networker.services.VisitorSrv;
 import javax.naming.TimeLimitExceededException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.rmi.UnexpectedException;
 import java.rmi.UnknownHostException;
 import java.security.SecureRandom;
 import java.time.LocalTime;
-import java.util.*;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.*;
 
 
@@ -48,42 +50,68 @@ public class PfListsCtr {
 
     private PfListsSrv pfListsSrv;
 
+    private static final InitProperties INIT_REG_PROPERTIES = new DBRegProperties(ConstantsFor.APP_NAME + SOURCE_CLASS);
+
     private boolean pingOK;
 
     private long timeOut;
 
+    private final Runnable makePFLists = this::runningList;
+
+    private ThreadConfig threadConfig = new ThreadConfig();
+
 
     /*Instances*/
     @Autowired
-    public PfListsCtr(PfLists pfLists, VisitorSrv visitorSrv) {
-        AppComponents appComponents = new AppComponents();
+    public PfListsCtr(PfLists pfLists, VisitorSrv visitorSrv, PfListsSrv pfListsSrv) {
+        threadConfig.taskDecorator(makePFLists);
         this.visitorSrv = visitorSrv;
         this.pfLists = pfLists;
-        this.pfListsSrv = appComponents.pfListsSrv(pfLists);
+        this.pfListsSrv = pfListsSrv;
         this.pingOK = ConstantsFor.isPingOK();
-        new Thread(this::run).start();
     }
 
     @GetMapping("/pflists")
-    public String pfBean(Model model, HttpServletRequest request, HttpServletResponse response) throws UnknownHostException {
+    public String pfBean(Model model, HttpServletRequest request, HttpServletResponse response) {
         String pflistsStr = "pflists";
-        if (!pingOK) {
-            model.addAttribute("vipnet", "No ping to srv-git");
-            model.addAttribute(METRIC_STR, LocalTime.now().toString());
-            throw new UnknownHostException("srv-git");
-        }
-        InitProperties initProperties = new DBRegProperties(ConstantsFor.APP_NAME + SOURCE_CLASS);
-        Properties properties = initProperties.getProps();
-        Long lastScan = Long.parseLong(properties.getProperty("pfscan", "1"));
-        int aThreadsLast = Integer.parseInt(properties.getProperty("thr", "1"));
+        Properties properties = INIT_REG_PROPERTIES.getProps();
+        long lastScan = Long.parseLong(properties.getProperty("pfscan", "1"));
+        timeOut = lastScan + TimeUnit.MINUTES.toMillis(15);
 
+        if (!pingOK) noPing(model);
         try {
             visitorSrv.makeVisit(request);
-        }
-        catch(IllegalArgumentException | NoSuchMethodException | NullPointerException e){
+        } catch (IllegalArgumentException | NoSuchMethodException | NullPointerException e) {
             LOGGER.error(e.getMessage(), e);
         }
+        modSet(model);
 
+        if (request.getQueryString() != null) threadConfig.taskDecorator(makePFLists);
+
+        if (pfLists.getTimeUpd() + TimeUnit.MINUTES.toMillis(170) < System.currentTimeMillis()) {
+            model.addAttribute(METRIC_STR, "Требуется обновление!");
+            model.addAttribute("gitstats", pfListsSrv.getExecutor().toString());
+        } else {
+            String msg = "" + (float) (TimeUnit.MILLISECONDS
+                .toSeconds(System.currentTimeMillis() - pfLists.getTimeUpd())) / 60;
+            LOGGER.warn(msg);
+        }
+        propUpd(properties);
+        return pflistsStr;
+    }
+
+    private void noPing(Model model) {
+        model.addAttribute("vipnet", "No ping to srv-git");
+        model.addAttribute(METRIC_STR, LocalTime.now().toString());
+        try {
+            throw new UnknownHostException("srv-git");
+        } catch (UnknownHostException e) {
+            LOGGER.error(String.valueOf(e.detail), e);
+        }
+    }
+
+    private void modSet(Model model) {
+        final int aThreadsLast = Thread.activeCount();
         model.addAttribute(METRIC_STR, (float) TimeUnit.MILLISECONDS
             .toSeconds(System.currentTimeMillis() - pfLists.getGitStats()) / ConstantsFor.ONE_HOUR_IN_MIN + " min since upd");
         model.addAttribute("vipnet", pfLists.getVipNet());
@@ -94,36 +122,13 @@ public class PfListsCtr {
         model.addAttribute("rules", pfLists.getPfRules());
         model.addAttribute("gitstats", Thread.activeCount() + " thr, active\nChange: " +
             (Thread.activeCount() - aThreadsLast));
-        this.timeOut = lastScan + TimeUnit.MINUTES.toMillis(15);
-        String msg1 = properties.toString() + " DEL! true";
-        LOGGER.warn(msg1);
-        if (request.getQueryString() != null && System.currentTimeMillis() > timeOut) {
-            model.addAttribute("pfLists", pfLists);
-            new Thread(() -> {
-                try {
-                    pfListsSrv.buildFactory();
-                } catch (UnexpectedException e) {
-                    LOGGER.error(e.getMessage(), e);
-                }
-            }).start();
-        }
-        if (pfLists.getTimeUpd() + TimeUnit.MINUTES.toMillis(170) < System.currentTimeMillis()) {
-            model.addAttribute(METRIC_STR, "Требуется обновление!");
-            try {
-                pfListsSrv.buildFactory();
-            } catch (UnexpectedException e) {
-                LOGGER.error(e.getMessage(), e);
-            }
-        } else {
-            String msg = "" + (float) (TimeUnit.MILLISECONDS
-                .toSeconds(System.currentTimeMillis() - pfLists.getTimeUpd())) / 60;
-            LOGGER.warn(msg);
-        }
-        initProperties.delProps();
+    }
+
+    private void propUpd(Properties properties) {
+        INIT_REG_PROPERTIES.delProps();
         properties.setProperty("pfscan", System.currentTimeMillis() + "");
         properties.setProperty("thr", Thread.activeCount() + "");
-        initProperties.setProps(properties);
-        return pflistsStr;
+        INIT_REG_PROPERTIES.setProps(properties);
     }
 
     private String getAttr(HttpServletRequest request) {
@@ -137,20 +142,19 @@ public class PfListsCtr {
         return stringBuilder.toString();
     }
 
-    private void run() {
+    private void runningList() {
         try {
             if (timeOut < System.currentTimeMillis()) {
-                pfListsSrv.buildFactory();
+                pfListsSrv.getExecutor();
             } else throw new TimeLimitExceededException(TimeUnit
                 .MILLISECONDS
                 .toSeconds(timeOut - System.currentTimeMillis()) / ConstantsFor.ONE_HOUR_IN_MIN + "");
-        } catch (UnexpectedException | TimeLimitExceededException e) {
+        } catch (TimeLimitExceededException e) {
             LOGGER.error(e.getMessage(), e);
         }
     }
 
     private void scheduleAns() {
-
         Runnable runnable = () -> {
             Thread.currentThread().setName("id " + System.currentTimeMillis());
             float upTime = (float) (System.currentTimeMillis() - ConstantsFor.START_STAMP) / TimeUnit.DAYS.toMillis(1);
@@ -163,10 +167,8 @@ public class PfListsCtr {
             Thread.currentThread().interrupt();
         };
         int delay = new SecureRandom().nextInt((int) TimeUnit.MINUTES.toMillis(250));
-        int init = new SecureRandom().nextInt((int) TimeUnit.MINUTES.toMillis(60));
         if (ConstantsFor.THIS_PC_NAME.toLowerCase().contains("no0027") ||
             ConstantsFor.THIS_PC_NAME.equalsIgnoreCase("home")) {
-            init = 20000;
             delay = 40000;
         }
         ThreadPoolTaskScheduler threadPoolTaskScheduler = new ThreadConfig().threadPoolTaskScheduler();

@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.componentsrepo.VersionInfo;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.logic.SSHFactory;
 import ru.vachok.networker.services.MatrixSRV;
@@ -43,12 +44,15 @@ public class MatrixCtr {
 
     private Visitor visitor;
 
+    private VersionInfo versionInfo;
+
     private long metricMatrixStart = System.currentTimeMillis();
 
     @Autowired
-    public MatrixCtr(VisitorSrv visitorSrv, Visitor visitor) {
+    public MatrixCtr(VisitorSrv visitorSrv, Visitor visitor, VersionInfo versionInfo) {
         this.visitorSrv = visitorSrv;
         this.visitor = visitor;
+        this.versionInfo = versionInfo;
     }
 
     @GetMapping("/")
@@ -76,7 +80,7 @@ public class MatrixCtr {
 
             if (ConstantsFor.getUserPC(request).toLowerCase().contains(ConstantsFor.NO0027) ||
                 ConstantsFor.getUserPC(request).toLowerCase().contains("0:0:0:0")) {
-                model.addAttribute("visit", new AppComponents().versionInfo().toString());
+                model.addAttribute("visit", versionInfo.toString());
             } else {
                 model.addAttribute("visit", visitor.getTimeSt() + " timestamp");
             }

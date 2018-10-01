@@ -45,8 +45,6 @@ public class IntoApplication {
      */
     private static AnnotationConfigApplicationContext appCtx = AppCtx.scanForBeansAndRefreshContext();
 
-    private static WebApplicationType webApplicationType;
-
     /**
      <h1>1. Точка входа в Spring Boot Application</h1>
      {@link #infoForU(ApplicationContext)}
@@ -76,11 +74,10 @@ public class IntoApplication {
     }
 
     private static void setWebType() {
-        webApplicationType = WebApplicationType.SERVLET;
+        WebApplicationType webApplicationType = WebApplicationType.SERVLET;
         SPRING_APPLICATION.setWebApplicationType(webApplicationType);
-        String name = SPRING_APPLICATION.getWebApplicationType().name();
-        LOGGER.info(name);
-        org.springframework.core.io.Resource resource = new ResLoader().getResource("static/images/pic03.jpg");
+
+        org.springframework.core.io.Resource resource = new ResLoader().getResource("/static/images/pic03.jpg");
         ResourceBanner resourceBanner = new ResourceBanner(resource);
         SPRING_APPLICATION.setBanner(resourceBanner);
         Runnable speedRun = new SpeedRunActualize();

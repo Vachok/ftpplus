@@ -169,7 +169,7 @@ public class SSHFactory {
      */
     @Service("ssh")
     @Scope("singleton")
-    public static class Builder extends AppComponents {
+    public static class Builder {
 
         /*Fields*/
         private String userName = "ITDept";

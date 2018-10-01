@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.componentsrepo.ServiceInform;
 import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.services.CookieShower;
 import ru.vachok.networker.services.VisitorSrv;
@@ -33,15 +34,18 @@ public class ServiceInfoCtrl {
 
     private CookieShower cookieShower;
 
+    private ServiceInform serviceInform;
+
     private Map<String, Boolean> localMapSB;
 
 
     /*Instances*/
     @Autowired
-    public ServiceInfoCtrl(VisitorSrv visitorSrv) {
+    public ServiceInfoCtrl(VisitorSrv visitorSrv, ServiceInform serviceInform) {
         this.visitorSrv = visitorSrv;
         this.cookieShower = visitorSrv.getCookieShower();
         this.localMapSB = new AppComponents().lastNetScanMap();
+        this.serviceInform = serviceInform;
     }
 
     @GetMapping("/serviceinfo")

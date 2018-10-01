@@ -4,6 +4,7 @@ package ru.vachok.money.services;
 import ru.vachok.money.other.XmlNode;
 
 import javax.mail.Address;
+import java.util.*;
 
 
 /**

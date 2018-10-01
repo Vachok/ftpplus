@@ -6,7 +6,6 @@ import java.util.function.BiFunction;
 
 /**
  @since 26.09.2018 (13:47) */
-
 public class SimpleCalculator {
 
     public double countDoubles(Queue<Double> doubleQueue) {

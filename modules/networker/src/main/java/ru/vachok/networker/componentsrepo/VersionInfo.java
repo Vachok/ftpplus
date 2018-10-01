@@ -3,13 +3,15 @@ package ru.vachok.networker.componentsrepo;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.ConstantsFor;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.security.SecureRandom;
 import java.util.Date;
 import java.util.Properties;
@@ -26,15 +28,12 @@ public class VersionInfo {
 
     private static InitProperties initProperties = new DBRegProperties(ConstantsFor.APP_NAME + VersionInfo.class.getSimpleName());
 
-    @Value ("${application.name}")
     private String appName = ConstantsFor.APP_NAME.replace("-", "");
 
-    @Value ("${build.version}")
     private String appVersion;
 
     private String appBuild;
 
-    @Value ("${build.time}")
     private String buildTime;
 
     public String getAppBuild() {
@@ -87,7 +86,7 @@ public class VersionInfo {
             setterVersionFromFiles(file);
         }
         else{
-            file = new File(""); //todo 30.09.2018 (19:03)
+            file = new File("c:\\Users\\ikudryashov\\IdeaProjects\\spring\\modules\\networker\\build.gradle");
             setterVersionFromFiles(file);
         }
         this.appBuild = new SecureRandom().nextInt(( int ) ConstantsFor.MY_AGE) + "." + ConstantsFor.thisPC();

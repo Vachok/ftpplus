@@ -19,7 +19,7 @@ public class SystemTrayHelper {
 
     public void addTray() {
         SystemTray systemTray = SystemTray.getSystemTray();
-        Image image = Toolkit.getDefaultToolkit().getImage(getClass().getResource("/static/images/icons8-сеть-15.png"));
+        Image image = Toolkit.getDefaultToolkit().getImage(getClass().getResource("/static/images/icons8-ip-адрес-15.png"));
         ActionListener actionListener = e -> {
             try{
                 Desktop.getDesktop().browse(URI.create("http://localhost:8880"));
