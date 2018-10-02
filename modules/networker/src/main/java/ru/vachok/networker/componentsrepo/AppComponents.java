@@ -8,11 +8,10 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Scope;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.logic.CookTheCookie;
-import ru.vachok.networker.logic.DBMessenger;
-import ru.vachok.networker.services.*;
+import ru.vachok.networker.services.ADSrv;
+import ru.vachok.networker.services.NetScannerSvc;
+import ru.vachok.networker.services.SimpleCalculator;
 
-import javax.servlet.http.HttpServletRequest;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -43,12 +42,6 @@ public class AppComponents {
     }
 
     @Bean
-    @Scope ("singleton")
-    public DBMessenger dbMessenger() {
-        return new DBMessenger();
-    }
-
-    @Bean
     public Map<String, String> getLastLogs() {
         int ind = 10;
         Map<String, String> lastLogsList = new ConcurrentHashMap<>();
@@ -67,29 +60,6 @@ public class AppComponents {
         return lastLogsList;
     }
 
-    @Bean("pflists")
-    @Scope("singleton")
-    public PfLists pfLists() {
-        return new PfLists();
-    }
-
-    @Bean("visitor")
-    @Scope("prototype")
-    public Visitor visitor(HttpServletRequest request) {
-        return new Visitor(request);
-    }
-
-    @Bean
-    @Scope("singleton")
-    public VisitorSrv visitorSrv(CookieShower cookieShower, Visitor visitor) {
-        return new VisitorSrv(cookieShower, visitor);
-    }
-
-    @Bean
-    public WhoIsWithSRV whoIsWithSRV() {
-        return new WhoIsWithSRV();
-    }
-
     @Bean("versioninfo")
     public static VersionInfo versionInfo() {
         VersionInfo versionInfo = new VersionInfo();
@@ -100,16 +70,6 @@ public class AppComponents {
         return versionInfo;
     }
 
-    public PfListsSrv pfListsSrv(PfLists pfLists) {
-        return new PfListsSrv(pfLists);
-    }
-
-    @Bean
-    @Scope("prototype")
-    public CookTheCookie cookTheCookie(Visitor visitor) {
-        return new CookTheCookie(visitor);
-    }
-
     @Bean
     @Scope ("singleton")
     public NetScannerSvc netScannerSvc() {
@@ -118,11 +78,6 @@ public class AppComponents {
         String msg = lastNetScan.getTimeLastScan() + " timeLastScan";
         getLogger().warn(msg);
         return new NetScannerSvc(lastNetScan);
-    }
-
-    @Bean
-    public static ResoCache resoCache() {
-        return ResoCache.getResoCache();
     }
 
     @Bean

@@ -13,11 +13,15 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.LastNetScan;
+import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.services.NetScannerSvc;
 
 import javax.servlet.http.HttpServletRequest;
 import java.security.SecureRandom;
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 
@@ -86,6 +90,7 @@ public class NetScanCtr {
             .addAttribute("netScannerSvc", netScannerSvc)
             .addAttribute("thePc", netScannerSvc.getThePc())
             .addAttribute(TITLE_STR, "First Scan: 2018-05-05");
+        model.addAttribute("footer", new PageFooter().getFooterUtext());
         lastScan.setTimeLastScan(new Date());
 
         return NETSCAN_STR;

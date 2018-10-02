@@ -16,20 +16,18 @@
 <p>
     <a href="http://srv-git.eatmeat.ru/fsa/">Статистика по HTTP-трафику SQUID</a><br>
     <a href="http://srv-git.eatmeat.ru:1234">Локальный GIT, для конфигов и тп. (Может быть выключен)</a> | <a href="/git">вкл</a>|<a href="/git?reboot">выкл</a><br>
-    <a href="/ad">Добавить фотографии в Outlook</a><br>
+    <a href="/visits">
 <p>
 <h3>Синтаксис</h3>
-<ol>
+<p>
     <font color="#f4f442">
         "whois: " - whois-запросы на все регистрационные сервера. // sample - whois: www.ru // <br>
         "calc: " - подсчёт суммы чисел. // sample - calc: 1 2 3.4 3 // <br>
     </font>
     Запрос без параметров - запрос в матрицу доступа. Поиск по-должности %олжнос%<br>
-</ol>
+</p>
+<p th:utext="${footer}"/>
 </body>
 <footer>
-    <a href="/pflists">Списки PF</a><br>
-    <a href="/netscan">Скан локальных ПК</a>
-    <a href="/serviceinfo"><p align="right">SERVICEINFO</p></a>
 </footer>
 </html>

@@ -11,6 +11,7 @@ import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.PfLists;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.services.PfListsSrv;
@@ -122,6 +123,8 @@ public class PfListsCtr {
         model.addAttribute("rules", pfLists.getPfRules());
         model.addAttribute("gitstats", Thread.activeCount() + " thr, active\nChange: " +
             (Thread.activeCount() - aThreadsLast));
+        model.addAttribute("footer", new PageFooter().getFooterUtext());
+
     }
 
     private void propUpd(Properties properties) {

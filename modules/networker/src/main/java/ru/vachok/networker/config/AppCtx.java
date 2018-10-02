@@ -9,8 +9,10 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 
+import java.util.Date;
 import java.util.PriorityQueue;
 import java.util.Queue;
+import java.util.StringJoiner;
 
 
 /**
@@ -19,6 +21,14 @@ import java.util.Queue;
 @Configuration
 @EnableAsync
 public class AppCtx extends AnnotationConfigApplicationContext {
+
+    public AppCtx() {
+
+        this.resetCommonCaches();
+        this.setDisplayName(ConstantsFor.APP_NAME.replace("-", ""));
+        this.setResourceLoader(new ResLoader());
+        this.refresh();
+    }
 
     private static final String SOURCE_CLASS = AppCtx.class.getSimpleName();
 
@@ -38,11 +48,9 @@ public class AppCtx extends AnnotationConfigApplicationContext {
     private static AnnotationConfigApplicationContext configApplicationContext = new AnnotationConfigApplicationContext();
 
     public static AnnotationConfigApplicationContext scanForBeansAndRefreshContext() {
-        configApplicationContext.clearResourceCaches();
         configApplicationContext.scan("ru.vachok.networker.componentsrepo");
         configApplicationContext.scan("ru.vachok.networker.services");
         configApplicationContext.scan("ru.vachok.networker.config");
-        configApplicationContext.setDisplayName(ConstantsFor.APP_NAME);
         qAdd();
         return configApplicationContext;
     }
@@ -59,19 +67,17 @@ public class AppCtx extends AnnotationConfigApplicationContext {
         outQueue.add(AppCtx.LIFECYCLE_PROCESSOR_BEAN_NAME);
     }
 
-    public static Queue<String> getClassLoaderURLList() {
-        ClassLoader classLoader = configApplicationContext.getClassLoader();
-        ClassLoader parent = classLoader!=null? classLoader.getParent(): null;
 
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("<p><h3><center>Class Loaders</center></h3><h4>Loader from context:</h4>");
-        stringBuilder.append(classLoader.getClass().getTypeName());
-        stringBuilder.append("<h4>Loader from " +
-            "parent:</h4><br>");
-        stringBuilder.append(parent.getClass().getTypeName());
-        stringBuilder.append("</p>");
-        String msg = stringBuilder.toString();
-        outQueue.add(msg);
-        return outQueue;
+    @Override
+    public String toString() {
+        return new StringJoiner("\n", AppCtx.class.getSimpleName() + "\n", "\n")
+            .add("applicationName='" + getApplicationName() + "'\n")
+            .add("beanDefinitionNames=" + new TForms().fromArray(getBeanDefinitionNames()))
+            .add("displayName='" + getDisplayName() + "'\n")
+            .add("id='" + getId() + "'\n")
+            .add("parent=" + getParent())
+            .add("parentBeanFactory=" + getParentBeanFactory())
+            .add("startupDate=" + new Date(getStartupDate()))
+            .toString();
     }
 }

@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.config.AppCtx;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -28,7 +29,7 @@ public class VersionInfo {
 
     private static InitProperties initProperties = new DBRegProperties(ConstantsFor.APP_NAME + VersionInfo.class.getSimpleName());
 
-    private String appName = ConstantsFor.APP_NAME.replace("-", "");
+    private String appName = new AppCtx().getDisplayName().split("@")[0];
 
     private String appVersion;
 
@@ -69,16 +70,6 @@ public class VersionInfo {
     }
 
 
-    @Override
-    public String toString() {
-        return new StringJoiner(", ", VersionInfo.class.getSimpleName() + "\n", "\n")
-            .add("appBuild='" + appBuild + "\n")
-            .add("appName='" + appName + "\n")
-            .add("appVersion='" + appVersion + "\n")
-            .add("buildTime='" + buildTime + "\n")
-            .toString();
-    }
-
     public void setParams() {
         Properties properties = initProperties.getProps();
         File file = new File("g:\\My_Proj\\FtpClientPlus\\modules\\networker\\build.gradle");
@@ -89,10 +80,11 @@ public class VersionInfo {
             file = new File("c:\\Users\\ikudryashov\\IdeaProjects\\spring\\modules\\networker\\build.gradle");
             setterVersionFromFiles(file);
         }
-        this.appBuild = new SecureRandom().nextInt(( int ) ConstantsFor.MY_AGE) + "." + ConstantsFor.thisPC();
-
+        this.appBuild = ConstantsFor.thisPC() + "." + new SecureRandom().nextInt((int) ConstantsFor.MY_AGE);
         properties.setProperty("appBuild", appBuild);
-        if(ConstantsFor.thisPC().equalsIgnoreCase("home")){
+
+        if (ConstantsFor.thisPC().equalsIgnoreCase("home") ||
+            ConstantsFor.thisPC().toLowerCase().contains("no0027")) {
             this.buildTime = new Date(ConstantsFor.START_STAMP).toString();
             properties.setProperty("buildTime", buildTime);
         }
@@ -115,5 +107,15 @@ public class VersionInfo {
         catch(IOException e){
             LOGGER.error(e.getMessage(), e);
         }
+    }
+
+    @Override
+    public String toString() {
+        return new StringJoiner("\n", VersionInfo.class.getSimpleName() + "\n", "\n")
+            .add("appBuild='" + appBuild + "'\n")
+            .add("appName='" + appName + "'\n")
+            .add("appVersion='" + appVersion + "'\n")
+            .add("buildTime='" + buildTime + "'\n")
+            .toString();
     }
 }

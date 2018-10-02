@@ -3,8 +3,11 @@ package ru.vachok.networker.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.DefaultResourceLoader;
-import ru.vachok.networker.componentsrepo.AppComponents;
+import org.springframework.core.io.Resource;
 import ru.vachok.networker.componentsrepo.ResoCache;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 /**
@@ -12,14 +15,9 @@ import ru.vachok.networker.componentsrepo.ResoCache;
 @Configuration
 public class ResLoader extends DefaultResourceLoader {
 
-    private static ResoCache resoCache = AppComponents.resoCache();
+    private Map<Resource, ResoCache> resourceResoCacheMap = new ConcurrentHashMap<>();
 
-    /*Fields*/
-
-    /**
-     Simple Name класса, для поиска настроек
-     */
-    private static final String SOURCE_CLASS = ResLoader.class.getSimpleName();
-
-
+    public ResLoader() {
+        this.resourceResoCacheMap = ResLoader.this.getResourceCache(ResoCache.class);
+    }
 }

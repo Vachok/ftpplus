@@ -2,13 +2,18 @@ package ru.vachok.networker.services;
 
 
 import org.slf4j.Logger;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.componentsrepo.ResoCache;
+import ru.vachok.networker.config.ResLoader;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.sql.*;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -95,14 +100,28 @@ public class MatrixSRV {
         return s;
     }
 
-    private String downBlob(byte[] bytes) throws IOException {
+    private String downBlob(byte[] bytes) throws IOException, SQLException {
         File file = new File("theBlob.msg");
         try (FileOutputStream fileOutputStream = new FileOutputStream(file)) {
             fileOutputStream.write(bytes);
         }
-        AppComponents.resoCache().setFilePath(file.getAbsolutePath());
-        AppComponents.resoCache().setBytes(bytes);
+        ResoCache resoCache = ResoCache.getResoCache();
+        resoCache.setFilePath(file.getAbsolutePath());
+        resoCache.setBytes(bytes);
+        resoCache.setFile(file);
+        resoCache.setDescr("Blob from " + c.getMetaData().getURL() + " " + c.getMetaData().getIdentifierQuoteString());
+        resoCache.setLastModif(System.currentTimeMillis());
+        resoCache.setFileName(file.getName());
 
-        throw new UnsupportedEncodingException("Not Implemented"); //todo 01.10.2018 (18:38) blob download
+        ResLoader resLoader = new ResLoader();
+        Map<Resource, ResoCache> resourceCache = resLoader.getResourceCache(ResoCache.class);
+        StringBuilder stringBuilder = new StringBuilder();
+
+        resourceCache.forEach((x, y) -> stringBuilder
+            .append(x.toString())
+            .append("<br>")
+            .append(y.toString()));
+
+        return stringBuilder.toString();
     }
 }

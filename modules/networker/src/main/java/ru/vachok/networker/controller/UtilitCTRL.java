@@ -10,6 +10,7 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.ADComputer;
 import ru.vachok.networker.componentsrepo.ADUser;
 import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.logic.PassGenerator;
 import ru.vachok.networker.services.ADSrv;
 import ru.vachok.networker.services.SimpleCalculator;
@@ -55,6 +56,7 @@ public class UtilitCTRL {
     @GetMapping("/ad")
     public String adUsersComps(HttpServletRequest request, Model model) {
         if(ConstantsFor.getPcAuth(request)){
+            model.addAttribute("footer", new PageFooter().getFooterUtext());
             return adFoto(model);
         }
         else{

@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.ServiceInform;
 import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.services.CookieShower;
@@ -19,9 +20,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.file.AccessDeniedException;
 import java.time.LocalTime;
-import java.util.Date;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -68,15 +67,12 @@ public class ServiceInfoCtrl {
         model.addAttribute("title", "srv-git is " + pingBool() + "noF: " +
             ConstantsFor.NO_F_DAYS);
         model.addAttribute("ping", pingGit());
-        model.addAttribute("urls", new TForms().fromArray(AppCtx.getClassLoaderURLList()));
+        model.addAttribute("urls", new AppCtx().toString().replaceAll("\n", "<br>"));
         model.addAttribute("request", prepareRequest(request));
-        model.addAttribute("visit", AppComponents
-            .versionInfo().toString() + " (current stamp: " + System.currentTimeMillis() + ")");
-        model.addAttribute("genstamp", "Generated: " +
-            new Date().getTime() +
-            ". Up: " +
-            TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - ConstantsFor.START_STAMP));
+        model.addAttribute("visit", AppComponents.versionInfo().toString());
         model.addAttribute("back", request.getHeader("REFERER".toLowerCase()));
+        model.addAttribute("footer", new PageFooter().getFooterUtext());
+
     }
 
     private boolean pingBool() {
@@ -89,7 +85,10 @@ public class ServiceInfoCtrl {
     private String pingGit() {
         try {
             InetAddress byName = InetAddress.getByName("srv-git.eatmeat.ru");
-            return "<b>" + byName.isReachable(1000) + "</b> srv-git.eatmeat.ru. <i>" + LocalTime.now() + "</i><br>";
+            boolean reachable = byName.isReachable(1000);
+            if (reachable) {
+                return "<b><font color=\"#77ff72\">" + true + "</b> srv-git.eatmeat.ru.</font> Checked at: <i>" + LocalTime.now() + "</i><br>";
+            } else return "<b><font color=\"#ff2121\">" + true + "</b> srv-git.eatmeat.ru.</font> Checked at: <i>" + LocalTime.now() + "</i><br>";
         } catch (IOException e) {
             return e.getMessage();
         }

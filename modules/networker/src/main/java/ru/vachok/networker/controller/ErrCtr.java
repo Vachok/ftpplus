@@ -7,6 +7,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.PageFooter;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -70,6 +71,7 @@ public class ErrCtr implements ErrorController {
                 .toSeconds(lastAccessedTime - httpServletRequest.getSession().getCreationTime()) + " sec. sess.");
             model.addAttribute("ref", httpServletRequest.getHeader("referer"));
             model.addAttribute("err", err);
+            model.addAttribute("footer", new PageFooter().getFooterUtext());
         }
         return "error";
     }

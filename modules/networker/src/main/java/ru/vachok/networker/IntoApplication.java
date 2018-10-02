@@ -53,7 +53,7 @@ public class IntoApplication {
      @see ru.vachok.networker.controller.MatrixCtr
      */
     public static void main(String[] args) {
-        new SystemTrayHelper().addTray();
+        SystemTrayHelper.addTray("icons8-плохие-поросята-32.png");
         SPRING_APPLICATION.setMainApplicationClass(IntoApplication.class);
         SPRING_APPLICATION.setApplicationContextClass(AppCtx.class);
         SPRING_APPLICATION.setResourceLoader(new ResLoader());

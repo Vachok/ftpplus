@@ -11,9 +11,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.AppComponents;
-import ru.vachok.networker.componentsrepo.VersionInfo;
-import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.componentsrepo.*;
 import ru.vachok.networker.logic.SSHFactory;
 import ru.vachok.networker.services.MatrixSRV;
 import ru.vachok.networker.services.VisitorSrv;
@@ -22,7 +20,10 @@ import ru.vachok.networker.services.WhoIsWithSRV;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 
@@ -49,6 +50,8 @@ public class MatrixCtr {
 
     private long metricMatrixStart = System.currentTimeMillis();
 
+    private static final String FOOTER_NAME = "footer";
+
     @Autowired
     public MatrixCtr(VisitorSrv visitorSrv, Visitor visitor, VersionInfo versionInfo) {
         this.visitorSrv = visitorSrv;
@@ -65,6 +68,7 @@ public class MatrixCtr {
             String queryString = request.getQueryString();
             if (queryString.equalsIgnoreCase("eth") && pcAuth) {
                 lastLogsGetter(model);
+                model.addAttribute(FOOTER_NAME, new PageFooter().getFooterUtext());
                 metricMatrixStart = System.currentTimeMillis() - metricMatrixStart;
                 return "logs";
             }
@@ -77,7 +81,7 @@ public class MatrixCtr {
             String userIP = userPC + ":" + request.getRemotePort() + "<-" + response.getStatus();
             model.addAttribute("yourip", userIP);
             model.addAttribute(MATRIX_STRING_NAME, new MatrixSRV());
-
+            model.addAttribute(FOOTER_NAME, new PageFooter().getFooterUtext());
             if (ConstantsFor.getUserPC(request).toLowerCase().contains(ConstantsFor.NO0027) ||
                 ConstantsFor.getUserPC(request).toLowerCase().contains("0:0:0:0")) {
                 model.addAttribute("visit", versionInfo.toString());
@@ -85,7 +89,6 @@ public class MatrixCtr {
                 model.addAttribute("visit", visitor.getTimeSt() + " timestamp");
             }
         }
-        metricMatrixStart = System.currentTimeMillis() - metricMatrixStart;
 
         return "starting";
     }
@@ -95,6 +98,7 @@ public class MatrixCtr {
         String logsFromDB = new TForms().fromArray(vachokEthosdistro);
         model.addAttribute("logdb", logsFromDB);
         model.addAttribute("starttime", new Date(ConstantsFor.START_STAMP));
+        model.addAttribute(FOOTER_NAME, new PageFooter().getFooterUtext());
         model.addAttribute("title", metricMatrixStart);
     }
 
@@ -123,10 +127,12 @@ public class MatrixCtr {
             workPos = matrixSRV.getWorkPos();
         } catch (NullPointerException e) {
             response.sendError(139, "");
+
             throw new IllegalStateException("<br>Строка ввода должности не инициализирована!<br>" +
                 this.getClass().getName() + "<br>");
         }
         model.addAttribute("workPos", workPos);
+        model.addAttribute(FOOTER_NAME, new PageFooter().getFooterUtext());
         model.addAttribute("headtitle", matrixSRV.getCountDB() + " позиций   " + TimeUnit.MILLISECONDS.toMinutes(
             System.currentTimeMillis() - ConstantsFor.START_STAMP) + " upTime");
         metricMatrixStart = System.currentTimeMillis() - metricMatrixStart;
@@ -155,6 +161,7 @@ public class MatrixCtr {
             String s = new WhoIsWithSRV().whoIs(workPos);
             matrixSRV.setWorkPos(s.replaceAll("\n", "<br>"));
             model.addAttribute("whois", s);
+            model.addAttribute(FOOTER_NAME, new PageFooter().getFooterUtext());
         } catch (ArrayIndexOutOfBoundsException e) {
             model.addAttribute("whois", workPos + "<p>" + e.getMessage());
             return MATRIX_STRING_NAME;
@@ -184,5 +191,10 @@ public class MatrixCtr {
         return REDIRECT_MATRIX;
     }
 
-
+    private String resoString() {
+        StringBuilder stringBuilder = new StringBuilder();
+        ResoCache resoCache = ResoCache.getResoCache();
+        stringBuilder.append(resoCache.exists()).append(" resources");
+        return stringBuilder.toString();
+    }
 }

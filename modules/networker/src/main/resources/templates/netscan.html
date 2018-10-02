@@ -1,6 +1,5 @@
 <!DOCTYPE HTML>
-<html xmlns:th="http://www.thymeleaf.org">
-<html lang="ru">
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
 <head>
     <meta charset="UTF-8">
     <title th:text="${title}">ХЗ</title>
@@ -24,6 +23,6 @@
 <p th:utext="${thePc}"/>
 </body>
 <footer>
-    <a href="/">Главная</a> | <a href="/netscan">Netscan</a>
+    <p th:utext="${footer}"/>
 </footer>
 </html>
