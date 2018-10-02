@@ -12,10 +12,8 @@ import ru.vachok.networker.services.ADSrv;
 import ru.vachok.networker.services.NetScannerSvc;
 import ru.vachok.networker.services.SimpleCalculator;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -33,6 +31,16 @@ public class AppComponents {
         ADUser adUser = new ADUser();
         ADComputer adComputer = new ADComputer();
         return new ADSrv(adUser, adComputer);
+    }
+
+    @Bean
+    @Scope ("singleton")
+    public NetScannerSvc netScannerSvc() {
+        LastNetScan lastNetScan = new LastNetScan();
+        lastNetScan.setNetWork(lastNetScanMap());
+        String msg = lastNetScan.getTimeLastScan() + " timeLastScan";
+        getLogger().warn(msg);
+        return new NetScannerSvc(lastNetScan, adComputers());
     }
 
     @Bean
@@ -71,17 +79,19 @@ public class AppComponents {
     }
 
     @Bean
-    @Scope ("singleton")
-    public NetScannerSvc netScannerSvc() {
-        LastNetScan lastNetScan = new LastNetScan();
-        lastNetScan.setNetWork(lastNetScanMap());
-        String msg = lastNetScan.getTimeLastScan() + " timeLastScan";
-        getLogger().warn(msg);
-        return new NetScannerSvc(lastNetScan);
+    public static List<ADComputer> adComputers() {
+        return adSrv().getAdComputer().getAdComputers();
     }
 
     @Bean
     public SimpleCalculator simpleCalculator() {
         return new SimpleCalculator();
+    }
+
+    @Bean
+    public ServiceInform serviceInform() {
+        ServiceInform serviceInform = new ServiceInform();
+        serviceInform.getResourcesTXT();
+        return serviceInform;
     }
 }

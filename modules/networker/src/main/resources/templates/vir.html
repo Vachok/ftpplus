@@ -9,10 +9,10 @@
 <center><a href="/">Main</a> | <a th:href="${ref}">Back</a> | <a href="/clsmail">Ящик и БД</a> | <a href="/clsmail?clearmail">Очистить ящик</a></center>
 <p th:utext="${mail}"/>
 <p th:utext="${urls}"/>
-<font color=""><p th:utext="${ping}"/>
+<font color=""><p th:utext="${ping}"></p></font>
 <p th:utext="${context}"/>
 <p th:utext="${request}"/>
-
+<p th:utext="${res}"/>
 </body>
 <footer>
     <p align="right" th:utext="${visit}"/>

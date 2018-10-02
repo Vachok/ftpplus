@@ -11,8 +11,8 @@ import java.net.URI;
 import java.net.URL;
 import java.security.SecureRandom;
 import java.time.Year;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+
 
 /**
  @since 01.10.2018 (13:37) */
@@ -136,6 +136,29 @@ public class ResoCache implements org.springframework.core.io.Resource {
     public InputStream getInputStream() throws IOException {
         try (InputStream inputStream = new ByteArrayInputStream(bytes)) {
             return inputStream;
+        }
+    }
+
+    @Override
+    public String toString() {
+        try{
+            return new StringJoiner(", ", ResoCache.class.getSimpleName() + "\n", "\n")
+                .add("bytes=" + Arrays.toString(bytes))
+                .add("contentLength=" + contentLength())
+                .add("descr='" + descr + "\n")
+                .add("description='" + getDescription() + "\n")
+                .add("exists=" + exists())
+                .add("fileName='" + fileName + "\n")
+                .add("filename='" + getFilename() + "\n")
+                .add("filePath='" + filePath + "\n")
+                .add("lastModif=" + lastModif)
+                .add("resources=" + resources)
+                .add("URI=" + getURI())
+                .add("URL=" + getURL())
+                .toString();
+        }
+        catch(IOException e){
+            return e.getMessage();
         }
     }
 }

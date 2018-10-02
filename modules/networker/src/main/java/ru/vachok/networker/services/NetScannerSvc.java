@@ -10,6 +10,7 @@ import ru.vachok.messenger.email.ESender;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.ADComputer;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.LastNetScan;
 
@@ -50,6 +51,8 @@ public class NetScannerSvc {
     private String thePc;
 
     private LastNetScan lastNetScan;
+
+    private static List<ADComputer> adComputers;
 
     private String qer;
 
@@ -272,7 +275,8 @@ public class NetScannerSvc {
 
     /*Instances*/
     @Autowired
-    public NetScannerSvc(LastNetScan lastNetScan) {
+    public NetScannerSvc(LastNetScan lastNetScan, List<ADComputer> adComputers) {
+        NetScannerSvc.adComputers = adComputers;
         this.lastNetScan = lastNetScan;
         getPcNames();
     }
@@ -321,18 +325,20 @@ public class NetScannerSvc {
     private String getSomeMore(String pcName) {
         List<Integer> onLine = new ArrayList<>();
         List<Integer> offLine = new ArrayList<>();
-
         try(PreparedStatement statement = c.prepareStatement("select * from velkompc where NamePP like ?")){
             statement.setString(1, pcName);
             try(ResultSet resultSet = statement.executeQuery()){
                 while(resultSet.next()){
+                    ADComputer adComputer = new ADComputer();
                     int onlineNow = resultSet.getInt("OnlineNow");
                     if(onlineNow==1){
                         onLine.add(onlineNow);
+                        adComputer.setDnsHostName(pcName);
                     }
                     if(onlineNow==0){
                         offLine.add(onlineNow);
                     }
+                    adComputers.add(adComputer);
                 }
             }
         }

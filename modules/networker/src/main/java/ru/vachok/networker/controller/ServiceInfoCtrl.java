@@ -64,6 +64,7 @@ public class ServiceInfoCtrl {
     }
 
     private void modModMaker(Model model, HttpServletRequest request) {
+        this.serviceInform = new ServiceInform();
         model.addAttribute("title", "srv-git is " + pingBool() + "noF: " +
             ConstantsFor.NO_F_DAYS);
         model.addAttribute("ping", pingGit());
@@ -72,9 +73,8 @@ public class ServiceInfoCtrl {
         model.addAttribute("visit", AppComponents.versionInfo().toString());
         model.addAttribute("back", request.getHeader("REFERER".toLowerCase()));
         model.addAttribute("footer", new PageFooter().getFooterUtext());
-
+        //        model.addAttribute("res", serviceInform.getResourcesTXT()); fixme 02.10.2018 (20:40)
     }
-
     private boolean pingBool() {
         try {
             return InetAddress.getByName("srv-git.eatmeat.ru").isReachable(1000);
