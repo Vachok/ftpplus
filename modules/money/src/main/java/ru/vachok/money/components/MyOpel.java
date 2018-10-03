@@ -9,6 +9,9 @@ import ru.vachok.money.ConstantsFor;
 import ru.vachok.money.config.ThrAsyncConfigurator;
 import ru.vachok.mysqlandprops.RegRuMysql;
 
+import java.sql.*;
+import java.util.*;
+
 
 /**
  @since 01.09.2018 (20:26) */

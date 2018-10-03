@@ -97,13 +97,13 @@ public class SystemTrayHelper {
         ideIdea.setLabel("Запуск Idea");
         moneyItem.addActionListener(e -> {
             try{
-                Desktop.getDesktop().browse(URI.create("http://localhost:8881/money"));
+                Desktop.getDesktop().browse(URI.create("http://localhost:8881/chkcar"));
             }
             catch(IOException e1){
                 LOGGER.error(e1.getMessage(), e1);
             }
         });
-        moneyItem.setLabel("Считаем деньги");
+        moneyItem.setLabel("Чекануть дорогу");
         rebootSys.addActionListener(e -> {
             try{
                 Runtime.getRuntime().exec("shutdown /r /f");
