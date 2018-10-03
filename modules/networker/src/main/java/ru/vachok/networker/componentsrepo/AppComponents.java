@@ -10,12 +10,18 @@ import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.services.ADSrv;
 import ru.vachok.networker.services.NetScannerSvc;
+import ru.vachok.networker.services.PCUserResolver;
 import ru.vachok.networker.services.SimpleCalculator;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.locks.ReentrantLock;
 
 
 @ComponentScan
@@ -28,25 +34,31 @@ public class AppComponents {
 
     @Bean
     public static ADSrv adSrv() {
-        ADUser adUser = new ADUser();
-        ADComputer adComputer = new ADComputer();
-        return new ADSrv(adUser, adComputer);
+        ADUser adUser = ADUser.getAdUser();
+        ADComputer adComputer = ADComputer.getAdComputer();
+        return ADSrv.getI(adUser, adComputer);
+    }
+
+    @Bean
+    public static ReentrantLock lock() {
+        return new ReentrantLock();
     }
 
     @Bean
     @Scope ("singleton")
-    public NetScannerSvc netScannerSvc() {
-        LastNetScan lastNetScan = new LastNetScan();
-        lastNetScan.setNetWork(lastNetScanMap());
-        String msg = lastNetScan.getTimeLastScan() + " timeLastScan";
-        getLogger().warn(msg);
-        return new NetScannerSvc(lastNetScan, adComputers());
+    public static NetScannerSvc netScannerSvc() {
+        return NetScannerSvc.getI();
     }
 
     @Bean
     @Scope("singleton")
-    public Map<String, Boolean> lastNetScanMap() {
-        return new LastNetScan().getNetWork();
+    public static ConcurrentMap<String, Boolean> lastNetScanMap() {
+        return lastNetScan().getNetWork();
+    }
+
+    @Bean
+    public static LastNetScan lastNetScan() {
+        return LastNetScan.getLastNetScan();
     }
 
     @Bean
@@ -80,7 +92,7 @@ public class AppComponents {
 
     @Bean
     public static List<ADComputer> adComputers() {
-        return adSrv().getAdComputer().getAdComputers();
+        return ADSrv.getI(ADUser.getAdUser(), ADComputer.getAdComputer()).getAdComputer().getAdComputers();
     }
 
     @Bean
@@ -93,5 +105,10 @@ public class AppComponents {
         ServiceInform serviceInform = new ServiceInform();
         serviceInform.getResourcesTXT();
         return serviceInform;
+    }
+
+    @Bean
+    public static PCUserResolver pcUserResolver() {
+        return PCUserResolver.getPcUserResolver();
     }
 }

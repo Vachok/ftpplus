@@ -18,6 +18,16 @@ import java.util.StringJoiner;
 @Scope("prototype")
 public class ADUser {
 
+    private static ADUser adUser = new ADUser();
+
+    private ADUser() {
+
+    }
+
+    public static ADUser getAdUser() {
+        return adUser;
+    }
+
     /**
      <b>eatmeat.ru</b>
      */
@@ -244,16 +254,9 @@ public class ADUser {
 
     @Override
     public String toString() {
-        return new StringJoiner("", "\n" + ADUser.class.getSimpleName() + "\n[", "\n----------------")
-            .add("\ndistinguishedName= " + distinguishedName + ";")
-            .add("\nenabled= " + enabled + ";")
-            .add("\ngivenName= " + givenName + ";")
-            .add("\nname= " + name + "'")
-            .add("\nobjectGUID= " + objectGUID + ";")
-            .add("\nsamAccountName= " + samAccountName + ";")
-            .add("\nSID= " + SID + ";")
-            .add("\nsurname= " + surname + "'")
-            .add("\nuserPrincipalName= " + userPrincipalName + ";")
+        return new StringJoiner("\n", ADUser.class.getSimpleName() + "\n", "\n")
+            .add("defaultDomainName='" + defaultDomainName + "'\n")
+            .add("userName='" + userName + "'\n")
             .toString();
     }
 }

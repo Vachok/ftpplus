@@ -7,7 +7,10 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.*;
+import ru.vachok.networker.componentsrepo.ADComputer;
+import ru.vachok.networker.componentsrepo.ADUser;
+import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.services.ADSrv;
 
 import javax.servlet.http.HttpServletRequest;
@@ -32,6 +35,7 @@ public class ActDirectoryCTRL {
         if(ConstantsFor.getPcAuth(request)){
             model.addAttribute("footer", new PageFooter().getFooterUtext());
             model.addAttribute("pcs", new TForms().adPCMap(adComputer.getAdComputers(), true));
+            model.addAttribute("users", adUserString());
         }
         else{
             return adFoto(model);
@@ -50,6 +54,11 @@ public class ActDirectoryCTRL {
         adComputers.forEach((x -> stringBuilder.append(x.toString())));
         stringBuilder.append("<br>");
         return "ok";
+    }
+
+    private String adUserString() {
+        ADUser adUser = AppComponents.pcUserResolver().adPCSetter();
+        return adUser.toString();
     }
 
 }

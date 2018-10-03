@@ -59,6 +59,7 @@ public class NetScanCtr {
 
     @GetMapping ("/netscan")
     public String netScan(HttpServletRequest request, Model model) {
+        netScannerSvc.getPCsAsync();
         String propertyLastScan = properties.getProperty("lastscan", "1515233487000");
         l = Long.parseLong(propertyLastScan) + TimeUnit.MINUTES.toMillis(duration);
         Map<String, Boolean> netWork = lastScan.getNetWork();
@@ -92,7 +93,6 @@ public class NetScanCtr {
             .addAttribute(TITLE_STR, "First Scan: 2018-05-05");
         model.addAttribute("footer", new PageFooter().getFooterUtext());
         lastScan.setTimeLastScan(new Date());
-
         return NETSCAN_STR;
     }
 

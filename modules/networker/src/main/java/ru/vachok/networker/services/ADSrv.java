@@ -3,7 +3,6 @@ package ru.vachok.networker.services;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.ADComputer;
@@ -28,9 +27,11 @@ public class ADSrv implements Runnable {
     /*Fields*/
     private static final Logger LOGGER = LoggerFactory.getLogger(ADSrv.class.getName());
 
-    private ADUser adUser;
+    private static ADUser adUser;
 
-    private ADComputer adComputer;
+    private static ADComputer adComputer;
+
+
 
     private Map<ADComputer, ADUser> adComputerADUserMap = new ConcurrentHashMap<>();
 
@@ -50,11 +51,16 @@ public class ADSrv implements Runnable {
         return adComputerADUserMap;
     }
 
-    /*Instances*/
-    @Autowired
-    public ADSrv(ADUser adUser, ADComputer adComputer) {
-        this.adUser = adUser;
-        this.adComputer = adComputer;
+    private static ADSrv adSrv = new ADSrv();
+
+    private ADSrv() {
+
+    }
+
+    public static ADSrv getI(ADUser adUser, ADComputer adComputer) {
+        ADSrv.adUser = adUser;
+        ADSrv.adComputer = adComputer;
+        return adSrv;
     }
 
     @Override
@@ -114,7 +120,7 @@ public class ADSrv implements Runnable {
         int index = 0;
         for(String s : compS){
             index++;
-            ADComputer adC = new ADComputer();
+            ADComputer adC = ADComputer.getAdComputer();
             String[] sS = s.split("\r\n");
             try{
                 for(String ssStr : sS){
@@ -167,7 +173,7 @@ public class ADSrv implements Runnable {
         List<ADUser> adUserList = new ArrayList<>();
         int indexUser = 0;
         for(String s : userS){
-            ADUser adU = new ADUser();
+            ADUser adU = ADUser.getAdUser();
             indexUser++;
             String[] sS = s.split("\r\n");
             try{
