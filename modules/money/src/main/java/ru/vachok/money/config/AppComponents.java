@@ -6,7 +6,6 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Scope;
 import ru.vachok.money.components.*;
 import ru.vachok.money.services.*;
-import ru.vachok.mysqlandprops.EMailAndDB.SpeedRunActualize;
 
 import javax.servlet.http.Cookie;
 
@@ -45,18 +44,9 @@ public class AppComponents {
     }
 
     @Bean
-    @Scope ("singleton")
-    public MyOpel myOpel(SpeedRunActualize speedRunActualize) {
-        MyOpel myOpel = new MyOpel();
-        myOpel.setCarName("Astra");
-        myOpel.setGosNum("A939OO190");
-        return myOpel;
-    }
-
-    @Bean
     @Scope ("prototype")
-    public Visitor visitor(CookieMaker cookieMaker) {
-        VisitorSrv visitorSrv = new VisitorSrv(cookieMaker);
+    public Visitor visitor() {
+        VisitorSrv visitorSrv = new VisitorSrv(new CookieMaker());
         return new Visitor(visitorSrv);
     }
 
@@ -75,6 +65,6 @@ public class AppComponents {
     @Bean
     @Scope ("singleton")
     public static MyOpel myOpel() {
-        return new MyOpel();
+        return MyOpel.getI();
     }
 }

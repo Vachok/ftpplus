@@ -1,15 +1,11 @@
 package ru.vachok.money.other;
 
 
-import org.slf4j.Logger;
 import org.springframework.scheduling.annotation.Scheduled;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.money.ConstantsFor;
-import ru.vachok.money.components.MyOpel;
-import ru.vachok.money.config.AppComponents;
 import ru.vachok.money.services.DBMessage;
 import ru.vachok.mysqlandprops.DataConnectTo;
-import ru.vachok.mysqlandprops.EMailAndDB.SpeedRunActualize;
 import ru.vachok.mysqlandprops.RegRuMysql;
 
 import javax.mail.Message;
@@ -31,9 +27,6 @@ import java.util.function.BiConsumer;
 @Deprecated
 public class SpeedRunActualizeLOC implements Callable<String> {
 
-    private static final Logger LOGGER = ConstantsFor.getLogger();
-
-    /*Fields*/
 
     /**
      {@linkplain SpeedRunActualizeLOC}
@@ -44,8 +37,6 @@ public class SpeedRunActualizeLOC implements Callable<String> {
      {@link #messageToUser}
      */
     private final MessageToUser messageToUser = new DBMessage();
-
-    private MyOpel myOpel = new AppComponents().myOpel(new SpeedRunActualize());
 
     /**
      {@link RegRuMysql}

@@ -8,6 +8,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import ru.vachok.money.components.AppFooter;
 import ru.vachok.money.components.ParserCBRruSRV;
 import ru.vachok.money.services.WhoIsWithSRV;
 
@@ -35,7 +36,7 @@ public class MoneyCtrl {
     public String money(Model model) {
         model.addAttribute("ParserCBRruSRV", parserCBRruSRV);
         model.addAttribute("currency", "in progress...");
-
+        model.addAttribute("footer", new AppFooter().getTheFooter());
         return "money";
     }
 

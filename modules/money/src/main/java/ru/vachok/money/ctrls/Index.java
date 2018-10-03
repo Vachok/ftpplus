@@ -9,6 +9,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.money.ConstantsFor;
+import ru.vachok.money.components.AppFooter;
 import ru.vachok.money.components.Visitor;
 import ru.vachok.money.config.AppCtx;
 import ru.vachok.money.services.TimeWorms;
@@ -36,6 +37,16 @@ public class Index {
 
     private TimeWorms timeWorms;
 
+    private String dateTimeLoc;
+
+    public String getDateTimeLoc() {
+        return dateTimeLoc;
+    }
+
+    public void setDateTimeLoc(String dateTimeLoc) {
+        this.dateTimeLoc = dateTimeLoc;
+    }
+
     private static final InitProperties GENERAL_LIFE = new DBRegProperties("general-life");
 
     private static final Properties PROPERTIES = GENERAL_LIFE.getProps();
@@ -62,14 +73,20 @@ public class Index {
             LOGGER.warn(e.getMessage());
         }
         long lasts = System.currentTimeMillis() - Long.parseLong(PROPERTIES.getProperty("lasts"));
-        float hrsWout = ( float ) TimeUnit.MILLISECONDS.toSeconds(lasts) / 60 / 60 / 24;
-        model.addAttribute("title", hrsWout + " days");
+
+        float hrsWont = ( float ) TimeUnit.MILLISECONDS
+            .toSeconds(lasts) / ConstantsFor.ONE_HOUR / ConstantsFor.ONE_HOUR / ConstantsFor.ONE_DAY;
+
+        model.addAttribute("title", hrsWont + " days");
         model.addAttribute("timeleft", timeWorms.timeLeft());
         model.addAttribute("geoloc", whoIsWithSRV.whoIs(request.getRemoteAddr()));
+        model.addAttribute("dateTimeLoc", dateTimeLoc);
+        model.addAttribute("footer", new AppFooter().getTheFooter());
 
         if(ConstantsFor.localPc().equalsIgnoreCase("home")){
             return "index-start";
         }
         return "home";
     }
+
 }

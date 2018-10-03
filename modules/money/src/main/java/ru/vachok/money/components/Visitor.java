@@ -101,9 +101,10 @@ public class Visitor {
         this.lastActivity = lastActivity;
     }
 
+
     @Override
     public String toString() {
-        return new StringJoiner(", ", Visitor.class.getSimpleName() + "\n", "\n")
+        return new StringJoiner("\n", Visitor.class.getSimpleName() + "\n", "\n")
             .add("ipAdd='" + ipAdd + "\n")
             .add("lastActivity=" + lastActivity)
             .add("request=" + request)
