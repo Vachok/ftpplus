@@ -19,6 +19,9 @@ import java.util.concurrent.RejectedExecutionException;
 @Service("ParserCBRruSRV")
 public class ParserCBRruSRV {
 
+    public ParserCBRruSRV(Currencies currencies) {
+        this.currencies = currencies;
+    }
 
     /*Fields*/
     private static final Logger LOGGER = LoggerFactory.getLogger(ParserCBRruSRV.class.getSimpleName());

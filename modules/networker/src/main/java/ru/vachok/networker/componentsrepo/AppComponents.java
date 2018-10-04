@@ -6,13 +6,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Scope;
+import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.logic.CookTheCookie;
-import ru.vachok.networker.logic.DBMessenger;
-import ru.vachok.networker.services.*;
+import ru.vachok.networker.services.ADSrv;
+import ru.vachok.networker.services.NetScannerSvc;
+import ru.vachok.networker.services.SimpleCalculator;
 
-import javax.servlet.http.HttpServletRequest;
+import java.sql.*;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 @ComponentScan
@@ -31,44 +34,38 @@ public class AppComponents {
     }
 
     @Bean
+    @Scope ("singleton")
+    public NetScannerSvc netScannerSvc() {
+        LastNetScan lastNetScan = new LastNetScan();
+        lastNetScan.setNetWork(lastNetScanMap());
+        String msg = lastNetScan.getTimeLastScan() + " timeLastScan";
+        getLogger().warn(msg);
+        return new NetScannerSvc(lastNetScan, adComputers());
+    }
+
+    @Bean
     @Scope("singleton")
     public Map<String, Boolean> lastNetScanMap() {
         return new LastNetScan().getNetWork();
     }
 
     @Bean
-    @Scope ("singleton")
-    public DBMessenger dbMessenger() {
-        return new DBMessenger();
-    }
-
-    @Bean
-    @Scope("singleton")
-    public DataBasesSRV dataBases() {
-        return new DataBasesSRV();
-    }
-
-    @Bean("pflists")
-    @Scope("singleton")
-    public PfLists pfLists() {
-        return new PfLists();
-    }
-
-    @Bean("visitor")
-    @Scope("prototype")
-    public Visitor visitor(HttpServletRequest request) {
-        return new Visitor(request);
-    }
-
-    @Bean
-    @Scope("singleton")
-    public VisitorSrv visitorSrv(CookieShower cookieShower, Visitor visitor) {
-        return new VisitorSrv(cookieShower, visitor);
-    }
-
-    @Bean
-    public WhoIsWithSRV whoIsWithSRV() {
-        return new WhoIsWithSRV();
+    public Map<String, String> getLastLogs() {
+        int ind = 10;
+        Map<String, String> lastLogsList = new ConcurrentHashMap<>();
+        String tbl = "eth";
+        Connection c = new RegRuMysql().getDefaultConnection("u0466446_webapp");
+        try(PreparedStatement p = c.prepareStatement(String.format("select * from %s ORDER BY timewhen DESC LIMIT 0 , 50", tbl));
+            ResultSet r = p.executeQuery()){
+            while(r.next()){
+                lastLogsList.put(++ind + ") " + r.getString("classname") + " - " + r.getString("msgtype"),
+                    r.getString("msgvalue") + " at: " + r.getString("timewhen"));
+            }
+        }
+        catch(SQLException ignore){
+            //
+        }
+        return lastLogsList;
     }
 
     @Bean("versioninfo")
@@ -81,29 +78,20 @@ public class AppComponents {
         return versionInfo;
     }
 
-    public PfListsSrv pfListsSrv(PfLists pfLists) {
-        return new PfListsSrv(pfLists);
+    @Bean
+    public static List<ADComputer> adComputers() {
+        return adSrv().getAdComputer().getAdComputers();
     }
 
     @Bean
-    @Scope("prototype")
-    public CookTheCookie cookTheCookie(Visitor visitor) {
-        return new CookTheCookie(visitor);
+    public SimpleCalculator simpleCalculator() {
+        return new SimpleCalculator();
     }
 
     @Bean
-    public MailSRV mailSRV(MailMessage mailMessage) {
-        mailMessage = new MailMessage();
-        return new MailSRV(mailMessage);
-    }
-
-    @Bean
-    @Scope ("singleton")
-    public NetScannerSvc netScannerSvc() {
-        LastNetScan lastNetScan = new LastNetScan();
-        lastNetScan.setNetWork(lastNetScanMap());
-        String msg = lastNetScan.getTimeLastScan() + " timeLastScan";
-        getLogger().warn(msg);
-        return new NetScannerSvc(lastNetScan);
+    public ServiceInform serviceInform() {
+        ServiceInform serviceInform = new ServiceInform();
+        serviceInform.getResourcesTXT();
+        return serviceInform;
     }
 }

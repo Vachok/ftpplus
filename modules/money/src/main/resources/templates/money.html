@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <link rel="stylesheet" type="text/css" media="all" href="css/style.css" th:href="@{css/style.css}"/>
@@ -8,9 +7,8 @@
 </head>
 <body>
 <h3 th:utext="${currency}"/>
-<p th:utext="${map}"/>
 <center>
-    <form th:action="@{/getmoney}" th:object="${ParserCBRru}" method="POST">
+    <form th:action="@{/getmoney}" th:object="${ParserCBRruSRV}" method="POST">
         Сколько и под какой % вы положили в 2014м?
         <input type="text" th:field="*{userInput}"/>
         <br>
@@ -22,11 +20,6 @@
 <img th:src="@{images/chrome_2018-08-22_19-33-57.png}"/>
 </body>
 <footer>
-    <link>
-    <a th:href="@{/exit}">Выйти из меня...</a><br>
-    <link>
-    <a th:href="@{/exit?shutdown}">Выключить систему...</a><br>
-    <link>
-    <a th:href="@{/exit?restart}">Перегруз системы...</a><br>
+    <p th:utext="${footer}"/>
 </footer>
 </html>

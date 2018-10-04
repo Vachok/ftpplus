@@ -5,11 +5,12 @@ import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import ru.vachok.money.components.AppFooter;
+import ru.vachok.money.services.TForms;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Arrays;
 
 
 /**
@@ -31,10 +32,10 @@ public class ErrCtrl implements ErrorController {
 
     @GetMapping("/error")
     public String err( Exception e , Model model ) {
-        String errStr = "<p>" + Arrays.toString(e.getStackTrace()).replaceAll(", " , "<br>") + "</p>";
         String eM = e.getMessage();
-        model.addAttribute("error" , errStr);
+        model.addAttribute("error" , new TForms().toStringFromArray(e));
         model.addAttribute("errmessage", eM);
+        model.addAttribute("footer", new AppFooter().getTheFooter());
         return "error";
     }
 

@@ -5,11 +5,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Scope;
 import ru.vachok.money.components.*;
-import ru.vachok.money.other.MailMessages;
-import ru.vachok.money.services.CalcSrv;
-import ru.vachok.money.services.CookieMaker;
-import ru.vachok.money.services.VisitorSrv;
-import ru.vachok.mysqlandprops.EMailAndDB.SpeedRunActualize;
+import ru.vachok.money.services.*;
+
+import javax.servlet.http.Cookie;
 
 
 /**
@@ -18,18 +16,44 @@ import ru.vachok.mysqlandprops.EMailAndDB.SpeedRunActualize;
 public class AppComponents {
 
     @Bean
-    @Scope ("singleton")
-    public static SpeedRunActualize getSpeedActualizer() {
-        return new SpeedRunActualize();
+    public ParserCBRruSRV parserCBRruSRV() {
+        return new ParserCBRruSRV(currencies());
     }
 
     @Bean
-    @Scope ("singleton")
-    public MyOpel myOpel(SpeedRunActualize speedRunActualize) {
-        MyOpel myOpel = new MyOpel();
-        myOpel.setCarName("Astra");
-        myOpel.setGosNum("A939OO190");
-        return myOpel;
+    @Scope ("prototype")
+    public Currencies currencies() {
+        return new Currencies();
+    }
+
+    @Bean
+    public CookIES cookIES() {
+        Cookie cookie = new Cookie("id", appVersion().toString());
+        CookieMaker cookieMaker = new CookieMaker();
+        return new CookIES(cookieMaker);
+    }
+
+    @Bean
+    public URLParser urlParser() {
+        return new URLParser(new URLContent());
+    }
+
+    @Bean
+    public AppVersion appVersion() {
+        return new AppVersion();
+    }
+
+    @Bean
+    @Scope ("prototype")
+    public Visitor visitor() {
+        VisitorSrv visitorSrv = new VisitorSrv(new CookieMaker());
+        return new Visitor(visitorSrv);
+    }
+
+    @Bean
+    @Scope ("prototype")
+    public CalcSrv calcSrv() {
+        return new CalcSrv(calculatorForSome());
     }
 
     @Bean ("CalculatorForSome")
@@ -40,32 +64,7 @@ public class AppComponents {
 
     @Bean
     @Scope ("singleton")
-    public MailMessages mailMessages() {
-        return new MailMessages();
-
-    }
-
-    @Bean
-    @Scope ("prototype")
-    public Currencies currencies(ParserCBRruSRV parserCBRruSRV) {
-        return new Currencies(parserCBRruSRV);
-    }
-
-    @Bean
-    @Scope ("prototype")
-    public Visitor visitor(CookieMaker cookieMaker) {
-        VisitorSrv visitorSrv = new VisitorSrv(cookieMaker);
-        return new Visitor(visitorSrv);
-    }
-
-    @Bean
-    @Scope ("prototype")
-    public CalcSrv calcSrv() {
-        return new CalcSrv();
-    }
-
-    @Bean
-    public AppVersion appVersion() {
-        return new AppVersion();
+    public static MyOpel myOpel() {
+        return MyOpel.getI();
     }
 }

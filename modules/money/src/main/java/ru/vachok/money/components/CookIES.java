@@ -2,6 +2,7 @@ package ru.vachok.money.components;
 
 
 import org.springframework.stereotype.Component;
+import ru.vachok.money.services.CookieMaker;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -11,6 +12,12 @@ import java.util.concurrent.ConcurrentHashMap;
  @since 15.09.2018 (22:08) */
 @Component ("cookies")
 public class CookIES {
+
+    private CookieMaker cookieMaker;
+
+    public CookIES(CookieMaker cookieMaker) {
+        this.cookieMaker = cookieMaker;
+    }
 
     private String nameCookie;
 

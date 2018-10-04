@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.RejectedExecutionException;
 
@@ -32,7 +33,7 @@ import java.util.concurrent.RejectedExecutionException;
  * <p>
  * Фабрика, для ssh-комманд.
  */
-public class SSHFactory {
+public class SSHFactory implements Callable<String> {
 
     /*Fields*/
     private static final Logger LOGGER = AppComponents.getLogger();
@@ -169,7 +170,7 @@ public class SSHFactory {
      */
     @Service("ssh")
     @Scope("singleton")
-    public static class Builder extends AppComponents {
+    public static class Builder {
 
         /*Fields*/
         private String userName = "ITDept";

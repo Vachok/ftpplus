@@ -3,23 +3,36 @@ package ru.vachok.money.other;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.vachok.money.ConstantsFor;
+import ru.vachok.mysqlandprops.props.DBRegProperties;
+import ru.vachok.mysqlandprops.props.InitProperties;
 
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.URI;
+import java.util.Properties;
 
 
 /**
  @since 29.09.2018 (22:33) */
 public class SystemTrayHelper {
-
     /*Fields*/
+    private static InitProperties initProperties = new DBRegProperties(ConstantsFor.APP_NAME + SystemTrayHelper.class.getSimpleName());
     private static final Logger LOGGER = LoggerFactory.getLogger(SystemTrayHelper.class.getSimpleName());
 
+    private static Properties properties = new Properties();
+
     public void addTrayDefaultMinimum() {
+        Properties properties = initProperties.getProps();
         SystemTray systemTray = SystemTray.getSystemTray();
-        Image image = Toolkit.getDefaultToolkit().getImage(getClass().getResource("/static/images/icons8-монеты-15.png"));
+        String defaultValue = "/static/images/icons8-монеты-15.png";
+        if(ConstantsFor.localPc().equalsIgnoreCase("home")){
+            defaultValue = "/static/images/icons8-скучающий-15.png";
+        }
+        Image image = Toolkit.getDefaultToolkit()
+            .getImage(getClass()
+                .getResource(properties.getProperty("icon", defaultValue)));
         PopupMenu popupMenu = popMenuSetter();
         TrayIcon trayIcon = new TrayIcon(image, "Money", popupMenu);
         try{
@@ -50,9 +63,7 @@ public class SystemTrayHelper {
         PopupMenu popupMenu = new PopupMenu();
         MenuItem exitItem = new MenuItem();
         MenuItem openSysInfoPage = new MenuItem();
-        MenuItem calcCtrl = new MenuItem();
-        MenuItem carDB = new MenuItem();
-        MenuItem ftpHome = new MenuItem();
+        MenuItem ideIdea = new MenuItem();
         MenuItem moneyItem = new MenuItem();
         MenuItem rebootSys = new MenuItem();
         MenuItem offSys = new MenuItem();
@@ -69,16 +80,22 @@ public class SystemTrayHelper {
             }
         });
         openSysInfoPage.setLabel("Открыть System Info Page");
-        calcCtrl.addActionListener(e -> {
+        ideIdea.addActionListener(e -> {
             try{
-                Desktop.getDesktop().browse(URI.create("http://localhost:8881/calc"));
+                String ideExe = "G:\\My_Proj\\.IdeaIC2017.3\\apps\\IDEA-C\\ch-0\\182.4505.22\\bin\\idea64.exe";
+                if(ConstantsFor.localPc().equalsIgnoreCase("home")){
+                    Runtime.getRuntime().exec(ideExe);
+                }
+                else{
+                    Toolkit.getDefaultToolkit().beep();
+                }
             }
             catch(IOException e1){
                 LOGGER.error(e1.getMessage(), e1);
             }
         });
-        calcCtrl.setLabel("Calc");
-        carDB.addActionListener(e -> {
+        ideIdea.setLabel("Запуск Idea");
+        moneyItem.addActionListener(e -> {
             try{
                 Desktop.getDesktop().browse(URI.create("http://localhost:8881/chkcar"));
             }
@@ -86,25 +103,7 @@ public class SystemTrayHelper {
                 LOGGER.error(e1.getMessage(), e1);
             }
         });
-        carDB.setLabel("Car");
-        ftpHome.addActionListener(e -> {
-            try{
-                Desktop.getDesktop().browse(URI.create("http://localhost:8881/ftp"));
-            }
-            catch(IOException e1){
-                LOGGER.error(e1.getMessage(), e1);
-            }
-        });
-        ftpHome.setLabel("FTP");
-        moneyItem.addActionListener(e -> {
-            try{
-                Desktop.getDesktop().browse(URI.create("http://localhost:8881/money"));
-            }
-            catch(IOException e1){
-                LOGGER.error(e1.getMessage(), e1);
-            }
-        });
-        moneyItem.setLabel("Считаем деньги");
+        moneyItem.setLabel("Чекануть дорогу");
         rebootSys.addActionListener(e -> {
             try{
                 Runtime.getRuntime().exec("shutdown /r /f");
@@ -124,9 +123,7 @@ public class SystemTrayHelper {
         });
         offSys.setLabel("TURN OFF THIS PC!");
 
-        popupMenu.add(calcCtrl);
-        popupMenu.add(carDB);
-        popupMenu.add(ftpHome);
+        popupMenu.add(ideIdea);
         popupMenu.add(moneyItem);
         popupMenu.add(openSysInfoPage);
         popupMenu.addSeparator();

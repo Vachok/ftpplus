@@ -4,7 +4,9 @@ package ru.vachok.networker;
 import org.slf4j.Logger;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
-import ru.vachok.networker.componentsrepo.*;
+import ru.vachok.networker.componentsrepo.ADComputer;
+import ru.vachok.networker.componentsrepo.ADUser;
+import ru.vachok.networker.componentsrepo.AppComponents;
 
 import javax.mail.Address;
 import javax.servlet.http.Cookie;
@@ -283,15 +285,5 @@ public class TForms {
         }
         if (br) return brStringBuilder.toString();
         else return brStringBuilder.toString();
-    }
-
-    public String fromMMessage(List<MailMessage> allMails) {
-        brStringBuilder.append("<p><h4>Mail Messages</h4>");
-        for (MailMessage mailMessage : allMails) {
-            brStringBuilder.append(mailMessage.toString());
-            brStringBuilder.append("<br>");
-        }
-        brStringBuilder.append("</p>");
-        return brStringBuilder.toString();
     }
 }

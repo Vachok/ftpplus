@@ -4,6 +4,7 @@ package ru.vachok.money.ctrls;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import ru.vachok.money.components.AppFooter;
 import ru.vachok.money.components.AppVersion;
 import ru.vachok.money.config.AppCtx;
 
@@ -21,6 +22,7 @@ public class SysInfoCtrl {
         model.addAttribute("title", appVersion.getAppVBuild());
         model.addAttribute("ctxinfo", AppCtx.getCtxInfoFromRequest(request));
         model.addAttribute("ver", appVersion.toString());
+        model.addAttribute("footer", new AppFooter().getTheFooter());
         return "sysinfo";
     }
 }

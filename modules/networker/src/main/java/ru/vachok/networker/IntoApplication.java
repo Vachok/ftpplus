@@ -45,8 +45,6 @@ public class IntoApplication {
      */
     private static AnnotationConfigApplicationContext appCtx = AppCtx.scanForBeansAndRefreshContext();
 
-    private static WebApplicationType webApplicationType;
-
     /**
      <h1>1. Точка входа в Spring Boot Application</h1>
      {@link #infoForU(ApplicationContext)}
@@ -55,7 +53,7 @@ public class IntoApplication {
      @see ru.vachok.networker.controller.MatrixCtr
      */
     public static void main(String[] args) {
-        new SystemTrayHelper().addTray();
+        SystemTrayHelper.addTray("icons8-плохие-поросята-32.png");
         SPRING_APPLICATION.setMainApplicationClass(IntoApplication.class);
         SPRING_APPLICATION.setApplicationContextClass(AppCtx.class);
         SPRING_APPLICATION.setResourceLoader(new ResLoader());
@@ -76,11 +74,10 @@ public class IntoApplication {
     }
 
     private static void setWebType() {
-        webApplicationType = WebApplicationType.SERVLET;
+        WebApplicationType webApplicationType = WebApplicationType.SERVLET;
         SPRING_APPLICATION.setWebApplicationType(webApplicationType);
-        String name = SPRING_APPLICATION.getWebApplicationType().name();
-        LOGGER.info(name);
-        org.springframework.core.io.Resource resource = new ResLoader().getResource("static/images/pic03.jpg");
+
+        org.springframework.core.io.Resource resource = new ResLoader().getResource("/static/images/pic03.jpg");
         ResourceBanner resourceBanner = new ResourceBanner(resource);
         SPRING_APPLICATION.setBanner(resourceBanner);
         Runnable speedRun = new SpeedRunActualize();
@@ -89,5 +86,9 @@ public class IntoApplication {
         executorService.scheduleWithFixedDelay(speedRun, ConstantsFor.INIT_DELAY, ConstantsFor.DELAY, TimeUnit.SECONDS);
         String msg = "Initial Delay checker = " + ConstantsFor.INIT_DELAY + "\nDelay = " + ConstantsFor.DELAY;
         LOGGER.warn(msg);
+    }
+
+    private static void appPropSetter() {
+        throw new UnsupportedOperationException();
     }
 }

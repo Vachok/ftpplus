@@ -15,10 +15,7 @@ import ru.vachok.networker.logic.DBMessenger;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 
@@ -52,20 +49,22 @@ public class VisitorSrv {
     public void makeVisit(HttpServletRequest request) throws IllegalArgumentException, NoSuchMethodException {
         visitor.setRemAddr(request.getRemoteAddr());
         visitor.setTimeSt(System.currentTimeMillis());
-        addCookies(request);
+
         MessageToUser viMessageToDB = new DBMessenger();
-        viMessageToDB.info(
-            new Date(ConstantsFor.START_STAMP) +
-                " by: " + visitor.getRemAddr(),
-            request.getHeader("USER-AGENT".toLowerCase()),
-            request.getCookies().length + " cookies len\n" +
-                request.getMethod() + " method\n" +
-                TimeUnit.MILLISECONDS
-                    .toSeconds(request
-                        .getSession().getLastAccessedTime() - request
-                        .getSession().getCreationTime()) + " sec spend in application\n" +
-                new TForms().fromEnum(request.getSession().getServletContext().getAttributeNames(), true));
-        try {
+        try{
+            viMessageToDB.info(
+                new Date(ConstantsFor.START_STAMP) +
+                    " by: " + visitor.getRemAddr(),
+                request.getHeader("USER-AGENT".toLowerCase()),
+                request.getCookies().length + " cookies len\n" +
+                    request.getMethod() + " method\n" +
+                    TimeUnit.MILLISECONDS
+                        .toSeconds(request
+                            .getSession().getLastAccessedTime() - request
+                            .getSession().getCreationTime()) + " sec spend in application\n" +
+                    new TForms().fromEnum(request.getSession().getServletContext().getAttributeNames(), true));
+
+            addCookies(request);
             visitor.setDbInfo(
                 new Date(ConstantsFor.START_STAMP) + "\n" +
                     " by: " + visitor.getRemAddr() + "\n" +
@@ -77,11 +76,12 @@ public class VisitorSrv {
                             .getSession().getLastAccessedTime() - request
                             .getSession().getCreationTime()) + " sec spend.\n" +
                     request.getSession());
-        } catch (NullPointerException e) {
-            throw new IllegalArgumentException("BAD ROBOT! 26.09.2018 (12:37)" +
-                this.getClass().getMethod("makeVisit", HttpServletRequest.class).getName());
         }
-        LOGGER.info(visitor.toString());
+        catch(NullPointerException ignore){
+            //
+        }
+        String msg = visitor.toString();
+        LOGGER.info(msg);
     }
 
     private void addCookies(HttpServletRequest request) throws IllegalArgumentException {

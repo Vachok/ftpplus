@@ -11,7 +11,10 @@ import ru.vachok.networker.componentsrepo.ADUser;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.InputMismatchException;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 
@@ -81,14 +84,14 @@ public class ADSrv implements Runnable {
             InputStream compInputStream = getClass().getResourceAsStream("/static/texts/computers.txt");
             InputStream usrInputStream = getClass().getResourceAsStream("/static/texts/users.txt")
         ){
-            int i = compInputStream.available() + ConstantsFor.KBYTE * 50;
+            int i = compInputStream.available() + ConstantsFor.KBYTE * 150;
             msg = "Computers to read " + i + " bytes";
             byte[] compBytes = new byte[i];
             while(compInputStream.available() > 0){
                 i = compInputStream.read(compBytes, 0, i);
             }
             LOGGER.info(msg);
-            i = usrInputStream.available() + ConstantsFor.KBYTE * 50;
+            i = usrInputStream.available() + ConstantsFor.KBYTE * 150;
             msg = "Bytes to read " + i;
             byte[] userBytes = new byte[i];
             while(usrInputStream.available() > 0){

@@ -1,10 +1,13 @@
 package ru.vachok.networker.services;
 
 
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.PfLists;
+import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.logic.SSHFactory;
 
 import java.rmi.UnexpectedException;
@@ -28,6 +31,8 @@ public class PfListsSrv {
      */
     private SSHFactory.Builder builder;
 
+    private ThreadPoolTaskExecutor executor;
+
     /**
      @param pfLists {@link #pfLists}
      */
@@ -35,6 +40,26 @@ public class PfListsSrv {
     public PfListsSrv(PfLists pfLists) {
         this.builder = new SSHFactory.Builder(ConstantsFor.SRV_NAT, "uname -a;exit");
         this.pfLists = pfLists;
+        makeListRunner();
+
+    }
+
+    public ThreadPoolTaskExecutor getExecutor() {
+        makeListRunner();
+        return executor;
+    }
+
+    public void makeListRunner() {
+        ThreadConfig threadConfig = new ThreadConfig();
+        ThreadPoolTaskExecutor executor = threadConfig.threadPoolTaskExecutor();
+        executor.execute(() -> {
+            try {
+                buildFactory();
+            } catch (UnexpectedException e) {
+                LoggerFactory.getLogger(PfListsSrv.class.getSimpleName());
+            }
+        });
+        this.executor = executor;
     }
 
     /**
@@ -56,7 +81,7 @@ public class PfListsSrv {
      @see SSHFactory
      @throws UnexpectedException если нет связи с srv-git. Проверка сети.
      */
-    public void buildFactory() throws UnexpectedException {
+    private void buildFactory() throws UnexpectedException {
         if (!ConstantsFor.isPingOK()) {
             throw new UnexpectedException("No ping");
         }

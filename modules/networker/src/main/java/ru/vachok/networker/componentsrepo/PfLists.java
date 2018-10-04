@@ -6,8 +6,7 @@ import org.springframework.stereotype.Component;
 
 
 /**
- * @since 10.09.2018 (11:35)
- */
+ @since 10.09.2018 (11:35) */
 @Component("pflists")
 @Scope("singleton")
 public class PfLists {
@@ -62,6 +61,7 @@ public class PfLists {
     public void setTimeUpd(long timeUpd) {
         this.timeUpd = timeUpd;
     }
+
     public void setuName(String uName) {
         this.uName = uName;
     }

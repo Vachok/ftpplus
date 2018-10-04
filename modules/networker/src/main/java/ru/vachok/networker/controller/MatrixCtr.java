@@ -11,15 +11,18 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.AppComponents;
-import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.componentsrepo.*;
 import ru.vachok.networker.logic.SSHFactory;
-import ru.vachok.networker.services.*;
+import ru.vachok.networker.services.MatrixSRV;
+import ru.vachok.networker.services.VisitorSrv;
+import ru.vachok.networker.services.WhoIsWithSRV;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -35,20 +38,25 @@ public class MatrixCtr {
 
     private static final String MATRIX_STRING_NAME = "matrix";
 
+    private static final String REDIRECT_MATRIX = "redirect:/matrix";
+
     private MatrixSRV matrixSRV;
 
     private VisitorSrv visitorSrv;
 
     private Visitor visitor;
 
+    private VersionInfo versionInfo;
+
     private long metricMatrixStart = System.currentTimeMillis();
 
-    private DataBasesSRV dataBasesSRV = new DataBasesSRV();
+    private static final String FOOTER_NAME = "footer";
 
     @Autowired
-    public MatrixCtr(VisitorSrv visitorSrv, Visitor visitor) {
+    public MatrixCtr(VisitorSrv visitorSrv, Visitor visitor, VersionInfo versionInfo) {
         this.visitorSrv = visitorSrv;
         this.visitor = visitor;
+        this.versionInfo = versionInfo;
     }
 
     @GetMapping("/")
@@ -60,37 +68,37 @@ public class MatrixCtr {
             String queryString = request.getQueryString();
             if (queryString.equalsIgnoreCase("eth") && pcAuth) {
                 lastLogsGetter(model);
+                model.addAttribute(FOOTER_NAME, new PageFooter().getFooterUtext());
                 metricMatrixStart = System.currentTimeMillis() - metricMatrixStart;
                 return "logs";
             }
         } else {
             try {
                 visitorSrv.makeVisit(request);
-            }
-            catch(Exception ignore){
+            } catch (Exception ignore) {
                 //
             }
             String userIP = userPC + ":" + request.getRemotePort() + "<-" + response.getStatus();
             model.addAttribute("yourip", userIP);
             model.addAttribute(MATRIX_STRING_NAME, new MatrixSRV());
-
+            model.addAttribute(FOOTER_NAME, new PageFooter().getFooterUtext());
             if (ConstantsFor.getUserPC(request).toLowerCase().contains(ConstantsFor.NO0027) ||
                 ConstantsFor.getUserPC(request).toLowerCase().contains("0:0:0:0")) {
-                model.addAttribute("visit", new AppComponents().versionInfo().toString());
+                model.addAttribute("visit", versionInfo.toString());
             } else {
                 model.addAttribute("visit", visitor.getTimeSt() + " timestamp");
             }
         }
-        metricMatrixStart = System.currentTimeMillis() - metricMatrixStart;
 
         return "starting";
     }
 
     private void lastLogsGetter(Model model) {
-        Map<String, String> vachokEthosdistro = dataBasesSRV.getLastLogs("ru_vachok_ethosdistro");
+        Map<String, String> vachokEthosdistro = new AppComponents().getLastLogs();
         String logsFromDB = new TForms().fromArray(vachokEthosdistro);
         model.addAttribute("logdb", logsFromDB);
         model.addAttribute("starttime", new Date(ConstantsFor.START_STAMP));
+        model.addAttribute(FOOTER_NAME, new PageFooter().getFooterUtext());
         model.addAttribute("title", metricMatrixStart);
     }
 
@@ -99,26 +107,9 @@ public class MatrixCtr {
         metricMatrixStart = System.currentTimeMillis();
         this.matrixSRV = matrixSRV;
         String workPos = this.matrixSRV.getWorkPos();
-        if (!workPos.toLowerCase().contains("whois:")) {
-            String workPosition = this.matrixSRV.
-                getWorkPosition(
-                    "select * from matrix where Doljnost like '%" + workPos + "%';");
-            this.matrixSRV.setWorkPos(workPosition);
-            LOGGER.info(workPosition);
-            return "redirect:/matrix";
-        } else {
-            try {
-                workPos = workPos.split(":")[1];
-                String s = new WhoIsWithSRV().whoIs(workPos);
-                matrixSRV.setWorkPos(s.replaceAll("\n", "<br>"));
-                model.addAttribute("whois", s);
-            } catch (ArrayIndexOutOfBoundsException e) {
-                model.addAttribute("whois", workPos + "<p>" + e.getMessage());
-                return MATRIX_STRING_NAME;
-            }
-            metricMatrixStart = System.currentTimeMillis() - metricMatrixStart;
-            return "redirect:/matrix";
-        }
+        if (workPos.toLowerCase().contains("whois:")) return whois(workPos, model);
+        else if (workPos.toLowerCase().contains("calc:")) return calculateDoubles(workPos, model);
+        else return matrixAccess(workPos);
     }
 
     @GetMapping("/matrix")
@@ -136,10 +127,12 @@ public class MatrixCtr {
             workPos = matrixSRV.getWorkPos();
         } catch (NullPointerException e) {
             response.sendError(139, "");
+
             throw new IllegalStateException("<br>Строка ввода должности не инициализирована!<br>" +
                 this.getClass().getName() + "<br>");
         }
         model.addAttribute("workPos", workPos);
+        model.addAttribute(FOOTER_NAME, new PageFooter().getFooterUtext());
         model.addAttribute("headtitle", matrixSRV.getCountDB() + " позиций   " + TimeUnit.MILLISECONDS.toMinutes(
             System.currentTimeMillis() - ConstantsFor.START_STAMP) + " upTime");
         metricMatrixStart = System.currentTimeMillis() - metricMatrixStart;
@@ -160,5 +153,48 @@ public class MatrixCtr {
         LOGGER.info(gitOner.call());
         metricMatrixStart = System.currentTimeMillis() - metricMatrixStart;
         return "redirect:http://srv-git.eatmeat.ru:1234";
+    }
+
+    private String whois(String workPos, Model model) {
+        try {
+            workPos = workPos.split(": ")[1];
+            String s = new WhoIsWithSRV().whoIs(workPos);
+            matrixSRV.setWorkPos(s.replaceAll("\n", "<br>"));
+            model.addAttribute("whois", s);
+            model.addAttribute(FOOTER_NAME, new PageFooter().getFooterUtext());
+        } catch (ArrayIndexOutOfBoundsException e) {
+            model.addAttribute("whois", workPos + "<p>" + e.getMessage());
+            return MATRIX_STRING_NAME;
+        }
+        metricMatrixStart = System.currentTimeMillis() - metricMatrixStart;
+        return REDIRECT_MATRIX;
+    }
+
+    private String calculateDoubles(String workPos, Model model) {
+        List<Double> list = new ArrayList<>();
+        String[] doubles = workPos.split(": ")[1].split(" ");
+        for (String aDouble : doubles) {
+            list.add(Double.parseDouble(aDouble));
+        }
+        double v = new AppComponents().simpleCalculator().countDoubles(list);
+        String pos = v + " Dinner price";
+        matrixSRV.setWorkPos(pos);
+        model.addAttribute("dinner", pos);
+        return REDIRECT_MATRIX;
+    }
+
+    private String matrixAccess(String workPos) {
+        String workPosition = this.matrixSRV.getWorkPosition(String
+            .format("select * from matrix where Doljnost like '%%%s%%';", workPos));
+        this.matrixSRV.setWorkPos(workPosition);
+        LOGGER.info(workPosition);
+        return REDIRECT_MATRIX;
+    }
+
+    private String resoString() {
+        StringBuilder stringBuilder = new StringBuilder();
+        ResoCache resoCache = ResoCache.getResoCache();
+        stringBuilder.append(resoCache.exists()).append(" resources");
+        return stringBuilder.toString();
     }
 }

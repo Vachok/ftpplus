@@ -7,6 +7,7 @@ import ru.vachok.money.services.VisitorSrv;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.StringJoiner;
 
 
 /**
@@ -98,5 +99,19 @@ public class Visitor {
 
     public void setLastActivity(long lastActivity) {
         this.lastActivity = lastActivity;
+    }
+
+
+    @Override
+    public String toString() {
+        return new StringJoiner("\n", Visitor.class.getSimpleName() + "\n", "\n")
+            .add("ipAdd='" + ipAdd + "\n")
+            .add("lastActivity=" + lastActivity)
+            .add("request=" + request)
+            .add("response=" + response)
+            .add("sessionID='" + sessionID + "\n")
+            .add("timeStart=" + timeStart)
+            .add("visitorSrv=" + visitorSrv)
+            .toString();
     }
 }

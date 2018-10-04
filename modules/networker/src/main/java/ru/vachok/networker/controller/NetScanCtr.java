@@ -13,11 +13,15 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.LastNetScan;
+import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.services.NetScannerSvc;
 
 import javax.servlet.http.HttpServletRequest;
 import java.security.SecureRandom;
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 
@@ -33,13 +37,13 @@ public class NetScanCtr {
 
     private static final Logger LOGGER = AppComponents.getLogger();
 
+    private static final String TITLE_STR = "TITLE_STR";
+
     private static Properties properties = new Properties();
 
     private NetScannerSvc netScannerSvc;
 
-    private static final String TITLE_STR = "TITLE_STR";
-
-    private static LastNetScan lastScan;
+    private LastNetScan lastScan;
 
     private long l;
 
@@ -47,9 +51,9 @@ public class NetScanCtr {
 
     /*Instances*/
     @Autowired
-    public NetScanCtr(NetScannerSvc netScannerSvc, final Map<String, Boolean> lastScanMap) {
+    public NetScanCtr(NetScannerSvc netScannerSvc, LastNetScan lastNetScan) {
         this.netScannerSvc = netScannerSvc;
-        lastScan = netScannerSvc.getLastNetScan();
+        this.lastScan = lastNetScan;
         duration = new SecureRandom().nextInt(( int ) ConstantsFor.MY_AGE);
     }
 
@@ -86,7 +90,9 @@ public class NetScanCtr {
             .addAttribute("netScannerSvc", netScannerSvc)
             .addAttribute("thePc", netScannerSvc.getThePc())
             .addAttribute(TITLE_STR, "First Scan: 2018-05-05");
+        model.addAttribute("footer", new PageFooter().getFooterUtext());
         lastScan.setTimeLastScan(new Date());
+
         return NETSCAN_STR;
     }
 
@@ -102,20 +108,20 @@ public class NetScanCtr {
         }
         else{
             lastScan.getNetWork().clear();
-                List<String> pCsAsync = netScannerSvc.getPcNames();
-                model
-                    .addAttribute(TITLE_STR, ( float ) TimeUnit.MILLISECONDS
-                        .toSeconds(System.currentTimeMillis() - this.l) / ConstantsFor.ONE_HOUR_IN_MIN + " was scan")
-                    .addAttribute("pc", new TForms().fromArray(pCsAsync));
-                lastScan.setTimeLastScan(new Date());
-                properties.setProperty("lastscan", System.currentTimeMillis() + "");
+            List<String> pCsAsync = netScannerSvc.getPcNames();
+            model
+                .addAttribute(TITLE_STR, ( float ) TimeUnit.MILLISECONDS
+                    .toSeconds(System.currentTimeMillis() - this.l) / ConstantsFor.ONE_HOUR_IN_MIN + " was scan")
+                .addAttribute("pc", new TForms().fromArray(pCsAsync));
+            lastScan.setTimeLastScan(new Date());
+            properties.setProperty("lastscan", System.currentTimeMillis() + "");
+            lastScan.getNetWork().clear();
 
         }
     }
 
     @PostMapping ("/netscan")
     public void pcNameForInfo(@ModelAttribute NetScannerSvc netScannerSvc, BindingResult result, Model model) {
-        this.netScannerSvc = netScannerSvc;
         netScannerSvc.getInfoFromDB();
         String thePc = netScannerSvc.getThePc();
         model.addAttribute("thePc", thePc);
