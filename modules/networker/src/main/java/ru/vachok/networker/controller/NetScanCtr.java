@@ -17,9 +17,9 @@ import ru.vachok.networker.services.NetScannerSvc;
 import javax.servlet.http.HttpServletRequest;
 import java.security.SecureRandom;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
@@ -50,11 +50,12 @@ public class NetScanCtr {
 
     @GetMapping ("/netscan")
     public String netScan(HttpServletRequest request, Model model) {
+        Map<String, Boolean> netWork = lastScan;
         String propertyLastScan = properties.getProperty("lastscan", "1515233487000");
         l = Long.parseLong(propertyLastScan) + TimeUnit.MINUTES.toMillis(duration);
-        Map<String, Boolean> netWork = lastScan;
         boolean isSystemTimeBigger = (System.currentTimeMillis() > l);
         boolean isMapSizeBigger = netWork.size() > 2;
+
         if(isMapSizeBigger){
             long timeLeft = TimeUnit.MILLISECONDS.toSeconds(l - System.currentTimeMillis());
             String msg = timeLeft + " seconds (" + ( float ) timeLeft / ConstantsFor.ONE_HOUR_IN_MIN + " min) left<br>Delay period is " + duration;
@@ -91,18 +92,18 @@ public class NetScanCtr {
         if(request!=null && request.getQueryString()!=null){
             lastScan.clear();
             netScannerSvc.setQer(request.getQueryString());
-            List<String> pcNames = netScannerSvc.getPCNamesPref(request.getQueryString());
+            Set<String> pcNames = netScannerSvc.getPCNamesPref(request.getQueryString());
             model
                 .addAttribute(TITLE_STR, new Date().toString())
-                .addAttribute("pc", new TForms().fromArray(pcNames));
+                .addAttribute("pc", new TForms().fromArray(pcNames, true));
         }
         else{
             lastScan.clear();
-            List<String> pCsAsync = netScannerSvc.getPcNames();
+            Set<String> pCsAsync = netScannerSvc.getPcNames();
             model
                 .addAttribute(TITLE_STR, ( float ) TimeUnit.MILLISECONDS
                     .toSeconds(System.currentTimeMillis() - this.l) / ConstantsFor.ONE_HOUR_IN_MIN + " was scan")
-                .addAttribute("pc", new TForms().fromArray(pCsAsync));
+                .addAttribute("pc", new TForms().fromArray(pCsAsync, true));
             AppComponents.lastNetScan().setTimeLastScan(new Date());
             properties.setProperty("lastscan", System.currentTimeMillis() + "");
             lastScan.clear();

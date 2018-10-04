@@ -272,7 +272,7 @@ public class TForms {
         return nStringBuilder.toString();
     }
 
-    public String fromArray(Set cacheSet, boolean br) {
+    public String fromArray(Set<?> cacheSet, boolean br) {
         brStringBuilder.append("<p>");
         nStringBuilder.append("\n");
         for (Object o : cacheSet) {

@@ -49,7 +49,7 @@ public class NetScannerSvc {
 
     private static List<ADComputer> adComputers = AppComponents.adComputers();
 
-    private static List<String> pcNames = new ArrayList<>();
+    private static Set<String> pcNames = new HashSet<>();
 
     private String thePc;
 
@@ -65,7 +65,7 @@ public class NetScannerSvc {
 
     private static NetScannerSvc netScannerSvc = new NetScannerSvc();
 
-    public List<String> getPcNames() {
+    public Set<String> getPcNames() {
         ThreadConfig threadConfig = new ThreadConfig();
         ThreadPoolTaskExecutor executor = threadConfig.threadPoolTaskExecutor();
         Runnable getPCs = this::getPCsAsync;
@@ -95,6 +95,7 @@ public class NetScannerSvc {
             LOGGER.warn(msg);
             final long startMethod = System.currentTimeMillis();
             for (String s : PC_PREFIXES) {
+                pcNames.clear();
                 pcNames.addAll(getPCNamesPref(s));
             }
             String elapsedTime = "Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethod) + " sec.";
@@ -110,7 +111,7 @@ public class NetScannerSvc {
                 mailMSG.info(
                     SOURCE_CLASS,
                     upTime + " min uptime. " + AppComponents.versionInfo().toString(),
-                    retLogs + " \n" + new TForms().fromArray(pcNames));
+                    retLogs + " \n" + new TForms().fromArray(pcNames, true));
             }).start();
         }).start();
     }
@@ -127,7 +128,7 @@ public class NetScannerSvc {
         this.qer = qer;
     }
 
-    public List<String> getPCNamesPref(String prefix) {
+    public Set<String> getPCNamesPref(String prefix) {
         this.qer = prefix;
         final long startMethTime = System.currentTimeMillis();
         boolean reachable;
