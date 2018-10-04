@@ -14,6 +14,7 @@ import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.services.ADSrv;
 
 import javax.servlet.http.HttpServletRequest;
+import java.net.UnknownServiceException;
 import java.util.List;
 
 
@@ -24,23 +25,31 @@ public class ActDirectoryCTRL {
 
     private static ADComputer adComputer;
 
+    private static final String USERS_SRTING = "users";
+
+
+
     /*Instances*/
     @Autowired
     public ActDirectoryCTRL(ADComputer adComputer) {
         ActDirectoryCTRL.adComputer = adComputer;
     }
 
-    @GetMapping ("/ad")
-    public String adUsersComps(HttpServletRequest request, Model model) {
-        if(ConstantsFor.getPcAuth(request)){
+    @GetMapping("/ad")
+    public String adUsersComps(HttpServletRequest request, Model model) throws UnknownServiceException {
+        if (request.getQueryString() != null) queryStringExists(request.getQueryString(), model);
+        else if (ConstantsFor.getPcAuth(request)) {
             model.addAttribute("footer", new PageFooter().getFooterUtext());
             model.addAttribute("pcs", new TForms().adPCMap(adComputer.getAdComputers(), true));
-            model.addAttribute("users", adUserString());
-        }
-        else{
-            return adFoto(model);
+            model.addAttribute(USERS_SRTING, adUserString());
+        } else {
+            throw new UnknownServiceException();
         }
         return "ok";
+    }
+
+    private void queryStringExists(String queryString, Model model) {
+        model.addAttribute(USERS_SRTING, queryString);
     }
 
     private String adFoto(Model model) {
@@ -50,7 +59,7 @@ public class ActDirectoryCTRL {
         List<ADUser> adUsers = adSrv.getAdUser().getAdUsers();
         StringBuilder stringBuilder = new StringBuilder();
         model.addAttribute("pcs", new TForms().adPCMap(adComputers, false));
-        model.addAttribute("users", new TForms().adUsersMap(adUsers, false));
+        model.addAttribute(USERS_SRTING, new TForms().adUsersMap(adUsers, false));
         adComputers.forEach((x -> stringBuilder.append(x.toString())));
         stringBuilder.append("<br>");
         return "ok";

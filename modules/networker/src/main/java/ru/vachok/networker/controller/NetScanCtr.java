@@ -48,34 +48,14 @@ public class NetScanCtr {
 
     private final int duration = new SecureRandom().nextInt((int) ConstantsFor.MY_AGE);
 
-    @GetMapping ("/netscan")
+    @GetMapping("/netscan")
     public String netScan(HttpServletRequest request, Model model) {
         Map<String, Boolean> netWork = lastScan;
-        String propertyLastScan = properties.getProperty("lastscan", "1515233487000");
-        l = Long.parseLong(propertyLastScan) + TimeUnit.MINUTES.toMillis(duration);
-        boolean isSystemTimeBigger = (System.currentTimeMillis() > l);
         boolean isMapSizeBigger = netWork.size() > 2;
 
-        if(isMapSizeBigger){
-            long timeLeft = TimeUnit.MILLISECONDS.toSeconds(l - System.currentTimeMillis());
-            String msg = timeLeft + " seconds (" + ( float ) timeLeft / ConstantsFor.ONE_HOUR_IN_MIN + " min) left<br>Delay period is " + duration;
-            LOGGER.warn(msg);
-            int i = ConstantsFor.TOTAL_PC - netWork.size();
-            model
-                .addAttribute("left", msg)
-                .addAttribute("pc", new TForms().fromArray(netWork, true))
-                .addAttribute("title", i + "/" + ConstantsFor.TOTAL_PC + " PCs");
-            if(0 > i){
-                model.addAttribute("newpc", "Добавлены компы! " + Math.abs(i) + " шт.");
-            }
-            properties.setProperty("totpc", ConstantsFor.TOTAL_PC + "");
-            if(isSystemTimeBigger && !(netWork.size() < ConstantsFor.TOTAL_PC)){
-                String msg1 = "isSystemTimeBigger is " + isMapSizeBigger + " " + netWork.size() + " network map cleared";
-                LOGGER.warn(msg1);
-                scanIt(request, model);
-            }
-        }
-        else{
+        if (isMapSizeBigger) {
+            mapSizeBigger(model, netWork, request);
+        } else {
             scanIt(request, model);
         }
         model
@@ -87,21 +67,43 @@ public class NetScanCtr {
         return NETSCAN_STR;
     }
 
+    private void mapSizeBigger(Model model, Map<String, Boolean> netWork, HttpServletRequest request) {
+        String propertyLastScan = properties.getProperty("lastscan", "1515233487000");
+        l = Long.parseLong(propertyLastScan) + TimeUnit.MINUTES.toMillis(duration);
+        boolean isSystemTimeBigger = (System.currentTimeMillis() > l);
+        long timeLeft = TimeUnit.MILLISECONDS.toSeconds(l - System.currentTimeMillis());
+        String msg = timeLeft + " seconds (" + (float) timeLeft / ConstantsFor.ONE_HOUR_IN_MIN + " min) left<br>Delay period is " + duration;
+        LOGGER.warn(msg);
+        int i = ConstantsFor.TOTAL_PC - netWork.size();
+        model
+            .addAttribute("left", msg)
+            .addAttribute("pc", new TForms().fromArray(netWork, true))
+            .addAttribute("title", i + "/" + ConstantsFor.TOTAL_PC + " PCs");
+        if (0 > i) {
+            model.addAttribute("newpc", "Добавлены компы! " + Math.abs(i) + " шт.");
+        }
+        properties.setProperty("totpc", ConstantsFor.TOTAL_PC + "");
+        if (isSystemTimeBigger && !(netWork.size() < ConstantsFor.TOTAL_PC)) {
+            String msg1 = "isSystemTimeBigger is " + true + " " + netWork.size() + " network map cleared";
+            LOGGER.warn(msg1);
+            scanIt(request, model);
+        }
+    }
+
     private void scanIt(HttpServletRequest request, Model model) {
 
-        if(request!=null && request.getQueryString()!=null){
+        if (request != null && request.getQueryString() != null) {
             lastScan.clear();
             netScannerSvc.setQer(request.getQueryString());
             Set<String> pcNames = netScannerSvc.getPCNamesPref(request.getQueryString());
             model
                 .addAttribute(TITLE_STR, new Date().toString())
                 .addAttribute("pc", new TForms().fromArray(pcNames, true));
-        }
-        else{
+        } else {
             lastScan.clear();
             Set<String> pCsAsync = netScannerSvc.getPcNames();
             model
-                .addAttribute(TITLE_STR, ( float ) TimeUnit.MILLISECONDS
+                .addAttribute(TITLE_STR, (float) TimeUnit.MILLISECONDS
                     .toSeconds(System.currentTimeMillis() - this.l) / ConstantsFor.ONE_HOUR_IN_MIN + " was scan")
                 .addAttribute("pc", new TForms().fromArray(pCsAsync, true));
             AppComponents.lastNetScan().setTimeLastScan(new Date());
@@ -110,11 +112,13 @@ public class NetScanCtr {
         }
     }
 
-    @PostMapping ("/netscan")
-    public void pcNameForInfo(@ModelAttribute NetScannerSvc netScannerSvc, BindingResult result, Model model) {
+    @PostMapping("/netscan")
+    public String pcNameForInfo(@ModelAttribute NetScannerSvc netScannerSvc, BindingResult result, Model model) {
         netScannerSvc.getInfoFromDB();
         String thePc = netScannerSvc.getThePc();
         model.addAttribute("thePc", thePc);
+        AppComponents.adSrv().getAdComputer().setDnsHostName(thePc);
         netScannerSvc.setThePc("");
+        return "redirect:/ad?" + thePc;
     }
 }

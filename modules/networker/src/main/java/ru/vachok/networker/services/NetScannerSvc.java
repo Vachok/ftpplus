@@ -205,6 +205,7 @@ public class NetScannerSvc {
         }
         return offLine.size() + " offline times and " + onLine.size() + " online times.";
     }
+
     private static String writeDB(Collection<String> pcNames) {
         List<String> list = new ArrayList<>();
         try (PreparedStatement p = c.prepareStatement("insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow) values (?,?,?,?)")) {
@@ -312,7 +313,7 @@ public class NetScannerSvc {
     }
 
     public String getInfoFromDB() {
-        if (thePc.isEmpty()) {
+        if (thePc.isEmpty() || thePc == null) {
             IllegalArgumentException argumentException = new IllegalArgumentException("Must be NOT NULL!");
             return argumentException.getMessage();
         }
