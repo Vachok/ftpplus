@@ -7,10 +7,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.ADComputer;
-import ru.vachok.networker.componentsrepo.ADUser;
-import ru.vachok.networker.componentsrepo.AppComponents;
-import ru.vachok.networker.componentsrepo.PageFooter;
+import ru.vachok.networker.componentsrepo.*;
 import ru.vachok.networker.services.ADSrv;
 
 import javax.servlet.http.HttpServletRequest;
@@ -56,7 +53,7 @@ public class ActDirectoryCTRL {
     private String queryStringExists(String queryString, Model model) {
         model.addAttribute("title", queryString);
         model.addAttribute(USERS_SRTING, inputWithInfoFromDB);
-        model.addAttribute("details", adSrv.getDetails());
+        model.addAttribute("details", adSrv.getDetails(queryString));
         model.addAttribute("footer", new PageFooter().getFooterUtext());
         return "aditem";
     }

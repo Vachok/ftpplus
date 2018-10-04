@@ -71,6 +71,7 @@ public class IntoApplication {
         String msg = appCtx.getApplicationName() + " app name" + appCtx.getDisplayName() + " app display name\n";
         LOGGER.info(msg);
         setWebType();
+
     }
 
     private static void setWebType() {

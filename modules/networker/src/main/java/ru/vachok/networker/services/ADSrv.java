@@ -12,10 +12,7 @@ import ru.vachok.networker.componentsrepo.AppComponents;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.InputMismatchException;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 
@@ -91,10 +88,17 @@ public class ADSrv implements Runnable {
         return strings;
     }
 
-    public String getDetails() {
+    public String getDetails(String queryString) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("<p>   Более подробно про ПК:<br>");
-
+        File[] files = new File(queryString + ".eatmeat.ru\\c$\\Users\\").listFiles();
+        for(File file : files){
+            stringBuilder
+                .append(file.getName())
+                .append(" ")
+                .append(new Date(file.lastModified()).toString())
+                .append("<br>");
+        }
         return stringBuilder.toString();
     }
 
