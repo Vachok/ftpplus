@@ -52,7 +52,7 @@ public class NetScannerSvc {
 
     private LastNetScan lastNetScan;
 
-    private static List<ADComputer> adComputers;
+    private static List<ADComputer> adComputers = AppComponents.adComputers();
 
     private String qer;
 
@@ -338,7 +338,6 @@ public class NetScannerSvc {
                     if(onlineNow==0){
                         offLine.add(onlineNow);
                     }
-                    adComputers.add(adComputer);
                 }
             }
         }
