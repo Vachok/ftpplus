@@ -6,6 +6,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.money.ConstantsFor;
+import ru.vachok.money.components.AppFooter;
 import ru.vachok.money.other.ftpclient.FtpHomeCamCheck;
 import ru.vachok.money.other.ftpclient.HomePCFilesCheck;
 
@@ -45,7 +46,7 @@ public class FTPCtrl {
         Float f = ((float) objects.length / ConstantsFor.FILES_TO_ENC_BLOCK);
         String callStr1 = "<p>" + objects.length + " TOTAL FILES is " + f + " converts<br></p>";
         model.addAttribute("call1" , callStr1);
-
+        model.addAttribute("footer", new AppFooter().getTheFooter());
         return "ftp";
     }
 }

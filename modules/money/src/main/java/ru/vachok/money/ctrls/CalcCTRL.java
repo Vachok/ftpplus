@@ -1,8 +1,6 @@
 package ru.vachok.money.ctrls;
 
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -10,6 +8,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import ru.vachok.money.components.AppFooter;
 import ru.vachok.money.components.CalculatorForSome;
 import ru.vachok.money.components.Visitor;
 import ru.vachok.money.services.CalcSrv;
@@ -30,8 +29,6 @@ public class CalcCTRL {
      */
     private static final String SOURCE_CLASS = CalcCTRL.class.getSimpleName();
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SOURCE_CLASS);
-
     private CalcSrv calcSrv;
 
     private CalculatorForSome calculatorForSome;
@@ -51,10 +48,10 @@ public class CalcCTRL {
     public String resultOfCount(Model model, HttpServletRequest request, HttpServletResponse response) {
         visitor.setSessionID(request.getSession().getId());
         visitor.setRequest(request);
-
         model.addAttribute("CalculatorForSome", calculatorForSome);
         calculatorForSome.setUserInput("");
         model.addAttribute("title", "CALC");
+        model.addAttribute("footer", new AppFooter().getTheFooter());
         return "calc";
     }
 
@@ -65,5 +62,4 @@ public class CalcCTRL {
         model.addAttribute("result", uInp);
         return "ok";
     }
-
 }

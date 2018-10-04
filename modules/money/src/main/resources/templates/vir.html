@@ -9,11 +9,6 @@
 <p th:text="${virTxt}"/>
 </body>
 <footer>
-    <link>
-    <a th:href="@{/exit}">Выйти из меня...</a><br>
-    <link>
-    <a th:href="@{/exit?shutdown}">Выключить систему...</a><br>
-    <link>
-    <a th:href="@{/exit?restart}">Перегруз системы...</a><br>
+    <p th:utext="${footer}"/>
 </footer>
 </html>

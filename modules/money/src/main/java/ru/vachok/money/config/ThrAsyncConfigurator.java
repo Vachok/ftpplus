@@ -21,9 +21,14 @@ public class ThrAsyncConfigurator {
     public ThreadPoolTaskExecutor getDefaultExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setThreadNamePrefix(System.currentTimeMillis() + "_exe");
+        ThreadGroup threadGroup = Thread.currentThread().getThreadGroup();
+        executor.setThreadGroup(threadGroup);
         executor.setMaxPoolSize(10);
         executor.setCorePoolSize(10);
-        LOGGER.info("Get Default executor = max pool 10, core pool is 10. Name prefix 'Timestamp'_exe");
+        executor.setThreadNamePrefix("EX_THR:");
+        executor.setThreadGroupName("EX_GROUP");
+        executor.setWaitForTasksToCompleteOnShutdown(false);
+        executor.setThreadPriority(3);
         executor.initialize();
         return executor;
     }

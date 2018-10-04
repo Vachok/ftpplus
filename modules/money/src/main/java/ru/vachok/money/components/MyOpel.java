@@ -9,13 +9,20 @@ import ru.vachok.money.ConstantsFor;
 import ru.vachok.money.config.ThrAsyncConfigurator;
 import ru.vachok.mysqlandprops.RegRuMysql;
 
+import java.sql.*;
+import java.util.*;
+
 
 /**
  @since 01.09.2018 (20:26) */
 @Component
 public class MyOpel {
-
     /*Fields*/
+    private static MyOpel myOpel = new MyOpel();
+
+    public static MyOpel getI() {
+        return myOpel;
+    }
     private static final Connection DEF_CON = new RegRuMysql()
         .getDefaultConnection(ConstantsFor.DB_PREFIX + "liferpg");
 
@@ -127,7 +134,7 @@ public class MyOpel {
     }
 
     /*Instances*/
-    public MyOpel() {
+    private MyOpel() {
         ThreadPoolTaskExecutor defaultExecutor = new ThrAsyncConfigurator().getDefaultExecutor();
         defaultExecutor.initialize();
         Runnable runnable = () -> {
