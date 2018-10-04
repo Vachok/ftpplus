@@ -47,7 +47,7 @@ public class PCUserResolver {
             lastScanMap.forEach((x, y) -> {
                 if (y) onlineNow.add(x);
             });
-        } else AppComponents.netScannerSvc().getPCsAsync();
+        } else NetScannerSvc.getI().getPCsAsync();
 
         onlineNow.forEach(x -> {
             x = x.replaceAll("<br><b>", "").split("</b><br>")[0];

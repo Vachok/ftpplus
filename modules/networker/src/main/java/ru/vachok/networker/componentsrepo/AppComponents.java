@@ -34,9 +34,9 @@ public class AppComponents {
 
     @Bean
     public static ADSrv adSrv() {
-        ADUser adUser = ADUser.getAdUser();
-        ADComputer adComputer = ADComputer.getAdComputer();
-        return ADSrv.getI(adUser, adComputer);
+        ADUser adUser = new ADUser();
+        ADComputer adComputer = new ADComputer();
+        return new ADSrv(adUser, adComputer);
     }
 
     @Bean
@@ -45,11 +45,9 @@ public class AppComponents {
     }
 
     @Bean
-    @Scope ("singleton")
     public static NetScannerSvc netScannerSvc() {
         return NetScannerSvc.getI();
     }
-
     @Bean
     @Scope("singleton")
     public static ConcurrentMap<String, Boolean> lastNetScanMap() {
@@ -92,7 +90,7 @@ public class AppComponents {
 
     @Bean
     public static List<ADComputer> adComputers() {
-        return ADSrv.getI(ADUser.getAdUser(), ADComputer.getAdComputer()).getAdComputer().getAdComputers();
+        return new ADSrv(new ADUser(), new ADComputer()).getAdComputer().getAdComputers();
     }
 
     @Bean

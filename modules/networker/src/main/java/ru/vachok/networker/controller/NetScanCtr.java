@@ -2,7 +2,6 @@ package ru.vachok.networker.controller;
 
 
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -12,7 +11,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
-import ru.vachok.networker.componentsrepo.LastNetScan;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.services.NetScannerSvc;
 
@@ -22,6 +20,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
 
@@ -41,28 +40,19 @@ public class NetScanCtr {
 
     private static Properties properties = new Properties();
 
-    private NetScannerSvc netScannerSvc;
+    private static NetScannerSvc netScannerSvc = AppComponents.netScannerSvc();
 
-    private LastNetScan lastScan;
+    private static ConcurrentMap<String, Boolean> lastScan = AppComponents.lastNetScanMap();
 
     private long l;
 
-    private final int duration;
-
-    /*Instances*/
-    @Autowired
-    public NetScanCtr(NetScannerSvc netScannerSvc, LastNetScan lastNetScan) {
-        this.netScannerSvc = netScannerSvc;
-        this.lastScan = lastNetScan;
-        duration = new SecureRandom().nextInt(( int ) ConstantsFor.MY_AGE);
-    }
+    private final int duration = new SecureRandom().nextInt((int) ConstantsFor.MY_AGE);
 
     @GetMapping ("/netscan")
     public String netScan(HttpServletRequest request, Model model) {
-        netScannerSvc.getPCsAsync();
         String propertyLastScan = properties.getProperty("lastscan", "1515233487000");
         l = Long.parseLong(propertyLastScan) + TimeUnit.MINUTES.toMillis(duration);
-        Map<String, Boolean> netWork = lastScan.getNetWork();
+        Map<String, Boolean> netWork = lastScan;
         boolean isSystemTimeBigger = (System.currentTimeMillis() > l);
         boolean isMapSizeBigger = netWork.size() > 2;
         if(isMapSizeBigger){
@@ -92,14 +82,14 @@ public class NetScanCtr {
             .addAttribute("thePc", netScannerSvc.getThePc())
             .addAttribute(TITLE_STR, "First Scan: 2018-05-05");
         model.addAttribute("footer", new PageFooter().getFooterUtext());
-        lastScan.setTimeLastScan(new Date());
+        AppComponents.lastNetScan().setTimeLastScan(new Date());
         return NETSCAN_STR;
     }
 
     private void scanIt(HttpServletRequest request, Model model) {
 
         if(request!=null && request.getQueryString()!=null){
-            lastScan.getNetWork().clear();
+            lastScan.clear();
             netScannerSvc.setQer(request.getQueryString());
             List<String> pcNames = netScannerSvc.getPCNamesPref(request.getQueryString());
             model
@@ -107,16 +97,15 @@ public class NetScanCtr {
                 .addAttribute("pc", new TForms().fromArray(pcNames));
         }
         else{
-            lastScan.getNetWork().clear();
+            lastScan.clear();
             List<String> pCsAsync = netScannerSvc.getPcNames();
             model
                 .addAttribute(TITLE_STR, ( float ) TimeUnit.MILLISECONDS
                     .toSeconds(System.currentTimeMillis() - this.l) / ConstantsFor.ONE_HOUR_IN_MIN + " was scan")
                 .addAttribute("pc", new TForms().fromArray(pCsAsync));
-            lastScan.setTimeLastScan(new Date());
+            AppComponents.lastNetScan().setTimeLastScan(new Date());
             properties.setProperty("lastscan", System.currentTimeMillis() + "");
-            lastScan.getNetWork().clear();
-
+            lastScan.clear();
         }
     }
 

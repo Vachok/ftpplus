@@ -18,16 +18,6 @@ import java.util.StringJoiner;
 @Scope("prototype")
 public class ADUser {
 
-    private static ADUser adUser = new ADUser();
-
-    private ADUser() {
-
-    }
-
-    public static ADUser getAdUser() {
-        return adUser;
-    }
-
     /**
      <b>eatmeat.ru</b>
      */

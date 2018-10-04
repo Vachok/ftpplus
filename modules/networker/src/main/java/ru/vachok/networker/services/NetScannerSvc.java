@@ -23,7 +23,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.*;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -46,11 +45,11 @@ public class NetScannerSvc {
 
     private static Connection c = new RegRuMysql().getDefaultConnection(DB_NAME);
 
-    private static Logger logger = LoggerFactory.getLogger(SOURCE_CLASS);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SOURCE_CLASS);
 
     private static List<ADComputer> adComputers = AppComponents.adComputers();
 
-    private List<String> pcNames = new ArrayList<>();
+    private static List<String> pcNames = new ArrayList<>();
 
     private String thePc;
 
@@ -58,14 +57,21 @@ public class NetScannerSvc {
 
     private String qer;
 
-    public List<String> getPcNames() {
-        return pcNames;
+    private Map<String, Boolean> netWork;
+
+    private NetScannerSvc() {
+        this.netWork = AppComponents.lastNetScanMap();
     }
 
     private static NetScannerSvc netScannerSvc = new NetScannerSvc();
 
-    private NetScannerSvc() {
-
+    public List<String> getPcNames() {
+        ThreadConfig threadConfig = new ThreadConfig();
+        ThreadPoolTaskExecutor executor = threadConfig.threadPoolTaskExecutor();
+        Runnable getPCs = this::getPCsAsync;
+        executor.execute(getPCs);
+        executor.destroy();
+        return pcNames;
     }
 
     public static NetScannerSvc getI() {
@@ -78,16 +84,23 @@ public class NetScannerSvc {
 
     @Locked(id = Thread.State.BLOCKED)
     public void getPCsAsync() {
-        ThreadPoolTaskExecutor executor = new ThreadConfig().threadPoolTaskExecutor();
-
         new Thread(() -> {
-            Thread.currentThread().setName("Netscan");
-            String msg = "Thread, id " + Thread.currentThread().getId() + " with name " + Thread.currentThread().getName() + " is locked.";
             lock.lock();
-            logger.warn(msg);
+            String msg = "Thread " +
+                Thread.currentThread().getId() +
+                " with name " +
+                Thread.currentThread().getName() +
+                " is locked = " +
+                AppComponents.lock().isLocked();
+            LOGGER.warn(msg);
+            final long startMethod = System.currentTimeMillis();
             for (String s : PC_PREFIXES) {
-                getPCNamesPref(s);
+                pcNames.addAll(getPCNamesPref(s));
             }
+            String elapsedTime = "Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethod) + " sec.";
+            pcNames.add(elapsedTime);
+            lock.unlock();
+            LOGGER.warn(msg);
             new Thread(() -> {
                 MessageToUser mailMSG = new ESender("143500@gmail.com");
                 float upTime = (float) (TimeUnit.MILLISECONDS
@@ -99,11 +112,6 @@ public class NetScannerSvc {
                     upTime + " min uptime. " + AppComponents.versionInfo().toString(),
                     retLogs + " \n" + new TForms().fromArray(pcNames));
             }).start();
-            msg = msg.replace("locked", "unlocked");
-            logger.warn(msg);
-            if (lock.hasQueuedThreads()) {
-                ThreadGroup threadGroup = Thread.currentThread().getThreadGroup();
-            } else lock.unlock();
         }).start();
     }
 
@@ -119,11 +127,7 @@ public class NetScannerSvc {
         this.qer = qer;
     }
 
-    /*Instances*/
-
     public List<String> getPCNamesPref(String prefix) {
-        ConcurrentMap<String, Boolean> netWork = AppComponents.lastNetScanMap();
-        pcNames = new ArrayList<>();
         this.qer = prefix;
         final long startMethTime = System.currentTimeMillis();
         boolean reachable;
@@ -137,22 +141,22 @@ public class NetScannerSvc {
                     pcNames.add(pcName + ":" + byName.getHostAddress() + " " + onLines + "");
                     netWork.putIfAbsent(pcName, false);
                     String format = MessageFormat.format("{0} {1}", pcName, onLines);
-                    logger.warn(format);
+                    LOGGER.warn(format);
                 } else {
                     String someMore = getSomeMore(pcName);
                     String onLines = (" online " + true + "<br>");
                     pcNames.add(pcName + ":" + byName.getHostAddress() + onLines);
                     netWork.putIfAbsent("<br><b>" + pcName + "</b><br>" + someMore, true);
                     String format = MessageFormat.format("{0} {1} | {2}", pcName, onLines, someMore);
-                    logger.info(format);
+                    LOGGER.info(format);
                 }
             } catch (IOException ignore) {
                 //
             }
         }
-        netWork.putIfAbsent("<h4>" + prefix + "     " + pcNames.size() + "</h4>", true);
+        netWork.put("<h4>" + prefix + "     " + pcNames.size() + "</h4>", true);
         String pcsString = writeDB(pcNames);
-        logger.info(pcsString);
+        LOGGER.info(pcsString);
         pcNames.add("<b>Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethTime) + " sec.</b>");
         return pcNames;
     }
@@ -183,7 +187,7 @@ public class NetScannerSvc {
             statement.setString(1, pcName);
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
-                    ADComputer adComputer = ADComputer.getAdComputer();
+                    ADComputer adComputer = new ADComputer();
                     int onlineNow = resultSet.getInt("OnlineNow");
                     if (onlineNow == 1) {
                         onLine.add(onlineNow);
@@ -196,17 +200,16 @@ public class NetScannerSvc {
                 }
             }
         } catch (SQLException | NullPointerException e) {
-            LoggerFactory.getLogger(SOURCE_CLASS).error(e.getMessage(), e);
+            LOGGER.error(e.getMessage(), e);
         }
         return offLine.size() + " offline times and " + onLine.size() + " online times.";
     }
-
     private static String writeDB(Collection<String> pcNames) {
         List<String> list = new ArrayList<>();
         try (PreparedStatement p = c.prepareStatement("insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow) values (?,?,?,?)")) {
             pcNames.stream().sorted().forEach(x -> {
                 String pcSerment = "Я не знаю...";
-                logger.info(x);
+                LOGGER.info(x);
                 if (x.contains("200.200")) {
                     pcSerment = "Торговый дом";
                 }
@@ -275,18 +278,17 @@ public class NetScannerSvc {
                     p.executeUpdate();
                     list.add(x1 + " " + x2 + " " + pcSerment + " " + onLine);
                 } catch (SQLException e) {
-                    logger.error(e.getMessage(), e);
+                    LOGGER.error(e.getMessage(), e);
                     c = new RegRuMysql().getDefaultConnection(DB_NAME);
                 }
             });
             return new TForms().fromArray(list);
         } catch (SQLException e) {
-            logger.error(e.getMessage(), e);
+            LOGGER.error(e.getMessage(), e);
             c = new RegRuMysql().getDefaultConnection(DB_NAME);
             return e.getMessage();
         }
     }
-    /*Private methods*/
 
     private int getNamesCount(String qer) {
         int inDex = 0;

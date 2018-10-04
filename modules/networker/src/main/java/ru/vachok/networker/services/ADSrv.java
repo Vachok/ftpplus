@@ -3,10 +3,12 @@ package ru.vachok.networker.services;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.ADComputer;
 import ru.vachok.networker.componentsrepo.ADUser;
+import ru.vachok.networker.componentsrepo.AppComponents;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -27,11 +29,9 @@ public class ADSrv implements Runnable {
     /*Fields*/
     private static final Logger LOGGER = LoggerFactory.getLogger(ADSrv.class.getName());
 
-    private static ADUser adUser;
+    private ADUser adUser;
 
-    private static ADComputer adComputer;
-
-
+    private ADComputer adComputer;
 
     private Map<ADComputer, ADUser> adComputerADUserMap = new ConcurrentHashMap<>();
 
@@ -51,21 +51,18 @@ public class ADSrv implements Runnable {
         return adComputerADUserMap;
     }
 
-    private static ADSrv adSrv = new ADSrv();
-
-    private ADSrv() {
-
-    }
-
-    public static ADSrv getI(ADUser adUser, ADComputer adComputer) {
-        ADSrv.adUser = adUser;
-        ADSrv.adComputer = adComputer;
-        return adSrv;
+    /*Instances*/
+    @Autowired
+    public ADSrv(ADUser adUser, ADComputer adComputer) {
+        this.adUser = adUser;
+        this.adComputer = adComputer;
     }
 
     @Override
     public void run() {
+        AppComponents.lock().lock();
         streamRead();
+        AppComponents.lock().unlock();
     }
     public List<String> adFileReader() {
         List<String> strings = new ArrayList<>();
@@ -120,7 +117,7 @@ public class ADSrv implements Runnable {
         int index = 0;
         for(String s : compS){
             index++;
-            ADComputer adC = ADComputer.getAdComputer();
+            ADComputer adC = new ADComputer();
             String[] sS = s.split("\r\n");
             try{
                 for(String ssStr : sS){
@@ -173,7 +170,7 @@ public class ADSrv implements Runnable {
         List<ADUser> adUserList = new ArrayList<>();
         int indexUser = 0;
         for(String s : userS){
-            ADUser adU = ADUser.getAdUser();
+            ADUser adU = new ADUser();
             indexUser++;
             String[] sS = s.split("\r\n");
             try{

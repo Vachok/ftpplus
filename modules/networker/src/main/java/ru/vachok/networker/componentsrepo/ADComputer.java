@@ -14,16 +14,6 @@ import java.util.List;
 @Component("adcomputer")
 public class ADComputer {
 
-    private static ADComputer adComputer = new ADComputer();
-
-    private ADComputer() {
-    }
-
-    public static ADComputer getAdComputer() {
-        return adComputer;
-    }
-
-
     private String distinguishedName;
 
     private String dnsHostName;
