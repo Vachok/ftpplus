@@ -114,10 +114,11 @@ public class NetScanCtr {
 
     @PostMapping("/netscan")
     public String pcNameForInfo(@ModelAttribute NetScannerSvc netScannerSvc, BindingResult result, Model model) {
-        netScannerSvc.getInfoFromDB();
         String thePc = netScannerSvc.getThePc();
-        model.addAttribute("thePc", thePc);
-        AppComponents.adSrv().getAdComputer().setDnsHostName(thePc);
+        AppComponents.adSrv().setUserInputRaw(thePc);
+        netScannerSvc.getInfoFromDB();
+        model.addAttribute("thePc", netScannerSvc.getThePc());
+        AppComponents.adSrv().setUserInputRaw(netScannerSvc.getThePc());
         netScannerSvc.setThePc("");
         return "redirect:/ad?" + thePc;
     }

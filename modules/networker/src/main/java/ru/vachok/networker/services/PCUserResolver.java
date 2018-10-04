@@ -48,7 +48,6 @@ public class PCUserResolver {
                 if (y) onlineNow.add(x);
             });
         } else NetScannerSvc.getI().getPCsAsync();
-
         onlineNow.forEach(x -> {
             x = x.replaceAll("<br><b>", "").split("</b><br>")[0];
             File[] files = new File("\\\\" + x + "\\c$\\Users\\").listFiles();

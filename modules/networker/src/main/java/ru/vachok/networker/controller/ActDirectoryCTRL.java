@@ -23,22 +23,27 @@ import java.util.List;
 @Controller
 public class ActDirectoryCTRL {
 
-    private static ADComputer adComputer;
+    private static ADSrv adSrv;
 
     private static final String USERS_SRTING = "users";
 
-
+    private static String inputWithInfoFromDB;
 
     /*Instances*/
     @Autowired
-    public ActDirectoryCTRL(ADComputer adComputer) {
-        ActDirectoryCTRL.adComputer = adComputer;
+    public ActDirectoryCTRL(ADSrv adSrv) {
+        ActDirectoryCTRL.adSrv = adSrv;
+    }
+
+    public static void setInputWithInfoFromDB(String inputWithInfoFromDB) {
+        ActDirectoryCTRL.inputWithInfoFromDB = inputWithInfoFromDB;
     }
 
     @GetMapping("/ad")
     public String adUsersComps(HttpServletRequest request, Model model) throws UnknownServiceException {
-        if (request.getQueryString() != null) queryStringExists(request.getQueryString(), model);
+        if (request.getQueryString() != null) return queryStringExists(request.getQueryString(), model);
         else if (ConstantsFor.getPcAuth(request)) {
+            ADComputer adComputer = adSrv.getAdComputer();
             model.addAttribute("footer", new PageFooter().getFooterUtext());
             model.addAttribute("pcs", new TForms().adPCMap(adComputer.getAdComputers(), true));
             model.addAttribute(USERS_SRTING, adUserString());
@@ -48,12 +53,15 @@ public class ActDirectoryCTRL {
         return "ok";
     }
 
-    private void queryStringExists(String queryString, Model model) {
-        model.addAttribute(USERS_SRTING, queryString);
+    private String queryStringExists(String queryString, Model model) {
+        model.addAttribute("title", queryString);
+        model.addAttribute(USERS_SRTING, inputWithInfoFromDB);
+        model.addAttribute("details", adSrv.getDetails());
+        model.addAttribute("footer", new PageFooter().getFooterUtext());
+        return "aditem";
     }
 
     private String adFoto(Model model) {
-        ADSrv adSrv = AppComponents.adSrv();
         adSrv.run();
         List<ADComputer> adComputers = adSrv.getAdComputer().getAdComputers();
         List<ADUser> adUsers = adSrv.getAdUser().getAdUsers();
@@ -69,5 +77,4 @@ public class ActDirectoryCTRL {
         ADUser adUser = AppComponents.pcUserResolver().adPCSetter();
         return adUser.toString();
     }
-
 }

@@ -14,6 +14,7 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.ADComputer;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.ThreadConfig;
+import ru.vachok.networker.controller.ActDirectoryCTRL;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -329,21 +330,23 @@ public class NetScannerSvc {
                         integersOff.add(onlineNow);
                     }
                     StringBuilder stringBuilder = new StringBuilder();
-                    String namePP = resultSet.getString("NamePP") +
-                        " ok! <br>" +
-                        "OnLines = " +
+                    String namePP = "<center><h2>" + resultSet.getString("NamePP") +
+                        " information.<br></h2>" +
+                        "<font color = \"silver\">OnLines = " +
                         timeNow.size() +
-                        "<br>Offlines = " +
+                        ". Offlines = " +
                         integersOff.size() +
-                        "<br>TOTAL: " + (integersOff.size() + timeNow.size());
+                        ". TOTAL: " + (integersOff.size() + timeNow.size());
                     stringBuilder
-                        .append("<p>")
                         .append(namePP)
-                        .append("</p>");
+                        .append(". <br>");
                     setThePc(stringBuilder.toString());
                 }
                 Collections.sort(timeNow);
-                setThePc(getThePc() + "Last online: " + timeNow.get(timeNow.size() - 1));
+                String thePcWithDBInfo = getThePc() + "Last online: " + timeNow.get(timeNow.size() - 1) + "<br>Actual on: ";
+                thePcWithDBInfo = thePcWithDBInfo + AppComponents.lastNetScan().getTimeLastScan() + "</center></font>";
+                setThePc(thePcWithDBInfo);
+                ActDirectoryCTRL.setInputWithInfoFromDB(thePcWithDBInfo);
             }
         } catch (SQLException | IndexOutOfBoundsException e) {
             setThePc(e.getMessage());
