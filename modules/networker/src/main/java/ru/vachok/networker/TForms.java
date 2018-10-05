@@ -93,8 +93,10 @@ public class TForms {
         return nStringBuilder.toString();
     }
 
-    public String fromArray(StackTraceElement[] stackTrace) {
-        for (StackTraceElement stackTraceElement : stackTrace) {
+    public String fromArray(Exception e, boolean br) {
+        brStringBuilder.append("<p>");
+        nStringBuilder.append("\n");
+        for (StackTraceElement stackTraceElement : e.getStackTrace()) {
             nStringBuilder
                 .append("At ")
                 .append(stackTraceElement
@@ -105,8 +107,19 @@ public class TForms {
                 .append(stackTraceElement.getMethodName())
                 .append(" method.\nFile: ")
                 .append(stackTraceElement.getFileName());
+            brStringBuilder
+                .append("At ")
+                .append(stackTraceElement
+                    .getClassName())
+                .append(" line, class: ")
+                .append(stackTraceElement.getClassName())
+                .append(" occurred disaster!<br>")
+                .append(stackTraceElement.getMethodName())
+                .append(" method.<br>File: ")
+                .append(stackTraceElement.getFileName());
         }
-        return nStringBuilder.toString();
+        if (!br) return nStringBuilder.toString();
+        else return brStringBuilder.toString();
     }
 
     public String fromArray(String[] stringsArray) {

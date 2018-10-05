@@ -8,6 +8,8 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Scope;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.exchange.ExSRV;
+import ru.vachok.networker.exchange.RulesBean;
 import ru.vachok.networker.services.ADSrv;
 import ru.vachok.networker.services.NetScannerSvc;
 import ru.vachok.networker.services.PCUserResolver;
@@ -108,5 +110,11 @@ public class AppComponents {
     @Bean
     public static PCUserResolver pcUserResolver() {
         return PCUserResolver.getPcUserResolver();
+    }
+
+    @Bean
+    public ExSRV exSRV() {
+        RulesBean rulesBean = new RulesBean();
+        return new ExSRV(rulesBean);
     }
 }

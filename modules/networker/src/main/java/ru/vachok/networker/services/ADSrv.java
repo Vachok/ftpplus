@@ -91,7 +91,7 @@ public class ADSrv implements Runnable {
     public String getDetails(String queryString) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("<p>   Более подробно про ПК:<br>");
-        File[] files = new File(queryString + ".eatmeat.ru\\c$\\Users\\").listFiles();
+        File[] files = new File("\\\\" + queryString + ".eatmeat.ru\\c$\\Users\\").listFiles();
         for(File file : files){
             stringBuilder
                 .append(file.getName())

@@ -6,19 +6,8 @@
     <link rel="stylesheet" type="text/css" media="all" href="css/main.css" th:href="@{css/main.css}"/>
 </head>
 <body>
-<h2>
-    <a href="/matrix">matrix</a><br>
-    <a href="/netscan">netscan</a><br>
-    <a href="/">main</a><br>
-
-</h2>
-<p>
-<h4>AD Computers:</h4>
-<textarea rows="20" cols="25" th:text="${pcs}"/>
-<p>
-<h4>AD Users:</h4>
-<textarea rows="20" cols="14" th:text="${users}"/>
-</p>
+<p th:utext="${ok}"/>
+<p th:utext="${pcs}"/>
 </body>
 <footer>
     <p th:utext="${footer}"/>

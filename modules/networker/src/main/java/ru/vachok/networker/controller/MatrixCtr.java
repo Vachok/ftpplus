@@ -104,7 +104,7 @@ public class MatrixCtr {
 
     @PostMapping("/matrix")
     public String getWorkPosition(@ModelAttribute(MATRIX_STRING_NAME) MatrixSRV matrixSRV, BindingResult result, Model model) {
-        metricMatrixStart = System.currentTimeMillis();
+
         this.matrixSRV = matrixSRV;
         String workPos = this.matrixSRV.getWorkPos();
         if (workPos.toLowerCase().contains("whois:")) return whois(workPos, model);

@@ -53,7 +53,7 @@ public class WhoIsWithSRV {
             replace = replace + "<p><h4>whois.ripe.net</h4><br>" + whoisClient.query(inetAddr);
             geoLocation.append(replace).append("</p>");
         } catch (IOException | RuntimeException e) {
-            geoLocation.append(e.getMessage()).append("\n").append(new TForms().fromArray(e.getStackTrace()));
+            geoLocation.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false));
         }
         String country = locale.getCountry() + " country, " + locale.getLanguage() + " lang";
         geoLocation.append(country).append("</p>");
