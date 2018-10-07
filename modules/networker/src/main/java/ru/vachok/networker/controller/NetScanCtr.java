@@ -16,10 +16,7 @@ import ru.vachok.networker.services.NetScannerSvc;
 
 import javax.servlet.http.HttpServletRequest;
 import java.security.SecureRandom;
-import java.util.Date;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
@@ -38,7 +35,7 @@ public class NetScanCtr {
 
     private static final String TITLE_STR = "TITLE_STR";
 
-    private static Properties properties = new Properties();
+    private static Properties properties = ConstantsFor.PROPS;
 
     private static NetScannerSvc netScannerSvc = AppComponents.netScannerSvc();
 

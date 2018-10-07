@@ -71,7 +71,6 @@ public class IntoApplication {
         String msg = appCtx.getApplicationName() + " app name" + appCtx.getDisplayName() + " app display name\n";
         LOGGER.info(msg);
         setWebType();
-
     }
 
     private static void setWebType() {
@@ -90,6 +89,6 @@ public class IntoApplication {
     }
 
     private static void appPropSetter() {
-        throw new UnsupportedOperationException();
+        SPRING_APPLICATION.setDefaultProperties(ConstantsFor.PROPS);
     }
 }

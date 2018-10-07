@@ -28,6 +28,11 @@ public enum ConstantsFor {
     private static final InitProperties DB_REG_PROPERTIES = new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
 
     public static final Properties PROPS = DB_REG_PROPERTIES.getProps();
+
+    public static void saveProps() {
+        DB_REG_PROPERTIES.delProps();
+        DB_REG_PROPERTIES.setProps(PROPS);
+    }
     /**
      <b>1 мегабайт в байтах</b>
      */

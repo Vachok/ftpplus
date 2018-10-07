@@ -11,6 +11,7 @@ import ru.vachok.networker.componentsrepo.ADUser;
 import ru.vachok.networker.componentsrepo.AppComponents;
 
 import java.io.*;
+import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -88,18 +89,23 @@ public class ADSrv implements Runnable {
         return strings;
     }
 
-    public String getDetails(String queryString) {
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("<p>   Более подробно про ПК:<br>");
-        File[] files = new File("\\\\" + queryString + ".eatmeat.ru\\c$\\Users\\").listFiles();
-        for(File file : files){
-            stringBuilder
-                .append(file.getName())
-                .append(" ")
-                .append(new Date(file.lastModified()).toString())
-                .append("<br>");
+    public String getDetails(String queryString) throws IOException {
+        if(InetAddress.getByName(queryString + ".eatmeat.ru").isReachable(500)){
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.append("<p>   Более подробно про ПК:<br>");
+            File[] files = new File("\\\\" + queryString + ".eatmeat.ru\\c$\\Users\\").listFiles();
+            for(File file : files){
+                stringBuilder
+                    .append(file.getName())
+                    .append(" ")
+                    .append(new Date(file.lastModified()).toString())
+                    .append("<br>");
+            }
+            return stringBuilder.toString();
         }
-        return stringBuilder.toString();
+        else{
+            return "PC Offline";
+        }
     }
 
     private void streamRead() {

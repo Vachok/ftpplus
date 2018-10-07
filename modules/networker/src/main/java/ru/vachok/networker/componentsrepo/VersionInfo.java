@@ -4,15 +4,10 @@ package ru.vachok.networker.componentsrepo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import ru.vachok.mysqlandprops.props.DBRegProperties;
-import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.config.AppCtx;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.security.SecureRandom;
 import java.util.Date;
 import java.util.Properties;
@@ -26,8 +21,6 @@ public class VersionInfo {
 
     /*Fields*/
     private static final Logger LOGGER = LoggerFactory.getLogger(VersionInfo.class.getSimpleName());
-
-    private static InitProperties initProperties = new DBRegProperties(ConstantsFor.APP_NAME + VersionInfo.class.getSimpleName());
 
     private String appName = new AppCtx().getDisplayName().split("@")[0];
 
@@ -71,7 +64,7 @@ public class VersionInfo {
 
 
     public void setParams() {
-        Properties properties = initProperties.getProps();
+        Properties properties = ConstantsFor.PROPS;
         File file = new File("g:\\My_Proj\\FtpClientPlus\\modules\\networker\\build.gradle");
         if(file.exists()){
             setterVersionFromFiles(file);
@@ -82,14 +75,12 @@ public class VersionInfo {
         }
         this.appBuild = ConstantsFor.thisPC() + "." + new SecureRandom().nextInt((int) ConstantsFor.MY_AGE);
         properties.setProperty("appBuild", appBuild);
-
         if (ConstantsFor.thisPC().equalsIgnoreCase("home") ||
             ConstantsFor.thisPC().toLowerCase().contains("no0027")) {
             this.buildTime = new Date(ConstantsFor.START_STAMP).toString();
             properties.setProperty("buildTime", buildTime);
         }
-        initProperties.delProps();
-        initProperties.setProps(properties);
+        ConstantsFor.saveProps();
         String msg = this.toString();
         LOGGER.info(msg);
     }

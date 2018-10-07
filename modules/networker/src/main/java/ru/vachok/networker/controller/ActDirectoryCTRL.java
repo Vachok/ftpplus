@@ -11,6 +11,7 @@ import ru.vachok.networker.componentsrepo.*;
 import ru.vachok.networker.services.ADSrv;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.net.UnknownServiceException;
 import java.util.List;
 
@@ -37,7 +38,7 @@ public class ActDirectoryCTRL {
     }
 
     @GetMapping("/ad")
-    public String adUsersComps(HttpServletRequest request, Model model) throws UnknownServiceException {
+    public String adUsersComps(HttpServletRequest request, Model model) throws IOException {
         if (request.getQueryString() != null) return queryStringExists(request.getQueryString(), model);
         else if (ConstantsFor.getPcAuth(request)) {
             ADComputer adComputer = adSrv.getAdComputer();
@@ -50,7 +51,7 @@ public class ActDirectoryCTRL {
         return "ok";
     }
 
-    private String queryStringExists(String queryString, Model model) {
+    private String queryStringExists(String queryString, Model model) throws IOException {
         model.addAttribute("title", queryString);
         model.addAttribute(USERS_SRTING, inputWithInfoFromDB);
         model.addAttribute("details", adSrv.getDetails(queryString));

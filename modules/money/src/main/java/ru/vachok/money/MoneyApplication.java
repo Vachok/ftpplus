@@ -60,7 +60,7 @@ public class MoneyApplication {
             new ESender("143500@gmail.com")
                 .info(ConstantsFor.APP_NAME,
                     "Started at " + new Date(ConstantsFor.START_STAMP),
-                    new AppVersion().toString() + "\n" + msg + "\n" + new AppComponents().visitor().toString());
+                    new AppVersion().toString() + "\n" + msg + "\n");
         }).start();
 
         LoggerFactory.getLogger(MoneyApplication.class.getSimpleName()).warn(msg);

@@ -62,7 +62,10 @@ public class SystemTrayHelper {
                 LOGGER.error(e1.getMessage(), e1);
             }
         };
-        ActionListener exitApp = e -> System.exit(0);
+        ActionListener exitApp = e -> {
+            ConstantsFor.saveProps();
+            System.exit(0);
+        };
 
         additionalItems(popupMenu);
         trayIcon.setImageAutoSize(true);
