@@ -18,10 +18,7 @@ import ru.vachok.networker.controller.ActDirectoryCTRL;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -148,7 +145,7 @@ public class NetScannerSvc {
                     String someMore = getSomeMore(pcName);
                     String onLines = (" online " + true + "<br>");
                     pcNames.add(pcName + ":" + byName.getHostAddress() + onLines);
-                    netWork.putIfAbsent("<br><b>" + pcName + "</b><br>" + someMore, true);
+                    netWork.putIfAbsent("<br><b><a href=\"/ad?" + pcName.split(".eatm")[0] + "\" >" + pcName + "</b></a><br>" + someMore, true);
                     String format = MessageFormat.format("{0} {1} | {2}", pcName, onLines, someMore);
                     LOGGER.info(format);
                 }
