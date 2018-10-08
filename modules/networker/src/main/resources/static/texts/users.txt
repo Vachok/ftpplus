@@ -1,4 +1,4 @@
-
+﻿
 
 DistinguishedName : CN=Administrator,CN=Users,DC=eatmeat,DC=ru
 Enabled           : True
@@ -7306,8 +7306,7 @@ SID               : S-1-5-21-3970069352-2416023058-3822801030-4524
 Surname           : 
 UserPrincipalName : UChicago@eatmeat.ru
 
-DistinguishedName : CN=Еремин\, Сергей,OU=Snabjenie,OU=Logistika,OU=ALL,DC=eatmeat,DC=ru
-Enabled           : True
+DistinguishedName : CN=Еремин\, Сергей,OU=_Disabled_Users,DC=eatmeat,DC=ru
 GivenName         : Сергей
 Name              : Еремин, Сергей
 ObjectClass       : user
@@ -7808,8 +7807,7 @@ SID               : S-1-5-21-3970069352-2416023058-3822801030-4541
 Surname           : Коновалова
 UserPrincipalName : kkonovalova@eatmeat.ru
 
-DistinguishedName : CN=Сучков\, Николай,OU=TP,OU=MK_Users,DC=eatmeat,DC=ru
-Enabled           : True
+DistinguishedName : CN=Сучков\, Николай,OU=_Disabled_Users,DC=eatmeat,DC=ru
 GivenName         : Николай
 Name              : Сучков, Николай
 ObjectClass       : user
@@ -7970,8 +7968,7 @@ SID               : S-1-5-21-3970069352-2416023058-3822801030-6647
 Surname           : Николаева
 UserPrincipalName : akalitina@eatmeat.ru
 
-DistinguishedName : CN=Сергеенко\, Алексей,OU=TP,OU=MK_Users,DC=eatmeat,DC=ru
-Enabled           : True
+DistinguishedName : CN=Сергеенко\, Алексей,OU=_Disabled_Users,DC=eatmeat,DC=ru
 GivenName         : Алексей
 Name              : Сергеенко, Алексей
 ObjectClass       : user
@@ -11921,6 +11918,38 @@ SamAccountName    : i.d.rusakov
 SID               : S-1-5-21-3970069352-2416023058-3822801030-7305
 Surname           : Русаков
 UserPrincipalName : i.d.rusakov@eatmeat.ru
+
+DistinguishedName : CN=Роденко\, Анна,OU=_New_Users,OU=ALL,DC=eatmeat,DC=ru
+Enabled           : True
+GivenName         : Анна
+Name              : Роденко, Анна
+ObjectClass       : user
+ObjectGUID        : d9577d72-649e-4e52-8611-5d568f4fe165
+SamAccountName    : a.n.rodenko
+SID               : S-1-5-21-3970069352-2416023058-3822801030-7306
+Surname           : Роденко
+UserPrincipalName : a.n.rodenko@eatmeat.ru
+
+DistinguishedName : CN=Юревич\, Андрей,OU=IT,OU=ALL,DC=eatmeat,DC=ru
+GivenName         : Андрей
+Name              : Юревич, Андрей
+ObjectClass       : user
+ObjectGUID        : 11ab6749-25c9-43a4-a1aa-7092ac8c392f
+SamAccountName    : a.p.yurevich
+SID               : S-1-5-21-3970069352-2416023058-3822801030-7308
+Surname           : Юревич
+UserPrincipalName : a.p.yurevich@eatmeat.ru
+
+DistinguishedName : CN=Голубев\, Александр,OU=Teh,OU=ALL,DC=eatmeat,DC=ru
+Enabled           : True
+GivenName         : Александр
+Name              : Голубев, Александр
+ObjectClass       : user
+ObjectGUID        : 63589718-a98c-454e-8c48-68b999651000
+SamAccountName    : a.n.golubev
+SID               : S-1-5-21-3970069352-2416023058-3822801030-7310
+Surname           : Голубев
+UserPrincipalName : a.n.golubev@eatmeat.ru
 
 
 

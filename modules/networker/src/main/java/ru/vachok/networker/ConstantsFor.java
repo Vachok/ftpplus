@@ -3,6 +3,7 @@ package ru.vachok.networker;
 
 import org.slf4j.LoggerFactory;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
+import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.logic.PassGenerator;
 
@@ -24,21 +25,21 @@ import java.util.concurrent.TimeUnit;
 public enum ConstantsFor {
     ;
 
+    public static final long MY_AGE = (long) Year.now().getValue() - 1984;
+
+    public static final long INIT_DELAY = new SecureRandom().nextInt((int) MY_AGE);
+
+    public static final String SCREEN_PATH = PROPS.getProperty("adPhotosPath");
+
     /*Fields*/
-    private static final InitProperties DB_REG_PROPERTIES = new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
+    private static InitProperties initProperties;
 
-    public static final Properties PROPS = DB_REG_PROPERTIES.getProps();
-
-    public static void saveProps() {
-        DB_REG_PROPERTIES.delProps();
-        DB_REG_PROPERTIES.setProps(PROPS);
-    }
     /**
      <b>1 мегабайт в байтах</b>
      */
     public static final int MBYTE = 1024 * 1024;
 
-    public static final long MY_AGE = ( long ) Year.now().getValue() - 1984;
+    public static final Properties PROPS = takePr();
 
     public static final int TOTAL_PC = Integer.parseInt(PROPS.getProperty("totpc", "315"));
 
@@ -112,7 +113,12 @@ public enum ConstantsFor {
 
     public static final int TIMEOUT_650 = 650;
 
-    public static final long INIT_DELAY = new SecureRandom().nextInt(( int ) MY_AGE);
+    public static void saveProps() {
+        initProperties.delProps();
+        initProperties.setProps(PROPS);
+        initProperties = new FileProps(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
+        initProperties.setProps(PROPS);
+    }
 
     public static final Long CACHE_TIME_MS = TimeUnit.MINUTES.toMillis(10);
 
@@ -126,7 +132,16 @@ public enum ConstantsFor {
 
     public static final String THIS_PC_NAME = thisPC();
 
-    public static final String SCREEN_PATH = "C:\\Users\\ikudryashov\\Documents\\ShareX\\Screenshots\\";
+    private static Properties takePr() {
+        try {
+            initProperties = new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
+            return initProperties.getProps();
+        } catch (Exception e) {
+
+            initProperties = new FileProps(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
+            return initProperties.getProps();
+        }
+    }
 
     public static final PassGenerator passGenerator = new PassGenerator();
 

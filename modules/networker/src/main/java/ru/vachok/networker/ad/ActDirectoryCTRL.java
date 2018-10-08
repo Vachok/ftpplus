@@ -1,19 +1,20 @@
-package ru.vachok.networker.controller;
+package ru.vachok.networker.ad;
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import ru.vachok.networker.ConstantsFor;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.*;
-import ru.vachok.networker.services.ADSrv;
+import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.componentsrepo.PageFooter;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.net.UnknownServiceException;
-import java.util.List;
 
 
 /**
@@ -21,34 +22,39 @@ import java.util.List;
 @Controller
 public class ActDirectoryCTRL {
 
-    private static ADSrv adSrv;
+    private static final Logger LOGGER = LoggerFactory.getLogger(ActDirectoryCTRL.class.getSimpleName());
+
+    private ADSrv adSrv;
 
     private static final String USERS_SRTING = "users";
 
     private static String inputWithInfoFromDB;
 
+    private PhotoConverterSRV photoConverterSRV;
     /*Instances*/
     @Autowired
-    public ActDirectoryCTRL(ADSrv adSrv) {
-        ActDirectoryCTRL.adSrv = adSrv;
+    public ActDirectoryCTRL(ADSrv adSrv, PhotoConverterSRV photoConverterSRV) {
+        this.photoConverterSRV = photoConverterSRV;
+        this.adSrv = adSrv;
     }
 
     public static void setInputWithInfoFromDB(String inputWithInfoFromDB) {
         ActDirectoryCTRL.inputWithInfoFromDB = inputWithInfoFromDB;
     }
 
+
     @GetMapping("/ad")
     public String adUsersComps(HttpServletRequest request, Model model) throws IOException {
         if (request.getQueryString() != null) return queryStringExists(request.getQueryString(), model);
-        else if (ConstantsFor.getPcAuth(request)) {
+        else {
             ADComputer adComputer = adSrv.getAdComputer();
+            ADUser adUser = adSrv.getAdUser();
+            model.addAttribute("photoConverter", photoConverterSRV);
             model.addAttribute("footer", new PageFooter().getFooterUtext());
             model.addAttribute("pcs", new TForms().adPCMap(adComputer.getAdComputers(), true));
-            model.addAttribute(USERS_SRTING, adUserString());
-        } else {
-            throw new UnknownServiceException();
+            model.addAttribute(USERS_SRTING, new TForms().adUsersMap(adUser.getAdUsers(), true));
         }
-        return "ok";
+        return "ad";
     }
 
     private String queryStringExists(String queryString, Model model) throws IOException {
@@ -59,15 +65,15 @@ public class ActDirectoryCTRL {
         return "aditem";
     }
 
-    private String adFoto(Model model) {
-        adSrv.run();
-        List<ADComputer> adComputers = adSrv.getAdComputer().getAdComputers();
-        List<ADUser> adUsers = adSrv.getAdUser().getAdUsers();
-        StringBuilder stringBuilder = new StringBuilder();
-        model.addAttribute("pcs", new TForms().adPCMap(adComputers, false));
-        model.addAttribute(USERS_SRTING, new TForms().adUsersMap(adUsers, false));
-        adComputers.forEach((x -> stringBuilder.append(x.toString())));
-        stringBuilder.append("<br>");
+    @PostMapping("/ad")
+    private String adFoto(@ModelAttribute PhotoConverterSRV photoConverterSRV, Model model) {
+        this.photoConverterSRV = photoConverterSRV;
+        try {
+            model.addAttribute("photoConverterSRV", photoConverterSRV);
+            model.addAttribute("ok", photoConverterSRV.psCommands(adSrv.getAdUser().getAdUsers()));
+        } catch (NullPointerException | IOException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
         return "ok";
     }
 
