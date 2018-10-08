@@ -4,8 +4,8 @@ package ru.vachok.networker;
 import org.slf4j.Logger;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
-import ru.vachok.networker.componentsrepo.ADComputer;
-import ru.vachok.networker.componentsrepo.ADUser;
+import ru.vachok.networker.ad.ADComputer;
+import ru.vachok.networker.ad.ADUser;
 import ru.vachok.networker.componentsrepo.AppComponents;
 
 import javax.mail.Address;

@@ -1,14 +1,10 @@
-package ru.vachok.networker.services;
+package ru.vachok.networker.ad;
 
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.componentsrepo.ADComputer;
-import ru.vachok.networker.componentsrepo.ADUser;
-import ru.vachok.networker.componentsrepo.AppComponents;
 
 import java.io.*;
 import java.net.InetAddress;
@@ -68,12 +64,28 @@ public class ADSrv implements Runnable {
 
     @Override
     public void run() {
-        AppComponents.lock().lock();
         streamRead();
-        AppComponents.lock().unlock();
     }
 
-    public List<String> adFileReader() {
+    String getDetails(String queryString) throws IOException {
+        if (InetAddress.getByName(queryString + ".eatmeat.ru").isReachable(500)) {
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.append("<p>   Более подробно про ПК:<br>");
+            File[] files = new File("\\\\" + queryString + ".eatmeat.ru\\c$\\Users\\").listFiles();
+            for (File file : files) {
+                stringBuilder
+                    .append(file.getName())
+                    .append(" ")
+                    .append(new Date(file.lastModified()).toString())
+                    .append("<br>");
+            }
+            return stringBuilder.toString();
+        } else {
+            return "PC Offline";
+        }
+    }
+
+    private List<String> adFileReader() {
         List<String> strings = new ArrayList<>();
         File adUsers = new File("allmailbox.txt");
         BufferedReader bufferedReader;
@@ -89,53 +101,37 @@ public class ADSrv implements Runnable {
         return strings;
     }
 
-    public String getDetails(String queryString) throws IOException {
-        if(InetAddress.getByName(queryString + ".eatmeat.ru").isReachable(500)){
-            StringBuilder stringBuilder = new StringBuilder();
-            stringBuilder.append("<p>   Более подробно про ПК:<br>");
-            File[] files = new File("\\\\" + queryString + ".eatmeat.ru\\c$\\Users\\").listFiles();
-            for(File file : files){
-                stringBuilder
-                    .append(file.getName())
-                    .append(" ")
-                    .append(new Date(file.lastModified()).toString())
-                    .append("<br>");
-            }
-            return stringBuilder.toString();
-        }
-        else{
-            return "PC Offline";
-        }
-    }
-
+    /**
+     <b>Сетает пользователей и ПК из файлов.</b><br>
+     Текстовые файлы - результаты выполенения get-aduser , get-adcomputer. Сервер srv-ad. PowerShell.<br>
+     <b>Требуется перевод в UTF-8</b>
+     */
     private void streamRead() {
         String msg;
         try (
-            InputStream compInputStream = getClass().getResourceAsStream("/static/texts/computers.txt");
-            InputStream usrInputStream = getClass().getResourceAsStream("/static/texts/users.txt")
-        ) {
-            int i = compInputStream.available() + ConstantsFor.KBYTE * 150;
+            InputStream compInputStream = getClass().getResourceAsStream("/static/texts/computers.txt")) {
+            int i = compInputStream.available();
             msg = "Computers to read " + i + " bytes";
             byte[] compBytes = new byte[i];
             while (compInputStream.available() > 0) {
                 i = compInputStream.read(compBytes, 0, i);
             }
             LOGGER.info(msg);
-            i = usrInputStream.available() + ConstantsFor.KBYTE * 150;
             msg = "Bytes to read " + i;
-            byte[] userBytes = new byte[i];
-            while (usrInputStream.available() > 0) {
-                i = usrInputStream.read(userBytes, 0, i);
-            }
-            userS = new String(userBytes, StandardCharsets.UTF_8).split("\n\r");
-            compS = new String(compBytes, StandardCharsets.UTF_8).split("\n\r");
+            LOGGER.info(msg);
+            this.compS = new String(compBytes, StandardCharsets.UTF_8).split("\n\r");
             msg = userS.length + " users and " + compS.length + " pc read.";
             LOGGER.warn(msg);
         } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
         }
-        adComputerSetter();
-        userSetter();
+        try {
+            adComputerSetter();
+            userSetter();
+        } catch (ArrayIndexOutOfBoundsException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+
     }
 
     private List<ADComputer> adComputerSetter() {
@@ -179,7 +175,6 @@ public class ADSrv implements Runnable {
                 LOGGER.error(e.getMessage(), e);
             }
             adComputers.add(adC);
-            adComputer.getAdComputers().add(adC);
         }
         try {
             String msg = index + " index\n" + this.getClass().getMethod("adComputerSetter", String[].class);
@@ -187,13 +182,24 @@ public class ADSrv implements Runnable {
         } catch (NoSuchMethodException ignore) {
             //
         }
+        adComputer.setAdComputers(adComputers);
         return adComputers;
     }
 
-    private List<ADUser> userSetter() {
+    List<ADUser> userSetter() {
+        try (InputStream usrInputStream = getClass().getResourceAsStream("/static/texts/users.txt")) {
+            int i = usrInputStream.available();
+            byte[] userBytes = new byte[i];
+            while (usrInputStream.available() > 0) {
+                i = usrInputStream.read(userBytes, 0, i);
+            }
+            this.userS = new String(userBytes, StandardCharsets.UTF_8).split("\n\r");
+        } catch (IOException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
         List<ADUser> adUserList = new ArrayList<>();
         int indexUser = 0;
-        for (String s : userS) {
+        for (String s : this.userS) {
             ADUser adU = new ADUser();
             indexUser++;
             String[] sS = s.split("\r\n");
@@ -229,12 +235,12 @@ public class ADSrv implements Runnable {
                     if (ssStr.contains("UserPrincipalName")) {
                         adU.setUserPrincipalName(ssStr.split(": ")[1]);
                     }
+
                 }
-            } catch (ArrayIndexOutOfBoundsException e) {
-                LOGGER.error(e.getMessage(), e);
+            } catch (ArrayIndexOutOfBoundsException ignore) {
+                //
             }
             adUserList.add(adU);
-            adUser.getAdUsers().add(adU);
         }
         try {
             String msg = indexUser + " index " + getClass().getMethod("userSetter", String[].class);
@@ -242,8 +248,14 @@ public class ADSrv implements Runnable {
         } catch (NoSuchMethodException ignore) {
             //
         }
+        adUser.setAdUsers(adUserList);
+        psComm(adUser.getAdUsers());
         return adUserList;
     }
 
+    private void psComm(List<ADUser> adUsers) {
+        PhotoConverterSRV photoConverterSRV = new PhotoConverterSRV();
+        photoConverterSRV.psCommands();
+    }
 
 }

@@ -1,11 +1,11 @@
-package ru.vachok.networker.services;
+package ru.vachok.networker.logic;
 
 
 import org.apache.commons.net.whois.WhoisClient;
 import org.slf4j.Logger;
-import org.springframework.stereotype.Service;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.ADComputer;
+import ru.vachok.networker.ad.ADComputer;
+import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.componentsrepo.AppComponents;
 
 import javax.jnlp.UnavailableServiceException;
@@ -16,7 +16,6 @@ import java.util.Locale;
 
 /**
  @since 14.09.2018 (22:46) */
-@Service("locator")
 public class WhoIsWithSRV {
 
     /**

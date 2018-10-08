@@ -1,8 +1,10 @@
-package ru.vachok.networker.services;
+package ru.vachok.networker.ad;
 
 
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
+import ru.vachok.mysqlandprops.RegRuMysql;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
 
 import javax.imageio.ImageIO;
@@ -10,6 +12,10 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -27,15 +33,19 @@ public class PhotoConverterSRV {
      */
     private static final Logger LOGGER = AppComponents.getLogger();
 
+    private static final Properties PROPERTIES = ConstantsFor.PROPS;
+
     /**
-     Путь до папки с фото. По-умолчанию c:\Users\ikudryashov\Documents\ShareX\Screenshots\adfoto
+     Путь до папки с фото.
      */
-    private String adPhotosPath = "c:\\Users\\ikudryashov\\Documents\\ShareX\\Screenshots\\adfoto";
+    private String adPhotosPath = PROPERTIES.getProperty("adPhotosPath");
 
     /**
      Файл-фото
      */
     private File adFotoFile;
+
+    private List<String> psCommands = new ArrayList<>();
 
     /**
      <b>Преобразование в JPG</b>
@@ -44,12 +54,23 @@ public class PhotoConverterSRV {
     private BiConsumer<String, BufferedImage> imageBiConsumer = (x, y) -> {
         File outFile = new File("\\\\srv-mail3\\c$\\newmailboxes\\foto\\" + x + ".jpg");
         String fName = "jpg";
+        Set<String> samAccountNames = samAccFromDB();
+        for (String sam : samAccountNames) {
+            if (sam.toLowerCase().contains(x)) x = sam;
+        }
         try {
             BufferedImage bufferedImage = new BufferedImage(y.getWidth(), y.getHeight(), BufferedImage.TYPE_INT_RGB);
             bufferedImage.createGraphics().drawImage(y, 0, 0, Color.WHITE, null);
             ImageIO.write(bufferedImage, fName, outFile);
             String msg = outFile.getAbsolutePath() + " written";
             LOGGER.info(msg);
+            msg = "Import-RecipientDataProperty -Identity " +
+                x +
+                " -Picture -FileData ([Byte[]] $(Get-Content -Path “C:\\newmailboxes\\foto\\" +
+                outFile.getName().split("\\Q.\\E")[0] +
+                ".jpg” -Encoding Byte -ReadCount 0))";
+            LOGGER.warn(msg);
+            psCommands.add(msg);
         } catch (IOException e) {
             AppComponents.getLogger().error(e.getMessage(), e);
         }
@@ -71,59 +92,47 @@ public class PhotoConverterSRV {
         this.adPhotosPath = adPhotosPath;
     }
 
-    /**
-     Формирование листа комманд, на основе анализа фотографий.
 
-     @return {@link List} команд для применения в среде PS
-     @throws IOException
-     @throws NullPointerException
-     */
-    public List<String> psCommands() throws IOException, NullPointerException {
-        ADSrv adSrv = AppComponents.adSrv();
-        new Thread(() -> adSrv.run());
-        List<String> commandsAD = new ArrayList<>();
-        Map<String, BufferedImage> stringBufferedImageMap = convertFoto();
-        Set<String> fileNames = stringBufferedImageMap.keySet();
-        List<String> samAccountNames = new ArrayList<>();
-        adSrv.getAdUser().getAdUsers().forEach((x) -> samAccountNames.add(x.getSamAccountName()));
-        for (String fileName : fileNames) {
-            samAccountNames.forEach(x -> {
-                if (x.toLowerCase().contains("samacc") && x.toLowerCase().contains(fileName)) {
-                    x = x.split("\\Q: \\E")[1];
-                    LOGGER.info(x);
-                    x = "Import-RecipientDataProperty -Identity " +
-                        x +
-                        " -Picture -FileData ([Byte[]] $(Get-Content -Path “C:\\newmailboxes\\foto\\" + fileName + ".jpg” -Encoding Byte -ReadCount 0))";
-                    commandsAD.add(x);
-                }
-            });
-        }
-        return commandsAD;
-    }
-
-    private void fileAsFile() {
+    String psCommands() throws NullPointerException {
         try {
-            BufferedImage read = ImageIO.read(adFotoFile);
-            LOGGER.info(read.getHeight() + " h/w " + read.getWidth());
+            convertFoto();
         } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
         }
+        StringBuilder stringBuilder = new StringBuilder();
+        for (String s : psCommands) {
+            stringBuilder.append(s);
+            stringBuilder.append("<br>");
+        }
+        return stringBuilder.toString();
     }
 
-    /**
-     @return {@link Map}, где {@link String} - это имя файла, и
-     */
-    private Map<String, BufferedImage> convertFoto() throws IOException, NullPointerException {
+    private void convertFoto() throws NullPointerException, IOException {
         File photosDirectory = new File(this.adPhotosPath);
         File[] fotoFiles = photosDirectory.listFiles();
         Map<String, BufferedImage> filesList = new HashMap<>();
-        for (File f : fotoFiles) {
-            String key = f.getName().split("\\Q.\\E")[0];
-            for (String format : ImageIO.getWriterFormatNames()) {
-                if (f.getName().toLowerCase().contains(format)) filesList.put(key, ImageIO.read(f));
+        if (fotoFiles != null) {
+            for (File f : fotoFiles) {
+                String key = f.getName().split("\\Q.\\E")[0];
+                for (String format : ImageIO.getWriterFormatNames()) {
+                    if (f.getName().toLowerCase().contains(format)) filesList.put(key, ImageIO.read(f));
+                }
             }
-        }
+        } else filesList.put("No files", null);
         filesList.forEach(imageBiConsumer);
-        return filesList;
+    }
+
+    private Set<String> samAccFromDB() {
+        Set<String> samAccounts = new HashSet<>();
+        Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.APP_NAME);
+        try (PreparedStatement p = c.prepareStatement("select * from u0466446_velkom.adusers");
+             ResultSet r = p.executeQuery()) {
+            while (r.next()) {
+                samAccounts.add(r.getString("samAccountName"));
+            }
+        } catch (SQLException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+        return samAccounts;
     }
 }

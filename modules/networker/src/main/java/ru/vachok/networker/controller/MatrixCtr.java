@@ -13,9 +13,9 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.*;
 import ru.vachok.networker.logic.SSHFactory;
+import ru.vachok.networker.logic.WhoIsWithSRV;
 import ru.vachok.networker.services.MatrixSRV;
 import ru.vachok.networker.services.VisitorSrv;
-import ru.vachok.networker.services.WhoIsWithSRV;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -104,9 +104,8 @@ public class MatrixCtr {
 
     @PostMapping("/matrix")
     public String getWorkPosition(@ModelAttribute(MATRIX_STRING_NAME) MatrixSRV matrixSRV, BindingResult result, Model model) {
-
         this.matrixSRV = matrixSRV;
-        String workPos = this.matrixSRV.getWorkPos();
+        String workPos = matrixSRV.getWorkPos();
         if (workPos.toLowerCase().contains("whois:")) return whois(workPos, model);
         else if (workPos.toLowerCase().contains("calc:")) return calculateDoubles(workPos, model);
         else return matrixAccess(workPos);

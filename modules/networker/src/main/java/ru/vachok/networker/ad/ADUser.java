@@ -1,4 +1,4 @@
-package ru.vachok.networker.componentsrepo;
+package ru.vachok.networker.ad;
 
 
 import org.springframework.context.annotation.Scope;
@@ -81,7 +81,8 @@ public class ADUser {
     }
 
     public String getSamAccountName() {
-        return samAccountName;
+        if (samAccountName == null) return "No Account";
+        else return samAccountName;
     }
 
     public void setSamAccountName(String samAccountName) {
@@ -246,7 +247,20 @@ public class ADUser {
     public String toString() {
         return new StringJoiner("\n", ADUser.class.getSimpleName() + "\n", "\n")
             .add("defaultDomainName='" + defaultDomainName + "'\n")
+            .add("distinguishedName='" + distinguishedName + "'\n")
+            .add("enabled='" + enabled + "'\n")
+            .add("givenName='" + givenName + "'\n")
+            .add("name='" + name + "'\n")
+            .add("objectClass='" + objectClass + "'\n")
+            .add("objectGUID='" + objectGUID + "'\n")
+            .add("samAccountName='" + samAccountName + "'\n")
+            .add("SID='" + SID + "'\n")
+            .add("surname='" + surname + "'\n")
+            .add("userDomain='" + userDomain + "'\n")
             .add("userName='" + userName + "'\n")
+            .add("userPrincipalName='" + userPrincipalName + "'\n")
+            .add("userRealName='" + userRealName + "'\n")
+            .add("userSurname='" + userSurname + "'\n")
             .toString();
     }
 }

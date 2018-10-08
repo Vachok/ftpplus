@@ -4,7 +4,8 @@ package ru.vachok.networker.services;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import ru.vachok.networker.componentsrepo.ADUser;
+import ru.vachok.networker.ad.ADSrv;
+import ru.vachok.networker.ad.ADUser;
 import ru.vachok.networker.componentsrepo.AppComponents;
 
 import java.io.File;
