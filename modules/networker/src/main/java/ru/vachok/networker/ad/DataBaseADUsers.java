@@ -9,10 +9,9 @@ import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
-import java.net.URISyntaxException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -35,25 +34,23 @@ public class DataBaseADUsers implements Callable<Boolean> {
 
     private boolean dbUploader() {
         DataConnectTo dataConnectTo = new RegRuMysql();
-        Connection defaultConnection = dataConnectTo.getDefaultConnection(ConstantsFor.APP_NAME);
-        String sql;
-        try {
-            File file = new File(getClass().getResource("/static/texts/users.txt").toURI());
-            sql = fileRead(file);
-        } catch (URISyntaxException e) {
-            LOGGER.error(e.getMessage(), e);
-            return false;
-        }
+        Connection defaultConnection = dataConnectTo.getDefaultConnection(ConstantsFor.DB_PREFIX + "velkom");
+        try (InputStream resourceAsStream = getClass().getResourceAsStream("/static/texts/users.txt")) {
+            InputStreamReader inputStreamReader = new InputStreamReader(resourceAsStream);
+            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+
+            String sql = fileRead(bufferedReader);
         try (PreparedStatement p = defaultConnection.prepareStatement(sql)) {
             p.executeUpdate();
-        } catch (SQLException e) {
+        }
+        } catch (SQLException | IOException e) {
             LOGGER.error(e.getMessage(), e);
             return false;
         }
         return true;
     }
 
-    private String fileRead(File file) {
+    private String fileRead(BufferedReader bufferedReader) {
         StringBuilder stringBuilderSQL = new StringBuilder();
         String distinguishedName = "";
         String enabled = "";
@@ -65,10 +62,13 @@ public class DataBaseADUsers implements Callable<Boolean> {
         String SID = "";
         String surname = "";
         String userPrincipalName = "";
-        try (FileReader fileReader = new FileReader(file)) {
-            BufferedReader bufferedReader = new BufferedReader(fileReader);
-            String s = bufferedReader.readLine();
-            if (s.toLowerCase().contains("distinguishedName")) distinguishedName = s.split(" : ")[1];
+        String s = null;
+        try {
+            s = bufferedReader.readLine();
+        } catch (IOException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+        if (s.toLowerCase().contains("distinguishedName")) distinguishedName = s.split(" : ")[1];
             if (s.toLowerCase().contains("enabled")) enabled = s.split(" : ")[1];
             if (s.toLowerCase().contains("givenName")) givenName = s.split(" : ")[1];
             if (s.toLowerCase().contains("name")) name = s.split(" : ")[1];
@@ -95,9 +95,6 @@ public class DataBaseADUsers implements Callable<Boolean> {
                 .append(objectGUID)
                 .append(enabled)
                 .append(")");
-        } catch (IOException | ArrayIndexOutOfBoundsException e) {
-            LOGGER.error(e.getMessage(), e);
-        }
         return stringBuilderSQL.toString();
     }
 }

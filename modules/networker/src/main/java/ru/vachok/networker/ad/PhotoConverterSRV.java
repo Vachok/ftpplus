@@ -123,6 +123,8 @@ public class PhotoConverterSRV {
     }
 
     private Set<String> samAccFromDB() {
+        Boolean call = new DataBaseADUsers().call();
+        LOGGER.warn(call + " db create");
         Set<String> samAccounts = new HashSet<>();
         Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.APP_NAME);
         try (PreparedStatement p = c.prepareStatement("select * from u0466446_velkom.adusers");

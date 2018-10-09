@@ -11,7 +11,6 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.ad.ADUser;
-import ru.vachok.networker.ad.DataBaseADUsers;
 import ru.vachok.networker.exchange.ExSRV;
 import ru.vachok.networker.exchange.RulesBean;
 import ru.vachok.networker.services.NetScannerSvc;
@@ -119,12 +118,5 @@ public class AppComponents {
     public ExSRV exSRV() {
         RulesBean rulesBean = new RulesBean();
         return new ExSRV(rulesBean);
-    }
-
-    @Bean
-    public DataBaseADUsers dataBaseADUsers() {
-        DataBaseADUsers dataBaseADUsers = new DataBaseADUsers();
-        dataBaseADUsers.call();
-        return dataBaseADUsers;
     }
 }

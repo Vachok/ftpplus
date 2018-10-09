@@ -13,7 +13,6 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.*;
 import ru.vachok.networker.logic.SSHFactory;
-import ru.vachok.networker.logic.WhoIsWithSRV;
 import ru.vachok.networker.services.MatrixSRV;
 import ru.vachok.networker.services.VisitorSrv;
 
@@ -63,7 +62,6 @@ public class MatrixCtr {
     public String getFirst(final HttpServletRequest request, Model model, HttpServletResponse response) {
         String userPC = ConstantsFor.getUserPC(request);
         boolean pcAuth = ConstantsFor.getPcAuth(request);
-
         if (request.getQueryString() != null) {
             String queryString = request.getQueryString();
             if (queryString.equalsIgnoreCase("eth") && pcAuth) {
@@ -89,7 +87,6 @@ public class MatrixCtr {
                 model.addAttribute("visit", visitor.getTimeSt() + " timestamp");
             }
         }
-
         return "starting";
     }
 
@@ -157,9 +154,6 @@ public class MatrixCtr {
     private String whois(String workPos, Model model) {
         try {
             workPos = workPos.split(": ")[1];
-            String s = new WhoIsWithSRV().whoIs(workPos);
-            matrixSRV.setWorkPos(s.replaceAll("\n", "<br>"));
-            model.addAttribute("whois", s);
             model.addAttribute(FOOTER_NAME, new PageFooter().getFooterUtext());
         } catch (ArrayIndexOutOfBoundsException e) {
             model.addAttribute("whois", workPos + "<p>" + e.getMessage());
