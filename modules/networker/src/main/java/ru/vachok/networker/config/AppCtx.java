@@ -3,20 +3,21 @@ package ru.vachok.networker.config;
 
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.scheduling.annotation.EnableAsync;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 
-import java.util.*;
+import java.util.Date;
+import java.util.PriorityQueue;
+import java.util.Queue;
+import java.util.StringJoiner;
 
 
 /**
  * @since 30.08.2018 (13:22)
  */
-@Configuration
-@EnableAsync
+@EnableAutoConfiguration
 public class AppCtx extends AnnotationConfigApplicationContext {
 
     public AppCtx() {
@@ -38,12 +39,10 @@ public class AppCtx extends AnnotationConfigApplicationContext {
         for (String s : configApplicationContext.getBeanDefinitionNames()) {
             LoggerFactory.getLogger(SOURCE_CLASS).info(s);
         }
-
         return autowireCapableBeanFactory;
     }
 
     private static AnnotationConfigApplicationContext configApplicationContext = new AnnotationConfigApplicationContext();
-
     public static AnnotationConfigApplicationContext scanForBeansAndRefreshContext() {
         configApplicationContext.scan("ru.vachok.networker.componentsrepo");
         configApplicationContext.scan("ru.vachok.networker.services");
@@ -51,7 +50,6 @@ public class AppCtx extends AnnotationConfigApplicationContext {
         qAdd();
         return configApplicationContext;
     }
-
     private static void qAdd() {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("<p><center><h3>Application Context</center></h3>");

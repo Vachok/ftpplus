@@ -1,7 +1,6 @@
 package ru.vachok.networker.config;
 
 
-import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.TaskDecorator;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -10,7 +9,6 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 /**
  * @since 11.09.2018 (11:41)
  */
-@Configuration
 @EnableAsync
 public class ThreadConfig extends ThreadPoolTaskExecutor {
 

@@ -1,4 +1,4 @@
-package ru.vachok.networker.logic;
+package ru.vachok.networker.services;
 
 
 import org.apache.commons.net.whois.WhoisClient;

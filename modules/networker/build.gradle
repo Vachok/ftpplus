@@ -18,7 +18,7 @@ plugins {
 }
 
 group = 'ru.vachok.networker'
-version = '0.227'
+version = '0.228'
 sourceCompatibility = 1.8
 
 repositories {
@@ -30,11 +30,10 @@ repositories {
 
 dependencies {
 	compile fileTree ('\\lib')
-    // https://mvnrepository.com/artifact/commons-net/commons-net
-    compile group: 'commons-net', name: 'commons-net', version: '3.6'
-    compile("org.springframework.boot:spring-boot-devtools")
 	compile('org.springframework.boot:spring-boot-starter-thymeleaf')
 	compile('org.springframework.boot:spring-boot-starter-web')
+    // https://mvnrepository.com/artifact/commons-net/commons-net
+    compile group: 'commons-net', name: 'commons-net', version: '3.6'
 //	compile('org.springframework.boot:spring-boot-starter-actuator')
 // https://mvnrepository.com/artifact/com.github.fonimus/spring-boot-ssh-shell-starter
 //    compile group: 'com.github.fonimus', name: 'spring-boot-ssh-shell-starter', version: '1.0.6'
@@ -42,8 +41,6 @@ dependencies {
     compile group: 'com.jcraft', name: 'jsch', version: '0.1.54'
 	// https://mvnrepository.com/artifact/org.springframework/spring-jdbc
 	compile group: 'org.springframework', name: 'spring-jdbc', version: '5.0.8.RELEASE'
-	// https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-devtools
-	compile group: 'org.springframework.boot', name: 'spring-boot-devtools', version: '2.0.4.RELEASE'
     // https://mvnrepository.com/artifact/org.testng/testng
     testCompile group: 'org.testng', name: 'testng', version: '6.14.1'
 

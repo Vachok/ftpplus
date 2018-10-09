@@ -68,9 +68,10 @@ public class ActDirectoryCTRL {
     @PostMapping("/ad")
     private String adFoto(@ModelAttribute PhotoConverterSRV photoConverterSRV, Model model) {
         this.photoConverterSRV = photoConverterSRV;
+        Boolean call = new DataBaseADUsers().call();
         try {
             model.addAttribute("photoConverterSRV", photoConverterSRV);
-            model.addAttribute("ok", photoConverterSRV.psCommands());
+            model.addAttribute("ok", photoConverterSRV.psCommands() + call + " dbCreate");
         } catch (NullPointerException e) {
             LOGGER.error(e.getMessage(), e);
         }

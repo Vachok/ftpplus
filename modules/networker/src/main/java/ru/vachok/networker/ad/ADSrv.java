@@ -64,6 +64,8 @@ public class ADSrv implements Runnable {
 
     @Override
     public void run() {
+        Boolean call = new DataBaseADUsers().call();
+        LOGGER.warn(call + " database ADUsers");
         streamRead();
     }
 

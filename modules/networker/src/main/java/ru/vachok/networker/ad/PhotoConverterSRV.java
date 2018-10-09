@@ -12,10 +12,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.*;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -123,8 +120,9 @@ public class PhotoConverterSRV {
     }
 
     private Set<String> samAccFromDB() {
+        Boolean call = new DataBaseADUsers().call();
         Set<String> samAccounts = new HashSet<>();
-        Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.APP_NAME);
+        Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.DB_PREFIX + "velkom");
         try (PreparedStatement p = c.prepareStatement("select * from u0466446_velkom.adusers");
              ResultSet r = p.executeQuery()) {
             while (r.next()) {
