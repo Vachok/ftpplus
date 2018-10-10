@@ -12,7 +12,10 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -105,12 +108,11 @@ public class PhotoConverterSRV {
     }
 
     private void convertFoto() throws NullPointerException, IOException {
-        File photosDirectory = new File(this.adPhotosPath);
-        File[] fotoFiles = photosDirectory.listFiles();
+        File[] fotoFiles = new File(this.adPhotosPath).listFiles();
         Map<String, BufferedImage> filesList = new HashMap<>();
         if (fotoFiles != null) {
             for (File f : fotoFiles) {
-                String key = f.getName().split("\\Q.\\E")[0];
+                String key = f.getName().split("\\Q.jp\\E")[0];
                 for (String format : ImageIO.getWriterFormatNames()) {
                     if (f.getName().toLowerCase().contains(format)) filesList.put(key, ImageIO.read(f));
                 }
@@ -120,7 +122,6 @@ public class PhotoConverterSRV {
     }
 
     private Set<String> samAccFromDB() {
-        Boolean call = new DataBaseADUsers().call();
         Set<String> samAccounts = new HashSet<>();
         Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.DB_PREFIX + "velkom");
         try (PreparedStatement p = c.prepareStatement("select * from u0466446_velkom.adusers");

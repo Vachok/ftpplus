@@ -5,10 +5,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.vachok.mysqlandprops.DataConnectTo;
+import ru.vachok.mysqlandprops.RegRuMysql;
+import ru.vachok.networker.ConstantsFor;
 
 import java.io.*;
 import java.net.InetAddress;
-import java.nio.charset.StandardCharsets;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -28,8 +33,6 @@ public class ADSrv implements Runnable {
     private ADComputer adComputer;
 
     private Map<ADComputer, ADUser> adComputerADUserMap = new ConcurrentHashMap<>();
-
-    private String[] userS;
 
     private String[] compS;
 
@@ -64,9 +67,8 @@ public class ADSrv implements Runnable {
 
     @Override
     public void run() {
-        Boolean call = new DataBaseADUsers().call();
-        LOGGER.warn(call + " database ADUsers");
-        streamRead();
+        List<ADUser> adUsers = userSetter();
+        adUser.setAdUsers(adUsers);
     }
 
     String getDetails(String queryString) throws IOException {
@@ -103,159 +105,100 @@ public class ADSrv implements Runnable {
         return strings;
     }
 
-    /**
-     <b>Сетает пользователей и ПК из файлов.</b><br>
-     Текстовые файлы - результаты выполенения get-aduser , get-adcomputer. Сервер srv-ad. PowerShell.<br>
-     <b>Требуется перевод в UTF-8</b>
-     */
-    private void streamRead() {
-        String msg;
-        try (
-            InputStream compInputStream = getClass().getResourceAsStream("/static/texts/computers.txt")) {
-            int i = compInputStream.available();
-            msg = "Computers to read " + i + " bytes";
-            byte[] compBytes = new byte[i];
-            while (compInputStream.available() > 0) {
-                i = compInputStream.read(compBytes, 0, i);
-            }
-            LOGGER.info(msg);
-            msg = "Bytes to read " + i;
-            LOGGER.info(msg);
-            this.compS = new String(compBytes, StandardCharsets.UTF_8).split("\n\r");
-            msg = userS.length + " users and " + compS.length + " pc read.";
-            LOGGER.warn(msg);
-        } catch (IOException e) {
-            LOGGER.error(e.getMessage(), e);
-        }
-        try {
-            adComputerSetter();
-            userSetter();
-        } catch (ArrayIndexOutOfBoundsException e) {
-            LOGGER.error(e.getMessage(), e);
-        }
-
-    }
-
-    private List<ADComputer> adComputerSetter() {
-        List<ADComputer> adComputers = new ArrayList<>();
-        int index = 0;
-        for (String s : compS) {
-            index++;
-            ADComputer adC = new ADComputer();
-            String[] sS = s.split("\r\n");
-            try {
-                for (String ssStr : sS) {
-                    if (ssStr.contains("DistinguishedName")) {
-                        adC.setDistinguishedName(ssStr.split(": ")[1]);
-                    }
-                    if (ssStr.contains("DNSHostName")) {
-                        adC.setDnsHostName(ssStr.split(": ")[1]);
-                    }
-                    if (ssStr.contains("Enabled")) {
-                        adC.setEnabled(ssStr.split(": ")[1]);
-                    }
-                    if (ssStr.contains("^Name")) {
-                        adC.setName(ssStr.split(": ")[1]);
-                    }
-                    if (ssStr.contains("ObjectClass")) {
-                        adC.setObjectClass(ssStr.split(": ")[1]);
-                    }
-                    if (ssStr.contains("ObjectGUID")) {
-                        adC.setObjectGUID(ssStr.split(": ")[1]);
-                    }
-                    if (ssStr.contains("SamAccountName")) {
-                        adC.setSamAccountName(ssStr.split(": ")[1]);
-                    }
-                    if (ssStr.contains("SID")) {
-                        adC.setSID(ssStr.split(": ")[1]);
-                    }
-                    if (ssStr.contains("UserPrincipalName")) {
-                        adC.setUserPrincipalName(ssStr.split(": ")[1]);
-                    }
-                }
-            } catch (ArrayIndexOutOfBoundsException e) {
-                LOGGER.error(e.getMessage(), e);
-            }
-            adComputers.add(adC);
-        }
-        try {
-            String msg = index + " index\n" + this.getClass().getMethod("adComputerSetter", String[].class);
-            LOGGER.info(msg);
-        } catch (NoSuchMethodException ignore) {
-            //
-        }
-        adComputer.setAdComputers(adComputers);
-        return adComputers;
-    }
-
     List<ADUser> userSetter() {
-        try (InputStream usrInputStream = getClass().getResourceAsStream("/static/texts/users.txt")) {
-            int i = usrInputStream.available();
-            byte[] userBytes = new byte[i];
-            while (usrInputStream.available() > 0) {
-                i = usrInputStream.read(userBytes, 0, i);
+        List<String> fileAsList = new ArrayList<>();
+        List<ADUser> adUserList = new ArrayList<>();
+        try (InputStream usrInputStream = getClass().getResourceAsStream("/static/texts/users.txt");
+             InputStreamReader inputStreamReader = new InputStreamReader(usrInputStream)) {
+            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+            while (bufferedReader.ready()) {
+                fileAsList.add(bufferedReader.readLine());
             }
-            this.userS = new String(userBytes, StandardCharsets.UTF_8).split("\n\r");
         } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
         }
-        List<ADUser> adUserList = new ArrayList<>();
         int indexUser = 0;
-        for (String s : this.userS) {
-            ADUser adU = new ADUser();
+        int h = 10;
+        ADUser adU = new ADUser();
+        for (int i = 0; i < fileAsList.size(); i += 10) {
             indexUser++;
-            String[] sS = s.split("\r\n");
             try {
-                for (String ssStr : sS) {
-                    if (ssStr.contains("DistinguishedName")) {
-                        adU.setDistinguishedName(ssStr.split(": ")[1]);
+                List<String> list = fileAsList.subList(i, h);
+                for (String s : list) {
+                    if (s.contains("DistinguishedName")) {
+                        adU.setDistinguishedName(s.split(": ")[1]);
                     }
-                    if (ssStr.contains("Enabled")) {
-                        adU.setEnabled(ssStr.split(": ")[1]);
+                    if (s.contains("Enabled")) {
+                        adU.setEnabled(s.split(": ")[1]);
                     }
-                    if (ssStr.contains("GivenName")) {
-                        adU.setGivenName(ssStr.split(": ")[1]);
+                    if (s.contains("GivenName")) {
+                        adU.setGivenName(s.split(": ")[1]);
                     }
-                    if (ssStr.contains("Name")) {
-                        adU.setName(ssStr.split(": ")[1]);
+                    if (s.contains("Name")) {
+                        adU.setName(s.split(": ")[1]);
                     }
-                    if (ssStr.contains("ObjectClass")) {
-                        adU.setObjectClass(ssStr.split(": ")[1]);
+                    if (s.contains("ObjectClass")) {
+                        adU.setObjectClass(s.split(": ")[1]);
                     }
-                    if (ssStr.contains("ObjectGUID")) {
-                        adU.setObjectGUID(ssStr.split(": ")[1]);
+                    if (s.contains("ObjectGUID")) {
+                        adU.setObjectGUID(s.split(": ")[1]);
                     }
-                    if (ssStr.contains("SamAccountName")) {
-                        adU.setSamAccountName(ssStr.split(": ")[1]);
+                    if (s.contains("SamAccountName")) {
+                        adU.setSamAccountName(s.split(": ")[1]);
                     }
-                    if (ssStr.contains("SID")) {
-                        adU.setSID(ssStr.split(": ")[1]);
+                    if (s.contains("SID")) {
+                        adU.setSID(s.split(": ")[1]);
                     }
-                    if (ssStr.contains("Surname")) {
-                        adU.setSurname(ssStr.split(": ")[1]);
+                    if (s.contains("Surname")) {
+                        adU.setSurname(s.split(": ")[1]);
                     }
-                    if (ssStr.contains("UserPrincipalName")) {
-                        adU.setUserPrincipalName(ssStr.split(": ")[1]);
-                    }
+                    if (s.contains("UserPrincipalName")) {
+                        adU.setUserPrincipalName(s.split(": ")[1]);
+                    } else if (s.equals("")) {
+                        adUserList.add(adU);
 
+                        adU = new ADUser();
+                    }
                 }
-            } catch (ArrayIndexOutOfBoundsException ignore) {
+            } catch (IndexOutOfBoundsException | IllegalArgumentException ignore) {
                 //
             }
-            adUserList.add(adU);
+            h += 10;
         }
-        try {
-            String msg = indexUser + " index " + getClass().getMethod("userSetter", String[].class);
-            LOGGER.info(msg);
-        } catch (NoSuchMethodException ignore) {
-            //
-        }
-        adUser.setAdUsers(adUserList);
-        psComm(adUser.getAdUsers());
+        psComm();
+        String msg = indexUser + " users read";
+        LOGGER.warn(msg);
         return adUserList;
     }
 
-    private void psComm(List<ADUser> adUsers) {
+    private void sendToDB(ADUser adU) {
+        DataConnectTo dataConnectTo = new RegRuMysql();
+        StringBuilder sql = new StringBuilder();
+        String str = "\', \'";
+        sql
+            .append("insert into adusers (distinguishedName, enabled, givenName, name, objectClass, objectGUID, ")
+            .append("samAccountName, ")
+            .append("SID, Surname, UserPrincipalName) values (\'")
+            .append(adU.getDistinguishedName()).append(str)
+            .append(adU.getEnabled()).append(str)
+            .append(adU.getGivenName()).append(str)
+            .append(adU.getName()).append(str)
+            .append(adU.getObjectClass()).append(str)
+            .append(adU.getObjectGUID()).append(str)
+            .append(adU.getSamAccountName()).append(str)
+            .append(adU.getSID()).append(str)
+            .append(adU.getSurname()).append(str)
+            .append(adU.getUserPrincipalName())
+            .append("\');");
+        Connection c = dataConnectTo.getDefaultConnection(ConstantsFor.DB_PREFIX + "velkom");
+        try (PreparedStatement p = c.prepareStatement(sql.toString())) {
+            p.executeUpdate();
+        } catch (SQLException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+    }
+
+    private void psComm() {
         PhotoConverterSRV photoConverterSRV = new PhotoConverterSRV();
         photoConverterSRV.psCommands();
     }

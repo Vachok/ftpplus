@@ -212,18 +212,15 @@ public class TForms {
         }
     }
 
-    public String adUsersMap(List<ADUser> adUsers, boolean br) {
-        brStringBuilder.append("<p>");
+    public String fromADUsersList(List<ADUser> adUsers, boolean br) {
         nStringBuilder.append("\n");
         for (ADUser ad : adUsers) {
             brStringBuilder
-                .append(ad.toString())
-                .append("<br>");
+                .append(ad.toStringBR());
             nStringBuilder
                 .append(ad.toString())
                 .append("\n");
         }
-        brStringBuilder.append("</p>");
         nStringBuilder.append("\n");
         if (br) {
             return brStringBuilder.toString();

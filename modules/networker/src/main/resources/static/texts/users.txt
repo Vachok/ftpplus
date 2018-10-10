@@ -11951,5 +11951,27 @@ SID               : S-1-5-21-3970069352-2416023058-3822801030-7310
 Surname           : Голубев
 UserPrincipalName : a.n.golubev@eatmeat.ru
 
+DistinguishedName : CN=Брусянина\, Наталья,OU=_New_Users,OU=ALL,DC=eatmeat,DC=ru
+Enabled           : True
+GivenName         : Наталья
+Name              : Брусянина, Наталья
+ObjectClass       : user
+ObjectGUID        : 094196e9-1334-4543-bf98-016776c5aa07
+SamAccountName    : n.i.brusyanina
+SID               : S-1-5-21-3970069352-2416023058-3822801030-7311
+Surname           : Брусянина
+UserPrincipalName : n.i.brusyanina@eatmeat.ru
+
+DistinguishedName : CN=Самошина\, Свтлана,OU=_New_Users,OU=ALL,DC=eatmeat,DC=ru
+Enabled           : True
+GivenName         : Свтлана
+Name              : Самошина, Свтлана
+ObjectClass       : user
+ObjectGUID        : 6194518d-7af5-4771-b5dd-2c3cbdb8662a
+SamAccountName    : s.a.samoshina
+SID               : S-1-5-21-3970069352-2416023058-3822801030-7312
+Surname           : Самошина
+UserPrincipalName : s.a.samoshina@eatmeat.ru
+
 
 

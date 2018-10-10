@@ -24,9 +24,6 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service("matrix")
 public class MatrixSRV {
 
-    /*Fields*/
-    private static final Connection c = new RegRuMysql().getDefaultConnection("u0466446_velkom");
-
     private static final Logger LOGGER = AppComponents.getLogger();
 
     private String workPos;
@@ -51,6 +48,7 @@ public class MatrixSRV {
 
     public String getWorkPosition(String sql) {
         Map<String, String> doljAndAccess = new ConcurrentHashMap<>();
+        Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.DB_PREFIX + "velkom");
         try (PreparedStatement statement = c.prepareStatement(sql);
              ResultSet r = statement.executeQuery()) {
             while (r.next()) {
@@ -100,7 +98,7 @@ public class MatrixSRV {
         return s;
     }
 
-    private String downBlob(byte[] bytes) throws IOException, SQLException {
+    private String downBlob(byte[] bytes) throws IOException {
         File file = new File("theBlob.msg");
         try (FileOutputStream fileOutputStream = new FileOutputStream(file)) {
             fileOutputStream.write(bytes);
@@ -109,7 +107,6 @@ public class MatrixSRV {
         resoCache.setFilePath(file.getAbsolutePath());
         resoCache.setBytes(bytes);
         resoCache.setFile(file);
-        resoCache.setDescr("Blob from " + c.getMetaData().getURL() + " " + c.getMetaData().getIdentifierQuoteString());
         resoCache.setLastModif(System.currentTimeMillis());
         resoCache.setFileName(file.getName());
 

@@ -15,6 +15,7 @@ import ru.vachok.networker.componentsrepo.PageFooter;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.util.List;
 
 
 /**
@@ -45,14 +46,14 @@ public class ActDirectoryCTRL {
 
     @GetMapping("/ad")
     public String adUsersComps(HttpServletRequest request, Model model) throws IOException {
+        List<ADUser> adUsers = adSrv.userSetter();
         if (request.getQueryString() != null) return queryStringExists(request.getQueryString(), model);
         else {
             ADComputer adComputer = adSrv.getAdComputer();
-            ADUser adUser = adSrv.getAdUser();
             model.addAttribute("photoConverter", photoConverterSRV);
             model.addAttribute("footer", new PageFooter().getFooterUtext());
             model.addAttribute("pcs", new TForms().adPCMap(adComputer.getAdComputers(), true));
-            model.addAttribute(USERS_SRTING, new TForms().adUsersMap(adUser.getAdUsers(), true));
+            model.addAttribute(USERS_SRTING, new TForms().fromADUsersList(adUsers, true));
         }
         return "ad";
     }
@@ -68,10 +69,10 @@ public class ActDirectoryCTRL {
     @PostMapping("/ad")
     private String adFoto(@ModelAttribute PhotoConverterSRV photoConverterSRV, Model model) {
         this.photoConverterSRV = photoConverterSRV;
-        Boolean call = new DataBaseADUsers().call();
+
         try {
             model.addAttribute("photoConverterSRV", photoConverterSRV);
-            model.addAttribute("ok", photoConverterSRV.psCommands() + call + " dbCreate");
+            model.addAttribute("ok", photoConverterSRV.psCommands());
         } catch (NullPointerException e) {
             LOGGER.error(e.getMessage(), e);
         }
