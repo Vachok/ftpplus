@@ -156,7 +156,6 @@ public class ADSrv implements Runnable {
                         adU.setUserPrincipalName(s.split(": ")[1]);
                     } else if (s.equals("")) {
                         adUserList.add(adU);
-
                         adU = new ADUser();
                     }
                 }
@@ -165,9 +164,10 @@ public class ADSrv implements Runnable {
             }
             h += 10;
         }
-        psComm();
+
         String msg = indexUser + " users read";
         LOGGER.warn(msg);
+        psComm();
         return adUserList;
     }
 

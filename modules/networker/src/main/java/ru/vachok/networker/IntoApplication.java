@@ -54,6 +54,7 @@ public class IntoApplication {
         SystemTrayHelper.addTray("icons8-плохие-поросята-32.png");
         SPRING_APPLICATION.setMainApplicationClass(IntoApplication.class);
         SPRING_APPLICATION.setApplicationContextClass(AppCtx.class);
+        System.setProperty("file.encoding", "UTF8");
         SpringApplication.run(IntoApplication.class, args);
         infoForU(appCtx);
     }

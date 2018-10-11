@@ -12,6 +12,7 @@ import javax.mail.Address;
 import javax.servlet.http.Cookie;
 import java.io.File;
 import java.util.*;
+import java.util.concurrent.ConcurrentMap;
 
 
 /**
@@ -295,5 +296,21 @@ public class TForms {
         }
         if (br) return brStringBuilder.toString();
         else return brStringBuilder.toString();
+    }
+
+    public String fromArray(ConcurrentMap<String, File> files, boolean b) {
+        brStringBuilder.append("<p>");
+        nStringBuilder.append("\n");
+        files.forEach((x, y) -> {
+            brStringBuilder
+                .append("<font color=\"yellow\"><center>")
+                .append(x)
+                .append("</font></center><br>");
+            nStringBuilder
+                .append(x)
+                .append("\n");
+        });
+        if (b) return brStringBuilder.toString();
+        else return nStringBuilder.toString();
     }
 }
