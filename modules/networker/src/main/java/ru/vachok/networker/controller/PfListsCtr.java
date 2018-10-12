@@ -7,8 +7,6 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import ru.vachok.mysqlandprops.props.DBRegProperties;
-import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.PageFooter;
@@ -23,10 +21,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.rmi.UnknownHostException;
 import java.security.SecureRandom;
 import java.time.LocalTime;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.*;
 
 
@@ -51,8 +46,6 @@ public class PfListsCtr {
 
     private PfListsSrv pfListsSrv;
 
-    private static final InitProperties INIT_REG_PROPERTIES = new DBRegProperties(ConstantsFor.APP_NAME + SOURCE_CLASS);
-
     private boolean pingOK;
 
     private long timeOut;
@@ -75,7 +68,7 @@ public class PfListsCtr {
     @GetMapping("/pflists")
     public String pfBean(Model model, HttpServletRequest request, HttpServletResponse response) {
         String pflistsStr = "pflists";
-        Properties properties = INIT_REG_PROPERTIES.getProps();
+        Properties properties = ConstantsFor.PROPS;
         long lastScan = Long.parseLong(properties.getProperty("pfscan", "1"));
         timeOut = lastScan + TimeUnit.MINUTES.toMillis(15);
 
@@ -128,10 +121,9 @@ public class PfListsCtr {
     }
 
     private void propUpd(Properties properties) {
-        INIT_REG_PROPERTIES.delProps();
         properties.setProperty("pfscan", System.currentTimeMillis() + "");
         properties.setProperty("thr", Thread.activeCount() + "");
-        INIT_REG_PROPERTIES.setProps(properties);
+        ConstantsFor.saveProps();
     }
 
     private String getAttr(HttpServletRequest request) {

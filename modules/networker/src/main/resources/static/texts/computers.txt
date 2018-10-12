@@ -1,4 +1,4 @@
-
+﻿
 
 DistinguishedName : CN=RUPS00,OU=Domain Controllers,DC=eatmeat,DC=ru
 DNSHostName       : rups00.eatmeat.ru
@@ -5538,6 +5538,36 @@ ObjectClass       : computer
 ObjectGUID        : ab6812bd-1a47-48e7-8a77-9879202fdeb3
 SamAccountName    : DO0208$
 SID               : S-1-5-21-3970069352-2416023058-3822801030-6361
+UserPrincipalName : 
+
+DistinguishedName : CN=DO0213,OU=User_PCs,OU=All_Computers,DC=eatmeat,DC=ru
+DNSHostName       : DO0213.eatmeat.ru
+Enabled           : True
+Name              : DO0213
+ObjectClass       : computer
+ObjectGUID        : b40bedf0-9f63-4a98-adee-42cfefb601c0
+SamAccountName    : DO0213$
+SID               : S-1-5-21-3970069352-2416023058-3822801030-6362
+UserPrincipalName : 
+
+DistinguishedName : CN=SRV-APPTD,OU=Check,OU=Servers,OU=All_Computers,DC=eatmeat,DC=ru
+DNSHostName       : SRV-APPTD.eatmeat.ru
+Enabled           : True
+Name              : SRV-APPTD
+ObjectClass       : computer
+ObjectGUID        : 3356ca7a-f1bc-4017-a2aa-031131a66285
+SamAccountName    : SRV-APPTD$
+SID               : S-1-5-21-3970069352-2416023058-3822801030-7307
+UserPrincipalName : 
+
+DistinguishedName : CN=DO0214,OU=User_PCs,OU=All_Computers,DC=eatmeat,DC=ru
+DNSHostName       : DO0214.eatmeat.ru
+Enabled           : True
+Name              : DO0214
+ObjectClass       : computer
+ObjectGUID        : 5f588901-2bb6-48f5-a0e0-d34f2a704bbe
+SamAccountName    : DO0214$
+SID               : S-1-5-21-3970069352-2416023058-3822801030-7309
 UserPrincipalName : 
 
 

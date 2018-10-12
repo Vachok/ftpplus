@@ -2,7 +2,6 @@ package ru.vachok.networker;
 
 
 import org.slf4j.Logger;
-import org.springframework.boot.ResourceBanner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -12,7 +11,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import ru.vachok.mysqlandprops.EMailAndDB.SpeedRunActualize;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.AppCtx;
-import ru.vachok.networker.config.ResLoader;
 import ru.vachok.networker.logic.SystemTrayHelper;
 
 import java.util.concurrent.Executors;
@@ -56,7 +54,7 @@ public class IntoApplication {
         SystemTrayHelper.addTray("icons8-плохие-поросята-32.png");
         SPRING_APPLICATION.setMainApplicationClass(IntoApplication.class);
         SPRING_APPLICATION.setApplicationContextClass(AppCtx.class);
-        SPRING_APPLICATION.setResourceLoader(new ResLoader());
+        System.setProperty("file.encoding", "UTF8");
         SpringApplication.run(IntoApplication.class, args);
         infoForU(appCtx);
     }
@@ -76,19 +74,11 @@ public class IntoApplication {
     private static void setWebType() {
         WebApplicationType webApplicationType = WebApplicationType.SERVLET;
         SPRING_APPLICATION.setWebApplicationType(webApplicationType);
-
-        org.springframework.core.io.Resource resource = new ResLoader().getResource("/static/images/pic03.jpg");
-        ResourceBanner resourceBanner = new ResourceBanner(resource);
-        SPRING_APPLICATION.setBanner(resourceBanner);
         Runnable speedRun = new SpeedRunActualize();
         ScheduledExecutorService executorService =
             Executors.unconfigurableScheduledExecutorService(Executors.newSingleThreadScheduledExecutor());
         executorService.scheduleWithFixedDelay(speedRun, ConstantsFor.INIT_DELAY, ConstantsFor.DELAY, TimeUnit.SECONDS);
         String msg = "Initial Delay checker = " + ConstantsFor.INIT_DELAY + "\nDelay = " + ConstantsFor.DELAY;
         LOGGER.warn(msg);
-    }
-
-    private static void appPropSetter() {
-        throw new UnsupportedOperationException();
     }
 }

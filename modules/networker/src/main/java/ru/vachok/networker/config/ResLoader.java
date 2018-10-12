@@ -1,7 +1,6 @@
 package ru.vachok.networker.config;
 
 
-import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.DefaultResourceLoader;
 import ru.vachok.networker.componentsrepo.ResoCache;
 
@@ -14,7 +13,6 @@ import java.util.Objects;
 
 /**
  @since 22.09.2018 (11:21) */
-@Configuration
 public class ResLoader extends DefaultResourceLoader {
 
     private ResoCache resoCache = ResoCache.getResoCache();

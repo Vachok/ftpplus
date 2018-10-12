@@ -6,12 +6,14 @@ import org.slf4j.LoggerFactory;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.messenger.email.ESender;
 import ru.vachok.mysqlandprops.DataConnectTo;
+import ru.vachok.mysqlandprops.props.DBRegProperties;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
@@ -22,12 +24,11 @@ import java.util.function.Function;
 public enum ConstantsFor {
     ;
 
-    /*Fields*/
-
     /**
      Кол-во байт в мегабайте
      */
     public static final int MEGABYTE = 1024 * 1024;
+
 
     /**
      Название приложения, для поиска properties
@@ -119,4 +120,6 @@ public enum ConstantsFor {
             return e.getMessage();
         }
     }
+
+    public static final Properties PROPERTIES = new DBRegProperties(APP_NAME + ConstantsFor.class.getSimpleName()).getProps();
 }

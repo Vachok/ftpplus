@@ -11,6 +11,7 @@ import ru.vachok.networker.config.ThreadConfig;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.URI;
 import java.util.concurrent.*;
 
@@ -35,12 +36,16 @@ public class SystemTrayHelper {
 
     public static void addTray(String iconFileName) {
         SystemTray systemTray = SystemTray.getSystemTray();
-        boolean b = ConstantsFor.thisPC().toLowerCase().contains("no0027") || ConstantsFor.thisPC().equalsIgnoreCase("home");
+        boolean myPC = ConstantsFor.thisPC().toLowerCase().contains("no0027") || ConstantsFor.thisPC().equalsIgnoreCase("home");
         if (iconFileName == null) {
             iconFileName = "icons8-ip-адрес-15.png";
         }
-        if (b) {
+        else
+            if(myPC){
             iconFileName = "icons8-плохие-поросята-48.png";
+        }
+        if(!srvGitIs()){
+            iconFileName = "icons8-отменить-2-20.png";
         }
         iconFileName = IMG_FOLDER_NAME + iconFileName;
         Image image = Toolkit.getDefaultToolkit().getImage(SystemTrayHelper.class.getResource(iconFileName));
@@ -57,7 +62,10 @@ public class SystemTrayHelper {
                 LOGGER.error(e1.getMessage(), e1);
             }
         };
-        ActionListener exitApp = e -> System.exit(0);
+        ActionListener exitApp = e -> {
+            ConstantsFor.saveProps();
+            System.exit(0);
+        };
 
         additionalItems(popupMenu);
         trayIcon.setImageAutoSize(true);
@@ -100,5 +108,15 @@ public class SystemTrayHelper {
         });
         gitStartWeb.setLabel("GIT WEB ON");
         popupMenu.add(gitStartWeb);
+    }
+
+    private static boolean srvGitIs() {
+        try{
+            return InetAddress.getByName("srv-git.eatmeat.ru").isReachable(1000);
+        }
+        catch(IOException e){
+            LOGGER.error(e.getMessage(), e);
+            return false;
+        }
     }
 }

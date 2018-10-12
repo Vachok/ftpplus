@@ -4,14 +4,15 @@ package ru.vachok.networker;
 import org.slf4j.Logger;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
-import ru.vachok.networker.componentsrepo.ADComputer;
-import ru.vachok.networker.componentsrepo.ADUser;
+import ru.vachok.networker.ad.ADComputer;
+import ru.vachok.networker.ad.ADUser;
 import ru.vachok.networker.componentsrepo.AppComponents;
 
 import javax.mail.Address;
 import javax.servlet.http.Cookie;
 import java.io.File;
 import java.util.*;
+import java.util.concurrent.ConcurrentMap;
 
 
 /**
@@ -93,8 +94,10 @@ public class TForms {
         return nStringBuilder.toString();
     }
 
-    public String fromArray(StackTraceElement[] stackTrace) {
-        for (StackTraceElement stackTraceElement : stackTrace) {
+    public String fromArray(Exception e, boolean br) {
+        brStringBuilder.append("<p>");
+        nStringBuilder.append("\n");
+        for (StackTraceElement stackTraceElement : e.getStackTrace()) {
             nStringBuilder
                 .append("At ")
                 .append(stackTraceElement
@@ -105,8 +108,19 @@ public class TForms {
                 .append(stackTraceElement.getMethodName())
                 .append(" method.\nFile: ")
                 .append(stackTraceElement.getFileName());
+            brStringBuilder
+                .append("At ")
+                .append(stackTraceElement
+                    .getClassName())
+                .append(" line, class: ")
+                .append(stackTraceElement.getClassName())
+                .append(" occurred disaster!<br>")
+                .append(stackTraceElement.getMethodName())
+                .append(" method.<br>File: ")
+                .append(stackTraceElement.getFileName());
         }
-        return nStringBuilder.toString();
+        if (!br) return nStringBuilder.toString();
+        else return brStringBuilder.toString();
     }
 
     public String fromArray(String[] stringsArray) {
@@ -199,18 +213,15 @@ public class TForms {
         }
     }
 
-    public String adUsersMap(List<ADUser> adUsers, boolean br) {
-        brStringBuilder.append("<p>");
+    public String fromADUsersList(List<ADUser> adUsers, boolean br) {
         nStringBuilder.append("\n");
         for (ADUser ad : adUsers) {
             brStringBuilder
-                .append(ad.toString())
-                .append("<br>");
+                .append(ad.toStringBR());
             nStringBuilder
                 .append(ad.toString())
                 .append("\n");
         }
-        brStringBuilder.append("</p>");
         nStringBuilder.append("\n");
         if (br) {
             return brStringBuilder.toString();
@@ -272,7 +283,7 @@ public class TForms {
         return nStringBuilder.toString();
     }
 
-    public String fromArray(Set cacheSet, boolean br) {
+    public String fromArray(Set<?> cacheSet, boolean br) {
         brStringBuilder.append("<p>");
         nStringBuilder.append("\n");
         for (Object o : cacheSet) {
@@ -285,5 +296,21 @@ public class TForms {
         }
         if (br) return brStringBuilder.toString();
         else return brStringBuilder.toString();
+    }
+
+    public String fromArray(ConcurrentMap<String, File> files, boolean b) {
+        brStringBuilder.append("<p>");
+        nStringBuilder.append("\n");
+        files.forEach((x, y) -> {
+            brStringBuilder
+                .append("<font color=\"yellow\"><center>")
+                .append(x)
+                .append("</font></center><br>");
+            nStringBuilder
+                .append(x)
+                .append("\n");
+        });
+        if (b) return brStringBuilder.toString();
+        else return nStringBuilder.toString();
     }
 }

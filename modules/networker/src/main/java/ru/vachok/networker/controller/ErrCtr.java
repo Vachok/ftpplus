@@ -56,8 +56,7 @@ public class ErrCtr implements ErrorController {
             String eMessage = H_2_CENTER + exception.getMessage() + H_2_CENTER_CLOSE;
             String eLocalizedMessage = H_2_CENTER + exception.getMessage() + H_2_CENTER_CLOSE;
             String err = "Научно-Исследовательский Институт Химии Удобрений и Ядов" + statCode;
-            StackTraceElement[] stackTrace = exception.getStackTrace();
-            String traceStr = new TForms().fromArray(stackTrace);
+            String traceStr = new TForms().fromArray(exception, false);
 
             long lastAccessedTime = httpServletRequest.getSession().getLastAccessedTime();
 

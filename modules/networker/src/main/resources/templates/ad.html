@@ -2,10 +2,12 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title th:text="${title}">ХЗ</title>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta http-equiv="Content-Type" content="text/html"/>
     <link rel="stylesheet" type="text/css" media="all" href="css/main.css" th:href="@{css/main.css}"/>
 </head>
 <body>
+<p th:utext="${users}"/>
+<p th:utext="${pcs}"/>
 <form th:action="@{/ad}" th:object="${photoConverter}" method="POST">
     Путь до папки с фото:
     <input type="text" th:field="*{adPhotosPath}"/>
@@ -23,7 +25,6 @@
 <p>На выходе мы получим <b>список комманд для <i>Power Shell</i></b>,
     которые надо скормить <a href="https://srv-mail3.eatmeat.ru/owa">SRV-MAIL3</a>.
 <ul th:utext="${pscommands}"/>
-<img th:src="${userimage}"/>
 </body>
 <footer>
     <p th:utext="${footer}"/>

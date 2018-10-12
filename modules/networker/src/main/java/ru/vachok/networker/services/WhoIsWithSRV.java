@@ -3,25 +3,20 @@ package ru.vachok.networker.services;
 
 import org.apache.commons.net.whois.WhoisClient;
 import org.slf4j.Logger;
-import org.springframework.stereotype.Service;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.ad.ADComputer;
+import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.componentsrepo.AppComponents;
 
+import javax.jnlp.UnavailableServiceException;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Locale;
-import java.util.Map;
 
 
 /**
  @since 14.09.2018 (22:46) */
-@Service("locator")
 public class WhoIsWithSRV {
-
-    /**
-     Simple Name класса, для поиска настроек
-     */
-    private static final String SOURCE_CLASS = WhoIsWithSRV.class.getSimpleName();
 
     /**
      {@link }
@@ -53,7 +48,7 @@ public class WhoIsWithSRV {
             replace = replace + "<p><h4>whois.ripe.net</h4><br>" + whoisClient.query(inetAddr);
             geoLocation.append(replace).append("</p>");
         } catch (IOException | RuntimeException e) {
-            geoLocation.append(e.getMessage()).append("\n").append(new TForms().fromArray(e.getStackTrace()));
+            geoLocation.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false));
         }
         String country = locale.getCountry() + " country, " + locale.getLanguage() + " lang";
         geoLocation.append(country).append("</p>");
@@ -80,8 +75,14 @@ public class WhoIsWithSRV {
         return whoIsQBuilder.toString();
     }
 
-    private String localWhois() {
-        Map<String, Boolean> stringBooleanMap = new AppComponents().lastNetScanMap();
-        return new TForms().mapStringBoolean(stringBooleanMap);
+    private String localWhois() throws UnavailableServiceException {
+        ADSrv adSrv = AppComponents.adSrv();
+        ADComputer adComputer = adSrv.getAdComputer();
+        if(adSrv.getUserInputRaw()!=null){
+            return adComputer.toString();
+        }
+        else{
+            throw new UnavailableServiceException();
+        }
     }
 }
