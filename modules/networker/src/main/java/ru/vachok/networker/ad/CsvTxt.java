@@ -35,7 +35,7 @@ public class CsvTxt {
 
     private List<String> psCommandsList = new ArrayList<>();
 
-    public List<String> getPsCommandsList() {
+    List<String> getPsCommandsList() {
         parseCSV();
         return psCommandsList;
     }
@@ -50,7 +50,7 @@ public class CsvTxt {
         this.file = file;
     }
 
-    void parseCSV() throws ArrayIndexOutOfBoundsException {
+    private void parseCSV() throws ArrayIndexOutOfBoundsException {
         StringBuilder stringBuilder = new StringBuilder();
         List<String> displNames = new ArrayList<>();
         ConcurrentMap<String, String> odinAssList = new ConcurrentHashMap<>();
@@ -69,7 +69,7 @@ public class CsvTxt {
             String[] strings = x.split(";");
             try {
                 strings[1] = strings[1].replaceFirst(" ", ",").split(" ")[0];
-                odinAssList.put(strings[1], strings[3]);
+                odinAssList.put(strings[1].replaceFirst(",", ", "), strings[4]);
             } catch (ArrayIndexOutOfBoundsException ignore) {
                 //
             }
@@ -78,21 +78,20 @@ public class CsvTxt {
         });
         equivalentList(odinAssList);
         String fromArray = new TForms().fromArray(odinAssList);
-        LOGGER.info(new String(fromArray.getBytes(), StandardCharsets.UTF_8));
+        String msg = new String(fromArray.getBytes(), StandardCharsets.UTF_8);
+        LOGGER.info(msg);
     }
 
     private void equivalentList(ConcurrentMap<String, String> odinAssList) {
         Set<String> stringSet = odinAssList.keySet();
-        stringSet.forEach(x -> {
-            StringBuilder stringBuilder = new StringBuilder();
-            stringBuilder
-                .append("Set-User -Identity \"")
-                .append(x)
-                .append("\" -Title \"")
-                .append(odinAssList.get(x))
-                .append("\"");
-            psCommandsList.add(stringBuilder.toString());
-        });
+        for (String x : stringSet) {
+            String commStr = "Set-User -Identity \"" +
+                x +
+                "\" -Title \"" +
+                odinAssList.get(x) +
+                "\"";
+            psCommandsList.add(new String(commStr.getBytes(), StandardCharsets.UTF_8));
+        }
     }
 
     ConcurrentMap<String, File> getFiles() {
