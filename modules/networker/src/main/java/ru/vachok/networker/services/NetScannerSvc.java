@@ -53,7 +53,7 @@ public class NetScannerSvc {
     private static Set<String> pcNames = new HashSet<>();
 
     private String thePc;
-  
+
     private static ReentrantLock lock = AppComponents.lock();
 
     private String qer;
