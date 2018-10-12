@@ -18,7 +18,7 @@ public class PCUserResolver {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PCUserResolver.class.getSimpleName());
 
-    public static Map<String, Boolean> lastScanMap = AppComponents.lastNetScan().getNetWork();
+    private static Map<String, Boolean> lastScanMap = AppComponents.lastNetScan().getNetWork();
 
     private static PCUserResolver pcUserResolver = new PCUserResolver();
 
@@ -52,8 +52,7 @@ public class PCUserResolver {
         onlineNow.forEach(x -> {
             x = x.replaceAll("<br><b>", "").split("</b><br>")[0];
             File[] files = new File("\\\\" + x + "\\c$\\Users\\").listFiles();
-            Map<Long, String> lastMod = new HashMap<>();
-
+            SortedMap<Long, String> lastMod = new TreeMap<>();
             if (files != null) {
                 for (File file : files) {
                     lastMod.put(file.lastModified(), file.getName() + " user " + x + " comp\n");

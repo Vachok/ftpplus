@@ -74,11 +74,16 @@ public class ADSrv implements Runnable {
             StringBuilder stringBuilder = new StringBuilder();
             stringBuilder.append("<p>   Более подробно про ПК:<br>");
             File[] files = new File("\\\\" + queryString + ".eatmeat.ru\\c$\\Users\\").listFiles();
+            List<String> timeName = new ArrayList<>();
             for (File file : files) {
-                stringBuilder
-                    .append(file.getName())
+                timeName.add(file.lastModified() + " " + file.getName());
+            }
+            Collections.sort(timeName);
+            for (String s : timeName) {
+                String[] strings = s.split(" ");
+                stringBuilder.append(strings[1])
                     .append(" ")
-                    .append(new Date(file.lastModified()).toString())
+                    .append(new Date(Long.parseLong(strings[0])))
                     .append("<br>");
             }
             return stringBuilder.toString();

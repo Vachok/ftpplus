@@ -37,11 +37,6 @@ public enum ConstantsFor {
     public static final long INIT_DELAY = new SecureRandom().nextInt((int) MY_AGE);
 
     /**
-     Кол-во локальных ПК {@link ru.vachok.networker.services.NetScannerSvc}
-     */
-    public static final int TOTAL_PC = Integer.parseInt(PROPS.getProperty("totpc", "315"));
-
-    /**
      <b>1 мегабайт в байтах</b>
      */
     public static final int MBYTE = 1024 * 1024;
@@ -159,6 +154,8 @@ public enum ConstantsFor {
     }
 
     public static final PassGenerator passGenerator = new PassGenerator();
+
+    public static int totalPc = Integer.parseInt(PROPS.getProperty("totpc", "317"));
 
     public static String consString() {
         return "ConstantsFor{" +
