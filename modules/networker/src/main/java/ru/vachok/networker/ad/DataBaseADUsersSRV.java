@@ -24,17 +24,17 @@ import java.util.stream.Stream;
 /**
  @since 09.10.2018 (10:35) */
 @Service
-public class DataBaseADUsers {
+public class DataBaseADUsersSRV {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DataBaseADUsersSRV.class.getSimpleName());
 
     private ADUser adUser;
 
     @Autowired
-    public DataBaseADUsers(ADUser adUser) {
+    public DataBaseADUsersSRV(ADUser adUser) {
         this.adUser = adUser;
         dbUploader();
     }
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(DataBaseADUsers.class.getSimpleName());
 
     private boolean dbUploader() {
         DataConnectTo dataConnectTo = new RegRuMysql();
@@ -44,8 +44,8 @@ public class DataBaseADUsers {
             BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
             ConcurrentMap<String, String> paramNameValueMap = fileRead(bufferedReader);
             try (PreparedStatement p = defaultConnection.prepareStatement("")) {
-            p.executeUpdate();
-                }
+                p.executeUpdate();
+            }
         } catch (SQLException | IOException e) {
             LOGGER.error(e.getMessage(), e);
         }
@@ -67,74 +67,73 @@ public class DataBaseADUsers {
             String SID = "";
             String surname = "";
             String userPrincipalName = "";
-            try{
-                if(s.toLowerCase().contains("distinguishedName")){
+            try {
+                if (s.toLowerCase().contains("distinguishedName")) {
                     distinguishedName = s.split(" : ")[1];
                     paramNameValue.put("distinguishedName", distinguishedName);
                 }
-                if(s.toLowerCase().contains("enabled")){
+                if (s.toLowerCase().contains("enabled")) {
                     enabled = s.split(" : ")[1];
                     paramNameValue.put("enabled", enabled);
                 }
-                if(s.toLowerCase().contains("givenName")){
+                if (s.toLowerCase().contains("givenName")) {
                     givenName = s.split(" : ")[1];
                     paramNameValue.put("givenName", givenName);
                 }
-                if(s.toLowerCase().contains("name")){
+                if (s.toLowerCase().contains("name")) {
                     name = s.split(" : ")[1];
                     paramNameValue.put("name", name);
                 }
-                if(s.toLowerCase().contains("objectClass")){
+                if (s.toLowerCase().contains("objectClass")) {
                     objectClass = s.split(" : ")[1];
                     paramNameValue.put("objectClass", objectClass);
                 }
-                if(s.toLowerCase().contains("objectGUID")){
+                if (s.toLowerCase().contains("objectGUID")) {
                     objectGUID = s.split(" : ")[1];
                     paramNameValue.put("objectGUID", objectGUID);
                 }
-                if(s.toLowerCase().contains("samAccountName")){
+                if (s.toLowerCase().contains("samAccountName")) {
                     samAccountName = s.split(" : ")[1];
                     paramNameValue.put("samAccountName", samAccountName);
                 }
-                if(s.toLowerCase().contains("sid")){
+                if (s.toLowerCase().contains("sid")) {
                     SID = s.split(" : ")[1];
                     paramNameValue.put("sid", SID);
                 }
-                if(s.toLowerCase().contains("surname")){
+                if (s.toLowerCase().contains("surname")) {
                     surname = s.split(" : ")[1];
                     paramNameValue.put("surname", surname);
                 }
-                if(s.toLowerCase().contains("userPrincipalName")){
+                if (s.toLowerCase().contains("userPrincipalName")) {
                     userPrincipalName = s.split(" : ")[1];
                     paramNameValue.put("userPrincipalName", userPrincipalName);
                 }
-            stringBuilderSQL
-                .append("insert into u0466446_velkom.adusers")
-                .append("(userDomain, userName, userSurname, distinguishedName, userPrincipalName,")
-                .append(" SID, samAccountName, objectClass, objectGUID, enabled)")
-                .append(" values ")
-                .append("(")
-                .append("eatmeat.ru, ")
-                .append(name)
-                .append(", ")
-                .append(surname)
-                .append(", ")
-                .append(distinguishedName)
-                .append(", ")
-                .append(userPrincipalName)
-                .append(", ")
-                .append(SID)
-                .append(", ")
-                .append(samAccountName)
-                .append(", ")
-                .append(objectClass)
-                .append(", ")
-                .append(objectGUID)
-                .append(", ")
-                .append(enabled)
-                .append(")");
-            }
-            catch(ArrayIndexOutOfBoundsException ignore){
+                stringBuilderSQL
+                    .append("insert into u0466446_velkom.adusers")
+                    .append("(userDomain, userName, userSurname, distinguishedName, userPrincipalName,")
+                    .append(" SID, samAccountName, objectClass, objectGUID, enabled)")
+                    .append(" values ")
+                    .append("(")
+                    .append("eatmeat.ru, ")
+                    .append(name)
+                    .append(", ")
+                    .append(surname)
+                    .append(", ")
+                    .append(distinguishedName)
+                    .append(", ")
+                    .append(userPrincipalName)
+                    .append(", ")
+                    .append(SID)
+                    .append(", ")
+                    .append(samAccountName)
+                    .append(", ")
+                    .append(objectClass)
+                    .append(", ")
+                    .append(objectGUID)
+                    .append(", ")
+                    .append(enabled)
+                    .append(")");
+            } catch (ArrayIndexOutOfBoundsException ignore) {
                 //
             }
         });

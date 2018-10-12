@@ -2,24 +2,22 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title th:text="${title}">ХЗ</title>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta http-equiv="Content-Type" content="text/html"/>
     <link rel="stylesheet" type="text/css" media="all" href="css/main.css" th:href="@{css/main.css}"/>
 </head>
 <body>
 <center>
     <p>
-        <a href="/">На главную</a>
-    <p>
-    <form th:action="@{/exchupl}" th:object="${exsrv}" method="POST" enctype="multipart/form-data">
+    <form th:action="@{/exchange}" th:object="${exsrv}" method="POST" enctype="multipart/form-data">
         Выберите файл<br><br>
         <input type="file" th:field="*{file}"/>
         <br><br><br>
         <input type="submit" value="Запрос"/>
         <br><br><br>
     </form>
+    <p th:utext="${transport}"/>
+    <p th:utext="${file}"/>
 </center>
-<p th:utext="${transport}"/>
-<p th:utext="${file}"/>
 </body>
 <footer>
     <p th:utext="${footer}"/>

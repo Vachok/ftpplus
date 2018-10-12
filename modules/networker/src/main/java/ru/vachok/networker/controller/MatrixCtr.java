@@ -15,6 +15,7 @@ import ru.vachok.networker.componentsrepo.*;
 import ru.vachok.networker.logic.SSHFactory;
 import ru.vachok.networker.services.MatrixSRV;
 import ru.vachok.networker.services.VisitorSrv;
+import ru.vachok.networker.services.WhoIsWithSRV;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -58,6 +59,15 @@ public class MatrixCtr {
         this.versionInfo = versionInfo;
     }
 
+    /**
+     <h2>Начальная страница</h2>
+     <b>matrix.html</b>
+
+     @param request  {@link HttpServletRequest}
+     @param model    {@link Model}
+     @param response {@link HttpServletResponse}
+     @return название файла html, в который помещаем модель.
+     */
     @GetMapping("/")
     public String getFirst(final HttpServletRequest request, Model model, HttpServletResponse response) {
         String userPC = ConstantsFor.getUserPC(request);
@@ -135,6 +145,12 @@ public class MatrixCtr {
         return MATRIX_STRING_NAME;
     }
 
+    /**<h2>SSH-команда</h2>
+     sudo cd /usr/home/ITDept;sudo git instaweb;exit
+     @param model {@link Model}
+     @param request {@link HttpServletRequest}
+     @return переадресация на <a href="http://srv-git.eatmeat.ru:1234">http://srv-git.eatmeat.ru:1234</a>
+     */
     @GetMapping("/git")
     public String gitOn(Model model, HttpServletRequest request) {
         try {
@@ -153,14 +169,17 @@ public class MatrixCtr {
 
     private String whois(String workPos, Model model) {
         try {
+            WhoIsWithSRV whoIsWithSRV = new WhoIsWithSRV();
             workPos = workPos.split(": ")[1];
+            String attributeValue = whoIsWithSRV.whoIs(workPos);
+            model.addAttribute("whois", attributeValue);
             model.addAttribute(FOOTER_NAME, new PageFooter().getFooterUtext());
         } catch (ArrayIndexOutOfBoundsException e) {
             model.addAttribute("whois", workPos + "<p>" + e.getMessage());
             return MATRIX_STRING_NAME;
         }
         metricMatrixStart = System.currentTimeMillis() - metricMatrixStart;
-        return REDIRECT_MATRIX;
+        return MATRIX_STRING_NAME;
     }
 
     private String calculateDoubles(String workPos, Model model) {

@@ -21,8 +21,7 @@ import java.util.concurrent.TimeUnit;
 /**
  {@link IntoApplication}
  <p>
- 1. {@link #main(String[])}<br>
- 1.1 {@link #infoForU(ApplicationContext)}
+ 1. {@link #main(String[])}<br> 1.1 {@link #infoForU(ApplicationContext)}
  */
 @SpringBootApplication
 @EnableScheduling
@@ -66,11 +65,15 @@ public class IntoApplication {
      @param appCtx {@link ApplicationContext}
      */
     private static void infoForU(ApplicationContext appCtx) {
-        String msg = appCtx.getApplicationName() + " app name" + appCtx.getDisplayName() + " app display name\n";
+        String msg = appCtx.getApplicationName() + " app name" + appCtx.getDisplayName() + " app display name\n" +
+            ConstantsFor.getBuildStamp();
         LOGGER.info(msg);
         setWebType();
     }
 
+    /**
+     <b>Тип WEB-application</b>
+     */
     private static void setWebType() {
         WebApplicationType webApplicationType = WebApplicationType.SERVLET;
         SPRING_APPLICATION.setWebApplicationType(webApplicationType);

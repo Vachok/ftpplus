@@ -20,9 +20,9 @@ import java.io.IOException;
 /**
  @since 11.10.2018 (9:12) */
 @Controller
-public class OdinAssSync {
+public class OdinAssSyncCTRL {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(OdinAssSync.class.getSimpleName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(OdinAssSyncCTRL.class.getSimpleName());
 
     private CsvTxt csvTxt = new CsvTxt();
 
@@ -56,7 +56,7 @@ public class OdinAssSync {
     @GetMapping("/odinass")
     public String viewPage(Model model) {
         model.addAttribute("CsvTxt", csvTxt);
-        model.addAttribute("title", OdinAssSync.class.getSimpleName());
+        model.addAttribute("title", OdinAssSyncCTRL.class.getSimpleName());
         model.addAttribute("footer", new PageFooter().getFooterUtext());
         return "odinass";
     }

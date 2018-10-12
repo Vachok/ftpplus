@@ -34,8 +34,6 @@ public class ADSrv implements Runnable {
 
     private Map<ADComputer, ADUser> adComputerADUserMap = new ConcurrentHashMap<>();
 
-    private String[] compS;
-
     public ADUser getAdUser() {
         return adUser;
     }

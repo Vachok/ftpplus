@@ -103,13 +103,6 @@ public class AppComponents {
     }
 
     @Bean
-    public ServiceInform serviceInform() {
-        ServiceInform serviceInform = new ServiceInform();
-        serviceInform.getResourcesTXT();
-        return serviceInform;
-    }
-
-    @Bean
     public static PCUserResolver pcUserResolver() {
         return PCUserResolver.getPcUserResolver();
     }

@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
+import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.logic.PassGenerator;
 
 import javax.servlet.http.HttpServletRequest;
@@ -19,32 +20,49 @@ import java.util.concurrent.TimeUnit;
 
 
 /**
- <h1>Константы</h1>
+ <h2>Константы</h2>
 
  @since 12.08.2018 (16:26) */
 public enum ConstantsFor {
     ;
 
+    /**
+     Число, для Secure Random
+     */
     public static final long MY_AGE = (long) Year.now().getValue() - 1984;
 
+    /**
+     Первоначальная задержка {@link ThreadConfig#threadPoolTaskScheduler()}
+     */
     public static final long INIT_DELAY = new SecureRandom().nextInt((int) MY_AGE);
 
-    private static InitProperties initProperties;
+    /**
+     Кол-во локальных ПК {@link ru.vachok.networker.services.NetScannerSvc}
+     */
+    public static final int TOTAL_PC = Integer.parseInt(PROPS.getProperty("totpc", "315"));
 
     /**
      <b>1 мегабайт в байтах</b>
      */
     public static final int MBYTE = 1024 * 1024;
 
+    public static final Float NO_F_DAYS = TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() -
+        Long.parseLong(getTheProps().getProperty("lasts", 1515233487000L + ""))) / 60f / 24f;
+
+    /**
+     {@link InitProperties}
+     */
+    private static InitProperties initProperties;
+
+    /**
+     {@link Properties} приложения
+     */
     public static final Properties PROPS = takePr();
 
-    public static final String SCREEN_PATH = PROPS.getProperty("adPhotosPath");
-    public static final int TOTAL_PC = Integer.parseInt(PROPS.getProperty("totpc", "315"));
-
-    public static final Float NO_F_DAYS = TimeUnit
-        .MILLISECONDS.toMinutes(System.currentTimeMillis() - Long
-            .parseLong(getTheProps().getProperty("lasts", 1515233487000L + ""))) / 60f / 24f;
-
+    /**
+     @param request для получения IP
+     @return boolean авторизован или нет
+     */
     public static boolean getPcAuth(HttpServletRequest request) {
         return request.getRemoteAddr().toLowerCase().contains("0:0:0:0") ||
             request.getRemoteAddr().contains("10.200.213") ||
@@ -64,11 +82,10 @@ public enum ConstantsFor {
     }
 
     public static long getBuildStamp() {
-        InitProperties initProperties = new DBRegProperties(APP_NAME + ConstantsFor.class.getSimpleName());
-        Properties props = initProperties.getProps();
+        Properties props = PROPS;
         try {
             String hostName = InetAddress.getLocalHost().getHostName();
-            if (hostName.equalsIgnoreCase("home")) {
+            if (hostName.equalsIgnoreCase("home") || hostName.toLowerCase().contains("no0027")) {
                 props.setProperty("build", System.currentTimeMillis() + "");
                 initProperties.delProps();
                 initProperties.setProps(props);
@@ -168,7 +185,6 @@ public enum ConstantsFor {
             '}';
     }
 
-    /*PS Methods*/
     public static String getUserPC(HttpServletRequest request) {
         return request.getRemoteAddr();
     }

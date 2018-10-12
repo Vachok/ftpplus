@@ -69,7 +69,7 @@ public class WhoIsWithSRV {
                 .append("<p><h4>")
                 .append(whoIsServer)
                 .append("</h4><br>")
-                .append(query);
+                .append(query.replaceAll("\n", "<br>"));
             whoisClient.disconnect();
         }
         return whoIsQBuilder.toString();

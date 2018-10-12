@@ -1,7 +1,6 @@
 package ru.vachok.networker.exchange;
 
 
-import org.apache.tomcat.util.digester.Rules;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -28,7 +27,7 @@ public class RulesBean {
 
     private String otherFields;
 
-    private List<Rules> allRules = new ArrayList<>();
+    private List<RulesBean> allRules = new ArrayList<>();
 
     public String getQuery() {
         return query;
@@ -38,11 +37,11 @@ public class RulesBean {
         this.query = query;
     }
 
-    public List<Rules> getAllRules() {
+    public List<RulesBean> getAllRules() {
         return allRules;
     }
 
-    public void setAllRules(List<Rules> allRules) {
+    public void setAllRules(List<RulesBean> allRules) {
         this.allRules = allRules;
     }
 
