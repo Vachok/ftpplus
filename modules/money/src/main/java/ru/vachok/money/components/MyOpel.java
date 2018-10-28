@@ -133,7 +133,10 @@ public class MyOpel {
         this.avgSpeedA107 = avgSpeedA107;
     }
 
-    /*Instances*/
+    /*Get&Set*/
+    private void setAvgSpeedRiga(double avgSpeedRiga) {
+        this.avgSpeedRiga = avgSpeedRiga;
+    }
     private MyOpel() {
         ThreadPoolTaskExecutor defaultExecutor = new ThrAsyncConfigurator().getDefaultExecutor();
         defaultExecutor.initialize();
@@ -144,6 +147,7 @@ public class MyOpel {
         defaultExecutor.execute(runnable);
     }
 
+    /*Instances*/
     /**
      <b>Среднее по Бетонке</b>
      */
@@ -167,9 +171,20 @@ public class MyOpel {
         }
         catch(SQLException e){
             LOGGER.error(e.getMessage(), e);
+
         }
-        if(road==0) setCountA107(speedsDoubles.size());
-        if(road==1) setCountRiga(speedsDoubles.size());
+        if(road==0){
+            setCountA107(speedsDoubles.size());
+            return getRet(speedsDoubles, timeDoubles);
+        }
+        if(road==1){
+            setCountRiga(speedsDoubles.size());
+            return getRet(speedsDoubles, timeDoubles);
+        }
+        throw new UnsupportedOperationException("Не могу вычислить...");
+    }
+
+    private Map<String, Double> getRet(List<Double> speedsDoubles, List<Double> timeDoubles) throws NoSuchElementException {
         Map<String, Double> retMap = new HashMap<>();
         (( ArrayList<Double> ) speedsDoubles).trimToSize();
         OptionalDouble avgSpeed = speedsDoubles.stream().mapToDouble(x -> x).average();
@@ -177,10 +192,6 @@ public class MyOpel {
         retMap.put("speed", avgSpeed.getAsDouble());
         retMap.put("time", averTime.getAsDouble());
         return retMap;
-    }
-
-    public void setAvgSpeedRiga(double avgSpeedRiga) {
-        this.avgSpeedRiga = avgSpeedRiga;
     }
 
 }
