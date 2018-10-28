@@ -61,7 +61,9 @@ public class ActDirectoryCTRL {
     private String queryStringExists(String queryString, Model model) throws IOException {
         model.addAttribute("title", queryString);
         model.addAttribute(USERS_SRTING, inputWithInfoFromDB);
-        model.addAttribute("details", adSrv.getDetails(queryString));
+try{        model.addAttribute("details", adSrv.getDetails(queryString));}catch(Exception e){
+    LOGGER.error(e.getMessage(), e);
+}
         model.addAttribute("footer", new PageFooter().getFooterUtext());
         return "aditem";
     }
