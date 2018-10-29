@@ -11,19 +11,22 @@ public class AppFooter {
 
     public String getTheFooter() {
         StringBuilder stringBuilder = new StringBuilder();
+        String razDel = "   |   ";
         stringBuilder
             .append("<center><h3>Навигация</h3></center>")
             .append("<a href=\"/\">MAIN</a>")
-            .append("   |   ")
+            .append(razDel)
             .append("<a href=\"/calc\">Calculator</a>")
-            .append("   |   ")
+            .append(razDel)
             .append("<a href=\"/chkcar\">Roads checker</a>")
-            .append("   |   ")
+            .append(razDel)
             .append("<a href=\"/ftp\">FTP</a>")
-            .append("   |   ")
+            .append(razDel)
             .append("<a href=\"/money\">Money</a>")
-            .append("   |   ")
-            .append("<a href=\"/sysinfo\">System information</a>");
+            .append(razDel)
+            .append("<a href=\"/sysinfo\">System information</a>")
+            .append(razDel)
+            .append("<a href=\"/nav\">NAV Test</a>");
         return stringBuilder.toString();
     }
 }

@@ -1,0 +1,25 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${title}">ХЗ</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link rel="stylesheet" type="text/css" media="all" href="css/main.css" th:href="@{css/main.css}"/>
+</head>
+<body>
+<h2 align="center" th:utext="${pagetitle}"/>
+<p th:utext="${content}"/>
+<center>
+    <form th:action="@{/navpost}" th:object="${MapperUnit}" method="POST">
+        Прошу вас,
+        <main th:utext="${user}"/>
+        , ввести что-нибудь:
+        <input type="text" th:field="*{userEnt}"/>
+        <br>
+        <input type="submit" value="Покажи мне"/>
+        <br></form>
+</center>
+</body>
+<footer>
+    <p align="right"><code th:utext="${footer}"/></p>
+</footer>
+</html>

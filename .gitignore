@@ -158,7 +158,6 @@ vashkevich.jpg
 -72HOME.log
 -73HOME.log
 -98HOME.log
-/LastNetScan.obj
 LastNetScan.obj
 mailmessage.obj
 modules/networker/mailmessage.obj
@@ -167,3 +166,12 @@ modules/networker/src/main/resources/static/mpdules/
 modules/networker/src/main/resources/static/thr/
 ru_vachok_networker-ConstantsFor.properties
 theBlob.msg
+0.properties
+StudioRU.plg
+hub.txt
+map.html
+map.txt
+ru_vachok_networker-1127.res
+ru_vachok_networker-551.res
+theBlob
+map.js

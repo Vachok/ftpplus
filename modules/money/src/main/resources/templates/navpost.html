@@ -6,13 +6,10 @@
     <link rel="stylesheet" type="text/css" media="all" href="css/main.css" th:href="@{css/main.css}"/>
 </head>
 <body>
-<h2 align="center">Немного инфо о системе</h2>
-
-<main th:text="${id}"/>
-<main th:text="${visitor}"/>
-<p th:utext="${ctxinfo}"/>
-<p th:text="${#execInfo}"/>
-<p th:text="${#uris}"/>
+<form th:action="@{/navpost}" th:object="${MapperUnit}" method="post">
+</form>
+<p align="center">
+<comment th:utext="${content}"/>
 </body>
 <footer>
     <p th:utext="${footer}"/>
