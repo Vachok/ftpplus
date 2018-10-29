@@ -1,6 +1,5 @@
 package ru.vachok.networker.controller;
 
-
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -145,9 +144,11 @@ public class MatrixCtr {
         return MATRIX_STRING_NAME;
     }
 
-    /**<h2>SSH-команда</h2>
+    /**
+     <h2>SSH-команда</h2>
      sudo cd /usr/home/ITDept;sudo git instaweb;exit
-     @param model {@link Model}
+
+     @param model   {@link Model}
      @param request {@link HttpServletRequest}
      @return переадресация на <a href="http://srv-git.eatmeat.ru:1234">http://srv-git.eatmeat.ru:1234</a>
      */
@@ -192,7 +193,7 @@ public class MatrixCtr {
         String pos = v + " Dinner price";
         matrixSRV.setWorkPos(pos);
         model.addAttribute("dinner", pos);
-        return REDIRECT_MATRIX;
+        return MATRIX_STRING_NAME;
     }
 
     private String matrixAccess(String workPos) {
@@ -200,7 +201,7 @@ public class MatrixCtr {
             .format("select * from matrix where Doljnost like '%%%s%%';", workPos));
         this.matrixSRV.setWorkPos(workPosition);
         LOGGER.info(workPosition);
-        return REDIRECT_MATRIX;
+        return MATRIX_STRING_NAME;
     }
 
     private String resoString() {

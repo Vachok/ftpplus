@@ -8,20 +8,19 @@ import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.componentsrepo.AppComponents;
 
-import javax.jnlp.UnavailableServiceException;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Locale;
 
 
-/**
- @since 14.09.2018 (22:46) */
 public class WhoIsWithSRV {
 
     /**
      {@link }
      */
     private static final Logger LOGGER = AppComponents.getLogger();
+
+    private static final String SOURCE_CLASS = WhoIsWithSRV.class.getSimpleName();
 
     public String whoIs(String inetAddr) {
         StringBuilder geoLocation = new StringBuilder();
@@ -75,14 +74,14 @@ public class WhoIsWithSRV {
         return whoIsQBuilder.toString();
     }
 
-    private String localWhois() throws UnavailableServiceException {
+    private String localWhois() {
         ADSrv adSrv = AppComponents.adSrv();
         ADComputer adComputer = adSrv.getAdComputer();
         if(adSrv.getUserInputRaw()!=null){
             return adComputer.toString();
         }
         else{
-            throw new UnavailableServiceException();
+            return "Fuck you";
         }
     }
 }
