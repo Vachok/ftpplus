@@ -71,7 +71,7 @@ public class Index {
             visitor.getVisitorSrv().makeVisit(request, response);
         }
         catch(Exception e){
-            LOGGER.warn(e.getMessage());
+            LOGGER.error(e.getMessage(), e);
         }
         long lasts = System.currentTimeMillis() - Long.parseLong(PROPERTIES.getProperty("lasts"));
 
