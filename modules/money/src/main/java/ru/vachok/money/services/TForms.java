@@ -4,6 +4,7 @@ package ru.vachok.money.services;
 import ru.vachok.money.other.XmlNode;
 
 import javax.mail.Address;
+import javax.servlet.http.Cookie;
 import java.util.*;
 
 
@@ -114,5 +115,36 @@ public class TForms {
             stringBuilder.append(element.toString()).append("\n");
         }
         return stringBuilder.toString();
+    }
+
+    public String toStringFromArray(Cookie[] cookies, boolean brB) {
+        for (Cookie c : cookies) {
+            String br = "<br>";
+            String n = "\n";
+            stringBuilder.append(br);
+            nstringBuilder.append(n);
+            stringBuilder
+                .append(c.getName()).append(" name")
+                .append(br)
+                .append(c.getDomain()).append(" domain")
+                .append(br)
+                .append(c.getValue()).append(" value")
+                .append(br)
+                .append(c.getSecure()).append(" secure")
+                .append(br)
+                .append(c.getVersion()).append(" version");
+            nstringBuilder
+                .append(c.getName()).append(" name")
+                .append(n)
+                .append(c.getDomain()).append(" domain")
+                .append(n)
+                .append(c.getValue()).append(" value")
+                .append(n)
+                .append(c.getSecure()).append(" secure")
+                .append(n)
+                .append(c.getVersion()).append(" version");
+        }
+        if (brB) return stringBuilder.toString();
+        else return nstringBuilder.toString();
     }
 }

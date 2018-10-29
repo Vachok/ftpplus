@@ -24,7 +24,8 @@ import java.util.concurrent.TimeUnit;
 
 
 /**
- @since 20.08.2018 (17:08) */
+ @since 20.08.2018 (17:08)
+ */
 @Controller
 public class Index {
 

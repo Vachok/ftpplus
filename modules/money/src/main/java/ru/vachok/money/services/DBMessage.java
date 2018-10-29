@@ -1,6 +1,7 @@
 package ru.vachok.money.services;
 
 
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.money.ConstantsFor;
@@ -56,9 +57,8 @@ public class DBMessage implements MessageToUser {
             p.setString(2 , s1);
             p.setString(3 , s2);
             p.executeUpdate();
-        }
-        catch(SQLException ignore){
-            //
+        } catch (SQLException e) {
+            LoggerFactory.getLogger(this.getClass().getSimpleName()).error(e.getMessage(), e);
         }
     }
 
