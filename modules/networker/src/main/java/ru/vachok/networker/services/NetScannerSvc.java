@@ -85,7 +85,7 @@ public class NetScannerSvc {
     public void getPCsAsync() {
         AtomicReference<String> msg = new AtomicReference<>("");
         new Thread(() -> {
-            Thread.currentThread().setName("***************PC_SCANNER_PROGRESS**************");
+            Thread.currentThread().setName("**************PC_SCANNER_PROGRESS*********LOCKED");
             lock.lock();
             msg.set(new StringBuilder()
                 .append("Thread ")

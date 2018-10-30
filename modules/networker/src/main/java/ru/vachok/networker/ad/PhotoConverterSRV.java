@@ -14,10 +14,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.*;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -56,7 +53,8 @@ public class PhotoConverterSRV {
      Подготавливает фотографии для импорта в ActiveDirectory. Преобразует любой понимаемый {@link BufferedImage} формат в jpg.
      */
     private BiConsumer<String, BufferedImage> imageBiConsumer = (x, y) -> {
-        File outFile = new File("\\\\srv-mail3\\c$\\newmailboxes\\foto\\" + x + ".jpg");
+        String pathName = properties.getProperty("pathName");
+        File outFile = new File(pathName + x + ".jpg");
         String fName = "jpg";
         Set<String> samAccountNames = samAccFromDB();
         for (String sam : samAccountNames) {
