@@ -13,20 +13,23 @@ class MapCoordinateParser {
 
     private String userEnt;
 
+    /*Instances*/
     MapCoordinateParser(String userEnt) {
         this.userEnt = userEnt;
         if (userEnt.contains("-")) {
             startStr = userEnt.split("-")[0].trim();
             stopStr = userEnt.split("-")[1].trim();
-        } else if (userEnt.isEmpty() || userEnt.isBlank()) {
-            startStr = "Павловская Слобода";
-            stopStr = "Истра";
-        } else {
-            stringBuilder
-                .append("Hello. К сожалению я не могу прочесть то, что вы ввели:<br><code>")
-                .append(userEnt)
-                .append("</code><br>Пожалуйста, вводите по-шаблону \"Точка старта - Точка стопа\", и я постараюсь вычислить для вас километраж.");
         }
+        else
+            if(userEnt.isEmpty()){
+                startStr = "Павловская Слобода";
+                stopStr = "Истра";
+            } else {
+                stringBuilder
+                    .append("Hello. К сожалению я не могу прочесть то, что вы ввели:<br><code>")
+                    .append(userEnt)
+                    .append("</code><br>Пожалуйста, вводите по-шаблону \"Точка старта - Точка стопа\", и я постараюсь вычислить для вас километраж.");
+            }
     }
 
     String getResultsAsText() {
