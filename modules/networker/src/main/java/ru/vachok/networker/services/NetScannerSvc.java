@@ -18,13 +18,11 @@ import ru.vachok.networker.config.ThreadConfig;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 
 
@@ -85,16 +83,19 @@ public class NetScannerSvc {
 
     @Locked(id = Thread.State.BLOCKED)
     public void getPCsAsync() {
+        AtomicReference<String> msg = new AtomicReference<>("");
         new Thread(() -> {
+            Thread.currentThread().setName("***************PC_SCANNER_PROGRESS**************");
             lock.lock();
-            String msg = "Thread " +
-                Thread.currentThread().getId() +
-                " with name " +
-                Thread.currentThread().getName() +
-                " is locked = " +
-                AppComponents.lock().isLocked();
-            LOGGER.warn(msg);
+            msg.set(new StringBuilder()
+                .append("Thread ")
+                .append(Thread.currentThread().getId())
+                .append(" with name ")
+                .append(Thread.currentThread().getName())
+                .append(" is locked = ")
+                .append(lock.isLocked()).toString());
             final long startMethod = System.currentTimeMillis();
+            LOGGER.warn(msg.get());
             for (String s : PC_PREFIXES) {
                 pcNames.clear();
                 pcNames.addAll(getPCNamesPref(s));
@@ -102,7 +103,7 @@ public class NetScannerSvc {
             String elapsedTime = "Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethod) + " sec.";
             pcNames.add(elapsedTime);
             lock.unlock();
-            LOGGER.warn(msg);
+            LOGGER.warn(msg.get());
             new Thread(() -> {
                 MessageToUser mailMSG = new ESender("143500@gmail.com");
                 float upTime = (float) (TimeUnit.MILLISECONDS

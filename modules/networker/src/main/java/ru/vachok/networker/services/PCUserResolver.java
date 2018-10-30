@@ -30,7 +30,7 @@ public class PCUserResolver {
         return pcUserResolver;
     }
 
-    public ADUser adPCSetter() {
+    public ADUser adUsersSetter() {
         ADSrv adSrv = AppComponents.adSrv();
         ADUser adUser = adSrv.getAdUser();
         try {

@@ -85,7 +85,8 @@ public class ActDirectoryCTRL {
     }
 
     private String adUserString() {
-        ADUser adUser = AppComponents.pcUserResolver().adPCSetter();
+        ADUser adUser = AppComponents.pcUserResolver().adUsersSetter();
+
         return adUser.toString();
     }
 }
