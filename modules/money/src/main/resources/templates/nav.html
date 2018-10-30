@@ -10,9 +10,7 @@
 <p th:utext="${content}"/>
 <center>
     <form th:action="@{/navpost}" th:object="${MapperUnit}" method="POST">
-        Прошу вас,
-        <main th:utext="${user}"/>
-        , ввести что-нибудь:
+        Прошу вас ввести что-нибудь:
         <input type="text" th:field="*{userEnt}"/>
         <br>
         <input type="submit" value="Покажи мне"/>

@@ -18,7 +18,7 @@ plugins {
 }
 
 group = 'ru.vachok.money'
-version = '0.228'
+version = '0.229'
 sourceCompatibility = 1.8
 
 repositories {
@@ -28,6 +28,7 @@ repositories {
 dependencies {
     compile fileTree('\\lib')
     compile("org.springframework.boot:spring-boot-devtools")
+    compile 'com.google.maps:google-maps-services:0.9.0'
     compile('org.springframework.boot:spring-boot-starter-web')
     compile('org.springframework.boot:spring-boot-starter-thymeleaf')
     // https://mvnrepository.com/artifact/xml-apis/xml-apis

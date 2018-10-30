@@ -16,16 +16,16 @@ import javax.servlet.http.HttpServletResponse;
 @Controller
 public class MapCTRL {
 
-    MapperUnit mapperUnit = new MapperUnit();
+    private MapperUnit mapperUnit = new MapperUnit();
 
     @GetMapping("/nav")
     public String navMod(Model model, HttpServletRequest request, HttpServletResponse response) {
+        mapperUnit.setResultTitle(request.getSession().getId());
         model.addAttribute("title", "Navigation Test");
         model.addAttribute("MapperUnit", mapperUnit);
-        model.addAttribute("user", request.getSession().getId());
         model.addAttribute("pagetitle", response.getStatus() + " status<br>Encoding is " + response.getCharacterEncoding());
         model.addAttribute("content", request.getRemoteAddr() + "<br>" + response.getContentType());
-        model.addAttribute("footer", "powered by Vachok. Since 29.10.2018 (13:12)<br>" + new AppFooter().getTheFooter());
+        model.addAttribute("footer", "Можно добавить картинки, динамические маршруты и пр.<br>" + new AppFooter().getTheFooter());
         return "nav";
     }
 
@@ -33,8 +33,8 @@ public class MapCTRL {
     public String navPost(Model model, @ModelAttribute MapperUnit mapperUnit) {
         this.mapperUnit = mapperUnit;
         model.addAttribute("MapperUnit", mapperUnit);
-        String s = new MapCoordinateParser(mapperUnit.getUserEnt()).whatAreYouDoing();
-        model.addAttribute("title", "Вы ввели...");
+        String s = new MapCoordinateParser(mapperUnit.getUserEnt()).getResultsAsText();
+        model.addAttribute("title", mapperUnit.getResultTitle());
         model.addAttribute("content", s);
         model.addAttribute("footer", new AppFooter().getTheFooter());
         return "navpost";
