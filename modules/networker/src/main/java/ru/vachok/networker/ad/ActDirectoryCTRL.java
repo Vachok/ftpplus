@@ -8,7 +8,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.PageFooter;
@@ -32,6 +31,7 @@ public class ActDirectoryCTRL {
     private static String inputWithInfoFromDB;
 
     private PhotoConverterSRV photoConverterSRV;
+
     /*Instances*/
     @Autowired
     public ActDirectoryCTRL(ADSrv adSrv, PhotoConverterSRV photoConverterSRV) {
@@ -58,27 +58,30 @@ public class ActDirectoryCTRL {
         return "ad";
     }
 
-    private String queryStringExists(String queryString, Model model) throws IOException {
+    private String queryStringExists(String queryString, Model model) {
         model.addAttribute("title", queryString);
         model.addAttribute(USERS_SRTING, inputWithInfoFromDB);
-try{        model.addAttribute("details", adSrv.getDetails(queryString));}catch(Exception e){
-    LOGGER.error(e.getMessage(), e);
-}
+        try {
+            model.addAttribute("details", adSrv.getDetails(queryString));
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage(), e);
+        }
         model.addAttribute("footer", new PageFooter().getFooterUtext());
         return "aditem";
     }
 
-    @PostMapping("/ad")
+    @GetMapping("/adphoto")
     private String adFoto(@ModelAttribute PhotoConverterSRV photoConverterSRV, Model model) {
         this.photoConverterSRV = photoConverterSRV;
-
         try {
             model.addAttribute("photoConverterSRV", photoConverterSRV);
-            model.addAttribute("ok", photoConverterSRV.psCommands());
+            model.addAttribute("title", "PowerShell. For str-mail3");
+            model.addAttribute("content", photoConverterSRV.psCommands());
+            model.addAttribute("footer", new PageFooter().getFooterUtext());
         } catch (NullPointerException e) {
             LOGGER.error(e.getMessage(), e);
         }
-        return "ok";
+        return "adphoto";
     }
 
     private String adUserString() {
