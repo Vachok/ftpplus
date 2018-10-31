@@ -308,15 +308,21 @@ public class TForms {
     public String fromArray(ConcurrentMap<String, File> files, boolean b) {
         brStringBuilder.append("<p>");
         nStringBuilder.append("\n");
-        files.forEach((x, y) -> {
+        try{
+            files.forEach((x, y) -> {
             brStringBuilder
                 .append("<font color=\"yellow\"><center>")
                 .append(x)
                 .append("</font></center><br>");
             nStringBuilder
                 .append(x)
-                .append("\n");
-        });
+                .append("\n")
+                .append(Arrays.toString(y.listFiles()));
+            });
+        }
+        catch(Exception e){
+            LOGGER.error(e.getMessage(), e);
+        }
         if (b) return brStringBuilder.toString();
         else return nStringBuilder.toString();
     }

@@ -16,12 +16,11 @@ import ru.vachok.networker.ad.ActDirectoryCTRL;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.ThreadConfig;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.InetAddress;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -113,10 +112,17 @@ public class NetScannerSvc {
                     .toSeconds(System.currentTimeMillis() - ConstantsFor.START_STAMP)) / 60f;
                 Map<String, String> lastLogs = new AppComponents().getLastLogs();
                 String retLogs = new TForms().fromArray(lastLogs);
+                String fromArray = new TForms().fromArray(ConstantsFor.COMPNAME_USERS_MAP, false);
                 mailMSG.info(
                     SOURCE_CLASS,
                     upTime + " min uptime. " + ConstantsFor.COMPNAME_USERS_MAP.size() + " COMPNAME_USERS_MAP size",
-                    retLogs + " \n" + new TForms().fromArray(ConstantsFor.COMPNAME_USERS_MAP, true));
+                    retLogs + " \n" + fromArray);
+                try(OutputStream outputStream = new FileOutputStream("lasusers.txt")){
+                    outputStream.write(fromArray.getBytes());
+                }
+                catch(IOException e){
+                    LOGGER.error(e.getMessage(), e);
+                }
             }).start();
         }).start();
     }

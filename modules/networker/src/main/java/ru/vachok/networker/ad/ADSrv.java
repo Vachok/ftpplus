@@ -154,12 +154,15 @@ public class ADSrv implements Runnable {
         if(InetAddress.getByName(queryString + ".eatmeat.ru").isReachable(500)){
             StringBuilder stringBuilder = new StringBuilder();
             stringBuilder.append("<p>   Более подробно про ПК:<br>");
-            File[] files = new File("\\\\" + queryString + ".eatmeat.ru\\c$\\Users\\").listFiles();
+            File filesAsFile = new File("\\\\" + queryString + ".eatmeat.ru\\c$\\Users\\");
+            File[] files = filesAsFile.listFiles();
             List<String> timeName = new ArrayList<>();
             for(File file : files){
                 timeName.add(file.lastModified() + " " + file.getName());
             }
             Collections.sort(timeName);
+            String s1 = timeName.get(timeName.size() - 1);
+            ListIterator<String> stringListIterator = timeName.listIterator();
             for(String s : timeName){
                 String[] strings = s.split(" ");
                 stringBuilder.append(strings[1])
@@ -167,6 +170,13 @@ public class ADSrv implements Runnable {
                     .append(new Date(Long.parseLong(strings[0])))
                     .append("<br>");
             }
+            ConstantsFor.COMPNAME_USERS_MAP.put(s1, filesAsFile);
+            stringBuilder.append("<p><b>")
+                .append(s1)
+                .append("<br>")
+                .append(ConstantsFor.COMPNAME_USERS_MAP.size())
+                .append(" COMPNAME_USERS_MAP size")
+                .append("</p></b>");
             return stringBuilder.toString();
         }
         else{

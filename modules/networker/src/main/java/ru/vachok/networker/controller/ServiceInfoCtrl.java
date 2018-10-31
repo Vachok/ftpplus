@@ -9,10 +9,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.AppComponents;
-import ru.vachok.networker.componentsrepo.PageFooter;
-import ru.vachok.networker.componentsrepo.ServiceInform;
-import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.componentsrepo.*;
 import ru.vachok.networker.config.AppCtx;
 
 import javax.servlet.http.HttpServletRequest;
@@ -130,8 +127,6 @@ public class ServiceInfoCtrl {
         stringBuilder.append("<center><h3>Параметры</h3></center>");
         stringBuilder.append(new TForms().mapStrStrArr(request.getParameterMap(), true));
 
-        stringBuilder.append("<center><h3>Cookies</h3></center>");
-        stringBuilder.append(new TForms().fromArray(ConstantsFor.VISITS_MAP.get(visitor.getUserID()).getCookies(), true));
         return stringBuilder.toString();
     }
 
