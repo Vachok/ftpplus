@@ -36,7 +36,6 @@ public class MoneyApplication {
         new SystemTrayHelper().addTrayDefaultMinimum();
         SPRING_APPLICATION.setLogStartupInfo(true);
         run(MoneyApplication.class, args);
-        urlS();
         startSchedule();
     }
 

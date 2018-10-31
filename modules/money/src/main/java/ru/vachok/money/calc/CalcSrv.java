@@ -1,4 +1,4 @@
-package ru.vachok.money.services;
+package ru.vachok.money.calc;
 
 
 import org.slf4j.Logger;
@@ -6,7 +6,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.vachok.money.ConstantsFor;
-import ru.vachok.money.components.CalculatorForSome;
+import ru.vachok.money.services.TForms;
+import ru.vachok.money.services.TimeWorms;
+import ru.vachok.money.services.WhoIsWithSRV;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -109,12 +111,25 @@ public class CalcSrv {
                 doubleList.add(parsDouble);
             }
             calculatorForSome.setUserDouble(doubleList);
-
-
+            return Arrays.toString(calculatorForSome.getUserDouble().toArray());
         }
         catch(Exception ignore){
             //
         }
-        return Arrays.toString(calculatorForSome.getUserDouble().toArray());
+        return "";
+    }
+
+    public String destinyGetter(String userInp) {
+        String[] split;
+        try{
+            split = userInp.split(" or ");
+            String destinyCooser = new ChooseYouDestiny().destinyCooser(split);
+            destinyCooser = destinyCooser.toUpperCase();
+            return destinyCooser;
+        }
+        catch(ArrayIndexOutOfBoundsException e){
+            split = userInp.split(" ");
+            return new ChooseYouDestiny().destinyCooser(split) + "<p><textarea>" + e.getMessage() + "</textarea>";
+        }
     }
 }

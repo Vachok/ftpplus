@@ -1,4 +1,4 @@
-package ru.vachok.money.ctrls;
+package ru.vachok.money.calc;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,9 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.money.components.AppFooter;
-import ru.vachok.money.components.CalculatorForSome;
 import ru.vachok.money.components.Visitor;
-import ru.vachok.money.services.CalcSrv;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -58,7 +56,7 @@ public class CalcCTRL {
     @PostMapping ("/calc")
     public String okOk(@ModelAttribute ("CalculatorForSome") CalculatorForSome calculatorForSome, BindingResult result, Model model) {
         this.calculatorForSome = calculatorForSome;
-        String uInp = calcSrv.resultCalc(calculatorForSome.getUserInput());
+        String uInp = calcSrv.destinyGetter(calculatorForSome.getUserInput());
         model.addAttribute("result", uInp);
         return "ok";
     }
