@@ -10,6 +10,7 @@ import ru.vachok.networker.componentsrepo.AppComponents;
 
 import java.io.File;
 import java.util.*;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  @since 02.10.2018 (17:32) */
@@ -22,8 +23,10 @@ public class PCUserResolver {
 
     private static PCUserResolver pcUserResolver = new PCUserResolver();
 
-    private PCUserResolver() {
+    private ConcurrentMap<String, File[]> stringConcurrentMap;
 
+    private PCUserResolver() {
+        this.stringConcurrentMap = new AppComponents().getCompUsersMap();
     }
 
     public static PCUserResolver getPcUserResolver() {
@@ -52,6 +55,7 @@ public class PCUserResolver {
         onlineNow.forEach(x -> {
             x = x.replaceAll("<br><b>", "").split("</b><br>")[0];
             File[] files = new File("\\\\" + x + "\\c$\\Users\\").listFiles();
+            stringConcurrentMap.put(x, files);
             SortedMap<Long, String> lastMod = new TreeMap<>();
             if (files != null) {
                 for (File file : files) {
@@ -63,9 +67,12 @@ public class PCUserResolver {
             boolean aLongPresent = max.isPresent();
             if (aLongPresent) {
                 Long aLong = max.get();
-                stringBuilder.append(lastMod.get(aLong));
+                stringBuilder
+                    .append(lastMod.get(aLong));
             }
         });
+        String msg = stringConcurrentMap.size() + " stringConcurrentMap size";
+        LOGGER.warn(msg);
         return stringBuilder.toString();
     }
 }

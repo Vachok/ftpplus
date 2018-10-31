@@ -14,7 +14,10 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -48,6 +51,7 @@ public class PhotoConverterSRV {
 
     private List<String> psCommands = new ArrayList<>();
 
+
     /**
      <b>Преобразование в JPG</b>
      Подготавливает фотографии для импорта в ActiveDirectory. Преобразует любой понимаемый {@link BufferedImage} формат в jpg.
@@ -69,7 +73,7 @@ public class PhotoConverterSRV {
             msg = "Import-RecipientDataProperty -Identity " +
                 x + " -Picture -FileData ([Byte[]] $(Get-Content -Path “C:\\newmailboxes\\foto\\" +
                 outFile.getName() +
-                " -Encoding Byte -ReadCount 0))";
+                "\" -Encoding Byte -ReadCount 0))";
             LOGGER.warn(msg);
             psCommands.add(msg);
         } catch (Exception e) {

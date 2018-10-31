@@ -43,7 +43,12 @@ public class ExCTRL {
             model.addAttribute("file", exSRV.fileAsStrings());
         } catch (NullPointerException e) {
             model.addAttribute("title", "No local file!");
-            model.addAttribute("file", "Не могу найти файл...");
+            model.addAttribute("file",
+                new StringBuilder()
+                    .append("Необходимо запустить на сервере <b>Exchange</b> Power Shell Script:")
+                    .append("<p><textarea>ImportSystemModules")
+                    .append("\n")
+                    .append("Get-TransportRule | fl > имя_файла</textarea></p>").toString());
         }
 
         model.addAttribute("footer", new PageFooter().getFooterUtext());
@@ -59,12 +64,17 @@ public class ExCTRL {
     @PostMapping("/exchange")
     public String uplFile(@RequestParam MultipartFile file, Model model) {
         exSRV.setFile(file);
-        String s = exSRV.fileAsStrings();
+        String s = new StringBuilder()
+            .append("Содержимое файла<br><textarea>")
+            .append(exSRV.fileAsStrings())
+            .append("</textarea>")
+            .toString();
         String rules = new TForms().fromArrayRules(ConstantsFor.MAIL_RULES, true);
         model.addAttribute("exsrv", exSRV);
-
         model.addAttribute("file", rules + s);
-        model.addAttribute("title", exSRV.getClass().getSimpleName());
+        model.addAttribute("title", ConstantsFor.MAIL_RULES.size() + " rules in " +
+            exSRV.getFile().getSize() / ConstantsFor.KBYTE + " kb file");
+        model.addAttribute("footer", new PageFooter().getFooterUtext());
         return "exchange";
     }
 }

@@ -18,7 +18,10 @@ import ru.vachok.networker.config.ThreadConfig;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -112,7 +115,7 @@ public class NetScannerSvc {
                 String retLogs = new TForms().fromArray(lastLogs);
                 mailMSG.info(
                     SOURCE_CLASS,
-                    upTime + " min uptime. " + AppComponents.versionInfo().toString(),
+                    upTime + " min uptime. " + ConstantsFor.COMPNAME_USERS_MAP.size() + " COMPNAME_USERS_MAP size",
                     retLogs + " \n" + new TForms().fromArray(pcNames, true));
             }).start();
         }).start();
@@ -286,7 +289,7 @@ public class NetScannerSvc {
                     c = new RegRuMysql().getDefaultConnection(DB_NAME);
                 }
             });
-            return new TForms().fromArray(list);
+            return new TForms().fromArray(list, true);
         } catch (SQLException e) {
             LOGGER.error(e.getMessage(), e);
             c = new RegRuMysql().getDefaultConnection(DB_NAME);
