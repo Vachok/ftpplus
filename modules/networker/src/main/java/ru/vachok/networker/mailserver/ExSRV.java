@@ -42,7 +42,7 @@ public class ExSRV {
         } catch (NullPointerException e) {
             return e.getMessage();
         }
-        return new String(new TForms().fromArray(fileAsList).getBytes(), StandardCharsets.UTF_8) + "<p>";
+        return new String(new TForms().fromArray(fileAsList, false).getBytes(), StandardCharsets.UTF_8) + "<p>";
     }
 
     private void getRulesFromFile() {

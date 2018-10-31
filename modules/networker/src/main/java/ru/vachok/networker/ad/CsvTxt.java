@@ -132,8 +132,8 @@ public class CsvTxt {
         strings.iterator().forEachRemaining(x -> {
             if (x.contains(".xls")) keyName.set(x);
         });
-        return new String((keyName.get() + "<br>" + new TForms().fromArray(csvList) + "<p>" +
-            new TForms().fromArray(txtList)).getBytes(), StandardCharsets.UTF_8);
+        return new String((keyName.get() + "<br>" + new TForms().fromArray(csvList, true) + "<p>" +
+            new TForms().fromArray(txtList, true)).getBytes(), StandardCharsets.UTF_8);
     }
 
     List<String> getTxtList() {

@@ -34,13 +34,15 @@ public class TForms {
 
     private static final String BR_S = "<br>";
 
-    public String fromArray(List<String> stringListWithBR) {
+    public String fromArray(List<String> stringList, boolean br) {
         brStringBuilder.append("<p>");
-        for (String s : stringListWithBR) {
-            brStringBuilder.append(s).append("<br>");
+        for (String s : stringList) {
+            brStringBuilder.append(s).append(BR_S);
+            nStringBuilder.append(s).append(N_S);
         }
         brStringBuilder.append("</p>");
-        return brStringBuilder.toString();
+        if (br) return brStringBuilder.toString();
+        else return nStringBuilder.toString();
     }
 
     public String fromArray(Map<String, String> stringStringMap) {
@@ -328,9 +330,9 @@ public class TForms {
                 .append(N_S)
                 .append(y.toString());
             brStringBuilder
-                .append("<p><center><h4>")
+                .append("<p><h4>")
                 .append(x)
-                .append(" MAP ID  RULE:</h4></center>")
+                .append(" MAP ID  RULE:</h4>")
                 .append(BR_S)
                 .append(y.toString())
                 .append("</p>");

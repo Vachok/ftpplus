@@ -16,6 +16,8 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.SecureRandom;
 import java.time.Year;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
@@ -50,10 +52,14 @@ public enum ConstantsFor {
 
     public static final Map<Long, HttpServletRequest> VISITS_MAP = new ConcurrentHashMap<>();
 
+    public static final List<String> CONSOLE = new ArrayList<>();
+
     /**
      {@link InitProperties}
      */
     private static InitProperties initProperties;
+
+    public static final ConcurrentMap<String, File> COMPNAME_USERS_MAP = new ConcurrentHashMap<>();
 
     /**
      {@link Properties} приложения
@@ -61,6 +67,8 @@ public enum ConstantsFor {
     public static final Properties PROPS = takePr();
 
     public static final ConcurrentMap<Integer, MailRule> MAIL_RULES = new ConcurrentHashMap<>();
+
+    public static final String ALERT_AD_FOTO = "<p>Для корректной работы, вам нужно положить фото юзеров <a href=\"file://srv-mail3.eatmeat.ru/c$/newmailboxes/fotoraw/\" target=\"_blank\">\\\\srv-mail3.eatmeat.ru\\c$\\newmailboxes\\fotoraw\\</a>\n";
 
     /**
      @param request для получения IP

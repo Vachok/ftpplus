@@ -8,12 +8,12 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.PageFooter;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
 import java.util.List;
 
 
@@ -45,7 +45,7 @@ public class ActDirectoryCTRL {
 
 
     @GetMapping("/ad")
-    public String adUsersComps(HttpServletRequest request, Model model) throws IOException {
+    public String adUsersComps(HttpServletRequest request, Model model) {
         List<ADUser> adUsers = adSrv.userSetter();
         if (request.getQueryString() != null) return queryStringExists(request.getQueryString(), model);
         else {
@@ -75,8 +75,9 @@ public class ActDirectoryCTRL {
         this.photoConverterSRV = photoConverterSRV;
         try {
             model.addAttribute("photoConverterSRV", photoConverterSRV);
-            model.addAttribute("title", "PowerShell. For str-mail3");
+            model.addAttribute("title", "PowerShell. Применить на SRV-MAIL3");
             model.addAttribute("content", photoConverterSRV.psCommands());
+            model.addAttribute("alert", ConstantsFor.ALERT_AD_FOTO);
             model.addAttribute("footer", new PageFooter().getFooterUtext());
         } catch (NullPointerException e) {
             LOGGER.error(e.getMessage(), e);

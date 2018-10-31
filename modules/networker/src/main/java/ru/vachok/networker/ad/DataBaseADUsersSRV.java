@@ -47,7 +47,7 @@ public class DataBaseADUsersSRV {
                 p.executeUpdate();
             }
         } catch (SQLException | IOException e) {
-            LOGGER.error(e.getMessage(), e);
+            return false;
         }
         return true;
     }

@@ -13,6 +13,9 @@ import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.logic.SystemTrayHelper;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.Reader;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -50,6 +53,15 @@ public class IntoApplication {
      @see ru.vachok.networker.controller.MatrixCtr
      */
     public static void main(String[] args) {
+        Thread threadReaderCon = new Thread(() -> {
+            try {
+                conToSocket();
+            } catch (IOException | NullPointerException e) {
+                LOGGER.error(e.getMessage(), e);
+            }
+        });
+        threadReaderCon.setDaemon(true);
+        threadReaderCon.start();
         SystemTrayHelper.addTray("icons8-плохие-поросята-32.png");
         SPRING_APPLICATION.setMainApplicationClass(IntoApplication.class);
         SPRING_APPLICATION.setApplicationContextClass(AppCtx.class);
@@ -71,6 +83,17 @@ public class IntoApplication {
         setWebType();
     }
 
+    private static void conToSocket() throws IOException {
+        Thread.currentThread().checkAccess();
+        Thread.currentThread().setName("CONSOLE READER THREAD");
+        Thread.currentThread().setPriority(1);
+        Reader reader = System.console().reader();
+        BufferedReader bufferedReader = new BufferedReader(reader);
+        while (bufferedReader.ready()) {
+            ConstantsFor.CONSOLE.add(bufferedReader.readLine());
+        }
+    }
+
     /**
      <b>Тип WEB-application</b>
      */
@@ -81,7 +104,7 @@ public class IntoApplication {
         ScheduledExecutorService executorService =
             Executors.unconfigurableScheduledExecutorService(Executors.newSingleThreadScheduledExecutor());
         executorService.scheduleWithFixedDelay(speedRun, ConstantsFor.INIT_DELAY, ConstantsFor.DELAY, TimeUnit.SECONDS);
-        String msg = "Initial Delay checker = " + ConstantsFor.INIT_DELAY + "\nDelay = " + ConstantsFor.DELAY;
+        String msg = "Initial Delay checker = " + ConstantsFor.INIT_DELAY + "\nDelay = " + ConstantsFor.DELAY + "\n" + ConstantsFor.CONSOLE.size();
         LOGGER.warn(msg);
     }
 }

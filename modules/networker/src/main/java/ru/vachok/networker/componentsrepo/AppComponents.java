@@ -16,6 +16,8 @@ import ru.vachok.networker.services.NetScannerSvc;
 import ru.vachok.networker.services.PCUserResolver;
 import ru.vachok.networker.services.SimpleCalculator;
 
+import java.io.File;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -25,6 +27,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.logging.FileHandler;
+import java.util.logging.Handler;
 
 
 @ComponentScan
@@ -32,7 +36,14 @@ public class AppComponents {
 
     @Bean
     public static Logger getLogger() {
-        return LoggerFactory.getLogger("ru_vachok_networker");
+        Logger logger = LoggerFactory.getLogger("ru_vachok_networker");
+        try {
+            Handler handler = new FileHandler();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return logger;
     }
 
     @Bean
@@ -110,5 +121,13 @@ public class AppComponents {
     @Bean
     public ExSRV exSRV() {
         return new ExSRV();
+    }
+
+    @Bean
+    @Scope("Singleton")
+    public ConcurrentMap<String, File> getCompUsersMap() {
+        ConstantsFor.COMPNAME_USERS_MAP.clear();
+        ConstantsFor.COMPNAME_USERS_MAP.put("INIT", new File("."));
+        return ConstantsFor.COMPNAME_USERS_MAP;
     }
 }
