@@ -7,6 +7,7 @@ import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.logic.PassGenerator;
+import ru.vachok.networker.mailserver.MailRule;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
@@ -18,6 +19,7 @@ import java.time.Year;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
 
@@ -57,6 +59,8 @@ public enum ConstantsFor {
      {@link Properties} приложения
      */
     public static final Properties PROPS = takePr();
+
+    public static final ConcurrentMap<Integer, MailRule> MAIL_RULES = new ConcurrentHashMap<>();
 
     /**
      @param request для получения IP

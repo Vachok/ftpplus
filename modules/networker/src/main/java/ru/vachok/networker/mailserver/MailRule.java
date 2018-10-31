@@ -3,13 +3,12 @@ package ru.vachok.networker.mailserver;
 
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.StringJoiner;
 
 /**
  @since 05.10.2018 (10:05) */
-@Component("rulesbean")
-public class RulesBean {
+@Component("mailrule")
+public class MailRule {
 
     private String runspaceId;
 
@@ -23,11 +22,19 @@ public class RulesBean {
 
     private String query;
 
+    private String name;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
     private boolean state;
 
     private String otherFields;
-
-    private List<RulesBean> allRules = new ArrayList<>();
 
     public String getQuery() {
         return query;
@@ -35,14 +42,6 @@ public class RulesBean {
 
     public void setQuery(String query) {
         this.query = query;
-    }
-
-    public List<RulesBean> getAllRules() {
-        return allRules;
-    }
-
-    public void setAllRules(List<RulesBean> allRules) {
-        this.allRules = allRules;
     }
 
     public String getDescription() {
@@ -99,5 +98,18 @@ public class RulesBean {
 
     public void setRunspaceId(String runspaceId) {
         this.runspaceId = runspaceId;
+    }
+
+
+    @Override
+    public String toString() {
+        return new StringJoiner("\n", MailRule.class.getSimpleName() + "\n", "\n")
+            .add("name='" + name + "'\n")
+            .add("state=" + state)
+            .add("actions='" + actions + "'\n")
+            .add("conditions='" + conditions + "'\n")
+            .add("description='" + description + "'\n")
+            .add("exceptions='" + exceptions + "'\n")
+            .toString();
     }
 }

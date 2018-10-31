@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
+import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
 
@@ -27,6 +29,7 @@ public class ExCTRL {
 
     @Autowired
     public ExCTRL(ExSRV exSRV) {
+        ConstantsFor.MAIL_RULES.clear();
         this.exSRV = exSRV;
     }
 
@@ -35,22 +38,32 @@ public class ExCTRL {
         Visitor visitor = new Visitor(request);
         LOGGER.warn(visitor.toString());
         model.addAttribute("exsrv", exSRV);
-        model.addAttribute("title", lastChange());
-        model.addAttribute("file", exSRV.fileAsStrings(true));
+        try {
+            model.addAttribute("title", lastChange());
+            model.addAttribute("file", exSRV.fileAsStrings());
+        } catch (NullPointerException e) {
+            model.addAttribute("title", "No local file!");
+            model.addAttribute("file", "Не могу найти файл...");
+        }
+
         model.addAttribute("footer", new PageFooter().getFooterUtext());
         return "exchange";
     }
 
     private String lastChange() {
         File file = new File(getClass().getResource("/static/texts/rules.txt").getFile());
-        return "From local: " + file.getAbsolutePath();
+        if (!file.exists()) return "No file! " + file.getAbsolutePath();
+        else return "From local: " + file.getAbsolutePath();
     }
 
     @PostMapping("/exchange")
     public String uplFile(@RequestParam MultipartFile file, Model model) {
         exSRV.setFile(file);
+        String s = exSRV.fileAsStrings();
+        String rules = new TForms().fromArrayRules(ConstantsFor.MAIL_RULES, true);
         model.addAttribute("exsrv", exSRV);
-        model.addAttribute("file", exSRV.fileAsStrings(false));
+
+        model.addAttribute("file", rules + s);
         model.addAttribute("title", exSRV.getClass().getSimpleName());
         return "exchange";
     }

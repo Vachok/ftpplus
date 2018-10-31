@@ -12,7 +12,6 @@ import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.ad.ADUser;
 import ru.vachok.networker.mailserver.ExSRV;
-import ru.vachok.networker.mailserver.RulesBean;
 import ru.vachok.networker.services.NetScannerSvc;
 import ru.vachok.networker.services.PCUserResolver;
 import ru.vachok.networker.services.SimpleCalculator;
@@ -110,7 +109,6 @@ public class AppComponents {
 
     @Bean
     public ExSRV exSRV() {
-        RulesBean rulesBean = new RulesBean();
-        return new ExSRV(rulesBean);
+        return new ExSRV();
     }
 }

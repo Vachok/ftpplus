@@ -7,6 +7,7 @@ import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.ADUser;
 import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.mailserver.MailRule;
 
 import javax.mail.Address;
 import javax.servlet.http.Cookie;
@@ -28,6 +29,10 @@ public class TForms {
     private StringBuilder brStringBuilder = new StringBuilder();
 
     private StringBuilder nStringBuilder = new StringBuilder();
+
+    private static final String N_S = "\n";
+
+    private static final String BR_S = "<br>";
 
     public String fromArray(List<String> stringListWithBR) {
         brStringBuilder.append("<p>");
@@ -311,6 +316,26 @@ public class TForms {
                 .append("\n");
         });
         if (b) return brStringBuilder.toString();
+        else return nStringBuilder.toString();
+    }
+
+    public String fromArrayRules(ConcurrentMap<Integer, MailRule> mailRules, boolean br) {
+        mailRules.forEach((x, y) -> {
+            nStringBuilder
+                .append(N_S)
+                .append(x)
+                .append(" MAP ID  RULE:")
+                .append(N_S)
+                .append(y.toString());
+            brStringBuilder
+                .append("<p><center><h4>")
+                .append(x)
+                .append(" MAP ID  RULE:</h4></center>")
+                .append(BR_S)
+                .append(y.toString())
+                .append("</p>");
+        });
+        if (br) return brStringBuilder.toString();
         else return nStringBuilder.toString();
     }
 }
