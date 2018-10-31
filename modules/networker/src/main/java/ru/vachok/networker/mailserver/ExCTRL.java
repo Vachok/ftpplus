@@ -1,6 +1,9 @@
-package ru.vachok.networker.exchange;
+package ru.vachok.networker.mailserver;
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -8,7 +11,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import ru.vachok.networker.componentsrepo.PageFooter;
+import ru.vachok.networker.componentsrepo.Visitor;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 
 /**
@@ -18,12 +23,17 @@ public class ExCTRL {
 
     private ExSRV exSRV;
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ExCTRL.class.getSimpleName());
+
+    @Autowired
     public ExCTRL(ExSRV exSRV) {
         this.exSRV = exSRV;
     }
 
     @GetMapping("/exchange")
-    public String exchangeWorks(Model model) {
+    public String exchangeWorks(Model model, HttpServletRequest request) {
+        Visitor visitor = new Visitor(request);
+        LOGGER.warn(visitor.toString());
         model.addAttribute("exsrv", exSRV);
         model.addAttribute("title", lastChange());
         model.addAttribute("file", exSRV.fileAsStrings(true));

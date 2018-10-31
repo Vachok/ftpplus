@@ -13,7 +13,6 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.*;
 import ru.vachok.networker.logic.SSHFactory;
 import ru.vachok.networker.services.MatrixSRV;
-import ru.vachok.networker.services.VisitorSrv;
 import ru.vachok.networker.services.WhoIsWithSRV;
 
 import javax.servlet.http.HttpServletRequest;
@@ -41,8 +40,6 @@ public class MatrixCtr {
 
     private MatrixSRV matrixSRV;
 
-    private VisitorSrv visitorSrv;
-
     private Visitor visitor;
 
     private VersionInfo versionInfo;
@@ -52,9 +49,7 @@ public class MatrixCtr {
     private static final String FOOTER_NAME = "footer";
 
     @Autowired
-    public MatrixCtr(VisitorSrv visitorSrv, Visitor visitor, VersionInfo versionInfo) {
-        this.visitorSrv = visitorSrv;
-        this.visitor = visitor;
+    public MatrixCtr(VersionInfo versionInfo) {
         this.versionInfo = versionInfo;
     }
 
@@ -69,6 +64,7 @@ public class MatrixCtr {
      */
     @GetMapping("/")
     public String getFirst(final HttpServletRequest request, Model model, HttpServletResponse response) {
+        this.visitor = new Visitor(request);
         String userPC = ConstantsFor.getUserPC(request);
         boolean pcAuth = ConstantsFor.getPcAuth(request);
         if (request.getQueryString() != null) {
@@ -81,7 +77,7 @@ public class MatrixCtr {
             }
         } else {
             try {
-                visitorSrv.makeVisit(request);
+                LOGGER.warn(visitor.toString());
             } catch (Exception ignore) {
                 //
             }
@@ -93,7 +89,7 @@ public class MatrixCtr {
                 ConstantsFor.getUserPC(request).toLowerCase().contains("0:0:0:0")) {
                 model.addAttribute("visit", versionInfo.toString());
             } else {
-                model.addAttribute("visit", visitor.getTimeSt() + " timestamp");
+                model.addAttribute("visit", visitor.getTimeSpend() + " timestamp");
             }
         }
         return "starting";
@@ -121,8 +117,8 @@ public class MatrixCtr {
     public String showResults(HttpServletRequest request, HttpServletResponse response, Model model) throws IOException {
         new Thread(() -> {
             try {
-                visitorSrv.makeVisit(request);
-            } catch (IllegalArgumentException | NoSuchMethodException e) {
+                LOGGER.warn(visitor.toString());
+            } catch (IllegalArgumentException e) {
                 LOGGER.error(e.getMessage(), e);
             }
         }).start();
@@ -155,7 +151,7 @@ public class MatrixCtr {
     @GetMapping("/git")
     public String gitOn(Model model, HttpServletRequest request) {
         try {
-            visitorSrv.makeVisit(request);
+            LOGGER.warn(visitor.toString());
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
         }

@@ -11,9 +11,9 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.PfLists;
+import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.services.PfListsSrv;
-import ru.vachok.networker.services.VisitorSrv;
 
 import javax.naming.TimeLimitExceededException;
 import javax.servlet.http.HttpServletRequest;
@@ -21,7 +21,10 @@ import javax.servlet.http.HttpServletResponse;
 import java.rmi.UnknownHostException;
 import java.security.SecureRandom;
 import java.time.LocalTime;
-import java.util.*;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.*;
 
 
@@ -40,7 +43,7 @@ public class PfListsCtr {
 
     private static final String METRIC_STR = "metric";
 
-    private VisitorSrv visitorSrv;
+    private Visitor visitor;
 
     private PfLists pfLists;
 
@@ -57,9 +60,8 @@ public class PfListsCtr {
 
     /*Instances*/
     @Autowired
-    public PfListsCtr(PfLists pfLists, VisitorSrv visitorSrv, PfListsSrv pfListsSrv) {
+    public PfListsCtr(PfLists pfLists, PfListsSrv pfListsSrv) {
         threadConfig.taskDecorator(makePFLists);
-        this.visitorSrv = visitorSrv;
         this.pfLists = pfLists;
         this.pfListsSrv = pfListsSrv;
         this.pingOK = ConstantsFor.isPingOK();
@@ -67,6 +69,7 @@ public class PfListsCtr {
 
     @GetMapping("/pflists")
     public String pfBean(Model model, HttpServletRequest request, HttpServletResponse response) {
+        this.visitor = new Visitor(request);
         String pflistsStr = "pflists";
         Properties properties = ConstantsFor.PROPS;
         long lastScan = Long.parseLong(properties.getProperty("pfscan", "1"));
@@ -74,8 +77,8 @@ public class PfListsCtr {
 
         if (!pingOK) noPing(model);
         try {
-            visitorSrv.makeVisit(request);
-        } catch (IllegalArgumentException | NoSuchMethodException | NullPointerException e) {
+            LOGGER.warn(visitor.toString());
+        } catch (IllegalArgumentException | NullPointerException e) {
             LOGGER.error(e.getMessage(), e);
         }
         modSet(model);

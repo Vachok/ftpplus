@@ -1,4 +1,4 @@
-package ru.vachok.networker.exchange;
+package ru.vachok.networker.mailserver;
 
 
 import org.springframework.stereotype.Component;
