@@ -56,7 +56,6 @@ public class ADSrv implements Runnable {
         return adComputerADUserMap;
     }
 
-    /*Instances*/
     @Autowired
     public ADSrv(ADUser adUser, ADComputer adComputer) {
         this.adUser = adUser;

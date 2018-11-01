@@ -54,6 +54,10 @@ public enum ConstantsFor {
 
     public static final List<String> CONSOLE = new ArrayList<>();
 
+    public static final String FOOTER = "footer";
+
+    public static final String USERS = "users";
+
     /**
      {@link InitProperties}
      */

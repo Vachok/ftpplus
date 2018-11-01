@@ -26,13 +26,10 @@ public class ActDirectoryCTRL {
 
     private ADSrv adSrv;
 
-    private static final String USERS_SRTING = "users";
-
     private static String inputWithInfoFromDB;
 
     private PhotoConverterSRV photoConverterSRV;
 
-    /*Instances*/
     @Autowired
     public ActDirectoryCTRL(ADSrv adSrv, PhotoConverterSRV photoConverterSRV) {
         this.photoConverterSRV = photoConverterSRV;
@@ -51,22 +48,22 @@ public class ActDirectoryCTRL {
         else {
             ADComputer adComputer = adSrv.getAdComputer();
             model.addAttribute("photoConverter", photoConverterSRV);
-            model.addAttribute("footer", new PageFooter().getFooterUtext());
+            model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext());
             model.addAttribute("pcs", new TForms().adPCMap(adComputer.getAdComputers(), true));
-            model.addAttribute(USERS_SRTING, new TForms().fromADUsersList(adUsers, true));
+            model.addAttribute(ConstantsFor.USERS, new TForms().fromADUsersList(adUsers, true));
         }
         return "ad";
     }
 
     private String queryStringExists(String queryString, Model model) {
         model.addAttribute("title", queryString);
-        model.addAttribute(USERS_SRTING, inputWithInfoFromDB);
+        model.addAttribute(ConstantsFor.USERS, inputWithInfoFromDB);
         try {
             model.addAttribute("details", adSrv.getDetails(queryString));
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
         }
-        model.addAttribute("footer", new PageFooter().getFooterUtext());
+        model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext());
         return "aditem";
     }
 
@@ -78,7 +75,7 @@ public class ActDirectoryCTRL {
             model.addAttribute("title", "PowerShell. Применить на SRV-MAIL3");
             model.addAttribute("content", photoConverterSRV.psCommands());
             model.addAttribute("alert", ConstantsFor.ALERT_AD_FOTO);
-            model.addAttribute("footer", new PageFooter().getFooterUtext());
+            model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext());
         } catch (NullPointerException e) {
             LOGGER.error(e.getMessage(), e);
         }
