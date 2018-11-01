@@ -15,6 +15,9 @@ import java.util.StringJoiner;
 @Component
 public class Visitor {
 
+    public Visitor() {
+    }
+
     public String getSessionID() {
         return sessionID;
     }

@@ -1,4 +1,4 @@
-package ru.vachok.money.components;
+package ru.vachok.money.mycar;
 
 
 import org.slf4j.Logger;
@@ -7,22 +7,32 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 import ru.vachok.money.ConstantsFor;
 import ru.vachok.money.config.ThrAsyncConfigurator;
+import ru.vachok.money.services.TForms;
+import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.RegRuMysql;
 
-import java.sql.*;
+import java.io.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 
 /**
  @since 01.09.2018 (20:26) */
 @Component
 public class MyOpel {
+
     /*Fields*/
     private static MyOpel myOpel = new MyOpel();
 
     public static MyOpel getI() {
         return myOpel;
     }
+
     private static final Connection DEF_CON = new RegRuMysql()
         .getDefaultConnection(ConstantsFor.DB_PREFIX + "liferpg");
 
@@ -37,6 +47,7 @@ public class MyOpel {
     private String carName;
 
     private int countA107;
+
     private int countRiga;
 
     public int getCountA107() {
@@ -133,10 +144,89 @@ public class MyOpel {
         this.avgSpeedA107 = avgSpeedA107;
     }
 
+    String getMAFAverages() {
+        String sql = "SELECT * FROM obdrawdata ORDER BY  'Mass Air Flow Rate(g/s)' DESC LIMIT 0 , 300000";
+        ConcurrentMap<String, Double> mafSensorData = new ConcurrentHashMap<>();
+        ConcurrentMap<String, Double> mafSensorData1 = new ConcurrentHashMap<>();
+        DataConnectTo dataConnectTo = new RegRuMysql();
+        Connection defaultConnection = dataConnectTo.getDefaultConnection(ConstantsFor.DB_PREFIX + "car");
+        try (PreparedStatement preparedStatement = defaultConnection.prepareStatement(sql)) {
+            try (PreparedStatement preparedStatement1 = defaultConnection.prepareStatement(sql.replace("obdrawdata", "milcelon"))) {
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        String gpsTime = resultSet.getString("GPS Time");
+                        double resultSetDouble = resultSet.getDouble("Mass Air Flow Rate(g/s)");
+                        mafSensorData.put(gpsTime, resultSetDouble);
+                    }
+                    try (ResultSet resultSet1 = preparedStatement1.executeQuery()) {
+                        while (resultSet1.next()) {
+                            String gpsTime = resultSet1.getString("GPS Time");
+                            double resultSetDouble = resultSet1.getDouble("Mass Air Flow Rate(g/s)");
+                            mafSensorData1.put(gpsTime, resultSetDouble);
+                        }
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            return e.getMessage() + "<br><textarea>" + new TForms().toStringFromArray(e) + "</textarea>";
+        }
+        Collection<Double> values = mafSensorData.values();
+        Collection<Double> values1 = mafSensorData1.values();
+        List<Double> vList = new ArrayList<>();
+        List<Double> vList1 = new ArrayList<>();
+        vList.addAll(values);
+        vList1.addAll(values1);
+        double value = 0.0;
+        double value1 = 0.0;
+        for (int i = 0; i < vList.size(); i++) {
+            value = value + vList.get(i);
+        }
+        value = value / vList.size();
+        for (int i = 0; i < vList1.size(); i++) {
+            value1 = value1 + vList.get(i);
+        }
+        value1 = value1 / vList1.size();
+        String s = "<h2>Расход воздуха: " + value + " Normal Mass Air Flow rate g/s (v) || <font color=\"yellow\">" + value1 + " NOW</font> (v1) || diff (v-v1) is <i>" + (value - value1) + "</i></h2>";
+        try {
+            File file = new File("maf.txt");
+            if (!file.exists()) {
+                String newFile = "File is new = " + file.createNewFile();
+                LOGGER.info(newFile);
+            }
+            writeToFile(s, file);
+        } catch (IOException ignore) {
+            //
+        }
+        return s;
+    }
+
+    private void writeToFile(String s, File file) {
+        try (InputStream inputStream = new FileInputStream(file);
+             InputStreamReader reader = new InputStreamReader(inputStream);
+             BufferedReader br = new BufferedReader(reader)) {
+            StringBuilder sBuilder = new StringBuilder(s);
+            while (reader.ready()) {
+                sBuilder
+                    .append("\n")
+                    .append(br.readLine())
+                    .append("\n");
+            }
+            s = sBuilder.toString();
+            try (OutputStream outputStream = new FileOutputStream(file);
+                 OutputStreamWriter writer = new OutputStreamWriter(outputStream);
+                 BufferedWriter bw = new BufferedWriter(writer)) {
+                bw.write(s);
+            }
+        } catch (IOException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+    }
+
     /*Get&Set*/
     private void setAvgSpeedRiga(double avgSpeedRiga) {
         this.avgSpeedRiga = avgSpeedRiga;
     }
+
     private MyOpel() {
         ThreadPoolTaskExecutor defaultExecutor = new ThrAsyncConfigurator().getDefaultExecutor();
         defaultExecutor.initialize();
@@ -147,37 +237,35 @@ public class MyOpel {
         defaultExecutor.execute(runnable);
     }
 
-    /*Instances*/
     /**
      <b>Среднее по Бетонке</b>
      */
     private Map<String, Double> avgInfo(int road) {
         List<Double> speedsDoubles = new ArrayList<>();
         List<Double> timeDoubles = new ArrayList<>();
-        try(PreparedStatement ps = DEF_CON.prepareStatement("select * from speed where Road = ?")){
+        try (PreparedStatement ps = DEF_CON.prepareStatement("select * from speed where Road = ?")) {
             ps.setInt(1, road);
-            try(ResultSet r = ps.executeQuery()){
-                while(r.next()){
+            try (ResultSet r = ps.executeQuery()) {
+                while (r.next()) {
                     speedsDoubles.add(r.getDouble(SPEED));
                     timeDoubles.add(r.getDouble("TimeSpend"));
                 }
-                if(r.last() && road==0){
+                if (r.last() && road == 0) {
                     setLastTimeA107(r.getString("TimeStamp"));
                 }
-                if(r.last() && road==1){
+                if (r.last() && road == 1) {
                     setLastTimeNRiga(r.getString("TimeStamp"));
                 }
             }
-        }
-        catch(SQLException e){
+        } catch (SQLException e) {
             LOGGER.error(e.getMessage(), e);
 
         }
-        if(road==0){
+        if (road == 0) {
             setCountA107(speedsDoubles.size());
             return getRet(speedsDoubles, timeDoubles);
         }
-        if(road==1){
+        if (road == 1) {
             setCountRiga(speedsDoubles.size());
             return getRet(speedsDoubles, timeDoubles);
         }
@@ -186,7 +274,7 @@ public class MyOpel {
 
     private Map<String, Double> getRet(List<Double> speedsDoubles, List<Double> timeDoubles) throws NoSuchElementException {
         Map<String, Double> retMap = new HashMap<>();
-        (( ArrayList<Double> ) speedsDoubles).trimToSize();
+        ((ArrayList<Double>) speedsDoubles).trimToSize();
         OptionalDouble avgSpeed = speedsDoubles.stream().mapToDouble(x -> x).average();
         OptionalDouble averTime = timeDoubles.stream().mapToDouble(x -> x).average();
         retMap.put("speed", avgSpeed.getAsDouble());
