@@ -27,9 +27,12 @@ public class ChooseYouDestiny {
         for(int i = 0; i < strings.length; i++){
             if(strings[i].toLowerCase().contains(", ")){
                 strings[i] = String.valueOf(properties.getOrDefault("ans", "Тогда выбери: <br>"));
+                return strings[i] + strings[secureRandom];
             }
-            return strings[i] + strings[secureRandom];
+            else{
+                return strings[secureRandom];
+            }
         }
-        return strings[secureRandom];
+        throw new IllegalStateException();
     }
 }
