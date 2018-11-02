@@ -39,10 +39,10 @@ public class ExCTRL {
         LOGGER.warn(visitor.toString());
         model.addAttribute("exsrv", exSRV);
         try {
-            model.addAttribute("title", lastChange());
+            model.addAttribute(ConstantsFor.TITLE, lastChange());
             model.addAttribute("file", exSRV.fileAsStrings());
         } catch (NullPointerException e) {
-            model.addAttribute("title", "No local file!");
+            model.addAttribute(ConstantsFor.TITLE, "No local file!");
             model.addAttribute("file",
                 new StringBuilder()
                     .append("Необходимо запустить на сервере <b>Exchange</b> Power Shell Script:")
@@ -65,15 +65,16 @@ public class ExCTRL {
     public String uplFile(@RequestParam MultipartFile file, Model model) {
         exSRV.setFile(file);
         String s = new StringBuilder()
-            .append("Содержимое файла<br><textarea>")
-            .append(exSRV.fileAsStrings())
+            .append("Содержимое других полей:<br><textarea>")
+            .append(exSRV.getOFields())
             .append("</textarea>")
             .toString();
         String rules = new TForms().fromArrayRules(ConstantsFor.MAIL_RULES, true);
         model.addAttribute("exsrv", exSRV);
         model.addAttribute("file", rules + s);
-        model.addAttribute("title", ConstantsFor.MAIL_RULES.size() + " rules in " +
+        model.addAttribute(ConstantsFor.TITLE, ConstantsFor.MAIL_RULES.size() + " rules in " +
             exSRV.getFile().getSize() / ConstantsFor.KBYTE + " kb file");
+        model.addAttribute("otherfields", exSRV.getOFields());
         model.addAttribute("footer", new PageFooter().getFooterUtext());
         return "exchange";
     }

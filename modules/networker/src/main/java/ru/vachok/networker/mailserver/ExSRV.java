@@ -9,9 +9,16 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 
 import java.io.*;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentMap;
+import java.util.function.Consumer;
 
 /**
  @since 05.10.2018 (9:56) */
@@ -30,6 +37,23 @@ public class ExSRV {
 
     public void setFile(MultipartFile file) {
         this.file = file;
+        fileAsStrings();
+    }
+
+    String getOFields() {
+
+        StringBuilder stringBuilder = new StringBuilder();
+        Consumer<String> consumer = (x) -> stringBuilder
+            .append(x)
+            .append("\n");
+        try {
+            for (MailRule mailRule : ConstantsFor.MAIL_RULES.values()) {
+                mailRule.getOtherFields().forEach(consumer);
+            }
+        } catch (NullPointerException ignore) {
+            //
+        }
+        return stringBuilder.toString();
     }
 
     String fileAsStrings() {
@@ -56,11 +80,10 @@ public class ExSRV {
             LOGGER.error(e.getMessage(), e);
             getStaticRulesFile();
         }
-        readRule(0);
+        readRule();
     }
 
     private void getStaticRulesFile() {
-
         try (InputStream inputStream = getClass().getResourceAsStream("/static/texts/rules.txt");
              InputStreamReader reader = new InputStreamReader(inputStream)) {
             BufferedReader bufferedReader = new BufferedReader(reader);
@@ -70,20 +93,20 @@ public class ExSRV {
         } catch (IOException | NullPointerException e) {
             LOGGER.error(e.getMessage(), e);
         }
-        readRule(0);
+        readRule();
     }
 
-    private void readRule(int start) {
-        List<String> sub = fileAsList.subList(start, fileAsList.size());
-        for (int index = 0; index < sub.size(); index++) {
-            String s1 = null;
+    private void readRule() {
+
+        for (String s : fileAsList) {
+            int index = fileAsList.indexOf(s);
             try {
-                s1 = new String(sub.get(index).getBytes(), "UNICODE");
-            } catch (UnsupportedEncodingException e) {
-                LOGGER.error(e.getMessage(), e);
-            }
-            if (s1 != null && s1.contains("Priority")) {
-                setRule(index);
+                s = new String(s.getBytes(), "UNICODE");
+                if (s.contains("Priority")) {
+                    setRule(index);
+                }
+            } catch (UnsupportedEncodingException | CharacterCodingException e) {
+                LOGGER.warn(e.getMessage());
             }
         }
         String msg = new TForms().fromArrayRules(ConstantsFor.MAIL_RULES, false);
@@ -92,25 +115,52 @@ public class ExSRV {
         LOGGER.warn(msg);
     }
 
-    private void setRule(int start) {
+    private void setRule(int start) throws CharacterCodingException, UnsupportedEncodingException {
+
+        ConcurrentMap<Integer, MailRule> map = ConstantsFor.MAIL_RULES;
         MailRule newRule = new MailRule();
+        List<String> otherFields = new ArrayList<>();
+        newRule.setRuleID(start);
         List<String> ruleList = fileAsList.subList(start, fileAsList.size());
         for (int i = 0; i < ruleList.size(); i++) {
-            String s = ruleList.get(i);
-            if (s.toLowerCase().contains("description")) newRule.setDescription(s);
-            if (s.toLowerCase().contains("conditions")) newRule.setConditions(s);
-            if (s.toLowerCase().contains("exceptions")) newRule.setExceptions(s);
-            if (s.toLowerCase().contains("actions")) newRule.setActions(s);
-            if (s.toLowerCase().contains("query")) newRule.setQuery(s);
-            if (s.toLowerCase().contains("name")) newRule.setName(s);
-            if (s.contains("0.1 (8.0.535.0)")) {
-                ConstantsFor.MAIL_RULES.put(ruleList.size() - start, newRule);
-                break;
+            String s1 = new String(ruleList.get(i).getBytes(), "UNICODE");
+            String s = encodeTo(s1);
+            try {
+                if (s.toLowerCase().contains("description")) newRule.setDescription(s.split(" : ")[1]);
+                if (s.toLowerCase().contains("conditions")) newRule.setConditions(s.split(" : ")[1]);
+                if (s.toLowerCase().contains("exceptions")) newRule.setExceptions(s.split(" : ")[1]);
+                if (s.toLowerCase().contains("actions")) newRule.setActions(s.split(" : ")[1]);
+                if (s.toLowerCase().contains("query")) newRule.setQuery(s.split(" : ")[1]);
+                if (s.toLowerCase().contains("name")) newRule.setName(s.split(" : ")[1]);
+                if (s.toLowerCase().contains("state")) newRule.setName(s.split(" : ")[1]);
+                if (s.contains("0.1 (8.0.535.0)")) {
+                    map.put(ruleList.size() - start, newRule);
+                    break;
+                } else otherFields.add(s);
+            } catch (ArrayIndexOutOfBoundsException e) {
+                otherFields.add(s);
+                String msg = otherFields.size() + " otherFields";
+                LOGGER.warn(msg);
             }
         }
-
-        String msg = start + " start. End rule.\nRULE ID IS " + (ruleList.size() - start);
+        String msg = newRule.getRuleID() + " ID. End rule.\nRULE name IS " + newRule.getName() + ", rules size is " + ConstantsFor.MAIL_RULES.size();
         LOGGER.warn(msg);
-        if (ruleList.size() - start > 6) readRule(ruleList.size() - start);
+        newRule.setOtherFields(otherFields);
     }
+
+    private String encodeTo(String s1) throws CharacterCodingException {
+        CharsetEncoder utf8 = StandardCharsets.UTF_8.newEncoder();
+        CharsetEncoder defEncoder = Charset.defaultCharset().newEncoder();
+        char[] chars = new char[s1.length()];
+        s1.getChars(0, s1.length(), chars, 0);
+        CharBuffer wrap = CharBuffer.wrap(chars);
+        ByteBuffer encode = utf8.encode(wrap);
+        encode.asCharBuffer().append(wrap);
+        String s = new String(encode.array());
+        encode = defEncoder.encode(wrap);
+        s = s + " | " + new String(encode.array());
+        return s;
+    }
+
+
 }

@@ -3,6 +3,7 @@ package ru.vachok.networker.mailserver;
 
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.StringJoiner;
 
 /**
@@ -11,6 +12,14 @@ import java.util.StringJoiner;
 public class MailRule {
 
     private String runspaceId;
+
+    private int ruleID;
+
+    private List<String> otherFields;
+
+    public int getRuleID() {
+        return ruleID;
+    }
 
     private String description;
 
@@ -24,6 +33,18 @@ public class MailRule {
 
     private String name;
 
+    public void setRuleID(int ruleID) {
+        this.ruleID = ruleID;
+    }
+
+    public List<String> getOtherFields() throws NullPointerException {
+        return otherFields;
+    }
+
+    public void setOtherFields(List<String> otherFields) {
+        this.otherFields = otherFields;
+    }
+
     public String getName() {
         return name;
     }
@@ -33,8 +54,6 @@ public class MailRule {
     }
 
     private boolean state;
-
-    private String otherFields;
 
     public String getQuery() {
         return query;
@@ -82,14 +101,6 @@ public class MailRule {
 
     public void setState(boolean state) {
         this.state = state;
-    }
-
-    public String getOtherFields() {
-        return otherFields;
-    }
-
-    public void setOtherFields(String otherFields) {
-        this.otherFields = otherFields;
     }
 
     public String getRunspaceId() {

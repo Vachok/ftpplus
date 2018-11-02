@@ -58,6 +58,8 @@ public enum ConstantsFor {
 
     public static final String USERS = "users";
 
+    public static final String TITLE = "title";
+
     /**
      {@link InitProperties}
      */
