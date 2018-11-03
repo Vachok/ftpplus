@@ -20,7 +20,7 @@ public class AppFooter {
             .append(razDel)
             .append("<a href=\"/chkcar\">Roads checker</a>")
             .append(razDel)
-            .append("<a href=\"/ftp\">FTP</a>")
+            .append("<a href=\"/carinfo\">MAF sensor</a>")
             .append(razDel)
             .append("<a href=\"/money\">Money</a>")
             .append(razDel)
