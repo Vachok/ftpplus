@@ -7,15 +7,11 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 import ru.vachok.money.ConstantsFor;
 import ru.vachok.money.config.ThrAsyncConfigurator;
-import ru.vachok.money.services.TForms;
 import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.RegRuMysql;
 
 import java.io.*;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -143,9 +139,35 @@ public class MyOpel {
     public void setAvgSpeedA107(double avgSpeedA107) {
         this.avgSpeedA107 = avgSpeedA107;
     }
+    /*Get&Set*/
 
-    String getMAFAverages() {
-        String sql = "SELECT * FROM obdrawdata ORDER BY  'Mass Air Flow Rate(g/s)' DESC LIMIT 0 , 300000";
+    private void writeToFile(String s, File file) {
+        try(InputStream inputStream = new FileInputStream(file);
+            InputStreamReader reader = new InputStreamReader(inputStream);
+            BufferedReader br = new BufferedReader(reader)){
+            StringBuilder sBuilder = new StringBuilder(s);
+            while(reader.ready()){
+                sBuilder
+                    .append("\n")
+                    .append(br.readLine())
+                    .append("\n");
+            }
+            s = sBuilder.toString();
+            try(OutputStream outputStream = new FileOutputStream(file);
+                OutputStreamWriter writer = new OutputStreamWriter(outputStream);
+                BufferedWriter bw = new BufferedWriter(writer)){
+                bw.write(s);
+            }
+        }
+        catch(IOException e){
+            LOGGER.error(e.getMessage(), e);
+        }
+    }
+
+    String getMAFAverages(int rowsCount) {
+        String sql = new StringBuilder()
+            .append("SELECT * FROM obdrawdata ORDER BY  'Mass Air Flow Rate(g/s)' DESC LIMIT 0 , ")
+            .append(rowsCount).toString();
         ConcurrentMap<String, Double> mafSensorData = new ConcurrentHashMap<>();
         ConcurrentMap<String, Double> mafSensorData1 = new ConcurrentHashMap<>();
         DataConnectTo dataConnectTo = new RegRuMysql();
@@ -168,7 +190,16 @@ public class MyOpel {
                 }
             }
         } catch (SQLException e) {
-            return e.getMessage() + "<br><textarea>" + new TForms().toStringFromArray(e) + "</textarea>";
+            String msg = "tryed " + rowsCount + " rows".toUpperCase() + "\n" + e.getMessage();
+            LOGGER.warn(msg);
+            if(rowsCount > 30000){
+                String msg1 = rowsCount + " returned".toUpperCase();
+                LOGGER.info(msg1);
+                return getMAFAverages(rowsCount - 29999);
+            }
+            else{
+                return e.getMessage();
+            }
         }
         Collection<Double> values = mafSensorData.values();
         Collection<Double> values1 = mafSensorData1.values();
@@ -199,30 +230,6 @@ public class MyOpel {
         }
         return s;
     }
-
-    private void writeToFile(String s, File file) {
-        try (InputStream inputStream = new FileInputStream(file);
-             InputStreamReader reader = new InputStreamReader(inputStream);
-             BufferedReader br = new BufferedReader(reader)) {
-            StringBuilder sBuilder = new StringBuilder(s);
-            while (reader.ready()) {
-                sBuilder
-                    .append("\n")
-                    .append(br.readLine())
-                    .append("\n");
-            }
-            s = sBuilder.toString();
-            try (OutputStream outputStream = new FileOutputStream(file);
-                 OutputStreamWriter writer = new OutputStreamWriter(outputStream);
-                 BufferedWriter bw = new BufferedWriter(writer)) {
-                bw.write(s);
-            }
-        } catch (IOException e) {
-            LOGGER.error(e.getMessage(), e);
-        }
-    }
-
-    /*Get&Set*/
     private void setAvgSpeedRiga(double avgSpeedRiga) {
         this.avgSpeedRiga = avgSpeedRiga;
     }

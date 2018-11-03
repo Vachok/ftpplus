@@ -7,6 +7,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import ru.vachok.money.ConstantsFor;
 import ru.vachok.money.components.AppFooter;
 import ru.vachok.money.components.Visitor;
 
@@ -52,7 +53,13 @@ public class CarDatabase {
     @GetMapping("/carinfo")
     public String defInfo(Model model) {
         model.addAttribute("title", "MAF");
-        String mafAverages = myOpel.getMAFAverages();
+        String mafAverages;
+        try{
+            mafAverages = myOpel.getMAFAverages(ConstantsFor.rowsCount);
+        }
+        catch(IndexOutOfBoundsException e){
+            mafAverages = e.getLocalizedMessage();
+        }
         model.addAttribute("info", mafAverages);
         model.addAttribute("footer", new AppFooter().getTheFooter());
         return CAR_DB;
