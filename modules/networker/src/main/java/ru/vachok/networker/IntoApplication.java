@@ -12,10 +12,9 @@ import ru.vachok.mysqlandprops.EMailAndDB.SpeedRunActualize;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.logic.SystemTrayHelper;
+import ru.vachok.networker.services.MyServer;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.Reader;
+import java.io.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -29,6 +28,8 @@ import java.util.concurrent.TimeUnit;
 @SpringBootApplication
 @EnableScheduling
 public class IntoApplication {
+
+    /*Fields*/
 
     /**
      {@link AppComponents#getLogger()}
@@ -53,21 +54,36 @@ public class IntoApplication {
      @see ru.vachok.networker.controller.MatrixCtr
      */
     public static void main(String[] args) {
-        Thread threadReaderCon = new Thread(() -> {
-            try {
-                conToSocket();
-            } catch (IOException | NullPointerException e) {
-                LOGGER.error(e.getMessage(), e);
-            }
-        });
-        threadReaderCon.setDaemon(true);
-        threadReaderCon.start();
         SystemTrayHelper.addTray("icons8-плохие-поросята-32.png");
         SPRING_APPLICATION.setMainApplicationClass(IntoApplication.class);
         SPRING_APPLICATION.setApplicationContextClass(AppCtx.class);
         System.setProperty("file.encoding", "UTF8");
         SpringApplication.run(IntoApplication.class, args);
         infoForU(appCtx);
+    }
+
+    private static void conToSocket() throws IOException {
+        Thread.currentThread().checkAccess();
+        Thread.currentThread().setName("CONSOLE READER THREAD");
+        Thread.currentThread().setPriority(1);
+        new Thread(() -> new MyServer().run());
+        Reader reader = System.console().reader();
+        BufferedReader bufferedReader = new BufferedReader(reader);
+        while(bufferedReader.ready()){
+            try(OutputStreamWriter outputStream = new FileWriter("con.log")){
+                String readLine = bufferedReader.readLine();
+                BufferedWriter writer = new BufferedWriter(outputStream);
+                ConstantsFor.CONSOLE.add(readLine);
+                writer.flush();
+                char[] sequence = readLine.toCharArray();
+                for(char c : sequence){
+                    writer.append(c);
+                }
+            }
+            catch(IOException e){
+                LOGGER.error(e.getMessage(), e);
+            }
+        }
     }
 
     /**
@@ -83,17 +99,6 @@ public class IntoApplication {
         setWebType();
     }
 
-    private static void conToSocket() throws IOException {
-        Thread.currentThread().checkAccess();
-        Thread.currentThread().setName("CONSOLE READER THREAD");
-        Thread.currentThread().setPriority(1);
-        Reader reader = System.console().reader();
-        BufferedReader bufferedReader = new BufferedReader(reader);
-        while (bufferedReader.ready()) {
-            ConstantsFor.CONSOLE.add(bufferedReader.readLine());
-        }
-    }
-
     /**
      <b>Тип WEB-application</b>
      */
@@ -106,5 +111,9 @@ public class IntoApplication {
         executorService.scheduleWithFixedDelay(speedRun, ConstantsFor.INIT_DELAY, ConstantsFor.DELAY, TimeUnit.SECONDS);
         String msg = "Initial Delay checker = " + ConstantsFor.INIT_DELAY + "\nDelay = " + ConstantsFor.DELAY + "\n" + ConstantsFor.CONSOLE.size();
         LOGGER.warn(msg);
+    }
+
+    private static void run() {
+        new MyServer().run();
     }
 }
