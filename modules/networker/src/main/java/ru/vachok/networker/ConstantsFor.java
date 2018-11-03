@@ -16,10 +16,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.SecureRandom;
 import java.time.Year;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
@@ -72,6 +69,7 @@ public enum ConstantsFor {
      */
     public static final Properties PROPS = takePr();
 
+    public static final int LISTEN_PORT = Integer.parseInt(PROPS.getOrDefault("lport", "9990").toString());
     public static final ConcurrentMap<Integer, MailRule> MAIL_RULES = new ConcurrentHashMap<>();
 
     public static final String ALERT_AD_FOTO = "<p>Для корректной работы, вам нужно положить фото юзеров <a href=\"file://srv-mail3.eatmeat.ru/c$/newmailboxes/fotoraw/\" target=\"_blank\">\\\\srv-mail3.eatmeat.ru\\c$\\newmailboxes\\fotoraw\\</a>\n";

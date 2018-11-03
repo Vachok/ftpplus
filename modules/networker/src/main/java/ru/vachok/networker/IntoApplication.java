@@ -12,7 +12,6 @@ import ru.vachok.mysqlandprops.EMailAndDB.SpeedRunActualize;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.logic.SystemTrayHelper;
-import ru.vachok.networker.services.MyServer;
 
 import java.io.*;
 import java.util.concurrent.Executors;
@@ -60,13 +59,14 @@ public class IntoApplication {
         System.setProperty("file.encoding", "UTF8");
         SpringApplication.run(IntoApplication.class, args);
         infoForU(appCtx);
+
     }
 
     private static void conToSocket() throws IOException {
         Thread.currentThread().checkAccess();
         Thread.currentThread().setName("CONSOLE READER THREAD");
         Thread.currentThread().setPriority(1);
-        new Thread(() -> new MyServer().run());
+
         Reader reader = System.console().reader();
         BufferedReader bufferedReader = new BufferedReader(reader);
         while(bufferedReader.ready()){
@@ -111,9 +111,5 @@ public class IntoApplication {
         executorService.scheduleWithFixedDelay(speedRun, ConstantsFor.INIT_DELAY, ConstantsFor.DELAY, TimeUnit.SECONDS);
         String msg = "Initial Delay checker = " + ConstantsFor.INIT_DELAY + "\nDelay = " + ConstantsFor.DELAY + "\n" + ConstantsFor.CONSOLE.size();
         LOGGER.warn(msg);
-    }
-
-    private static void run() {
-        new MyServer().run();
     }
 }

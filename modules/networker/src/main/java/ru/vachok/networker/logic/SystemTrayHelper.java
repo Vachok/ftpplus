@@ -7,12 +7,12 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.ThreadConfig;
+import ru.vachok.networker.services.MyServer;
 
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.URI;
+import java.net.*;
 import java.util.concurrent.*;
 
 
@@ -24,6 +24,8 @@ public class SystemTrayHelper {
 
     private static SystemTrayHelper s = new SystemTrayHelper();
 
+    /*Fields*/
+
     private SystemTrayHelper() {
     }
 
@@ -31,7 +33,7 @@ public class SystemTrayHelper {
         return s;
     }
 
-    /*Fields*/
+    private static final Socket socket = new Socket();
     private static final Logger LOGGER = LoggerFactory.getLogger(SystemTrayHelper.class.getSimpleName());
 
     public static void addTray(String iconFileName) {
@@ -87,9 +89,17 @@ public class SystemTrayHelper {
     }
 
     private static void additionalItems(PopupMenu popupMenu) {
+        MyServer myServer = MyServer.getI();
         ThreadConfig threadConfig = new ThreadConfig();
         ThreadPoolTaskExecutor executor = threadConfig.threadPoolTaskExecutor();
+        try(ServerSocket serverSocket = new ServerSocket(9990)){
+            Runnable runnable = myServer::run;
+            executor.execute(runnable);
+        }
+        catch(IOException e){
+        }
         MenuItem gitStartWeb = new MenuItem();
+
         gitStartWeb.addActionListener(actionEvent -> {
             Callable<String> sshStr = () -> new SSHFactory
                 .Builder(ConstantsFor
@@ -108,6 +118,19 @@ public class SystemTrayHelper {
         });
         gitStartWeb.setLabel("GIT WEB ON");
         popupMenu.add(gitStartWeb);
+        MenuItem conToSoc = new MenuItem();
+        conToSoc.setLabel("To telnet");
+        conToSoc.addActionListener(e -> {
+            executor.execute(myServer);
+        });
+        popupMenu.add(conToSoc);
+        MenuItem toConsole = new MenuItem();
+        toConsole.setLabel("Console Back");
+        toConsole.addActionListener(e -> {
+            myServer.stop();
+            System.setOut(System.err);
+        });
+        popupMenu.add(toConsole);
     }
 
     private static boolean srvGitIs() {
