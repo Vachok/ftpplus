@@ -1,6 +1,7 @@
 package ru.vachok.money.mycar;
 
 
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -19,6 +20,7 @@ import javax.servlet.http.HttpServletRequest;
 @Controller
 public class CarDatabase {
 
+    /*Fields*/
     private static final String CAR_DB = "car_db";
 
     private MyOpel myOpel;
@@ -32,35 +34,37 @@ public class CarDatabase {
         this.visitor = new Visitor();
     }
 
-    @GetMapping("/chkcar")
+    @GetMapping ("/chkcar")
     public String showEngineTMP(Model model, HttpServletRequest request) {
         visitor.setRequest(request);
         model.addAttribute("myOpel", myOpel);
         model.addAttribute("title", "Average speeds");
         String roadStat = "<center><p>" + myOpel.getAvgSpeedA107() + " A107<br>            " + myOpel.getAvgSpeedRiga() + " Novoriga</p>" +
-            "<p>" + myOpel.getLastTimeA107() + " по A107. (" + myOpel.getCountA107() + " total)" + ";<br>" + myOpel.getLastTimeNRiga() + " по Риге.(" + myOpel.getCountRiga() + " total);" + "</p></center>";
+            "<p>" + myOpel.getLastTimeA107() + " по A107. (" + myOpel.getCountA107() + " total)" + ";<br>" + myOpel.getLastTimeNRiga() + " по Риге.(" + myOpel.getCountRiga() + " total);" + "</p" +
+            "></center>";
         model.addAttribute("roadStat", roadStat);
         model.addAttribute("footer", new AppFooter().getTheFooter());
         return CAR_DB;
     }
 
-    @PostMapping("/carinfo")
+    @PostMapping ("/carinfo")
     public String carInfo(@ModelAttribute MyOpel myOpel) {
         this.myOpel = myOpel;
         return "redirect:/" + CAR_DB;
     }
 
-    @GetMapping("/carinfo")
+    @GetMapping ("/carinfo")
     public String defInfo(Model model) {
         model.addAttribute("title", "MAF");
-        String mafAverages;
+
         try{
-            mafAverages = myOpel.getMAFAverages(ConstantsFor.rowsCount);
+            String mafAverages = myOpel.getMAFAverages(ConstantsFor.ROWS_COUNT);
+            model.addAttribute("info", mafAverages);
         }
         catch(IndexOutOfBoundsException e){
-            mafAverages = e.getLocalizedMessage();
+            LoggerFactory.getLogger(this.getClass().getSimpleName());
         }
-        model.addAttribute("info", mafAverages);
+
         model.addAttribute("footer", new AppFooter().getTheFooter());
         return CAR_DB;
     }

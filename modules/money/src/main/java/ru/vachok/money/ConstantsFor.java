@@ -7,6 +7,7 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.messenger.email.ESender;
 import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
+import ru.vachok.mysqlandprops.props.InitProperties;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -24,11 +25,11 @@ import java.util.function.Function;
 public enum ConstantsFor {
     ;
 
+
     /**
      Кол-во байт в мегабайте
      */
     public static final int MEGABYTE = 1024 * 1024;
-
 
     /**
      Название приложения, для поиска properties
@@ -41,7 +42,6 @@ public enum ConstantsFor {
 
     public static final float FILES_TO_ENC_BLOCK = 111.0f;
 
-    public static final int rowsCount = 300000;
 
     public static final String DB_PREFIX = "u0466446_";
 
@@ -66,6 +66,11 @@ public enum ConstantsFor {
         emailMe.info(ConstantsFor.APP_NAME, className + " ok", msg);
     }).start();
 
+    public static final InitProperties DB_REG = new DBRegProperties(APP_NAME + ConstantsFor.class.getSimpleName());
+
+    public static final Properties PROPERTIES = DB_REG.getProps();
+
+    public static final int ROWS_COUNT = Integer.parseInt(PROPERTIES.getOrDefault("rows", "300000").toString());
     /**
      Кол-во байт в килобайте
      */
@@ -122,6 +127,4 @@ public enum ConstantsFor {
             return e.getMessage();
         }
     }
-
-    public static final Properties PROPERTIES = new DBRegProperties(APP_NAME + ConstantsFor.class.getSimpleName()).getProps();
 }

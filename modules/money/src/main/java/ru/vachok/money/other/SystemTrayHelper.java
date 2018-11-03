@@ -18,12 +18,10 @@ import java.util.Properties;
  @since 29.09.2018 (22:33) */
 public class SystemTrayHelper {
     /*Fields*/
-    private static InitProperties initProperties = new DBRegProperties(ConstantsFor.APP_NAME + SystemTrayHelper.class.getSimpleName());
     private static final Logger LOGGER = LoggerFactory.getLogger(SystemTrayHelper.class.getSimpleName());
 
-    private static Properties properties = new Properties();
-
     public void addTrayDefaultMinimum() {
+        InitProperties initProperties = new DBRegProperties(ConstantsFor.APP_NAME + SystemTrayHelper.class.getSimpleName());
         Properties properties = initProperties.getProps();
         SystemTray systemTray = SystemTray.getSystemTray();
         String defaultValue = "/static/images/icons8-монеты-15.png";
