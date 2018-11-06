@@ -169,7 +169,6 @@ public class MyServer extends Thread {
         System.setOut(new PrintStream(socket.getOutputStream()));
         printWriter.println(( float ) (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN + " | " + ConstantsFor.APP_NAME);
         printWriter.println("NEW SOCKET: " + socket.toString());
-        Thread.sleep(new SecureRandom().nextInt(15));
         while(inputStream.available() > 0){
             byte[] bytes = new byte[3];
             int read = inputStream.read(bytes);
