@@ -31,7 +31,16 @@ public class MyServer extends Thread {
 
     private static MyServer myServer = new MyServer();
 
+    /*Get&Set*/
+    public static void setSocket(Socket socket) {
+        MyServer.socket = socket;
+    }
+
     private static ServerSocket serverSocket;
+
+    public static ServerSocket getServerSocket() {
+        return serverSocket;
+    }
 
     private static Socket socket;
 

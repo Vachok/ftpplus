@@ -4,19 +4,23 @@ package ru.vachok.networker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.net.MyServer;
+import ru.vachok.networker.services.DBMessenger;
 
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.URI;
 import java.util.concurrent.*;
 
-import static java.lang.System.err;
+import static java.lang.System.*;
 
 
 /**
@@ -28,6 +32,9 @@ public class SystemTrayHelper {
     private static SystemTrayHelper s = new SystemTrayHelper();
 
     /*Fields*/
+    private static final Logger LOGGER = LoggerFactory.getLogger(SystemTrayHelper.class.getSimpleName());
+
+    private static MessageToUser messageToUser = new DBMessenger();
 
     private SystemTrayHelper() {
     }
@@ -36,7 +43,6 @@ public class SystemTrayHelper {
         return s;
     }
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SystemTrayHelper.class.getSimpleName());
 
     public static void addTray(String iconFileName) {
         SystemTray systemTray = SystemTray.getSystemTray();
@@ -68,7 +74,7 @@ public class SystemTrayHelper {
         };
         ActionListener exitApp = e -> {
             ConstantsFor.saveProps();
-            System.exit(0);
+            exit(0);
         };
 
         additionalItems(popupMenu);
@@ -116,22 +122,31 @@ public class SystemTrayHelper {
         MenuItem conToSoc = new MenuItem();
         conToSoc.setLabel("To telnet");
         conToSoc.addActionListener(e -> {
-            thread.start();
+            try{
+                reconSock();
+            }
+            catch(IOException e1){
+                messageToUser.errorAlert(SystemTrayHelper.class.getSimpleName(), e1.getMessage(), new TForms().fromArray(e1, false));
+            }
         });
         popupMenu.add(conToSoc);
         MenuItem toConsole = new MenuItem();
         toConsole.setLabel("Console Back");
         toConsole.addActionListener(e -> {
             System.setOut(err);
-            Socket socket = MyServer.getSocket();
-            try {
-                socket.close();
-            } catch (IOException e1) {
-                LOGGER.error(e1.getMessage(), e1);
-            }
         });
         popupMenu.add(toConsole);
     }
+
+    private static void reconSock() throws IOException {
+        Socket socket = MyServer.getServerSocket().accept();
+        MyServer.setSocket(socket);
+        PrintWriter printWriter = new PrintWriter(socket.getOutputStream(), true);
+        System.setOut(new PrintStream(socket.getOutputStream()));
+        printWriter.println(System.currentTimeMillis());
+        printWriter.print(out);
+    }
+
     private static boolean srvGitIs() {
         try{
             return InetAddress.getByName("srv-git.eatmeat.ru").isReachable(1000);
