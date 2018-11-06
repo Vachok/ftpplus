@@ -13,8 +13,6 @@ import ru.vachok.networker.services.DBMessenger;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.io.PrintStream;
-import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.URI;
@@ -116,20 +114,9 @@ public class SystemTrayHelper {
             }
         });
         gitStartWeb.setLabel("GIT WEB ON");
-        Thread thread = executor.createThread(MyServer.getI());
+        Thread thread = executor.createThread(() -> recOn());
         thread.start();
         popupMenu.add(gitStartWeb);
-        MenuItem conToSoc = new MenuItem();
-        conToSoc.setLabel("To telnet");
-        conToSoc.addActionListener(e -> {
-            try{
-                reconSock();
-            }
-            catch(IOException e1){
-                messageToUser.errorAlert(SystemTrayHelper.class.getSimpleName(), e1.getMessage(), new TForms().fromArray(e1, false));
-            }
-        });
-        popupMenu.add(conToSoc);
         MenuItem toConsole = new MenuItem();
         toConsole.setLabel("Console Back");
         toConsole.addActionListener(e -> {
@@ -138,13 +125,17 @@ public class SystemTrayHelper {
         popupMenu.add(toConsole);
     }
 
-    private static void reconSock() throws IOException {
-        Socket socket = MyServer.getServerSocket().accept();
-        MyServer.setSocket(socket);
-        PrintWriter printWriter = new PrintWriter(socket.getOutputStream(), true);
-        System.setOut(new PrintStream(socket.getOutputStream()));
-        printWriter.println(System.currentTimeMillis());
-        printWriter.print(out);
+    private static void recOn() {
+        MyServer.setSocket(new Socket());
+        while(!MyServer.getSocket().isClosed()){
+            try{
+                MyServer.reconSock();
+            }
+            catch(IOException | InterruptedException e1){
+                messageToUser.errorAlert(SystemTrayHelper.class.getSimpleName(), e1.getMessage(), new TForms().fromArray(e1, false));
+                Thread.currentThread().interrupt();
+            }
+        }
     }
 
     private static boolean srvGitIs() {

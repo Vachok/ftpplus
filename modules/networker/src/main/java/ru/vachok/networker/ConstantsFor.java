@@ -16,10 +16,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.SecureRandom;
 import java.time.Year;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
@@ -59,6 +56,8 @@ public enum ConstantsFor {
     public static final String USERS = "users";
 
     public static final String TITLE = "title";
+
+    public static final int USER_EXIT = 222;
 
     /**
      {@link InitProperties}
