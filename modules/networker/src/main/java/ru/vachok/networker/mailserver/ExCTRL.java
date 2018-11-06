@@ -33,6 +33,14 @@ public class ExCTRL {
         this.exSRV = exSRV;
     }
 
+    /**
+     <b>/exchange (GET)</b>
+     Модель. Атрибуты:<br> 1. {@link ExSRV} <br> 2. {@link #lastChange()} <br> 3. {@link ExSRV#fileAsList} <br> 4. Статичный текст при пустом файле. <br> 5. {@link PageFooter}
+
+     @param model   {@link Model}, на запрос "/exchange"
+     @param request {@link HttpServletRequest}
+     @return exchange.html
+     */
     @GetMapping("/exchange")
     public String exchangeWorks(Model model, HttpServletRequest request) {
         Visitor visitor = new Visitor(request);
@@ -42,7 +50,6 @@ public class ExCTRL {
             model.addAttribute(ConstantsFor.TITLE, lastChange());
             model.addAttribute("file", exSRV.fileAsStrings());
         } catch (NullPointerException e) {
-            model.addAttribute(ConstantsFor.TITLE, "No local file!");
             model.addAttribute("file",
                 new StringBuilder()
                     .append("Необходимо запустить на сервере <b>Exchange</b> Power Shell Script:")
@@ -55,12 +62,27 @@ public class ExCTRL {
         return "exchange";
     }
 
+    /**
+     @return заголовок страницы.
+     */
     private String lastChange() {
         File file = new File(getClass().getResource("/static/texts/rules.txt").getFile());
         if (!file.exists()) return "No file! " + file.getAbsolutePath();
         else return "From local: " + file.getAbsolutePath();
     }
 
+    /**<b>/exchange (POST)</b>
+     Модель. <br>
+     1. <i>exSRV</i>, {@link ExSRV} <br>
+     2. <i>file</i>, {@link TForms} - парсер массива {@link ConstantsFor#MAIL_RULES}
+     3. <i>{@link ConstantsFor#TITLE}</i>, {@link ConstantsFor#MAIL_RULES}.size()
+     4. <i>otherfields</i>, {@link ExSRV#getOFields()}
+     5. <i>footer</i>, {@link PageFooter#getFooterUtext()}
+     @see ExSRV
+     @param file {@link MultipartFile}, загружаемый пользователем через web-форму
+     @param model {@link Model}
+     @return exchange.html
+     */
     @PostMapping("/exchange")
     public String uplFile(@RequestParam MultipartFile file, Model model) {
         exSRV.setFile(file);

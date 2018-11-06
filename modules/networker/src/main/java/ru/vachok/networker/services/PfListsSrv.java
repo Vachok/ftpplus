@@ -6,9 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.componentsrepo.PfLists;
 import ru.vachok.networker.config.ThreadConfig;
-import ru.vachok.networker.logic.SSHFactory;
 
 import java.rmi.UnexpectedException;
 import java.util.Date;

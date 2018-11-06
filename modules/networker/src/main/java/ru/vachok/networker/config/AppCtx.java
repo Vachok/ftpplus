@@ -61,7 +61,6 @@ public class AppCtx extends AnnotationConfigApplicationContext {
         outQueue.add(AppCtx.CLASSPATH_ALL_URL_PREFIX);
         outQueue.add(AppCtx.LIFECYCLE_PROCESSOR_BEAN_NAME);
     }
-
     @Override
     public String toString() {
         return new StringJoiner("\n", AppCtx.class.getSimpleName() + "\n", "\n")

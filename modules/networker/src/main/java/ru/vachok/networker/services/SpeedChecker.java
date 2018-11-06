@@ -1,4 +1,4 @@
-package ru.vachok.networker.logic;
+package ru.vachok.networker.services;
 
 
 import ru.vachok.mysqlandprops.DataConnectTo;
@@ -6,7 +6,10 @@ import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 
 /**

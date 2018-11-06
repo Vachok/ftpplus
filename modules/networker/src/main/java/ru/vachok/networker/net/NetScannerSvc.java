@@ -1,4 +1,4 @@
-package ru.vachok.networker.services;
+package ru.vachok.networker.net;
 
 
 import org.slf4j.Logger;
@@ -20,7 +20,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -159,7 +162,7 @@ public class NetScannerSvc {
      Сканирующий метод. Запускает отдельный {@link Thread}, который блокируется с помощью {@link ReentrantLock}
      */
     @Locked (id = Thread.State.BLOCKED)
-    void getPCsAsync() {
+    public void getPCsAsync() {
         AtomicReference<String> msg = new AtomicReference<>("");
         new Thread(() -> {
             Thread.currentThread().setName("PC_SCANNER_PROGRESS*********LOCKED");

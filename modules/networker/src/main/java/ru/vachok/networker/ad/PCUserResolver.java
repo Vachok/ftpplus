@@ -1,13 +1,12 @@
-package ru.vachok.networker.services;
+package ru.vachok.networker.ad;
 
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.ad.ADSrv;
-import ru.vachok.networker.ad.ADUser;
 import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.net.NetScannerSvc;
 
 import java.io.File;
 import java.util.*;

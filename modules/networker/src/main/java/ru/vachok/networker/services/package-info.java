@@ -1,4 +1,4 @@
 /**
- Сервисы-beans
+ Сервисы
  */
 package ru.vachok.networker.services;

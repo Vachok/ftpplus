@@ -12,7 +12,7 @@ import java.util.StringJoiner;
 
 
 /**
- <h>Хранилище информации о пользователе AD</h1>
+ <b>Хранилище информации о пользователе AD</b>
 
  @since 30.08.2018 (10:11) */
 @Component("aduser")

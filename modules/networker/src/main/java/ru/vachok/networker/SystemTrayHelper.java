@@ -1,19 +1,22 @@
-package ru.vachok.networker.logic;
+package ru.vachok.networker;
 
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.ThreadConfig;
-import ru.vachok.networker.services.MyServer;
+import ru.vachok.networker.net.MyServer;
 
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.net.*;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.net.URI;
 import java.util.concurrent.*;
+
+import static java.lang.System.err;
 
 
 /**
@@ -33,7 +36,6 @@ public class SystemTrayHelper {
         return s;
     }
 
-    private static final Socket socket = new Socket();
     private static final Logger LOGGER = LoggerFactory.getLogger(SystemTrayHelper.class.getSimpleName());
 
     public static void addTray(String iconFileName) {
@@ -89,20 +91,11 @@ public class SystemTrayHelper {
     }
 
     private static void additionalItems(PopupMenu popupMenu) {
-        MyServer myServer = MyServer.getI();
         ThreadConfig threadConfig = new ThreadConfig();
         ThreadPoolTaskExecutor executor = threadConfig.threadPoolTaskExecutor();
-        try(ServerSocket serverSocket = new ServerSocket(9990)){
-            Runnable runnable = myServer::run;
-            executor.execute(runnable);
-        }
-        catch(IOException e){
-        }
         MenuItem gitStartWeb = new MenuItem();
-
         gitStartWeb.addActionListener(actionEvent -> {
-            Callable<String> sshStr = () -> new SSHFactory
-                .Builder(ConstantsFor
+            Callable<String> sshStr = () -> new SSHFactory.Builder(ConstantsFor
                 .SRV_GIT, "sudo git instaweb;" +
                 "sudo cd /usr/home/dpetrov/;" +
                 "sudo git instaweb -p 11111;" +
@@ -117,22 +110,28 @@ public class SystemTrayHelper {
             }
         });
         gitStartWeb.setLabel("GIT WEB ON");
+        Thread thread = executor.createThread(MyServer.getI());
+        thread.start();
         popupMenu.add(gitStartWeb);
         MenuItem conToSoc = new MenuItem();
         conToSoc.setLabel("To telnet");
         conToSoc.addActionListener(e -> {
-            executor.execute(myServer);
+            thread.start();
         });
         popupMenu.add(conToSoc);
         MenuItem toConsole = new MenuItem();
         toConsole.setLabel("Console Back");
         toConsole.addActionListener(e -> {
-            myServer.stop();
-            System.setOut(System.err);
+            System.setOut(err);
+            Socket socket = MyServer.getSocket();
+            try {
+                socket.close();
+            } catch (IOException e1) {
+                LOGGER.error(e1.getMessage(), e1);
+            }
         });
         popupMenu.add(toConsole);
     }
-
     private static boolean srvGitIs() {
         try{
             return InetAddress.getByName("srv-git.eatmeat.ru").isReachable(1000);

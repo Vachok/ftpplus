@@ -11,7 +11,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import ru.vachok.mysqlandprops.EMailAndDB.SpeedRunActualize;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.AppCtx;
-import ru.vachok.networker.logic.SystemTrayHelper;
 
 import java.io.*;
 import java.util.concurrent.Executors;

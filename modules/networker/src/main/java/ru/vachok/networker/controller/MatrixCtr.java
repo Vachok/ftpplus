@@ -1,5 +1,6 @@
 package ru.vachok.networker.controller;
 
+
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -9,9 +10,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.*;
-import ru.vachok.networker.logic.SSHFactory;
 import ru.vachok.networker.services.MatrixSRV;
 import ru.vachok.networker.services.WhoIsWithSRV;
 

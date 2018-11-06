@@ -1,4 +1,4 @@
-package ru.vachok.networker.logic;
+package ru.vachok.networker;
 
 
 import com.jcraft.jsch.*;
@@ -10,7 +10,6 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
-import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
 
 import java.io.File;

@@ -12,7 +12,7 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.PageFooter;
-import ru.vachok.networker.services.NetScannerSvc;
+import ru.vachok.networker.net.NetScannerSvc;
 
 import javax.servlet.http.HttpServletRequest;
 import java.security.SecureRandom;
