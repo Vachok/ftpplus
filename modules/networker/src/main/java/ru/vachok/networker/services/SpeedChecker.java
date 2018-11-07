@@ -17,8 +17,6 @@ import java.sql.SQLException;
 public class SpeedChecker implements Runnable {
 
     private static final DataConnectTo DATA_CONNECT_TO = new RegRuMysql();
-
-    /*Methods*/
     /**
      * When an object implementing interface <code>Runnable</code> is used
      * to create a thread, MatrixCtr the thread causes the object's

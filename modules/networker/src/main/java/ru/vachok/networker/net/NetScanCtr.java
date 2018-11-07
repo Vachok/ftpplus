@@ -1,4 +1,4 @@
-package ru.vachok.networker.controller;
+package ru.vachok.networker.net;
 
 
 import org.slf4j.Logger;
@@ -12,7 +12,6 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.PageFooter;
-import ru.vachok.networker.net.NetScannerSvc;
 
 import javax.servlet.http.HttpServletRequest;
 import java.security.SecureRandom;

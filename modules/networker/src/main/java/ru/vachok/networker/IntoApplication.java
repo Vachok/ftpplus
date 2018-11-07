@@ -9,10 +9,10 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import ru.vachok.mysqlandprops.EMailAndDB.SpeedRunActualize;
+import ru.vachok.networker.accesscontrol.MatrixCtr;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.AppCtx;
 
-import java.io.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -49,7 +49,7 @@ public class IntoApplication {
      {@link #infoForU(ApplicationContext)}
 
      @param args null
-     @see ru.vachok.networker.controller.MatrixCtr
+     @see MatrixCtr
      */
     public static void main(String[] args) {
         SystemTrayHelper.addTray("icons8-плохие-поросята-32.png");
@@ -58,31 +58,6 @@ public class IntoApplication {
         System.setProperty("file.encoding", "UTF8");
         SpringApplication.run(IntoApplication.class, args);
         infoForU(appCtx);
-
-    }
-
-    private static void conToSocket() throws IOException {
-        Thread.currentThread().checkAccess();
-        Thread.currentThread().setName("CONSOLE READER THREAD");
-        Thread.currentThread().setPriority(1);
-
-        Reader reader = System.console().reader();
-        BufferedReader bufferedReader = new BufferedReader(reader);
-        while(bufferedReader.ready()){
-            try(OutputStreamWriter outputStream = new FileWriter("con.log")){
-                String readLine = bufferedReader.readLine();
-                BufferedWriter writer = new BufferedWriter(outputStream);
-                ConstantsFor.CONSOLE.add(readLine);
-                writer.flush();
-                char[] sequence = readLine.toCharArray();
-                for(char c : sequence){
-                    writer.append(c);
-                }
-            }
-            catch(IOException e){
-                LOGGER.error(e.getMessage(), e);
-            }
-        }
     }
 
     /**

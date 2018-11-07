@@ -9,7 +9,10 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.*;
+import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.componentsrepo.PageFooter;
+import ru.vachok.networker.componentsrepo.ServiceInform;
+import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.config.AppCtx;
 
 import javax.servlet.http.HttpServletRequest;
@@ -20,7 +23,7 @@ import java.time.LocalTime;
 import java.util.Map;
 
 
-/**
+/**Вывод различной сопутствующей информации
  * @since 21.09.2018 (11:33)
  */
 @Controller
@@ -58,7 +61,6 @@ public class ServiceInfoCtrl {
             return "vir";
         } else throw new AccessDeniedException("Sorry. Denied");
     }
-
     private void modModMaker(Model model, HttpServletRequest request) {
         this.serviceInform = new ServiceInform();
         model.addAttribute("title", "srv-git is " + pingBool() + "noF: " +
@@ -129,7 +131,6 @@ public class ServiceInfoCtrl {
 
         return stringBuilder.toString();
     }
-
     @GetMapping("/clsmail")
     public String mailBox(Model model, HttpServletRequest request) {
         model.addAttribute("title", "You have another app");

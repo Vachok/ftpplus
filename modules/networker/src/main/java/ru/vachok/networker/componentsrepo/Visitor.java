@@ -13,7 +13,7 @@ import java.util.StringJoiner;
 import java.util.concurrent.TimeUnit;
 
 /**
- Created by 14350 on 12.08.2018 1:19
+ @since 12.08.2018 1:19
  */
 public class Visitor {
 

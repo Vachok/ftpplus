@@ -1,4 +1,4 @@
-package ru.vachok.networker.controller;
+package ru.vachok.networker.accesscontrol;
 
 
 import org.slf4j.Logger;
