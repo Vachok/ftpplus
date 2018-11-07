@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
+import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.mailserver.MailRule;
 import ru.vachok.networker.services.PassGenerator;
@@ -16,7 +17,8 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.SecureRandom;
 import java.time.Year;
-import java.util.*;
+import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
@@ -56,6 +58,11 @@ public enum ConstantsFor {
     public static final String TITLE = "title";
 
     public static final int USER_EXIT = 222;
+
+    /**
+     {@link Visitor#getVisitsMap()}
+     */
+    public static final Map<Long, HttpServletRequest> VISITS_MAP = new ConcurrentHashMap<>();
 
     /**
      {@link InitProperties}

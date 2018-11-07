@@ -83,7 +83,7 @@ public class IntoApplication {
         ScheduledExecutorService executorService =
             Executors.unconfigurableScheduledExecutorService(Executors.newSingleThreadScheduledExecutor());
         executorService.scheduleWithFixedDelay(speedRun, ConstantsFor.INIT_DELAY, ConstantsFor.DELAY, TimeUnit.SECONDS);
-        String msg = "Initial Delay checker = " + ConstantsFor.INIT_DELAY + "\nDelay = " + ConstantsFor.DELAY + "\n" + ConstantsFor.CONSOLE.size();
+        String msg = "Initial Delay checker = " + ConstantsFor.INIT_DELAY + "\nDelay = " + ConstantsFor.DELAY + "\n";
         LOGGER.warn(msg);
     }
 }

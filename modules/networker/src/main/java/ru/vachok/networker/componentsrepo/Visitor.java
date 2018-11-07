@@ -51,6 +51,12 @@ public class Visitor {
         return request;
     }
 
+
+    /**
+     @param request {@link HttpServletRequest}
+     @deprecated 07.11.2018 (13:58)
+     */
+    @Deprecated
     public void setRequest(HttpServletRequest request) {
         this.request = request;
         this.remAddr = request.getRemoteAddr();
@@ -59,6 +65,11 @@ public class Visitor {
         getVisitsMap().put(USER_ID, request);
     }
 
+    /**
+     <i>{@link #setRequest(HttpServletRequest)}</i>
+
+     @return {@link ConstantsFor#VISITS_MAP}
+     */
     public Map<Long, HttpServletRequest> getVisitsMap() {
         return ConstantsFor.VISITS_MAP;
     }
