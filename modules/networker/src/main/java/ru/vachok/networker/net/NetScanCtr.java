@@ -15,10 +15,7 @@ import ru.vachok.networker.componentsrepo.PageFooter;
 
 import javax.servlet.http.HttpServletRequest;
 import java.security.SecureRandom;
-import java.util.Date;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
@@ -49,6 +46,7 @@ public class NetScanCtr {
 
     @GetMapping("/netscan")
     public String netScan(HttpServletRequest request, Model model) {
+        netScannerSvc.setThePc("");
         Map<String, Boolean> netWork = lastScan;
         boolean isMapSizeBigger = netWork.size() > 2;
 
@@ -116,7 +114,7 @@ public class NetScanCtr {
         String thePc = netScannerSvc.getThePc();
         AppComponents.adSrv().setUserInputRaw(thePc);
         netScannerSvc.getInfoFromDB();
-        model.addAttribute("thePc", netScannerSvc.getThePc());
+        model.addAttribute("thePc", thePc);
         AppComponents.adSrv().setUserInputRaw(netScannerSvc.getThePc());
         netScannerSvc.setThePc("");
         return "redirect:/ad?" + thePc;

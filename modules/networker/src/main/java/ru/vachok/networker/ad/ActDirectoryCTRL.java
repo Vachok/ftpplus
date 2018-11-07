@@ -12,6 +12,7 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.PageFooter;
+import ru.vachok.networker.net.NetScannerSvc;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -57,7 +58,9 @@ public class ActDirectoryCTRL {
     }
 
     private String queryStringExists(String queryString, Model model) {
-        model.addAttribute("title", queryString);
+        NetScannerSvc iScan = NetScannerSvc.getI();
+        iScan.setThePc(queryString);
+        model.addAttribute("title", queryString + " " + iScan.getInfoFromDB());
         model.addAttribute(ConstantsFor.USERS, inputWithInfoFromDB);
         try {
             model.addAttribute("details", adSrv.getDetails(queryString));

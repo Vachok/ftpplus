@@ -262,7 +262,7 @@ public class NetScannerSvc {
      @param pcName имя компьютера
      @return выдержка из БД (когда последний раз был онлайн + кол-во проверок)
      */
-    private String getSomeMore(String pcName) {
+    public String getSomeMore(String pcName) {
         List<Integer> onLine = new ArrayList<>();
         List<Integer> offLine = new ArrayList<>();
         try(PreparedStatement statement = c.prepareStatement("select * from velkompc where NamePP like ?")){
