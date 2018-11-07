@@ -49,7 +49,6 @@ public enum ConstantsFor {
 
     public static final Map<Long, HttpServletRequest> VISITS_MAP = new ConcurrentHashMap<>();
 
-    public static final List<String> CONSOLE = new ArrayList<>();
 
     public static final String FOOTER = "footer";
 
