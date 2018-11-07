@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SystemTrayHelper;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.VersionInfo;
 import ru.vachok.networker.services.DBMessenger;
@@ -19,8 +20,7 @@ import java.util.Date;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
-import static java.lang.System.err;
-import static java.lang.System.out;
+import static java.lang.System.*;
 
 
 /**
@@ -28,6 +28,8 @@ import static java.lang.System.out;
 
  @since 03.11.2018 (23:51) */
 public class MyServer extends Thread {
+
+    /*Fields*/
 
     /**
      Simple Name класса, для поиска настроек
@@ -63,14 +65,6 @@ public class MyServer extends Thread {
      */
     private static Socket socket;
 
-    static {
-        try {
-            serverSocket = new ServerSocket(ConstantsFor.LISTEN_PORT);
-        } catch (IOException e) {
-            LOGGER.error(e.getMessage(), e);
-        }
-    }
-
     /**
      <i>{@link SystemTrayHelper#recOn()}</i>
 
@@ -97,9 +91,97 @@ public class MyServer extends Thread {
     }
 
     /**
+     @return {@link ServerSocket}
+     @deprecated 07.11.2018 (12:50)
+     */
+    @Deprecated
+    private static ServerSocket getServerSocket() {
+        return serverSocket;
+    }
+
+    /*Instances*/
+
+    /**
      {@link #myServer}
      */
     private MyServer() {
+    }
+
+    static {
+        try{
+            serverSocket = new ServerSocket(ConstantsFor.LISTEN_PORT);
+        }
+        catch(IOException e){
+            LOGGER.error(e.getMessage(), e);
+        }
+    }
+
+    /**
+     {@link #runSocket()}
+     */
+    @Override
+    public void run() {
+        try{
+            runSocket();
+        }
+        catch(IOException e){
+            LOGGER.error(e.getMessage(), e);
+        }
+    }
+
+    /**
+     <b>Создаёт {@link ServerSocket}</b>
+     <p>
+     <i>{@link #run()}</i>
+
+     @throws IOException {@link ServerSocket} accept() , .getReuseAddress()
+     */
+    private static void runSocket() throws IOException {
+        while(true){
+            socket = serverSocket.accept();
+            accepSoc(socket);
+            if(socket.isClosed()){
+                System.setOut(err);
+                String msg = serverSocket.getReuseAddress() + " getReuseAddress";
+                LOGGER.warn(msg);
+                break;
+            }
+            if(!socket.isConnected()){
+                System.setOut(err);
+            }
+        }
+    }
+
+    /**
+     <b>Первоначальное подключение</b>
+     <p>
+     <i> {@link #runSocket()} </i>
+
+     @param socket {@link Socket} для подключившегося клиента
+     */
+    private static void accepSoc(Socket socket) {
+        StringBuilder f = new StringBuilder();
+        try(Scanner scanner = new Scanner(System.in);
+            PrintWriter printWriter = new PrintWriter(socket.getOutputStream(), true)){
+            System.setOut(new PrintStream(socket.getOutputStream()));
+            f.append("\n\n")
+                .append(( float ) (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / 60)
+                .append(" APP RUNNING \n")
+                .append(ConstantsFor.APP_NAME)
+                .append("\n\n\n")
+                .append(new Date())
+                .append(" build ")
+                .append(new VersionInfo().toString());
+            printWriter.println(f.toString());
+            if(scanner.hasNext()){
+                while(socket.isConnected()){
+                    printWriter.print(out);
+                }
+            }
+        }
+        catch(IOException e){
+            LoggerFactory.getLogger(SOURCE_CLASS).error(e.getMessage(), e);
+        }
     }
 
     /**
@@ -120,20 +202,29 @@ public class MyServer extends Thread {
         BufferedReader bufferedReader = new BufferedReader(reader);
         String readLine = bufferedReader.readLine();
 
-        if (readLine.toLowerCase().contains("exit")) {
+        if(readLine.toLowerCase().contains("exit")){
             socket.close();
             System.exit(ConstantsFor.USER_EXIT);
         }
-        if (readLine.toLowerCase().contains("help")) ifHelp();
-        if (readLine.toLowerCase().contains("con")) ifCon();
-        if (readLine.toLowerCase().contains("thread")) ifThread();
-        if (readLine.equalsIgnoreCase("shutdown")) {
+        if(readLine.toLowerCase().contains("help")){
+            ifHelp();
+        }
+        if(readLine.toLowerCase().contains("con")){
+            ifCon();
+        }
+        if(readLine.toLowerCase().contains("thread")){
+            ifThread();
+        }
+        if(readLine.toLowerCase().contains("netscan")){
+            ifNetScan();
+        }
+        if(readLine.equalsIgnoreCase("shutdown")){
             Runtime.getRuntime().exec("shutdown /p /f");
         }
-        if (readLine.equalsIgnoreCase("reboot")) {
+        if(readLine.equalsIgnoreCase("reboot")){
             Runtime.getRuntime().exec("shutdown /r /f");
-        } else {
-            messageToUser.info(MyServer.class.getSimpleName(), "RUNNING console reader", Arrays.toString(readLine.getBytes()));
+        }
+        else{
             printToSocket();
         }
     }
@@ -167,24 +258,20 @@ public class MyServer extends Thread {
         printToSocket();
     }
 
-    /**
-     @return {@link ServerSocket}
-     @deprecated 07.11.2018 (12:50)
-     */
-    @Deprecated
-    private static ServerSocket getServerSocket() {
-        return serverSocket;
-    }
+    private static void ifNetScan() throws IOException {
+        PrintWriter printWriter = new PrintWriter(socket.getOutputStream(), true);
+        NetScannerSvc i = NetScannerSvc.getI();
+        try{
+            String thePc = i.getThePc();
+            printToSocket();
+            printWriter.println(thePc);
+        }
+        catch(Exception e){
+            System.setOut(err);
+            messageToUser.errorAlert(SOURCE_CLASS, e.getMessage(), new TForms().fromArray(e, false));
+            socket.close();
+            socket = new Socket();
 
-    /**
-     {@link #runSocket()}
-     */
-    @Override
-    public void run() {
-        try {
-            runSocket();
-        } catch (IOException e) {
-            LOGGER.error(e.getMessage(), e);
         }
     }
 
@@ -199,69 +286,21 @@ public class MyServer extends Thread {
         PrintWriter printWriter = new PrintWriter(socket.getOutputStream(), true);
         InputStream inputStream = socket.getInputStream();
         System.setOut(new PrintStream(socket.getOutputStream()));
-        printWriter.println((float) (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN + " | " + ConstantsFor.APP_NAME);
+        printWriter.println(( float ) (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN + " | " + ConstantsFor.APP_NAME);
         printWriter.println("NEW SOCKET: " + socket.toString());
         printWriter.println("APP INFO: " + new VersionInfo().toString());
-        while (inputStream.available() > 0) {
+        while(inputStream.available() > 0){
             byte[] bytes = new byte[3];
             int read = inputStream.read(bytes);
-            if (!Arrays.toString(bytes).contains("-1, -8, 3")) {
+            if(!Arrays.toString(bytes).contains("-1, -8, 3")){
                 printWriter.print(out);
-            } else {
+            }
+            else{
                 printWriter.println(read);
+                System.setOut(err);
                 socket.close();
                 setSocket(new Socket());
             }
-        }
-    }
-
-    /**
-     <b>Создаёт {@link ServerSocket}</b>
-     <p>
-     <i>{@link #run()}</i>
-
-     @throws IOException {@link ServerSocket} accept() , .getReuseAddress()
-     */
-    private static void runSocket() throws IOException {
-        while (true) {
-            socket = serverSocket.accept();
-            accepSoc(socket);
-            if (socket.isClosed()) {
-                String msg = serverSocket.getReuseAddress() + " getReuseAddress";
-                LOGGER.warn(msg);
-                break;
-            }
-        }
-    }
-
-    /**
-     <b>Первоначальное подключение</b>
-     <p>
-     <i> {@link #runSocket()} </i>
-
-     @param socket {@link Socket} для подключившегося клиента
-     */
-    private static void accepSoc(Socket socket) {
-        StringBuilder f = new StringBuilder();
-        try (Scanner scanner = new Scanner(System.in);
-             PrintWriter printWriter = new PrintWriter(socket.getOutputStream(), true)) {
-            System.setOut(new PrintStream(socket.getOutputStream()));
-            f.append("\n\n")
-                .append((float) (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / 60)
-                .append(" APP RUNNING \n")
-                .append(ConstantsFor.APP_NAME)
-                .append("\n\n\n")
-                .append(new Date())
-                .append(" build ")
-                .append(new VersionInfo().toString());
-            printWriter.println(f.toString());
-            if (scanner.hasNext()) {
-                while (socket.isConnected()) {
-                    printWriter.print(out);
-                }
-            }
-        } catch (IOException e) {
-            LoggerFactory.getLogger(SOURCE_CLASS).error(e.getMessage(), e);
         }
     }
 }
