@@ -29,7 +29,6 @@ public class SystemTrayHelper {
 
     private static SystemTrayHelper s = new SystemTrayHelper();
 
-    /*Fields*/
     private static final Logger LOGGER = AppComponents.getLogger();
 
     private static MessageToUser messageToUser = new DBMessenger();
