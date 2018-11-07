@@ -5,8 +5,10 @@ import org.slf4j.LoggerFactory;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
+import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.config.ThreadConfig;
-import ru.vachok.networker.logic.PassGenerator;
+import ru.vachok.networker.mailserver.MailRule;
+import ru.vachok.networker.services.PassGenerator;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
@@ -15,7 +17,10 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.SecureRandom;
 import java.time.Year;
+import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
 
@@ -37,11 +42,6 @@ public enum ConstantsFor {
     public static final long INIT_DELAY = new SecureRandom().nextInt((int) MY_AGE);
 
     /**
-     Кол-во локальных ПК {@link ru.vachok.networker.services.NetScannerSvc}
-     */
-    public static final int TOTAL_PC = Integer.parseInt(PROPS.getProperty("totpc", "315"));
-
-    /**
      <b>1 мегабайт в байтах</b>
      */
     public static final int MBYTE = 1024 * 1024;
@@ -49,15 +49,37 @@ public enum ConstantsFor {
     public static final Float NO_F_DAYS = TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() -
         Long.parseLong(getTheProps().getProperty("lasts", 1515233487000L + ""))) / 60f / 24f;
 
+
+
+    public static final String FOOTER = "footer";
+
+    public static final String USERS = "users";
+
+    public static final String TITLE = "title";
+
+    public static final int USER_EXIT = 222;
+
+    /**
+     {@link Visitor#getVisitsMap()}
+     */
+    public static final Map<Long, HttpServletRequest> VISITS_MAP = new ConcurrentHashMap<>();
+
     /**
      {@link InitProperties}
      */
     private static InitProperties initProperties;
 
+    public static final ConcurrentMap<String, File> COMPNAME_USERS_MAP = new ConcurrentHashMap<>();
+
     /**
      {@link Properties} приложения
      */
     public static final Properties PROPS = takePr();
+
+    public static final int LISTEN_PORT = Integer.parseInt(PROPS.getOrDefault("lport", "9990").toString());
+    public static final ConcurrentMap<Integer, MailRule> MAIL_RULES = new ConcurrentHashMap<>();
+
+    public static final String ALERT_AD_FOTO = "<p>Для корректной работы, вам нужно положить фото юзеров <a href=\"file://srv-mail3.eatmeat.ru/c$/newmailboxes/fotoraw/\" target=\"_blank\">\\\\srv-mail3.eatmeat.ru\\c$\\newmailboxes\\fotoraw\\</a>\n";
 
     /**
      @param request для получения IP
@@ -159,6 +181,8 @@ public enum ConstantsFor {
     }
 
     public static final PassGenerator passGenerator = new PassGenerator();
+
+    public static int totalPc = Integer.parseInt(PROPS.getProperty("totpc", "317"));
 
     public static String consString() {
         return "ConstantsFor{" +

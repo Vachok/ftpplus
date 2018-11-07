@@ -8,13 +8,12 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.PageFooter;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
 import java.util.List;
 
 
@@ -27,12 +26,10 @@ public class ActDirectoryCTRL {
 
     private ADSrv adSrv;
 
-    private static final String USERS_SRTING = "users";
-
     private static String inputWithInfoFromDB;
 
     private PhotoConverterSRV photoConverterSRV;
-    /*Instances*/
+
     @Autowired
     public ActDirectoryCTRL(ADSrv adSrv, PhotoConverterSRV photoConverterSRV) {
         this.photoConverterSRV = photoConverterSRV;
@@ -45,42 +42,49 @@ public class ActDirectoryCTRL {
 
 
     @GetMapping("/ad")
-    public String adUsersComps(HttpServletRequest request, Model model) throws IOException {
+    public String adUsersComps(HttpServletRequest request, Model model) {
         List<ADUser> adUsers = adSrv.userSetter();
         if (request.getQueryString() != null) return queryStringExists(request.getQueryString(), model);
         else {
             ADComputer adComputer = adSrv.getAdComputer();
             model.addAttribute("photoConverter", photoConverterSRV);
-            model.addAttribute("footer", new PageFooter().getFooterUtext());
+            model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext());
             model.addAttribute("pcs", new TForms().adPCMap(adComputer.getAdComputers(), true));
-            model.addAttribute(USERS_SRTING, new TForms().fromADUsersList(adUsers, true));
+            model.addAttribute(ConstantsFor.USERS, new TForms().fromADUsersList(adUsers, true));
         }
         return "ad";
     }
 
-    private String queryStringExists(String queryString, Model model) throws IOException {
+    private String queryStringExists(String queryString, Model model) {
         model.addAttribute("title", queryString);
-        model.addAttribute(USERS_SRTING, inputWithInfoFromDB);
-        model.addAttribute("details", adSrv.getDetails(queryString));
-        model.addAttribute("footer", new PageFooter().getFooterUtext());
+        model.addAttribute(ConstantsFor.USERS, inputWithInfoFromDB);
+        try {
+            model.addAttribute("details", adSrv.getDetails(queryString));
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+        model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext());
         return "aditem";
     }
 
-    @PostMapping("/ad")
+    @GetMapping("/adphoto")
     private String adFoto(@ModelAttribute PhotoConverterSRV photoConverterSRV, Model model) {
         this.photoConverterSRV = photoConverterSRV;
-
         try {
             model.addAttribute("photoConverterSRV", photoConverterSRV);
-            model.addAttribute("ok", photoConverterSRV.psCommands());
+            model.addAttribute("title", "PowerShell. Применить на SRV-MAIL3");
+            model.addAttribute("content", photoConverterSRV.psCommands());
+            model.addAttribute("alert", ConstantsFor.ALERT_AD_FOTO);
+            model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext());
         } catch (NullPointerException e) {
             LOGGER.error(e.getMessage(), e);
         }
-        return "ok";
+        return "adphoto";
     }
 
     private String adUserString() {
-        ADUser adUser = AppComponents.pcUserResolver().adPCSetter();
+        ADUser adUser = AppComponents.pcUserResolver().adUsersSetter();
+
         return adUser.toString();
     }
 }

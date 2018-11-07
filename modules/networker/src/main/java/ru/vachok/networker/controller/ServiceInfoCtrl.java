@@ -1,6 +1,7 @@
 package ru.vachok.networker.controller;
 
 
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -11,9 +12,8 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.ServiceInform;
+import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.config.AppCtx;
-import ru.vachok.networker.services.CookieShower;
-import ru.vachok.networker.services.VisitorSrv;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
@@ -23,34 +23,33 @@ import java.time.LocalTime;
 import java.util.Map;
 
 
-/**
+/**Вывод различной сопутствующей информации
  * @since 21.09.2018 (11:33)
  */
 @Controller
 public class ServiceInfoCtrl {
 
-    private VisitorSrv visitorSrv;
-
-    private CookieShower cookieShower;
+    private static final Logger LOGGER = LoggerFactory.getLogger(ServiceInfoCtrl.class.getSimpleName());
 
     private ServiceInform serviceInform;
+
+    private Visitor visitor;
 
     private Map<String, Boolean> localMapSB;
 
 
     /*Instances*/
     @Autowired
-    public ServiceInfoCtrl(VisitorSrv visitorSrv, ServiceInform serviceInform) {
-        this.visitorSrv = visitorSrv;
-        this.cookieShower = visitorSrv.getCookieShower();
+    public ServiceInfoCtrl(ServiceInform serviceInform) {
         this.localMapSB = new AppComponents().lastNetScanMap();
         this.serviceInform = serviceInform;
     }
 
     @GetMapping("/serviceinfo")
     public String infoMapping(Model model, HttpServletRequest request) throws AccessDeniedException {
+        this.visitor = new Visitor(request);
         try{
-            visitorSrv.makeVisit(request);
+            LOGGER.warn(visitor.toString());
         }
         catch(Exception e){
             LoggerFactory.getLogger(ServiceInfoCtrl.class.getSimpleName());
@@ -62,7 +61,6 @@ public class ServiceInfoCtrl {
             return "vir";
         } else throw new AccessDeniedException("Sorry. Denied");
     }
-
     private void modModMaker(Model model, HttpServletRequest request) {
         this.serviceInform = new ServiceInform();
         model.addAttribute("title", "srv-git is " + pingBool() + "noF: " +
@@ -131,11 +129,8 @@ public class ServiceInfoCtrl {
         stringBuilder.append("<center><h3>Параметры</h3></center>");
         stringBuilder.append(new TForms().mapStrStrArr(request.getParameterMap(), true));
 
-        stringBuilder.append("<center><h3>Cookies</h3></center>");
-        stringBuilder.append(cookieShower.showCookie());
         return stringBuilder.toString();
     }
-
     @GetMapping("/clsmail")
     public String mailBox(Model model, HttpServletRequest request) {
         model.addAttribute("title", "You have another app");

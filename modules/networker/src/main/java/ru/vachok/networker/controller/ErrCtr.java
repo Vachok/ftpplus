@@ -10,32 +10,40 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.PageFooter;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.nio.file.AccessDeniedException;
 import java.util.concurrent.TimeUnit;
 
 
 /**
- The type Err control.
+ {@link ErrorController}
  */
 @Controller
 public class ErrCtr implements ErrorController {
 
+    /**
+     Центрировать (левый тэг)
+     */
     private static final String H_2_CENTER = "<h2><center>";
 
+    /**
+     Центрировать (правый тэг)
+     */
     private static final String H_2_CENTER_CLOSE = "</h2></center>";
 
+    /**
+     @return путь к ошибке для броузера
+     */
     @Override
     public String getErrorPath() {
         return "/error";
     }
 
-    /**
-     Err handle H_2_CENTER.
+    /**<b>Страница обработчика ошибок</b>
+     Отображает сообщения exception
 
+     @see TForms
      @param httpServletRequest the http servlet request
-     @return the H_2_CENTER
+     @param model {@link Model} . Аттрибуты - <i>eMessage</i>, <i>statcode</i>, <i>2</i>
+     @return error.html
      */
     @GetMapping("/error")
     public String errHandle(HttpServletRequest httpServletRequest, Model model) {
@@ -73,36 +81,5 @@ public class ErrCtr implements ErrorController {
             model.addAttribute("footer", new PageFooter().getFooterUtext());
         }
         return "error";
-    }
-
-    /**
-     Exit app.
-
-     @param httpServletRequest the http servlet request
-     @throws IOException the io exception
-     */
-    @GetMapping("/stop")
-    public String exitApp(HttpServletRequest httpServletRequest, HttpServletResponse response) throws IOException {
-        String q = httpServletRequest.getQueryString();
-        String userIp = httpServletRequest.getRemoteAddr();
-        if ((
-            userIp.contains(ConstantsFor.NO0027) ||
-                userIp.contains("10.10.111") ||
-                userIp.contains("172.26.43") ||
-                userIp.contains("0:0:0:0:0"))) {
-            if (q != null) {
-                if (q.contains("full")) Runtime.getRuntime().exec("shutdown /p /f");
-                if (q.contains("restart")) Runtime.getRuntime().exec("shutdown /r /f");
-            } else {
-                System.exit(0);
-                return "redirect:srv-sd.eatmeat.ru/otrs/index.pl?Action=AgentTicketSearch;Subaction=Search;TakeLastSearch=1;SaveProfile=1;Profile=Новые предъявы";
-
-            }
-        } else {
-            response.setStatus(403);
-            throw new AccessDeniedException("Access denied!");
-        }
-
-        return "redirect:/ok";
     }
 }

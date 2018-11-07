@@ -7,6 +7,7 @@ import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.ADUser;
 import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.mailserver.MailRule;
 
 import javax.mail.Address;
 import javax.servlet.http.Cookie;
@@ -29,13 +30,19 @@ public class TForms {
 
     private StringBuilder nStringBuilder = new StringBuilder();
 
-    public String fromArray(List<String> stringListWithBR) {
+    private static final String N_S = "\n";
+
+    private static final String BR_S = "<br>";
+
+    public String fromArray(List<String> stringList, boolean br) {
         brStringBuilder.append("<p>");
-        for (String s : stringListWithBR) {
-            brStringBuilder.append(s).append("<br>");
+        for (String s : stringList) {
+            brStringBuilder.append(s).append(BR_S);
+            nStringBuilder.append(s).append(N_S);
         }
         brStringBuilder.append("</p>");
-        return brStringBuilder.toString();
+        if (br) return brStringBuilder.toString();
+        else return nStringBuilder.toString();
     }
 
     public String fromArray(Map<String, String> stringStringMap) {
@@ -301,16 +308,42 @@ public class TForms {
     public String fromArray(ConcurrentMap<String, File> files, boolean b) {
         brStringBuilder.append("<p>");
         nStringBuilder.append("\n");
-        files.forEach((x, y) -> {
+        try{
+            files.forEach((x, y) -> {
             brStringBuilder
                 .append("<font color=\"yellow\"><center>")
                 .append(x)
                 .append("</font></center><br>");
             nStringBuilder
                 .append(x)
-                .append("\n");
-        });
+                .append("\n")
+                .append(Arrays.toString(y.listFiles()));
+            });
+        }
+        catch(Exception e){
+            LOGGER.error(e.getMessage(), e);
+        }
         if (b) return brStringBuilder.toString();
+        else return nStringBuilder.toString();
+    }
+
+    public String fromArrayRules(ConcurrentMap<Integer, MailRule> mailRules, boolean br) {
+        mailRules.forEach((x, y) -> {
+            nStringBuilder
+                .append(N_S)
+                .append(x)
+                .append(" MAP ID  RULE:")
+                .append(N_S)
+                .append(y.toString());
+            brStringBuilder
+                .append("<p><h4>")
+                .append(x)
+                .append(" MAP ID  RULE:</h4>")
+                .append(BR_S)
+                .append(y.toString())
+                .append("</p>");
+        });
+        if (br) return brStringBuilder.toString();
         else return nStringBuilder.toString();
     }
 }

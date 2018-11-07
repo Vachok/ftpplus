@@ -1,48 +1,84 @@
 package ru.vachok.networker.componentsrepo;
 
 
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
+import ru.vachok.networker.ConstantsFor;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.StringJoiner;
+import java.util.concurrent.TimeUnit;
 
 /**
- * Created by 14350 on 12.08.2018 1:19
+ @since 12.08.2018 1:19
  */
-@Component
-@Scope("prototype")
 public class Visitor {
 
-    /**
-     * The Time st.
-     */
-    private long timeSt;
+    private static final long USER_ID = TimeUnit.MILLISECONDS.toSeconds(ConstantsFor.START_STAMP - System.currentTimeMillis());
 
     /**
-     * The Rem addr.
+     The Time st.
      */
-    private String remAddr;
+    private String timeSpend = new StringBuilder()
+        .append(System.currentTimeMillis() - ConstantsFor.START_STAMP)
+        .append(" сек. идёт сессия.")
+        .append("\n")
+        .toString();
 
     private String visitPlace;
 
     private String dbInfo;
 
-    private String userID;
+    /**
+     The Rem addr.
+     */
+    private String remAddr;
+
+    private HttpSession session;
+
+    public Visitor(HttpServletRequest request) {
+        this.request = request;
+    }
+
+    public HttpSession getSession() {
+        return session;
+    }
+
+    public HttpServletRequest getRequest() throws NullPointerException {
+        return request;
+    }
+
+
+    /**
+     @param request {@link HttpServletRequest}
+     @deprecated 07.11.2018 (13:58)
+     */
+    @Deprecated
+    public void setRequest(HttpServletRequest request) {
+        this.request = request;
+        this.remAddr = request.getRemoteAddr();
+        this.visitPlace = request.getPathInfo();
+        this.session = request.getSession();
+        getVisitsMap().put(USER_ID, request);
+    }
+
+    /**
+     <i>{@link #setRequest(HttpServletRequest)}</i>
+
+     @return {@link ConstantsFor#VISITS_MAP}
+     */
+    public Map<Long, HttpServletRequest> getVisitsMap() {
+        return ConstantsFor.VISITS_MAP;
+    }
 
     private HttpServletRequest request;
 
     private int clickCounter;
 
     private Collection<Cookie> cookieCollection = new ArrayList<>();
-
-    public Visitor(HttpServletRequest request) {
-        this.request = request;
-    }
 
     public int getClickCounter() {
         return clickCounter;
@@ -60,20 +96,8 @@ public class Visitor {
         this.cookieCollection = cookieCollection;
     }
 
-    public String getUserID() {
-        return userID;
-    }
-
-    public void setUserID(String userID) {
-        this.userID = userID;
-    }
-
     public String getVisitPlace() {
         return visitPlace;
-    }
-
-    public void setVisitPlace(String visitPlace) {
-        this.visitPlace = visitPlace;
     }
 
     public String getDbInfo() {
@@ -84,50 +108,28 @@ public class Visitor {
         this.dbInfo = dbInfo;
     }
 
-    private Map<Long, String> visitsMap = new ConcurrentHashMap<>();
-
-    public Map<Long, String> getVisitsMap() {
-        return visitsMap;
-    }
-
-    public void setVisitsMap(Map<Long, String> visitsMap) {
-        this.visitsMap = visitsMap;
-    }
-
     /**
-     * Gets time st.
-     *
-     * @return the time st
+     Gets time st.
+
+     @return the time st
      */
-    public long getTimeSt() {
-        return timeSt;
+    public String getTimeSpend() {
+        return timeSpend;
     }
 
-
     /**
-     * Sets time st.
-     *
-     * @param timeSt the time st
-     */
-    public void setTimeSt(long timeSt) {
-        this.timeSt = timeSt;
-    }
+     Gets rem addr.
 
-
-    /**
-     * Gets rem addr.
-     *
-     * @return the rem addr
+     @return the rem addr
      */
     public String getRemAddr() {
         return remAddr;
     }
 
-
     /**
-     * Sets rem addr.
-     *
-     * @param remAddr the rem addr
+     Sets rem addr.
+
+     @param remAddr the rem addr
      */
     public void setRemAddr(String remAddr) {
         this.remAddr = remAddr;
@@ -135,10 +137,14 @@ public class Visitor {
 
     @Override
     public String toString() {
-        return "Visitor{" +
-            "remAddr='" + remAddr + '\'' +
-            ", timeSt=" + timeSt +
-            '}' +
-            "\n<br>";
+        return new StringJoiner("\n", Visitor.class.getSimpleName() + "\n", "\n")
+            .add("remAddr='" + remAddr + "'\n")
+            .add("timeSpend=" + timeSpend)
+            .add("userID=" + getUserID())
+            .toString();
+    }
+
+    public long getUserID() {
+        return USER_ID;
     }
 }

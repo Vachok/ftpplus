@@ -9,9 +9,9 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import ru.vachok.mysqlandprops.EMailAndDB.SpeedRunActualize;
+import ru.vachok.networker.accesscontrol.MatrixCtr;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.AppCtx;
-import ru.vachok.networker.logic.SystemTrayHelper;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -26,6 +26,8 @@ import java.util.concurrent.TimeUnit;
 @SpringBootApplication
 @EnableScheduling
 public class IntoApplication {
+
+    /*Fields*/
 
     /**
      {@link AppComponents#getLogger()}
@@ -47,7 +49,7 @@ public class IntoApplication {
      {@link #infoForU(ApplicationContext)}
 
      @param args null
-     @see ru.vachok.networker.controller.MatrixCtr
+     @see MatrixCtr
      */
     public static void main(String[] args) {
         SystemTrayHelper.addTray("icons8-плохие-поросята-32.png");
@@ -81,7 +83,7 @@ public class IntoApplication {
         ScheduledExecutorService executorService =
             Executors.unconfigurableScheduledExecutorService(Executors.newSingleThreadScheduledExecutor());
         executorService.scheduleWithFixedDelay(speedRun, ConstantsFor.INIT_DELAY, ConstantsFor.DELAY, TimeUnit.SECONDS);
-        String msg = "Initial Delay checker = " + ConstantsFor.INIT_DELAY + "\nDelay = " + ConstantsFor.DELAY;
+        String msg = "Initial Delay checker = " + ConstantsFor.INIT_DELAY + "\nDelay = " + ConstantsFor.DELAY + "\n";
         LOGGER.warn(msg);
     }
 }

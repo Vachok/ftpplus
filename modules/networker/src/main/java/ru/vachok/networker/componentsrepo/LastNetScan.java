@@ -33,7 +33,7 @@ public class LastNetScan implements Serializable {
     private ConcurrentMap<String, Boolean> netWork = new ConcurrentHashMap<>();
 
     private LastNetScan() {
-        LOGGER.warn("Serial. Understand 25.09.2018 (20:45)");
+        LOGGER.info(this.getClass().getSimpleName());
     }
 
     public static LastNetScan getLastNetScan() {

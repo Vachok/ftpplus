@@ -4,6 +4,8 @@ package ru.vachok.networker.ad;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 import ru.vachok.mysqlandprops.RegRuMysql;
+import ru.vachok.mysqlandprops.props.DBRegProperties;
+import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
 
@@ -33,12 +35,14 @@ public class PhotoConverterSRV {
      */
     private static final Logger LOGGER = AppComponents.getLogger();
 
-    private static final Properties PROPERTIES = ConstantsFor.PROPS;
+    private static InitProperties initProperties = new DBRegProperties(ConstantsFor.APP_NAME + "photoConverter");
+
+    private Properties properties = initProperties.getProps();
 
     /**
      Путь до папки с фото.
      */
-    private String adPhotosPath = PROPERTIES.getProperty("adPhotosPath");
+    private String adPhotosPath = properties.getProperty("adphotopath");
 
     /**
      Файл-фото
@@ -47,12 +51,14 @@ public class PhotoConverterSRV {
 
     private List<String> psCommands = new ArrayList<>();
 
+
     /**
      <b>Преобразование в JPG</b>
      Подготавливает фотографии для импорта в ActiveDirectory. Преобразует любой понимаемый {@link BufferedImage} формат в jpg.
      */
     private BiConsumer<String, BufferedImage> imageBiConsumer = (x, y) -> {
-        File outFile = new File("\\\\srv-mail3\\c$\\newmailboxes\\foto\\" + x + ".jpg");
+        String pathName = properties.getProperty("pathName");
+        File outFile = new File(pathName + x + ".jpg");
         String fName = "jpg";
         Set<String> samAccountNames = samAccFromDB();
         for (String sam : samAccountNames) {
@@ -65,14 +71,14 @@ public class PhotoConverterSRV {
             String msg = outFile.getAbsolutePath() + " written";
             LOGGER.info(msg);
             msg = "Import-RecipientDataProperty -Identity " +
-                x +
-                " -Picture -FileData ([Byte[]] $(Get-Content -Path “C:\\newmailboxes\\foto\\" +
-                outFile.getName().split("\\Q.\\E")[0] +
-                ".jpg” -Encoding Byte -ReadCount 0))";
+                x + " -Picture -FileData ([Byte[]] $(Get-Content -Path “C:\\newmailboxes\\foto\\" +
+                outFile.getName() +
+                "\" -Encoding Byte -ReadCount 0))";
             LOGGER.warn(msg);
             psCommands.add(msg);
-        } catch (IOException e) {
+        } catch (Exception e) {
             AppComponents.getLogger().error(e.getMessage(), e);
+            psCommands.add(e.getMessage());
         }
     };
 
@@ -91,7 +97,6 @@ public class PhotoConverterSRV {
     public void setAdPhotosPath(String adPhotosPath) {
         this.adPhotosPath = adPhotosPath;
     }
-
 
     String psCommands() throws NullPointerException {
         try {
@@ -112,13 +117,17 @@ public class PhotoConverterSRV {
         Map<String, BufferedImage> filesList = new HashMap<>();
         if (fotoFiles != null) {
             for (File f : fotoFiles) {
-                String key = f.getName().split("\\Q.jp\\E")[0];
                 for (String format : ImageIO.getWriterFormatNames()) {
-                    if (f.getName().toLowerCase().contains(format)) filesList.put(key, ImageIO.read(f));
+                    String key = f.getName();
+                    if (key.contains(format)) filesList.put(key.replaceFirst("\\Q.\\E" + format, ""), ImageIO.read(f));
                 }
             }
         } else filesList.put("No files", null);
-        filesList.forEach(imageBiConsumer);
+        try {
+            filesList.forEach(imageBiConsumer);
+        } catch (NullPointerException e) {
+            filesList.put("ERROR", null);
+        }
     }
 
     private Set<String> samAccFromDB() {

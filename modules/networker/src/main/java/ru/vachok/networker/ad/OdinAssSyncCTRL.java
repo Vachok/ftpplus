@@ -32,7 +32,7 @@ public class OdinAssSyncCTRL {
         LOGGER.info(csvTxt.readFileToString());
         model.addAttribute("CsvTxt", csvTxt);
         model.addAttribute("mapfiles", mapFiles());
-        model.addAttribute("csvparse", new TForms().fromArray(csvTxt.getPsCommandsList()));
+        model.addAttribute("csvparse", new TForms().fromArray(csvTxt.getPsCommandsList(), true));
         model.addAttribute("result", getResult());
         return "odinass";
     }
