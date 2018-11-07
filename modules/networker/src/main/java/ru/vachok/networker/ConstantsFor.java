@@ -169,6 +169,10 @@ public enum ConstantsFor {
 
     public static final String THIS_PC_NAME = thisPC();
 
+    public static String getUpTime() {
+        return "(" + (+(float) (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / 60 / 60) + " hrs ago)";
+    }
+
     private static Properties takePr() {
         try {
             initProperties = new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());

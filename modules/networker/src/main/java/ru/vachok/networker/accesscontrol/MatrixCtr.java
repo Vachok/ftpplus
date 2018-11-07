@@ -82,7 +82,8 @@ public class MatrixCtr {
             } catch (Exception ignore) {
                 //
             }
-            String userIP = userPC + ":" + request.getRemotePort() + "<-" + response.getStatus();
+            String userIP = userPC + ":" + request.getRemotePort() + "<-" + new VersionInfo().getAppVersion();
+            if (!ConstantsFor.isPingOK()) userIP = "ping to srv-git.eatmeat.ru is " + false;
             model.addAttribute("yourip", userIP);
             model.addAttribute(MATRIX_STRING_NAME, new MatrixSRV());
             model.addAttribute(FOOTER_NAME, new PageFooter().getFooterUtext());
@@ -136,7 +137,7 @@ public class MatrixCtr {
         model.addAttribute("workPos", workPos);
         model.addAttribute(FOOTER_NAME, new PageFooter().getFooterUtext());
         model.addAttribute("headtitle", matrixSRV.getCountDB() + " позиций   " + TimeUnit.MILLISECONDS.toMinutes(
-            System.currentTimeMillis() - ConstantsFor.START_STAMP) + " upTime");
+            System.currentTimeMillis() - ConstantsFor.START_STAMP) + " getUpTime");
         metricMatrixStart = System.currentTimeMillis() - metricMatrixStart;
         return MATRIX_STRING_NAME;
     }

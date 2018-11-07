@@ -7,6 +7,7 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SystemTrayHelper;
 import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.componentsrepo.VersionInfo;
 import ru.vachok.networker.services.DBMessenger;
 
 import java.io.*;
@@ -14,6 +15,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.security.SecureRandom;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
@@ -117,36 +119,14 @@ public class MyServer extends Thread {
         InputStreamReader reader = new InputStreamReader(inputStream);
         BufferedReader bufferedReader = new BufferedReader(reader);
         String readLine = bufferedReader.readLine();
+
         if (readLine.toLowerCase().contains("exit")) {
             socket.close();
             System.exit(ConstantsFor.USER_EXIT);
         }
-        if (readLine.toLowerCase().contains("help")) {
-            PrintWriter printWriter = new PrintWriter(socket.getOutputStream(), true);
-            printWriter.println("exit - выход из приложения");
-            printWriter.println("con - вывод в консоль");
-            Thread.sleep(TimeUnit.SECONDS.toMillis(10));
-            printToSocket();
-        }
-        if (readLine.toLowerCase().contains("con")) {
-            System.setOut(err);
-            socket.close();
-            setSocket(new Socket());
-        }
-        if (readLine.toLowerCase().contains("thread")) {
-            PrintWriter printWriter = new PrintWriter(socket.getOutputStream(), true);
-            long millis = TimeUnit.SECONDS.toMillis(new SecureRandom().nextInt(20));
-            printWriter.println(Thread.currentThread().getState() + " current thread state");
-            printWriter.println(Thread.currentThread().getName() + " name");
-            printWriter.println(Thread.currentThread().getPriority() + " prio");
-            printWriter.println(Thread.currentThread().getThreadGroup().activeCount() + " getThreadGroup().activeCount()");
-            printWriter.println(Thread.currentThread().getThreadGroup().activeGroupCount() + " getThreadGroup().activeGroupCount()");
-            printWriter.println(Thread.currentThread().getThreadGroup().toString() + " getThreadGroup().toString()");
-            printWriter.println();
-            printWriter.println(millis / 1000 + " sec to start console read");
-            Thread.sleep(millis);
-            printToSocket();
-        }
+        if (readLine.toLowerCase().contains("help")) ifHelp();
+        if (readLine.toLowerCase().contains("con")) ifCon();
+        if (readLine.toLowerCase().contains("thread")) ifThread();
         if (readLine.equalsIgnoreCase("shutdown")) {
             Runtime.getRuntime().exec("shutdown /p /f");
         }
@@ -156,6 +136,35 @@ public class MyServer extends Thread {
             messageToUser.info(MyServer.class.getSimpleName(), "RUNNING console reader", Arrays.toString(readLine.getBytes()));
             printToSocket();
         }
+    }
+
+    private static void ifHelp() throws IOException, InterruptedException {
+        PrintWriter printWriter = new PrintWriter(socket.getOutputStream(), true);
+        printWriter.println("exit - выход из приложения");
+        printWriter.println("con - вывод в консоль");
+        Thread.sleep(TimeUnit.SECONDS.toMillis(10));
+        printToSocket();
+    }
+
+    private static void ifCon() throws IOException {
+        System.setOut(err);
+        socket.close();
+        setSocket(new Socket());
+    }
+
+    private static void ifThread() throws IOException, InterruptedException {
+        PrintWriter printWriter = new PrintWriter(socket.getOutputStream(), true);
+        long millis = TimeUnit.SECONDS.toMillis(new SecureRandom().nextInt(20));
+        printWriter.println(Thread.currentThread().getState() + " current thread state");
+        printWriter.println(Thread.currentThread().getName() + " name");
+        printWriter.println(Thread.currentThread().getPriority() + " prio");
+        printWriter.println(Thread.currentThread().getThreadGroup().activeCount() + " getThreadGroup().activeCount()");
+        printWriter.println(Thread.currentThread().getThreadGroup().activeGroupCount() + " getThreadGroup().activeGroupCount()");
+        printWriter.println(Thread.currentThread().getThreadGroup().toString() + " getThreadGroup().toString()");
+        printWriter.println();
+        printWriter.println(millis / 1000 + " sec to start console read");
+        Thread.sleep(millis);
+        printToSocket();
     }
 
     /**
@@ -192,6 +201,7 @@ public class MyServer extends Thread {
         System.setOut(new PrintStream(socket.getOutputStream()));
         printWriter.println((float) (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN + " | " + ConstantsFor.APP_NAME);
         printWriter.println("NEW SOCKET: " + socket.toString());
+        printWriter.println("APP INFO: " + new VersionInfo().toString());
         while (inputStream.available() > 0) {
             byte[] bytes = new byte[3];
             int read = inputStream.read(bytes);
@@ -240,7 +250,10 @@ public class MyServer extends Thread {
                 .append((float) (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / 60)
                 .append(" APP RUNNING \n")
                 .append(ConstantsFor.APP_NAME)
-                .append("\n\n\n");
+                .append("\n\n\n")
+                .append(new Date())
+                .append(" build ")
+                .append(new VersionInfo().toString());
             printWriter.println(f.toString());
             if (scanner.hasNext()) {
                 while (socket.isConnected()) {

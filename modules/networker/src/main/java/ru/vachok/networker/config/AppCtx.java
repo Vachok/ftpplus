@@ -8,10 +8,8 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 
-import java.util.Date;
 import java.util.PriorityQueue;
 import java.util.Queue;
-import java.util.StringJoiner;
 
 
 /**
@@ -60,17 +58,5 @@ public class AppCtx extends AnnotationConfigApplicationContext {
         outQueue.add(msg);
         outQueue.add(AppCtx.CLASSPATH_ALL_URL_PREFIX);
         outQueue.add(AppCtx.LIFECYCLE_PROCESSOR_BEAN_NAME);
-    }
-    @Override
-    public String toString() {
-        return new StringJoiner("\n", AppCtx.class.getSimpleName() + "\n", "\n")
-            .add("applicationName='" + getApplicationName() + "'\n")
-            .add("beanDefinitionNames=" + new TForms().fromArray(getBeanDefinitionNames()))
-            .add("displayName='" + getDisplayName() + "'\n")
-            .add("id='" + getId() + "'\n")
-            .add("parent=" + getParent())
-            .add("parentBeanFactory=" + getParentBeanFactory())
-            .add("startupDate=" + new Date(getStartupDate()))
-            .toString();
     }
 }
