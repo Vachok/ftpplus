@@ -30,7 +30,7 @@ public class SystemTrayHelper {
     private static SystemTrayHelper s = new SystemTrayHelper();
 
     /*Fields*/
-    private static final Logger LOGGER = LoggerFactory.getLogger(SystemTrayHelper.class.getSimpleName());
+    private static final Logger LOGGER = AppComponents.getLogger();
 
     private static MessageToUser messageToUser = new DBMessenger();
 
