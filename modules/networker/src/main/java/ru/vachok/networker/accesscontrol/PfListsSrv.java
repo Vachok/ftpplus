@@ -1,4 +1,4 @@
-package ru.vachok.networker.services;
+package ru.vachok.networker.accesscontrol;
 
 
 import com.mysql.jdbc.exceptions.jdbc4.CommunicationsException;
