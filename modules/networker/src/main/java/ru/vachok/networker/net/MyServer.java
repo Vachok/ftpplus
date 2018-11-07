@@ -21,7 +21,8 @@ import static java.lang.System.err;
 import static java.lang.System.out;
 
 
-/** Телнет-сервер получения информации и ввода команд приложения.
+/**
+ Телнет-сервер получения информации и ввода команд приложения.
 
  @since 03.11.2018 (23:51) */
 public class MyServer extends Thread {
@@ -42,26 +43,30 @@ public class MyServer extends Thread {
     private static MyServer myServer = new MyServer();
 
     /**
-     * <b>Сокет для сервера</b> <br>
-     *     {@link #getServerSocket()}
+     <b>Сокет для сервера</b>
+     <p>
+     {@link #getServerSocket()}
      */
     private static ServerSocket serverSocket;
 
     /**
-     * {@link DBMessenger}
+     {@link DBMessenger}
      */
     private static MessageToUser messageToUser = new DBMessenger();
 
     /**
-     <b>Сокет для клиента</b> <br>
+     <b>Сокет для клиента</b>
+     <p>
      {@link #getSocket()} , {@link #setSocket(Socket)}
      */
     private static Socket socket;
 
-    /**
-     * {@link #myServer}
-     */
-    private MyServer() {
+    static {
+        try {
+            serverSocket = new ServerSocket(ConstantsFor.LISTEN_PORT);
+        } catch (IOException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
     }
 
     /**
@@ -89,22 +94,20 @@ public class MyServer extends Thread {
         return myServer;
     }
 
-    static {
-        try{
-            serverSocket = new ServerSocket(ConstantsFor.LISTEN_PORT);
-        }
-        catch(IOException e){
-            LOGGER.error(e.getMessage(), e);
-        }
+    /**
+     {@link #myServer}
+     */
+    private MyServer() {
     }
 
-    /**<b>Обработчик ввода из Telnet</b> <br>
+    /**
+     <b>Обработчик ввода из Telnet</b>
+     <p>
      <i>{@link SystemTrayHelper#recOn()}</i>
      <p>
-     Слушает первую строку ввода из Telnet. <br>
-     Обращается в {@link #printToSocket()}
+     Слушает первую строку ввода из Telnet. <br> Обращается в {@link #printToSocket()}
 
-     @throws IOException {@link InputStream} ; {@link Socket} ; {@link #printToSocket()}
+     @throws IOException          {@link InputStream} ; {@link Socket} ; {@link #printToSocket()}
      @throws InterruptedException help и thread
      */
     public static void reconSock() throws IOException, InterruptedException {
@@ -114,23 +117,23 @@ public class MyServer extends Thread {
         InputStreamReader reader = new InputStreamReader(inputStream);
         BufferedReader bufferedReader = new BufferedReader(reader);
         String readLine = bufferedReader.readLine();
-        if(readLine.toLowerCase().contains("exit")){
+        if (readLine.toLowerCase().contains("exit")) {
             socket.close();
             System.exit(ConstantsFor.USER_EXIT);
         }
-        if(readLine.toLowerCase().contains("help")){
+        if (readLine.toLowerCase().contains("help")) {
             PrintWriter printWriter = new PrintWriter(socket.getOutputStream(), true);
             printWriter.println("exit - выход из приложения");
             printWriter.println("con - вывод в консоль");
             Thread.sleep(TimeUnit.SECONDS.toMillis(10));
             printToSocket();
         }
-        if(readLine.toLowerCase().contains("con")) {
+        if (readLine.toLowerCase().contains("con")) {
             System.setOut(err);
             socket.close();
             setSocket(new Socket());
         }
-        if(readLine.toLowerCase().contains("thread")){
+        if (readLine.toLowerCase().contains("thread")) {
             PrintWriter printWriter = new PrintWriter(socket.getOutputStream(), true);
             long millis = TimeUnit.SECONDS.toMillis(new SecureRandom().nextInt(20));
             printWriter.println(Thread.currentThread().getState() + " current thread state");
@@ -144,42 +147,24 @@ public class MyServer extends Thread {
             Thread.sleep(millis);
             printToSocket();
         }
-        if(readLine.equalsIgnoreCase("shutdown")){
+        if (readLine.equalsIgnoreCase("shutdown")) {
             Runtime.getRuntime().exec("shutdown /p /f");
         }
-        if(readLine.equalsIgnoreCase("reboot")){
+        if (readLine.equalsIgnoreCase("reboot")) {
             Runtime.getRuntime().exec("shutdown /r /f");
-        }
-        else{
+        } else {
             messageToUser.info(MyServer.class.getSimpleName(), "RUNNING console reader", Arrays.toString(readLine.getBytes()));
             printToSocket();
         }
     }
 
     /**
-     <i>{@link #reconSock()}</i>
-     <p>
-     Поддерживает соединение и возможность reconnect <br> {@code while(inputStream.available()>0)}
-
-     @throws IOException {@link InputStream} из {@link Socket}
+     @return {@link ServerSocket}
+     @deprecated 07.11.2018 (12:50)
      */
-    private static void printToSocket() throws IOException {
-        PrintWriter printWriter = new PrintWriter(socket.getOutputStream(), true);
-        InputStream inputStream = socket.getInputStream();
-        System.setOut(new PrintStream(socket.getOutputStream()));
-        printWriter.println(( float ) (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN + " | " + ConstantsFor.APP_NAME);
-        printWriter.println("NEW SOCKET: " + socket.toString());
-        while (inputStream.available() > 0) {
-            byte[] bytes = new byte[3];
-            int read = inputStream.read(bytes);
-            if(!Arrays.toString(bytes).contains("-1, -8, 3")){
-                printWriter.print(out);
-            } else{
-                printWriter.println(read);
-                socket.close();
-                setSocket(new Socket());
-            }
-        }
+    @Deprecated
+    private static ServerSocket getServerSocket() {
+        return serverSocket;
     }
 
     /**
@@ -195,7 +180,34 @@ public class MyServer extends Thread {
     }
 
     /**
-     <b>Создаёт {@link ServerSocket}</b> <br>
+     <i>{@link #reconSock()}</i>
+     <p>
+     Поддерживает соединение и возможность reconnect <br> {@code while(inputStream.available()>0)}
+
+     @throws IOException {@link InputStream} из {@link Socket}
+     */
+    private static void printToSocket() throws IOException {
+        PrintWriter printWriter = new PrintWriter(socket.getOutputStream(), true);
+        InputStream inputStream = socket.getInputStream();
+        System.setOut(new PrintStream(socket.getOutputStream()));
+        printWriter.println((float) (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN + " | " + ConstantsFor.APP_NAME);
+        printWriter.println("NEW SOCKET: " + socket.toString());
+        while (inputStream.available() > 0) {
+            byte[] bytes = new byte[3];
+            int read = inputStream.read(bytes);
+            if (!Arrays.toString(bytes).contains("-1, -8, 3")) {
+                printWriter.print(out);
+            } else {
+                printWriter.println(read);
+                socket.close();
+                setSocket(new Socket());
+            }
+        }
+    }
+
+    /**
+     <b>Создаёт {@link ServerSocket}</b>
+     <p>
      <i>{@link #run()}</i>
 
      @throws IOException {@link ServerSocket} accept() , .getReuseAddress()
@@ -212,12 +224,9 @@ public class MyServer extends Thread {
         }
     }
 
-    private static ServerSocket getServerSocket() {
-        return serverSocket;
-    }
-
     /**
      <b>Первоначальное подключение</b>
+     <p>
      <i> {@link #runSocket()} </i>
 
      @param socket {@link Socket} для подключившегося клиента
