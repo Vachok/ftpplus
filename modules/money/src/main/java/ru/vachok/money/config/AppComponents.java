@@ -5,10 +5,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Scope;
 import ru.vachok.money.ConstantsFor;
 import ru.vachok.money.components.AppVersion;
 import ru.vachok.money.components.URLContent;
 import ru.vachok.money.services.URLParser;
+import ru.vachok.money.services.sockets.TellNetSRV;
 
 
 /**
@@ -29,5 +31,11 @@ public class AppComponents {
     @Bean
     public AppVersion appVersion() {
         return new AppVersion();
+    }
+
+    @Bean
+    @Scope("singleton")
+    public static TellNetSRV tellNetSRV() {
+        return new TellNetSRV();
     }
 }

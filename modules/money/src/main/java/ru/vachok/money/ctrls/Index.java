@@ -13,7 +13,7 @@ import ru.vachok.money.components.AppFooter;
 import ru.vachok.money.components.Visitor;
 import ru.vachok.money.config.AppCtx;
 import ru.vachok.money.services.TimeWorms;
-import ru.vachok.money.services.WhoIsWithSRV;
+import ru.vachok.money.services.sockets.TellNetSockets;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.InitProperties;
 
@@ -32,13 +32,13 @@ public class Index {
     /*Fields*/
     private static final Logger LOGGER = LoggerFactory.getLogger(Index.class.getSimpleName());
 
-    private WhoIsWithSRV whoIsWithSRV;
-
     private Visitor visitor;
 
     private TimeWorms timeWorms;
 
     private String dateTimeLoc;
+
+    private TellNetSockets tellNetSockets;
 
     public String getDateTimeLoc() {
         return dateTimeLoc;
@@ -54,9 +54,9 @@ public class Index {
 
     /*Instances*/
     @Autowired
-    public Index(WhoIsWithSRV whoIsWithSRV, Visitor visitor, TimeWorms timeWorms) {
-        this.whoIsWithSRV = whoIsWithSRV;
+    public Index(Visitor visitor, TellNetSockets tellNetSockets, TimeWorms timeWorms) {
         this.visitor = visitor;
+        this.tellNetSockets = tellNetSockets;
         this.timeWorms = timeWorms;
         ConfigurableEnvironment environment = AppCtx.getCtx().getEnvironment();
         for(String profile : environment.getActiveProfiles()){
@@ -80,7 +80,7 @@ public class Index {
 
         model.addAttribute("title", hrsWont + " days");
         model.addAttribute("timeleft", timeWorms.timeLeft());
-        model.addAttribute("geoloc", whoIsWithSRV.whoIs(request.getRemoteAddr()));
+
         model.addAttribute("dateTimeLoc", dateTimeLoc);
         model.addAttribute("footer", new AppFooter().getTheFooter());
 
@@ -89,5 +89,4 @@ public class Index {
         }
         return "home";
     }
-
 }

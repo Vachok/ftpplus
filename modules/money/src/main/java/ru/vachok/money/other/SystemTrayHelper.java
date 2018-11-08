@@ -4,6 +4,8 @@ package ru.vachok.money.other;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.vachok.money.ConstantsFor;
+import ru.vachok.money.config.AppComponents;
+import ru.vachok.money.services.sockets.TellNetSRV;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.InitProperties;
 
@@ -129,6 +131,13 @@ public class SystemTrayHelper {
         popupMenu.add(offSys);
         popupMenu.addSeparator();
         popupMenu.add(exitItem);
+
+        tellNetStarter();
         return popupMenu;
+    }
+
+    private void tellNetStarter() {
+        TellNetSRV tellNetSRV = AppComponents.tellNetSRV();
+        new Thread(() -> tellNetSRV.run()).start();
     }
 }

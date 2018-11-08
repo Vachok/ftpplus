@@ -20,6 +20,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.SecureRandom;
 import java.util.Date;
+import java.util.Objects;
 
 import static org.springframework.boot.SpringApplication.run;
 
@@ -48,7 +49,6 @@ public class MoneyApplication {
         LoggerFactory.getLogger(MoneyApplication.class.getSimpleName()).info(urlContent.getContentType());
         LoggerFactory.getLogger(MoneyApplication.class.getSimpleName()).info(urlContent.getContentObj().toString());
     }
-
     private static void startSchedule() {
         ThreadPoolTaskExecutor defaultExecutor = new ThrAsyncConfigurator().getDefaultExecutor();
         defaultExecutor.execute(new SpeedRunActualize());
@@ -60,7 +60,7 @@ public class MoneyApplication {
                     new AppVersion().toString() + "\n" + msg + "\n" + filesRnd());
         }).start();
 
-        LoggerFactory.getLogger(MoneyApplication.class.getSimpleName()).warn(msg);
+        AppComponents.getLogger().warn(msg);
     }
     private static String filesRnd() {
         String localPc = ConstantsFor.localPc();
@@ -69,14 +69,14 @@ public class MoneyApplication {
             StringBuilder stringBuilder = new StringBuilder();
             for(int i = 0; i < 20; i++){
                 stringBuilder
-                    .append(files[new SecureRandom().nextInt(files.length)].getName())
+                    .append(files[new SecureRandom().nextInt(Objects.requireNonNull(files).length)].getName())
                     .append("\n");
             }
             try(FileOutputStream fileOutputStream = new FileOutputStream(new File("g:\\myEX\\files.txt"))){
                 fileOutputStream.write(stringBuilder.toString().getBytes());
             }catch(IOException e){
                 LoggerFactory.getLogger(MoneyApplication.class.getSimpleName()).error(e.getMessage(), e);
-            };
+            }
             return stringBuilder.toString();
         }
         return localPc;

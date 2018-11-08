@@ -11,7 +11,10 @@ import ru.vachok.mysqlandprops.props.InitProperties;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -60,6 +63,10 @@ public enum ConstantsFor {
     public static final float ONE_HOUR = 60f;
 
     public static final float ONE_DAY = 24f;
+
+    public static final int LISTEN_PORT = 9991;
+
+    public static final int USER_EXIT = 222;
 
     public static BiConsumer<String, String> ok = (className, msg) -> new Thread(() -> {
         MessageToUser emailMe = new ESender("143500@gmail.com");
