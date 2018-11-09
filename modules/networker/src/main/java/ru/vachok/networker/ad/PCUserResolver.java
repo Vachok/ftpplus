@@ -14,7 +14,7 @@ import java.util.*;
 /**
  @since 02.10.2018 (17:32) */
 @Service
-public class PCUserResolver {
+public class PCUserResolver { // todo https://github.com/Vachok/ftpplus/blob/289014503abc43c30a7f3196e457113a7e757c23/modules/networker/src/main/java/ru/vachok/networker/ad/PCUserResolver.java#L17
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PCUserResolver.class.getSimpleName());
 
