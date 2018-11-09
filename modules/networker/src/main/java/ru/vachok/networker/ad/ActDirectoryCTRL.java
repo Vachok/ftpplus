@@ -12,6 +12,7 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.PageFooter;
+import ru.vachok.networker.net.NetScannerSvc;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -28,6 +29,8 @@ public class ActDirectoryCTRL {
 
     private static String inputWithInfoFromDB;
 
+    private String titleStr = "PowerShell. Применить на SRV-MAIL3";
+
     private PhotoConverterSRV photoConverterSRV;
 
     @Autowired
@@ -39,7 +42,6 @@ public class ActDirectoryCTRL {
     public static void setInputWithInfoFromDB(String inputWithInfoFromDB) {
         ActDirectoryCTRL.inputWithInfoFromDB = inputWithInfoFromDB;
     }
-
 
     @GetMapping("/ad")
     public String adUsersComps(HttpServletRequest request, Model model) {
@@ -56,7 +58,9 @@ public class ActDirectoryCTRL {
     }
 
     private String queryStringExists(String queryString, Model model) {
-        model.addAttribute("title", queryString);
+        NetScannerSvc iScan = NetScannerSvc.getI();
+        iScan.setThePc(queryString);
+        model.addAttribute("title", queryString + " " + iScan.getInfoFromDB());
         model.addAttribute(ConstantsFor.USERS, inputWithInfoFromDB);
         try {
             model.addAttribute("details", adSrv.getDetails(queryString));
@@ -72,7 +76,8 @@ public class ActDirectoryCTRL {
         this.photoConverterSRV = photoConverterSRV;
         try {
             model.addAttribute("photoConverterSRV", photoConverterSRV);
-            model.addAttribute("title", "PowerShell. Применить на SRV-MAIL3");
+            if (!ConstantsFor.isPingOK()) titleStr = "ping to srv-git.eatmeat.ru is " + false;
+            model.addAttribute("title", titleStr);
             model.addAttribute("content", photoConverterSRV.psCommands());
             model.addAttribute("alert", ConstantsFor.ALERT_AD_FOTO);
             model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext());
@@ -84,7 +89,6 @@ public class ActDirectoryCTRL {
 
     private String adUserString() {
         ADUser adUser = AppComponents.pcUserResolver().adUsersSetter();
-
         return adUser.toString();
     }
 }

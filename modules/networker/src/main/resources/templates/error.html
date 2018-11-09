@@ -7,6 +7,9 @@
 </head>
 <body bgcolor="#B63E3F"/>
 <p th:utext="${eMessage}"/>
+<details>
+    <summary>Посмотреть Stack Trace</summary>
+    <p th:utext="${stackTrace}"/></details>
 <p th:utext="${statcode}"/>
 <p>
 <center>
@@ -16,8 +19,5 @@
 </body>
 <footer>
     <p th:utext="${footer}"/>
-    <p><br>
-        <textarea rows="15" cols="10" th:text="${stackTrace}"/>
-    </p>
 </footer>
 </html>

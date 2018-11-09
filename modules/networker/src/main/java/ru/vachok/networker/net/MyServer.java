@@ -6,7 +6,9 @@ import org.slf4j.LoggerFactory;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SystemTrayHelper;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.componentsrepo.VersionInfo;
 import ru.vachok.networker.services.DBMessenger;
 
 import java.io.*;
@@ -14,6 +16,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.security.SecureRandom;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
@@ -26,6 +29,8 @@ import static java.lang.System.out;
 
  @since 03.11.2018 (23:51) */
 public class MyServer extends Thread {
+
+    /*Fields*/
 
     /**
      Simple Name класса, для поиска настроек
@@ -44,8 +49,8 @@ public class MyServer extends Thread {
 
     /**
      <b>Сокет для сервера</b>
-     <p>
-     {@link #getServerSocket()}
+
+     @see ConstantsFor#LISTEN_PORT
      */
     private static ServerSocket serverSocket;
 
@@ -60,14 +65,6 @@ public class MyServer extends Thread {
      {@link #getSocket()} , {@link #setSocket(Socket)}
      */
     private static Socket socket;
-
-    static {
-        try {
-            serverSocket = new ServerSocket(ConstantsFor.LISTEN_PORT);
-        } catch (IOException e) {
-            LOGGER.error(e.getMessage(), e);
-        }
-    }
 
     /**
      <i>{@link SystemTrayHelper#recOn()}</i>
@@ -94,10 +91,20 @@ public class MyServer extends Thread {
         return myServer;
     }
 
+    /*Instances*/
+
     /**
      {@link #myServer}
      */
     private MyServer() {
+    }
+
+    static {
+        try {
+            serverSocket = new ServerSocket(ConstantsFor.LISTEN_PORT);
+        } catch (IOException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
     }
 
     /**
@@ -111,41 +118,30 @@ public class MyServer extends Thread {
      @throws InterruptedException help и thread
      */
     public static void reconSock() throws IOException, InterruptedException {
-        Socket socket = getServerSocket().accept();
+        Socket socket = serverSocket.accept();
         setSocket(socket);
         InputStream inputStream = socket.getInputStream();
+        PrintStream printStream = new PrintStream(socket.getOutputStream());
         InputStreamReader reader = new InputStreamReader(inputStream);
         BufferedReader bufferedReader = new BufferedReader(reader);
+        printStream.println(new VersionInfo().toString());
+        printStream.println("Press Enter or enter command:\n");
         String readLine = bufferedReader.readLine();
         if (readLine.toLowerCase().contains("exit")) {
             socket.close();
             System.exit(ConstantsFor.USER_EXIT);
         }
         if (readLine.toLowerCase().contains("help")) {
-            PrintWriter printWriter = new PrintWriter(socket.getOutputStream(), true);
-            printWriter.println("exit - выход из приложения");
-            printWriter.println("con - вывод в консоль");
-            Thread.sleep(TimeUnit.SECONDS.toMillis(10));
-            printToSocket();
+            ifHelp();
         }
         if (readLine.toLowerCase().contains("con")) {
-            System.setOut(err);
-            socket.close();
-            setSocket(new Socket());
+            ifCon();
         }
         if (readLine.toLowerCase().contains("thread")) {
-            PrintWriter printWriter = new PrintWriter(socket.getOutputStream(), true);
-            long millis = TimeUnit.SECONDS.toMillis(new SecureRandom().nextInt(20));
-            printWriter.println(Thread.currentThread().getState() + " current thread state");
-            printWriter.println(Thread.currentThread().getName() + " name");
-            printWriter.println(Thread.currentThread().getPriority() + " prio");
-            printWriter.println(Thread.currentThread().getThreadGroup().activeCount() + " getThreadGroup().activeCount()");
-            printWriter.println(Thread.currentThread().getThreadGroup().activeGroupCount() + " getThreadGroup().activeGroupCount()");
-            printWriter.println(Thread.currentThread().getThreadGroup().toString() + " getThreadGroup().toString()");
-            printWriter.println();
-            printWriter.println(millis / 1000 + " sec to start console read");
-            Thread.sleep(millis);
-            printToSocket();
+            ifThread();
+        }
+        if (readLine.toLowerCase().contains("netscan")) {
+            ifNetScan();
         }
         if (readLine.equalsIgnoreCase("shutdown")) {
             Runtime.getRuntime().exec("shutdown /p /f");
@@ -153,29 +149,74 @@ public class MyServer extends Thread {
         if (readLine.equalsIgnoreCase("reboot")) {
             Runtime.getRuntime().exec("shutdown /r /f");
         } else {
-            messageToUser.info(MyServer.class.getSimpleName(), "RUNNING console reader", Arrays.toString(readLine.getBytes()));
             printToSocket();
         }
     }
 
     /**
-     @return {@link ServerSocket}
-     @deprecated 07.11.2018 (12:50)
+     <b>Help if</b>
+
+     @throws IOException          {@link #printToSocket()} , {@link #socket}.getOutputStream()
+     @throws InterruptedException {@link Thread}.sleep()
      */
-    @Deprecated
-    private static ServerSocket getServerSocket() {
-        return serverSocket;
+    private static void ifHelp() throws IOException, InterruptedException {
+        PrintWriter printWriter = new PrintWriter(socket.getOutputStream(), true);
+        printWriter.println("exit - close connection and exit app");
+        printWriter.println("con - switch out to System.err and close connection");
+        Thread.sleep(TimeUnit.SECONDS.toMillis(10));
+        printToSocket();
     }
 
     /**
-     {@link #runSocket()}
+     <b>Con if</b>
+
+     @throws IOException {@link #socket}.close()
      */
-    @Override
-    public void run() {
+    private static void ifCon() throws IOException {
+        System.setOut(err);
+        socket.close();
+        setSocket(new Socket());
+    }
+
+    /**
+     <b>Thread if</b>
+
+     @throws IOException          {@link #printToSocket()} , {@link #socket}.getOutputStream()
+     @throws InterruptedException {@link Thread}.sleep()
+     */
+    private static void ifThread() throws IOException, InterruptedException {
+        PrintWriter printWriter = new PrintWriter(socket.getOutputStream(), true);
+        long millis = TimeUnit.SECONDS.toMillis(new SecureRandom().nextInt(20));
+        printWriter.println(Thread.currentThread().getState() + " current thread state");
+        printWriter.println(Thread.currentThread().getName() + " name");
+        printWriter.println(Thread.currentThread().getPriority() + " prio");
+        printWriter.println(Thread.currentThread().getThreadGroup().activeCount() + " getThreadGroup().activeCount()");
+        printWriter.println(Thread.currentThread().getThreadGroup().activeGroupCount() + " getThreadGroup().activeGroupCount()");
+        printWriter.println(Thread.currentThread().getThreadGroup().toString() + " getThreadGroup().toString()");
+        printWriter.println();
+        printWriter.println(millis / 1000 + " sec to start console read");
+        Thread.sleep(millis);
+        printToSocket();
+    }
+
+    /**
+     <b>Netscan if</b>
+
+     @throws IOException {@link #socket}.close()
+     */
+    private static void ifNetScan() throws IOException {
+        PrintWriter printWriter = new PrintWriter(socket.getOutputStream(), true);
+        NetScannerSvc i = NetScannerSvc.getI();
         try {
-            runSocket();
-        } catch (IOException e) {
-            LOGGER.error(e.getMessage(), e);
+            String thePc = i.getThePc();
+            printToSocket();
+            printWriter.println(thePc);
+        } catch (Exception e) {
+            System.setOut(err);
+            messageToUser.errorAlert(SOURCE_CLASS, e.getMessage(), new TForms().fromArray(e, false));
+            socket.close();
+            socket = new Socket();
+
         }
     }
 
@@ -192,6 +233,7 @@ public class MyServer extends Thread {
         System.setOut(new PrintStream(socket.getOutputStream()));
         printWriter.println((float) (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN + " | " + ConstantsFor.APP_NAME);
         printWriter.println("NEW SOCKET: " + socket.toString());
+        printWriter.println("APP INFO: " + new VersionInfo().toString());
         while (inputStream.available() > 0) {
             byte[] bytes = new byte[3];
             int read = inputStream.read(bytes);
@@ -199,9 +241,22 @@ public class MyServer extends Thread {
                 printWriter.print(out);
             } else {
                 printWriter.println(read);
+                System.setOut(err);
                 socket.close();
                 setSocket(new Socket());
             }
+        }
+    }
+
+    /**
+     {@link #runSocket()}
+     */
+    @Override
+    public void run() {
+        try {
+            runSocket();
+        } catch (IOException e) {
+            LOGGER.error(e.getMessage(), e);
         }
     }
 
@@ -217,9 +272,13 @@ public class MyServer extends Thread {
             socket = serverSocket.accept();
             accepSoc(socket);
             if (socket.isClosed()) {
+                System.setOut(err);
                 String msg = serverSocket.getReuseAddress() + " getReuseAddress";
                 LOGGER.warn(msg);
                 break;
+            }
+            if (!socket.isConnected()) {
+                System.setOut(err);
             }
         }
     }
@@ -240,7 +299,10 @@ public class MyServer extends Thread {
                 .append((float) (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / 60)
                 .append(" APP RUNNING \n")
                 .append(ConstantsFor.APP_NAME)
-                .append("\n\n\n");
+                .append("\n\n\n")
+                .append(new Date())
+                .append(" build ")
+                .append(new VersionInfo().toString());
             printWriter.println(f.toString());
             if (scanner.hasNext()) {
                 while (socket.isConnected()) {

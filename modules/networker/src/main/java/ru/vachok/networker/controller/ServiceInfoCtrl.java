@@ -9,17 +9,14 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.AppComponents;
-import ru.vachok.networker.componentsrepo.PageFooter;
-import ru.vachok.networker.componentsrepo.ServiceInform;
-import ru.vachok.networker.componentsrepo.Visitor;
-import ru.vachok.networker.config.AppCtx;
+import ru.vachok.networker.componentsrepo.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.file.AccessDeniedException;
 import java.time.LocalTime;
+import java.util.Date;
 import java.util.Map;
 
 
@@ -66,12 +63,11 @@ public class ServiceInfoCtrl {
         model.addAttribute("title", "srv-git is " + pingBool() + "noF: " +
             ConstantsFor.NO_F_DAYS);
         model.addAttribute("ping", pingGit());
-        model.addAttribute("urls", new AppCtx().toString().replaceAll("\n", "<br>"));
+        model.addAttribute("urls", "Запущено - " + new Date(ConstantsFor.START_STAMP) + ConstantsFor.getUpTime());
         model.addAttribute("request", prepareRequest(request));
-        model.addAttribute("visit", AppComponents.versionInfo().toString());
+        model.addAttribute("visit", new VersionInfo().toString());
         model.addAttribute("back", request.getHeader("REFERER".toLowerCase()));
         model.addAttribute("footer", new PageFooter().getFooterUtext());
-        //        model.addAttribute("res", serviceInform.getResourcesTXT()); fixme 02.10.2018 (20:40)
     }
     private boolean pingBool() {
         try {

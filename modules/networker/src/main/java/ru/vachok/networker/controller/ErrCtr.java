@@ -10,7 +10,6 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.PageFooter;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -37,18 +36,20 @@ public class ErrCtr implements ErrorController {
         return "/error";
     }
 
-    /**<b>Страница обработчика ошибок</b>
+    /**
+     <b>Страница обработчика ошибок</b>
      Отображает сообщения exception
 
-     @see TForms
      @param httpServletRequest the http servlet request
-     @param model {@link Model} . Аттрибуты - <i>eMessage</i>, <i>statcode</i>, <i>2</i>
+     @param model              {@link Model} . Аттрибуты - <i>eMessage</i>, <i>statcode</i>, <i>2</i>
      @return error.html
+     @see TForms
      */
     @GetMapping("/error")
     public String errHandle(HttpServletRequest httpServletRequest, Model model) {
         Integer statCode = (Integer) httpServletRequest.getAttribute("javax.servlet.error.status_code");
         Exception exception = (Exception) httpServletRequest.getAttribute("javax.servlet.error.exception");
+
         model.addAttribute("eMessage", httpServletRequest
             .getRequestURL() +
             " тут нет того, что ищешь.<br>" +
@@ -60,26 +61,32 @@ public class ErrCtr implements ErrorController {
             H_2_CENTER_CLOSE.replaceAll("2", "4"));
         model.addAttribute("statcode", H_2_CENTER + statCode + H_2_CENTER_CLOSE);
 
-        if (exception != null) {
-            String eMessage = H_2_CENTER + exception.getMessage() + H_2_CENTER_CLOSE;
-            String eLocalizedMessage = H_2_CENTER + exception.getMessage() + H_2_CENTER_CLOSE;
-            String err = "Научно-Исследовательский Институт Химии Удобрений и Ядов" + statCode;
-            String traceStr = new TForms().fromArray(exception, false);
-
-            long lastAccessedTime = httpServletRequest.getSession().getLastAccessedTime();
-
-            if (!exception.getMessage().equals(exception.getLocalizedMessage())) eMessage = eMessage + eLocalizedMessage;
-
-            if (ConstantsFor.getPcAuth(httpServletRequest)) model.addAttribute("stackTrace", traceStr);
-
-            model.addAttribute("eMessage", eMessage);
-            model.addAttribute("statcode", H_2_CENTER + statCode + H_2_CENTER_CLOSE);
-            model.addAttribute("title", TimeUnit.MILLISECONDS
-                .toSeconds(lastAccessedTime - httpServletRequest.getSession().getCreationTime()) + " sec. sess.");
-            model.addAttribute("ref", httpServletRequest.getHeader("referer"));
-            model.addAttribute("err", err);
-            model.addAttribute("footer", new PageFooter().getFooterUtext());
-        }
+        if (exception != null) setExcept(model, exception, statCode, httpServletRequest);
         return "error";
+    }
+
+    /**
+     <b>Модель ошибки</b>
+
+     @param model              {@link Model} модель
+     @param exception          {@link Exception} ошибка
+     @param statCode           {@link Integer}. Статус ошибки http
+     @param httpServletRequest {@link javax.servlet.http.HttpServletRequest} запрос со-стороны пользователя
+     @see #errHandle(HttpServletRequest, Model)
+     */
+    private void setExcept(Model model, Exception exception, Integer statCode, HttpServletRequest httpServletRequest) {
+        String eMessage = H_2_CENTER + exception.getMessage() + H_2_CENTER_CLOSE;
+        String eLocalizedMessage = H_2_CENTER + exception.getMessage() + H_2_CENTER_CLOSE;
+        String err = statCode + " Научно-Исследовательский Институт Химии Удобрений и Ядов";
+        String traceStr = new TForms().fromArray(exception, true);
+
+        if (!exception.getMessage().equals(exception.getLocalizedMessage())) eMessage = eMessage + eLocalizedMessage;
+        if (ConstantsFor.getPcAuth(httpServletRequest)) model.addAttribute("stackTrace", traceStr);
+
+        model.addAttribute("eMessage", eMessage);
+        model.addAttribute("statcode", H_2_CENTER + statCode + H_2_CENTER_CLOSE);
+        model.addAttribute("title", err);
+        model.addAttribute("ref", httpServletRequest.getHeader("referer"));
+        model.addAttribute("footer", new PageFooter().getFooterUtext());
     }
 }

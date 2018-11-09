@@ -20,10 +20,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -265,7 +262,7 @@ public class NetScannerSvc {
      @param pcName имя компьютера
      @return выдержка из БД (когда последний раз был онлайн + кол-во проверок)
      */
-    private String getSomeMore(String pcName) {
+    public String getSomeMore(String pcName) {
         List<Integer> onLine = new ArrayList<>();
         List<Integer> offLine = new ArrayList<>();
         try(PreparedStatement statement = c.prepareStatement("select * from velkompc where NamePP like ?")){
@@ -397,5 +394,14 @@ public class NetScannerSvc {
             inDex = ConstantsFor.TDPC;
         }
         return inDex;
+    }
+
+    @Override
+    public String toString() {
+        return new StringJoiner("\n", NetScannerSvc.class.getSimpleName() + "\n", "\n")
+            .add("infoFromDB='" + getInfoFromDB() + "\n")
+            .add("qer='" + qer + "\n")
+            .add("thePc='" + thePc + "\n")
+            .toString();
     }
 }

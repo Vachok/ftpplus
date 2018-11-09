@@ -20,7 +20,7 @@ plugins {
 }
 
 group = 'ru.vachok.networker'
-version = '0.243'
+version = '0.246'
 sourceCompatibility = 1.8
 
 repositories {

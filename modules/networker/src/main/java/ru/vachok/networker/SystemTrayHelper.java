@@ -2,7 +2,6 @@ package ru.vachok.networker;
 
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.componentsrepo.AppComponents;
@@ -25,31 +24,33 @@ import static java.lang.System.*;
  @since 29.09.2018 (22:33) */
 public class SystemTrayHelper {
 
+    /*Fields*/
     private static final String IMG_FOLDER_NAME = "/static/images/";
-
-    private static SystemTrayHelper s = new SystemTrayHelper();
 
     private static final Logger LOGGER = AppComponents.getLogger();
 
-    private static MessageToUser messageToUser = new DBMessenger();
+    private static SystemTrayHelper s = new SystemTrayHelper();
 
-    private SystemTrayHelper() {
-    }
+    private static MessageToUser messageToUser = new DBMessenger();
 
     public static SystemTrayHelper getInstance() {
         return s;
     }
 
+    /*Instances*/
+    private SystemTrayHelper() {
+    }
 
-    public static void addTray(String iconFileName) {
+    static void addTray(String iconFileName) {
         SystemTray systemTray = SystemTray.getSystemTray();
         boolean myPC = ConstantsFor.thisPC().toLowerCase().contains("no0027") || ConstantsFor.thisPC().equalsIgnoreCase("home");
-        if (iconFileName == null) {
+        if(iconFileName==null){
             iconFileName = "icons8-ip-адрес-15.png";
         }
-        else
+        else{
             if(myPC){
-            iconFileName = "icons8-плохие-поросята-48.png";
+                iconFileName = "icons8-плохие-поросята-48.png";
+            }
         }
         if(!srvGitIs()){
             iconFileName = "icons8-отменить-2-20.png";
@@ -93,6 +94,16 @@ public class SystemTrayHelper {
         }
     }
 
+    private static boolean srvGitIs() {
+        try{
+            return InetAddress.getByName("srv-git.eatmeat.ru").isReachable(1000);
+        }
+        catch(IOException e){
+            LOGGER.error(e.getMessage(), e);
+            return false;
+        }
+    }
+
     private static void additionalItems(PopupMenu popupMenu) {
         ThreadConfig threadConfig = new ThreadConfig();
         ThreadPoolTaskExecutor executor = threadConfig.threadPoolTaskExecutor();
@@ -106,9 +117,10 @@ public class SystemTrayHelper {
                 "sudo git instaweb -p 9999;" +
                 "exit").build().call();
             Future<String> submit = executor.submit(sshStr);
-            try {
+            try{
                 LOGGER.info(submit.get(30, TimeUnit.SECONDS));
-            } catch (InterruptedException | ExecutionException | TimeoutException e) {
+            }
+            catch(InterruptedException | ExecutionException | TimeoutException e){
                 Thread.currentThread().interrupt();
             }
         });
@@ -134,16 +146,6 @@ public class SystemTrayHelper {
                 messageToUser.errorAlert(SystemTrayHelper.class.getSimpleName(), e1.getMessage(), new TForms().fromArray(e1, false));
                 Thread.currentThread().interrupt();
             }
-        }
-    }
-
-    private static boolean srvGitIs() {
-        try{
-            return InetAddress.getByName("srv-git.eatmeat.ru").isReachable(1000);
-        }
-        catch(IOException e){
-            LOGGER.error(e.getMessage(), e);
-            return false;
         }
     }
 }

@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
 
 
 /**
- <h2>Константы</h2>
+ <b>Константы</b>
 
  @since 12.08.2018 (16:26) */
 public enum ConstantsFor {
@@ -168,6 +168,10 @@ public enum ConstantsFor {
     public static final String APP_NAME = "ru_vachok_networker-";
 
     public static final String THIS_PC_NAME = thisPC();
+
+    public static String getUpTime() {
+        return "(" + (+(float) (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / 60 / 60) + " hrs ago)";
+    }
 
     private static Properties takePr() {
         try {
