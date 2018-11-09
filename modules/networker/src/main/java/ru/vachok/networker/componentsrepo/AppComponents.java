@@ -132,6 +132,11 @@ public class AppComponents {
         return ConstantsFor.COMPNAME_USERS_MAP;
     }
 
+    /**
+     {@link org.springframework.ui.Model} attribute "ruleset"
+
+     @return {@link RuleSet}
+     */
     @Bean
     public RuleSet ruleSet() {
         return new RuleSet();

@@ -2,14 +2,21 @@ package ru.vachok.networker.mailserver;
 
 
 import org.springframework.stereotype.Component;
+import org.springframework.ui.Model;
 
-/**
+/**<b>Exchange Rules Changer</b>
  @since 09.11.2018 (9:38) */
 @Component("ruleset")
 public class RuleSet {
 
+    /**
+     Get-TransportRule -identity
+     */
     private String identity;
 
+    /**
+     Get-TransportRule -fromAddressMatchesPatterns
+     */
     private String fromAddressMatchesPatterns;
 
     public String getIdentity() {
@@ -28,6 +35,12 @@ public class RuleSet {
         this.fromAddressMatchesPatterns = fromAddressMatchesPatterns;
     }
 
+    /**
+     <b>Разбор ввода в форму</b>
+     {@link ExCTRL#ruleSetPost(RuleSet, Model)}
+
+     @return Set-TransportRule -Identity "{@link #identity}" -FromAddressMatchesPattern {@link #fromAddressMatchesPatterns} -ExceptIfHasClassification "Default\ExCompanyConfidential"
+     */
     public String getCopyToRuleSetter() {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder

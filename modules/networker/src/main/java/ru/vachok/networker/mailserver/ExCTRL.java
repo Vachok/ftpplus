@@ -108,8 +108,17 @@ public class ExCTRL {
         return "exchange";
     }
 
+    /**
+     <b>Post-запрос</b>
+     <p>
+     Запрос, для устанвки полей {@link RuleSet#fromAddressMatchesPatterns} и {@link RuleSet#identity}
+
+     @param ruleSet {@link RuleSet}
+     @param model   {@link Model}
+     @return ok.html
+     */
     @PostMapping("/ruleset")
-    public String ruleSet(@ModelAttribute RuleSet ruleSet, Model model) {
+    public String ruleSetPost(@ModelAttribute RuleSet ruleSet, Model model) {
         this.ruleSet = ruleSet;
         rawS = ruleSet.getIdentity() + "<br>" + ruleSet.getFromAddressMatchesPatterns() + "<p>" + ruleSet.getCopyToRuleSetter();
         model.addAttribute("ruleset", ruleSet);
@@ -120,8 +129,14 @@ public class ExCTRL {
         return "ok";
     }
 
+    /**<b>GET-ответ</b>
+     @see #ruleSet
+     @param model {@link Model}
+     @param response {@link HttpServletResponse}
+     @return redirect:/ok?FromAddressMatchesPatterns
+     */
     @GetMapping("/ruleset")
-    public String getRuleSet(Model model, HttpServletResponse response) {
+    public String ruleSetGet(Model model, HttpServletResponse response) {
         response.addHeader("pcs", "FromAddressMatchesPatterns");
         model.addAttribute("ruleset", ruleSet);
         model.addAttribute("ok", rawS);

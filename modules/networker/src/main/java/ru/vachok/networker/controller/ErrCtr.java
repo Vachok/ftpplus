@@ -65,6 +65,15 @@ public class ErrCtr implements ErrorController {
         return "error";
     }
 
+    /**
+     <b>Модель ошибки</b>
+
+     @param model              {@link Model} модель
+     @param exception          {@link Exception} ошибка
+     @param statCode           {@link Integer}. Статус ошибки http
+     @param httpServletRequest {@link javax.servlet.http.HttpServletRequest} запрос со-стороны пользователя
+     @see #errHandle(HttpServletRequest, Model)
+     */
     private void setExcept(Model model, Exception exception, Integer statCode, HttpServletRequest httpServletRequest) {
         String eMessage = H_2_CENTER + exception.getMessage() + H_2_CENTER_CLOSE;
         String eLocalizedMessage = H_2_CENTER + exception.getMessage() + H_2_CENTER_CLOSE;
