@@ -13,6 +13,7 @@ import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.ad.ADUser;
 import ru.vachok.networker.ad.PCUserResolver;
 import ru.vachok.networker.mailserver.ExSRV;
+import ru.vachok.networker.mailserver.RuleSet;
 import ru.vachok.networker.net.NetScannerSvc;
 import ru.vachok.networker.services.SimpleCalculator;
 
@@ -129,6 +130,11 @@ public class AppComponents {
         ConstantsFor.COMPNAME_USERS_MAP.clear();
         ConstantsFor.COMPNAME_USERS_MAP.put("INIT", new File("."));
         return ConstantsFor.COMPNAME_USERS_MAP;
+    }
+
+    @Bean
+    public RuleSet ruleSet() {
+        return new RuleSet();
     }
 
 }

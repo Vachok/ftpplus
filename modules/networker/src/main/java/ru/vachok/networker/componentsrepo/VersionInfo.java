@@ -13,7 +13,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.security.SecureRandom;
 import java.util.Date;
-import java.util.StringJoiner;
 
 
 /**
@@ -113,11 +112,12 @@ public class VersionInfo {
 
     @Override
     public String toString() {
-        return new StringJoiner("; ", VersionInfo.class.getSimpleName() + "\n", "\n")
-            .add("appBuild='" + appBuild + "'\n")
-            .add("appName='" + appName + "'\n")
-            .add("appVersion='" + appVersion + "'\n")
-            .add("buildTime='" + buildTime + "'\n")
-            .toString();
+        final StringBuilder sb = new StringBuilder("VersionInfo{");
+        sb.append("appBuild='").append(appBuild).append('\'');
+        sb.append(", appName='").append(appName).append('\'');
+        sb.append(", appVersion='").append(appVersion).append('\'');
+        sb.append(", buildTime='").append(buildTime).append('\'');
+        sb.append('}');
+        return sb.toString();
     }
 }

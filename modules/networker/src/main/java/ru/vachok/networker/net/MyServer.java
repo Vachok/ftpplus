@@ -20,7 +20,8 @@ import java.util.Date;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
-import static java.lang.System.*;
+import static java.lang.System.err;
+import static java.lang.System.out;
 
 
 /**
@@ -198,10 +199,12 @@ public class MyServer extends Thread {
         Socket socket = getServerSocket().accept();
         setSocket(socket);
         InputStream inputStream = socket.getInputStream();
+        PrintStream printStream = new PrintStream(socket.getOutputStream());
         InputStreamReader reader = new InputStreamReader(inputStream);
         BufferedReader bufferedReader = new BufferedReader(reader);
+        printStream.println(new VersionInfo().toString());
+        printStream.println("Press Enter or enter command:\n");
         String readLine = bufferedReader.readLine();
-
         if(readLine.toLowerCase().contains("exit")){
             socket.close();
             System.exit(ConstantsFor.USER_EXIT);

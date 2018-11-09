@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,6 +17,7 @@ import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 
 /**
@@ -25,11 +27,14 @@ public class ExCTRL {
 
     private ExSRV exSRV;
 
+    private RuleSet ruleSet;
     private static final Logger LOGGER = LoggerFactory.getLogger(ExCTRL.class.getSimpleName());
 
+    private String rawS;
     @Autowired
-    public ExCTRL(ExSRV exSRV) {
+    public ExCTRL(ExSRV exSRV, RuleSet ruleSet) {
         ConstantsFor.MAIL_RULES.clear();
+        this.ruleSet = ruleSet;
         this.exSRV = exSRV;
     }
 
@@ -46,6 +51,7 @@ public class ExCTRL {
         Visitor visitor = new Visitor(request);
         LOGGER.warn(visitor.toString());
         model.addAttribute("exsrv", exSRV);
+        model.addAttribute("ruleset", ruleSet);
         try {
             model.addAttribute(ConstantsFor.TITLE, lastChange());
             model.addAttribute("file", exSRV.fileAsStrings());
@@ -58,7 +64,7 @@ public class ExCTRL {
                     .append("Get-TransportRule | fl > имя_файла</textarea></p>").toString());
         }
 
-        model.addAttribute("footer", new PageFooter().getFooterUtext());
+        model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext());
         return "exchange";
     }
 
@@ -93,11 +99,32 @@ public class ExCTRL {
             .toString();
         String rules = new TForms().fromArrayRules(ConstantsFor.MAIL_RULES, true);
         model.addAttribute("exsrv", exSRV);
+        model.addAttribute("ruleset", ruleSet);
         model.addAttribute("file", rules + s);
         model.addAttribute(ConstantsFor.TITLE, ConstantsFor.MAIL_RULES.size() + " rules in " +
             exSRV.getFile().getSize() / ConstantsFor.KBYTE + " kb file");
         model.addAttribute("otherfields", exSRV.getOFields());
         model.addAttribute("footer", new PageFooter().getFooterUtext());
         return "exchange";
+    }
+
+    @PostMapping("/ruleset")
+    public String ruleSet(@ModelAttribute RuleSet ruleSet, Model model) {
+        this.ruleSet = ruleSet;
+        rawS = ruleSet.getIdentity() + "<br>" + ruleSet.getFromAddressMatchesPatterns() + "<p>" + ruleSet.getCopyToRuleSetter();
+        model.addAttribute("ruleset", ruleSet);
+        model.addAttribute("title", ruleSet.getIdentity());
+        model.addAttribute("ok", rawS);
+        model.addAttribute("footer", new PageFooter().getFooterUtext());
+
+        return "ok";
+    }
+
+    @GetMapping("/ruleset")
+    public String getRuleSet(Model model, HttpServletResponse response) {
+        response.addHeader("pcs", "FromAddressMatchesPatterns");
+        model.addAttribute("ruleset", ruleSet);
+        model.addAttribute("ok", rawS);
+        return "redirect:/ok?FromAddressMatchesPatterns";
     }
 }

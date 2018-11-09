@@ -18,7 +18,10 @@ import ru.vachok.networker.services.WhoIsWithSRV;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 
@@ -195,7 +198,7 @@ public class MatrixCtr {
             .format("select * from matrix where Doljnost like '%%%s%%';", workPos));
         this.matrixSRV.setWorkPos(workPosition);
         LOGGER.info(workPosition);
-        return MATRIX_STRING_NAME;
+        return REDIRECT_MATRIX;
     }
 
     private String resoString() {
