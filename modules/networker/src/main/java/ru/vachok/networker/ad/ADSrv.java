@@ -170,6 +170,12 @@ public class ADSrv implements Runnable {
                     .append("<br>");
             }
             ConstantsFor.COMPNAME_USERS_MAP.put(s1, filesAsFile);
+            try{
+                new PCUserResolver().recToDB(queryString + ".eatmeat.ru", s1.split(" ")[1]);
+            }
+            catch(ArrayIndexOutOfBoundsException ignore){
+                //
+            }
             stringBuilder.append("<p><b>")
                 .append(s1)
                 .append("<br>")
