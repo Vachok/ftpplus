@@ -49,7 +49,7 @@ public enum ConstantsFor {
     public static final Float NO_F_DAYS = TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() -
         Long.parseLong(getTheProps().getProperty("lasts", 1515233487000L + ""))) / 60f / 24f;
 
-
+    public static final ConcurrentMap<String, String> PC_U_MAP = new ConcurrentHashMap<>();
 
     public static final String FOOTER = "footer";
 

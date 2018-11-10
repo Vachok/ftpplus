@@ -20,8 +20,7 @@ import java.util.Date;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
-import static java.lang.System.err;
-import static java.lang.System.out;
+import static java.lang.System.*;
 
 
 /**
@@ -117,14 +116,19 @@ public class MyServer extends Thread {
      @throws IOException          {@link InputStream} ; {@link Socket} ; {@link #printToSocket()}
      @throws InterruptedException help и thread
      */
-    public static void reconSock() throws IOException, InterruptedException {
+    public static void reconSock() throws IOException, InterruptedException, NullPointerException {
         Socket socket = serverSocket.accept();
         setSocket(socket);
         InputStream inputStream = socket.getInputStream();
         PrintStream printStream = new PrintStream(socket.getOutputStream());
         InputStreamReader reader = new InputStreamReader(inputStream);
         BufferedReader bufferedReader = new BufferedReader(reader);
-        printStream.println(new VersionInfo().toString());
+        try{
+            printStream.println(new VersionInfo().toString());
+        }
+        catch(RuntimeException e){
+            LOGGER.warn(e.getMessage());
+        }
         printStream.println("Press Enter or enter command:\n");
         String readLine = bufferedReader.readLine();
         if (readLine.toLowerCase().contains("exit")) {

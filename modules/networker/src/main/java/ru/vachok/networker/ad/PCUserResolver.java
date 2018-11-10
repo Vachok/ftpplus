@@ -15,6 +15,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.ConcurrentMap;
 
 
 /**<b>Ищет имя пользователя</b>
@@ -105,16 +106,20 @@ public class PCUserResolver {
     }
 
     void recToDB(String userName, String pcName) {
+        ConcurrentMap<String, String> pcUMap = ConstantsFor.PC_U_MAP;
         DataConnectTo dataConnectTo = new RegRuMysql();
-        String msg = userName + " on pc " + pcName + " is set.";
         Connection connection = dataConnectTo.getDefaultConnection("u0466446_velkom");
+
+        String msg = userName + " on pc " + pcName + " is set.";
         String sql = "insert into pcuser (pcName, userName) values(?,?)";
+
         try(PreparedStatement p = connection.prepareStatement(sql)){
             p.setString(1, userName);
             p.setString(2, pcName);
             p.executeUpdate();
 
             LOGGER.info(msg);
+            pcUMap.put(userName, pcName);
         }
         catch(SQLException e){
             LOGGER.warn(msg.replace(" set.", " not set!"));

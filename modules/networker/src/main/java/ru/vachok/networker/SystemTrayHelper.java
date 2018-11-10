@@ -151,7 +151,7 @@ public class SystemTrayHelper {
             try{
                 MyServer.reconSock();
             }
-            catch(IOException | InterruptedException e1){
+            catch(IOException | InterruptedException | NullPointerException e1){
                 messageToUser.errorAlert(SystemTrayHelper.class.getSimpleName(), e1.getMessage(), new TForms().fromArray(e1, false));
                 Thread.currentThread().interrupt();
             }

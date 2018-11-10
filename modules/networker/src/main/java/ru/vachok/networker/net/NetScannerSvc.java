@@ -188,10 +188,11 @@ public class NetScannerSvc {
                 Map<String, String> lastLogs = new AppComponents().getLastLogs();
                 String retLogs = new TForms().fromArray(lastLogs);
                 String fromArray = new TForms().fromArray(ConstantsFor.COMPNAME_USERS_MAP, false);
+                String psUser = new TForms().fromArrayUsers(ConstantsFor.PC_U_MAP, false);
                 mailMSG.info(
                     SOURCE_CLASS,
                     upTime + " min uptime. " + ConstantsFor.COMPNAME_USERS_MAP.size() + " COMPNAME_USERS_MAP size",
-                    retLogs + " \n" + fromArray);
+                    retLogs + " \n" + psUser + "\n" + fromArray);
                 try(OutputStream outputStream = new FileOutputStream("lasusers.txt")){
                     outputStream.write(fromArray.getBytes());
                 }
