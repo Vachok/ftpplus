@@ -117,9 +117,8 @@ public class PCUserResolver {
             p.setString(1, userName);
             p.setString(2, pcName);
             p.executeUpdate();
-
             LOGGER.info(msg);
-            pcUMap.put(userName, pcName);
+            pcUMap.put(pcName, msg);
         }
         catch(SQLException e){
             LOGGER.warn(msg.replace(" set.", " not set!"));
