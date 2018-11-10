@@ -3,6 +3,9 @@ package ru.vachok.networker.services;
 
 import org.apache.commons.net.whois.WhoisClient;
 import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
+import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.ADSrv;
@@ -13,6 +16,7 @@ import java.net.InetAddress;
 import java.util.Locale;
 
 
+@Service
 public class WhoIsWithSRV {
 
     /**
@@ -51,10 +55,23 @@ public class WhoIsWithSRV {
         }
         String country = locale.getCountry() + " country, " + locale.getLanguage() + " lang";
         geoLocation.append(country).append("</p>");
-
+        String traceRoute = traceRt(inetAddr);
         String msg = geoLocation.toString();
         LOGGER.info(msg);
         return traceRoute + "<p>" + msg;
+    }
+
+    private String traceRt(String inetAddr) {
+        SSHFactory.Builder sshFactoryBu = new SSHFactory.Builder(ConstantsFor.SRV_GIT, "traceroute " + inetAddr);
+        String retStr = sshFactoryBu.build().call();
+        try{
+            retStr = retStr.split(" = ")[1].replaceAll("(\\s\\d?\\d\\s)", "<br>").trim();
+        }
+        catch(ArrayIndexOutOfBoundsException e){
+            return e.getMessage();
+        }
+
+        return retStr;
     }
 
     private String whoIsQuery(String inetAddr) throws IOException {
