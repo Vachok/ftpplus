@@ -66,6 +66,7 @@ public class ActDirectoryCTRL {
             model.addAttribute("details", adSrv.getDetails(queryString));
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
+            model.addAttribute("details", e.getMessage());
         }
         model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext());
         return "aditem";

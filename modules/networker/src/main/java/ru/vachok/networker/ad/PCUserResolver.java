@@ -105,9 +105,10 @@ public class PCUserResolver {
                 }
             }
             else{
-                lastMod.put(System.currentTimeMillis(), "Can't set user for: " + x + "\n");
+                stringBuilder
+                    .append(System.currentTimeMillis())
+                    .append(" millis. Can't set user for: ").append(x).append("\n");
             }
-
             Optional<Long> max = lastMod.keySet().stream().max(Long::compareTo);
             boolean aLongPresent = max.isPresent();
             if(aLongPresent){

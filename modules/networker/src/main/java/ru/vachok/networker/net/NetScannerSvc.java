@@ -213,6 +213,7 @@ public class NetScannerSvc {
     }
 
     Set<String> getPCNamesPref(String prefix) {
+        String proizvodstvoUser = "proizvodstvo";
         this.qer = prefix;
         final long startMethTime = System.currentTimeMillis();
         boolean reachable;
@@ -224,19 +225,27 @@ public class NetScannerSvc {
                 if(!reachable){
                     String someMore = getSomeMore(pcName, false);
                     String onLines = ("online " + false + "");
-                    pcNames.add(pcName + ":" + byName.getHostAddress() + " " + onLines + "");
-                    netWork.putIfAbsent(pcName + " last name is " + someMore, false);
-
+                    onLines = onLines + "<br>";
+                    pcNames.add(pcName + ":" + byName.getHostAddress() + " " + onLines);
                     String format = MessageFormat.format("{0} {1} | {2}", pcName, onLines, someMore);
+                    netWork.putIfAbsent(pcName + " last name is " + someMore, false);
                     LOGGER.warn(format);
                 }
                 else{
-                    String someMore = getSomeMore(pcName, true);
-                    someMore = someMore + " <i><font color=\"yellow\">last name is " + getSomeMore(pcName, false) + "</i></font>";
-                    String onLines = (" online " + true + "<br>");
-                    pcNames.add(pcName + ":" + byName.getHostAddress() + onLines);
-                    netWork.putIfAbsent("<br><b><a href=\"/ad?" + pcName.split(".eatm")[0] + "\" >" + pcName + "</b></a><br>" + someMore, true);
+                    String someMore = new StringBuilder().append("<i><font color=\"yellow\">last name is ")
+                        .append(getSomeMore(pcName, false)).append("</i></font> ")
+                        .append(getSomeMore(pcName, true))
+                        .toString();
+                    String onLines = (" online " + true + "");
+                    onLines = onLines + "<br><br>";
                     String format = MessageFormat.format("{0} {1} | {2}", pcName, onLines, someMore);
+                    pcNames.add(pcName + ":" + byName.getHostAddress() + onLines);
+                    String printStr = new StringBuilder().append("<br><b><a href=\"/ad?")
+                        .append(pcName.split(".eatm")[0]).append("\" >")
+                        .append(pcName).append("</b></a>     ")
+                        .append(someMore).append(". ")
+                        .toString();
+                    netWork.putIfAbsent(printStr, true);
                     LOGGER.info(format);
                 }
             }
@@ -443,17 +452,22 @@ public class NetScannerSvc {
      @return имя юзера, если есть.
      */
     private String offLinesCheckUser(String sql, String pcName) {
+        StringBuilder stringBuilder = new StringBuilder();
         try(PreparedStatement p = c.prepareStatement(sql)){
             p.setString(1, pcName);
             try(ResultSet resultSet = p.executeQuery()){
                 while(resultSet.next()){
-                    return resultSet.getString("userName") + " (time: " + resultSet.getString("whenQueried") + ")";
+                    return
+                        stringBuilder.append("<b>")
+                        .append(resultSet.getString("userName")).append("</b> (time: ")
+                        .append(resultSet.getString("whenQueried")).append(")")
+                        .toString();
                 }
             }
         }
         catch(SQLException e){
-            return e.getMessage();
+            return stringBuilder.append(e.getMessage()).toString().toUpperCase();
         }
-        return "No Name!";
+        return "No Name!".toUpperCase();
     }
 }

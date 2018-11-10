@@ -56,6 +56,7 @@ public class ADSrv implements Runnable {
         return adComputerADUserMap;
     }
 
+    /*Instances*/
     @Autowired
     public ADSrv(ADUser adUser, ADComputer adComputer) {
         this.adUser = adUser;
@@ -149,6 +150,11 @@ public class ADSrv implements Runnable {
         photoConverterSRV.psCommands();
     }
 
+    /**
+     @param queryString запрос из браузера
+     @return имя компьютера и пользователя
+     @throws IOException {@link InetAddress}.getByName(queryString + ".eatmeat.ru").isReachable(500))
+     */
     String getDetails(String queryString) throws IOException {
         if(InetAddress.getByName(queryString + ".eatmeat.ru").isReachable(500)){
             StringBuilder stringBuilder = new StringBuilder();
@@ -156,7 +162,7 @@ public class ADSrv implements Runnable {
             File filesAsFile = new File("\\\\" + queryString + ".eatmeat.ru\\c$\\Users\\");
             File[] files = filesAsFile.listFiles();
             List<String> timeName = new ArrayList<>();
-            for(File file : files){
+            for(File file : Objects.requireNonNull(files)){
                 timeName.add(file.lastModified() + " " + file.getName());
             }
             Collections.sort(timeName);
