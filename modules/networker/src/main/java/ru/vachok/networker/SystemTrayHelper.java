@@ -12,9 +12,7 @@ import ru.vachok.networker.services.DBMessenger;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.Socket;
-import java.net.URI;
+import java.net.*;
 import java.util.concurrent.*;
 
 import static java.lang.System.*;
@@ -33,25 +31,29 @@ public class SystemTrayHelper {
 
     private static MessageToUser messageToUser = new DBMessenger();
 
+    private static String thisPcName;
+
+    /*Instances*/
+
     public static SystemTrayHelper getInstance() {
         return s;
     }
 
-    /*Instances*/
+    static {
+        try{
+            thisPcName = ConstantsFor.thisPC();
+        }
+        catch(UnknownHostException e){
+            LOGGER.error(e.getMessage(), e);
+        }
+    }
     private SystemTrayHelper() {
     }
 
     static void addTray(String iconFileName) {
         SystemTray systemTray = SystemTray.getSystemTray();
-        boolean myPC = false;
-        try{
-            myPC = ConstantsFor
-                .thisPC().toLowerCase().contains("no0027") || ConstantsFor
-                .thisPC().equalsIgnoreCase("home");
-        }
-        catch(Exception ignore){
-            //
-        }
+        boolean myPC;
+        myPC = thisPcName.toLowerCase().contains("no0027") || thisPcName.equalsIgnoreCase("home");
         if(iconFileName==null){
             iconFileName = "icons8-ip-адрес-15.png";
         }
