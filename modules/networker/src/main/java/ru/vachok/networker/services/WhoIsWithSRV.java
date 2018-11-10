@@ -54,7 +54,7 @@ public class WhoIsWithSRV {
 
         String msg = geoLocation.toString();
         LOGGER.info(msg);
-        return msg;
+        return traceRoute + "<p>" + msg;
     }
 
     private String whoIsQuery(String inetAddr) throws IOException {
