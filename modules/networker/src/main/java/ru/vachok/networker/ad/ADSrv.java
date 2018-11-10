@@ -185,7 +185,7 @@ public class ADSrv implements Runnable {
             return stringBuilder.toString();
         }
         else{
-            return "PC Offline";
+            return new PCUserResolver().offNowGetU(queryString);
         }
     }
 

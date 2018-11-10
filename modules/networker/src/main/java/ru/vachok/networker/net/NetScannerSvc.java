@@ -203,7 +203,7 @@ public class NetScannerSvc {
         }).start();
     }
 
-    public Set<String> getPCNamesPref(String prefix) {
+    Set<String> getPCNamesPref(String prefix) {
         this.qer = prefix;
         final long startMethTime = System.currentTimeMillis();
         boolean reachable;
@@ -263,7 +263,7 @@ public class NetScannerSvc {
      @param pcName имя компьютера
      @return выдержка из БД (когда последний раз был онлайн + кол-во проверок)
      */
-    public String getSomeMore(String pcName) {
+    private String getSomeMore(String pcName) {
         List<Integer> onLine = new ArrayList<>();
         List<Integer> offLine = new ArrayList<>();
         try(PreparedStatement statement = c.prepareStatement("select * from velkompc where NamePP like ?")){
