@@ -16,7 +16,6 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.URI;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.lang.System.*;
 
@@ -44,11 +43,11 @@ public class SystemTrayHelper {
 
     static void addTray(String iconFileName) {
         SystemTray systemTray = SystemTray.getSystemTray();
-        AtomicBoolean myPC = null;
+        boolean myPC = false;
         try{
-            myPC = new AtomicBoolean(ConstantsFor
+            myPC = ConstantsFor
                 .thisPC().toLowerCase().contains("no0027") || ConstantsFor
-                .thisPC().equalsIgnoreCase("home"));
+                .thisPC().equalsIgnoreCase("home");
         }
         catch(Exception ignore){
             //
@@ -57,7 +56,7 @@ public class SystemTrayHelper {
             iconFileName = "icons8-ip-адрес-15.png";
         }
         else{
-            if(myPC.get()){
+            if(myPC){
                 iconFileName = "icons8-плохие-поросята-48.png";
             }
         }
@@ -151,7 +150,7 @@ public class SystemTrayHelper {
             try{
                 MyServer.reconSock();
             }
-            catch(IOException | InterruptedException e1){
+            catch(IOException | InterruptedException | NullPointerException e1){
                 messageToUser.errorAlert(SystemTrayHelper.class.getSimpleName(), e1.getMessage(), new TForms().fromArray(e1, false));
                 Thread.currentThread().interrupt();
             }
