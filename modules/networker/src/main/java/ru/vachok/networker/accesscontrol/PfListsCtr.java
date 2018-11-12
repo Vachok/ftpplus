@@ -36,6 +36,10 @@ public class PfListsCtr {
 
     private static final String METRIC_STR = "metric";
 
+    private static String thisPcName;
+
+    /*Instances*/
+
     private Visitor visitor;
 
     private PfLists pfLists;
@@ -50,8 +54,14 @@ public class PfListsCtr {
 
     private ThreadConfig threadConfig = new ThreadConfig();
 
-
-    /*Instances*/
+    static {
+        try{
+            thisPcName = ConstantsFor.thisPC();
+        }
+        catch(java.net.UnknownHostException e){
+            LOGGER.error(e.getMessage(), e);
+        }
+    }
     @Autowired
     public PfListsCtr(PfLists pfLists, PfListsSrv pfListsSrv) {
         threadConfig.taskDecorator(makePFLists);
@@ -158,8 +168,8 @@ public class PfListsCtr {
             Thread.currentThread().interrupt();
         };
         int delay = new SecureRandom().nextInt((int) TimeUnit.MINUTES.toMillis(250));
-        if (ConstantsFor.THIS_PC_NAME.toLowerCase().contains("no0027") ||
-            ConstantsFor.THIS_PC_NAME.equalsIgnoreCase("home")) {
+        if(thisPcName.toLowerCase().contains("no0027") ||
+            thisPcName.equalsIgnoreCase("home")){
             delay = 40000;
         }
         ThreadPoolTaskScheduler threadPoolTaskScheduler = new ThreadConfig().threadPoolTaskScheduler();

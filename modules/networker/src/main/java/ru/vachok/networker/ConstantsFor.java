@@ -34,12 +34,12 @@ public enum ConstantsFor {
     /**
      Число, для Secure Random
      */
-    public static final long MY_AGE = (long) Year.now().getValue() - 1984;
+    public static final long MY_AGE = ( long ) Year.now().getValue() - 1984;
 
     /**
      Первоначальная задержка {@link ThreadConfig#threadPoolTaskScheduler()}
      */
-    public static final long INIT_DELAY = new SecureRandom().nextInt((int) MY_AGE);
+    public static final long INIT_DELAY = new SecureRandom().nextInt(( int ) MY_AGE);
 
     /**
      <b>1 мегабайт в байтах</b>
@@ -49,7 +49,7 @@ public enum ConstantsFor {
     public static final Float NO_F_DAYS = TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() -
         Long.parseLong(getTheProps().getProperty("lasts", 1515233487000L + ""))) / 60f / 24f;
 
-
+    public static final ConcurrentMap<String, String> PC_U_MAP = new ConcurrentHashMap<>();
 
     public static final String FOOTER = "footer";
 
@@ -64,61 +64,15 @@ public enum ConstantsFor {
      */
     public static final Map<Long, HttpServletRequest> VISITS_MAP = new ConcurrentHashMap<>();
 
-    /**
-     {@link InitProperties}
-     */
-    private static InitProperties initProperties;
-
     public static final ConcurrentMap<String, File> COMPNAME_USERS_MAP = new ConcurrentHashMap<>();
 
-    /**
-     {@link Properties} приложения
-     */
-    public static final Properties PROPS = takePr();
 
-    public static final int LISTEN_PORT = Integer.parseInt(PROPS.getOrDefault("lport", "9990").toString());
+
     public static final ConcurrentMap<Integer, MailRule> MAIL_RULES = new ConcurrentHashMap<>();
 
-    public static final String ALERT_AD_FOTO = "<p>Для корректной работы, вам нужно положить фото юзеров <a href=\"file://srv-mail3.eatmeat.ru/c$/newmailboxes/fotoraw/\" target=\"_blank\">\\\\srv-mail3.eatmeat.ru\\c$\\newmailboxes\\fotoraw\\</a>\n";
-
-    /**
-     @param request для получения IP
-     @return boolean авторизован или нет
-     */
-    public static boolean getPcAuth(HttpServletRequest request) {
-        return request.getRemoteAddr().toLowerCase().contains("0:0:0:0") ||
-            request.getRemoteAddr().contains("10.200.213") ||
-            request.getRemoteAddr().contains("10.10.111") ||
-            request.getRemoteAddr().contains("172.16.200");
-    }
-
-    private static boolean pingOK = true;
-
-    public static boolean isPingOK() {
-        try {
-            pingOK = InetAddress.getByName("srv-git.eatmeat.ru").isReachable(500);
-        } catch (IOException e) {
-            LoggerFactory.getLogger(ConstantsFor.class.getSimpleName()).error(e.getMessage(), e);
-        }
-        return pingOK;
-    }
-
-    public static long getBuildStamp() {
-        Properties props = PROPS;
-        try {
-            String hostName = InetAddress.getLocalHost().getHostName();
-            if (hostName.equalsIgnoreCase("home") || hostName.toLowerCase().contains("no0027")) {
-                props.setProperty("build", System.currentTimeMillis() + "");
-                initProperties.delProps();
-                initProperties.setProps(props);
-                return System.currentTimeMillis();
-            } else {
-                return Long.parseLong(props.getProperty("build", "1"));
-            }
-        } catch (UnknownHostException e) {
-            return 1L;
-        }
-    }
+    public static final String ALERT_AD_FOTO =
+        "<p>Для корректной работы, вам нужно положить фото юзеров <a href=\"file://srv-mail3.eatmeat.ru/c$/newmailboxes/fotoraw/\" target=\"_blank\">\\\\srv-mail3.eatmeat" +
+            ".ru\\c$\\newmailboxes\\fotoraw\\</a>\n";
 
     public static final String NO0027 = "10.200.213.85";
 
@@ -150,13 +104,6 @@ public enum ConstantsFor {
 
     public static final int TIMEOUT_650 = 650;
 
-    public static void saveProps() {
-        initProperties.delProps();
-        initProperties.setProps(PROPS);
-        initProperties = new FileProps(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
-        initProperties.setProps(PROPS);
-    }
-
     public static final Long CACHE_TIME_MS = TimeUnit.MINUTES.toMillis(10);
 
     public static final float ONE_HOUR_IN_MIN = 60f;
@@ -167,26 +114,83 @@ public enum ConstantsFor {
 
     public static final String APP_NAME = "ru_vachok_networker-";
 
-    public static final String THIS_PC_NAME = thisPC();
+    /**
+     {@link Properties} приложения
+     */
+    public static final Properties PROPS = takePr();
 
-    public static String getUpTime() {
-        return "(" + (+(float) (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / 60 / 60) + " hrs ago)";
-    }
-
-    private static Properties takePr() {
-        try {
-            initProperties = new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
-            return initProperties.getProps();
-        } catch (Exception e) {
-
-            initProperties = new FileProps(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
-            return initProperties.getProps();
-        }
-    }
+    public static int totalPc = Integer.parseInt(PROPS.getProperty("totpc", "317"));
 
     public static final PassGenerator passGenerator = new PassGenerator();
 
-    public static int totalPc = Integer.parseInt(PROPS.getProperty("totpc", "317"));
+    public static final int LISTEN_PORT = Integer.parseInt(ConstantsFor.PROPS.getOrDefault("lport", "9990").toString());
+
+    /**
+     {@link InitProperties}
+     */
+    private static InitProperties initProperties;
+
+    private static boolean pingOK = true;
+
+    public static boolean isPingOK() {
+        try{
+            pingOK = InetAddress.getByName("srv-git.eatmeat.ru").isReachable(500);
+        }
+        catch(IOException e){
+            LoggerFactory.getLogger(ConstantsFor.class.getSimpleName()).error(e.getMessage(), e);
+        }
+        return pingOK;
+    }
+
+    public static long getBuildStamp() {
+        Properties props = PROPS;
+        try{
+            String hostName = InetAddress.getLocalHost().getHostName();
+            if(hostName.equalsIgnoreCase("home") || hostName.toLowerCase().contains("no0027")){
+                props.setProperty("build", System.currentTimeMillis() + "");
+                initProperties.delProps();
+                initProperties.setProps(props);
+                return System.currentTimeMillis();
+            }
+            else{
+                return Long.parseLong(props.getProperty("build", "1"));
+            }
+        }
+        catch(UnknownHostException e){
+            return 1L;
+        }
+    }
+
+    public static String getUpTime() {
+        return "(" + (+( float ) (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / 60 / 60) + " hrs ago)";
+    }
+
+    private static Properties getTheProps() {
+        InitProperties initProperties = new DBRegProperties("u0466446_properties-general");
+        return initProperties.getProps();
+    }
+
+    /**
+     @param request для получения IP
+     @return boolean авторизован или нет
+     */
+    public static boolean getPcAuth(HttpServletRequest request) {
+        return request.getRemoteAddr().toLowerCase().contains("0:0:0:0") ||
+            request.getRemoteAddr().contains("10.200.213") ||
+            request.getRemoteAddr().contains("10.10.111") ||
+            request.getRemoteAddr().contains("172.16.200");
+    }
+
+    public static void saveProps() {
+        initProperties.delProps();
+        initProperties.setProps(PROPS);
+        initProperties = new FileProps(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
+        initProperties.setProps(PROPS);
+    }
+
+    public static String getUserPC(HttpServletRequest request) {
+        return request.getRemoteAddr();
+    }
 
     public static String consString() {
         return "ConstantsFor{" +
@@ -207,26 +211,25 @@ public enum ConstantsFor {
             ", SSH_OUT=" + SSH_OUT +
             ", START_STAMP=" + START_STAMP +
             ", TDPC=" + TDPC +
-            ", THIS_PC_NAME='" + THIS_PC_NAME + '\'' +
+            '\'' +
             ", TIMEOUT_2=" + TIMEOUT_2 +
             ", TIMEOUT_650=" + TIMEOUT_650 +
             '}';
     }
 
-    public static String getUserPC(HttpServletRequest request) {
-        return request.getRemoteAddr();
+    public static String thisPC() throws UnknownHostException {
+        return InetAddress.getLocalHost().getHostName();
     }
 
-    private static Properties getTheProps() {
-        InitProperties initProperties = new DBRegProperties("u0466446_properties-general");
-        return initProperties.getProps();
-    }
+    private static Properties takePr() {
+        try{
+            initProperties = new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
+            return initProperties.getProps();
+        }
+        catch(Exception e){
 
-    public static String thisPC() {
-        try {
-            return InetAddress.getLocalHost().getHostName();
-        } catch (UnknownHostException e) {
-            return "No hostname!";
+            initProperties = new FileProps(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
+            return initProperties.getProps();
         }
     }
 }

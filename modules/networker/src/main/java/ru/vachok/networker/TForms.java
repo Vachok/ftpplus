@@ -346,4 +346,26 @@ public class TForms {
         if (br) return brStringBuilder.toString();
         else return nStringBuilder.toString();
     }
+
+    public String fromArrayUsers(ConcurrentMap<String, String> pcUsers, boolean br) {
+        pcUsers.forEach((x, y) -> {
+            nStringBuilder
+                .append(N_S)
+                .append(x)
+                .append(N_S)
+                .append(y);
+            brStringBuilder
+                .append("<p><h4>")
+                .append(x)
+                .append(BR_S)
+                .append(y)
+                .append("</p>");
+        });
+        if(br){
+            return brStringBuilder.toString();
+        }
+        else{
+            return nStringBuilder.toString();
+        }
+    }
 }

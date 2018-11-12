@@ -83,6 +83,20 @@ public class NetScannerSvc {
         this.qer = qer;
     }
 
+    /*Instances*/
+    private NetScannerSvc() {
+        this.netWork = AppComponents.lastNetScanMap();
+    }
+
+    @Override
+    public String toString() {
+        return new StringJoiner("\n", NetScannerSvc.class.getSimpleName() + "\n", "\n")
+            .add("infoFromDB='" + getInfoFromDB() + "\n")
+            .add("qer='" + qer + "\n")
+            .add("thePc='" + thePc + "\n")
+            .toString();
+    }
+
     /**
      Выполняет запрос в БД по-пользовательскому вводу <br>
 
@@ -150,11 +164,6 @@ public class NetScannerSvc {
         this.thePc = thePc;
     }
 
-    /*Instances*/
-    private NetScannerSvc() {
-        this.netWork = AppComponents.lastNetScanMap();
-    }
-
     /**
      Сканирующий метод. Запускает отдельный {@link Thread}, который блокируется с помощью {@link ReentrantLock}
      */
@@ -188,10 +197,11 @@ public class NetScannerSvc {
                 Map<String, String> lastLogs = new AppComponents().getLastLogs();
                 String retLogs = new TForms().fromArray(lastLogs);
                 String fromArray = new TForms().fromArray(ConstantsFor.COMPNAME_USERS_MAP, false);
+                String psUser = new TForms().fromArrayUsers(ConstantsFor.PC_U_MAP, false);
                 mailMSG.info(
                     SOURCE_CLASS,
                     upTime + " min uptime. " + ConstantsFor.COMPNAME_USERS_MAP.size() + " COMPNAME_USERS_MAP size",
-                    retLogs + " \n" + fromArray);
+                    retLogs + " \n" + psUser + "\n" + fromArray);
                 try(OutputStream outputStream = new FileOutputStream("lasusers.txt")){
                     outputStream.write(fromArray.getBytes());
                 }
@@ -202,7 +212,8 @@ public class NetScannerSvc {
         }).start();
     }
 
-    public Set<String> getPCNamesPref(String prefix) {
+    Set<String> getPCNamesPref(String prefix) {
+        String proizvodstvoUser = "proizvodstvo";
         this.qer = prefix;
         final long startMethTime = System.currentTimeMillis();
         boolean reachable;
@@ -212,18 +223,29 @@ public class NetScannerSvc {
                 byName = InetAddress.getByName(pcName);
                 reachable = byName.isReachable(ConstantsFor.TIMEOUT_650);
                 if(!reachable){
+                    String someMore = getSomeMore(pcName, false);
                     String onLines = ("online " + false + "");
-                    pcNames.add(pcName + ":" + byName.getHostAddress() + " " + onLines + "");
-                    netWork.putIfAbsent(pcName, false);
-                    String format = MessageFormat.format("{0} {1}", pcName, onLines);
+                    onLines = onLines + "<br>";
+                    pcNames.add(pcName + ":" + byName.getHostAddress() + " " + onLines);
+                    String format = MessageFormat.format("{0} {1} | {2}", pcName, onLines, someMore);
+                    netWork.putIfAbsent(pcName + " last name is " + someMore, false);
                     LOGGER.warn(format);
                 }
                 else{
-                    String someMore = getSomeMore(pcName);
-                    String onLines = (" online " + true + "<br>");
-                    pcNames.add(pcName + ":" + byName.getHostAddress() + onLines);
-                    netWork.putIfAbsent("<br><b><a href=\"/ad?" + pcName.split(".eatm")[0] + "\" >" + pcName + "</b></a><br>" + someMore, true);
+                    String someMore = new StringBuilder().append("<i><font color=\"yellow\">last name is ")
+                        .append(getSomeMore(pcName, false)).append("</i></font> ")
+                        .append(getSomeMore(pcName, true))
+                        .toString();
+                    String onLines = (" online " + true + "");
+                    onLines = onLines + "<br><br>";
                     String format = MessageFormat.format("{0} {1} | {2}", pcName, onLines, someMore);
+                    pcNames.add(pcName + ":" + byName.getHostAddress() + onLines);
+                    String printStr = new StringBuilder().append("<br><b><a href=\"/ad?")
+                        .append(pcName.split(".eatm")[0]).append("\" >")
+                        .append(pcName).append("</b></a>     ")
+                        .append(someMore).append(". ")
+                        .toString();
+                    netWork.putIfAbsent(printStr, true);
                     LOGGER.info(format);
                 }
             }
@@ -259,33 +281,21 @@ public class NetScannerSvc {
     }
 
     /**
-     @param pcName имя компьютера
+     @param pcName   имя компьютера
+     @param isOnline онлайн = true
      @return выдержка из БД (когда последний раз был онлайн + кол-во проверок)
+     либо хранимый в БД юзернейм (для offlines)
      */
-    public String getSomeMore(String pcName) {
-        List<Integer> onLine = new ArrayList<>();
-        List<Integer> offLine = new ArrayList<>();
-        try(PreparedStatement statement = c.prepareStatement("select * from velkompc where NamePP like ?")){
-            statement.setString(1, pcName);
-            try(ResultSet resultSet = statement.executeQuery()){
-                while(resultSet.next()){
-                    ADComputer adComputer = new ADComputer();
-                    int onlineNow = resultSet.getInt("OnlineNow");
-                    if(onlineNow==1){
-                        onLine.add(onlineNow);
-                        adComputer.setDnsHostName(pcName);
-                    }
-                    if(onlineNow==0){
-                        offLine.add(onlineNow);
-                    }
-                    adComputers.add(adComputer);
-                }
-            }
+    private String getSomeMore(String pcName, boolean isOnline) {
+        String sql;
+        if(isOnline){
+            sql = "select * from velkompc where NamePP like ?";
+            return onLinesCheck(sql, pcName);
         }
-        catch(SQLException | NullPointerException e){
-            LOGGER.error(e.getMessage(), e);
+        else{
+            sql = "select * from pcuser where pcName like ?";
+            return offLinesCheckUser(sql, pcName);
         }
-        return offLine.size() + " offline times and " + onLine.size() + " online times.";
     }
 
     private static String writeDB(Collection<String> pcNames) {
@@ -396,12 +406,68 @@ public class NetScannerSvc {
         return inDex;
     }
 
-    @Override
-    public String toString() {
-        return new StringJoiner("\n", NetScannerSvc.class.getSimpleName() + "\n", "\n")
-            .add("infoFromDB='" + getInfoFromDB() + "\n")
-            .add("qer='" + qer + "\n")
-            .add("thePc='" + thePc + "\n")
-            .toString();
+    /**
+     <b>Проверяет ПК онлайн</b>
+
+     @param sql    запрос
+     @param pcName имя ПК
+     @return кол-во проверок и сколько был вкл/выкл
+     */
+    private String onLinesCheck(String sql, String pcName) {
+        List<Integer> onLine = new ArrayList<>();
+        List<Integer> offLine = new ArrayList<>();
+        StringBuilder stringBuilder = new StringBuilder();
+        try(PreparedStatement statement = c.prepareStatement(sql)){
+            statement.setString(1, pcName);
+            try(ResultSet resultSet = statement.executeQuery()){
+                while(resultSet.next()){
+                    ADComputer adComputer = new ADComputer();
+                    int onlineNow = resultSet.getInt("OnlineNow");
+                    if(onlineNow==1){
+                        onLine.add(onlineNow);
+                        adComputer.setDnsHostName(pcName);
+                    }
+                    if(onlineNow==0){
+                        offLine.add(onlineNow);
+                    }
+                    adComputers.add(adComputer);
+                }
+            }
+        }
+        catch(SQLException | NullPointerException e){
+            LOGGER.error(e.getMessage(), e);
+        }
+        return stringBuilder
+            .append(offLine.size())
+            .append(" offline times and ")
+            .append(onLine.size())
+            .append(" online times.").toString();
+    }
+
+    /**
+     <b>Проверяет есть ля в БД имя пользователя</b>
+
+     @param sql    запрос
+     @param pcName имя ПК
+     @return имя юзера, если есть.
+     */
+    private String offLinesCheckUser(String sql, String pcName) {
+        StringBuilder stringBuilder = new StringBuilder();
+        try(PreparedStatement p = c.prepareStatement(sql)){
+            p.setString(1, pcName);
+            try(ResultSet resultSet = p.executeQuery()){
+                while(resultSet.next()){
+                    return
+                        stringBuilder.append("<b>")
+                        .append(resultSet.getString("userName")).append("</b> (time: ")
+                        .append(resultSet.getString("whenQueried")).append(")")
+                        .toString();
+                }
+            }
+        }
+        catch(SQLException e){
+            return stringBuilder.append(e.getMessage()).toString().toUpperCase();
+        }
+        return "No Name!".toUpperCase();
     }
 }

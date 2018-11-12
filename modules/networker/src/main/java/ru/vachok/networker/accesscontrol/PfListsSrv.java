@@ -1,7 +1,5 @@
 package ru.vachok.networker.accesscontrol;
 
-
-import com.mysql.jdbc.exceptions.jdbc4.CommunicationsException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
@@ -45,23 +43,22 @@ public class PfListsSrv {
 
     }
 
-    public ThreadPoolTaskExecutor getExecutor() {
+    ThreadPoolTaskExecutor getExecutor() {
         makeListRunner();
         return executor;
     }
 
-    public void makeListRunner() {
+    private void makeListRunner() {
         ThreadConfig threadConfig = new ThreadConfig();
-        ThreadPoolTaskExecutor executor = threadConfig.threadPoolTaskExecutor();
+        executor = threadConfig.threadPoolTaskExecutor();
         executor.execute(() -> {
             try {
                 buildFactory();
             }
-            catch(UnexpectedException | CommunicationsException e){
+            catch(UnexpectedException e){
                 AppComponents.getLogger().error(e.getMessage(), e);
             }
         });
-        this.executor = executor;
     }
 
     /**
@@ -81,9 +78,9 @@ public class PfListsSrv {
      <p>
 
      @see SSHFactory
-     @throws UnexpectedException если нет связи с srv-git. Проверка сети.
+     @throws UnexpectedException если нет связи с srv-git. Проверка сети. <i>e: No ping</i>
      */
-    private void buildFactory() throws UnexpectedException, CommunicationsException {
+    private void buildFactory() throws UnexpectedException {
         if (!ConstantsFor.isPingOK()) {
             throw new UnexpectedException("No ping");
         }

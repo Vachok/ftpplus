@@ -12,9 +12,7 @@ import ru.vachok.networker.services.DBMessenger;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.Socket;
-import java.net.URI;
+import java.net.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -34,30 +32,34 @@ public class SystemTrayHelper {
 
     private static MessageToUser messageToUser = new DBMessenger();
 
+    private static String thisPcName;
+
+    /*Instances*/
+
     public static SystemTrayHelper getInstance() {
         return s;
     }
 
-    /*Instances*/
+    static {
+        try{
+            thisPcName = ConstantsFor.thisPC();
+        }
+        catch(UnknownHostException e){
+            LOGGER.error(e.getMessage(), e);
+        }
+    }
     private SystemTrayHelper() {
     }
 
     static void addTray(String iconFileName) {
         SystemTray systemTray = SystemTray.getSystemTray();
-        AtomicBoolean myPC = null;
-        try{
-            myPC = new AtomicBoolean(ConstantsFor
-                .thisPC().toLowerCase().contains("no0027") || ConstantsFor
-                .thisPC().equalsIgnoreCase("home"));
-        }
-        catch(Exception ignore){
-            //
-        }
+        boolean myPC;
+        myPC = thisPcName.toLowerCase().contains("no0027") || thisPcName.equalsIgnoreCase("home");
         if(iconFileName==null){
             iconFileName = "icons8-ip-адрес-15.png";
         }
         else{
-            if(myPC.get()){
+            if(myPC){
                 iconFileName = "icons8-плохие-поросята-48.png";
             }
         }
@@ -151,7 +153,7 @@ public class SystemTrayHelper {
             try{
                 MyServer.reconSock();
             }
-            catch(IOException | InterruptedException e1){
+            catch(IOException | InterruptedException | NullPointerException e1){
                 messageToUser.errorAlert(SystemTrayHelper.class.getSimpleName(), e1.getMessage(), new TForms().fromArray(e1, false));
                 Thread.currentThread().interrupt();
             }

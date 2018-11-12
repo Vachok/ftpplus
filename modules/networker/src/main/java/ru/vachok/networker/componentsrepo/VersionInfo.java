@@ -7,10 +7,8 @@ import org.springframework.stereotype.Component;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.config.AppCtx;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
+import java.net.UnknownHostException;
 import java.security.SecureRandom;
 import java.util.Date;
 
@@ -31,8 +29,11 @@ public class VersionInfo {
 
     private String buildTime;
 
+    private String thisPCName;
+
+    /*Instances*/
     public VersionInfo() {
-        if (ConstantsFor.thisPC().toLowerCase().contains("home") || ConstantsFor.thisPC().toLowerCase().contains("no0")) {
+        if(thisPCName.toLowerCase().contains("home") || thisPCName.toLowerCase().contains("no0")){
             setParams();
         } else getParams();
     }
@@ -45,10 +46,10 @@ public class VersionInfo {
             file = new File("c:\\Users\\ikudryashov\\IdeaProjects\\spring\\modules\\networker\\build.gradle");
             setterVersionFromFiles(file);
         }
-        this.appBuild = ConstantsFor.thisPC() + "." + new SecureRandom().nextInt((int) ConstantsFor.MY_AGE);
+        this.appBuild = thisPCName + "." + new SecureRandom().nextInt(( int ) ConstantsFor.MY_AGE);
         ConstantsFor.PROPS.setProperty("appBuild", appBuild);
-        if (ConstantsFor.thisPC().equalsIgnoreCase("home") ||
-            ConstantsFor.thisPC().toLowerCase().contains("no0027")) {
+        if(thisPCName.equalsIgnoreCase("home") ||
+            thisPCName.toLowerCase().contains("no0027")){
             this.buildTime = new Date(ConstantsFor.START_STAMP).toString();
             ConstantsFor.PROPS.setProperty("buildTime", buildTime);
         }
@@ -56,6 +57,15 @@ public class VersionInfo {
         ConstantsFor.saveProps();
         String msg = this.toString();
         LOGGER.info(msg);
+    }
+
+    /*Itinial Block*/ {
+        try{
+            thisPCName = ConstantsFor.thisPC();
+        }
+        catch(UnknownHostException e){
+            LOGGER.error(e.getMessage(), e);
+        }
     }
 
     public String getAppBuild() {

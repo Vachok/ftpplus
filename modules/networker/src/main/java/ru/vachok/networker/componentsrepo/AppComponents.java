@@ -8,10 +8,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Scope;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.ad.ADComputer;
-import ru.vachok.networker.ad.ADSrv;
-import ru.vachok.networker.ad.ADUser;
-import ru.vachok.networker.ad.PCUserResolver;
+import ru.vachok.networker.ad.*;
 import ru.vachok.networker.mailserver.ExSRV;
 import ru.vachok.networker.mailserver.RuleSet;
 import ru.vachok.networker.net.NetScannerSvc;
@@ -19,10 +16,8 @@ import ru.vachok.networker.services.SimpleCalculator;
 
 import java.io.File;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.net.UnknownHostException;
+import java.sql.*;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -34,6 +29,17 @@ import java.util.logging.Handler;
 
 @ComponentScan
 public class AppComponents {
+
+    private static String thisPcName;
+
+    static {
+        try{
+            thisPcName = ConstantsFor.thisPC();
+        }
+        catch(UnknownHostException e){
+            getLogger().warn(e.getMessage());
+        }
+    }
 
     @Bean
     public static Logger getLogger() {
@@ -97,8 +103,8 @@ public class AppComponents {
     @Bean("versioninfo")
     public static VersionInfo versionInfo() {
         VersionInfo versionInfo = new VersionInfo();
-        if(ConstantsFor.thisPC().equalsIgnoreCase("home") ||
-            ConstantsFor.thisPC().toLowerCase().contains("no0027")){
+        if(thisPcName.equalsIgnoreCase("home") ||
+            thisPcName.toLowerCase().contains("no0027")){
             versionInfo.setParams();
         }
         return versionInfo;
