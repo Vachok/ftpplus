@@ -13,6 +13,7 @@ import ru.vachok.networker.Locked;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.ActDirectoryCTRL;
+import ru.vachok.networker.ad.PCUserResolver;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.ThreadConfig;
 
@@ -20,10 +21,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -220,7 +218,7 @@ public class NetScannerSvc {
     }
 
     Set<String> getPCNamesPref(String prefix) {
-        String proizvodstvoUser = "proizvodstvo";
+        List<InetAddress> onlineAddr = new ArrayList<>();
         this.qer = prefix;
         final long startMethTime = System.currentTimeMillis();
         boolean reachable;
@@ -236,6 +234,7 @@ public class NetScannerSvc {
                     pcNames.add(pcName + ":" + byName.getHostAddress() + " " + onLines);
                     String format = MessageFormat.format("{0} {1} | {2}", pcName, onLines, someMore);
                     netWork.putIfAbsent(pcName + " last name is " + someMore, false);
+                    onlineAddr.add(byName);
                     LOGGER.warn(format);
                 } else {
                     String someMore = new StringBuilder().append("<i><font color=\"yellow\">last name is ")
@@ -258,6 +257,7 @@ public class NetScannerSvc {
                 //
             }
         }
+        new Thread(() -> new PCUserResolver().resolveNamesAuto(onlineAddr)).start();
         netWork.put("<h4>" + prefix + "     " + pcNames.size() + "</h4>", true);
         String pcsString = writeDB(pcNames);
         LOGGER.info(pcsString);

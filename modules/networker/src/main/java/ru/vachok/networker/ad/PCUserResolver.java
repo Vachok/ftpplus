@@ -11,6 +11,7 @@ import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.net.NetScannerSvc;
 
 import java.io.File;
+import java.net.InetAddress;
 import java.sql.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
@@ -46,6 +47,14 @@ public class PCUserResolver {
      */
     public static PCUserResolver getPcUserResolver() {
         return pcUserResolver;
+    }
+
+    /**
+     @param onlineAddr адреса онлайн ПК.
+     @see NetScannerSvc
+     */
+    public void resolveNamesAuto(List<InetAddress> onlineAddr) {
+
     }
 
     /**
