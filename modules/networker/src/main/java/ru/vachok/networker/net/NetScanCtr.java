@@ -15,7 +15,10 @@ import ru.vachok.networker.componentsrepo.PageFooter;
 
 import javax.servlet.http.HttpServletRequest;
 import java.security.SecureRandom;
-import java.util.*;
+import java.util.Date;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
@@ -24,9 +27,6 @@ import java.util.concurrent.TimeUnit;
  @since 30.08.2018 (12:55) */
 @Controller
 public class NetScanCtr {
-
-    /*Fields*/
-    private static final String SOURCE_CLASS = NetScanCtr.class.getSimpleName();
 
     private static final String NETSCAN_STR = "netscan";
 

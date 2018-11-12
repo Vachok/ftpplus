@@ -11,7 +11,10 @@ import java.net.URI;
 import java.net.URL;
 import java.security.SecureRandom;
 import java.time.Year;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.StringJoiner;
 
 
 /**
@@ -79,6 +82,7 @@ public class ResoCache implements org.springframework.core.io.Resource {
     public String getFilePath() {
         return filePath;
     }
+
     public void setFilePath(String filePath) {
         this.filePath = filePath;
     }
@@ -141,7 +145,7 @@ public class ResoCache implements org.springframework.core.io.Resource {
 
     @Override
     public String toString() {
-        try{
+        try {
             return new StringJoiner(", ", ResoCache.class.getSimpleName() + "\n", "\n")
                 .add("bytes=" + Arrays.toString(bytes))
                 .add("contentLength=" + contentLength())
@@ -156,8 +160,7 @@ public class ResoCache implements org.springframework.core.io.Resource {
                 .add("URI=" + getURI())
                 .add("URL=" + getURL())
                 .toString();
-        }
-        catch(IOException e){
+        } catch (IOException e) {
             return e.getMessage();
         }
     }
