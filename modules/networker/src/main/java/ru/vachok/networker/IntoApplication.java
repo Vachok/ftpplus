@@ -13,6 +13,7 @@ import ru.vachok.networker.accesscontrol.MatrixCtr;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.AppCtx;
 
+import java.net.UnknownHostException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -44,6 +45,16 @@ public class IntoApplication {
      */
     private static AnnotationConfigApplicationContext appCtx = AppCtx.scanForBeansAndRefreshContext();
 
+    private static String thisPc;
+
+    static {
+        try {
+            thisPc = ConstantsFor.thisPC();
+        } catch (UnknownHostException e) {
+            thisPc = "noName";
+        }
+    }
+
     /**
      <h1>1. Точка входа в Spring Boot Application</h1>
      {@link #infoForU(ApplicationContext)}
@@ -52,7 +63,9 @@ public class IntoApplication {
      @see MatrixCtr
      */
     public static void main(String[] args) {
-        SystemTrayHelper.addTray("icons8-плохие-поросята-32.png");
+        if (thisPc.toLowerCase().contains("no0027") || thisPc.toLowerCase().contains("home"))
+            SystemTrayHelper.addTray("icons8-плохие-поросята-32.png");
+        else SystemTrayHelper.addTray(null);
         SPRING_APPLICATION.setMainApplicationClass(IntoApplication.class);
         SPRING_APPLICATION.setApplicationContextClass(AppCtx.class);
         System.setProperty("file.encoding", "UTF8");

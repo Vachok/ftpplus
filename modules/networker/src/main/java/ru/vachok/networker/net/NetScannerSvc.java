@@ -20,7 +20,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -99,7 +102,7 @@ public class NetScannerSvc {
 
     /**
      Выполняет запрос в БД по-пользовательскому вводу <br>
-
+     Устанавливает {@link ActDirectoryCTRL#queryStringExists(java.lang.String, org.springframework.ui.Model)}
      @return web-страница с результатом
      */
     public String getInfoFromDB() {
@@ -156,10 +159,17 @@ public class NetScannerSvc {
         return "ok";
     }
 
+    /**
+     @return атрибут модели.
+     */
+    @SuppressWarnings("WeakerAccess")
     public String getThePc() {
         return thePc;
     }
 
+    /**
+     @param thePc имя ПК
+     */
     public void setThePc(String thePc) {
         this.thePc = thePc;
     }
@@ -459,8 +469,8 @@ public class NetScannerSvc {
                 while(resultSet.next()){
                     return
                         stringBuilder.append("<b>")
-                        .append(resultSet.getString("userName")).append("</b> (time: ")
-                        .append(resultSet.getString("whenQueried")).append(")")
+                            .append(resultSet.getString("userName").trim()).append("</b> (time: ")
+                            .append(resultSet.getString("whenQueried")).append(")")
                         .toString();
                 }
             }

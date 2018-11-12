@@ -15,7 +15,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 
 /**
@@ -32,11 +31,9 @@ public class ADSrv implements Runnable {
 
     private ADComputer adComputer;
 
-    private Map<ADComputer, ADUser> adComputerADUserMap = new ConcurrentHashMap<>();
-
     private String userInputRaw;
 
-    public ADUser getAdUser() {
+    ADUser getAdUser() {
         return adUser;
     }
 
@@ -50,10 +47,6 @@ public class ADSrv implements Runnable {
 
     public void setUserInputRaw(String userInputRaw) {
         this.userInputRaw = userInputRaw;
-    }
-
-    public Map<ADComputer, ADUser> getAdComputerADUserMap() {
-        return adComputerADUserMap;
     }
 
     /*Instances*/
@@ -133,18 +126,17 @@ public class ADSrv implements Runnable {
             }
             h += 10;
         }
-
         String msg = indexUser + " users read";
         LOGGER.warn(msg);
-        try{
-            psComm();
-        }
-        catch(Exception e){
-            LOGGER.error(e.getMessage(), e);
-        }
+        psComm();
         return adUserList;
     }
 
+    /**
+     <b>Запрос на конвертацию фото</b>
+
+     @see PhotoConverterSRV
+     */
     private void psComm() {
         PhotoConverterSRV photoConverterSRV = new PhotoConverterSRV();
         photoConverterSRV.psCommands();
@@ -167,7 +159,6 @@ public class ADSrv implements Runnable {
             }
             Collections.sort(timeName);
             String s1 = timeName.get(timeName.size() - 1);
-            ListIterator<String> stringListIterator = timeName.listIterator();
             for(String s : timeName){
                 String[] strings = s.split(" ");
                 stringBuilder.append(strings[1])
@@ -195,6 +186,11 @@ public class ADSrv implements Runnable {
         }
     }
 
+    /**
+     <b>allmailbox.txt</b>
+
+     @return файл построчно
+     */
     private List<String> adFileReader() {
         List<String> strings = new ArrayList<>();
         File adUsers = new File("allmailbox.txt");
@@ -204,14 +200,16 @@ public class ADSrv implements Runnable {
             while(bufferedReader.ready()){
                 strings.add(bufferedReader.readLine());
             }
-        }
-        catch(IOException | InputMismatchException e){
+        } catch(IOException | InputMismatchException e){
             LOGGER.error(e.getMessage(), e);
         }
         LOGGER.info(adUser.toString());
         return strings;
     }
 
+    /**<b>Обновление БД velkom.adusers</b>
+     @param adU {@link ADUser}
+     */
     private void sendToDB(ADUser adU) {
         DataConnectTo dataConnectTo = new RegRuMysql();
         StringBuilder sql = new StringBuilder();
@@ -234,8 +232,7 @@ public class ADSrv implements Runnable {
         Connection c = dataConnectTo.getDefaultConnection(ConstantsFor.DB_PREFIX + "velkom");
         try(PreparedStatement p = c.prepareStatement(sql.toString())){
             p.executeUpdate();
-        }
-        catch(SQLException e){
+        } catch(SQLException e){
             LOGGER.error(e.getMessage(), e);
         }
     }

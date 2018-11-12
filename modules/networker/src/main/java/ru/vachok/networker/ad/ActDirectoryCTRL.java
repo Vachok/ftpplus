@@ -57,6 +57,15 @@ public class ActDirectoryCTRL {
         return "ad";
     }
 
+    /**
+     <b>AdItem</b>
+     Используемые методы и константы: <br> 1. {@link NetScannerSvc#setThePc(String)} <br> 2. {@link #inputWithInfoFromDB} <br> 3. {@link ADSrv#getDetails(String)} <br> 4. {@link
+    PageFooter#getFooterUtext()}
+
+     @param queryString {@link HttpServletRequest#getQueryString()}
+     @param model       {@link Model}
+     @return aditem.html
+     */
     private String queryStringExists(String queryString, Model model) {
         NetScannerSvc iScan = NetScannerSvc.getI();
         iScan.setThePc(queryString);
