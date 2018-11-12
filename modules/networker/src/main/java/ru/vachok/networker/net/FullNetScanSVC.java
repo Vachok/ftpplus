@@ -29,13 +29,13 @@ public class FullNetScanSVC implements Runnable {
         String lan192 = "192.168.";
         String lan172 = "172.";
 
-        ipBuild(lan10);
+        ipBuild(lan192);
     }
 
-    private void ipBuild(String lan10) {
+    private void ipBuild(String vLAN) {
         List<String> threeOctets = new ArrayList<>();
         for (int i = 10; i < 50; i++) {
-            threeOctets.add(lan10 + i);
+            threeOctets.add(vLAN + i);
         }
         buildOct4(threeOctets);
     }
@@ -50,11 +50,17 @@ public class FullNetScanSVC implements Runnable {
         addressList.forEach(x -> {
             String[] strings = x.split("\\Q.\\E");
             byte[] bytes = new byte[4];
-            char[] chars = new char[16];
-            for(int i = 0; i < strings.length; i++){
-                strings[i].getChars(0, 1, chars, i); //todo 12.11.2018 (22:25)
-            }
-            LOGGER.info(Arrays.toString(chars));
+            char[] oct1Chs = new char[3];
+            char[] oct2Chs = new char[3];
+            char[] oct3Chs = new char[3];
+            strings[0].getChars(0, 2, oct1Chs, 0);
+            strings[1].getChars(3, 6, oct2Chs, 0);
+            strings[2].getChars(7, 10, oct2Chs, 0);
+            StringBuilder stringBuilder = new StringBuilder()
+                .append(Arrays.toString(oct1Chs)).append(" 1 \n")
+                .append(Arrays.toString(oct2Chs)).append(" 2 \n")
+                .append(Arrays.toString(oct3Chs)).append(" 3");
+            LOGGER.warn(stringBuilder.toString()); //todo 13.11.2018 (2:55)
         });
     }
 
