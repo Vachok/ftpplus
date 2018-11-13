@@ -60,7 +60,7 @@ public class FullNetScanSVC implements Runnable {
                 .append(Arrays.toString(oct1Chs)).append(" 1 \n")
                 .append(Arrays.toString(oct2Chs)).append(" 2 \n")
                 .append(Arrays.toString(oct3Chs)).append(" 3");
-            LOGGER.warn(stringBuilder.toString()); //todo 13.11.2018 (2:55)
+            LOGGER.warn(stringBuilder.toString());
         });
     }
 

@@ -54,7 +54,13 @@ public class PCUserResolver {
      @see NetScannerSvc
      */
     public void resolveNamesAuto(List<InetAddress> onlineAddr) {
-
+        StringBuilder stringBuilder = new StringBuilder();
+        for(InetAddress inetAddress : onlineAddr){
+            String pathTo = "\\\\" + inetAddress.getHostName() + "\\c$\\Users";
+            File[] files = new File(pathTo).listFiles();
+            stringBuilder.append(files.toString());
+        }
+        LOGGER.warn(stringBuilder.toString()); //todo 13.11.2018 (3:04)
     }
 
     /**
