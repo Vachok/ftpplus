@@ -97,6 +97,12 @@ public class ActDirectoryCTRL {
         return "adphoto";
     }
 
+    /**
+     @return {@link ADUser}
+     @since 13.11.2018 (11:24)
+     @deprecated
+     */
+    @Deprecated
     private String adUserString() {
         ADUser adUser = AppComponents.pcUserResolver().adUsersSetter();
         return adUser.toString();

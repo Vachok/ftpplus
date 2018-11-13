@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
+import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
@@ -35,7 +36,15 @@ public class PhotoConverterSRV {
      */
     private static final Logger LOGGER = AppComponents.getLogger();
 
-    private static InitProperties initProperties = new DBRegProperties(ConstantsFor.APP_NAME + "photoConverter");
+    private static InitProperties initProperties;
+
+    static {
+        try {
+            initProperties = new DBRegProperties(ConstantsFor.APP_NAME + "photoConverter");
+        } catch (Exception e) {
+            initProperties = new FileProps(ConstantsFor.APP_NAME + "photoConverter");
+        }
+    }
 
     private Properties properties = initProperties.getProps();
 
@@ -50,7 +59,6 @@ public class PhotoConverterSRV {
     private File adFotoFile;
 
     private List<String> psCommands = new ArrayList<>();
-
 
     /**
      <b>Преобразование в JPG</b>
@@ -128,6 +136,8 @@ public class PhotoConverterSRV {
         } catch (NullPointerException e) {
             filesList.put("ERROR", null);
         }
+        initProperties.delProps();
+        initProperties.setProps(properties);
     }
 
     private Set<String> samAccFromDB() {
