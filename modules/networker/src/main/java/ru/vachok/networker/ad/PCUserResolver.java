@@ -57,10 +57,15 @@ public class PCUserResolver {
         StringBuilder stringBuilder = new StringBuilder();
         for(InetAddress inetAddress : onlineAddr){
             String pathTo = "\\\\" + inetAddress.getHostName() + "\\c$\\Users";
-            File[] files = new File(pathTo).listFiles();
-            stringBuilder.append(files.toString());
+            List<File> files = new ArrayList<>();
+            try{
+                files = Arrays.asList(Objects.requireNonNull(new File(pathTo).listFiles()));
+            }
+            catch(Exception ignore){
+                //
+            }
+            files.forEach((x) -> LOGGER.warn(x.getName() + "\n")); //todo 13.11.2018 (3:17)
         }
-        LOGGER.warn(stringBuilder.toString()); //todo 13.11.2018 (3:04)
     }
 
     /**
