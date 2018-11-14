@@ -48,7 +48,6 @@ public class ADSrv implements Runnable {
     public void setUserInputRaw(String userInputRaw) {
         this.userInputRaw = userInputRaw;
     }
-
     /*Instances*/
     @Autowired
     public ADSrv(ADUser adUser, ADComputer adComputer) {

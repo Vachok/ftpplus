@@ -18,6 +18,7 @@ import java.net.Socket;
 import java.net.URI;
 import java.net.UnknownHostException;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.lang.System.err;
 import static java.lang.System.exit;

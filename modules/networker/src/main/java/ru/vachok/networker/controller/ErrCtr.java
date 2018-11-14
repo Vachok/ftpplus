@@ -49,6 +49,7 @@ public class ErrCtr implements ErrorController {
     public String errHandle(HttpServletRequest httpServletRequest, Model model) {
         Integer statCode = (Integer) httpServletRequest.getAttribute("javax.servlet.error.status_code");
         Exception exception = (Exception) httpServletRequest.getAttribute("javax.servlet.error.exception");
+
         model.addAttribute("eMessage", httpServletRequest
             .getRequestURL() +
             " тут нет того, что ищешь.<br>" +
@@ -62,7 +63,6 @@ public class ErrCtr implements ErrorController {
         if (exception != null) setExcept(model, exception, statCode, httpServletRequest);
         return "error";
     }
-
     /**
      <b>Модель ошибки</b>
 

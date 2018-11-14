@@ -8,7 +8,6 @@ import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.net.NetScannerSvc;
-
 import java.io.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -25,7 +24,6 @@ import java.util.concurrent.ConcurrentMap;
  @since 02.10.2018 (17:32) */
 @Service
 public class PCUserResolver {
-
     /**
      {@link Logger}
      */
@@ -133,7 +131,7 @@ public class PCUserResolver {
         List<String> onlineNow = new ArrayList<>();
         List<String> offNow = new ArrayList<>();
         StringBuilder stringBuilder = new StringBuilder();
-        if (!lastScanMap.isEmpty()) {
+        if(!lastScanMap.isEmpty()){
             lastScanMap.forEach((x, y) -> {
                 if (y) {
                     onlineNow.add(x);
@@ -150,8 +148,8 @@ public class PCUserResolver {
             File[] files = filesAsFile.listFiles();
             ConstantsFor.COMPNAME_USERS_MAP.put(x, filesAsFile);
             SortedMap<Long, String> lastMod = new TreeMap<>();
-            if (files != null) {
-                for (File file : files) {
+            if(files!=null){
+                for(File file : files){
                     lastMod.put(file.lastModified(), file.getName() + " user " + x + " comp\n");
 
                 }
@@ -162,7 +160,7 @@ public class PCUserResolver {
             }
             Optional<Long> max = lastMod.keySet().stream().max(Long::compareTo);
             boolean aLongPresent = max.isPresent();
-            if (aLongPresent) {
+            if(aLongPresent){
                 Long aLong = max.get();
 
                 stringBuilder
