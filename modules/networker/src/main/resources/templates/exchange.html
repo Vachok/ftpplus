@@ -1,0 +1,41 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${title}">ХЗ</title>
+    <meta http-equiv="Content-Type" content="text/html" charset="UTF-8"/>
+    <link rel="stylesheet" type="text/css" media="all" href="css/main.css" th:href="@{css/main.css}"/>
+</head>
+<body>
+<center>
+    <a href="https://srv-mail3.eatmeat.ru/owa" target="_blank">Перейти в OWA</a>
+    <p>
+        <details title="Открыть">
+            <summary>Открыть формы</summary>
+            <form th:action="@{/ruleset}" th:object="${ruleset}" method="POST">
+                Identity:<br>
+                <input type="text" th:field="*{identity}"/>
+                <br>
+                FromAddressMatchesPatterns:<br>
+                <input type="text" th:field="*{fromAddressMatchesPatterns}"/>
+                <br>
+                <input type="submit" value="Запрос"/>
+                <br><br><br>
+            </form>
+    <p>
+    <form th:action="@{/exchange}" th:object="${exsrv}" method="POST" enctype="multipart/form-data">
+        Выберите файл<br><br>
+        <input type="file" th:field="*{file}"/>
+        <br><br><br>
+        <input type="submit" value="Запрос"/>
+        <br><br><br>
+    </form>
+    </details>
+    <p th:utext="${transport}"/>
+    <p th:utext="${file}"/>
+</center>
+</body>
+<footer>
+    <a href="/pages/excangeKB.html">Small knowledge base. Exchange 2010</a>
+    <p th:utext="${footer}"/>
+</footer>
+</html>
