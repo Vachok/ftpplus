@@ -4,18 +4,16 @@ package ru.vachok.networker.ad;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.net.NetScannerSvc;
 
 import java.io.*;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.*;
+import java.util.Date;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 
@@ -42,6 +40,13 @@ public class PCUserResolver {
     private static PCUserResolver pcUserResolver = new PCUserResolver();
 
     /**
+     {@link RegRuMysql#getDefaultConnection(String)} - u0466446_velkom
+     */
+    private static Connection connection = new RegRuMysql().getDefaultConnection("u0466446_velkom");
+
+    private static String sql = "insert into pcuser (pcName, userName) values(?,?)";
+
+    /**
      @return {@link #pcUserResolver}
      @see AppComponents#pcUserResolver()
      */
@@ -50,8 +55,8 @@ public class PCUserResolver {
     }
 
     /**
-     Записывает содержимое c-users в файл с именем ПК
-
+     Записывает содержимое c-users в файл с именем ПК <br>
+     1 {@link #writeDB(File[])}
      @see NetScannerSvc#onLinesCheck(String, String)
      @param pcName имя компьютера
      */
@@ -61,6 +66,37 @@ public class PCUserResolver {
              PrintWriter writer = new PrintWriter(outputStream, true)) {
             writer.append(Arrays.toString(files).replace(", ", "\n"));
         } catch (IOException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+        writeDB(Objects.requireNonNull(files));
+    }
+
+    /**
+     Записывает инфо о пльзователе в <b>pcuserauto</b> <br>
+     Записи добавляются к уже имеющимся.
+
+     @param files файлы из Users
+     @see #namesToFile(String)
+     */
+    private void writeDB(File[] files) {
+        ConcurrentMap<Long, String> timeName = new ConcurrentHashMap<>();
+        for(File f : files){
+            timeName.put(f.lastModified(), f.getName());
+        }
+        List<String> sortedTimeName = new ArrayList<>();
+        timeName.forEach((timeStamp, fileName) -> {
+            sortedTimeName.add(new Date(timeStamp) + "___" + fileName);
+        });
+        Collections.sort(sortedTimeName);
+
+        try(PreparedStatement preparedStatement = connection.prepareStatement(sql
+            .replaceAll("pcuser", "pcuserauto"));){
+            String[] split = sortedTimeName.get(sortedTimeName.size() - 1).split("___");
+            preparedStatement.setString(1, split[0]);
+            preparedStatement.setString(2, split[1]);
+            preparedStatement.executeUpdate();
+        }
+        catch(SQLException e){
             LOGGER.error(e.getMessage(), e);
         }
     }
@@ -150,16 +186,30 @@ public class PCUserResolver {
     String offNowGetU(String pcName) {
         StringBuilder v = new StringBuilder();
         Connection c = new RegRuMysql().getDefaultConnection("u0466446_velkom");
-        String sql = "select * from pcuser";
-        try (PreparedStatement p = c.prepareStatement(sql);
-             ResultSet resultSet = p.executeQuery()) {
+        String userName = "userName";
+        String whenQueried = "whenQueried";
+        String columnLabel = "pcName";
+        try(PreparedStatement p = c.prepareStatement("select * from pcuser");
+            PreparedStatement pAuto = c.prepareStatement("select * from pcuserauto");
+            ResultSet resultSet = p.executeQuery();
+            ResultSet resultSetA = pAuto.executeQuery()){
             while (resultSet.next()) {
-                if (resultSet.getString("pcName").toLowerCase().contains(pcName)) {
+
+                if(resultSet.getString(columnLabel).toLowerCase().contains(pcName)){
                     v
                         .append("<b>")
-                        .append(resultSet.getString("userName"))
+                        .append(resultSet.getString(userName))
                         .append("</b> <br>At ")
-                        .append(resultSet.getString("whenQueried"));
+                        .append(resultSet.getString(whenQueried));
+                }
+            }
+            while(resultSetA.next()){
+                if(resultSetA.getString(columnLabel).toLowerCase().contains(pcName)){
+                    v
+                        .append("<p>")
+                        .append(resultSet.getString(userName))
+                        .append(" auto QUERY at: ")
+                        .append(resultSet.getString(whenQueried));
                 }
             }
         } catch (SQLException e) {
@@ -179,12 +229,7 @@ public class PCUserResolver {
      */
     void recToDB(String userName, String pcName) {
         ConcurrentMap<String, String> pcUMap = ConstantsFor.PC_U_MAP;
-        DataConnectTo dataConnectTo = new RegRuMysql();
-        Connection connection = dataConnectTo.getDefaultConnection("u0466446_velkom");
-
         String msg = userName + " on pc " + pcName + " is set.";
-        String sql = "insert into pcuser (pcName, userName) values(?,?)";
-
         try (PreparedStatement p = connection.prepareStatement(sql)) {
             p.setString(1, userName);
             p.setString(2, pcName);
