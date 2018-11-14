@@ -22,7 +22,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
@@ -218,20 +221,6 @@ public class NetScannerSvc {
         return pcNames;
     }
 
-    private NetScannerSvc() {
-        this.netWork = AppComponents.lastNetScanMap();
-    }
-
-    @Override
-    public String toString() {
-        return new StringJoiner("\n", NetScannerSvc.class.getSimpleName() + "\n", "\n")
-            .add("infoFromDB='" + getInfoFromDB() + "\n")
-            .add("qer='" + qer + "\n")
-            .add("thePc='" + thePc + "\n")
-            .toString();
-    }
-
-    /*Instances*/
     private NetScannerSvc() {
         this.netWork = AppComponents.lastNetScanMap();
     }
