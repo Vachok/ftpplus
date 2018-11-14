@@ -25,9 +25,6 @@ import java.util.concurrent.TimeUnit;
 @Controller
 public class NetScanCtr {
 
-    /*Fields*/
-    private static final String SOURCE_CLASS = NetScanCtr.class.getSimpleName();
-
     private static final String NETSCAN_STR = "netscan";
 
     private static final Logger LOGGER = AppComponents.getLogger();

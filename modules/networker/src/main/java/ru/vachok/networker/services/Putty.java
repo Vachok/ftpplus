@@ -2,6 +2,7 @@ package ru.vachok.networker.services;
 
 
 import org.slf4j.Logger;
+import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.componentsrepo.AppComponents;
@@ -16,16 +17,16 @@ import java.sql.*;
 import java.util.Arrays;
 
 
+/**
+ putty.exe . Если нет на ПК - берёт из БД
+ */
 public class Putty extends Thread {
 
-    /*Fields*/
     private static final String SOURCE_CLASS = Putty.class.getSimpleName();
 
     private static final Logger LOGGER = AppComponents.getLogger();
 
-    private static final int TIMEOUT_2 = 2000;
-
-    private static MessageToUser messageToUser = new DBMessenger();
+    private static MessageToUser messageToUser = new MessageCons();
 
     @Override
     public void run() {
@@ -50,18 +51,15 @@ public class Putty extends Thread {
                 Process myPuttyExec = Runtime.getRuntime().exec(puttyPath);
                 String msg = myPuttyExec.isAlive() + " my putty alive";
                 LOGGER.info(msg);
+            } catch(IOException e){
+                messageToUser.errorAlert(SOURCE_CLASS, "puttyStart ID 54", e.getMessage());
             }
-            catch(IOException e){
-                messageToUser.errorAlert(SOURCE_CLASS, "puttyStart ID 56", e.getMessage());
-            }
-        }
-        else{
+        } else{
             noPutty(puttyPath);
         }
     }
 
     private static void noPutty(String puttyPath) {
-        messageToUser.infoTimer(TIMEOUT_2, SOURCE_CLASS + " noPutty ID 107 " + puttyPath);
         tryToRePack(puttyPath);
     }
 
@@ -82,20 +80,16 @@ public class Putty extends Thread {
                         fileOutputStream.write(fileInputStream.read());
                     }
                 }
-            }
-            else{
+            } else{
                 String s = resultSet.getMetaData().toString();
                 messageToUser.info(SOURCE_CLASS, "tryToRePack ID 97", s);
             }
-        }
-        catch(SQLException | IOException e){
+        } catch(SQLException | IOException e){
             messageToUser.out("Putty_101", (Arrays.toString(e.getStackTrace()).replaceAll(", ", "\n") + "\nPutty.tryToRePack, and ID (lineNum) is 101").getBytes());
         }
         new Putty().startPy();
     }
 
-    /*Private methods
-    =========================* */
     private void startPy() {
         puttyStart();
     }
