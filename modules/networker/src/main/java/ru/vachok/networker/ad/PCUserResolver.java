@@ -8,6 +8,7 @@ import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.net.NetScannerSvc;
+
 import java.io.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -53,7 +54,7 @@ public class PCUserResolver {
     }
 
     /**
-     Записывает содержимое c-users в файл с именем ПК <br> 1 {@link #writeDB(String, File[])}
+     Записывает содержимое c-users в файл с именем ПК <br> 1 {@link #recAutoDB(String, File[])}
 
      @param pcName имя компьютера
      @see NetScannerSvc#onLinesCheck(String, String)
@@ -67,7 +68,7 @@ public class PCUserResolver {
             LOGGER.error(e.getMessage(), e);
         }
         if (files != null) {
-            writeDB(pcName, files);
+            recAutoDB(pcName, files);
         }
     }
 
@@ -78,13 +79,13 @@ public class PCUserResolver {
      @param files  файлы из Users
      @see #namesToFile(String)
      */
-    private void writeDB(String pcName, File[] files) {
+    private void recAutoDB(String pcName, File[] files) {
         ConcurrentMap<Long, String> timeName = new ConcurrentHashMap<>();
         for (File f : files) {
             timeName.put(f.lastModified(), f.getName());
         }
         List<String> sortedTimeName = new ArrayList<>();
-        timeName.forEach((timeStamp, fileName) -> sortedTimeName.add(timeStamp + "___(" + new Date(timeStamp) + ")___" + fileName));
+        timeName.forEach((timeStamp, fileName) -> sortedTimeName.add(timeStamp + "___" + new Date(timeStamp) + "___" + fileName));
         Collections.sort(sortedTimeName);
         String sql = "insert into pcuser (pcName, userName, lastmod, stamp) values(?,?,?,?)";
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql
