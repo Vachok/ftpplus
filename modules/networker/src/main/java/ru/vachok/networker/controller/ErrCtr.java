@@ -60,11 +60,9 @@ public class ErrCtr implements ErrorController {
                 .getVirtualServerName() +
             H_2_CENTER_CLOSE.replaceAll("2", "4"));
         model.addAttribute("statcode", H_2_CENTER + statCode + H_2_CENTER_CLOSE);
-
         if (exception != null) setExcept(model, exception, statCode, httpServletRequest);
         return "error";
     }
-
     /**
      <b>Модель ошибки</b>
 

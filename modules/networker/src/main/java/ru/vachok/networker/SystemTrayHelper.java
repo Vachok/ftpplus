@@ -8,15 +8,20 @@ import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.net.MyServer;
 import ru.vachok.networker.services.DBMessenger;
+import ru.vachok.networker.services.Putty;
 
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.net.*;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.net.URI;
+import java.net.UnknownHostException;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static java.lang.System.*;
+import static java.lang.System.err;
+import static java.lang.System.exit;
 
 
 /**
@@ -33,8 +38,6 @@ public class SystemTrayHelper {
     private static MessageToUser messageToUser = new DBMessenger();
 
     private static String thisPcName;
-
-    /*Instances*/
 
     public static SystemTrayHelper getInstance() {
         return s;
@@ -85,8 +88,7 @@ public class SystemTrayHelper {
             ConstantsFor.saveProps();
             exit(0);
         };
-
-        additionalItems(popupMenu);
+        addItems(popupMenu);
         trayIcon.setImageAutoSize(true);
         defItem.setLabel("Exit");
         defItem.addActionListener(exitApp);
@@ -115,9 +117,12 @@ public class SystemTrayHelper {
         }
     }
 
-    private static void additionalItems(PopupMenu popupMenu) {
+    private static void addItems(PopupMenu popupMenu) {
         ThreadConfig threadConfig = new ThreadConfig();
         ThreadPoolTaskExecutor executor = threadConfig.threadPoolTaskExecutor();
+        Thread thread = executor.createThread(SystemTrayHelper::recOn);
+        thread.start();
+
         MenuItem gitStartWeb = new MenuItem();
         gitStartWeb.addActionListener(actionEvent -> {
             Callable<String> sshStr = () -> new SSHFactory.Builder(ConstantsFor
@@ -136,15 +141,17 @@ public class SystemTrayHelper {
             }
         });
         gitStartWeb.setLabel("GIT WEB ON");
-        Thread thread = executor.createThread(() -> recOn());
-        thread.start();
         popupMenu.add(gitStartWeb);
+
         MenuItem toConsole = new MenuItem();
         toConsole.setLabel("Console Back");
-        toConsole.addActionListener(e -> {
-            System.setOut(err);
-        });
+        toConsole.addActionListener(e -> System.setOut(err));
         popupMenu.add(toConsole);
+
+        MenuItem puttyStarter = new MenuItem();
+        puttyStarter.addActionListener(e -> new Putty().run());
+        puttyStarter.setLabel("Start Putty");
+        popupMenu.add(puttyStarter);
     }
 
     private static void recOn() {
