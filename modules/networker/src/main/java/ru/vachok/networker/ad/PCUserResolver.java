@@ -10,9 +10,11 @@ import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.net.NetScannerSvc;
 
 import java.io.*;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
-import java.util.Date;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -44,8 +46,6 @@ public class PCUserResolver {
      */
     private static Connection connection = new RegRuMysql().getDefaultConnection("u0466446_velkom");
 
-    private static String sql = "insert into pcuser (pcName, userName) values(?,?)";
-
     /**
      @return {@link #pcUserResolver}
      @see AppComponents#pcUserResolver()
@@ -55,10 +55,10 @@ public class PCUserResolver {
     }
 
     /**
-     Записывает содержимое c-users в файл с именем ПК <br>
-     1 {@link #writeDB(File[])}
-     @see NetScannerSvc#onLinesCheck(String, String)
+     Записывает содержимое c-users в файл с именем ПК <br> 1 {@link #writeDB(String, File[])}
+
      @param pcName имя компьютера
+     @see NetScannerSvc#onLinesCheck(String, String)
      */
     public void namesToFile(String pcName) {
         File[] files = new File("\\\\" + pcName + "\\c$\\Users\\").listFiles();
@@ -68,35 +68,36 @@ public class PCUserResolver {
         } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
         }
-        writeDB(Objects.requireNonNull(files));
+        if (files != null) {
+            writeDB(pcName, files);
+        }
     }
 
     /**
-     Записывает инфо о пльзователе в <b>pcuserauto</b> <br>
-     Записи добавляются к уже имеющимся.
+     Записывает инфо о пльзователе в <b>pcuserauto</b> <br> Записи добавляются к уже имеющимся.
 
-     @param files файлы из Users
+     @param pcName имя ПК
+     @param files  файлы из Users
      @see #namesToFile(String)
      */
-    private void writeDB(File[] files) {
+    private void writeDB(String pcName, File[] files) {
         ConcurrentMap<Long, String> timeName = new ConcurrentHashMap<>();
-        for(File f : files){
+        for (File f : files) {
             timeName.put(f.lastModified(), f.getName());
         }
         List<String> sortedTimeName = new ArrayList<>();
-        timeName.forEach((timeStamp, fileName) -> {
-            sortedTimeName.add(new Date(timeStamp) + "___" + fileName);
-        });
+        timeName.forEach((timeStamp, fileName) -> sortedTimeName.add(timeStamp + "___(" + new Date(timeStamp) + ")___" + fileName));
         Collections.sort(sortedTimeName);
-
-        try(PreparedStatement preparedStatement = connection.prepareStatement(sql
-            .replaceAll("pcuser", "pcuserauto"));){
+        String sql = "insert into pcuser (pcName, userName, lastmod, stamp) values(?,?,?,?)";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql
+            .replaceAll("pcuser", "pcuserauto"))) {
             String[] split = sortedTimeName.get(sortedTimeName.size() - 1).split("___");
-            preparedStatement.setString(1, split[0]);
-            preparedStatement.setString(2, split[1]);
+            preparedStatement.setString(1, pcName);
+            preparedStatement.setString(2, split[2]);
+            preparedStatement.setString(3, split[1]);
+            preparedStatement.setString(4, split[0]);
             preparedStatement.executeUpdate();
-        }
-        catch(SQLException e){
+        } catch (SQLException | ArrayIndexOutOfBoundsException e) {
             LOGGER.error(e.getMessage(), e);
         }
     }
@@ -104,8 +105,8 @@ public class PCUserResolver {
     /**
      Запрос на установку пользователя
 
-     @see ActDirectoryCTRL#adUserString()
      @return {@link ADSrv#getAdUser()}
+     @see ActDirectoryCTRL#adUserString()
      @see ActDirectoryCTRL
      */
     ADUser adUsersSetter() {
@@ -125,8 +126,8 @@ public class PCUserResolver {
      <b>Рабочий метод</b>
      Делает запрос в {@code \\c$\Users}, ищет там папки, записывает в массив. <br> Сортирует по дате изменения.
 
-     @see #adUsersSetter()
      @return {@link String}, имя последнего измененного объекта.
+     @see #adUsersSetter()
      */
     private String getResolvedName() {
         List<String> onlineNow = new ArrayList<>();
@@ -185,31 +186,32 @@ public class PCUserResolver {
      */
     String offNowGetU(String pcName) {
         StringBuilder v = new StringBuilder();
-        Connection c = new RegRuMysql().getDefaultConnection("u0466446_velkom");
-        String userName = "userName";
-        String whenQueried = "whenQueried";
-        String columnLabel = "pcName";
-        try(PreparedStatement p = c.prepareStatement("select * from pcuser");
-            PreparedStatement pAuto = c.prepareStatement("select * from pcuserauto");
-            ResultSet resultSet = p.executeQuery();
-            ResultSet resultSetA = pAuto.executeQuery()){
-            while (resultSet.next()) {
+        try (Connection c = new RegRuMysql().getDefaultConnection("u0466446_velkom")) {
+            String userName = "userName";
+            String whenQueried = "whenQueried";
+            String columnLabel = "pcName";
+            try (PreparedStatement p = c.prepareStatement("select * from pcuser");
+                 PreparedStatement pAuto = c.prepareStatement("select * from pcuserauto");
+                 ResultSet resultSet = p.executeQuery();
+                 ResultSet resultSetA = pAuto.executeQuery()) {
+                while (resultSet.next()) {
 
-                if(resultSet.getString(columnLabel).toLowerCase().contains(pcName)){
-                    v
-                        .append("<b>")
-                        .append(resultSet.getString(userName))
-                        .append("</b> <br>At ")
-                        .append(resultSet.getString(whenQueried));
+                    if (resultSet.getString(columnLabel).toLowerCase().contains(pcName)) {
+                        v
+                            .append("<b>")
+                            .append(resultSet.getString(userName))
+                            .append("</b> <br>At ")
+                            .append(resultSet.getString(whenQueried));
+                    }
                 }
-            }
-            while(resultSetA.next()){
-                if(resultSetA.getString(columnLabel).toLowerCase().contains(pcName)){
-                    v
-                        .append("<p>")
-                        .append(resultSet.getString(userName))
-                        .append(" auto QUERY at: ")
-                        .append(resultSet.getString(whenQueried));
+                while (resultSetA.next()) {
+                    if (resultSetA.getString(columnLabel).toLowerCase().contains(pcName)) {
+                        v
+                            .append("<p>")
+                            .append(resultSet.getString(userName))
+                            .append(" auto QUERY at: ")
+                            .append(resultSet.getString(whenQueried));
+                    }
                 }
             }
         } catch (SQLException e) {
@@ -219,15 +221,14 @@ public class PCUserResolver {
     }
 
     /**
-     Запись в БД <b>pcuser</b><br>
-     Запись по-запросу от браузера. <br>
-     pcName - уникальный (таблица не переписывается или не дополняется, при наличии записи по-компу)
+     Запись в БД <b>pcuser</b><br> Запись по-запросу от браузера. <br> pcName - уникальный (таблица не переписывается или не дополняется, при наличии записи по-компу)
 
-     @see ADSrv#getDetails(String)
      @param userName имя юзера
-     @param pcName имя ПК
+     @param pcName   имя ПК
+     @see ADSrv#getDetails(String)
      */
     void recToDB(String userName, String pcName) {
+        String sql = "insert into pcuser (pcName, userName) values(?,?)";
         ConcurrentMap<String, String> pcUMap = ConstantsFor.PC_U_MAP;
         String msg = userName + " on pc " + pcName + " is set.";
         try (PreparedStatement p = connection.prepareStatement(sql)) {
