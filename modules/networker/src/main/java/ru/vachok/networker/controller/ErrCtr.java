@@ -62,7 +62,6 @@ public class ErrCtr implements ErrorController {
         if (exception != null) setExcept(model, exception, statCode, httpServletRequest);
         return "error";
     }
-
     /**
      <b>Модель ошибки</b>
 
