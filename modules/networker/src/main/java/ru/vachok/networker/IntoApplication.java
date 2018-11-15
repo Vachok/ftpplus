@@ -14,7 +14,6 @@ import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.net.FullNetScanSVC;
 
-import java.net.UnknownHostException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -46,15 +45,7 @@ public class IntoApplication {
      */
     private static AnnotationConfigApplicationContext appCtx = AppCtx.scanForBeansAndRefreshContext();
 
-    private static String thisPc;
-
-    static {
-        try {
-            thisPc = ConstantsFor.thisPC();
-        } catch (UnknownHostException e) {
-            thisPc = "noName";
-        }
-    }
+    private static final String THIS_PC = ConstantsFor.thisPC();
 
     /**
      <h1>1. Точка входа в Spring Boot Application</h1>
@@ -64,9 +55,12 @@ public class IntoApplication {
      @see MatrixCtr
      */
     public static void main(String[] args) {
-        if (thisPc.toLowerCase().contains("no0027") || thisPc.toLowerCase().contains("home"))
+        if(THIS_PC.toLowerCase().contains("no0027") || THIS_PC.toLowerCase().contains("home")){
             SystemTrayHelper.addTray("icons8-плохие-поросята-32.png");
-        else SystemTrayHelper.addTray(null);
+        }
+        else{
+            SystemTrayHelper.addTray(null);
+        }
         SPRING_APPLICATION.setMainApplicationClass(IntoApplication.class);
         SPRING_APPLICATION.setApplicationContextClass(AppCtx.class);
         System.setProperty("file.encoding", "UTF8");
@@ -81,8 +75,12 @@ public class IntoApplication {
      @param appCtx {@link ApplicationContext}
      */
     private static void infoForU(ApplicationContext appCtx) {
-        String msg = appCtx.getApplicationName() + " app name" + appCtx.getDisplayName() + " app display name\n" +
-            ConstantsFor.getBuildStamp();
+        String msg = new StringBuilder()
+            .append(appCtx.getApplicationName())
+            .append(" app name")
+            .append(appCtx.getDisplayName())
+            .append(" app display name\n")
+            .append(ConstantsFor.getBuildStamp()).toString();
         LOGGER.info(msg);
         setWebType();
     }

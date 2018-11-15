@@ -4,14 +4,8 @@ package ru.vachok.networker.services;
 import org.slf4j.Logger;
 import ru.vachok.networker.componentsrepo.AppComponents;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.*;
+import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -45,39 +39,17 @@ public class ArchivesAutoCleaner implements Runnable {
         starterClean(dirList);
     }
 
-    private void starterClean(List<Path> dirPathList) {
-        List<Path> filesLevel2 = new ArrayList<>();
-        dirPathList.forEach(x -> {
-            if (x.toFile().isDirectory()) {
-                File[] files = x.toFile().listFiles();
-                for (File f : Objects.requireNonNull(files)) {
-                    if (f.isDirectory()) {
-                        try (DirectoryStream directoryStream = Files.newDirectoryStream(f.toPath())) {
-                            directoryStream.iterator().forEachRemaining(xD -> {
-                                    filesLevel2.add((Path) xD);
-                                    LOGGER.info(f.getAbsolutePath() + " is " + filesLevel2.size() + " files or dirs");
-                                }
-                            );
-                        } catch (IOException | NullPointerException e) {
-                            LOGGER.error(e.getMessage(), e);
-                        }
-                    }
-                }
-            }
-        });
-        deleteFilesOldier(filesLevel2);
-    }
-
     private void deleteFilesOldier(List<Path> filesLevel2) {
         List<Path> filesLevel3 = new ArrayList<>();
-        filesLevel2.forEach(x -> {
+        filesLevel2.iterator().forEachRemaining(x -> {
             if (x.toFile().isFile()) {
                 if (x.toFile().getName().toLowerCase().contains(" " + yearStop + "-")) {
                     try {
                         String toDel = x.toString();
                         Files.delete(x);
                         LOGGER.warn(toDel);
-                    } catch (IOException ignore) {
+                    }
+                    catch(IOException | NullPointerException ignore){
                         //
                     }
                 }
@@ -90,8 +62,36 @@ public class ArchivesAutoCleaner implements Runnable {
                     //
                 }
 
-            } else LOGGER.warn(x.toString() + " ********************************");
+            }
+            else{
+                String msg = x.toString() + " ********************************";
+                LOGGER.warn(msg);
+            }
         });
         starterClean(filesLevel3);
+    }
+
+    private void starterClean(List<Path> dirPathList) {
+        List<Path> filesLevel2 = new ArrayList<>();
+        dirPathList.iterator().forEachRemaining(x -> {
+            if(x.toFile().isDirectory()){
+                File[] files = x.toFile().listFiles();
+                for(File f : Objects.requireNonNull(files)){
+                    if(f.isDirectory()){
+                        try(DirectoryStream directoryStream = Files.newDirectoryStream(f.toPath())){
+                            directoryStream.iterator().forEachRemaining(xD -> {
+                                    filesLevel2.add(( Path ) xD);
+                                    LOGGER.info(f.getAbsolutePath() + " is " + filesLevel2.size() + " files or dirs");
+                                }
+                            );
+                        }
+                        catch(IOException | NullPointerException e){
+                            LOGGER.error(e.getMessage(), e);
+                        }
+                    }
+                }
+            }
+        });
+        deleteFilesOldier(filesLevel2);
     }
 }

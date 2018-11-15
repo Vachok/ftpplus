@@ -22,7 +22,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.sql.*;
 import java.text.MessageFormat;
 import java.util.*;
@@ -261,13 +260,8 @@ public class NetScannerSvc {
                 String fromArray = new TForms().fromArray(ConstantsFor.COMPNAME_USERS_MAP, false);
                 String psUser = new TForms().fromArrayUsers(ConstantsFor.PC_U_MAP, false);
                 String thisPCStr;
-                try{
 
-                    thisPCStr = ConstantsFor.thisPC();
-                }
-                catch(UnknownHostException e){
-                    thisPCStr = e.getMessage();
-                }
+                thisPCStr = ConstantsFor.thisPC();
                 mailMSG.info(
                     SOURCE_CLASS,
                     upTime + " min uptime. " + thisPCStr + " COMPNAME_USERS_MAP size",

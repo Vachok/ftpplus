@@ -8,7 +8,6 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.config.AppCtx;
 
 import java.io.*;
-import java.net.UnknownHostException;
 import java.security.SecureRandom;
 import java.util.Date;
 
@@ -29,7 +28,7 @@ public class VersionInfo {
 
     private String buildTime;
 
-    private String thisPCName;
+    private final String thisPCName = ConstantsFor.thisPC();
 
     /*Instances*/
     public VersionInfo() {
@@ -54,18 +53,8 @@ public class VersionInfo {
             ConstantsFor.PROPS.setProperty("buildTime", buildTime);
         }
         ConstantsFor.PROPS.setProperty("appVersion", getAppVersion());
-        ConstantsFor.saveProps();
         String msg = this.toString();
         LOGGER.info(msg);
-    }
-
-    /*Itinial Block*/ {
-        try{
-            thisPCName = ConstantsFor.thisPC();
-        }
-        catch(UnknownHostException e){
-            LOGGER.error(e.getMessage(), e);
-        }
     }
 
     public String getAppBuild() {
