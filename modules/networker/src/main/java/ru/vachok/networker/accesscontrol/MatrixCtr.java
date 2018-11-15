@@ -13,6 +13,7 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.*;
+import ru.vachok.networker.services.SimpleCalculator;
 import ru.vachok.networker.services.WhoIsWithSRV;
 
 import javax.servlet.http.HttpServletRequest;
@@ -111,7 +112,9 @@ public class MatrixCtr {
         String workPos = matrixSRV.getWorkPos();
         if (workPos.toLowerCase().contains("whois:")) return whois(workPos, model);
         else if (workPos.toLowerCase().contains("calc:")) return calculateDoubles(workPos, model);
+        else if (workPos.toLowerCase().contains("calctime:")) timeStamp(new SimpleCalculator(), model, workPos);
         else return matrixAccess(workPos);
+        return MATRIX_STRING_NAME;
     }
 
     @GetMapping("/matrix")
@@ -191,6 +194,12 @@ public class MatrixCtr {
         matrixSRV.setWorkPos(pos);
         model.addAttribute("dinner", pos);
         return MATRIX_STRING_NAME;
+    }
+
+    private String timeStamp(@ModelAttribute SimpleCalculator simpleCalculator, Model model, String workPos) {
+        model.addAttribute("simpleCalculator", simpleCalculator);
+        model.addAttribute("dinner", simpleCalculator.getStampFromDate(workPos));
+        return "redirect:/calculate";
     }
 
     private String matrixAccess(String workPos) {

@@ -37,6 +37,11 @@ public enum ConstantsFor {
     public static final long MY_AGE = ( long ) Year.now().getValue() - 1984;
 
     /**
+     {@link Properties} приложения
+     */
+    public static final Properties PROPS = takePr();
+
+    /**
      Первоначальная задержка {@link ThreadConfig#threadPoolTaskScheduler()}
      */
     public static final long INIT_DELAY = new SecureRandom().nextInt(( int ) MY_AGE);
@@ -47,7 +52,7 @@ public enum ConstantsFor {
     public static final int MBYTE = 1024 * 1024;
 
     public static final Float NO_F_DAYS = TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() -
-        Long.parseLong(getTheProps().getProperty("lasts", 1515233487000L + ""))) / 60f / 24f;
+        Long.parseLong(PROPS.getProperty("lasts", 1544816520000L + ""))) / 60f / 24f;
 
     public static final ConcurrentMap<String, String> PC_U_MAP = new ConcurrentHashMap<>();
 
@@ -114,11 +119,6 @@ public enum ConstantsFor {
 
     public static final String APP_NAME = "ru_vachok_networker-";
 
-    /**
-     {@link Properties} приложения
-     */
-    public static final Properties PROPS = takePr();
-
     public static int totalPc = Integer.parseInt(PROPS.getProperty("totpc", "317"));
 
     public static final PassGenerator passGenerator = new PassGenerator();
@@ -163,11 +163,6 @@ public enum ConstantsFor {
 
     public static String getUpTime() {
         return "(" + (+( float ) (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / 60 / 60) + " hrs ago)";
-    }
-
-    private static Properties getTheProps() {
-        InitProperties initProperties = new DBRegProperties("u0466446_properties-general");
-        return initProperties.getProps();
     }
 
     /**

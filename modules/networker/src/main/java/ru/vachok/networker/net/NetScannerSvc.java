@@ -364,7 +364,7 @@ public class NetScannerSvc {
      @see #getPCNamesPref(String)
      */
     private static String writeDB(Collection<String> pcNames) {
-        List<String> list = new ArrayList<>(); //// FIXME: 13.11.2018
+        List<String> list = new ArrayList<>();
         try (PreparedStatement p = c.prepareStatement("insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow) values (?,?,?,?)")) {
             pcNames.stream().sorted().forEach(x -> {
                 String pcSerment = "Я не знаю...";
@@ -485,7 +485,6 @@ public class NetScannerSvc {
     private String onLinesCheck(String sql, String pcName) {
         PCUserResolver pcUserResolver = new PCUserResolver();
         ThreadConfig threadConfig = new ThreadConfig();
-
         List<Integer> onLine = new ArrayList<>();
         List<Integer> offLine = new ArrayList<>();
         StringBuilder stringBuilder = new StringBuilder();
@@ -552,19 +551,20 @@ public class NetScannerSvc {
             try (PreparedStatement p1 = c.prepareStatement(sql.replaceAll("pcuser", "pcuserauto"))) {
                 p.setString(1, pcName);
                 p1.setString(1, pcName);
-                try (ResultSet resultSet = p.executeQuery();
-                     ResultSet resultSet1 = p1.executeQuery()) {
+                try (ResultSet resultSet = p.executeQuery()) {
                     while (resultSet.next()) {
                         stringBuilder.append("<b>")
                             .append(resultSet.getString("userName").trim()).append("</b> (time: ")
                             .append(resultSet.getString("whenQueried")).append(")");
                     }
-                    while (resultSet1.next()) {
-                        if (resultSet1.last()) {
-                            return stringBuilder
-                                .append("    (AutoResolved name: ")
-                                .append(resultSet1.getString("userName").trim()).append(" (time: ")
-                                .append(resultSet1.getString("whenQueried")).append("))").toString();
+                    try (ResultSet resultSet1 = p1.executeQuery()) {
+                        while (resultSet1.next()) {
+                            if (resultSet1.last()) {
+                                return stringBuilder
+                                    .append("    (AutoResolved name: ")
+                                    .append(resultSet1.getString("userName").trim()).append(" (time: ")
+                                    .append(resultSet1.getString("whenQueried")).append("))").toString();
+                            }
                         }
                     }
                 }
