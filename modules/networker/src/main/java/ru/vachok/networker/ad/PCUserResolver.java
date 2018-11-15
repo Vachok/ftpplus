@@ -190,7 +190,7 @@ public class PCUserResolver {
             String whenQueried = "whenQueried";
             String columnLabel = "pcName";
             try (PreparedStatement p = c.prepareStatement("select * from pcuser");
-                 PreparedStatement pAuto = c.prepareStatement("select * from pcuserauto");
+                 PreparedStatement pAuto = c.prepareStatement("select * from pcuserauto where pcName in (select pcName from pcuser) order by pcName asc limit 203");
                  ResultSet resultSet = p.executeQuery();
                  ResultSet resultSetA = pAuto.executeQuery()) {
                 while (resultSet.next()) {
