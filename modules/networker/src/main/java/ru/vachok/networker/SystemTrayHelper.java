@@ -7,20 +7,17 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.net.MyServer;
+import ru.vachok.networker.services.ArchivesAutoCleaner;
 import ru.vachok.networker.services.DBMessenger;
 import ru.vachok.networker.services.Putty;
 
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.Socket;
-import java.net.URI;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.util.concurrent.*;
 
-import static java.lang.System.err;
-import static java.lang.System.exit;
+import static java.lang.System.*;
 
 
 /**
@@ -121,6 +118,7 @@ public class SystemTrayHelper {
         ThreadPoolTaskExecutor executor = threadConfig.threadPoolTaskExecutor();
         Thread thread = executor.createThread(SystemTrayHelper::recOn);
         thread.start();
+        int yearStop = 2014;
 
         MenuItem gitStartWeb = new MenuItem();
         gitStartWeb.addActionListener(actionEvent -> {
@@ -149,8 +147,13 @@ public class SystemTrayHelper {
 
         MenuItem puttyStarter = new MenuItem();
         puttyStarter.addActionListener(e -> new Putty().run());
-        puttyStarter.setLabel("Start Putty");
+        puttyStarter.setLabel("Putty");
         popupMenu.add(puttyStarter);
+
+        MenuItem delFiles = new MenuItem();
+        delFiles.addActionListener(e -> new ArchivesAutoCleaner(yearStop).run());
+        delFiles.setLabel("Autoclean-" + yearStop);
+        popupMenu.add(delFiles);
     }
 
     private static void recOn() {

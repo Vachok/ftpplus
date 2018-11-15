@@ -22,10 +22,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.net.UnknownHostException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
@@ -36,7 +34,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 /**
  @since 21.08.2018 (14:40) */
-@Service("netScannerSvc")
+@Service ("netScannerSvc")
 public class NetScannerSvc {
 
     /*Fields*/
@@ -57,14 +55,14 @@ public class NetScannerSvc {
     private static final String DB_NAME = ConstantsFor.DB_PREFIX + "velkom";
 
     /**
-     {@link AppComponents#getLogger()}
-     */
-    private static final Logger LOGGER = AppComponents.getLogger();
-
-    /**
      {@link RegRuMysql#getDefaultConnection(String)}
      */
     private static Connection c = new RegRuMysql().getDefaultConnection(DB_NAME);
+
+    /**
+     {@link AppComponents#getLogger()}
+     */
+    private static final Logger LOGGER = AppComponents.getLogger();
 
     /**
      {@link AppComponents#adComputers()}
@@ -95,67 +93,6 @@ public class NetScannerSvc {
      */
     private Map<String, Boolean> netWork;
 
-    /**
-     Сканирующий метод. Запускает отдельный {@link Thread}, который блокируется с помощью {@link ReentrantLock} <br> 1 {@link #getPCNamesPref(String)} 1.1 {@link #getCycleNames(String)} 1.1.1 {@link
-    #getNamesCount(String)} 1.2 {@link #getSomeMore(String, boolean)} 1.2.1 {@link #onLinesCheck(String, String)} 1.2.1.1 {@link ThreadConfig#threadPoolTaskExecutor()} 1.2.1.2 {@link
-    PCUserResolver#namesToFile(String)} 1.2.2 {@link #offLinesCheckUser(String, String)} 1.3 {@link #getSomeMore(String, boolean)} 1.3.1 {@link #onLinesCheck(String, String)} 1.3.1.1 {@link
-    ThreadConfig#threadPoolTaskExecutor()} 1.3.1.2 {@link PCUserResolver#namesToFile(String)} 1.4 {@link #getSomeMore(String, boolean)} 1.4.1 {@link #onLinesCheck(String, String)} 1.4.1.1 {@link
-    ThreadConfig#threadPoolTaskExecutor()} 1.4.1.2 {@link PCUserResolver#namesToFile(String)} 1.4.2 {@link #offLinesCheckUser(String, String)} 1.5 {@link #writeDB(Collection)} 1.5.1 {@link
-    TForms#fromArray(List, boolean)} <br>
-     <p>
-     2 {@link TForms#fromArray(Map)} <br>
-     <p>
-     3 {@link TForms#fromArray(java.util.concurrent.ConcurrentMap, boolean)} <br>
-     <p>
-     4 {@link TForms#fromArrayUsers(ConcurrentMap, boolean)}
-
-     @see PCUserResolver#getResolvedName()
-     @see #getPcNames()
-     */
-    @Locked(id = Thread.State.BLOCKED)
-    public void getPCsAsync() {
-        AtomicReference<String> msg = new AtomicReference<>("");
-        new Thread(() -> {
-            Thread.currentThread().setName("PC_SCANNER_PROGRESS*********LOCKED");
-            lock.lock();
-            msg.set(new StringBuilder()
-                .append("Thread ")
-                .append(Thread.currentThread().getId())
-                .append(" with name ")
-                .append(Thread.currentThread().getName())
-                .append(" is locked = ")
-                .append(lock.isLocked()).toString());
-            final long startMethod = System.currentTimeMillis();
-            LOGGER.warn(msg.get());
-            for (String s : PC_PREFIXES) {
-                pcNames.clear();
-                pcNames.addAll(getPCNamesPref(s));
-            }
-            String elapsedTime = "Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethod) + " sec.";
-            pcNames.add(elapsedTime);
-            lock.unlock();
-            LOGGER.warn(msg.get());
-            new Thread(() -> {
-                MessageToUser mailMSG = new ESender("143500@gmail.com");
-                float upTime = (float) (TimeUnit.MILLISECONDS
-                    .toSeconds(System.currentTimeMillis() - ConstantsFor.START_STAMP)) / 60f;
-                Map<String, String> lastLogs = new AppComponents().getLastLogs();
-                String retLogs = new TForms().fromArray(lastLogs);
-                String fromArray = new TForms().fromArray(ConstantsFor.COMPNAME_USERS_MAP, false);
-                String psUser = new TForms().fromArrayUsers(ConstantsFor.PC_U_MAP, false);
-                mailMSG.info(
-                    SOURCE_CLASS,
-                    upTime + " min uptime. " + ConstantsFor.COMPNAME_USERS_MAP.size() + " COMPNAME_USERS_MAP size",
-                    retLogs + " \n" + psUser + "\n" + fromArray);
-                try (OutputStream outputStream = new FileOutputStream("lasusers.txt")) {
-                    outputStream.write(fromArray.getBytes());
-                } catch (IOException e) {
-                    LOGGER.error(e.getMessage(), e);
-                }
-            }).start();
-        }).start();
-    }
-
     public static NetScannerSvc getI() {
         return netScannerSvc;
     }
@@ -165,62 +102,29 @@ public class NetScannerSvc {
     }
 
     /**
-     Сборщик для {@link #pcNames} <br> 1. {@link #getCycleNames(String)} 1.1 {@link #getNamesCount(String)} <br> 2. {@link #getSomeMore(String, boolean)} 2.1 {@link #onLinesCheck(String, String)} 2.1.1
-     {@link ThreadConfig#threadPoolTaskExecutor()} 2.1.2 {@link PCUserResolver#namesToFile(String)} <br> 2.2 {@link #offLinesCheckUser(String, String)} <br> 3. {@link #getSomeMore(String, boolean)} 3.1
-     {@link #onLinesCheck(String, String)} 3.1.1 {@link ThreadConfig#threadPoolTaskExecutor()} 3.1.2 {@link PCUserResolver#namesToFile(String)} <br> 4. {@link #getSomeMore(String, boolean)} 4.1 {@link
-    ThreadConfig#threadPoolTaskExecutor()} 4.1.2 {@link PCUserResolver#namesToFile(String)} 4.2 {@link #offLinesCheckUser(String, String)} <br> 5. {@link #writeDB(Collection)} 5.1 {@link
-    TForms#fromArray(List, boolean)}
+     @param qer {@link HttpServletRequest}.getQueryString()
+     @see NetScanCtr#scanIt(HttpServletRequest, Model)
+     */
+    void setQer(String qer) {
+        this.qer = qer;
+    }
 
-     @param prefixPcName префикс имени ПК
+    /**
+     1 {@link ThreadConfig#threadPoolTaskExecutor()}
+
      @return {@link #pcNames}
      @see NetScanCtr#scanIt(HttpServletRequest, Model)
-     @see #getPCsAsync()
      */
-    Set<String> getPCNamesPref(String prefixPcName) {
-        this.qer = prefixPcName;
-        final long startMethTime = System.currentTimeMillis();
-        boolean reachable;
-        InetAddress byName;
-        for (String pcName : getCycleNames(prefixPcName)) {
-            try {
-                byName = InetAddress.getByName(pcName);
-                reachable = byName.isReachable(ConstantsFor.TIMEOUT_650);
-                if (!reachable) {
-                    String someMore = getSomeMore(pcName, false);
-                    String onLines = ("online " + false + "");
-                    onLines = onLines + "<br>";
-                    pcNames.add(pcName + ":" + byName.getHostAddress() + " " + onLines);
-                    String format = MessageFormat.format("{0} {1} | {2}", pcName, onLines, someMore);
-                    netWork.putIfAbsent(pcName + " last name is " + someMore, false);
-                    LOGGER.warn(format);
-                } else {
-                    String someMore = new StringBuilder().append("<i><font color=\"yellow\">last name is ")
-                        .append(getSomeMore(pcName, false)).append("</i></font> ")
-                        .append(getSomeMore(pcName, true))
-                        .toString();
-                    String onLines = (" online " + true + "");
-                    onLines = onLines + "<br><br>";
-                    String format = MessageFormat.format("{0} {1} | {2}", pcName, onLines, someMore);
-                    pcNames.add(pcName + ":" + byName.getHostAddress() + onLines);
-                    String printStr = new StringBuilder().append("<br><b><a href=\"/ad?")
-                        .append(pcName.split(".eatm")[0]).append("\" >")
-                        .append(pcName).append("</b></a>     ")
-                        .append(someMore).append(". ")
-                        .toString();
-                    netWork.putIfAbsent(printStr, true);
-                    LOGGER.info(format);
-                }
-            } catch (IOException ignore) {
-                //
-            }
-        }
-        netWork.put("<h4>" + prefixPcName + "     " + pcNames.size() + "</h4>", true);
-        String pcsString = writeDB(pcNames);
-        LOGGER.info(pcsString);
-        pcNames.add("<b>Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethTime) + " sec.</b>");
+    Set<String> getPcNames() {
+        ThreadConfig threadConfig = new ThreadConfig();
+        ThreadPoolTaskExecutor executor = threadConfig.threadPoolTaskExecutor();
+        Runnable getPCs = this::getPCsAsync;
+        executor.execute(getPCs);
+        executor.destroy();
         return pcNames;
     }
 
+    /*Instances*/
     private NetScannerSvc() {
         this.netWork = AppComponents.lastNetScanMap();
     }
@@ -240,7 +144,7 @@ public class NetScannerSvc {
      @return web-страница с результатом
      */
     public String getInfoFromDB() {
-        if (thePc.isEmpty()) {
+        if(thePc.isEmpty()){
             IllegalArgumentException argumentException = new IllegalArgumentException("Must be NOT NULL!");
             return argumentException.getMessage();
         }
@@ -249,15 +153,16 @@ public class NetScannerSvc {
             .append("select * from velkompc where NamePP like '%")
             .append(thePc)
             .append("%'");
-        try (PreparedStatement preparedStatement = c.prepareStatement(sql.toString())) {
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+        try(PreparedStatement preparedStatement = c.prepareStatement(sql.toString())){
+            try(ResultSet resultSet = preparedStatement.executeQuery()){
                 List<String> timeNow = new ArrayList<>();
                 List<Integer> integersOff = new ArrayList<>();
-                while (resultSet.next()) {
+                while(resultSet.next()){
                     int onlineNow = resultSet.getInt("OnlineNow");
-                    if (onlineNow == 1) {
+                    if(onlineNow==1){
                         timeNow.add(resultSet.getString("TimeNow"));
-                    } else {
+                    }
+                    else{
                         integersOff.add(onlineNow);
                     }
                     StringBuilder stringBuilder = new StringBuilder();
@@ -285,7 +190,8 @@ public class NetScannerSvc {
                 setThePc(thePcWithDBInfo);
                 ActDirectoryCTRL.setInputWithInfoFromDB(thePcWithDBInfo);
             }
-        } catch (SQLException | IndexOutOfBoundsException e) {
+        }
+        catch(SQLException | IndexOutOfBoundsException e){
             setThePc(e.getMessage());
         }
         return "ok";
@@ -294,7 +200,7 @@ public class NetScannerSvc {
     /**
      @return атрибут модели.
      */
-    @SuppressWarnings("WeakerAccess")
+    @SuppressWarnings ("WeakerAccess")
     public String getThePc() {
         return thePc;
     }
@@ -307,6 +213,137 @@ public class NetScannerSvc {
     }
 
     /**
+     Сканирующий метод. Запускает отдельный {@link Thread}, который блокируется с помощью {@link ReentrantLock} <br> 1 {@link #getPCNamesPref(String)} 1.1 {@link #getCycleNames(String)} 1.1.1 {@link
+    #getNamesCount(String)} 1.2 {@link #getSomeMore(String, boolean)} 1.2.1 {@link #onLinesCheck(String, String)} 1.2.1.1 {@link ThreadConfig#threadPoolTaskExecutor()} 1.2.1.2 {@link
+    PCUserResolver#namesToFile(String)} 1.2.2 {@link #offLinesCheckUser(String, String)} 1.3 {@link #getSomeMore(String, boolean)} 1.3.1 {@link #onLinesCheck(String, String)} 1.3.1.1 {@link
+    ThreadConfig#threadPoolTaskExecutor()} 1.3.1.2 {@link PCUserResolver#namesToFile(String)} 1.4 {@link #getSomeMore(String, boolean)} 1.4.1 {@link #onLinesCheck(String, String)} 1.4.1.1 {@link
+    ThreadConfig#threadPoolTaskExecutor()} 1.4.1.2 {@link PCUserResolver#namesToFile(String)} 1.4.2 {@link #offLinesCheckUser(String, String)} 1.5 {@link #writeDB(Collection)} 1.5.1 {@link
+    TForms#fromArray(List, boolean)} <br>
+     <p>
+     2 {@link TForms#fromArray(Map)} <br>
+     <p>
+     3 {@link TForms#fromArray(java.util.concurrent.ConcurrentMap, boolean)} <br>
+     <p>
+     4 {@link TForms#fromArrayUsers(ConcurrentMap, boolean)}
+
+     @see PCUserResolver#getResolvedName()
+     @see #getPcNames()
+     */
+    @Locked (id = Thread.State.BLOCKED)
+    public void getPCsAsync() {
+        AtomicReference<String> msg = new AtomicReference<>("");
+        new Thread(() -> {
+            Thread.currentThread().setName("PC_SCANNER_PROGRESS*********LOCKED");
+            lock.lock();
+            msg.set(new StringBuilder()
+                .append("Thread ")
+                .append(Thread.currentThread().getId())
+                .append(" with name ")
+                .append(Thread.currentThread().getName())
+                .append(" is locked = ")
+                .append(lock.isLocked()).toString());
+            final long startMethod = System.currentTimeMillis();
+            LOGGER.warn(msg.get());
+            for(String s : PC_PREFIXES){
+                pcNames.clear();
+                pcNames.addAll(getPCNamesPref(s));
+            }
+            String elapsedTime = "Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethod) + " sec.";
+            pcNames.add(elapsedTime);
+            lock.unlock();
+            LOGGER.warn(msg.get());
+            new Thread(() -> {
+                MessageToUser mailMSG = new ESender("143500@gmail.com");
+                float upTime = ( float ) (TimeUnit.MILLISECONDS
+                                              .toSeconds(System.currentTimeMillis() - ConstantsFor.START_STAMP)) / 60f;
+                Map<String, String> lastLogs = new AppComponents().getLastLogs();
+                String retLogs = new TForms().fromArray(lastLogs);
+                String fromArray = new TForms().fromArray(ConstantsFor.COMPNAME_USERS_MAP, false);
+                String psUser = new TForms().fromArrayUsers(ConstantsFor.PC_U_MAP, false);
+                String thisPCStr;
+                try{
+
+                    thisPCStr = ConstantsFor.thisPC();
+                }
+                catch(UnknownHostException e){
+                    thisPCStr = e.getMessage();
+                }
+                mailMSG.info(
+                    SOURCE_CLASS,
+                    upTime + " min uptime. " + thisPCStr + " COMPNAME_USERS_MAP size",
+                    retLogs + " \n" + psUser + "\n" + fromArray);
+                try(OutputStream outputStream = new FileOutputStream("lasusers.txt")){
+                    outputStream.write(fromArray.getBytes());
+                }
+                catch(IOException e){
+                    LOGGER.error(e.getMessage(), e);
+                }
+            }).start();
+        }).start();
+    }
+
+    /**
+     Сборщик для {@link #pcNames} <br> 1. {@link #getCycleNames(String)} 1.1 {@link #getNamesCount(String)} <br> 2. {@link #getSomeMore(String, boolean)} 2.1 {@link #onLinesCheck(String, String)} 2
+     .1.1
+     {@link ThreadConfig#threadPoolTaskExecutor()} 2.1.2 {@link PCUserResolver#namesToFile(String)} <br> 2.2 {@link #offLinesCheckUser(String, String)} <br> 3. {@link #getSomeMore(String, boolean)}
+     3.1
+     {@link #onLinesCheck(String, String)} 3.1.1 {@link ThreadConfig#threadPoolTaskExecutor()} 3.1.2 {@link PCUserResolver#namesToFile(String)} <br> 4. {@link #getSomeMore(String, boolean)} 4.1 {@link
+    ThreadConfig#threadPoolTaskExecutor()} 4.1.2 {@link PCUserResolver#namesToFile(String)} 4.2 {@link #offLinesCheckUser(String, String)} <br> 5. {@link #writeDB(Collection)} 5.1 {@link
+    TForms#fromArray(List, boolean)}
+
+     @param prefixPcName префикс имени ПК
+     @return {@link #pcNames}
+     @see NetScanCtr#scanIt(HttpServletRequest, Model)
+     @see #getPCsAsync()
+     */
+    Set<String> getPCNamesPref(String prefixPcName) {
+        this.qer = prefixPcName;
+        final long startMethTime = System.currentTimeMillis();
+        boolean reachable;
+        InetAddress byName;
+        for(String pcName : getCycleNames(prefixPcName)){
+            try{
+                byName = InetAddress.getByName(pcName);
+                reachable = byName.isReachable(ConstantsFor.TIMEOUT_650);
+                if(!reachable){
+                    String someMore = getSomeMore(pcName, false);
+                    String onLines = ("online " + false + "");
+                    onLines = onLines + "<br>";
+                    pcNames.add(pcName + ":" + byName.getHostAddress() + " " + onLines);
+                    String format = MessageFormat.format("{0} {1} | {2}", pcName, onLines, someMore);
+                    netWork.putIfAbsent(pcName + " last name is " + someMore, false);
+                    LOGGER.warn(format);
+                }
+                else{
+                    String someMore = new StringBuilder().append("<i><font color=\"yellow\">last name is ")
+                        .append(getSomeMore(pcName, false)).append("</i></font> ")
+                        .append(getSomeMore(pcName, true))
+                        .toString();
+                    String onLines = (" online " + true + "");
+                    onLines = onLines + "<br><br>";
+                    String format = MessageFormat.format("{0} {1} | {2}", pcName, onLines, someMore);
+                    pcNames.add(pcName + ":" + byName.getHostAddress() + onLines);
+                    String printStr = new StringBuilder().append("<br><b><a href=\"/ad?")
+                        .append(pcName.split(".eatm")[0]).append("\" >")
+                        .append(pcName).append("</b></a>     ")
+                        .append(someMore).append(". ")
+                        .toString();
+                    netWork.putIfAbsent(printStr, true);
+                    LOGGER.info(format);
+                }
+            }
+            catch(IOException ignore){
+                //
+            }
+        }
+        netWork.put("<h4>" + prefixPcName + "     " + pcNames.size() + "</h4>", true);
+        String pcsString = writeDB(pcNames);
+        LOGGER.info(pcsString);
+        pcNames.add("<b>Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethTime) + " sec.</b>");
+        return pcNames;
+    }
+
+    /**
      1. {@link #getNamesCount(String)}
 
      @param namePCPrefix префикс имени ПК
@@ -314,17 +351,18 @@ public class NetScannerSvc {
      @see #getPCNamesPref(String)
      */
     private Collection<String> getCycleNames(String namePCPrefix) {
-        if (namePCPrefix == null) {
+        if(namePCPrefix==null){
             namePCPrefix = "pp";
         }
         int inDex = getNamesCount(namePCPrefix);
         String nameCount;
         Collection<String> list = new ArrayList<>();
         int pcNum = 0;
-        for (int i = 1; i < inDex; i++) {
-            if (namePCPrefix.equals("no") || namePCPrefix.equals("pp") || namePCPrefix.equals("do")) {
+        for(int i = 1; i < inDex; i++){
+            if(namePCPrefix.equals("no") || namePCPrefix.equals("pp") || namePCPrefix.equals("do")){
                 nameCount = String.format("%04d", ++pcNum);
-            } else {
+            }
+            else{
                 nameCount = String.format("%03d", ++pcNum);
             }
             list.add(namePCPrefix + nameCount + ".eatmeat.ru");
@@ -344,11 +382,12 @@ public class NetScannerSvc {
     private String getSomeMore(String pcName, boolean isOnline) {
 
         String sql;
-        if (isOnline) {
+        if(isOnline){
             sql = "select * from velkompc where NamePP like ?";
 
             return onLinesCheck(sql, pcName);
-        } else {
+        }
+        else{
             sql = "select * from pcuser where pcName like ?";
             return offLinesCheckUser(sql, pcName);
         }
@@ -365,67 +404,67 @@ public class NetScannerSvc {
      */
     private static String writeDB(Collection<String> pcNames) {
         List<String> list = new ArrayList<>();
-        try (PreparedStatement p = c.prepareStatement("insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow) values (?,?,?,?)")) {
+        try(PreparedStatement p = c.prepareStatement("insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow) values (?,?,?,?)")){
             pcNames.stream().sorted().forEach(x -> {
                 String pcSerment = "Я не знаю...";
                 LOGGER.info(x);
-                if (x.contains("200.200")) {
+                if(x.contains("200.200")){
                     pcSerment = "Торговый дом";
                 }
-                if (x.contains("200.201")) {
+                if(x.contains("200.201")){
                     pcSerment = "IP телефоны";
                 }
-                if (x.contains("200.202")) {
+                if(x.contains("200.202")){
                     pcSerment = "Техслужба";
                 }
-                if (x.contains("200.203")) {
+                if(x.contains("200.203")){
                     pcSerment = "СКУД";
                 }
-                if (x.contains("200.204")) {
+                if(x.contains("200.204")){
                     pcSerment = "Упаковка";
                 }
-                if (x.contains("200.205")) {
+                if(x.contains("200.205")){
                     pcSerment = "МХВ";
                 }
-                if (x.contains("200.206")) {
+                if(x.contains("200.206")){
                     pcSerment = "Здание склада 5";
                 }
-                if (x.contains("200.207")) {
+                if(x.contains("200.207")){
                     pcSerment = "Сырокопоть";
                 }
-                if (x.contains("200.208")) {
+                if(x.contains("200.208")){
                     pcSerment = "Участок убоя";
                 }
-                if (x.contains("200.209")) {
+                if(x.contains("200.209")){
                     pcSerment = "Да ладно?";
                 }
-                if (x.contains("200.210")) {
+                if(x.contains("200.210")){
                     pcSerment = "Мастера колб";
                 }
-                if (x.contains("200.212")) {
+                if(x.contains("200.212")){
                     pcSerment = "Мастера деликатесов";
                 }
-                if (x.contains("200.213")) {
+                if(x.contains("200.213")){
                     pcSerment = "2й этаж. АДМ.";
                 }
-                if (x.contains("200.214")) {
+                if(x.contains("200.214")){
                     pcSerment = "WiFiCorp";
                 }
-                if (x.contains("200.215")) {
+                if(x.contains("200.215")){
                     pcSerment = "WiFiFree";
                 }
-                if (x.contains("200.217")) {
+                if(x.contains("200.217")){
                     pcSerment = "1й этаж АДМ";
                 }
-                if (x.contains("192.168")) {
+                if(x.contains("192.168")){
                     pcSerment = "Может быть в разных местах...";
                 }
-                if (x.contains("172.16.200")) {
+                if(x.contains("172.16.200")){
                     pcSerment = "Open VPN авторизация - сертификат";
                 }
                 boolean onLine = false;
-                try {
-                    if (x.contains("true")) {
+                try{
+                    if(x.contains("true")){
                         onLine = true;
                     }
                     String x1 = x.split(":")[0];
@@ -436,13 +475,15 @@ public class NetScannerSvc {
                     p.setBoolean(4, onLine);
                     p.executeUpdate();
                     list.add(x1 + " " + x2 + " " + pcSerment + " " + onLine);
-                } catch (SQLException e) {
+                }
+                catch(SQLException e){
                     LOGGER.error(e.getMessage(), e);
                     c = new RegRuMysql().getDefaultConnection(DB_NAME);
                 }
             });
             return new TForms().fromArray(list, true);
-        } catch (SQLException e) {
+        }
+        catch(SQLException e){
             LOGGER.error(e.getMessage(), e);
             c = new RegRuMysql().getDefaultConnection(DB_NAME);
             return e.getMessage();
@@ -456,19 +497,19 @@ public class NetScannerSvc {
      */
     private int getNamesCount(String qer) {
         int inDex = 0;
-        if (qer.equals("no")) {
+        if(qer.equals("no")){
             inDex = ConstantsFor.NOPC;
         }
-        if (qer.equals("pp")) {
+        if(qer.equals("pp")){
             inDex = ConstantsFor.PPPC;
         }
-        if (qer.equals("do")) {
+        if(qer.equals("do")){
             inDex = ConstantsFor.DOPC;
         }
-        if (qer.equals("a")) {
+        if(qer.equals("a")){
             inDex = ConstantsFor.APC;
         }
-        if (qer.equals("td")) {
+        if(qer.equals("td")){
             inDex = ConstantsFor.TDPC;
         }
         return inDex;
@@ -489,23 +530,24 @@ public class NetScannerSvc {
         List<Integer> offLine = new ArrayList<>();
         StringBuilder stringBuilder = new StringBuilder();
         threadConfig.threadPoolTaskExecutor().execute(() -> pcUserResolver.namesToFile(pcName));
-        try (PreparedStatement statement = c.prepareStatement(sql)) {
+        try(PreparedStatement statement = c.prepareStatement(sql)){
             statement.setString(1, pcName);
-            try (ResultSet resultSet = statement.executeQuery()) {
-                while (resultSet.next()) {
+            try(ResultSet resultSet = statement.executeQuery()){
+                while(resultSet.next()){
                     ADComputer adComputer = new ADComputer();
                     int onlineNow = resultSet.getInt("OnlineNow");
-                    if (onlineNow == 1) {
+                    if(onlineNow==1){
                         onLine.add(onlineNow);
                         adComputer.setDnsHostName(pcName);
                     }
-                    if (onlineNow == 0) {
+                    if(onlineNow==0){
                         offLine.add(onlineNow);
                     }
                     adComputers.add(adComputer);
                 }
             }
-        } catch (SQLException | NullPointerException e) {
+        }
+        catch(SQLException | NullPointerException e){
             LOGGER.error(e.getMessage(), e);
         }
         return stringBuilder
@@ -513,29 +555,6 @@ public class NetScannerSvc {
             .append(" offline times and ")
             .append(onLine.size())
             .append(" online times.").toString();
-    }
-
-    /**
-     1 {@link ThreadConfig#threadPoolTaskExecutor()}
-
-     @return {@link #pcNames}
-     @see NetScanCtr#scanIt(HttpServletRequest, Model)
-     */
-    Set<String> getPcNames() {
-        ThreadConfig threadConfig = new ThreadConfig();
-        ThreadPoolTaskExecutor executor = threadConfig.threadPoolTaskExecutor();
-        Runnable getPCs = this::getPCsAsync;
-        executor.execute(getPCs);
-        executor.destroy();
-        return pcNames;
-    }
-
-    /**
-     @param qer {@link HttpServletRequest}.getQueryString()
-     @see NetScanCtr#scanIt(HttpServletRequest, Model)
-     */
-    void setQer(String qer) {
-        this.qer = qer;
     }
 
     /**
@@ -547,19 +566,19 @@ public class NetScannerSvc {
      */
     private String offLinesCheckUser(String sql, String pcName) {
         StringBuilder stringBuilder = new StringBuilder();
-        try (PreparedStatement p = c.prepareStatement(sql)) {
-            try (PreparedStatement p1 = c.prepareStatement(sql.replaceAll("pcuser", "pcuserauto"))) {
+        try(PreparedStatement p = c.prepareStatement(sql)){
+            try(PreparedStatement p1 = c.prepareStatement(sql.replaceAll("pcuser", "pcuserauto"))){
                 p.setString(1, pcName);
                 p1.setString(1, pcName);
-                try (ResultSet resultSet = p.executeQuery()) {
-                    while (resultSet.next()) {
+                try(ResultSet resultSet = p.executeQuery()){
+                    while(resultSet.next()){
                         stringBuilder.append("<b>")
                             .append(resultSet.getString("userName").trim()).append("</b> (time: ")
                             .append(resultSet.getString("whenQueried")).append(")");
                     }
-                    try (ResultSet resultSet1 = p1.executeQuery()) {
-                        while (resultSet1.next()) {
-                            if (resultSet1.last()) {
+                    try(ResultSet resultSet1 = p1.executeQuery()){
+                        while(resultSet1.next()){
+                            if(resultSet1.last()){
                                 return stringBuilder
                                     .append("    (AutoResolved name: ")
                                     .append(resultSet1.getString("userName").trim()).append(" (time: ")
@@ -569,7 +588,8 @@ public class NetScannerSvc {
                     }
                 }
             }
-        } catch (SQLException e) {
+        }
+        catch(SQLException e){
             stringBuilder.append(e.getMessage());
 
         }
