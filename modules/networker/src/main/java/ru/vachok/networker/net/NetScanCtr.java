@@ -14,8 +14,12 @@ import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.PageFooter;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.security.SecureRandom;
-import java.util.*;
+import java.util.Date;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
@@ -42,7 +46,7 @@ public class NetScanCtr {
     private final int duration = new SecureRandom().nextInt((int) ConstantsFor.MY_AGE);
 
     @GetMapping("/netscan")
-    public String netScan(HttpServletRequest request, Model model) {
+    public String netScan(HttpServletRequest request, HttpServletResponse response, Model model) {
         netScannerSvc.setThePc("");
         Map<String, Boolean> netWork = lastScan;
         boolean isMapSizeBigger = netWork.size() > 2;
@@ -58,6 +62,7 @@ public class NetScanCtr {
             .addAttribute(TITLE_STR, "First Scan: 2018-05-05");
         model.addAttribute("footer", new PageFooter().getFooterUtext());
         AppComponents.lastNetScan().setTimeLastScan(new Date());
+        response.addHeader("Refresh", "30");
         return NETSCAN_STR;
     }
 

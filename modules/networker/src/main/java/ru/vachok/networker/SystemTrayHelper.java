@@ -17,9 +17,11 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.URI;
+import java.time.Year;
 import java.util.concurrent.*;
 
-import static java.lang.System.*;
+import static java.lang.System.err;
+import static java.lang.System.exit;
 
 
 /**
@@ -112,7 +114,7 @@ public class SystemTrayHelper {
         ThreadPoolTaskExecutor executor = threadConfig.threadPoolTaskExecutor();
         Thread thread = executor.createThread(SystemTrayHelper::recOn);
         thread.start();
-        int yearStop = 2014;
+
 
         MenuItem gitStartWeb = new MenuItem();
         gitStartWeb.addActionListener(actionEvent -> {
@@ -145,8 +147,19 @@ public class SystemTrayHelper {
         popupMenu.add(puttyStarter);
 
         MenuItem delFiles = new MenuItem();
-        delFiles.addActionListener(e -> new ArchivesAutoCleaner(yearStop).run());
-        delFiles.setLabel("Autoclean-" + yearStop);
+        delFiles.addActionListener(e -> {
+            executor.setThreadGroup(new ThreadGroup(("CLR")));
+            executor.setThreadNamePrefix("CLEAN");
+            executor.setThreadGroupName("12-17");
+            int startyear = Integer.parseInt(ConstantsFor.PROPS.getOrDefault("startyear", (Year.now().getValue() - 6)).toString());
+            for (int i = startyear; i < startyear + 5; i++) {
+                String msg = ("starting clean for " + i).toUpperCase();
+                LOGGER.info(msg);
+                executor.setThreadNamePrefix(i + " ");
+                executor.submit(new ArchivesAutoCleaner(i));
+            }
+        });
+        delFiles.setLabel("Autoclean");
         popupMenu.add(delFiles);
     }
 
