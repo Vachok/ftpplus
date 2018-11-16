@@ -50,6 +50,8 @@ public class PfListsCtr {
 
     private long timeOut;
 
+    private int delayRef = new SecureRandom().nextInt(( int ) TimeUnit.MINUTES.toMillis(250));
+
     private final Runnable makePFLists = this::runningList;
 
     private ThreadConfig threadConfig = new ThreadConfig();
@@ -72,7 +74,6 @@ public class PfListsCtr {
         Properties properties = ConstantsFor.PROPS;
         long lastScan = Long.parseLong(properties.getProperty("pfscan", "1"));
         timeOut = lastScan + TimeUnit.MINUTES.toMillis(15);
-
         if (!pingOK) noPing(model);
         try {
             LOGGER.warn(visitor.toString());
@@ -82,16 +83,19 @@ public class PfListsCtr {
         modSet(model);
 
         if (request.getQueryString() != null) threadConfig.taskDecorator(makePFLists);
-
         if (pfLists.getTimeUpd() + TimeUnit.MINUTES.toMillis(170) < System.currentTimeMillis()) {
             model.addAttribute(METRIC_STR, "Требуется обновление!");
             model.addAttribute("gitstats", pfListsSrv.getExecutor().toString());
         } else {
             String msg = "" + (float) (TimeUnit.MILLISECONDS
-                .toSeconds(System.currentTimeMillis() - pfLists.getTimeUpd())) / 60;
+                                           .toSeconds(System.currentTimeMillis() - pfLists.getTimeUpd())) / ConstantsFor.ONE_HOUR_IN_MIN;
             LOGGER.warn(msg);
         }
         propUpd(properties);
+        String refreshRate = String.valueOf(TimeUnit.MILLISECONDS.toMinutes(delayRef) * ConstantsFor.ONE_HOUR_IN_MIN);
+        response.addHeader("Refresh", refreshRate);
+        String msg = TimeUnit.MILLISECONDS.toMinutes(delayRef) + " autorefresh";
+        LOGGER.info(msg);
         return pflistsStr;
     }
 
@@ -102,7 +106,6 @@ public class PfListsCtr {
     }
 
     private void modSet(Model model) {
-        final int aThreadsLast = Thread.activeCount();
         model.addAttribute(METRIC_STR, (float) TimeUnit.MILLISECONDS
             .toSeconds(System.currentTimeMillis() - pfLists.getGitStats()) / ConstantsFor.ONE_HOUR_IN_MIN + " min since upd");
         model.addAttribute("vipnet", pfLists.getVipNet());
@@ -161,18 +164,17 @@ public class PfListsCtr {
             LOGGER.warn(msg);
             Thread.currentThread().interrupt();
         };
-        int delay = new SecureRandom().nextInt((int) TimeUnit.MINUTES.toMillis(250));
         if(thisPcName.toLowerCase().contains("no0027") ||
             thisPcName.equalsIgnoreCase("home")){
-            delay = 40000;
+            delayRef = 40000;
         }
         ThreadPoolTaskScheduler threadPoolTaskScheduler = new ThreadConfig().threadPoolTaskScheduler();
-        ScheduledFuture<?> schedule = threadPoolTaskScheduler.scheduleWithFixedDelay(runnable, new Date(), delay);
+        ScheduledFuture<?> schedule = threadPoolTaskScheduler.scheduleWithFixedDelay(runnable, new Date(), delayRef);
         try {
             schedule.get(35, TimeUnit.SECONDS);
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
             long delay1 = schedule.getDelay(TimeUnit.SECONDS);
-            LOGGER.error(e.getMessage() + " " + delay1 + " delay", e);
+            LOGGER.error(e.getMessage() + " " + delay1 + " delayRef", e);
             Thread.currentThread().interrupt();
         }
     }
