@@ -31,7 +31,6 @@ public class AppComponents {
 
     private static String thisPcName = ConstantsFor.thisPC();
 
-
     @Bean
     public static Logger getLogger() {
         Logger logger = LoggerFactory.getLogger("ru_vachok_networker");
@@ -105,7 +104,6 @@ public class AppComponents {
     public static List<ADComputer> adComputers() {
         return new ADSrv(new ADUser(), new ADComputer()).getAdComputer().getAdComputers();
     }
-
     @Bean("simpleCalculator")
     public SimpleCalculator simpleCalculator() {
         return new SimpleCalculator();

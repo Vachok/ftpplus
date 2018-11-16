@@ -42,7 +42,6 @@ public class SystemTrayHelper {
     public static SystemTrayHelper getInstance() {
         return s;
     }
-
     private SystemTrayHelper() {
     }
 
@@ -114,8 +113,6 @@ public class SystemTrayHelper {
         ThreadPoolTaskExecutor executor = threadConfig.threadPoolTaskExecutor();
         Thread thread = executor.createThread(SystemTrayHelper::recOn);
         thread.start();
-
-
         MenuItem gitStartWeb = new MenuItem();
         gitStartWeb.addActionListener(actionEvent -> {
             Callable<String> sshStr = () -> new SSHFactory.Builder(ConstantsFor

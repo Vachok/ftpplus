@@ -31,9 +31,7 @@ import java.util.concurrent.TimeUnit;
  @since 12.08.2018 (16:26) */
 public enum ConstantsFor {
     ;
-
     public static final Properties PROPS = takePr(new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName()));
-
     /**
      Число, для Secure Random
      */
@@ -163,7 +161,6 @@ public enum ConstantsFor {
     public static String getUpTime() {
         return "(" + (+( float ) (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / 60 / 60) + " hrs ago)";
     }
-
     /**
      @param request для получения IP
      @return boolean авторизован или нет
@@ -203,7 +200,6 @@ public enum ConstantsFor {
             ", TIMEOUT_650=" + TIMEOUT_650 +
             '}';
     }
-
     public static String thisPC() {
         try{
             return InetAddress.getLocalHost().getHostName();
@@ -223,7 +219,6 @@ public enum ConstantsFor {
             initProperties = new FileProps(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
             AppComponents.getLogger().warn("Taking File properties:" + "\n" + e.getMessage());
             return initProperties.getProps();
-
         }
     }
 }

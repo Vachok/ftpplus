@@ -32,7 +32,6 @@ public class ServiceInfoCtrl {
     private ServiceInform serviceInform;
 
     private Map<String, Boolean> localMapSB;
-
     @Autowired
     public ServiceInfoCtrl(ServiceInform serviceInform) {
         this.localMapSB = new AppComponents().lastNetScanMap();
@@ -54,7 +53,6 @@ public class ServiceInfoCtrl {
             return "vir";
         } else throw new AccessDeniedException("Sorry. Denied");
     }
-
     private void modModMaker(Model model, HttpServletRequest request) {
         this.serviceInform = new ServiceInform();
         model.addAttribute("title", "srv-git is " + pingBool() + "noF: " +
@@ -66,7 +64,6 @@ public class ServiceInfoCtrl {
         model.addAttribute("back", request.getHeader("REFERER".toLowerCase()));
         model.addAttribute("footer", new PageFooter().getFooterUtext());
     }
-
     private boolean pingBool() {
         try {
             return InetAddress.getByName("srv-git.eatmeat.ru").isReachable(1000);
@@ -74,7 +71,6 @@ public class ServiceInfoCtrl {
             return false;
         }
     }
-
     private String pingGit() {
         try {
             InetAddress byName = InetAddress.getByName("srv-git.eatmeat.ru");
@@ -86,7 +82,6 @@ public class ServiceInfoCtrl {
             return e.getMessage();
         }
     }
-
     private String prepareRequest(HttpServletRequest request) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("<center><h3>Заголовки</h3></center>");
@@ -127,7 +122,6 @@ public class ServiceInfoCtrl {
 
         return stringBuilder.toString();
     }
-
     @GetMapping("/clsmail")
     public String mailBox(Model model, HttpServletRequest request) {
         model.addAttribute("title", "You have another app");

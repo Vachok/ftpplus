@@ -195,13 +195,11 @@ public class MatrixCtr {
         model.addAttribute("dinner", pos);
         return MATRIX_STRING_NAME;
     }
-
     private String timeStamp(@ModelAttribute SimpleCalculator simpleCalculator, Model model, String workPos) {
         model.addAttribute("simpleCalculator", simpleCalculator);
         model.addAttribute("dinner", simpleCalculator.getStampFromDate(workPos));
         return "redirect:/calculate";
     }
-
     private String matrixAccess(String workPos) {
         String workPosition = this.matrixSRV.getWorkPosition(String
             .format("select * from matrix where Doljnost like '%%%s%%';", workPos));

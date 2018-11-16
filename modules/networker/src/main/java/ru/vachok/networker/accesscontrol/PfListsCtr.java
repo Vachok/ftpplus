@@ -49,7 +49,6 @@ public class PfListsCtr {
     private boolean pingOK;
 
     private long timeOut;
-    /*Instances*/
 
     private final Runnable makePFLists = this::runningList;
 
@@ -62,7 +61,6 @@ public class PfListsCtr {
         this.pfListsSrv = pfListsSrv;
         this.pingOK = ConstantsFor.isPingOK();
     }
-
     static {
         thisPcName = ConstantsFor.thisPC();
     }

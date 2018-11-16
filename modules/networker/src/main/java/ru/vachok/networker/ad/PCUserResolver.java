@@ -8,7 +8,6 @@ import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.net.NetScannerSvc;
-
 import java.io.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -55,7 +54,6 @@ public class PCUserResolver {
 
     /**
      Записывает содержимое c-users в файл с именем ПК <br> 1 {@link #recAutoDB(String, File[])}
-
      @param pcName имя компьютера
      @see NetScannerSvc#onLinesCheck(String, String)
      */

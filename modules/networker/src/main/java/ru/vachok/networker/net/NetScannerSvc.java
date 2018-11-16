@@ -275,7 +275,6 @@ public class NetScannerSvc {
             }).start();
         }).start();
     }
-
     /**
      Сборщик для {@link #pcNames} <br> 1. {@link #getCycleNames(String)} 1.1 {@link #getNamesCount(String)} <br> 2. {@link #getSomeMore(String, boolean)} 2.1 {@link #onLinesCheck(String, String)} 2
      .1.1
@@ -336,7 +335,6 @@ public class NetScannerSvc {
         pcNames.add("<b>Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethTime) + " sec.</b>");
         return pcNames;
     }
-
     /**
      1. {@link #getNamesCount(String)}
 

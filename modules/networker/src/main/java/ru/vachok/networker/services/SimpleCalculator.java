@@ -22,7 +22,6 @@ public class SimpleCalculator {
     public void setQuery(String query) {
         this.query = query;
     }
-
     public double countDoubles(List<Double> doubleList) {
         double resultDouble = 0d;
         for (Double aDouble : doubleList) {
