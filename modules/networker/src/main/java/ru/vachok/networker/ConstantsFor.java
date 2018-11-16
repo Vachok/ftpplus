@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
+import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.mailserver.MailRule;
@@ -30,7 +31,7 @@ import java.util.concurrent.TimeUnit;
  @since 12.08.2018 (16:26) */
 public enum ConstantsFor {
     ;
-
+    public static final Properties PROPS = takePr(new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName()));
     /**
      Число, для Secure Random
      */
@@ -47,7 +48,7 @@ public enum ConstantsFor {
     public static final int MBYTE = 1024 * 1024;
 
     public static final Float NO_F_DAYS = TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() -
-        Long.parseLong(getTheProps().getProperty("lasts", 1515233487000L + ""))) / 60f / 24f;
+        Long.parseLong(PROPS.getProperty("lasts", 1544816520000L + ""))) / 60f / 24f;
 
     public static final ConcurrentMap<String, String> PC_U_MAP = new ConcurrentHashMap<>();
 
@@ -65,8 +66,6 @@ public enum ConstantsFor {
     public static final Map<Long, HttpServletRequest> VISITS_MAP = new ConcurrentHashMap<>();
 
     public static final ConcurrentMap<String, File> COMPNAME_USERS_MAP = new ConcurrentHashMap<>();
-
-
 
     public static final ConcurrentMap<Integer, MailRule> MAIL_RULES = new ConcurrentHashMap<>();
 
@@ -117,43 +116,33 @@ public enum ConstantsFor {
     /**
      {@link Properties} приложения
      */
-    public static final Properties PROPS = takePr();
 
     public static int totalPc = Integer.parseInt(PROPS.getProperty("totpc", "317"));
 
     public static final PassGenerator passGenerator = new PassGenerator();
 
-    public static final int LISTEN_PORT = Integer.parseInt(ConstantsFor.PROPS.getOrDefault("lport", "9990").toString());
-
-    /**
-     {@link InitProperties}
-     */
-    private static InitProperties initProperties;
-
-    private static boolean pingOK = true;
+    public static final int LISTEN_PORT = Integer.parseInt(PROPS.getOrDefault("lport", "9990").toString());
 
     public static boolean isPingOK() {
         try{
-            pingOK = InetAddress.getByName("srv-git.eatmeat.ru").isReachable(500);
+            return InetAddress.getByName("srv-git.eatmeat.ru").isReachable(500);
         }
         catch(IOException e){
             LoggerFactory.getLogger(ConstantsFor.class.getSimpleName()).error(e.getMessage(), e);
+            return false;
         }
-        return pingOK;
     }
 
     public static long getBuildStamp() {
-        Properties props = PROPS;
         try{
             String hostName = InetAddress.getLocalHost().getHostName();
             if(hostName.equalsIgnoreCase("home") || hostName.toLowerCase().contains("no0027")){
-                props.setProperty("build", System.currentTimeMillis() + "");
-                initProperties.delProps();
-                initProperties.setProps(props);
+                PROPS.setProperty("build", System.currentTimeMillis() + "");
+                saveProps(PROPS);
                 return System.currentTimeMillis();
             }
             else{
-                return Long.parseLong(props.getProperty("build", "1"));
+                return Long.parseLong(PROPS.getProperty("build", "1"));
             }
         }
         catch(UnknownHostException e){
@@ -161,15 +150,17 @@ public enum ConstantsFor {
         }
     }
 
+    static void saveProps(Properties propsToSave) {
+        InitProperties initProperties = new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
+        initProperties.delProps();
+        initProperties.setProps(propsToSave);
+        initProperties = new FileProps(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
+        initProperties.setProps(propsToSave);
+    }
+
     public static String getUpTime() {
         return "(" + (+( float ) (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / 60 / 60) + " hrs ago)";
     }
-
-    private static Properties getTheProps() {
-        InitProperties initProperties = new DBRegProperties("u0466446_properties-general");
-        return initProperties.getProps();
-    }
-
     /**
      @param request для получения IP
      @return boolean авторизован или нет
@@ -179,13 +170,6 @@ public enum ConstantsFor {
             request.getRemoteAddr().contains("10.200.213") ||
             request.getRemoteAddr().contains("10.10.111") ||
             request.getRemoteAddr().contains("172.16.200");
-    }
-
-    public static void saveProps() {
-        initProperties.delProps();
-        initProperties.setProps(PROPS);
-        initProperties = new FileProps(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
-        initProperties.setProps(PROPS);
     }
 
     public static String getUserPC(HttpServletRequest request) {
@@ -216,19 +200,24 @@ public enum ConstantsFor {
             ", TIMEOUT_650=" + TIMEOUT_650 +
             '}';
     }
-
-    public static String thisPC() throws UnknownHostException {
-        return InetAddress.getLocalHost().getHostName();
+    public static String thisPC() {
+        try{
+            return InetAddress.getLocalHost().getHostName();
+        }
+        catch(UnknownHostException e){
+            return e.getMessage();
+        }
     }
 
-    private static Properties takePr() {
+    private static Properties takePr(InitProperties initProperties) {
         try{
-            initProperties = new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
-            return initProperties.getProps();
+            Properties initPropertiesProps = initProperties.getProps();
+            saveProps(initPropertiesProps);
+            return initPropertiesProps;
         }
         catch(Exception e){
-
             initProperties = new FileProps(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
+            AppComponents.getLogger().warn("Taking File properties:" + "\n" + e.getMessage());
             return initProperties.getProps();
         }
     }

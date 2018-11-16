@@ -1,0 +1,21 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${title}">ХЗ</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link rel="stylesheet" type="text/css" media="all" href="css/main.css" th:href="@{css/main.css}"/>
+</head>
+<body>
+<form>
+    <form th:action="@{/calculate}" th:object="${simpleCalculator}" method="POST"><br>
+        Дата:<br>
+        <input type="datetime-local" th:field="*{query}"/><br>
+        <input type="submit" value="Установить дату"/><br>
+    </form>
+</form>
+<center><p th:utext="${result}"></center>
+</body>
+<footer>
+    <p th:utext="${footer}"/>
+</footer>
+</html>

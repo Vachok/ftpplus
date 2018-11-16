@@ -20,9 +20,10 @@ import java.util.Date;
 import java.util.Map;
 
 
-/**Вывод различной сопутствующей информации
- * @since 21.09.2018 (11:33)
- */
+/**
+ Вывод различной сопутствующей информации
+
+ @since 21.09.2018 (11:33) */
 @Controller
 public class ServiceInfoCtrl {
 
@@ -30,12 +31,7 @@ public class ServiceInfoCtrl {
 
     private ServiceInform serviceInform;
 
-    private Visitor visitor;
-
     private Map<String, Boolean> localMapSB;
-
-
-    /*Instances*/
     @Autowired
     public ServiceInfoCtrl(ServiceInform serviceInform) {
         this.localMapSB = new AppComponents().lastNetScanMap();
@@ -44,11 +40,10 @@ public class ServiceInfoCtrl {
 
     @GetMapping("/serviceinfo")
     public String infoMapping(Model model, HttpServletRequest request) throws AccessDeniedException {
-        this.visitor = new Visitor(request);
-        try{
+        Visitor visitor = new Visitor(request);
+        try {
             LOGGER.warn(visitor.toString());
-        }
-        catch(Exception e){
+        } catch (Exception e) {
             LoggerFactory.getLogger(ServiceInfoCtrl.class.getSimpleName());
         }
         if (request.getRemoteAddr().contains("0:0:0:0") ||

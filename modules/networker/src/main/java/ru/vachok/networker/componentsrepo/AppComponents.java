@@ -16,7 +16,6 @@ import ru.vachok.networker.services.SimpleCalculator;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.UnknownHostException;
 import java.sql.*;
 import java.util.List;
 import java.util.Map;
@@ -30,16 +29,7 @@ import java.util.logging.Handler;
 @ComponentScan
 public class AppComponents {
 
-    private static String thisPcName;
-
-    static {
-        try{
-            thisPcName = ConstantsFor.thisPC();
-        }
-        catch(UnknownHostException e){
-            getLogger().warn(e.getMessage());
-        }
-    }
+    private static String thisPcName = ConstantsFor.thisPC();
 
     @Bean
     public static Logger getLogger() {
@@ -114,8 +104,7 @@ public class AppComponents {
     public static List<ADComputer> adComputers() {
         return new ADSrv(new ADUser(), new ADComputer()).getAdComputer().getAdComputers();
     }
-
-    @Bean
+    @Bean("simpleCalculator")
     public SimpleCalculator simpleCalculator() {
         return new SimpleCalculator();
     }

@@ -7,6 +7,7 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.net.MyServer;
+import ru.vachok.networker.services.ArchivesAutoCleaner;
 import ru.vachok.networker.services.DBMessenger;
 import ru.vachok.networker.services.Putty;
 
@@ -16,7 +17,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.URI;
-import java.net.UnknownHostException;
+import java.time.Year;
 import java.util.concurrent.*;
 
 import static java.lang.System.err;
@@ -36,19 +37,10 @@ public class SystemTrayHelper {
 
     private static MessageToUser messageToUser = new DBMessenger();
 
-    private static String thisPcName;
+    private static final String THIS_PC = ConstantsFor.thisPC();
 
     public static SystemTrayHelper getInstance() {
         return s;
-    }
-
-    static {
-        try{
-            thisPcName = ConstantsFor.thisPC();
-        }
-        catch(UnknownHostException e){
-            LOGGER.error(e.getMessage(), e);
-        }
     }
     private SystemTrayHelper() {
     }
@@ -56,7 +48,7 @@ public class SystemTrayHelper {
     static void addTray(String iconFileName) {
         SystemTray systemTray = SystemTray.getSystemTray();
         boolean myPC;
-        myPC = thisPcName.toLowerCase().contains("no0027") || thisPcName.equalsIgnoreCase("home");
+        myPC = THIS_PC.toLowerCase().contains("no0027") || THIS_PC.equalsIgnoreCase("home");
         if(iconFileName==null){
             iconFileName = "icons8-ip-адрес-15.png";
         }
@@ -84,7 +76,7 @@ public class SystemTrayHelper {
             }
         };
         ActionListener exitApp = e -> {
-            ConstantsFor.saveProps();
+            ConstantsFor.saveProps(ConstantsFor.PROPS);
             exit(0);
         };
         addItems(popupMenu);
@@ -121,7 +113,6 @@ public class SystemTrayHelper {
         ThreadPoolTaskExecutor executor = threadConfig.threadPoolTaskExecutor();
         Thread thread = executor.createThread(SystemTrayHelper::recOn);
         thread.start();
-
         MenuItem gitStartWeb = new MenuItem();
         gitStartWeb.addActionListener(actionEvent -> {
             Callable<String> sshStr = () -> new SSHFactory.Builder(ConstantsFor
@@ -149,8 +140,24 @@ public class SystemTrayHelper {
 
         MenuItem puttyStarter = new MenuItem();
         puttyStarter.addActionListener(e -> new Putty().run());
-        puttyStarter.setLabel("Start Putty");
+        puttyStarter.setLabel("Putty");
         popupMenu.add(puttyStarter);
+
+        MenuItem delFiles = new MenuItem();
+        delFiles.addActionListener(e -> {
+            executor.setThreadGroup(new ThreadGroup(("CLR")));
+            executor.setThreadNamePrefix("CLEAN");
+            executor.setThreadGroupName("12-17");
+            int startyear = Integer.parseInt(ConstantsFor.PROPS.getOrDefault("startyear", (Year.now().getValue() - 6)).toString());
+            for (int i = startyear; i < startyear + 5; i++) {
+                String msg = ("starting clean for " + i).toUpperCase();
+                LOGGER.info(msg);
+                executor.setThreadNamePrefix(i + " ");
+                executor.submit(new ArchivesAutoCleaner(i));
+            }
+        });
+        delFiles.setLabel("Autoclean");
+        popupMenu.add(delFiles);
     }
 
     private static void recOn() {

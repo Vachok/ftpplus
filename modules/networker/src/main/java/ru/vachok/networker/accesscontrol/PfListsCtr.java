@@ -38,7 +38,7 @@ public class PfListsCtr {
 
     private static String thisPcName;
 
-    /*Instances*/
+    private Properties properties;
 
     private Visitor visitor;
 
@@ -53,25 +53,20 @@ public class PfListsCtr {
     private final Runnable makePFLists = this::runningList;
 
     private ThreadConfig threadConfig = new ThreadConfig();
-
-    static {
-        try{
-            thisPcName = ConstantsFor.thisPC();
-        }
-        catch(java.net.UnknownHostException e){
-            LOGGER.error(e.getMessage(), e);
-        }
-    }
     @Autowired
     public PfListsCtr(PfLists pfLists, PfListsSrv pfListsSrv) {
         threadConfig.taskDecorator(makePFLists);
+        this.properties = ConstantsFor.PROPS;
         this.pfLists = pfLists;
         this.pfListsSrv = pfListsSrv;
         this.pingOK = ConstantsFor.isPingOK();
     }
+    static {
+        thisPcName = ConstantsFor.thisPC();
+    }
 
     @GetMapping("/pflists")
-    public String pfBean(Model model, HttpServletRequest request, HttpServletResponse response) {
+    public String pfBean(Model model, HttpServletRequest request, HttpServletResponse response) throws UnknownHostException {
         this.visitor = new Visitor(request);
         String pflistsStr = "pflists";
         Properties properties = ConstantsFor.PROPS;
@@ -100,14 +95,10 @@ public class PfListsCtr {
         return pflistsStr;
     }
 
-    private void noPing(Model model) {
+    private void noPing(Model model) throws UnknownHostException {
         model.addAttribute("vipnet", "No ping to srv-git");
         model.addAttribute(METRIC_STR, LocalTime.now().toString());
-        try {
-            throw new UnknownHostException("srv-git");
-        } catch (UnknownHostException e) {
-            LOGGER.error(String.valueOf(e.detail), e);
-        }
+        throw new UnknownHostException("srv-git");
     }
 
     private void modSet(Model model) {
@@ -121,15 +112,18 @@ public class PfListsCtr {
         model.addAttribute("nat", pfLists.getPfNat());
         model.addAttribute("rules", pfLists.getPfRules());
         model.addAttribute("gitstats", Thread.activeCount() + " thr, active\nChange: " +
-            (Thread.activeCount() - aThreadsLast));
+            (Thread.activeCount() - Long.parseLong(properties.getOrDefault("thr", 1L).toString())));
         model.addAttribute("footer", new PageFooter().getFooterUtext());
 
     }
 
+    /**
+     @param properties {@link ConstantsFor#PROPS}
+     */
     private void propUpd(Properties properties) {
+
         properties.setProperty("pfscan", System.currentTimeMillis() + "");
         properties.setProperty("thr", Thread.activeCount() + "");
-        ConstantsFor.saveProps();
     }
 
     private String getAttr(HttpServletRequest request) {

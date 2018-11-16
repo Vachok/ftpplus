@@ -53,8 +53,7 @@ public class PCUserResolver {
     }
 
     /**
-     Записывает содержимое c-users в файл с именем ПК <br> 1 {@link #writeDB(String, File[])}
-
+     Записывает содержимое c-users в файл с именем ПК <br> 1 {@link #recAutoDB(String, File[])}
      @param pcName имя компьютера
      @see NetScannerSvc#onLinesCheck(String, String)
      */
@@ -67,7 +66,7 @@ public class PCUserResolver {
             LOGGER.error(e.getMessage(), e);
         }
         if (files != null) {
-            writeDB(pcName, files);
+            recAutoDB(pcName, files);
         }
     }
 
@@ -78,13 +77,13 @@ public class PCUserResolver {
      @param files  файлы из Users
      @see #namesToFile(String)
      */
-    private void writeDB(String pcName, File[] files) {
+    private void recAutoDB(String pcName, File[] files) {
         ConcurrentMap<Long, String> timeName = new ConcurrentHashMap<>();
         for (File f : files) {
             timeName.put(f.lastModified(), f.getName());
         }
         List<String> sortedTimeName = new ArrayList<>();
-        timeName.forEach((timeStamp, fileName) -> sortedTimeName.add(timeStamp + "___(" + new Date(timeStamp) + ")___" + fileName));
+        timeName.forEach((timeStamp, fileName) -> sortedTimeName.add(timeStamp + "___" + new Date(timeStamp) + "___" + fileName));
         Collections.sort(sortedTimeName);
         String sql = "insert into pcuser (pcName, userName, lastmod, stamp) values(?,?,?,?)";
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql
@@ -189,7 +188,7 @@ public class PCUserResolver {
             String whenQueried = "whenQueried";
             String columnLabel = "pcName";
             try (PreparedStatement p = c.prepareStatement("select * from pcuser");
-                 PreparedStatement pAuto = c.prepareStatement("select * from pcuserauto");
+                 PreparedStatement pAuto = c.prepareStatement("select * from pcuserauto where pcName in (select pcName from pcuser) order by pcName asc limit 203");
                  ResultSet resultSet = p.executeQuery();
                  ResultSet resultSetA = pAuto.executeQuery()) {
                 while (resultSet.next()) {
