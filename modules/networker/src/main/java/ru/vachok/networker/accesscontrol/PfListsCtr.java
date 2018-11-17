@@ -71,7 +71,7 @@ public class PfListsCtr {
     public String pfBean(Model model, HttpServletRequest request, HttpServletResponse response) throws UnknownHostException {
         this.visitor = new Visitor(request);
         String pflistsStr = "pflists";
-        Properties properties = ConstantsFor.PROPS;
+        this.properties = ConstantsFor.PROPS;
         long lastScan = Long.parseLong(properties.getProperty("pfscan", "1"));
         timeOut = lastScan + TimeUnit.MINUTES.toMillis(15);
         if (!pingOK) noPing(model);
