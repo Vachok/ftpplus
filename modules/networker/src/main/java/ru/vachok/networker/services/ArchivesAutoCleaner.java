@@ -31,13 +31,15 @@ public class ArchivesAutoCleaner implements Runnable {
     /**
      * Строка лога
      */
-    private String clnStr = yearStop + " year ." + "Cleaning: ";
+    private String clnStr;
 
+    /*Instances*/
     /**
      @param yearStop год, за который почистить
      */
     public ArchivesAutoCleaner(int yearStop) {
         this.yearStop = yearStop;
+        this.clnStr = yearStop + " year ." + "Cleaning: ";
     }
 
     /**Запуск
