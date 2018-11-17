@@ -113,6 +113,10 @@ public enum ConstantsFor {
 
     public static final String APP_NAME = "ru_vachok_networker-";
 
+    public static final int TEST_EXIT = 333;
+
+    public static final int BAD_STATS = 666;
+
     /**
      {@link Properties} приложения
      */
