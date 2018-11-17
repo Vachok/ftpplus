@@ -4,14 +4,8 @@ package ru.vachok.networker.services;
 import org.slf4j.Logger;
 import ru.vachok.networker.componentsrepo.AppComponents;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.*;
+import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -153,5 +147,14 @@ public class ArchivesAutoCleaner implements Runnable {
                 LOGGER.warn(e.getMessage());
             }
         }
+    }
+
+    /**
+     Следит за активностью {@link ArchivesAutoCleaner}, при необходимости восстанавливает процесс
+
+     @since 17.11.2018 (14:06)
+     */
+    class CleanRestart {
+
     }
 }

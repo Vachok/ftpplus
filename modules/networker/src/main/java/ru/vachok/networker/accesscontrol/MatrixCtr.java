@@ -19,10 +19,7 @@ import ru.vachok.networker.services.WhoIsWithSRV;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 
@@ -55,8 +52,8 @@ public class MatrixCtr {
     }
 
     /**
-     <h2>Начальная страница</h2>
-     <b>matrix.html</b>
+     Начальная страница
+     <a href="http://rups00.eatmeat.ru:8880/" target="_blank">Matrix.Html</a>
 
      @param request  {@link HttpServletRequest}
      @param model    {@link Model}
@@ -145,7 +142,7 @@ public class MatrixCtr {
     }
 
     /**
-     <h2>SSH-команда</h2>
+     SSH-команда <br>
      sudo cd /usr/home/ITDept;sudo git instaweb;exit
 
      @param model   {@link Model}
