@@ -154,7 +154,7 @@ public enum ConstantsFor {
         }
     }
 
-    static void saveProps(Properties propsToSave) {
+    public static void saveProps(Properties propsToSave) {
         InitProperties initProperties = new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
         initProperties.delProps();
         initProperties.setProps(propsToSave);
