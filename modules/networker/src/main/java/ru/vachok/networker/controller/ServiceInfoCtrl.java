@@ -34,44 +34,37 @@ public class ServiceInfoCtrl {
 
     private Map<String, Boolean> localMapSB;
 
+    private boolean authReq;
+
     /*Instances*/
     @Autowired
     public ServiceInfoCtrl(ServiceInform serviceInform) {
-        this.localMapSB = new AppComponents().lastNetScanMap();
+        new AppComponents();
+        this.localMapSB = AppComponents.lastNetScanMap();
         this.serviceInform = serviceInform;
     }
 
     @GetMapping ("/serviceinfo")
     public String infoMapping(Model model, HttpServletRequest request) throws AccessDeniedException {
+        this.authReq = request.getRemoteAddr().contains("0:0:0:0") ||
+            request.getRemoteAddr().contains("10.10.111") ||
+            request.getRemoteAddr().contains(ConstantsFor.NO0027) ||
+            request.getRemoteAddr().contains("172.16.20");
         Visitor visitor = new Visitor(request);
         try{
-            LOGGER.warn(visitor.toString());
+            String msg = visitor.toString();
+            LOGGER.warn(msg);
         }
         catch(Exception e){
             LoggerFactory.getLogger(ServiceInfoCtrl.class.getSimpleName());
         }
-        if(request.getRemoteAddr().contains("0:0:0:0") ||
-            request.getRemoteAddr().contains("10.10.111") ||
-            request.getRemoteAddr().contains(ConstantsFor.NO0027) ||
-            request.getRemoteAddr().contains("172.16.20")){
+        if(authReq){
             modModMaker(model, request);
             return "vir";
         }
         else{
             throw new AccessDeniedException("Sorry. Denied");
         }
-    }
-
-    private void modModMaker(Model model, HttpServletRequest request) {
-        this.serviceInform = new ServiceInform();
-        model.addAttribute("title", "srv-git is " + pingBool() + "noF: " +
-            ConstantsFor.NO_F_DAYS);
-        model.addAttribute("ping", pingGit());
-        model.addAttribute("urls", "Запущено - " + new Date(ConstantsFor.START_STAMP) + ConstantsFor.getUpTime());
-        model.addAttribute("request", prepareRequest(request));
-        model.addAttribute("visit", new VersionInfo().toString());
-        model.addAttribute("back", request.getHeader("REFERER".toLowerCase()));
-        model.addAttribute("footer", new PageFooter().getFooterUtext());
     }
 
     @GetMapping ("/clsmail")
@@ -82,13 +75,15 @@ public class ServiceInfoCtrl {
         return "clsmail";
     }
 
-    private boolean pingBool() {
-        try{
-            return InetAddress.getByName("srv-git.eatmeat.ru").isReachable(1000);
-        }
-        catch(IOException e){
-            return false;
-        }
+    private void modModMaker(Model model, HttpServletRequest request) {
+        this.serviceInform = new ServiceInform();
+        model.addAttribute("title", ConstantsFor.NO_F_DAYS + " (" + ConstantsFor.NO_F_DAYS * ConstantsFor.ONE_DAY + ")");
+        model.addAttribute("ping", pingGit());
+        model.addAttribute("urls", "Запущено - " + new Date(ConstantsFor.START_STAMP) + ConstantsFor.getUpTime());
+        model.addAttribute("request", prepareRequest(request));
+        model.addAttribute("visit", new VersionInfo().toString());
+        model.addAttribute("back", request.getHeader("REFERER".toLowerCase()));
+        model.addAttribute("footer", new PageFooter().getFooterUtext());
     }
 
     private String prepareRequest(HttpServletRequest request) {
@@ -146,5 +141,16 @@ public class ServiceInfoCtrl {
         catch(IOException e){
             return e.getMessage();
         }
+    }
+
+    @GetMapping ("/stop")
+    public String closeApp() throws AccessDeniedException {
+        if(authReq){
+            System.exit(ConstantsFor.USER_EXIT);
+        }
+        else{
+            throw new AccessDeniedException("DENY!");
+        }
+        return "ok";
     }
 }

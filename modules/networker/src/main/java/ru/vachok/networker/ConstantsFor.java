@@ -117,6 +117,8 @@ public enum ConstantsFor {
 
     public static final int BAD_STATS = 666;
 
+    public static final int ONE_DAY = 24;
+
     /**
      {@link Properties} приложения
      */

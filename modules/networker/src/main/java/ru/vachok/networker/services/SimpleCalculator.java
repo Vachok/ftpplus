@@ -40,10 +40,10 @@ public class SimpleCalculator {
         else{
             query = query.replaceFirst("calctime: ", "");
         }
-        Calendar.Builder builder;
+        Calendar.Builder builder = new Calendar.Builder();
         try{
             String[] stringsDate = query.split("-");
-            builder = parseInput(stringsDate, new Calendar.Builder());
+            builder = parseInput(stringsDate, builder);
             if(setTo){
                 setToDB(builder.build().getTimeInMillis());
             }

@@ -13,6 +13,10 @@ import ru.vachok.networker.accesscontrol.MatrixCtr;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.net.FullNetScanSVC;
+
+import java.time.LocalDate;
+import java.time.format.TextStyle;
+import java.util.Locale;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -54,6 +58,9 @@ public class IntoApplication {
      @see MatrixCtr
      */
     public static void main(String[] args) {
+        String msg = LocalDate.now().getDayOfWeek().getValue() + " - day of week\n" +
+            LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault());
+        LOGGER.warn(msg);
         if(THIS_PC.toLowerCase().contains("no0027") || THIS_PC.toLowerCase().contains("home")){
             SystemTrayHelper.addTray("icons8-плохие-поросята-32.png");
         }
@@ -65,6 +72,7 @@ public class IntoApplication {
         System.setProperty("file.encoding", "UTF8");
         SpringApplication.run(IntoApplication.class, args);
         infoForU(appCtx);
+
     }
 
     /**
