@@ -28,7 +28,9 @@ import static java.lang.System.exit;
  @since 29.09.2018 (22:33) */
 public class SystemTrayHelper {
 
-    /*Fields*/
+    /**
+
+     */
     private static final String IMG_FOLDER_NAME = "/static/images/";
 
     private static final Logger LOGGER = AppComponents.getLogger();
@@ -148,12 +150,14 @@ public class SystemTrayHelper {
             executor.setThreadGroup(new ThreadGroup(("CLR")));
             executor.setThreadNamePrefix("CLEAN");
             executor.setThreadGroupName("12-17");
-            int startyear = Integer.parseInt(ConstantsFor.PROPS.getOrDefault("startyear", (Year.now().getValue() - 6)).toString());
-            for (int i = startyear; i < startyear + 5; i++) {
+            int startYear = Integer.parseInt(ConstantsFor.PROPS.getOrDefault("startyear", (Year.now().getValue() - 6)).toString());
+            for (int i = startYear; i < startYear + 5; i++) {
                 String msg = ("starting clean for " + i).toUpperCase();
                 LOGGER.info(msg);
                 executor.setThreadNamePrefix(i + " ");
-                executor.submit(new ArchivesAutoCleaner(i));
+                Thread executorThread = executor.createThread(new ArchivesAutoCleaner(i));
+                executorThread.setDaemon(true);
+                executor.submit(executorThread);
             }
         });
         delFiles.setLabel("Autoclean");
