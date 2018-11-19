@@ -153,7 +153,7 @@ public class SystemTrayHelper {
                 String msg = ("starting clean for " + i).toUpperCase();
                 LOGGER.info(msg);
                 executor.setThreadNamePrefix(i + " ");
-                executor.submit(new ArchivesAutoCleaner(i));
+                executor.execute(new ArchivesAutoCleaner(i), ConstantsFor.TIMEOUT_5);
             }
         });
         delFiles.setLabel("Autoclean");

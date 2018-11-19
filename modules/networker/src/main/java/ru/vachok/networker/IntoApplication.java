@@ -12,7 +12,6 @@ import ru.vachok.mysqlandprops.EMailAndDB.SpeedRunActualize;
 import ru.vachok.networker.accesscontrol.MatrixCtr;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.AppCtx;
-import ru.vachok.networker.net.FullNetScanSVC;
 
 import java.time.LocalDate;
 import java.time.format.TextStyle;
@@ -103,7 +102,6 @@ public class IntoApplication {
             Executors.unconfigurableScheduledExecutorService(Executors.newSingleThreadScheduledExecutor());
         executorService.scheduleWithFixedDelay(speedRun, ConstantsFor.INIT_DELAY, ConstantsFor.DELAY, TimeUnit.SECONDS);
         String msg = "Initial Delay checker = " + ConstantsFor.INIT_DELAY + "\nDelay = " + ConstantsFor.DELAY + "\n";
-        executorService.execute(new FullNetScanSVC());
         LOGGER.warn(msg);
     }
 }
