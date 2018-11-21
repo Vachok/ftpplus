@@ -23,7 +23,8 @@ public class ArchivesAutoCleaner extends SimpleFileVisitor<Path> implements Runn
     private static final String SRV_FS_ARCHIVES = "\\\\192.168.14.10\\IT-Backup\\SRV-FS\\Archives";
 
     /**
-     Год
+     Год, за который идёт чистка.
+     @see ru.vachok.networker.SystemTrayHelper
      */
     private int yearStop;
 

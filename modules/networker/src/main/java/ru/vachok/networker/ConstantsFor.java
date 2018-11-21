@@ -123,7 +123,7 @@ public enum ConstantsFor {
      {@link Properties} приложения
      */
 
-    public static int totalPc = Integer.parseInt(PROPS.getProperty("totpc", "317"));
+    public static final int TOTAL_PC = Integer.parseInt(PROPS.getOrDefault("totpc", "316").toString());
 
     public static final PassGenerator passGenerator = new PassGenerator();
 
