@@ -73,16 +73,16 @@ public class NetScanCtr {
         long timeLeft = TimeUnit.MILLISECONDS.toSeconds(l - System.currentTimeMillis());
         String msg = timeLeft + " seconds (" + (float) timeLeft / ConstantsFor.ONE_HOUR_IN_MIN + " min) left<br>Delay period is " + duration;
         LOGGER.warn(msg);
-        int i = ConstantsFor.totalPc - netWork.size();
+        int i = ConstantsFor.TOTAL_PC - netWork.size();
         model
             .addAttribute("left", msg)
             .addAttribute("pc", new TForms().fromArray(netWork, true))
-            .addAttribute("title", i + "/" + ConstantsFor.totalPc + " PCs");
+            .addAttribute("title", i + "/" + ConstantsFor.TOTAL_PC + " PCs");
         if (0 > i) {
             model.addAttribute("newpc", "Добавлены компы! " + Math.abs(i) + " шт.");
         }
-        properties.setProperty("totpc", ConstantsFor.totalPc + "");
-        if (isSystemTimeBigger && !(netWork.size() < ConstantsFor.totalPc)) {
+        properties.setProperty("totpc", ConstantsFor.TOTAL_PC + "");
+        if (isSystemTimeBigger && !(netWork.size() < ConstantsFor.TOTAL_PC)) {
             String msg1 = "isSystemTimeBigger is " + true + " " + netWork.size() + " network map cleared";
             LOGGER.warn(msg1);
             scanIt(request, model);

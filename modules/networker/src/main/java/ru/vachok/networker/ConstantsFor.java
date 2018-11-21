@@ -117,11 +117,13 @@ public enum ConstantsFor {
 
     public static final int BAD_STATS = 666;
 
+    public static final int ONE_DAY = 24;
+
     /**
      {@link Properties} приложения
      */
 
-    public static int totalPc = Integer.parseInt(PROPS.getProperty("totpc", "317"));
+    public static final int TOTAL_PC = Integer.parseInt(PROPS.getOrDefault("totpc", "316").toString());
 
     public static final PassGenerator passGenerator = new PassGenerator();
 
@@ -154,7 +156,7 @@ public enum ConstantsFor {
         }
     }
 
-    static void saveProps(Properties propsToSave) {
+    public static void saveProps(Properties propsToSave) {
         InitProperties initProperties = new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
         initProperties.delProps();
         initProperties.setProps(propsToSave);

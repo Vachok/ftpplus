@@ -8,12 +8,13 @@ import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.net.NetScannerSvc;
+
 import java.io.*;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
+import java.time.LocalDate;
+import java.time.format.TextStyle;
 import java.util.*;
+import java.util.Date;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -87,13 +88,17 @@ public class PCUserResolver {
         Collections.sort(sortedTimeName);
         String sql = "insert into pcuser (pcName, userName, lastmod, stamp) values(?,?,?,?)";
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql
-            .replaceAll("pcuser", "pcuserauto"))) {
+            .replaceAll("pcuser", "pcuserauto"));
+             PreparedStatement trunkBase = connection.prepareStatement("TRUNCATE table  pcuserauto")){
             String[] split = sortedTimeName.get(sortedTimeName.size() - 1).split("___");
             preparedStatement.setString(1, pcName);
             preparedStatement.setString(2, split[2]);
             preparedStatement.setString(3, split[1]);
             preparedStatement.setString(4, split[0]);
             preparedStatement.executeUpdate();
+            if(LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault()).toLowerCase().contains("поне")){
+                trunkBase.executeUpdate();
+            }
         } catch (SQLException | ArrayIndexOutOfBoundsException e) {
             LOGGER.error(e.getMessage(), e);
         }

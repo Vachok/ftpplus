@@ -109,8 +109,12 @@ public class MatrixCtr {
         String workPos = matrixSRV.getWorkPos();
         if (workPos.toLowerCase().contains("whois:")) return whois(workPos, model);
         else if (workPos.toLowerCase().contains("calc:")) return calculateDoubles(workPos, model);
-        else if (workPos.toLowerCase().contains("calctime:")) timeStamp(new SimpleCalculator(), model, workPos);
-        else return matrixAccess(workPos);
+        else
+            if(workPos.toLowerCase().contains("calctime:") || workPos.toLowerCase().contains("calctimes:")){
+                timeStamp(new SimpleCalculator(), model, workPos);
+            }
+            else
+                return matrixAccess(workPos);
         return MATRIX_STRING_NAME;
     }
 
