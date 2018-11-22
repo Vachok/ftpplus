@@ -20,14 +20,14 @@ import java.net.URI;
 import java.time.Year;
 import java.util.concurrent.*;
 
-import static java.lang.System.err;
-import static java.lang.System.exit;
+import static java.lang.System.*;
 
 
 /**
  @since 29.09.2018 (22:33) */
 public class SystemTrayHelper {
 
+    /*Fields*/
     /**
      *
      */
@@ -35,16 +35,17 @@ public class SystemTrayHelper {
 
     private static final Logger LOGGER = AppComponents.getLogger();
 
+    private static final String THIS_PC = ConstantsFor.thisPC();
+
     private static SystemTrayHelper s = new SystemTrayHelper();
 
     private static MessageToUser messageToUser = new DBMessenger();
-
-    private static final String THIS_PC = ConstantsFor.thisPC();
 
     public static SystemTrayHelper getInstance() {
         return s;
     }
 
+    /*Instances*/
     private SystemTrayHelper() {
     }
 
@@ -52,14 +53,15 @@ public class SystemTrayHelper {
         SystemTray systemTray = SystemTray.getSystemTray();
         boolean myPC;
         myPC = THIS_PC.toLowerCase().contains("no0027") || THIS_PC.equalsIgnoreCase("home");
-        if (iconFileName == null) {
+        if(iconFileName==null){
             iconFileName = "icons8-ip-адрес-15.png";
-        } else {
-            if (myPC) {
+        }
+        else{
+            if(myPC){
                 iconFileName = "icons8-плохие-поросята-48.png";
             }
         }
-        if (!srvGitIs()) {
+        if(!srvGitIs()){
             iconFileName = "icons8-отменить-2-20.png";
         }
         iconFileName = IMG_FOLDER_NAME + iconFileName;
@@ -70,9 +72,10 @@ public class SystemTrayHelper {
             AppComponents.versionInfo().getAppVersion() + " " + AppComponents.versionInfo().getBuildTime(), popupMenu);
 
         ActionListener actionListener = e -> {
-            try {
+            try{
                 Desktop.getDesktop().browse(URI.create("http://localhost:8880"));
-            } catch (IOException e1) {
+            }
+            catch(IOException e1){
                 LOGGER.error(e1.getMessage(), e1);
             }
         };
@@ -86,21 +89,24 @@ public class SystemTrayHelper {
         defItem.addActionListener(exitApp);
         popupMenu.add(defItem);
         trayIcon.addActionListener(actionListener);
-        try {
-            if (SystemTray.isSupported()) {
+        try{
+            if(SystemTray.isSupported()){
                 systemTray.add(trayIcon);
-            } else {
+            }
+            else{
                 LOGGER.warn("Tray not supported!");
             }
-        } catch (AWTException e) {
+        }
+        catch(AWTException e){
             LOGGER.warn(e.getMessage(), e);
         }
     }
 
     private static boolean srvGitIs() {
-        try {
+        try{
             return InetAddress.getByName("srv-git.eatmeat.ru").isReachable(1000);
-        } catch (IOException e) {
+        }
+        catch(IOException e){
             LOGGER.error(e.getMessage(), e);
             return false;
         }
@@ -121,9 +127,10 @@ public class SystemTrayHelper {
                 "sudo git instaweb -p 9999;" +
                 "exit").build().call();
             Future<String> submit = executor.submit(sshStr);
-            try {
+            try{
                 LOGGER.info(submit.get(30, TimeUnit.SECONDS));
-            } catch (InterruptedException | ExecutionException | TimeoutException e) {
+            }
+            catch(InterruptedException | ExecutionException | TimeoutException e){
                 Thread.currentThread().interrupt();
             }
         });
@@ -136,7 +143,7 @@ public class SystemTrayHelper {
         popupMenu.add(toConsole);
 
         MenuItem puttyStarter = new MenuItem();
-        puttyStarter.addActionListener(e -> new Putty().run());
+        puttyStarter.addActionListener(e -> new Putty().start());
         puttyStarter.setLabel("Putty");
         popupMenu.add(puttyStarter);
 
@@ -146,7 +153,7 @@ public class SystemTrayHelper {
             executor.setThreadNamePrefix("CLEAN");
             executor.setThreadGroupName("12-17");
             int startYear = Integer.parseInt(ConstantsFor.PROPS.getOrDefault("startyear", (Year.now().getValue() - 6)).toString());
-            for (int i = startYear; i < startYear + 5; i++) {
+            for(int i = startYear; i < startYear + 5; i++){
                 String msg = ("starting clean for " + i).toUpperCase();
                 LOGGER.info(msg);
                 executor.setThreadNamePrefix(i + " ");
@@ -161,10 +168,11 @@ public class SystemTrayHelper {
 
     private static void recOn() {
         MyServer.setSocket(new Socket());
-        while (!MyServer.getSocket().isClosed()) {
-            try {
+        while(!MyServer.getSocket().isClosed()){
+            try{
                 MyServer.reconSock();
-            } catch (IOException | InterruptedException | NullPointerException e1) {
+            }
+            catch(IOException | InterruptedException | NullPointerException e1){
                 messageToUser.errorAlert(SystemTrayHelper.class.getSimpleName(), e1.getMessage(), new TForms().fromArray(e1, false));
                 Thread.currentThread().interrupt();
             }
