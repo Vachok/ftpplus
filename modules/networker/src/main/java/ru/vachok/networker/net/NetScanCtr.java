@@ -16,10 +16,7 @@ import ru.vachok.networker.componentsrepo.PageFooter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.security.SecureRandom;
-import java.util.Date;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
@@ -60,7 +57,7 @@ public class NetScanCtr {
             .addAttribute("netScannerSvc", netScannerSvc)
             .addAttribute("thePc", netScannerSvc.getThePc())
             .addAttribute(TITLE_STR, "First Scan: 2018-05-05");
-        model.addAttribute("footer", new PageFooter().getFooterUtext());
+        model.addAttribute("footer", new PageFooter().getFooterUtext() + "<br>First Scan: 2018-05-05");
         AppComponents.lastNetScan().setTimeLastScan(new Date());
         response.addHeader("Refresh", "30");
         return NETSCAN_STR;
@@ -81,7 +78,7 @@ public class NetScanCtr {
         if (0 > i) {
             model.addAttribute("newpc", "Добавлены компы! " + Math.abs(i) + " шт.");
         }
-        properties.setProperty("totpc", ConstantsFor.TOTAL_PC + "");
+        properties.setProperty("totpc", netWork.size() + "");
         if (isSystemTimeBigger && !(netWork.size() < ConstantsFor.TOTAL_PC)) {
             String msg1 = "isSystemTimeBigger is " + true + " " + netWork.size() + " network map cleared";
             LOGGER.warn(msg1);

@@ -86,4 +86,10 @@ public class ErrCtr implements ErrorController {
         model.addAttribute("ref", httpServletRequest.getHeader("referer"));
         model.addAttribute("footer", new PageFooter().getFooterUtext());
     }
+
+    @GetMapping ("/login")
+    public String logIn(Model model) {
+        model.addAttribute("footer", new PageFooter().getFooterUtext());
+        return "login";
+    }
 }

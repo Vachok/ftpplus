@@ -20,30 +20,32 @@ import java.net.URI;
 import java.time.Year;
 import java.util.concurrent.*;
 
-import static java.lang.System.err;
-import static java.lang.System.exit;
+import static java.lang.System.*;
 
 
 /**
  @since 29.09.2018 (22:33) */
 public class SystemTrayHelper {
 
+    /*Fields*/
     /**
-
+     *
      */
     private static final String IMG_FOLDER_NAME = "/static/images/";
 
     private static final Logger LOGGER = AppComponents.getLogger();
 
+    private static final String THIS_PC = ConstantsFor.thisPC();
+
     private static SystemTrayHelper s = new SystemTrayHelper();
 
     private static MessageToUser messageToUser = new DBMessenger();
 
-    private static final String THIS_PC = ConstantsFor.thisPC();
-
     public static SystemTrayHelper getInstance() {
         return s;
     }
+
+    /*Instances*/
     private SystemTrayHelper() {
     }
 
@@ -141,7 +143,7 @@ public class SystemTrayHelper {
         popupMenu.add(toConsole);
 
         MenuItem puttyStarter = new MenuItem();
-        puttyStarter.addActionListener(e -> new Putty().run());
+        puttyStarter.addActionListener(e -> new Putty().start());
         puttyStarter.setLabel("Putty");
         popupMenu.add(puttyStarter);
 
@@ -151,7 +153,7 @@ public class SystemTrayHelper {
             executor.setThreadNamePrefix("CLEAN");
             executor.setThreadGroupName("12-17");
             int startYear = Integer.parseInt(ConstantsFor.PROPS.getOrDefault("startyear", (Year.now().getValue() - 6)).toString());
-            for (int i = startYear; i < startYear + 5; i++) {
+            for(int i = startYear; i < startYear + 5; i++){
                 String msg = ("starting clean for " + i).toUpperCase();
                 LOGGER.info(msg);
                 executor.setThreadNamePrefix(i + " ");
