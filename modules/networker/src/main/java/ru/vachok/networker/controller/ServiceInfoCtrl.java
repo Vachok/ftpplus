@@ -9,7 +9,10 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.*;
+import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.componentsrepo.PageFooter;
+import ru.vachok.networker.componentsrepo.VersionInfo;
+import ru.vachok.networker.componentsrepo.Visitor;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
@@ -18,6 +21,7 @@ import java.nio.file.AccessDeniedException;
 import java.time.LocalTime;
 import java.util.Date;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -30,7 +34,8 @@ public class ServiceInfoCtrl {
     /*Fields*/
     private static final Logger LOGGER = LoggerFactory.getLogger(ServiceInfoCtrl.class.getSimpleName());
 
-    private ServiceInform serviceInform;
+    private float lastS = TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() -
+        Long.parseLong(ConstantsFor.PROPS.getProperty("lasts", 1544816520000L + ""))) / 60f / 24f;
 
     private Map<String, Boolean> localMapSB;
 
@@ -38,10 +43,9 @@ public class ServiceInfoCtrl {
 
     /*Instances*/
     @Autowired
-    public ServiceInfoCtrl(ServiceInform serviceInform) {
+    public ServiceInfoCtrl() {
         new AppComponents();
         this.localMapSB = AppComponents.lastNetScanMap();
-        this.serviceInform = serviceInform;
     }
 
     @GetMapping ("/serviceinfo")
@@ -76,8 +80,7 @@ public class ServiceInfoCtrl {
     }
 
     private void modModMaker(Model model, HttpServletRequest request) {
-        this.serviceInform = new ServiceInform();
-        model.addAttribute("title", ConstantsFor.NO_F_DAYS + " (" + ConstantsFor.NO_F_DAYS * ConstantsFor.ONE_DAY + ")");
+        model.addAttribute("title", lastS + " (" + lastS * ConstantsFor.ONE_DAY + ")");
         model.addAttribute("ping", pingGit());
         model.addAttribute("urls", "Запущено - " + new Date(ConstantsFor.START_STAMP) + ConstantsFor.getUpTime());
         model.addAttribute("request", prepareRequest(request));

@@ -45,12 +45,9 @@ public enum ConstantsFor {
     /**
      <b>1 мегабайт в байтах</b>
      */
-    public static final int MBYTE = 1024 * 1024;
+    public static final int MBYTE = 1048576;
 
-    public static final long GBYTE = 1024 * 1024 * 1024;
-
-    public static final Float NO_F_DAYS = TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() -
-        Long.parseLong(PROPS.getProperty("lasts", 1544816520000L + ""))) / 60f / 24f;
+    public static final long GBYTE = 1073741824;
 
     public static final ConcurrentMap<String, String> PC_U_MAP = new ConcurrentHashMap<>();
 
