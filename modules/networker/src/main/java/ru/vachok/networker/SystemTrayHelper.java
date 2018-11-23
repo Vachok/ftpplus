@@ -20,7 +20,8 @@ import java.net.URI;
 import java.time.Year;
 import java.util.concurrent.*;
 
-import static java.lang.System.*;
+import static java.lang.System.err;
+import static java.lang.System.exit;
 
 
 /**
@@ -50,7 +51,6 @@ public class SystemTrayHelper {
     }
 
     static void addTray(String iconFileName) {
-        SystemTray systemTray = SystemTray.getSystemTray();
         boolean myPC;
         myPC = THIS_PC.toLowerCase().contains("no0027") || THIS_PC.equalsIgnoreCase("home");
         if(iconFileName==null){
@@ -91,14 +91,17 @@ public class SystemTrayHelper {
         trayIcon.addActionListener(actionListener);
         try{
             if(SystemTray.isSupported()){
+                SystemTray systemTray = SystemTray.getSystemTray();
                 systemTray.add(trayIcon);
             }
             else{
                 LOGGER.warn("Tray not supported!");
+                Thread.currentThread().interrupt();
             }
         }
         catch(AWTException e){
             LOGGER.warn(e.getMessage(), e);
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -166,14 +169,17 @@ public class SystemTrayHelper {
         popupMenu.add(delFiles);
     }
 
+    /**
+     Reconnect Socket, пока он открыт.
+     */
     private static void recOn() {
         MyServer.setSocket(new Socket());
         while(!MyServer.getSocket().isClosed()){
             try{
                 MyServer.reconSock();
-            }
-            catch(IOException | InterruptedException | NullPointerException e1){
+            } catch(IOException | InterruptedException | NullPointerException e1){
                 messageToUser.errorAlert(SystemTrayHelper.class.getSimpleName(), e1.getMessage(), new TForms().fromArray(e1, false));
+                new ThreadConfig().threadPoolTaskExecutor().execute(MyServer.getI());
                 Thread.currentThread().interrupt();
             }
         }
