@@ -8,15 +8,22 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Scope;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.ad.*;
+import ru.vachok.networker.ad.ADComputer;
+import ru.vachok.networker.ad.ADSrv;
+import ru.vachok.networker.ad.ADUser;
+import ru.vachok.networker.ad.PCUserResolver;
 import ru.vachok.networker.mailserver.ExSRV;
 import ru.vachok.networker.mailserver.RuleSet;
 import ru.vachok.networker.net.NetScannerSvc;
+import ru.vachok.networker.services.ArchivesSorter;
 import ru.vachok.networker.services.SimpleCalculator;
 
 import java.io.File;
 import java.io.IOException;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -71,39 +78,27 @@ public class AppComponents {
         return LastNetScan.getLastNetScan();
     }
 
-    @Bean
-    public Map<String, String> getLastLogs() {
-        int ind = 10;
-        Map<String, String> lastLogsList = new ConcurrentHashMap<>();
-        String tbl = "eth";
-        Connection c = new RegRuMysql().getDefaultConnection("u0466446_webapp");
-        try(PreparedStatement p = c.prepareStatement(String.format("select * from %s ORDER BY timewhen DESC LIMIT 0 , 50", tbl));
-            ResultSet r = p.executeQuery()){
-            while(r.next()){
-                lastLogsList.put(++ind + ") " + r.getString("classname") + " - " + r.getString("msgtype"),
-                    r.getString("msgvalue") + " at: " + r.getString("timewhen"));
-            }
-        }
-        catch(SQLException ignore){
-            //
-        }
-        return lastLogsList;
-    }
-
     @Bean("versioninfo")
     public static VersionInfo versionInfo() {
         VersionInfo versionInfo = new VersionInfo();
-        if(thisPcName.equalsIgnoreCase("home") ||
-            thisPcName.toLowerCase().contains("no0027")){
+        if (thisPcName.equalsIgnoreCase("home") ||
+            thisPcName.toLowerCase().contains("no0027")) {
             versionInfo.setParams();
         }
         return versionInfo;
     }
 
     @Bean
+    @Scope("singleton")
+    public static ArchivesSorter archivesSorter() {
+        return new ArchivesSorter();
+    }
+
+    @Bean
     public static List<ADComputer> adComputers() {
         return new ADSrv(new ADUser(), new ADComputer()).getAdComputer().getAdComputers();
     }
+
     @Bean("simpleCalculator")
     public SimpleCalculator simpleCalculator() {
         return new SimpleCalculator();
@@ -135,6 +130,24 @@ public class AppComponents {
     @Bean
     public RuleSet ruleSet() {
         return new RuleSet();
+    }
+
+    @Bean
+    public Map<String, String> getLastLogs() {
+        int ind = 10;
+        Map<String, String> lastLogsList = new ConcurrentHashMap<>();
+        String tbl = "eth";
+        Connection c = new RegRuMysql().getDefaultConnection("u0466446_webapp");
+        try (PreparedStatement p = c.prepareStatement(String.format("select * from %s ORDER BY timewhen DESC LIMIT 0 , 50", tbl));
+             ResultSet r = p.executeQuery()) {
+            while (r.next()) {
+                lastLogsList.put(++ind + ") " + r.getString("classname") + " - " + r.getString("msgtype"),
+                    r.getString("msgvalue") + " at: " + r.getString("timewhen"));
+            }
+        } catch (SQLException ignore) {
+            //
+        }
+        return lastLogsList;
     }
 
 }
