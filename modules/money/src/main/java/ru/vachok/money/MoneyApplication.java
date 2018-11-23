@@ -8,11 +8,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import ru.vachok.messenger.email.ESender;
 import ru.vachok.money.components.AppVersion;
-import ru.vachok.money.components.URLContent;
 import ru.vachok.money.config.AppComponents;
-import ru.vachok.money.config.ThrAsyncConfigurator;
+import ru.vachok.money.config.ThreadConfig;
 import ru.vachok.money.other.SystemTrayHelper;
-import ru.vachok.money.services.URLParser;
 import ru.vachok.mysqlandprops.EMailAndDB.SpeedRunActualize;
 
 import java.io.File;
@@ -40,17 +38,8 @@ public class MoneyApplication {
         startSchedule();
     }
 
-    private static void urlS() {
-        URLParser urlParser = new AppComponents().urlParser();
-        urlParser.showContents();
-        URLContent urlContent = urlParser.getUrlContent();
-        LoggerFactory.getLogger(MoneyApplication.class.getSimpleName()).info(urlContent.getUrlPermissions());
-        LoggerFactory.getLogger(MoneyApplication.class.getSimpleName()).info(urlContent.getUrlString());
-        LoggerFactory.getLogger(MoneyApplication.class.getSimpleName()).info(urlContent.getContentType());
-        LoggerFactory.getLogger(MoneyApplication.class.getSimpleName()).info(urlContent.getContentObj().toString());
-    }
     private static void startSchedule() {
-        ThreadPoolTaskExecutor defaultExecutor = new ThrAsyncConfigurator().getDefaultExecutor();
+        ThreadPoolTaskExecutor defaultExecutor = new ThreadConfig().getDefaultExecutor();
         defaultExecutor.execute(new SpeedRunActualize());
         String msg = defaultExecutor.getThreadPoolExecutor().toString();
         defaultExecutor.createThread(() -> {
@@ -62,6 +51,7 @@ public class MoneyApplication {
 
         AppComponents.getLogger().warn(msg);
     }
+
     private static String filesRnd() {
         String localPc = ConstantsFor.localPc();
         if(localPc.equalsIgnoreCase("home")){
@@ -74,7 +64,8 @@ public class MoneyApplication {
             }
             try(FileOutputStream fileOutputStream = new FileOutputStream(new File("g:\\myEX\\files.txt"))){
                 fileOutputStream.write(stringBuilder.toString().getBytes());
-            }catch(IOException e){
+            }
+            catch(IOException e){
                 LoggerFactory.getLogger(MoneyApplication.class.getSimpleName()).error(e.getMessage(), e);
             }
             return stringBuilder.toString();

@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 import ru.vachok.money.ConstantsFor;
-import ru.vachok.money.config.ThrAsyncConfigurator;
+import ru.vachok.money.config.ThreadConfig;
 import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.RegRuMysql;
 
@@ -147,7 +147,7 @@ public class MyOpel {
 
     /*Instances*/
     private MyOpel() {
-        ThreadPoolTaskExecutor defaultExecutor = new ThrAsyncConfigurator().getDefaultExecutor();
+        ThreadPoolTaskExecutor defaultExecutor = new ThreadConfig().getDefaultExecutor();
         defaultExecutor.initialize();
         Runnable runnable = () -> {
             getAvgSpeedA107();

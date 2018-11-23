@@ -1,4 +1,4 @@
-package ru.vachok.money.components;
+package ru.vachok.money.banking;
 
 
 import org.springframework.stereotype.Component;

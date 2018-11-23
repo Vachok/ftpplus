@@ -23,30 +23,26 @@ public class TellNetSRV implements Runnable {
      */
     public static final Logger LOGGER = AppComponents.getLogger();
 
-    /**
-     Simple Name класса, для поиска настроек
-     */
-    private static final String SOURCE_CLASS = TellNetSRV.class.getSimpleName();
-
     private static Socket socket;
 
-    public static Socket getSocket() {
+    static Socket getSocket() {
         return TellNetSRV.socket;
     }
 
-    public static void setSocket(Socket socket) {
+    static void setSocket(Socket socket) {
         TellNetSRV.socket = socket;
     }
 
     @Override
     public void run() {
-        try (ServerSocket serverSocket = new ServerSocket(ConstantsFor.LISTEN_PORT)) {
-            while (true) {
+        try(ServerSocket serverSocket = new ServerSocket(ConstantsFor.LISTEN_PORT)){
+            while(true){
                 TellNetSRV.socket = serverSocket.accept();
                 String msg = socket.toString();
                 LOGGER.warn(msg);
             }
-        } catch (IOException e) {
+        }
+        catch(IOException e){
             LOGGER.error(e.getMessage(), e);
         }
     }

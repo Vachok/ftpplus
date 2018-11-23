@@ -6,7 +6,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.money.components.AppFooter;
 import ru.vachok.money.components.AppVersion;
-import ru.vachok.money.config.AppCtx;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -20,9 +19,8 @@ public class SysInfoCtrl {
     public String gettingInfo(Model model, HttpServletRequest request) {
         AppVersion appVersion = new AppVersion();
         model.addAttribute("title", appVersion.getAppVBuild());
-        model.addAttribute("ctxinfo", AppCtx.getCtxInfoFromRequest(request));
-        model.addAttribute("ver", appVersion.toString());
+        model.addAttribute("result", appVersion.toString());
         model.addAttribute("footer", new AppFooter().getTheFooter());
-        return "sysinfo";
+        return "ok";
     }
 }

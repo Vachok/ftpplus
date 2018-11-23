@@ -5,6 +5,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.vachok.money.services.TForms;
 
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
+
 /**
  @since 28.09.2018 (16:59) */
 public class ThrowMeMaybe {
@@ -17,12 +21,14 @@ public class ThrowMeMaybe {
         return databaseErr;
     }
 
+    /*Get&Set*/
     public void setDatabaseErr(Throwable databaseErr) {
+        ConcurrentMap<String, StackTraceElement[]> traceElementConcurrentMap = new ConcurrentHashMap<>();
         Thread.getAllStackTraces().forEach((x, y) -> {
-            String s = x.getName() + " " + TForms.toStringFromArray(y);
-            LOGGER.error(s);
+            traceElementConcurrentMap.put(x.getName(), y);
             databaseErr.setStackTrace(y);
         });
+        LOGGER.error(new TForms().toStringFromArray(traceElementConcurrentMap, false));
         this.databaseErr = databaseErr;
     }
 }

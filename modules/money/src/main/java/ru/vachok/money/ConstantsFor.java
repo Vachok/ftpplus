@@ -11,13 +11,9 @@ import ru.vachok.mysqlandprops.props.InitProperties;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
@@ -28,6 +24,8 @@ import java.util.function.Function;
 public enum ConstantsFor {
     ;
 
+
+    public static final String URL_AS_STRING = "http://cbr.ru/currency_base/daily/";
 
     /**
      Кол-во байт в мегабайте
@@ -44,7 +42,6 @@ public enum ConstantsFor {
     public static final int YEAR_BIRTH = 1984;
 
     public static final float FILES_TO_ENC_BLOCK = 111.0f;
-
 
     public static final String DB_PREFIX = "u0466446_";
 
@@ -75,9 +72,8 @@ public enum ConstantsFor {
 
     public static final InitProperties DB_REG = new DBRegProperties(APP_NAME + ConstantsFor.class.getSimpleName());
 
-    public static final Properties PROPERTIES = DB_REG.getProps();
-
-    public static final int ROWS_COUNT = Integer.parseInt(PROPERTIES.getOrDefault("rows", "300000").toString());
+    public static final int ROWS_COUNT = Integer.parseInt(DB_REG.getProps()
+        .getOrDefault("rows", "300000").toString());
     /**
      Кол-во байт в килобайте
      */

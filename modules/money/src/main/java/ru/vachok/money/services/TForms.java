@@ -7,127 +7,133 @@ import ru.vachok.money.other.XmlNode;
 import javax.mail.Address;
 import javax.servlet.http.Cookie;
 import java.util.*;
+import java.util.concurrent.ConcurrentMap;
 
 
 /**
  @since 28.08.2018 (0:28) */
 public class TForms {
 
-    private static StringBuilder stringBuilder = new StringBuilder();
+    private StringBuilder brStrBuilder = new StringBuilder();
 
-    private static StringBuilder nstringBuilder = new StringBuilder();
+    private StringBuilder nStringBuilder = new StringBuilder();
 
     private static final String BR_S = "<br>";
 
     private static final String N_S = "\n";
 
     public String toStringFromArray(Collection<String> headerNames) {
-        stringBuilder.append("<p>");
-        headerNames.forEach(x -> stringBuilder.append(x).append("<br>"));
-        stringBuilder.append("</p>");
-        return stringBuilder.toString();
+        brStrBuilder.append("<p>");
+        headerNames.forEach(x -> brStrBuilder.append(x).append("<br>"));
+        brStrBuilder.append("</p>");
+        return brStrBuilder.toString();
     }
 
-    /*PS Methods*/
-    public static String toStringFromArray(StackTraceElement[] e) {
-        for (StackTraceElement element : e) {
-            stringBuilder.append(element.toString()).append("\n");
+    public String toStringFromArray(List<?> listSome, boolean br) {
+        brStrBuilder.append("<p>");
+        nStringBuilder.append("\n");
+        listSome.forEach(x -> {
+            brStrBuilder.append(x)
+                .append("<br>");
+            nStringBuilder.append(x)
+                .append("\n");
+        });
+        if(br){
+            return brStrBuilder.toString();
         }
-        return stringBuilder.toString();
+        else{
+            return nStringBuilder.toString();
+        }
     }
 
     public String mapLongString(Map<Long, String> cookiesToShow) {
-        stringBuilder.append("LongString:\n");
+        brStrBuilder.append("LongString:\n");
         cookiesToShow.forEach((x, y) -> {
-            stringBuilder.append(new Date(x)).append(": ").append(y).append("\n");
+            brStrBuilder.append(new Date(x)).append(": ").append(y).append("\n");
         });
-        return stringBuilder.toString();
+        return brStrBuilder.toString();
     }
 
     public String toStringFromArray(Map<String, String> map) {
-        stringBuilder.append("<p>");
+        brStrBuilder.append("<p>");
         map.forEach((x, y) -> {
-            stringBuilder.append(x).append(" ; ");
-            stringBuilder.append(y).append("<br>");
+            brStrBuilder.append(x).append(" ; ");
+            brStrBuilder.append(y).append("<br>");
         });
-        stringBuilder.append("</p>");
-        return stringBuilder.toString();
+        brStrBuilder.append("</p>");
+        return brStrBuilder.toString();
 
     }
 
     public String toStringFromArray(Exception e) {
         for (StackTraceElement stackTraceElement : e.getStackTrace()) {
-            stringBuilder
+            brStrBuilder
                 .append(stackTraceElement.getLineNumber())
                 .append(" line, in ").append(".").append(stackTraceElement.getMethodName())
                 .append(" " +
                     "exception: ").append(stackTraceElement.toString());
-            stringBuilder.append("\n");
+            brStrBuilder.append("\n");
         }
-        return stringBuilder.toString();
+        return brStrBuilder.toString();
     }
 
     public String toStringFromArray(Address[] from) {
         for (Address fr : from) {
-            stringBuilder.append(fr.toString()).append("\n");
+            brStrBuilder.append(fr.toString()).append("\n");
         }
-        return stringBuilder.toString();
+        return brStrBuilder.toString();
     }
 
     public String toStringFromArray(List<String> stringList) {
         for (String s : stringList) {
-            stringBuilder.append(s).append("\n");
+            nStringBuilder.append(s).append("\n");
         }
-        return stringBuilder.toString();
+        return nStringBuilder.toString();
     }
 
-    public String enumToString(Enumeration<String> yourEnum, boolean br) {
-        stringBuilder.append("<p>");
-        nstringBuilder.append("<p>");
-        while (yourEnum.hasMoreElements()) {
-            String str = yourEnum.nextElement();
-            stringBuilder
-                .append(str)
-                .append("<br>");
-            nstringBuilder
-                .append(str)
-                .append("<br>");
+    public String toStringFromArray(ConcurrentMap<?, ?> mapOfSome, boolean b) {
+        brStrBuilder.append("<p>");
+        nStringBuilder.append("\n");
+        mapOfSome.forEach((x, y) -> {
+            brStrBuilder.append(x.toString()).append(" x  |  ")
+                .append(y.toString()).append(" y  |||<br>");
+            nStringBuilder.append(x.toString()).append(" x  |  ")
+                .append(y.toString()).append(" y  |||\n");
+        });
+        if(b){
+            return brStrBuilder.toString();
         }
-        stringBuilder.append("</p>");
-        nstringBuilder.append("</p>");
-        if (br) {
-            return stringBuilder.toString();
-        } else {
-            return nstringBuilder.toString();
+        else{
+            return nStringBuilder.toString();
         }
     }
 
     public String mapIntXmlNode(Map<Integer, XmlNode> integerXmlNodeMap) {
-        stringBuilder.append("<p>");
-        integerXmlNodeMap.forEach((x, y) -> stringBuilder.append(x)
+        brStrBuilder.append("<p>");
+        integerXmlNodeMap.forEach((x, y) -> brStrBuilder.append(x)
             .append(") ")
             .append(y.toString())
             .append("<br>"));
-        stringBuilder.append("</p>");
-        return stringBuilder.toString();
+        brStrBuilder.append("</p>");
+        return brStrBuilder.toString();
     }
 
     public String toStringFromArray(String[] beanDefinitionNames) {
-        stringBuilder.append("<p>");
+        brStrBuilder.append("<p>");
         for (String s : beanDefinitionNames) {
-            stringBuilder.append(s).append("<br>");
+            brStrBuilder.append(s).append("<br>");
         }
-        stringBuilder.append("</p>");
-        return stringBuilder.toString();
+        brStrBuilder.append("</p>");
+        return brStrBuilder.toString();
     }
 
     public String toStringFromArray(Cookie[] cookies, boolean brB) {
         for (Cookie c : cookies) {
             String br = "<br>";
             String n = "\n";
-            stringBuilder.append(br);
-            nstringBuilder.append(n);
-            stringBuilder
+            brStrBuilder.append(br);
+            nStringBuilder.append(n);
+            brStrBuilder
                 .append(c.getName()).append(" name")
                 .append(br)
                 .append(c.getDomain()).append(" domain")
@@ -137,7 +143,7 @@ public class TForms {
                 .append(c.getSecure()).append(" secure")
                 .append(br)
                 .append(c.getVersion()).append(" version");
-            nstringBuilder
+            nStringBuilder
                 .append(c.getName()).append(" name")
                 .append(n)
                 .append(c.getDomain()).append(" domain")
@@ -148,29 +154,59 @@ public class TForms {
                 .append(n)
                 .append(c.getVersion()).append(" version");
         }
-        if (brB) return stringBuilder.toString();
-        else return nstringBuilder.toString();
+        if(brB){
+            return brStrBuilder.toString();
+        }
+        else{
+            return nStringBuilder.toString();
+        }
     }
 
     public String toStringFromArray(DistanceMatrixElement[] elements, boolean br) {
         for (DistanceMatrixElement element : elements) {
-            stringBuilder.append("<p>");
-            stringBuilder.append(element.status).append(BR_S);
-            stringBuilder
+            brStrBuilder.append("<p>");
+            brStrBuilder.append(element.status).append(BR_S);
+            brStrBuilder
                 .append(element.duration).append(" рассчётное время.")
                 .append(BR_S)
                 .append(element.durationInTraffic).append(" рассчётное время, с учётом траффика.")
                 .append(BR_S)
                 .append(element.distance).append(" дистанция");
-            nstringBuilder.append(element.status).append(N_S);
-            nstringBuilder
+            nStringBuilder.append(element.status).append(N_S);
+            nStringBuilder
                 .append(element.duration).append(" рассчётное время.")
                 .append(N_S)
                 .append(element.durationInTraffic).append(" рассчётное время, с учётом траффика.")
                 .append(N_S)
                 .append(element.distance).append(" дистанция");
         }
-        if (br) return stringBuilder.toString();
-        else return nstringBuilder.toString();
+        if(br){
+            return brStrBuilder.toString();
+        }
+        else{
+            return nStringBuilder.toString();
+        }
+    }
+
+    String enumToString(Enumeration<String> yourEnum, boolean br) {
+        brStrBuilder.append("<p>");
+        nStringBuilder.append("<p>");
+        while(yourEnum.hasMoreElements()){
+            String str = yourEnum.nextElement();
+            brStrBuilder
+                .append(str)
+                .append("<br>");
+            nStringBuilder
+                .append(str)
+                .append("<br>");
+        }
+        brStrBuilder.append("</p>");
+        nStringBuilder.append("</p>");
+        if(br){
+            return brStrBuilder.toString();
+        }
+        else{
+            return nStringBuilder.toString();
+        }
     }
 }

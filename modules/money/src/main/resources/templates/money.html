@@ -6,7 +6,7 @@
     <title th:text="${title}"></title>
 </head>
 <body>
-<h3 th:utext="${currency}"/>
+<center><p th:utext="${currency}"/></center>
 <center>
     <form th:action="@{/getmoney}" th:object="${ParserCBRruSRV}" method="POST">
         Сколько и под какой % вы положили в 2014м?
