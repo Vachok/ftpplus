@@ -22,6 +22,7 @@ public class PageFooter {
             .append("<a href=\"/odinass\">Сформировать лист команд PoShell для сверки должностей</a><br>\n")
             .append("<a href=\"/exchange\"><strike>Парсинг правил MS Exchange</a><br></strike>\n")
             .append("<a href=\"/adphoto\">Добавить фотографии в Outlook</a><br>\n")
+            .append("<a href=\"/cleaner\"><strike>Ищейка файлов</strike></a><br>\n")
             .append("<a href=\"/serviceinfo\"><font color=\"#999eff\">SERVICEINFO</font></a>")
             .toString();
     }
