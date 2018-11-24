@@ -305,28 +305,6 @@ public class TForms {
         else return brStringBuilder.toString();
     }
 
-    public String fromArray(ConcurrentMap<String, File> files, boolean b) {
-        brStringBuilder.append("<p>");
-        nStringBuilder.append("\n");
-        try{
-            files.forEach((x, y) -> {
-            brStringBuilder
-                .append("<font color=\"yellow\"><center>")
-                .append(x)
-                .append("</font></center><br>");
-            nStringBuilder
-                .append(x)
-                .append("\n")
-                .append(Arrays.toString(y.listFiles()));
-            });
-        }
-        catch(Exception e){
-            LOGGER.error(e.getMessage(), e);
-        }
-        if (b) return brStringBuilder.toString();
-        else return nStringBuilder.toString();
-    }
-
     public String fromArrayRules(ConcurrentMap<Integer, MailRule> mailRules, boolean br) {
         mailRules.forEach((x, y) -> {
             nStringBuilder
@@ -367,5 +345,21 @@ public class TForms {
         else{
             return nStringBuilder.toString();
         }
+    }
+
+    public String fromArray(ConcurrentMap<?, ?> filesFailMap, boolean br) {
+        brStringBuilder.append("<p>");
+        filesFailMap.forEach((x, y) -> {
+            brStringBuilder.append("<br>")
+                .append(x.toString())
+                .append(" ")
+                .append(y.toString());
+            nStringBuilder.append("\n")
+                .append(x.toString())
+                .append(" ")
+                .append(y.toString());
+        });
+        if (br) return brStringBuilder.toString();
+        else return nStringBuilder.toString();
     }
 }
