@@ -13,8 +13,8 @@ import java.io.*;
 import java.sql.*;
 import java.time.LocalDate;
 import java.time.format.TextStyle;
-import java.util.*;
 import java.util.Date;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -58,16 +58,21 @@ public class PCUserResolver {
      @param pcName имя компьютера
      @see NetScannerSvc#onLinesCheck(String, String)
      */
-    public void namesToFile(String pcName) {
-        File[] files = new File("\\\\" + pcName + "\\c$\\Users\\").listFiles();
+    public synchronized void namesToFile(String pcName) {
+        Thread.currentThread().setName(pcName);
+        Thread.currentThread().setPriority(3);
+        File[] files = new File[100];
         try (OutputStream outputStream = new FileOutputStream(pcName);
              PrintWriter writer = new PrintWriter(outputStream, true)) {
+            files = new File("\\\\" + pcName + "\\c$\\Users\\").listFiles();
             writer.append(Arrays.toString(files).replace(", ", "\n"));
+            Thread.currentThread().interrupt();
         } catch (IOException e) {
-            LOGGER.error(e.getMessage(), e);
+            Thread.currentThread().interrupt();
         }
         if (files != null) {
             recAutoDB(pcName, files);
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -99,8 +104,10 @@ public class PCUserResolver {
             if(LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault()).toLowerCase().contains("поне")){
                 trunkBase.executeUpdate();
             }
+            Thread.currentThread().interrupt();
         } catch (SQLException | ArrayIndexOutOfBoundsException e) {
             LOGGER.error(e.getMessage(), e);
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -120,7 +127,9 @@ public class PCUserResolver {
             adUser.setUserName(resolvedName);
         } catch (NullPointerException e) {
             LOGGER.warn("I cant set User for");
+            Thread.currentThread().interrupt();
         }
+        Thread.currentThread().interrupt();
         return adUser;
     }
 
@@ -217,8 +226,10 @@ public class PCUserResolver {
                 }
             }
         } catch (SQLException e) {
+            Thread.currentThread().interrupt();
             return e.getMessage();
         }
+        Thread.currentThread().interrupt();
         return v.toString();
     }
 
@@ -239,8 +250,10 @@ public class PCUserResolver {
             p.executeUpdate();
             LOGGER.info(msg);
             pcUMap.put(pcName, msg);
+            Thread.currentThread().interrupt();
         } catch (SQLException e) {
             LOGGER.warn(msg.replace(" set.", " not set!"));
+            Thread.currentThread().interrupt();
         }
     }
 }

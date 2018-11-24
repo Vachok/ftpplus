@@ -9,7 +9,6 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.messenger.email.ESender;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.Locked;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.ActDirectoryCTRL;
@@ -22,10 +21,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
@@ -148,7 +144,6 @@ public class NetScannerSvc {
      @see PCUserResolver#getResolvedName()
      @see #getPcNames()
      */
-    @Locked(id = Thread.State.BLOCKED)
     public void getPCsAsync() {
         AtomicReference<String> msg = new AtomicReference<>("");
         new Thread(() -> {
@@ -212,6 +207,7 @@ public class NetScannerSvc {
         final long startMethTime = System.currentTimeMillis();
         boolean reachable;
         InetAddress byName;
+        Thread.currentThread().setPriority(8);
         for (String pcName : getCycleNames(prefixPcName)) {
             try {
                 byName = InetAddress.getByName(pcName);
@@ -247,8 +243,9 @@ public class NetScannerSvc {
                     netWork.putIfAbsent(printStr, true);
                     LOGGER.info(format);
                 }
-            } catch (IOException ignore) {
-                //
+            }
+            catch(IOException e){
+                Thread.currentThread().interrupt();
             }
         }
         netWork.put("<h4>" + prefixPcName + "     " + pcNames.size() + "</h4>", true);
