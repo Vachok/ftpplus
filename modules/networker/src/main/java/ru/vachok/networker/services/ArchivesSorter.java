@@ -35,6 +35,10 @@ public class ArchivesSorter extends SimpleFileVisitor<Path> implements Callable<
 
     private String fileName = "files_2.5_years_old_25mb.csv";
 
+    private String fileNameNoAccess;
+
+    private boolean yearNoAccess;
+
     private String date;
 
     private String startPath;
@@ -46,6 +50,15 @@ public class ArchivesSorter extends SimpleFileVisitor<Path> implements Callable<
     private long failCounter = 0L;
 
     private StringBuilder msgBuilder = new StringBuilder();
+
+    public String getFileNameNoAccess() {
+        return fileNameNoAccess;
+    }
+
+    public void setFileNameNoAccess(String fileNameNoAccess) {
+        this.fileNameNoAccess = fileNameNoAccess;
+        this.yearNoAccess = true;
+    }
 
     public String getStartPath() {
         return startPath;
@@ -63,20 +76,25 @@ public class ArchivesSorter extends SimpleFileVisitor<Path> implements Callable<
         this.date = date;
     }
 
-/*Instances*/
-public ArchivesSorter() {
-}
+    /*Instances*/
+    public ArchivesSorter() {
+    }
 
     ArchivesSorter(String startPath) {
         super();
         this.startPath = startPath;
     }
 
-    /*Itinial Block*/
     /*Itinial Block*/ {
         try{
-            OutputStream outputStream = new FileOutputStream(fileName);
-            printWriter = new PrintWriter(outputStream, true);
+            if(!yearNoAccess){
+                OutputStream outputStream = new FileOutputStream(fileName);
+                printWriter = new PrintWriter(outputStream, true);
+            }
+            else{
+                OutputStream outputStream = new FileOutputStream(fileNameNoAccess);
+                printWriter = new PrintWriter(outputStream, true);
+            }
         }
         catch(FileNotFoundException e){
             LOGGER.error(e.getMessage(), e);
@@ -122,7 +140,7 @@ public ArchivesSorter() {
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
         this.filesCounter = filesCounter + 1;
-        if(file.getFileName().toString().toLowerCase().contains(".jpg") && attrs.size() > ConstantsFor.MBYTE || file.getFileName().toString().toLowerCase().contains(".nef")){
+        if(file.getFileName().toString().toLowerCase().contains(".jpg") && attrs.size() > ConstantsFor.MBYTE * 2 || file.getFileName().toString().toLowerCase().contains(".nef")){
             printWriter.println(file.toAbsolutePath()
                 + ","
                 + ( float ) file.toFile().length() / ConstantsFor.MBYTE + ""
@@ -133,6 +151,16 @@ public ArchivesSorter() {
             String msgS = file.toString() + " " + attrs.lastAccessTime();
             LOGGER.warn(msgS);
         }
+        if(attrs.lastAccessTime().toMillis() < System.currentTimeMillis() - TimeUnit.DAYS.toMillis(ConstantsFor.ONE_YEAR)){
+            printWriter.println("!!! OLD! = " +
+                attrs.lastAccessTime() +
+                " " +
+                file.toAbsolutePath() +
+                " " +
+                ( float ) file.toFile().length() / ConstantsFor.MBYTE +
+                "\n");
+        }
+
         return FileVisitResult.CONTINUE;
     }
 

@@ -39,7 +39,8 @@ public class FileCleanerCTRL {
     public String postFile(Model model, @ModelAttribute ArchivesSorter archivesSorter) {
         this.archivesSorter = archivesSorter;
         model.addAttribute("archivesSorter", archivesSorter);
-        model.addAttribute("title", archivesSorter.getStartPath());
+        String startPath = archivesSorter.getStartPath();
+        model.addAttribute("title", startPath);
         model.addAttribute("call", callMe());
         model.addAttribute("footer", new PageFooter().getFooterUtext());
         return "cleaner";
