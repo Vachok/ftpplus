@@ -20,8 +20,7 @@ import java.net.URI;
 import java.time.Year;
 import java.util.concurrent.*;
 
-import static java.lang.System.err;
-import static java.lang.System.exit;
+import static java.lang.System.*;
 
 
 /**
