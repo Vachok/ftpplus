@@ -5,7 +5,7 @@ import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import ru.vachok.money.components.AppFooter;
+import ru.vachok.money.components.PageFooter;
 import ru.vachok.money.services.TForms;
 
 import javax.servlet.http.HttpServletRequest;
@@ -33,9 +33,9 @@ public class ErrCtrl implements ErrorController {
     @GetMapping("/error")
     public String err( Exception e , Model model ) {
         String eM = e.getMessage();
-        model.addAttribute("error" , new TForms().toStringFromArray(e));
+        model.addAttribute("error", new TForms().toStringFromArray(e, true));
         model.addAttribute("errmessage", eM);
-        model.addAttribute("footer", new AppFooter().getTheFooter());
+        model.addAttribute("footer", new PageFooter().getTheFooter());
         return "error";
     }
 

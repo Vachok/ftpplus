@@ -25,6 +25,8 @@ public enum ConstantsFor {
     ;
 
 
+    public static final int ONE_YEAR = 365;
+
     public static final String URL_AS_STRING = "http://cbr.ru/currency_base/daily/";
 
     /**

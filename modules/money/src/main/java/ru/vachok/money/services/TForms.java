@@ -14,13 +14,14 @@ import java.util.concurrent.ConcurrentMap;
  @since 28.08.2018 (0:28) */
 public class TForms {
 
-    private StringBuilder brStrBuilder = new StringBuilder();
-
-    private StringBuilder nStringBuilder = new StringBuilder();
-
+    /*Fields*/
     private static final String BR_S = "<br>";
 
     private static final String N_S = "\n";
+
+    private StringBuilder brStrBuilder = new StringBuilder();
+
+    private StringBuilder nStringBuilder = new StringBuilder();
 
     public String toStringFromArray(Collection<String> headerNames) {
         brStrBuilder.append("<p>");
@@ -65,27 +66,40 @@ public class TForms {
 
     }
 
-    public String toStringFromArray(Exception e) {
-        for (StackTraceElement stackTraceElement : e.getStackTrace()) {
+    public String toStringFromArray(Exception e, boolean br) {
+        brStrBuilder.append("<p>");
+        for(StackTraceElement stackTraceElement : e.getStackTrace()){
             brStrBuilder
                 .append(stackTraceElement.getLineNumber())
                 .append(" line, in ").append(".").append(stackTraceElement.getMethodName())
                 .append(" " +
                     "exception: ").append(stackTraceElement.toString());
-            brStrBuilder.append("\n");
+            brStrBuilder.append("<br>");
+
+            nStringBuilder
+                .append(stackTraceElement.getLineNumber())
+                .append(" line, in ").append(stackTraceElement.getMethodName())
+                .append(" " + "exception: ")
+                .append(stackTraceElement.toString());
+            nStringBuilder.append("\n");
         }
-        return brStrBuilder.toString();
+        if(br){
+            return brStrBuilder.toString();
+        }
+        else{
+            return nStringBuilder.toString();
+        }
     }
 
     public String toStringFromArray(Address[] from) {
-        for (Address fr : from) {
+        for(Address fr : from){
             brStrBuilder.append(fr.toString()).append("\n");
         }
         return brStrBuilder.toString();
     }
 
     public String toStringFromArray(List<String> stringList) {
-        for (String s : stringList) {
+        for(String s : stringList){
             nStringBuilder.append(s).append("\n");
         }
         return nStringBuilder.toString();
@@ -120,7 +134,7 @@ public class TForms {
 
     public String toStringFromArray(String[] beanDefinitionNames) {
         brStrBuilder.append("<p>");
-        for (String s : beanDefinitionNames) {
+        for(String s : beanDefinitionNames){
             brStrBuilder.append(s).append("<br>");
         }
         brStrBuilder.append("</p>");
@@ -128,7 +142,7 @@ public class TForms {
     }
 
     public String toStringFromArray(Cookie[] cookies, boolean brB) {
-        for (Cookie c : cookies) {
+        for(Cookie c : cookies){
             String br = "<br>";
             String n = "\n";
             brStrBuilder.append(br);
@@ -163,7 +177,7 @@ public class TForms {
     }
 
     public String toStringFromArray(DistanceMatrixElement[] elements, boolean br) {
-        for (DistanceMatrixElement element : elements) {
+        for(DistanceMatrixElement element : elements){
             brStrBuilder.append("<p>");
             brStrBuilder.append(element.status).append(BR_S);
             brStrBuilder
@@ -180,6 +194,25 @@ public class TForms {
                 .append(N_S)
                 .append(element.distance).append(" дистанция");
         }
+        if(br){
+            return brStrBuilder.toString();
+        }
+        else{
+            return nStringBuilder.toString();
+        }
+    }
+
+    public String stackToString(Stack<?> stack, boolean br) {
+        brStrBuilder.append("<p>");
+        stack.forEach(x -> {
+            String s = stack.pop().toString();
+            brStrBuilder
+                .append(s)
+                .append("<br>");
+            nStringBuilder
+                .append(s)
+                .append("\n");
+        });
         if(br){
             return brStrBuilder.toString();
         }

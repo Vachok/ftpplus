@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.money.ConstantsFor;
-import ru.vachok.money.components.AppFooter;
+import ru.vachok.money.components.PageFooter;
 import ru.vachok.money.components.Visitor;
 
 import javax.servlet.http.HttpServletRequest;
@@ -43,7 +43,7 @@ public class CarDatabase {
             "<p>" + myOpel.getLastTimeA107() + " по A107. (" + myOpel.getCountA107() + " total)" + ";<br>" + myOpel.getLastTimeNRiga() + " по Риге.(" + myOpel.getCountRiga() + " total);" + "</p" +
             "></center>";
         model.addAttribute("roadStat", roadStat);
-        model.addAttribute("footer", new AppFooter().getTheFooter());
+        model.addAttribute("footer", new PageFooter().getTheFooter());
         return CAR_DB;
     }
 
@@ -65,7 +65,7 @@ public class CarDatabase {
             LoggerFactory.getLogger(this.getClass().getSimpleName());
         }
 
-        model.addAttribute("footer", new AppFooter().getTheFooter());
+        model.addAttribute("footer", new PageFooter().getTheFooter());
         return CAR_DB;
     }
 

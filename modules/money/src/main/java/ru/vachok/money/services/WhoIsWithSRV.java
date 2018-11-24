@@ -59,7 +59,7 @@ public class WhoIsWithSRV {
             whoisClient.disconnect();
         }
         catch(IOException | RuntimeException e){
-            geoLocation.append(e.getMessage()).append("\n").append(new TForms().toStringFromArray(e));
+            geoLocation.append(e.getMessage()).append("\n").append(new TForms().toStringFromArray(e, true));
         }
         String country = locale.getDisplayCountry() + " - " + locale.getDisplayLanguage();
         geoLocation.append(country).append("</p>");

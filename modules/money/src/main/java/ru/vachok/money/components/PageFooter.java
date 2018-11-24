@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 /**
  @since 03.10.2018 (22:38) */
 @Component
-public class AppFooter {
+public class PageFooter {
 
     public String getTheFooter() {
         StringBuilder stringBuilder = new StringBuilder();

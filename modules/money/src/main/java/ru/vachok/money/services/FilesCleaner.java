@@ -8,6 +8,7 @@ import ru.vachok.money.config.AppComponents;
 import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Stack;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
@@ -31,12 +32,30 @@ public class FilesCleaner extends SimpleFileVisitor<Path> implements Callable<St
 
     private PrintWriter printWriter;
 
-    private File file = new File("torrents.csv");
+    private boolean delFiles;
 
-    /*Itinial Block*/
+    private long bytesCount = 0;
+
+    private File fileR = new File("torrents.csv");
+
+    public String getStartDir() {
+        return startDir;
+    }
+
+
+    /*Instances*/
+    public FilesCleaner(String startDir, boolean delFiles) {
+        this.startDir = startDir;
+        this.delFiles = delFiles;
+    }
+
+    public FilesCleaner() {
+        this.delFiles = false;
+    }
+
     /*Itinial Block*/ {
         try{
-            OutputStream outputStream = new FileOutputStream(file);
+            OutputStream outputStream = new FileOutputStream(fileR);
             printWriter = new PrintWriter(outputStream, true);
         }
         catch(FileNotFoundException e){
@@ -52,7 +71,24 @@ public class FilesCleaner extends SimpleFileVisitor<Path> implements Callable<St
         catch(IOException e){
             LOGGER.warn(e.getMessage(), e);
         }
-        return file.getAbsolutePath() + " " + file.length() / ConstantsFor.KILOBYTE + " KB";
+        return readFile();
+    }
+
+    private String readFile() {
+        Stack<String> stringStack = new Stack<>();
+        try(InputStream inputStream = new FileInputStream(fileR);
+            InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+            BufferedReader bufferedReader = new BufferedReader(inputStreamReader)){
+            while(bufferedReader.ready()){
+                stringStack.add(bufferedReader.readLine());
+            }
+            String retStr = "<a href=\"/cleandir\">" + startDir + "</a><br>" + new TForms().stackToString(stringStack, true);
+            LOGGER.info(retStr);
+            return retStr;
+        }
+        catch(IOException e){
+            return new TForms().toStringFromArray(e, true);
+        }
     }
 
     @Override
@@ -64,9 +100,47 @@ public class FilesCleaner extends SimpleFileVisitor<Path> implements Callable<St
 
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-        if(attrs.lastAccessTime().toMillis() < (System.currentTimeMillis() - TimeUnit.DAYS.toMillis(720))){
-            printWriter.println(file.toAbsolutePath().toString() + "," + attrs.size() / ConstantsFor.MEGABYTE + "," +
-                attrs.lastAccessTime());
+        boolean oldFilesToFile = attrs.lastAccessTime().toMillis() < (System.currentTimeMillis() - TimeUnit
+            .DAYS.toMillis(ConstantsFor.ONE_YEAR));
+        String semiCol = ",";
+        if(delFiles){
+            Thread.currentThread().setPriority(1);
+            Thread.currentThread().setName(startDir);
+            if(attrs.isRegularFile() && oldFilesToFile){
+                long length = file.toFile().length();
+                this.bytesCount = bytesCount + length;
+                String toString = new StringBuilder()
+                    .append("File: ")
+                    .append(semiCol)
+                    .append(file.toAbsolutePath())
+                    .append(semiCol)
+                    .append("size in kbytes")
+                    .append(semiCol)
+                    .append(( float ) length / ConstantsFor.KILOBYTE)
+                    .append(semiCol)
+                    .append("Created")
+                    .append(semiCol)
+                    .append(attrs.creationTime())
+                    .append(semiCol)
+                    .append(attrs.fileKey()).append(" file key?")
+                    .append(( float ) length / ConstantsFor.MEGABYTE)
+                    .append(" Mbytes total")
+                    .append("\n").toString();
+                try{
+                    Files.delete(file);
+                    printWriter.println(toString);
+                }
+                catch(AccessDeniedException e){
+                    printWriter.println("Denied. Reason: " + e.getReason() + ": " + file.toAbsolutePath());
+                    return FileVisitResult.CONTINUE;
+                }
+            }
+        }
+        else{
+            if(oldFilesToFile){
+                printWriter.println(file.toAbsolutePath().toString() + semiCol + attrs.size() / ConstantsFor.MEGABYTE + semiCol +
+                    attrs.lastAccessTime());
+            }
         }
         return FileVisitResult.CONTINUE;
     }
@@ -79,6 +153,10 @@ public class FilesCleaner extends SimpleFileVisitor<Path> implements Callable<St
 
     @Override
     public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+        Iterable<FileStore> fileStoreIter = dir.getFileSystem().getFileStores();
+        if(delFiles && !fileStoreIter.iterator().hasNext()){
+            Files.delete(dir);
+        }
         return FileVisitResult.CONTINUE;
     }
 }

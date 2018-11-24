@@ -8,7 +8,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import ru.vachok.money.components.AppFooter;
+import ru.vachok.money.components.PageFooter;
 import ru.vachok.money.components.Visitor;
 
 import javax.servlet.http.HttpServletRequest;
@@ -49,7 +49,7 @@ public class CalcCTRL {
         model.addAttribute("CalculatorForSome", calculatorForSome);
         calculatorForSome.setUserInput("");
         model.addAttribute("title", "CALC");
-        model.addAttribute("footer", new AppFooter().getTheFooter());
+        model.addAttribute("footer", new PageFooter().getTheFooter());
         return "calc";
     }
 

@@ -88,7 +88,7 @@ public class MailMessages implements Callable<Message[]> {
         }
         catch(MessagingException | IOException e){
             LOGGER.error(SOURCE_CLASS + ".getMailbox\n" + e.getMessage(), e);
-            return e.getMessage() + "<br>" + new TForms().toStringFromArray(e);
+            return e.getMessage() + "<br>" + new TForms().toStringFromArray(e, true);
         }
 
         return stringBuilder.toString();

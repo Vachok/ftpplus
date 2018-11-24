@@ -103,7 +103,7 @@ public class CalcSrv {
             }
         }
         catch(ArrayIndexOutOfBoundsException e){
-            return e.getMessage() + "<p>" + new TForms().toStringFromArray(e);
+            return e.getMessage() + "<p>" + new TForms().toStringFromArray(e, true);
         }
         try{
             for(String s : parsedInp){

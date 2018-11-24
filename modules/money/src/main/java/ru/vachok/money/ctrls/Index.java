@@ -8,7 +8,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.money.ConstantsFor;
-import ru.vachok.money.components.AppFooter;
+import ru.vachok.money.components.PageFooter;
 import ru.vachok.money.components.Visitor;
 import ru.vachok.money.services.TimeWorms;
 import ru.vachok.money.services.sockets.TellNetSockets;
@@ -75,7 +75,7 @@ public class Index {
         model.addAttribute("timeleft", timeWorms.timeLeft());
 
         model.addAttribute("dateTimeLoc", dateTimeLoc);
-        model.addAttribute("footer", new AppFooter().getTheFooter());
+        model.addAttribute("footer", new PageFooter().getTheFooter());
 
         if(ConstantsFor.localPc().equalsIgnoreCase("home")){
             return "index-start";
