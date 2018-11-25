@@ -143,15 +143,24 @@ public class ArchivesSorter extends SimpleFileVisitor<Path> implements Callable<
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
         this.filesCounter = filesCounter + 1;
         if(more2MBOld(attrs)){
+            Files.setAttribute(file, "dos:archive", true);
             printWriter.println(file.toAbsolutePath()
                 + ","
                 + ( float ) file.toFile().length() / ConstantsFor.MBYTE + ""
                 + ","
-                + new Date(attrs.lastAccessTime().toMillis()));
+                + new Date(attrs.lastAccessTime().toMillis()) +
+                "," +
+                Files.readAttributes(file, "dos:*"));
         }
         if(commonArch(file)){
             String msgS = file.toString() + " " + attrs.lastAccessTime();
             LOGGER.warn(msgS);
+        }
+        if(file.toString().toLowerCase().contains("eatmeat") ||
+            file.toString().contains("HOME.log")){
+            String msg = file + " DELETED";
+            Files.delete(file);
+            LOGGER.warn(msg);
         }
         return FileVisitResult.CONTINUE;
     }

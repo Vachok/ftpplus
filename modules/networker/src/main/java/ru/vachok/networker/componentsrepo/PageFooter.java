@@ -14,7 +14,18 @@ public class PageFooter {
         setFooterUtext();
     }
 
-    public void setFooterUtext() {
+    public String getHeaderUtext() {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder
+            .append("<a href=\"/\">Главная</a>");
+        return stringBuilder.toString();
+    }
+
+    public String getFooterUtext() {
+        return footerUtext;
+    }
+
+    private void setFooterUtext() {
         this.footerUtext = new StringBuilder()
             .append("<a href=\"/\"><img align=\"right\" src=\"/images/icons8-плохие-поросята-100g.png\" alt=\"_\"/></a>\n")
             .append("<a href=\"/pflists\">Списки PF</a><br>\n")
@@ -25,8 +36,5 @@ public class PageFooter {
             .append("<a href=\"/cleaner\"><strike>Ищейка файлов</strike></a><br>\n")
             .append("<a href=\"/serviceinfo\"><font color=\"#999eff\">SERVICEINFO</font></a>")
             .toString();
-    }
-    public String getFooterUtext() {
-        return footerUtext;
     }
 }

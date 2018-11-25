@@ -20,8 +20,7 @@ import java.net.URI;
 import java.time.Year;
 import java.util.concurrent.*;
 
-import static java.lang.System.err;
-import static java.lang.System.exit;
+import static java.lang.System.*;
 
 
 /**
@@ -81,6 +80,7 @@ public class SystemTrayHelper {
         };
         ActionListener exitApp = e -> {
             ConstantsFor.saveProps(ConstantsFor.PROPS);
+            IntoApplication.delTemp();
             exit(0);
         };
         addItems(popupMenu);

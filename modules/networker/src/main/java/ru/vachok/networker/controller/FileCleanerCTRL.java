@@ -42,6 +42,7 @@ public class FileCleanerCTRL {
         String startPath = archivesSorter.getStartPath();
         model.addAttribute("title", startPath);
         model.addAttribute("call", callMe());
+        model.addAttribute("header", new PageFooter().getHeaderUtext());
         model.addAttribute("footer", new PageFooter().getFooterUtext());
         return "cleaner";
     }

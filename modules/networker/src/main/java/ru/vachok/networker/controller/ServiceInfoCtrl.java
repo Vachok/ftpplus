@@ -8,6 +8,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.*;
 
@@ -145,6 +146,7 @@ public class ServiceInfoCtrl {
     @GetMapping ("/stop")
     public String closeApp() throws AccessDeniedException {
         if(authReq){
+            IntoApplication.delTemp();
             ConstantsFor.saveProps(ConstantsFor.PROPS);
             System.exit(ConstantsFor.USER_EXIT);
         }

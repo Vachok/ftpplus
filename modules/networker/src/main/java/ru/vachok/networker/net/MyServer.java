@@ -4,9 +4,7 @@ package ru.vachok.networker.net;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.SystemTrayHelper;
-import ru.vachok.networker.TForms;
+import ru.vachok.networker.*;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.VersionInfo;
 import ru.vachok.networker.services.DBMessenger;
@@ -133,6 +131,8 @@ public class MyServer extends Thread {
         printStream.println("Press Enter or enter command:\n");
         String readLine = bufferedReader.readLine();
         if (readLine.toLowerCase().contains("exit")) {
+            IntoApplication.delTemp();
+            ConstantsFor.saveProps(ConstantsFor.PROPS);
             socket.close();
             System.exit(ConstantsFor.USER_EXIT);
         }
