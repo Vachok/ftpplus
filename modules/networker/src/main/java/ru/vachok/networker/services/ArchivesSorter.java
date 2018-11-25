@@ -85,6 +85,8 @@ public class ArchivesSorter extends SimpleFileVisitor<Path> implements Callable<
         this.startPath = startPath;
     }
 
+    /*Itinial Block*/
+    /*Itinial Block*/
     /*Itinial Block*/ {
         try{
             if(!yearNoAccess){
@@ -132,7 +134,7 @@ public class ArchivesSorter extends SimpleFileVisitor<Path> implements Callable<
     @Override
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
         this.dirsCounter = dirsCounter + 1;
-        String toString = dir.toString() + " " + dirsCounter + " dirs";
+        String toString = dir.toString() + " " + dirsCounter + " dirs\n" + attrs.fileKey();
         LOGGER.info(toString);
         return FileVisitResult.CONTINUE;
     }
@@ -140,7 +142,7 @@ public class ArchivesSorter extends SimpleFileVisitor<Path> implements Callable<
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
         this.filesCounter = filesCounter + 1;
-        if(file.getFileName().toString().toLowerCase().contains(".jpg") && attrs.size() > ConstantsFor.MBYTE * 2 || file.getFileName().toString().toLowerCase().contains(".nef")){
+        if(more2MBOld(attrs)){
             printWriter.println(file.toAbsolutePath()
                 + ","
                 + ( float ) file.toFile().length() / ConstantsFor.MBYTE + ""
@@ -151,17 +153,14 @@ public class ArchivesSorter extends SimpleFileVisitor<Path> implements Callable<
             String msgS = file.toString() + " " + attrs.lastAccessTime();
             LOGGER.warn(msgS);
         }
-        if(attrs.lastAccessTime().toMillis() < System.currentTimeMillis() - TimeUnit.DAYS.toMillis(ConstantsFor.ONE_YEAR)){
-            printWriter.println("!!! OLD! = " +
-                attrs.lastAccessTime() +
-                " " +
-                file.toAbsolutePath() +
-                " " +
-                ( float ) file.toFile().length() / ConstantsFor.MBYTE +
-                "\n");
-        }
-
         return FileVisitResult.CONTINUE;
+    }
+
+    private boolean more2MBOld(BasicFileAttributes attrs) {
+        return attrs
+            .lastAccessTime().toMillis() < System.currentTimeMillis() - TimeUnit.DAYS.toMillis(ConstantsFor.ONE_YEAR) &&
+            attrs
+                .size() > ConstantsFor.MBYTE * 2;
     }
 
     @Override

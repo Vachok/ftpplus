@@ -88,13 +88,13 @@ public class IntoApplication {
             .append(" app display name\n")
             .append(ConstantsFor.getBuildStamp()).toString();
         LOGGER.info(msg);
-        setWebType();
+        schedStarter();
     }
 
     /**
      <b>Тип WEB-application</b>
      */
-    private static void setWebType() {
+    private static void schedStarter() {
         WebApplicationType webApplicationType = WebApplicationType.SERVLET;
         SPRING_APPLICATION.setWebApplicationType(webApplicationType);
         Runnable speedRun = new SpeedRunActualize();

@@ -116,6 +116,8 @@ public class VersionInfo {
         sb.append(", appName='").append(appName).append('\'');
         sb.append(", appVersion='").append(appVersion).append('\'');
         sb.append(", buildTime='").append(buildTime).append('\'');
+        sb.append(", pfLists timeout seconds='").append(ConstantsFor.DELAY).append('\'');
+        sb.append(", netscan delay='").append(ConstantsFor.NETSCAN_DELAY).append('\'');
         sb.append('}');
         return sb.toString();
     }

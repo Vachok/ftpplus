@@ -130,6 +130,8 @@ public enum ConstantsFor {
 
     public static final int ONE_YEAR = 365;
 
+    public static final int NETSCAN_DELAY = new SecureRandom().nextInt(( int ) ConstantsFor.MY_AGE);
+
     public static boolean isPingOK() {
         try{
             return InetAddress.getByName("srv-git.eatmeat.ru").isReachable(500);

@@ -15,7 +15,6 @@ import ru.vachok.networker.componentsrepo.PageFooter;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.security.SecureRandom;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
@@ -41,7 +40,7 @@ public class NetScanCtr {
 
     private long l;
 
-    private final int duration = new SecureRandom().nextInt(( int ) ConstantsFor.MY_AGE);
+    private final int duration = ConstantsFor.NETSCAN_DELAY;
 
     @GetMapping ("/netscan")
     public String netScan(HttpServletRequest request, HttpServletResponse response, Model model) {
