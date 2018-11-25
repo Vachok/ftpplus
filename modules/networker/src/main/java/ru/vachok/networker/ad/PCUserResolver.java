@@ -17,7 +17,6 @@ import java.time.LocalDate;
 import java.time.format.TextStyle;
 import java.util.Date;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
@@ -52,6 +51,8 @@ public class PCUserResolver {
      */
     private static Connection connection = new RegRuMysql().getDefaultConnection("u0466446_velkom");
 
+    private String lastFileUse;
+
     /**
      @return {@link #pcUserResolver}
      @see AppComponents#pcUserResolver()
@@ -73,7 +74,7 @@ public class PCUserResolver {
         try(OutputStream outputStream = new FileOutputStream(pcName);
             PrintWriter writer = new PrintWriter(outputStream, true)){
             String pathAsStr = "\\\\" + pcName + "\\c$\\Users\\";
-            String lastFileUse = getLastTimeUse(pathAsStr).split("Users")[1];
+            lastFileUse = getLastTimeUse(pathAsStr).split("Users")[1];
             files = new File(pathAsStr).listFiles();
             writer
                 .append(Arrays.toString(files).replace(", ", "\n"))
@@ -81,11 +82,11 @@ public class PCUserResolver {
                 .append(lastFileUse);
             Thread.currentThread().interrupt();
         }
-        catch(IOException e){
+        catch(IOException | ArrayIndexOutOfBoundsException e){
             Thread.currentThread().interrupt();
         }
         if(files!=null){
-            recAutoDB(pcName, files);
+            recAutoDB(pcName, lastFileUse);
             Thread.currentThread().interrupt();
         }
     }
@@ -98,7 +99,8 @@ public class PCUserResolver {
             Collections.sort(timePath);
             return timePath.get(timePath.size() - 1);
         }
-        catch(IOException e){
+        catch(IOException | IndexOutOfBoundsException e){
+            Thread.currentThread().interrupt();
             return e.getMessage();
         }
     }
@@ -110,23 +112,16 @@ public class PCUserResolver {
      @param files  файлы из Users
      @see #namesToFile(String)
      */
-    private void recAutoDB(String pcName, File[] files) {
-        ConcurrentMap<Long, String> timeName = new ConcurrentHashMap<>();
-        for(File f : files){
-            timeName.put(f.lastModified(), f.getName());
-        }
-        List<String> sortedTimeName = new ArrayList<>();
-        timeName.forEach((timeStamp, fileName) -> sortedTimeName.add(timeStamp + "___" + new Date(timeStamp) + "___" + fileName));
-        Collections.sort(sortedTimeName);
+    private void recAutoDB(String pcName, String lastFileUse) {
         String sql = "insert into pcuser (pcName, userName, lastmod, stamp) values(?,?,?,?)";
         try(PreparedStatement preparedStatement = connection.prepareStatement(sql
             .replaceAll("pcuser", "pcuserauto"));
             PreparedStatement trunkBase = connection.prepareStatement("TRUNCATE table  pcuserauto")){
-            String[] split = sortedTimeName.get(sortedTimeName.size() - 1).split("___");
+            String[] split = lastFileUse.split(" ");
             preparedStatement.setString(1, pcName);
-            preparedStatement.setString(2, split[2]);
-            preparedStatement.setString(3, split[1]);
-            preparedStatement.setString(4, split[0]);
+            preparedStatement.setString(2, split[0]);
+            preparedStatement.setString(3, split[2] + split[3] + split[4]);
+            preparedStatement.setString(4, split[7]);
             preparedStatement.executeUpdate();
             if(LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault()).toLowerCase().contains("поне")){
                 trunkBase.executeUpdate();
@@ -307,7 +302,7 @@ public class PCUserResolver {
 
         @Override
         public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-            timePath.add(file.toFile().lastModified() + " " + file);
+            timePath.add(file.toFile().lastModified() + " " + file + " " + new Date(file.toFile().lastModified()) + " " + file.toFile().lastModified());
             return FileVisitResult.CONTINUE;
         }
 
