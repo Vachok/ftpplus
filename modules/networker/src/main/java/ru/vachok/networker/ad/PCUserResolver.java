@@ -85,7 +85,7 @@ public class PCUserResolver {
         catch(IOException | ArrayIndexOutOfBoundsException e){
             Thread.currentThread().interrupt();
         }
-        if(files!=null){
+        if(lastFileUse!=null){
             recAutoDB(pcName, lastFileUse);
             Thread.currentThread().interrupt();
         }
@@ -128,7 +128,7 @@ public class PCUserResolver {
             }
             Thread.currentThread().interrupt();
         }
-        catch(SQLException | ArrayIndexOutOfBoundsException e){
+        catch(SQLException | ArrayIndexOutOfBoundsException | NullPointerException e){
             LOGGER.error(e.getMessage(), e);
             Thread.currentThread().interrupt();
         }
