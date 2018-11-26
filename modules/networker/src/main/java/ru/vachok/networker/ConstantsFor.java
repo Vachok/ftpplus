@@ -135,7 +135,6 @@ public enum ConstantsFor {
     public static final String COMMON_FOLDER = "\\\\srv-fs.eatmeat.ru\\common_new";
 
     public static final String IT_FOLDER = "\\\\srv-fs.eatmeat.ru\\it$$";
-
     public static boolean isPingOK() {
         try{
             return InetAddress.getByName("srv-git.eatmeat.ru").isReachable(500);
