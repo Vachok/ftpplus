@@ -47,17 +47,18 @@ public class IntoApplication {
      */
     private static final SpringApplication SPRING_APPLICATION = new SpringApplication();
 
+    private static final String THIS_PC = ConstantsFor.thisPC();
+
     /**
      {@link AppCtx#scanForBeansAndRefreshContext()}
      */
     private static AnnotationConfigApplicationContext appCtx = AppCtx.scanForBeansAndRefreshContext();
 
-    private static final String THIS_PC = ConstantsFor.thisPC();
-
     /**
      <h1>1. Точка входа в Spring Boot Application</h1>
-
+     <p>
      {@link #infoForU(ApplicationContext)}
+
      @param args null
      @see MatrixCtr
      */
@@ -65,9 +66,10 @@ public class IntoApplication {
         String msg = LocalDate.now().getDayOfWeek().getValue() + " - day of week\n" +
             LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault());
         LOGGER.warn(msg);
-        if (THIS_PC.toLowerCase().contains("no0027") || THIS_PC.toLowerCase().contains("home")) {
+        if(THIS_PC.toLowerCase().contains("no0027") || THIS_PC.toLowerCase().contains("home")){
             SystemTrayHelper.addTray("icons8-плохие-поросята-32.png");
-        } else {
+        }
+        else{
             SystemTrayHelper.addTray(null);
         }
         SPRING_APPLICATION.setMainApplicationClass(IntoApplication.class);
@@ -96,9 +98,10 @@ public class IntoApplication {
     }
 
     public static void delTemp() {
-        try {
+        try{
             Files.walkFileTree(Paths.get("."), new ArchivesSorter());
-        } catch (IOException e) {
+        }
+        catch(IOException e){
             LOGGER.error(e.getMessage(), e);
         }
     }
@@ -113,12 +116,16 @@ public class IntoApplication {
         ScheduledExecutorService executorService =
             Executors.unconfigurableScheduledExecutorService(Executors.newSingleThreadScheduledExecutor());
         executorService.scheduleWithFixedDelay(speedRun, ConstantsFor.INIT_DELAY, ConstantsFor.DELAY, TimeUnit.SECONDS);
-        new Thread(() -> {
-            try {
-                Files.walkFileTree(Paths.get("\\\\srv-fs.eatmeat.ru\\common_new"), new CommonRightsChecker());
-            } catch (IOException e) {
-                LOGGER.warn(e.getMessage(), e);
-            }
-        }).start();
+        if(ConstantsFor.thisPC().toLowerCase().contains("no0027") ||
+            ConstantsFor.thisPC().toLowerCase().contains("rups")){
+            new Thread(() -> {
+                try{
+                    Files.walkFileTree(Paths.get("\\\\srv-fs.eatmeat.ru\\common_new"), new CommonRightsChecker());
+                }
+                catch(IOException e){
+                    LOGGER.warn(e.getMessage(), e);
+                }
+            }).start();
+        }
     }
 }
