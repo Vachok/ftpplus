@@ -21,10 +21,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
@@ -57,6 +54,12 @@ public class NetScannerSvc {
      {@link RegRuMysql#getDefaultConnection(String)}
      */
     private static Connection c;
+
+    /*Fields*/
+
+    /**
+     {@link AppComponents#getLogger()}
+     */
     private static final Logger LOGGER = AppComponents.getLogger();
 
     static {
@@ -66,11 +69,6 @@ public class NetScannerSvc {
             LOGGER.warn(e.getMessage());
         }
     }
-
-    /**
-     {@link AppComponents#getLogger()}
-     */
-
 
     /**
      {@link AppComponents#adComputers()}
@@ -109,9 +107,11 @@ public class NetScannerSvc {
         return qer;
     }
 
+/*Get&Set*/
+
     /**
+     Usage: {@link NetScanCtr#scanIt(HttpServletRequest, Model)}
      @param qer {@link HttpServletRequest}.getQueryString()
-     @see NetScanCtr#scanIt(HttpServletRequest, Model)
      */
     void setQer(String qer) {
         this.qer = qer;
