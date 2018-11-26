@@ -453,8 +453,12 @@ public class NetScannerSvc {
         List<Integer> onLine = new ArrayList<>();
         List<Integer> offLine = new ArrayList<>();
         StringBuilder stringBuilder = new StringBuilder();
-
-        threadConfig.threadPoolTaskExecutor().execute(() -> pcUserResolver.namesToFile(pcName));
+        ThreadPoolTaskExecutor executor = threadConfig.threadPoolTaskExecutor();
+        executor.setThreadGroup(new ThreadGroup("online"));
+        executor.setMaxPoolSize(30);
+        executor.setKeepAliveSeconds(30);
+        executor.setAllowCoreThreadTimeOut(true); // TODO: 26.11.2018 26.11.2018 (22:06)
+        executor.execute(() -> pcUserResolver.namesToFile(pcName));
         try (PreparedStatement statement = c.prepareStatement(sql)) {
             statement.setString(1, pcName);
             try (ResultSet resultSet = statement.executeQuery()) {
