@@ -19,7 +19,6 @@ import ru.vachok.networker.services.ArchivesSorter;
 import ru.vachok.networker.services.SimpleCalculator;
 
 import java.io.File;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -29,8 +28,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.FileHandler;
-import java.util.logging.Handler;
 
 
 @ComponentScan
@@ -41,12 +38,7 @@ public class AppComponents {
     @Bean
     public static Logger getLogger() {
         Logger logger = LoggerFactory.getLogger("ru_vachok_networker");
-        try {
-            Handler handler = new FileHandler();
 
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
         return logger;
     }
 

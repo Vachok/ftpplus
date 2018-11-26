@@ -9,7 +9,6 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.messenger.email.ESender;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.Locked;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.ActDirectoryCTRL;
@@ -38,8 +37,6 @@ import java.util.concurrent.locks.ReentrantLock;
  @since 21.08.2018 (14:40) */
 @Service("netScannerSvc")
 public class NetScannerSvc {
-
-    /*Fields*/
 
     /**
      Префиксы имён ПК Велком.
@@ -126,7 +123,6 @@ public class NetScannerSvc {
         return pcNames;
     }
 
-    /*Instances*/
     private NetScannerSvc() {
         this.netWork = AppComponents.lastNetScanMap();
     }
@@ -148,11 +144,10 @@ public class NetScannerSvc {
      @see PCUserResolver#getResolvedName()
      @see #getPcNames()
      */
-    @Locked(id = Thread.State.BLOCKED)
     public void getPCsAsync() {
         AtomicReference<String> msg = new AtomicReference<>("");
         new Thread(() -> {
-            Thread.currentThread().setName("PC_SCANNER_PROGRESS*********LOCKED");
+            Thread.currentThread().setName("PC_SCANNER_PROGRESS*LOCKED");
             lock.lock();
             msg.set(new StringBuilder()
                 .append("Thread ")
@@ -212,6 +207,7 @@ public class NetScannerSvc {
         final long startMethTime = System.currentTimeMillis();
         boolean reachable;
         InetAddress byName;
+        Thread.currentThread().setPriority(8);
         for (String pcName : getCycleNames(prefixPcName)) {
             try {
                 byName = InetAddress.getByName(pcName);
@@ -236,7 +232,6 @@ public class NetScannerSvc {
                         .append(" online ")
                         .append(true)
                         .append("<br><br>").toString();
-
                     String format = MessageFormat.format("{0} {1} | {2}", pcName, onLines, someMore);
                     pcNames.add(pcName + ":" + byName.getHostAddress() + onLines);
                     String printStr = new StringBuilder().append("<br><b><a href=\"/ad?")
@@ -247,8 +242,9 @@ public class NetScannerSvc {
                     netWork.putIfAbsent(printStr, true);
                     LOGGER.info(format);
                 }
-            } catch (IOException ignore) {
-                //
+            }
+            catch(IOException e){
+                Thread.currentThread().interrupt();
             }
         }
         netWork.put("<h4>" + prefixPcName + "     " + pcNames.size() + "</h4>", true);
@@ -305,7 +301,6 @@ public class NetScannerSvc {
         String sql;
         if (isOnline) {
             sql = "select * from velkompc where NamePP like ?";
-
             return onLinesCheck(sql, pcName);
         } else {
             sql = "select * from pcuser where pcName like ?";
@@ -447,6 +442,7 @@ public class NetScannerSvc {
         List<Integer> onLine = new ArrayList<>();
         List<Integer> offLine = new ArrayList<>();
         StringBuilder stringBuilder = new StringBuilder();
+
         threadConfig.threadPoolTaskExecutor().execute(() -> pcUserResolver.namesToFile(pcName));
         try (PreparedStatement statement = c.prepareStatement(sql)) {
             statement.setString(1, pcName);
@@ -465,7 +461,7 @@ public class NetScannerSvc {
                 }
             }
         } catch (SQLException | NullPointerException e) {
-            LOGGER.error(e.getMessage(), e);
+            return e.getMessage();
         }
         return stringBuilder
             .append(offLine.size())
@@ -502,6 +498,8 @@ public class NetScannerSvc {
                                     .append(resultSet1.getString("whenQueried")).append("))").toString();
                             }
                         }
+                    } catch (SQLException ignore) {
+                        //
                     }
                 }
             }
@@ -510,25 +508,6 @@ public class NetScannerSvc {
 
         }
         return "<font color=\"orange\">EXCEPTION in SQL dropped. <br>" + stringBuilder.toString() + "</font>";
-    }
-
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("NetScannerSvc{");
-        sb.append("adComputers=").append(adComputers);
-        sb.append(", c=").append(c);
-        sb.append(", DB_NAME='").append(DB_NAME).append('\'');
-        sb.append(", infoFromDB='").append(getInfoFromDB()).append('\'');
-        sb.append(", lock=").append(lock);
-        sb.append(", netScannerSvc=").append(netScannerSvc);
-        sb.append(", netWork=").append(netWork);
-        sb.append(", PC_PREFIXES=").append(Arrays.toString(PC_PREFIXES));
-        sb.append(", pcNames=").append(pcNames);
-        sb.append(", qer='").append(qer).append('\'');
-        sb.append(", SOURCE_CLASS='").append(SOURCE_CLASS).append('\'');
-        sb.append(", thePc='").append(thePc).append('\'');
-        sb.append('}');
-        return sb.toString();
     }
 
     /**

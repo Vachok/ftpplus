@@ -80,6 +80,7 @@ public class SystemTrayHelper {
         };
         ActionListener exitApp = e -> {
             ConstantsFor.saveProps(ConstantsFor.PROPS);
+            IntoApplication.delTemp();
             exit(0);
         };
         addItems(popupMenu);

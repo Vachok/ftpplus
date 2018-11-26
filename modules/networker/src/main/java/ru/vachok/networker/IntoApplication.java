@@ -12,7 +12,11 @@ import ru.vachok.mysqlandprops.EMailAndDB.SpeedRunActualize;
 import ru.vachok.networker.accesscontrol.MatrixCtr;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.AppCtx;
+import ru.vachok.networker.services.ArchivesSorter;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.TextStyle;
 import java.util.Locale;
@@ -88,20 +92,27 @@ public class IntoApplication {
             .append(" app display name\n")
             .append(ConstantsFor.getBuildStamp()).toString();
         LOGGER.info(msg);
-        setWebType();
+        schedStarter();
+    }
+
+    public static void delTemp() {
+        try{
+            Files.walkFileTree(Paths.get("."), new ArchivesSorter());
+        }
+        catch(IOException e){
+            LOGGER.error(e.getMessage(), e);
+        }
     }
 
     /**
      <b>Тип WEB-application</b>
      */
-    private static void setWebType() {
+    private static void schedStarter() {
         WebApplicationType webApplicationType = WebApplicationType.SERVLET;
         SPRING_APPLICATION.setWebApplicationType(webApplicationType);
         Runnable speedRun = new SpeedRunActualize();
         ScheduledExecutorService executorService =
             Executors.unconfigurableScheduledExecutorService(Executors.newSingleThreadScheduledExecutor());
         executorService.scheduleWithFixedDelay(speedRun, ConstantsFor.INIT_DELAY, ConstantsFor.DELAY, TimeUnit.SECONDS);
-        String msg = "Initial Delay checker = " + ConstantsFor.INIT_DELAY + "\nDelay = " + ConstantsFor.DELAY + "\n";
-        LOGGER.warn(msg);
     }
 }
