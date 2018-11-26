@@ -85,9 +85,7 @@ public class ArchivesSorter extends SimpleFileVisitor<Path> implements Callable<
         this.startPath = startPath;
     }
 
-    /*Itinial Block*/
-    /*Itinial Block*/
-    /*Itinial Block*/ {
+    {
         try{
             if(!yearNoAccess){
                 OutputStream outputStream = new FileOutputStream(fileName);
@@ -200,7 +198,7 @@ public class ArchivesSorter extends SimpleFileVisitor<Path> implements Callable<
         return file.getFileName().endsWith(".jpg") || file.endsWith(".nef") && attrs.isRegularFile() || attrs.isSymbolicLink();
     }
 
-    private long parseDate() { //// FIXME: 23.11.2018 23.11.2018 (16:12)
+    private long parseDate() {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat();
         long timeInMillis = 0;
         try{

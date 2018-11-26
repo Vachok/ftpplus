@@ -12,10 +12,10 @@ import ru.vachok.networker.net.NetScannerSvc;
 import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.sql.*;
-import java.time.LocalDate;
-import java.time.format.TextStyle;
-import java.util.Date;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 
@@ -62,10 +62,10 @@ public class PCUserResolver {
     }
 
     /**
-     Записывает содержимое c-users в файл с именем ПК <br> 1 {@link #recAutoDB(String, File[])}
+     Записывает содержимое c-users в файл с именем ПК <br> 1 {@link #recAutoDB(String, String)}
 
      @param pcName имя компьютера
-     @see NetScannerSvc#onLinesCheck(String, String)
+     @see NetScannerSvc
      */
     public synchronized void namesToFile(String pcName) {
         Thread.currentThread().setName(pcName);
@@ -115,17 +115,13 @@ public class PCUserResolver {
     private void recAutoDB(String pcName, String lastFileUse) {
         String sql = "insert into pcuser (pcName, userName, lastmod, stamp) values(?,?,?,?)";
         try(PreparedStatement preparedStatement = connection.prepareStatement(sql
-            .replaceAll("pcuser", "pcuserauto"));
-            PreparedStatement trunkBase = connection.prepareStatement("TRUNCATE table  pcuserauto")){
+            .replaceAll("pcuser", "pcuserauto"))) {
             String[] split = lastFileUse.split(" ");
             preparedStatement.setString(1, pcName);
             preparedStatement.setString(2, split[0]);
             preparedStatement.setString(3, split[2] + split[3] + split[4]);
             preparedStatement.setString(4, split[7]);
             preparedStatement.executeUpdate();
-            if(LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault()).toLowerCase().contains("поне")){
-                trunkBase.executeUpdate();
-            }
             Thread.currentThread().interrupt();
         }
         catch(SQLException | ArrayIndexOutOfBoundsException | NullPointerException e){
@@ -286,7 +282,6 @@ public class PCUserResolver {
         }
     }
 
-    /*END FOR CLASS*/
     static class WalkerToUserFolder extends SimpleFileVisitor<Path> {
 
         private List<String> timePath = new ArrayList<>();
