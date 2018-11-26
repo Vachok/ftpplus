@@ -77,6 +77,7 @@ public class ArchivesSorter extends SimpleFileVisitor<Path> implements Callable<
 
     /*Instances*/
     public ArchivesSorter() {
+        Thread.currentThread().setName(getClass().getSimpleName());
     }
 
     ArchivesSorter(String startPath) {

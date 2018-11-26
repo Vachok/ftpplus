@@ -12,10 +12,8 @@ import ru.vachok.networker.TForms;
 
 import java.io.*;
 import java.net.InetAddress;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
+import java.util.Date;
 import java.util.*;
 
 
@@ -88,6 +86,7 @@ public class ADSrv implements Runnable {
     public ADSrv(ADUser adUser, ADComputer adComputer) {
         this.adUser = adUser;
         this.adComputer = adComputer;
+        Thread.currentThread().setName(getClass().getSimpleName());
     }
 
     @Override

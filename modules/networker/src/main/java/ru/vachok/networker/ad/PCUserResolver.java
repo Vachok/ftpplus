@@ -56,6 +56,7 @@ public class PCUserResolver {
      @see AppComponents#pcUserResolver()
      */
     public static PCUserResolver getPcUserResolver() {
+        Thread.currentThread().setName(PCUserResolver.class.getSimpleName());
         return pcUserResolver;
     }
 

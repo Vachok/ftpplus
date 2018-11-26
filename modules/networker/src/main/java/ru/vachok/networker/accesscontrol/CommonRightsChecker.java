@@ -27,7 +27,8 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> {
 
     private PrintWriter printWriterGood;
 
-    {
+    /*Itinial Block*/ {
+        Thread.currentThread().setName(getClass().getSimpleName());
         try {
             OutputStream osGood = new FileOutputStream(ConstantsFor.IT_FOLDER + "\\file_own.txt");
             OutputStream osFails = new FileOutputStream(ConstantsFor.IT_FOLDER + "\\file_own_failed.txt");
