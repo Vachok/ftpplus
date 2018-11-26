@@ -8,11 +8,13 @@ import org.springframework.stereotype.Service;
 import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
 
 import java.io.*;
 import java.net.InetAddress;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -33,6 +35,38 @@ public class ADSrv implements Runnable {
 
     private String userInputRaw;
 
+    /**
+     Проверяет по-базе, какими файлами владеет юзер.
+
+     @param user Active Dir Username <i>(Example: ikudryashov)</i>
+     @return {@link ADUser#ownerRights}
+     */
+    public String checkCommonRightsForUserName(String user) {
+        adUser.setUserName(user);
+        List<String> ownerRights = adUser.getOwnerRights();
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder
+            .append("<p>")
+            .append(user)
+            .append(" owner: <br>");
+        String sql = "select * from common where user like %?%;";
+        try (Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.DB_PREFIX + "velkom")) {
+            try (PreparedStatement preparedStatement = c.prepareStatement(sql)) {
+                preparedStatement.setString(1, user);
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        ownerRights.add(resultSet.getString("dir"));
+                    }
+                }
+            }
+            stringBuilder.append(new TForms().fromArray(ownerRights, true));
+            adUser.setOwnerRights(ownerRights);
+            return stringBuilder.toString();
+        } catch (SQLException e) {
+            return e.getMessage();
+        }
+    }
+
     ADUser getAdUser() {
         return adUser;
     }
@@ -48,6 +82,7 @@ public class ADSrv implements Runnable {
     public void setUserInputRaw(String userInputRaw) {
         this.userInputRaw = userInputRaw;
     }
+
     /*Instances*/
     @Autowired
     public ADSrv(ADUser adUser, ADComputer adComputer) {

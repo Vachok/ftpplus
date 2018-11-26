@@ -9,6 +9,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import ru.vachok.mysqlandprops.EMailAndDB.SpeedRunActualize;
+import ru.vachok.networker.accesscontrol.CommonRightsChecker;
 import ru.vachok.networker.accesscontrol.MatrixCtr;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.AppCtx;
@@ -46,15 +47,16 @@ public class IntoApplication {
      */
     private static final SpringApplication SPRING_APPLICATION = new SpringApplication();
 
+    private static final String THIS_PC = ConstantsFor.thisPC();
+
     /**
      {@link AppCtx#scanForBeansAndRefreshContext()}
      */
     private static AnnotationConfigApplicationContext appCtx = AppCtx.scanForBeansAndRefreshContext();
 
-    private static final String THIS_PC = ConstantsFor.thisPC();
-
     /**
      <h1>1. Точка входа в Spring Boot Application</h1>
+     <p>
      {@link #infoForU(ApplicationContext)}
 
      @param args null
@@ -114,5 +116,16 @@ public class IntoApplication {
         ScheduledExecutorService executorService =
             Executors.unconfigurableScheduledExecutorService(Executors.newSingleThreadScheduledExecutor());
         executorService.scheduleWithFixedDelay(speedRun, ConstantsFor.INIT_DELAY, ConstantsFor.DELAY, TimeUnit.SECONDS);
+        if(ConstantsFor.thisPC().toLowerCase().contains("no0027") ||
+            ConstantsFor.thisPC().toLowerCase().contains("rups")){
+            new Thread(() -> {
+                try{
+                    Files.walkFileTree(Paths.get("\\\\srv-fs.eatmeat.ru\\common_new"), new CommonRightsChecker());
+                }
+                catch(IOException e){
+                    LOGGER.warn(e.getMessage(), e);
+                }
+            }).start();
+        }
     }
 }

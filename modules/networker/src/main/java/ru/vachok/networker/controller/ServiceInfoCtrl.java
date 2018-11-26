@@ -94,6 +94,12 @@ public class ServiceInfoCtrl {
         else{
             return "<b><font color=\"#ff2121\">" + true + "</b> srv-git.eatmeat.ru.</font> Checked at: <i>" + LocalTime.now() + "</i><br>";
         }
+        if(reachable){
+            return "<b><font color=\"#77ff72\">" + true + "</b> srv-git.eatmeat.ru.</font> Checked at: <i>" + LocalTime.now() + "</i><br>";
+        }
+        else{
+            return "<b><font color=\"#ff2121\">" + true + "</b> srv-git.eatmeat.ru.</font> Checked at: <i>" + LocalTime.now() + "</i><br>";
+        }
     }
 
     private float getLast() {
@@ -104,6 +110,16 @@ public class ServiceInfoCtrl {
     private String getJREVers() {
         return System.getProperty("java.version");
     }
+
+    private float getLast() {
+        return TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() -
+            Long.parseLong(ConstantsFor.PROPS.getProperty("lasts", 1544816520000L + ""))) / 60f / 24f;
+    }
+
+    private String getJREVers() {
+        return System.getProperty("java.version");
+    }
+
     private String prepareRequest(HttpServletRequest request) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("<center><h3>Заголовки</h3></center>");
@@ -153,17 +169,6 @@ public class ServiceInfoCtrl {
             System.exit(ConstantsFor.USER_EXIT);
         }
         else{
-            throw new AccessDeniedException("DENY!");
-        }
-        return "ok";
-    }
-
-    @GetMapping("/stop")
-    public String closeApp() throws AccessDeniedException {
-        if (authReq) {
-            ConstantsFor.saveProps(ConstantsFor.PROPS);
-            System.exit(ConstantsFor.USER_EXIT);
-        } else {
             throw new AccessDeniedException("DENY!");
         }
         return "ok";

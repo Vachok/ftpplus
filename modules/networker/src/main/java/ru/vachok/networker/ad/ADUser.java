@@ -55,6 +55,19 @@ public class ADUser {
 
     private String givenName;
 
+    /**
+     Лист прав на common, где пользователь является владельцем.
+     */
+    private List<String> ownerRights = new ArrayList<>();
+
+    public List<String> getOwnerRights() {
+        return ownerRights;
+    }
+
+    public void setOwnerRights(List<String> ownerRights) {
+        this.ownerRights = ownerRights;
+    }
+
     private List<ADUser> adUsers = new ArrayList<>();
 
     public String getUserPrincipalName() {

@@ -56,12 +56,21 @@ public class NetScannerSvc {
     /**
      {@link RegRuMysql#getDefaultConnection(String)}
      */
-    private static Connection c = new RegRuMysql().getDefaultConnection(DB_NAME);
+    private static Connection c;
+    private static final Logger LOGGER = AppComponents.getLogger();
+
+    static {
+        try {
+            c = new RegRuMysql().getDefaultConnection(DB_NAME);
+        } catch (Exception e) {
+            LOGGER.warn(e.getMessage());
+        }
+    }
 
     /**
      {@link AppComponents#getLogger()}
      */
-    private static final Logger LOGGER = AppComponents.getLogger();
+
 
     /**
      {@link AppComponents#adComputers()}

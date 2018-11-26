@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.componentsrepo.*;
 import ru.vachok.networker.services.SimpleCalculator;
 import ru.vachok.networker.services.WhoIsWithSRV;
@@ -19,7 +20,10 @@ import ru.vachok.networker.services.WhoIsWithSRV;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 
@@ -109,12 +113,17 @@ public class MatrixCtr {
         String workPos = matrixSRV.getWorkPos();
         if (workPos.toLowerCase().contains("whois:")) return whois(workPos, model);
         else if (workPos.toLowerCase().contains("calc:")) return calculateDoubles(workPos, model);
-        else
-            if(workPos.toLowerCase().contains("calctime:") || workPos.toLowerCase().contains("calctimes:")){
-                timeStamp(new SimpleCalculator(), model, workPos);
-            }
-            else
-                return matrixAccess(workPos);
+        else if (workPos.toLowerCase().contains("common: ")) {
+            return getCommonAccessRights(workPos, model);
+        } else if (workPos.toLowerCase().contains("calctime:") || workPos.toLowerCase().contains("calctimes:")) {
+            timeStamp(new SimpleCalculator(), model, workPos);
+        } else return matrixAccess(workPos);
+        return MATRIX_STRING_NAME;
+    }
+
+    private String getCommonAccessRights(String workPos, Model model) {
+        ADSrv adSrv = AppComponents.adSrv();
+        String commonRights = adSrv.checkCommonRightsForUserName(workPos.split(": ")[1]);
         return MATRIX_STRING_NAME;
     }
 

@@ -37,6 +37,7 @@ public class ArchivesSorter extends SimpleFileVisitor<Path> implements Callable<
     private String fileNameNoAccess;
 
     private boolean yearNoAccess;
+  
     private String date;
 
     private String startPath;
@@ -180,6 +181,7 @@ public class ArchivesSorter extends SimpleFileVisitor<Path> implements Callable<
     public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
         return FileVisitResult.CONTINUE;
     }
+  
     /**
      Условие: <i>файл более 25 мб</i><b> ии </b><i>last modified: более чем</i><b> 3650 суток делить на 3</b>.
 
