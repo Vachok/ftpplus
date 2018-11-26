@@ -12,11 +12,12 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.UserPrincipal;
 import java.nio.file.attribute.UserPrincipalLookupService;
+import java.nio.file.spi.FileSystemProvider;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-public class FileOwnerChecker extends SimpleFileVisitor<Path> {
+public class CommonRightsChecker extends SimpleFileVisitor<Path> {
 
     private static final Logger LOGGER = AppComponents.getLogger();
 
@@ -101,6 +102,36 @@ public class FileOwnerChecker extends SimpleFileVisitor<Path> {
             printWriterGood.println(dir + " " + name);
         } catch (IOException | UnsupportedOperationException e) {
             LOGGER.info(e.getMessage());
+        }
+    }
+
+    static class DirectoryRights extends SimpleFileVisitor<Path> implements Runnable {
+
+        @Override
+        public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+            FileSystem fileSystem = dir.getFileSystem();
+            FileSystemProvider provider = fileSystem.provider();
+            return FileVisitResult.CONTINUE;
+        }
+
+        @Override
+        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+            return FileVisitResult.CONTINUE;
+        }
+
+        @Override
+        public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+            return FileVisitResult.CONTINUE;
+        }
+
+        @Override
+        public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+            return FileVisitResult.CONTINUE;
+        }
+
+        @Override
+        public void run() {
+
         }
     }
 }

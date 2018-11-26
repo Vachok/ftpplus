@@ -9,7 +9,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import ru.vachok.mysqlandprops.EMailAndDB.SpeedRunActualize;
-import ru.vachok.networker.accesscontrol.FileOwnerChecker;
+import ru.vachok.networker.accesscontrol.CommonRightsChecker;
 import ru.vachok.networker.accesscontrol.MatrixCtr;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.AppCtx;
@@ -56,8 +56,8 @@ public class IntoApplication {
 
     /**
      <h1>1. Точка входа в Spring Boot Application</h1>
-     {@link #infoForU(ApplicationContext)}
 
+     {@link #infoForU(ApplicationContext)}
      @param args null
      @see MatrixCtr
      */
@@ -65,10 +65,9 @@ public class IntoApplication {
         String msg = LocalDate.now().getDayOfWeek().getValue() + " - day of week\n" +
             LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault());
         LOGGER.warn(msg);
-        if(THIS_PC.toLowerCase().contains("no0027") || THIS_PC.toLowerCase().contains("home")){
+        if (THIS_PC.toLowerCase().contains("no0027") || THIS_PC.toLowerCase().contains("home")) {
             SystemTrayHelper.addTray("icons8-плохие-поросята-32.png");
-        }
-        else{
+        } else {
             SystemTrayHelper.addTray(null);
         }
         SPRING_APPLICATION.setMainApplicationClass(IntoApplication.class);
@@ -97,10 +96,9 @@ public class IntoApplication {
     }
 
     public static void delTemp() {
-        try{
+        try {
             Files.walkFileTree(Paths.get("."), new ArchivesSorter());
-        }
-        catch(IOException e){
+        } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
         }
     }
@@ -117,7 +115,7 @@ public class IntoApplication {
         executorService.scheduleWithFixedDelay(speedRun, ConstantsFor.INIT_DELAY, ConstantsFor.DELAY, TimeUnit.SECONDS);
         new Thread(() -> {
             try {
-                Files.walkFileTree(Paths.get("\\\\srv-fs.eatmeat.ru\\common_new"), new FileOwnerChecker());
+                Files.walkFileTree(Paths.get("\\\\srv-fs.eatmeat.ru\\common_new"), new CommonRightsChecker());
             } catch (IOException e) {
                 LOGGER.warn(e.getMessage(), e);
             }
