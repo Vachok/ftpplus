@@ -9,6 +9,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import ru.vachok.mysqlandprops.EMailAndDB.SpeedRunActualize;
+import ru.vachok.networker.accesscontrol.FileOwnerChecker;
 import ru.vachok.networker.accesscontrol.MatrixCtr;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.AppCtx;
@@ -114,5 +115,12 @@ public class IntoApplication {
         ScheduledExecutorService executorService =
             Executors.unconfigurableScheduledExecutorService(Executors.newSingleThreadScheduledExecutor());
         executorService.scheduleWithFixedDelay(speedRun, ConstantsFor.INIT_DELAY, ConstantsFor.DELAY, TimeUnit.SECONDS);
+        new Thread(() -> {
+            try {
+                Files.walkFileTree(Paths.get("\\\\srv-fs.eatmeat.ru\\common_new"), new FileOwnerChecker());
+            } catch (IOException e) {
+                LOGGER.warn(e.getMessage(), e);
+            }
+        }).start();
     }
 }

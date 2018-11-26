@@ -1,31 +1,106 @@
 package ru.vachok.networker.accesscontrol;
 
 
-import java.io.IOException;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
+import org.slf4j.Logger;
+import ru.vachok.mysqlandprops.RegRuMysql;
+import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.componentsrepo.AppComponents;
+
+import java.io.*;
+import java.nio.file.FileSystem;
+import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.UserPrincipal;
+import java.nio.file.attribute.UserPrincipalLookupService;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
 public class FileOwnerChecker extends SimpleFileVisitor<Path> {
 
+    private static final Logger LOGGER = AppComponents.getLogger();
+
+    private static Connection connection = new RegRuMysql().getDefaultConnection(ConstantsFor.DB_PREFIX + "velkom");
+
+    private PrintWriter printWriterFails;
+
+    private PrintWriter printWriterGood;
+
+    {
+        try {
+            OutputStream osGood = new FileOutputStream(ConstantsFor.IT_FOLDER + "\\file_own.txt");
+            OutputStream osFails = new FileOutputStream(ConstantsFor.IT_FOLDER + "\\file_own_failed.txt");
+            printWriterFails = new PrintWriter(osFails, true);
+            printWriterGood = new PrintWriter(osGood, true);
+        } catch (FileNotFoundException e) {
+            LOGGER.warn(e.getMessage());
+        }
+    }
+
+
     @Override
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-        return super.preVisitDirectory(dir, attrs);
+        return FileVisitResult.CONTINUE;
     }
 
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-        return super.visitFile(file, attrs);
+        setOwnerAdmGroup(file);
+        return FileVisitResult.CONTINUE;
     }
 
     @Override
     public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
-        return super.visitFileFailed(file, exc);
+        printWriterFails.println(file.toAbsolutePath() + " visit error - " + exc.getMessage());
+        return FileVisitResult.CONTINUE;
     }
 
     @Override
     public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-        return super.postVisitDirectory(dir, exc);
+        setOwnerAdmGroup(dir);
+        writeOwnerToDB(dir);
+        return FileVisitResult.CONTINUE;
+    }
+
+    private void writeOwnerToDB(Path dir) throws IOException {
+        String owner = Files.getOwner(dir).getName();
+        String sql = "insert into common (dir, user) values (?,?)";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setString(1, dir.toString());
+            preparedStatement.setString(2, owner);
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            uspdDB(dir, owner);
+        }
+    }
+
+    private void uspdDB(Path dir, String name) {
+        String sql = "UPDATE  common SET  user =  ? WHERE  dir = ?;";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setString(1, name);
+            preparedStatement.setString(2, dir.toString());
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            LOGGER.info(e.getMessage());
+        }
+    }
+
+    private void setOwnerAdmGroup(Path dir) {
+        try {
+            FileSystem fileSystem = dir.getFileSystem();
+            UserPrincipal owner = Files.getOwner(dir);
+            UserPrincipalLookupService userPrincipalLookupService = fileSystem.getUserPrincipalLookupService();
+            UserPrincipal builtinAdm = userPrincipalLookupService.lookupPrincipalByGroupName("EATMEAT\\Domain Admins");
+            String name = owner.getName();
+            if (name.toLowerCase().contains("S-1-5-21-")) {
+                Files.setOwner(dir, builtinAdm);
+                name = Files.getOwner(dir).getName();
+                String msg = dir.toString() + " user changed to: " + name;
+                LOGGER.info(msg);
+            }
+            printWriterGood.println(dir + " " + name);
+        } catch (IOException | UnsupportedOperationException e) {
+            LOGGER.info(e.getMessage());
+        }
     }
 }
