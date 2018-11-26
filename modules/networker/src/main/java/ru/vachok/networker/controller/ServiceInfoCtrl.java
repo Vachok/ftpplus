@@ -10,10 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.AppComponents;
-import ru.vachok.networker.componentsrepo.PageFooter;
-import ru.vachok.networker.componentsrepo.VersionInfo;
-import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.componentsrepo.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
@@ -88,27 +85,15 @@ public class ServiceInfoCtrl {
         catch(IOException e){
             LOGGER.error(e.getMessage(), e);
         }
+        String s = "</b> srv-git.eatmeat.ru.</font> Checked at: <i>";
+        String s2 = "</i><br>";
+        String s1 = "<b><font color=\"#77ff72\">" + true + s + LocalTime.now() + s2;
         if(reachable){
-            return "<b><font color=\"#77ff72\">" + true + "</b> srv-git.eatmeat.ru.</font> Checked at: <i>" + LocalTime.now() + "</i><br>";
+            return s1;
         }
         else{
-            return "<b><font color=\"#ff2121\">" + true + "</b> srv-git.eatmeat.ru.</font> Checked at: <i>" + LocalTime.now() + "</i><br>";
+            return "<b><font color=\"#ff2121\">" + true + s + LocalTime.now() + s2;
         }
-        if(reachable){
-            return "<b><font color=\"#77ff72\">" + true + "</b> srv-git.eatmeat.ru.</font> Checked at: <i>" + LocalTime.now() + "</i><br>";
-        }
-        else{
-            return "<b><font color=\"#ff2121\">" + true + "</b> srv-git.eatmeat.ru.</font> Checked at: <i>" + LocalTime.now() + "</i><br>";
-        }
-    }
-
-    private float getLast() {
-        return TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() -
-            Long.parseLong(ConstantsFor.PROPS.getProperty("lasts", 1544816520000L + ""))) / 60f / 24f;
-    }
-
-    private String getJREVers() {
-        return System.getProperty("java.version");
     }
 
     private float getLast() {
