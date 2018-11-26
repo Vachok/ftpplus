@@ -10,7 +10,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.*;
+import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.componentsrepo.PageFooter;
+import ru.vachok.networker.componentsrepo.VersionInfo;
+import ru.vachok.networker.componentsrepo.Visitor;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
@@ -101,7 +104,6 @@ public class ServiceInfoCtrl {
     private String getJREVers() {
         return System.getProperty("java.version");
     }
-
     private String prepareRequest(HttpServletRequest request) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("<center><h3>Заголовки</h3></center>");
@@ -151,6 +153,17 @@ public class ServiceInfoCtrl {
             System.exit(ConstantsFor.USER_EXIT);
         }
         else{
+            throw new AccessDeniedException("DENY!");
+        }
+        return "ok";
+    }
+
+    @GetMapping("/stop")
+    public String closeApp() throws AccessDeniedException {
+        if (authReq) {
+            ConstantsFor.saveProps(ConstantsFor.PROPS);
+            System.exit(ConstantsFor.USER_EXIT);
+        } else {
             throw new AccessDeniedException("DENY!");
         }
         return "ok";
