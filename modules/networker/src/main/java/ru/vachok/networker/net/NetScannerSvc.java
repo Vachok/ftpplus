@@ -156,7 +156,7 @@ public class NetScannerSvc {
     public void getPCsAsync() {
         AtomicReference<String> msg = new AtomicReference<>("");
         new Thread(() -> {
-            Thread.currentThread().setName("PC_SCANNER_PROGRESS*LOCKED");
+
             lock.lock();
             msg.set(new StringBuilder()
                 .append("Thread ")
@@ -168,6 +168,7 @@ public class NetScannerSvc {
             final long startMethod = System.currentTimeMillis();
             LOGGER.warn(msg.get());
             for (String s : PC_PREFIXES) {
+                Thread.currentThread().setName(lock.isLocked() + " lock*" + s);
                 pcNames.clear();
                 pcNames.addAll(getPCNamesPref(s));
             }
@@ -176,6 +177,7 @@ public class NetScannerSvc {
             lock.unlock();
             LOGGER.warn(msg.get());
             new Thread(() -> {
+                Thread.currentThread().setName(lock.isLocked() + " lock*SMTP");
                 MessageToUser mailMSG = new ESender("143500@gmail.com");
                 float upTime = (float) (TimeUnit.MILLISECONDS
                     .toSeconds(System.currentTimeMillis() - ConstantsFor.START_STAMP)) / 60f;
