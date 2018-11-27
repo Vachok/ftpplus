@@ -157,6 +157,5 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> {
         public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
             return FileVisitResult.CONTINUE;
         }
-
     }
 }

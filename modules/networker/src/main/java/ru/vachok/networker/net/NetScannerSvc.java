@@ -55,12 +55,10 @@ public class NetScannerSvc {
      */
     private static Connection c;
 
-    /*Fields*/
-
     /**
      {@link AppComponents#getLogger()}
      */
-    private static final Logger LOGGER = AppComponents.getLogger();
+
 
     static {
         try {

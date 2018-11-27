@@ -94,6 +94,21 @@ public class ServiceInfoCtrl {
         else{
             return "<b><font color=\"#ff2121\">" + true + s + LocalTime.now() + s2;
         }
+        if(reachable){
+            return "<b><font color=\"#77ff72\">" + true + "</b> srv-git.eatmeat.ru.</font> Checked at: <i>" + LocalTime.now() + "</i><br>";
+        }
+        else{
+            return "<b><font color=\"#ff2121\">" + true + "</b> srv-git.eatmeat.ru.</font> Checked at: <i>" + LocalTime.now() + "</i><br>";
+        }
+    }
+
+    private float getLast() {
+        return TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() -
+            Long.parseLong(ConstantsFor.PROPS.getProperty("lasts", 1544816520000L + ""))) / 60f / 24f;
+    }
+
+    private String getJREVers() {
+        return System.getProperty("java.version");
     }
 
     private float getLast() {
