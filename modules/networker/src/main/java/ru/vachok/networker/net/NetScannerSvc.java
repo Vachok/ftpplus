@@ -21,10 +21,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
@@ -57,7 +54,11 @@ public class NetScannerSvc {
      {@link RegRuMysql#getDefaultConnection(String)}
      */
     private static Connection c;
-    private static final Logger LOGGER = AppComponents.getLogger();
+
+    /**
+     {@link AppComponents#getLogger()}
+     */
+
 
     static {
         try {
@@ -66,11 +67,6 @@ public class NetScannerSvc {
             LOGGER.warn(e.getMessage());
         }
     }
-
-    /**
-     {@link AppComponents#getLogger()}
-     */
-
 
     /**
      {@link AppComponents#adComputers()}
@@ -109,9 +105,11 @@ public class NetScannerSvc {
         return qer;
     }
 
+/*Get&Set*/
+
     /**
+     Usage: {@link NetScanCtr#scanIt(HttpServletRequest, Model)}
      @param qer {@link HttpServletRequest}.getQueryString()
-     @see NetScanCtr#scanIt(HttpServletRequest, Model)
      */
     void setQer(String qer) {
         this.qer = qer;
@@ -156,7 +154,7 @@ public class NetScannerSvc {
     public void getPCsAsync() {
         AtomicReference<String> msg = new AtomicReference<>("");
         new Thread(() -> {
-            Thread.currentThread().setName("PC_SCANNER_PROGRESS*LOCKED");
+
             lock.lock();
             msg.set(new StringBuilder()
                 .append("Thread ")
@@ -168,6 +166,7 @@ public class NetScannerSvc {
             final long startMethod = System.currentTimeMillis();
             LOGGER.warn(msg.get());
             for (String s : PC_PREFIXES) {
+                Thread.currentThread().setName(lock.isLocked() + " lock*" + s);
                 pcNames.clear();
                 pcNames.addAll(getPCNamesPref(s));
             }
@@ -176,6 +175,7 @@ public class NetScannerSvc {
             lock.unlock();
             LOGGER.warn(msg.get());
             new Thread(() -> {
+                Thread.currentThread().setName(lock.isLocked() + " lock*SMTP");
                 MessageToUser mailMSG = new ESender("143500@gmail.com");
                 float upTime = (float) (TimeUnit.MILLISECONDS
                     .toSeconds(System.currentTimeMillis() - ConstantsFor.START_STAMP)) / 60f;
@@ -451,8 +451,12 @@ public class NetScannerSvc {
         List<Integer> onLine = new ArrayList<>();
         List<Integer> offLine = new ArrayList<>();
         StringBuilder stringBuilder = new StringBuilder();
-
-        threadConfig.threadPoolTaskExecutor().execute(() -> pcUserResolver.namesToFile(pcName));
+        ThreadPoolTaskExecutor executor = threadConfig.threadPoolTaskExecutor();
+        executor.setThreadGroup(new ThreadGroup("online"));
+        executor.setMaxPoolSize(30);
+        executor.setKeepAliveSeconds(30);
+        executor.setAllowCoreThreadTimeOut(true); // TODO: 26.11.2018 26.11.2018 (22:06)
+        executor.execute(() -> pcUserResolver.namesToFile(pcName));
         try (PreparedStatement statement = c.prepareStatement(sql)) {
             statement.setString(1, pcName);
             try (ResultSet resultSet = statement.executeQuery()) {

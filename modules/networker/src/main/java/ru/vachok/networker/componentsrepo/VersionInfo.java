@@ -32,6 +32,7 @@ public class VersionInfo {
 
     /*Instances*/
     public VersionInfo() {
+        Thread.currentThread().setName(getClass().getSimpleName());
         if(thisPCName.toLowerCase().contains("home") || thisPCName.toLowerCase().contains("no0")){
             setParams();
         } else getParams();

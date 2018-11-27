@@ -38,27 +38,35 @@ public class ADSrv implements Runnable {
     /**
      Проверяет по-базе, какими файлами владеет юзер.
 
-     @param user Active Dir Username <i>(Example: ikudryashov)</i>
+     @param owner Active Dir Username <i>(Example: ikudryashov)</i>
      @return {@link ADUser#ownerRights}
      */
-    public String checkCommonRightsForUserName(String user) {
-        adUser.setUserName(user);
+    public String checkCommonRightsForUserName(String users) {
+        String owner = " ";
         List<String> ownerRights = adUser.getOwnerRights();
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder
-            .append("<p>")
-            .append(user)
-            .append(" owner: <br>");
-        String sql = "select * from common where user like %?%;";
+        String sql = "select * from common where users like ? LIMIT 0, 300";
         try (Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.DB_PREFIX + "velkom")) {
             try (PreparedStatement preparedStatement = c.prepareStatement(sql)) {
-                preparedStatement.setString(1, user);
+                preparedStatement.setString(1, "%" + users + "%");
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     while (resultSet.next()) {
-                        ownerRights.add(resultSet.getString("dir"));
+                        owner = "<details><summary><b>" +
+                            resultSet.getString("dir") +
+                            " </b>***Владелец: " +
+                            resultSet.getString("user") +
+                            " Время проверки: " +
+                            resultSet.getString("timerec") +
+                            "</summary><small>" +
+                            resultSet.getString("users") +
+                            "</small></details>";
+                        ownerRights.add(owner);
                     }
                 }
             }
+            stringBuilder.append("<font color=\"yellow\">")
+                .append(sql.replaceAll("\\Q?\\E", users))
+                .append("</font><br>Пользователь отмечен в правах на папки:<br>");
             stringBuilder.append(new TForms().fromArray(ownerRights, true));
             adUser.setOwnerRights(ownerRights);
             return stringBuilder.toString();
@@ -88,6 +96,7 @@ public class ADSrv implements Runnable {
     public ADSrv(ADUser adUser, ADComputer adComputer) {
         this.adUser = adUser;
         this.adComputer = adComputer;
+        Thread.currentThread().setName(getClass().getSimpleName());
     }
 
     @Override

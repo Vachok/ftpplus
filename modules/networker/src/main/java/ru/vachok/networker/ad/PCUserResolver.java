@@ -12,10 +12,8 @@ import ru.vachok.networker.net.NetScannerSvc;
 import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
+import java.util.Date;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 
@@ -58,6 +56,7 @@ public class PCUserResolver {
      @see AppComponents#pcUserResolver()
      */
     public static PCUserResolver getPcUserResolver() {
+        Thread.currentThread().setName(PCUserResolver.class.getSimpleName());
         return pcUserResolver;
     }
 
@@ -109,10 +108,11 @@ public class PCUserResolver {
      Записывает инфо о пльзователе в <b>pcuserauto</b> <br> Записи добавляются к уже имеющимся.
 
      @param pcName имя ПК
-     @param files  файлы из Users
+     @param lastFileUse
      @see #namesToFile(String)
      */
-    private void recAutoDB(String pcName, String lastFileUse) {
+    private void recAutoDB(String pcName, String lastFileUse) {  // FIXME: 26.11.2018 JAVADOC
+
         String sql = "insert into pcuser (pcName, userName, lastmod, stamp) values(?,?,?,?)";
         try(PreparedStatement preparedStatement = connection.prepareStatement(sql
             .replaceAll("pcuser", "pcuserauto"))) {

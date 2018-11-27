@@ -33,10 +33,12 @@ public class ActDirectoryCTRL {
 
     private PhotoConverterSRV photoConverterSRV;
 
+    /*Instances*/
     @Autowired
     public ActDirectoryCTRL(ADSrv adSrv, PhotoConverterSRV photoConverterSRV) {
         this.photoConverterSRV = photoConverterSRV;
         this.adSrv = adSrv;
+        Thread.currentThread().setName(getClass().getSimpleName());
     }
 
     public static void setInputWithInfoFromDB(String inputWithInfoFromDB) {

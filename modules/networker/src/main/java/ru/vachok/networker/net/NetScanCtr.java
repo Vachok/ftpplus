@@ -42,6 +42,7 @@ public class NetScanCtr {
 
     private final int duration = ConstantsFor.NETSCAN_DELAY;
 
+    @SuppressWarnings ("WeakerAccess")
     @GetMapping ("/netscan")
     public String netScan(HttpServletRequest request, HttpServletResponse response, Model model) {
         netScannerSvc.setThePc("");
@@ -64,6 +65,17 @@ public class NetScanCtr {
         return NETSCAN_STR;
     }
 
+    /**
+     Usage in: {@link #netScan(HttpServletRequest, HttpServletResponse, Model)}
+     <p>
+     Uses: <br>
+     1.1 {@link TForms#fromArray(Map, boolean)}
+     1.2 {@link #scanIt(HttpServletRequest, Model)}
+
+     @param model   {@link Model} для сборки
+     @param netWork временная {@link Map} для хранения данных во-время работы метода.
+     @param request {@link HttpServletRequest}
+     */
     private void mapSizeBigger(Model model, Map<String, Boolean> netWork, HttpServletRequest request) {
         String propertyLastScan = properties.getProperty("lastscan", "1515233487000");
         l = Long.parseLong(propertyLastScan) + TimeUnit.MINUTES.toMillis(duration);
@@ -88,8 +100,26 @@ public class NetScanCtr {
         }
     }
 
+    /**
+     Модель для {@link #netScan(HttpServletRequest, HttpServletResponse, Model)} <br>
+     Делает проверки на {@link HttpServletRequest#getQueryString()}, если != 0: <br>
+     {@link #lastScan}.clear() <br>
+     {@link NetScannerSvc#getPCNamesPref(String)} <br>
+     {@link NetScannerSvc#setQer(String)}
+     <p>
+     Добавляет в {@link Model}: <br>
+     {@link ConstantsFor#TITLE} = {@link Date}.toString() <br>
+     <b>"pc"</b> = {@link TForms#fromArray(Set, boolean)} )} из {@link NetScannerSvc#getPCNamesPref(String)}
+     <p>
+     Usage in: <br>
+     {@link #mapSizeBigger(Model, Map, HttpServletRequest)} (99)
+     <p>
+     Uses: <br>
+     1.1 {@link NetScannerSvc#getPCNamesPref(String)}
+     @param request {@link HttpServletRequest} от пользователя через браузер
+     @param model {@link Model} для сборки
+     */
     private void scanIt(HttpServletRequest request, Model model) {
-
         if(request!=null && request.getQueryString()!=null){
             lastScan.clear();
             netScannerSvc.setQer(request.getQueryString());

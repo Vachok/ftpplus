@@ -30,6 +30,7 @@ public class FileCleanerCTRL {
 
     @GetMapping("/cleaner")
     public String getFilesInfo(Model model, HttpServletResponse response) {
+        Thread.currentThread().setName(getClass().getSimpleName() + "GET");
         model.addAttribute("title", "Инфо о файлах");
         model.addAttribute("archivesSorter", archivesSorter);
         return "cleaner";
@@ -37,6 +38,7 @@ public class FileCleanerCTRL {
 
     @PostMapping("/cleaner")
     public String postFile(Model model, @ModelAttribute ArchivesSorter archivesSorter) {
+        Thread.currentThread().setName(getClass().getSimpleName() + "POST");
         this.archivesSorter = archivesSorter;
         model.addAttribute("archivesSorter", archivesSorter);
         String startPath = archivesSorter.getStartPath();
@@ -48,6 +50,7 @@ public class FileCleanerCTRL {
     }
 
     private String callMe() {
+        Thread.currentThread().setName(getClass().getSimpleName() + "CALL");
         Future<String> submit = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(archivesSorter);
         try {
             return submit.get();
