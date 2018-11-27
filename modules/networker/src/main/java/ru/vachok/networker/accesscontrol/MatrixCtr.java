@@ -40,6 +40,8 @@ public class MatrixCtr {
 
     private static final String REDIRECT_MATRIX = "redirect:/matrix";
 
+    private final String whoisStr = "whois";
+
     private MatrixSRV matrixSRV;
 
     private Visitor visitor;
@@ -121,9 +123,18 @@ public class MatrixCtr {
         return MATRIX_STRING_NAME;
     }
 
-    private String getCommonAccessRights(String workPos, Model model) {
-        ADSrv adSrv = AppComponents.adSrv();
-        String commonRights = adSrv.checkCommonRightsForUserName(workPos.split(": ")[1]);
+    private String whois(String workPos, Model model) {
+        try {
+            WhoIsWithSRV whoIsWithSRV = new WhoIsWithSRV();
+            workPos = workPos.split(": ")[1];
+            String attributeValue = whoIsWithSRV.whoIs(workPos);
+            model.addAttribute(whoisStr, attributeValue);
+            model.addAttribute(FOOTER_NAME, new PageFooter().getFooterUtext());
+        } catch (ArrayIndexOutOfBoundsException e) {
+            model.addAttribute(whoisStr, workPos + "<p>" + e.getMessage());
+            return MATRIX_STRING_NAME;
+        }
+        metricMatrixStart = System.currentTimeMillis() - metricMatrixStart;
         return MATRIX_STRING_NAME;
     }
 
@@ -178,18 +189,17 @@ public class MatrixCtr {
         return "redirect:http://srv-git.eatmeat.ru:1234";
     }
 
-    private String whois(String workPos, Model model) {
+    private String getCommonAccessRights(String workPos, Model model) {
+        ADSrv adSrv = AppComponents.adSrv();
         try {
-            WhoIsWithSRV whoIsWithSRV = new WhoIsWithSRV();
-            workPos = workPos.split(": ")[1];
-            String attributeValue = whoIsWithSRV.whoIs(workPos);
-            model.addAttribute("whois", attributeValue);
-            model.addAttribute(FOOTER_NAME, new PageFooter().getFooterUtext());
+            String users = workPos.split(": ")[1];
+            String commonRights = adSrv.checkCommonRightsForUserName(users);
+            model.addAttribute(whoisStr, commonRights);
+            model.addAttribute("title", workPos);
+            model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext());
         } catch (ArrayIndexOutOfBoundsException e) {
-            model.addAttribute("whois", workPos + "<p>" + e.getMessage());
-            return MATRIX_STRING_NAME;
+            LOGGER.error(e.getMessage(), e);
         }
-        metricMatrixStart = System.currentTimeMillis() - metricMatrixStart;
         return MATRIX_STRING_NAME;
     }
 

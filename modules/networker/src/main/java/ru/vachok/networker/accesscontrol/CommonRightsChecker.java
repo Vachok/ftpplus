@@ -9,13 +9,13 @@ import ru.vachok.networker.componentsrepo.AppComponents;
 import java.io.*;
 import java.nio.file.FileSystem;
 import java.nio.file.*;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.nio.file.attribute.UserPrincipal;
-import java.nio.file.attribute.UserPrincipalLookupService;
-import java.nio.file.spi.FileSystemProvider;
+import java.nio.file.attribute.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 public class CommonRightsChecker extends SimpleFileVisitor<Path> {
 
@@ -42,6 +42,7 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> {
 
     @Override
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+        writeRightsToDB(dir);
         return FileVisitResult.CONTINUE;
     }
 
@@ -76,14 +77,23 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> {
         }
     }
 
+    private void writeRightsToDB(Path dir) {
+        try {
+            Files.walkFileTree(dir, Collections.singleton(FileVisitOption.FOLLOW_LINKS), 1, new DirectoryRights());
+        } catch (IOException e) {
+            LOGGER.info(e.getMessage());
+        }
+    }
+
     private void uspdDB(Path dir, String name) {
-        String sql = "UPDATE  common SET  user =  ? WHERE  dir = ?;";
+        String sql = "UPDATE  common SET  user =  ? WHERE  dir like ?;";
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setString(1, name);
-            preparedStatement.setString(2, dir.toString());
+            preparedStatement.setString(2, "%" + dir.toString() + "%");
             preparedStatement.executeUpdate();
+            writeRightsToDB(dir);
         } catch (SQLException e) {
-            LOGGER.info(e.getMessage());
+            LOGGER.warn(e.getMessage());
         }
     }
 
@@ -106,23 +116,41 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> {
         }
     }
 
-    static class DirectoryRights extends SimpleFileVisitor<Path> implements Runnable {
+    class DirectoryRights extends SimpleFileVisitor<Path> {
 
         @Override
         public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-            FileSystem fileSystem = dir.getFileSystem();
-            FileSystemProvider provider = fileSystem.provider();
+            AclFileAttributeView fileAttributeView = Files.getFileAttributeView(dir, AclFileAttributeView.class);
+            List<AclEntry> acl = fileAttributeView.getAcl();
+            StringBuilder uRights = new StringBuilder();
+            acl.forEach(x -> {
+                uRights.append("***\n<br>");
+                String perm = Arrays.toString(x.permissions().toArray());
+                String user = x.principal().getName();
+                String aclType = x.type().name();
+                String msg = user + " type is " + aclType + " and permissions:\n<br>" + perm;
+                uRights.append(msg);
+                uRights.append("\n<br>");
+            });
+            String sql = "update common set users = ? where dir like ?;";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                preparedStatement.setString(1, uRights.toString());
+                preparedStatement.setString(2, "%" + dir.getFileName() + "%");
+                preparedStatement.executeUpdate();
+            } catch (SQLException e) {
+                LOGGER.warn(e.getMessage());
+            }
             return FileVisitResult.CONTINUE;
         }
 
         @Override
         public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-            return FileVisitResult.CONTINUE;
+            return FileVisitResult.SKIP_SUBTREE;
         }
 
         @Override
         public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
-            return FileVisitResult.CONTINUE;
+            return FileVisitResult.SKIP_SIBLINGS;
         }
 
         @Override
@@ -130,9 +158,5 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> {
             return FileVisitResult.CONTINUE;
         }
 
-        @Override
-        public void run() {
-
-        }
     }
 }
