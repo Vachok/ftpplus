@@ -15,6 +15,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 public class CommonRightsChecker extends SimpleFileVisitor<Path> {
@@ -37,6 +38,11 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> {
         } catch (FileNotFoundException e) {
             LOGGER.warn(e.getMessage());
         }
+    }
+
+    public CommonRightsChecker() {
+        String msg = "Starting a new instance of " + getClass().getSimpleName() + " at " + new Date();
+        LOGGER.warn(msg);
     }
 
 

@@ -13,6 +13,7 @@ import ru.vachok.networker.accesscontrol.CommonRightsChecker;
 import ru.vachok.networker.accesscontrol.MatrixCtr;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.AppCtx;
+import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.services.ArchivesSorter;
 
 import java.io.IOException;
@@ -20,10 +21,9 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.TextStyle;
+import java.util.Date;
 import java.util.Locale;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 
 /**
@@ -66,10 +66,9 @@ public class IntoApplication {
         String msg = LocalDate.now().getDayOfWeek().getValue() + " - day of week\n" +
             LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault());
         LOGGER.warn(msg);
-        if(THIS_PC.toLowerCase().contains("no0027") || THIS_PC.toLowerCase().contains("home")){
+        if (THIS_PC.toLowerCase().contains("no0027") || THIS_PC.toLowerCase().contains("home")) {
             SystemTrayHelper.addTray("icons8-плохие-поросята-32.png");
-        }
-        else{
+        } else {
             SystemTrayHelper.addTray(null);
         }
         SPRING_APPLICATION.setMainApplicationClass(IntoApplication.class);
@@ -77,7 +76,6 @@ public class IntoApplication {
         System.setProperty("file.encoding", "UTF8");
         SpringApplication.run(IntoApplication.class, args);
         infoForU(appCtx);
-
     }
 
     /**
@@ -98,10 +96,9 @@ public class IntoApplication {
     }
 
     public static void delTemp() {
-        try{
+        try {
             Files.walkFileTree(Paths.get("."), new ArchivesSorter());
-        }
-        catch(IOException e){
+        } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
         }
     }
@@ -116,16 +113,34 @@ public class IntoApplication {
         ScheduledExecutorService executorService =
             Executors.unconfigurableScheduledExecutorService(Executors.newSingleThreadScheduledExecutor());
         executorService.scheduleWithFixedDelay(speedRun, ConstantsFor.INIT_DELAY, ConstantsFor.DELAY, TimeUnit.SECONDS);
-        if(ConstantsFor.thisPC().toLowerCase().contains("no0027") ||
-            ConstantsFor.thisPC().toLowerCase().contains("rups")){
-            new Thread(() -> {
-                try{
-                    Files.walkFileTree(Paths.get("\\\\srv-fs.eatmeat.ru\\common_new"), new CommonRightsChecker());
-                }
-                catch(IOException e){
-                    LOGGER.warn(e.getMessage(), e);
-                }
-            }).start();
+        if (ConstantsFor.thisPC().toLowerCase().contains("no0027") ||
+            ConstantsFor.thisPC().toLowerCase().contains("rups")) {
+            runCommonScan();
+        }
+    }
+
+    /**
+     Запускает сканнер прав Common
+     <p>
+     Usages: {@link #schedStarter()} Uses: {@link CommonRightsChecker}
+     */
+    private static void runCommonScan() {
+        Runnable r = () -> {
+            try {
+                Files.walkFileTree(Paths.get("\\\\srv-fs.eatmeat.ru\\common_new"), new CommonRightsChecker());
+            } catch (IOException e) {
+                LOGGER.warn(e.getMessage(), e);
+            }
+        };
+        ScheduledFuture<?> scheduleWithFixedDelay =
+            new ThreadConfig().threadPoolTaskScheduler()
+                .scheduleWithFixedDelay(r, new Date(), TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY));
+        try {
+            scheduleWithFixedDelay.get();
+        } catch (InterruptedException | ExecutionException e) {
+            LOGGER.error(e.getMessage(), e);
+            Thread.currentThread().interrupt();
+            r.run();
         }
     }
 }

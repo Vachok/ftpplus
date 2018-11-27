@@ -2,6 +2,7 @@ package ru.vachok.networker;
 
 
 import org.slf4j.LoggerFactory;
+import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
@@ -17,7 +18,14 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.SecureRandom;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.Year;
+import java.time.format.TextStyle;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
@@ -31,16 +39,18 @@ import java.util.concurrent.TimeUnit;
  @since 12.08.2018 (16:26) */
 public enum ConstantsFor {
     ;
+
     public static final Properties PROPS = takePr(new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName()));
+
     /**
      Число, для Secure Random
      */
-    public static final long MY_AGE = ( long ) Year.now().getValue() - 1984;
+    public static final long MY_AGE = (long) Year.now().getValue() - 1984;
 
     /**
      Первоначальная задержка {@link ThreadConfig#threadPoolTaskScheduler()}
      */
-    public static final long INIT_DELAY = new SecureRandom().nextInt(( int ) MY_AGE);
+    public static final long INIT_DELAY = new SecureRandom().nextInt((int) MY_AGE);
 
     /**
      <b>1 мегабайт в байтах</b>
@@ -118,10 +128,6 @@ public enum ConstantsFor {
 
     public static final int ONE_DAY = 24;
 
-    /**
-     {@link Properties} приложения
-     */
-
     public static final int TOTAL_PC = Integer.parseInt(PROPS.getOrDefault("totpc", "316").toString());
 
     public static final PassGenerator passGenerator = new PassGenerator();
@@ -130,34 +136,32 @@ public enum ConstantsFor {
 
     public static final int ONE_YEAR = 365;
 
-    public static final int NETSCAN_DELAY = new SecureRandom().nextInt(( int ) ConstantsFor.MY_AGE);
+    public static final int NETSCAN_DELAY = new SecureRandom().nextInt((int) ConstantsFor.MY_AGE);
 
     public static final String COMMON_FOLDER = "\\\\srv-fs.eatmeat.ru\\common_new";
 
     public static final String IT_FOLDER = "\\\\srv-fs.eatmeat.ru\\it$$";
+
     public static boolean isPingOK() {
-        try{
+        try {
             return InetAddress.getByName("srv-git.eatmeat.ru").isReachable(500);
-        }
-        catch(IOException e){
+        } catch (IOException e) {
             LoggerFactory.getLogger(ConstantsFor.class.getSimpleName()).error(e.getMessage(), e);
             return false;
         }
     }
 
     public static long getBuildStamp() {
-        try{
+        try {
             String hostName = InetAddress.getLocalHost().getHostName();
-            if(hostName.equalsIgnoreCase("home") || hostName.toLowerCase().contains("no0027")){
+            if (hostName.equalsIgnoreCase("home") || hostName.toLowerCase().contains("no0027")) {
                 PROPS.setProperty("build", System.currentTimeMillis() + "");
                 saveProps(PROPS);
                 return System.currentTimeMillis();
-            }
-            else{
+            } else {
                 return Long.parseLong(PROPS.getProperty("build", "1"));
             }
-        }
-        catch(UnknownHostException e){
+        } catch (UnknownHostException e) {
             return 1L;
         }
     }
@@ -171,8 +175,9 @@ public enum ConstantsFor {
     }
 
     public static String getUpTime() {
-        return "(" + (+( float ) (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / 60 / 60) + " hrs ago)";
+        return "(" + (+(float) (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / 60 / 60) + " hrs ago)";
     }
+
     /**
      @param request для получения IP
      @return boolean авторизован или нет
@@ -188,46 +193,37 @@ public enum ConstantsFor {
         return request.getRemoteAddr();
     }
 
-    public static String consString() {
-        return "ConstantsFor{" +
-            "APC=" + APC +
-            ", APP_NAME='" + APP_NAME + '\'' +
-            ", passGenerator=" + passGenerator +
-            ", DB_PREFIX='" + DB_PREFIX + '\'' +
-            ", DELAY=" + DELAY +
-            ", DOPC=" + DOPC +
-            ", INIT_DELAY=" + INIT_DELAY +
-            ", KBYTE=" + KBYTE +
-            ", MBYTE=" + MBYTE +
-            ", NO0027='" + NO0027 + '\'' +
-            ", NOPC=" + NOPC +
-            ", PPPC=" + PPPC +
-            ", SRV_NAT='" + SRV_NAT + '\'' +
-            ", SSH_ERR=" + SSH_ERR +
-            ", SSH_OUT=" + SSH_OUT +
-            ", START_STAMP=" + START_STAMP +
-            ", TDPC=" + TDPC +
-            '\'' +
-            ", TIMEOUT_2=" + TIMEOUT_2 +
-            ", TIMEOUT_650=" + TIMEOUT_650 +
-            '}';
-    }
     public static String thisPC() {
-        try{
+        try {
             return InetAddress.getLocalHost().getHostName();
-        }
-        catch(UnknownHostException | ExceptionInInitializerError e){
+        } catch (UnknownHostException | ExceptionInInitializerError e) {
             return e.getMessage();
         }
     }
 
+    static boolean checkDay() {
+        String msg = LocalDate.now().getDayOfWeek().getValue() + " - day of week\n" +
+            LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault());
+        if (msg.toLowerCase().contains("понедель")) {
+            if (LocalTime.now().isBefore(LocalTime.of(13, 0))) {
+                try (Connection c = new RegRuMysql().getDefaultConnection(DB_PREFIX + "velkom");
+                     PreparedStatement preparedStatement = c.prepareStatement("TRUNCATE TABLE pcuserauto")) {
+                    preparedStatement.executeUpdate();
+                    return true;
+                } catch (SQLException e) {
+                    return false;
+                }
+            }
+        }
+        return false;
+    }
+
     private static Properties takePr(InitProperties initProperties) {
-        try{
+        try {
             Properties initPropertiesProps = initProperties.getProps();
             saveProps(initPropertiesProps);
             return initPropertiesProps;
-        }
-        catch(Exception e){
+        } catch (Exception e) {
             initProperties = new FileProps(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
             AppComponents.getLogger().warn("Taking File properties:" + "\n" + e.getMessage());
             return initProperties.getProps();

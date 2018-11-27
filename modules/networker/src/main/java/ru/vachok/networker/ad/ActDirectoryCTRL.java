@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.net.NetScannerSvc;
 
@@ -98,14 +97,4 @@ public class ActDirectoryCTRL {
         return "adphoto";
     }
 
-    /**
-     @return {@link ADUser}
-     @since 13.11.2018 (11:24)
-     @deprecated
-     */
-    @Deprecated
-    private String adUserString() {
-        ADUser adUser = AppComponents.pcUserResolver().adUsersSetter();
-        return adUser.toString();
-    }
 }
