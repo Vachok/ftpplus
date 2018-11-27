@@ -21,7 +21,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
@@ -58,7 +61,7 @@ public class NetScannerSvc {
     /**
      {@link AppComponents#getLogger()}
      */
-
+    private static final Logger LOGGER = AppComponents.getLogger();
 
     static {
         try {
@@ -104,8 +107,6 @@ public class NetScannerSvc {
     public String getQer() {
         return qer;
     }
-
-/*Get&Set*/
 
     /**
      Usage: {@link NetScanCtr#scanIt(HttpServletRequest, Model)}

@@ -40,7 +40,7 @@ public class MatrixCtr {
 
     private static final String REDIRECT_MATRIX = "redirect:/matrix";
 
-    private final String whoisStr = "whois";
+    private static final String WHOIS_STR = "whois";
 
     private MatrixSRV matrixSRV;
 
@@ -123,19 +123,27 @@ public class MatrixCtr {
         return MATRIX_STRING_NAME;
     }
 
-    private String whois(String workPos, Model model) {
+    /**
+     SSH-команда <br> sudo cd /usr/home/ITDept;sudo git instaweb;exit
+
+     @param model   {@link Model}
+     @param request {@link HttpServletRequest}
+     @return переадресация на <a href="http://srv-git.eatmeat.ru:1234">http://srv-git.eatmeat.ru:1234</a>
+     */
+    @GetMapping("/git")
+    public String gitOn(Model model, HttpServletRequest request) {
         try {
-            WhoIsWithSRV whoIsWithSRV = new WhoIsWithSRV();
-            workPos = workPos.split(": ")[1];
-            String attributeValue = whoIsWithSRV.whoIs(workPos);
-            model.addAttribute(whoisStr, attributeValue);
-            model.addAttribute(FOOTER_NAME, new PageFooter().getFooterUtext());
-        } catch (ArrayIndexOutOfBoundsException e) {
-            model.addAttribute(whoisStr, workPos + "<p>" + e.getMessage());
-            return MATRIX_STRING_NAME;
+            LOGGER.warn(visitor.toString());
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage(), e);
         }
+        SSHFactory gitOner = new SSHFactory.Builder(ConstantsFor.SRV_GIT, "sudo cd /usr/home/ITDept;sudo git instaweb;exit").build();
+        if (request.getQueryString() != null && request.getQueryString().equalsIgnoreCase("reboot")) {
+            gitOner = new SSHFactory.Builder(ConstantsFor.SRV_GIT, "sudo reboot").build();
+        }
+        LOGGER.info(gitOner.call());
         metricMatrixStart = System.currentTimeMillis() - metricMatrixStart;
-        return MATRIX_STRING_NAME;
+        return "redirect:http://srv-git.eatmeat.ru:1234";
     }
 
     @GetMapping("/matrix")
@@ -165,28 +173,19 @@ public class MatrixCtr {
         return MATRIX_STRING_NAME;
     }
 
-    /**
-     SSH-команда <br>
-     sudo cd /usr/home/ITDept;sudo git instaweb;exit
-
-     @param model   {@link Model}
-     @param request {@link HttpServletRequest}
-     @return переадресация на <a href="http://srv-git.eatmeat.ru:1234">http://srv-git.eatmeat.ru:1234</a>
-     */
-    @GetMapping("/git")
-    public String gitOn(Model model, HttpServletRequest request) {
+    private String whois(String workPos, Model model) {
         try {
-            LOGGER.warn(visitor.toString());
-        } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
+            WhoIsWithSRV whoIsWithSRV = new WhoIsWithSRV();
+            workPos = workPos.split(": ")[1];
+            String attributeValue = whoIsWithSRV.whoIs(workPos);
+            model.addAttribute(WHOIS_STR, attributeValue);
+            model.addAttribute(FOOTER_NAME, new PageFooter().getFooterUtext());
+        } catch (ArrayIndexOutOfBoundsException e) {
+            model.addAttribute(WHOIS_STR, workPos + "<p>" + e.getMessage());
+            return MATRIX_STRING_NAME;
         }
-        SSHFactory gitOner = new SSHFactory.Builder(ConstantsFor.SRV_GIT, "sudo cd /usr/home/ITDept;sudo git instaweb;exit").build();
-        if (request.getQueryString() != null && request.getQueryString().equalsIgnoreCase("reboot")) {
-            gitOner = new SSHFactory.Builder(ConstantsFor.SRV_GIT, "sudo reboot").build();
-        }
-        LOGGER.info(gitOner.call());
         metricMatrixStart = System.currentTimeMillis() - metricMatrixStart;
-        return "redirect:http://srv-git.eatmeat.ru:1234";
+        return MATRIX_STRING_NAME;
     }
 
     private String getCommonAccessRights(String workPos, Model model) {
@@ -194,7 +193,7 @@ public class MatrixCtr {
         try {
             String users = workPos.split(": ")[1];
             String commonRights = adSrv.checkCommonRightsForUserName(users);
-            model.addAttribute(whoisStr, commonRights);
+            model.addAttribute(WHOIS_STR, commonRights);
             model.addAttribute("title", workPos);
             model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext());
         } catch (ArrayIndexOutOfBoundsException e) {
@@ -215,11 +214,13 @@ public class MatrixCtr {
         model.addAttribute("dinner", pos);
         return MATRIX_STRING_NAME;
     }
+
     private String timeStamp(@ModelAttribute SimpleCalculator simpleCalculator, Model model, String workPos) {
         model.addAttribute("simpleCalculator", simpleCalculator);
         model.addAttribute("dinner", simpleCalculator.getStampFromDate(workPos));
         return "redirect:/calculate";
     }
+
     private String matrixAccess(String workPos) {
         String workPosition = this.matrixSRV.getWorkPosition(String
             .format("select * from matrix where Doljnost like '%%%s%%';", workPos));
