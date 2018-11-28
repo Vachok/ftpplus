@@ -3,6 +3,7 @@ package ru.vachok.networker.ad;
 
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
+import org.springframework.ui.Model;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
@@ -19,8 +20,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.function.BiConsumer;
 
 
@@ -65,7 +66,7 @@ public class PhotoConverterSRV {
      Подготавливает фотографии для импорта в ActiveDirectory. Преобразует любой понимаемый {@link BufferedImage} формат в jpg.
      */
     private BiConsumer<String, BufferedImage> imageBiConsumer = (x, y) -> {
-        String pathName = properties.getProperty("pathName");
+        String pathName = properties.getOrDefault("pathName", "\\\\srv-mail3.eatmeat.ru\\c$\\newmailboxes\\foto\\").toString();
         File outFile = new File(pathName + x + ".jpg");
         String fName = "jpg";
         Set<String> samAccountNames = samAccFromDB();
@@ -106,6 +107,14 @@ public class PhotoConverterSRV {
         this.adPhotosPath = adPhotosPath;
     }
 
+    /**
+     Создание списка PoShe комманд для добавления фото
+     <p>
+     Usages: {@link ActDirectoryCTRL#adFoto(PhotoConverterSRV, Model)} , {@link ADSrv#psComm()} <br> Uses: {@link #convertFoto()}
+
+     @return Комманды Exchange PowerShell
+     @throws NullPointerException если нет фото
+     */
     String psCommands() throws NullPointerException {
         try {
             convertFoto();

@@ -81,6 +81,15 @@ public class ActDirectoryCTRL {
         return "aditem";
     }
 
+    /**
+     Get adphoto.html
+     <p>
+     Uses: {@link PhotoConverterSRV#psCommands}
+
+     @param photoConverterSRV {@link PhotoConverterSRV}
+     @param model             {@link Model}
+     @return adphoto.html
+     */
     @GetMapping("/adphoto")
     private String adFoto(@ModelAttribute PhotoConverterSRV photoConverterSRV, Model model) {
         this.photoConverterSRV = photoConverterSRV;
