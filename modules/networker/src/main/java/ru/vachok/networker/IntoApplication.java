@@ -100,7 +100,6 @@ public class IntoApplication {
             Files.walkFileTree(Paths.get("."), new CommonScan2YOlder());
         } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
-            delTemp();
         }
     }
 

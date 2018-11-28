@@ -124,7 +124,12 @@ public class CommonScan2YOlder extends SimpleFileVisitor<Path> implements Callab
                 Files.readAttributes(file, "dos:*"));
         }
         if (tempFile(file)) {
-            Files.delete(file);
+            try{
+                Files.delete(file);
+            }
+            catch(FileSystemException e){
+                LOGGER.warn(e.getMessage(), e);
+            }
             LOGGER.warn(fileAbs);
         }
         return FileVisitResult.CONTINUE;

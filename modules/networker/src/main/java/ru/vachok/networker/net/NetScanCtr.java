@@ -16,14 +16,9 @@ import ru.vachok.networker.componentsrepo.PageFooter;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.Date;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
@@ -45,7 +40,12 @@ public class NetScanCtr {
 
     private static final String TITLE_STR = ConstantsFor.TITLE;
 
-    private static Properties properties = ConstantsFor.PROPS;
+    /*Fields*/
+
+    /**
+     {@link ConstantsFor#PROPS}
+     */
+    private static final Properties properties = ConstantsFor.getPROPS();
 
     private static NetScannerSvc netScannerSvc = AppComponents.netScannerSvc();
 
@@ -86,7 +86,7 @@ public class NetScanCtr {
      @param request {@link HttpServletRequest}
      */
     private void mapSizeBigger(Model model, Map<String, Boolean> netWork, HttpServletRequest request) {
-        String propertyLastScan = properties.getProperty("lastscan", "1515233487000");
+        String propertyLastScan = properties.getOrDefault("lastscan", "1515233487000").toString();
         l = Long.parseLong(propertyLastScan) + TimeUnit.MINUTES.toMillis(duration);
         boolean isSystemTimeBigger = (System.currentTimeMillis() > l);
         long timeLeft = TimeUnit.MILLISECONDS.toSeconds(l - System.currentTimeMillis());
@@ -135,8 +135,7 @@ public class NetScanCtr {
             lastScan.clear();
             Set<String> pCsAsync = netScannerSvc.getPcNames();
             model
-                .addAttribute(TITLE_STR, (float) TimeUnit.MILLISECONDS
-                    .toSeconds(System.currentTimeMillis() - this.l) / ConstantsFor.ONE_HOUR_IN_MIN + " was scan")
+                .addAttribute(TITLE_STR, new Date(this.l))
                 .addAttribute("pc", new TForms().fromArray(pCsAsync, true));
             AppComponents.lastNetScan().setTimeLastScan(new Date());
             properties.setProperty("lastscan", System.currentTimeMillis() + "");
@@ -148,7 +147,7 @@ public class NetScanCtr {
     public String pcNameForInfo(@ModelAttribute NetScannerSvc netScannerSvc, BindingResult result, Model model) {
         String thePc = netScannerSvc.getThePc();
         AppComponents.adSrv().setUserInputRaw(thePc);
-        if (thePc.toLowerCase().contains("user: ")) {
+        if(thePc.toLowerCase().toLowerCase().contains("user: ")){
             model.addAttribute("ok", getUserFromDB(thePc));
             model.addAttribute(ConstantsFor.TITLE, thePc);
             model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext());

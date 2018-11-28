@@ -8,7 +8,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.componentsrepo.*;
+import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.componentsrepo.PageFooter;
+import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.config.ThreadConfig;
 
 import javax.naming.TimeLimitExceededException;
@@ -55,10 +57,12 @@ public class PfListsCtr {
     private final Runnable makePFLists = this::runningList;
 
     private ThreadConfig threadConfig = new ThreadConfig();
+
+    /*Instances*/
     @Autowired
     public PfListsCtr(PfLists pfLists, PfListsSrv pfListsSrv) {
         threadConfig.taskDecorator(makePFLists);
-        this.properties = ConstantsFor.PROPS;
+        this.properties = ConstantsFor.getPROPS();
         this.pfLists = pfLists;
         this.pfListsSrv = pfListsSrv;
         this.pingOK = ConstantsFor.isPingOK();
@@ -71,7 +75,7 @@ public class PfListsCtr {
     public String pfBean(Model model, HttpServletRequest request, HttpServletResponse response) throws UnknownHostException {
         this.visitor = new Visitor(request);
         String pflistsStr = "pflists";
-        this.properties = ConstantsFor.PROPS;
+        this.properties = ConstantsFor.getPROPS();
         long lastScan = Long.parseLong(properties.getProperty("pfscan", "1"));
         timeOut = lastScan + TimeUnit.MINUTES.toMillis(15);
         if (!pingOK) noPing(model);

@@ -21,10 +21,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
@@ -539,7 +536,7 @@ public class NetScannerSvc {
     }
 
     /**
-     <b>Проверяет есть ля в БД имя пользователя</b>
+     <b>Проверяет есть ли в БД имя пользователя</b>
 
      @param sql    запрос
      @param pcName имя ПК
@@ -557,18 +554,19 @@ public class NetScannerSvc {
                             .append(resultSet.getString("userName").trim()).append("</b> (time: ")
                             .append(resultSet.getString("whenQueried")).append(")");
                     }
-                    try (ResultSet resultSet1 = p1.executeQuery()) {
-                        while (resultSet1.next()) {
-                            if (resultSet1.last()) {
-                                return stringBuilder
-                                    .append("    (AutoResolved name: ")
-                                    .append(resultSet1.getString("userName").trim()).append(" (time: ")
-                                    .append(resultSet1.getString("whenQueried")).append("))").toString();
-                            }
+                }
+                try(ResultSet resultSet1 = p1.executeQuery()){
+                    while(resultSet1.next()){
+                        if(resultSet1.last()){
+                            return stringBuilder
+                                .append("    (AutoResolved name: ")
+                                .append(resultSet1.getString("userName").trim()).append(" (time: ")
+                                .append(resultSet1.getString("whenQueried")).append("))").toString();
                         }
-                    } catch (SQLException ignore) {
-                        //
                     }
+                }
+                catch(SQLException ignore){
+                    //
                 }
             }
         } catch (SQLException e) {

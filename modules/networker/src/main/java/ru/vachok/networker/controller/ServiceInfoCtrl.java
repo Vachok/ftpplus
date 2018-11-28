@@ -10,10 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.AppComponents;
-import ru.vachok.networker.componentsrepo.PageFooter;
-import ru.vachok.networker.componentsrepo.VersionInfo;
-import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.componentsrepo.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
@@ -22,6 +19,7 @@ import java.nio.file.AccessDeniedException;
 import java.time.LocalTime;
 import java.util.Date;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 
@@ -39,7 +37,12 @@ public class ServiceInfoCtrl {
 
     private boolean authReq;
 
-    /*Instances*/
+    private static final Properties PROPS = ConstantsFor.getPROPS();
+
+    private float getLast() {
+        return TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() -
+            Long.parseLong(ConstantsFor.getPROPS().getProperty("lasts", 1544816520000L + ""))) / 60f / 24f;
+    }
     @Autowired
     public ServiceInfoCtrl() {
         new AppComponents();
@@ -99,11 +102,7 @@ public class ServiceInfoCtrl {
         }
     }
 
-
-    private float getLast() {
-        return TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() -
-            Long.parseLong(ConstantsFor.PROPS.getProperty("lasts", 1544816520000L + ""))) / 60f / 24f;
-    }
+    /*Instances*/
 
     private String getJREVers() {
         return System.getProperty("java.version");
@@ -149,12 +148,11 @@ public class ServiceInfoCtrl {
 
         return stringBuilder.toString();
     }
-
     @GetMapping ("/stop")
     public String closeApp() throws AccessDeniedException {
         if(authReq){
             IntoApplication.delTemp();
-            ConstantsFor.saveProps(ConstantsFor.PROPS);
+            ConstantsFor.saveProps(PROPS);
             System.exit(ConstantsFor.USER_EXIT);
         }
         else{

@@ -6,10 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import ru.vachok.networker.ConstantsFor;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.security.SecureRandom;
 import java.util.Date;
 import java.util.Properties;
@@ -30,6 +27,8 @@ public class VersionInfo {
     private String appBuild;
 
     private String buildTime;
+
+    private static final Properties PROPERTIES = ConstantsFor.getPROPS();
 
     private final String thisPCName = ConstantsFor.thisPC();
 
@@ -73,9 +72,13 @@ public class VersionInfo {
         File file = new File("g:\\My_Proj\\FtpClientPlus\\modules\\networker\\build.gradle");
         if (file.exists()) {
             setterVersionFromFiles(file);
+            ConstantsFor.saveProps(PROPERTIES);
         } else {
             file = new File("C:\\Users\\ikudryashov\\IdeaProjects\\spring\\modules\\networker\\build.gradle");
-            if (file.exists()) setterVersionFromFiles(file);
+            if(file.exists()){
+                setterVersionFromFiles(file);
+                ConstantsFor.saveProps(PROPERTIES);
+            }
             else {
                 getParams();
                 String msg = toString();
@@ -83,16 +86,15 @@ public class VersionInfo {
             }
         }
         this.appBuild = thisPCName + "." + new SecureRandom().nextInt(( int ) ConstantsFor.MY_AGE);
-        ConstantsFor.PROPS.setProperty("appBuild", appBuild);
+        ConstantsFor.getPROPS().setProperty("appBuild", appBuild);
         if(thisPCName.equalsIgnoreCase("home") ||
             thisPCName.toLowerCase().contains("no0027")){
             this.buildTime = new Date(ConstantsFor.START_STAMP).toString();
-            ConstantsFor.PROPS.setProperty("buildTime", buildTime);
+            ConstantsFor.getPROPS().setProperty("buildTime", buildTime);
         }
-        ConstantsFor.PROPS.setProperty("appVersion", getAppVersion());
+        PROPERTIES.setProperty("appVersion", getAppVersion());
         String msg = this.toString();
         LOGGER.info(msg);
-        ConstantsFor.saveProps(ConstantsFor.PROPS);
     }
 
     /**
@@ -116,9 +118,9 @@ public class VersionInfo {
     }
 
     private void getParams() {
-        setAppBuild(ConstantsFor.PROPS.getOrDefault("appBuild", "no database").toString());
-        setBuildTime(ConstantsFor.PROPS.getOrDefault("buildTime", System.currentTimeMillis()).toString());
-        setAppVersion(ConstantsFor.PROPS.getOrDefault("appVersion", "no database").toString());
+        setAppBuild(PROPERTIES.getOrDefault("appBuild", "no database").toString());
+        setBuildTime(PROPERTIES.getOrDefault("buildTime", System.currentTimeMillis()).toString());
+        setAppVersion(PROPERTIES.getOrDefault("appVersion", "no database").toString());
     }
 
     @Override

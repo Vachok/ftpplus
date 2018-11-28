@@ -20,8 +20,7 @@ import java.net.URI;
 import java.time.Year;
 import java.util.concurrent.*;
 
-import static java.lang.System.err;
-import static java.lang.System.exit;
+import static java.lang.System.*;
 
 
 /**
@@ -80,7 +79,7 @@ public class SystemTrayHelper {
             }
         };
         ActionListener exitApp = e -> {
-            ConstantsFor.saveProps(ConstantsFor.PROPS);
+            ConstantsFor.saveProps(ConstantsFor.getPROPS());
             IntoApplication.delTemp();
             exit(0);
         };
@@ -156,7 +155,7 @@ public class SystemTrayHelper {
             executor.setThreadGroup(new ThreadGroup(("CLR")));
             executor.setThreadNamePrefix("CLEAN");
             executor.setThreadGroupName("12-17");
-            int startYear = Integer.parseInt(ConstantsFor.PROPS.getOrDefault("startyear", (Year.now().getValue() - 6)).toString());
+            int startYear = Integer.parseInt(ConstantsFor.getPROPS().getOrDefault("startyear", (Year.now().getValue() - 6)).toString());
             for(int i = startYear; i < startYear + 5; i++){
                 String msg = ("starting clean for " + i).toUpperCase();
                 LOGGER.info(msg);

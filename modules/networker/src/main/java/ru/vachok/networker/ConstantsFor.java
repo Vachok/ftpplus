@@ -120,7 +120,12 @@ public enum ConstantsFor {
 
     public static final String APP_NAME = "ru_vachok_networker-";
 
-    public static final Properties PROPS = takePr(new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName()));
+    /*Fields*/
+    private static final Properties PROPS = takePr();
+
+    public static Properties getPROPS() {
+        return PROPS;
+    }
 
     public static final int TEST_EXIT = 333;
 
@@ -156,7 +161,6 @@ public enum ConstantsFor {
             String hostName = InetAddress.getLocalHost().getHostName();
             if (hostName.equalsIgnoreCase("home") || hostName.toLowerCase().contains("no0027")) {
                 PROPS.setProperty("build", System.currentTimeMillis() + "");
-                saveProps(PROPS);
                 return System.currentTimeMillis();
             } else {
                 return Long.parseLong(PROPS.getProperty("build", "1"));
@@ -218,12 +222,15 @@ public enum ConstantsFor {
         return false;
     }
 
-    private static Properties takePr(InitProperties initProperties) {
+    private static Properties takePr() {
+        InitProperties initProperties = new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
         try {
+            AppComponents.getLogger().info("ConstantsFor.takePr");
             return initProperties.getProps();
         } catch (Exception e) {
             initProperties = new FileProps(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
-            AppComponents.getLogger().warn("Taking File properties:" + "\n" + e.getMessage());
+            String msg = "Taking File properties:" + "\n" + e.getMessage();
+            AppComponents.getLogger().warn(msg);
             return initProperties.getProps();
         }
     }
