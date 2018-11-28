@@ -20,7 +20,6 @@ import java.util.*;
 
 
 /**
-
  @since 25.09.2018 (15:10) */
 @Service("adsrv")
 public class ADSrv implements Runnable {
@@ -39,7 +38,7 @@ public class ADSrv implements Runnable {
     private ADComputer adComputer;
 
     /**
-     * Строка из формы на сайте.
+     Строка из формы на сайте.
      */
     private String userInputRaw;
 

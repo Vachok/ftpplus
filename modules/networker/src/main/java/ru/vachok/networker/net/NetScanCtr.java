@@ -8,6 +8,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
@@ -15,7 +16,14 @@ import ru.vachok.networker.componentsrepo.PageFooter;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Date;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
@@ -145,10 +153,44 @@ public class NetScanCtr {
     public String pcNameForInfo(@ModelAttribute NetScannerSvc netScannerSvc, BindingResult result, Model model) {
         String thePc = netScannerSvc.getThePc();
         AppComponents.adSrv().setUserInputRaw(thePc);
+        if (thePc.toLowerCase().contains("user: ")) {
+            model.addAttribute("ok", getUserFromDB(thePc));
+            model.addAttribute(ConstantsFor.TITLE, thePc);
+            model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext());
+            return "ok";
+        }
         netScannerSvc.getInfoFromDB();
         model.addAttribute("thePc", thePc);
         AppComponents.adSrv().setUserInputRaw(netScannerSvc.getThePc());
         netScannerSvc.setThePc("");
         return "redirect:/ad?" + thePc;
     }
+
+    private String getUserFromDB(String userInputRaw) {
+        try {
+            userInputRaw = userInputRaw.split("user: ")[1];
+        } catch (ArrayIndexOutOfBoundsException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+        try (Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.DB_PREFIX + "velkom");
+             PreparedStatement p = c.prepareStatement("select * from pcuserauto where userName like ? ORDER BY whenQueried DESC LIMIT 0, 20")) {
+            p.setString(1, "%" + userInputRaw + "%");
+            try (ResultSet r = p.executeQuery()) {
+                StringBuilder stringBuilder = new StringBuilder();
+                String headER = "<h3><center>LAST 20 USER PCs</center></h3>";
+                stringBuilder.append(headER);
+                while (r.next()) {
+                    String pcName = r.getString("pcName");
+                    String returnER = "<br><center><a href=\"/ad?" + pcName.split("\\Q.\\E")[0] + "\">" + pcName + "</a> set: " +
+                        r.getString("whenQueried") + "</center>";
+                    stringBuilder.append(returnER);
+                }
+                return stringBuilder.toString();
+            }
+        } catch (SQLException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+        return null;
+    }
+
 }

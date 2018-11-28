@@ -155,8 +155,7 @@ public class ArchivesSorter extends SimpleFileVisitor<Path> implements Callable<
             LOGGER.warn(msgS);
         }
         if (file.toString().toLowerCase().contains("eatmeat.ru") ||
-            file.toString().contains("HOME.log") ||
-            file.toString().toLowerCase().contains("constantsfor")) {
+            file.toString().contains("HOME.log")) {
             String msg = file + " DELETED";
             Files.delete(file);
             LOGGER.warn(msg);

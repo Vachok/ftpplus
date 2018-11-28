@@ -67,7 +67,7 @@ public class NetScannerSvc {
         try {
             c = new RegRuMysql().getDefaultConnection(DB_NAME);
         } catch (Exception e) {
-            LOGGER.warn(e.getMessage());
+            c = new RegRuMysql().getDefaultConnection(DB_NAME);
         }
     }
 
