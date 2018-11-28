@@ -20,7 +20,7 @@ public class ArchivesAutoCleaner extends SimpleFileVisitor<Path> implements Runn
     /**
      Первоначальная папка
      */
-    private static final String SRV_FS_ARCHIVES = "\\\\192.168.14.10\\IT-Backup\\SRV-FS\\Archives";
+    private static final String SRV_FS_ARCHIVES = "\\\\192.168.14.10\\IT-Backup\\SRV-FS\\Archives\\";
 
     /**
      Год, за который идёт чистка.
@@ -55,7 +55,7 @@ public class ArchivesAutoCleaner extends SimpleFileVisitor<Path> implements Runn
 
     @Override
     public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
-        String size = Files.size(file) + " visit failed (" + file.toAbsolutePath() + ")";
+        String size = exc.getMessage() + " visit failed (" + file.toAbsolutePath() + ")";
         LOGGER.info(size);
         return FileVisitResult.CONTINUE;
     }
@@ -63,7 +63,7 @@ public class ArchivesAutoCleaner extends SimpleFileVisitor<Path> implements Runn
     @Override
     public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
         try {
-            if (dir.toAbsolutePath().toFile().listFiles().length == 0) {
+            if (dir.toFile().isDirectory() && dir.getNameCount() == 0) {
                 Files.delete(dir);
                 String msg = dir.toString() + " deleted!";
                 LOGGER.warn(msg);

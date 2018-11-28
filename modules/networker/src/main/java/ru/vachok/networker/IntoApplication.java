@@ -14,7 +14,7 @@ import ru.vachok.networker.accesscontrol.MatrixCtr;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.config.ThreadConfig;
-import ru.vachok.networker.services.ArchivesSorter;
+import ru.vachok.networker.services.CommonScan2YOlder;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -97,9 +97,10 @@ public class IntoApplication {
 
     public static void delTemp() {
         try {
-            Files.walkFileTree(Paths.get("."), new ArchivesSorter());
+            Files.walkFileTree(Paths.get("."), new CommonScan2YOlder());
         } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
+            delTemp();
         }
     }
 

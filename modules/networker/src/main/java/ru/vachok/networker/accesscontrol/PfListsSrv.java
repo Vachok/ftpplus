@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.componentsrepo.AppComponents;
-import ru.vachok.networker.componentsrepo.PfLists;
 import ru.vachok.networker.config.ThreadConfig;
 
 import java.rmi.UnexpectedException;

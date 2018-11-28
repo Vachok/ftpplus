@@ -29,16 +29,21 @@ import java.util.concurrent.TimeUnit;
 
 
 /**
+ Контроллер netscan.html
+ <p>
+
  @since 30.08.2018 (12:55) */
 @Controller
 public class NetScanCtr {
 
-    /*Fields*/
     private static final String NETSCAN_STR = "netscan";
 
+    /**
+     {@link AppComponents#getLogger()}
+     */
     private static final Logger LOGGER = AppComponents.getLogger();
 
-    private static final String TITLE_STR = "TITLE_STR";
+    private static final String TITLE_STR = ConstantsFor.TITLE;
 
     private static Properties properties = ConstantsFor.PROPS;
 
@@ -50,23 +55,21 @@ public class NetScanCtr {
 
     private final int duration = ConstantsFor.NETSCAN_DELAY;
 
-    @SuppressWarnings ("WeakerAccess")
-    @GetMapping ("/netscan")
+    @SuppressWarnings("WeakerAccess")
+    @GetMapping("/netscan")
     public String netScan(HttpServletRequest request, HttpServletResponse response, Model model) {
         netScannerSvc.setThePc("");
         Map<String, Boolean> netWork = lastScan;
         boolean isMapSizeBigger = netWork.size() > 2;
 
-        if(isMapSizeBigger){
+        if (isMapSizeBigger) {
             mapSizeBigger(model, netWork, request);
-        }
-        else{
+        } else {
             scanIt(request, model);
         }
         model
             .addAttribute("netScannerSvc", netScannerSvc)
-            .addAttribute("thePc", netScannerSvc.getThePc())
-            .addAttribute(TITLE_STR, "First Scan: 2018-05-05");
+            .addAttribute("thePc", netScannerSvc.getThePc());
         model.addAttribute("footer", new PageFooter().getFooterUtext() + "<br>First Scan: 2018-05-05");
         AppComponents.lastNetScan().setTimeLastScan(new Date());
         response.addHeader("Refresh", "30");
@@ -76,9 +79,7 @@ public class NetScanCtr {
     /**
      Usage in: {@link #netScan(HttpServletRequest, HttpServletResponse, Model)}
      <p>
-     Uses: <br>
-     1.1 {@link TForms#fromArray(Map, boolean)}
-     1.2 {@link #scanIt(HttpServletRequest, Model)}
+     Uses: <br> 1.1 {@link TForms#fromArray(Map, boolean)} 1.2 {@link #scanIt(HttpServletRequest, Model)}
 
      @param model   {@link Model} для сборки
      @param netWork временная {@link Map} для хранения данных во-время работы метода.
@@ -89,18 +90,18 @@ public class NetScanCtr {
         l = Long.parseLong(propertyLastScan) + TimeUnit.MINUTES.toMillis(duration);
         boolean isSystemTimeBigger = (System.currentTimeMillis() > l);
         long timeLeft = TimeUnit.MILLISECONDS.toSeconds(l - System.currentTimeMillis());
-        String msg = timeLeft + " seconds (" + ( float ) timeLeft / ConstantsFor.ONE_HOUR_IN_MIN + " min) left<br>Delay period is " + duration;
+        String msg = timeLeft + " seconds (" + (float) timeLeft / ConstantsFor.ONE_HOUR_IN_MIN + " min) left<br>Delay period is " + duration;
         LOGGER.warn(msg);
         int i = ConstantsFor.TOTAL_PC - netWork.size();
         model
             .addAttribute("left", msg)
             .addAttribute("pc", new TForms().fromArray(netWork, true))
             .addAttribute("title", i + "/" + ConstantsFor.TOTAL_PC + " PCs");
-        if(0 > i){
+        if (0 > i) {
             model.addAttribute("newpc", "Добавлены компы! " + Math.abs(i) + " шт.");
             properties.setProperty("totpc", netWork.size() + "");
         }
-        if(isSystemTimeBigger && !(netWork.size() < ConstantsFor.TOTAL_PC)){
+        if (isSystemTimeBigger && !(netWork.size() < ConstantsFor.TOTAL_PC)) {
             String msg1 = "isSystemTimeBigger is " + true + " " + netWork.size() + " network map cleared";
             LOGGER.warn(msg1);
             properties.setProperty("totpc", netWork.size() + "");
@@ -109,38 +110,32 @@ public class NetScanCtr {
     }
 
     /**
-     Модель для {@link #netScan(HttpServletRequest, HttpServletResponse, Model)} <br>
-     Делает проверки на {@link HttpServletRequest#getQueryString()}, если != 0: <br>
-     {@link #lastScan}.clear() <br>
-     {@link NetScannerSvc#getPCNamesPref(String)} <br>
-     {@link NetScannerSvc#setQer(String)}
+     Модель для {@link #netScan(HttpServletRequest, HttpServletResponse, Model)} <br> Делает проверки на {@link HttpServletRequest#getQueryString()}, если != 0: <br> {@link #lastScan}.clear() <br>
+     {@link NetScannerSvc#getPCNamesPref(String)} <br> {@link NetScannerSvc#setQer(String)}
      <p>
-     Добавляет в {@link Model}: <br>
-     {@link ConstantsFor#TITLE} = {@link Date}.toString() <br>
+     Добавляет в {@link Model}: <br> {@link ConstantsFor#TITLE} = {@link Date}.toString() <br>
      <b>"pc"</b> = {@link TForms#fromArray(Set, boolean)} )} из {@link NetScannerSvc#getPCNamesPref(String)}
      <p>
-     Usage in: <br>
-     {@link #mapSizeBigger(Model, Map, HttpServletRequest)} (99)
+     Usage in: <br> {@link #mapSizeBigger(Model, Map, HttpServletRequest)} (99)
      <p>
-     Uses: <br>
-     1.1 {@link NetScannerSvc#getPCNamesPref(String)}
+     Uses: <br> 1.1 {@link NetScannerSvc#getPCNamesPref(String)}
+
      @param request {@link HttpServletRequest} от пользователя через браузер
-     @param model {@link Model} для сборки
+     @param model   {@link Model} для сборки
      */
     private void scanIt(HttpServletRequest request, Model model) {
-        if(request!=null && request.getQueryString()!=null){
+        if (request != null && request.getQueryString() != null) {
             lastScan.clear();
             netScannerSvc.setQer(request.getQueryString());
             Set<String> pcNames = netScannerSvc.getPCNamesPref(request.getQueryString());
             model
                 .addAttribute(TITLE_STR, new Date().toString())
                 .addAttribute("pc", new TForms().fromArray(pcNames, true));
-        }
-        else{
+        } else {
             lastScan.clear();
             Set<String> pCsAsync = netScannerSvc.getPcNames();
             model
-                .addAttribute(TITLE_STR, ( float ) TimeUnit.MILLISECONDS
+                .addAttribute(TITLE_STR, (float) TimeUnit.MILLISECONDS
                     .toSeconds(System.currentTimeMillis() - this.l) / ConstantsFor.ONE_HOUR_IN_MIN + " was scan")
                 .addAttribute("pc", new TForms().fromArray(pCsAsync, true));
             AppComponents.lastNetScan().setTimeLastScan(new Date());
@@ -149,7 +144,7 @@ public class NetScanCtr {
         }
     }
 
-    @PostMapping ("/netscan")
+    @PostMapping("/netscan")
     public String pcNameForInfo(@ModelAttribute NetScannerSvc netScannerSvc, BindingResult result, Model model) {
         String thePc = netScannerSvc.getThePc();
         AppComponents.adSrv().setUserInputRaw(thePc);

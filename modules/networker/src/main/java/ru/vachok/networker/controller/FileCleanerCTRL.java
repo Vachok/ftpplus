@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.PageFooter;
-import ru.vachok.networker.services.ArchivesSorter;
+import ru.vachok.networker.services.CommonScan2YOlder;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.concurrent.ExecutionException;
@@ -21,27 +21,27 @@ import java.util.concurrent.Future;
 @Controller
 public class FileCleanerCTRL {
 
-    private ArchivesSorter archivesSorter;
+    private CommonScan2YOlder commonScan2YOlder;
 
     @Autowired
-    public FileCleanerCTRL(ArchivesSorter archivesSorter) {
-        this.archivesSorter = archivesSorter;
+    public FileCleanerCTRL(CommonScan2YOlder commonScan2YOlder) {
+        this.commonScan2YOlder = commonScan2YOlder;
     }
 
     @GetMapping("/cleaner")
     public String getFilesInfo(Model model, HttpServletResponse response) {
         Thread.currentThread().setName(getClass().getSimpleName() + "GET");
         model.addAttribute("title", "Инфо о файлах");
-        model.addAttribute("archivesSorter", archivesSorter);
+        model.addAttribute("commonScan2YOlder", commonScan2YOlder);
         return "cleaner";
     }
 
     @PostMapping("/cleaner")
-    public String postFile(Model model, @ModelAttribute ArchivesSorter archivesSorter) {
+    public String postFile(Model model, @ModelAttribute CommonScan2YOlder commonScan2YOlder) {
         Thread.currentThread().setName(getClass().getSimpleName() + "POST");
-        this.archivesSorter = archivesSorter;
-        model.addAttribute("archivesSorter", archivesSorter);
-        String startPath = archivesSorter.getStartPath();
+        this.commonScan2YOlder = commonScan2YOlder;
+        model.addAttribute("commonScan2YOlder", commonScan2YOlder);
+        String startPath = commonScan2YOlder.getStartPath();
         model.addAttribute("title", startPath);
         model.addAttribute("call", callMe());
         model.addAttribute("header", new PageFooter().getHeaderUtext());
@@ -51,7 +51,7 @@ public class FileCleanerCTRL {
 
     private String callMe() {
         Thread.currentThread().setName(getClass().getSimpleName() + "CALL");
-        Future<String> submit = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(archivesSorter);
+        Future<String> submit = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(commonScan2YOlder);
         try {
             return submit.get();
         } catch (ExecutionException | InterruptedException e) {
