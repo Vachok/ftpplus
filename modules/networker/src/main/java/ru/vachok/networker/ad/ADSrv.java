@@ -20,8 +20,6 @@ import java.util.*;
 
 
 /**
- <h1></h1>
-
  @since 25.09.2018 (15:10) */
 @Service("adsrv")
 public class ADSrv implements Runnable {
@@ -29,20 +27,29 @@ public class ADSrv implements Runnable {
     /*Fields*/
     private static final Logger LOGGER = LoggerFactory.getLogger(ADSrv.class.getName());
 
+    /**
+     {@link ADUser}
+     */
     private ADUser adUser;
 
+    /**
+     {@link ADComputer}
+     */
     private ADComputer adComputer;
 
+    /**
+     Строка из формы на сайте.
+     */
     private String userInputRaw;
 
     /**
-     Проверяет по-базе, какими файлами владеет юзер.
+     Проверяет по-базе, какие папки есть у юзера.
 
-     @param owner Active Dir Username <i>(Example: ikudryashov)</i>
-     @return {@link ADUser#ownerRights}
+     @param users Active Dir Username <i>(Example: ikudryashov)</i>
+     @return информация о правах юзера, взятая из БД.
      */
     public String checkCommonRightsForUserName(String users) {
-        String owner = " ";
+        String owner;
         List<String> ownerRights = adUser.getOwnerRights();
         StringBuilder stringBuilder = new StringBuilder();
         String sql = "select * from common where users like ? LIMIT 0, 300";

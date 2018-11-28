@@ -12,8 +12,10 @@ import ru.vachok.networker.net.NetScannerSvc;
 import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.sql.*;
-import java.util.Date;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 
@@ -69,7 +71,7 @@ public class PCUserResolver {
     public synchronized void namesToFile(String pcName) {
         Thread.currentThread().setName(pcName);
         Thread.currentThread().setPriority(3);
-        File[] files = new File[100];
+        File[] files;
         try(OutputStream outputStream = new FileOutputStream(pcName);
             PrintWriter writer = new PrintWriter(outputStream, true)){
             String pathAsStr = "\\\\" + pcName + "\\c$\\Users\\";
@@ -106,12 +108,13 @@ public class PCUserResolver {
 
     /**
      Записывает инфо о пльзователе в <b>pcuserauto</b> <br> Записи добавляются к уже имеющимся.
-
+     <p>
+     Usages: {@link PCUserResolver#namesToFile(String)} <br>
+     Uses: -
      @param pcName имя ПК
-     @param lastFileUse
-     @see #namesToFile(String)
+     @param lastFileUse строка - имя последнего измененного файла в папке пользователя.
      */
-    private void recAutoDB(String pcName, String lastFileUse) {  // FIXME: 26.11.2018 JAVADOC
+    private void recAutoDB(String pcName, String lastFileUse) {
 
         String sql = "insert into pcuser (pcName, userName, lastmod, stamp) values(?,?,?,?)";
         try(PreparedStatement preparedStatement = connection.prepareStatement(sql
@@ -132,9 +135,10 @@ public class PCUserResolver {
 
     /**
      Запрос на установку пользователя
-
+     <p>
+     Usages:  {@link AppComponents#pcUserResolver()} <br>
+     Uses: {@link AppComponents#adSrv()} <br>
      @return {@link ADSrv#getAdUser()}
-     @see ActDirectoryCTRL#adUserString()
      @see ActDirectoryCTRL
      */
     ADUser adUsersSetter() {
@@ -282,6 +286,11 @@ public class PCUserResolver {
         }
     }
 
+    /**
+     Поиск файлов в папках {@code c-users}.
+
+     @since 22.11.2018 (14:46)
+     */
     static class WalkerToUserFolder extends SimpleFileVisitor<Path> {
 
         private List<String> timePath = new ArrayList<>();

@@ -5,11 +5,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.config.AppCtx;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.security.SecureRandom;
 import java.util.Date;
+import java.util.Properties;
 
 
 /**
@@ -20,7 +23,7 @@ public class VersionInfo {
     /*Fields*/
     private static final Logger LOGGER = LoggerFactory.getLogger(VersionInfo.class.getSimpleName());
 
-    private String appName = new AppCtx().getDisplayName().split("@")[0];
+    private String appName = ConstantsFor.APP_NAME;
 
     private String appVersion;
 
@@ -38,13 +41,46 @@ public class VersionInfo {
         } else getParams();
     }
 
+    public String getAppBuild() {
+        return appBuild;
+    }
+
+    /**
+     Usages: {@link #getParams()} <br> Uses: - <br>
+
+     @param appBuild build (Random num)
+     */
+    public void setAppBuild(String appBuild) {
+        this.appBuild = appBuild;
+    }
+
+    public String getAppName() {
+        return appName;
+    }
+
+    public String getBuildTime() {
+        return buildTime;
+    }
+
+    public void setAppName(String appName) {
+        this.appName = appName;
+    }
+
+    /**
+     Usages: {@link AppComponents#versionInfo()} <br> Uses: {@link #setterVersionFromFiles(File)} , {@link #getParams()} , {@link #toString()} , {@link ConstantsFor#saveProps(Properties)}<br>
+     */
     void setParams() {
         File file = new File("g:\\My_Proj\\FtpClientPlus\\modules\\networker\\build.gradle");
         if (file.exists()) {
             setterVersionFromFiles(file);
         } else {
-            file = new File("c:\\Users\\ikudryashov\\IdeaProjects\\spring\\modules\\networker\\build.gradle");
-            setterVersionFromFiles(file);
+            file = new File("C:\\Users\\ikudryashov\\IdeaProjects\\spring\\modules\\networker\\build.gradle");
+            if (file.exists()) setterVersionFromFiles(file);
+            else {
+                getParams();
+                String msg = toString();
+                LOGGER.warn(msg);
+            }
         }
         this.appBuild = thisPCName + "." + new SecureRandom().nextInt(( int ) ConstantsFor.MY_AGE);
         ConstantsFor.PROPS.setProperty("appBuild", appBuild);
@@ -56,50 +92,18 @@ public class VersionInfo {
         ConstantsFor.PROPS.setProperty("appVersion", getAppVersion());
         String msg = this.toString();
         LOGGER.info(msg);
+        ConstantsFor.saveProps(ConstantsFor.PROPS);
     }
 
-    public String getAppBuild() {
-        return appBuild;
-    }
+    /**
+     Usages: {@link #setParams()} <br> Uses: - <br>
 
-    public void setAppBuild(String appBuild) {
-        this.appBuild = appBuild;
-    }
-
-    public String getBuildTime() {
-        return buildTime;
-    }
-
-    public void setBuildTime(String buildTime) {
-        this.buildTime = buildTime;
-    }
-
-    public String getAppName() {
-        return appName;
-    }
-
-    public void setAppName(String appName) {
-        this.appName = appName;
-    }
-
-    public String getAppVersion() {
-        return appVersion;
-    }
-
-    private void getParams() {
-        setAppBuild(ConstantsFor.PROPS.getOrDefault("appBuild", "no database").toString());
-        setBuildTime(ConstantsFor.PROPS.getOrDefault("buildTime", System.currentTimeMillis()).toString());
-        setAppVersion(ConstantsFor.PROPS.getOrDefault("appVersion", "no database").toString());
-    }
-
-    private void setAppVersion(String appVersion) {
-        this.appVersion = appVersion;
-    }
-
+     @param file gradle.build
+     */
     private void setterVersionFromFiles(File file) {
         try (
-            FileReader fileReader = new FileReader(file)) {
-            BufferedReader reader = new BufferedReader(fileReader);
+            FileReader fileReader = new FileReader(file);
+            BufferedReader reader = new BufferedReader(fileReader)) {
             reader.lines().forEach(x -> {
                 if (x.contains("version = '0.")) {
                     setAppVersion(x.split("'")[1]);
@@ -108,6 +112,13 @@ public class VersionInfo {
         } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
         }
+        setBuildTime(System.currentTimeMillis() + "");
+    }
+
+    private void getParams() {
+        setAppBuild(ConstantsFor.PROPS.getOrDefault("appBuild", "no database").toString());
+        setBuildTime(ConstantsFor.PROPS.getOrDefault("buildTime", System.currentTimeMillis()).toString());
+        setAppVersion(ConstantsFor.PROPS.getOrDefault("appVersion", "no database").toString());
     }
 
     @Override
@@ -117,9 +128,25 @@ public class VersionInfo {
         sb.append(", appName='").append(appName).append('\'');
         sb.append(", appVersion='").append(appVersion).append('\'');
         sb.append(", buildTime='").append(buildTime).append('\'');
-        sb.append(", pfLists timeout seconds='").append(ConstantsFor.DELAY).append('\'');
-        sb.append(", netscan delay='").append(ConstantsFor.NETSCAN_DELAY).append('\'');
+        sb.append(", thisPCName='").append(thisPCName).append('\'');
         sb.append('}');
         return sb.toString();
+    }
+
+    public String getAppVersion() {
+        return appVersion;
+    }
+
+    private void setAppVersion(String appVersion) {
+        this.appVersion = appVersion;
+    }
+
+    /**
+     Usages: {@link #getParams()} <br> Uses: - <br>
+
+     @param buildTime build timestamp
+     */
+    public void setBuildTime(String buildTime) {
+        this.buildTime = buildTime;
     }
 }

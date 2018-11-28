@@ -20,7 +20,8 @@ import java.net.URI;
 import java.time.Year;
 import java.util.concurrent.*;
 
-import static java.lang.System.*;
+import static java.lang.System.err;
+import static java.lang.System.exit;
 
 
 /**
@@ -29,7 +30,7 @@ public class SystemTrayHelper {
 
     /*Fields*/
     /**
-     *
+     Путь к папке с рисунками
      */
     private static final String IMG_FOLDER_NAME = "/static/images/";
 
@@ -37,12 +38,12 @@ public class SystemTrayHelper {
 
     private static final String THIS_PC = ConstantsFor.thisPC();
 
-    private static SystemTrayHelper s = new SystemTrayHelper();
+    private static SystemTrayHelper systemTrayHelper = new SystemTrayHelper();
 
     private static MessageToUser messageToUser = new DBMessenger();
 
     public static SystemTrayHelper getInstance() {
-        return s;
+        return systemTrayHelper;
     }
 
     /*Instances*/
@@ -173,6 +174,8 @@ public class SystemTrayHelper {
      Reconnect Socket, пока он открыт.
      */
     private static void recOn() {
+        String bSTR = ConstantsFor.checkDay() + " pcuserauto truncated";
+        LOGGER.warn(bSTR);
         MyServer.setSocket(new Socket());
         while(!MyServer.getSocket().isClosed()){
             try{

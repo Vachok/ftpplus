@@ -21,7 +21,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
@@ -58,13 +61,13 @@ public class NetScannerSvc {
     /**
      {@link AppComponents#getLogger()}
      */
-
+    private static final Logger LOGGER = AppComponents.getLogger();
 
     static {
         try {
             c = new RegRuMysql().getDefaultConnection(DB_NAME);
         } catch (Exception e) {
-            LOGGER.warn(e.getMessage());
+            c = new RegRuMysql().getDefaultConnection(DB_NAME);
         }
     }
 
@@ -104,8 +107,6 @@ public class NetScannerSvc {
     public String getQer() {
         return qer;
     }
-
-/*Get&Set*/
 
     /**
      Usage: {@link NetScanCtr#scanIt(HttpServletRequest, Model)}
@@ -438,6 +439,63 @@ public class NetScannerSvc {
     }
 
     /**
+     Выполняет запрос в БД по-пользовательскому вводу <br> Устанавливает {@link ActDirectoryCTRL#queryStringExists(java.lang.String, org.springframework.ui.Model)}
+
+     @return web-страница с результатом
+     */
+    public String getInfoFromDB() {
+        if (thePc.isEmpty()) {
+            IllegalArgumentException argumentException = new IllegalArgumentException("Must be NOT NULL!");
+            return argumentException.getMessage();
+        }
+        StringBuilder sql = new StringBuilder();
+        sql
+            .append("select * from velkompc where NamePP like '%")
+            .append(thePc)
+            .append("%'");
+        try (PreparedStatement preparedStatement = c.prepareStatement(sql.toString())) {
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                List<String> timeNow = new ArrayList<>();
+                List<Integer> integersOff = new ArrayList<>();
+                while (resultSet.next()) {
+                    int onlineNow = resultSet.getInt("OnlineNow");
+                    if (onlineNow == 1) {
+                        timeNow.add(resultSet.getString("TimeNow"));
+                    } else {
+                        integersOff.add(onlineNow);
+                    }
+                    StringBuilder stringBuilder = new StringBuilder();
+                    String namePP = "<center><h2>" + resultSet.getString("NamePP") +
+                        " information.<br></h2>" +
+                        "<font color = \"silver\">OnLines = " +
+                        timeNow.size() +
+                        ". Offlines = " +
+                        integersOff.size() +
+                        ". TOTAL: " + (integersOff.size() + timeNow.size());
+                    stringBuilder
+                        .append(namePP)
+                        .append(". <br>");
+                    setThePc(stringBuilder.toString());
+                }
+                Collections.sort(timeNow);
+                String str = timeNow.get(timeNow.size() - 1);
+                String thePcWithDBInfo = new StringBuilder()
+                    .append(getThePc())
+                    .append("Last online: ")
+                    .append(str)
+                    .append(" (")
+                    .append(")<br>Actual on: ").toString();
+                thePcWithDBInfo = thePcWithDBInfo + AppComponents.lastNetScan().getTimeLastScan() + "</center></font>";
+                setThePc(thePcWithDBInfo);
+                ActDirectoryCTRL.setInputWithInfoFromDB(thePcWithDBInfo);
+            }
+        } catch (SQLException | IndexOutOfBoundsException e) {
+            setThePc(e.getMessage());
+        }
+        return "ok";
+    }
+
+    /**
      Проверяет имя пользователя на ПК онлайн
 
      @param sql    запрос
@@ -452,10 +510,7 @@ public class NetScannerSvc {
         List<Integer> offLine = new ArrayList<>();
         StringBuilder stringBuilder = new StringBuilder();
         ThreadPoolTaskExecutor executor = threadConfig.threadPoolTaskExecutor();
-        executor.setThreadGroup(new ThreadGroup("online"));
-        executor.setMaxPoolSize(30);
-        executor.setKeepAliveSeconds(30);
-        executor.setAllowCoreThreadTimeOut(true); // TODO: 26.11.2018 26.11.2018 (22:06)
+        execSet(executor);
         executor.execute(() -> pcUserResolver.namesToFile(pcName));
         try (PreparedStatement statement = c.prepareStatement(sql)) {
             statement.setString(1, pcName);
@@ -524,60 +579,18 @@ public class NetScannerSvc {
     }
 
     /**
-     Выполняет запрос в БД по-пользовательскому вводу <br> Устанавливает {@link ActDirectoryCTRL#queryStringExists(java.lang.String, org.springframework.ui.Model)}
-
-     @return web-страница с результатом
+     Сетает {@link org.springframework.core.task.TaskExecutor} для запуска сканирования отдельного ПК.
+     @param executor {@link ThreadConfig}
      */
-    public String getInfoFromDB() {
-        if (thePc.isEmpty()) {
-            IllegalArgumentException argumentException = new IllegalArgumentException("Must be NOT NULL!");
-            return argumentException.getMessage();
-        }
-        StringBuilder sql = new StringBuilder();
-        sql
-            .append("select * from velkompc where NamePP like '%")
-            .append(thePc)
-            .append("%'");
-        try (PreparedStatement preparedStatement = c.prepareStatement(sql.toString())) {
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                List<String> timeNow = new ArrayList<>();
-                List<Integer> integersOff = new ArrayList<>();
-                while (resultSet.next()) {
-                    int onlineNow = resultSet.getInt("OnlineNow");
-                    if (onlineNow == 1) {
-                        timeNow.add(resultSet.getString("TimeNow"));
-                    } else {
-                        integersOff.add(onlineNow);
-                    }
-                    StringBuilder stringBuilder = new StringBuilder();
-                    String namePP = "<center><h2>" + resultSet.getString("NamePP") +
-                        " information.<br></h2>" +
-                        "<font color = \"silver\">OnLines = " +
-                        timeNow.size() +
-                        ". Offlines = " +
-                        integersOff.size() +
-                        ". TOTAL: " + (integersOff.size() + timeNow.size());
-                    stringBuilder
-                        .append(namePP)
-                        .append(". <br>");
-                    setThePc(stringBuilder.toString());
-                }
-                Collections.sort(timeNow);
-                String str = timeNow.get(timeNow.size() - 1);
-                String thePcWithDBInfo = new StringBuilder()
-                    .append(getThePc())
-                    .append("Last online: ")
-                    .append(str)
-                    .append(" (")
-                    .append(")<br>Actual on: ").toString();
-                thePcWithDBInfo = thePcWithDBInfo + AppComponents.lastNetScan().getTimeLastScan() + "</center></font>";
-                setThePc(thePcWithDBInfo);
-                ActDirectoryCTRL.setInputWithInfoFromDB(thePcWithDBInfo);
-            }
-        } catch (SQLException | IndexOutOfBoundsException e) {
-            setThePc(e.getMessage());
-        }
-        return "ok";
+    private void execSet(ThreadPoolTaskExecutor executor) {
+        executor.setThreadGroup(new ThreadGroup("online"));
+        executor.setMaxPoolSize(30);
+        executor.setCorePoolSize(3);
+        executor.setKeepAliveSeconds(30);
+        executor.setAllowCoreThreadTimeOut(true);
+        executor.setQueueCapacity(317);
+        String msg = executor.prefersShortLivedTasks() + " prefersShortLivedTasks";
+        LOGGER.debug(msg);
     }
 
     /**
