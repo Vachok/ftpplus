@@ -6,7 +6,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import ru.vachok.networker.ConstantsFor;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.security.SecureRandom;
 import java.util.Date;
 import java.util.Properties;
@@ -131,6 +134,8 @@ public class VersionInfo {
         sb.append(", appVersion='").append(appVersion).append('\'');
         sb.append(", buildTime='").append(buildTime).append('\'');
         sb.append(", thisPCName='").append(thisPCName).append('\'');
+        sb.append(", DELAY='").append(ConstantsFor.DELAY).append('\'');
+        sb.append(", INIT_DELAY='").append(ConstantsFor.INIT_DELAY).append('\'');
         sb.append('}');
         return sb.toString();
     }

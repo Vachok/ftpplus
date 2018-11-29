@@ -132,9 +132,12 @@ public class IntoApplication {
                 LOGGER.warn(e.getMessage(), e);
             }
         };
+        Date startTime = new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(5));
         ScheduledFuture<?> scheduleWithFixedDelay =
             new ThreadConfig().threadPoolTaskScheduler()
-                .scheduleWithFixedDelay(r, new Date(), TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY));
+                .scheduleWithFixedDelay(r,
+                    startTime,
+                    TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY * 3));
         try {
             scheduleWithFixedDelay.get();
         } catch (InterruptedException | ExecutionException e) {

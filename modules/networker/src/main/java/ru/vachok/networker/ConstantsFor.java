@@ -100,7 +100,7 @@ public enum ConstantsFor {
 
     public static final int TIMEOUT_5 = 5000;
 
-    public static final long DELAY = new SecureRandom().nextInt(1600);
+    public static final long DELAY = TimeUnit.MINUTES.toSeconds(MY_AGE);
 
     public static final int DOPC = 250;
 
@@ -141,7 +141,7 @@ public enum ConstantsFor {
 
     public static final int ONE_YEAR = 365;
 
-    public static final int NETSCAN_DELAY = new SecureRandom().nextInt((int) ConstantsFor.MY_AGE);
+    public static final int NETSCAN_DELAY = (int) ConstantsFor.DELAY;
 
     public static final String COMMON_FOLDER = "\\\\srv-fs.eatmeat.ru\\common_new";
 
