@@ -21,10 +21,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
@@ -196,6 +193,8 @@ public class NetScannerSvc {
                 } catch (IOException e) {
                     LOGGER.error(e.getMessage(), e);
                 }
+                String s = Thread.activeCount() + " active threads now.";
+                LOGGER.warn(s);
             }).start();
         }).start();
     }
