@@ -29,4 +29,8 @@ public class PageFooter {
             .append("<a href=\"/nav\">NAV Test</a>");
         return stringBuilder.toString();
     }
+
+    public String getHead() {
+        return "<h3><a href\"/\">Main</a></h3>";
+    }
 }

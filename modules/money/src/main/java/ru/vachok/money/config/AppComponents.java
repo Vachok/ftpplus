@@ -9,6 +9,8 @@ import org.springframework.context.annotation.Scope;
 import ru.vachok.money.ConstantsFor;
 import ru.vachok.money.components.AppVersion;
 import ru.vachok.money.components.URLContent;
+import ru.vachok.money.filesys.FilesCheckerCleaner;
+import ru.vachok.money.filesys.FilesSRV;
 import ru.vachok.money.services.URLParser;
 import ru.vachok.money.services.sockets.TellNetSRV;
 
@@ -37,5 +39,16 @@ public class AppComponents {
     @Scope("singleton")
     public static TellNetSRV tellNetSRV() {
         return new TellNetSRV();
+    }
+
+    @Bean
+    public FilesSRV filesSRV() {
+        return new FilesSRV(filesCheckerCleaner());
+    }
+
+    @Bean
+    @Scope ("singleton")
+    public static FilesCheckerCleaner filesCheckerCleaner() {
+        return new FilesCheckerCleaner();
     }
 }

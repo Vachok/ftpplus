@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.security.SecureRandom;
 import java.util.Date;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 import static org.springframework.boot.SpringApplication.run;
 
@@ -42,13 +43,14 @@ public class MoneyApplication {
         ThreadPoolTaskExecutor defaultExecutor = new ThreadConfig().getDefaultExecutor();
         defaultExecutor.execute(new SpeedRunActualize());
         String msg = defaultExecutor.getThreadPoolExecutor().toString();
-        defaultExecutor.createThread(() -> {
+        Runnable r = () ->
+        {
             new ESender("143500@gmail.com")
                 .info(ConstantsFor.APP_NAME,
                     ConstantsFor.APP_NAME + ". Started at " + new Date(ConstantsFor.START_STAMP),
                     new AppVersion().toString() + "\n" + msg + "\n" + filesRnd());
-        }).start();
-
+        };
+        defaultExecutor.execute(r, TimeUnit.MINUTES.toMillis(5));
         AppComponents.getLogger().warn(msg);
     }
 
