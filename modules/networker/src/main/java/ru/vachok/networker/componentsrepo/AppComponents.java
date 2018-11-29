@@ -8,6 +8,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Scope;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.accesscontrol.SshActs;
 import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.ad.ADUser;
@@ -142,6 +143,12 @@ public class AppComponents {
             //
         }
         return lastLogsList;
+    }
+
+    @Bean
+    @Scope("singleton")
+    public SshActs sshActs() {
+        return new SshActs();
     }
 
 }

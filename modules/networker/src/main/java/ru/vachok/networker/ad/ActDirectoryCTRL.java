@@ -8,8 +8,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.accesscontrol.SshActs;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.net.NetScannerSvc;
 
@@ -28,15 +30,18 @@ public class ActDirectoryCTRL {
 
     private static String inputWithInfoFromDB;
 
+    private SshActs sshActs;
+
     private String titleStr = "PowerShell. Применить на SRV-MAIL3";
 
     private PhotoConverterSRV photoConverterSRV;
 
     /*Instances*/
     @Autowired
-    public ActDirectoryCTRL(ADSrv adSrv, PhotoConverterSRV photoConverterSRV) {
+    public ActDirectoryCTRL(ADSrv adSrv, PhotoConverterSRV photoConverterSRV, SshActs sshActs) {
         this.photoConverterSRV = photoConverterSRV;
         this.adSrv = adSrv;
+        this.sshActs = sshActs;
         Thread.currentThread().setName(getClass().getSimpleName());
     }
 
@@ -51,6 +56,7 @@ public class ActDirectoryCTRL {
         else {
             ADComputer adComputer = adSrv.getAdComputer();
             model.addAttribute("photoConverter", photoConverterSRV);
+            model.addAttribute("sshActs", sshActs);
             model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext());
             model.addAttribute("pcs", new TForms().adPCMap(adComputer.getAdComputers(), true));
             model.addAttribute(ConstantsFor.USERS, new TForms().fromADUsersList(adUsers, true));
@@ -95,6 +101,7 @@ public class ActDirectoryCTRL {
         this.photoConverterSRV = photoConverterSRV;
         try {
             model.addAttribute("photoConverterSRV", photoConverterSRV);
+            model.addAttribute("sshActs", sshActs);
             if (!ConstantsFor.isPingOK()) titleStr = "ping to srv-git.eatmeat.ru is " + false;
             model.addAttribute("title", titleStr);
             model.addAttribute("content", photoConverterSRV.psCommands());
@@ -104,6 +111,14 @@ public class ActDirectoryCTRL {
             LOGGER.error(e.getMessage(), e);
         }
         return "adphoto";
+    }
+
+    @PostMapping("/sshacts")
+    private String sshActs(@ModelAttribute SshActs sshActs, Model model) {
+        this.sshActs = sshActs;
+        model.addAttribute("sshActs", sshActs);
+        model.addAttribute("tempFull", sshActs.isTempFull());
+        return "aditem";
     }
 
 }

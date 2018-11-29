@@ -21,7 +21,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
@@ -508,7 +511,7 @@ public class NetScannerSvc {
         StringBuilder stringBuilder = new StringBuilder();
         ThreadPoolTaskExecutor executor = threadConfig.threadPoolTaskExecutor();
         execSet(executor);
-        executor.execute(() -> pcUserResolver.namesToFile(pcName));
+        executor.execute(() -> pcUserResolver.namesToFile(pcName), ConstantsFor.TIMEOUT_5);
         try (PreparedStatement statement = c.prepareStatement(sql)) {
             statement.setString(1, pcName);
             try (ResultSet resultSet = statement.executeQuery()) {
@@ -526,6 +529,7 @@ public class NetScannerSvc {
                 }
             }
         } catch (SQLException | NullPointerException e) {
+            executor.destroy();
             return e.getMessage();
         }
         return stringBuilder
@@ -587,8 +591,6 @@ public class NetScannerSvc {
         executor.setKeepAliveSeconds(30);
         executor.setAllowCoreThreadTimeOut(true);
         executor.setQueueCapacity(317);
-        String msg = executor.prefersShortLivedTasks() + " prefersShortLivedTasks";
-        LOGGER.debug(msg);
     }
 
     /**
