@@ -180,8 +180,7 @@ public class NetScanCtr {
         if (0 > i) {
             model.addAttribute("newpc", "Добавлены компы! " + Math.abs(i) + " шт.");
             properties.setProperty("totpc", netWork.size() + "");
-        }
-        if (isSystemTimeBigger && (netWork.size() - 6 > ConstantsFor.TOTAL_PC)) {
+        } else if (isSystemTimeBigger && (5 > i)) {
             String msg1 = "isSystemTimeBigger is " + true + " " + netWork.size() + " network map cleared";
             LOGGER.warn(msg1);
             properties.setProperty("totpc", netWork.size() + "");
