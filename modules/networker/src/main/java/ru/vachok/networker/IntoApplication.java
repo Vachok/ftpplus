@@ -132,7 +132,7 @@ public class IntoApplication {
                 LOGGER.warn(e.getMessage(), e);
             }
         };
-        Date startTime = new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(5));
+        Date startTime = new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(20));
         ScheduledFuture<?> scheduleWithFixedDelay =
             new ThreadConfig().threadPoolTaskScheduler()
                 .scheduleWithFixedDelay(r,

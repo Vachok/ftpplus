@@ -16,9 +16,14 @@ import ru.vachok.networker.componentsrepo.PageFooter;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Date;
-import java.util.*;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
@@ -40,10 +45,8 @@ public class NetScanCtr {
 
     private static final String TITLE_STR = ConstantsFor.TITLE;
 
-    /*Fields*/
-
     /**
-     {@link ConstantsFor#PROPS}
+     {@link ConstantsFor#getPROPS()}
      */
     private static final Properties properties = ConstantsFor.getPROPS();
 
@@ -76,37 +79,21 @@ public class NetScanCtr {
         return NETSCAN_STR;
     }
 
-    /**
-     Usage in: {@link #netScan(HttpServletRequest, HttpServletResponse, Model)}
-     <p>
-     Uses: <br> 1.1 {@link TForms#fromArray(Map, boolean)} 1.2 {@link #scanIt(HttpServletRequest, Model)}
-
-     @param model   {@link Model} для сборки
-     @param netWork временная {@link Map} для хранения данных во-время работы метода.
-     @param request {@link HttpServletRequest}
-     */
-    private void mapSizeBigger(Model model, Map<String, Boolean> netWork, HttpServletRequest request) {
-        String propertyLastScan = properties.getOrDefault("lastscan", "1515233487000").toString();
-        l = Long.parseLong(propertyLastScan) + TimeUnit.MINUTES.toMillis(duration);
-        boolean isSystemTimeBigger = (System.currentTimeMillis() > l);
-        long timeLeft = TimeUnit.MILLISECONDS.toSeconds(l - System.currentTimeMillis());
-        String msg = timeLeft + " seconds (" + (float) timeLeft / ConstantsFor.ONE_HOUR_IN_MIN + " min) left<br>Delay period is " + duration;
-        LOGGER.warn(msg);
-        int i = ConstantsFor.TOTAL_PC - netWork.size();
-        model
-            .addAttribute("left", msg)
-            .addAttribute("pc", new TForms().fromArray(netWork, true))
-            .addAttribute("title", i + "/" + ConstantsFor.TOTAL_PC + " PCs");
-        if (0 > i) {
-            model.addAttribute("newpc", "Добавлены компы! " + Math.abs(i) + " шт.");
-            properties.setProperty("totpc", netWork.size() + "");
+    @PostMapping("/netscan")
+    public String pcNameForInfo(@ModelAttribute NetScannerSvc netScannerSvc, BindingResult result, Model model) {
+        String thePc = netScannerSvc.getThePc();
+        AppComponents.adSrv().setUserInputRaw(thePc);
+        if (thePc.toLowerCase().contains("user: ")) {
+            model.addAttribute("ok", getUserFromDB(thePc));
+            model.addAttribute(ConstantsFor.TITLE, thePc);
+            model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext());
+            return "ok";
         }
-        if (isSystemTimeBigger && !(netWork.size() < ConstantsFor.TOTAL_PC)) {
-            String msg1 = "isSystemTimeBigger is " + true + " " + netWork.size() + " network map cleared";
-            LOGGER.warn(msg1);
-            properties.setProperty("totpc", netWork.size() + "");
-            scanIt(request, model);
-        }
+        netScannerSvc.getInfoFromDB();
+        model.addAttribute("thePc", thePc);
+        AppComponents.adSrv().setUserInputRaw(netScannerSvc.getThePc());
+        netScannerSvc.setThePc("");
+        return "redirect:/ad?" + thePc;
     }
 
     /**
@@ -143,28 +130,11 @@ public class NetScanCtr {
         }
     }
 
-    @PostMapping("/netscan")
-    public String pcNameForInfo(@ModelAttribute NetScannerSvc netScannerSvc, BindingResult result, Model model) {
-        String thePc = netScannerSvc.getThePc();
-        AppComponents.adSrv().setUserInputRaw(thePc);
-        if(thePc.toLowerCase().toLowerCase().contains("user: ")){
-            model.addAttribute("ok", getUserFromDB(thePc));
-            model.addAttribute(ConstantsFor.TITLE, thePc);
-            model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext());
-            return "ok";
-        }
-        netScannerSvc.getInfoFromDB();
-        model.addAttribute("thePc", thePc);
-        AppComponents.adSrv().setUserInputRaw(netScannerSvc.getThePc());
-        netScannerSvc.setThePc("");
-        return "redirect:/ad?" + thePc;
-    }
-
     private String getUserFromDB(String userInputRaw) {
         try {
-            userInputRaw = userInputRaw.split("user: ")[1];
+            userInputRaw = userInputRaw.split(": ")[1];
         } catch (ArrayIndexOutOfBoundsException e) {
-            LOGGER.error(e.getMessage(), e);
+            return e.getMessage();
         }
         try (Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.DB_PREFIX + "velkom");
              PreparedStatement p = c.prepareStatement("select * from pcuserauto where userName like ? ORDER BY whenQueried DESC LIMIT 0, 20")) {
@@ -182,9 +152,40 @@ public class NetScanCtr {
                 return stringBuilder.toString();
             }
         } catch (SQLException e) {
-            LOGGER.error(e.getMessage(), e);
+            return e.getMessage();
         }
-        return null;
     }
 
+    /**
+     Usage in: {@link #netScan(HttpServletRequest, HttpServletResponse, Model)}
+     <p>
+     Uses: <br> 1.1 {@link TForms#fromArray(Map, boolean)} 1.2 {@link #scanIt(HttpServletRequest, Model)}
+
+     @param model   {@link Model} для сборки
+     @param netWork временная {@link Map} для хранения данных во-время работы метода.
+     @param request {@link HttpServletRequest}
+     */
+    private void mapSizeBigger(Model model, Map<String, Boolean> netWork, HttpServletRequest request) {
+        String propertyLastScan = properties.getOrDefault("lastscan", "1515233487000").toString();
+        l = Long.parseLong(propertyLastScan) + TimeUnit.MINUTES.toMillis(duration);
+        boolean isSystemTimeBigger = (System.currentTimeMillis() > l);
+        long timeLeft = TimeUnit.MILLISECONDS.toSeconds(l - System.currentTimeMillis());
+        String msg = timeLeft + " seconds (" + (float) timeLeft / ConstantsFor.ONE_HOUR_IN_MIN + " min) left<br>Delay period is " + duration;
+        LOGGER.warn(msg);
+        int i = ConstantsFor.TOTAL_PC - netWork.size();
+        model
+            .addAttribute("left", msg)
+            .addAttribute("pc", new TForms().fromArray(netWork, true))
+            .addAttribute("title", i + "/" + ConstantsFor.TOTAL_PC + " PCs");
+        if (0 > i) {
+            model.addAttribute("newpc", "Добавлены компы! " + Math.abs(i) + " шт.");
+            properties.setProperty("totpc", netWork.size() + "");
+        }
+        if (isSystemTimeBigger && (netWork.size() - 6 > ConstantsFor.TOTAL_PC)) {
+            String msg1 = "isSystemTimeBigger is " + true + " " + netWork.size() + " network map cleared";
+            LOGGER.warn(msg1);
+            properties.setProperty("totpc", netWork.size() + "");
+            scanIt(request, model);
+        }
+    }
 }

@@ -48,7 +48,7 @@ public enum ConstantsFor {
     /**
      Первоначальная задержка {@link ThreadConfig#threadPoolTaskScheduler()}
      */
-    public static final long INIT_DELAY = new SecureRandom().nextInt((int) MY_AGE);
+    public static final long INIT_DELAY = TimeUnit.MINUTES.toSeconds(MY_AGE);
 
     /**
      <b>1 мегабайт в байтах</b>
@@ -100,7 +100,7 @@ public enum ConstantsFor {
 
     public static final int TIMEOUT_5 = 5000;
 
-    public static final long DELAY = TimeUnit.MINUTES.toSeconds(MY_AGE);
+    public static final long DELAY = new SecureRandom().nextInt((int) MY_AGE);
 
     public static final int DOPC = 250;
 
