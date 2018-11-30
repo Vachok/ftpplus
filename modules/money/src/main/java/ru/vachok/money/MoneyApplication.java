@@ -24,6 +24,9 @@ import java.util.concurrent.TimeUnit;
 import static org.springframework.boot.SpringApplication.run;
 
 
+/**
+ Стартер
+ */
 @EnableAutoConfiguration
 @SpringBootApplication
 public class MoneyApplication {

@@ -3,6 +3,7 @@ package ru.vachok.money.filesys;
 
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
+import ru.vachok.money.ConstantsFor;
 import ru.vachok.money.config.AppComponents;
 
 import java.io.IOException;
@@ -26,9 +27,19 @@ public class FilesCheckerCleaner extends SimpleFileVisitor<Path> {
 
     private ConcurrentMap<String, String> resMap = new ConcurrentHashMap<>();
 
+    private Path path;
+
+    public Path getPath() {
+        return path;
+    }
+
+    public void setPath(Path path) {
+        this.path = path;
+    }
+
     public ConcurrentMap<String, String> getResMap() {
         try{
-            Files.walkFileTree(Paths.get("."), this);
+            Files.walkFileTree(path, this);
         }
         catch(IOException e){
             LOGGER.error(e.getMessage(), e);
@@ -44,7 +55,7 @@ public class FilesCheckerCleaner extends SimpleFileVisitor<Path> {
 
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-        if(attrs.lastModifiedTime().toMillis() < System.currentTimeMillis() - TimeUnit.DAYS.toMillis(365)){
+        if(attrs.lastModifiedTime().toMillis() < System.currentTimeMillis() - TimeUnit.DAYS.toMillis(ConstantsFor.ONE_YEAR)){
             resMap.put(file.toString(), attrs.lastAccessTime().toString());
             return FileVisitResult.CONTINUE;
         }

@@ -7,6 +7,11 @@
 </head>
 <body>
 <p th:utext="${head}">
+<form method="POST" th:action="@{/files}" th:object="${filesSrv}">
+    <input th:field="*{userInput}" type="text"/>
+    <br>
+    <input type="submit" value="Получить"/>
+</form>
 <p th:utext="${result}">
 </body>
 <footer>

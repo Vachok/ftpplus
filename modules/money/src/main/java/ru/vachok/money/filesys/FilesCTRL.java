@@ -2,9 +2,12 @@ package ru.vachok.money.filesys;
 
 
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.money.components.PageFooter;
 import ru.vachok.money.config.AppComponents;
 
@@ -28,7 +31,13 @@ public class FilesCTRL {
      */
     private static final Logger LOGGER = AppComponents.getLogger();
 
-    private FilesSRV filesSRV = new AppComponents().filesSRV();
+    private FilesSRV filesSRV;
+
+    /*Instances*/
+    @Autowired
+    public FilesCTRL(FilesSRV filesSRV) {
+        this.filesSRV = filesSRV;
+    }
 
     /**
      GET /files
@@ -40,8 +49,17 @@ public class FilesCTRL {
     public String filesGet(Model model) {
         LOGGER.info("FilesCTRL.filesGet");
         model.addAttribute("title", "File system works");
+        model.addAttribute("filesSrv", filesSRV);
         model.addAttribute("head", new PageFooter().getHead());
         model.addAttribute("footer", new PageFooter().getTheFooter());
+        model.addAttribute("result", filesSRV.getInfo());
+        return "files";
+    }
+
+    @PostMapping ("/files")
+    public String filesPOST(@ModelAttribute FilesSRV filesSRV, Model model) {
+        this.filesSRV = filesSRV;
+        model.addAttribute("filesSrv", filesSRV);
         model.addAttribute("result", filesSRV.getInfo());
         return "files";
     }
