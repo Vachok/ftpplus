@@ -150,16 +150,17 @@ public class ADComputer {
 
     @Override
     public String toString() {
-        return "ADComputer{" +
-            "distinguishedName='" + distinguishedName + '\'' +
-            ", dnsHostName='" + dnsHostName + '\'' +
-            ", enabled='" + enabled + '\'' +
-            ", name='" + name + '\'' +
-            ", objectClass='" + objectClass + '\'' +
-            ", objectGUID='" + objectGUID + '\'' +
-            ", samAccountName='" + samAccountName + '\'' +
-            ", SID='" + SID + '\'' +
-            ", userPrincipalName='" + userPrincipalName + '\'' +
-            '}';
+        final StringBuilder sb = new StringBuilder("ADComputer{");
+        sb.append("distinguishedName='").append(distinguishedName).append('\'');
+        sb.append(", dnsHostName='").append(dnsHostName).append('\'');
+        sb.append(", enabled='").append(enabled).append('\'');
+        sb.append(", name='").append(name).append('\'');
+        sb.append(", objectClass='").append(objectClass).append('\'');
+        sb.append(", objectGUID='").append(objectGUID).append('\'');
+        sb.append(", samAccountName='").append(samAccountName).append('\'');
+        sb.append(", SID='").append(SID).append('\'');
+        sb.append(", userPrincipalName='").append(userPrincipalName).append('\'');
+        sb.append('}');
+        return sb.toString();
     }
 }

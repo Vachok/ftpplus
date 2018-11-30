@@ -19,8 +19,10 @@ import ru.vachok.networker.services.CommonScan2YOlder;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.TextStyle;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 import java.util.concurrent.*;
@@ -132,18 +134,37 @@ public class IntoApplication {
                 LOGGER.warn(e.getMessage(), e);
             }
         };
-        Date startTime = new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(20));
-        ScheduledFuture<?> scheduleWithFixedDelay =
-            new ThreadConfig().threadPoolTaskScheduler()
-                .scheduleWithFixedDelay(r,
-                    startTime,
-                    TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY * 3));
+
+        Date startTime = getNextSat();
+
+        ScheduledFuture<?> scheduleWithFixedDelay = new ThreadConfig().threadPoolTaskScheduler().scheduleWithFixedDelay(
+            r, startTime, TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY * 7));
         try {
+            String msg = "Common scanner : " + startTime.toString();
+            LOGGER.warn(msg);
             scheduleWithFixedDelay.get();
         } catch (InterruptedException | ExecutionException e) {
             LOGGER.error(e.getMessage(), e);
             Thread.currentThread().interrupt();
             r.run();
+        }
+    }
+
+    private static Date getNextSat() {
+        Calendar.Builder builder = new Calendar.Builder();
+        LocalDate localDate = LocalDate.now();
+        DayOfWeek satDay = DayOfWeek.SATURDAY;
+        if (localDate.getDayOfWeek().toString().equalsIgnoreCase(satDay.toString())) return new Date();
+        else {
+            Date retDate = builder
+                .setDate(
+                    localDate.getYear(),
+                    localDate.getMonth().getValue() - 1,
+                    localDate.getDayOfMonth() + 1)
+                .setTimeOfDay(0, 1, 0).build().getTime();
+            String msg = retDate.toString() + "//todo 30.11.2018 (14:09)"; // TODO: 30.11.2018
+            LOGGER.info(msg);
+            return retDate;
         }
     }
 }

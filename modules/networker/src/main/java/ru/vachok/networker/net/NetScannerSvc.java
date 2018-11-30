@@ -21,7 +21,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
@@ -306,7 +309,6 @@ public class NetScannerSvc {
      @see #getPCNamesPref(String)
      */
     private String getSomeMore(String pcName, boolean isOnline) {
-
         String sql;
         if (isOnline) {
             sql = "select * from velkompc where NamePP like ?";

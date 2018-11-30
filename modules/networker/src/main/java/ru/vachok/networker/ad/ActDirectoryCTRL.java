@@ -8,7 +8,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.SshActs;
@@ -112,13 +111,4 @@ public class ActDirectoryCTRL {
         }
         return "adphoto";
     }
-
-    @PostMapping("/sshacts")
-    private String sshActs(@ModelAttribute SshActs sshActs, Model model) {
-        this.sshActs = sshActs;
-        model.addAttribute("sshActs", sshActs);
-        model.addAttribute("tempFull", sshActs.isTempFull());
-        return "aditem";
-    }
-
 }

@@ -8,11 +8,13 @@
 <body>
 <p th:utext="${users}"></p>
 <p th:utext="${details}"></p>
+
 <center>
+    <p th:utext="${sshdetail}"/>
     <form>
         <form method="POST" th:action="@{/sshacts}" th:object="${sshActs}"><br>
             Internet:<br>
-            <input name="Полный, через proxy (запись статистики)" th:checked="${tempFull}" type="checkbox"/><br>
+            <input name="Полный, через proxy (запись статистики)" type="checkbox"/><br>
             <input type="submit" value="Установить"/><br>
         </form>
     </form>
