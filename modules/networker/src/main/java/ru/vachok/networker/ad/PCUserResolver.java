@@ -59,6 +59,8 @@ public class PCUserResolver {
      */
     public static PCUserResolver getPcUserResolver() {
         Thread.currentThread().setName(PCUserResolver.class.getSimpleName());
+        Thread.currentThread().checkAccess();
+        Thread.currentThread().getThreadGroup().checkAccess();
         return pcUserResolver;
     }
 
@@ -81,9 +83,10 @@ public class PCUserResolver {
                 .append(Arrays.toString(files).replace(", ", "\n"))
                 .append("\n\n\n")
                 .append(lastFileUse);
-            Thread.currentThread().interrupt();
+            Thread.currentThread().checkAccess();
         }
         catch(IOException | ArrayIndexOutOfBoundsException e){
+            Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
         }
         if(lastFileUse!=null){
@@ -101,7 +104,6 @@ public class PCUserResolver {
             return timePath.get(timePath.size() - 1);
         }
         catch(IOException | IndexOutOfBoundsException e){
-            Thread.currentThread().interrupt();
             return e.getMessage();
         }
     }
@@ -125,11 +127,13 @@ public class PCUserResolver {
             preparedStatement.setString(3, split[2] + split[3] + split[4]);
             preparedStatement.setString(4, split[7]);
             preparedStatement.executeUpdate();
+            Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
         }
         catch(SQLException | ArrayIndexOutOfBoundsException | NullPointerException e){
             LOGGER.error(e.getMessage(), e);
-            Thread.currentThread().interrupt();
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().getThreadGroup().destroy();
         }
     }
 
@@ -254,10 +258,12 @@ public class PCUserResolver {
             }
         }
         catch(SQLException e){
-            Thread.currentThread().interrupt();
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().getThreadGroup().destroy();
             return e.getMessage();
         }
-        Thread.currentThread().interrupt();
+        Thread.currentThread().checkAccess();
+        Thread.currentThread().getThreadGroup().interrupt();
         return v.toString();
     }
 

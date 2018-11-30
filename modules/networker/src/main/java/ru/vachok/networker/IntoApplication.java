@@ -14,7 +14,7 @@ import ru.vachok.networker.accesscontrol.MatrixCtr;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.config.ThreadConfig;
-import ru.vachok.networker.services.ArchivesSorter;
+import ru.vachok.networker.services.CommonScan2YOlder;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -97,7 +97,7 @@ public class IntoApplication {
 
     public static void delTemp() {
         try {
-            Files.walkFileTree(Paths.get("."), new ArchivesSorter());
+            Files.walkFileTree(Paths.get("."), new CommonScan2YOlder());
         } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
         }
@@ -132,9 +132,12 @@ public class IntoApplication {
                 LOGGER.warn(e.getMessage(), e);
             }
         };
+        Date startTime = new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(20));
         ScheduledFuture<?> scheduleWithFixedDelay =
             new ThreadConfig().threadPoolTaskScheduler()
-                .scheduleWithFixedDelay(r, new Date(), TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY));
+                .scheduleWithFixedDelay(r,
+                    startTime,
+                    TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY * 3));
         try {
             scheduleWithFixedDelay.get();
         } catch (InterruptedException | ExecutionException e) {

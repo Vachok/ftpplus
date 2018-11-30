@@ -21,10 +21,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
@@ -196,6 +193,8 @@ public class NetScannerSvc {
                 } catch (IOException e) {
                     LOGGER.error(e.getMessage(), e);
                 }
+                String s = Thread.activeCount() + " active threads now.";
+                LOGGER.warn(s);
             }).start();
         }).start();
     }
@@ -511,7 +510,7 @@ public class NetScannerSvc {
         StringBuilder stringBuilder = new StringBuilder();
         ThreadPoolTaskExecutor executor = threadConfig.threadPoolTaskExecutor();
         execSet(executor);
-        executor.execute(() -> pcUserResolver.namesToFile(pcName));
+        executor.execute(() -> pcUserResolver.namesToFile(pcName), ConstantsFor.TIMEOUT_5);
         try (PreparedStatement statement = c.prepareStatement(sql)) {
             statement.setString(1, pcName);
             try (ResultSet resultSet = statement.executeQuery()) {
@@ -529,6 +528,7 @@ public class NetScannerSvc {
                 }
             }
         } catch (SQLException | NullPointerException e) {
+            executor.destroy();
             return e.getMessage();
         }
         return stringBuilder
@@ -539,7 +539,7 @@ public class NetScannerSvc {
     }
 
     /**
-     <b>Проверяет есть ля в БД имя пользователя</b>
+     <b>Проверяет есть ли в БД имя пользователя</b>
 
      @param sql    запрос
      @param pcName имя ПК
@@ -557,18 +557,19 @@ public class NetScannerSvc {
                             .append(resultSet.getString("userName").trim()).append("</b> (time: ")
                             .append(resultSet.getString("whenQueried")).append(")");
                     }
-                    try (ResultSet resultSet1 = p1.executeQuery()) {
-                        while (resultSet1.next()) {
-                            if (resultSet1.last()) {
-                                return stringBuilder
-                                    .append("    (AutoResolved name: ")
-                                    .append(resultSet1.getString("userName").trim()).append(" (time: ")
-                                    .append(resultSet1.getString("whenQueried")).append("))").toString();
-                            }
+                }
+                try(ResultSet resultSet1 = p1.executeQuery()){
+                    while(resultSet1.next()){
+                        if(resultSet1.last()){
+                            return stringBuilder
+                                .append("    (AutoResolved name: ")
+                                .append(resultSet1.getString("userName").trim()).append(" (time: ")
+                                .append(resultSet1.getString("whenQueried")).append("))").toString();
                         }
-                    } catch (SQLException ignore) {
-                        //
                     }
+                }
+                catch(SQLException ignore){
+                    //
                 }
             }
         } catch (SQLException e) {
@@ -589,8 +590,6 @@ public class NetScannerSvc {
         executor.setKeepAliveSeconds(30);
         executor.setAllowCoreThreadTimeOut(true);
         executor.setQueueCapacity(317);
-        String msg = executor.prefersShortLivedTasks() + " prefersShortLivedTasks";
-        LOGGER.debug(msg);
     }
 
     /**

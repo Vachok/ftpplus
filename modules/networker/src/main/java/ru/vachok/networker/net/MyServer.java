@@ -13,9 +13,7 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.security.SecureRandom;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Scanner;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static java.lang.System.*;
@@ -62,6 +60,8 @@ public class MyServer extends Thread {
      {@link #getSocket()} , {@link #setSocket(Socket)}
      */
     private static Socket socket;
+
+    private static final Properties propsToSave = ConstantsFor.getPROPS();
 
     /**
      <i>{@link SystemTrayHelper#recOn()}</i>
@@ -132,7 +132,7 @@ public class MyServer extends Thread {
         String readLine = bufferedReader.readLine();
         if (readLine.toLowerCase().contains("exit")) {
             IntoApplication.delTemp();
-            ConstantsFor.saveProps(ConstantsFor.PROPS);
+            ConstantsFor.saveProps(propsToSave);
             socket.close();
             System.exit(ConstantsFor.USER_EXIT);
         }

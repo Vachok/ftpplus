@@ -6,9 +6,7 @@ import org.springframework.stereotype.Service;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
 
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 
 /**
@@ -20,6 +18,8 @@ public class SimpleCalculator {
     private static final Logger LOGGER = AppComponents.getLogger();
 
     private String query;
+
+    private static final Properties PROPS = ConstantsFor.getPROPS();
 
     public String getQuery() {
         return query;
@@ -77,9 +77,10 @@ public class SimpleCalculator {
 
     }
 
+    /*Get&Set*/
     private void setToDB(long timeInMillis) {
-        ConstantsFor.PROPS.setProperty("lasts", String.valueOf(timeInMillis));
-        ConstantsFor.saveProps(ConstantsFor.PROPS);
+        ConstantsFor.getPROPS().setProperty("lasts", String.valueOf(timeInMillis));
+        ConstantsFor.saveProps(PROPS);
     }
 
     public double countDoubles(List<Double> doubleList) {

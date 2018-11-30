@@ -1,4 +1,4 @@
-package ru.vachok.networker.componentsrepo;
+package ru.vachok.networker.accesscontrol;
 
 
 import org.springframework.context.annotation.Scope;
