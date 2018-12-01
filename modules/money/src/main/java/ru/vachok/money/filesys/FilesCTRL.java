@@ -52,15 +52,16 @@ public class FilesCTRL {
         model.addAttribute("filesSrv", filesSRV);
         model.addAttribute("head", new PageFooter().getHead());
         model.addAttribute("footer", new PageFooter().getTheFooter());
-        model.addAttribute("result", filesSRV.getInfo());
         return "files";
     }
 
     @PostMapping ("/files")
     public String filesPOST(@ModelAttribute FilesSRV filesSRV, Model model) {
+        LOGGER.info("FilesCTRL.filesPOST");
         this.filesSRV = filesSRV;
         model.addAttribute("filesSrv", filesSRV);
-        model.addAttribute("result", filesSRV.getInfo());
+        String resStr = filesSRV.getInfo();
+        model.addAttribute("result", resStr);
         return "files";
     }
 }

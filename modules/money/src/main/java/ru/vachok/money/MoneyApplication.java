@@ -19,6 +19,8 @@ import java.io.IOException;
 import java.security.SecureRandom;
 import java.util.Date;
 import java.util.Objects;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import static org.springframework.boot.SpringApplication.run;
@@ -53,7 +55,8 @@ public class MoneyApplication {
                     ConstantsFor.APP_NAME + ". Started at " + new Date(ConstantsFor.START_STAMP),
                     new AppVersion().toString() + "\n" + msg + "\n" + filesRnd());
         };
-        defaultExecutor.execute(r, TimeUnit.MINUTES.toMillis(5));
+        ScheduledExecutorService scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(2);
+        scheduledThreadPoolExecutor.scheduleWithFixedDelay(r, ConstantsFor.INITIAL_DELAY, TimeUnit.DAYS.toSeconds(1), TimeUnit.SECONDS);
         AppComponents.getLogger().warn(msg);
     }
 

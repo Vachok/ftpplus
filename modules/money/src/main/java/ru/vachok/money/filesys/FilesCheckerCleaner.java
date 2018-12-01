@@ -7,7 +7,9 @@ import ru.vachok.money.ConstantsFor;
 import ru.vachok.money.config.AppComponents;
 
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -38,18 +40,12 @@ public class FilesCheckerCleaner extends SimpleFileVisitor<Path> {
     }
 
     public ConcurrentMap<String, String> getResMap() {
-        try{
-            Files.walkFileTree(path, this);
-        }
-        catch(IOException e){
-            LOGGER.error(e.getMessage(), e);
-        }
+        LOGGER.info("FilesCheckerCleaner.getResMap");
         return resMap;
     }
 
     @Override
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-        LOGGER.info("FilesCheckerCleaner.preVisitDirectory");
         return FileVisitResult.CONTINUE;
     }
 
@@ -65,12 +61,11 @@ public class FilesCheckerCleaner extends SimpleFileVisitor<Path> {
     @Override
     public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
         resMap.put(file.toString(), exc.getMessage());
-        return super.visitFileFailed(file, exc);
+        return FileVisitResult.CONTINUE;
     }
 
     @Override
     public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-        LOGGER.info("FilesCheckerCleaner.postVisitDirectory");
-        return super.postVisitDirectory(dir, exc);
+        return FileVisitResult.CONTINUE;
     }
 }

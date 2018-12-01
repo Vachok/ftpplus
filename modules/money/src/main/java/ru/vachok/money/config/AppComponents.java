@@ -43,7 +43,7 @@ public class AppComponents {
 
     @Bean
     public FilesSRV filesSRV() {
-        return new FilesSRV(filesCheckerCleaner());
+        return new FilesSRV();
     }
 
     @Bean

@@ -1,10 +1,14 @@
 package ru.vachok.money.filesys;
 
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
+import ru.vachok.money.config.AppComponents;
 import ru.vachok.money.services.TForms;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.ConcurrentMap;
 
@@ -17,7 +21,12 @@ import java.util.concurrent.ConcurrentMap;
 @Service
 public class FilesSRV {
 
-    private String userInput = "";
+    /*Fields*/
+    private static final Logger LOGGER = AppComponents.getLogger();
+
+    private String userInput;
+
+    private FilesCheckerCleaner filesCheckerCleaner;
 
     public String getUserInput() {
         return userInput;
@@ -27,22 +36,16 @@ public class FilesSRV {
         this.userInput = userInput;
     }
 
-    /**
-     Simple Name класса, для поиска настроек
-     */
-    private static final String SOURCE_CLASS = FilesSRV.class.getSimpleName();
-
-    private FilesCheckerCleaner filesCheckerCleaner;
-
     String getInfo() {
-        filesCheckerCleaner.setPath(Paths.get(userInput));
+        FilesCheckerCleaner filesCheckerCleaner = new FilesCheckerCleaner();
+        Path path = Paths.get(this.userInput);
+        try{
+            Files.walkFileTree(path, filesCheckerCleaner);
+        }
+        catch(IOException e){
+            LOGGER.error(e.getMessage(), e);
+        }
         ConcurrentMap<String, String> resMap = filesCheckerCleaner.getResMap();
         return new TForms().toStringFromArray(resMap);
-    }
-
-    /*Instances*/
-    @Autowired
-    public FilesSRV(FilesCheckerCleaner filesCheckerCleaner) {
-        this.filesCheckerCleaner = filesCheckerCleaner;
     }
 }
