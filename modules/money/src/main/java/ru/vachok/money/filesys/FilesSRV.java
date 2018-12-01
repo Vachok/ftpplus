@@ -3,6 +3,7 @@ package ru.vachok.money.filesys;
 
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
+import org.springframework.ui.Model;
 import ru.vachok.money.config.AppComponents;
 import ru.vachok.money.services.TForms;
 
@@ -24,18 +25,36 @@ import java.util.concurrent.ConcurrentMap;
 public class FilesSRV {
 
     /*Fields*/
+
+    /**
+     {@link AppComponents#getLogger()}
+     */
     private static final Logger LOGGER = AppComponents.getLogger();
 
+    /**
+     Пользовательский ввод
+
+     @see FilesCTRL#filesPOST(FilesSRV, Model)
+     */
     private String userInput;
 
+    /**
+     @return {@link #userInput}
+     */
     public String getUserInput() {
         return userInput;
     }
 
+    /**
+     @param userInput {@link #userInput}
+     */
     public void setUserInput(String userInput) {
         this.userInput = userInput;
     }
 
+    /**
+     @return список файлов из {@link FilesCheckerCleaner}
+     */
     String getInfo() {
         FilesCheckerCleaner filesCheckerCleaner = new FilesCheckerCleaner();
         if(userInput.equalsIgnoreCase("all")){
@@ -52,6 +71,11 @@ public class FilesSRV {
         return new TForms().toStringFromArray(resMap);
     }
 
+    /**
+     IF {@link #userInput} eq "all"
+     @param filesCheckerCleaner {@link FilesCheckerCleaner}
+     @return список <b>всех файлов</b> соотв. критериям {@link FilesCheckerCleaner}
+     */
     private String scanAllDrives(FilesCheckerCleaner filesCheckerCleaner) {
         List<String> resList = new ArrayList<>();
         Path[] paths = {Paths.get("c:\\"), Paths.get("d:\\"), Paths.get("e:\\"),
