@@ -10,6 +10,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 
 
@@ -26,8 +28,6 @@ public class FilesSRV {
 
     private String userInput;
 
-    private FilesCheckerCleaner filesCheckerCleaner;
-
     public String getUserInput() {
         return userInput;
     }
@@ -38,6 +38,9 @@ public class FilesSRV {
 
     String getInfo() {
         FilesCheckerCleaner filesCheckerCleaner = new FilesCheckerCleaner();
+        if(userInput.equalsIgnoreCase("all")){
+            return scanAllDrives(filesCheckerCleaner);
+        }
         Path path = Paths.get(this.userInput);
         try{
             Files.walkFileTree(path, filesCheckerCleaner);
@@ -47,5 +50,22 @@ public class FilesSRV {
         }
         ConcurrentMap<String, String> resMap = filesCheckerCleaner.getResMap();
         return new TForms().toStringFromArray(resMap);
+    }
+
+    private String scanAllDrives(FilesCheckerCleaner filesCheckerCleaner) {
+        List<String> resList = new ArrayList<>();
+        Path[] paths = {Paths.get("c:\\"), Paths.get("d:\\"), Paths.get("e:\\"),
+            Paths.get("f:\\"), Paths.get("g:\\")};
+        for(Path path : paths){
+            try{
+                Files.walkFileTree(path, filesCheckerCleaner);
+                ConcurrentMap<String, String> resMap = filesCheckerCleaner.getResMap();
+                resList.add(new TForms().toStringFromArray(resMap, true));
+            }
+            catch(IOException e){
+                LOGGER.error(e.getMessage(), e);
+            }
+        }
+        return new TForms().toStringFromArray(resList);
     }
 }

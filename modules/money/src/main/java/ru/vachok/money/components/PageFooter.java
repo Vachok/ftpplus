@@ -26,7 +26,9 @@ public class PageFooter {
             .append(razDel)
             .append("<a href=\"/sysinfo\">System information</a>")
             .append(razDel)
-            .append("<a href=\"/nav\">NAV Test</a>");
+            .append("<a href=\"/nav\">NAV Test</a>")
+            .append(razDel)
+            .append("<a href=\"/files\">FS works</a>");
         return stringBuilder.toString();
     }
 
