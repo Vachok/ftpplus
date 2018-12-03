@@ -8,6 +8,8 @@ import javax.servlet.http.Cookie;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 
+import static ru.vachok.money.services.sockets.TellNetSRV.LOGGER;
+
 
 /**
  @since 28.08.2018 (0:28) */
@@ -137,31 +139,36 @@ public class TForms {
     }
 
     public String toStringFromArray(Cookie[] cookies, boolean brB) {
-        for(Cookie c : cookies){
-            String br = "<br>";
-            String n = "\n";
-            brStrBuilder.append(br);
-            nStringBuilder.append(n);
-            brStrBuilder
-                .append(c.getName()).append(" name")
-                .append(br)
-                .append(c.getDomain()).append(" domain")
-                .append(br)
-                .append(c.getValue()).append(" value")
-                .append(br)
-                .append(c.getSecure()).append(" secure")
-                .append(br)
-                .append(c.getVersion()).append(" version");
-            nStringBuilder
-                .append(c.getName()).append(" name")
-                .append(n)
-                .append(c.getDomain()).append(" domain")
-                .append(n)
-                .append(c.getValue()).append(" value")
-                .append(n)
-                .append(c.getSecure()).append(" secure")
-                .append(n)
-                .append(c.getVersion()).append(" version");
+        try{
+            for(Cookie c : cookies){
+                String br = "<br>";
+                String n = "\n";
+                brStrBuilder.append(br);
+                nStringBuilder.append(n);
+                brStrBuilder
+                    .append(c.getName()).append(" name")
+                    .append(br)
+                    .append(c.getDomain()).append(" domain")
+                    .append(br)
+                    .append(c.getValue()).append(" value")
+                    .append(br)
+                    .append(c.getSecure()).append(" secure")
+                    .append(br)
+                    .append(c.getVersion()).append(" version");
+                nStringBuilder
+                    .append(c.getName()).append(" name")
+                    .append(n)
+                    .append(c.getDomain()).append(" domain")
+                    .append(n)
+                    .append(c.getValue()).append(" value")
+                    .append(n)
+                    .append(c.getSecure()).append(" secure")
+                    .append(n)
+                    .append(c.getVersion()).append(" version");
+            }
+        }
+        catch(NullPointerException e){
+            LOGGER.warn(e.getMessage() + " no cookies");
         }
         if(brB){
             return brStrBuilder.toString();

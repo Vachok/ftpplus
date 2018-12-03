@@ -17,21 +17,21 @@ import java.util.concurrent.TimeUnit;
 public class VisitorSrv {
 
     /*Fields*/
-    private CookieMaker cookieMaker;
-
-    public CookieMaker getCookieMaker() {
-        return cookieMaker;
-    }
-
-    /*Instances*/
-    public VisitorSrv(CookieMaker cookieMaker) {
-        this.cookieMaker = cookieMaker;
-    }
 
     /**
      {@link }
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(VisitorSrv.class.getSimpleName());
+
+    private CookieMaker cookieMaker;
+
+    public CookieMaker getCookieMaker() {
+        return cookieMaker;
+    }
+    /*Instances*/
+    public VisitorSrv(CookieMaker cookieMaker) {
+        this.cookieMaker = cookieMaker;
+    }
 
     public void makeVisit(HttpServletRequest request, HttpServletResponse response) throws IllegalStateException {
         StringBuilder sb = new StringBuilder();
@@ -39,18 +39,24 @@ public class VisitorSrv {
         String sessionId = request.getSession().getId();
         String msg = "SET NEW Session ID" + request.getSession().getId() + " sessionID = " + sessionId;
         LOGGER.info(msg);
-        if (CookieMaker.isCookiePresent(request) == 0) {
+        if(CookieMaker.isCookiePresent(request)==0){
             Cookie[] cookies = request.getCookies();
-            for(Cookie c : cookies){
-                sb
-                    .append("Name: ")
-                    .append(c.getName()).append("\n")
-                    .append("Age: ")
-                    .append(c.getMaxAge()).append("\n")
-                    .append("Comment: ")
-                    .append(c.getComment()).append("\n")
-                    .append("Value")
-                    .append(c.getValue());
+            try{
+                for(Cookie c : cookies){
+                    sb
+                        .append("Name: ")
+                        .append(c.getName()).append("\n")
+                        .append("Age: ")
+                        .append(c.getMaxAge()).append("\n")
+                        .append("Comment: ")
+                        .append(c.getComment()).append("\n")
+                        .append("Value")
+                        .append(c.getValue());
+                }
+            }
+            catch(NullPointerException e){
+                String msg1 = e.getMessage() + " no cookies";
+                LOGGER.warn(msg1);
             }
         }
         else{
@@ -58,9 +64,10 @@ public class VisitorSrv {
         }
         String n = "\n";
         Cookie[] cookies = new Cookie[100];
-        try {
+        try{
             cookies = request.getCookies();
-        } catch (Exception e) {
+        }
+        catch(Exception e){
             LOGGER.error(e.getMessage(), e);
         }
         req
