@@ -156,13 +156,15 @@ public class IntoApplication {
         DayOfWeek satDay = DayOfWeek.SATURDAY;
         if (localDate.getDayOfWeek().toString().equalsIgnoreCase(satDay.toString())) return new Date();
         else {
+            int firstDayOfWeek = Calendar.getInstance().getFirstDayOfWeek();
+            int toSat = satDay.getValue() - firstDayOfWeek;
             Date retDate = builder
                 .setDate(
                     localDate.getYear(),
                     localDate.getMonth().getValue() - 1,
-                    localDate.getDayOfMonth() + 1)
+                    localDate.getDayOfMonth() + toSat + 1)
                 .setTimeOfDay(0, 1, 0).build().getTime();
-            String msg = retDate.toString() + "//todo 30.11.2018 (14:09)"; // TODO: 30.11.2018
+            String msg = retDate.toString() + " " + toSat;
             LOGGER.info(msg);
             return retDate;
         }
