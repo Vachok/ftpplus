@@ -8,8 +8,8 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.money.components.AppVersion;
 import ru.vachok.money.components.PageFooter;
 import ru.vachok.money.config.ThreadConfig;
+import ru.vachok.money.filesys.FilesCleaner;
 import ru.vachok.money.services.DBMessage;
-import ru.vachok.money.services.FilesCleaner;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.concurrent.ExecutionException;

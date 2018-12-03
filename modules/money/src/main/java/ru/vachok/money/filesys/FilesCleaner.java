@@ -1,13 +1,15 @@
-package ru.vachok.money.services;
+package ru.vachok.money.filesys;
 
 
 import org.slf4j.Logger;
 import ru.vachok.money.ConstantsFor;
 import ru.vachok.money.config.AppComponents;
+import ru.vachok.money.services.TForms;
 
 import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Objects;
 import java.util.Stack;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
@@ -20,12 +22,6 @@ import java.util.concurrent.TimeUnit;
 public class FilesCleaner extends SimpleFileVisitor<Path> implements Callable<String> {
 
     /*Fields*/
-
-    /**
-     Simple Name класса, для поиска настроек
-     */
-    private static final String SOURCE_CLASS = FilesCleaner.class.getSimpleName();
-
     private static final Logger LOGGER = AppComponents.getLogger();
 
     private String startDir = "\\\\10.10.111.1\\Torrents-FTP";
@@ -36,7 +32,7 @@ public class FilesCleaner extends SimpleFileVisitor<Path> implements Callable<St
 
     private long bytesCount = 0;
 
-    private File fileR = new File("torrents.csv");
+    private File fileR = new File("111.1.del");
 
     public String getStartDir() {
         return startDir;
@@ -53,6 +49,13 @@ public class FilesCleaner extends SimpleFileVisitor<Path> implements Callable<St
         this.delFiles = false;
     }
 
+    /*Itinial Block*/
+    /*Itinial Block*/
+    /*Itinial Block*/
+    /*Itinial Block*/
+    /*Itinial Block*/
+    /*Itinial Block*/
+    /*Itinial Block*/
     /*Itinial Block*/ {
         try{
             OutputStream outputStream = new FileOutputStream(fileR);
@@ -93,7 +96,9 @@ public class FilesCleaner extends SimpleFileVisitor<Path> implements Callable<St
 
     @Override
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-        String logMsg = "Scanning dir - " + dir.toAbsolutePath().toString() + " modified at " + attrs.lastModifiedTime();
+        int filesInDir = dir.toFile().listFiles().length;
+        String logMsg = "Scanning dir - " + dir.toAbsolutePath().toString() + ". Files: " + filesInDir +
+            "\nmodified at " + attrs.lastModifiedTime();
         LOGGER.info(logMsg);
         return FileVisitResult.CONTINUE;
     }
@@ -103,59 +108,71 @@ public class FilesCleaner extends SimpleFileVisitor<Path> implements Callable<St
         boolean oldFilesToFile = attrs.lastAccessTime().toMillis() < (System.currentTimeMillis() - TimeUnit
             .DAYS.toMillis(ConstantsFor.ONE_YEAR));
         String semiCol = ",";
-        if(delFiles){
-            Thread.currentThread().setPriority(1);
-            Thread.currentThread().setName(startDir);
-            if(attrs.isRegularFile() && oldFilesToFile){
-                long length = file.toFile().length();
-                this.bytesCount = bytesCount + length;
-                String toString = new StringBuilder()
-                    .append("File: ")
-                    .append(semiCol)
-                    .append(file.toAbsolutePath())
-                    .append(semiCol)
-                    .append("size in kbytes")
-                    .append(semiCol)
-                    .append(( float ) length / ConstantsFor.KILOBYTE)
-                    .append(semiCol)
-                    .append("Created")
-                    .append(semiCol)
-                    .append(attrs.creationTime())
-                    .append(semiCol)
-                    .append(attrs.fileKey()).append(" file key?")
-                    .append(( float ) length / ConstantsFor.MEGABYTE)
-                    .append(" Mbytes total")
-                    .append("\n").toString();
-                try{
-                    Files.delete(file);
-                    printWriter.println(toString);
-                }
-                catch(AccessDeniedException e){
-                    printWriter.println("Denied. Reason: " + e.getReason() + ": " + file.toAbsolutePath());
-                    return FileVisitResult.CONTINUE;
+        Thread.currentThread().setPriority(1);
+        Thread.currentThread().setName(startDir);
+        long length = file.toFile().length();
+        bytesCount = bytesCount + length;
+        String toString = new StringBuilder()
+            .append("File: ")
+            .append(semiCol)
+            .append(file.toAbsolutePath())
+            .append(semiCol)
+            .append("size in kbytes")
+            .append(semiCol)
+            .append(( float ) length / ConstantsFor.KILOBYTE)
+            .append(semiCol)
+            .append("Created")
+            .append(semiCol)
+            .append(attrs.creationTime())
+            .append(semiCol)
+            .append(file.toFile().getTotalSpace() / ConstantsFor.MEGABYTE)
+            .append(" MBYTES on disk free")
+            .append(semiCol)
+            .append("\n")
+            .append(( float ) bytesCount / ConstantsFor.MEGABYTE)
+            .append(" Mbytes total deleted")
+            .append("\n").toString();
+        if(attrs.isRegularFile()){
+            this.bytesCount = bytesCount + length;
+            try{
+                Files.deleteIfExists(file.toAbsolutePath());
+            }
+            catch(AccessDeniedException e){
+                boolean delete = file.toFile().delete();
+                if(!delete){
+                    file.toFile().deleteOnExit();
                 }
             }
         }
         else{
             if(oldFilesToFile){
+                String msg = true + " oldFilesToFile\n" + file.toString();
+                LOGGER.info(msg);
                 printWriter.println(file.toAbsolutePath().toString() + semiCol + attrs.size() / ConstantsFor.MEGABYTE + semiCol +
                     attrs.lastAccessTime());
             }
         }
+        printWriter.println(toString);
         return FileVisitResult.CONTINUE;
     }
 
     @Override
     public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
-        printWriter.println(file + "," + exc.getMessage());
+        String msg = file + "," + exc.getMessage();
+        LOGGER.warn(msg);
         return FileVisitResult.CONTINUE;
     }
 
     @Override
     public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-        Iterable<FileStore> fileStoreIter = dir.getFileSystem().getFileStores();
-        if(delFiles && !fileStoreIter.iterator().hasNext()){
-            Files.delete(dir);
+        try{
+            if(Objects.requireNonNull(dir.toFile().listFiles()).length <= 0){
+                Files.delete(dir);
+                return FileVisitResult.CONTINUE;
+            }
+        }
+        catch(FileSystemException e){
+            printWriter.println(e.getMessage());
         }
         return FileVisitResult.CONTINUE;
     }
