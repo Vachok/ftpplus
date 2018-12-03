@@ -112,13 +112,4 @@ public class ActDirectoryCTRL {
         }
         return "adphoto";
     }
-
-    @PostMapping("/sshacts")
-    private String sshActs(@ModelAttribute SshActs sshActs, Model model) {
-        this.sshActs = sshActs;
-        model.addAttribute("sshActs", sshActs);
-        model.addAttribute("tempFull", sshActs.isTempFull());
-        return "aditem";
-    }
-
 }

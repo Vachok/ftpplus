@@ -306,7 +306,6 @@ public class NetScannerSvc {
      @see #getPCNamesPref(String)
      */
     private String getSomeMore(String pcName, boolean isOnline) {
-
         String sql;
         if (isOnline) {
             sql = "select * from velkompc where NamePP like ?";
