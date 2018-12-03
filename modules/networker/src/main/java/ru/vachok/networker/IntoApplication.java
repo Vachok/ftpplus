@@ -14,6 +14,8 @@ import ru.vachok.networker.accesscontrol.MatrixCtr;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.config.ThreadConfig;
+import ru.vachok.networker.controller.ServiceInfoCtrl;
+import ru.vachok.networker.net.MyServer;
 import ru.vachok.networker.services.CommonScan2YOlder;
 
 import java.io.IOException;
@@ -49,6 +51,12 @@ public class IntoApplication {
      */
     private static final SpringApplication SPRING_APPLICATION = new SpringApplication();
 
+    /**
+     Имя ПК, на котором запущена программа.
+     <p>
+     <p>
+     {@link ConstantsFor#thisPC()}
+     */
     private static final String THIS_PC = ConstantsFor.thisPC();
 
     /**
@@ -97,6 +105,11 @@ public class IntoApplication {
         schedStarter();
     }
 
+    /**
+     Удаление временных файлов.
+     <p>
+     Usages: {@link SystemTrayHelper#addTray(String)}, {@link ServiceInfoCtrl#closeApp()}, {@link MyServer#reconSock()}. <br> Uses: {@link CommonScan2YOlder} <br>
+     */
     public static void delTemp() {
         try {
             Files.walkFileTree(Paths.get("."), new CommonScan2YOlder());
@@ -137,10 +150,12 @@ public class IntoApplication {
 
         Date startTime = getNextSat();
 
+        long delay = TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY * 7);
         ScheduledFuture<?> scheduleWithFixedDelay = new ThreadConfig().threadPoolTaskScheduler().scheduleWithFixedDelay(
-            r, startTime, TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY * 7));
+            r, startTime, delay);
         try {
-            String msg = "Common scanner : " + startTime.toString();
+            String msg = "Common scanner : " + startTime.toString() + ". Common scan delay is " +
+                (float) TimeUnit.MILLISECONDS.toHours(delay) / 24 + " days";
             LOGGER.warn(msg);
             scheduleWithFixedDelay.get();
         } catch (InterruptedException | ExecutionException e) {
@@ -150,6 +165,13 @@ public class IntoApplication {
         }
     }
 
+    /**
+     Дата запуска common scanner
+     <p>
+     Usage: {@link #runCommonScan()} <br> Uses: - <br>
+
+     @return new {@link Date} следующая суббота 0:01
+     */
     private static Date getNextSat() {
         Calendar.Builder builder = new Calendar.Builder();
         LocalDate localDate = LocalDate.now();
