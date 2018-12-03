@@ -171,7 +171,12 @@ public enum ConstantsFor {
     }
 
     public static void saveProps(Properties propsToSave) {
-        InitProperties initProperties = new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
+        InitProperties initProperties;
+        try {
+            initProperties = new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
+        } catch (Exception e) {
+            initProperties = new FileProps(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
+        }
         initProperties.delProps();
         initProperties.setProps(propsToSave);
         initProperties = new FileProps(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
