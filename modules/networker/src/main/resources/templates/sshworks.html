@@ -1,0 +1,26 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${title}">ХЗ</title>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type"/>
+    <link href="css/main.css" media="all" rel="stylesheet" th:href="@{css/main.css}" type="text/css"/>
+</head>
+<body>
+<center>
+    <p th:utext="${sshdetail}"/>
+    <form>
+        <form method="POST" th:action="@{/sshacts}" th:object="${sshActs}"><br>
+            Internet:<br><br>
+            Полный, через proxy (запись статистики): <input id="tempFull" name="inet" th:field="*{tempFull}" th:value="${tempFull}" type="radio"/><br>
+            Органиченный, через proxy (запись статистики): <input id="squid" name="inet" type="radio"/><br>
+            Только определённые сайты, через proxy (запись статистики): <input id="squidLimited" name="inet" type="radio"/><br>
+            NAT, <b>без proxy</b> (без статистики): <input id="NAT" name="inet" type="radio"/><br>
+            <input type="submit" value="Установить"/><br>
+        </form>
+    </form>
+</center>
+</body>
+<footer>
+    <p th:utext="${footer}"/>
+</footer>
+</html>

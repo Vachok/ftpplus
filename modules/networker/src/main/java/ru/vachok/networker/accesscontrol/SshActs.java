@@ -19,30 +19,36 @@ import ru.vachok.networker.componentsrepo.PageFooter;
 @Service("sshActs")
 public class SshActs {
 
-    private Boolean tempFull = false;
+    private static final String PC_NAME = AppComponents.adSrv().getAdComputer().toString();
 
-    public Boolean isTempFull() {
+    private String tempFull;
+
+    @SuppressWarnings("WeakerAccess")
+    public String getTempFull() {
         return tempFull;
     }
 
-    public String pcName = AppComponents.adSrv().getAdComputer().toString();
-
-    public void setTempFull(boolean tempFull) {
+    public void setTempFull(String tempFull) {
         this.tempFull = tempFull;
     }
+
 
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("SshActs{");
-        sb.append("pcName='").append(pcName).append('\'');
+        sb.append("PC_NAME='").append(PC_NAME).append('\'');
         sb.append(", tempFull=").append(tempFull);
         sb.append('}');
         return sb.toString();
     }
 
+    /**
+     {@link Controller}, для работы с SSH
 
+     @since 01.12.2018 (9:58)
+     */
     @Controller
-    class SshActsCTRL {
+    public class SshActsCTRL {
 
         private SshActs sshActs;
 
@@ -55,9 +61,9 @@ public class SshActs {
         public String sshActsPOST(@ModelAttribute SshActs sshActs, Model model) {
             this.sshActs = sshActs;
             model.addAttribute("sshActs", sshActs);
-            model.addAttribute("tempFull", sshActs.isTempFull());
+            model.addAttribute("tempFull", sshActs.getTempFull());
             model.addAttribute("sshdetail", sshActs.toString());
-            return "aditem";
+            return "sshworks";
         }
 
         @GetMapping("/sshacts")
@@ -66,7 +72,7 @@ public class SshActs {
             model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext());
             model.addAttribute("sshActs", sshActs);
             model.addAttribute("sshdetail", sshActs.toString());
-            return "aditem";
+            return "sshworks";
         }
     }
 }
