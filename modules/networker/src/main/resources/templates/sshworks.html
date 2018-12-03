@@ -3,7 +3,7 @@
 <head>
     <title th:text="${title}">ХЗ</title>
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type"/>
-    <link href="css/main.css" media="all" rel="stylesheet" th:href="@{css/main.css}" type="text/css"/>
+    <!--<link href="css/main.css" media="all" rel="stylesheet" th:href="@{css/main.css}" type="text/css"/>-->
 </head>
 <body>
 <center>
@@ -11,12 +11,21 @@
     <form>
         <form method="POST" th:action="@{/sshacts}" th:object="${sshActs}"><br>
             Internet:<br><br>
-            Полный, через proxy (запись статистики): <input id="tempFull" name="inet" th:field="*{tempFull}" th:value="${tempFull}" type="radio"/><br>
-            Органиченный, через proxy (запись статистики): <input id="squid" name="inet" type="radio"/><br>
-            Только определённые сайты, через proxy (запись статистики): <input id="squidLimited" name="inet" type="radio"/><br>
-            NAT, <b>без proxy</b> (без статистики): <input id="NAT" name="inet" type="radio"/><br>
+            Разрешить инет для : <input placeholder="Введите имя или IP компьютера" required size="26" th:field="*{pcName}" type="text"/> <br>
+            <p>
+                Полный, через proxy (<a href="http://srv-git.eatmeat.ru/fsa/">запись статистики</a>): <input id="tempFull" name="inet" th:field="*{inet}" th:value="full" type="radio"/><br>
+                Органиченный, через proxy (<a href="http://srv-git.eatmeat.ru/fsa/">запись статистики</a>): <input id="squid" name="inet" th:field="*{inet}" th:value="std" type="radio"/><br>
+                Только определённые сайты, через proxy (<a href="http://srv-git.eatmeat.ru/fsa/">запись статистики</a>): <input id="squidLimited" name="inet" th:field="*{inet}" th:value="limit"
+                                                                                                                                type="radio"/><br>
+                NAT, <b>без proxy</b> (<b>без статистики</b>): <input id="NAT" name="inet" th:field="*{inet}" th:value="nat" type="radio"/><br><br>
             <input type="submit" value="Установить"/><br>
         </form>
+    </form>
+    <p>
+    <form method="POST" th:action="@{/allowdomain}" th:object="${sshActs}"><br>
+        Разрешить домен :<br>
+        <input placeholder="Введите имя домена. (domain.name - откроет *.domain.name)" required size="55" th:field="*{allowDomain}" type="text"/>
+        <input type="submit" value="Разрешить"/>
     </form>
 </center>
 </body>

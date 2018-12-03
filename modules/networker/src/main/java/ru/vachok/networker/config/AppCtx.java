@@ -13,8 +13,7 @@ import java.util.Queue;
 
 
 /**
- * @since 30.08.2018 (13:22)
- */
+ @since 30.08.2018 (13:22) */
 @EnableAutoConfiguration
 public class AppCtx extends AnnotationConfigApplicationContext {
 
@@ -41,6 +40,7 @@ public class AppCtx extends AnnotationConfigApplicationContext {
     }
 
     private static AnnotationConfigApplicationContext configApplicationContext = new AnnotationConfigApplicationContext();
+
     public static AnnotationConfigApplicationContext scanForBeansAndRefreshContext() {
         configApplicationContext.scan("ru.vachok.networker.componentsrepo");
         configApplicationContext.scan("ru.vachok.networker.services");
@@ -48,6 +48,7 @@ public class AppCtx extends AnnotationConfigApplicationContext {
         qAdd();
         return configApplicationContext;
     }
+
     private static void qAdd() {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("<p><center><h3>Application Context</center></h3>");
