@@ -2,7 +2,6 @@ package ru.vachok.money.services;
 
 
 import com.google.maps.model.DistanceMatrixElement;
-import ru.vachok.money.other.XmlNode;
 
 import javax.mail.Address;
 import javax.servlet.http.Cookie;
@@ -55,15 +54,21 @@ public class TForms {
         return brStrBuilder.toString();
     }
 
-    public String toStringFromArray(Map<String, String> map) {
+    public String toStringFromArray(Map<?, ?> map, boolean br) {
         brStrBuilder.append("<p>");
         map.forEach((x, y) -> {
             brStrBuilder.append(x).append(" ; ");
             brStrBuilder.append(y).append("<br>");
+            nStringBuilder.append(x).append(" ; ");
+            nStringBuilder.append(y).append("\n");
         });
         brStrBuilder.append("</p>");
-        return brStrBuilder.toString();
-
+        if(br){
+            return brStrBuilder.toString();
+        }
+        else{
+            return nStringBuilder.toString();
+        }
     }
 
     public String toStringFromArray(Exception e, boolean br) {
@@ -120,16 +125,6 @@ public class TForms {
         else{
             return nStringBuilder.toString();
         }
-    }
-
-    public String mapIntXmlNode(Map<Integer, XmlNode> integerXmlNodeMap) {
-        brStrBuilder.append("<p>");
-        integerXmlNodeMap.forEach((x, y) -> brStrBuilder.append(x)
-            .append(") ")
-            .append(y.toString())
-            .append("<br>"));
-        brStrBuilder.append("</p>");
-        return brStrBuilder.toString();
     }
 
     public String toStringFromArray(String[] beanDefinitionNames) {

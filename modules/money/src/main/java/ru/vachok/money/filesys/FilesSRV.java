@@ -8,9 +8,7 @@ import ru.vachok.money.config.AppComponents;
 import ru.vachok.money.services.TForms;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentMap;
@@ -39,6 +37,17 @@ public class FilesSRV {
     private String userInput;
 
     /**
+     Буквы дисков домашнего ПК.
+     <p>
+     */
+    private Path[] pathsHomePC = {
+        Paths.get("c:\\"),
+        Paths.get("d:\\"),
+        Paths.get("e:\\"),
+        Paths.get("f:\\"),
+        Paths.get("g:\\")};
+
+    /**
      @return {@link #userInput}
      */
     public String getUserInput() {
@@ -60,6 +69,11 @@ public class FilesSRV {
         if(userInput.equalsIgnoreCase("all")){
             return scanAllDrives(filesCheckerCleaner);
         }
+        else{
+            if(userInput.toLowerCase().contains("search: ")){
+                return searchFile(userInput);
+            }
+        }
         Path path = Paths.get(this.userInput);
         try{
             Files.walkFileTree(path, filesCheckerCleaner);
@@ -68,18 +82,18 @@ public class FilesSRV {
             LOGGER.error(e.getMessage(), e);
         }
         ConcurrentMap<String, String> resMap = filesCheckerCleaner.getResMap();
-        return new TForms().toStringFromArray(resMap);
+        return new TForms().toStringFromArray(resMap, true);
     }
 
     /**
      IF {@link #userInput} eq "all"
+
      @param filesCheckerCleaner {@link FilesCheckerCleaner}
      @return список <b>всех файлов</b> соотв. критериям {@link FilesCheckerCleaner}
      */
     private String scanAllDrives(FilesCheckerCleaner filesCheckerCleaner) {
         List<String> resList = new ArrayList<>();
-        Path[] paths = {Paths.get("c:\\"), Paths.get("d:\\"), Paths.get("e:\\"),
-            Paths.get("f:\\"), Paths.get("g:\\")};
+        Path[] paths = this.pathsHomePC;
         for(Path path : paths){
             try{
                 Files.walkFileTree(path, filesCheckerCleaner);
@@ -91,5 +105,21 @@ public class FilesSRV {
             }
         }
         return new TForms().toStringFromArray(resList);
+    }
+
+    private String searchFile(String userInput) {
+        StringBuilder stringBuilder = new StringBuilder();
+        FileVisitor<Path> filesCheckerCleaner = new FilesCheckerCleaner(true, userInput.split(": ")[1]);
+        for(Path path : pathsHomePC){
+            try{
+                Files.walkFileTree(path, filesCheckerCleaner);
+                ConcurrentMap<String, String> resMap = (( FilesCheckerCleaner ) filesCheckerCleaner).getResMap();
+                stringBuilder.append(new TForms().toStringFromArray(resMap, true));
+            }
+            catch(IOException e){
+                stringBuilder.append(e.getMessage());
+            }
+        }
+        return stringBuilder.toString();
     }
 }

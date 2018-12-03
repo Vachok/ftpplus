@@ -46,7 +46,7 @@ public class DataBases {
         StringBuilder stringBuilder = new StringBuilder();
         String[] namesDB = {"rez", "speed"};
         for(String s : namesDB){
-            String s1 = new TForms().toStringFromArray(getLastLogs(s));
+            String s1 = new TForms().toStringFromArray(getLastLogs(s), true);
             stringBuilder.append(s1);
         }
         m.addAttribute("dbinfo", stringBuilder.toString());

@@ -31,6 +31,9 @@ public class FilesCTRL {
      */
     private static final Logger LOGGER = AppComponents.getLogger();
 
+    /**
+     {@link AppComponents#filesSRV()}
+     */
     private FilesSRV filesSRV;
 
     /*Instances*/

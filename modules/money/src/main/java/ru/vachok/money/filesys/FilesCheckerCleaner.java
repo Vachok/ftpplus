@@ -31,6 +31,10 @@ public class FilesCheckerCleaner extends SimpleFileVisitor<Path> {
 
     private Path path;
 
+    private String inpUser;
+
+    private boolean isSearch;
+
     public Path getPath() {
         return path;
     }
@@ -44,6 +48,17 @@ public class FilesCheckerCleaner extends SimpleFileVisitor<Path> {
         return resMap;
     }
 
+    /*Instances*/
+    public FilesCheckerCleaner(boolean isSearch, String inpUser) {
+        this.isSearch = isSearch;
+        this.inpUser = inpUser;
+    }
+
+    public FilesCheckerCleaner() {
+        this.isSearch = false;
+        this.inpUser = "Nothing";
+    }
+
     @Override
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
         return FileVisitResult.CONTINUE;
@@ -51,9 +66,15 @@ public class FilesCheckerCleaner extends SimpleFileVisitor<Path> {
 
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-        if(attrs.lastModifiedTime().toMillis() < System.currentTimeMillis() - TimeUnit.DAYS.toMillis(ConstantsFor.ONE_YEAR)){
+        boolean isOneYearOld = attrs.lastModifiedTime().toMillis() < System.currentTimeMillis() - TimeUnit.DAYS.toMillis(ConstantsFor.ONE_YEAR);
+        if(!isSearch && isOneYearOld){
             resMap.put(file.toString(), attrs.lastAccessTime().toString());
             return FileVisitResult.CONTINUE;
+        }
+        else{
+            if(attrs.isRegularFile() && file.toFile().getName().toLowerCase().contains(inpUser)){
+                resMap.put(file.toString(), ( float ) attrs.size() / ConstantsFor.KILOBYTE + " kbytes");
+            }
         }
         return FileVisitResult.CONTINUE;
     }
