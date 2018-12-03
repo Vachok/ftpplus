@@ -16,8 +16,6 @@ import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.controller.ServiceInfoCtrl;
 import ru.vachok.networker.net.MyServer;
-import ru.vachok.networker.services.CommonScan2YOlder;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
