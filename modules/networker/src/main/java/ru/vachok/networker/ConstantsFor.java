@@ -11,6 +11,7 @@ import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.mailserver.MailRule;
 import ru.vachok.networker.services.PassGenerator;
+import ru.vachok.networker.services.TimeChecker;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
@@ -208,6 +209,17 @@ public enum ConstantsFor {
         } catch (UnknownHostException | ExceptionInInitializerError e) {
             return e.getMessage();
         }
+    }
+
+    private static long atomicTime;
+
+    public static long getAtomicTime() {
+        ConstantsFor.atomicTime = new TimeChecker().call().getReturnTime();
+        return atomicTime;
+    }
+
+    static void setAtomicTime(long returnTime) {
+        ConstantsFor.atomicTime = returnTime;
     }
 
     static boolean checkDay() {

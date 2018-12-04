@@ -1,6 +1,7 @@
 package ru.vachok.networker;
 
 
+import org.apache.commons.net.ntp.TimeInfo;
 import org.slf4j.Logger;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
@@ -18,6 +19,7 @@ import ru.vachok.networker.controller.ServiceInfoCtrl;
 import ru.vachok.networker.net.MyServer;
 import ru.vachok.networker.net.SwitchesAvailability;
 import ru.vachok.networker.services.CommonScan2YOlder;
+import ru.vachok.networker.services.TimeChecker;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -174,9 +176,12 @@ public class IntoApplication {
      @return new {@link Date} следующая суббота 0:01
      */
     private static Date getNextSat() {
+        TimeChecker timeChecker = new TimeChecker();
+        TimeInfo call = timeChecker.call();
         Calendar.Builder builder = new Calendar.Builder();
         LocalDate localDate = LocalDate.now();
         DayOfWeek satDay = DayOfWeek.SATURDAY;
+        ConstantsFor.setAtomicTime(call.getReturnTime());
         if (localDate.getDayOfWeek().toString().equalsIgnoreCase(satDay.toString())) return new Date();
         else {
             int firstDayOfWeek = Calendar.getInstance().getFirstDayOfWeek();
@@ -187,7 +192,8 @@ public class IntoApplication {
                     localDate.getMonth().getValue() - 1,
                     localDate.getDayOfMonth() + toSat)
                 .setTimeOfDay(0, 1, 0).build().getTime();
-            String msg = retDate.toString() + " " + toSat;
+            call.computeDetails();
+            String msg = retDate.toString() + " " + toSat + " \nTimeChecker information: " + call.getMessage();
             LOGGER.info(msg);
             return retDate;
         }
