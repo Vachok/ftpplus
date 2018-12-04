@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import ru.vachok.money.ConstantsFor;
-import ru.vachok.money.services.TForms;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.xml.stream.XMLStreamException;
@@ -18,13 +17,14 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.stream.Stream;
 
 
 /**
  <h1>Тянет курсы USD и EURO</h1>
 
  @since 12.08.2018 (16:12) */
-@Service ("ParserCBRruSRV")
+@Service("ParserCBRruSRV")
 public class ParserCBRruSRV {
 
     /*Fields*/
@@ -32,14 +32,14 @@ public class ParserCBRruSRV {
 
     private Currencies currencies;
 
-    private String userInput = "Сколько руб. / Процент";
+    private String userInput = "0 / 0";
 
     /**
      <i>Используется в модели! Must be <b>public</b></i>.
 
      @return {@link MoneyCtrl#getMoney(ParserCBRruSRV, Model, BindingResult, HttpServletRequest)}
      */
-    @SuppressWarnings ("WeakerAccess")
+    @SuppressWarnings("WeakerAccess")
     public String getUserInput() {
         return userInput;
     }
@@ -53,29 +53,77 @@ public class ParserCBRruSRV {
         this.currencies = currencies;
     }
 
-    String usdCur() {
-        List<String> readiedXML = new ArrayList<>();
-        try(InputStream inputStream = getUrl().openStream();
-            InputStreamReader reader = new InputStreamReader(inputStream);
-            BufferedReader br = new BufferedReader(reader)){
-            while(reader.ready()){
-                readiedXML.add(br.readLine());
+    public String countYourMoney() {
+        curDownloader();
+        String[] stringsInput = userInput.split(" / ");
+        currencies.setHowManyWas(Float.parseFloat(stringsInput[0]));
+        currencies.setPercentBanka(Float.parseFloat(stringsInput[1]));
+        return currencies.toString();
+    }
+
+    void curDownloader() {
+        try (InputStream inputStream = getUrl().openStream();
+             InputStreamReader reader = new InputStreamReader(inputStream);
+             OutputStream outputStream = new FileOutputStream("cbr.ru");
+             BufferedReader bufferedReader = new BufferedReader(reader);
+             PrintWriter printWriter = new PrintWriter(outputStream, true)) {
+            while (bufferedReader.ready()) {
+                Stream<String> lines = bufferedReader.lines();
+                Object[] objects = lines.toArray();
+                for (int i = 0; i < objects.length; i++) {
+                    Object o = objects[i];
+                    if (o.toString().contains("<td>USD</td>") || o.toString().contains("<td>EUR</td>")) {
+                        for (int j = 0; j < 4; j++) {
+                            printWriter.println(objects[i + j]);
+                        }
+                    }
+                }
             }
+            parseCur();
+        } catch (IOException e) {
+            LOGGER.warn(e.getMessage(), e);
         }
-        catch(IOException e){
-            LOGGER.error(e.getMessage(), e);
-        }
-        return new TForms().toStringFromArray(readiedXML, true);
     }
 
     private URL getUrl() {
-        try{
-            URL url = new URL(ConstantsFor.URL_AS_STRING);
-            return url;
-        }
-        catch(MalformedURLException e){
+        try {
+            return new URL(ConstantsFor.URL_AS_STRING);
+        } catch (MalformedURLException e) {
             LOGGER.info(e.getMessage(), e);
             throw new RejectedExecutionException();
+        }
+    }
+
+    private String parseCur() {
+        StringBuilder stringBuilder = new StringBuilder();
+        List<Float> floatList = new ArrayList<>();
+        try (InputStream inputStream = new FileInputStream("cbr.ru");
+             InputStreamReader reader = new InputStreamReader(inputStream);
+             BufferedReader bufferedReader = new BufferedReader(reader)) {
+            while (bufferedReader.ready()) {
+                String s = bufferedReader.readLine();
+                if (s.contains(",")) {
+                    Float v = Float.parseFloat(s
+                        .replace(',', '.')
+                        .replaceAll("<td>", "")
+                        .replaceAll("</td>", ""));
+                    floatList.add(v);
+                }
+                String msg = floatList.size() + " floats";
+                LOGGER.info(msg);
+            }
+            float euro = Math.max(floatList.get(0), floatList.get(1));
+            float usd = Math.min(floatList.get(0), floatList.get(1));
+            stringBuilder
+                .append(euro)
+                .append(" EURO ; ")
+                .append(usd)
+                .append(" USD");
+            currencies.setEuro(euro);
+            currencies.setUsDollar(usd);
+            return stringBuilder.toString();
+        } catch (IOException e) {
+            return e.getMessage();
         }
     }
 

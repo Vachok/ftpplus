@@ -24,7 +24,6 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class FilesCheckerCleaner extends SimpleFileVisitor<Path> {
 
-    /*Fields*/
     private static final Logger LOGGER = AppComponents.getLogger();
 
     private ConcurrentMap<String, String> resMap = new ConcurrentHashMap<>();
@@ -48,7 +47,6 @@ public class FilesCheckerCleaner extends SimpleFileVisitor<Path> {
         return resMap;
     }
 
-    /*Instances*/
     public FilesCheckerCleaner(boolean isSearch, String inpUser) {
         this.isSearch = isSearch;
         this.inpUser = inpUser;

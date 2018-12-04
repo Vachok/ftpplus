@@ -11,7 +11,10 @@ import ru.vachok.mysqlandprops.props.InitProperties;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -27,12 +30,12 @@ public enum ConstantsFor {
 
     public static final int ONE_YEAR = 365;
 
-    public static final String URL_AS_STRING = "http://cbr.ru/currency_base/daily/";
+    public static final String URL_AS_STRING = "https://cbr.ru/currency_base/daily/";
 
     /**
      Кол-во байт в мегабайте
      */
-    public static final int MEGABYTE = 1024 * 1024;
+    public static final int MEGABYTE = 1048576;
 
     /**
      Название приложения, для поиска properties

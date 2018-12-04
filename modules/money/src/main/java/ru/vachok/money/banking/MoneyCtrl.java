@@ -4,47 +4,43 @@ package ru.vachok.money.banking;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.money.components.PageFooter;
-import ru.vachok.money.services.WhoIsWithSRV;
-
-import javax.servlet.http.HttpServletRequest;
 
 
 /**
- * @since 20.08.2018 (22:47)
- */
+ @since 20.08.2018 (22:47) */
 @Controller
 public class MoneyCtrl {
 
-    private WhoIsWithSRV whoIsWithSRV;
-
     private ParserCBRruSRV parserCBRruSRV;
+
+    private Currencies currencies;
 
     /*Instances*/
     @Autowired
-    public MoneyCtrl(WhoIsWithSRV whoIsWithSRV, ParserCBRruSRV parserCBRruSRV) {
-        this.whoIsWithSRV = whoIsWithSRV;
+    public MoneyCtrl(ParserCBRruSRV parserCBRruSRV, Currencies currencies) {
+        this.currencies = currencies;
         this.parserCBRruSRV = parserCBRruSRV;
     }
 
     @GetMapping("/money")
     public String money(Model model) {
+        parserCBRruSRV.curDownloader();
         model.addAttribute("ParserCBRruSRV", parserCBRruSRV);
-        model.addAttribute("currency", parserCBRruSRV.usdCur());
+        model.addAttribute("currency", parserCBRruSRV.countYourMoney());
         model.addAttribute("footer", new PageFooter().getTheFooter());
         return "money";
     }
 
     @PostMapping("/getmoney")
-    public String getMoney(@ModelAttribute ParserCBRruSRV parserCBRruSRV, Model model, BindingResult result, HttpServletRequest request) {
-        String s = whoIsWithSRV.whoIs( request.getRemoteAddr());
+    public String getMoney(@ModelAttribute ParserCBRruSRV parserCBRruSRV, Model model, @ModelAttribute Currencies currencies) {
+        this.currencies = currencies;
         model.addAttribute("ParserCBRruSRV", parserCBRruSRV);
         model.addAttribute("title", parserCBRruSRV.getUserInput());
-        model.addAttribute("result", s);
+        model.addAttribute("result", currencies.toString());
         return "ok";
     }
 }
