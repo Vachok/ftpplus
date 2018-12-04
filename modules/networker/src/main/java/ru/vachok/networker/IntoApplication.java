@@ -16,6 +16,7 @@ import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.controller.ServiceInfoCtrl;
 import ru.vachok.networker.net.MyServer;
+import ru.vachok.networker.net.SwitchesAvailability;
 import ru.vachok.networker.services.CommonScan2YOlder;
 
 import java.io.IOException;
@@ -38,8 +39,6 @@ import java.util.concurrent.*;
 @SpringBootApplication
 @EnableScheduling
 public class IntoApplication {
-
-    /*Fields*/
 
     /**
      {@link AppComponents#getLogger()}
@@ -127,7 +126,9 @@ public class IntoApplication {
         Runnable speedRun = new SpeedRunActualize();
         ScheduledExecutorService executorService =
             Executors.unconfigurableScheduledExecutorService(Executors.newSingleThreadScheduledExecutor());
-        executorService.scheduleWithFixedDelay(speedRun, ConstantsFor.INIT_DELAY, ConstantsFor.DELAY, TimeUnit.SECONDS);
+        executorService.scheduleWithFixedDelay(speedRun, ConstantsFor.INIT_DELAY,
+            TimeUnit.MINUTES.toSeconds(ConstantsFor.DELAY), TimeUnit.SECONDS);
+        executorService.scheduleWithFixedDelay(new SwitchesAvailability(), 1, ConstantsFor.DELAY, TimeUnit.SECONDS);
         if (ConstantsFor.thisPC().toLowerCase().contains("no0027") ||
             ConstantsFor.thisPC().toLowerCase().contains("rups")) {
             runCommonScan();
@@ -184,7 +185,7 @@ public class IntoApplication {
                 .setDate(
                     localDate.getYear(),
                     localDate.getMonth().getValue() - 1,
-                    localDate.getDayOfMonth() + toSat + 1)
+                    localDate.getDayOfMonth() + toSat)
                 .setTimeOfDay(0, 1, 0).build().getTime();
             String msg = retDate.toString() + " " + toSat;
             LOGGER.info(msg);

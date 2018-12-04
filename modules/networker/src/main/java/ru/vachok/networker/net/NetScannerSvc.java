@@ -21,7 +21,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
@@ -228,7 +231,6 @@ public class NetScannerSvc {
         ThreadPoolTaskExecutor executor = threadConfig.threadPoolTaskExecutor();
         Runnable getPCs = this::getPCsAsync;
         executor.execute(getPCs);
-        executor.destroy();
         return pcNames;
     }
 
@@ -626,8 +628,6 @@ public class NetScannerSvc {
             lock.unlock();
             LOGGER.warn(msg.get());
             new Thread(() -> {
-                threadPoolTaskExecutor.destroy();
-
                 Thread.currentThread().setName(lock.isLocked() + " lock*SMTP");
                 MessageToUser mailMSG = new ESender("143500@gmail.com");
                 float upTime = ( float ) (TimeUnit.MILLISECONDS
@@ -650,7 +650,6 @@ public class NetScannerSvc {
                 }
                 String s = Thread.activeCount() + " active threads now.";
                 LOGGER.warn(s);
-                threadConfig.destroy();
                 this.onLinePCs = 0;
             }).start();
         }).start();
