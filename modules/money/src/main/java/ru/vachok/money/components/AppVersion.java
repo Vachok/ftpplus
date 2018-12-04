@@ -8,14 +8,10 @@ import ru.vachok.money.ConstantsFor;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.InitProperties;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Properties;
-import java.util.StringJoiner;
 
 
 /**
@@ -123,11 +119,16 @@ public class AppVersion {
 
     @Override
     public String toString() {
-        return new StringJoiner("\n", AppVersion.class.getSimpleName() + "\n", "\n")
-            .add(appDisplayVersion + "'\n")
-            .add(appSrcVersion + "'\n")
-            .add("appVBuild='" + appVBuild + "'\n")
-            .add("buildTime='" + buildTime + "'\n")
-            .toString();
+        final StringBuilder sb = new StringBuilder("AppVersion{");
+        sb.append("appDisplayVersion='").append(appDisplayVersion).append('\'');
+        sb.append(", appSrcVersion='").append(appSrcVersion).append('\'');
+        sb.append(", appVBuild='").append(appVBuild).append('\'');
+        sb.append(", buildTime='").append(buildTime).append('\'');
+        sb.append(", COMPATIBILITY_STR='").append(COMPATIBILITY_STR).append('\'');
+        sb.append(", GENERIC_ID=").append(GENERIC_ID);
+        sb.append(", initProperties=").append(initProperties);
+        sb.append(", VERSION_STR='").append(VERSION_STR).append('\'');
+        sb.append('}');
+        return sb.toString();
     }
 }

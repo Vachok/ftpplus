@@ -56,7 +56,7 @@ public class MoneyApplication {
                     new AppVersion().toString() + "\n" + msg + "\n" + filesRnd());
         };
         ScheduledExecutorService scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(2);
-        scheduledThreadPoolExecutor.scheduleWithFixedDelay(r, ConstantsFor.INITIAL_DELAY, TimeUnit.DAYS.toSeconds(1), TimeUnit.SECONDS);
+        scheduledThreadPoolExecutor.scheduleWithFixedDelay(r, ConstantsFor.DELAY, TimeUnit.DAYS.toSeconds(1), TimeUnit.SECONDS);
         AppComponents.getLogger().warn(msg);
     }
 
