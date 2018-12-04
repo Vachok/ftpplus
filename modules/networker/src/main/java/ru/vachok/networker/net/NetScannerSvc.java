@@ -35,6 +35,7 @@ import java.util.concurrent.locks.ReentrantLock;
 @Service ("netScannerSvc")
 public class NetScannerSvc {
 
+    /*Fields*/
     /**
      Префиксы имён ПК Велком.
      */
@@ -123,10 +124,12 @@ public class NetScannerSvc {
         return qer;
     }
 
+    /*Get&Set*/
     /**
      {@link #qer}
      Usage: {@link NetScanCtr#scanIt(HttpServletRequest, Model)} <br>
      Uses: - <br>
+
      @param qer {@link HttpServletRequest}.getQueryString()
      */
     void setQer(String qer) {
@@ -224,90 +227,7 @@ public class NetScannerSvc {
         return pcNames;
     }
 
-/*Instances*/
-
-    /**
-     @see AppComponents#lastNetScanMap()
-     */
-    private NetScannerSvc() {
-        this.netWork = AppComponents.lastNetScanMap();
-    }
-
-    static {
-        try{
-            c = new RegRuMysql().getDefaultConnection(DB_NAME);
-        }
-        catch(Exception e){
-            c = new RegRuMysql().getDefaultConnection(DB_NAME);
-        }
-    }
-
-    /**
-     Сканирующий метод. Запускает отдельный {@link Thread}, который блокируется с помощью {@link ReentrantLock} <br> 1 {@link #getPCNamesPref(String)} 1.1 {@link #getCycleNames(String)} 1.1.1 {@link
-    #getNamesCount(String)} 1.2 {@link #getSomeMore(String, boolean)} 1.2.1 {@link #onLinesCheck(String, String)} 1.2.1.1 {@link ThreadConfig#threadPoolTaskExecutor()} 1.2.1.2 {@link
-    PCUserResolver#namesToFile(String)} 1.2.2 {@link #offLinesCheckUser(String, String)} 1.3 {@link #getSomeMore(String, boolean)} 1.3.1 {@link #onLinesCheck(String, String)} 1.3.1.1 {@link
-    ThreadConfig#threadPoolTaskExecutor()} 1.3.1.2 {@link PCUserResolver#namesToFile(String)} 1.4 {@link #getSomeMore(String, boolean)} 1.4.1 {@link #onLinesCheck(String, String)} 1.4.1.1 {@link
-    ThreadConfig#threadPoolTaskExecutor()} 1.4.1.2 {@link PCUserResolver#namesToFile(String)} 1.4.2 {@link #offLinesCheckUser(String, String)} 1.5 {@link #writeDB(Collection)} 1.5.1 {@link
-    TForms#fromArray(List, boolean)} <br>
-     <p>
-     2 {@link TForms#fromArray(Map)} <br>
-     <p>
-     3 {@link TForms#fromArray(java.util.concurrent.ConcurrentMap, boolean)} <br>
-     <p>
-     4 {@link TForms#fromArrayUsers(ConcurrentMap, boolean)}
-
-     @see PCUserResolver#getResolvedName()
-     @see #getPcNames()
-     */
-    public void getPCsAsync() {
-        AtomicReference<String> msg = new AtomicReference<>("");
-        new Thread(() -> {
-            lock.lock();
-            msg.set(new StringBuilder()
-                .append("Thread ")
-                .append(Thread.currentThread().getId())
-                .append(" with name ")
-                .append(Thread.currentThread().getName())
-                .append(" is locked = ")
-                .append(lock.isLocked()).toString());
-            final long startMethod = System.currentTimeMillis();
-            LOGGER.warn(msg.get());
-            for(String s : PC_PREFIXES){
-                Thread.currentThread().setName(lock.isLocked() + " lock*" + s);
-                pcNames.clear();
-                pcNames.addAll(getPCNamesPref(s));
-            }
-            String elapsedTime = "Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethod) + " sec.";
-            pcNames.add(elapsedTime);
-            lock.unlock();
-            LOGGER.warn(msg.get());
-            new Thread(() -> {
-                threadPoolTaskExecutor.destroy();
-                Thread.currentThread().setName(lock.isLocked() + " lock*SMTP");
-                MessageToUser mailMSG = new ESender("143500@gmail.com");
-                float upTime = ( float ) (TimeUnit.MILLISECONDS
-                                              .toSeconds(System.currentTimeMillis() - ConstantsFor.START_STAMP)) / 60f;
-                Map<String, String> lastLogs = new AppComponents().getLastLogs();
-                String retLogs = new TForms().fromArray(lastLogs);
-                String fromArray = new TForms().fromArray(ConstantsFor.COMPNAME_USERS_MAP, false);
-                String psUser = new TForms().fromArrayUsers(ConstantsFor.PC_U_MAP, false);
-                String thisPCStr;
-                thisPCStr = ConstantsFor.thisPC();
-                mailMSG.info(
-                    SOURCE_CLASS,
-                    upTime + " min uptime. " + thisPCStr + " COMPNAME_USERS_MAP size",
-                    retLogs + " \n" + psUser + "\n" + fromArray);
-                try(OutputStream outputStream = new FileOutputStream("lasusers.txt")){
-                    outputStream.write(fromArray.getBytes());
-                }
-                catch(IOException e){
-                    LOGGER.error(e.getMessage(), e);
-                }
-                String s = Thread.activeCount() + " active threads now.";
-                LOGGER.warn(s);
-            }).start();
-        }).start();
-    }
+    /*Instances*/
 
     /**
      Сборщик для {@link #pcNames} <br> 1. {@link #getCycleNames(String)} 1.1 {@link #getNamesCount(String)} <br> 2. {@link #getSomeMore(String, boolean)} 2.1 {@link #onLinesCheck(String, String)} 2
@@ -642,5 +562,89 @@ public class NetScannerSvc {
         executor.setKeepAliveSeconds(30);
         executor.setAllowCoreThreadTimeOut(true);
         executor.setQueueCapacity(317);
+    }
+
+    /**
+     @see AppComponents#lastNetScanMap()
+     */
+    private NetScannerSvc() {
+        this.netWork = AppComponents.lastNetScanMap();
+    }
+
+    static {
+        try{
+            c = new RegRuMysql().getDefaultConnection(DB_NAME);
+        }
+        catch(Exception e){
+            c = new RegRuMysql().getDefaultConnection(DB_NAME);
+        }
+    }
+
+    /**
+     Сканирующий метод. Запускает отдельный {@link Thread}, который блокируется с помощью {@link ReentrantLock} <br> 1 {@link #getPCNamesPref(String)} 1.1 {@link #getCycleNames(String)} 1.1.1 {@link
+    #getNamesCount(String)} 1.2 {@link #getSomeMore(String, boolean)} 1.2.1 {@link #onLinesCheck(String, String)} 1.2.1.1 {@link ThreadConfig#threadPoolTaskExecutor()} 1.2.1.2 {@link
+    PCUserResolver#namesToFile(String)} 1.2.2 {@link #offLinesCheckUser(String, String)} 1.3 {@link #getSomeMore(String, boolean)} 1.3.1 {@link #onLinesCheck(String, String)} 1.3.1.1 {@link
+    ThreadConfig#threadPoolTaskExecutor()} 1.3.1.2 {@link PCUserResolver#namesToFile(String)} 1.4 {@link #getSomeMore(String, boolean)} 1.4.1 {@link #onLinesCheck(String, String)} 1.4.1.1 {@link
+    ThreadConfig#threadPoolTaskExecutor()} 1.4.1.2 {@link PCUserResolver#namesToFile(String)} 1.4.2 {@link #offLinesCheckUser(String, String)} 1.5 {@link #writeDB(Collection)} 1.5.1 {@link
+    TForms#fromArray(List, boolean)} <br>
+     <p>
+     2 {@link TForms#fromArray(Map)} <br>
+     <p>
+     3 {@link TForms#fromArray(java.util.concurrent.ConcurrentMap, boolean)} <br>
+     <p>
+     4 {@link TForms#fromArrayUsers(ConcurrentMap, boolean)}
+
+     @see PCUserResolver#getResolvedName()
+     @see #getPcNames()
+     */
+    public void getPCsAsync() {
+        AtomicReference<String> msg = new AtomicReference<>("");
+        new Thread(() -> {
+            lock.lock();
+            msg.set(new StringBuilder()
+                .append("Thread ")
+                .append(Thread.currentThread().getId())
+                .append(" with name ")
+                .append(Thread.currentThread().getName())
+                .append(" is locked = ")
+                .append(lock.isLocked()).toString());
+            final long startMethod = System.currentTimeMillis();
+            LOGGER.warn(msg.get());
+            for(String s : PC_PREFIXES){
+                Thread.currentThread().setName(lock.isLocked() + " lock*" + s);
+                pcNames.clear();
+                pcNames.addAll(getPCNamesPref(s));
+            }
+            String elapsedTime = "Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethod) + " sec.";
+            pcNames.add(elapsedTime);
+            lock.unlock();
+            LOGGER.warn(msg.get());
+            new Thread(() -> {
+                threadPoolTaskExecutor.destroy();
+                Thread.currentThread().setName(lock.isLocked() + " lock*SMTP");
+                MessageToUser mailMSG = new ESender("143500@gmail.com");
+                float upTime = ( float ) (TimeUnit.MILLISECONDS
+                                              .toSeconds(System.currentTimeMillis() - ConstantsFor.START_STAMP)) / 60f;
+                Map<String, String> lastLogs = new AppComponents().getLastLogs();
+                String retLogs = new TForms().fromArray(lastLogs);
+                String fromArray = new TForms().fromArray(ConstantsFor.COMPNAME_USERS_MAP, false);
+                String psUser = new TForms().fromArrayUsers(ConstantsFor.PC_U_MAP, false);
+                String thisPCStr;
+                thisPCStr = ConstantsFor.thisPC();
+                mailMSG.info(
+                    SOURCE_CLASS,
+                    upTime + " min uptime. " + thisPCStr + " COMPNAME_USERS_MAP size",
+                    retLogs + " \n" + psUser + "\n" + fromArray);
+                try(OutputStream outputStream = new FileOutputStream("lasusers.txt")){
+                    outputStream.write(fromArray.getBytes());
+                }
+                catch(IOException e){
+                    LOGGER.error(e.getMessage(), e);
+                }
+                String s = Thread.activeCount() + " active threads now.";
+                LOGGER.warn(s);
+                threadConfig.destroy();
+            }).start();
+        }).start();
     }
 }
