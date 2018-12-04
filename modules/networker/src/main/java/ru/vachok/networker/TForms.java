@@ -12,6 +12,7 @@ import ru.vachok.networker.mailserver.MailRule;
 import javax.mail.Address;
 import javax.servlet.http.Cookie;
 import java.io.File;
+import java.net.InetAddress;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 
@@ -33,17 +34,6 @@ public class TForms {
     private static final String N_S = "\n";
 
     private static final String BR_S = "<br>";
-
-    public String fromArray(List<String> stringList, boolean br) {
-        brStringBuilder.append("<p>");
-        for (String s : stringList) {
-            brStringBuilder.append(s).append(BR_S);
-            nStringBuilder.append(s).append(N_S);
-        }
-        brStringBuilder.append("</p>");
-        if (br) return brStringBuilder.toString();
-        else return nStringBuilder.toString();
-    }
 
     public String fromArray(Map<String, String> stringStringMap) {
         List<String> list = new ArrayList<>();
@@ -339,10 +329,9 @@ public class TForms {
                 .append(y)
                 .append("</p>");
         });
-        if(br){
+        if (br) {
             return brStringBuilder.toString();
-        }
-        else{
+        } else {
             return nStringBuilder.toString();
         }
     }
@@ -360,6 +349,34 @@ public class TForms {
                 .append(y.toString());
         });
         if (br) return brStringBuilder.toString();
+        else return nStringBuilder.toString();
+    }
+
+    public String fromArray(InetAddress[] allByName, boolean b) {
+        brStringBuilder.append(BR_S);
+        for (InetAddress inetAddress : allByName) {
+            brStringBuilder
+                .append(inetAddress.toString())
+                .append(BR_S);
+            nStringBuilder
+                .append(inetAddress.toString())
+                .append(N_S);
+        }
+        if (b) return brStringBuilder.toString();
+        else return nStringBuilder.toString();
+    }
+
+    public String fromArray(List<?> inetAddresses, boolean b) {
+        brStringBuilder.append(BR_S);
+        inetAddresses.forEach(x -> {
+            brStringBuilder
+                .append(x.toString())
+                .append(BR_S);
+            nStringBuilder
+                .append(x.toString())
+                .append(N_S);
+        });
+        if (b) return brStringBuilder.toString();
         else return nStringBuilder.toString();
     }
 }
