@@ -60,6 +60,9 @@ public class NetScannerSvc {
      {@link RegRuMysql#getDefaultConnection(String)}
      */
     private static Connection c;
+    /*Get&Set*/
+
+    private int onLinePCs = 0;
 
     /**
      {@link AppComponents#adComputers()}
@@ -124,7 +127,9 @@ public class NetScannerSvc {
         return qer;
     }
 
-    /*Get&Set*/
+    public int getOnLinePCs() {
+        return onLinePCs;
+    }
     /**
      {@link #qer}
      Usage: {@link NetScanCtr#scanIt(HttpServletRequest, Model)} <br>
@@ -335,7 +340,8 @@ public class NetScannerSvc {
         String sql;
         if(isOnline){
             sql = "select * from velkompc where NamePP like ?";
-            return onLinesCheck(sql, pcName);
+            this.onLinePCs = this.onLinePCs + 1;
+            return onLinesCheck(sql, pcName) + " | " + onLinePCs;
         }
         else{
             sql = "select * from pcuser where pcName like ?";
@@ -621,6 +627,7 @@ public class NetScannerSvc {
             LOGGER.warn(msg.get());
             new Thread(() -> {
                 threadPoolTaskExecutor.destroy();
+
                 Thread.currentThread().setName(lock.isLocked() + " lock*SMTP");
                 MessageToUser mailMSG = new ESender("143500@gmail.com");
                 float upTime = ( float ) (TimeUnit.MILLISECONDS
@@ -632,7 +639,7 @@ public class NetScannerSvc {
                 String thisPCStr;
                 thisPCStr = ConstantsFor.thisPC();
                 mailMSG.info(
-                    SOURCE_CLASS,
+                    SOURCE_CLASS + " onlines: " + onLinePCs,
                     upTime + " min uptime. " + thisPCStr + " COMPNAME_USERS_MAP size",
                     retLogs + " \n" + psUser + "\n" + fromArray);
                 try(OutputStream outputStream = new FileOutputStream("lasusers.txt")){
@@ -644,6 +651,7 @@ public class NetScannerSvc {
                 String s = Thread.activeCount() + " active threads now.";
                 LOGGER.warn(s);
                 threadConfig.destroy();
+                this.onLinePCs = 0;
             }).start();
         }).start();
     }
