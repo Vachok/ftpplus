@@ -205,7 +205,7 @@ public class SshActs {
         @PostMapping("/sshacts")
         public String sshActsPOST(@ModelAttribute SshActs sshActs, Model model, HttpServletRequest request) throws AccessDeniedException {
             String pcReq = request.getRemoteAddr().toLowerCase();
-            if (getB(pcReq)) {
+            if(getAuthentic(pcReq)){
                 this.sshActs = sshActs;
                 model.addAttribute(AT_NAME_SSHACTS, sshActs);
                 model.addAttribute(AT_NAME_SSHDETAIL, sshActs.getPcName());
@@ -220,11 +220,12 @@ public class SshActs {
             this.sshActs = sshActs;
         }
 
-        private boolean getB(String pcReq) {
+        private boolean getAuthentic(String pcReq) {
             return
                 pcReq.contains("10.10.111.") ||
                     pcReq.contains("10.200.213.85") ||
-                    pcReq.contains("0:0:0:0");
+                    pcReq.contains("0:0:0:0") ||
+                    pcReq.contains("10.10.111");
         }
 
         @GetMapping("/sshacts")
@@ -232,7 +233,7 @@ public class SshActs {
             String pcReq = request.getRemoteAddr().toLowerCase();
             LOGGER.warn(pcReq);
             setInet(pcReq);
-            if (getB(pcReq)) {
+            if(getAuthentic(pcReq)){
                 model.addAttribute(ConstantsFor.TITLE, "SSH Works");
                 model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext());
                 model.addAttribute(AT_NAME_SSHACTS, sshActs);
