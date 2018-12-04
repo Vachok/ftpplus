@@ -22,6 +22,7 @@ import ru.vachok.networker.services.CommonScan2YOlder;
 import ru.vachok.networker.services.TimeChecker;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.DayOfWeek;
@@ -103,7 +104,12 @@ public class IntoApplication {
             .append(" app display name\n")
             .append(ConstantsFor.getBuildStamp()).toString();
         LOGGER.info(msg);
-        schedStarter();
+        try{
+            schedStarter();
+        }
+        catch(InvocationTargetException e){
+            LOGGER.error(e.getMessage(), e);
+        }
     }
 
     /**
@@ -122,7 +128,7 @@ public class IntoApplication {
     /**
      <b>Тип WEB-application</b>
      */
-    private static void schedStarter() {
+    private static void schedStarter() throws InvocationTargetException {
         WebApplicationType webApplicationType = WebApplicationType.SERVLET;
         SPRING_APPLICATION.setWebApplicationType(webApplicationType);
         Runnable speedRun = new SpeedRunActualize();
