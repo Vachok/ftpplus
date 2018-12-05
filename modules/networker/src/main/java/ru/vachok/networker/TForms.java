@@ -379,4 +379,26 @@ public class TForms {
         if (b) return brStringBuilder.toString();
         else return nStringBuilder.toString();
     }
+
+    public String fromArray(StackTraceElement[] y, boolean b) {
+        brStringBuilder.append(BR_S);
+        brStringBuilder.append(y.length)
+            .append(" stack length<br>");
+        nStringBuilder.append(y.length)
+            .append(" stack length\n");
+        for(StackTraceElement st : y){
+            nStringBuilder
+                .append(st.toString())
+                .append(N_S);
+            brStringBuilder
+                .append(st.toString())
+                .append(BR_S);
+        }
+        if(b){
+            return brStringBuilder.toString();
+        }
+        else{
+            return nStringBuilder.toString();
+        }
+    }
 }

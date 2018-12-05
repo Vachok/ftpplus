@@ -98,6 +98,7 @@ public class NetScanCtr {
         }
         model
             .addAttribute("netScannerSvc", netScannerSvc)
+            .addAttribute("serviceinfo", netScannerSvc.someInfo())
             .addAttribute("thePc", netScannerSvc.getThePc());
         model.addAttribute("footer", new PageFooter().getFooterUtext() + "<br>First Scan: 2018-05-05");
         AppComponents.lastNetScan().setTimeLastScan(new Date());

@@ -15,16 +15,14 @@ import ru.vachok.networker.ad.ActDirectoryCTRL;
 import ru.vachok.networker.ad.PCUserResolver;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.ThreadConfig;
+import ru.vachok.networker.services.TimeChecker;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
@@ -39,6 +37,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class NetScannerSvc {
 
     /*Fields*/
+
     /**
      Префиксы имён ПК Велком.
      */
@@ -63,9 +62,6 @@ public class NetScannerSvc {
      {@link RegRuMysql#getDefaultConnection(String)}
      */
     private static Connection c;
-    /*Get&Set*/
-
-    private int onLinePCs = 0;
 
     /**
      {@link AppComponents#adComputers()}
@@ -86,6 +82,8 @@ public class NetScannerSvc {
      new {@link NetScannerSvc}
      */
     private static NetScannerSvc netScannerSvc = new NetScannerSvc();
+
+    private int onLinePCs = 0;
 
     /**
      /netscan POST форма
@@ -116,6 +114,8 @@ public class NetScannerSvc {
      */
     private ThreadPoolTaskExecutor threadPoolTaskExecutor = threadConfig.threadPoolTaskExecutor();
 
+    /*Get&Set*/
+
     /**
      @return {@link #netScannerSvc}
      */
@@ -130,9 +130,6 @@ public class NetScannerSvc {
         return qer;
     }
 
-    public int getOnLinePCs() {
-        return onLinePCs;
-    }
     /**
      {@link #qer}
      Usage: {@link NetScanCtr#scanIt(HttpServletRequest, Model)} <br>
@@ -142,6 +139,10 @@ public class NetScannerSvc {
      */
     void setQer(String qer) {
         this.qer = qer;
+    }
+
+    public int getOnLinePCs() {
+        return onLinePCs;
     }
 
     /**
@@ -573,22 +574,6 @@ public class NetScannerSvc {
     }
 
     /**
-     @see AppComponents#lastNetScanMap()
-     */
-    private NetScannerSvc() {
-        this.netWork = AppComponents.lastNetScanMap();
-    }
-
-    static {
-        try{
-            c = new RegRuMysql().getDefaultConnection(DB_NAME);
-        }
-        catch(Exception e){
-            c = new RegRuMysql().getDefaultConnection(DB_NAME);
-        }
-    }
-
-    /**
      Сканирующий метод. Запускает отдельный {@link Thread}, который блокируется с помощью {@link ReentrantLock} <br> 1 {@link #getPCNamesPref(String)} 1.1 {@link #getCycleNames(String)} 1.1.1 {@link
     #getNamesCount(String)} 1.2 {@link #getSomeMore(String, boolean)} 1.2.1 {@link #onLinesCheck(String, String)} 1.2.1.1 {@link ThreadConfig#threadPoolTaskExecutor()} 1.2.1.2 {@link
     PCUserResolver#namesToFile(String)} 1.2.2 {@link #offLinesCheckUser(String, String)} 1.3 {@link #getSomeMore(String, boolean)} 1.3.1 {@link #onLinesCheck(String, String)} 1.3.1.1 {@link
@@ -653,5 +638,56 @@ public class NetScannerSvc {
                 this.onLinePCs = 0;
             }).start();
         }).start();
+    }
+
+    /**
+     @see AppComponents#lastNetScanMap()
+     */
+    private NetScannerSvc() {
+        this.netWork = AppComponents.lastNetScanMap();
+    }
+
+    static {
+        try{
+            c = new RegRuMysql().getDefaultConnection(DB_NAME);
+        }
+        catch(Exception e){
+            c = new RegRuMysql().getDefaultConnection(DB_NAME);
+        }
+    }
+
+    String someInfo() {
+        StringBuilder stringBuilder = new StringBuilder();
+        String str = new TimeChecker().call().getMessage().toString();
+        stringBuilder
+            .append("Thread.activeCount(): <font color=\"yellow\">")
+            .append(Thread.activeCount())
+            .append("</font>, Thread.currentThread().getName(): <font color=\"yellow\">")
+            .append(Thread.currentThread().getName())
+            .append("</font><p> new TimeChecker().call():<br> <font color=\"yellow\">")
+            .append(str)
+            .append("</font>");
+        tryKillSleepTHR(str);
+        return stringBuilder.toString();
+    }
+
+    private void tryKillSleepTHR(String str) {
+        Thread.currentThread().checkAccess();
+        Thread.getAllStackTraces().forEach((x, y) -> {
+            if(x.getState().equals(Thread.State.WAITING) && x.getName().contains("eatmeat.ru")){
+                x.checkAccess();
+                x.interrupt();
+                String s = str + "\n\n\n"
+                    + new TForms().fromArray(x.getStackTrace(), false) + "\n" +
+                    x.isAlive() + " isAlive. Total active = " + Thread.activeCount();
+                String name = x.getName() + "log.txt";
+                try(OutputStream outputStream = new FileOutputStream(name)){
+                    outputStream.write(s.getBytes());
+                }
+                catch(IOException e){
+                    LOGGER.warn(e.getMessage(), e);
+                }
+            }
+        });
     }
 }

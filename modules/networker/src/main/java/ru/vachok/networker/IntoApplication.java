@@ -111,6 +111,8 @@ public class IntoApplication {
             Throwable targetException = e.getTargetException();
             LOGGER.error(e.getMessage(), e);
             LOGGER.warn(targetException.getMessage());
+            new Thread(IntoApplication::new).start();
+            Thread.currentThread().interrupt();
         }
     }
 
