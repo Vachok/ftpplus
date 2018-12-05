@@ -1,0 +1,23 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${title}">ХЗ</title>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type"/>
+    <link href="css/main.css" media="all" rel="stylesheet" th:href="@{css/main.css}" type="text/css"/>
+</head>
+<body>
+<center><br>
+    <p th:utext="${input}"/>
+    <h3><p th:utext="${result}"/></h3>
+</center>
+<form method="POST" th:action="@{/commonarch}" th:object="${common}"><br>
+    Укажите путь, где была папка или файл :<br>
+    <input th:field="*{delFolderPath}" type="text"/><br>
+    <input type="submit" value="Восстановить"/><br>
+</form>
+
+</body>
+<footer>
+    <p th:utext="${footer}"/>
+</footer>
+</html>

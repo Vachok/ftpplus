@@ -10,8 +10,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import ru.vachok.mysqlandprops.EMailAndDB.SpeedRunActualize;
-import ru.vachok.networker.accesscontrol.CommonRightsChecker;
 import ru.vachok.networker.accesscontrol.MatrixCtr;
+import ru.vachok.networker.accesscontrol.common.CommonRightsChecker;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.config.ThreadConfig;
@@ -108,7 +108,9 @@ public class IntoApplication {
             schedStarter();
         }
         catch(InvocationTargetException e){
+            Throwable targetException = e.getTargetException();
             LOGGER.error(e.getMessage(), e);
+            LOGGER.warn(targetException.getMessage());
         }
     }
 
@@ -196,7 +198,7 @@ public class IntoApplication {
                 .setDate(
                     localDate.getYear(),
                     localDate.getMonth().getValue() - 1,
-                    localDate.getDayOfMonth() + toSat)
+                    localDate.getDayOfMonth() + toSat - 1)
                 .setTimeOfDay(0, 1, 0).build().getTime();
             call.computeDetails();
             String msg = retDate.toString() + " " + toSat + " \nTimeChecker information: " + call.getMessage();
