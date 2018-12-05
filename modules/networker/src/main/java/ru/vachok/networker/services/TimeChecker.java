@@ -49,4 +49,12 @@ public class TimeChecker implements Callable<TimeInfo> {
         LOGGER.info(msg);
         return ntpudpClientTime;
     }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("TimeChecker{");
+        sb.append("call=").append(call());
+        sb.append('}');
+        return sb.toString();
+    }
 }

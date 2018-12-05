@@ -15,16 +15,14 @@ import ru.vachok.networker.ad.ActDirectoryCTRL;
 import ru.vachok.networker.ad.PCUserResolver;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.ThreadConfig;
+import ru.vachok.networker.services.TimeChecker;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
@@ -39,6 +37,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class NetScannerSvc {
 
     /*Fields*/
+
     /**
      Префиксы имён ПК Велком.
      */
@@ -63,9 +62,6 @@ public class NetScannerSvc {
      {@link RegRuMysql#getDefaultConnection(String)}
      */
     private static Connection c;
-    /*Get&Set*/
-
-    private int onLinePCs = 0;
 
     /**
      {@link AppComponents#adComputers()}
@@ -86,6 +82,8 @@ public class NetScannerSvc {
      new {@link NetScannerSvc}
      */
     private static NetScannerSvc netScannerSvc = new NetScannerSvc();
+
+    private int onLinePCs = 0;
 
     /**
      /netscan POST форма
@@ -112,11 +110,6 @@ public class NetScannerSvc {
     private ThreadConfig threadConfig = new ThreadConfig();
 
     /**
-     {@link ThreadConfig#threadPoolTaskExecutor()}
-     */
-    private ThreadPoolTaskExecutor threadPoolTaskExecutor = threadConfig.threadPoolTaskExecutor();
-
-    /**
      @return {@link #netScannerSvc}
      */
     public static NetScannerSvc getI() {
@@ -130,9 +123,6 @@ public class NetScannerSvc {
         return qer;
     }
 
-    public int getOnLinePCs() {
-        return onLinePCs;
-    }
     /**
      {@link #qer}
      Usage: {@link NetScanCtr#scanIt(HttpServletRequest, Model)} <br>
@@ -142,6 +132,10 @@ public class NetScannerSvc {
      */
     void setQer(String qer) {
         this.qer = qer;
+    }
+
+    public int getOnLinePCs() {
+        return onLinePCs;
     }
 
     /**
@@ -227,13 +221,11 @@ public class NetScannerSvc {
      @see NetScanCtr#scanIt(HttpServletRequest, Model)
      */
     Set<String> getPcNames() {
-        ThreadConfig threadConfig = new ThreadConfig();
         ThreadPoolTaskExecutor executor = threadConfig.threadPoolTaskExecutor();
         Runnable getPCs = this::getPCsAsync;
         executor.execute(getPCs);
         return pcNames;
     }
-
     /*Instances*/
 
     /**
@@ -472,122 +464,6 @@ public class NetScannerSvc {
         }
         return inDex;
     }
-
-    /**
-     Проверяет имя пользователя на ПК онлайн
-
-     @param sql    запрос
-     @param pcName имя ПК
-     @return кол-во проверок и сколько был вкл/выкл
-     @see #getSomeMore(String, boolean)
-     */
-    private String onLinesCheck(String sql, String pcName) {
-        PCUserResolver pcUserResolver = new PCUserResolver();
-        List<Integer> onLine = new ArrayList<>();
-        List<Integer> offLine = new ArrayList<>();
-        StringBuilder stringBuilder = new StringBuilder();
-        threadPoolTaskExecutor = threadConfig.threadPoolTaskExecutor();
-        execSet(threadPoolTaskExecutor);
-        threadPoolTaskExecutor.execute(() -> pcUserResolver.namesToFile(pcName), ConstantsFor.TIMEOUT_5);
-        try(PreparedStatement statement = c.prepareStatement(sql)){
-            statement.setString(1, pcName);
-            try(ResultSet resultSet = statement.executeQuery()){
-                while(resultSet.next()){
-                    ADComputer adComputer = new ADComputer();
-                    int onlineNow = resultSet.getInt("OnlineNow");
-                    if(onlineNow==1){
-                        onLine.add(onlineNow);
-                        adComputer.setDnsHostName(pcName);
-                    }
-                    if(onlineNow==0){
-                        offLine.add(onlineNow);
-                    }
-                    adComputers.add(adComputer);
-                }
-            }
-        }
-        catch(SQLException | NullPointerException e){
-            return e.getMessage();
-        }
-        return stringBuilder
-            .append(offLine.size())
-            .append(" offline times and ")
-            .append(onLine.size())
-            .append(" online times.").toString();
-    }
-
-    /**
-     <b>Проверяет есть ли в БД имя пользователя</b>
-
-     @param sql    запрос
-     @param pcName имя ПК
-     @return имя юзера, если есть.
-     */
-    private String offLinesCheckUser(String sql, String pcName) {
-        StringBuilder stringBuilder = new StringBuilder();
-        try(PreparedStatement p = c.prepareStatement(sql)){
-            try(PreparedStatement p1 = c.prepareStatement(sql.replaceAll("pcuser", "pcuserauto"))){
-                p.setString(1, pcName);
-                p1.setString(1, pcName);
-                try(ResultSet resultSet = p.executeQuery()){
-                    while(resultSet.next()){
-                        stringBuilder.append("<b>")
-                            .append(resultSet.getString("userName").trim()).append("</b> (time: ")
-                            .append(resultSet.getString("whenQueried")).append(")");
-                    }
-                }
-                try(ResultSet resultSet1 = p1.executeQuery()){
-                    while(resultSet1.next()){
-                        if(resultSet1.last()){
-                            return stringBuilder
-                                .append("    (AutoResolved name: ")
-                                .append(resultSet1.getString("userName").trim()).append(" (time: ")
-                                .append(resultSet1.getString("whenQueried")).append("))").toString();
-                        }
-                    }
-                }
-                catch(SQLException ignore){
-                    //
-                }
-            }
-        }
-        catch(SQLException e){
-            stringBuilder.append(e.getMessage());
-
-        }
-        return "<font color=\"orange\">EXCEPTION in SQL dropped. <br>" + stringBuilder.toString() + "</font>";
-    }
-
-    /**
-     Сетает {@link org.springframework.core.task.TaskExecutor} для запуска сканирования отдельного ПК.
-
-     @param executor {@link ThreadConfig}
-     */
-    private void execSet(ThreadPoolTaskExecutor executor) {
-        executor.setThreadGroup(new ThreadGroup("online"));
-        executor.setMaxPoolSize(30);
-        executor.setCorePoolSize(3);
-        executor.setKeepAliveSeconds(30);
-        executor.setAllowCoreThreadTimeOut(true);
-        executor.setQueueCapacity(317);
-    }
-
-    /**
-     @see AppComponents#lastNetScanMap()
-     */
-    private NetScannerSvc() {
-        this.netWork = AppComponents.lastNetScanMap();
-    }
-
-    static {
-        try{
-            c = new RegRuMysql().getDefaultConnection(DB_NAME);
-        }
-        catch(Exception e){
-            c = new RegRuMysql().getDefaultConnection(DB_NAME);
-        }
-    }
-
     /**
      Сканирующий метод. Запускает отдельный {@link Thread}, который блокируется с помощью {@link ReentrantLock} <br> 1 {@link #getPCNamesPref(String)} 1.1 {@link #getCycleNames(String)} 1.1.1 {@link
     #getNamesCount(String)} 1.2 {@link #getSomeMore(String, boolean)} 1.2.1 {@link #onLinesCheck(String, String)} 1.2.1.1 {@link ThreadConfig#threadPoolTaskExecutor()} 1.2.1.2 {@link
@@ -653,5 +529,161 @@ public class NetScannerSvc {
                 this.onLinePCs = 0;
             }).start();
         }).start();
+    }
+
+    /**
+     <b>Проверяет есть ли в БД имя пользователя</b>
+
+     @param sql    запрос
+     @param pcName имя ПК
+     @return имя юзера, если есть.
+     */
+    private String offLinesCheckUser(String sql, String pcName) {
+        StringBuilder stringBuilder = new StringBuilder();
+        try(PreparedStatement p = c.prepareStatement(sql)){
+            try(PreparedStatement p1 = c.prepareStatement(sql.replaceAll("pcuser", "pcuserauto"))){
+                p.setString(1, pcName);
+                p1.setString(1, pcName);
+                try(ResultSet resultSet = p.executeQuery()){
+                    while(resultSet.next()){
+                        stringBuilder.append("<b>")
+                            .append(resultSet.getString("userName").trim()).append("</b> (time: ")
+                            .append(resultSet.getString("whenQueried")).append(")");
+                    }
+                }
+                try(ResultSet resultSet1 = p1.executeQuery()){
+                    while(resultSet1.next()){
+                        if(resultSet1.last()){
+                            return stringBuilder
+                                .append("    (AutoResolved name: ")
+                                .append(resultSet1.getString("userName").trim()).append(" (time: ")
+                                .append(resultSet1.getString("whenQueried")).append("))").toString();
+                        }
+                    }
+                }
+                catch(SQLException ignore){
+                    //
+                }
+            }
+        }
+        catch(SQLException e){
+            stringBuilder.append(e.getMessage());
+
+        }
+        return "<font color=\"orange\">EXCEPTION in SQL dropped. <br>" + stringBuilder.toString() + "</font>";
+    }
+
+    /**
+     Сетает {@link org.springframework.core.task.TaskExecutor} для запуска сканирования отдельного ПК.
+
+     @param executor {@link ThreadConfig}
+     */
+    private void execSet(ThreadPoolTaskExecutor executor) {
+        executor.setThreadGroup(new ThreadGroup("online"));
+        executor.setMaxPoolSize(30);
+        executor.setCorePoolSize(3);
+        executor.setKeepAliveSeconds(30);
+        executor.setAllowCoreThreadTimeOut(true);
+        executor.setQueueCapacity(317);
+    }
+
+    /**
+     Проверяет имя пользователя на ПК онлайн
+
+     @param sql    запрос
+     @param pcName имя ПК
+     @return кол-во проверок и сколько был вкл/выкл
+     @see #getSomeMore(String, boolean)
+     */
+    private String onLinesCheck(String sql, String pcName) {
+        PCUserResolver pcUserResolver = new PCUserResolver();
+        List<Integer> onLine = new ArrayList<>();
+        List<Integer> offLine = new ArrayList<>();
+        StringBuilder stringBuilder = new StringBuilder();
+        ThreadPoolTaskExecutor threadPoolTaskExecutor = threadConfig.threadPoolTaskExecutor();
+        execSet(threadPoolTaskExecutor);
+        lock.unlock();
+        threadPoolTaskExecutor.execute(() -> pcUserResolver.namesToFile(pcName), ConstantsFor.TIMEOUT_5);
+        lock.lock();
+        try(PreparedStatement statement = c.prepareStatement(sql)){
+            statement.setString(1, pcName);
+            try(ResultSet resultSet = statement.executeQuery()){
+                while(resultSet.next()){
+                    ADComputer adComputer = new ADComputer();
+                    int onlineNow = resultSet.getInt("OnlineNow");
+                    if(onlineNow==1){
+                        onLine.add(onlineNow);
+                        adComputer.setDnsHostName(pcName);
+                    }
+                    if(onlineNow==0){
+                        offLine.add(onlineNow);
+                    }
+                    adComputers.add(adComputer);
+                }
+            }
+        }
+        catch(SQLException | NullPointerException e){
+            return e.getMessage();
+        }
+        return stringBuilder
+            .append(offLine.size())
+            .append(" offline times and ")
+            .append(onLine.size())
+            .append(" online times.").toString();
+    }
+
+    /**
+     @see AppComponents#lastNetScanMap()
+     */
+    private NetScannerSvc() {
+        this.netWork = AppComponents.lastNetScanMap();
+    }
+
+    static {
+        try{
+            c = new RegRuMysql().getDefaultConnection(DB_NAME);
+        }
+        catch(Exception e){
+            c = new RegRuMysql().getDefaultConnection(DB_NAME);
+        }
+    }
+
+    String someInfo() {
+        StringBuilder stringBuilder = new StringBuilder();
+        String str = new TimeChecker().call().getMessage().toString();
+        stringBuilder
+            .append("Thread.activeCount(): <font color=\"yellow\">")
+            .append(Thread.activeCount())
+            .append("</font>, Thread.currentThread().getName(): <font color=\"yellow\">")
+            .append(Thread.currentThread().getName())
+            .append("</font><p> new TimeChecker().call():<br> <font color=\"yellow\">")
+            .append(str)
+            .append("</font>");
+        tryKillSleepTHR(str);
+        return stringBuilder.toString();
+    }
+
+    private void tryKillSleepTHR(String str) {
+        Thread.currentThread().checkAccess();
+        Thread.getAllStackTraces().forEach((x, y) -> {
+            if(x.getState().equals(Thread.State.WAITING) && x.getName().contains("eatmeat.ru")){
+                x.checkAccess();
+                x.interrupt();
+                String s = str + "\n\n\n"
+                    + new TForms().fromArray(x.getStackTrace(), false) + "\n" +
+                    x.isAlive() + " isAlive. Total active = " + Thread.activeCount();
+                String name = x.getName() + "log.txt";
+                try(OutputStream outputStream = new FileOutputStream(name)){
+                    outputStream.write(s.getBytes());
+                }
+                catch(IOException e){
+                    LOGGER.warn(e.getMessage());
+                }
+                if(x.isAlive()){
+                    x.stop();
+                }
+
+            }
+        });
     }
 }
