@@ -27,18 +27,6 @@ public class CalculatorForSome {
     private List<Double> userDouble;
 
     private String userInput;
-    @Override
-    public String toString() {
-        return "CalculatorForSome{" +
-            "calcDouble=" + calcDouble +
-            ", calcInt=" + calcInt +
-            ", messageToUser=" + messageToUser +
-            ", SOURCE_CLASS='" + SOURCE_CLASS + '\'' +
-            ", uLong=" + uLong +
-            ", userDouble=" + userDouble +
-            ", userInput='" + userInput + '\'' +
-            '}';
-    }
 
     /**
      {@link }
@@ -87,5 +75,19 @@ public class CalculatorForSome {
 
     public void setUserInput(String userInput) {
         this.userInput = userInput;
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("CalculatorForSome{");
+        sb.append("calcDouble=").append(calcDouble);
+        sb.append(", calcInt=").append(calcInt);
+        sb.append(", messageToUser=").append(messageToUser);
+        sb.append(", SOURCE_CLASS='").append(SOURCE_CLASS).append('\'');
+        sb.append(", uLong=").append(uLong);
+        sb.append(", userDouble=").append(userDouble);
+        sb.append(", userInput='").append(userInput).append('\'');
+        sb.append('}');
+        return sb.toString();
     }
 }

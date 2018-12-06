@@ -132,4 +132,13 @@ public class CalcSrv {
             return new ChooseYouDestiny().destinyCooser(split) + "<p><textarea>" + e.getMessage() + "</textarea>";
         }
     }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("CalcSrv{");
+        sb.append("calculatorForSome=").append(calculatorForSome);
+        sb.append(", SOURCE_CLASS='").append(SOURCE_CLASS).append('\'');
+        sb.append('}');
+        return sb.toString();
+    }
 }

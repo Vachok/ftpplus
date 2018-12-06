@@ -1,22 +1,23 @@
 package ru.vachok.money;
 
 
+import org.apache.commons.net.ntp.TimeInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.messenger.email.ESender;
+import ru.vachok.money.config.AppComponents;
+import ru.vachok.money.services.TimeChecker;
 import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.InitProperties;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
@@ -50,6 +51,12 @@ public enum ConstantsFor {
 
     public static final String DB_PREFIX = "u0466446_";
 
+
+    /*Fields*/
+    private static final Logger LOGGER = AppComponents.getLogger();
+
+    public static final String AT_NAME_TITLE = "title";
+
     public static final int MONTH_BIRTH = 1;
 
     public static final int DAY_OF_B_MONTH = 7;
@@ -69,6 +76,24 @@ public enum ConstantsFor {
     public static final int LISTEN_PORT = 9991;
 
     public static final int USER_EXIT = 222;
+
+    public static final String AT_NAME_FOOTER = "footer";
+
+    public static final String AT_NAME_RESULT = "result";
+
+    public static String getAtomTime() {
+        TimeChecker timeChecker = new TimeChecker();
+        TimeInfo call = null;
+        try{
+            call = timeChecker.call();
+            call.computeDetails();
+            return new java.util.Date(call.getReturnTime()).toString();
+        }
+        catch(Exception e){
+            LOGGER.error(e.getMessage(), e);
+        }
+        throw new NoSuchElementException();
+    }
 
     public static BiConsumer<String, String> ok = (className, msg) -> new Thread(() -> {
         MessageToUser emailMe = new ESender("143500@gmail.com");

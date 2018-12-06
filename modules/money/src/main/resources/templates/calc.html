@@ -9,12 +9,22 @@
 <a href="/">Главная</a> | <a href="/ftp">FTP</a>
 <p th:utext="${inp}"></p>
 <form th:action="@{/calc}" th:object="${CalculatorForSome}" method="POST">
-    Введите что-нибудь(введите ? для помощи):
+    Введите что-нибудь :
     <input type="text" th:field="*{userInput}"/>
     <br>
     <input type="submit" value="Считать"/>
     <br>
 
+</form>
+<form method="POST" th:action="@{/destiny}" th:object="${destiny}">
+    Пускай случай решит :
+    <input placeholder="Вариант 1" required size="11" th:field="*{variantOne}" type="text"/>
+    <input placeholder="Вариант 2" required size="11" th:field="*{variantTwo}" type="text"/>
+    <input placeholder="Вариант 3" size="11" th:field="*{variantThree}" type="text"/>
+    <input placeholder="Вариант 4" size="11" th:field="*{variantFour}" type="text"/>
+    <br>
+    <input type="submit" value="Решить"/>
+    <br>
 </form>
 </body>
 <footer>

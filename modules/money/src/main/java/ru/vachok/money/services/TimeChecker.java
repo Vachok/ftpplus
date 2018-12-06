@@ -39,4 +39,17 @@ public class TimeChecker implements Callable<TimeInfo> {
         LOGGER.info(msg);
         return atomTime;
     }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("TimeChecker{");
+        try{
+            sb.append("call=").append(call().getMessage());
+        }
+        catch(Exception e){
+            LOGGER.error(e.getMessage(), e);
+        }
+        sb.append('}');
+        return sb.toString();
+    }
 }
