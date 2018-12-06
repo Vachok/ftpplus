@@ -12,8 +12,10 @@ import ru.vachok.networker.net.NetScannerSvc;
 import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.sql.*;
-import java.util.Date;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 
@@ -79,12 +81,6 @@ public class PCUserResolver implements Thread.UncaughtExceptionHandler {
         LOGGER.info(msg);
         while(t.getState().equals(Thread.State.WAITING)){
             t.interrupt();
-            try{
-                throw e;
-            }
-            catch(Throwable throwable){
-                LOGGER.warn(throwable.getMessage());
-            }
         }
         AppComponents.lock().lock();
     }

@@ -225,15 +225,13 @@ public enum ConstantsFor {
     static boolean checkDay() {
         String msg = LocalDate.now().getDayOfWeek().getValue() + " - day of week\n" +
             LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault());
-        if (msg.toLowerCase().contains("понедель")) {
-            if (LocalTime.now().isBefore(LocalTime.of(13, 0))) {
-                try (Connection c = new RegRuMysql().getDefaultConnection(DB_PREFIX + "velkom");
-                     PreparedStatement preparedStatement = c.prepareStatement("TRUNCATE TABLE pcuserauto")) {
-                    preparedStatement.executeUpdate();
-                    return true;
-                } catch (SQLException e) {
-                    return false;
-                }
+        if (msg.toLowerCase().contains("понедель") && LocalTime.now().isBefore(LocalTime.of(13, 0))) {
+            try (Connection c = new RegRuMysql().getDefaultConnection(DB_PREFIX + "velkom");
+                 PreparedStatement preparedStatement = c.prepareStatement("TRUNCATE TABLE pcuserauto")) {
+                preparedStatement.executeUpdate();
+                return true;
+            } catch (SQLException e) {
+                return false;
             }
         }
         return false;

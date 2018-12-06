@@ -19,7 +19,7 @@ public class ResLoader extends DefaultResourceLoader {
 
     public boolean loadNew() {
         String path = getClass().getResource("/static/texts/users.txt").getPath();
-        Path pathRes = null;
+        Path pathRes;
         try{
             pathRes = Paths.get(path).toRealPath();
         }
@@ -33,7 +33,6 @@ public class ResLoader extends DefaultResourceLoader {
             resoCache.setFilePath(filesWithTextResource.getAbsolutePath());
             resoCache.setDescr("TXT File");
             resoCache.setLastModif(System.currentTimeMillis());
-            return resoCache.exists();
         }
         throw new IllegalStateException("Вас тут быть не должно!");
     }

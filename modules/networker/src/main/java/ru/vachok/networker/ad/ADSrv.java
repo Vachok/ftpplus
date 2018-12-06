@@ -5,7 +5,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
@@ -160,7 +159,7 @@ public class ADSrv implements Runnable {
                         adU.setSamAccountName(s.split(": ")[1]);
                     }
                     if (s.contains("SID")) {
-                        adU.setSID(s.split(": ")[1]);
+                        adU.setSid(s.split(": ")[1]);
                     }
                     if (s.contains("Surname")) {
                         adU.setSurname(s.split(": ")[1]);
@@ -238,60 +237,6 @@ public class ADSrv implements Runnable {
             return stringBuilder.toString();
         } else {
             return new PCUserResolver().offNowGetU(queryString);
-        }
-    }
-
-    /**
-     <b>allmailbox.txt</b>
-
-     @return файл построчно
-     */
-    private List<String> adFileReader() {
-        List<String> strings = new ArrayList<>();
-        File adUsers = new File("allmailbox.txt");
-        try (FileReader fileReader = new FileReader(adUsers);
-             BufferedReader bufferedReader = new BufferedReader(fileReader)) {
-
-            while (bufferedReader.ready()) {
-                strings.add(bufferedReader.readLine());
-            }
-        } catch (IOException | InputMismatchException e) {
-            LOGGER.error(e.getMessage(), e);
-        }
-        LOGGER.info(adUser.toString());
-        return strings;
-    }
-
-    /**
-     <b>Обновление БД velkom.adusers</b>
-
-     @param adU {@link ADUser}
-     */
-    private void sendToDB(ADUser adU) {
-        DataConnectTo dataConnectTo = new RegRuMysql();
-        StringBuilder sql = new StringBuilder();
-        String str = "\', \'";
-        sql
-            .append("insert into adusers (distinguishedName, enabled, givenName, name, objectClass, objectGUID, ")
-            .append("samAccountName, ")
-            .append("SID, Surname, UserPrincipalName) values (\'")
-            .append(adU.getDistinguishedName()).append(str)
-            .append(adU.getEnabled()).append(str)
-            .append(adU.getGivenName()).append(str)
-            .append(adU.getName()).append(str)
-            .append(adU.getObjectClass()).append(str)
-            .append(adU.getObjectGUID()).append(str)
-            .append(adU.getSamAccountName()).append(str)
-            .append(adU.getSID()).append(str)
-            .append(adU.getSurname()).append(str)
-            .append(adU.getUserPrincipalName())
-            .append("\');");
-        try (Connection c = dataConnectTo.getDefaultConnection(ConstantsFor.DB_PREFIX + "velkom")) {
-            try (PreparedStatement p = c.prepareStatement(sql.toString())) {
-                p.executeUpdate();
-            }
-        } catch (SQLException e) {
-            LOGGER.error(e.getMessage(), e);
         }
     }
 

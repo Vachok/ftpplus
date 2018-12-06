@@ -21,7 +21,6 @@ import java.net.InetAddress;
 import java.nio.file.AccessDeniedException;
 import java.time.LocalTime;
 import java.util.Date;
-import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
@@ -36,8 +35,6 @@ public class ServiceInfoCtrl {
     /*Fields*/
     private static final Logger LOGGER = LoggerFactory.getLogger(ServiceInfoCtrl.class.getSimpleName());
 
-    private Map<String, Boolean> localMapSB;
-
     private boolean authReq;
 
     private static final Properties PROPS = ConstantsFor.getPROPS();
@@ -49,7 +46,6 @@ public class ServiceInfoCtrl {
     @Autowired
     public ServiceInfoCtrl() {
         new AppComponents();
-        this.localMapSB = AppComponents.lastNetScanMap();
     }
 
     @GetMapping ("/serviceinfo")

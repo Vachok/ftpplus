@@ -84,11 +84,7 @@ public class MatrixSRV {
                 if (changes.length() > ConstantsFor.KBYTE) {
                     r.getBlob("changes");
                     String fileType = r.getString("filetype");
-                    try {
-                        doljAndAccess.put("Reason", downBlob(changes.getBytes(1, Math.toIntExact(changes.length())), fileType));
-                    } catch (IOException e) {
-                        LOGGER.error(e.getMessage(), e);
-                    }
+                    doljAndAccess.put("Reason", downBlob(changes.getBytes(1, Math.toIntExact(changes.length())), fileType));
                 }
             }
         } catch (SQLException e) {
@@ -99,11 +95,13 @@ public class MatrixSRV {
         return s;
     }
 
-    private String downBlob(byte[] bytes, String fileType) throws IOException {
+    private String downBlob(byte[] bytes, String fileType) {
         String fileName = "theBlob." + fileType;
         File file = new File(fileName);
         try (FileOutputStream fileOutputStream = new FileOutputStream(file)) {
             fileOutputStream.write(bytes);
+        } catch (IOException e) {
+            LOGGER.warn(e.getMessage(), e);
         }
         ResoCache resoCache = ResoCache.getResoCache();
         resoCache.setFilePath(file.getAbsolutePath());

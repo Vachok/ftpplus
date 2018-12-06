@@ -102,7 +102,7 @@ public class ResoCache implements org.springframework.core.io.Resource {
         try (FileOutputStream fileOutputStream = new FileOutputStream(file)) {
             fileOutputStream.write(bytes);
         } catch (IOException e) {
-
+            LOGGER.warn(e.getMessage(), e);
         }
         return file;
     }

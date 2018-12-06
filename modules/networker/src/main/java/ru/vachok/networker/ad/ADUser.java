@@ -41,7 +41,7 @@ public class ADUser {
 
     private String surname;
 
-    private String SID;
+    private String sid;
 
     private String samAccountName;
 
@@ -86,12 +86,12 @@ public class ADUser {
         this.surname = surname;
     }
 
-    public String getSID() {
-        return SID;
+    public String getSid() {
+        return sid;
     }
 
-    public void setSID(String SID) {
-        this.SID = SID;
+    public void setSid(String sid) {
+        this.sid = sid;
     }
 
     public String getSamAccountName() {
@@ -198,7 +198,7 @@ public class ADUser {
             .add("objectClass='" + objectClass + brString)
             .add("objectGUID='" + objectGUID + brString)
             .add("samAccountName='" + samAccountName + brString)
-            .add("SID='" + SID + brString)
+            .add("sid='" + sid + brString)
             .add("surname='" + surname + brString)
             .add("userDomain='" + userDomain + brString)
             .add("userName='" + userName + brString)
@@ -206,28 +206,6 @@ public class ADUser {
             .add("userRealName='" + userRealName + brString)
             .add("userSurname='" + userSurname + brString)
             .toString().getBytes(), StandardCharsets.UTF_8);
-    }
-
-    @Override
-    public int hashCode() {
-        int result = defaultDomainName != null ? defaultDomainName.hashCode() : 0;
-        result = 31 * result + (userDomain != null ? userDomain.hashCode() : 0);
-        result = 31 * result + (userName != null ? userName.hashCode() : 0);
-        result = 31 * result + (userRealName != null ? userRealName.hashCode() : 0);
-        result = 31 * result + (userSurname != null ? userSurname.hashCode() : 0);
-        result = 31 * result + (distinguishedName != null ? distinguishedName.hashCode() : 0);
-        result = 31 * result + (userPrincipalName != null ? userPrincipalName.hashCode() : 0);
-        result = 31 * result + (surname != null ? surname.hashCode() : 0);
-        result = 31 * result + (SID != null ? SID.hashCode() : 0);
-        result = 31 * result + (samAccountName != null ? samAccountName.hashCode() : 0);
-        result = 31 * result + (objectClass != null ? objectClass.hashCode() : 0);
-        result = 31 * result + (objectGUID != null ? objectGUID.hashCode() : 0);
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result + (enabled != null ? enabled.hashCode() : 0);
-        result = 31 * result + (givenName != null ? givenName.hashCode() : 0);
-        result = 31 * result + (adUsers != null ? adUsers.hashCode() : 0);
-        result = 31 * result + (userPhoto != null ? userPhoto.hashCode() : 0);
-        return result;
     }
 
     public String getUserSurname() {
@@ -255,32 +233,6 @@ public class ADUser {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        ADUser adUser = (ADUser) o;
-
-        if (defaultDomainName != null ? !defaultDomainName.equals(adUser.defaultDomainName) : adUser.defaultDomainName != null) return false;
-        if (userDomain != null ? !userDomain.equals(adUser.userDomain) : adUser.userDomain != null) return false;
-        if (userName != null ? !userName.equals(adUser.userName) : adUser.userName != null) return false;
-        if (userRealName != null ? !userRealName.equals(adUser.userRealName) : adUser.userRealName != null) return false;
-        if (userSurname != null ? !userSurname.equals(adUser.userSurname) : adUser.userSurname != null) return false;
-        if (distinguishedName != null ? !distinguishedName.equals(adUser.distinguishedName) : adUser.distinguishedName != null) return false;
-        if (userPrincipalName != null ? !userPrincipalName.equals(adUser.userPrincipalName) : adUser.userPrincipalName != null) return false;
-        if (surname != null ? !surname.equals(adUser.surname) : adUser.surname != null) return false;
-        if (SID != null ? !SID.equals(adUser.SID) : adUser.SID != null) return false;
-        if (samAccountName != null ? !samAccountName.equals(adUser.samAccountName) : adUser.samAccountName != null) return false;
-        if (objectClass != null ? !objectClass.equals(adUser.objectClass) : adUser.objectClass != null) return false;
-        if (objectGUID != null ? !objectGUID.equals(adUser.objectGUID) : adUser.objectGUID != null) return false;
-        if (name != null ? !name.equals(adUser.name) : adUser.name != null) return false;
-        if (enabled != null ? !enabled.equals(adUser.enabled) : adUser.enabled != null) return false;
-        if (givenName != null ? !givenName.equals(adUser.givenName) : adUser.givenName != null) return false;
-        if (adUsers != null ? !adUsers.equals(adUser.adUsers) : adUser.adUsers != null) return false;
-        return userPhoto != null ? userPhoto.equals(adUser.userPhoto) : adUser.userPhoto == null;
-    }
-
-    @Override
     public String toString() {
         return new StringJoiner("\n", ADUser.class.getSimpleName() + "\n", "\n")
             .add("defaultDomainName='" + defaultDomainName + "'\n")
@@ -291,7 +243,7 @@ public class ADUser {
             .add("objectClass='" + objectClass + "'\n")
             .add("objectGUID='" + objectGUID + "'\n")
             .add("samAccountName='" + samAccountName + "'\n")
-            .add("SID='" + SID + "'\n")
+            .add("sid='" + sid + "'\n")
             .add("surname='" + surname + "'\n")
             .add("userDomain='" + userDomain + "'\n")
             .add("userName='" + userName + "'\n")

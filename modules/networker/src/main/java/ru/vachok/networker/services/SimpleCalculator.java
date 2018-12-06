@@ -1,21 +1,19 @@
 package ru.vachok.networker.services;
 
 
-import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.componentsrepo.AppComponents;
 
-import java.util.*;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.Properties;
 
 
 /**
  @since 26.09.2018 (13:47) */
 @Service
 public class SimpleCalculator {
-
-    /*Fields*/
-    private static final Logger LOGGER = AppComponents.getLogger();
 
     private String query;
 

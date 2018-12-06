@@ -25,12 +25,15 @@ import java.io.File;
 @Controller
 public class ExCTRL {
 
+    private static final String AT_NAME_RULESET = "ruleset";
+
     private ExSRV exSRV;
 
     private RuleSet ruleSet;
     private static final Logger LOGGER = LoggerFactory.getLogger(ExCTRL.class.getSimpleName());
 
     private String rawS;
+
     @Autowired
     public ExCTRL(ExSRV exSRV, RuleSet ruleSet) {
         ConstantsFor.MAIL_RULES.clear();
@@ -51,7 +54,7 @@ public class ExCTRL {
         Visitor visitor = new Visitor(request);
         LOGGER.warn(visitor.toString());
         model.addAttribute("exsrv", exSRV);
-        model.addAttribute("ruleset", ruleSet);
+        model.addAttribute(AT_NAME_RULESET, ruleSet);
         try {
             model.addAttribute(ConstantsFor.TITLE, lastChange());
             model.addAttribute("file", exSRV.fileAsStrings());
@@ -99,7 +102,7 @@ public class ExCTRL {
             .toString();
         String rules = new TForms().fromArrayRules(ConstantsFor.MAIL_RULES, true);
         model.addAttribute("exsrv", exSRV);
-        model.addAttribute("ruleset", ruleSet);
+        model.addAttribute(AT_NAME_RULESET, ruleSet);
         model.addAttribute("file", rules + s);
         model.addAttribute(ConstantsFor.TITLE, ConstantsFor.MAIL_RULES.size() + " rules in " +
             exSRV.getFile().getSize() / ConstantsFor.KBYTE + " kb file");
@@ -121,7 +124,7 @@ public class ExCTRL {
     public String ruleSetPost(@ModelAttribute RuleSet ruleSet, Model model) {
         this.ruleSet = ruleSet;
         rawS = ruleSet.getIdentity() + "<br>" + ruleSet.getFromAddressMatchesPatterns() + "<p>" + ruleSet.getCopyToRuleSetter();
-        model.addAttribute("ruleset", ruleSet);
+        model.addAttribute(AT_NAME_RULESET, ruleSet);
         model.addAttribute("title", ruleSet.getIdentity());
         model.addAttribute("ok", rawS);
         model.addAttribute("footer", new PageFooter().getFooterUtext());
@@ -138,7 +141,7 @@ public class ExCTRL {
     @GetMapping("/ruleset")
     public String ruleSetGet(Model model, HttpServletResponse response) {
         response.addHeader("pcs", "FromAddressMatchesPatterns");
-        model.addAttribute("ruleset", ruleSet);
+        model.addAttribute(AT_NAME_RULESET, ruleSet);
         model.addAttribute("ok", rawS);
         return "redirect:/ok?FromAddressMatchesPatterns";
     }
