@@ -12,8 +12,7 @@ import javax.servlet.ServletContext;
 import java.util.Set;
 
 /**
- * @since 19.09.2018 (9:07)
- */
+ @since 19.09.2018 (9:07) */
 public class ControlAndContextTH {
 
     private final TemplateEngine templateEngine;
@@ -27,7 +26,6 @@ public class ControlAndContextTH {
         this.templateEngine = new TemplateEngine();
         this.templateEngine.setTemplateResolver(servletContextTemplateResolver);
     }
-
 
     public TemplateEngine getTemplateEngine() {
         Set cacheSet = templateEngine.getCacheManager().getTemplateCache().keySet();

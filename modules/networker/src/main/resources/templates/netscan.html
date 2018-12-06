@@ -11,7 +11,9 @@
     <center><h2 th:utext="${left}"></h2><br>
         <h3 th:utext="${newpc}"/></center>
 </a>
-
+<h4>
+    <center th:utext="${serviceinfo}"></center>
+</h4>
 <form th:action="@{/netscan}" th:object="${netScannerSvc}" method="POST">
     Интересуемый ПК:
     <input type="text" th:field="*{thePc}"/>

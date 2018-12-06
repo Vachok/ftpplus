@@ -4,10 +4,10 @@ package ru.vachok.networker;
 import org.slf4j.Logger;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.accesscontrol.common.ArchivesAutoCleaner;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.net.MyServer;
-import ru.vachok.networker.services.ArchivesAutoCleaner;
 import ru.vachok.networker.services.DBMessenger;
 import ru.vachok.networker.services.Putty;
 

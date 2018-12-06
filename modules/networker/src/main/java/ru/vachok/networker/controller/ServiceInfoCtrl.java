@@ -10,7 +10,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.*;
+import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.componentsrepo.PageFooter;
+import ru.vachok.networker.componentsrepo.VersionInfo;
+import ru.vachok.networker.componentsrepo.Visitor;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
@@ -73,13 +76,15 @@ public class ServiceInfoCtrl {
     }
 
     private void modModMaker(Model model, HttpServletRequest request) {
-        model.addAttribute("title", getLast() + " (" + getLast() * ConstantsFor.ONE_DAY + ")");
+        model.addAttribute(ConstantsFor.TITLE, getLast() + " (" + getLast() * ConstantsFor.ONE_DAY + ")");
         model.addAttribute("ping", pingGit());
-        model.addAttribute("urls", "Запущено - " + new Date(ConstantsFor.START_STAMP) + ConstantsFor.getUpTime());
+        model.addAttribute("urls", "Запущено - " +
+            new Date(ConstantsFor.START_STAMP) + ConstantsFor.getUpTime() +
+            "<br>Точное время: " + ConstantsFor.getAtomicTime());
         model.addAttribute("request", prepareRequest(request));
         model.addAttribute("visit", new VersionInfo().toString());
         model.addAttribute("back", request.getHeader("REFERER".toLowerCase()));
-        model.addAttribute("footer", new PageFooter().getFooterUtext() + "<br>" + getJREVers());
+        model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext() + "<br>" + getJREVers());
     }
 
     private String pingGit() {
@@ -101,8 +106,6 @@ public class ServiceInfoCtrl {
             return "<b><font color=\"#ff2121\">" + true + s + LocalTime.now() + s2;
         }
     }
-
-    /*Instances*/
 
     private String getJREVers() {
         return System.getProperty("java.version");

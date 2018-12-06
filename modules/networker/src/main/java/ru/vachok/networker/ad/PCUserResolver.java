@@ -12,10 +12,8 @@ import ru.vachok.networker.net.NetScannerSvc;
 import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
+import java.util.Date;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 
@@ -27,7 +25,7 @@ import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
 
  @since 02.10.2018 (17:32) */
 @Service
-public class PCUserResolver {
+public class PCUserResolver implements Thread.UncaughtExceptionHandler {
 
     /*Fields*/
 
@@ -62,6 +60,33 @@ public class PCUserResolver {
         Thread.currentThread().checkAccess();
         Thread.currentThread().getThreadGroup().checkAccess();
         return pcUserResolver;
+    }
+
+    /**
+     Method invoked when the given thread terminates due to the
+     given uncaught exception.
+     <p>Any exception thrown by this method will be ignored by the
+     Java Virtual Machine.  @param t the thread
+
+     @param e the exception
+     */
+    @Override
+    public synchronized void uncaughtException(Thread t, Throwable e) {
+        AppComponents.lock().unlock();
+        t.checkAccess();
+        t.interrupt();
+        String msg = t.toString() + "\n" + e.getMessage();
+        LOGGER.info(msg);
+        while(t.getState().equals(Thread.State.WAITING)){
+            t.interrupt();
+            try{
+                throw e;
+            }
+            catch(Throwable throwable){
+                LOGGER.warn(throwable.getMessage());
+            }
+        }
+        AppComponents.lock().lock();
     }
 
     /**
@@ -109,39 +134,11 @@ public class PCUserResolver {
     }
 
     /**
-     Записывает инфо о пльзователе в <b>pcuserauto</b> <br> Записи добавляются к уже имеющимся.
-     <p>
-     Usages: {@link PCUserResolver#namesToFile(String)} <br>
-     Uses: -
-     @param pcName имя ПК
-     @param lastFileUse строка - имя последнего измененного файла в папке пользователя.
-     */
-    private void recAutoDB(String pcName, String lastFileUse) {
-
-        String sql = "insert into pcuser (pcName, userName, lastmod, stamp) values(?,?,?,?)";
-        try(PreparedStatement preparedStatement = connection.prepareStatement(sql
-            .replaceAll("pcuser", "pcuserauto"))) {
-            String[] split = lastFileUse.split(" ");
-            preparedStatement.setString(1, pcName);
-            preparedStatement.setString(2, split[0]);
-            preparedStatement.setString(3, split[2] + split[3] + split[4]);
-            preparedStatement.setString(4, split[7]);
-            preparedStatement.executeUpdate();
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().interrupt();
-        }
-        catch(SQLException | ArrayIndexOutOfBoundsException | NullPointerException e){
-            LOGGER.error(e.getMessage(), e);
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().getThreadGroup().destroy();
-        }
-    }
-
-    /**
      Запрос на установку пользователя
      <p>
      Usages:  {@link AppComponents#pcUserResolver()} <br>
      Uses: {@link AppComponents#adSrv()} <br>
+
      @return {@link ADSrv#getAdUser()}
      @see ActDirectoryCTRL
      */
@@ -159,6 +156,36 @@ public class PCUserResolver {
         }
         Thread.currentThread().interrupt();
         return adUser;
+    }
+
+    /**
+     Записывает инфо о пльзователе в <b>pcuserauto</b> <br> Записи добавляются к уже имеющимся.
+     <p>
+     Usages: {@link PCUserResolver#namesToFile(String)} <br>
+     Uses: -
+
+     @param pcName      имя ПК
+     @param lastFileUse строка - имя последнего измененного файла в папке пользователя.
+     */
+    private void recAutoDB(String pcName, String lastFileUse) {
+
+        String sql = "insert into pcuser (pcName, userName, lastmod, stamp) values(?,?,?,?)";
+        try(PreparedStatement preparedStatement = connection.prepareStatement(sql
+            .replaceAll("pcuser", "pcuserauto"))){
+            String[] split = lastFileUse.split(" ");
+            preparedStatement.setString(1, pcName);
+            preparedStatement.setString(2, split[0]);
+            preparedStatement.setString(3, split[2] + split[3] + split[4]);
+            preparedStatement.setString(4, split[7]);
+            preparedStatement.executeUpdate();
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+        }
+        catch(SQLException | ArrayIndexOutOfBoundsException | NullPointerException e){
+            LOGGER.error(e.getMessage(), e);
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().getThreadGroup().destroy();
+        }
     }
 
     /**
@@ -291,6 +318,8 @@ public class PCUserResolver {
             Thread.currentThread().interrupt();
         }
     }
+
+/*END FOR CLASS*/
 
     /**
      Поиск файлов в папках {@code c-users}.

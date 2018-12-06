@@ -1,4 +1,4 @@
-package ru.vachok.networker.accesscontrol;
+package ru.vachok.networker.accesscontrol.common;
 
 
 import org.slf4j.Logger;
@@ -28,7 +28,7 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> {
 
     private PrintWriter printWriterGood;
 
-    /*Itinial Block*/ {
+    {
         Thread.currentThread().setName(getClass().getSimpleName());
         try {
             OutputStream osGood = new FileOutputStream(ConstantsFor.IT_FOLDER + "\\file_own.txt");

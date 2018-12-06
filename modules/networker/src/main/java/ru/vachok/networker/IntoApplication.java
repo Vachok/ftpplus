@@ -1,6 +1,7 @@
 package ru.vachok.networker;
 
 
+import org.apache.commons.net.ntp.TimeInfo;
 import org.slf4j.Logger;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
@@ -9,8 +10,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import ru.vachok.mysqlandprops.EMailAndDB.SpeedRunActualize;
-import ru.vachok.networker.accesscontrol.CommonRightsChecker;
 import ru.vachok.networker.accesscontrol.MatrixCtr;
+import ru.vachok.networker.accesscontrol.common.CommonRightsChecker;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.config.ThreadConfig;
@@ -18,8 +19,10 @@ import ru.vachok.networker.controller.ServiceInfoCtrl;
 import ru.vachok.networker.net.MyServer;
 import ru.vachok.networker.net.SwitchesAvailability;
 import ru.vachok.networker.services.CommonScan2YOlder;
+import ru.vachok.networker.services.TimeChecker;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.DayOfWeek;
@@ -101,7 +104,16 @@ public class IntoApplication {
             .append(" app display name\n")
             .append(ConstantsFor.getBuildStamp()).toString();
         LOGGER.info(msg);
-        schedStarter();
+        try{
+            schedStarter();
+        }
+        catch(InvocationTargetException e){
+            Throwable targetException = e.getTargetException();
+            LOGGER.error(e.getMessage(), e);
+            LOGGER.warn(targetException.getMessage());
+            new Thread(IntoApplication::new).start();
+            Thread.currentThread().interrupt();
+        }
     }
 
     /**
@@ -120,7 +132,7 @@ public class IntoApplication {
     /**
      <b>Тип WEB-application</b>
      */
-    private static void schedStarter() {
+    private static void schedStarter() throws InvocationTargetException {
         WebApplicationType webApplicationType = WebApplicationType.SERVLET;
         SPRING_APPLICATION.setWebApplicationType(webApplicationType);
         Runnable speedRun = new SpeedRunActualize();
@@ -174,9 +186,12 @@ public class IntoApplication {
      @return new {@link Date} следующая суббота 0:01
      */
     private static Date getNextSat() {
+        TimeChecker timeChecker = new TimeChecker();
+        TimeInfo call = timeChecker.call();
         Calendar.Builder builder = new Calendar.Builder();
         LocalDate localDate = LocalDate.now();
         DayOfWeek satDay = DayOfWeek.SATURDAY;
+        ConstantsFor.setAtomicTime(call.getReturnTime());
         if (localDate.getDayOfWeek().toString().equalsIgnoreCase(satDay.toString())) return new Date();
         else {
             int firstDayOfWeek = Calendar.getInstance().getFirstDayOfWeek();
@@ -185,9 +200,10 @@ public class IntoApplication {
                 .setDate(
                     localDate.getYear(),
                     localDate.getMonth().getValue() - 1,
-                    localDate.getDayOfMonth() + toSat)
+                    localDate.getDayOfMonth() + toSat - 2)
                 .setTimeOfDay(0, 1, 0).build().getTime();
-            String msg = retDate.toString() + " " + toSat;
+            call.computeDetails();
+            String msg = retDate.toString() + " " + toSat + " \nTimeChecker information: " + call.getMessage();
             LOGGER.info(msg);
             return retDate;
         }

@@ -1,4 +1,4 @@
-package ru.vachok.networker.accesscontrol;
+package ru.vachok.networker.accesscontrol.common;
 
 
 import java.io.IOException;
