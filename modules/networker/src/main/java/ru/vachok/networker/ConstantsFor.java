@@ -101,7 +101,8 @@ public enum ConstantsFor {
 
     public static final int TIMEOUT_5 = 5000;
 
-    public static final long DELAY = new SecureRandom().nextInt((int) MY_AGE);
+    /*Fields*/
+    public static final long DELAY = getDelay();
 
     public static final int DOPC = 250;
 
@@ -121,7 +122,13 @@ public enum ConstantsFor {
 
     public static final String APP_NAME = "ru_vachok_networker-";
 
-    /*Fields*/
+    private static long getDelay() {
+        long delay = new SecureRandom().nextInt(( int ) MY_AGE);
+        if(delay < 7){
+            delay = 7;
+        }
+        return delay;
+    }
     private static final Properties PROPS = takePr();
 
     public static Properties getPROPS() {
