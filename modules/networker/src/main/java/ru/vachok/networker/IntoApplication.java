@@ -200,7 +200,7 @@ public class IntoApplication {
                 .setDate(
                     localDate.getYear(),
                     localDate.getMonth().getValue() - 1,
-                    localDate.getDayOfMonth() + toSat - 1)
+                    localDate.getDayOfMonth() + toSat - 2)
                 .setTimeOfDay(0, 1, 0).build().getTime();
             call.computeDetails();
             String msg = retDate.toString() + " " + toSat + " \nTimeChecker information: " + call.getMessage();

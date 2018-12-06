@@ -86,7 +86,7 @@ public class CommonSRV {
             Thread.sleep(1000);
             Files.walkFileTree(restoreFromArchives.getArchiveDir(), Collections.singleton(FileVisitOption.FOLLOW_LINKS), followInt + 1, restoreFromArchives);
         } catch (IOException e) {
-            LOGGER.error(e.getMessage(), e);
+            return e.getMessage();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
