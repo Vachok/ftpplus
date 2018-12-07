@@ -71,7 +71,7 @@ public enum ConstantsFor {
 
     public static final float ONE_HOUR = 60f;
 
-    public static final float ONE_DAY = 24f;
+    public static final float ONE_DAY_HOURS = 24f;
 
     public static final int LISTEN_PORT = 9991;
 

@@ -7,6 +7,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.money.ConstantsFor;
 import ru.vachok.money.components.AppVersion;
 import ru.vachok.money.components.PageFooter;
 import ru.vachok.money.config.AppComponents;
@@ -19,11 +20,8 @@ import javax.servlet.http.HttpServletRequest;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.Objects;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 
 /**
@@ -34,9 +32,11 @@ import java.util.concurrent.Future;
 @Controller
 public class SysInfoCtrl {
 
+    /*Fields*/
+
     private ThreadConfig t = new ThreadConfig();
 
-    /*Fields*/
+    private static final String S_SPEND = " sec spend";
     private static final Logger LOGGER = AppComponents.getLogger();
 
     @GetMapping ("/sysinfo")
@@ -52,41 +52,49 @@ public class SysInfoCtrl {
     }
 
     private String getSomeShit() {
+        final long stArt = System.currentTimeMillis();
         StringBuilder stringBuilder = new StringBuilder();
-
+        long returnTimeNow = System.currentTimeMillis();
         LocalDate nowDate = LocalDate.now();
         DayOfWeek satDayOfWeek = DayOfWeek.SATURDAY;
-        int firstDayOfWeek = Calendar.getInstance().getFirstDayOfWeek();
+        int toSatDays = satDayOfWeek.getValue() - nowDate.getDayOfWeek().getValue();
         Calendar.Builder builder = new Calendar.Builder();
-        int toSatDays = satDayOfWeek.getValue() - firstDayOfWeek;
-        Date date = builder.setDate(
+        Calendar date = builder.setDate(
             nowDate.getYear(),
             nowDate.getMonthValue() - 1,
-            nowDate.getDayOfMonth() + toSatDays).build().getTime();
+            nowDate.getDayOfMonth() + toSatDays).setTimeOfDay(0, 1, 0).build();
+        long toSatLong = date.getTimeInMillis();
         Callable<TimeInfo> atomCall = new TimeChecker();
         TimeInfo atomInfo = null;
         try{
 
             atomInfo = atomCall.call();
+            atomInfo.computeDetails();
         }
         catch(Exception e){
             LOGGER.warn(e.getMessage());
         }
+        if(atomInfo!=null){
+            returnTimeNow = atomInfo.getReturnTime();
+        }
         stringBuilder
             .append("<br>До ")
-            .append(date.toString())
+            .append(date.getTime().toString())
             .append("<br><font color=\"yellow\">")
-            .append(toSatDays)
+            .append(( float ) TimeUnit.MILLISECONDS.toHours(toSatLong - returnTimeNow) / ConstantsFor.ONE_DAY_HOURS)
             .append("</font> дней...<br>Точное UNIX-время: <font color=\"orange\">")
             .append(Objects.requireNonNull(atomInfo).getReturnTime())
             .append("</font><br>Human readable: ")
             .append(Objects.requireNonNull(atomInfo).getMessage().toString().replaceAll("\\Q[\\E", "")
                 .replaceAll("\\Q]\\E", "").replaceAll(",", "<br>").replaceAll("\\Q:\\E", ": "));
+        String msg = "SysInfoCtrl.getSomeShit method. " + ( float ) (System.currentTimeMillis() - stArt) / 1000 + S_SPEND;
+        LOGGER.info(msg);
         return stringBuilder.toString();
     }
 
     @GetMapping ("/cleandir")
     public String cleanDirectory(Model model) {
+        final long stArt = System.currentTimeMillis();
         FilesCleaner filesCleanerHome = new FilesCleaner("\\\\10.10.111.1\\Torrents-FTP\\home\\", true);
         String toClean = getFilesToClean(filesCleanerHome);
 
@@ -97,16 +105,23 @@ public class SysInfoCtrl {
         MessageToUser messageToUser = new DBMessage();
         messageToUser.infoNoTitles(toClean + "\n\n");
 
+        String msg = "SysInfoCtrl.cleanDirectory method. " + ( float ) (System.currentTimeMillis() - stArt) / 1000 + S_SPEND;
+        LOGGER.info(msg);
         return "ok";
     }
 
     private String getFilesToClean(FilesCleaner filesCleaner) {
+        final long stArt = System.currentTimeMillis();
         Future<String> submit = t.getDefaultExecutor().submit(filesCleaner);
         try{
+            String msg = "SysInfoCtrl.getFilesToClean method. " + ( float ) (System.currentTimeMillis() - stArt) / 1000 + S_SPEND;
+            LOGGER.info(msg);
             return submit.get();
         }
         catch(ExecutionException | InterruptedException e){
             Thread.currentThread().interrupt();
+            String msg = "SysInfoCtrl.getFilesToClean method. " + ( float ) (System.currentTimeMillis() - stArt) / 1000 + S_SPEND;
+            LOGGER.info(msg);
             return e.getMessage();
         }
     }

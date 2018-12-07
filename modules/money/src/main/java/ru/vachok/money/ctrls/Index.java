@@ -69,7 +69,7 @@ public class Index {
         long lasts = System.currentTimeMillis() - Long.parseLong(PROPERTIES.getProperty("lasts"));
 
         float hrsWont = ( float ) TimeUnit.MILLISECONDS
-            .toSeconds(lasts) / ConstantsFor.ONE_HOUR / ConstantsFor.ONE_HOUR / ConstantsFor.ONE_DAY;
+            .toSeconds(lasts) / ConstantsFor.ONE_HOUR / ConstantsFor.ONE_HOUR / ConstantsFor.ONE_DAY_HOURS;
 
         model.addAttribute("title", hrsWont + " days");
         model.addAttribute("timeleft", timeWorms.timeLeft());
