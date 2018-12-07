@@ -655,10 +655,8 @@ public class NetScannerSvc {
         StringBuilder stringBuilder = new StringBuilder();
         String str = new TimeChecker().call().getMessage().toString();
         stringBuilder
-            .append("Thread.activeCount(): <font color=\"yellow\">")
-            .append(Thread.activeCount())
-            .append("</font>, Thread.currentThread().getName(): <font color=\"yellow\">")
-            .append(Thread.currentThread().getName())
+            .append("threadConfig.toString() <font color=\"yellow\">")
+            .append(threadConfig.toString())
             .append("</font><p> new TimeChecker().call():<br> <font color=\"yellow\">")
             .append(str)
             .append("</font>");

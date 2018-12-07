@@ -124,8 +124,8 @@ public enum ConstantsFor {
 
     private static long getDelay() {
         long delay = new SecureRandom().nextInt(( int ) MY_AGE);
-        if(delay < 7){
-            delay = 7;
+        if (delay < 9) {
+            delay = 9;
         }
         return delay;
     }

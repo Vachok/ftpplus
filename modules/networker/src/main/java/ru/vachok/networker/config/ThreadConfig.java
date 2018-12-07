@@ -12,11 +12,13 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 @EnableAsync
 public class ThreadConfig extends ThreadPoolTaskExecutor {
 
+    private ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+
     public ThreadPoolTaskExecutor threadPoolTaskExecutor() {
-        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        this.executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(5);
         executor.setMaxPoolSize(5);
-        executor.setThreadNamePrefix(System.currentTimeMillis() + "execution task");
+        executor.setThreadNamePrefix(System.currentTimeMillis() + "task");
         executor.initialize();
         return executor;
     }
@@ -30,5 +32,18 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
 
     public TaskDecorator taskDecorator(Runnable runnable) {
         return runnable1 -> runnable;
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder(executor.getThreadNamePrefix() + "{");
+        sb.append("activeCount/total=").append(executor.getActiveCount());
+        sb.append(Thread.activeCount());
+        sb.append(", corePoolSize=").append(executor.getCorePoolSize());
+        sb.append(", keepAliveSeconds=").append(executor.getKeepAliveSeconds());
+        sb.append(", maxPoolSize=").append(executor.getMaxPoolSize());
+        sb.append(", poolSize=").append(executor.getPoolSize());
+        sb.append('}');
+        return sb.toString();
     }
 }
