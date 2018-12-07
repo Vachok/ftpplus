@@ -32,12 +32,17 @@ import java.util.concurrent.*;
 @Controller
 public class SysInfoCtrl {
 
+
     /*Fields*/
 
-    private ThreadConfig t = new ThreadConfig();
-
+    /**
+     Название в сроке времени.
+     */
     private static final String S_SPEND = " sec spend";
+
     private static final Logger LOGGER = AppComponents.getLogger();
+
+    private ThreadConfig t = new ThreadConfig();
 
     @GetMapping ("/sysinfo")
     public String gettingInfo(Model model, HttpServletRequest request) {
