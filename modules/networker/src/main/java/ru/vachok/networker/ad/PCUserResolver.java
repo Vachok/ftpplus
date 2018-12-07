@@ -12,8 +12,10 @@ import ru.vachok.networker.net.NetScannerSvc;
 import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.sql.*;
-import java.util.Date;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 
@@ -72,15 +74,10 @@ public class PCUserResolver implements Thread.UncaughtExceptionHandler {
      */
     @Override
     public synchronized void uncaughtException(Thread t, Throwable e) {
-        AppComponents.lock().unlock();
         t.checkAccess();
         t.interrupt();
         String msg = t.toString() + "\n" + e.getMessage();
         LOGGER.info(msg);
-        while(t.getState().equals(Thread.State.WAITING)){
-            t.interrupt();
-        }
-        AppComponents.lock().lock();
     }
 
     /**
@@ -153,6 +150,30 @@ public class PCUserResolver implements Thread.UncaughtExceptionHandler {
     }
 
     /**
+     Запись в БД <b>pcuser</b><br> Запись по-запросу от браузера. <br> pcName - уникальный (таблица не переписывается или не дополняется, при наличии записи по-компу)
+
+     @param userName имя юзера
+     @param pcName   имя ПК
+     @see ADSrv#getDetails(String)
+     */
+    synchronized void recToDB(String userName, String pcName) {
+        String sql = "insert into pcuser (pcName, userName) values(?,?)";
+        ConcurrentMap<String, String> pcUMap = ConstantsFor.PC_U_MAP;
+        String msg = userName + " on pc " + pcName + " is set.";
+        try (PreparedStatement p = connection.prepareStatement(sql)) {
+            p.setString(1, userName);
+            p.setString(2, pcName);
+            p.executeUpdate();
+            LOGGER.info(msg);
+            pcUMap.put(pcName, msg);
+            Thread.currentThread().interrupt();
+        } catch (SQLException e) {
+            LOGGER.warn(msg.replace(" set.", " not set!"));
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    /**
      Записывает инфо о пльзователе в <b>pcuserauto</b> <br> Записи добавляются к уже имеющимся.
      <p>
      Usages: {@link PCUserResolver#namesToFile(String)} <br>
@@ -161,7 +182,7 @@ public class PCUserResolver implements Thread.UncaughtExceptionHandler {
      @param pcName      имя ПК
      @param lastFileUse строка - имя последнего измененного файла в папке пользователя.
      */
-    private void recAutoDB(String pcName, String lastFileUse) {
+    private synchronized void recAutoDB(String pcName, String lastFileUse) {
 
         String sql = "insert into pcuser (pcName, userName, lastmod, stamp) values(?,?,?,?)";
         try(PreparedStatement preparedStatement = connection.prepareStatement(sql
@@ -189,7 +210,7 @@ public class PCUserResolver implements Thread.UncaughtExceptionHandler {
      @return {@link String}, имя последнего измененного объекта.
      @see #adUsersSetter()
      */
-    private String getResolvedName() {
+    private synchronized String getResolvedName() {
         List<String> onlineNow = new ArrayList<>();
         List<String> offNow = new ArrayList<>();
         StringBuilder stringBuilder = new StringBuilder();
@@ -247,7 +268,7 @@ public class PCUserResolver implements Thread.UncaughtExceptionHandler {
      @return имя юзера, время записи.
      @see ADSrv#getDetails(String)
      */
-    String offNowGetU(String pcName) {
+    synchronized String offNowGetU(String pcName) {
         StringBuilder v = new StringBuilder();
         try(Connection c = new RegRuMysql().getDefaultConnection("u0466446_velkom")){
             String userName = "userName";
@@ -286,31 +307,6 @@ public class PCUserResolver implements Thread.UncaughtExceptionHandler {
         Thread.currentThread().checkAccess();
         Thread.currentThread().getThreadGroup().interrupt();
         return v.toString();
-    }
-
-    /**
-     Запись в БД <b>pcuser</b><br> Запись по-запросу от браузера. <br> pcName - уникальный (таблица не переписывается или не дополняется, при наличии записи по-компу)
-
-     @param userName имя юзера
-     @param pcName   имя ПК
-     @see ADSrv#getDetails(String)
-     */
-    void recToDB(String userName, String pcName) {
-        String sql = "insert into pcuser (pcName, userName) values(?,?)";
-        ConcurrentMap<String, String> pcUMap = ConstantsFor.PC_U_MAP;
-        String msg = userName + " on pc " + pcName + " is set.";
-        try(PreparedStatement p = connection.prepareStatement(sql)){
-            p.setString(1, userName);
-            p.setString(2, pcName);
-            p.executeUpdate();
-            LOGGER.info(msg);
-            pcUMap.put(pcName, msg);
-            Thread.currentThread().interrupt();
-        }
-        catch(SQLException e){
-            LOGGER.warn(msg.replace(" set.", " not set!"));
-            Thread.currentThread().interrupt();
-        }
     }
 
 /*END FOR CLASS*/

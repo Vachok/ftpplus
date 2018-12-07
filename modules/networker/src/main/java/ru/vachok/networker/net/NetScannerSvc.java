@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
+import org.springframework.util.CustomizableThreadCreator;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.messenger.email.ESender;
 import ru.vachok.mysqlandprops.RegRuMysql;
@@ -22,7 +23,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
@@ -412,12 +416,7 @@ public class NetScannerSvc {
         if(isOnline){
             sql = "select * from velkompc where NamePP like ?";
             this.onLinePCs = this.onLinePCs + 1;
-            try{
-                return onLinesCheck(sql, pcName) + " | " + onLinePCs;
-            }
-            catch(InterruptedException e){
-                return e.getMessage();
-            }
+            return onLinesCheck(sql, pcName) + " | " + onLinePCs;
         }
         else{
             sql = "select * from pcuser where pcName like ?";
@@ -555,15 +554,15 @@ public class NetScannerSvc {
      @return кол-во проверок и сколько был вкл/выкл
      @see #getSomeMore(String, boolean)
      */
-    private String onLinesCheck(String sql, String pcName) throws InterruptedException {
+    private String onLinesCheck(String sql, String pcName) {
         PCUserResolver pcUserResolver = new PCUserResolver();
         List<Integer> onLine = new ArrayList<>();
         List<Integer> offLine = new ArrayList<>();
         StringBuilder stringBuilder = new StringBuilder();
         this.threadPoolTaskExecutor = threadConfig.threadPoolTaskExecutor();
-        execSet(threadPoolTaskExecutor);
-        threadPoolTaskExecutor.execute(() -> pcUserResolver.namesToFile(pcName), ConstantsFor.TIMEOUT_5);
         try(PreparedStatement statement = c.prepareStatement(sql)){
+            Runnable r = () -> pcUserResolver.namesToFile(pcName);
+            execSet(r);
             statement.setString(1, pcName);
             try(ResultSet resultSet = statement.executeQuery()){
                 while(resultSet.next()){
@@ -603,25 +602,21 @@ public class NetScannerSvc {
             PreparedStatement p1 = c.prepareStatement(sql.replaceAll("pcuser", "pcuserauto"))){
             p.setString(1, pcName);
             p1.setString(1, pcName);
-            try(ResultSet resultSet = p.executeQuery()){
+            try (ResultSet resultSet = p.executeQuery();
+                 ResultSet resultSet1 = p1.executeQuery()) {
                 while(resultSet.next()){
                     stringBuilder.append("<b>")
                         .append(resultSet.getString("userName").trim()).append("</b> (time: ")
                         .append(resultSet.getString("whenQueried")).append(")");
                 }
-                try(ResultSet resultSet1 = p1.executeQuery()){
-                    while(resultSet1.next()){
-                        if(resultSet1.last()){
-                            return stringBuilder
-                                .append("    (AutoResolved name: ")
-                                .append(resultSet1.getString("userName").trim()).append(" (time: ")
-                                .append(resultSet1.getString("whenQueried")).append("))").toString();
-                        }
+                while (resultSet1.next()) {
+                    if (resultSet1.last()) {
+                        return stringBuilder
+                            .append("    (AutoResolved name: ")
+                            .append(resultSet1.getString("userName").trim()).append(" (time: ")
+                            .append(resultSet1.getString("whenQueried")).append("))").toString();
                     }
                 }
-            }
-            catch(SQLException ignore){
-                //
             }
         }
         catch(SQLException e){
@@ -638,17 +633,22 @@ public class NetScannerSvc {
     }
 
     /**
-     Сетает {@link org.springframework.core.task.TaskExecutor} для запуска сканирования отдельного ПК.
+     Сетает {@link org.springframework.core.task.TaskExecutor} для запуска сканирования отдельного ПК.@param executor {@link ThreadConfig}
+     @param r
 
-     @param executor {@link ThreadConfig}
+
      */
-    private void execSet(ThreadPoolTaskExecutor executor) {
-        executor.setThreadGroup(new ThreadGroup("online"));
-        executor.setMaxPoolSize(30);
-        executor.setCorePoolSize(3);
-        executor.setKeepAliveSeconds(30);
-        executor.setAllowCoreThreadTimeOut(true);
-        executor.setQueueCapacity(317);
+    private void execSet(Runnable r) {
+        CustomizableThreadCreator customizableThreadCreator = new CustomizableThreadCreator("OnChk: ");
+        customizableThreadCreator.setThreadGroup(threadPoolTaskExecutor.getThreadGroup());
+        Thread thread = customizableThreadCreator.createThread(r);
+        threadPoolTaskExecutor.setMaxPoolSize(30);
+        threadPoolTaskExecutor.setCorePoolSize(3);
+        threadPoolTaskExecutor.setKeepAliveSeconds(30);
+        threadPoolTaskExecutor.setAllowCoreThreadTimeOut(true);
+        threadPoolTaskExecutor.setQueueCapacity(317);
+        threadPoolTaskExecutor.setAwaitTerminationSeconds(5);
+        thread.start();
     }
 
     String someInfo() {
