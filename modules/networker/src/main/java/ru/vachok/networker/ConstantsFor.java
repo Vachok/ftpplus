@@ -122,13 +122,7 @@ public enum ConstantsFor {
 
     public static final String APP_NAME = "ru_vachok_networker-";
 
-    private static long getDelay() {
-        long delay = new SecureRandom().nextInt(( int ) MY_AGE);
-        if (delay < 9) {
-            delay = 9;
-        }
-        return delay;
-    }
+    public static final int ONE_DAY_HOURS = 24;
     private static final Properties PROPS = takePr();
 
     public static Properties getPROPS() {
@@ -139,7 +133,13 @@ public enum ConstantsFor {
 
     public static final int BAD_STATS = 666;
 
-    public static final int ONE_DAY = 24;
+    private static long getDelay() {
+        long delay = new SecureRandom().nextInt((int) MY_AGE);
+        if (delay < 14) {
+            delay = 14;
+        }
+        return delay;
+    }
 
     public static final int TOTAL_PC = Integer.parseInt(PROPS.getOrDefault("totpc", "316").toString());
 

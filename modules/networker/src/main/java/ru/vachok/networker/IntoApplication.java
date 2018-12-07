@@ -12,13 +12,13 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import ru.vachok.mysqlandprops.EMailAndDB.SpeedRunActualize;
 import ru.vachok.networker.accesscontrol.MatrixCtr;
 import ru.vachok.networker.accesscontrol.common.CommonRightsChecker;
+import ru.vachok.networker.accesscontrol.common.CommonScan2YOlder;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.controller.ServiceInfoCtrl;
 import ru.vachok.networker.net.MyServer;
 import ru.vachok.networker.net.SwitchesAvailability;
-import ru.vachok.networker.services.CommonScan2YOlder;
 import ru.vachok.networker.services.TimeChecker;
 
 import java.io.IOException;
@@ -163,12 +163,11 @@ public class IntoApplication {
 
         Date startTime = getNextSat();
 
-        long delay = TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY * 7);
+        long delay = TimeUnit.DAYS.toMillis(7);
         ScheduledFuture<?> scheduleWithFixedDelay = new ThreadConfig().threadPoolTaskScheduler().scheduleWithFixedDelay(
             r, startTime, delay);
         try {
-            String msg = "Common scanner : " + startTime.toString() + ". Common scan delay is " +
-                (float) TimeUnit.MILLISECONDS.toHours(delay) / 24 + " days";
+            String msg = "Common scanner : " + startTime.toString();
             LOGGER.warn(msg);
             scheduleWithFixedDelay.get();
         } catch (InterruptedException | ExecutionException e) {

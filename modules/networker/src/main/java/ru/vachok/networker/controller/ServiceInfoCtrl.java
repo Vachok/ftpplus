@@ -72,7 +72,7 @@ public class ServiceInfoCtrl {
     }
 
     private void modModMaker(Model model, HttpServletRequest request) {
-        model.addAttribute(ConstantsFor.TITLE, getLast() + " (" + getLast() * ConstantsFor.ONE_DAY + ")");
+        model.addAttribute(ConstantsFor.TITLE, getLast() + " (" + getLast() * ConstantsFor.ONE_DAY_HOURS + ")");
         model.addAttribute("ping", pingGit());
         model.addAttribute("urls", "Запущено - " +
             new Date(ConstantsFor.START_STAMP) + ConstantsFor.getUpTime() +

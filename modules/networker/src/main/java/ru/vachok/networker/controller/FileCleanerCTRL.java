@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.accesscontrol.common.CommonScan2YOlder;
 import ru.vachok.networker.componentsrepo.PageFooter;
-import ru.vachok.networker.services.CommonScan2YOlder;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.concurrent.ExecutionException;
