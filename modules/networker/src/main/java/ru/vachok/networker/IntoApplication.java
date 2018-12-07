@@ -20,6 +20,7 @@ import ru.vachok.networker.controller.ServiceInfoCtrl;
 import ru.vachok.networker.net.MyServer;
 import ru.vachok.networker.net.SwitchesAvailability;
 import ru.vachok.networker.services.TimeChecker;
+import ru.vachok.networker.services.WeekPCStats;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -138,13 +139,20 @@ public class IntoApplication {
         Runnable speedRun = new SpeedRunActualize();
         ScheduledExecutorService executorService =
             Executors.unconfigurableScheduledExecutorService(Executors.newSingleThreadScheduledExecutor());
+        long delay = ConstantsFor.DELAY;
         executorService.scheduleWithFixedDelay(speedRun, ConstantsFor.INIT_DELAY,
-            TimeUnit.MINUTES.toSeconds(ConstantsFor.DELAY), TimeUnit.SECONDS);
-        executorService.scheduleWithFixedDelay(new SwitchesAvailability(), 1, ConstantsFor.DELAY, TimeUnit.SECONDS);
+            TimeUnit.MINUTES.toSeconds(delay), TimeUnit.SECONDS);
+        executorService.scheduleWithFixedDelay(new SwitchesAvailability(), 1, delay, TimeUnit.SECONDS);
         if (ConstantsFor.thisPC().toLowerCase().contains("no0027") ||
             ConstantsFor.thisPC().toLowerCase().contains("rups")) {
             runCommonScan();
         }
+        ScheduledExecutorService scheduledExecutorService =
+            Executors.unconfigurableScheduledExecutorService(Executors.newSingleThreadScheduledExecutor());
+        long initialDelay = TimeUnit.SECONDS.toHours(ConstantsFor.INIT_DELAY * 2);
+        String initialDelayStr = initialDelay + " init_HOURS (for stat)";
+        scheduledExecutorService.scheduleWithFixedDelay(new WeekPCStats(), initialDelay, delay, TimeUnit.HOURS);
+        LOGGER.warn(initialDelayStr);
     }
 
     /**
