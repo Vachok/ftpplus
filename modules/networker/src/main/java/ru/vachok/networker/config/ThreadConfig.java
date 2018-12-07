@@ -37,7 +37,7 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder(executor.getThreadNamePrefix() + "{");
-        sb.append("activeCount/total=").append(executor.getActiveCount());
+        sb.append("activeCount/total=").append(executor.getActiveCount()).append("/");
         sb.append(Thread.activeCount());
         sb.append(", corePoolSize=").append(executor.getCorePoolSize());
         sb.append(", keepAliveSeconds=").append(executor.getKeepAliveSeconds());
