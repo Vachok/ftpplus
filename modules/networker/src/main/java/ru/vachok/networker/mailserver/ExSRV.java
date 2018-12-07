@@ -145,17 +145,4 @@ public class ExSRV {
         LOGGER.warn(msg);
         newRule.setOtherFields(otherFields);
     }
-
-    private void getStaticRulesFile() {
-        try (InputStream inputStream = getClass().getResourceAsStream("/static/texts/rules.txt");
-             InputStreamReader reader = new InputStreamReader(inputStream)) {
-            BufferedReader bufferedReader = new BufferedReader(reader);
-            while (bufferedReader.ready()) {
-                fileAsList.add(new String(bufferedReader.readLine().getBytes(), "UNICODE"));
-            }
-        } catch (IOException | NullPointerException e) {
-            LOGGER.error(e.getMessage(), e);
-        }
-        readRule();
-    }
 }

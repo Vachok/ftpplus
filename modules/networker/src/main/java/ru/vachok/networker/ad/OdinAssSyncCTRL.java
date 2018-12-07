@@ -13,10 +13,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.PageFooter;
 
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-
 /**
  @since 11.10.2018 (9:12) */
 @Controller
@@ -67,12 +63,5 @@ public class OdinAssSyncCTRL {
         csvTxt.getTxtList().clear();
         csvTxt.getXlsList().clear();
         return "redirect:/odinass";
-    }
-
-    private void getCSV(HttpServletResponse response) {
-        try (ServletOutputStream outputStream = response.getOutputStream()) {
-        } catch (IOException e) {
-            LOGGER.error(e.getMessage(), e);
-        }
     }
 }

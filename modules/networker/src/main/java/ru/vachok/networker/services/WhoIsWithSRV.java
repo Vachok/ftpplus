@@ -7,8 +7,6 @@ import org.springframework.stereotype.Service;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.ad.ADComputer;
-import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.componentsrepo.AppComponents;
 
 import java.io.IOException;
@@ -23,8 +21,6 @@ public class WhoIsWithSRV {
      {@link }
      */
     private static final Logger LOGGER = AppComponents.getLogger();
-
-    private static final String SOURCE_CLASS = WhoIsWithSRV.class.getSimpleName();
 
     public String whoIs(String inetAddr) {
         StringBuilder geoLocation = new StringBuilder();
@@ -64,10 +60,9 @@ public class WhoIsWithSRV {
     private String traceRt(String inetAddr) {
         SSHFactory.Builder sshFactoryBu = new SSHFactory.Builder(ConstantsFor.SRV_GIT, "traceroute " + inetAddr);
         String retStr = sshFactoryBu.build().call();
-        try{
+        try {
             retStr = retStr.split(" = ")[1].replaceAll("(\\s\\d?\\d\\s)", "<br>").trim();
-        }
-        catch(ArrayIndexOutOfBoundsException e){
+        } catch (ArrayIndexOutOfBoundsException e) {
             return e.getMessage();
         }
 
@@ -89,16 +84,5 @@ public class WhoIsWithSRV {
             whoisClient.disconnect();
         }
         return whoIsQBuilder.toString();
-    }
-
-    private String localWhois() {
-        ADSrv adSrv = AppComponents.adSrv();
-        ADComputer adComputer = adSrv.getAdComputer();
-        if(adSrv.getUserInputRaw()!=null){
-            return adComputer.toString();
-        }
-        else{
-            return "Fuck you";
-        }
     }
 }

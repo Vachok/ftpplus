@@ -178,6 +178,7 @@ public class RestoreFromArchives extends SimpleFileVisitor<Path> {
         Path restInCommon = Paths.get(commonNeed);
         commonNeed = ARCHIVE_DIR.toString() + "\\" + pathInArch;
         Path restInArch = Paths.get(commonNeed);
+        File[] files = restInArch.toFile().listFiles();
         if (restInCommon.toFile().isDirectory() && restInCommon.toFile().exists()) {
             String msg = new StringBuilder()
                 .append(commonNeed)
@@ -192,7 +193,7 @@ public class RestoreFromArchives extends SimpleFileVisitor<Path> {
                 .append("</textarea><font color=\"green\">")
                 .append(restInArch)
                 .append("</font> это папка из архива.<p><textarea>")
-                .append(Arrays.toString(restInArch.toFile().listFiles())
+                .append(Arrays.toString(files)
                     .replaceAll(", ", "\n")
                     .replaceAll("\\Q]\\E", "")
                     .replaceAll("\\Q[\\E", ""))
@@ -203,8 +204,8 @@ public class RestoreFromArchives extends SimpleFileVisitor<Path> {
         } else {
             File tFilePath = new File(restInCommon.toString());
             boolean mkdirs = tFilePath.mkdirs();
-            if (mkdirs) {
-                for (File f : restInArch.toFile().listFiles()) {
+            if (mkdirs && Objects.requireNonNull(files).length > 0) {
+                for (File f : files) {
                     if (f.exists() && f.lastModified() > (System.currentTimeMillis() - TimeUnit.DAYS.toMillis(5))) {
                         Path copy = Files.copy(f.toPath(), Paths.get(tFilePath.toPath() + "\\" + f.getName()));
                         resultStr.append(copy.toUri());

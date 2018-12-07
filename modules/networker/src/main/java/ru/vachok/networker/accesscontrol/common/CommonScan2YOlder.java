@@ -1,4 +1,4 @@
-package ru.vachok.networker.services;
+package ru.vachok.networker.accesscontrol.common;
 
 
 import org.slf4j.Logger;
@@ -37,16 +37,12 @@ public class CommonScan2YOlder extends SimpleFileVisitor<Path> implements Callab
 
     private StringBuilder msgBuilder = new StringBuilder();
 
-    {
-        try {
-            OutputStream outputStream = new FileOutputStream(fileName);
+    public CommonScan2YOlder() {
+        try (OutputStream outputStream = new FileOutputStream(fileName)) {
             printWriter = new PrintWriter(outputStream, true);
-        } catch (FileNotFoundException e) {
+        } catch (IOException e) {
             LOGGER.warn(e.getMessage(), e);
         }
-    }
-
-    public CommonScan2YOlder() {
         Thread.currentThread().setName(getClass().getSimpleName());
     }
 
@@ -124,10 +120,9 @@ public class CommonScan2YOlder extends SimpleFileVisitor<Path> implements Callab
                 Files.readAttributes(file, "dos:*"));
         }
         if (tempFile(file)) {
-            try{
+            try {
                 Files.delete(file);
-            }
-            catch(FileSystemException e){
+            } catch (FileSystemException e) {
                 LOGGER.warn(e.getMessage(), e);
             }
             LOGGER.warn(fileAbs);

@@ -3,7 +3,6 @@ package ru.vachok.networker.accesscontrol;
 
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,8 +18,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.rmi.UnknownHostException;
 import java.security.SecureRandom;
 import java.time.LocalTime;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -29,12 +28,7 @@ import java.util.concurrent.*;
 @Controller
 public class PfListsCtr {
 
-    /*Fields*/
-    private static final Map<String, String> SHOW_ME = new ConcurrentHashMap<>();
-
     private static final Logger LOGGER = AppComponents.getLogger();
-
-    private static final String SOURCE_CLASS = PfListsCtr.class.getSimpleName();
 
     private static final String METRIC_STR = "metric";
 
@@ -133,17 +127,6 @@ public class PfListsCtr {
         properties.setProperty("thr", Thread.activeCount() + "");
     }
 
-    private String getAttr(HttpServletRequest request) {
-        Enumeration<String> attributeNames = request.getServletContext().getAttributeNames();
-        StringBuilder stringBuilder = new StringBuilder();
-        while (attributeNames.hasMoreElements()) {
-            stringBuilder.append(attributeNames.nextElement());
-            stringBuilder.append("<p>");
-            stringBuilder.append("\n");
-        }
-        return stringBuilder.toString();
-    }
-
     private void runningList() {
         try {
             if (timeOut < System.currentTimeMillis()) {
@@ -153,33 +136,6 @@ public class PfListsCtr {
                 .toSeconds(timeOut - System.currentTimeMillis()) / ConstantsFor.ONE_HOUR_IN_MIN + "");
         } catch (TimeLimitExceededException e) {
             LOGGER.error(e.getMessage(), e);
-        }
-    }
-
-    private void scheduleAns() {
-        Runnable runnable = () -> {
-            Thread.currentThread().setName("id " + System.currentTimeMillis());
-            float upTime = (float) (System.currentTimeMillis() - ConstantsFor.START_STAMP) / TimeUnit.DAYS.toMillis(1);
-            String msg = upTime +
-                " uptime days. Active threads = " +
-                Thread.activeCount() + ". This thread = " +
-                Thread.currentThread().getName() + "|" +
-                System.currentTimeMillis() + "\n";
-            LOGGER.warn(msg);
-            Thread.currentThread().interrupt();
-        };
-        if(thisPcName.toLowerCase().contains("no0027") ||
-            thisPcName.equalsIgnoreCase("home")){
-            delayRef = 40000;
-        }
-        ThreadPoolTaskScheduler threadPoolTaskScheduler = new ThreadConfig().threadPoolTaskScheduler();
-        ScheduledFuture<?> schedule = threadPoolTaskScheduler.scheduleWithFixedDelay(runnable, new Date(), delayRef);
-        try {
-            schedule.get(35, TimeUnit.SECONDS);
-        } catch (InterruptedException | ExecutionException | TimeoutException e) {
-            long delay1 = schedule.getDelay(TimeUnit.SECONDS);
-            LOGGER.error(e.getMessage() + " " + delay1 + " delayRef", e);
-            Thread.currentThread().interrupt();
         }
     }
 

@@ -6,8 +6,10 @@ import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
 
-import java.io.*;
-import java.nio.file.FileSystem;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.nio.file.*;
 import java.nio.file.attribute.*;
 import java.sql.Connection;
@@ -28,23 +30,18 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> {
 
     private PrintWriter printWriterGood;
 
-    {
+    public CommonRightsChecker() {
         Thread.currentThread().setName(getClass().getSimpleName());
-        try {
-            OutputStream osGood = new FileOutputStream(ConstantsFor.IT_FOLDER + "\\file_own.txt");
-            OutputStream osFails = new FileOutputStream(ConstantsFor.IT_FOLDER + "\\file_own_failed.txt");
+        try (OutputStream osGood = new FileOutputStream(ConstantsFor.IT_FOLDER + "\\file_own.txt");
+             OutputStream osFails = new FileOutputStream(ConstantsFor.IT_FOLDER + "\\file_own_failed.txt")) {
             printWriterFails = new PrintWriter(osFails, true);
             printWriterGood = new PrintWriter(osGood, true);
-        } catch (FileNotFoundException e) {
+        } catch (IOException e) {
             LOGGER.warn(e.getMessage());
         }
-    }
-
-    public CommonRightsChecker() {
         String msg = "Starting a new instance of " + getClass().getSimpleName() + " at " + new Date();
         LOGGER.warn(msg);
     }
-
 
     @Override
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {

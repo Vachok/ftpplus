@@ -101,7 +101,8 @@ public enum ConstantsFor {
 
     public static final int TIMEOUT_5 = 5000;
 
-    public static final long DELAY = new SecureRandom().nextInt((int) MY_AGE);
+    /*Fields*/
+    public static final long DELAY = getDelay();
 
     public static final int DOPC = 250;
 
@@ -121,7 +122,7 @@ public enum ConstantsFor {
 
     public static final String APP_NAME = "ru_vachok_networker-";
 
-    /*Fields*/
+    public static final int ONE_DAY_HOURS = 24;
     private static final Properties PROPS = takePr();
 
     public static Properties getPROPS() {
@@ -132,7 +133,13 @@ public enum ConstantsFor {
 
     public static final int BAD_STATS = 666;
 
-    public static final int ONE_DAY = 24;
+    private static long getDelay() {
+        long delay = new SecureRandom().nextInt((int) MY_AGE);
+        if (delay < 14) {
+            delay = 14;
+        }
+        return delay;
+    }
 
     public static final int TOTAL_PC = Integer.parseInt(PROPS.getOrDefault("totpc", "316").toString());
 
@@ -225,15 +232,13 @@ public enum ConstantsFor {
     static boolean checkDay() {
         String msg = LocalDate.now().getDayOfWeek().getValue() + " - day of week\n" +
             LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault());
-        if (msg.toLowerCase().contains("понедель")) {
-            if (LocalTime.now().isBefore(LocalTime.of(13, 0))) {
-                try (Connection c = new RegRuMysql().getDefaultConnection(DB_PREFIX + "velkom");
-                     PreparedStatement preparedStatement = c.prepareStatement("TRUNCATE TABLE pcuserauto")) {
-                    preparedStatement.executeUpdate();
-                    return true;
-                } catch (SQLException e) {
-                    return false;
-                }
+        if (msg.toLowerCase().contains("понедель") && LocalTime.now().isBefore(LocalTime.of(13, 0))) {
+            try (Connection c = new RegRuMysql().getDefaultConnection(DB_PREFIX + "velkom");
+                 PreparedStatement preparedStatement = c.prepareStatement("TRUNCATE TABLE pcuserauto")) {
+                preparedStatement.executeUpdate();
+                return true;
+            } catch (SQLException e) {
+                return false;
             }
         }
         return false;

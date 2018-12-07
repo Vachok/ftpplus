@@ -1,9 +1,7 @@
 package ru.vachok.networker.accesscontrol;
 
 
-import org.slf4j.Logger;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.AppComponents;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -20,8 +18,6 @@ class NameOrIPChecker {
 
 
     private static final Pattern PATTERN_NAME = Pattern.compile("^(([aAdDTtNn])(([0-3])|([oOTtPp])))((\\d{2})|(\\d{4}))");
-
-    private static final Logger LOGGER = AppComponents.getLogger();
 
     private static final Pattern PATTERN_IP = Pattern.compile("^([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])$");
 

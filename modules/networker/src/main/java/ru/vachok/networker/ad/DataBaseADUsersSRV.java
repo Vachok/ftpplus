@@ -1,8 +1,6 @@
 package ru.vachok.networker.ad;
 
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.vachok.mysqlandprops.DataConnectTo;
@@ -26,13 +24,8 @@ import java.util.stream.Stream;
 @Service
 public class DataBaseADUsersSRV {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DataBaseADUsersSRV.class.getSimpleName());
-
-    private ADUser adUser;
-
     @Autowired
     public DataBaseADUsersSRV(ADUser adUser) {
-        this.adUser = adUser;
         dbUploader();
     }
 
