@@ -4,10 +4,15 @@ package ru.vachok.networker.net;
 import org.slf4j.Logger;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.services.TimeChecker;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -118,9 +123,24 @@ public class SwitchesAvailability implements Runnable {
         Collections.sort(badIP);
         String okStr = new TForms().fromArray(okIP, false).replaceAll("/", "");
         String badStr = new TForms().fromArray(badIP, false).replaceAll("/", "");
-        LOGGER.info(okStr);
-        LOGGER.warn(badStr);
-        String msg = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startTime) + " sec spend";
+        writeToFile(okStr, badStr);
+        String msg = "SwitchesAvailability.testAddresses, " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startTime) + " sec spend";
         LOGGER.warn(msg);
+    }
+
+    private void writeToFile(String okIP, String badIP) {
+        File file = new File("sw.list.log");
+        try (OutputStream outputStream = new FileOutputStream(file)) {
+            String toWrite = new StringBuilder()
+                .append(new TimeChecker().toString())
+                .append("\n\n")
+                .append("Online Switches: ")
+                .append(okIP)
+                .append("\nOffline Switches: ")
+                .append(badIP).toString();
+            outputStream.write(new String(toWrite.getBytes(), StandardCharsets.UTF_8).getBytes());
+        } catch (IOException e) {
+            LOGGER.warn(e.getMessage(), e);
+        }
     }
 }
