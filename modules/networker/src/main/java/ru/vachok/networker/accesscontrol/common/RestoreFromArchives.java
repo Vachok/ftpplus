@@ -10,10 +10,7 @@ import java.nio.charset.Charset;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -41,17 +38,26 @@ public class RestoreFromArchives extends SimpleFileVisitor<Path> {
 
     private String pathToRestoreAsStr;
 
-    RestoreFromArchives(String pathToRestoreAsStr) {
+    private int perionDays;
+
+    RestoreFromArchives(String pathToRestoreAsStr, String pDays) {
+        this.perionDays = Integer.parseInt(pDays);
         if (pathToRestoreAsStr.toLowerCase().contains("common_new")) pathToRestoreAsStr = pathToRestoreAsStr.split("\\Qcommon_new\\\\E")[1];
         else if (pathToRestoreAsStr.toLowerCase().contains("archives")) pathToRestoreAsStr = pathToRestoreAsStr.split("\\Qrchives\\\\E")[1];
         else if (pathToRestoreAsStr.toLowerCase().contains(":\\")) pathToRestoreAsStr = pathToRestoreAsStr.split("\\Q:\\\\E")[1];
+        else if (pathToRestoreAsStr.isEmpty()) pathToRestoreAsStr = Paths.get("").toString();
         char[] chars = pathToRestoreAsStr.toCharArray();
-        Character lastChar = chars[chars.length - 1];
-        if (lastChar.equals('\\')) {
-            chars[chars.length - 1] = ' ';
-            this.pathToRestoreAsStr = new String(chars).trim();
-        } else this.pathToRestoreAsStr = new String(pathToRestoreAsStr.getBytes(), Charset.defaultCharset());
-        getFirstLevelDirs();
+        try {
+            Character lastChar = chars[chars.length - 1];
+            if (lastChar.equals('\\')) {
+                chars[chars.length - 1] = ' ';
+                this.pathToRestoreAsStr = new String(chars).trim();
+            } else this.pathToRestoreAsStr = new String(pathToRestoreAsStr.getBytes(), Charset.defaultCharset());
+
+            getFirstLevelDirs();
+        } catch (ArrayIndexOutOfBoundsException ignore) {
+            //
+        }
     }
 
     private void getFirstLevelDirs() {
@@ -72,13 +78,12 @@ public class RestoreFromArchives extends SimpleFileVisitor<Path> {
             } else return FileVisitResult.SKIP_SUBTREE;
         } catch (ArrayIndexOutOfBoundsException e) {
             aCase = pathInArch.equalsIgnoreCase(pathInCommon);
+        } catch (NullPointerException e1) {
+            resultStr.append(FileVisitResult.TERMINATE);
+            return FileVisitResult.TERMINATE;
         }
         if (attrs.isDirectory() && aCase) return directoryMatch(pathInArch);
-        else return directoryMismatch();
-    }
-
-    private FileVisitResult directoryMismatch() {
-        return FileVisitResult.CONTINUE;
+        else return FileVisitResult.CONTINUE;
     }
 
     @Override
@@ -90,45 +95,89 @@ public class RestoreFromArchives extends SimpleFileVisitor<Path> {
         return FileVisitResult.CONTINUE;
     }
 
-    private FileVisitResult fileChecker(String filePathStr, Path file, FileTime fileTime) throws IOException {
-        List<String> fileNamesList = new ArrayList<>();
-        File newCommonFile = new File(filePathStr);
-        String archFileName = file.toFile().getName().toLowerCase();
-        String newCommonFileName = newCommonFile.getName().toLowerCase();
-        if (fileTime.toMillis() > (System.currentTimeMillis() - TimeUnit.DAYS.toMillis(5))
-            && archFileName.contains(newCommonFileName)) {
+    @Override
+    public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+        resultStr
+            .append(exc.getMessage())
+            .append(" err");
+        return FileVisitResult.SKIP_SIBLINGS;
+    }
+
+    private FileVisitResult directoryMatch(String pathInArch) throws IOException {
+        String commonNeed = COMMON_DIR.toString() + pathInArch;
+        Path restInCommon = Paths.get(commonNeed);
+        commonNeed = ARCHIVE_DIR.toString() + "\\" + pathInArch;
+        Path restInArch = Paths.get(commonNeed);
+        File[] files = restInArch.toFile().listFiles();
+        if (restInCommon.toFile().isDirectory()) {
             resultStr
-                .append("<br>Модифицировано: ")
-                .append(fileTime)
-                .append("<br>")
-                .append(file.toFile().getName())
-                .append("<br>");
-            String msg = "Файл из архива - <font color=\"orange\">" + file.toString();
-            LOGGER.info(msg);
-            resultStr.append(msg)
-                .append("</font> <font color=\"red\"> размер в байтах: ")
-                .append(Files.size(file))
-                .append("</font>.<br>");
-            fileNamesList.add(file.toFile().getAbsolutePath());
-        }
-        for (String s : fileNamesList) {
-            String target = s.replace("\\\\192.168.14.10\\IT-Backup\\Srv-Fs\\Archives\\",
-                "\\\\srv-fs.eatmeat.ru\\common_new\\");
-            File tFile = new File(target);
-            String tFPath = tFile.getAbsolutePath().replace(tFile.getName(), "");
-            Files.createDirectories(Paths.get(tFPath));
-            Files.copy(Paths.get(s), tFile.toPath());
+                .append("Похоже что вы ищете папку - ")
+                .append(restInCommon.toAbsolutePath())
+                .append(" ")
+                .append(restInCommon.toFile().isDirectory())
+                .append("<p>");
+            String msg = new StringBuilder()
+                .append(commonNeed)
+                .append("<p><font color=\"yellow\">")
+                .append(restInCommon)
+                .append("</font> это пропащая папка:<br>")
+                .append("<textarea readonly rows=9>")
+                .append(Arrays.toString(restInCommon.toFile().listFiles())
+                    .replaceAll(", ", "\n")
+                    .replaceAll("\\Q]\\E", "")
+                    .replaceAll("\\Q[\\E", ""))
+                .append("</textarea><font color=\"green\">")
+                .append(restInArch)
+                .append("</font> это папка из архива:<br><textarea readonly rows=9>")
+                .append(Arrays.toString(files)
+                    .replaceAll(", ", "\n")
+                    .replaceAll("\\Q]\\E", "")
+                    .replaceAll("\\Q[\\E", ""))
+                .append("</textarea>")
+                .toString();
+            LOGGER.warn(msg);
+            resultStr.append(msg);
+        } else if (!restInCommon.toFile().exists()) {
             resultStr
-                .append("Cкопирован сюда: <font color=\"green\">")
-                .append(target)
-                .append("</font><br>");
+                .append(!restInCommon.toFile().exists()).append(" ").append(restInCommon.toFile().getAbsolutePath())
+                .append(" не существует!!! Восстанавливаю всю папку в common_new<br>");
+            File tFilePath = new File(restInCommon.toString());
+            boolean mkdirs = tFilePath.mkdirs();
+            if (mkdirs && Objects.requireNonNull(files).length > 0) {
+                resultStr
+                    .append("<font color=\"red\">DEADLINE IS        ")
+                    .append(new Date(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(perionDays)))
+                    .append("</font><br>");
+                for (File f : files) {
+                    if (f.exists() && f.lastModified() > (System.currentTimeMillis() - TimeUnit.DAYS.toMillis(perionDays))) {
+                        Path copy = Files.copy(f.toPath(), Paths.get(tFilePath.toPath() + "\\" + f.getName()));
+                        resultStr
+                            .append(" ")
+                            .append(copy.toFile().getName());
+                    } else resultStr
+                        .append(f.getName())
+                        .append(" <font color=\"yellow\">")
+                        .append(new Date(f.lastModified()))
+                        .append("</font> period ")
+                        .append(false)
+                        .append("<br>");
+                }
+            }
         }
-        return FileVisitResult.CONTINUE;
+        return FileVisitResult.TERMINATE;
     }
 
     @Override
-    public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
-        return FileVisitResult.SKIP_SIBLINGS;
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("RestoreFromArchives <br>");
+        sb.append("\n ").append(resultStr);
+        sb.append("\n<p> <font color=\"grey\">ARCHIVE_DIR=").append(ARCHIVE_DIR);
+        sb.append("\n COMMON_DIR=").append(COMMON_DIR);
+        sb.append("\n firstLeverSTR='").append(firstLeverSTR).append('\'');
+        sb.append("\n pathToRestoreAsStr='").append(pathToRestoreAsStr).append('\'');
+        sb.append("\n perionDays='").append(perionDays).append('\'');
+        sb.append("</font><p>");
+        return sb.toString();
     }
 
     @Override
@@ -152,18 +201,6 @@ public class RestoreFromArchives extends SimpleFileVisitor<Path> {
             pathToRestoreAsStr.equals(that.pathToRestoreAsStr);
     }
 
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("RestoreFromArchives{");
-        sb.append("ARCHIVE_DIR=").append(ARCHIVE_DIR);
-        sb.append(", COMMON_DIR=").append(COMMON_DIR);
-        sb.append(", firstLeverSTR='").append(firstLeverSTR).append('\'');
-        sb.append(", pathToRestoreAsStr='").append(pathToRestoreAsStr).append('\'');
-        sb.append(", resultStr=").append(resultStr);
-        sb.append('}');
-        return sb.toString();
-    }
-
     Path getArchiveDir() {
         return ARCHIVE_DIR;
     }
@@ -172,47 +209,40 @@ public class RestoreFromArchives extends SimpleFileVisitor<Path> {
         return COMMON_DIR;
     }
 
-    private FileVisitResult directoryMatch(String pathInArch) throws IOException {
-        LOGGER.info(pathInArch);
-        String commonNeed = COMMON_DIR.toString() + pathInArch;
-        Path restInCommon = Paths.get(commonNeed);
-        commonNeed = ARCHIVE_DIR.toString() + "\\" + pathInArch;
-        Path restInArch = Paths.get(commonNeed);
-        File[] files = restInArch.toFile().listFiles();
-        if (restInCommon.toFile().isDirectory() && restInCommon.toFile().exists()) {
-            String msg = new StringBuilder()
-                .append(commonNeed)
-                .append("<br><font color=\"yellow\">")
-                .append(restInCommon)
-                .append("</font> это пропащая папка<br>")
-                .append("<textarea>")
-                .append(Arrays.toString(restInCommon.toFile().listFiles())
-                    .replaceAll(", ", "\n")
-                    .replaceAll("\\Q]\\E", "")
-                    .replaceAll("\\Q[\\E", ""))
-                .append("</textarea><font color=\"green\">")
-                .append(restInArch)
-                .append("</font> это папка из архива.<p><textarea>")
-                .append(Arrays.toString(files)
-                    .replaceAll(", ", "\n")
-                    .replaceAll("\\Q]\\E", "")
-                    .replaceAll("\\Q[\\E", ""))
-                .append("</textarea>")
-                .toString();
-            LOGGER.warn(msg);
-            resultStr.append(msg);
-        } else {
-            File tFilePath = new File(restInCommon.toString());
-            boolean mkdirs = tFilePath.mkdirs();
-            if (mkdirs && Objects.requireNonNull(files).length > 0) {
-                for (File f : files) {
-                    if (f.exists() && f.lastModified() > (System.currentTimeMillis() - TimeUnit.DAYS.toMillis(5))) {
-                        Path copy = Files.copy(f.toPath(), Paths.get(tFilePath.toPath() + "\\" + f.getName()));
-                        resultStr.append(copy.toUri());
-                    }
-                }
-            }
+    private FileVisitResult fileChecker(String filePathStr, Path file, FileTime fileTime) throws IOException {
+        List<String> fileNamesList = new ArrayList<>();
+        File newCommonFile = new File(filePathStr);
+        String archFileName = file.toFile().getName().toLowerCase();
+        String newCommonFileName = newCommonFile.getName().toLowerCase();
+        if (fileTime.toMillis() > (System.currentTimeMillis() - TimeUnit.DAYS.toMillis(perionDays))
+            && archFileName.contains(newCommonFileName)) {
+            resultStr
+                .append("<br>Модифицировано: ").append(fileTime)
+                .append("<br>")
+                .append(file.toFile().getName())
+                .append("<br>");
+            String msg = "Файл из архива - <font color=\"orange\">" + file.toString();
+            LOGGER.info(msg);
+            resultStr.append(msg)
+                .append("</font> <font color=\"red\"> размер в байтах: ")
+                .append(Files.size(file))
+                .append("</font>.<br>");
+            fileNamesList.add(file.toFile().getAbsolutePath());
         }
-        return FileVisitResult.TERMINATE;
+        for (String s : fileNamesList) copyFile(s);
+        return FileVisitResult.CONTINUE;
+    }
+
+    private void copyFile(String s) throws IOException {
+        String target = s.replace("\\\\192.168.14.10\\IT-Backup\\Srv-Fs\\Archives\\",
+            "\\\\srv-fs.eatmeat.ru\\common_new\\");
+        File tFile = new File(target);
+        String tFPath = tFile.getAbsolutePath().replace(tFile.getName(), "");
+        Files.createDirectories(Paths.get(tFPath));
+        Files.copy(Paths.get(s), tFile.toPath());
+        resultStr
+            .append("Cкопирован сюда: <font color=\"green\">")
+            .append(target)
+            .append("</font><br>");
     }
 }

@@ -34,6 +34,16 @@ public class CommonSRV {
      */
     private String delFolderPath;
 
+    private String perionDays;
+
+    public String getPerionDays() {
+        return perionDays;
+    }
+
+    public void setPerionDays(String perionDays) {
+        this.perionDays = perionDays;
+    }
+
     /**
      @return {@link #delFolderPath}
      */
@@ -52,19 +62,11 @@ public class CommonSRV {
         this.delFolderPath = delFolderPath;
     }
 
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("CommonSRV{");
-        sb.append("delFolderPath='").append(delFolderPath).append('\'');
-        sb.append('}');
-        return sb.toString();
-    }
-
     /**
      @return {@link RestoreFromArchives#toString()}
      */
     String reStoreDir() {
-        RestoreFromArchives restoreFromArchives = new RestoreFromArchives(delFolderPath);
+        RestoreFromArchives restoreFromArchives = new RestoreFromArchives(delFolderPath, perionDays);
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder
             .append("User inputs: ")
@@ -81,7 +83,7 @@ public class CommonSRV {
             .append(followInt)
             .append(" кол-во вложений папок для просмотра\n");
         try {
-            String msg = followInt + " number of followed links";
+            String msg = followInt + " number of followed links" + "\n" + toString();
             LOGGER.warn(msg);
             Thread.sleep(1000);
             Files.walkFileTree(restoreFromArchives.getArchiveDir(), Collections.singleton(FileVisitOption.FOLLOW_LINKS), followInt + 1, restoreFromArchives);
@@ -110,5 +112,14 @@ public class CommonSRV {
         }
         String msg = file.getAbsolutePath() + " written";
         LOGGER.info(msg);
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("CommonSRV{");
+        sb.append("delFolderPath='").append(delFolderPath).append('\'');
+        sb.append(", perionDays='").append(perionDays).append('\'');
+        sb.append('}');
+        return sb.toString();
     }
 }
