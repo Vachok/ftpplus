@@ -401,4 +401,22 @@ public class TForms {
             return nStringBuilder.toString();
         }
     }
+
+    public String fromArray(Object[] objects, boolean b) {
+        brStringBuilder.append("<p>");
+        for(Object o : objects){
+            brStringBuilder
+                .append(o.toString())
+                .append(BR_S);
+            nStringBuilder
+                .append(o.toString())
+                .append(N_S);
+        }
+        if(b){
+            return brStringBuilder.toString();
+        }
+        else{
+            return nStringBuilder.toString();
+        }
+    }
 }

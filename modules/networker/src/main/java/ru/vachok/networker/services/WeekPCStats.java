@@ -13,7 +13,10 @@ import java.io.*;
 import java.nio.file.Files;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 
 /**
@@ -67,7 +70,7 @@ public class WeekPCStats implements Runnable {
                     .append(r.getString(2))
                     .append(" ")
                     .append(r.getString(3)).toString());
-                PC_NAMES_IN_TABLE.add(r.getString(2));
+                PC_NAMES_IN_TABLE.add(r.getString(2) + " " + r.getString(3));
             }
             String msgTimeSp = new StringBuilder()
                 .append("WeekPCStats.getFromDB method. ")
@@ -90,6 +93,7 @@ public class WeekPCStats implements Runnable {
      Если {@link ConstantsFor#thisPC()} - home, копирует файл в роутер. <br>
      Usages: {@link #getFromDB()} <br>
      Uses: {@link ConstantsFor#thisPC()}, {@link #getInfoList(File)} ()}
+
      @param file {@code velkom_pcuserauto.txt}
      */
     private void copyFile(File file) {
@@ -117,6 +121,7 @@ public class WeekPCStats implements Runnable {
      Usages: {@link #copyFile(File)} <br>
      Uses: -
      <p>
+
      @param file {@code velkom_pcuserauto.txt}
      @return {@link List} строк из файла
      */
@@ -141,7 +146,27 @@ public class WeekPCStats implements Runnable {
             PC_NAMES_IN_TABLE.get(0) + " " + PC_NAMES_IN_TABLE.get(1) + "...\n";
         LOGGER.info(msgTimeSp);
         MessageToUser messageToUser = new ESender("143500@gmail.com");
-        new Thread(() -> messageToUser.info(ConstantsFor.getUpTime(), msgTimeSp, new TForms().fromArray(fileLines, false))).start();
+        new Thread(() -> messageToUser.info(ConstantsFor.getUpTime(), msgTimeSp, getInfo())).start();
         return fileLines;
+    }
+
+    private String getInfo() {
+        Collections.sort(PC_NAMES_IN_TABLE);
+        Object[] objects = PC_NAMES_IN_TABLE.stream().distinct().toArray();
+        ConcurrentMap<String, Integer> integerStringConcurrentMap = new ConcurrentHashMap<>();
+        PC_NAMES_IN_TABLE.forEach(x -> {
+            Integer integer = 0;
+            Object toMapO = "";
+            for(Object o : objects){
+                boolean contains = PC_NAMES_IN_TABLE.contains(o);
+                if(contains){
+                    integer = integer + 1;
+                }
+                String msg = integer + " " + o.toString();
+                toMapO = o;
+            }
+            integerStringConcurrentMap.put(toMapO.toString(), integer);
+        });
+        return new TForms().fromArray(integerStringConcurrentMap, false);
     }
 }
