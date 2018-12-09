@@ -36,7 +36,7 @@ public class PageFooter {
             .append("<a href=\"/common\"><font color=\"yellow\">Восстановить из архива</font></a><br>\n")
             .append("<a href=\"/cleaner\"><strike>Ищейка файлов</strike></a><br>\n")
             .append("<a href=\"/sshacts\"><strike>SSH worker</strike></a><br>\n")
-            .append("<a href=\"/serviceinfo\"><font color=\"#999eff\">SERVICEINFO</font></a>")
+            .append("<a href=\"/serviceinfo\"><font color=\"#999eff\">SERVICEINFO</font></a><p>\n")
             .toString();
     }
 }

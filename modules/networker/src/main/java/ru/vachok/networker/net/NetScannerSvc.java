@@ -634,9 +634,11 @@ public class NetScannerSvc {
 
     /**
      Сетает {@link org.springframework.core.task.TaskExecutor} для запуска сканирования отдельного ПК.@param executor {@link ThreadConfig}
-     @param r
+     <p>
+     Usages: {@link #onLinesCheck(String, String)} <br>
+     Uses: -
 
-
+     @param r {@link Runnable}, для пуска.
      */
     private void execSet(Runnable r) {
         CustomizableThreadCreator customizableThreadCreator = new CustomizableThreadCreator("OnChk: ");

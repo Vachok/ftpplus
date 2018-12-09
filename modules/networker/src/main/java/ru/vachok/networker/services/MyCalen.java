@@ -11,6 +11,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -36,9 +37,11 @@ public abstract class MyCalen {
      Дата запуска common scanner
      <p>
      Usage: {@link IntoApplication#runCommonScan()} <br>
-     Uses: - <br>
-
+     Uses: -
+     <p>
      @return new {@link Date} следующая суббота 0:01
+     @param hourNeed час
+     @param minNeed минута
      */
     public static Date getNextSat(int hourNeed, int minNeed) {
         final long stArt = System.currentTimeMillis();
@@ -79,7 +82,7 @@ public abstract class MyCalen {
         Calendar.Builder cBuilder = new Calendar.Builder();
         LocalDateTime localDateTime = LocalDateTime.now();
         if(localDateTime.getDayOfWeek().toString().equalsIgnoreCase(dayOfWeek.toString())){
-            return new Date();
+            return new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(1));
         }
         else{
             int toDateDays = dayOfWeek.getValue() - localDateTime.getDayOfWeek().getValue();

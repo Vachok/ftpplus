@@ -35,6 +35,14 @@ public class WeekPCStats implements Runnable {
         LOGGER.info(msgTimeSp);
     }
 
+    /**
+     Инфо из БД
+     <p>
+     Читает БД pcuserauto <br>
+     Записывает файл {@code velkom_pcuserauto.txt} <br>
+     Usages: {@link #run()}
+     Uses: {@link #copyFile(File)}
+     */
     private void getFromDB() {
         final long stArt = System.currentTimeMillis();
         String sql = "select * from pcuserauto";
@@ -69,6 +77,14 @@ public class WeekPCStats implements Runnable {
         copyFile(file);
     }
 
+    /**
+     Копир
+     <p>
+     Если {@link ConstantsFor#thisPC()} - home, копирует файл в роутер. <br>
+     Usages: {@link #getFromDB()} <br>
+     Uses: {@link ConstantsFor#thisPC()}, {@link #getInfoList(File)} ()}
+     @param file {@code velkom_pcuserauto.txt}
+     */
     private void copyFile(File file) {
         final long stArt = System.currentTimeMillis();
         if(ConstantsFor.thisPC().toLowerCase().contains("home")){
@@ -81,10 +97,19 @@ public class WeekPCStats implements Runnable {
                 LOGGER.error(e.getMessage(), e);
             }
         }
-        getInfo(file);
+        getInfoList(file);
     }
 
-    private void getInfo(File file) {
+    /**
+     Чтение файла
+     <p>
+     Usages: {@link #copyFile(File)} <br>
+     Uses: {@link TForms#fromArray(List, boolean)}
+     <p>
+     @param file {@code velkom_pcuserauto.txt}
+     @return {@link List} строк из файла
+     */
+    private List<String> getInfoList(File file) {
         final long stArt = System.currentTimeMillis();
         List<String> fileLines = new ArrayList<>();
         try(InputStream inputStream = new FileInputStream(file);
@@ -95,11 +120,13 @@ public class WeekPCStats implements Runnable {
             }
         }
         catch(IOException e){
-            LOGGER.error(e.getMessage(), e);
+            fileLines.add(e.getMessage());
+            return fileLines;
         }
-        String msgTimeSp = "WeekPCStats.getInfo method. " +
+        String msgTimeSp = "WeekPCStats.getInfoList method. " +
             ( float ) (System.currentTimeMillis() - stArt) / 1000 +
             " sec spend\n" + "\n" + new TForms().fromArray(fileLines, false) + "\n" + fileLines.size() + " size";
         LOGGER.info(msgTimeSp);
+        return fileLines;
     }
 }

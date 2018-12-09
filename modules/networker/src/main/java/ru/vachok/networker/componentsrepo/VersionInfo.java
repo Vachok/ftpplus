@@ -28,6 +28,8 @@ public class VersionInfo {
 
     private String buildTime;
 
+    private static final String DOC_URL = "<a href=\"/doc/index.html\">DOC</a>";
+
     private static final Properties PROPERTIES = ConstantsFor.getPROPS();
 
     private final String thisPCName = ConstantsFor.thisPC();
@@ -148,6 +150,7 @@ public class VersionInfo {
         sb.append(", appName='").append(appName).append('\'');
         sb.append(", appVersion='").append(appVersion).append('\'');
         sb.append(", buildTime='").append(buildTime).append('\'');
+        sb.append(", DOC_URL='").append(DOC_URL).append('\'');
         sb.append(", thisPCName='").append(thisPCName).append('\'');
         sb.append('}');
         return sb.toString();

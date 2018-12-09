@@ -5,10 +5,7 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 import ru.vachok.networker.componentsrepo.AppComponents;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.util.Collections;
@@ -28,8 +25,6 @@ public class CommonSRV {
 
     /**
      Пользовательский ввод через форму на сайте
-     <p>
-
      @see CommonCTRL
      */
     private String delFolderPath;
