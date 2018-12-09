@@ -146,6 +146,13 @@ public class WeekPCStats implements Runnable {
             PC_NAMES_IN_TABLE.get(0) + " " + PC_NAMES_IN_TABLE.get(1) + "...\n";
         LOGGER.info(msgTimeSp);
         String infoS = getInfo();
+        try(OutputStream outputStream = new FileOutputStream("infoS.txt");
+            PrintWriter printWriter = new PrintWriter(outputStream, true)){
+            printWriter.print(infoS);
+        }
+        catch(IOException e){
+            LOGGER.warn(e.getMessage(), e);
+        }
         MessageToUser messageToUser = new ESender("143500@gmail.com");
         new Thread(() -> messageToUser.info(ConstantsFor.getUpTime(), msgTimeSp, infoS)).start();
         return fileLines;
@@ -155,15 +162,20 @@ public class WeekPCStats implements Runnable {
         final long stArt = System.currentTimeMillis();
         Collections.sort(PC_NAMES_IN_TABLE);
         Object[] objects = PC_NAMES_IN_TABLE.stream().distinct().toArray();
+        List<String> obList = new ArrayList<>();
+        for(Object object : objects){
+            obList.add(object.toString());
+        }
+        Collections.sort(obList);
         ConcurrentMap<String, Integer> integerStringConcurrentMap = new ConcurrentHashMap<>();
         PC_NAMES_IN_TABLE.parallelStream().forEach(x -> {
             Integer integer = 0;
-            for(Object o : objects){
-                boolean contains = PC_NAMES_IN_TABLE.contains(o.toString());
+            for(String o : obList){
+                boolean contains = PC_NAMES_IN_TABLE.contains(o);
                 if(contains){
                     integer = integer + 1;
                 }
-                integerStringConcurrentMap.put(o.toString(), integer);
+                integerStringConcurrentMap.put(o, integer);
             }
         });
         String msgTimeSp = "WeekPCStats.getInfo method. " + ( float ) (System.currentTimeMillis() - stArt) / 1000 + " sec spend";
