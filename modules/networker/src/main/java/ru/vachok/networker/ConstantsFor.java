@@ -215,6 +215,8 @@ public enum ConstantsFor {
             return InetAddress.getLocalHost().getHostName();
         } catch (UnknownHostException | ExceptionInInitializerError e) {
             return e.getMessage();
+        } catch (NullPointerException n) {
+            return "pc";
         }
     }
 

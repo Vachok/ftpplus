@@ -23,10 +23,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
@@ -260,6 +257,7 @@ public class NetScannerSvc {
      @see #getPcNames()
      */
     public void getPCsAsync() {
+        final long stArt = System.currentTimeMillis();
         AtomicReference<String> msg = new AtomicReference<>("");
         new Thread(() -> {
             lock.lock();
@@ -306,6 +304,8 @@ public class NetScannerSvc {
                 LOGGER.warn(s);
                 this.onLinePCs = 0;
             }).start();
+            String msgTimeSp = "NetScannerSvc.getPCsAsync method. " + ( float ) (System.currentTimeMillis() - stArt) / 1000 + " sec spend";
+            LOGGER.warn(msgTimeSp);
         }).start();
     }
 
@@ -634,9 +634,11 @@ public class NetScannerSvc {
 
     /**
      Сетает {@link org.springframework.core.task.TaskExecutor} для запуска сканирования отдельного ПК.@param executor {@link ThreadConfig}
-     @param r
+     <p>
+     Usages: {@link #onLinesCheck(String, String)} <br>
+     Uses: -
 
-
+     @param r {@link Runnable}, для пуска.
      */
     private void execSet(Runnable r) {
         CustomizableThreadCreator customizableThreadCreator = new CustomizableThreadCreator("OnChk: ");

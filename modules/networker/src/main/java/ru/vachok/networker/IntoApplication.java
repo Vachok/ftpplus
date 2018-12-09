@@ -1,7 +1,6 @@
 package ru.vachok.networker;
 
 
-import org.apache.commons.net.ntp.TimeInfo;
 import org.slf4j.Logger;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
@@ -19,7 +18,8 @@ import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.controller.ServiceInfoCtrl;
 import ru.vachok.networker.net.MyServer;
 import ru.vachok.networker.net.SwitchesAvailability;
-import ru.vachok.networker.services.TimeChecker;
+import ru.vachok.networker.services.MyCalen;
+import ru.vachok.networker.services.WeekPCStats;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -28,7 +28,6 @@ import java.nio.file.Paths;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.TextStyle;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 import java.util.concurrent.*;
@@ -43,6 +42,7 @@ import java.util.concurrent.*;
 @EnableScheduling
 public class IntoApplication {
 
+    /*Fields*/
     /**
      {@link AppComponents#getLogger()}
      */
@@ -56,10 +56,11 @@ public class IntoApplication {
     /**
      Имя ПК, на котором запущена программа.
      <p>
-     <p>
      {@link ConstantsFor#thisPC()}
      */
     private static final String THIS_PC = ConstantsFor.thisPC();
+
+    private static final String STR_SEC_SPEND = " sec spend";
 
     /**
      {@link AppCtx#scanForBeansAndRefreshContext()}
@@ -75,12 +76,14 @@ public class IntoApplication {
      @see MatrixCtr
      */
     public static void main(String[] args) {
+        final long stArt = System.currentTimeMillis();
         String msg = LocalDate.now().getDayOfWeek().getValue() + " - day of week\n" +
             LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault());
         LOGGER.warn(msg);
-        if (THIS_PC.toLowerCase().contains("no0027") || THIS_PC.toLowerCase().contains("home")) {
+        if(THIS_PC.toLowerCase().contains("no0027") || THIS_PC.toLowerCase().contains("home")){
             SystemTrayHelper.addTray("icons8-плохие-поросята-32.png");
-        } else {
+        }
+        else{
             SystemTrayHelper.addTray(null);
         }
         SPRING_APPLICATION.setMainApplicationClass(IntoApplication.class);
@@ -88,6 +91,8 @@ public class IntoApplication {
         System.setProperty("file.encoding", "UTF8");
         SpringApplication.run(IntoApplication.class, args);
         infoForU(appCtx);
+        String msgTimeSp = "IntoApplication.main method. " + ( float ) (System.currentTimeMillis() - stArt) / 1000 + STR_SEC_SPEND;
+        LOGGER.info(msgTimeSp);
     }
 
     /**
@@ -97,6 +102,7 @@ public class IntoApplication {
      @param appCtx {@link ApplicationContext}
      */
     private static void infoForU(ApplicationContext appCtx) {
+        final long stArt = System.currentTimeMillis();
         String msg = new StringBuilder()
             .append(appCtx.getApplicationName())
             .append(" app name")
@@ -114,6 +120,8 @@ public class IntoApplication {
             new Thread(IntoApplication::new).start();
             Thread.currentThread().interrupt();
         }
+        String msgTimeSp = "IntoApplication.infoForU method. " + ( float ) (System.currentTimeMillis() - stArt) / 1000 + STR_SEC_SPEND;
+        LOGGER.info(msgTimeSp);
     }
 
     /**
@@ -122,29 +130,53 @@ public class IntoApplication {
      Usages: {@link SystemTrayHelper#addTray(String)}, {@link ServiceInfoCtrl#closeApp()}, {@link MyServer#reconSock()}. <br> Uses: {@link CommonScan2YOlder} <br>
      */
     public static void delTemp() {
-        try {
+        try{
             Files.walkFileTree(Paths.get("."), new CommonScan2YOlder());
-        } catch (IOException e) {
+        }
+        catch(IOException e){
             LOGGER.error(e.getMessage(), e);
         }
     }
 
     /**
-     <b>Тип WEB-application</b>
+     Тип WEB-application
+     <p>
+     Usages: {@link #runCommonScan()} <br>
+     Uses:
+     1.1 {@link ConstantsFor#thisPC()},
+     1.2 {@link ConstantsFor#thisPC()},
+     1.3 {@link #runCommonScan()},
+     1.4 {@link MyCalen#getNextDayofWeek(int, int, DayOfWeek)},
+     1.5 {@link ThreadConfig#threadPoolTaskScheduler()}
+
+     @throws InvocationTargetException иногда возникает. Причину не отловил
      */
     private static void schedStarter() throws InvocationTargetException {
+        final long stArt = System.currentTimeMillis();
         WebApplicationType webApplicationType = WebApplicationType.SERVLET;
         SPRING_APPLICATION.setWebApplicationType(webApplicationType);
         Runnable speedRun = new SpeedRunActualize();
         ScheduledExecutorService executorService =
             Executors.unconfigurableScheduledExecutorService(Executors.newSingleThreadScheduledExecutor());
+        long delay = ConstantsFor.DELAY;
         executorService.scheduleWithFixedDelay(speedRun, ConstantsFor.INIT_DELAY,
-            TimeUnit.MINUTES.toSeconds(ConstantsFor.DELAY), TimeUnit.SECONDS);
-        executorService.scheduleWithFixedDelay(new SwitchesAvailability(), 1, ConstantsFor.DELAY, TimeUnit.SECONDS);
-        if (ConstantsFor.thisPC().toLowerCase().contains("no0027") ||
-            ConstantsFor.thisPC().toLowerCase().contains("rups")) {
+            TimeUnit.MINUTES.toSeconds(delay), TimeUnit.SECONDS);
+        executorService.scheduleWithFixedDelay(new SwitchesAvailability(), 1, delay, TimeUnit.SECONDS);
+        if(ConstantsFor.thisPC().toLowerCase().contains("no0027") ||
+            ConstantsFor.thisPC().toLowerCase().contains("rups")){
             runCommonScan();
         }
+        Date nextStartDay = MyCalen.getNextDayofWeek(23, 57, DayOfWeek.SUNDAY);
+        new ThreadConfig().threadPoolTaskScheduler()
+            .scheduleWithFixedDelay(new WeekPCStats(), nextStartDay, TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY_HOURS * 7));
+        String msgTimeSp = new StringBuilder()
+            .append("IntoApplication.schedStarter method. ")
+            .append(( float ) (System.currentTimeMillis() - stArt) / 1000)
+            .append(STR_SEC_SPEND)
+            .append("\n")
+            .append(nextStartDay.toString())
+            .append(" nextDayofWeek.toString()").toString();
+        LOGGER.warn(msgTimeSp);
     }
 
     /**
@@ -154,56 +186,26 @@ public class IntoApplication {
      */
     private static void runCommonScan() {
         Runnable r = () -> {
-            try {
+            try{
                 Files.walkFileTree(Paths.get("\\\\srv-fs.eatmeat.ru\\common_new"), new CommonRightsChecker());
-            } catch (IOException e) {
+            }
+            catch(IOException e){
                 LOGGER.warn(e.getMessage(), e);
             }
         };
-
-        Date startTime = getNextSat();
-
+        Date startTime = MyCalen.getNextSat(0, 1);
         long delay = TimeUnit.DAYS.toMillis(7);
         ScheduledFuture<?> scheduleWithFixedDelay = new ThreadConfig().threadPoolTaskScheduler().scheduleWithFixedDelay(
             r, startTime, delay);
-        try {
+        try{
             String msg = "Common scanner : " + startTime.toString();
             LOGGER.warn(msg);
             scheduleWithFixedDelay.get();
-        } catch (InterruptedException | ExecutionException e) {
+        }
+        catch(InterruptedException | ExecutionException e){
             LOGGER.error(e.getMessage(), e);
             Thread.currentThread().interrupt();
             r.run();
-        }
-    }
-
-    /**
-     Дата запуска common scanner
-     <p>
-     Usage: {@link #runCommonScan()} <br> Uses: - <br>
-
-     @return new {@link Date} следующая суббота 0:01
-     */
-    private static Date getNextSat() {
-        TimeChecker timeChecker = new TimeChecker();
-        TimeInfo call = timeChecker.call();
-        Calendar.Builder builder = new Calendar.Builder();
-        LocalDate localDate = LocalDate.now();
-        DayOfWeek satDay = DayOfWeek.SATURDAY;
-        ConstantsFor.setAtomicTime(call.getReturnTime());
-        if (localDate.getDayOfWeek().toString().equalsIgnoreCase(satDay.toString())) return new Date();
-        else {
-            int toSat = satDay.getValue() - localDate.getDayOfWeek().getValue();
-            Date retDate = builder
-                .setDate(
-                    localDate.getYear(),
-                    localDate.getMonth().getValue() - 1,
-                    localDate.getDayOfMonth() + toSat)
-                .setTimeOfDay(0, 1, 0).build().getTime();
-            call.computeDetails();
-            String msg = retDate.toString() + " " + toSat + " \nTimeChecker information: " + call.getMessage();
-            LOGGER.info(msg);
-            return retDate;
         }
     }
 }

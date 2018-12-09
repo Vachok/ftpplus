@@ -40,7 +40,7 @@ public class CommonCTRL {
     public String commonArchPOST(@ModelAttribute CommonSRV commonSRV, Model model) {
         this.commonSRV = commonSRV;
         model.addAttribute(AT_NAME_COMMON, commonSRV);
-        model.addAttribute("input", commonSRV.getDelFolderPath());
+        model.addAttribute(ConstantsFor.TITLE, commonSRV.getDelFolderPath() + " (" + commonSRV.getPerionDays() + " дн.) ");
         model.addAttribute("result", commonSRV.reStoreDir());
         model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext());
         return AT_NAME_COMMON;

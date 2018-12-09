@@ -366,9 +366,9 @@ public class TForms {
         else return nStringBuilder.toString();
     }
 
-    public String fromArray(List<?> inetAddresses, boolean b) {
+    public String fromArray(List<?> rndList, boolean b) {
         brStringBuilder.append(BR_S);
-        inetAddresses.forEach(x -> {
+        rndList.forEach(x -> {
             brStringBuilder
                 .append(x.toString())
                 .append(BR_S);
@@ -393,6 +393,24 @@ public class TForms {
             brStringBuilder
                 .append(st.toString())
                 .append(BR_S);
+        }
+        if(b){
+            return brStringBuilder.toString();
+        }
+        else{
+            return nStringBuilder.toString();
+        }
+    }
+
+    public String fromArray(Object[] objects, boolean b) {
+        brStringBuilder.append("<p>");
+        for(Object o : objects){
+            brStringBuilder
+                .append(o.toString())
+                .append(BR_S);
+            nStringBuilder
+                .append(o.toString())
+                .append(N_S);
         }
         if(b){
             return brStringBuilder.toString();

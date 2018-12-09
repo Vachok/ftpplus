@@ -49,7 +49,18 @@ public class PCUserResolver implements Thread.UncaughtExceptionHandler {
     /**
      {@link RegRuMysql#getDefaultConnection(String)} - u0466446_velkom
      */
-    private static Connection connection = new RegRuMysql().getDefaultConnection("u0466446_velkom");
+    private static Connection connection;
+
+    static {
+        try {
+            connection = new RegRuMysql().getDefaultConnection("u0466446_velkom");
+        } catch (Exception e) {
+            Throwable[] suppressed = e.getSuppressed();
+            for (Throwable t : suppressed) {
+                LOGGER.warn(t.getMessage(), t);
+            }
+        }
+    }
 
     private String lastFileUse;
 

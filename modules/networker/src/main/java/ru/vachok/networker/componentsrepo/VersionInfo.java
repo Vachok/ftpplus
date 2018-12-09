@@ -6,10 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import ru.vachok.networker.ConstantsFor;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.security.SecureRandom;
 import java.util.Date;
 import java.util.Properties;
@@ -31,11 +28,21 @@ public class VersionInfo {
 
     private String buildTime;
 
+    private static final String DOC_URL = "<a href=\"/doc/index.html\">DOC</a>";
+
     private static final Properties PROPERTIES = ConstantsFor.getPROPS();
 
     private final String thisPCName = ConstantsFor.thisPC();
+    /*Get&Set*/
 
-    /*Instances*/
+    /**
+     Usages: {@link #getParams()} <br> Uses: - <br>
+
+     @param appBuild build (Random num)
+     */
+    private void setAppBuild(String appBuild) {
+        this.appBuild = appBuild;
+    }
     public VersionInfo() {
         Thread.currentThread().setName(getClass().getSimpleName());
         if(thisPCName.toLowerCase().contains("home") || thisPCName.toLowerCase().contains("no0")){
@@ -47,13 +54,8 @@ public class VersionInfo {
         return appBuild;
     }
 
-    /**
-     Usages: {@link #getParams()} <br> Uses: - <br>
-
-     @param appBuild build (Random num)
-     */
-    public void setAppBuild(String appBuild) {
-        this.appBuild = appBuild;
+    public String getAppVersion() {
+        return appVersion;
     }
 
     public String getAppName() {
@@ -100,16 +102,28 @@ public class VersionInfo {
         LOGGER.info(msg);
     }
 
+    private void setAppVersion(String appVersion) {
+        this.appVersion = appVersion;
+    }
+
+    private void getParams() {
+        setAppBuild(PROPERTIES.getOrDefault("appBuild", "no database").toString());
+        setBuildTime(PROPERTIES.getOrDefault("buildTime", System.currentTimeMillis()).toString());
+        setAppVersion(PROPERTIES.getOrDefault("appVersion", "no database").toString());
+    }
+
+    /*Instances*/
+
     /**
      Usages: {@link #setParams()} <br> Uses: - <br>
 
      @param file gradle.build
      */
     private void setterVersionFromFiles(File file) {
-        try (
-            FileReader fileReader = new FileReader(file);
-            BufferedReader reader = new BufferedReader(fileReader)) {
-            reader.lines().forEach(x -> {
+        try(InputStream inputStream = new FileInputStream(file);
+            InputStreamReader reader = new InputStreamReader(inputStream);
+            BufferedReader bufferedReader = new BufferedReader(reader)){
+            bufferedReader.lines().forEach(x -> {
                 if (x.contains("version = '0.")) {
                     setAppVersion(x.split("'")[1]);
                 }
@@ -120,10 +134,13 @@ public class VersionInfo {
         setBuildTime(System.currentTimeMillis() + "");
     }
 
-    private void getParams() {
-        setAppBuild(PROPERTIES.getOrDefault("appBuild", "no database").toString());
-        setBuildTime(PROPERTIES.getOrDefault("buildTime", System.currentTimeMillis()).toString());
-        setAppVersion(PROPERTIES.getOrDefault("appVersion", "no database").toString());
+    /**
+     Usages: {@link #getParams()} <br> Uses: - <br>
+
+     @param buildTime build timestamp
+     */
+    private void setBuildTime(String buildTime) {
+        this.buildTime = buildTime;
     }
 
     @Override
@@ -133,27 +150,9 @@ public class VersionInfo {
         sb.append(", appName='").append(appName).append('\'');
         sb.append(", appVersion='").append(appVersion).append('\'');
         sb.append(", buildTime='").append(buildTime).append('\'');
+        sb.append(", DOC_URL='").append(DOC_URL).append('\'');
         sb.append(", thisPCName='").append(thisPCName).append('\'');
-        sb.append(", DELAY='").append(ConstantsFor.DELAY).append('\'');
-        sb.append(", INIT_DELAY='").append(ConstantsFor.INIT_DELAY).append('\'');
         sb.append('}');
         return sb.toString();
-    }
-
-    public String getAppVersion() {
-        return appVersion;
-    }
-
-    private void setAppVersion(String appVersion) {
-        this.appVersion = appVersion;
-    }
-
-    /**
-     Usages: {@link #getParams()} <br> Uses: - <br>
-
-     @param buildTime build timestamp
-     */
-    public void setBuildTime(String buildTime) {
-        this.buildTime = buildTime;
     }
 }
