@@ -23,6 +23,11 @@ public class WeekPCStats implements Runnable {
     /*Fields*/
     private static final Logger LOGGER = AppComponents.getLogger();
 
+    /**
+     Лист только с именами ПК
+     */
+    private static final List<String> PC_NAMES_IN_TABLE = new ArrayList<>();
+
     @Override
     public void run() {
         final long stArt = System.currentTimeMillis();
@@ -59,6 +64,7 @@ public class WeekPCStats implements Runnable {
                     .append(r.getString(2))
                     .append(" ")
                     .append(r.getString(3)).toString());
+                PC_NAMES_IN_TABLE.add(r.getString(2));
             }
             String msgTimeSp = new StringBuilder()
                 .append("WeekPCStats.getFromDB method. ")
@@ -127,7 +133,9 @@ public class WeekPCStats implements Runnable {
         }
         String msgTimeSp = "WeekPCStats.getInfoList method. " +
             ( float ) (System.currentTimeMillis() - stArt) / 1000 +
-            " sec spend\n" + fileLines.size() + " strings in file";
+            " sec spend\n" + fileLines.size() + " strings in file\n" +
+            PC_NAMES_IN_TABLE.size() + " PC_NAMES_IN_TABLE.size()\n" +
+            PC_NAMES_IN_TABLE.get(0) + " " + PC_NAMES_IN_TABLE.get(1) + "...\n";
         LOGGER.info(msgTimeSp);
         return fileLines;
     }
