@@ -156,7 +156,7 @@ public class IntoApplication {
             runCommonScan();
         }
         Date nextDayofWeek = MyCalen
-            .getNextDayofWeek(21, 0, DayOfWeek.SUNDAY);
+            .getNextDayofWeek(23, 57, DayOfWeek.SUNDAY);
         new ThreadConfig().threadPoolTaskScheduler()
             .scheduleWithFixedDelay(new WeekPCStats(), nextDayofWeek, TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY_HOURS * 7));
         String msgTimeSp = new StringBuilder()
