@@ -82,7 +82,7 @@ public abstract class MyCalen {
         Calendar.Builder cBuilder = new Calendar.Builder();
         LocalDateTime localDateTime = LocalDateTime.now();
         if(localDateTime.getDayOfWeek().toString().equalsIgnoreCase(dayOfWeek.toString())){
-            return new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(1));
+            return new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(7));
         }
         else{
             int toDateDays = dayOfWeek.getValue() - localDateTime.getDayOfWeek().getValue();
