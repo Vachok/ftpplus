@@ -2,8 +2,11 @@ package ru.vachok.networker.services;
 
 
 import org.slf4j.Logger;
+import ru.vachok.messenger.MessageToUser;
+import ru.vachok.messenger.email.ESender;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 
 import java.io.*;
@@ -132,11 +135,13 @@ public class WeekPCStats implements Runnable {
             return fileLines;
         }
         String msgTimeSp = "WeekPCStats.getInfoList method. " +
-            ( float ) (System.currentTimeMillis() - stArt) / 1000 +
+            ( double ) (System.currentTimeMillis() - stArt) / 1000 +
             " sec spend\n" + fileLines.size() + " strings in file\n" +
             PC_NAMES_IN_TABLE.size() + " PC_NAMES_IN_TABLE.size()\n" +
             PC_NAMES_IN_TABLE.get(0) + " " + PC_NAMES_IN_TABLE.get(1) + "...\n";
         LOGGER.info(msgTimeSp);
+        MessageToUser messageToUser = new ESender("143500@gmail.com");
+        new Thread(() -> messageToUser.info(ConstantsFor.getUpTime(), msgTimeSp, new TForms().fromArray(fileLines, false))).start();
         return fileLines;
     }
 }
