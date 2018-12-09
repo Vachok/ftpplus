@@ -145,12 +145,14 @@ public class WeekPCStats implements Runnable {
             PC_NAMES_IN_TABLE.size() + " PC_NAMES_IN_TABLE.size()\n" +
             PC_NAMES_IN_TABLE.get(0) + " " + PC_NAMES_IN_TABLE.get(1) + "...\n";
         LOGGER.info(msgTimeSp);
+        String infoS = getInfo();
         MessageToUser messageToUser = new ESender("143500@gmail.com");
-        new Thread(() -> messageToUser.info(ConstantsFor.getUpTime(), msgTimeSp, getInfo())).start();
+        new Thread(() -> messageToUser.info(ConstantsFor.getUpTime(), msgTimeSp, infoS)).start();
         return fileLines;
     }
 
     private String getInfo() {
+        final long stArt = System.currentTimeMillis();
         Collections.sort(PC_NAMES_IN_TABLE);
         Object[] objects = PC_NAMES_IN_TABLE.stream().distinct().toArray();
         ConcurrentMap<String, Integer> integerStringConcurrentMap = new ConcurrentHashMap<>();
@@ -163,10 +165,11 @@ public class WeekPCStats implements Runnable {
                     integer = integer + 1;
                 }
                 String msg = integer + " " + o.toString();
-                toMapO = o;
+                integerStringConcurrentMap.put(o.toString(), integer);
             }
-            integerStringConcurrentMap.put(toMapO.toString(), integer);
         });
+        String msgTimeSp = "WeekPCStats.getInfo method. " + ( float ) (System.currentTimeMillis() - stArt) / 1000 + " sec spend";
+        LOGGER.info(msgTimeSp);
         return new TForms().fromArray(integerStringConcurrentMap, false);
     }
 }
