@@ -76,6 +76,7 @@ public class IntoApplication {
      @see MatrixCtr
      */
     public static void main(String[] args) {
+        final long stArt = System.currentTimeMillis();
         String msg = LocalDate.now().getDayOfWeek().getValue() + " - day of week\n" +
             LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault());
         LOGGER.warn(msg);
@@ -89,6 +90,8 @@ public class IntoApplication {
         System.setProperty("file.encoding", "UTF8");
         SpringApplication.run(IntoApplication.class, args);
         infoForU(appCtx);
+        String msgTimeSp = "IntoApplication.main method. " + ( float ) (System.currentTimeMillis() - stArt) / 1000 + " sec spend";
+        LOGGER.info(msgTimeSp);
     }
 
     /**
@@ -98,6 +101,7 @@ public class IntoApplication {
      @param appCtx {@link ApplicationContext}
      */
     private static void infoForU(ApplicationContext appCtx) {
+        final long stArt = System.currentTimeMillis();
         String msg = new StringBuilder()
             .append(appCtx.getApplicationName())
             .append(" app name")
@@ -115,6 +119,8 @@ public class IntoApplication {
             new Thread(IntoApplication::new).start();
             Thread.currentThread().interrupt();
         }
+        String msgTimeSp = "IntoApplication.infoForU method. " + ( float ) (System.currentTimeMillis() - stArt) / 1000 + " sec spend";
+        LOGGER.info(msgTimeSp);
     }
 
     /**

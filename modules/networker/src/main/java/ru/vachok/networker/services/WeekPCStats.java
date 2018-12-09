@@ -46,6 +46,7 @@ public class WeekPCStats implements Runnable {
     }
 
     private void getFromDB() {
+        final long stArt = System.currentTimeMillis();
         String sql = "select * from pcuserauto";
         try(Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.DB_PREFIX + "velkom");
             PreparedStatement p = c.prepareStatement(sql);
@@ -61,5 +62,7 @@ public class WeekPCStats implements Runnable {
         catch(SQLException | IOException e){
             LOGGER.warn(e.getMessage());
         }
+        String msgTimeSp = "WeekPCStats.getFromDB method. " + ( float ) (System.currentTimeMillis() - stArt) / 1000 + " sec spend";
+        LOGGER.info(msgTimeSp);
     }
 }
