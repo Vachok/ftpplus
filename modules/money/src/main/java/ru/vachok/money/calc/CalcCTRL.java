@@ -71,7 +71,7 @@ public class CalcCTRL {
         String toString = calculatorForSome.toString();
         model.addAttribute(AT_NAME_DESTINY, chooseYouDestiny);
         LOGGER.info(toString);
-        String userInputs = calcSrv.destinyGetter(calculatorForSome.getUserInput());
+        String userInputs = calcSrv.destinyGetter();
         model.addAttribute(ConstantsFor.AT_NAME_RESULT, userInputs);
         return "ok";
     }
@@ -81,8 +81,7 @@ public class CalcCTRL {
         this.chooseYouDestiny = chooseYouDestiny;
         model.addAttribute(AT_NAME_DESTINY, chooseYouDestiny);
         model.addAttribute("CalculatorForSome", calculatorForSome);
-        String toString = chooseYouDestiny.toString();
-        LOGGER.info(toString);
+        model.addAttribute(ConstantsFor.AT_NAME_RESULT, chooseYouDestiny.destinyChooser());
         return "calc";
     }
 }

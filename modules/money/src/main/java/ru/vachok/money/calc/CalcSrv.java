@@ -22,6 +22,9 @@ public class CalcSrv {
     /*Fields*/
     private CalculatorForSome calculatorForSome;
 
+    @Autowired
+    private ChooseYouDestiny chooseYouDestiny;
+
     /*Instances*/
     @Autowired
     public CalcSrv(CalculatorForSome calculatorForSome) {
@@ -119,19 +122,9 @@ public class CalcSrv {
         return "";
     }
 
-    public String destinyGetter(String userInp) {
-        String[] split;
-        try{
-            split = userInp.split(" or ");
-            String destinyCooser = new ChooseYouDestiny().destinyCooser(split);
-            destinyCooser = destinyCooser.toUpperCase();
-            return destinyCooser;
+    public String destinyGetter() {
+        return chooseYouDestiny.destinyChooser();
         }
-        catch(ArrayIndexOutOfBoundsException e){
-            split = userInp.split(" ");
-            return new ChooseYouDestiny().destinyCooser(split) + "<p><textarea>" + e.getMessage() + "</textarea>";
-        }
-    }
 
     @Override
     public String toString() {
