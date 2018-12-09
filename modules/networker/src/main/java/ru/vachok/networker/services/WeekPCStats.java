@@ -4,12 +4,10 @@ package ru.vachok.networker.services;
 import org.slf4j.Logger;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 
 import java.io.*;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -87,10 +85,14 @@ public class WeekPCStats implements Runnable {
      */
     private void copyFile(File file) {
         final long stArt = System.currentTimeMillis();
+        File toCopyFile = new File("\\\\10.10.111.1\\Torrents-FTP\\" + file.getName());
         if(ConstantsFor.thisPC().toLowerCase().contains("home")){
             try{
-                Files.copy(file.toPath(), Paths.get("\\\\10.10.111.1\\Torrents-FTP\\" + file.getName()));
-                String msgTimeSp = "WeekPCStats.copyFile method. " + ( float ) (System.currentTimeMillis() - stArt) / 1000 + " sec spend";
+                Files.deleteIfExists(toCopyFile.toPath());
+                Files.copy(file.toPath(), toCopyFile.toPath());
+                String msgTimeSp = "WeekPCStats.copyFile method. " +
+                    ( float ) (System.currentTimeMillis() - stArt) / 1000 +
+                    " sec spend";
                 LOGGER.info(msgTimeSp);
             }
             catch(IOException e){
@@ -104,7 +106,7 @@ public class WeekPCStats implements Runnable {
      Чтение файла
      <p>
      Usages: {@link #copyFile(File)} <br>
-     Uses: {@link TForms#fromArray(List, boolean)}
+     Uses: -
      <p>
      @param file {@code velkom_pcuserauto.txt}
      @return {@link List} строк из файла
@@ -125,7 +127,7 @@ public class WeekPCStats implements Runnable {
         }
         String msgTimeSp = "WeekPCStats.getInfoList method. " +
             ( float ) (System.currentTimeMillis() - stArt) / 1000 +
-            " sec spend\n" + "\n" + new TForms().fromArray(fileLines, false) + "\n" + fileLines.size() + " size";
+            " sec spend\n" + fileLines.size() + " strings in file";
         LOGGER.info(msgTimeSp);
         return fileLines;
     }
