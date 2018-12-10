@@ -452,7 +452,7 @@
 		appearance: none;
 		float: left;
 		margin-right: -2em;
-		opacity: 0;
+		opacity: 0.5;
 		width: 1em;
 		z-index: -1;
 	}
@@ -935,7 +935,7 @@
 		-webkit-transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
 		-ms-transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
 		transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
-		background-color: #70c7be;
+		background-color: #429bf4;
 		border-radius: 4px;
 		border: 0;
 		color: #ffffff !important;
@@ -1008,7 +1008,8 @@
 			font-size: 1.35em;
 		}
 
-		input[type="submit"].disabled, input[type="submit"]:disabled,
+		input[type="submit"].disabled,
+		input[type="submit"]:disabled,
 		input[type="reset"].disabled,
 		input[type="reset"]:disabled,
 		input[type="button"].disabled,
@@ -1410,3 +1411,8 @@
 				padding: 3em 0 1em 0;
 			}
 		}
+/* My */
+
+#b22 {
+		background-color: #00ff69;
+}
