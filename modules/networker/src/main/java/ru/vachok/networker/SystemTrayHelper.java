@@ -18,6 +18,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.URI;
 import java.time.Year;
+import java.util.Properties;
 import java.util.concurrent.*;
 
 import static java.lang.System.err;
@@ -25,31 +26,62 @@ import static java.lang.System.exit;
 
 
 /**
+ Добавляет иконку приложения в System Tray
+ <p>
+ Если трэй доступен.
  @since 29.09.2018 (22:33) */
 public class SystemTrayHelper {
 
-    /*Fields*/
     /**
-     Путь к папке с рисунками
+     Путь к папке со значками
      */
     private static final String IMG_FOLDER_NAME = "/static/images/";
 
+    /**
+     {@link AppComponents#getLogger()}
+     */
     private static final Logger LOGGER = AppComponents.getLogger();
 
+    /**
+     Имя ПК, где запущено приложение
+     <p>
+     {@link ConstantsFor#thisPC()}
+     */
     private static final String THIS_PC = ConstantsFor.thisPC();
 
+    /**
+     * Instance
+     */
     private static SystemTrayHelper systemTrayHelper = new SystemTrayHelper();
 
+    /**
+     * {@link DBMessenger}
+     */
     private static MessageToUser messageToUser = new DBMessenger();
 
+    /**
+     * Конструктор по-умолчанию
+     */
+    private SystemTrayHelper() {
+    }
+
+    /**
+     @return {@link #systemTrayHelper}
+     */
     public static SystemTrayHelper getInstance() {
         return systemTrayHelper;
     }
 
-    /*Instances*/
-    private SystemTrayHelper() {
-    }
+    /**
+     Создаёт System Tray Icon
+     <p>
+     Usages: {@link IntoApplication#main(String[])} <br>
+     Uses: 1.1 {@link #srvGitIs()}, 1.2 {@link AppComponents#versionInfo()}, 1.3 {@link AppComponents#versionInfo()},
+     1.4 {@link AppComponents#versionInfo()}, 1.5 {@link ConstantsFor#saveProps(Properties)}, 1.6 {@link IntoApplication#delTemp()},
+     1.7 {@link #addItems(PopupMenu)} .
 
+     @param iconFileName имя файла-иконки.
+     */
     static void addTray(String iconFileName) {
         boolean myPC;
         myPC = THIS_PC.toLowerCase().contains("no0027") || THIS_PC.equalsIgnoreCase("home");
@@ -70,7 +102,6 @@ public class SystemTrayHelper {
         MenuItem defItem = new MenuItem();
         TrayIcon trayIcon = new TrayIcon(image, AppComponents.versionInfo().getAppBuild() + " v. " +
             AppComponents.versionInfo().getAppVersion() + " " + AppComponents.versionInfo().getBuildTime(), popupMenu);
-
         ActionListener actionListener = e -> {
             try{
                 Desktop.getDesktop().browse(URI.create("http://localhost:8880"));
@@ -106,16 +137,31 @@ public class SystemTrayHelper {
         }
     }
 
+    /**
+     Проверка доступности <a href="http://srv-git.eatmeat.ru:1234">srv-git.eatmeat.ru</a>
+     <p>
+     Usages: {@link #addTray(String)} <br>
+     Uses: -
+     @return srv-git online
+     */
     private static boolean srvGitIs() {
         try{
             return InetAddress.getByName("srv-git.eatmeat.ru").isReachable(1000);
-        }
-        catch(IOException e){
+        } catch(IOException e){
             LOGGER.error(e.getMessage(), e);
             return false;
         }
     }
 
+    /**
+     Добавление компонентов в меню
+     <p>
+     Usages: {@link #addTray(String)} <br>
+     Uses: 1.1 {@link ThreadConfig#threadPoolTaskExecutor()}, 1.2 {@link SSHFactory.Builder#build()}, 1.3 {@link SSHFactory.Builder}
+     1.4 {@link SSHFactory#call()}, 1.5 {@link ArchivesAutoCleaner}
+
+     @param popupMenu {@link PopupMenu}
+     */
     private static void addItems(PopupMenu popupMenu) {
         ThreadConfig threadConfig = new ThreadConfig();
         ThreadPoolTaskExecutor executor = threadConfig.threadPoolTaskExecutor();
@@ -133,8 +179,7 @@ public class SystemTrayHelper {
             Future<String> submit = executor.submit(sshStr);
             try{
                 LOGGER.info(submit.get(30, TimeUnit.SECONDS));
-            }
-            catch(InterruptedException | ExecutionException | TimeoutException e){
+            } catch(InterruptedException | ExecutionException | TimeoutException e){
                 Thread.currentThread().interrupt();
             }
         });
@@ -171,7 +216,12 @@ public class SystemTrayHelper {
     }
 
     /**
-     Reconnect Socket, пока он открыт.
+     Reconnect Socket, пока он открыт
+     <p>
+     Usages: {@link #addItems(PopupMenu)} <br>
+     Uses: 1.1 {@link ConstantsFor#checkDay()}, 1.2 {@link MyServer#reconSock()}, 1.3 {@link TForms#fromArray(Exception, boolean)},
+     1.4 {@link ThreadConfig#threadPoolTaskExecutor()}
+
      */
     private static void recOn() {
         String bSTR = ConstantsFor.checkDay() + " pcuserauto truncated";
