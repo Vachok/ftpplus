@@ -10,11 +10,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.*;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -148,55 +146,8 @@ public class SwitchesAvailability implements Runnable {
                 .append("\nOffline Switches: \n")
                 .append(badIP).toString();
             outputStream.write(new String(toWrite.getBytes(), StandardCharsets.UTF_8).getBytes());
-            copyFile(file);
         } catch (IOException e) {
             LOGGER.warn(e.getMessage(), e);
-        }
-    }
-
-    /**
-     Копирование файла в /static
-     <p>
-     Usages: {@link #writeToFile(String, String)} <br>
-     Uses: 1.1 {@link #getUri(Path)}
-
-     @param file sw.log.txt
-     */
-    private void copyFile(File file) {
-        try {
-            File file1 = new File("");
-            Path pathForCopy = Paths.get(file1.getAbsolutePath() + "\\resources\\static\\texts\\sw.log.txt");
-            File fileToCopy = pathForCopy.toFile();
-            Files.createDirectories(Paths.get(pathForCopy.toAbsolutePath().toString().replace(pathForCopy.toFile().getName(), "")));
-            boolean newFile = fileToCopy.createNewFile();
-            Files.delete(fileToCopy.toPath());
-            Files.copy(file.toPath(), pathForCopy);
-            URI uri = getUri(pathForCopy);
-            String msg = file.getName() + " copied to " + pathForCopy.toString() + " " + newFile + " URL: " + uri.relativize(uri).toURL().toExternalForm();
-            LOGGER.info(msg);
-        } catch (IOException e) {
-            LOGGER.warn(e.getMessage(), e);
-        }
-
-    }
-
-    /**
-     Создание {@link URI}
-     <p>
-     Usages: {@link #copyFile(File)} <br>
-     Uses: -
-     @param pathForCopy путь до копии
-     @return {@link URI} из /static
-     */
-    private URI getUri(Path pathForCopy) {
-        URI uri = pathForCopy.toUri().normalize();
-        try {
-            URL url = new URL("http://" + InetAddress.getLocalHost().getHostName());
-            URI hostURI = url.toURI();
-            return hostURI.relativize(uri);
-        } catch (MalformedURLException | UnknownHostException | URISyntaxException e) {
-            LOGGER.warn(e.getMessage(), e);
-            return URI.create("http://localhost");
         }
     }
 

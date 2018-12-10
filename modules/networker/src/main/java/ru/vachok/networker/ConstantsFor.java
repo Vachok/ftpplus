@@ -152,6 +152,8 @@ public enum ConstantsFor {
 
     public static final long ONE_WEEK_MILLIS = TimeUnit.HOURS.toMillis(ONE_DAY_HOURS * 7);
 
+    public static final long BLURAY_SIZE = MBYTE * 1_024 * 47;
+
     private static final Properties PROPS = takePr();
 
     public static Properties getPROPS() {
