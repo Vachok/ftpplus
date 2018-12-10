@@ -21,8 +21,7 @@ import java.util.Date;
 import java.util.Properties;
 import java.util.concurrent.*;
 
-import static java.lang.System.err;
-import static java.lang.System.exit;
+import static java.lang.System.*;
 
 
 /**
@@ -224,7 +223,7 @@ public class SystemTrayHelper {
                 MyServer.reconSock();
             } catch (IOException | InterruptedException | NullPointerException e1) {
                 messageToUser.errorAlert(SystemTrayHelper.class.getSimpleName(), e1.getMessage(), new TForms().fromArray(e1, false));
-                new ThreadConfig().threadPoolTaskExecutor().execute(MyServer.getI());
+                new ThreadConfig().threadPoolTaskExecutor().submit(MyServer.getI());
                 Thread.currentThread().interrupt();
             }
         }
