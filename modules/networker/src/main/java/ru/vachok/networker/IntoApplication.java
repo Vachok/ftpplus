@@ -34,7 +34,7 @@ import java.util.concurrent.*;
 
 
 /**
- {@link IntoApplication}
+ Старт
  <p>
  1. {@link #main(String[])}<br> 1.1 {@link #infoForU(ApplicationContext)}
  */
@@ -42,7 +42,6 @@ import java.util.concurrent.*;
 @EnableScheduling
 public class IntoApplication {
 
-    /*Fields*/
     /**
      {@link AppComponents#getLogger()}
      */
@@ -60,6 +59,9 @@ public class IntoApplication {
      */
     private static final String THIS_PC = ConstantsFor.thisPC();
 
+    /**
+     Повторение более 3х раз в строках
+     */
     private static final String STR_SEC_SPEND = " sec spend";
 
     /**

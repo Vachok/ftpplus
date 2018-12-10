@@ -28,13 +28,12 @@ public class PageFooter {
     private void setFooterUtext() {
         this.footerUtext = new StringBuilder()
             .append("<a href=\"/\"><img align=\"right\" src=\"/images/icons8-плохие-поросята-100g.png\" alt=\"_\"/></a>\n")
-            .append("<a href=\"/pflists\">Списки PF</a><br>\n")
-            .append("<a href=\"/netscan\">Скан локальных ПК</a><br>\n")
+            .append("<a href=\"/pflists\"><font color=\"#00cc66\">Списки PF</font></a><br>\n")
+            .append("<a href=\"/netscan\"><font color=\"#00cc66\">Скан локальных ПК</font></a><br>\n")
             .append("<a href=\"/odinass\">Сформировать лист команд PoShell для сверки должностей</a><br>\n")
             .append("<a href=\"/exchange\"><strike>Парсинг правил MS Exchange</a><br></strike>\n")
             .append("<a href=\"/adphoto\">Добавить фотографии в Outlook</a><br>\n")
-            .append("<a href=\"/common\"><font color=\"yellow\">Восстановить из архива</font></a><br>\n")
-            .append("<a href=\"/cleaner\"><strike>Ищейка файлов</strike></a><br>\n")
+            .append("<a href=\"/common\"><font color=\"#00cc66\">Восстановить из архива</font></a><br>\n")
             .append("<a href=\"/sshacts\"><strike>SSH worker</strike></a><br>\n")
             .append("<a href=\"/serviceinfo\"><font color=\"#999eff\">SERVICEINFO</font></a><p>\n")
             .toString();

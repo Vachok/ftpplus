@@ -20,6 +20,10 @@ import java.util.concurrent.TimeUnit;
  @since 09.12.2018 (15:26) */
 public abstract class MyCalen {
 
+    private MyCalen() {
+
+    }
+
     /*Fields*/
     private static final Logger LOGGER = AppComponents.getLogger();
 
@@ -77,14 +81,23 @@ public abstract class MyCalen {
         }
     }
 
+    /**
+     Создание {@link Date}
+     <p>
+     Usages: {@link IntoApplication#schedStarter()} <br> Uses: -
+
+     @param hourNeed  час
+     @param minNeed   минута
+     @param dayOfWeek день недели
+     @return нужный {@link Date}
+     */
     public static Date getNextDayofWeek(int hourNeed, int minNeed, DayOfWeek dayOfWeek) {
         final long stArt = System.currentTimeMillis();
         Calendar.Builder cBuilder = new Calendar.Builder();
         LocalDateTime localDateTime = LocalDateTime.now();
         if(localDateTime.getDayOfWeek().toString().equalsIgnoreCase(dayOfWeek.toString())){
             return new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(7));
-        }
-        else{
+        } else{
             int toDateDays = dayOfWeek.getValue() - localDateTime.getDayOfWeek().getValue();
             cBuilder
                 .setDate(localDateTime.getYear(),
