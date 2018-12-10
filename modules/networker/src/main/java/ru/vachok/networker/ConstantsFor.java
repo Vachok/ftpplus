@@ -2,6 +2,9 @@ package ru.vachok.networker;
 
 
 import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import ru.vachok.messenger.MessageToUser;
+import ru.vachok.messenger.email.ESender;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
@@ -10,6 +13,7 @@ import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.mailserver.MailRule;
+import ru.vachok.networker.services.MyCalen;
 import ru.vachok.networker.services.PassGenerator;
 import ru.vachok.networker.services.TimeChecker;
 
@@ -22,10 +26,11 @@ import java.security.SecureRandom;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.time.Year;
 import java.time.format.TextStyle;
+import java.util.Date;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
@@ -123,6 +128,9 @@ public enum ConstantsFor {
     public static final String APP_NAME = "ru_vachok_networker-";
 
     public static final int ONE_DAY_HOURS = 24;
+
+    public static final long ONE_WEEK_MILLIS = TimeUnit.HOURS.toMillis(ONE_DAY_HOURS * 7);
+
     private static final Properties PROPS = takePr();
 
     public static Properties getPROPS() {
@@ -231,19 +239,26 @@ public enum ConstantsFor {
         ConstantsFor.atomicTime = returnTime;
     }
 
-    static boolean checkDay() {
-        String msg = LocalDate.now().getDayOfWeek().getValue() + " - day of week\n" +
-            LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault());
-        if (msg.toLowerCase().contains("понедель") && LocalTime.now().isBefore(LocalTime.of(13, 0))) {
-            try (Connection c = new RegRuMysql().getDefaultConnection(DB_PREFIX + "velkom");
-                 PreparedStatement preparedStatement = c.prepareStatement("TRUNCATE TABLE pcuserauto")) {
-                preparedStatement.executeUpdate();
-                return true;
-            } catch (SQLException e) {
-                return false;
-            }
+    static String checkDay() {
+        Date dateStart = MyCalen.getNextDayofWeek(10, 0, DayOfWeek.MONDAY);
+        String msg = dateStart + " - date to TRUNCATE , " +
+            LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault()) + "\n" +
+            ONE_WEEK_MILLIS + " ms delay.\n";
+        ThreadConfig t = new ThreadConfig();
+        ThreadPoolTaskScheduler threadPoolTaskScheduler = t.threadPoolTaskScheduler();
+        threadPoolTaskScheduler.scheduleWithFixedDelay(ConstantsFor::trunkTableUsers, dateStart, ONE_WEEK_MILLIS);
+        return msg;
+    }
+
+    private static void trunkTableUsers() {
+        MessageToUser messageToUser = new ESender("143500@gmail.com");
+        try (Connection c = new RegRuMysql().getDefaultConnection(DB_PREFIX + "velkom");
+             PreparedStatement preparedStatement = c.prepareStatement("TRUNCATE TABLE pcuserauto")) {
+            preparedStatement.executeUpdate();
+            messageToUser.infoNoTitles("TRUNCATE true\n" + ConstantsFor.getUpTime() + " uptime.");
+        } catch (SQLException e) {
+            messageToUser.infoNoTitles("TRUNCATE false\n" + ConstantsFor.getUpTime() + " uptime.");
         }
-        return false;
     }
 
     private static Properties takePr() {
