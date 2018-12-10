@@ -6,7 +6,10 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.services.TimeChecker;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -126,6 +129,14 @@ public class SwitchesAvailability implements Runnable {
         LOGGER.warn(msg);
     }
 
+    /**
+     Запись в файл информации
+     <p>
+     Usages: {@link #testAddresses()} <br> Uses: 1.1 {@link TimeChecker#call()}, 1.2 {@link #copyFile(File)}
+
+     @param okIP  лист он-лайн адресов
+     @param badIP лист офлайн адресов
+     */
     private void writeToFile(String okIP, String badIP) {
         File file = new File("sw.list.log");
         try (OutputStream outputStream = new FileOutputStream(file)) {
@@ -143,6 +154,14 @@ public class SwitchesAvailability implements Runnable {
         }
     }
 
+    /**
+     Копирование файла в /static
+     <p>
+     Usages: {@link #writeToFile(String, String)} <br>
+     Uses: 1.1 {@link #getUri(Path)}
+
+     @param file sw.log.txt
+     */
     private void copyFile(File file) {
         try {
             File file1 = new File("");
@@ -161,6 +180,14 @@ public class SwitchesAvailability implements Runnable {
 
     }
 
+    /**
+     Создание {@link URI}
+     <p>
+     Usages: {@link #copyFile(File)} <br>
+     Uses: -
+     @param pathForCopy путь до копии
+     @return {@link URI} из /static
+     */
     private URI getUri(Path pathForCopy) {
         URI uri = pathForCopy.toUri().normalize();
         try {
@@ -172,6 +199,5 @@ public class SwitchesAvailability implements Runnable {
             return URI.create("http://localhost");
         }
     }
-
 
 }
