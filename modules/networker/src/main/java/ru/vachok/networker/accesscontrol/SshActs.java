@@ -14,6 +14,7 @@ import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.PageFooter;
+import ru.vachok.networker.services.WhoIsWithSRV;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.FileOutputStream;
@@ -201,7 +202,7 @@ public class SshActs {
         }
     }
 
-    private Pattern p = Pattern.compile("^http{1,}+[\\w\\d(:)(/)]{1,}");
+    private Pattern p = Pattern.compile("^http{1,}[(s:)][\\w\\d(:/.)]{1,}");
 
 
     private String allowDomainAct() {
@@ -226,7 +227,8 @@ public class SshActs {
                 .append("sudo squid -k reconfigure;")
 
                 .append("sudo cat /etc/pf/allowdomain;exit").toString();
-            String call = new SSHFactory.Builder(ConstantsFor.SRV_NAT, commandSSH).build().call();
+            String call = "<b>" + new SSHFactory.Builder(ConstantsFor.SRV_NAT, commandSSH).build().call() + "</b>";
+            call = call + "<font color=\"gray\"><br><br>" + new WhoIsWithSRV().whoIs(ipResolved) + "</font>";
             writeToLog(new String((call + "\n\n" + toString()).getBytes(), Charset.defaultCharset()));
             return call;
         } catch (UnknownHostException e) {
@@ -277,6 +279,7 @@ public class SshActs {
             String pcReq = request.getRemoteAddr().toLowerCase();
             if (getAuthentic(pcReq)) {
                 this.sshActs = sshActs;
+                model.addAttribute("head", new PageFooter().getHeaderUtext());
                 model.addAttribute(AT_NAME_SSHACTS, sshActs);
                 model.addAttribute(AT_NAME_SSHDETAIL, sshActs.getPcName());
                 return PAGE_NAME;
@@ -292,6 +295,7 @@ public class SshActs {
             return
                 pcReq.contains("10.10.111.") ||
                     pcReq.contains("10.200.213.85") ||
+                    pcReq.contains("10.200.213.200") ||
                     pcReq.contains("0:0:0:0") ||
                     pcReq.contains("10.10.111");
         }
@@ -328,12 +332,11 @@ public class SshActs {
             this.sshActs = sshActs;
             model.addAttribute(ConstantsFor.TITLE, sshActs.getAllowDomain());
             model.addAttribute(AT_NAME_SSHACTS, sshActs);
-            model.addAttribute("ok", sshActs.toString() + "<p><b>" + sshActs.allowDomainAct() + "</b>");
+            model.addAttribute("ok", sshActs.toString() + "<p>" + sshActs.allowDomainAct());
             model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext());
             return "ok";
         }
     }
-
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("SshActs{");
