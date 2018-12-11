@@ -204,7 +204,6 @@ public class SshActs {
 
     private Pattern p = Pattern.compile("^http{1,}[(s:)][\\w\\d(:/.)]{1,}");
 
-
     private String allowDomainAct() {
         String ipResolved;
         this.allowDomain = checkDName();
@@ -215,13 +214,13 @@ public class SshActs {
             String commandSSH = new StringBuilder()
 
                 .append(SUDO_GREP_V).append(Objects.requireNonNull(allowDomain)).append("' /etc/pf/allowdomain > /etc/pf/allowdomain_tmp;")
-                .append(SUDO_GREP_V).append(Objects.requireNonNull(ipResolved)).append("' /etc/pf/allowip > /etc/pf/allowip_tmp;")
+                .append(SUDO_GREP_V).append(Objects.requireNonNull(ipResolved)).append(" #").append(allowDomain).append("' /etc/pf/allowip > /etc/pf/allowip_tmp;")
 
                 .append("sudo cp /etc/pf/allowdomain_tmp /etc/pf/allowdomain;")
                 .append("sudo cp /etc/pf/allowip_tmp /etc/pf/allowip;")
 
                 .append(SUDO_ECHO).append("\"").append(Objects.requireNonNull(allowDomain, "allowdomain string is null")).append("\"").append(" >> /etc/pf/allowdomain;")
-                .append(SUDO_ECHO).append("\"").append(ipResolved).append("\"").append(" >> /etc/pf/allowip;")
+                .append(SUDO_ECHO).append("\"").append(ipResolved).append(" #").append(allowDomain).append("\"").append(" >> /etc/pf/allowip;")
 
                 .append("sudo /etc/initpf.fw;")
                 .append("sudo squid -k reconfigure;")
