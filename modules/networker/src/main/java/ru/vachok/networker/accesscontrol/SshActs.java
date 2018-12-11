@@ -18,11 +18,13 @@ import ru.vachok.networker.componentsrepo.PageFooter;
 import javax.servlet.http.HttpServletRequest;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.charset.Charset;
 import java.nio.file.AccessDeniedException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Objects;
+import java.util.regex.Pattern;
 
 /**
  SSH-actions class
@@ -181,6 +183,8 @@ public class SshActs {
         }
     }
 
+    private Pattern p = Pattern.compile("^http{1,}+[\\w\\d(:)(/)]{1,}");
+
 
     @Override
     public String toString() {
@@ -203,8 +207,23 @@ public class SshActs {
 
     private String allowDomainAct() {
         String ipResolved;
+        if (allowDomain.contains("http")) {
+            this.allowDomain = allowDomain.replace("http://", ".");
+            if (allowDomain.contains("https")) this.allowDomain = allowDomain.replace("https://", ".");
+            char[] chars = allowDomain.toCharArray();
+            try {
+                Character lastChar = chars[chars.length - 1];
+                if (lastChar.equals('/')) {
+                    chars[chars.length - 1] = ' ';
+                    this.allowDomain = new String(chars).trim();
+                } else this.allowDomain = new String(allowDomain.getBytes(), Charset.defaultCharset());
+            } catch (ArrayIndexOutOfBoundsException ignore) {
+                //
+            }
+        }
         try {
-            ipResolved = InetAddress.getByName(allowDomain).toString();
+            InetAddress inetAddress = InetAddress.getByName(allowDomain.replaceFirst("\\Q.\\E", ""));
+            ipResolved = inetAddress.getHostAddress();
         } catch (UnknownHostException e) {
             return new TForms().fromArray(e, true);
         }
@@ -215,7 +234,6 @@ public class SshActs {
             " >> /etc/pf/allowdomain;sudo echo " +
             "\"" +
             ipResolved +
-            comment +
             "\"" +
             " >> /etc/pf/allowip;sudo /etc/initpf.fw;sudo squid -k reconfigure;sudo /etc/initpf.fw;sudo tail /etc/pf/allowdomain;exit";
         return new SSHFactory.Builder(ConstantsFor.SRV_NAT, commandSSH).build().call();
@@ -262,6 +280,7 @@ public class SshActs {
 
         @GetMapping("/sshacts")
         public String sshActsGET(Model model, HttpServletRequest request) throws AccessDeniedException {
+            sshActs.setAllowDomain("");
             String pcReq = request.getRemoteAddr().toLowerCase();
             LOGGER.warn(pcReq);
             setInet(pcReq);
@@ -291,7 +310,7 @@ public class SshActs {
             this.sshActs = sshActs;
             model.addAttribute(ConstantsFor.TITLE, sshActs.getAllowDomain());
             model.addAttribute(AT_NAME_SSHACTS, sshActs);
-            model.addAttribute("ok", sshActs.toString() + "<br>" + allowDomainAct());
+            model.addAttribute("ok", sshActs.toString() + "<p><b>" + sshActs.allowDomainAct() + "</b>");
             model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext());
             return "ok";
         }

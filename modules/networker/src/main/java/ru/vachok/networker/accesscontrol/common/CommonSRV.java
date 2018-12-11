@@ -5,7 +5,10 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 import ru.vachok.networker.componentsrepo.AppComponents;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.util.Collections;
@@ -55,6 +58,11 @@ public class CommonSRV {
      */
     public void setDelFolderPath(String delFolderPath) {
         this.delFolderPath = delFolderPath;
+    }
+
+    public void setNullToAllFields() {
+        this.delFolderPath = "";
+        this.perionDays = "";
     }
 
     /**

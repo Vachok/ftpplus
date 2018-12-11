@@ -47,8 +47,8 @@
     </form>
     <p>
     <form method="POST" th:action="@{/allowdomain}" th:object="${sshActs}"><br>
-        Разрешить домен :<br>
-        <input placeholder="Введите имя домена. (domain.name - откроет *.domain.name)" required size="55" th:field="*{allowDomain}" type="text"/>
+        Разрешить домен (должно начинаться с <b>http</b>) :<br>
+        <input pattern="^http{1,}[(s)(:)][\w\d(:)(/)(.)]{1,}" placeholder="Введите имя домена." required size="55" th:field="*{allowDomain}" type="text"/>
         <input type="submit" value="Разрешить"/>
     </form>
 </center>

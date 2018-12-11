@@ -28,7 +28,7 @@ public class CommonCTRL {
 
     @GetMapping("/common")
     public String commonGET(Model model) {
-
+        commonSRV.setNullToAllFields();
         model.addAttribute(ConstantsFor.TITLE, new Date(new TimeChecker().call().getReturnTime()));
         model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext());
         model.addAttribute(AT_NAME_COMMON, commonSRV);
