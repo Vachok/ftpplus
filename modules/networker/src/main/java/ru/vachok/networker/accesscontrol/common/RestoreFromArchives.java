@@ -30,10 +30,21 @@ public class RestoreFromArchives extends SimpleFileVisitor<Path> {
      */
     private static final Path COMMON_DIR = Paths.get("\\\\srv-fs.eatmeat.ru\\common_new");
 
-    private String firstLeverSTR;
-
+    /**
+     {@link AppComponents#getLogger()}
+     */
     private static final Logger LOGGER = AppComponents.getLogger();
 
+    /**
+     Папка первого уровня.
+     <p>
+     Для того, чтобы не перебирать каждый раз всё.
+     */
+    private String firstLeverSTR;
+
+    /**
+     {@link StringBuilder} результата работы.
+     */
     private StringBuilder resultStr = new StringBuilder();
 
     private String pathToRestoreAsStr;
@@ -172,10 +183,10 @@ public class RestoreFromArchives extends SimpleFileVisitor<Path> {
         final StringBuilder sb = new StringBuilder("RestoreFromArchives <br>");
         sb.append("\n ").append(resultStr);
         sb.append("\n<p> <font color=\"grey\">ARCHIVE_DIR=").append(ARCHIVE_DIR);
-        sb.append("\n COMMON_DIR=").append(COMMON_DIR);
-        sb.append("\n firstLeverSTR='").append(firstLeverSTR).append('\'');
-        sb.append("\n pathToRestoreAsStr='").append(pathToRestoreAsStr).append('\'');
-        sb.append("\n perionDays='").append(perionDays).append('\'');
+        sb.append("\n<br> COMMON_DIR=").append(COMMON_DIR);
+        sb.append("\n<br> firstLeverSTR='").append(firstLeverSTR).append('\'');
+        sb.append("\n<br> pathToRestoreAsStr='").append(pathToRestoreAsStr).append('\'');
+        sb.append("\n<br> perionDays='").append(perionDays).append('\'');
         sb.append("</font><p>");
         return sb.toString();
     }

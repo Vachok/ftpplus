@@ -16,6 +16,9 @@ import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.PageFooter;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
@@ -41,6 +44,8 @@ public class SshActs {
 
     private static final String AT_NAME_SSHACTS = "sshActs";
 
+    private static final String SUDO_ECHO = "sudo echo ";
+
     private String pcName;
 
     private String inet;
@@ -50,6 +55,8 @@ public class SshActs {
     private String comment;
 
     private String ipAddrOnly;
+
+    private static final String SUDO_GREP_V = "sudo grep -v '";
 
     public void setIpAddrOnly(String ipAddrOnly) {
         this.ipAddrOnly = ipAddrOnly;
@@ -164,10 +171,21 @@ public class SshActs {
 
     private String execByWhatListSwitcher(int whatList, boolean iDel) {
         if (iDel) {
-            return "sudo grep -v '" + Objects.requireNonNull(pcName) + "' /etc/pf/vipnet > /etc/pf/vipnet_tmp;sudo grep -v '" + Objects.requireNonNull(ipAddrOnly) + "' /etc/pf/vipnet > /etc/pf/vipnet_tmp;sudo cp /etc/pf/vipnet_tmp /etc/pf/vipnet;sudo pfctl -f /etc/srv-nat.conf;sudo grep -v '" + Objects.requireNonNull(ipAddrOnly) + "' /etc/pf/squid > /etc/pf/squid_tmp;sudo cp /etc/pf/squid_tmp /etc/pf/squid;sudo grep -v '" + Objects.requireNonNull(ipAddrOnly) + "' /etc/pf/squidlimited > /etc/pf/squidlimited_tmp;sudo cp /etc/pf/squidlimited_tmp /etc/pf/squidlimited;sudo grep -v '" + Objects.requireNonNull(ipAddrOnly) + "' /etc/pf/tempfull > /etc/pf/tempfull_tmp;sudo cp /etc/pf/tempfull_tmp /etc/pf/tempfull;sudo squid -k reconfigure;sudo /etc/initpf.fw";
+            return new StringBuilder()
+                .append(SUDO_GREP_V)
+                .append(Objects.requireNonNull(pcName))
+                .append("' /etc/pf/vipnet > /etc/pf/vipnet_tmp;sudo grep -v '")
+                .append(Objects.requireNonNull(ipAddrOnly))
+                .append("' /etc/pf/vipnet > /etc/pf/vipnet_tmp;sudo cp /etc/pf/vipnet_tmp /etc/pf/vipnet;sudo pfctl -f /etc/srv-nat.conf;sudo grep -v '")
+                .append(Objects.requireNonNull(ipAddrOnly))
+                .append("' /etc/pf/squid > /etc/pf/squid_tmp;sudo cp /etc/pf/squid_tmp /etc/pf/squid;sudo grep -v '")
+                .append(Objects.requireNonNull(ipAddrOnly))
+                .append("' /etc/pf/squidlimited > /etc/pf/squidlimited_tmp;sudo cp /etc/pf/squidlimited_tmp /etc/pf/squidlimited;sudo grep -v '")
+                .append(Objects.requireNonNull(ipAddrOnly))
+                .append("' /etc/pf/tempfull > /etc/pf/tempfull_tmp;sudo cp /etc/pf/tempfull_tmp /etc/pf/tempfull;sudo squid -k reconfigure;sudo /etc/initpf.fw").toString();
         } else {
             this.comment = Objects.requireNonNull(ipAddrOnly) + comment;
-            String echoSudo = "sudo echo ";
+            String echoSudo = SUDO_ECHO;
             switch (whatList) {
                 case 1:
                     return echoSudo + "\"" + comment + "\"" + " >> /etc/pf/vipnet;sudo /etc/initpf.fw;";
@@ -186,59 +204,59 @@ public class SshActs {
     private Pattern p = Pattern.compile("^http{1,}+[\\w\\d(:)(/)]{1,}");
 
 
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("SshActs{");
-        sb.append("allowDomain='").append(allowDomain).append('\'');
-        sb.append(", AT_NAME_SSHACTS='").append(AT_NAME_SSHACTS).append('\'');
-        sb.append(", AT_NAME_SSHDETAIL='").append(AT_NAME_SSHDETAIL).append('\'');
-        sb.append(", comment='").append(comment).append('\'');
-        sb.append(", inet='").append(inet).append('\'');
-        sb.append(", ipAddrOnly='").append(ipAddrOnly).append('\'');
-        sb.append(", PAGE_NAME='").append(PAGE_NAME).append('\'');
-        sb.append(", pcName='").append(pcName).append('\'');
-        sb.append(", squid=").append(squid);
-        sb.append(", squidLimited=").append(squidLimited);
-        sb.append(", tempFull=").append(tempFull);
-        sb.append(", vipNet=").append(vipNet);
-        sb.append('}');
-        return sb.toString();
-    }
-
     private String allowDomainAct() {
         String ipResolved;
-        if (allowDomain.contains("http")) {
-            this.allowDomain = allowDomain.replace("http://", ".");
-            if (allowDomain.contains("https")) this.allowDomain = allowDomain.replace("https://", ".");
-            char[] chars = allowDomain.toCharArray();
-            try {
-                Character lastChar = chars[chars.length - 1];
-                if (lastChar.equals('/')) {
-                    chars[chars.length - 1] = ' ';
-                    this.allowDomain = new String(chars).trim();
-                } else this.allowDomain = new String(allowDomain.getBytes(), Charset.defaultCharset());
-            } catch (ArrayIndexOutOfBoundsException ignore) {
-                //
-            }
-        }
+        this.allowDomain = checkDName();
+        Objects.requireNonNull(allowDomain, "allowdomain string is null");
         try {
             InetAddress inetAddress = InetAddress.getByName(allowDomain.replaceFirst("\\Q.\\E", ""));
             ipResolved = inetAddress.getHostAddress();
+            String commandSSH = new StringBuilder()
+
+                .append(SUDO_GREP_V).append(Objects.requireNonNull(allowDomain)).append("' /etc/pf/allowdomain > /etc/pf/allowdomain_tmp;")
+                .append(SUDO_GREP_V).append(Objects.requireNonNull(ipResolved)).append("' /etc/pf/allowip > /etc/pf/allowip_tmp;")
+
+                .append("sudo cp /etc/pf/allowdomain_tmp /etc/pf/allowdomain;")
+                .append("sudo cp /etc/pf/allowip_tmp /etc/pf/allowip;")
+
+                .append(SUDO_ECHO).append("\"").append(Objects.requireNonNull(allowDomain, "allowdomain string is null")).append("\"").append(" >> /etc/pf/allowdomain;")
+                .append(SUDO_ECHO).append("\"").append(ipResolved).append("\"").append(" >> /etc/pf/allowip;")
+
+                .append("sudo /etc/initpf.fw;")
+                .append("sudo squid -k reconfigure;")
+
+                .append("sudo cat /etc/pf/allowdomain;exit").toString();
+            String call = new SSHFactory.Builder(ConstantsFor.SRV_NAT, commandSSH).build().call();
+            writeToLog(new String((call + "\n\n" + toString()).getBytes(), Charset.defaultCharset()));
+            return call;
         } catch (UnknownHostException e) {
             return new TForms().fromArray(e, true);
         }
-        String commandSSH = "sudo echo " +
-            "\"" +
-            allowDomain +
-            "\"" +
-            " >> /etc/pf/allowdomain;sudo echo " +
-            "\"" +
-            ipResolved +
-            "\"" +
-            " >> /etc/pf/allowip;sudo /etc/initpf.fw;sudo squid -k reconfigure;sudo /etc/initpf.fw;sudo tail /etc/pf/allowdomain;exit";
-        return new SSHFactory.Builder(ConstantsFor.SRV_NAT, commandSSH).build().call();
     }
 
+    private String checkDName() {
+        this.allowDomain = allowDomain.replace("http://", ".");
+        if (allowDomain.contains("https")) this.allowDomain = allowDomain.replace("https://", ".");
+        char[] chars = allowDomain.toCharArray();
+        try {
+            Character lastChar = chars[chars.length - 1];
+            if (lastChar.equals('/')) {
+                chars[chars.length - 1] = ' ';
+                this.allowDomain = new String(chars).trim();
+            } else this.allowDomain = new String(allowDomain.getBytes(), Charset.defaultCharset());
+            return allowDomain;
+        } catch (ArrayIndexOutOfBoundsException e) {
+            return e.getMessage();
+        }
+    }
+
+    private void writeToLog(String s) {
+        try (OutputStream outputStream = new FileOutputStream(this.getClass().getSimpleName() + ".log")) {
+            outputStream.write(s.getBytes());
+        } catch (IOException e) {
+            LOGGER.warn(e.getMessage(), e);
+        }
+    }
 
     /**
      {@link Controller}, для работы с SSH
@@ -314,5 +332,27 @@ public class SshActs {
             model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext());
             return "ok";
         }
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("SshActs{");
+        sb.append("allowDomain='").append(allowDomain).append('\'');
+        sb.append(", AT_NAME_SSHACTS='").append(AT_NAME_SSHACTS).append('\'');
+        sb.append(", AT_NAME_SSHDETAIL='").append(AT_NAME_SSHDETAIL).append('\'');
+        sb.append(", comment='").append(comment).append('\'');
+        sb.append(", inet='").append(inet).append('\'');
+        sb.append(", ipAddrOnly='").append(ipAddrOnly).append('\'');
+        sb.append(", p=").append(p);
+        sb.append(", PAGE_NAME='").append(PAGE_NAME).append('\'');
+        sb.append(", pcName='").append(pcName).append('\'');
+        sb.append(", squid=").append(squid);
+        sb.append(", squidLimited=").append(squidLimited);
+        sb.append(", SUDO_ECHO='").append(SUDO_ECHO).append('\'');
+        sb.append(", SUDO_GREP_V='").append(SUDO_GREP_V).append('\'');
+        sb.append(", tempFull=").append(tempFull);
+        sb.append(", vipNet=").append(vipNet);
+        sb.append('}');
+        return sb.toString();
     }
 }

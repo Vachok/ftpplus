@@ -34,7 +34,7 @@ public class PageFooter {
             .append("<a href=\"/exchange\"><strike>Парсинг правил MS Exchange</a><br></strike>\n")
             .append("<a href=\"/adphoto\">Добавить фотографии в Outlook</a><br>\n")
             .append("<a href=\"/common\"><font color=\"#00cc66\">Восстановить из архива</font></a><br>\n")
-            .append("<a href=\"/sshacts\"><strike>SSH worker</strike></a><br>\n")
+            .append("<a href=\"/sshacts\">SSH worker (Only Allow Domains)</a><br>\n")
             .append("<a href=\"/serviceinfo\"><font color=\"#999eff\">SERVICEINFO</font></a><p>\n")
             .toString();
     }
