@@ -60,7 +60,7 @@ public class CommonSRV {
         this.delFolderPath = delFolderPath;
     }
 
-    public void setNullToAllFields() {
+    void setNullToAllFields() {
         this.delFolderPath = "";
         this.perionDays = "";
     }
