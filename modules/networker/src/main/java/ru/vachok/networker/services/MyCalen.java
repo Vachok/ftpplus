@@ -99,13 +99,12 @@ public abstract class MyCalen {
             return new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(7));
         } else{
             int toDateDays = dayOfWeek.getValue() - localDateTime.getDayOfWeek().getValue();
-            cBuilder
-                .setDate(localDateTime.getYear(),
+            Date retDate = cBuilder.setDate(localDateTime.getYear(),
                     localDateTime.getMonthValue() - 1,
-                    localDateTime.getDayOfMonth() + toDateDays).setTimeOfDay(hourNeed, minNeed, 0);
+                localDateTime.getDayOfMonth() + toDateDays).setTimeOfDay(hourNeed, minNeed, 0).build().getTime();
             timeInfo.computeDetails();
             long rDiff = System.currentTimeMillis() - timeInfo.getReturnTime();
-            Date retDate = cBuilder.build().getTime();
+
             String msgTimeSp = new StringBuilder()
                 .append("MyCalen.getNextDayofWeek method. ")
                 .append(( float ) (System.currentTimeMillis() - stArt) / 1000)
@@ -115,7 +114,7 @@ public abstract class MyCalen {
                 .append(retDate.toString())
                 .append(" date returned").toString();
             LOGGER.info(msgTimeSp);
-            return retDate;
+            return retDate; // FIXME: 11.12.2018
         }
     }
 }
