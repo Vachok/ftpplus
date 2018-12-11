@@ -3,7 +3,6 @@ package ru.vachok.networker;
 
 import org.slf4j.Logger;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -82,10 +81,9 @@ public class IntoApplication {
         String msg = LocalDate.now().getDayOfWeek().getValue() + " - day of week\n" +
             LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault());
         LOGGER.warn(msg);
-        if(THIS_PC.toLowerCase().contains("no0027") || THIS_PC.toLowerCase().contains("home")){
+        if (THIS_PC.toLowerCase().contains("no0027") || THIS_PC.toLowerCase().contains("home")) {
             SystemTrayHelper.addTray("icons8-плохие-поросята-32.png");
-        }
-        else{
+        } else {
             SystemTrayHelper.addTray(null);
         }
         SPRING_APPLICATION.setMainApplicationClass(IntoApplication.class);
@@ -93,7 +91,7 @@ public class IntoApplication {
         System.setProperty("file.encoding", "UTF8");
         SpringApplication.run(IntoApplication.class, args);
         infoForU(appCtx);
-        String msgTimeSp = "IntoApplication.main method. " + ( float ) (System.currentTimeMillis() - stArt) / 1000 + STR_SEC_SPEND;
+        String msgTimeSp = "IntoApplication.main method. " + (float) (System.currentTimeMillis() - stArt) / 1000 + STR_SEC_SPEND;
         LOGGER.info(msgTimeSp);
     }
 
@@ -112,72 +110,57 @@ public class IntoApplication {
             .append(" app display name\n")
             .append(ConstantsFor.getBuildStamp()).toString();
         LOGGER.info(msg);
-        try{
+        try {
             schedStarter();
-        }
-        catch(InvocationTargetException e){
+        } catch (InvocationTargetException e) {
             Throwable targetException = e.getTargetException();
             LOGGER.error(e.getMessage(), e);
             LOGGER.warn(targetException.getMessage());
             new Thread(IntoApplication::new).start();
             Thread.currentThread().interrupt();
         }
-        String msgTimeSp = "IntoApplication.infoForU method. " + ( float ) (System.currentTimeMillis() - stArt) / 1000 + STR_SEC_SPEND;
+        String msgTimeSp = "IntoApplication.infoForU method. " + (float) (System.currentTimeMillis() - stArt) / 1000 + STR_SEC_SPEND;
         LOGGER.info(msgTimeSp);
     }
 
     /**
-     Удаление временных файлов.
+     Запуск заданий по-расписанию
      <p>
-     Usages: {@link SystemTrayHelper#addTray(String)}, {@link ServiceInfoCtrl#closeApp()}, {@link MyServer#reconSock()}. <br> Uses: {@link CommonScan2YOlder} <br>
-     */
-    public static void delTemp() {
-        try{
-            Files.walkFileTree(Paths.get("."), new CommonScan2YOlder());
-        }
-        catch(IOException e){
-            LOGGER.error(e.getMessage(), e);
-        }
-    }
-
-    /**
-     Тип WEB-application
-     <p>
-     Usages: {@link #runCommonScan()} <br>
-     Uses:
-     1.1 {@link ConstantsFor#thisPC()},
-     1.2 {@link ConstantsFor#thisPC()},
-     1.3 {@link #runCommonScan()},
-     1.4 {@link MyCalen#getNextDayofWeek(int, int, DayOfWeek)},
-     1.5 {@link ThreadConfig#threadPoolTaskScheduler()}
+     Usages: {@link #infoForU(ApplicationContext)} <br>
+     Uses: 1.1 {@link #weekStat()}, 1.2 {@link ConstantsFor#thisPC()}, 1.3 {@link ConstantsFor#thisPC()},
+     1.4 {@link #runCommonScan()} .
 
      @throws InvocationTargetException иногда возникает. Причину не отловил
      */
     private static void schedStarter() throws InvocationTargetException {
-        final long stArt = System.currentTimeMillis();
-        WebApplicationType webApplicationType = WebApplicationType.SERVLET;
-        SPRING_APPLICATION.setWebApplicationType(webApplicationType);
         Runnable speedRun = new SpeedRunActualize();
-        ScheduledExecutorService executorService =
-            Executors.unconfigurableScheduledExecutorService(Executors.newSingleThreadScheduledExecutor());
-        long delay = ConstantsFor.DELAY;
-        executorService.scheduleWithFixedDelay(speedRun, ConstantsFor.INIT_DELAY,
-            TimeUnit.MINUTES.toSeconds(delay), TimeUnit.SECONDS);
-        executorService.scheduleWithFixedDelay(new SwitchesAvailability(), 1, delay, TimeUnit.SECONDS);
-        if(ConstantsFor.thisPC().toLowerCase().contains("no0027") ||
-            ConstantsFor.thisPC().toLowerCase().contains("rups")){
+        Runnable swAval = new SwitchesAvailability();
+        ScheduledExecutorService executorService = Executors.unconfigurableScheduledExecutorService(Executors.newScheduledThreadPool(2));
+
+        executorService.scheduleWithFixedDelay(speedRun, ConstantsFor.INIT_DELAY, TimeUnit.MINUTES.toSeconds(ConstantsFor.DELAY), TimeUnit.SECONDS);
+        executorService.scheduleWithFixedDelay(swAval, 1, ConstantsFor.DELAY, TimeUnit.SECONDS);
+
+        weekStat();
+
+        if (ConstantsFor.thisPC().toLowerCase().contains("no0027") ||
+            ConstantsFor.thisPC().toLowerCase().contains("rups")) {
             runCommonScan();
         }
+    }
+
+    /**
+     Стата за неделю по-ПК
+     <p>
+     Usages: {@link #schedStarter()} <br> Uses: 1.1 {@link MyCalen#getNextDayofWeek(int, int, DayOfWeek)}, 1.2 {@link ThreadConfig#threadPoolTaskScheduler()}
+     */
+    private static void weekStat() {
         Date nextStartDay = MyCalen.getNextDayofWeek(23, 57, DayOfWeek.SUNDAY);
-        new ThreadConfig().threadPoolTaskScheduler()
-            .scheduleWithFixedDelay(new WeekPCStats(), nextStartDay, TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY_HOURS * 7));
+        new ThreadConfig().threadPoolTaskScheduler().scheduleWithFixedDelay(
+            new WeekPCStats(), nextStartDay, TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY_HOURS * 7));
+
         String msgTimeSp = new StringBuilder()
-            .append("IntoApplication.schedStarter method. ")
-            .append(( float ) (System.currentTimeMillis() - stArt) / 1000)
-            .append(STR_SEC_SPEND)
-            .append("\n")
-            .append(nextStartDay.toString())
-            .append(" nextDayofWeek.toString()").toString();
+            .append("new WeekPCStats: ")
+            .append(nextStartDay.toString()).toString();
         LOGGER.warn(msgTimeSp);
     }
 
@@ -188,10 +171,9 @@ public class IntoApplication {
      */
     private static void runCommonScan() {
         Runnable r = () -> {
-            try{
+            try {
                 Files.walkFileTree(Paths.get("\\\\srv-fs.eatmeat.ru\\common_new"), new CommonRightsChecker());
-            }
-            catch(IOException e){
+            } catch (IOException e) {
                 LOGGER.warn(e.getMessage(), e);
             }
         };
@@ -199,15 +181,27 @@ public class IntoApplication {
         long delay = TimeUnit.DAYS.toMillis(7);
         ScheduledFuture<?> scheduleWithFixedDelay = new ThreadConfig().threadPoolTaskScheduler().scheduleWithFixedDelay(
             r, startTime, delay);
-        try{
+        try {
             String msg = "Common scanner : " + startTime.toString();
             LOGGER.warn(msg);
             scheduleWithFixedDelay.get();
-        }
-        catch(InterruptedException | ExecutionException e){
+        } catch (InterruptedException | ExecutionException e) {
             LOGGER.error(e.getMessage(), e);
             Thread.currentThread().interrupt();
             r.run();
+        }
+    }
+
+    /**
+     Удаление временных файлов.
+     <p>
+     Usages: {@link SystemTrayHelper#addTray(String)}, {@link ServiceInfoCtrl#closeApp()}, {@link MyServer#reconSock()}. <br> Uses: {@link CommonScan2YOlder} <br>
+     */
+    public static void delTemp() {
+        try {
+            Files.walkFileTree(Paths.get("."), new CommonScan2YOlder());
+        } catch (IOException e) {
+            LOGGER.error(e.getMessage(), e);
         }
     }
 }

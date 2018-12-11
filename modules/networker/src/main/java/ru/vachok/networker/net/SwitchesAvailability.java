@@ -130,7 +130,8 @@ public class SwitchesAvailability implements Runnable {
     /**
      Запись в файл информации
      <p>
-     Usages: {@link #testAddresses()} <br> Uses: 1.1 {@link TimeChecker#call()}, 1.2 {@link #copyFile(File)}
+     Usages: {@link #testAddresses()} <br>
+     Uses: 1.1 {@link TimeChecker#call()}
 
      @param okIP  лист он-лайн адресов
      @param badIP лист офлайн адресов

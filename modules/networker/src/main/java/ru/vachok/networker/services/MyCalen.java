@@ -8,7 +8,6 @@ import ru.vachok.networker.componentsrepo.AppComponents;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
@@ -94,17 +93,18 @@ public abstract class MyCalen {
     public static Date getNextDayofWeek(int hourNeed, int minNeed, DayOfWeek dayOfWeek) {
         final long stArt = System.currentTimeMillis();
         Calendar.Builder cBuilder = new Calendar.Builder();
-        LocalDateTime localDateTime = LocalDateTime.now();
-        if(localDateTime.getDayOfWeek().toString().equalsIgnoreCase(dayOfWeek.toString())){
-            return new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(7));
-        } else{
-            int toDateDays = dayOfWeek.getValue() - localDateTime.getDayOfWeek().getValue();
-            Date retDate = cBuilder.setDate(localDateTime.getYear(),
-                    localDateTime.getMonthValue() - 1,
-                localDateTime.getDayOfMonth() + toDateDays).setTimeOfDay(hourNeed, minNeed, 0).build().getTime();
+        LocalDate localDate = LocalDate.now();
+        if (localDate.getDayOfWeek().equals(dayOfWeek)) {
+            return new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(14));
+        } else {
+            int toDateDays = Math.abs(dayOfWeek.getValue() + 7 - localDate.getDayOfWeek().getValue());
+            cBuilder
+                .setDate(localDate.getYear(),
+                    localDate.getMonthValue() - 1,
+                    localDate.getDayOfMonth() + toDateDays).setTimeOfDay(hourNeed, minNeed, 0);
             timeInfo.computeDetails();
             long rDiff = System.currentTimeMillis() - timeInfo.getReturnTime();
-
+            Date retDate = cBuilder.build().getTime();
             String msgTimeSp = new StringBuilder()
                 .append("MyCalen.getNextDayofWeek method. ")
                 .append(( float ) (System.currentTimeMillis() - stArt) / 1000)
@@ -114,7 +114,8 @@ public abstract class MyCalen {
                 .append(retDate.toString())
                 .append(" date returned").toString();
             LOGGER.info(msgTimeSp);
-            return retDate; // FIXME: 11.12.2018
+            return retDate;
         }
+
     }
 }

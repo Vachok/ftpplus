@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.PageFooter;
 
@@ -200,17 +201,24 @@ public class SshActs {
         return sb.toString();
     }
 
-    private void allowDomainAct() {
-        String ipResolved = null;
+    private String allowDomainAct() {
+        String ipResolved;
         try {
             ipResolved = InetAddress.getByName(allowDomain).toString();
         } catch (UnknownHostException e) {
-            LOGGER.warn(e.getMessage(), e);
+            return new TForms().fromArray(e, true);
         }
-        String commandSSH = "sudo echo " + "\"" + allowDomain + "\"" + " >> /etc/pf/allowdomain;sudo echo " + "\"" + ipResolved + comment + "\"" + " >> /etc/pf/allowip;sudo /etc/initpf.fw;sudo squid -k reconfigure;sudo /etc/initpf.fw;sudo tail /etc/pf/allowdomain;exit";
-        commandSSH = "ls";
-        LOGGER.warn(new SSHFactory.Builder(ConstantsFor.SRV_NAT, commandSSH).build().call());
-
+        String commandSSH = "sudo echo " +
+            "\"" +
+            allowDomain +
+            "\"" +
+            " >> /etc/pf/allowdomain;sudo echo " +
+            "\"" +
+            ipResolved +
+            comment +
+            "\"" +
+            " >> /etc/pf/allowip;sudo /etc/initpf.fw;sudo squid -k reconfigure;sudo /etc/initpf.fw;sudo tail /etc/pf/allowdomain;exit";
+        return new SSHFactory.Builder(ConstantsFor.SRV_NAT, commandSSH).build().call();
     }
 
 
@@ -281,10 +289,9 @@ public class SshActs {
         @PostMapping("/allowdomain")
         public String allowPOST(@ModelAttribute SshActs sshActs, Model model) {
             this.sshActs = sshActs;
-            allowDomainAct();
             model.addAttribute(ConstantsFor.TITLE, sshActs.getAllowDomain());
             model.addAttribute(AT_NAME_SSHACTS, sshActs);
-            model.addAttribute("ok", sshActs.toString());
+            model.addAttribute("ok", sshActs.toString() + "<br>" + allowDomainAct());
             model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext());
             return "ok";
         }

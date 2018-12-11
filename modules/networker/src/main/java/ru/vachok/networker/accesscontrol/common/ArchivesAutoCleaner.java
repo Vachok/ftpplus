@@ -53,7 +53,7 @@ public class ArchivesAutoCleaner extends SimpleFileVisitor<Path> implements Runn
         FileStore fileStore = Files.getFileStore(ditToCopyFiles.toPath());
         long totalSpace = fileStore.getTotalSpace();
         if (attrs.isRegularFile() &&
-            totalSpace < ConstantsFor.BLURAY_SIZE &&
+            totalSpace < ConstantsFor.GBYTE * 47 &&
             attrs.lastModifiedTime().toMillis() < new Date(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(365)).getTime()) {
 
             String copiedFilePathStr = file.toAbsolutePath().toString();
@@ -67,8 +67,7 @@ public class ArchivesAutoCleaner extends SimpleFileVisitor<Path> implements Runn
             String msg = file.toString() + " is copied!\n" + copyPath.toAbsolutePath();
             printWriter.println(msg);
             return FileVisitResult.CONTINUE;
-        }
-        return FileVisitResult.CONTINUE;
+        } else return FileVisitResult.CONTINUE;
     }
 
     @Override
