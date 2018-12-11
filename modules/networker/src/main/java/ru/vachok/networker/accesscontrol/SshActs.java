@@ -212,7 +212,6 @@ public class SshActs {
             InetAddress inetAddress = InetAddress.getByName(allowDomain.replaceFirst("\\Q.\\E", ""));
             ipResolved = inetAddress.getHostAddress();
             String commandSSH = new StringBuilder()
-
                 .append(SUDO_GREP_V).append(Objects.requireNonNull(allowDomain)).append("' /etc/pf/allowdomain > /etc/pf/allowdomain_tmp;")
                 .append(SUDO_GREP_V).append(Objects.requireNonNull(ipResolved)).append(" #").append(allowDomain).append("' /etc/pf/allowip > /etc/pf/allowip_tmp;")
 
