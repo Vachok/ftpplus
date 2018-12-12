@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
-import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.services.WhoIsWithSRV;
@@ -24,8 +23,6 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.nio.file.AccessDeniedException;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Objects;
 import java.util.Optional;
@@ -213,37 +210,41 @@ public class SshActs {
         }
     }
 
-    private Pattern p = Pattern.compile("^http{1,}[(s:)][\\w\\d(:/.)]{1,}");
+    private Pattern p = Pattern.compile("^http+[(s:)][\\w\\d(:/.)]+");
 
     private String allowDomainAdd() {
         String ipResolved;
         this.allowDomain = checkDName();
         Objects.requireNonNull(allowDomain, "allowdomain string is null");
+        String commandSSH = new StringBuilder()
+            .append(SUDO_GREP_V).append(Objects.requireNonNull(allowDomain)).append("' /etc/pf/allowdomain > /etc/pf/allowdomain_tmp;")
+            .append(SUDO_GREP_V).append(Objects.requireNonNull(resolveIp(allowDomain))).append(" #").append(allowDomain).append("' /etc/pf/allowip > /etc/pf/allowip_tmp;")
+
+            .append("sudo cp /etc/pf/allowdomain_tmp /etc/pf/allowdomain;")
+            .append("sudo cp /etc/pf/allowip_tmp /etc/pf/allowip;")
+
+            .append(SUDO_ECHO).append("\"").append(Objects.requireNonNull(allowDomain, "allowdomain string is null")).append("\"").append(" >> /etc/pf/allowdomain;")
+            .append(SUDO_ECHO).append("\"").append(resolveIp(allowDomain)).append(" #").append(allowDomain).append("\"").append(" >> /etc/pf/allowip;")
+
+            .append("sudo /etc/initpf.fw;")
+            .append("ping -c 5 10.200.200.1;")
+            .append("sudo squid -k reconfigure;")
+
+            .append("exit;").toString();
+        String call = "<b>" + new SSHFactory.Builder(ConstantsFor.SRV_NAT, commandSSH).build().call() + "</b>";
+        call = call + "<font color=\"gray\"><br><br>" + new WhoIsWithSRV().whoIs(resolveIp(allowDomain)) + "</font>";
+        writeToLog(new String((call + "\n\n" + toString()).getBytes(), Charset.defaultCharset()));
+        return call;
+    }
+
+    private String resolveIp(String s) {
+        InetAddress inetAddress = null;
         try {
-            InetAddress inetAddress = InetAddress.getByName(allowDomain.replaceFirst("\\Q.\\E", ""));
-            ipResolved = inetAddress.getHostAddress();
-            String commandSSH = new StringBuilder()
-                .append(SUDO_GREP_V).append(Objects.requireNonNull(allowDomain)).append("' /etc/pf/allowdomain > /etc/pf/allowdomain_tmp;")
-                .append(SUDO_GREP_V).append(Objects.requireNonNull(ipResolved)).append(" #").append(allowDomain).append("' /etc/pf/allowip > /etc/pf/allowip_tmp;")
-
-                .append("sudo cp /etc/pf/allowdomain_tmp /etc/pf/allowdomain;")
-                .append("sudo cp /etc/pf/allowip_tmp /etc/pf/allowip;")
-
-                .append(SUDO_ECHO).append("\"").append(Objects.requireNonNull(allowDomain, "allowdomain string is null")).append("\"").append(" >> /etc/pf/allowdomain;")
-                .append(SUDO_ECHO).append("\"").append(ipResolved).append(" #").append(allowDomain).append("\"").append(" >> /etc/pf/allowip;")
-
-                .append("sudo /etc/initpf.fw;")
-                .append("ping -c 5 10.200.200.1;")
-                .append("sudo squid -k reconfigure;")
-
-                .append("exit").toString();
-            String call = "<b>" + new SSHFactory.Builder(ConstantsFor.SRV_NAT, commandSSH).build().call() + "</b>";
-            call = call + "<font color=\"gray\"><br><br>" + new WhoIsWithSRV().whoIs(ipResolved) + "</font>";
-            writeToLog(new String((call + "\n\n" + toString()).getBytes(), Charset.defaultCharset()));
-            return call;
+            inetAddress = InetAddress.getByName(s.replaceFirst("\\Q.\\E", ""));
         } catch (UnknownHostException e) {
-            return new TForms().fromArray(e, true);
+            LOGGER.warn(e.getMessage(), e);
         }
+        return Objects.requireNonNull(inetAddress).getHostAddress();
     }
 
     @Override
@@ -287,24 +288,27 @@ public class SshActs {
 
     private String allowDomainDel() {
         StringBuilder stringBuilder = new StringBuilder();
-
         stringBuilder
             .append(delDomain).append(" del domain raw<br>");
-
         this.delDomain = checkDNameDel();
         Optional<String> delDomainOpt = Optional.of(delDomain);
         delDomainOpt.ifPresent(x -> {
             String sshCom = new StringBuilder()
-                .append(SUDO_GREP_V).append(delDomainOpt.get()).append("' /etc/pf/allowdomain > /etc/pf/allowdomain_tmp;")
-                .append("sudo cp /etc/pf/allowdomain_tmp /etc/pf/allowdomain;")
+                .append(SUDO_GREP_V).append(x).append("' /etc/pf/allowdomain > /etc/pf/allowdomain_tmp;")
+                .append(SUDO_GREP_V).append(Objects.requireNonNull(resolveIp(x))).append(" #").append(x).append("' /etc/pf/allowip > /etc/pf/allowip_tmp;")
 
+                .append("sudo cp /etc/pf/allowdomain_tmp /etc/pf/allowdomain;")
+                .append("sudo cp /etc/pf/allowip_tmp /etc/pf/allowip;")
+
+                .append("sudo /etc/initpf.fw;")
+                .append("ping -c 5 10.200.200.1;")
                 .append("sudo squid -k reconfigure;")
 
                 .append("exit;").toString();
             String resStr = new SSHFactory.Builder(ConstantsFor.SRV_NAT, sshCom).build().call();
             stringBuilder.append(resStr);
         });
-
+        writeToLog(stringBuilder.toString());
         return stringBuilder.toString();
     }
 
@@ -375,6 +379,7 @@ public class SshActs {
         @GetMapping("/sshacts")
         public String sshActsGET(Model model, HttpServletRequest request) throws AccessDeniedException {
             sshActs.setAllowDomain("");
+            sshActs.setDelDomain("");
             String pcReq = request.getRemoteAddr().toLowerCase();
             LOGGER.warn(pcReq);
             setInet(pcReq);
@@ -395,14 +400,17 @@ public class SshActs {
 
         private String percToEnd() {
             LocalTime endDay = LocalTime.parse("17:30");
-            LocalDateTime localDateTime = endDay.atDate(LocalDate.now());
-            return localDateTime.toString();
+            LocalTime localTime = endDay.minusHours(LocalTime.now().getHour());
+
+            localTime = localTime.minusMinutes(LocalTime.now().getMinute());
+            localTime = localTime.minusSeconds(LocalTime.now().getSecond());
+            return localTime.toString() + " ";
         }
 
         @PostMapping("/allowdomain")
         public String allowPOST(@ModelAttribute SshActs sshActs, Model model) {
             this.sshActs = sshActs;
-            model.addAttribute(ConstantsFor.TITLE, sshActs.getAllowDomain());
+            model.addAttribute(ConstantsFor.TITLE, sshActs.getAllowDomain() + " добавлен");
             model.addAttribute(AT_NAME_SSHACTS, sshActs);
             model.addAttribute("ok", sshActs.toString() + "<p>" + sshActs.allowDomainAdd());
             model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext());
@@ -412,7 +420,7 @@ public class SshActs {
         @PostMapping("/deldomain")
         public String delDomPOST(@ModelAttribute SshActs sshActs, Model model) {
             this.sshActs = sshActs;
-            model.addAttribute(ConstantsFor.TITLE, sshActs.getAllowDomain());
+            model.addAttribute(ConstantsFor.TITLE, sshActs.getDelDomain() + " удалён");
             model.addAttribute(AT_NAME_SSHACTS, sshActs);
             model.addAttribute("ok", sshActs.toString() + "<p>" + sshActs.allowDomainDel());
             model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext());
