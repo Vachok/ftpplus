@@ -51,6 +51,11 @@
         <input pattern="^http{1,}[(s)(:)][\w\d:/.\-]{1,}" placeholder="Введите имя домена." required size="55" th:field="*{allowDomain}" type="text"/>
         <input type="submit" value="Разрешить"/>
     </form>
+    <form method="POST" th:action="@{/deldomain}" th:object="${sshActs}"><br>
+        Удалить домен (должно начинаться с <b>http</b>) :<br>
+        <input pattern="^http{1,}[(s)(:)][\w\d:/.\-]{1,}" placeholder="Введите имя домена." required size="55" th:field="*{delDomain}" type="text"/>
+        <input type="submit" value="Удалить"/>
+    </form>
 </center>
 </body>
 <footer>

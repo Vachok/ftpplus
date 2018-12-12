@@ -116,6 +116,5 @@ public abstract class MyCalen {
             LOGGER.info(msgTimeSp);
             return retDate;
         }
-
     }
 }

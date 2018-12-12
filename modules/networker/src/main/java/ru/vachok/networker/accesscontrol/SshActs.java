@@ -28,6 +28,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 /**
@@ -56,6 +57,16 @@ public class SshActs {
     private String comment;
 
     private String ipAddrOnly;
+
+    private String delDomain;
+
+    public String getDelDomain() {
+        return delDomain;
+    }
+
+    public void setDelDomain(String delDomain) {
+        this.delDomain = delDomain;
+    }
 
     private static final String SUDO_GREP_V = "sudo grep -v '";
 
@@ -204,7 +215,7 @@ public class SshActs {
 
     private Pattern p = Pattern.compile("^http{1,}[(s:)][\\w\\d(:/.)]{1,}");
 
-    private String allowDomainAct() {
+    private String allowDomainAdd() {
         String ipResolved;
         this.allowDomain = checkDName();
         Objects.requireNonNull(allowDomain, "allowdomain string is null");
@@ -222,9 +233,10 @@ public class SshActs {
                 .append(SUDO_ECHO).append("\"").append(ipResolved).append(" #").append(allowDomain).append("\"").append(" >> /etc/pf/allowip;")
 
                 .append("sudo /etc/initpf.fw;")
+                .append("ping -c 5 10.200.200.1;")
                 .append("sudo squid -k reconfigure;")
 
-                .append("sudo cat /etc/pf/allowdomain;exit").toString();
+                .append("exit").toString();
             String call = "<b>" + new SSHFactory.Builder(ConstantsFor.SRV_NAT, commandSSH).build().call() + "</b>";
             call = call + "<font color=\"gray\"><br><br>" + new WhoIsWithSRV().whoIs(ipResolved) + "</font>";
             writeToLog(new String((call + "\n\n" + toString()).getBytes(), Charset.defaultCharset()));
@@ -232,6 +244,29 @@ public class SshActs {
         } catch (UnknownHostException e) {
             return new TForms().fromArray(e, true);
         }
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("SshActs{");
+        sb.append("allowDomain='").append(allowDomain).append('\'');
+        sb.append(", AT_NAME_SSHACTS='").append(AT_NAME_SSHACTS).append('\'');
+        sb.append(", AT_NAME_SSHDETAIL='").append(AT_NAME_SSHDETAIL).append('\'');
+        sb.append(", comment='").append(comment).append('\'');
+        sb.append(", delDomain='").append(delDomain).append('\'');
+        sb.append(", inet='").append(inet).append('\'');
+        sb.append(", ipAddrOnly='").append(ipAddrOnly).append('\'');
+        sb.append(", p=").append(p);
+        sb.append(", PAGE_NAME='").append(PAGE_NAME).append('\'');
+        sb.append(", pcName='").append(pcName).append('\'');
+        sb.append(", squid=").append(squid);
+        sb.append(", squidLimited=").append(squidLimited);
+        sb.append(", SUDO_ECHO='").append(SUDO_ECHO).append('\'');
+        sb.append(", SUDO_GREP_V='").append(SUDO_GREP_V).append('\'');
+        sb.append(", tempFull=").append(tempFull);
+        sb.append(", vipNet=").append(vipNet);
+        sb.append('}');
+        return sb.toString();
     }
 
     private String checkDName() {
@@ -250,6 +285,29 @@ public class SshActs {
         }
     }
 
+    private String allowDomainDel() {
+        StringBuilder stringBuilder = new StringBuilder();
+
+        stringBuilder
+            .append(delDomain).append(" del domain raw<br>");
+
+        this.delDomain = checkDNameDel();
+        Optional<String> delDomainOpt = Optional.of(delDomain);
+        delDomainOpt.ifPresent(x -> {
+            String sshCom = new StringBuilder()
+                .append(SUDO_GREP_V).append(delDomainOpt.get()).append("' /etc/pf/allowdomain > /etc/pf/allowdomain_tmp;")
+                .append("sudo cp /etc/pf/allowdomain_tmp /etc/pf/allowdomain;")
+
+                .append("sudo squid -k reconfigure;")
+
+                .append("exit;").toString();
+            String resStr = new SSHFactory.Builder(ConstantsFor.SRV_NAT, sshCom).build().call();
+            stringBuilder.append(resStr);
+        });
+
+        return stringBuilder.toString();
+    }
+
     private void writeToLog(String s) {
         try (OutputStream outputStream = new FileOutputStream(this.getClass().getSimpleName() + ".log")) {
             outputStream.write(s.getBytes());
@@ -257,6 +315,23 @@ public class SshActs {
             LOGGER.warn(e.getMessage(), e);
         }
     }
+
+    private String checkDNameDel() {
+        this.delDomain = delDomain.replace("http://", ".");
+        if (delDomain.contains("https")) this.delDomain = delDomain.replace("https://", ".");
+        char[] chars = delDomain.toCharArray();
+        try {
+            Character lastChar = chars[chars.length - 1];
+            if (lastChar.equals('/')) {
+                chars[chars.length - 1] = ' ';
+                this.delDomain = new String(chars).trim();
+            } else this.delDomain = new String(delDomain.getBytes(), Charset.defaultCharset());
+            return delDomain;
+        } catch (ArrayIndexOutOfBoundsException e) {
+            return e.getMessage();
+        }
+    }
+
 
     /**
      {@link Controller}, для работы с SSH
@@ -330,30 +405,19 @@ public class SshActs {
             this.sshActs = sshActs;
             model.addAttribute(ConstantsFor.TITLE, sshActs.getAllowDomain());
             model.addAttribute(AT_NAME_SSHACTS, sshActs);
-            model.addAttribute("ok", sshActs.toString() + "<p>" + sshActs.allowDomainAct());
+            model.addAttribute("ok", sshActs.toString() + "<p>" + sshActs.allowDomainAdd());
             model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext());
             return "ok";
         }
-    }
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("SshActs{");
-        sb.append("allowDomain='").append(allowDomain).append('\'');
-        sb.append(", AT_NAME_SSHACTS='").append(AT_NAME_SSHACTS).append('\'');
-        sb.append(", AT_NAME_SSHDETAIL='").append(AT_NAME_SSHDETAIL).append('\'');
-        sb.append(", comment='").append(comment).append('\'');
-        sb.append(", inet='").append(inet).append('\'');
-        sb.append(", ipAddrOnly='").append(ipAddrOnly).append('\'');
-        sb.append(", p=").append(p);
-        sb.append(", PAGE_NAME='").append(PAGE_NAME).append('\'');
-        sb.append(", pcName='").append(pcName).append('\'');
-        sb.append(", squid=").append(squid);
-        sb.append(", squidLimited=").append(squidLimited);
-        sb.append(", SUDO_ECHO='").append(SUDO_ECHO).append('\'');
-        sb.append(", SUDO_GREP_V='").append(SUDO_GREP_V).append('\'');
-        sb.append(", tempFull=").append(tempFull);
-        sb.append(", vipNet=").append(vipNet);
-        sb.append('}');
-        return sb.toString();
+
+        @PostMapping("/deldomain")
+        public String delDomPOST(@ModelAttribute SshActs sshActs, Model model) {
+            this.sshActs = sshActs;
+            model.addAttribute(ConstantsFor.TITLE, sshActs.getAllowDomain());
+            model.addAttribute(AT_NAME_SSHACTS, sshActs);
+            model.addAttribute("ok", sshActs.toString() + "<p>" + sshActs.allowDomainDel());
+            model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext());
+            return "ok";
+        }
     }
 }
