@@ -26,7 +26,6 @@ import java.nio.file.AccessDeniedException;
 import java.time.LocalTime;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.regex.Pattern;
 
 /**
  SSH-actions class
@@ -35,27 +34,57 @@ import java.util.regex.Pattern;
 @Service("sshActs")
 public class SshActs {
 
+    /**
+     {@link AppComponents#getLogger()}
+     */
     private static final Logger LOGGER = AppComponents.getLogger();
 
+    /**
+     sshworks.html
+     */
     private static final String PAGE_NAME = "sshworks";
 
+    /**
+     * Имя аттрибута
+     */
     private static final String AT_NAME_SSHDETAIL = "sshdetail";
 
+    /**
+     * Имя аттрибута
+     */
     private static final String AT_NAME_SSHACTS = "sshActs";
 
+    /**
+     * SSH-command
+     */
     private static final String SUDO_ECHO = "sudo echo ";
 
+    /**
+     * SSH-command
+     */
+    private static final String SUDO_GREP_V = "sudo grep -v '";
+
+    /**
+     Имя ПК для разрешения
+     */
     private String pcName;
 
+    /**
+     * Уровень доступа к инету
+     */
     private String inet;
 
+    /**
+     * Разрешить адрес
+     */
     private String allowDomain;
-
-    private String comment;
 
     private String ipAddrOnly;
 
-    private String delDomain;
+    /**
+     Комментарий
+     */
+    private String comment;
 
     public String getDelDomain() {
         return delDomain;
@@ -65,7 +94,10 @@ public class SshActs {
         this.delDomain = delDomain;
     }
 
-    private static final String SUDO_GREP_V = "sudo grep -v '";
+    /**
+     * Имя домена для удаления.
+     */
+    private String delDomain;
 
     public void setIpAddrOnly(String ipAddrOnly) {
         this.ipAddrOnly = ipAddrOnly;
@@ -139,11 +171,26 @@ public class SshActs {
         LOGGER.warn(msg);
     }
 
-    private void setAllFalse() {
-        this.squidLimited = false;
-        this.squid = false;
-        this.tempFull = false;
-        this.vipNet = false;
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("SshActs{");
+        sb.append("allowDomain='").append(allowDomain).append('\'');
+        sb.append(", AT_NAME_SSHACTS='").append(AT_NAME_SSHACTS).append('\'');
+        sb.append(", AT_NAME_SSHDETAIL='").append(AT_NAME_SSHDETAIL).append('\'');
+        sb.append(", comment='").append(comment).append('\'');
+        sb.append(", delDomain='").append(delDomain).append('\'');
+        sb.append(", inet='").append(inet).append('\'');
+        sb.append(", ipAddrOnly='").append(ipAddrOnly).append('\'');
+        sb.append(", PAGE_NAME='").append(PAGE_NAME).append('\'');
+        sb.append(", pcName='").append(pcName).append('\'');
+        sb.append(", squid=").append(squid);
+        sb.append(", squidLimited=").append(squidLimited);
+        sb.append(", SUDO_ECHO='").append(SUDO_ECHO).append('\'');
+        sb.append(", SUDO_GREP_V='").append(SUDO_GREP_V).append('\'');
+        sb.append(", tempFull=").append(tempFull);
+        sb.append(", vipNet=").append(vipNet);
+        sb.append('}');
+        return sb.toString();
     }
 
     private void setSquid() {
@@ -210,10 +257,12 @@ public class SshActs {
         }
     }
 
-    private Pattern p = Pattern.compile("^http+[(s:)][\\w\\d(:/.)]+");
+    /**
+     Добавить домен в разрешенные
 
+     @return результат выполненния
+     */
     private String allowDomainAdd() {
-        String ipResolved;
         this.allowDomain = checkDName();
         Objects.requireNonNull(allowDomain, "allowdomain string is null");
         String commandSSH = new StringBuilder()
@@ -237,6 +286,23 @@ public class SshActs {
         return call;
     }
 
+    /**
+     * Установить все списки на <b>false</b>
+     */
+    private void setAllFalse() {
+        this.squidLimited = false;
+        this.squid = false;
+        this.tempFull = false;
+        this.vipNet = false;
+    }
+
+    /**
+     Резолвит ip-адрес
+     <p>
+
+     @param s домен для проверки
+     @return ip-адрес
+     */
     private String resolveIp(String s) {
         InetAddress inetAddress = null;
         try {
@@ -247,45 +313,11 @@ public class SshActs {
         return Objects.requireNonNull(inetAddress).getHostAddress();
     }
 
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("SshActs{");
-        sb.append("allowDomain='").append(allowDomain).append('\'');
-        sb.append(", AT_NAME_SSHACTS='").append(AT_NAME_SSHACTS).append('\'');
-        sb.append(", AT_NAME_SSHDETAIL='").append(AT_NAME_SSHDETAIL).append('\'');
-        sb.append(", comment='").append(comment).append('\'');
-        sb.append(", delDomain='").append(delDomain).append('\'');
-        sb.append(", inet='").append(inet).append('\'');
-        sb.append(", ipAddrOnly='").append(ipAddrOnly).append('\'');
-        sb.append(", p=").append(p);
-        sb.append(", PAGE_NAME='").append(PAGE_NAME).append('\'');
-        sb.append(", pcName='").append(pcName).append('\'');
-        sb.append(", squid=").append(squid);
-        sb.append(", squidLimited=").append(squidLimited);
-        sb.append(", SUDO_ECHO='").append(SUDO_ECHO).append('\'');
-        sb.append(", SUDO_GREP_V='").append(SUDO_GREP_V).append('\'');
-        sb.append(", tempFull=").append(tempFull);
-        sb.append(", vipNet=").append(vipNet);
-        sb.append('}');
-        return sb.toString();
-    }
+    /**
+     Удаление домена из разрешенных
 
-    private String checkDName() {
-        this.allowDomain = allowDomain.replace("http://", ".");
-        if (allowDomain.contains("https")) this.allowDomain = allowDomain.replace("https://", ".");
-        char[] chars = allowDomain.toCharArray();
-        try {
-            Character lastChar = chars[chars.length - 1];
-            if (lastChar.equals('/')) {
-                chars[chars.length - 1] = ' ';
-                this.allowDomain = new String(chars).trim();
-            } else this.allowDomain = new String(allowDomain.getBytes(), Charset.defaultCharset());
-            return allowDomain;
-        } catch (ArrayIndexOutOfBoundsException e) {
-            return e.getMessage();
-        }
-    }
-
+     @return результат выполнения
+     */
     private String allowDomainDel() {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder
@@ -312,27 +344,40 @@ public class SshActs {
         return stringBuilder.toString();
     }
 
+    /**
+     Приведение имени домена в нужный формат
+     <p>
+
+     @return имя домена для применения в /etc/pf/allowdomain
+     */
+    private String checkDName() {
+        this.allowDomain = allowDomain.replace("http://", ".");
+        if (allowDomain.contains("https")) this.allowDomain = allowDomain.replace("https://", ".");
+        char[] chars = allowDomain.toCharArray();
+        try {
+            Character lastChar = chars[chars.length - 1];
+            if (lastChar.equals('/')) {
+                chars[chars.length - 1] = ' ';
+                this.allowDomain = new String(chars).trim();
+            } else this.allowDomain = new String(allowDomain.getBytes(), Charset.defaultCharset());
+            return allowDomain;
+        } catch (ArrayIndexOutOfBoundsException e) {
+            return e.getMessage();
+        }
+    }
+
+    /**
+     Запись результата в лог
+     <p>
+     {@code this.getClass().getSimpleName() + ".log"}
+
+     @param s лог, для записи
+     */
     private void writeToLog(String s) {
         try (OutputStream outputStream = new FileOutputStream(this.getClass().getSimpleName() + ".log")) {
             outputStream.write(s.getBytes());
         } catch (IOException e) {
             LOGGER.warn(e.getMessage(), e);
-        }
-    }
-
-    private String checkDNameDel() {
-        this.delDomain = delDomain.replace("http://", ".");
-        if (delDomain.contains("https")) this.delDomain = delDomain.replace("https://", ".");
-        char[] chars = delDomain.toCharArray();
-        try {
-            Character lastChar = chars[chars.length - 1];
-            if (lastChar.equals('/')) {
-                chars[chars.length - 1] = ' ';
-                this.delDomain = new String(chars).trim();
-            } else this.delDomain = new String(delDomain.getBytes(), Charset.defaultCharset());
-            return delDomain;
-        } catch (ArrayIndexOutOfBoundsException e) {
-            return e.getMessage();
         }
     }
 
@@ -425,6 +470,25 @@ public class SshActs {
             model.addAttribute("ok", sshActs.toString() + "<p>" + sshActs.allowDomainDel());
             model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext());
             return "ok";
+        }
+    }
+
+    /**
+     @return имя домена, для удаления.
+     */
+    private String checkDNameDel() {
+        this.delDomain = delDomain.replace("http://", ".");
+        if (delDomain.contains("https")) this.delDomain = delDomain.replace("https://", ".");
+        char[] chars = delDomain.toCharArray();
+        try {
+            Character lastChar = chars[chars.length - 1];
+            if (lastChar.equals('/')) {
+                chars[chars.length - 1] = ' ';
+                this.delDomain = new String(chars).trim();
+            } else this.delDomain = new String(delDomain.getBytes(), Charset.defaultCharset());
+            return delDomain;
+        } catch (ArrayIndexOutOfBoundsException e) {
+            return e.getMessage();
         }
     }
 }
