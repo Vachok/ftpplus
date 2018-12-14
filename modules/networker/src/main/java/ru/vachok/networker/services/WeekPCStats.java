@@ -175,7 +175,7 @@ public class WeekPCStats implements Runnable {
         Collections.sort(obList);
         ConcurrentMap<String, Integer> integerStringConcurrentMap = new ConcurrentHashMap<>();
         PC_NAMES_IN_TABLE.parallelStream().forEach(x -> {
-            Integer integer = 0;
+            int integer = 0;
             for(String o : obList){
                 boolean contains = PC_NAMES_IN_TABLE.contains(o);
                 if(contains){
