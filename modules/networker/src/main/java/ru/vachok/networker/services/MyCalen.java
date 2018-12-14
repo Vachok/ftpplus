@@ -39,22 +39,22 @@ public abstract class MyCalen {
     /**
      Дата запуска common scanner
      <p>
-     Usage: {@link IntoApplication#runCommonScan()} <br>
-     Uses: -
+     Usage: {@link IntoApplication#runCommonScan()} <br> Uses: -
      <p>
-     @return new {@link Date} следующая суббота 0:01
+
      @param hourNeed час
-     @param minNeed минута
+     @param minNeed  минута
+     @return new {@link Date} следующая суббота 0:01
      */
     public static Date getNextSat(int hourNeed, int minNeed) {
         final long stArt = System.currentTimeMillis();
         Calendar.Builder builder = new Calendar.Builder();
         LocalDate localDate = LocalDate.now();
         DayOfWeek satDay = DayOfWeek.SATURDAY;
-        if(localDate.getDayOfWeek().toString().equalsIgnoreCase(satDay.toString())){
-            return new Date();
-        }
-        else{
+        if (localDate.getDayOfWeek().toString().equalsIgnoreCase(satDay.toString())) {
+            timeInfo.computeDetails();
+            return new Date(timeInfo.getReturnTime() + TimeUnit.MINUTES.toMillis(14));
+        } else {
             int toSat = satDay.getValue() - localDate.getDayOfWeek().getValue();
             Date retDate = builder
                 .setDate(
@@ -71,7 +71,7 @@ public abstract class MyCalen {
                 .append("\nTimeChecker information: ")
                 .append(timeInfo.getMessage())
                 .append("\nMyCalen.getNextSat method. ")
-                .append(( float ) (System.currentTimeMillis() - stArt) / 1000)
+                .append((float) (System.currentTimeMillis() - stArt) / 1000)
                 .append(" sec spend\n")
                 .append(retDate.toString())
                 .append(" date returned").toString();
@@ -107,7 +107,7 @@ public abstract class MyCalen {
             Date retDate = cBuilder.build().getTime();
             String msgTimeSp = new StringBuilder()
                 .append("MyCalen.getNextDayofWeek method. ")
-                .append(( float ) (System.currentTimeMillis() - stArt) / 1000)
+                .append((float) (System.currentTimeMillis() - stArt) / 1000)
                 .append(" sec spend\n")
                 .append(rDiff)
                 .append(" System.currentTimeMillis()-timeInfo.getReturnTime()\n")

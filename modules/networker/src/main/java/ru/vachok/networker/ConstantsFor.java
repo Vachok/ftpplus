@@ -275,8 +275,9 @@ public enum ConstantsFor {
     }
 
     private static Properties takePr() {
-        InitProperties initProperties = new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
+        InitProperties initProperties;
         try {
+            initProperties = new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
             AppComponents.getLogger().info("ConstantsFor.takePr");
             return initProperties.getProps();
         } catch (Exception e) {

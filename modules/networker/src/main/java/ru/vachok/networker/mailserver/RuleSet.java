@@ -41,7 +41,7 @@ public class RuleSet {
 
      @return Set-TransportRule -Identity "{@link #identity}" -FromAddressMatchesPattern {@link #fromAddressMatchesPatterns} -ExceptIfHasClassification "Default\ExCompanyConfidential"
      */
-    public String getCopyToRuleSetter() {
+    String getCopyToRuleSetter() {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder
             .append("Set-TransportRule -Identity \"")
