@@ -7,6 +7,7 @@ import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.componentsrepo.AppComponents;
 
 import java.time.DayOfWeek;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Calendar;
 import java.util.Date;
@@ -118,10 +119,21 @@ public abstract class MyCalen {
         }
     }
 
+    /**
+     // TODO: 19.12.2018 проверить метод!
+
+     @return дата через месяц.
+     */
     public static Date getNextMonth() {
         LocalDate localDate = LocalDate.now();
         Calendar.Builder builder = new Calendar.Builder();
         builder.setDate(localDate.getYear(), localDate.getMonthValue(), localDate.getDayOfMonth());
-        return builder.build().getTime();
+        Calendar build = builder.build();
+        build.setWeekDate(localDate.getYear(), build.getWeeksInWeekYear(), Calendar.SATURDAY);
+        Instant instant = build.toInstant();
+        Date date = new Date(instant.toEpochMilli());
+        String msg = instant.toString() + " and ret date is: " + date.toString();
+        LOGGER.warn(msg);
+        return date;
     }
 }

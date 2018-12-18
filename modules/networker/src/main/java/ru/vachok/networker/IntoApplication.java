@@ -120,7 +120,8 @@ public class IntoApplication {
             new Thread(IntoApplication::new).start();
             Thread.currentThread().interrupt();
         }
-        String msgTimeSp = "IntoApplication.infoForU method. " + (float) (System.currentTimeMillis() - stArt) / 1000 + STR_SEC_SPEND;
+        String msgTimeSp = "IntoApplication.infoForU method. " + ( float ) (System.currentTimeMillis() - stArt) / 1000 +
+            STR_SEC_SPEND + "\n" + MyCalen.getNextMonth();
         LOGGER.info(msgTimeSp);
     }
 
