@@ -20,7 +20,7 @@ import ru.vachok.networker.net.SwitchesAvailability;
 import ru.vachok.networker.services.MyCalen;
 import ru.vachok.networker.services.WeekPCStats;
 
-import java.io.IOException;
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -121,7 +121,7 @@ public class IntoApplication {
             Thread.currentThread().interrupt();
         }
         String msgTimeSp = "IntoApplication.infoForU method. " + ( float ) (System.currentTimeMillis() - stArt) / 1000 +
-            STR_SEC_SPEND + "\n" + MyCalen.getNextMonth();
+            STR_SEC_SPEND;
         LOGGER.info(msgTimeSp);
     }
 
@@ -153,6 +153,15 @@ public class IntoApplication {
         if (ConstantsFor.thisPC().toLowerCase().contains("no0027") ||
             ConstantsFor.thisPC().toLowerCase().contains("rups")) {
             runCommonScan();
+        }
+        else{
+            try(OutputStream outputStream = new FileOutputStream("const.txt");
+                PrintWriter printWriter = new PrintWriter(outputStream, true)){
+                printWriter.println(ConstantsFor.toStringS() + "\n\n" + MyCalen.toStringS());
+            }
+            catch(IOException e){
+                LOGGER.warn(e.getMessage());
+            }
         }
     }
 

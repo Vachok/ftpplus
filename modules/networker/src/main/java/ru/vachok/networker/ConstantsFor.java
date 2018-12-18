@@ -286,4 +286,51 @@ public enum ConstantsFor {
             return initProperties.getProps();
         }
     }
-}
+
+    public static String toStringS() {
+        final StringBuilder sb = new StringBuilder("ConstantsFor{");
+        sb.append("ALERT_AD_FOTO='").append(ALERT_AD_FOTO).append('\n');
+        sb.append(", APC=").append(APC);
+        sb.append(", APP_NAME='").append(APP_NAME).append('\n');
+        sb.append(", atomicTime=").append(atomicTime);
+        sb.append(", CACHE_TIME_MS=").append(CACHE_TIME_MS);
+        sb.append(", COMPNAME_USERS_MAP=").append(COMPNAME_USERS_MAP);
+        sb.append(", DB_PREFIX='").append(DB_PREFIX).append('\n');
+        sb.append(", DELAY=").append(DELAY);
+        sb.append(", DOPC=").append(DOPC);
+        sb.append(", FOOTER='").append(FOOTER).append('\n');
+        sb.append(", GBYTE=").append(GBYTE);
+        sb.append(", INIT_DELAY=").append(INIT_DELAY);
+        sb.append(", IT_FOLDER='").append(IT_FOLDER).append('\n');
+        sb.append(", KBYTE=").append(KBYTE);
+        sb.append(", LISTEN_PORT=").append(LISTEN_PORT);
+        sb.append(", MAIL_RULES=").append(MAIL_RULES);
+        sb.append(", MBYTE=").append(MBYTE);
+        sb.append(", MY_AGE=").append(MY_AGE);
+        sb.append(", NETSCAN_DELAY=").append(NETSCAN_DELAY);
+        sb.append(", NO0027='").append(NO0027).append('\n');
+        sb.append(", NOPC=").append(NOPC);
+        sb.append(", ONE_DAY_HOURS=").append(ONE_DAY_HOURS);
+        sb.append(", ONE_HOUR_IN_MIN=").append(ONE_HOUR_IN_MIN);
+        sb.append(", ONE_MONTH_DAYS=").append(ONE_MONTH_DAYS);
+        sb.append(", ONE_WEEK_MILLIS=").append(ONE_WEEK_MILLIS);
+        sb.append(", ONE_YEAR=").append(ONE_YEAR);
+        sb.append(", passGenerator=").append(passGenerator);
+        sb.append(", PC_U_MAP=").append(PC_U_MAP);
+        sb.append(", PPPC=").append(PPPC);
+        sb.append(", PROPS=").append(PROPS);
+        sb.append(", SRV_GIT='").append(SRV_GIT).append('\n');
+        sb.append(", SRV_NAT='").append(SRV_NAT).append('\n');
+        sb.append(", SSH_ERR=").append(SSH_ERR);
+        sb.append(", START_STAMP=").append(START_STAMP);
+        sb.append(", TDPC=").append(TDPC);
+        sb.append(", TIMEOUT_5=").append(TIMEOUT_5);
+        sb.append(", TIMEOUT_650=").append(TIMEOUT_650);
+        sb.append(", TITLE='").append(TITLE).append('\n');
+        sb.append(", TOTAL_PC=").append(TOTAL_PC);
+        sb.append(", USER_EXIT=").append(USER_EXIT);
+        sb.append(", USERS='").append(USERS).append('\n');
+        sb.append(", VISITS_MAP=").append(VISITS_MAP);
+        sb.append('}');
+        return sb.toString();
+    }}

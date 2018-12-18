@@ -136,4 +136,13 @@ public abstract class MyCalen {
         LOGGER.warn(msg);
         return date;
     }
+
+    public static String toStringS() {
+        final StringBuilder sb = new StringBuilder("MyCalen{");
+        sb.append(" getNextDayofWeek (friday i'm in love!)=").append(getNextDayofWeek(0, 0, DayOfWeek.FRIDAY)).append("\n");
+        sb.append(", getNextMonth=").append(getNextMonth()).append("\n");
+        sb.append(", getNextSat=").append(getNextSat(0, 1)).append("\n");
+        sb.append('}');
+        return sb.toString();
+    }
 }
