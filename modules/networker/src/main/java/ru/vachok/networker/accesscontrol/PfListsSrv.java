@@ -25,6 +25,16 @@ public class PfListsSrv {
      */
     private PfLists pfLists;
 
+    private String commandForNat;
+
+    public String getCommandForNat() {
+        return commandForNat;
+    }
+
+    public void setCommandForNat(String commandForNat) {
+        this.commandForNat = commandForNat;
+    }
+
     /**
      {@link SSHFactory.Builder}
      */
@@ -41,6 +51,11 @@ public class PfListsSrv {
         this.pfLists = pfLists;
         makeListRunner();
 
+    }
+
+    String runCom() {
+        SSHFactory.Builder builder = new SSHFactory.Builder(ConstantsFor.SRV_NAT, commandForNat);
+        return builder.build().call();
     }
 
     ThreadPoolTaskExecutor getExecutor() {

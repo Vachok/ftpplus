@@ -138,7 +138,7 @@ public class SSHFactory implements Callable<String> {
                 int r = connect.read(bytes);
                 messageToUser.infoNoTitles("connect read bytes = " + r);
             }
-            retString = retString + " " + new String(bytes, StandardCharsets.UTF_8);
+            retString = retString + " <br>\n" + new String(bytes, StandardCharsets.UTF_8);
             return retString;
         } catch (IOException | JSchException e) {
             messageToUser.errorAlert(SOURCE_CLASS, " Exception id 123", e.getMessage() + "\n" + Arrays.toString(e.getStackTrace()));
@@ -158,9 +158,6 @@ public class SSHFactory implements Callable<String> {
         File pemFile = new File("a161.pem");
         return pemFile.getAbsolutePath();
     }
-
-    /*END FOR CLASS*/
-
 
     /**
      * Builder.
