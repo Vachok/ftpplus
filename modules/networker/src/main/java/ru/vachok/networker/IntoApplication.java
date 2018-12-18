@@ -1,6 +1,7 @@
 package ru.vachok.networker;
 
 
+import org.apache.commons.net.ntp.TimeInfo;
 import org.slf4j.Logger;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -157,6 +158,9 @@ public class IntoApplication {
         else{
             try(OutputStream outputStream = new FileOutputStream("const.txt");
                 PrintWriter printWriter = new PrintWriter(outputStream, true)){
+                TimeInfo timeInfo = MyCalen.getTimeInfo();
+                timeInfo.computeDetails();
+                printWriter.println(new Date(timeInfo.getReturnTime()));
                 printWriter.println(ConstantsFor.toStringS() + "\n\n" + MyCalen.toStringS());
             }
             catch(IOException e){

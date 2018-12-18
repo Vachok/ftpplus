@@ -32,6 +32,10 @@ public abstract class MyCalen {
      */
     private static final TimeChecker TIME_CHECKER = new TimeChecker();
 
+    public static TimeInfo getTimeInfo() {
+        return timeInfo;
+    }
+
     /**
      {@link TimeChecker#call()}
      */
