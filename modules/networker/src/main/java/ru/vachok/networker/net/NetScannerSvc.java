@@ -82,7 +82,7 @@ public class NetScannerSvc {
     /**
      new {@link NetScannerSvc}
      */
-    private static NetScannerSvc netScannerSvc = new NetScannerSvc();
+    private static volatile NetScannerSvc netScannerSvc;
 
     private int onLinePCs = 0;
 
@@ -111,12 +111,7 @@ public class NetScannerSvc {
 
     private ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadConfig().threadPoolTaskExecutor();
 
-    /**
-     @return {@link #netScannerSvc}
-     */
-    public static NetScannerSvc getI() {
-        return netScannerSvc;
-    }
+    /*Get&Set*/
 
     /**
      @return {@link #qer}
@@ -125,7 +120,19 @@ public class NetScannerSvc {
         return qer;
     }
 
-/*Get&Set*/
+    /**
+     @return {@link #netScannerSvc}
+     */
+    public static NetScannerSvc getI() {
+        if(netScannerSvc==null){
+            synchronized(NetScannerSvc.class) {
+                if(netScannerSvc==null){
+                    netScannerSvc = new NetScannerSvc();
+                }
+            }
+        }
+        return netScannerSvc;
+    }
 
     /**
      {@link #qer} Usage: {@link NetScanCtr#scanIt(HttpServletRequest, Model)} <br> Uses: - <br>
@@ -260,7 +267,6 @@ public class NetScannerSvc {
         final long stArt = System.currentTimeMillis();
         AtomicReference<String> msg = new AtomicReference<>("");
         new Thread(() -> {
-            lock.lock();
             msg.set(new StringBuilder()
                 .append("Thread ")
                 .append(Thread.currentThread().getId())
@@ -277,7 +283,6 @@ public class NetScannerSvc {
             }
             String elapsedTime = "Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethod) + " sec.";
             pcNames.add(elapsedTime);
-            lock.unlock();
             LOGGER.warn(msg.get());
             new Thread(() -> {
                 Thread.currentThread().setName(lock.isLocked() + " lock*SMTP");

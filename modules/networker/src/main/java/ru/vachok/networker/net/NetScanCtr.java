@@ -185,6 +185,9 @@ public class NetScanCtr {
         }
     }
 
+    /**
+     @param netWork {@link #lastScan}
+     */
     private void writeToFile(Map<String, Boolean> netWork) {
         try(OutputStream outputStream = new FileOutputStream("newpc.txt");
             PrintWriter printWriter = new PrintWriter(outputStream, true)){
