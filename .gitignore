@@ -730,3 +730,8 @@ do0109.eatmeat.ru
 newpc.txt
 modules/networker/src/main/resources/static/flightrec/flight_recording_1002GMyProjFtpClientPlusmodulesnetworkerbuildlibsnetworker0267jar1944.jfr
 !/modules/networker/src/main/resources/
+resources/
+!/modules/networker/src/main/resources/static/texts/lastscannet.txt
+!/modules/networker/src/main/resources/static/texts/const.txt
+const.txt
+lastscannet.txt
