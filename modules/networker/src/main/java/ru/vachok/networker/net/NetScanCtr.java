@@ -1,6 +1,7 @@
 package ru.vachok.networker.net;
 
 
+import org.apache.commons.net.ntp.TimeInfo;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -13,6 +14,7 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.PageFooter;
+import ru.vachok.networker.services.MyCalen;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -130,6 +132,7 @@ public class NetScanCtr {
             .addAttribute("pc", new TForms().fromArray(netWork, true))
             .addAttribute("title", i + "/" + ConstantsFor.TOTAL_PC + " PCs (" + netScannerSvc.getOnLinePCs() + ")");
         if(0 > i){
+            writeToFile(netWork);
             model.addAttribute("newpc", "Добавлены компы! " + Math.abs(i) + " шт.");
             properties.setProperty("totpc", netWork.size() + "");
         }
@@ -144,6 +147,7 @@ public class NetScanCtr {
                 }
             }
         }
+        writeToFile(netWork);
     }
 
     /**
@@ -189,10 +193,12 @@ public class NetScanCtr {
      @param netWork {@link #lastScan}
      */
     private void writeToFile(Map<String, Boolean> netWork) {
-        try(OutputStream outputStream = new FileOutputStream("newpc.txt");
+        try(OutputStream outputStream = new FileOutputStream("lastscannet.txt");
             PrintWriter printWriter = new PrintWriter(outputStream, true)){
             printWriter.println("3 > Network Size!");
-            printWriter.println(new Date(System.currentTimeMillis()));
+            TimeInfo timeInfo = MyCalen.getTimeInfo();
+            timeInfo.computeDetails();
+            printWriter.println(new Date(timeInfo.getReturnTime()));
             netWork.forEach((x, y) -> {
                 printWriter.println(x + " " + y);
             });

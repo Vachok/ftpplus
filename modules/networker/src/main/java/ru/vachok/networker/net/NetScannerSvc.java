@@ -284,6 +284,7 @@ public class NetScannerSvc {
             String elapsedTime = "Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethod) + " sec.";
             pcNames.add(elapsedTime);
             LOGGER.warn(msg.get());
+
             new Thread(() -> {
                 Thread.currentThread().setName(lock.isLocked() + " lock*SMTP");
                 MessageToUser mailMSG = new ESender("143500@gmail.com");
