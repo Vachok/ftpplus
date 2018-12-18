@@ -69,8 +69,7 @@ public class PfListsSrv {
         executor.execute(() -> {
             try {
                 buildFactory();
-            }
-            catch(UnexpectedException e){
+            } catch (UnexpectedException | NullPointerException e) {
                 AppComponents.getLogger().error(e.getMessage(), e);
             }
         });
@@ -95,7 +94,7 @@ public class PfListsSrv {
      @see SSHFactory
      @throws UnexpectedException если нет связи с srv-git. Проверка сети. <i>e: No ping</i>
      */
-    private void buildFactory() throws UnexpectedException {
+    private void buildFactory() throws UnexpectedException, NullPointerException {
         if (!ConstantsFor.isPingOK()) {
             throw new UnexpectedException("No ping");
         }
