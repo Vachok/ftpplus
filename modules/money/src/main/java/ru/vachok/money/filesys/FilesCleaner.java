@@ -9,8 +9,9 @@ import ru.vachok.money.services.TForms;
 import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.Objects;
-import java.util.Stack;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
@@ -28,9 +29,9 @@ public class FilesCleaner extends SimpleFileVisitor<Path> implements Callable<St
 
     private PrintWriter printWriter;
 
-    private boolean delFiles;
-
     private long bytesCount = 0;
+
+    private int filesCount = 0;
 
     private File fileR = new File("111.1.del");
 
@@ -38,24 +39,14 @@ public class FilesCleaner extends SimpleFileVisitor<Path> implements Callable<St
         return startDir;
     }
 
-
     /*Instances*/
-    public FilesCleaner(String startDir, boolean delFiles) {
+    public FilesCleaner(String startDir) {
         this.startDir = startDir;
-        this.delFiles = delFiles;
     }
 
     public FilesCleaner() {
-        this.delFiles = false;
     }
 
-    /*Itinial Block*/
-    /*Itinial Block*/
-    /*Itinial Block*/
-    /*Itinial Block*/
-    /*Itinial Block*/
-    /*Itinial Block*/
-    /*Itinial Block*/
     /*Itinial Block*/ {
         try{
             OutputStream outputStream = new FileOutputStream(fileR);
@@ -77,32 +68,6 @@ public class FilesCleaner extends SimpleFileVisitor<Path> implements Callable<St
         return readFile();
     }
 
-    private String readFile() {
-        Stack<String> stringStack = new Stack<>();
-        try(InputStream inputStream = new FileInputStream(fileR);
-            InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-            BufferedReader bufferedReader = new BufferedReader(inputStreamReader)){
-            while(bufferedReader.ready()){
-                stringStack.add(bufferedReader.readLine());
-            }
-            String retStr = "<a href=\"/cleandir\">" + startDir + "</a><br>" + new TForms().stackToString(stringStack, true);
-            LOGGER.info(retStr);
-            return retStr;
-        }
-        catch(IOException e){
-            return new TForms().toStringFromArray(e, true);
-        }
-    }
-
-    @Override
-    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-        int filesInDir = dir.toFile().listFiles().length;
-        String logMsg = "Scanning dir - " + dir.toAbsolutePath().toString() + ". Files: " + filesInDir +
-            "\nmodified at " + attrs.lastModifiedTime();
-        LOGGER.info(logMsg);
-        return FileVisitResult.CONTINUE;
-    }
-
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
         boolean oldFilesToFile = attrs.lastAccessTime().toMillis() < (System.currentTimeMillis() - TimeUnit
@@ -113,7 +78,9 @@ public class FilesCleaner extends SimpleFileVisitor<Path> implements Callable<St
         long length = file.toFile().length();
         bytesCount = bytesCount + length;
         String toString = new StringBuilder()
-            .append("File: ")
+            .append("File (")
+            .append(filesCount)
+            .append(") ")
             .append(semiCol)
             .append(file.toAbsolutePath())
             .append(semiCol)
@@ -136,10 +103,12 @@ public class FilesCleaner extends SimpleFileVisitor<Path> implements Callable<St
             this.bytesCount = bytesCount + length;
             try{
                 Files.deleteIfExists(file.toAbsolutePath());
+                this.filesCount = this.filesCount + 1;
             }
             catch(AccessDeniedException e){
-                boolean delete = file.toFile().delete();
-                if(!delete){
+                file.toFile().deleteOnExit();
+                this.filesCount = this.filesCount + 1;
+                if(file.toFile().exists()){
                     file.toFile().deleteOnExit();
                 }
             }
@@ -148,12 +117,38 @@ public class FilesCleaner extends SimpleFileVisitor<Path> implements Callable<St
             if(oldFilesToFile){
                 String msg = true + " oldFilesToFile\n" + file.toString();
                 LOGGER.info(msg);
-                printWriter.println(file.toAbsolutePath().toString() + semiCol + attrs.size() / ConstantsFor.MEGABYTE + semiCol +
+                printWriter.println(filesCount + ") " + file.toAbsolutePath().toString() + semiCol + attrs.size() / ConstantsFor.MEGABYTE + semiCol +
                     attrs.lastAccessTime());
             }
         }
         printWriter.println(toString);
         return FileVisitResult.CONTINUE;
+    }
+
+    @Override
+    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+        int filesInDir = dir.toFile().listFiles().length;
+        String logMsg = "Scanning dir - " + dir.toAbsolutePath().toString() + ". Files: " + filesInDir +
+            "\nmodified at " + attrs.lastModifiedTime();
+        LOGGER.info(logMsg);
+        return FileVisitResult.CONTINUE;
+    }
+
+    private String readFile() {
+        Deque<String> stringArrayDeque = new ArrayDeque<>();
+        try(InputStream inputStream = new FileInputStream(fileR);
+            InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+            BufferedReader bufferedReader = new BufferedReader(inputStreamReader)){
+            while(bufferedReader.ready()){
+                stringArrayDeque.add(bufferedReader.readLine());
+            }
+            String retStr = "<a href=\"/cleandir\">" + startDir + "</a><br>" + new TForms().toStringFromArray(stringArrayDeque, true);
+            LOGGER.info(retStr);
+            return retStr;
+        }
+        catch(IOException e){
+            return new TForms().toStringFromArray(e, true);
+        }
     }
 
     @Override

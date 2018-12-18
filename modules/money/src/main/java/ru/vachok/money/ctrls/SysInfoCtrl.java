@@ -100,7 +100,7 @@ public class SysInfoCtrl {
     @GetMapping ("/cleandir")
     public String cleanDirectory(Model model) {
         final long stArt = System.currentTimeMillis();
-        FilesCleaner filesCleanerHome = new FilesCleaner("\\\\10.10.111.1\\Torrents-FTP\\home\\", true);
+        FilesCleaner filesCleanerHome = new FilesCleaner("\\\\10.10.111.1\\Torrents-FTP\\home\\");
         String toClean = getFilesToClean(filesCleanerHome);
 
         model.addAttribute("title", "Cleaning: " + filesCleanerHome.getStartDir());

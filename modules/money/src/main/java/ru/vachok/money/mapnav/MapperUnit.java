@@ -27,9 +27,15 @@ public class MapperUnit {
         this.resultTitle = resultTitle;
     }
 
+    /*Instances*/
     public MapperUnit() {
-        InitProperties initProperties = new DBRegProperties(ConstantsFor.APP_NAME + "Nav");
-        mapApiKey = initProperties.getProps().getProperty("mapapikey");
+        try{
+            InitProperties initProperties = new DBRegProperties(ConstantsFor.APP_NAME + "Nav");
+            mapApiKey = initProperties.getProps().getProperty("mapapikey");
+        }
+        catch(NullPointerException e){
+            mapApiKey = "";
+        }
     }
 
     public String getMapApiKey() {

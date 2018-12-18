@@ -266,7 +266,9 @@ public class MyOpel {
             String msg = e.getSQLState() + " SQL state " + e.getErrorCode() + " err code " + e.getNextException() + " next e.";
             LOGGER.warn(msg);
             LOGGER.error(e.getMessage(), e);
-
+            for(int i = 0; i < 1; i++){
+                return new MyOpel().avgInfo(i);
+            }
         }
         if(road==0){
             setCountA107(speedsDoubles.size());

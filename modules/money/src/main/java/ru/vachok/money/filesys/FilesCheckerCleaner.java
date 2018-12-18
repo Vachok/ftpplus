@@ -42,12 +42,13 @@ public class FilesCheckerCleaner extends SimpleFileVisitor<Path> {
         this.path = path;
     }
 
-    public ConcurrentMap<String, String> getResMap() {
+    ConcurrentMap<String, String> getResMap() {
         LOGGER.info("FilesCheckerCleaner.getResMap");
         return resMap;
     }
 
-    public FilesCheckerCleaner(boolean isSearch, String inpUser) {
+    /*Instances*/
+    FilesCheckerCleaner(boolean isSearch, String inpUser) {
         this.isSearch = isSearch;
         this.inpUser = inpUser;
     }

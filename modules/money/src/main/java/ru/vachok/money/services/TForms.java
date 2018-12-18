@@ -223,6 +223,24 @@ public class TForms {
         }
     }
 
+    public String toStringFromArray(Deque<?> arrayDeque, boolean b) {
+        brStrBuilder.append(BR_S);
+        arrayDeque.forEach(x -> {
+            brStrBuilder
+                .append(x)
+                .append(BR_S);
+            nStringBuilder
+                .append(x)
+                .append(N_S);
+        });
+        if(b){
+            return brStrBuilder.toString();
+        }
+        else{
+            return nStringBuilder.toString();
+        }
+    }
+
     String enumToString(Enumeration<String> yourEnum, boolean br) {
         brStrBuilder.append("<p>");
         nStringBuilder.append("<p>");
