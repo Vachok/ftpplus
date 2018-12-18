@@ -36,10 +36,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.Year;
 import java.time.format.TextStyle;
-import java.util.Date;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
@@ -155,6 +152,8 @@ public enum ConstantsFor {
     public static final long GBYTE = 1073741824;
 
     private static final Properties PROPS = takePr();
+
+    public static final int ONE_MONTH_DAYS = 30;
 
     public static Properties getPROPS() {
         return PROPS;

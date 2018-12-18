@@ -117,4 +117,11 @@ public abstract class MyCalen {
             return retDate;
         }
     }
+
+    public static Date getNextMonth() {
+        LocalDate localDate = LocalDate.now();
+        Calendar.Builder builder = new Calendar.Builder();
+        builder.setDate(localDate.getYear(), localDate.getMonthValue(), localDate.getDayOfMonth());
+        return builder.build().getTime();
+    }
 }

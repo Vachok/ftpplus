@@ -29,6 +29,7 @@ import java.time.LocalDate;
 import java.time.format.TextStyle;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.concurrent.*;
 
 
@@ -133,11 +134,17 @@ public class IntoApplication {
      @throws InvocationTargetException иногда возникает. Причину не отловил
      */
     private static void schedStarter() throws InvocationTargetException {
-        Runnable speedRun = new SpeedRunActualize();
+        Runnable speedRun = null;
+        try{
+            speedRun = new SpeedRunActualize();
+        }
+        catch(ExceptionInInitializerError e){
+            LOGGER.warn(e.getMessage(), e);
+        }
         Runnable swAval = new SwitchesAvailability();
         ScheduledExecutorService executorService = Executors.unconfigurableScheduledExecutorService(Executors.newScheduledThreadPool(2));
 
-        executorService.scheduleWithFixedDelay(speedRun, ConstantsFor.INIT_DELAY, TimeUnit.MINUTES.toSeconds(ConstantsFor.DELAY), TimeUnit.SECONDS);
+        executorService.scheduleWithFixedDelay(Objects.requireNonNull(speedRun), ConstantsFor.INIT_DELAY, TimeUnit.MINUTES.toSeconds(ConstantsFor.DELAY), TimeUnit.SECONDS);
         executorService.scheduleWithFixedDelay(swAval, 1, ConstantsFor.DELAY, TimeUnit.SECONDS);
 
         weekStat();
@@ -177,12 +184,12 @@ public class IntoApplication {
                 LOGGER.warn(e.getMessage(), e);
             }
         };
-        Date startTime = MyCalen.getNextSat(0, 1);
-        long delay = TimeUnit.DAYS.toMillis(7);
+        Date startTime = MyCalen.getNextMonth();
+        long delay = TimeUnit.DAYS.toMillis(ConstantsFor.ONE_MONTH_DAYS);
         ScheduledFuture<?> scheduleWithFixedDelay = new ThreadConfig().threadPoolTaskScheduler().scheduleWithFixedDelay(
             r, startTime, delay);
         try {
-            String msg = "Common scanner : " + startTime.toString();
+            String msg = "Common scanner : " + startTime.toString() + "  ||  " + delay + " TimeUnit.DAYS.toMillis(ConstantsFor.ONE_MONTH_DAYS)";
             LOGGER.warn(msg);
             scheduleWithFixedDelay.get();
         } catch (InterruptedException | ExecutionException e) {
