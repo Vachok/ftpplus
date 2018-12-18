@@ -11,7 +11,10 @@ import ru.vachok.networker.componentsrepo.AppComponents;
 
 import java.io.*;
 import java.nio.file.Files;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -34,13 +37,16 @@ public class WeekPCStats implements Runnable {
      */
     private static final List<String> PC_NAMES_IN_TABLE = new ArrayList<>();
 
+    /**
+     Более 3х совпадений в строках
+     */
+    private static final String STR_SEC_SPEND = " sec spend";
+
     @Override
     public void run() {
         final long stArt = System.currentTimeMillis();
-
         getFromDB();
-
-        String msgTimeSp = "WeekPCStats.run method. " + ( float ) (System.currentTimeMillis() - stArt) / 1000 + " sec spend";
+        String msgTimeSp = "WeekPCStats.run method. " + (float) (System.currentTimeMillis() - stArt) / 1000 + STR_SEC_SPEND;
         LOGGER.info(msgTimeSp);
     }
 
@@ -105,7 +111,7 @@ public class WeekPCStats implements Runnable {
                 Files.copy(file.toPath(), toCopyFile.toPath());
                 String msgTimeSp = "WeekPCStats.copyFile method. " +
                     ( float ) (System.currentTimeMillis() - stArt) / 1000 +
-                    " sec spend";
+                    STR_SEC_SPEND;
                 LOGGER.info(msgTimeSp);
             }
             catch(IOException e){
@@ -169,7 +175,7 @@ public class WeekPCStats implements Runnable {
         Collections.sort(obList);
         ConcurrentMap<String, Integer> integerStringConcurrentMap = new ConcurrentHashMap<>();
         PC_NAMES_IN_TABLE.parallelStream().forEach(x -> {
-            Integer integer = 0;
+            int integer = 0;
             for(String o : obList){
                 boolean contains = PC_NAMES_IN_TABLE.contains(o);
                 if(contains){
@@ -178,7 +184,7 @@ public class WeekPCStats implements Runnable {
                 integerStringConcurrentMap.put(o, integer);
             }
         });
-        String msgTimeSp = "WeekPCStats.getInfo method. " + ( float ) (System.currentTimeMillis() - stArt) / 1000 + " sec spend";
+        String msgTimeSp = "WeekPCStats.getInfo method. " + (float) (System.currentTimeMillis() - stArt) / 1000 + STR_SEC_SPEND;
         LOGGER.info(msgTimeSp);
         return new TForms().fromArray(integerStringConcurrentMap, false);
     }

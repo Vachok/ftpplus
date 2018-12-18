@@ -8,7 +8,6 @@ import ru.vachok.networker.componentsrepo.AppComponents;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
@@ -19,6 +18,10 @@ import java.util.concurrent.TimeUnit;
 
  @since 09.12.2018 (15:26) */
 public abstract class MyCalen {
+
+    private MyCalen() {
+
+    }
 
     /*Fields*/
     private static final Logger LOGGER = AppComponents.getLogger();
@@ -36,22 +39,22 @@ public abstract class MyCalen {
     /**
      Дата запуска common scanner
      <p>
-     Usage: {@link IntoApplication#runCommonScan()} <br>
-     Uses: -
+     Usage: {@link IntoApplication#runCommonScan()} <br> Uses: -
      <p>
-     @return new {@link Date} следующая суббота 0:01
+
      @param hourNeed час
-     @param minNeed минута
+     @param minNeed  минута
+     @return new {@link Date} следующая суббота 0:01
      */
     public static Date getNextSat(int hourNeed, int minNeed) {
         final long stArt = System.currentTimeMillis();
         Calendar.Builder builder = new Calendar.Builder();
         LocalDate localDate = LocalDate.now();
         DayOfWeek satDay = DayOfWeek.SATURDAY;
-        if(localDate.getDayOfWeek().toString().equalsIgnoreCase(satDay.toString())){
-            return new Date();
-        }
-        else{
+        if (localDate.getDayOfWeek().toString().equalsIgnoreCase(satDay.toString())) {
+            timeInfo.computeDetails();
+            return new Date(timeInfo.getReturnTime() + TimeUnit.MINUTES.toMillis(14));
+        } else {
             int toSat = satDay.getValue() - localDate.getDayOfWeek().getValue();
             Date retDate = builder
                 .setDate(
@@ -68,7 +71,7 @@ public abstract class MyCalen {
                 .append("\nTimeChecker information: ")
                 .append(timeInfo.getMessage())
                 .append("\nMyCalen.getNextSat method. ")
-                .append(( float ) (System.currentTimeMillis() - stArt) / 1000)
+                .append((float) (System.currentTimeMillis() - stArt) / 1000)
                 .append(" sec spend\n")
                 .append(retDate.toString())
                 .append(" date returned").toString();
@@ -77,25 +80,34 @@ public abstract class MyCalen {
         }
     }
 
+    /**
+     Создание {@link Date}
+     <p>
+     Usages: {@link IntoApplication#schedStarter()} <br> Uses: -
+
+     @param hourNeed  час
+     @param minNeed   минута
+     @param dayOfWeek день недели
+     @return нужный {@link Date}
+     */
     public static Date getNextDayofWeek(int hourNeed, int minNeed, DayOfWeek dayOfWeek) {
         final long stArt = System.currentTimeMillis();
         Calendar.Builder cBuilder = new Calendar.Builder();
-        LocalDateTime localDateTime = LocalDateTime.now();
-        if(localDateTime.getDayOfWeek().toString().equalsIgnoreCase(dayOfWeek.toString())){
-            return new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(7));
-        }
-        else{
-            int toDateDays = dayOfWeek.getValue() - localDateTime.getDayOfWeek().getValue();
+        LocalDate localDate = LocalDate.now();
+        if (localDate.getDayOfWeek().equals(dayOfWeek)) {
+            return new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(14));
+        } else {
+            int toDateDays = Math.abs(dayOfWeek.getValue() + 7 - localDate.getDayOfWeek().getValue());
             cBuilder
-                .setDate(localDateTime.getYear(),
-                    localDateTime.getMonthValue() - 1,
-                    localDateTime.getDayOfMonth() + toDateDays).setTimeOfDay(hourNeed, minNeed, 0);
+                .setDate(localDate.getYear(),
+                    localDate.getMonthValue() - 1,
+                    localDate.getDayOfMonth() + toDateDays).setTimeOfDay(hourNeed, minNeed, 0);
             timeInfo.computeDetails();
             long rDiff = System.currentTimeMillis() - timeInfo.getReturnTime();
             Date retDate = cBuilder.build().getTime();
             String msgTimeSp = new StringBuilder()
                 .append("MyCalen.getNextDayofWeek method. ")
-                .append(( float ) (System.currentTimeMillis() - stArt) / 1000)
+                .append((float) (System.currentTimeMillis() - stArt) / 1000)
                 .append(" sec spend\n")
                 .append(rDiff)
                 .append(" System.currentTimeMillis()-timeInfo.getReturnTime()\n")
@@ -104,5 +116,12 @@ public abstract class MyCalen {
             LOGGER.info(msgTimeSp);
             return retDate;
         }
+    }
+
+    public static Date getNextMonth() {
+        LocalDate localDate = LocalDate.now();
+        Calendar.Builder builder = new Calendar.Builder();
+        builder.setDate(localDate.getYear(), localDate.getMonthValue(), localDate.getDayOfMonth());
+        return builder.build().getTime();
     }
 }

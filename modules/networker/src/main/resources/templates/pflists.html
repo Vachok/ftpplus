@@ -7,6 +7,14 @@
 </head>
 <body>
 <h3><a href="/">Главная</a> | <a href="/pflists?renew">Обновление списков</a></h3>
+
+<form method="POST" th:action="@{/runcom}" th:object="${PfListsSrv}">
+    Выполнить комманду на srv-nat:
+    <input th:field="*{commandForNat}" type="text"/>
+    <br>
+    <input type="submit" value="SSH Command"/>
+    <br>
+</form>
 <p>
 <h4>Обычный доступ</h4>
 <textarea name="SQUID STANDARD: " rows="10" cols="10" th:text="${squid}"/><br>

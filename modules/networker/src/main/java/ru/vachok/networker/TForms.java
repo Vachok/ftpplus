@@ -18,7 +18,8 @@ import java.util.concurrent.ConcurrentMap;
 
 
 /**
- <h1>Помощник для {@link Arrays#toString(int[])}</h1>
+ Помощник для {@link Arrays#toString()}
+ <p>
  Делает похожие действия, но сразу так, как нужно для {@link ru.vachok.networker.IntoApplication}
 
  @since 06.09.2018 (9:33) */

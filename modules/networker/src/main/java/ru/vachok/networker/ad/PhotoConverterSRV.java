@@ -16,10 +16,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.List;
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -47,7 +44,17 @@ public class PhotoConverterSRV {
         }
     }
 
-    private Properties properties = initProperties.getProps();
+    private Properties properties = getProps();
+
+    private static Properties getProps() {
+        try{
+            return initProperties.getProps();
+        }
+        catch(Exception e){
+            PhotoConverterSRV.initProperties = new DBRegProperties(ConstantsFor.APP_NAME + PhotoConverterSRV.class.getSimpleName());
+            return initProperties.getProps();
+        }
+    }
 
     /**
      Путь до папки с фото.

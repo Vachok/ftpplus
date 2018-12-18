@@ -16,6 +16,7 @@ import ru.vachok.networker.componentsrepo.PageFooter;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.*;
 import java.sql.*;
 import java.util.Date;
 import java.util.*;
@@ -64,7 +65,7 @@ public class NetScanCtr {
     private static NetScannerSvc netScannerSvc = AppComponents.netScannerSvc();
 
     /**
-     * {@link AppComponents#lastNetScanMap()}
+     {@link AppComponents#lastNetScanMap()}
      */
     private static ConcurrentMap<String, Boolean> lastScan = AppComponents.lastNetScanMap();
 
@@ -84,16 +85,17 @@ public class NetScanCtr {
      @param model    {@link Model}
      @return {@link #AT_NAME_NETSCAN}.html
      */
-    @SuppressWarnings("WeakerAccess")
-    @GetMapping("/netscan")
+    @SuppressWarnings ("WeakerAccess")
+    @GetMapping ("/netscan")
     public String netScan(HttpServletRequest request, HttpServletResponse response, Model model) {
         netScannerSvc.setThePc("");
         Map<String, Boolean> netWork = lastScan;
         boolean isMapSizeBigger = netWork.size() > 2;
 
-        if (isMapSizeBigger) {
+        if(isMapSizeBigger){
             mapSizeBigger(model, netWork, request);
-        } else {
+        }
+        else{
             scanIt(request, model);
         }
         model
@@ -132,11 +134,14 @@ public class NetScanCtr {
             properties.setProperty("totpc", netWork.size() + "");
         }
         else{
-            if(isSystemTimeBigger && (5 > i)){
-                String msg1 = "isSystemTimeBigger is " + true + " " + netWork.size() + " network map cleared";
-                LOGGER.warn(msg1);
+            if(3 > i){
                 properties.setProperty("totpc", netWork.size() + "");
-                scanIt(request, model);
+                writeToFile(netWork);
+                if(isSystemTimeBigger){
+                    String msg1 = "isSystemTimeBigger is " + true + " " + netWork.size() + " network map cleared";
+                    LOGGER.warn(msg1);
+                    scanIt(request, model);
+                }
             }
         }
     }
@@ -160,14 +165,15 @@ public class NetScanCtr {
      @param model   {@link Model} для сборки
      */
     private void scanIt(HttpServletRequest request, Model model) {
-        if (request != null && request.getQueryString() != null) {
+        if(request!=null && request.getQueryString()!=null){
             lastScan.clear();
             netScannerSvc.setQer(request.getQueryString());
             Set<String> pcNames = netScannerSvc.getPCNamesPref(request.getQueryString());
             model
                 .addAttribute(TITLE_STR, new Date().toString())
                 .addAttribute("pc", new TForms().fromArray(pcNames, true));
-        } else {
+        }
+        else{
             lastScan.clear();
             Set<String> pCsAsync = netScannerSvc.getPcNames();
             model
@@ -180,11 +186,29 @@ public class NetScanCtr {
     }
 
     /**
+     @param netWork {@link #lastScan}
+     */
+    private void writeToFile(Map<String, Boolean> netWork) {
+        try(OutputStream outputStream = new FileOutputStream("newpc.txt");
+            PrintWriter printWriter = new PrintWriter(outputStream, true)){
+            printWriter.println("3 > Network Size!");
+            printWriter.println(new Date(System.currentTimeMillis()));
+            netWork.forEach((x, y) -> {
+                printWriter.println(x + " " + y);
+            });
+        }
+        catch(IOException e){
+            LOGGER.warn(e.getMessage(), e);
+        }
+    }
+
+    /**
      POST /netscan
      <p>
+
      @param netScannerSvc {@link NetScannerSvc}
-     @param result {@link BindingResult}
-     @param model {@link Model}
+     @param result        {@link BindingResult}
+     @param model         {@link Model}
      @return redirect:/ad? + {@link NetScannerSvc#getThePc()}
      */
     @PostMapping ("/netscan")
@@ -214,19 +238,20 @@ public class NetScanCtr {
      @return LAST 20 USER PCs
      */
     private String getUserFromDB(String userInputRaw) {
-        try {
+        try{
             userInputRaw = userInputRaw.split(": ")[1];
-        } catch (ArrayIndexOutOfBoundsException e) {
+        }
+        catch(ArrayIndexOutOfBoundsException e){
             return e.getMessage();
         }
-        try (Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.DB_PREFIX + "velkom");
-             PreparedStatement p = c.prepareStatement("select * from pcuserauto where userName like ? ORDER BY whenQueried DESC LIMIT 0, 20")) {
+        try(Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.DB_PREFIX + "velkom");
+            PreparedStatement p = c.prepareStatement("select * from pcuserauto where userName like ? ORDER BY whenQueried DESC LIMIT 0, 20")){
             p.setString(1, "%" + userInputRaw + "%");
-            try (ResultSet r = p.executeQuery()) {
+            try(ResultSet r = p.executeQuery()){
                 StringBuilder stringBuilder = new StringBuilder();
                 String headER = "<h3><center>LAST 20 USER PCs</center></h3>";
                 stringBuilder.append(headER);
-                while (r.next()) {
+                while(r.next()){
                     String pcName = r.getString("pcName");
                     String returnER = "<br><center><a href=\"/ad?" + pcName.split("\\Q.\\E")[0] + "\">" + pcName + "</a> set: " +
                         r.getString("whenQueried") + "</center>";
@@ -234,7 +259,8 @@ public class NetScanCtr {
                 }
                 return stringBuilder.toString();
             }
-        } catch (SQLException e) {
+        }
+        catch(SQLException e){
             return e.getMessage();
         }
     }

@@ -22,6 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 @Controller
 public class ErrCtr implements ErrorController {
 
+    /*Fields*/
     /**
      Центрировать (левый тэг)
      */
@@ -51,10 +52,10 @@ public class ErrCtr implements ErrorController {
      @return error.html
      @see TForms
      */
-    @GetMapping("/error")
+    @GetMapping ("/error")
     public String errHandle(HttpServletRequest httpServletRequest, Model model) {
-        Integer statCode = (Integer) httpServletRequest.getAttribute("javax.servlet.error.status_code");
-        Exception exception = (Exception) httpServletRequest.getAttribute("javax.servlet.error.exception");
+        Integer statCode = ( Integer ) httpServletRequest.getAttribute("javax.servlet.error.status_code");
+        Exception exception = ( Exception ) httpServletRequest.getAttribute("javax.servlet.error.exception");
         model.addAttribute("eMessage", httpServletRequest
             .getRequestURL() +
             " тут нет того, что ищешь.<br>" +
@@ -65,17 +66,19 @@ public class ErrCtr implements ErrorController {
                 .getVirtualServerName() +
             H_2_CENTER_CLOSE.replaceAll("2", "4"));
         model.addAttribute("statcode", H_2_CENTER + statCode + H_2_CENTER_CLOSE);
-        if (exception != null) {
+        if(exception!=null){
             MessageToUser eMail = new ESender("143500@.gmail.com");
             setExcept(model, exception, statCode, httpServletRequest);
-            try {
+            try{
                 eMail.errorAlert(exception.toString(), exception.getMessage(), new TForms().fromArray(exception, false));
-            } catch (Exception e) {
+            }
+            catch(Exception e){
                 LOGGER.error(e.getMessage(), e);
             }
         }
         return "error";
     }
+
     /**
      <b>Модель ошибки</b>
 
@@ -91,19 +94,17 @@ public class ErrCtr implements ErrorController {
         String err = statCode + " Научно-Исследовательский Институт Химии Удобрений и Ядов";
         String traceStr = new TForms().fromArray(exception, true);
 
-        if (!exception.getMessage().equals(exception.getLocalizedMessage())) eMessage = eMessage + eLocalizedMessage;
-        if (ConstantsFor.getPcAuth(httpServletRequest)) model.addAttribute("stackTrace", traceStr);
+        if(!exception.getMessage().equals(exception.getLocalizedMessage())){
+            eMessage = eMessage + eLocalizedMessage;
+        }
+        if(ConstantsFor.getPcAuth(httpServletRequest)){
+            model.addAttribute("stackTrace", traceStr);
+        }
 
         model.addAttribute("eMessage", eMessage);
         model.addAttribute("statcode", H_2_CENTER + statCode + H_2_CENTER_CLOSE);
         model.addAttribute("title", err);
         model.addAttribute("ref", httpServletRequest.getHeader("referer"));
         model.addAttribute("footer", new PageFooter().getFooterUtext());
-    }
-
-    @GetMapping ("/login")
-    public String logIn(Model model) {
-        model.addAttribute("footer", new PageFooter().getFooterUtext());
-        return "login";
     }
 }

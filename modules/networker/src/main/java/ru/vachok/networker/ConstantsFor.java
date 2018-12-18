@@ -2,14 +2,24 @@ package ru.vachok.networker;
 
 
 import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import org.springframework.ui.Model;
+import org.springframework.web.multipart.MultipartFile;
+import ru.vachok.messenger.MessageToUser;
+import ru.vachok.messenger.email.ESender;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
+import ru.vachok.networker.ad.PCUserResolver;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.config.ThreadConfig;
+import ru.vachok.networker.controller.ServiceInfoCtrl;
+import ru.vachok.networker.mailserver.ExSRV;
 import ru.vachok.networker.mailserver.MailRule;
+import ru.vachok.networker.net.NetScannerSvc;
+import ru.vachok.networker.services.MyCalen;
 import ru.vachok.networker.services.PassGenerator;
 import ru.vachok.networker.services.TimeChecker;
 
@@ -22,21 +32,19 @@ import java.security.SecureRandom;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.time.Year;
 import java.time.format.TextStyle;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
 
 /**
- <b>Константы</b>
-
+ Константы, используемые в приложении
+ <p>
  @since 12.08.2018 (16:26) */
 public enum ConstantsFor {
     ;
@@ -56,16 +64,29 @@ public enum ConstantsFor {
      */
     public static final int MBYTE = 1048576;
 
-    public static final long GBYTE = 1073741824;
-
+    /**
+     {@link ru.vachok.networker.ad.PCUserResolver#recToDB(String, String)}
+     */
     public static final ConcurrentMap<String, String> PC_U_MAP = new ConcurrentHashMap<>();
 
+    /**
+     {@link Model} имя атрибута
+     */
     public static final String FOOTER = "footer";
 
+    /**
+     * {@link Model} имя атрибута
+     */
     public static final String USERS = "users";
 
+    /**
+     * {@link Model} имя атрибута
+     */
     public static final String TITLE = "title";
 
+    /**
+     * {@link ServiceInfoCtrl#closeApp()}
+     */
     public static final int USER_EXIT = 222;
 
     /**
@@ -73,8 +94,15 @@ public enum ConstantsFor {
      */
     public static final Map<Long, HttpServletRequest> VISITS_MAP = new ConcurrentHashMap<>();
 
+    /**
+     * {@link ru.vachok.networker.ad.ADSrv#getDetails(String)}, {@link PCUserResolver#getResolvedName()},
+     * {@link AppComponents#getCompUsersMap()}, {@link NetScannerSvc#getPCsAsync()}
+     */
     public static final ConcurrentMap<String, File> COMPNAME_USERS_MAP = new ConcurrentHashMap<>();
 
+    /**
+     * {@link ru.vachok.networker.mailserver.ExCTRL#uplFile(MultipartFile, Model)}, {@link ExSRV#getOFields()},
+     */
     public static final ConcurrentMap<Integer, MailRule> MAIL_RULES = new ConcurrentHashMap<>();
 
     public static final String ALERT_AD_FOTO =
@@ -87,10 +115,6 @@ public enum ConstantsFor {
 
     public static final File SSH_ERR = new File("ssh_err.txt");
 
-    public static final File SSH_OUT = new File("ssh_out.txt");
-
-    public static final int TIMEOUT_2 = 2000;
-
     public static final String SRV_NAT = "192.168.13.30";
 
     public static final int NOPC = 50;
@@ -101,7 +125,6 @@ public enum ConstantsFor {
 
     public static final int TIMEOUT_5 = 5000;
 
-    /*Fields*/
     public static final long DELAY = getDelay();
 
     public static final int DOPC = 250;
@@ -123,15 +146,18 @@ public enum ConstantsFor {
     public static final String APP_NAME = "ru_vachok_networker-";
 
     public static final int ONE_DAY_HOURS = 24;
+
+    public static final long ONE_WEEK_MILLIS = TimeUnit.HOURS.toMillis(ONE_DAY_HOURS * 7);
+
+    public static final long GBYTE = 1073741824;
+
     private static final Properties PROPS = takePr();
+
+    public static final int ONE_MONTH_DAYS = 30;
 
     public static Properties getPROPS() {
         return PROPS;
     }
-
-    public static final int TEST_EXIT = 333;
-
-    public static final int BAD_STATS = 666;
 
     private static long getDelay() {
         long delay = new SecureRandom().nextInt((int) MY_AGE);
@@ -150,8 +176,6 @@ public enum ConstantsFor {
     public static final int ONE_YEAR = 365;
 
     public static final int NETSCAN_DELAY = (int) ConstantsFor.DELAY;
-
-    public static final String COMMON_FOLDER = "\\\\srv-fs.eatmeat.ru\\common_new";
 
     public static final String IT_FOLDER = "\\\\srv-fs.eatmeat.ru\\it$$";
 
@@ -227,28 +251,32 @@ public enum ConstantsFor {
         return atomicTime;
     }
 
-    static void setAtomicTime(long returnTime) {
-        ConstantsFor.atomicTime = returnTime;
+    static String checkDay() {
+        Date dateStart = MyCalen.getNextDayofWeek(10, 0, DayOfWeek.MONDAY);
+        String msg = dateStart + " - date to TRUNCATE , " +
+            LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault()) + "\n" +
+            ONE_WEEK_MILLIS + " ms delay.\n";
+        ThreadConfig t = new ThreadConfig();
+        ThreadPoolTaskScheduler threadPoolTaskScheduler = t.threadPoolTaskScheduler();
+        threadPoolTaskScheduler.scheduleWithFixedDelay(ConstantsFor::trunkTableUsers, dateStart, ONE_WEEK_MILLIS);
+        return msg;
     }
 
-    static boolean checkDay() {
-        String msg = LocalDate.now().getDayOfWeek().getValue() + " - day of week\n" +
-            LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault());
-        if (msg.toLowerCase().contains("понедель") && LocalTime.now().isBefore(LocalTime.of(13, 0))) {
-            try (Connection c = new RegRuMysql().getDefaultConnection(DB_PREFIX + "velkom");
-                 PreparedStatement preparedStatement = c.prepareStatement("TRUNCATE TABLE pcuserauto")) {
-                preparedStatement.executeUpdate();
-                return true;
-            } catch (SQLException e) {
-                return false;
-            }
+    private static void trunkTableUsers() {
+        MessageToUser messageToUser = new ESender("143500@gmail.com");
+        try (Connection c = new RegRuMysql().getDefaultConnection(DB_PREFIX + "velkom");
+             PreparedStatement preparedStatement = c.prepareStatement("TRUNCATE TABLE pcuserauto")) {
+            preparedStatement.executeUpdate();
+            messageToUser.infoNoTitles("TRUNCATE true\n" + ConstantsFor.getUpTime() + " uptime.");
+        } catch (SQLException e) {
+            messageToUser.infoNoTitles("TRUNCATE false\n" + ConstantsFor.getUpTime() + " uptime.");
         }
-        return false;
     }
 
     private static Properties takePr() {
-        InitProperties initProperties = new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
+        InitProperties initProperties;
         try {
+            initProperties = new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
             AppComponents.getLogger().info("ConstantsFor.takePr");
             return initProperties.getProps();
         } catch (Exception e) {

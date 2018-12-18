@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.PageFooter;
@@ -46,7 +48,7 @@ public class PfListsCtr {
 
     private long timeOut;
 
-    private int delayRef = new SecureRandom().nextInt(( int ) TimeUnit.MINUTES.toMillis(250));
+    private int delayRef = new SecureRandom().nextInt((int) TimeUnit.MINUTES.toMillis(250));
 
     private final Runnable makePFLists = this::runningList;
 
@@ -61,6 +63,7 @@ public class PfListsCtr {
         this.pfListsSrv = pfListsSrv;
         this.pingOK = ConstantsFor.isPingOK();
     }
+
     static {
         thisPcName = ConstantsFor.thisPC();
     }
@@ -79,14 +82,13 @@ public class PfListsCtr {
             LOGGER.error(e.getMessage(), e);
         }
         modSet(model);
-
         if (request.getQueryString() != null) threadConfig.taskDecorator(makePFLists);
         if (pfLists.getTimeUpd() + TimeUnit.MINUTES.toMillis(170) < System.currentTimeMillis()) {
             model.addAttribute(METRIC_STR, "Требуется обновление!");
             model.addAttribute("gitstats", pfListsSrv.getExecutor().toString());
         } else {
             String msg = "" + (float) (TimeUnit.MILLISECONDS
-                                           .toSeconds(System.currentTimeMillis() - pfLists.getTimeUpd())) / ConstantsFor.ONE_HOUR_IN_MIN;
+                .toSeconds(System.currentTimeMillis() - pfLists.getTimeUpd())) / ConstantsFor.ONE_HOUR_IN_MIN;
             LOGGER.warn(msg);
         }
         propUpd(properties);
@@ -97,13 +99,8 @@ public class PfListsCtr {
         return pflistsStr;
     }
 
-    private void noPing(Model model) throws UnknownHostException {
-        model.addAttribute("vipnet", "No ping to srv-git");
-        model.addAttribute(METRIC_STR, LocalTime.now().toString());
-        throw new UnknownHostException("srv-git");
-    }
-
     private void modSet(Model model) {
+        model.addAttribute("PfListsSrv", pfListsSrv);
         model.addAttribute(METRIC_STR, (float) TimeUnit.MILLISECONDS
             .toSeconds(System.currentTimeMillis() - pfLists.getGitStats()) / ConstantsFor.ONE_HOUR_IN_MIN + " min since upd");
         model.addAttribute("vipnet", pfLists.getVipNet());
@@ -116,6 +113,22 @@ public class PfListsCtr {
             (Thread.activeCount() - Long.parseLong(properties.getOrDefault("thr", 1L).toString())));
         model.addAttribute("footer", new PageFooter().getFooterUtext());
 
+    }
+
+    private void noPing(Model model) throws UnknownHostException {
+        model.addAttribute("vipnet", "No ping to srv-git");
+        model.addAttribute(METRIC_STR, LocalTime.now().toString());
+        throw new UnknownHostException("srv-git");
+    }
+
+    @PostMapping("/runcom")
+    public String runCommand(Model model, @ModelAttribute PfListsSrv pfListsSrv) {
+        this.pfListsSrv = pfListsSrv;
+        model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext());
+        model.addAttribute(ConstantsFor.TITLE, pfListsSrv.getCommandForNat());
+        model.addAttribute("PfListsSrv", pfListsSrv);
+        model.addAttribute("ok", pfListsSrv.runCom());
+        return "ok";
     }
 
     /**

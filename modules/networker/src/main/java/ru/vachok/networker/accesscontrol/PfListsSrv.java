@@ -25,6 +25,16 @@ public class PfListsSrv {
      */
     private PfLists pfLists;
 
+    private String commandForNat;
+
+    public String getCommandForNat() {
+        return commandForNat;
+    }
+
+    public void setCommandForNat(String commandForNat) {
+        this.commandForNat = commandForNat;
+    }
+
     /**
      {@link SSHFactory.Builder}
      */
@@ -43,6 +53,11 @@ public class PfListsSrv {
 
     }
 
+    String runCom() {
+        SSHFactory.Builder builder = new SSHFactory.Builder(ConstantsFor.SRV_NAT, commandForNat);
+        return builder.build().call();
+    }
+
     ThreadPoolTaskExecutor getExecutor() {
         makeListRunner();
         return executor;
@@ -54,8 +69,7 @@ public class PfListsSrv {
         executor.execute(() -> {
             try {
                 buildFactory();
-            }
-            catch(UnexpectedException e){
+            } catch (UnexpectedException | NullPointerException e) {
                 AppComponents.getLogger().error(e.getMessage(), e);
             }
         });
@@ -80,7 +94,7 @@ public class PfListsSrv {
      @see SSHFactory
      @throws UnexpectedException если нет связи с srv-git. Проверка сети. <i>e: No ping</i>
      */
-    private void buildFactory() throws UnexpectedException {
+    private void buildFactory() throws UnexpectedException, NullPointerException {
         if (!ConstantsFor.isPingOK()) {
             throw new UnexpectedException("No ping");
         }
