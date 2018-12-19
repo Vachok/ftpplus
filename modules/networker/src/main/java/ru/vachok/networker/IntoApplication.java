@@ -24,6 +24,7 @@ import ru.vachok.networker.services.WeekPCStats;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -42,6 +43,8 @@ import java.util.concurrent.*;
 @SpringBootApplication
 @EnableScheduling
 public class IntoApplication {
+
+    /*Fields*/
 
     /**
      {@link AppComponents#getLogger()}
@@ -83,9 +86,10 @@ public class IntoApplication {
         String msg = LocalDate.now().getDayOfWeek().getValue() + " - day of week\n" +
             LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault());
         LOGGER.warn(msg);
-        if (THIS_PC.toLowerCase().contains("no0027") || THIS_PC.toLowerCase().contains("home")) {
+        if(THIS_PC.toLowerCase().contains("no0027") || THIS_PC.toLowerCase().contains("home")){
             SystemTrayHelper.addTray("icons8-плохие-поросята-32.png");
-        } else {
+        }
+        else{
             SystemTrayHelper.addTray(null);
         }
         SPRING_APPLICATION.setMainApplicationClass(IntoApplication.class);
@@ -93,7 +97,7 @@ public class IntoApplication {
         System.setProperty("file.encoding", "UTF8");
         SpringApplication.run(IntoApplication.class, args);
         infoForU(appCtx);
-        String msgTimeSp = "IntoApplication.main method. " + (float) (System.currentTimeMillis() - stArt) / 1000 + STR_SEC_SPEND;
+        String msgTimeSp = "IntoApplication.main method. " + ( float ) (System.currentTimeMillis() - stArt) / 1000 + STR_SEC_SPEND;
         LOGGER.info(msgTimeSp);
     }
 
@@ -112,9 +116,10 @@ public class IntoApplication {
             .append(" app display name\n")
             .append(ConstantsFor.getBuildStamp()).toString();
         LOGGER.info(msg);
-        try {
+        try{
             schedStarter();
-        } catch (InvocationTargetException e) {
+        }
+        catch(InvocationTargetException e){
             Throwable targetException = e.getTargetException();
             LOGGER.error(e.getMessage(), e);
             LOGGER.warn(targetException.getMessage());
@@ -151,17 +156,24 @@ public class IntoApplication {
 
         weekStat();
 
-        if (ConstantsFor.thisPC().toLowerCase().contains("no0027") ||
-            ConstantsFor.thisPC().toLowerCase().contains("rups")) {
+        if(ConstantsFor.thisPC().toLowerCase().contains("no0027") ||
+            ConstantsFor.thisPC().toLowerCase().contains("rups")){
             runCommonScan();
         }
         else{
-            try(OutputStream outputStream = new FileOutputStream("const.txt");
+            File file = new File("const.txt");
+            try(OutputStream outputStream = new FileOutputStream(file);
                 PrintWriter printWriter = new PrintWriter(outputStream, true)){
                 TimeInfo timeInfo = MyCalen.getTimeInfo();
                 timeInfo.computeDetails();
                 printWriter.println(new Date(timeInfo.getReturnTime()));
                 printWriter.println(ConstantsFor.toStringS() + "\n\n" + MyCalen.toStringS());
+                if(ConstantsFor.thisPC().toLowerCase().contains("home") || ConstantsFor.thisPC().contains("10.10.111.")){
+                    Path toCopy = Paths
+                        .get("G:\\My_Proj\\FtpClientPlus\\modules\\networker\\src\\main\\resources\\static\\texts");
+                    Files.deleteIfExists(toCopy);
+                    Files.move(file.toPath(), toCopy);
+                }
             }
             catch(IOException e){
                 LOGGER.warn(e.getMessage());
@@ -192,9 +204,10 @@ public class IntoApplication {
      */
     private static void runCommonScan() {
         Runnable r = () -> {
-            try {
+            try{
                 Files.walkFileTree(Paths.get("\\\\srv-fs.eatmeat.ru\\common_new"), new CommonRightsChecker());
-            } catch (IOException e) {
+            }
+            catch(IOException e){
                 LOGGER.warn(e.getMessage(), e);
             }
         };
@@ -202,11 +215,12 @@ public class IntoApplication {
         long delay = TimeUnit.DAYS.toMillis(ConstantsFor.ONE_MONTH_DAYS);
         ScheduledFuture<?> scheduleWithFixedDelay = new ThreadConfig().threadPoolTaskScheduler().scheduleWithFixedDelay(
             r, startTime, delay);
-        try {
+        try{
             String msg = "Common scanner : " + startTime.toString() + "  ||  " + delay + " TimeUnit.DAYS.toMillis(ConstantsFor.ONE_MONTH_DAYS)";
             LOGGER.warn(msg);
             scheduleWithFixedDelay.get();
-        } catch (InterruptedException | ExecutionException e) {
+        }
+        catch(InterruptedException | ExecutionException e){
             LOGGER.error(e.getMessage(), e);
             Thread.currentThread().interrupt();
             r.run();
@@ -219,9 +233,10 @@ public class IntoApplication {
      Usages: {@link SystemTrayHelper#addTray(String)}, {@link ServiceInfoCtrl#closeApp()}, {@link MyServer#reconSock()}. <br> Uses: {@link CommonScan2YOlder} <br>
      */
     public static void delTemp() {
-        try {
+        try{
             Files.walkFileTree(Paths.get("."), new CommonScan2YOlder());
-        } catch (IOException e) {
+        }
+        catch(IOException e){
             LOGGER.error(e.getMessage(), e);
         }
     }
