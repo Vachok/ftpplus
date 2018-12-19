@@ -68,6 +68,8 @@ public class IntoApplication {
      */
     private static final String STR_SEC_SPEND = " sec spend";
 
+    private static volatile File constTxt = new File("const.txt");
+
     /**
      {@link AppCtx#scanForBeansAndRefreshContext()}
      */
@@ -94,7 +96,7 @@ public class IntoApplication {
         }
         SPRING_APPLICATION.setMainApplicationClass(IntoApplication.class);
         SPRING_APPLICATION.setApplicationContextClass(AppCtx.class);
-        System.setProperty("file.encoding", "UTF8");
+        System.setProperty("constTxt.encoding", "UTF8");
         SpringApplication.run(IntoApplication.class, args);
         infoForU(appCtx);
         String msgTimeSp = "IntoApplication.main method. " + ( float ) (System.currentTimeMillis() - stArt) / 1000 + STR_SEC_SPEND;
@@ -161,18 +163,31 @@ public class IntoApplication {
             runCommonScan();
         }
         else{
-            File file = new File("const.txt");
-            try(OutputStream outputStream = new FileOutputStream(file);
+            try(OutputStream outputStream = new FileOutputStream(constTxt);
                 PrintWriter printWriter = new PrintWriter(outputStream, true)){
                 TimeInfo timeInfo = MyCalen.getTimeInfo();
                 timeInfo.computeDetails();
                 printWriter.println(new Date(timeInfo.getReturnTime()));
                 printWriter.println(ConstantsFor.toStringS() + "\n\n" + MyCalen.toStringS());
                 if(ConstantsFor.thisPC().toLowerCase().contains("home") || ConstantsFor.thisPC().contains("10.10.111.")){
-                    Path toCopy = Paths
-                        .get("G:\\My_Proj\\FtpClientPlus\\modules\\networker\\src\\main\\resources\\static\\texts");
-                    Files.deleteIfExists(toCopy);
-                    Files.move(file.toPath(), toCopy);
+                    new Thread(() -> {
+
+                        Path toCopy = Paths
+                            .get("G:\\My_Proj\\FtpClientPlus\\modules\\networker\\src\\main\\resources\\static\\texts\\const.txt");
+
+                        try{
+                            while(constTxt.canWrite()){
+                                Thread.currentThread().wait(); // FIXME: 19.12.2018 
+                                Files.deleteIfExists(toCopy);
+
+                            }
+                            Files.copy(constTxt.toPath(), toCopy);
+                        }
+                        catch(IOException | InterruptedException e){
+                            LOGGER.warn(e.getMessage());
+                            Thread.currentThread().interrupt();
+                        }
+                    }).start();
                 }
             }
             catch(IOException e){
