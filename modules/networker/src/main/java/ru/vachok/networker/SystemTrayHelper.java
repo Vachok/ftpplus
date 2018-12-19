@@ -7,6 +7,7 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.accesscontrol.common.ArchivesAutoCleaner;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.ThreadConfig;
+import ru.vachok.networker.config.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.MyServer;
 import ru.vachok.networker.services.DBMessenger;
 import ru.vachok.networker.services.Putty;
@@ -21,7 +22,8 @@ import java.util.Date;
 import java.util.Properties;
 import java.util.concurrent.*;
 
-import static java.lang.System.*;
+import static java.lang.System.err;
+import static java.lang.System.exit;
 
 
 /**
@@ -76,7 +78,7 @@ public class SystemTrayHelper {
      Создаёт System Tray Icon
      <p>
      Usages: {@link IntoApplication#main(String[])} <br> Uses: 1.1 {@link #srvGitIs()}, 1.2 {@link AppComponents#versionInfo()}, 1.3 {@link AppComponents#versionInfo()}, 1.4 {@link
-    AppComponents#versionInfo()}, 1.5 {@link ConstantsFor#saveProps(Properties)}, 1.6 {@link IntoApplication#delTemp()}, 1.7 {@link #addItems(PopupMenu)} .
+    AppComponents#versionInfo()}, 1.5 {@link ConstantsFor#saveProps(Properties)}, 1.6 {@link FileSystemWorker#delTemp()}, 1.7 {@link #addItems(PopupMenu)} .
 
      @param iconFileName имя файла-иконки.
      */
@@ -108,7 +110,7 @@ public class SystemTrayHelper {
         };
         ActionListener exitApp = e -> {
             ConstantsFor.saveProps(ConstantsFor.getPROPS());
-            IntoApplication.delTemp();
+            FileSystemWorker.delTemp();
             exit(0);
         };
         addItems(popupMenu);

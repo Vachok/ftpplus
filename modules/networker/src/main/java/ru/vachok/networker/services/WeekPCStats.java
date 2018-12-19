@@ -109,7 +109,7 @@ public class WeekPCStats implements Runnable {
             try{
                 Files.deleteIfExists(toCopyFile.toPath());
                 Files.copy(file.toPath(), toCopyFile.toPath());
-                String msgTimeSp = "WeekPCStats.copyFile method. " +
+                String msgTimeSp = "WeekPCStats.cpConstTxt method. " +
                     ( float ) (System.currentTimeMillis() - stArt) / 1000 +
                     STR_SEC_SPEND;
                 LOGGER.info(msgTimeSp);
@@ -164,6 +164,11 @@ public class WeekPCStats implements Runnable {
         return fileLines;
     }
 
+    /**
+     Usages: {@link #getInfoList(File)} <br> Uses: {@link TForms#fromArray(java.util.concurrent.ConcurrentMap, boolean)}
+
+     @return информация для записи в файл
+     */
     private String getInfo() {
         final long stArt = System.currentTimeMillis();
         Collections.sort(PC_NAMES_IN_TABLE);

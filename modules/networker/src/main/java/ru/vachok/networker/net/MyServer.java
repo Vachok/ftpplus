@@ -4,19 +4,26 @@ package ru.vachok.networker.net;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.*;
+import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.SystemTrayHelper;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.VersionInfo;
+import ru.vachok.networker.config.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.DBMessenger;
 
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.security.SecureRandom;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.Properties;
+import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
-import static java.lang.System.*;
+import static java.lang.System.err;
+import static java.lang.System.out;
 
 
 /**
@@ -132,7 +139,7 @@ public class MyServer extends Thread {
         printStream.println("Press Enter or enter command:\n");
         String readLine = bufferedReader.readLine();
         if (readLine.toLowerCase().contains("exit")) {
-            IntoApplication.delTemp();
+            FileSystemWorker.delTemp();
             ConstantsFor.saveProps(propsToSave);
             socket.close();
             System.exit(ConstantsFor.USER_EXIT);

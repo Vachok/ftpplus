@@ -3,7 +3,6 @@ package ru.vachok.networker.services;
 
 import org.apache.commons.net.ntp.TimeInfo;
 import org.slf4j.Logger;
-import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.componentsrepo.AppComponents;
 
 import java.time.DayOfWeek;
@@ -44,7 +43,7 @@ public abstract class MyCalen {
     /**
      Дата запуска common scanner
      <p>
-     Usage: {@link IntoApplication#runCommonScan()} <br> Uses: -
+     Usage: {@link ru.vachok.networker.AppInfoOnLoad#runCommonScan()} <br> Uses: -
      <p>
 
      @param hourNeed час
@@ -116,7 +115,7 @@ public abstract class MyCalen {
     /**
      Создание {@link Date}
      <p>
-     Usages: {@link IntoApplication#schedStarter()} <br> Uses: -
+     Usages: {@link ru.vachok.networker.AppInfoOnLoad#schedStarter()} <br> Uses: -
 
      @param hourNeed  час
      @param minNeed   минута

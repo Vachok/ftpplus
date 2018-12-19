@@ -8,12 +8,12 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.VersionInfo;
 import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.config.fileworks.FileSystemWorker;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
@@ -43,30 +43,29 @@ public class ServiceInfoCtrl {
         return TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() -
             Long.parseLong(ConstantsFor.getPROPS().getProperty("lasts", 1544816520000L + ""))) / 60f / 24f;
     }
+
     @Autowired
     public ServiceInfoCtrl() {
         new AppComponents();
     }
 
-    @GetMapping ("/serviceinfo")
+    @GetMapping("/serviceinfo")
     public String infoMapping(Model model, HttpServletRequest request) throws AccessDeniedException {
         this.authReq = request.getRemoteAddr().contains("0:0:0:0") ||
             request.getRemoteAddr().contains("10.10.111") ||
             request.getRemoteAddr().contains(ConstantsFor.NO0027) ||
             request.getRemoteAddr().contains("172.16.20");
         Visitor visitor = new Visitor(request);
-        try{
+        try {
             String msg = visitor.toString();
             LOGGER.warn(msg);
-        }
-        catch(Exception e){
+        } catch (Exception e) {
             LoggerFactory.getLogger(ServiceInfoCtrl.class.getSimpleName());
         }
-        if(authReq){
+        if (authReq) {
             modModMaker(model, request);
             return "vir";
-        }
-        else{
+        } else {
             throw new AccessDeniedException("Sorry. Denied");
         }
     }
@@ -83,24 +82,16 @@ public class ServiceInfoCtrl {
         model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext() + "<br>" + getJREVers());
     }
 
-    private String pingGit() {
-        boolean reachable = false;
-        try{
-            InetAddress byName = InetAddress.getByName("srv-git.eatmeat.ru");
-            reachable = byName.isReachable(1000);
+    @GetMapping("/stop")
+    public String closeApp() throws AccessDeniedException {
+        if (authReq) {
+            FileSystemWorker.delTemp();
+            ConstantsFor.saveProps(PROPS);
+            System.exit(ConstantsFor.USER_EXIT);
+        } else {
+            throw new AccessDeniedException("DENY!");
         }
-        catch(IOException e){
-            LOGGER.error(e.getMessage(), e);
-        }
-        String s = "</b> srv-git.eatmeat.ru.</font> Checked at: <i>";
-        String s2 = "</i><br>";
-        String s1 = "<b><font color=\"#77ff72\">" + true + s + LocalTime.now() + s2;
-        if(reachable){
-            return s1;
-        }
-        else{
-            return "<b><font color=\"#ff2121\">" + true + s + LocalTime.now() + s2;
-        }
+        return "ok";
     }
 
     private String getJREVers() {
@@ -147,16 +138,22 @@ public class ServiceInfoCtrl {
 
         return stringBuilder.toString();
     }
-    @GetMapping ("/stop")
-    public String closeApp() throws AccessDeniedException {
-        if(authReq){
-            IntoApplication.delTemp();
-            ConstantsFor.saveProps(PROPS);
-            System.exit(ConstantsFor.USER_EXIT);
+
+    private String pingGit() {
+        boolean reachable = false;
+        try {
+            InetAddress byName = InetAddress.getByName("srv-git.eatmeat.ru");
+            reachable = byName.isReachable(1000);
+        } catch (IOException e) {
+            LOGGER.error(e.getMessage(), e);
         }
-        else{
-            throw new AccessDeniedException("DENY!");
+        String s = "</b> srv-git.eatmeat.ru.</font> Checked at: <i>";
+        String s2 = "</i><br>";
+        String s1 = "<b><font color=\"#77ff72\">" + true + s + LocalTime.now() + s2;
+        if (reachable) {
+            return s1;
+        } else {
+            return "<b><font color=\"#ff2121\">" + true + s + LocalTime.now() + s2;
         }
-        return "ok";
     }
 }
