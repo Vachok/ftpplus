@@ -163,9 +163,9 @@ public enum ConstantsFor {
     }
 
     public static String showMem() {
-        String msg = (float) Runtime.getRuntime().totalMemory() / ConstantsFor.KBYTE + " now totalMemory, " +
-            (float) Runtime.getRuntime().freeMemory() / ConstantsFor.KBYTE + " now freeMemory, " +
-            (float) Runtime.getRuntime().maxMemory() / ConstantsFor.KBYTE + " now maxMemory.";
+        String msg = (float) Runtime.getRuntime().totalMemory() / ConstantsFor.MBYTE + " now totalMemory, " +
+            (float) Runtime.getRuntime().freeMemory() / ConstantsFor.MBYTE + " now freeMemory, " +
+            (float) Runtime.getRuntime().maxMemory() / ConstantsFor.MBYTE + " now maxMemory.";
         AppComponents.getLogger().warn(msg);
         return msg;
     }

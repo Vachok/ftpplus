@@ -16,6 +16,7 @@ import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.config.fileworks.FileSystemWorker;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.file.AccessDeniedException;
@@ -50,7 +51,7 @@ public class ServiceInfoCtrl {
     }
 
     @GetMapping("/serviceinfo")
-    public String infoMapping(Model model, HttpServletRequest request) throws AccessDeniedException {
+    public String infoMapping(Model model, HttpServletRequest request, HttpServletResponse response) throws AccessDeniedException {
         this.authReq = request.getRemoteAddr().contains("0:0:0:0") ||
             request.getRemoteAddr().contains("10.10.111") ||
             request.getRemoteAddr().contains(ConstantsFor.NO0027) ||
@@ -64,6 +65,7 @@ public class ServiceInfoCtrl {
         }
         if (authReq) {
             modModMaker(model, request);
+            response.addHeader("Refresh", "11");
             return "vir";
         } else {
             throw new AccessDeniedException("Sorry. Denied");
@@ -75,7 +77,7 @@ public class ServiceInfoCtrl {
         model.addAttribute("ping", pingGit());
         model.addAttribute("urls", "Запущено - " +
             new Date(ConstantsFor.START_STAMP) + ConstantsFor.getUpTime() +
-            "<br>Точное время: " + ConstantsFor.getAtomicTime());
+            "<br>Точное время: " + ConstantsFor.getAtomicTime() + ". Состояние памяти (МБ): <font color=\"#82caff\">" + ConstantsFor.showMem() + "</font>");
         model.addAttribute("request", prepareRequest(request));
         model.addAttribute("visit", new VersionInfo().toString());
         model.addAttribute("back", request.getHeader("REFERER".toLowerCase()));
