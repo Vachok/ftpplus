@@ -52,11 +52,6 @@ public enum ConstantsFor {
     private static final Properties PROPS = takePr();
 
     /**
-     Первоначальная задержка {@link ThreadConfig#threadPoolTaskScheduler()}
-     */
-    public static final long INIT_DELAY = TimeUnit.MINUTES.toSeconds(MY_AGE);
-
-    /**
      <b>1 мегабайт в байтах</b>
      */
     public static final int MBYTE = 1048576;
@@ -75,6 +70,11 @@ public enum ConstantsFor {
      Число, для Secure Random
      */
     public static final long MY_AGE = ( long ) Year.now().getValue() - 1984;
+
+    /**
+     Первоначальная задержка {@link ThreadConfig#threadPoolTaskScheduler()}
+     */
+    public static final long INIT_DELAY = TimeUnit.MINUTES.toSeconds(MY_AGE);
 
     /**
      {@link Model} имя атрибута
@@ -230,7 +230,6 @@ public enum ConstantsFor {
         LocalTime localTime = endDay.minusHours(LocalTime.now().getHour());
         localTime = localTime.minusMinutes(LocalTime.now().getMinute());
         localTime = localTime.minusSeconds(LocalTime.now().getSecond());
-        stringBuilder.append(localTime.toString());
         boolean workHours = startDay.isAfter(LocalTime.now()) && endDay.isBefore(LocalTime.now());
         if(workHours){
             int toEndDaySec = localTime.toSecondOfDay();
@@ -245,8 +244,9 @@ public enum ConstantsFor {
                 .append("<br>");
         }
         else{
-            stringBuilder.append("<b> GO HOME! </b>");
+            stringBuilder.append("<b> GO HOME! </b><br>");
         }
+        stringBuilder.append(localTime.toString());
         return stringBuilder.toString();
     }
 
