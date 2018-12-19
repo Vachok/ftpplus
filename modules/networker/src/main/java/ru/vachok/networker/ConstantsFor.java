@@ -32,15 +32,9 @@ import java.security.SecureRandom;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.Year;
+import java.time.*;
 import java.time.format.TextStyle;
-import java.util.Date;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
@@ -49,14 +43,13 @@ import java.util.concurrent.TimeUnit;
 /**
  Константы, используемые в приложении
  <p>
+
  @since 12.08.2018 (16:26) */
 public enum ConstantsFor {
     ;
 
-    /**
-     Число, для Secure Random
-     */
-    public static final long MY_AGE = (long) Year.now().getValue() - 1984;
+    /*Fields*/
+    private static final Properties PROPS = takePr();
 
     /**
      Первоначальная задержка {@link ThreadConfig#threadPoolTaskScheduler()}
@@ -79,19 +72,19 @@ public enum ConstantsFor {
     public static final String FOOTER = "footer";
 
     /**
-     * {@link Model} имя атрибута
+     Число, для Secure Random
+     */
+    public static final long MY_AGE = ( long ) Year.now().getValue() - 1984;
+
+    /**
+     {@link Model} имя атрибута
      */
     public static final String USERS = "users";
 
     /**
-     * {@link Model} имя атрибута
+     {@link Model} имя атрибута
      */
     public static final String TITLE = "title";
-
-    /**
-     * {@link ServiceInfoCtrl#closeApp()}
-     */
-    public static final int USER_EXIT = 222;
 
     /**
      {@link Visitor#getVisitsMap()}
@@ -99,15 +92,15 @@ public enum ConstantsFor {
     public static final Map<Long, HttpServletRequest> VISITS_MAP = new ConcurrentHashMap<>();
 
     /**
-     * {@link ru.vachok.networker.ad.ADSrv#getDetails(String)}, {@link PCUserResolver#getResolvedName()},
-     * {@link AppComponents#getCompUsersMap()}, {@link NetScannerSvc#getPCsAsync()}
+     {@link ServiceInfoCtrl#closeApp()}
      */
-    public static final ConcurrentMap<String, File> COMPNAME_USERS_MAP = new ConcurrentHashMap<>();
+    public static final int USER_EXIT = 222;
 
     /**
-     * {@link ru.vachok.networker.mailserver.ExCTRL#uplFile(MultipartFile, Model)}, {@link ExSRV#getOFields()},
+     {@link ru.vachok.networker.ad.ADSrv#getDetails(String)}, {@link PCUserResolver#getResolvedName()},
+     {@link AppComponents#getCompUsersMap()}, {@link NetScannerSvc#getPCsAsync()}
      */
-    public static final ConcurrentMap<Integer, MailRule> MAIL_RULES = new ConcurrentHashMap<>();
+    public static final ConcurrentMap<String, File> COMPNAME_USERS_MAP = new ConcurrentHashMap<>();
 
     public static final String ALERT_AD_FOTO =
         "<p>Для корректной работы, вам нужно положить фото юзеров <a href=\"file://srv-mail3.eatmeat.ru/c$/newmailboxes/fotoraw/\" target=\"_blank\">\\\\srv-mail3.eatmeat" +
@@ -149,43 +142,18 @@ public enum ConstantsFor {
 
     public static final String APP_NAME = "ru_vachok_networker-";
 
+    /**
+     {@link ru.vachok.networker.mailserver.ExCTRL#uplFile(MultipartFile, Model)}, {@link ExSRV#getOFields()},
+     */
+    public static final ConcurrentMap<Integer, MailRule> MAIL_RULES = new ConcurrentHashMap<>();
+
     public static final int ONE_DAY_HOURS = 24;
 
     public static final long ONE_WEEK_MILLIS = TimeUnit.HOURS.toMillis(ONE_DAY_HOURS * 7);
 
     public static final long GBYTE = 1073741824;
 
-    private static final Properties PROPS = takePr();
-
     public static final int ONE_MONTH_DAYS = 30;
-
-    public static Properties getPROPS() {
-        return PROPS;
-    }
-
-    public static String showMem() {
-        String msg = (float) Runtime.getRuntime().totalMemory() / ConstantsFor.MBYTE + " now totalMemory, " +
-            (float) Runtime.getRuntime().freeMemory() / ConstantsFor.MBYTE + " now freeMemory, " +
-            (float) Runtime.getRuntime().maxMemory() / ConstantsFor.MBYTE + " now maxMemory.";
-        AppComponents.getLogger().warn(msg);
-        return msg;
-    }
-    private static long getDelay() {
-        long delay = new SecureRandom().nextInt((int) MY_AGE);
-        if (delay < 14) {
-            delay = 14;
-        }
-        return delay;
-    }
-
-    public static String percToEnd() {
-        LocalTime endDay = LocalTime.parse("17:30");
-        LocalTime localTime = endDay.minusHours(LocalTime.now().getHour());
-
-        localTime = localTime.minusMinutes(LocalTime.now().getMinute());
-        localTime = localTime.minusSeconds(LocalTime.now().getSecond());
-        return localTime.toString() + " ";
-    }
 
     public static final int TOTAL_PC = Integer.parseInt(PROPS.getOrDefault("totpc", "316").toString());
 
@@ -195,48 +163,105 @@ public enum ConstantsFor {
 
     public static final int ONE_YEAR = 365;
 
-    public static final int NETSCAN_DELAY = (int) ConstantsFor.DELAY;
+    public static final int NETSCAN_DELAY = ( int ) ConstantsFor.DELAY;
 
     public static final String IT_FOLDER = "\\\\srv-fs.eatmeat.ru\\it$$";
 
+    private static long atomicTime;
+
+    public static Properties getPROPS() {
+        return PROPS;
+    }
+
     public static boolean isPingOK() {
-        try {
+        try{
             return InetAddress.getByName("srv-git.eatmeat.ru").isReachable(500);
-        } catch (IOException e) {
+        }
+        catch(IOException e){
             LoggerFactory.getLogger(ConstantsFor.class.getSimpleName()).error(e.getMessage(), e);
             return false;
         }
     }
 
     public static long getBuildStamp() {
-        try {
+        try{
             String hostName = InetAddress.getLocalHost().getHostName();
-            if (hostName.equalsIgnoreCase("home") || hostName.toLowerCase().contains("no0027")) {
+            if(hostName.equalsIgnoreCase("home") || hostName.toLowerCase().contains("no0027")){
                 PROPS.setProperty("build", System.currentTimeMillis() + "");
                 return System.currentTimeMillis();
-            } else {
+            }
+            else{
                 return Long.parseLong(PROPS.getProperty("build", "1"));
             }
-        } catch (UnknownHostException e) {
+        }
+        catch(UnknownHostException e){
             return 1L;
         }
     }
 
+    public static long getAtomicTime() {
+        ConstantsFor.atomicTime = new TimeChecker().call().getReturnTime();
+        return atomicTime;
+    }
+
+    private static long getDelay() {
+        long delay = new SecureRandom().nextInt(( int ) MY_AGE);
+        if(delay < 14){
+            delay = 14;
+        }
+        return delay;
+    }
+
+    public static String showMem() {
+        String msg = ( float ) Runtime.getRuntime().totalMemory() / ConstantsFor.MBYTE + " now totalMemory, " +
+            ( float ) Runtime.getRuntime().freeMemory() / ConstantsFor.MBYTE + " now freeMemory, " +
+            ( float ) Runtime.getRuntime().maxMemory() / ConstantsFor.MBYTE + " now maxMemory.";
+        AppComponents.getLogger().warn(msg);
+        return msg;
+    }
+
+    public static String percToEnd() {
+        StringBuilder stringBuilder = new StringBuilder();
+        LocalTime endDay = LocalTime.parse("17:30");
+        final int secDayEnd = endDay.toSecondOfDay();
+        LocalTime startDay = LocalTime.parse("08:30");
+        final int startSec = startDay.toSecondOfDay();
+        final int allDaySec = secDayEnd - startSec;
+        LocalTime localTime = endDay.minusHours(LocalTime.now().getHour());
+        localTime = localTime.minusMinutes(LocalTime.now().getMinute());
+        localTime = localTime.minusSeconds(LocalTime.now().getSecond());
+        stringBuilder.append(localTime.toString());
+        boolean workHours = startDay.isAfter(LocalTime.now()) && endDay.isBefore(LocalTime.now());
+        if(workHours){
+            int toEndDaySec = localTime.toSecondOfDay();
+            int diffSec = allDaySec - toEndDaySec;
+            Float percDay = (( float ) allDaySec / ( float ) toEndDaySec);
+            stringBuilder
+                .append(", difference - ")
+                .append(diffSec);
+            stringBuilder
+                .append(", proc - ")
+                .append(percDay)
+                .append("<br>");
+        }
+        else{
+            stringBuilder.append("<b> GO HOME! </b>");
+        }
+        return stringBuilder.toString();
+    }
+
     public static void saveProps(Properties propsToSave) {
         InitProperties initProperties;
-        try {
+        try{
             initProperties = new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
-        } catch (Exception e) {
+        }
+        catch(Exception e){
             initProperties = new FileProps(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
         }
         initProperties.delProps();
         initProperties.setProps(propsToSave);
         initProperties = new FileProps(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
         initProperties.setProps(propsToSave);
-    }
-
-    public static String getUpTime() {
-        return "(" + (+(float) (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / 60 / 60) + " hrs ago)";
     }
 
     /**
@@ -255,55 +280,14 @@ public enum ConstantsFor {
     }
 
     public static String thisPC() {
-        try {
+        try{
             return InetAddress.getLocalHost().getHostName();
-        } catch (UnknownHostException | ExceptionInInitializerError e) {
+        }
+        catch(UnknownHostException | ExceptionInInitializerError e){
             return e.getMessage();
-        } catch (NullPointerException n) {
+        }
+        catch(NullPointerException n){
             return "pc";
-        }
-    }
-
-    private static long atomicTime;
-
-    public static long getAtomicTime() {
-        ConstantsFor.atomicTime = new TimeChecker().call().getReturnTime();
-        return atomicTime;
-    }
-
-    static String checkDay() {
-        Date dateStart = MyCalen.getNextDayofWeek(10, 0, DayOfWeek.MONDAY);
-        String msg = dateStart + " - date to TRUNCATE , " +
-            LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault()) + "\n" +
-            ONE_WEEK_MILLIS + " ms delay.\n";
-        ThreadConfig t = new ThreadConfig();
-        ThreadPoolTaskScheduler threadPoolTaskScheduler = t.threadPoolTaskScheduler();
-        threadPoolTaskScheduler.scheduleWithFixedDelay(ConstantsFor::trunkTableUsers, dateStart, ONE_WEEK_MILLIS);
-        return msg;
-    }
-
-    private static void trunkTableUsers() {
-        MessageToUser messageToUser = new ESender("143500@gmail.com");
-        try (Connection c = new RegRuMysql().getDefaultConnection(DB_PREFIX + "velkom");
-             PreparedStatement preparedStatement = c.prepareStatement("TRUNCATE TABLE pcuserauto")) {
-            preparedStatement.executeUpdate();
-            messageToUser.infoNoTitles("TRUNCATE true\n" + ConstantsFor.getUpTime() + " uptime.");
-        } catch (SQLException e) {
-            messageToUser.infoNoTitles("TRUNCATE false\n" + ConstantsFor.getUpTime() + " uptime.");
-        }
-    }
-
-    private static Properties takePr() {
-        InitProperties initProperties;
-        try {
-            initProperties = new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
-            AppComponents.getLogger().info("ConstantsFor.takePr");
-            return initProperties.getProps();
-        } catch (Exception e) {
-            initProperties = new FileProps(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
-            String msg = "Taking File properties:" + "\n" + e.getMessage();
-            AppComponents.getLogger().warn(msg);
-            return initProperties.getProps();
         }
     }
 
@@ -353,4 +337,46 @@ public enum ConstantsFor {
         sb.append(", VISITS_MAP=").append(VISITS_MAP);
         sb.append('}');
         return sb.toString();
+    }
+
+    static String checkDay() {
+        Date dateStart = MyCalen.getNextDayofWeek(10, 0, DayOfWeek.MONDAY);
+        String msg = dateStart + " - date to TRUNCATE , " +
+            LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault()) + "\n" +
+            ONE_WEEK_MILLIS + " ms delay.\n";
+        ThreadConfig t = new ThreadConfig();
+        ThreadPoolTaskScheduler threadPoolTaskScheduler = t.threadPoolTaskScheduler();
+        threadPoolTaskScheduler.scheduleWithFixedDelay(ConstantsFor::trunkTableUsers, dateStart, ONE_WEEK_MILLIS);
+        return msg;
+    }
+
+    private static void trunkTableUsers() {
+        MessageToUser messageToUser = new ESender("143500@gmail.com");
+        try(Connection c = new RegRuMysql().getDefaultConnection(DB_PREFIX + "velkom");
+            PreparedStatement preparedStatement = c.prepareStatement("TRUNCATE TABLE pcuserauto")){
+            preparedStatement.executeUpdate();
+            messageToUser.infoNoTitles("TRUNCATE true\n" + ConstantsFor.getUpTime() + " uptime.");
+        }
+        catch(SQLException e){
+            messageToUser.infoNoTitles("TRUNCATE false\n" + ConstantsFor.getUpTime() + " uptime.");
+        }
+    }
+
+    public static String getUpTime() {
+        return "(" + (+( float ) (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / 60 / 60) + " hrs ago)";
+    }
+
+    private static Properties takePr() {
+        InitProperties initProperties;
+        try{
+            initProperties = new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
+            AppComponents.getLogger().info("ConstantsFor.takePr");
+            return initProperties.getProps();
+        }
+        catch(Exception e){
+            initProperties = new FileProps(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
+            String msg = "Taking File properties:" + "\n" + e.getMessage();
+            AppComponents.getLogger().warn(msg);
+            return initProperties.getProps();
+        }
     }}
