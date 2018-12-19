@@ -36,7 +36,10 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.Year;
 import java.time.format.TextStyle;
-import java.util.*;
+import java.util.Date;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
@@ -159,6 +162,13 @@ public enum ConstantsFor {
         return PROPS;
     }
 
+    public static String showMem() {
+        String msg = (float) Runtime.getRuntime().totalMemory() / ConstantsFor.KBYTE + " now totalMemory, " +
+            (float) Runtime.getRuntime().freeMemory() / ConstantsFor.KBYTE + " now freeMemory, " +
+            (float) Runtime.getRuntime().maxMemory() / ConstantsFor.KBYTE + " now maxMemory.";
+        AppComponents.getLogger().warn(msg);
+        return msg;
+    }
     private static long getDelay() {
         long delay = new SecureRandom().nextInt((int) MY_AGE);
         if (delay < 14) {

@@ -14,6 +14,7 @@ import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Date;
+import java.util.List;
 
 /**
  Вспомогательная работа с файлами.
@@ -119,6 +120,21 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         } catch (IOException | InterruptedException e) {
             LOGGER.warn(e.getMessage());
             Thread.currentThread().interrupt();
+        }
+    }
+
+    /**
+     Запись файла
+
+     @param fileName  имя файла
+     @param toFileRec {@link List} строчек на запись.
+     */
+    public static synchronized void recFile(String fileName, List<String> toFileRec) {
+        try (OutputStream outputStream = new FileOutputStream(fileName);
+             PrintWriter printWriter = new PrintWriter(outputStream, true)) {
+            toFileRec.forEach(printWriter::println);
+        } catch (IOException e) {
+            LOGGER.info(e.getMessage());
         }
     }
 }

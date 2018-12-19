@@ -67,6 +67,7 @@ public class IntoApplication {
      Запуск до старта Spring boot app
      */
     private static void beforeSt() {
+        ConstantsFor.showMem();
         LOGGER.info("IntoApplication.beforeSt");
         String msg = LocalDate.now().getDayOfWeek().getValue() + " - day of week\n" +
             LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault());
@@ -89,6 +90,7 @@ public class IntoApplication {
         ThreadConfig threadConfig = new ThreadConfig();
         Runnable infoAndSched = new AppInfoOnLoad();
         threadConfig.threadPoolTaskExecutor().execute(infoAndSched);
+        ConstantsFor.showMem();
     }
 
 }
