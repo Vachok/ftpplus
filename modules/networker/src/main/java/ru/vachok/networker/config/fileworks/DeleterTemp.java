@@ -3,14 +3,8 @@ package ru.vachok.networker.config.fileworks;
 
 import ru.vachok.networker.ConstantsFor;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.nio.file.FileSystemException;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.io.*;
+import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
@@ -91,7 +85,15 @@ class DeleterTemp extends FileSystemWorker implements Runnable {
      */
     private boolean tempFile(Path filePath) {
         return filePath.toString().toLowerCase().contains(".eatmeat.ru") ||
-            filePath.toString().toLowerCase().contains(".log");
+            filePath.toString().toLowerCase().contains(".log") ||
+            filePath.toString().toLowerCase().contains(".obj") ||
+            filePath.toString().toLowerCase().contains(".after") ||
+            filePath.toString().toLowerCase().contains(".before") ||
+            filePath.toString().toLowerCase().contains(".test") ||
+            filePath.toString().toLowerCase().contains("putty.exe") ||
+            filePath.toString().toLowerCase().contains(".me") ||
+            filePath.toString().toLowerCase().contains(".csv") ||
+            filePath.toString().toLowerCase().contains(".prn");
     }
 
 }
