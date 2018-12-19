@@ -3,8 +3,10 @@ package ru.vachok.networker.config.fileworks;
 
 import org.apache.commons.net.ntp.TimeInfo;
 import org.slf4j.Logger;
+import ru.vachok.messenger.email.ESender;
 import ru.vachok.networker.AppInfoOnLoad;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.common.CommonScan2YOlder;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.ThreadConfig;
@@ -78,6 +80,24 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
             } catch (IOException e) {
                 LOGGER.warn(e.getMessage());
             }
+        }
+    }
+
+    public static String searchInCommon(String[] folderPath) {
+        FileSearcher fileSearcher = new FileSearcher(folderPath[0]);
+        try {
+            String folderToSearch = folderPath[1];
+            folderToSearch = "\\\\srv-fs.eatmeat.ru\\common_new\\" + folderToSearch;
+            Files.walkFileTree(Paths.get(folderToSearch), fileSearcher);
+            ESender resSend = new ESender("netvisor@velkomfood.ru");
+            List<String> fileSearcherResList = fileSearcher.getResList();
+            String resTo = new TForms().fromArray(fileSearcherResList, true);
+            if (fileSearcherResList.size() > 0) {
+                resSend.info(FileSearcher.class.getSimpleName(), "SEARCHER RESULTS " + new Date().getTime(), fileSearcher.toString());
+            }
+            return resTo;
+        } catch (Exception e) {
+            return e.getMessage();
         }
     }
 

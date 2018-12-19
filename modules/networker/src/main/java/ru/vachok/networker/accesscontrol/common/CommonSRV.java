@@ -4,6 +4,7 @@ package ru.vachok.networker.accesscontrol.common;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.config.fileworks.FileSystemWorker;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -28,11 +29,14 @@ public class CommonSRV {
 
     /**
      Пользовательский ввод через форму на сайте
+
      @see CommonCTRL
      */
     private String delFolderPath;
 
     private String perionDays;
+
+    private String searchPat;
 
     public String getPerionDays() {
         return perionDays;
@@ -58,6 +62,27 @@ public class CommonSRV {
      */
     public void setDelFolderPath(String delFolderPath) {
         this.delFolderPath = delFolderPath;
+    }
+
+    public String getSearchPat() {
+        return searchPat;
+    }
+
+    public void setSearchPat(String searchPat) {
+        this.searchPat = searchPat;
+    }
+
+    public String searchByPat() {
+
+        StringBuilder stringBuilder = new StringBuilder();
+        try {
+            String[] toSearch = searchPat.split("\\Q:\\E");
+            FileSystemWorker.searchInCommon(toSearch);
+        } catch (Exception e) {
+            return e.getMessage();
+        }
+
+        return stringBuilder.toString();
     }
 
     void setNullToAllFields() {

@@ -19,6 +19,13 @@
     <br>
     <input type="submit" value="Восстановить"/><br>
 </form>
+<form method="POST" th:action="@{/commonsearch}" th:object="${common}"><br>
+    Укажите путь, где была папка или файл :<br>
+    <input placeholder="Введите что ищем и папку в common_new через двоеточие. Пример .avi:13_Служба_персонала" required th:field="*{searchPat}" type="text"/>
+    <br>
+    Результат этого поиска будет отправлен на netvisor@velkomfood.ru
+    <input type="submit" value="Найти"/><br>
+</form>
 <p>
     Работа в тестовом режиме. <br>
     Укажите путь до файла, в виде (пример) : <code>14_ИТ_служба\Общая\График отпусков 2019г. IT.xlsx</code> <br>
