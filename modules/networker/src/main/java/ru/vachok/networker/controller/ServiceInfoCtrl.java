@@ -74,10 +74,12 @@ public class ServiceInfoCtrl {
 
     private void modModMaker(Model model, HttpServletRequest request) {
         model.addAttribute(ConstantsFor.TITLE, getLast() + " (" + getLast() * ConstantsFor.ONE_DAY_HOURS + ")");
+        model.addAttribute("mail", ConstantsFor.percToEnd());
         model.addAttribute("ping", pingGit());
         model.addAttribute("urls", "Запущено - " +
             new Date(ConstantsFor.START_STAMP) + ConstantsFor.getUpTime() +
-            "<br>Точное время: " + ConstantsFor.getAtomicTime() + ". Состояние памяти (МБ): <font color=\"#82caff\">" + ConstantsFor.showMem() + "</font>");
+            "<br>Точное время: " + ConstantsFor.getAtomicTime() +
+            ". Состояние памяти (МБ): <font color=\"#82caff\">" + ConstantsFor.showMem() + "</font>");
         model.addAttribute("request", prepareRequest(request));
         model.addAttribute("visit", new VersionInfo().toString());
         model.addAttribute("back", request.getHeader("REFERER".toLowerCase()));

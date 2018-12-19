@@ -23,7 +23,6 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.nio.file.AccessDeniedException;
-import java.time.LocalTime;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -429,7 +428,7 @@ public class SshActs {
             LOGGER.warn(pcReq);
             setInet(pcReq);
             if (getAuthentic(pcReq)) {
-                model.addAttribute(ConstantsFor.TITLE, percToEnd());
+                model.addAttribute(ConstantsFor.TITLE, ConstantsFor.percToEnd());
                 model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext());
                 model.addAttribute(AT_NAME_SSHACTS, sshActs);
                 if (request.getQueryString() != null) {
@@ -441,15 +440,6 @@ public class SshActs {
                 model.addAttribute(AT_NAME_SSHDETAIL, sshActs.toString());
                 return PAGE_NAME;
             } else throw new AccessDeniedException("NOT Allowed! ");
-        }
-
-        private String percToEnd() {
-            LocalTime endDay = LocalTime.parse("17:30");
-            LocalTime localTime = endDay.minusHours(LocalTime.now().getHour());
-
-            localTime = localTime.minusMinutes(LocalTime.now().getMinute());
-            localTime = localTime.minusSeconds(LocalTime.now().getSecond());
-            return localTime.toString() + " ";
         }
 
         @PostMapping("/allowdomain")

@@ -34,6 +34,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.Year;
 import java.time.format.TextStyle;
 import java.util.Date;
@@ -175,6 +176,15 @@ public enum ConstantsFor {
             delay = 14;
         }
         return delay;
+    }
+
+    public static String percToEnd() {
+        LocalTime endDay = LocalTime.parse("17:30");
+        LocalTime localTime = endDay.minusHours(LocalTime.now().getHour());
+
+        localTime = localTime.minusMinutes(LocalTime.now().getMinute());
+        localTime = localTime.minusSeconds(LocalTime.now().getSecond());
+        return localTime.toString() + " ";
     }
 
     public static final int TOTAL_PC = Integer.parseInt(PROPS.getOrDefault("totpc", "316").toString());
