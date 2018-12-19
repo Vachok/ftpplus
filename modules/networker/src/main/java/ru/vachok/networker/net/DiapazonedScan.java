@@ -5,6 +5,8 @@ import org.slf4j.Logger;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
 
+import java.util.Arrays;
+
 /**
  Скан диапазона адресов
 
@@ -38,6 +40,7 @@ public class DiapazonedScan {
         sb.append("ourInstance=").append(ourInstance.getClass().getTypeName());
         sb.append(" Скан диапазона адресов since 19.12.2018 (11:35)").append("\n");
         sb.append(ConstantsFor.showMem());
+        sb.append(Arrays.toString(KassaSBank.values()));
         sb.append('}');
         return sb.toString();
     }
