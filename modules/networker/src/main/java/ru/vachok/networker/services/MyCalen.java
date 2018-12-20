@@ -23,7 +23,6 @@ public abstract class MyCalen {
 
     }
 
-    /*Fields*/
     private static final Logger LOGGER = AppComponents.getLogger();
 
     /**
@@ -107,8 +106,8 @@ public abstract class MyCalen {
         build.setWeekDate(localDate.getYear(), build.getWeeksInWeekYear(), Calendar.SATURDAY);
         Instant instant = build.toInstant();
         Date date = new Date(instant.toEpochMilli());
-        String msg = instant.toString() + " and ret date is: " + date.toString();
-        LOGGER.warn(msg);
+        String msg = instant.toString() + " and ret date is: " + date.toString() + "\n\n";
+        LOGGER.info(msg);
         return date;
     }
 

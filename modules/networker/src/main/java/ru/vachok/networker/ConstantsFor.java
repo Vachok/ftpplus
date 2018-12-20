@@ -32,9 +32,15 @@ import java.security.SecureRandom;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.time.*;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.Year;
 import java.time.format.TextStyle;
-import java.util.*;
+import java.util.Date;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
@@ -230,18 +236,18 @@ public enum ConstantsFor {
         LocalTime localTime = endDay.minusHours(LocalTime.now().getHour());
         localTime = localTime.minusMinutes(LocalTime.now().getMinute());
         localTime = localTime.minusSeconds(LocalTime.now().getSecond());
-        boolean workHours = startDay.isAfter(LocalTime.now()) && endDay.isBefore(LocalTime.now());
+        boolean workHours = LocalTime.now().isAfter(startDay) && LocalTime.now().isBefore(endDay);
         if(workHours){
             int toEndDaySec = localTime.toSecondOfDay();
             int diffSec = allDaySec - toEndDaySec;
-            Float percDay = (( float ) allDaySec / ( float ) toEndDaySec);
+            float percDay = ((float) allDaySec / (float) toEndDaySec);
             stringBuilder
-                .append(", difference - ")
-                .append(diffSec);
+                .append("Прошло минут ")
+                .append(TimeUnit.SECONDS.toMinutes(diffSec));
             stringBuilder
-                .append(", proc - ")
-                .append(percDay)
-                .append("<br>");
+                .append(". Осталось ")
+                .append(100 - (percDay - 1) * 100)
+                .append(" %<br>");
         }
         else{
             stringBuilder.append("<b> GO HOME! </b><br>");
