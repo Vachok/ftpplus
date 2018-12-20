@@ -11,6 +11,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.lang.reflect.Field;
 import java.net.InetAddress;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -90,7 +91,8 @@ public class DiapazonedScan implements Runnable {
     private void scanAll() throws IOException {
         long stArt = System.currentTimeMillis();
         LOGGER.info("DiapazonedScan.scanAll");
-        OutputStream outputStream = new FileOutputStream("avalible.txt");
+        String avaPathStr = Paths.get(".").toFile().getCanonicalPath();
+        OutputStream outputStream = new FileOutputStream(avaPathStr + "\\modules\\networker\\src\\main\\resources\\static\\texts\\available.txt");
         PrintWriter printWriter = new PrintWriter(outputStream, true);
         ConcurrentMap<String, InetAddress> avaliablePCs = new ConcurrentHashMap<>();
         List<String> notAval = new ArrayList<>();

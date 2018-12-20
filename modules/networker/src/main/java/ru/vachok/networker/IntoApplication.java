@@ -11,6 +11,8 @@ import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.config.ThreadConfig;
 
+import java.io.IOException;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.TextStyle;
 import java.util.Locale;
@@ -91,6 +93,14 @@ public class IntoApplication {
         Runnable infoAndSched = new AppInfoOnLoad();
         threadConfig.threadPoolTaskExecutor().execute(infoAndSched);
         ConstantsFor.showMem();
+        try {
+            String showPath = Paths.get(".").toString() + "\n abs: " +
+                Paths.get(".").toFile().getAbsolutePath() + "\n canonical: " +
+                Paths.get(".").toFile().getCanonicalPath();
+            LOGGER.warn(showPath);
+        } catch (IOException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
     }
 
 }
