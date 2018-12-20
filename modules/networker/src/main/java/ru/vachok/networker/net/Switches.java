@@ -1,6 +1,11 @@
 package ru.vachok.networker.net;
 
 
+import java.io.IOException;
+import java.net.InetAddress;
+import java.util.Collections;
+import java.util.List;
+
 /**
  Свичи
 
@@ -52,31 +57,40 @@ public enum Switches {
 
     public static final String WTF = "10.200.215.250";
 
+    public static final String CONTROL = "192.168.13.13";
 
     public static String toStringS() {
-        final StringBuilder sb = new StringBuilder("<center>Switches{<br>");
-        sb.append("ATC_201_HP=").append(ATC_201_HP).append("<br>");
-        sb.append("ATC_201_HP_VLAN203=").append(ATC_201_HP_VLAN203).append("<br>");
-        sb.append("CORE_HP_3800=").append(CORE_HP_3800).append("<br>");
-        sb.append("HOTEL_MIKROTIK=").append(HOTEL_MIKROTIK).append("<br>");
-        sb.append("HP_2530_24_G_ADM_YURDEP_2=").append(HP_2530_24_G_ADM_YURDEP_2).append("<br>");
-        sb.append("HP_2530_24_G_PO_EP_SK=").append(HP_2530_24_G_POE_P_SK).append("<br>");
-        sb.append("HP_2530_48_1_FLOOR_VLAN_217=").append(HP_2530_48_1_FLOOR_VLAN_217).append("<br>");
-        sb.append("HP_2530_48_ADM_YURDEP=").append(HP_2530_48_ADM_YURDEP).append("<br>");
-        sb.append("HP_2530_48_G_ADM_IT_2=").append(HP_2530_48_G_ADM_IT_2).append("<br>");
-        sb.append("HP_2530_48_IT_OTDEL=").append(HP_2530_48_IT_OTDEL).append("<br>");
-        sb.append("HP_2530_48_UBOY=").append(HP_2530_48_UBOY).append("<br>");
-        sb.append("HP_2530_48_UPAKOVKA=").append(HP_2530_48_UPAKOVKA).append("<br>");
-        sb.append("HP_3500_2=").append(HP_3500_2).append("<br>");
-        sb.append("HP_3500_YL_217_SCHETFAKT=").append(HP_3500_YL_217_SCHETFAKT).append("<br>");
-        sb.append("MKC_VLAN_210_HP=").append(MKC_VLAN_210_HP).append("<br>");
-        sb.append("PF_HP=").append(PF_HP).append("<br>");
-        sb.append("SB_PAVILION_MIKROTIK=").append(SB_PAVILION_MIKROTIK).append("<br>");
-        sb.append("SKLAD_2_MXV_HP=").append(SKLAD_2_MXV_HP).append("<br>");
-        sb.append("SKLAD_5_MIKROTIK=").append(SKLAD_5_MIKROTIK).append("<br>");
-        sb.append("TD_HP_V1910_24G=").append(TD_HP_V1910_24G).append("<br>");
-        sb.append("TECH_SLUJBA_HP=").append(TECH_SLUJBA_HP).append("<br>");
-        sb.append("<font color=\"#ff77fc\">WTF=").append(WTF).append("</font><br>");
-        sb.append("}</center>");
-        return sb.toString();
-    }}
+        StringBuilder stringBuilder = new StringBuilder();
+
+        try {
+            List<String> swListAsStr = DiapazonedScan.getInstance().pingSwitch();
+            Collections.sort(swListAsStr);
+            for (String s : swListAsStr) {
+                s = s.replaceAll("\n", "");
+                InetAddress inetAddress = InetAddress.getByName(s);
+                byte[] addressBytes = inetAddress.getAddress();
+                inetAddress = InetAddress.getByAddress(addressBytes);
+
+                if (inetAddress.isReachable(500)) {
+                    stringBuilder.append("<center>");
+                    stringBuilder
+                        .append("<font color=\"#00ff69\">")
+                        .append(s)
+                        .append("</font>");
+                    stringBuilder.append("</center>");
+                } else {
+                    stringBuilder.append("<center>");
+                    stringBuilder
+                        .append("<strike><font color=\"red\">")
+                        .append(s)
+                        .append("</font></strike>");
+                    stringBuilder.append("</center>");
+                }
+            }
+        } catch (IllegalAccessException | IOException e) {
+            stringBuilder.append(e.getMessage());
+        }
+
+        return stringBuilder.toString();
+    }
+}
