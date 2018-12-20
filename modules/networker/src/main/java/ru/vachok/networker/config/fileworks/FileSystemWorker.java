@@ -89,7 +89,9 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
             String folderToSearch = folderPath[1];
             folderToSearch = "\\\\srv-fs.eatmeat.ru\\common_new\\" + folderToSearch;
             Files.walkFileTree(Paths.get(folderToSearch), fileSearcher);
-            ESender resSend = new ESender("netvisor@velkomfood.ru");
+            String oneAddress = "netvisor@velkomfood.ru";
+            if (ConstantsFor.thisPC().contains("NO0027")) oneAddress = "143500@gmail.com";
+            ESender resSend = new ESender(oneAddress);
             List<String> fileSearcherResList = fileSearcher.getResList();
             String resTo = new TForms().fromArray(fileSearcherResList, true);
             if (fileSearcherResList.size() > 0) {

@@ -242,12 +242,12 @@ public enum ConstantsFor {
             int diffSec = allDaySec - toEndDaySec;
             float percDay = ((float) allDaySec / (float) toEndDaySec);
             stringBuilder
-                .append("Прошло минут ")
+                .append("Работаем ")
                 .append(TimeUnit.SECONDS.toMinutes(diffSec));
             stringBuilder
-                .append(". Осталось ")
+                .append("(мин.). Ещё ")
                 .append(100 - (percDay - 1) * 100)
-                .append(" %<br>");
+                .append(" % или ");
         }
         else{
             stringBuilder.append("<b> GO HOME! </b><br>");

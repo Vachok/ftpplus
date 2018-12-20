@@ -64,6 +64,7 @@ public class CommonSRV {
         this.delFolderPath = delFolderPath;
     }
 
+    @SuppressWarnings("WeakerAccess")
     public String getSearchPat() {
         return searchPat;
     }
@@ -72,16 +73,16 @@ public class CommonSRV {
         this.searchPat = searchPat;
     }
 
-    public String searchByPat() {
+    String searchByPat() {
 
         StringBuilder stringBuilder = new StringBuilder();
         try {
             String[] toSearch = searchPat.split("\\Q:\\E");
-            FileSystemWorker.searchInCommon(toSearch);
+            String searchInCommon = FileSystemWorker.searchInCommon(toSearch);
+            stringBuilder.append(searchInCommon);
         } catch (Exception e) {
-            return e.getMessage();
+            stringBuilder.append(e.getMessage());
         }
-
         return stringBuilder.toString();
     }
 
