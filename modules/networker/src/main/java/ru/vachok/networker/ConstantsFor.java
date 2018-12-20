@@ -240,13 +240,13 @@ public enum ConstantsFor {
         if(workHours){
             int toEndDaySec = localTime.toSecondOfDay();
             int diffSec = allDaySec - toEndDaySec;
-            float percDay = ((float) allDaySec / (float) toEndDaySec);
+            float percDay = ((float) toEndDaySec / (((float) allDaySec) / 100));
             stringBuilder
                 .append("Работаем ")
                 .append(TimeUnit.SECONDS.toMinutes(diffSec));
             stringBuilder
                 .append("(мин.). Ещё ")
-                .append(100 - (percDay - 1) * 100)
+                .append(percDay)
                 .append(" % или ");
         }
         else{
