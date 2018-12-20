@@ -9,8 +9,13 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.*;
+import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.componentsrepo.PageFooter;
+import ru.vachok.networker.componentsrepo.VersionInfo;
+import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.config.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.Switches;
+import ru.vachok.networker.services.MyCalen;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -72,12 +77,18 @@ public class ServiceInfoCtrl {
         model.addAttribute(ConstantsFor.TITLE, getLast() + " (" + getLast() * ConstantsFor.ONE_DAY_HOURS + ")");
         model.addAttribute("mail", ConstantsFor.percToEnd());
         model.addAttribute("ping", pingGit());
-        model.addAttribute("urls", "Запущено - " +
-            new Date(ConstantsFor.START_STAMP) + ConstantsFor.getUpTime() +
-            "<br>Точное время: " + ConstantsFor.getAtomicTime() +
-            ". Состояние памяти (МБ): <font color=\"#82caff\">" + ConstantsFor.showMem() + "</font>");
+        model.addAttribute("urls", new StringBuilder()
+            .append("Запущено - ")
+            .append(new Date(ConstantsFor.START_STAMP)).append(ConstantsFor.getUpTime())
+            .append("<br>Точное время: ")
+            .append(ConstantsFor.getAtomicTime())
+            .append(". Состояние памяти (МБ): <font color=\"#82caff\">")
+            .append(ConstantsFor.showMem()).append("</font><p>")
+            .append(Switches.toStringS())
+            .toString());
         model.addAttribute("request", prepareRequest(request));
         model.addAttribute("visit", new VersionInfo().toString());
+        model.addAttribute("res", MyCalen.toStringS());
         model.addAttribute("back", request.getHeader("REFERER".toLowerCase()));
         model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext() + "<br>" + getJREVers());
     }
