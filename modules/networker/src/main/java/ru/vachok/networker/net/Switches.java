@@ -54,7 +54,7 @@ public enum Switches {
 
 
     public static String toStringS() {
-        final StringBuilder sb = new StringBuilder("Switches{");
+        final StringBuilder sb = new StringBuilder("<center>Switches{<br>");
         sb.append("ATC_201_HP=").append(ATC_201_HP).append("<br>");
         sb.append("ATC_201_HP_VLAN203=").append(ATC_201_HP_VLAN203).append("<br>");
         sb.append("CORE_HP_3800=").append(CORE_HP_3800).append("<br>");
@@ -76,7 +76,7 @@ public enum Switches {
         sb.append("SKLAD_5_MIKROTIK=").append(SKLAD_5_MIKROTIK).append("<br>");
         sb.append("TD_HP_V1910_24G=").append(TD_HP_V1910_24G).append("<br>");
         sb.append("TECH_SLUJBA_HP=").append(TECH_SLUJBA_HP).append("<br>");
-        sb.append("WTF=").append(WTF).append("<br>");
-        sb.append('}');
+        sb.append("<font color=\"#ff77fc\">WTF=").append(WTF).append("</font><br>");
+        sb.append("}</center>");
         return sb.toString();
     }}
