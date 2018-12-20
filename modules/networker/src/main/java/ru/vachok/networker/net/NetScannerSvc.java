@@ -16,7 +16,7 @@ import ru.vachok.networker.ad.ActDirectoryCTRL;
 import ru.vachok.networker.ad.PCUserResolver;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.ThreadConfig;
-import ru.vachok.networker.config.fileworks.FileSystemWorker;
+import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.TimeChecker;
 
 import javax.servlet.http.HttpServletRequest;

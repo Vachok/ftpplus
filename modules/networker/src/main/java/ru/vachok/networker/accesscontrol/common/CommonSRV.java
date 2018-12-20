@@ -4,7 +4,7 @@ package ru.vachok.networker.accesscontrol.common;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 import ru.vachok.networker.componentsrepo.AppComponents;
-import ru.vachok.networker.config.fileworks.FileSystemWorker;
+import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.io.File;
 import java.io.FileOutputStream;

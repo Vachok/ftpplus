@@ -9,7 +9,7 @@ import ru.vachok.networker.SystemTrayHelper;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.VersionInfo;
-import ru.vachok.networker.config.fileworks.FileSystemWorker;
+import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.DBMessenger;
 
 import java.io.*;

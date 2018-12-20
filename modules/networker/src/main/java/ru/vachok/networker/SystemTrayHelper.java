@@ -7,7 +7,7 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.accesscontrol.common.ArchivesAutoCleaner;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.ThreadConfig;
-import ru.vachok.networker.config.fileworks.FileSystemWorker;
+import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.MyServer;
 import ru.vachok.networker.services.DBMessenger;
 import ru.vachok.networker.services.Putty;

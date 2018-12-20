@@ -1,10 +1,16 @@
-package ru.vachok.networker.config.fileworks;
+package ru.vachok.networker.fileworks;
 
 
 import ru.vachok.networker.ConstantsFor;
 
-import java.io.*;
-import java.nio.file.*;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.nio.file.FileSystemException;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;

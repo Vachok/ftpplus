@@ -13,7 +13,7 @@ import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.VersionInfo;
 import ru.vachok.networker.componentsrepo.Visitor;
-import ru.vachok.networker.config.fileworks.FileSystemWorker;
+import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.Switches;
 import ru.vachok.networker.services.MyCalen;
 

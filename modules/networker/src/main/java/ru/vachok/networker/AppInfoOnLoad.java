@@ -8,7 +8,7 @@ import ru.vachok.networker.accesscontrol.common.CommonRightsChecker;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.config.ThreadConfig;
-import ru.vachok.networker.config.fileworks.FileSystemWorker;
+import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.SwitchesAvailability;
 import ru.vachok.networker.services.MyCalen;
 import ru.vachok.networker.services.WeekPCStats;

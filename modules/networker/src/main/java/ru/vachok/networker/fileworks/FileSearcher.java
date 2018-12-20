@@ -1,4 +1,4 @@
-package ru.vachok.networker.config.fileworks;
+package ru.vachok.networker.fileworks;
 
 
 import ru.vachok.networker.TForms;
