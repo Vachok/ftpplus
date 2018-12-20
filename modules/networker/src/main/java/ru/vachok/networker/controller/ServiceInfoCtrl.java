@@ -9,10 +9,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.AppComponents;
-import ru.vachok.networker.componentsrepo.PageFooter;
-import ru.vachok.networker.componentsrepo.VersionInfo;
-import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.componentsrepo.*;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.Switches;
 import ru.vachok.networker.services.MyCalen;
@@ -166,5 +163,10 @@ public class ServiceInfoCtrl {
         } else {
             return "<b><font color=\"#ff2121\">" + true + s + LocalTime.now() + s2;
         }
+    }
+
+    @GetMapping ("/pcoff")
+    public void offPC(Model model) throws IOException {
+        Runtime.getRuntime().exec("shutdown /p /f");
     }
 }

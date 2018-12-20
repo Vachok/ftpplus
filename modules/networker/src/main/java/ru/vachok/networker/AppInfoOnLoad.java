@@ -151,5 +151,4 @@ public class AppInfoOnLoad implements Runnable {
             r.run();
         }
     }
-
 }
