@@ -7,17 +7,21 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import ru.vachok.mysqlandprops.props.DBRegProperties;
+import ru.vachok.mysqlandprops.props.FileProps;
+import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.accesscontrol.MatrixCtr;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.AppCtx;
-import ru.vachok.networker.config.ExitApp;
 import ru.vachok.networker.config.ThreadConfig;
 
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.TextStyle;
+import java.util.Arrays;
 import java.util.Locale;
+import java.util.Properties;
 
 
 /**
@@ -28,6 +32,8 @@ import java.util.Locale;
 @SpringBootApplication
 @EnableScheduling
 public class IntoApplication {
+
+    /*Fields*/
 
     /**
      {@link AppComponents#getLogger()}
@@ -48,7 +54,11 @@ public class IntoApplication {
 
     private static ConfigurableApplicationContext configurableApplicationContext;
 
-    public static ConfigurableApplicationContext getConfigurableApplicationContext() {
+    static SpringApplication getSpringApplication() {
+        return SPRING_APPLICATION;
+    }
+
+    static ConfigurableApplicationContext getConfigurableApplicationContext() {
         return configurableApplicationContext;
     }
 
@@ -62,20 +72,21 @@ public class IntoApplication {
      */
     public static void main(String[] args) {
         final long stArt = System.currentTimeMillis();
-
         beforeSt();
-
         configurableApplicationContext = SpringApplication.run(IntoApplication.class, args);
         ConfigurableApplicationContext run = configurableApplicationContext;
-
         run.start();
-        run.registerShutdownHook();
 
-        afterSt();
-
+        if(args.length > 0 && Arrays.toString(args).contains("off")){
+            new ThreadConfig().killAll();
+        }
+        else{
+            String msg = afterSt() + " " + run.toString();
+            LOGGER.warn(msg);
+        }
         String msgTimeSp = new StringBuilder()
             .append("IntoApplication.main method. ")
-            .append((float) (System.currentTimeMillis() - stArt) / 1000)
+            .append(( float ) (System.currentTimeMillis() - stArt) / 1000)
             .append(" sec spend").toString();
         LOGGER.info(msgTimeSp);
     }
@@ -84,17 +95,16 @@ public class IntoApplication {
      Запуск до старта Spring boot app
      */
     private static void beforeSt() {
-
-        Runtime.getRuntime().addShutdownHook(new ExitApp());
-
+        ConstantsFor.takePr();
         ConstantsFor.showMem();
         LOGGER.info("IntoApplication.beforeSt");
         String msg = LocalDate.now().getDayOfWeek().getValue() + " - day of week\n" +
             LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault());
         LOGGER.warn(msg);
-        if (THIS_PC.toLowerCase().contains("no0027") || THIS_PC.toLowerCase().contains("home")) {
+        if(THIS_PC.toLowerCase().contains("no0027") || THIS_PC.toLowerCase().contains("home")){
             SystemTrayHelper.addTray("icons8-плохие-поросята-32.png");
-        } else {
+        }
+        else{
             SystemTrayHelper.addTray(null);
         }
         SPRING_APPLICATION.setMainApplicationClass(IntoApplication.class);
@@ -105,20 +115,29 @@ public class IntoApplication {
     /**
      Запуск после старта Spring boot app
      */
-    private static void afterSt() {
-        LOGGER.info("IntoApplication.afterSt");
+    private static boolean afterSt() {
+
         ThreadConfig threadConfig = new ThreadConfig();
         Runnable infoAndSched = new AppInfoOnLoad();
-        threadConfig.threadPoolTaskExecutor().execute(infoAndSched);
         ConstantsFor.showMem();
-        try {
+        try{
+            String s = Paths.get("").toFile().getCanonicalPath().toLowerCase();
             String showPath = Paths.get(".").toString() + "\n abs: " +
-                Paths.get(".").toFile().getAbsolutePath() + "\n canonical: " +
-                Paths.get(".").toFile().getCanonicalPath();
-            LOGGER.warn(showPath);
-        } catch (IOException e) {
-            LOGGER.error(e.getMessage(), e);
+                Paths.get(".").toFile().getAbsolutePath();
+            new Thread(() -> {
+
+                InitProperties initProperties = new FileProps(s + "\\modules\\networker\\src\\main\\resources\\application");
+                Properties props = initProperties.getProps();
+                initProperties = new DBRegProperties(ConstantsFor.APP_NAME + "application");
+                initProperties.setProps(props);
+            }).start();
+            LOGGER.error(showPath);
+            threadConfig.threadPoolTaskExecutor().execute(infoAndSched);
+            return true;
+        }
+        catch(IOException e){
+            LOGGER.warn(e.getMessage(), e);
+            return false;
         }
     }
-
 }

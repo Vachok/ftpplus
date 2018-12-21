@@ -741,3 +741,6 @@ avalible.txt
 /available.txt
 iislogsclean.log
 modules/networker/src/main/resources/static/texts/available_last.txt
+modules/networker/src/main/resources/static/texts/available_last_last.txt
+regSourceForProperties.properties
+*SystemTrayHelper.se*

@@ -5,6 +5,8 @@ import org.springframework.core.task.TaskDecorator;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import ru.vachok.networker.componentsrepo.AppComponents;
+
 
 /**
  * @since 11.09.2018 (11:41)
@@ -30,8 +32,18 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
         return threadPoolTaskScheduler;
     }
 
-    public TaskDecorator taskDecorator(Runnable runnable) {
-        return runnable1 -> runnable;
+    public Runnable taskDecorator(Runnable runnable) {
+        TaskDecorator taskDecorator = runnable1 -> runnable;
+        String msg = taskDecorator.toString() + " " + this.getClass().getSimpleName() + ".taskDecorator(Runnable runnable)";
+        AppComponents.getLogger().info(msg);
+        return taskDecorator.decorate(runnable);
+    }
+
+    public void killAll() {
+        threadPoolTaskExecutor().destroy();
+        threadPoolTaskScheduler().destroy();
+        Thread.currentThread().checkAccess();
+        Thread.currentThread().interrupt();
     }
 
     @Override

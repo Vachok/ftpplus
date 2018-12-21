@@ -58,7 +58,7 @@ public class PfListsCtr {
     @Autowired
     public PfListsCtr(PfLists pfLists, PfListsSrv pfListsSrv) {
         threadConfig.taskDecorator(makePFLists);
-        this.properties = ConstantsFor.getPROPS();
+        this.properties = ConstantsFor.getProps();
         this.pfLists = pfLists;
         this.pfListsSrv = pfListsSrv;
         this.pingOK = ConstantsFor.isPingOK();
@@ -72,7 +72,7 @@ public class PfListsCtr {
     public String pfBean(Model model, HttpServletRequest request, HttpServletResponse response) throws UnknownHostException {
         this.visitor = new Visitor(request);
         String pflistsStr = "pflists";
-        this.properties = ConstantsFor.getPROPS();
+        this.properties = ConstantsFor.getProps();
         long lastScan = Long.parseLong(properties.getProperty("pfscan", "1"));
         timeOut = lastScan + TimeUnit.MINUTES.toMillis(15);
         if (!pingOK) noPing(model);

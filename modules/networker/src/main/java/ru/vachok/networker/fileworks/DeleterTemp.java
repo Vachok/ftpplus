@@ -3,14 +3,8 @@ package ru.vachok.networker.fileworks;
 
 import ru.vachok.networker.ConstantsFor;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.nio.file.FileSystemException;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.io.*;
+import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
@@ -59,14 +53,17 @@ class DeleterTemp extends FileSystemWorker implements Runnable {
                 "," +
                 Files.readAttributes(file, "dos:*"));
         }
+
         if (tempFile(file.toAbsolutePath())) {
             try {
-                Files.delete(file);
+                Files.deleteIfExists(file);
             } catch (FileSystemException e) {
-                LOGGER.warn(e.getMessage(), e);
+                file.toFile().deleteOnExit();
+                return FileVisitResult.CONTINUE;
             }
             LOGGER.warn(fileAbs);
         }
+
         return FileVisitResult.CONTINUE;
     }
 

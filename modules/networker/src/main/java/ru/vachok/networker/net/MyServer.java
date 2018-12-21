@@ -9,7 +9,6 @@ import ru.vachok.networker.SystemTrayHelper;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.VersionInfo;
-import ru.vachok.networker.config.ExitApp;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.DBMessenger;
 
@@ -17,14 +16,10 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.security.SecureRandom;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Properties;
-import java.util.Scanner;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-import static java.lang.System.err;
-import static java.lang.System.out;
+import static java.lang.System.*;
 
 
 /**
@@ -69,7 +64,7 @@ public class MyServer extends Thread {
      */
     private static Socket socket;
 
-    private static final Properties propsToSave = ConstantsFor.getPROPS();
+    private static final Properties propsToSave = ConstantsFor.getProps();
 
     /**
      <i>{@link SystemTrayHelper#recOn()}</i>
@@ -142,9 +137,7 @@ public class MyServer extends Thread {
         String readLine = bufferedReader.readLine();
         if (readLine.toLowerCase().contains("exit")) {
             FileSystemWorker.delTemp();
-            ConstantsFor.saveProps(propsToSave);
             socket.close();
-            Runtime.getRuntime().addShutdownHook(new ExitApp(MyServer.class.getSimpleName(), "scanAll"));
             System.exit(ConstantsFor.USER_EXIT);
         }
         if (readLine.toLowerCase().contains("help")) {

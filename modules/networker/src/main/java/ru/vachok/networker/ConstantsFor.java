@@ -18,6 +18,7 @@ import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.controller.ServiceInfoCtrl;
 import ru.vachok.networker.mailserver.ExSRV;
 import ru.vachok.networker.mailserver.MailRule;
+import ru.vachok.networker.net.DiapazonedScan;
 import ru.vachok.networker.net.NetScannerSvc;
 import ru.vachok.networker.services.MyCalen;
 import ru.vachok.networker.services.PassGenerator;
@@ -32,15 +33,9 @@ import java.security.SecureRandom;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.Year;
+import java.time.*;
 import java.time.format.TextStyle;
-import java.util.Date;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.*;
 
 
@@ -52,10 +47,15 @@ import java.util.concurrent.*;
 public enum ConstantsFor {
     ;
 
-    public static final BlockingQueue<String> ALL_DEVICES = new ArrayBlockingQueue<>(4591);
-
     /*Fields*/
-    private static final Properties PROPS = takePr();
+    private static final Properties PROPS = new Properties();
+
+    /**
+     Список девайсов и адресов в диапазоне VLAN200-VLAN217
+
+     @see DiapazonedScan
+     */
+    public static final BlockingQueue<String> ALL_DEVICES = new ArrayBlockingQueue<>(4590);
 
     /**
      <b>1 мегабайт в байтах</b>
@@ -161,8 +161,6 @@ public enum ConstantsFor {
 
     public static final int ONE_MONTH_DAYS = 30;
 
-    public static final int TOTAL_PC = Integer.parseInt(PROPS.getOrDefault("totpc", "316").toString());
-
     public static final PassGenerator passGenerator = new PassGenerator();
 
     public static final int LISTEN_PORT = Integer.parseInt(PROPS.getOrDefault("lport", "9990").toString());
@@ -175,7 +173,7 @@ public enum ConstantsFor {
 
     private static long atomicTime;
 
-    public static Properties getPROPS() {
+    public static Properties getProps() {
         return PROPS;
     }
 
@@ -337,7 +335,6 @@ public enum ConstantsFor {
         sb.append(", TIMEOUT_5=").append(TIMEOUT_5);
         sb.append(", TIMEOUT_650=").append(TIMEOUT_650);
         sb.append(", TITLE='").append(TITLE).append('\n');
-        sb.append(", TOTAL_PC=").append(TOTAL_PC);
         sb.append(", USER_EXIT=").append(USER_EXIT);
         sb.append(", USERS='").append(USERS).append('\n');
         sb.append(", VISITS_MAP=").append(VISITS_MAP);
@@ -372,17 +369,19 @@ public enum ConstantsFor {
         return "(" + (+( float ) (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / 60 / 60) + " hrs ago)";
     }
 
-    private static Properties takePr() {
+    static void takePr() {
         InitProperties initProperties;
         try{
             initProperties = new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
-            AppComponents.getLogger().info("ConstantsFor.takePr");
-            return initProperties.getProps();
+            String msg = "Taking DB properties:" + "\n" + initProperties.getClass().getSimpleName();
+            AppComponents.getLogger().info(msg);
+            PROPS.putAll(initProperties.getProps());
         }
         catch(Exception e){
             initProperties = new FileProps(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
             String msg = "Taking File properties:" + "\n" + e.getMessage();
             AppComponents.getLogger().warn(msg);
-            return initProperties.getProps();
+            PROPS.putAll(initProperties.getProps());
+            AppComponents.getLogger().warn(msg);
         }
     }}

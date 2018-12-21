@@ -8,13 +8,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.ExitApp;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.AppComponents;
-import ru.vachok.networker.componentsrepo.PageFooter;
-import ru.vachok.networker.componentsrepo.VersionInfo;
-import ru.vachok.networker.componentsrepo.Visitor;
-import ru.vachok.networker.config.ExitApp;
-import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.componentsrepo.*;
+import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.net.DiapazonedScan;
 import ru.vachok.networker.services.MyCalen;
 
@@ -40,11 +37,12 @@ public class ServiceInfoCtrl {
 
     private boolean authReq;
 
-    private static final Properties PROPS = ConstantsFor.getPROPS();
+    /*Fields*/
+    private static final Properties PROPS = ConstantsFor.getProps();
 
     private float getLast() {
         return TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() -
-            Long.parseLong(ConstantsFor.getPROPS().getProperty("lasts", 1544816520000L + ""))) / 60f / 24f;
+            Long.parseLong(ConstantsFor.getProps().getProperty("lasts", 1544816520000L + ""))) / 60f / 24f;
     }
 
     @Autowired
@@ -77,10 +75,7 @@ public class ServiceInfoCtrl {
     @GetMapping("/stop")
     public String closeApp() throws AccessDeniedException {
         if (authReq) {
-            FileSystemWorker.delTemp();
-            ConstantsFor.saveProps(PROPS);
-            Runtime.getRuntime().addShutdownHook(new ExitApp(this.getClass().getSimpleName(), "closeApp"));
-            System.exit(ConstantsFor.USER_EXIT);
+            new ThreadConfig().threadPoolTaskExecutor().execute(new ExitApp(this.getClass().getSimpleName()));
         } else {
             throw new AccessDeniedException("DENY!");
         }

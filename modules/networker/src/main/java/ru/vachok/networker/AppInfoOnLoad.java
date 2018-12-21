@@ -53,6 +53,15 @@ public class AppInfoOnLoad implements Runnable {
      */
     private static final File CONST_TXT = new File("const.txt");
 
+    /*Fields*/
+
+    /**
+     Задержка выполнения для этого класса
+
+     @see #schedStarter()
+     */
+    private static final int THIS_DELAY = 150;
+
     /**
      @return {@link #CONST_TXT}
      */
@@ -101,9 +110,12 @@ public class AppInfoOnLoad implements Runnable {
         Runnable swAval = new SwitchesAvailability();
         ScheduledExecutorService executorService = Executors.unconfigurableScheduledExecutorService(Executors.newScheduledThreadPool(3));
 
+
         executorService.scheduleWithFixedDelay(Objects.requireNonNull(speedRun), ConstantsFor.INIT_DELAY, TimeUnit.MINUTES.toSeconds(ConstantsFor.DELAY), TimeUnit.SECONDS);
-        executorService.scheduleWithFixedDelay(swAval, 1, ConstantsFor.DELAY, TimeUnit.SECONDS);
-        executorService.scheduleWithFixedDelay(DiapazonedScan.getInstance(), 1, 200, TimeUnit.MINUTES);
+        if(!ConstantsFor.thisPC().toLowerCase().contains("home")){
+            executorService.scheduleWithFixedDelay(swAval, 10, ConstantsFor.DELAY, TimeUnit.SECONDS);
+        }
+        executorService.scheduleWithFixedDelay(DiapazonedScan.getInstance(), 4, THIS_DELAY, TimeUnit.MINUTES);
 
         dateSchedulers();
 
