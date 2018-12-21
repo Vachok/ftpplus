@@ -41,9 +41,7 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 
 /**
@@ -53,6 +51,8 @@ import java.util.concurrent.TimeUnit;
  @since 12.08.2018 (16:26) */
 public enum ConstantsFor {
     ;
+
+    public static final BlockingQueue<String> ALL_DEVICES = new ArrayBlockingQueue<>(4591);
 
     /*Fields*/
     private static final Properties PROPS = takePr();

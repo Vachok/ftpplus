@@ -9,6 +9,7 @@ import ru.vachok.networker.SystemTrayHelper;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.VersionInfo;
+import ru.vachok.networker.config.ExitApp;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.DBMessenger;
 
@@ -143,6 +144,7 @@ public class MyServer extends Thread {
             FileSystemWorker.delTemp();
             ConstantsFor.saveProps(propsToSave);
             socket.close();
+            Runtime.getRuntime().addShutdownHook(new ExitApp(MyServer.class.getSimpleName(), "scanAll"));
             System.exit(ConstantsFor.USER_EXIT);
         }
         if (readLine.toLowerCase().contains("help")) {

@@ -18,10 +18,18 @@ import ru.vachok.networker.services.MyCalen;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.*;
-import java.sql.*;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Date;
-import java.util.*;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
@@ -79,25 +87,24 @@ public class NetScanCtr {
     /**
      GET /netscan
      <p>
-     Usages: {@link #scanIt(HttpServletRequest, Model)}, {@link #mapSizeBigger(Model, Map, HttpServletRequest)} <br>
-     Uses: {@link PageFooter#getFooterUtext()}, {@link AppComponents#lastNetScan()}.setTimeLastScan(new {@link Date}) <br>
+     Usages: {@link #scanIt(HttpServletRequest, Model)}, {@link #mapSizeBigger(Model, Map, HttpServletRequest)} <br> Uses: {@link PageFooter#getFooterUtext()}, {@link
+    AppComponents#lastNetScan()}.setTimeLastScan(new {@link Date}) <br>
 
      @param request  {@link HttpServletRequest}
      @param response {@link HttpServletResponse}
      @param model    {@link Model}
      @return {@link #AT_NAME_NETSCAN}.html
      */
-    @SuppressWarnings ("WeakerAccess")
-    @GetMapping ("/netscan")
+    @SuppressWarnings("WeakerAccess")
+    @GetMapping("/netscan")
     public String netScan(HttpServletRequest request, HttpServletResponse response, Model model) {
         netScannerSvc.setThePc("");
         Map<String, Boolean> netWork = lastScan;
         boolean isMapSizeBigger = netWork.size() > 2;
 
-        if(isMapSizeBigger){
+        if (isMapSizeBigger) {
             mapSizeBigger(model, netWork, request);
-        }
-        else{
+        } else {
             scanIt(request, model);
         }
         model
@@ -124,23 +131,22 @@ public class NetScanCtr {
         propLastScanMinusDuration = Long.parseLong(propertyLastScan) + TimeUnit.MINUTES.toMillis(DURATION);
         boolean isSystemTimeBigger = (System.currentTimeMillis() > propLastScanMinusDuration);
         long timeLeft = TimeUnit.MILLISECONDS.toSeconds(propLastScanMinusDuration - System.currentTimeMillis());
-        String msg = timeLeft + " seconds (" + ( float ) timeLeft / ConstantsFor.ONE_HOUR_IN_MIN + " min) left<br>Delay period is " + DURATION;
+        String msg = timeLeft + " seconds (" + (float) timeLeft / ConstantsFor.ONE_HOUR_IN_MIN + " min) left<br>Delay period is " + DURATION;
         LOGGER.warn(msg);
         int i = ConstantsFor.TOTAL_PC - netWork.size();
         model
             .addAttribute("left", msg)
             .addAttribute("pc", new TForms().fromArray(netWork, true))
             .addAttribute("title", i + "/" + ConstantsFor.TOTAL_PC + " PCs (" + netScannerSvc.getOnLinePCs() + ")");
-        if(0 > i){
+        if (0 > i) {
             writeToFile(netWork);
             model.addAttribute("newpc", "Добавлены компы! " + Math.abs(i) + " шт.");
             properties.setProperty("totpc", netWork.size() + "");
-        }
-        else{
-            if(3 > i){
+        } else {
+            if (3 > i) {
                 properties.setProperty("totpc", netWork.size() + "");
                 writeToFile(netWork);
-                if(isSystemTimeBigger){
+                if (isSystemTimeBigger) {
                     String msg1 = "isSystemTimeBigger is " + true + " " + netWork.size() + " network map cleared";
                     LOGGER.warn(msg1);
                     scanIt(request, model);
@@ -151,12 +157,8 @@ public class NetScanCtr {
     }
 
     /**
-     Модель для
-     {@link #netScan(HttpServletRequest, HttpServletResponse, Model)} <br>
-     Делает проверки на {@link HttpServletRequest#getQueryString()}, если != 0: <br>
-     {@link #lastScan}.clear() <br>
-     {@link NetScannerSvc#getPCNamesPref(String)} <br>
-     {@link NetScannerSvc#setQer(String)}
+     Модель для {@link #netScan(HttpServletRequest, HttpServletResponse, Model)} <br> Делает проверки на {@link HttpServletRequest#getQueryString()}, если != 0: <br> {@link #lastScan}.clear() <br>
+     {@link NetScannerSvc#getPCNamesPref(String)} <br> {@link NetScannerSvc#setQer(String)}
      <p>
      Добавляет в {@link Model}: <br> {@link ConstantsFor#TITLE} = {@link Date}.toString() <br>
      <b>"pc"</b> = {@link TForms#fromArray(Set, boolean)} )} из {@link NetScannerSvc#getPCNamesPref(String)}
@@ -169,15 +171,14 @@ public class NetScanCtr {
      @param model   {@link Model} для сборки
      */
     private void scanIt(HttpServletRequest request, Model model) {
-        if(request!=null && request.getQueryString()!=null){
+        if (request != null && request.getQueryString() != null) {
             lastScan.clear();
             netScannerSvc.setQer(request.getQueryString());
             Set<String> pcNames = netScannerSvc.getPCNamesPref(request.getQueryString());
             model
                 .addAttribute(TITLE_STR, new Date().toString())
                 .addAttribute("pc", new TForms().fromArray(pcNames, true));
-        }
-        else{
+        } else {
             lastScan.clear();
             Set<String> pCsAsync = netScannerSvc.getPcNames();
             model
@@ -193,8 +194,8 @@ public class NetScanCtr {
      @param netWork {@link #lastScan}
      */
     private void writeToFile(Map<String, Boolean> netWork) {
-        try(OutputStream outputStream = new FileOutputStream("lastscannet.txt");
-            PrintWriter printWriter = new PrintWriter(outputStream, true)){
+        try (OutputStream outputStream = new FileOutputStream("lastscannet.txt");
+             PrintWriter printWriter = new PrintWriter(outputStream, true)) {
             printWriter.println("3 > Network Size!");
             TimeInfo timeInfo = MyCalen.getTimeInfo();
             timeInfo.computeDetails();
@@ -202,8 +203,7 @@ public class NetScanCtr {
             netWork.forEach((x, y) -> {
                 printWriter.println(x + " " + y);
             });
-        }
-        catch(IOException e){
+        } catch (IOException e) {
             LOGGER.warn(e.getMessage(), e);
         }
     }
@@ -217,11 +217,11 @@ public class NetScanCtr {
      @param model         {@link Model}
      @return redirect:/ad? + {@link NetScannerSvc#getThePc()}
      */
-    @PostMapping ("/netscan")
+    @PostMapping("/netscan")
     public String pcNameForInfo(@ModelAttribute NetScannerSvc netScannerSvc, BindingResult result, Model model) {
         String thePc = netScannerSvc.getThePc();
         AppComponents.adSrv().setUserInputRaw(thePc);
-        if(thePc.toLowerCase().contains("user: ")){
+        if (thePc.toLowerCase().contains("user: ")) {
             model.addAttribute("ok", getUserFromDB(thePc));
             model.addAttribute(ConstantsFor.TITLE, thePc);
             model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext());
@@ -237,27 +237,25 @@ public class NetScanCtr {
     /**
      Достаёт инфо о пользователе из БД
      <p>
-     Usages: {@link #pcNameForInfo(NetScannerSvc, BindingResult, Model)} <br>
-     Uses: - <br>
+     Usages: {@link #pcNameForInfo(NetScannerSvc, BindingResult, Model)} <br> Uses: - <br>
 
      @param userInputRaw {@link NetScannerSvc#getThePc()}
      @return LAST 20 USER PCs
      */
     private String getUserFromDB(String userInputRaw) {
-        try{
+        try {
             userInputRaw = userInputRaw.split(": ")[1];
-        }
-        catch(ArrayIndexOutOfBoundsException e){
+        } catch (ArrayIndexOutOfBoundsException e) {
             return e.getMessage();
         }
-        try(Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.DB_PREFIX + "velkom");
-            PreparedStatement p = c.prepareStatement("select * from pcuserauto where userName like ? ORDER BY whenQueried DESC LIMIT 0, 20")){
+        try (Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.DB_PREFIX + "velkom");
+             PreparedStatement p = c.prepareStatement("select * from pcuserauto where userName like ? ORDER BY whenQueried DESC LIMIT 0, 20")) {
             p.setString(1, "%" + userInputRaw + "%");
-            try(ResultSet r = p.executeQuery()){
+            try (ResultSet r = p.executeQuery()) {
                 StringBuilder stringBuilder = new StringBuilder();
                 String headER = "<h3><center>LAST 20 USER PCs</center></h3>";
                 stringBuilder.append(headER);
-                while(r.next()){
+                while (r.next()) {
                     String pcName = r.getString("pcName");
                     String returnER = "<br><center><a href=\"/ad?" + pcName.split("\\Q.\\E")[0] + "\">" + pcName + "</a> set: " +
                         r.getString("whenQueried") + "</center>";
@@ -265,9 +263,30 @@ public class NetScanCtr {
                 }
                 return stringBuilder.toString();
             }
-        }
-        catch(SQLException e){
+        } catch (SQLException e) {
             return e.getMessage();
         }
+    }
+
+    @GetMapping("/showalldev")
+    private String allDevices(Model model, HttpServletRequest request, HttpServletResponse response) {
+        model.addAttribute(ConstantsFor.TITLE, "DiapazonedScan.scanAll");
+        if (request.getQueryString() != null) {
+            if (ConstantsFor.ALL_DEVICES.remainingCapacity() == 0) {
+                StringBuilder stringBuilder = new StringBuilder();
+                stringBuilder.append(ConstantsFor.ALL_DEVICES.remove());
+                model.addAttribute("res", stringBuilder.toString());
+            } else {
+                final float scansInMin = 45.9f;
+                float minLeft = ConstantsFor.ALL_DEVICES.remainingCapacity() / scansInMin;
+                String attributeValue = "~minLeft: " + minLeft + " " + new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis((long) minLeft));
+                model.addAttribute(ConstantsFor.TITLE, attributeValue);
+                response.addHeader("Refresh", "7");
+            }
+        }
+        model.addAttribute("head", new PageFooter().getHeaderUtext() + "<center><p><a href=\"/showalldev?needsopen\"><h2>Show IPs</h2></a></center>");
+        model.addAttribute("ok", ConstantsFor.ALL_DEVICES.size() + " IPs collected." + " " + ConstantsFor.ALL_DEVICES.remainingCapacity() + " left");
+        model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext());
+        return "ok";
     }
 }

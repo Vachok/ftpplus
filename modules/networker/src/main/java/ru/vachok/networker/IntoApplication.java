@@ -10,6 +10,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import ru.vachok.networker.accesscontrol.MatrixCtr;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.AppCtx;
+import ru.vachok.networker.config.ExitApp;
 import ru.vachok.networker.config.ThreadConfig;
 
 import java.io.IOException;
@@ -66,7 +67,9 @@ public class IntoApplication {
 
         configurableApplicationContext = SpringApplication.run(IntoApplication.class, args);
         ConfigurableApplicationContext run = configurableApplicationContext;
+
         run.start();
+        run.registerShutdownHook();
 
         afterSt();
 
@@ -81,6 +84,9 @@ public class IntoApplication {
      Запуск до старта Spring boot app
      */
     private static void beforeSt() {
+
+        Runtime.getRuntime().addShutdownHook(new ExitApp());
+
         ConstantsFor.showMem();
         LOGGER.info("IntoApplication.beforeSt");
         String msg = LocalDate.now().getDayOfWeek().getValue() + " - day of week\n" +

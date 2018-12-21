@@ -4,6 +4,7 @@ package ru.vachok.networker.net;
 import org.slf4j.Logger;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.config.ExitApp;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -11,11 +12,11 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.lang.reflect.Field;
 import java.net.InetAddress;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  Скан диапазона адресов
@@ -36,45 +37,26 @@ public class DiapazonedScan implements Runnable {
         if (ourInstance == null) {
             synchronized (DiapazonedScan.class) {
                 if (ourInstance == null) {
-                    LOGGER.info("DiapazonedScan.getInstance");
                     ourInstance = new DiapazonedScan();
-                    ExecutorService e = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor());
-                    Future<?> submit = e.submit(ourInstance);
-                    new Thread(() ->
-                    {
-                        String msg1 = "START " + ourInstance.toString();
-                        LOGGER.warn(msg1);
-
-                        Object o;
-                        try {
-                            o = submit.get();
-                            String msg = o.toString() + " obj returned by " + ourInstance.getClass().getSimpleName();
-                            LOGGER.warn(msg);
-                        } catch (InterruptedException | ExecutionException e1) {
-                            e1.getMessage();
-                            Thread.currentThread().interrupt();
-                        }
-
-                    });
                 }
             }
         }
+        LOGGER.info("DiapazonedScan.getInstance");
         return ourInstance;
     }
 
     @Override
     public String toString() {
+        LOGGER.info("DiapazonedScan.toString");
         final StringBuilder sb = new StringBuilder("DiapazonedScan{");
-        sb.append("ourInstance=").append(ourInstance.getClass().getTypeName());
-        sb.append(" Скан диапазона адресов since 19.12.2018 (11:35)").append("\n");
-        sb.append(ConstantsFor.showMem());
-        sb.append(Arrays.toString(KassaSBank.values()));
-        sb.append('}');
+        sb.append("<a href=\"/showalldev\">ALL_DEVICES=").append(ConstantsFor.ALL_DEVICES.size()).append("/4591");
+        sb.append("</a>}");
         return sb.toString();
     }
 
     @Override
     public void run() {
+        LOGGER.warn("DiapazonedScan.run");
         try {
             scanAll();
         } catch (IOException e) {
@@ -88,31 +70,31 @@ public class DiapazonedScan implements Runnable {
 
      @throws IOException если адрес недоступен.
      */
+    @SuppressWarnings("all")
     private void scanAll() throws IOException {
         long stArt = System.currentTimeMillis();
         LOGGER.info("DiapazonedScan.scanAll");
         String avaPathStr = Paths.get(".").toFile().getCanonicalPath();
-        OutputStream outputStream = new FileOutputStream(avaPathStr + "\\modules\\networker\\src\\main\\resources\\static\\texts\\available.txt");
+        Path logPath = Paths.get(avaPathStr + "\\modules\\networker\\src\\main\\resources\\static\\texts\\available.txt");
+        if (!logPath.toFile().isFile()) logPath = Paths.get("available.txt");
+        OutputStream outputStream = new FileOutputStream(logPath.toFile());
         PrintWriter printWriter = new PrintWriter(outputStream, true);
-        ConcurrentMap<String, InetAddress> avaliablePCs = new ConcurrentHashMap<>();
-        List<String> notAval = new ArrayList<>();
         for (int i = 200; i < 218; i++) {
             for (int j = 0; j < 255; j++) {
                 byte[] aBytes = InetAddress.getByName("10.200." + i + "." + j).getAddress();
                 InetAddress byAddress = InetAddress.getByAddress(aBytes);
-                if (byAddress.isReachable(250)) {
-                    avaliablePCs.put(byAddress.getHostName(), byAddress);
-                    printWriter.println(byAddress.toString());
-                } else notAval.add(byAddress.toString());
+
+                if (byAddress.isReachable(200)) {
+                    printWriter.println(byAddress.getHostName() + " " + byAddress.getHostAddress());
+                    ConstantsFor.ALL_DEVICES.add("<font color=\"green\">" + byAddress.toString() + "</font><br>");
+                } else ConstantsFor.ALL_DEVICES.add("<font color=\"red\">" + byAddress.toString() + "</font><br>");
             }
         }
         printWriter.close();
         outputStream.close();
-        String msg = avaliablePCs.size() +
-            " avaliablePCs\n" + notAval.size() +
-            " notAval\nTotal scanned: " +
-            avaliablePCs.size() + notAval.size() +
-            "\nTime spend: " + TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - stArt);
+        Runtime.getRuntime().addShutdownHook(new ExitApp(this.getClass().getSimpleName(), "scanAll"));
+        String msg = "\nTime spend: " + TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - stArt);
+        ConstantsFor.ALL_DEVICES.add(msg);
         LOGGER.warn(msg);
     }
 
@@ -129,5 +111,6 @@ public class DiapazonedScan implements Runnable {
         LOGGER.warn(retMe);
         return swList;
     }
+
 
 }

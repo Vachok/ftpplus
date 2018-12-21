@@ -9,9 +9,13 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.*;
+import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.componentsrepo.PageFooter;
+import ru.vachok.networker.componentsrepo.VersionInfo;
+import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.config.ExitApp;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.Switches;
+import ru.vachok.networker.net.DiapazonedScan;
 import ru.vachok.networker.services.MyCalen;
 
 import javax.servlet.http.HttpServletRequest;
@@ -70,6 +74,19 @@ public class ServiceInfoCtrl {
         }
     }
 
+    @GetMapping("/stop")
+    public String closeApp() throws AccessDeniedException {
+        if (authReq) {
+            FileSystemWorker.delTemp();
+            ConstantsFor.saveProps(PROPS);
+            Runtime.getRuntime().addShutdownHook(new ExitApp(this.getClass().getSimpleName(), "closeApp"));
+            System.exit(ConstantsFor.USER_EXIT);
+        } else {
+            throw new AccessDeniedException("DENY!");
+        }
+        return "ok";
+    }
+
     private void modModMaker(Model model, HttpServletRequest request) {
         model.addAttribute(ConstantsFor.TITLE, getLast() + " (" + getLast() * ConstantsFor.ONE_DAY_HOURS + ")");
         model.addAttribute("mail", ConstantsFor.percToEnd());
@@ -81,25 +98,13 @@ public class ServiceInfoCtrl {
             .append(ConstantsFor.getAtomicTime())
             .append(". Состояние памяти (МБ): <font color=\"#82caff\">")
             .append(ConstantsFor.showMem()).append("</font><p>")
-            .append(Switches.toStringS())
+            .append(DiapazonedScan.getInstance().toString())
             .toString());
         model.addAttribute("request", prepareRequest(request));
         model.addAttribute("visit", new VersionInfo().toString());
         model.addAttribute("res", MyCalen.toStringS());
         model.addAttribute("back", request.getHeader("REFERER".toLowerCase()));
         model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext() + "<br>" + getJREVers());
-    }
-
-    @GetMapping("/stop")
-    public String closeApp() throws AccessDeniedException {
-        if (authReq) {
-            FileSystemWorker.delTemp();
-            ConstantsFor.saveProps(PROPS);
-            System.exit(ConstantsFor.USER_EXIT);
-        } else {
-            throw new AccessDeniedException("DENY!");
-        }
-        return "ok";
     }
 
     private String getJREVers() {

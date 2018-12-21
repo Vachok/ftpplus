@@ -7,6 +7,7 @@ import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.ADUser;
 import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.mailserver.MailRule;
 
 import javax.mail.Address;
@@ -27,6 +28,8 @@ public class TForms {
 
     /*Fields*/
     private static final Logger LOGGER = AppComponents.getLogger();
+
+    private static final ThreadConfig THREAD_CONFIG = new ThreadConfig();
 
     private StringBuilder brStringBuilder = new StringBuilder();
 
@@ -387,7 +390,7 @@ public class TForms {
             .append(" stack length<br>");
         nStringBuilder.append(y.length)
             .append(" stack length\n");
-        for(StackTraceElement st : y){
+        for (StackTraceElement st : y) {
             nStringBuilder
                 .append(st.toString())
                 .append(N_S);
@@ -395,17 +398,16 @@ public class TForms {
                 .append(st.toString())
                 .append(BR_S);
         }
-        if(b){
+        if (b) {
             return brStringBuilder.toString();
-        }
-        else{
+        } else {
             return nStringBuilder.toString();
         }
     }
 
     public String fromArray(Object[] objects, boolean b) {
         brStringBuilder.append("<p>");
-        for(Object o : objects){
+        for (Object o : objects) {
             brStringBuilder
                 .append(o.toString())
                 .append(BR_S);
@@ -413,11 +415,11 @@ public class TForms {
                 .append(o.toString())
                 .append(N_S);
         }
-        if(b){
+        if (b) {
             return brStringBuilder.toString();
-        }
-        else{
+        } else {
             return nStringBuilder.toString();
         }
     }
+
 }

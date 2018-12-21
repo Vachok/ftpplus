@@ -6,6 +6,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.accesscontrol.common.ArchivesAutoCleaner;
 import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.config.ExitApp;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.MyServer;
@@ -112,7 +113,8 @@ public class SystemTrayHelper {
             IntoApplication.getConfigurableApplicationContext().close();
             ConstantsFor.saveProps(ConstantsFor.getPROPS());
             FileSystemWorker.delTemp();
-            exit(0);
+            Runtime.getRuntime().addShutdownHook(new ExitApp(SystemTrayHelper.class.getSimpleName(), "addTray"));
+            exit(ConstantsFor.USER_EXIT);
         };
         addItems(popupMenu);
         trayIcon.setImageAutoSize(true);

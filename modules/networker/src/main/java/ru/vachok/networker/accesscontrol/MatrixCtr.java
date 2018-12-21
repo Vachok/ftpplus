@@ -17,6 +17,7 @@ import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.VersionInfo;
 import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.net.DiapazonedScan;
 import ru.vachok.networker.services.SimpleCalculator;
 import ru.vachok.networker.services.WhoIsWithSRV;
 
@@ -100,6 +101,8 @@ public class MatrixCtr {
                 model.addAttribute("visit", visitor.getTimeSpend() + " timestamp");
             }
         }
+        model.addAttribute("devscan", DiapazonedScan.getInstance().toString());
+        response.addHeader("Refresh", "90");
         return "starting";
     }
 
