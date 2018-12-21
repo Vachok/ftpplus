@@ -109,6 +109,7 @@ public class SystemTrayHelper {
             }
         };
         ActionListener exitApp = e -> {
+            IntoApplication.getConfigurableApplicationContext().close();
             ConstantsFor.saveProps(ConstantsFor.getPROPS());
             FileSystemWorker.delTemp();
             exit(0);

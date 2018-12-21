@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import ru.vachok.networker.accesscontrol.MatrixCtr;
 import ru.vachok.networker.componentsrepo.AppComponents;
@@ -44,6 +45,12 @@ public class IntoApplication {
      */
     private static final String THIS_PC = ConstantsFor.thisPC();
 
+    private static ConfigurableApplicationContext configurableApplicationContext;
+
+    public static ConfigurableApplicationContext getConfigurableApplicationContext() {
+        return configurableApplicationContext;
+    }
+
     /**
      <h1>1. Точка входа в Spring Boot Application</h1>
      <p>
@@ -54,8 +61,13 @@ public class IntoApplication {
      */
     public static void main(String[] args) {
         final long stArt = System.currentTimeMillis();
+
         beforeSt();
-        SpringApplication.run(IntoApplication.class, args);
+
+        configurableApplicationContext = SpringApplication.run(IntoApplication.class, args);
+        ConfigurableApplicationContext run = configurableApplicationContext;
+        run.start();
+
         afterSt();
 
         String msgTimeSp = new StringBuilder()

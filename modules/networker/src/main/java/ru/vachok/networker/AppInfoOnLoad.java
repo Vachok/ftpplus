@@ -3,12 +3,14 @@ package ru.vachok.networker;
 
 import org.slf4j.Logger;
 import org.springframework.context.ApplicationContext;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import ru.vachok.mysqlandprops.EMailAndDB.SpeedRunActualize;
 import ru.vachok.networker.accesscontrol.common.CommonRightsChecker;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.mailserver.MailIISLogsCleaner;
 import ru.vachok.networker.net.SwitchesAvailability;
 import ru.vachok.networker.services.MyCalen;
 import ru.vachok.networker.services.WeekPCStats;
@@ -86,7 +88,7 @@ public class AppInfoOnLoad implements Runnable {
     /**
      Запуск заданий по-расписанию
      <p>
-     Usages: {@link #infoForU(ApplicationContext)} <br> Uses: 1.1 {@link #weekStat()}, 1.2 {@link ConstantsFor#thisPC()}, 1.3 {@link ConstantsFor#thisPC()}, 1.4 {@link #runCommonScan()} .
+     Usages: {@link #infoForU(ApplicationContext)} <br> Uses: 1.1 {@link #dateSchedulers()}, 1.2 {@link ConstantsFor#thisPC()}, 1.3 {@link ConstantsFor#thisPC()}, 1.4 {@link #runCommonScan()} .
      */
     private void schedStarter() {
         Runnable speedRun = null;
@@ -101,7 +103,7 @@ public class AppInfoOnLoad implements Runnable {
         executorService.scheduleWithFixedDelay(Objects.requireNonNull(speedRun), ConstantsFor.INIT_DELAY, TimeUnit.MINUTES.toSeconds(ConstantsFor.DELAY), TimeUnit.SECONDS);
         executorService.scheduleWithFixedDelay(swAval, 1, ConstantsFor.DELAY, TimeUnit.SECONDS);
 
-        weekStat();
+        dateSchedulers();
 
         if (ConstantsFor.thisPC().toLowerCase().contains(STR_PC_NO0027) ||
             ConstantsFor.thisPC().toLowerCase().contains("rups")) {
@@ -114,14 +116,22 @@ public class AppInfoOnLoad implements Runnable {
      <p>
      Usages: {@link #schedStarter()} <br> Uses: 1.1 {@link MyCalen#getNextDayofWeek(int, int, DayOfWeek)}, 1.2 {@link ThreadConfig#threadPoolTaskScheduler()}
      */
-    private static void weekStat() {
+    private static void dateSchedulers() {
         Date nextStartDay = MyCalen.getNextDayofWeek(23, 57, DayOfWeek.SUNDAY);
-        new ThreadConfig().threadPoolTaskScheduler().scheduleWithFixedDelay(
-            new WeekPCStats(), nextStartDay, TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY_HOURS * 7));
-        String msgTimeSp = new StringBuilder()
-            .append("new WeekPCStats: ")
-            .append(nextStartDay.toString()).toString();
-        LOGGER.warn(msgTimeSp);
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("AppInfoOnLoad.dateSchedulers ");
+        ThreadPoolTaskScheduler threadPoolTaskScheduler = new ThreadConfig().threadPoolTaskScheduler();
+        long delay = TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY_HOURS * 7);
+
+        threadPoolTaskScheduler.scheduleWithFixedDelay(new WeekPCStats(), nextStartDay, delay);
+        stringBuilder.append(nextStartDay.toString()).append(" stats start | ");
+
+        nextStartDay = new Date(nextStartDay.getTime() - TimeUnit.HOURS.toMillis(1));
+        threadPoolTaskScheduler.scheduleWithFixedDelay(new MailIISLogsCleaner(), nextStartDay, delay);
+        stringBuilder.append(nextStartDay.toString()).append(" logs IIS cleaner start.");
+
+        String logStr = stringBuilder.toString();
+        LOGGER.warn(logStr);
     }
 
     /**

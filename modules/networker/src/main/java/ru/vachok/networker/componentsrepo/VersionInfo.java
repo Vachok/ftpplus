@@ -153,6 +153,7 @@ public class VersionInfo {
         sb.append(", DOC_URL='").append(DOC_URL).append('\'');
         sb.append(", thisPCName='").append(thisPCName).append('\'');
         sb.append('}');
+        sb.append("<p>\n");
         return sb.toString();
     }
 }
