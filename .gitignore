@@ -740,3 +740,4 @@ NetScannerSvc.after
 avalible.txt
 /available.txt
 iislogsclean.log
+modules/networker/src/main/resources/static/texts/available_last.txt
