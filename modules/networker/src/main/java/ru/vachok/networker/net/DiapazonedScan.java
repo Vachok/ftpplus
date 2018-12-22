@@ -87,7 +87,6 @@ public class DiapazonedScan implements Runnable {
         String msg1 = "DiapazonedScan.scanNew " + p.toAbsolutePath().toString();
         LOGGER.warn(msg1);
         File newLanFile = new File("available_last.txt");
-
         try(OutputStream outputStream = new FileOutputStream(newLanFile);
             PrintWriter printWriter = new PrintWriter(outputStream, true)){
             scanLan(printWriter, 200, 218, stArt, "10.200.");
@@ -130,7 +129,7 @@ public class DiapazonedScan implements Runnable {
                 else{
                     ConstantsFor.ALL_DEVICES.add("<font color=\"red\">" + byAddress.toString() + FONT_BR_STR);
                 }
-                msgBuild.append("IP was ").append(" 10.200.").append(i).append("<-i.j->").append(j).append("\n")
+                msgBuild.append("IP was ").append(whatVlan).append(i).append("<-i.j->").append(j).append("\n")
                     .append(j).append(" was j\n");
                 String msg = msgBuild.toString();
                 LOGGER.info(msg);

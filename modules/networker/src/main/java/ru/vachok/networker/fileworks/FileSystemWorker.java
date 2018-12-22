@@ -176,10 +176,12 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         return stringBuilder.toString();
     }
 
-    public static boolean copyFile(File oldLANFile, String s) {
+    public static boolean copyFile(File origFile, String s) {
         try{
-            Path copy = Files.copy(oldLANFile.toPath(), Paths.get(s));
-            String msg = copy.toString();
+            Path targetPath = Paths.get(s);
+            boolean targetCreate = targetPath.toFile().createNewFile();
+            Path copy = Files.copy(origFile.toPath(), targetPath);
+            String msg = copy.toString() + " " + targetCreate;
             LOGGER.info(msg);
             return true;
         }
@@ -197,7 +199,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     synchronized void cpConstTxt() {
         Path toCopy =
             Paths.get("G:\\My_Proj\\FtpClientPlus\\modules\\networker\\src\\main\\resources\\static\\texts\\const.txt");
-        
+
         try{
             boolean canWrite = CONST_TXT.canWrite();
             if(canWrite){
