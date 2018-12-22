@@ -13,10 +13,7 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.ADSrv;
-import ru.vachok.networker.componentsrepo.AppComponents;
-import ru.vachok.networker.componentsrepo.PageFooter;
-import ru.vachok.networker.componentsrepo.VersionInfo;
-import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.componentsrepo.*;
 import ru.vachok.networker.net.DiapazonedScan;
 import ru.vachok.networker.services.SimpleCalculator;
 import ru.vachok.networker.services.WhoIsWithSRV;
@@ -24,10 +21,7 @@ import ru.vachok.networker.services.WhoIsWithSRV;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 
@@ -69,6 +63,7 @@ public class MatrixCtr {
      @param model    {@link Model}
      @param response {@link HttpServletResponse}
      @return название файла html, в который помещаем модель.
+     @see DiapazonedScan
      */
     @GetMapping("/")
     public String getFirst(final HttpServletRequest request, Model model, HttpServletResponse response) {

@@ -14,6 +14,7 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.PageFooter;
+import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MyCalen;
 
 import javax.servlet.http.HttpServletRequest;
@@ -125,14 +126,18 @@ public class NetScanCtr {
             else{
                 final float scansInMin = 45.9f;
                 float minLeft = ConstantsFor.ALL_DEVICES.remainingCapacity() / scansInMin;
-                String attributeValue = "~minLeft: " + minLeft + " " + new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(( long ) minLeft));
+                String attributeValue = new StringBuilder()
+                    .append(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(( long ) minLeft)))
+                    .append(" ~minLeft: ").append(minLeft)
+                    .toString();
                 model.addAttribute(ConstantsFor.TITLE, attributeValue);
-                response.addHeader("Refresh", "15");
+                model.addAttribute("pcs", FileSystemWorker.readFile("available_last.txt") + "<p>" + FileSystemWorker.readFile("old_lan.txt"));
+                response.addHeader("Refresh", "9");
             }
         }
         model.addAttribute("head", new PageFooter().getHeaderUtext() + "<center><p><a href=\"/showalldev?needsopen\"><h2>Show IPs</h2></a></center>");
-        model.addAttribute("ok", ConstantsFor.ALL_DEVICES.size() + " IPs collected." + " " + ConstantsFor.ALL_DEVICES.remainingCapacity() + " left");
-        model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext());
+        model.addAttribute("ok", DiapazonedScan.getInstance().toString());
+        model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext() + ". Left: " + ConstantsFor.ALL_DEVICES.remainingCapacity() + " IPs.");
         return "ok";
     }
 

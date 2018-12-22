@@ -91,8 +91,8 @@ public class ServiceInfoCtrl {
             .append(new Date(ConstantsFor.START_STAMP)).append(ConstantsFor.getUpTime())
             .append("<br>Точное время: ")
             .append(ConstantsFor.getAtomicTime())
-            .append(". Состояние памяти (МБ): <font color=\"#82caff\">")
-            .append(ConstantsFor.showMem()).append("</font><p>")
+            .append(".<br> Состояние памяти (МБ): <font color=\"#82caff\">")
+            .append(ConstantsFor.showMem()).append("</font><br>")
             .append(DiapazonedScan.getInstance().toString())
             .toString());
         model.addAttribute("request", prepareRequest(request));

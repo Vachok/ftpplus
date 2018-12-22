@@ -2,9 +2,12 @@ package ru.vachok.networker.net;
 
 
 import org.slf4j.Logger;
+import org.springframework.ui.Model;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.lang.reflect.Field;
 import java.net.InetAddress;
@@ -54,6 +57,9 @@ public class DiapazonedScan implements Runnable {
         }
     }
 
+    /**
+     @return /showalldev = {@link NetScanCtr#allDevices(Model, HttpServletRequest, HttpServletResponse)}
+     */
     @Override
     public String toString() {
         LOGGER.info("DiapazonedScan.toString");
@@ -120,8 +126,7 @@ public class DiapazonedScan implements Runnable {
             LOGGER.error(e.getMessage(), e);
         }
         String msg = "Vlans 200-217 completed.\nTime spend: " +
-            TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - stArt) +
-            "\nStarting vlans 192-168.11-14;";
+            TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - stArt) + "\n\n";
         LOGGER.warn(msg);
         scanOldLan(stArt);
     }
@@ -134,7 +139,7 @@ public class DiapazonedScan implements Runnable {
                 StringBuilder msgBuild = new StringBuilder();
                 for(int j = 0; j < 255; j++){
                     msgBuild = new StringBuilder();
-                    byte[] aBytes = InetAddress.getByName("10.200." + i + "." + j).getAddress();
+                    byte[] aBytes = InetAddress.getByName("192.168." + i + "." + j).getAddress();
                     InetAddress byAddress = InetAddress.getByAddress(aBytes);
                     int t = 100;
                     if(ConstantsFor.thisPC().toLowerCase().contains("home")){
@@ -147,7 +152,7 @@ public class DiapazonedScan implements Runnable {
                     else{
                         ConstantsFor.ALL_DEVICES.add("<font color=\"red\">" + byAddress.toString() + "</font><br>");
                     }
-                    msgBuild.append("IP was ").append(" 10.200.").append(i).append("<-i.j->").append(j).append("\n")
+                    msgBuild.append("IP was ").append(" 192.168.").append(i).append("<-i.j->").append(j).append("\n")
                         .append(j).append(" was j\n");
                     String msg = msgBuild.toString();
                     LOGGER.info(msg);
@@ -164,8 +169,9 @@ public class DiapazonedScan implements Runnable {
         catch(IOException e){
             LOGGER.error(e.getMessage());
         }
-        String msgTimeSp = "DiapazonedScan.scanOldLan method. " + ( float ) (System.currentTimeMillis() - stArt) / 1000 + " sec spend";
-        LOGGER.info(msgTimeSp);
+        String msg = "Vlans 11-14 completed.\nTime spend: " +
+            TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - stArt) + "\n\n";
+        LOGGER.warn(msg);
     }
 
     List<String> pingSwitch() throws IllegalAccessException {
