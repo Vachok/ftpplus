@@ -62,7 +62,7 @@ public class DiapazonedScan implements Runnable {
             .append("<a href=\"/showalldev\">ALL_DEVICES ")
             .append(ConstantsFor.ALL_DEVICES.size())
             .append("/5610 (")
-            .append((ConstantsFor.IPS_IN_VELKOM_VLAN / 100) * ConstantsFor.ALL_DEVICES.size())
+            .append(( float ) ConstantsFor.ALL_DEVICES.size() / ( float ) (ConstantsFor.IPS_IN_VELKOM_VLAN / 100))
             .append(" %)");
         sb.append("</a>}");
         return sb.toString();
