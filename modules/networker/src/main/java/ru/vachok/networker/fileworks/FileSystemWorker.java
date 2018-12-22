@@ -107,6 +107,14 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         }
     }
 
+    /**
+     Поиск в \\srv-fs\common_new
+     <p>
+
+     @param folderPath папка, откуда начать искать
+     @return список файлов или {@link Exception}
+     @see FileSearcher
+     */
     public static String searchInCommon(String[] folderPath) {
         FileSearcher fileSearcher = new FileSearcher(folderPath[0]);
         try{
@@ -176,6 +184,13 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         return stringBuilder.toString();
     }
 
+    /**
+     Простое копирование файла.
+
+     @param origFile файл, для копирования
+     @param s        строка путь
+     @return удача/нет
+     */
     public static boolean copyFile(File origFile, String s) {
         try{
             Path targetPath = Paths.get(s);

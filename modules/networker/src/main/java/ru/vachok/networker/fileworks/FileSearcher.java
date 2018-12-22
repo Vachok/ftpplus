@@ -11,20 +11,63 @@ import java.util.ArrayList;
 import java.util.List;
 
 
+/**
+ Ищет файлы
+ <p>
+
+ @see FileSystemWorker
+ @since 19.12.2018 (20:15) */
 public class FileSearcher extends FileSystemWorker {
 
+    /**
+     * Паттерн для поиска
+     *
+     * @see FileSystemWorker#searchInCommon(String[])
+     */
     private String patternToSearch;
 
+    /**
+     * {@link List} с результатами
+     */
     private List<String> resList = new ArrayList<>();
 
+    /**
+     @return {@link #resList}
+     */
+    List<String> getResList() {
+        return resList;
+    }
+
+    /*Instances*/
+
+    /**
+     @param patternToSearch что искать
+     */
     public FileSearcher(String patternToSearch) {
         this.patternToSearch = patternToSearch;
     }
 
-    public List<String> getResList() {
-        return resList;
+    /**
+     @return {@link #resList} or {@code nothing...}
+     */
+    @Override
+    public String toString() {
+        if(resList.size() > 0){
+            return new TForms().fromArray(resList, false);
+        }
+        else{
+            return resList.size() + " nothing...";
+        }
     }
 
+    /**
+     Сверяет {@link #patternToSearch} с именем файла
+
+     @param file  файл
+     @param attrs {@link BasicFileAttributes}
+     @return {@link FileVisitResult#CONTINUE}
+     @throws IOException filesystem
+     */
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
         if (attrs.isRegularFile() && file.toFile().getName().toLowerCase().contains(patternToSearch)) {
@@ -33,6 +76,14 @@ public class FileSearcher extends FileSystemWorker {
         return FileVisitResult.CONTINUE;
     }
 
+    /**
+     Вывод имени папки в консоль.
+
+     @param dir обработанная папка
+     @param exc {@link IOException}
+     @return {@link FileVisitResult#CONTINUE}
+     @throws IOException filesystem
+     */
     @Override
     public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
         if (dir.toFile().isDirectory()) {
@@ -40,11 +91,5 @@ public class FileSearcher extends FileSystemWorker {
             LOGGER.info(msg);
         }
         return FileVisitResult.CONTINUE;
-    }
-
-    @Override
-    public String toString() {
-        if (resList.size() > 0) return new TForms().fromArray(resList, false);
-        else return resList.size() + " nothing...";
     }
 }
