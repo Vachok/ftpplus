@@ -11,6 +11,6 @@ class FilesCP extends FileSystemWorker implements Runnable {
     @Override
     public void run() {
         LOGGER.info("FilesCP.run");
-        cpConstTxt("G:\\My_Proj\\FtpClientPlus\\modules\\networker\\src\\main\\resources\\static\\texts\\const.txt");
+        cpConstTxt();
     }
 }

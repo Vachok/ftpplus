@@ -53,7 +53,7 @@ public enum ConstantsFor {
     public static final int IPS_IN_VELKOM_VLAN = getIPs();
 
     /**
-     Список девайсов и адресов в диапазоне VLAN200-VLAN217
+     Список девайсов и адресов.
 
      @see DiapazonedScan
      */

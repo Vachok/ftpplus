@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.Objects;
 import java.util.concurrent.*;
 
+
 /**
  Информация и шедулеры.
  <p>
@@ -33,6 +34,7 @@ import java.util.concurrent.*;
  @since 19.12.2018 (9:40) */
 public class AppInfoOnLoad implements Runnable {
 
+    /*Fields*/
     /**
      {@link AppComponents#getLogger()}
      */
@@ -52,8 +54,6 @@ public class AppInfoOnLoad implements Runnable {
      {@link File} - const.txt
      */
     private static final File CONST_TXT = new File("const.txt");
-
-    /*Fields*/
 
     /**
      Задержка выполнения для этого класса
@@ -90,7 +90,7 @@ public class AppInfoOnLoad implements Runnable {
             .append(ConstantsFor.getBuildStamp()).toString();
         LOGGER.info(msg);
         schedStarter();
-        String msgTimeSp = "IntoApplication.infoForU method. " + (float) (System.currentTimeMillis() - stArt) / 1000 +
+        String msgTimeSp = "IntoApplication.infoForU method. " + ( float ) (System.currentTimeMillis() - stArt) / 1000 +
             STR_SEC_SPEND;
         LOGGER.info(msgTimeSp);
     }
@@ -102,9 +102,10 @@ public class AppInfoOnLoad implements Runnable {
      */
     private void schedStarter() {
         Runnable speedRun = null;
-        try {
+        try{
             speedRun = new SpeedRunActualize();
-        } catch (ExceptionInInitializerError e) {
+        }
+        catch(ExceptionInInitializerError e){
             LOGGER.warn(e.getMessage(), e);
         }
         Runnable swAval = new SwitchesAvailability();
@@ -117,14 +118,21 @@ public class AppInfoOnLoad implements Runnable {
                 .scheduleWithFixedDelay(swAval, 10, ConstantsFor.DELAY, TimeUnit.SECONDS);
         }
         executorService
-            .scheduleWithFixedDelay(DiapazonedScan.getInstance(), 4, THIS_DELAY, TimeUnit.MINUTES);
+            .scheduleWithFixedDelay(DiapazonedScan.getInstance(), 1, THIS_DELAY, TimeUnit.MINUTES);
+
+        String msg = "Scheduled: DiapazonedScan.getInstance(). Initial delay 1. delay " + THIS_DELAY + " in minutes\n" +
+            new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(THIS_DELAY + 1));
+        LOGGER.info(msg);
 
         dateSchedulers();
 
-        if (ConstantsFor.thisPC().toLowerCase().contains(STR_PC_NO0027) ||
-            ConstantsFor.thisPC().toLowerCase().contains("rups")) {
+        if(ConstantsFor.thisPC().toLowerCase().contains(STR_PC_NO0027) ||
+            ConstantsFor.thisPC().toLowerCase().contains("rups")){
             runCommonScan();
-        } else FileSystemWorker.cpConstTxt(true);
+        }
+        else{
+            FileSystemWorker.cpConstTxt(true);
+        }
     }
 
     /**
@@ -157,9 +165,10 @@ public class AppInfoOnLoad implements Runnable {
      */
     private static void runCommonScan() {
         Runnable r = () -> {
-            try {
+            try{
                 Files.walkFileTree(Paths.get("\\\\srv-fs.eatmeat.ru\\common_new"), new CommonRightsChecker());
-            } catch (IOException e) {
+            }
+            catch(IOException e){
                 LOGGER.warn(e.getMessage(), e);
             }
         };
@@ -167,11 +176,12 @@ public class AppInfoOnLoad implements Runnable {
         long delay = TimeUnit.DAYS.toMillis(ConstantsFor.ONE_MONTH_DAYS);
         ScheduledFuture<?> scheduleWithFixedDelay = new ThreadConfig().threadPoolTaskScheduler().scheduleWithFixedDelay(
             r, startTime, delay);
-        try {
+        try{
             String msg = "Common scanner : " + startTime.toString() + "  ||  " + delay + " TimeUnit.DAYS.toMillis(ConstantsFor.ONE_MONTH_DAYS)";
             LOGGER.warn(msg);
             scheduleWithFixedDelay.get();
-        } catch (InterruptedException | ExecutionException e) {
+        }
+        catch(InterruptedException | ExecutionException e){
             LOGGER.error(e.getMessage(), e);
             Thread.currentThread().interrupt();
             r.run();

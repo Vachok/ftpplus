@@ -26,10 +26,31 @@ import java.util.concurrent.TimeUnit;
 public class DiapazonedScan implements Runnable {
 
     /*Fields*/
+
+    /**
+     {@link AppComponents#getLogger()}
+     */
     private static final Logger LOGGER = AppComponents.getLogger();
 
+    /**
+     Повторения.
+     */
+    private static final String FONT_BR_STR = "</font><br>";
+
+    /**
+     Корень директории.
+     */
+    private static final String ROOT_PATH_STR = Paths.get(".").toAbsolutePath().toString();
+
+    /**
+     Singleton inst
+     */
     private static volatile DiapazonedScan ourInstance;
 
+    /**
+     SINGLETON
+     @return {@link DiapazonedScan} single.
+     */
     public static DiapazonedScan getInstance() {
         if(ourInstance==null){
             synchronized(DiapazonedScan.class) {
@@ -47,15 +68,105 @@ public class DiapazonedScan implements Runnable {
     private DiapazonedScan() {
     }
 
+    /**
+     * {@link #scanNew()}
+     */
     @Override
     public void run() {
         LOGGER.warn("DiapazonedScan.run");
-        try{
-            scanAll();
+        scanNew();
+    }
+
+    /**
+     Добавляет в {@link ConstantsFor#ALL_DEVICES} адреса <i>10.200.200-217.254</i>
+     */
+    @SuppressWarnings ("all")
+    private void scanNew() {
+        final long stArt = System.currentTimeMillis();
+        Path p = Paths.get(ROOT_PATH_STR + "\\lan\\200_" + System.currentTimeMillis() / 1000 + ".scan");
+        String msg1 = "DiapazonedScan.scanNew " + p.toAbsolutePath().toString();
+        LOGGER.warn(msg1);
+        File newLanFile = new File("available_last.txt");
+
+        try(OutputStream outputStream = new FileOutputStream(newLanFile);
+            PrintWriter printWriter = new PrintWriter(outputStream, true)){
+            scanLan(printWriter, 200, 218, stArt, "10.200.");
         }
         catch(IOException e){
             LOGGER.error(e.getMessage(), e);
+            String msg = "Vlans 200-217 completed.\nTime spend: " +
+                TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - stArt) + "\n\n";
+            LOGGER.warn(msg);
         }
+        boolean b = FileSystemWorker.copyFile(newLanFile, p.toAbsolutePath().toString());
+        scanOldLan(stArt);
+    }
+
+    /**
+     Сканер локальной сети
+
+     @param printWriter Запись в лог
+     @param fromVlan    начало с 3 октета IP
+     @param toVlan      конец с 3 октета IP
+     @param stArt       таймер
+     @param whatVlan    первый 2 октета, с точкоё в конце.
+     @throws IOException запись в файл
+     */
+    private void scanLan(PrintWriter printWriter, int fromVlan, int toVlan, long stArt, String whatVlan) throws IOException {
+        for(int i = fromVlan; i < toVlan; i++){
+            StringBuilder msgBuild = new StringBuilder();
+            for(int j = 0; j < 255; j++){
+                msgBuild = new StringBuilder();
+                byte[] aBytes = InetAddress.getByName(whatVlan + i + "." + j).getAddress();
+                InetAddress byAddress = InetAddress.getByAddress(aBytes);
+                int t = 100;
+                if(ConstantsFor.thisPC().toLowerCase().contains("home")){
+                    t = 400;
+                }
+                if(byAddress.isReachable(t)){
+                    printWriter.println(byAddress.getHostName() + " " + byAddress.getHostAddress());
+                    ConstantsFor.ALL_DEVICES.add("<font color=\"green\">" + byAddress.toString() + FONT_BR_STR);
+                }
+                else{
+                    ConstantsFor.ALL_DEVICES.add("<font color=\"red\">" + byAddress.toString() + FONT_BR_STR);
+                }
+                msgBuild.append("IP was ").append(" 10.200.").append(i).append("<-i.j->").append(j).append("\n")
+                    .append(j).append(" was j\n");
+                String msg = msgBuild.toString();
+                LOGGER.info(msg);
+            }
+            msgBuild
+                .append(i).append(" was i. Total time: ")
+                .append(TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - stArt))
+                .append("min\n").append(ConstantsFor.ALL_DEVICES.size()).append(" ALL_DEVICES.size()");
+            String msg = msgBuild.toString();
+            LOGGER.warn(msg);
+            printWriter.println(msg);
+        }
+    }
+
+    /**
+     192.168.11-14.254
+
+     @param stArt таймер начала общего скана
+     @see #scanNew()
+     */
+    private void scanOldLan(long stArt) {
+        File oldLANFile = new File("old_lan.txt");
+        Path p = Paths.get(ROOT_PATH_STR + "\\lan\\192_" + System.currentTimeMillis() / 1000 + ".scan");
+        String msg1 = "scanOldLan " + p.toAbsolutePath().toString();
+        LOGGER.warn(msg1);
+        try(OutputStream outputStream = new FileOutputStream(oldLANFile);
+            PrintWriter printWriter = new PrintWriter(outputStream, true)){
+            scanLan(printWriter, 11, 15, stArt, "192.168.");
+        }
+        catch(IOException e){
+            LOGGER.error(e.getMessage());
+        }
+        boolean b = FileSystemWorker.copyFile(oldLANFile, p.toAbsolutePath().toString());
+        String msg = "Vlans 11-14 completed.\nTime spend: " +
+            TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - stArt) + "\n" + b + " copyFile.\n\n";
+        LOGGER.warn(msg);
     }
 
     /**
@@ -76,108 +187,13 @@ public class DiapazonedScan implements Runnable {
     }
 
     /**
-     Добавляет в {@link ConstantsFor#ALL_DEVICES} адреса <i>10.200.200-217.254</i> и <i>192.168.11-14.254</i>
+     Пингует в 200х VLANах девайсы с 10.200.x.250 по 10.200.x.254
      <p>
+     Свичи начала сегментов. Вкл. в оптическое ядро.
 
-     @throws IOException если адрес недоступен.
+     @return лист важного оборудования
+     @throws IllegalAccessException {@code wList.add("\n" + swF.get(swF).toString())}
      */
-    @SuppressWarnings ("all")
-    private void scanAll() throws IOException {
-        long stArt = System.currentTimeMillis();
-        LOGGER.info("DiapazonedScan.scanAll");
-        String avaPathStr = Paths.get(".").toFile().getCanonicalPath();
-        Path logPath = Paths.get(avaPathStr + "\\modules\\networker\\src\\main\\resources\\static\\texts\\available_last.txt");
-        if(!logPath.toFile().isFile()){
-            logPath = Paths.get("available_last.txt");
-        }
-        File newLanFile = logPath.toFile();
-        try(OutputStream outputStream = new FileOutputStream(newLanFile);
-            PrintWriter printWriter = new PrintWriter(outputStream, true);){
-            for(int i = 200; i < 218; i++){
-                StringBuilder msgBuild = new StringBuilder();
-                for(int j = 0; j < 255; j++){
-                    msgBuild = new StringBuilder();
-                    byte[] aBytes = InetAddress.getByName("10.200." + i + "." + j).getAddress();
-                    InetAddress byAddress = InetAddress.getByAddress(aBytes);
-                    int t = 100;
-                    if(ConstantsFor.thisPC().toLowerCase().contains("home")){
-                        t = 400;
-                    }
-                    if(byAddress.isReachable(t)){
-                        printWriter.println(byAddress.getHostName() + " " + byAddress.getHostAddress());
-                        ConstantsFor.ALL_DEVICES.add("<font color=\"green\">" + byAddress.toString() + "</font><br>");
-                    }
-                    else{
-                        ConstantsFor.ALL_DEVICES.add("<font color=\"red\">" + byAddress.toString() + "</font><br>");
-                    }
-                    msgBuild.append("IP was ").append(" 10.200.").append(i).append("<-i.j->").append(j).append("\n")
-                        .append(j).append(" was j\n");
-                    String msg = msgBuild.toString();
-                    LOGGER.info(msg);
-                }
-                msgBuild
-                    .append(i).append(" was i. Total time: ")
-                    .append(TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - stArt)).append("min\n")
-                    .append(ConstantsFor.ALL_DEVICES.size() + " ALL_DEVICES.size()");
-                String msg = msgBuild.toString();
-                LOGGER.warn(msg);
-                printWriter.println(msg);
-            }
-        }
-        catch(IOException e){
-            LOGGER.error(e.getMessage(), e);
-        }
-        String msg = "Vlans 200-217 completed.\nTime spend: " +
-            TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - stArt) + "\n\n";
-        LOGGER.warn(msg);
-        FileSystemWorker.copyFile(newLanFile, "lan\\200_" + System.currentTimeMillis() + ".scan");
-        scanOldLan(stArt);
-    }
-
-    private void scanOldLan(long stArt) {
-        File oldLANFile = new File("old_lan.txt");
-        try(OutputStream outputStream = new FileOutputStream(oldLANFile);
-            PrintWriter printWriter = new PrintWriter(outputStream, true)){
-            for(int i = 11; i < 15; i++){
-                StringBuilder msgBuild = new StringBuilder();
-                for(int j = 0; j < 255; j++){
-                    msgBuild = new StringBuilder();
-                    byte[] aBytes = InetAddress.getByName("192.168." + i + "." + j).getAddress();
-                    InetAddress byAddress = InetAddress.getByAddress(aBytes);
-                    int t = 100;
-                    if(ConstantsFor.thisPC().toLowerCase().contains("home")){
-                        t = 400;
-                    }
-                    if(byAddress.isReachable(t)){
-                        printWriter.println(byAddress.getHostName() + " " + byAddress.getHostAddress());
-                        ConstantsFor.ALL_DEVICES.add("<font color=\"green\">" + byAddress.toString() + "</font><br>");
-                    }
-                    else{
-                        ConstantsFor.ALL_DEVICES.add("<font color=\"red\">" + byAddress.toString() + "</font><br>");
-                    }
-                    msgBuild.append("IP was ").append(" 192.168.").append(i).append("<-i.j->").append(j).append("\n")
-                        .append(j).append(" was j\n");
-                    String msg = msgBuild.toString();
-                    LOGGER.info(msg);
-                }
-                msgBuild
-                    .append(i).append(" was i. Total time: ")
-                    .append(TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - stArt))
-                    .append("min\n").append(ConstantsFor.ALL_DEVICES.size()).append(" ALL_DEVICES.size()");
-                String msg = msgBuild.toString();
-                LOGGER.warn(msg);
-                printWriter.println(msg);
-            }
-        }
-        catch(IOException e){
-            LOGGER.error(e.getMessage());
-        }
-        String msg = "Vlans 11-14 completed.\nTime spend: " +
-            TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - stArt) + "\n\n";
-        LOGGER.warn(msg);
-        FileSystemWorker.copyFile(oldLANFile, "lan\\192_" + System.currentTimeMillis() + ".scan");
-    }
-
     List<String> pingSwitch() throws IllegalAccessException {
         LOGGER.info("DiapazonedScan.pingSwitch");
         StringBuilder stringBuilder = new StringBuilder();

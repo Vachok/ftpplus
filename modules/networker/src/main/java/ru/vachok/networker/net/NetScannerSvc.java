@@ -25,10 +25,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
@@ -38,6 +35,8 @@ import java.util.concurrent.locks.ReentrantLock;
 
 
 /**
+ Управление сервисами LAN-разведки.
+ <p>
  @since 21.08.2018 (14:40) */
 @Service("netScannerSvc")
 public class NetScannerSvc {

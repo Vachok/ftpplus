@@ -12,6 +12,10 @@ import java.util.List;
 import java.util.function.Consumer;
 
 
+/**
+ Адреса терминалов на кассах ТД.
+
+ @since 18.12.2018 (17:56) */
 public enum KassaSBank implements Iterable {
     ;
 

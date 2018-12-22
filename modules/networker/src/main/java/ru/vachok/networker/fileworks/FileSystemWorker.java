@@ -194,8 +194,10 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
 
      @see #fileMake()
      */
-    synchronized void cpConstTxt(String s) {
-        Path toCopy = Paths.get(s);
+    synchronized void cpConstTxt() {
+        Path toCopy =
+            Paths.get("G:\\My_Proj\\FtpClientPlus\\modules\\networker\\src\\main\\resources\\static\\texts\\const.txt");
+        
         try{
             boolean canWrite = CONST_TXT.canWrite();
             if(canWrite){
