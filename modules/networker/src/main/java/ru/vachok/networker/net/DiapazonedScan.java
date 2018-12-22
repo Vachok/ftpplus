@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.springframework.ui.Model;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -89,7 +90,8 @@ public class DiapazonedScan implements Runnable {
         if(!logPath.toFile().isFile()){
             logPath = Paths.get("available_last.txt");
         }
-        try(OutputStream outputStream = new FileOutputStream(logPath.toFile());
+        File newLanFile = logPath.toFile();
+        try(OutputStream outputStream = new FileOutputStream(newLanFile);
             PrintWriter printWriter = new PrintWriter(outputStream, true);){
             for(int i = 200; i < 218; i++){
                 StringBuilder msgBuild = new StringBuilder();
@@ -128,6 +130,7 @@ public class DiapazonedScan implements Runnable {
         String msg = "Vlans 200-217 completed.\nTime spend: " +
             TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - stArt) + "\n\n";
         LOGGER.warn(msg);
+        FileSystemWorker.copyFile(newLanFile, "lan\\200_" + System.currentTimeMillis() + ".scan");
         scanOldLan(stArt);
     }
 
@@ -172,6 +175,7 @@ public class DiapazonedScan implements Runnable {
         String msg = "Vlans 11-14 completed.\nTime spend: " +
             TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - stArt) + "\n\n";
         LOGGER.warn(msg);
+        FileSystemWorker.copyFile(oldLANFile, "lan\\192_" + System.currentTimeMillis() + ".scan");
     }
 
     List<String> pingSwitch() throws IllegalAccessException {

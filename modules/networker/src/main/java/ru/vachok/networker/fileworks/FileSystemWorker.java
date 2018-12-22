@@ -176,6 +176,19 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         return stringBuilder.toString();
     }
 
+    public static boolean copyFile(File oldLANFile, String s) {
+        try{
+            Path copy = Files.copy(oldLANFile.toPath(), Paths.get(s));
+            String msg = copy.toString();
+            LOGGER.info(msg);
+            return true;
+        }
+        catch(IOException e){
+            LOGGER.error(e.getMessage(), e);
+            return false;
+        }
+    }
+
     /**
      Метод для копирования.
 
