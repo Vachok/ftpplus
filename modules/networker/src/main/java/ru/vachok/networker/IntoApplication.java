@@ -116,7 +116,6 @@ public class IntoApplication {
      Запуск после старта Spring boot app
      */
     private static boolean afterSt() {
-
         ThreadConfig threadConfig = new ThreadConfig();
         Runnable infoAndSched = new AppInfoOnLoad();
         ConstantsFor.showMem();
@@ -125,10 +124,13 @@ public class IntoApplication {
             String showPath = Paths.get(".").toString() + "\n abs: " +
                 Paths.get(".").toFile().getAbsolutePath();
             new Thread(() -> {
-
                 InitProperties initProperties = new FileProps(s + "\\modules\\networker\\src\\main\\resources\\application");
                 Properties props = initProperties.getProps();
+                props.setProperty("build.version", ConstantsFor.getProps().getProperty("appVersion"));
+                props.setProperty("qsize", ConstantsFor.IPS_IN_VELKOM_VLAN + "");
+                initProperties.setProps(props);
                 initProperties = new DBRegProperties(ConstantsFor.APP_NAME + "application");
+                initProperties.delProps();
                 initProperties.setProps(props);
             }).start();
             LOGGER.error(showPath);

@@ -60,7 +60,7 @@ public class AppInfoOnLoad implements Runnable {
 
      @see #schedStarter()
      */
-    private static final int THIS_DELAY = 150;
+    private static final int THIS_DELAY = 111;
 
     /**
      @return {@link #CONST_TXT}
@@ -110,12 +110,14 @@ public class AppInfoOnLoad implements Runnable {
         Runnable swAval = new SwitchesAvailability();
         ScheduledExecutorService executorService = Executors.unconfigurableScheduledExecutorService(Executors.newScheduledThreadPool(3));
 
-
-        executorService.scheduleWithFixedDelay(Objects.requireNonNull(speedRun), ConstantsFor.INIT_DELAY, TimeUnit.MINUTES.toSeconds(ConstantsFor.DELAY), TimeUnit.SECONDS);
+        executorService
+            .scheduleWithFixedDelay(Objects.requireNonNull(speedRun), ConstantsFor.INIT_DELAY, TimeUnit.MINUTES.toSeconds(ConstantsFor.DELAY), TimeUnit.SECONDS);
         if(!ConstantsFor.thisPC().toLowerCase().contains("home")){
-            executorService.scheduleWithFixedDelay(swAval, 10, ConstantsFor.DELAY, TimeUnit.SECONDS);
+            executorService
+                .scheduleWithFixedDelay(swAval, 10, ConstantsFor.DELAY, TimeUnit.SECONDS);
         }
-        executorService.scheduleWithFixedDelay(DiapazonedScan.getInstance(), 4, THIS_DELAY, TimeUnit.MINUTES);
+        executorService
+            .scheduleWithFixedDelay(DiapazonedScan.getInstance(), 4, THIS_DELAY, TimeUnit.MINUTES);
 
         dateSchedulers();
 

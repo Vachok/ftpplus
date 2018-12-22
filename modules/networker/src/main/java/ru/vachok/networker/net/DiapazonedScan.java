@@ -54,8 +54,22 @@ public class DiapazonedScan implements Runnable {
         }
     }
 
+    @Override
+    public String toString() {
+        LOGGER.info("DiapazonedScan.toString");
+        final StringBuilder sb = new StringBuilder("DiapazonedScan{");
+        sb
+            .append("<a href=\"/showalldev\">ALL_DEVICES ")
+            .append(ConstantsFor.ALL_DEVICES.size())
+            .append("/5610 (")
+            .append((ConstantsFor.IPS_IN_VELKOM_VLAN / 100) * ConstantsFor.ALL_DEVICES.size())
+            .append(" %)");
+        sb.append("</a>}");
+        return sb.toString();
+    }
+
     /**
-     Добавляет в {@link ConstantsFor#ALL_DEVICES} адреса 10.200.200-217.254
+     Добавляет в {@link ConstantsFor#ALL_DEVICES} адреса <i>10.200.200-217.254</i> и <i>192.168.11-14.254</i>
      <p>
 
      @throws IOException если адрес недоступен.
@@ -105,17 +119,53 @@ public class DiapazonedScan implements Runnable {
         catch(IOException e){
             LOGGER.error(e.getMessage(), e);
         }
-        String msg = "\nTime spend: " + TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - stArt);
+        String msg = "Vlans 200-217 completed.\nTime spend: " +
+            TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - stArt) +
+            "\nStarting vlans 192-168.11-14;";
         LOGGER.warn(msg);
+        scanOldLan(stArt);
     }
 
-    @Override
-    public String toString() {
-        LOGGER.info("DiapazonedScan.toString");
-        final StringBuilder sb = new StringBuilder("DiapazonedScan{");
-        sb.append("<a href=\"/showalldev\">ALL_DEVICES=").append(ConstantsFor.ALL_DEVICES.size()).append("/4591");
-        sb.append("</a>}");
-        return sb.toString();
+    private void scanOldLan(long stArt) {
+        File oldLANFile = new File("old_lan.txt");
+        try(OutputStream outputStream = new FileOutputStream(oldLANFile);
+            PrintWriter printWriter = new PrintWriter(outputStream, true)){
+            for(int i = 11; i < 15; i++){
+                StringBuilder msgBuild = new StringBuilder();
+                for(int j = 0; j < 255; j++){
+                    msgBuild = new StringBuilder();
+                    byte[] aBytes = InetAddress.getByName("10.200." + i + "." + j).getAddress();
+                    InetAddress byAddress = InetAddress.getByAddress(aBytes);
+                    int t = 100;
+                    if(ConstantsFor.thisPC().toLowerCase().contains("home")){
+                        t = 400;
+                    }
+                    if(byAddress.isReachable(t)){
+                        printWriter.println(byAddress.getHostName() + " " + byAddress.getHostAddress());
+                        ConstantsFor.ALL_DEVICES.add("<font color=\"green\">" + byAddress.toString() + "</font><br>");
+                    }
+                    else{
+                        ConstantsFor.ALL_DEVICES.add("<font color=\"red\">" + byAddress.toString() + "</font><br>");
+                    }
+                    msgBuild.append("IP was ").append(" 10.200.").append(i).append("<-i.j->").append(j).append("\n")
+                        .append(j).append(" was j\n");
+                    String msg = msgBuild.toString();
+                    LOGGER.info(msg);
+                }
+                msgBuild
+                    .append(i).append(" was i. Total time: ")
+                    .append(TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - stArt))
+                    .append("min\n").append(ConstantsFor.ALL_DEVICES.size()).append(" ALL_DEVICES.size()");
+                String msg = msgBuild.toString();
+                LOGGER.warn(msg);
+                printWriter.println(msg);
+            }
+        }
+        catch(IOException e){
+            LOGGER.error(e.getMessage());
+        }
+        String msgTimeSp = "DiapazonedScan.scanOldLan method. " + ( float ) (System.currentTimeMillis() - stArt) / 1000 + " sec spend";
+        LOGGER.info(msgTimeSp);
     }
 
     List<String> pingSwitch() throws IllegalAccessException {

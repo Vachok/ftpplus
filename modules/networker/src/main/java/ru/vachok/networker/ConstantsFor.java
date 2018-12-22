@@ -50,13 +50,21 @@ public enum ConstantsFor {
     /*Fields*/
     private static final Properties PROPS = new Properties();
 
+    public static final int IPS_IN_VELKOM_VLAN = getIPs();
+
     /**
      Список девайсов и адресов в диапазоне VLAN200-VLAN217
 
      @see DiapazonedScan
      */
-    public static final BlockingQueue<String> ALL_DEVICES = new ArrayBlockingQueue<>(4590);
+    public static final BlockingQueue<String> ALL_DEVICES = new ArrayBlockingQueue<>(IPS_IN_VELKOM_VLAN);
 
+    private static int getIPs() {
+        int vlansNum = Integer.parseInt(PROPS.getProperty("vlans", "22"));
+        int qSize = vlansNum * 255;
+        PROPS.setProperty("qsize", qSize + "");
+        return qSize;
+    }
     /**
      <b>1 мегабайт в байтах</b>
      */
