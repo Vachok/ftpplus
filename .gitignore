@@ -744,3 +744,8 @@ modules/networker/src/main/resources/static/texts/available_last.txt
 modules/networker/src/main/resources/static/texts/available_last_last.txt
 regSourceForProperties.properties
 *SystemTrayHelper.se*
+available_last.txt
+do0132.eatmeat.ru
+modules/networker/lan/
+old_lan.txt
+/temp_pat.cfg

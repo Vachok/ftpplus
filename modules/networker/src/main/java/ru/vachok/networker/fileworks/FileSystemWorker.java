@@ -194,6 +194,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     public static boolean copyFile(File origFile, String s) {
         try{
             Path targetPath = Paths.get(s);
+            targetPath.getFileSystem().provider();
             boolean targetCreate = targetPath.toFile().createNewFile();
             Path copy = Files.copy(origFile.toPath(), targetPath);
             String msg = copy.toString() + " " + targetCreate;

@@ -9,6 +9,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
+
 /**
  Удаление временных файлов.
 
@@ -20,18 +21,19 @@ class DeleterTemp extends FileSystemWorker implements Runnable {
      */
     private static PrintWriter printWriter;
 
-    static {
-        try (OutputStream outputStream = new FileOutputStream(DeleterTemp.class.getSimpleName() + "_log.txt")) {
-            printWriter = new PrintWriter(outputStream, true);
-        } catch (IOException e) {
-            LOGGER.error(e.getMessage(), e);
-        }
-    }
-
     /**
      Счётчик файлов
      */
     private int filesCounter = 0;
+
+    static {
+        try(OutputStream outputStream = new FileOutputStream(DeleterTemp.class.getSimpleName() + "_log.txt")){
+            printWriter = new PrintWriter(outputStream, true);
+        }
+        catch(IOException e){
+            LOGGER.error(e.getMessage(), e);
+        }
+    }
 
     @Override
     public void run() {
@@ -43,21 +45,22 @@ class DeleterTemp extends FileSystemWorker implements Runnable {
         Thread.currentThread().setName("DeleterTemp.visitFile");
         this.filesCounter = filesCounter + 1;
         String fileAbs = file.toAbsolutePath().toString() + " DELETED";
-        if (more2MBOld(attrs)) {
+        if(more2MBOld(attrs)){
             Files.setAttribute(file, "dos:archive", true);
             printWriter.println(file.toAbsolutePath()
                 + ","
-                + (float) file.toFile().length() / ConstantsFor.MBYTE + ""
+                + ( float ) file.toFile().length() / ConstantsFor.MBYTE + ""
                 + ","
                 + new Date(attrs.lastAccessTime().toMillis()) +
                 "," +
                 Files.readAttributes(file, "dos:*"));
         }
 
-        if (tempFile(file.toAbsolutePath())) {
-            try {
+        if(tempFile(file.toAbsolutePath())){
+            try{
                 Files.deleteIfExists(file);
-            } catch (FileSystemException e) {
+            }
+            catch(FileSystemException e){
                 file.toFile().deleteOnExit();
                 return FileVisitResult.CONTINUE;
             }
@@ -87,6 +90,18 @@ class DeleterTemp extends FileSystemWorker implements Runnable {
      @return удалять / не удалять
      */
     private boolean tempFile(Path filePath) {
+        try(InputStream inputStream = new FileInputStream("temp_pat.cfg");
+            InputStreamReader reader = new InputStreamReader(inputStream);
+            BufferedReader bufferedReader = new BufferedReader(reader)){
+            String msg = inputStream.available() + " inputStream.available in " + this.getClass().getSimpleName() + ".tempFile";
+            LOGGER.warn(msg);
+            while(inputStream.available() > 0){
+                return filePath.toString().toLowerCase().contains(bufferedReader.readLine());
+            }
+        }
+        catch(IOException e){
+            LOGGER.warn(e.getMessage(), e);
+        }
         return filePath.toString().toLowerCase().contains(".eatmeat.ru") ||
             filePath.toString().toLowerCase().contains(".log") ||
             filePath.toString().toLowerCase().contains(".obj") ||

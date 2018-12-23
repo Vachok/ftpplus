@@ -7,14 +7,8 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.*;
+import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Date;
 import java.util.Objects;
@@ -77,7 +71,7 @@ public class MailIISLogsCleaner extends FileSystemWorker implements Runnable {
 
     @Override
     public void run() {
-        Path iisLogsDir = Paths.get("\\\\srv-mail3\\c$\\inetpub\\logs\\LogFiles\\W3SVC1\\");
+        Path iisLogsDir = Paths.get("\\\\srv-mail3.eatmeat.ru\\c$\\inetpub\\logs\\LogFiles\\W3SVC1\\");
         printWriter.println("Starting IIS logs cleaner.");
         printWriter.println("Date: ");
         printWriter.println(new Date(ConstantsFor.getAtomicTime()));

@@ -8,13 +8,10 @@ import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -56,7 +53,7 @@ public class WeekPCStats implements Runnable {
      Читает БД pcuserauto <br>
      Записывает файл {@code velkom_pcuserauto.txt} <br>
      Usages: {@link #run()}
-     Uses: {@link #copyFile(File)}
+     Uses: {@link FileSystemWorker#copyFile(File, String)}
      */
     private void getFromDB() {
         final long stArt = System.currentTimeMillis();
@@ -90,7 +87,11 @@ public class WeekPCStats implements Runnable {
         catch(SQLException | IOException e){
             LOGGER.warn(e.getMessage());
         }
-        copyFile(file);
+        String toCopy = "\\\\10.10.111.1\\Torrents-FTP\\" + file.getName();
+        if(!ConstantsFor.thisPC().toLowerCase().contains("home")){
+            toCopy = file.getName() + "_cp";
+        }
+        FileSystemWorker.copyFile(file, toCopy);
     }
 
     /**
@@ -102,29 +103,18 @@ public class WeekPCStats implements Runnable {
 
      @param file {@code velkom_pcuserauto.txt}
      */
-    private void copyFile(File file) {
-        final long stArt = System.currentTimeMillis();
-        File toCopyFile = new File("\\\\10.10.111.1\\Torrents-FTP\\" + file.getName());
-        if(ConstantsFor.thisPC().toLowerCase().contains("home")){
-            try{
-                Files.deleteIfExists(toCopyFile.toPath());
-                Files.copy(file.toPath(), toCopyFile.toPath());
-                String msgTimeSp = "WeekPCStats.cpConstTxt method. " +
-                    ( float ) (System.currentTimeMillis() - stArt) / 1000 +
-                    STR_SEC_SPEND;
-                LOGGER.info(msgTimeSp);
-            }
-            catch(IOException e){
-                LOGGER.error(e.getMessage(), e);
-            }
-        }
+    private void sendToEmail(File file) {
+        MessageToUser eSender = new ESender("143500@gmail.com");
+        eSender.info(this.getClass().getSimpleName(),
+            ConstantsFor.thisPC() + " " + ConstantsFor.getUpTime(),
+            new TForms().fromArray(getInfoList(file), false));
         getInfoList(file);
     }
 
     /**
      Чтение файла
      <p>
-     Usages: {@link #copyFile(File)} <br>
+     Usages: {@link #sendToEmail(File)} <br>
      Uses: -
      <p>
 
