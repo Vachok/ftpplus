@@ -192,19 +192,23 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
      @return удача/нет
      */
     public static boolean copyFile(File origFile, String s) {
+        File toCpFile = new File(s);
         try{
-            Path targetPath = Paths.get(s);
-            targetPath.getFileSystem().provider();
-            boolean targetCreate = targetPath.toFile().createNewFile();
+            Path targetPath = toCpFile.toPath();
+            Path directories = Files.createDirectories(targetPath.getParent());
+            toCpFile = targetPath.toFile();
+            if(!toCpFile.exists()){
+                toCpFile.createNewFile();
+            }
+            Files.deleteIfExists(targetPath);
             Path copy = Files.copy(origFile.toPath(), targetPath);
-            String msg = copy.toString() + " " + targetCreate;
+            String msg = directories + " getParent directory. " + copy.toString() + " " + toCpFile.exists();
             LOGGER.info(msg);
-            return true;
         }
-        catch(IOException e){
+        catch(IOException | NullPointerException e){
             LOGGER.error(e.getMessage(), e);
-            return false;
         }
+        return toCpFile.exists();
     }
 
     /**

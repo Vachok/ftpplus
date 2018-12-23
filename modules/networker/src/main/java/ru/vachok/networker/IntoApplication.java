@@ -14,7 +14,9 @@ import ru.vachok.networker.accesscontrol.MatrixCtr;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.config.ThreadConfig;
+import ru.vachok.networker.fileworks.FileSystemWorker;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.time.LocalDate;
@@ -95,6 +97,7 @@ public class IntoApplication {
      Запуск до старта Spring boot app
      */
     private static void beforeSt() {
+        FileSystemWorker.copyFile(new File("const.txt"), ".\\lan\\" + ConstantsFor.thisPC());
         ConstantsFor.takePr();
         ConstantsFor.showMem();
         LOGGER.info("IntoApplication.beforeSt");
@@ -109,7 +112,7 @@ public class IntoApplication {
         }
         SPRING_APPLICATION.setMainApplicationClass(IntoApplication.class);
         SPRING_APPLICATION.setApplicationContextClass(AppCtx.class);
-        System.setProperty("CONST_TXT.encoding", "UTF8");
+        System.setProperty("encoding", "UTF8");
     }
 
     /**
