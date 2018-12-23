@@ -6,7 +6,9 @@ import ru.vachok.networker.ConstantsFor;
 import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 
@@ -90,13 +92,12 @@ class DeleterTemp extends FileSystemWorker implements Runnable {
      @return удалять / не удалять
      */
     private boolean tempFile(Path filePath) {
+        List<String> fromFile = new ArrayList<>();
         try(InputStream inputStream = new FileInputStream("temp_pat.cfg");
             InputStreamReader reader = new InputStreamReader(inputStream);
             BufferedReader bufferedReader = new BufferedReader(reader)){
-            String msg = inputStream.available() + " inputStream.available in " + this.getClass().getSimpleName() + ".tempFile";
-            LOGGER.warn(msg);
             while(inputStream.available() > 0){
-                return filePath.toString().toLowerCase().contains(bufferedReader.readLine());
+                fromFile.add(bufferedReader.readLine());
             }
         }
         catch(IOException e){
@@ -111,6 +112,9 @@ class DeleterTemp extends FileSystemWorker implements Runnable {
             filePath.toString().toLowerCase().contains("putty.exe") ||
             filePath.toString().toLowerCase().contains(".me") ||
             filePath.toString().toLowerCase().contains(".csv") ||
+            filePath.toString().contains("MessagesInCons") ||
+            filePath.toString().toLowerCase().contains(".msg") ||
+            filePath.toString().toLowerCase().contains("SystemTrayHelper.set".toLowerCase()) ||
             filePath.toString().toLowerCase().contains(".prn");
     }
 

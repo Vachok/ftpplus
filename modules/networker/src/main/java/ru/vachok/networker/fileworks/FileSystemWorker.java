@@ -24,7 +24,6 @@ import java.util.List;
  @since 19.12.2018 (9:57) */
 public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
 
-    /*Fields*/
 
     /**
      {@link AppInfoOnLoad#getConstTxt()}
@@ -41,7 +40,6 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
      */
     static final Logger LOGGER = AppComponents.getLogger();
 
-    /*METHODS*/
 
     /**
      @param atHome дома / не дома
@@ -191,22 +189,22 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
      @param s        строка путь
      @return удача/нет
      */
-    public static boolean copyFile(File origFile, String s) {
+    public static boolean copyOrDelFile(File origFile, String s, boolean needDel) {
         File toCpFile = new File(s);
         try{
             Path targetPath = toCpFile.toPath();
             Path directories = Files.createDirectories(targetPath.getParent());
             toCpFile = targetPath.toFile();
-            if(!toCpFile.exists()){
-                toCpFile.createNewFile();
+            Path copy = Files.copy(origFile.toPath(), targetPath, StandardCopyOption.REPLACE_EXISTING);
+            if(needDel){
+                Files.deleteIfExists(origFile.toPath());
             }
-            Files.deleteIfExists(targetPath);
-            Path copy = Files.copy(origFile.toPath(), targetPath);
             String msg = directories + " getParent directory. " + copy.toString() + " " + toCpFile.exists();
             LOGGER.info(msg);
         }
         catch(IOException | NullPointerException e){
-            LOGGER.error(e.getMessage(), e);
+            LOGGER.warn(e.getMessage(), e);
+            return toCpFile.exists();
         }
         return toCpFile.exists();
     }

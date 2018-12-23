@@ -7,41 +7,64 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 
 /**
- Действия, для выхода
+ Действия, при выходе
 
  @since 21.12.2018 (12:15) */
 public class ExitApp implements Runnable {
 
-    /*Fields*/
+    /**
+     {@link AppComponents#getLogger()}
+     */
     private static final Logger LOGGER = AppComponents.getLogger();
 
+    /**
+     Причина выхода
+     */
     private String reasonExit;
 
+    /**
+     Имя инициатора
+     */
     private String name;
 
+    /**
+     Переменная для сохранения {@link ConstantsFor#getProps()} в БД
+     {@link #run()}
+     */
     private Properties properties;
 
+    /**
+     Uptime в минутах. Как статус {@link System#exit(int)}
+     */
     private long toMinutes = TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - ConstantsFor.START_STAMP);
 
-    /*Instances*/
+    /**
+     @param name       {@link #name}
+     @param reasonExit {@link #reasonExit}
+     */
     public ExitApp(String name, String reasonExit) {
         this.reasonExit = reasonExit;
         this.name = name;
     }
 
+    /**
+     {@link #reasonExit} is {@code  "No Reason. From " + ExitApp.class.getSimpleName}
+
+     @param fromClass {@link #name}
+     */
     public ExitApp(String fromClass) {
-        this.reasonExit = "No Reason. From " + IntoApplication.class.getSimpleName();
+        this.reasonExit = "No Reason. From " + ExitApp.class.getSimpleName();
         this.name = fromClass;
     }
 
+    /**
+     {@link #copyAvail()}
+     */
     @Override
     public void run() {
         this.properties = ConstantsFor.getProps();
@@ -57,30 +80,13 @@ public class ExitApp implements Runnable {
     }
 
     private void copyAvail() throws IOException {
-        String avaPathStr = Paths.get(".").toFile().getCanonicalPath();
-        Path logPath = Paths.get(avaPathStr + "\\modules\\networker\\src\\main\\resources\\static\\texts\\available_last.txt");
-        File avalInRoot = new File("available_last.txt");
-        File avalInTexts = new File(logPath.toString());
-
-        if(avalInRoot.exists() && avalInRoot.canRead()){
-            String avalInTextsStr = avalInTexts.toString();
-            avalInTextsStr = avalInTextsStr.replace("available", "available_last");
-            Files.copy(avalInRoot.toPath(), Paths.get(avalInTextsStr));
-            exitAppDO();
+        File appLog = new File("\"g:\\\\My_Proj\\\\FtpClientPlus\\\\modules\\\\networker\\\\app.log\"");
+        FileSystemWorker.copyOrDelFile(new File("available_last.txt"), ".\\lan\\vlans200" + System.currentTimeMillis() / 1000 + ".txt", true);
+        FileSystemWorker.copyOrDelFile(new File("old_lan.txt"), ".\\lan\\old_lan_" + System.currentTimeMillis() / 1000 + ".txt", true);
+        if(appLog.exists() && appLog.canRead()){
+            FileSystemWorker.copyOrDelFile(appLog, "\\\\10.10.111.1\\Torrents-FTP\\app.log", false);
         }
-        else{
-            if(avalInTexts.exists() && avalInTexts.canWrite() && avalInTexts.canRead()){
-                Files.deleteIfExists(avalInTexts.toPath());
-                Files.copy(avalInTexts.toPath(), Paths.get(avalInTexts
-                    .getAbsolutePath().replace("available", "available_last")));
-                exitAppDO();
-            }
-            else{
-                LOGGER.error("NO FILES AVAILABLE!");
-                LOGGER.info(name);
-                exitAppDO();
-            }
-        }
+        exitAppDO();
     }
 
     private void exitAppDO() {

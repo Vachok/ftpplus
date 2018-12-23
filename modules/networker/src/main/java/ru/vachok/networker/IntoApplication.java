@@ -10,12 +10,12 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
-import ru.vachok.networker.accesscontrol.MatrixCtr;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -54,12 +54,26 @@ public class IntoApplication {
      */
     private static final String THIS_PC = ConstantsFor.thisPC();
 
+    /**
+     {@link ConfigurableApplicationContext}
+     Usages: {@link #main(String[])},
+     */
     private static ConfigurableApplicationContext configurableApplicationContext;
 
+    /**
+     Usages: {@link SystemTrayHelper#addItems(PopupMenu)}
+
+     @return {@link #SPRING_APPLICATION}
+     */
     static SpringApplication getSpringApplication() {
         return SPRING_APPLICATION;
     }
 
+    /**
+     Usages: {@link ExitApp#exitAppDO()}, {@link SystemTrayHelper#addItems(PopupMenu)}
+
+     @return {@link #configurableApplicationContext}
+     */
     static ConfigurableApplicationContext getConfigurableApplicationContext() {
         return configurableApplicationContext;
     }
@@ -67,10 +81,10 @@ public class IntoApplication {
     /**
      <h1>1. Точка входа в Spring Boot Application</h1>
      <p>
-     {@link AppInfoOnLoad#infoForU(ApplicationContext)}
 
      @param args null
-     @see MatrixCtr
+     @see SystemTrayHelper#addItems(PopupMenu)
+     {@link AppInfoOnLoad#infoForU(ApplicationContext)}
      */
     public static void main(String[] args) {
         final long stArt = System.currentTimeMillis();
@@ -94,10 +108,11 @@ public class IntoApplication {
     }
 
     /**
-     Запуск до старта Spring boot app
+     Запуск до старта Spring boot app <br>
+     Usages: {@link #main(String[])}
      */
     private static void beforeSt() {
-        FileSystemWorker.copyFile(new File("const.txt"), ".\\lan\\" + ConstantsFor.thisPC());
+        FileSystemWorker.copyOrDelFile(new File("const.txt"), ".\\lan\\" + ConstantsFor.thisPC(), true);
         ConstantsFor.takePr();
         ConstantsFor.showMem();
         LOGGER.info("IntoApplication.beforeSt");
@@ -116,7 +131,8 @@ public class IntoApplication {
     }
 
     /**
-     Запуск после старта Spring boot app
+     Запуск после старта Spring boot app <br>
+     Usages: {@link #main(String[])}
      */
     private static boolean afterSt() {
         ThreadConfig threadConfig = new ThreadConfig();

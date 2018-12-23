@@ -69,6 +69,9 @@ public class AppInfoOnLoad implements Runnable {
         return CONST_TXT;
     }
 
+    /**
+     @see #infoForU(ApplicationContext)
+     */
     @Override
     public void run() {
         infoForU(AppCtx.scanForBeansAndRefreshContext());
@@ -118,7 +121,7 @@ public class AppInfoOnLoad implements Runnable {
                 .scheduleWithFixedDelay(swAval, 10, ConstantsFor.DELAY, TimeUnit.SECONDS);
         }
         executorService
-            .scheduleWithFixedDelay(DiapazonedScan.getInstance(), 7, THIS_DELAY, TimeUnit.MINUTES);
+            .scheduleWithFixedDelay(DiapazonedScan.getInstance(), 3, THIS_DELAY, TimeUnit.MINUTES);
 
         String msg = "Scheduled: DiapazonedScan.getInstance(). Initial delay 1. delay " + THIS_DELAY + " in minutes\n" +
             new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(THIS_DELAY + 1));

@@ -97,7 +97,7 @@ public class DiapazonedScan implements Runnable {
                 TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - stArt) + "\n\n";
             LOGGER.warn(msg);
         }
-        boolean b = FileSystemWorker.copyFile(newLanFile, p.toAbsolutePath().toString());
+        boolean b = FileSystemWorker.copyOrDelFile(newLanFile, p.toAbsolutePath().toString(), true);
         scanOldLan(stArt);
     }
 
@@ -162,9 +162,9 @@ public class DiapazonedScan implements Runnable {
         catch(IOException e){
             LOGGER.error(e.getMessage());
         }
-        boolean b = FileSystemWorker.copyFile(oldLANFile, p.toAbsolutePath().toString());
+        boolean b = FileSystemWorker.copyOrDelFile(oldLANFile, p.toAbsolutePath().toString(), true);
         String msg = "Vlans 11-14 completed.\nTime spend: " +
-            TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - stArt) + "\n" + b + " copyFile.\n\n";
+            TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - stArt) + "\n" + b + " copyOrDelFile.\n\n";
         LOGGER.warn(msg);
     }
 
