@@ -16,6 +16,7 @@ import ru.vachok.networker.ad.ActDirectoryCTRL;
 import ru.vachok.networker.ad.PCUserResolver;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.ThreadConfig;
+import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.TimeChecker;
 
 import javax.servlet.http.HttpServletRequest;
@@ -23,6 +24,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
+import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.text.MessageFormat;
 import java.util.*;
@@ -33,8 +35,10 @@ import java.util.concurrent.locks.ReentrantLock;
 
 
 /**
+ Управление сервисами LAN-разведки.
+ <p>
  @since 21.08.2018 (14:40) */
-@Service ("netScannerSvc")
+@Service("netScannerSvc")
 public class NetScannerSvc {
 
     /*Fields*/
@@ -109,9 +113,9 @@ public class NetScannerSvc {
      */
     private String thePc;
 
-    private ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadConfig().threadPoolTaskExecutor();
+    private static final String SHOW_MEM = ConstantsFor.showMem();
 
-    /*Get&Set*/
+    private ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadConfig().threadPoolTaskExecutor();
 
     /**
      @return {@link #qer}
@@ -120,18 +124,13 @@ public class NetScannerSvc {
         return qer;
     }
 
-    /**
-     @return {@link #netScannerSvc}
-     */
-    public static NetScannerSvc getI() {
-        if(netScannerSvc==null){
-            synchronized(NetScannerSvc.class) {
-                if(netScannerSvc==null){
-                    netScannerSvc = new NetScannerSvc();
-                }
-            }
+    /*Instances*/
+    static {
+        try {
+            c = new RegRuMysql().getDefaultConnection(DB_NAME);
+        } catch (Exception e) {
+            c = new RegRuMysql().getDefaultConnection(DB_NAME);
         }
-        return netScannerSvc;
     }
 
     /**
@@ -148,12 +147,27 @@ public class NetScannerSvc {
     }
 
     /**
+     @return {@link #netScannerSvc}
+     */
+    public static NetScannerSvc getI() {
+        ConstantsFor.showMem();
+        if (netScannerSvc == null) {
+            synchronized (NetScannerSvc.class) {
+                if (netScannerSvc == null) {
+                    netScannerSvc = new NetScannerSvc();
+                }
+            }
+        }
+        return netScannerSvc;
+    }
+
+    /**
      Выполняет запрос в БД по-пользовательскому вводу <br> Устанавливает {@link ActDirectoryCTRL#queryStringExists(java.lang.String, org.springframework.ui.Model)}
 
      @return web-страница с результатом
      */
     public String getInfoFromDB() {
-        if(thePc.isEmpty()){
+        if (thePc.isEmpty()) {
             IllegalArgumentException argumentException = new IllegalArgumentException("Must be NOT NULL!");
             return argumentException.getMessage();
         }
@@ -162,16 +176,15 @@ public class NetScannerSvc {
             .append("select * from velkompc where NamePP like '%")
             .append(thePc)
             .append("%'");
-        try(PreparedStatement preparedStatement = c.prepareStatement(sql.toString())){
-            try(ResultSet resultSet = preparedStatement.executeQuery()){
+        try (PreparedStatement preparedStatement = c.prepareStatement(sql.toString())) {
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 List<String> timeNow = new ArrayList<>();
                 List<Integer> integersOff = new ArrayList<>();
-                while(resultSet.next()){
+                while (resultSet.next()) {
                     int onlineNow = resultSet.getInt("OnlineNow");
-                    if(onlineNow==1){
+                    if (onlineNow == 1) {
                         timeNow.add(resultSet.getString("TimeNow"));
-                    }
-                    else{
+                    } else {
                         integersOff.add(onlineNow);
                     }
                     StringBuilder stringBuilder = new StringBuilder();
@@ -199,19 +212,10 @@ public class NetScannerSvc {
                 setThePc(thePcWithDBInfo);
                 ActDirectoryCTRL.setInputWithInfoFromDB(thePcWithDBInfo);
             }
-        }
-        catch(SQLException | IndexOutOfBoundsException e){
+        } catch (SQLException | IndexOutOfBoundsException e) {
             setThePc(e.getMessage());
         }
         return "ok";
-    }
-
-    /**
-     @return атрибут модели.
-     */
-    @SuppressWarnings ("WeakerAccess")
-    public String getThePc() {
-        return thePc;
     }
 
     /**
@@ -236,14 +240,12 @@ public class NetScannerSvc {
         return pcNames;
     }
 
-    /*Instances*/
-    static {
-        try{
-            c = new RegRuMysql().getDefaultConnection(DB_NAME);
-        }
-        catch(Exception e){
-            c = new RegRuMysql().getDefaultConnection(DB_NAME);
-        }
+    /**
+     @return атрибут модели.
+     */
+    @SuppressWarnings("WeakerAccess")
+    public String getThePc() {
+        return thePc;
     }
 
     /**
@@ -267,6 +269,7 @@ public class NetScannerSvc {
         final long stArt = System.currentTimeMillis();
         AtomicReference<String> msg = new AtomicReference<>("");
         new Thread(() -> {
+            FileSystemWorker.recFile(this.getClass().getSimpleName() + ".before", Collections.singletonList(ConstantsFor.showMem()));
             msg.set(new StringBuilder()
                 .append("Thread ")
                 .append(Thread.currentThread().getId())
@@ -276,7 +279,7 @@ public class NetScannerSvc {
                 .append(lock.isLocked()).toString());
             final long startMethod = System.currentTimeMillis();
             LOGGER.warn(msg.get());
-            for(String s : PC_PREFIXES){
+            for (String s : PC_PREFIXES) {
                 Thread.currentThread().setName(lock.isLocked() + " lock*" + s);
                 pcNames.clear();
                 pcNames.addAll(getPCNamesPref(s));
@@ -284,11 +287,12 @@ public class NetScannerSvc {
             String elapsedTime = "Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethod) + " sec.";
             pcNames.add(elapsedTime);
             LOGGER.warn(msg.get());
+
             new Thread(() -> {
                 Thread.currentThread().setName(lock.isLocked() + " lock*SMTP");
                 MessageToUser mailMSG = new ESender("143500@gmail.com");
-                float upTime = ( float ) (TimeUnit.MILLISECONDS
-                                              .toSeconds(System.currentTimeMillis() - ConstantsFor.START_STAMP)) / 60f;
+                float upTime = (float) (TimeUnit.MILLISECONDS
+                    .toSeconds(System.currentTimeMillis() - ConstantsFor.START_STAMP)) / 60f;
                 Map<String, String> lastLogs = new AppComponents().getLastLogs();
                 String retLogs = new TForms().fromArray(lastLogs);
                 String fromArray = new TForms().fromArray(ConstantsFor.COMPNAME_USERS_MAP, false);
@@ -298,18 +302,17 @@ public class NetScannerSvc {
                 mailMSG.info(
                     SOURCE_CLASS + " onlines: " + onLinePCs,
                     upTime + " min uptime. " + thisPCStr + " COMPNAME_USERS_MAP size",
-                    retLogs + " \n" + psUser + "\n" + fromArray);
-                try(OutputStream outputStream = new FileOutputStream("lasusers.txt")){
-                    outputStream.write(fromArray.getBytes());
-                }
-                catch(IOException e){
-                    LOGGER.error(e.getMessage(), e);
-                }
+                    SHOW_MEM + "\n" + ConstantsFor.showMem() + "\n\n" + retLogs + " \n" + psUser + "\n" + fromArray);
+                FileSystemWorker.recFile("lasusers.txt",
+                    Collections.singletonList(new String(fromArray.getBytes(), StandardCharsets.UTF_8)));
+
                 String s = Thread.activeCount() + " active threads now.";
                 LOGGER.warn(s);
                 this.onLinePCs = 0;
+                FileSystemWorker.recFile(this.getClass().getSimpleName() + ".after",
+                    Collections.singletonList(ConstantsFor.showMem()));
             }).start();
-            String msgTimeSp = "NetScannerSvc.getPCsAsync method. " + ( float ) (System.currentTimeMillis() - stArt) / 1000 + " sec spend";
+            String msgTimeSp = "NetScannerSvc.getPCsAsync method. " + (float) (System.currentTimeMillis() - stArt) / 1000 + " sec spend";
             LOGGER.warn(msgTimeSp);
         }).start();
     }
@@ -318,8 +321,7 @@ public class NetScannerSvc {
      Сборщик для {@link #pcNames} <br> 1. {@link #getCycleNames(String)} 1.1 {@link #getNamesCount(String)} <br> 2. {@link #getSomeMore(String, boolean)} 2.1 {@link #onLinesCheck(String, String)} 2
      .1.1 {@link ThreadConfig#threadPoolTaskExecutor()} 2.1.2 {@link PCUserResolver#namesToFile(String)} <br> 2.2 {@link #offLinesCheckUser(String, String)} <br> 3. {@link #getSomeMore(String,
         boolean)} 3.1 {@link #onLinesCheck(String, String)} 3.1.1 {@link ThreadConfig#threadPoolTaskExecutor()} 3.1.2 {@link PCUserResolver#namesToFile(String)} <br> 4. {@link #getSomeMore(String,
-        boolean)} 4.1 {@link ThreadConfig#threadPoolTaskExecutor()} 4.1.2 {@link PCUserResolver#namesToFile(String)} 4.2 {@link #offLinesCheckUser(String, String)} <br> 5.
-     {@link #writeDB(Collection)} 5.1
+        boolean)} 4.1 {@link ThreadConfig#threadPoolTaskExecutor()} 4.1.2 {@link PCUserResolver#namesToFile(String)} 4.2 {@link #offLinesCheckUser(String, String)} <br> 5. {@link #writeDB(Collection)} 5.1
      {@link TForms#fromArray(List, boolean)}
 
      @param prefixPcName префикс имени ПК
@@ -333,11 +335,11 @@ public class NetScannerSvc {
         boolean reachable;
         InetAddress byName;
         Thread.currentThread().setPriority(8);
-        for(String pcName : getCycleNames(prefixPcName)){
-            try{
+        for (String pcName : getCycleNames(prefixPcName)) {
+            try {
                 byName = InetAddress.getByName(pcName);
                 reachable = byName.isReachable(ConstantsFor.TIMEOUT_650);
-                if(!reachable){
+                if (!reachable) {
                     String someMore = getSomeMore(pcName, false);
                     String onLines = new StringBuilder()
                         .append("online ")
@@ -348,8 +350,7 @@ public class NetScannerSvc {
                     String format = MessageFormat.format("{0} {1} | {2}", pcName, onLines, someMore);
                     netWork.putIfAbsent(pcName + " last name is " + someMore, false);
                     LOGGER.warn(format);
-                }
-                else{
+                } else {
                     String someMore = new StringBuilder().append("<i><font color=\"yellow\">last name is ")
                         .append(getSomeMore(pcName, false)).append("</i></font> ")
                         .append(getSomeMore(pcName, true))
@@ -368,8 +369,7 @@ public class NetScannerSvc {
                     netWork.putIfAbsent(printStr, true);
                     LOGGER.info(format);
                 }
-            }
-            catch(IOException e){
+            } catch (IOException e) {
                 Thread.currentThread().interrupt();
             }
         }
@@ -388,18 +388,17 @@ public class NetScannerSvc {
      @see #getPCNamesPref(String)
      */
     private Collection<String> getCycleNames(String namePCPrefix) {
-        if(namePCPrefix==null){
+        if (namePCPrefix == null) {
             namePCPrefix = "pp";
         }
         int inDex = getNamesCount(namePCPrefix);
         String nameCount;
         Collection<String> list = new ArrayList<>();
         int pcNum = 0;
-        for(int i = 1; i < inDex; i++){
-            if(namePCPrefix.equals("no") || namePCPrefix.equals("pp") || namePCPrefix.equals("do")){
+        for (int i = 1; i < inDex; i++) {
+            if (namePCPrefix.equals("no") || namePCPrefix.equals("pp") || namePCPrefix.equals("do")) {
                 nameCount = String.format("%04d", ++pcNum);
-            }
-            else{
+            } else {
                 nameCount = String.format("%03d", ++pcNum);
             }
             list.add(namePCPrefix + nameCount + ".eatmeat.ru");
@@ -418,12 +417,11 @@ public class NetScannerSvc {
      */
     private String getSomeMore(String pcName, boolean isOnline) {
         String sql;
-        if(isOnline){
+        if (isOnline) {
             sql = "select * from velkompc where NamePP like ?";
             this.onLinePCs = this.onLinePCs + 1;
             return onLinesCheck(sql, pcName) + " | " + onLinePCs;
-        }
-        else{
+        } else {
             sql = "select * from pcuser where pcName like ?";
             return offLinesCheckUser(sql, pcName);
         }
@@ -440,67 +438,67 @@ public class NetScannerSvc {
      */
     private static String writeDB(Collection<String> pcNames) {
         List<String> list = new ArrayList<>();
-        try(PreparedStatement p = c.prepareStatement("insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow) values (?,?,?,?)")){
+        try (PreparedStatement p = c.prepareStatement("insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow) values (?,?,?,?)")) {
             pcNames.stream().sorted().forEach(x -> {
                 String pcSerment = "Я не знаю...";
                 LOGGER.info(x);
-                if(x.contains("200.200")){
+                if (x.contains("200.200")) {
                     pcSerment = "Торговый дом";
                 }
-                if(x.contains("200.201")){
+                if (x.contains("200.201")) {
                     pcSerment = "IP телефоны";
                 }
-                if(x.contains("200.202")){
+                if (x.contains("200.202")) {
                     pcSerment = "Техслужба";
                 }
-                if(x.contains("200.203")){
+                if (x.contains("200.203")) {
                     pcSerment = "СКУД";
                 }
-                if(x.contains("200.204")){
+                if (x.contains("200.204")) {
                     pcSerment = "Упаковка";
                 }
-                if(x.contains("200.205")){
+                if (x.contains("200.205")) {
                     pcSerment = "МХВ";
                 }
-                if(x.contains("200.206")){
+                if (x.contains("200.206")) {
                     pcSerment = "Здание склада 5";
                 }
-                if(x.contains("200.207")){
+                if (x.contains("200.207")) {
                     pcSerment = "Сырокопоть";
                 }
-                if(x.contains("200.208")){
+                if (x.contains("200.208")) {
                     pcSerment = "Участок убоя";
                 }
-                if(x.contains("200.209")){
+                if (x.contains("200.209")) {
                     pcSerment = "Да ладно?";
                 }
-                if(x.contains("200.210")){
+                if (x.contains("200.210")) {
                     pcSerment = "Мастера колб";
                 }
-                if(x.contains("200.212")){
+                if (x.contains("200.212")) {
                     pcSerment = "Мастера деликатесов";
                 }
-                if(x.contains("200.213")){
+                if (x.contains("200.213")) {
                     pcSerment = "2й этаж. АДМ.";
                 }
-                if(x.contains("200.214")){
+                if (x.contains("200.214")) {
                     pcSerment = "WiFiCorp";
                 }
-                if(x.contains("200.215")){
+                if (x.contains("200.215")) {
                     pcSerment = "WiFiFree";
                 }
-                if(x.contains("200.217")){
+                if (x.contains("200.217")) {
                     pcSerment = "1й этаж АДМ";
                 }
-                if(x.contains("192.168")){
+                if (x.contains("192.168")) {
                     pcSerment = "Может быть в разных местах...";
                 }
-                if(x.contains("172.16.200")){
+                if (x.contains("172.16.200")) {
                     pcSerment = "Open VPN авторизация - сертификат";
                 }
                 boolean onLine = false;
-                try{
-                    if(x.contains("true")){
+                try {
+                    if (x.contains("true")) {
                         onLine = true;
                     }
                     String x1 = x.split(":")[0];
@@ -511,15 +509,13 @@ public class NetScannerSvc {
                     p.setBoolean(4, onLine);
                     p.executeUpdate();
                     list.add(x1 + " " + x2 + " " + pcSerment + " " + onLine);
-                }
-                catch(SQLException e){
+                } catch (SQLException e) {
                     LOGGER.error(e.getMessage(), e);
                     c = new RegRuMysql().getDefaultConnection(DB_NAME);
                 }
             });
             return new TForms().fromArray(list, true);
-        }
-        catch(SQLException e){
+        } catch (SQLException e) {
             LOGGER.error(e.getMessage(), e);
             c = new RegRuMysql().getDefaultConnection(DB_NAME);
             return e.getMessage();
@@ -533,19 +529,19 @@ public class NetScannerSvc {
      */
     private int getNamesCount(String qer) {
         int inDex = 0;
-        if(qer.equals("no")){
+        if (qer.equals("no")) {
             inDex = ConstantsFor.NOPC;
         }
-        if(qer.equals("pp")){
+        if (qer.equals("pp")) {
             inDex = ConstantsFor.PPPC;
         }
-        if(qer.equals("do")){
+        if (qer.equals("do")) {
             inDex = ConstantsFor.DOPC;
         }
-        if(qer.equals("a")){
+        if (qer.equals("a")) {
             inDex = ConstantsFor.APC;
         }
-        if(qer.equals("td")){
+        if (qer.equals("td")) {
             inDex = ConstantsFor.TDPC;
         }
         return inDex;
@@ -565,26 +561,25 @@ public class NetScannerSvc {
         List<Integer> offLine = new ArrayList<>();
         StringBuilder stringBuilder = new StringBuilder();
         this.threadPoolTaskExecutor = threadConfig.threadPoolTaskExecutor();
-        try(PreparedStatement statement = c.prepareStatement(sql)){
+        try (PreparedStatement statement = c.prepareStatement(sql)) {
             Runnable r = () -> pcUserResolver.namesToFile(pcName);
             execSet(r);
             statement.setString(1, pcName);
-            try(ResultSet resultSet = statement.executeQuery()){
-                while(resultSet.next()){
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
                     ADComputer adComputer = new ADComputer();
                     int onlineNow = resultSet.getInt("OnlineNow");
-                    if(onlineNow==1){
+                    if (onlineNow == 1) {
                         onLine.add(onlineNow);
                         adComputer.setDnsHostName(pcName);
                     }
-                    if(onlineNow==0){
+                    if (onlineNow == 0) {
                         offLine.add(onlineNow);
                     }
                     adComputers.add(adComputer);
                 }
             }
-        }
-        catch(SQLException | NullPointerException e){
+        } catch (SQLException | NullPointerException e) {
             return e.getMessage();
         }
         return stringBuilder
@@ -603,13 +598,13 @@ public class NetScannerSvc {
      */
     private String offLinesCheckUser(String sql, String pcName) {
         StringBuilder stringBuilder = new StringBuilder();
-        try(PreparedStatement p = c.prepareStatement(sql);
-            PreparedStatement p1 = c.prepareStatement(sql.replaceAll("pcuser", "pcuserauto"))){
+        try (PreparedStatement p = c.prepareStatement(sql);
+             PreparedStatement p1 = c.prepareStatement(sql.replaceAll("pcuser", "pcuserauto"))) {
             p.setString(1, pcName);
             p1.setString(1, pcName);
             try (ResultSet resultSet = p.executeQuery();
                  ResultSet resultSet1 = p1.executeQuery()) {
-                while(resultSet.next()){
+                while (resultSet.next()) {
                     stringBuilder.append("<b>")
                         .append(resultSet.getString("userName").trim()).append("</b> (time: ")
                         .append(resultSet.getString("whenQueried")).append(")");
@@ -623,13 +618,13 @@ public class NetScannerSvc {
                     }
                 }
             }
-        }
-        catch(SQLException e){
+        } catch (SQLException e) {
             stringBuilder.append(e.getMessage());
 
         }
         return "<font color=\"orange\">EXCEPTION in SQL dropped. <br>" + stringBuilder.toString() + "</font>";
     }
+
     /**
      @see AppComponents#lastNetScanMap()
      */
@@ -640,8 +635,7 @@ public class NetScannerSvc {
     /**
      Сетает {@link org.springframework.core.task.TaskExecutor} для запуска сканирования отдельного ПК.@param executor {@link ThreadConfig}
      <p>
-     Usages: {@link #onLinesCheck(String, String)} <br>
-     Uses: -
+     Usages: {@link #onLinesCheck(String, String)} <br> Uses: -
 
      @param r {@link Runnable}, для пуска.
      */
@@ -674,7 +668,7 @@ public class NetScannerSvc {
     private void tryKillSleepTHR(String str) {
         Thread.currentThread().checkAccess();
         Thread.getAllStackTraces().forEach((x, y) -> {
-            if(x.getState().equals(Thread.State.WAITING) && x.getName().contains("eatmeat.ru")){
+            if (x.getState().equals(Thread.State.WAITING) && x.getName().contains("eatmeat.ru")) {
                 x.checkAccess();
                 x.interrupt();
                 threadPoolTaskExecutor.destroy();
@@ -682,10 +676,9 @@ public class NetScannerSvc {
                     + new TForms().fromArray(x.getStackTrace(), false) + "\n" +
                     x.isAlive() + " isAlive. Total active = " + Thread.activeCount();
                 String name = x.getName() + "log.txt";
-                try(OutputStream outputStream = new FileOutputStream(name)){
+                try (OutputStream outputStream = new FileOutputStream(name)) {
                     outputStream.write(s.getBytes());
-                }
-                catch(IOException e){
+                } catch (IOException e) {
                     LOGGER.info(e.getMessage());
                 }
             }

@@ -7,18 +7,17 @@
 </head>
 <body>
 <center><a href="/">Main</a> | <a th:href="${ref}">Back</a> | <a href="/clsmail">Ящик и БД</a> | <a href="/clsmail?clearmail">Очистить ящик</a></center>
-<p th:utext="${mail}"/>
+<center><b><font color="#f7fc6c"><p th:utext="${mail}"/></font></b></center>
 <p th:utext="${urls}"/>
 <a href="http://srv-git.eatmeat.ru:9999"><font color=""><p th:utext="${ping}"></p></font></a>
+<a href="texts/avalible_last.txt">avalible_last</a> <a href="texts/available.txt">avalible</a>
 <p th:utext="${visit}"/>
 <p th:utext="${request}"/>
 <p th:utext="${res}"/>
 </body>
 <footer>
     <p align="right" th:utext="${visit}"/>
-
-    <a href="/stop">Exit Application</a>
-    <a href="/netscan?td">Netscan TD</a>
+    <h3><a href="/stop"><font color="yellow">Exit Application</font></a> or <a href="/pcoff"><font color="red">OFF PC</font></a></h3>
     <a href="/netscan">Netscan Full</a>
     <a href="/pflists">PfLists</a>
 </footer>

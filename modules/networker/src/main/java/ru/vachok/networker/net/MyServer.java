@@ -4,9 +4,12 @@ package ru.vachok.networker.net;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.*;
+import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.SystemTrayHelper;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.VersionInfo;
+import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.DBMessenger;
 
 import java.io.*;
@@ -61,7 +64,7 @@ public class MyServer extends Thread {
      */
     private static Socket socket;
 
-    private static final Properties propsToSave = ConstantsFor.getPROPS();
+    private static final Properties propsToSave = ConstantsFor.getProps();
 
     /**
      <i>{@link SystemTrayHelper#recOn()}</i>
@@ -129,11 +132,11 @@ public class MyServer extends Thread {
         }
         printStream.println((System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN + " min up | " + ConstantsFor.APP_NAME);
         printStream.println(Thread.activeCount() + " active THREADS");
+        printStream.println(ConstantsFor.showMem());
         printStream.println("Press Enter or enter command:\n");
         String readLine = bufferedReader.readLine();
         if (readLine.toLowerCase().contains("exit")) {
-            IntoApplication.delTemp();
-            ConstantsFor.saveProps(propsToSave);
+            FileSystemWorker.delTemp();
             socket.close();
             System.exit(ConstantsFor.USER_EXIT);
         }

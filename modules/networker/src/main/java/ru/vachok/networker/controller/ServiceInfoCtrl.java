@@ -8,14 +8,15 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.IntoApplication;
+import ru.vachok.networker.ExitApp;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.AppComponents;
-import ru.vachok.networker.componentsrepo.PageFooter;
-import ru.vachok.networker.componentsrepo.VersionInfo;
-import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.componentsrepo.*;
+import ru.vachok.networker.config.ThreadConfig;
+import ru.vachok.networker.net.DiapazonedScan;
+import ru.vachok.networker.services.MyCalen;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.file.AccessDeniedException;
@@ -32,75 +33,73 @@ import java.util.concurrent.TimeUnit;
 @Controller
 public class ServiceInfoCtrl {
 
-    /*Fields*/
     private static final Logger LOGGER = LoggerFactory.getLogger(ServiceInfoCtrl.class.getSimpleName());
 
     private boolean authReq;
 
-    private static final Properties PROPS = ConstantsFor.getPROPS();
+    /*Fields*/
+    private static final Properties PROPS = ConstantsFor.getProps();
 
     private float getLast() {
         return TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() -
-            Long.parseLong(ConstantsFor.getPROPS().getProperty("lasts", 1544816520000L + ""))) / 60f / 24f;
+            Long.parseLong(ConstantsFor.getProps().getProperty("lasts", 1544816520000L + ""))) / 60f / 24f;
     }
+
     @Autowired
     public ServiceInfoCtrl() {
         new AppComponents();
     }
 
-    @GetMapping ("/serviceinfo")
-    public String infoMapping(Model model, HttpServletRequest request) throws AccessDeniedException {
+    @GetMapping("/serviceinfo")
+    public String infoMapping(Model model, HttpServletRequest request, HttpServletResponse response) throws AccessDeniedException {
         this.authReq = request.getRemoteAddr().contains("0:0:0:0") ||
             request.getRemoteAddr().contains("10.10.111") ||
             request.getRemoteAddr().contains(ConstantsFor.NO0027) ||
             request.getRemoteAddr().contains("172.16.20");
         Visitor visitor = new Visitor(request);
-        try{
+        try {
             String msg = visitor.toString();
             LOGGER.warn(msg);
-        }
-        catch(Exception e){
+        } catch (Exception e) {
             LoggerFactory.getLogger(ServiceInfoCtrl.class.getSimpleName());
         }
-        if(authReq){
+        if (authReq) {
             modModMaker(model, request);
+            response.addHeader("Refresh", "11");
             return "vir";
-        }
-        else{
+        } else {
             throw new AccessDeniedException("Sorry. Denied");
         }
     }
 
-    private void modModMaker(Model model, HttpServletRequest request) {
-        model.addAttribute(ConstantsFor.TITLE, getLast() + " (" + getLast() * ConstantsFor.ONE_DAY_HOURS + ")");
-        model.addAttribute("ping", pingGit());
-        model.addAttribute("urls", "Запущено - " +
-            new Date(ConstantsFor.START_STAMP) + ConstantsFor.getUpTime() +
-            "<br>Точное время: " + ConstantsFor.getAtomicTime());
-        model.addAttribute("request", prepareRequest(request));
-        model.addAttribute("visit", new VersionInfo().toString());
-        model.addAttribute("back", request.getHeader("REFERER".toLowerCase()));
-        model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext() + "<br>" + getJREVers());
+    @GetMapping("/stop")
+    public String closeApp() throws AccessDeniedException {
+        if (authReq) {
+            new ThreadConfig().threadPoolTaskExecutor().execute(new ExitApp(this.getClass().getSimpleName()));
+        } else {
+            throw new AccessDeniedException("DENY!");
+        }
+        return "ok";
     }
 
-    private String pingGit() {
-        boolean reachable = false;
-        try{
-            InetAddress byName = InetAddress.getByName("srv-git.eatmeat.ru");
-            reachable = byName.isReachable(1000);
-        }
-        catch(IOException e){
-            LOGGER.error(e.getMessage(), e);
-        }
-        String s = "</b> srv-git.eatmeat.ru.</font> Checked at: <i>";
-        String s2 = "</i><br>";
-        String s1 = "<b><font color=\"#77ff72\">" + true + s + LocalTime.now() + s2;
-        if(reachable){
-            return s1;
-        }
-        else{
-            return "<b><font color=\"#ff2121\">" + true + s + LocalTime.now() + s2;
-        }
+    private void modModMaker(Model model, HttpServletRequest request) {
+        model.addAttribute(ConstantsFor.TITLE, getLast() + " (" + getLast() * ConstantsFor.ONE_DAY_HOURS + ")");
+        model.addAttribute("mail", ConstantsFor.percToEnd());
+        model.addAttribute("ping", pingGit());
+        model.addAttribute("urls", new StringBuilder()
+            .append("Запущено - ")
+            .append(new Date(ConstantsFor.START_STAMP)).append(ConstantsFor.getUpTime())
+            .append("<br>Точное время: ")
+            .append(ConstantsFor.getAtomicTime())
+            .append(".<br> Состояние памяти (МБ): <font color=\"#82caff\">")
+            .append(ConstantsFor.showMem()).append("</font><br>")
+            .append(DiapazonedScan.getInstance().toString())
+            .toString());
+        model.addAttribute("request", prepareRequest(request));
+        model.addAttribute("visit", new VersionInfo().toString());
+        model.addAttribute("res", MyCalen.toStringS());
+        model.addAttribute("back", request.getHeader("REFERER".toLowerCase()));
+        model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext() + "<br>" + getJREVers());
     }
 
     private String getJREVers() {
@@ -147,16 +146,27 @@ public class ServiceInfoCtrl {
 
         return stringBuilder.toString();
     }
-    @GetMapping ("/stop")
-    public String closeApp() throws AccessDeniedException {
-        if(authReq){
-            IntoApplication.delTemp();
-            ConstantsFor.saveProps(PROPS);
-            System.exit(ConstantsFor.USER_EXIT);
+
+    private String pingGit() {
+        boolean reachable = false;
+        try {
+            InetAddress byName = InetAddress.getByName("srv-git.eatmeat.ru");
+            reachable = byName.isReachable(1000);
+        } catch (IOException e) {
+            LOGGER.error(e.getMessage(), e);
         }
-        else{
-            throw new AccessDeniedException("DENY!");
+        String s = "</b> srv-git.eatmeat.ru.</font> Checked at: <i>";
+        String s2 = "</i><br>";
+        String s1 = "<b><font color=\"#77ff72\">" + true + s + LocalTime.now() + s2;
+        if (reachable) {
+            return s1;
+        } else {
+            return "<b><font color=\"#ff2121\">" + true + s + LocalTime.now() + s2;
         }
-        return "ok";
+    }
+
+    @GetMapping ("/pcoff")
+    public void offPC(Model model) throws IOException {
+        Runtime.getRuntime().exec("shutdown /p /f");
     }
 }

@@ -6,11 +6,14 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
-import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.config.ThreadConfig;
+import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.rmi.UnexpectedException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 
 /**
@@ -69,8 +72,12 @@ public class PfListsSrv {
         executor.execute(() -> {
             try {
                 buildFactory();
-            } catch (UnexpectedException | NullPointerException e) {
-                AppComponents.getLogger().error(e.getMessage(), e);
+            } catch (Exception e) {
+                List<String> stringArrayList = new ArrayList<>();
+                stringArrayList.add("Line 78 threw: ");
+                stringArrayList.add(e.getMessage());
+                stringArrayList.add(new TForms().fromArray(e, false));
+                FileSystemWorker.recFile(this.getClass().getSimpleName() + ".makeListRunner", stringArrayList);
             }
         });
     }

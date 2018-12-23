@@ -30,7 +30,7 @@ public class VersionInfo {
 
     private static final String DOC_URL = "<a href=\"/doc/index.html\">DOC</a>";
 
-    private static final Properties PROPERTIES = ConstantsFor.getPROPS();
+    private static final Properties PROPERTIES = ConstantsFor.getProps();
 
     private final String thisPCName = ConstantsFor.thisPC();
     /*Get&Set*/
@@ -69,7 +69,17 @@ public class VersionInfo {
     public void setAppName(String appName) {
         this.appName = appName;
     }
+    /*Instances*/
 
+    private void setAppVersion(String appVersion) {
+        this.appVersion = appVersion;
+    }
+
+    private void getParams() {
+        setAppBuild(PROPERTIES.getOrDefault("appBuild", "no database").toString());
+        setBuildTime(PROPERTIES.getOrDefault("buildTime", System.currentTimeMillis()).toString());
+        setAppVersion(PROPERTIES.getOrDefault("appVersion", "no database").toString());
+    }
     /**
      Usages: {@link AppComponents#versionInfo()} <br> Uses: {@link #setterVersionFromFiles(File)} , {@link #getParams()} , {@link #toString()} , {@link ConstantsFor#saveProps(Properties)}<br>
      */
@@ -91,28 +101,16 @@ public class VersionInfo {
             }
         }
         this.appBuild = thisPCName + "." + new SecureRandom().nextInt(( int ) ConstantsFor.MY_AGE);
-        ConstantsFor.getPROPS().setProperty("appBuild", appBuild);
+        ConstantsFor.getProps().setProperty("appBuild", appBuild);
         if(thisPCName.equalsIgnoreCase("home") ||
             thisPCName.toLowerCase().contains("no0027")){
             this.buildTime = new Date(ConstantsFor.START_STAMP).toString();
-            ConstantsFor.getPROPS().setProperty("buildTime", buildTime);
+            ConstantsFor.getProps().setProperty("buildTime", buildTime);
         }
         PROPERTIES.setProperty("appVersion", getAppVersion());
         String msg = this.toString();
         LOGGER.info(msg);
     }
-
-    private void setAppVersion(String appVersion) {
-        this.appVersion = appVersion;
-    }
-
-    private void getParams() {
-        setAppBuild(PROPERTIES.getOrDefault("appBuild", "no database").toString());
-        setBuildTime(PROPERTIES.getOrDefault("buildTime", System.currentTimeMillis()).toString());
-        setAppVersion(PROPERTIES.getOrDefault("appVersion", "no database").toString());
-    }
-
-    /*Instances*/
 
     /**
      Usages: {@link #setParams()} <br> Uses: - <br>
@@ -153,6 +151,7 @@ public class VersionInfo {
         sb.append(", DOC_URL='").append(DOC_URL).append('\'');
         sb.append(", thisPCName='").append(thisPCName).append('\'');
         sb.append('}');
+        sb.append("<p>\n");
         return sb.toString();
     }
 }

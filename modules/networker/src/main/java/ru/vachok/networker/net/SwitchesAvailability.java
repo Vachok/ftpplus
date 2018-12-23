@@ -53,6 +53,12 @@ public class SwitchesAvailability implements Runnable {
         } catch (IOException e) {
             LOGGER.warn(e.getMessage());
         }
+        try {
+            List<String> stringList = DiapazonedScan.getInstance().pingSwitch();
+            LOGGER.info(new TForms().fromArray(stringList, false));
+        } catch (IllegalAccessException e) {
+            LOGGER.warn(e.getMessage());
+        }
     }
 
     /**

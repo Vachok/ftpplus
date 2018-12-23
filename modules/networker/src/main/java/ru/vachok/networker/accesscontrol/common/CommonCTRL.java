@@ -9,9 +9,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.PageFooter;
-import ru.vachok.networker.services.TimeChecker;
-
-import java.util.Date;
 
 /**
  Контроллер для /AT_NAME_COMMON
@@ -29,7 +26,7 @@ public class CommonCTRL {
     @GetMapping("/common")
     public String commonGET(Model model) {
         commonSRV.setNullToAllFields();
-        model.addAttribute(ConstantsFor.TITLE, new Date(new TimeChecker().call().getReturnTime()));
+        model.addAttribute(ConstantsFor.TITLE, ConstantsFor.percToEnd());
         model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext());
         model.addAttribute(AT_NAME_COMMON, commonSRV);
 
@@ -43,6 +40,16 @@ public class CommonCTRL {
         model.addAttribute(ConstantsFor.TITLE, commonSRV.getDelFolderPath() + " (" + commonSRV.getPerionDays() + " дн.) ");
         model.addAttribute("result", commonSRV.reStoreDir());
         model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext());
+        return AT_NAME_COMMON;
+    }
+
+    @PostMapping("/commonsearch")
+    public String commonSearch(@ModelAttribute CommonSRV commonSRV, Model model) {
+        this.commonSRV = commonSRV;
+        model.addAttribute(AT_NAME_COMMON, commonSRV);
+        model.addAttribute(ConstantsFor.TITLE, commonSRV.getSearchPat() + " - идёт поиск");
+        model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext());
+        model.addAttribute("result", commonSRV.searchByPat());
         return AT_NAME_COMMON;
     }
 }
