@@ -2,9 +2,9 @@ package ru.vachok.money;
 
 
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import ru.vachok.messenger.email.ESender;
 import ru.vachok.money.components.AppVersion;
@@ -27,20 +27,23 @@ import static org.springframework.boot.SpringApplication.run;
 
 
 /**
- Стартер
- */
+ Стартер.
+ <p>
+
+ @since 02.05.2018 (19:59) */
 @EnableAutoConfiguration
 @SpringBootApplication
 public class MoneyApplication {
 
+    private static ConfigurableApplicationContext runningApp;
 
-    /*Fields*/
-    private static final SpringApplication SPRING_APPLICATION = new SpringApplication();
+    static ConfigurableApplicationContext getRunningApp() {
+        return runningApp;
+    }
 
     public static void main(String[] args) {
         new SystemTrayHelper().addTrayDefaultMinimum();
-        SPRING_APPLICATION.setLogStartupInfo(true);
-        run(MoneyApplication.class, args);
+        runningApp = run(MoneyApplication.class, args);
         startSchedule();
     }
 

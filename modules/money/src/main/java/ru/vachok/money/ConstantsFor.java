@@ -6,7 +6,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.messenger.email.ESender;
+import ru.vachok.money.banking.ParserCBRruSRV;
 import ru.vachok.money.config.AppComponents;
+import ru.vachok.money.filesys.FilesCheckerCleaner;
+import ru.vachok.money.filesys.FilesCleaner;
 import ru.vachok.money.services.TimeChecker;
 import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
@@ -14,6 +17,8 @@ import ru.vachok.mysqlandprops.props.InitProperties;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,8 +34,18 @@ public enum ConstantsFor {
     ;
 
 
+    /**
+     1 год в днях
+     <p>
+     Usages: {@link FilesCheckerCleaner#visitFile(Path, BasicFileAttributes)}, {@link FilesCleaner#visitFile(Path, BasicFileAttributes)}
+     */
     public static final int ONE_YEAR = 365;
 
+    /**
+     * <a href="https://cbr.ru/currency_base/daily/">cbr.ru</a>
+     <p>
+     Usages: {@link ParserCBRruSRV#getUrl()}
+     */
     public static final String URL_AS_STRING = "https://cbr.ru/currency_base/daily/";
 
     /**
@@ -51,8 +66,6 @@ public enum ConstantsFor {
 
     public static final String DB_PREFIX = "u0466446_";
 
-
-    /*Fields*/
     private static final Logger LOGGER = AppComponents.getLogger();
 
     public static final String AT_NAME_TITLE = "title";
@@ -160,4 +173,5 @@ public enum ConstantsFor {
             return e.getMessage();
         }
     }
+
 }

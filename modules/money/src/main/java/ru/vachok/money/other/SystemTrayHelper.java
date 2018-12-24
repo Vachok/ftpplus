@@ -7,6 +7,7 @@ import ru.vachok.money.ConstantsFor;
 import ru.vachok.money.config.AppComponents;
 import ru.vachok.money.services.sockets.TellNetSRV;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
+import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
 
 import java.awt.*;
@@ -19,11 +20,18 @@ import java.util.Properties;
 /**
  @since 29.09.2018 (22:33) */
 public class SystemTrayHelper {
+
     /*Fields*/
     private static final Logger LOGGER = LoggerFactory.getLogger(SystemTrayHelper.class.getSimpleName());
 
     public void addTrayDefaultMinimum() {
-        InitProperties initProperties = new DBRegProperties(ConstantsFor.APP_NAME + SystemTrayHelper.class.getSimpleName());
+        InitProperties initProperties = new FileProps(ConstantsFor.APP_NAME + SystemTrayHelper.class.getSimpleName());
+        try{
+            initProperties = new DBRegProperties(ConstantsFor.APP_NAME + SystemTrayHelper.class.getSimpleName());
+        }
+        catch(ExceptionInInitializerError e){
+            LOGGER.error(e.getMessage(), e);
+        }
         Properties properties = initProperties.getProps();
         SystemTray systemTray = SystemTray.getSystemTray();
         String defaultValue = "/static/images/icons8-монеты-15.png";

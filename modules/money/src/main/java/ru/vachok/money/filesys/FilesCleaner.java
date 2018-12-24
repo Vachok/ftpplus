@@ -68,6 +68,12 @@ public class FilesCleaner extends SimpleFileVisitor<Path> implements Callable<St
         return readFile();
     }
 
+    /**
+     @param file  {@link Path} до текущего анализируемого файла
+     @param attrs {@link BasicFileAttributes}
+     @return {@link FileVisitResult#CONTINUE}
+     @throws IOException {@link Files#deleteIfExists(Path)} (Path)} at line 111
+     */
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
         boolean oldFilesToFile = attrs.lastAccessTime().toMillis() < (System.currentTimeMillis() - TimeUnit

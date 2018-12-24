@@ -724,3 +724,8 @@ newpc.txt
 velkom_pcuserauto.txt
 const.txt
 lastscannet.txt
+DeleterTemp_log.txt
+available_last.txt
+lan/
+regSourceForProperties.properties
+temp_pat.cfg

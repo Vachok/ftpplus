@@ -9,22 +9,11 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.events.XMLEvent;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 
-/**
- Stax Stream Processor
- Read all tag names and its text values if exists.
- Parse xml files by level numbers or by elements names.
-
- @Author: D. Petrov
- @Copyright: Motun Ltd. and Co. */
 public class StaxStreamProcessor implements AutoCloseable {
 
-    /*Fields*/
     private static final XMLInputFactory FACTORY = XMLInputFactory.newInstance();
 
     private static final Logger LOGGER = ConstantsFor.getLogger();
@@ -63,12 +52,6 @@ public class StaxStreamProcessor implements AutoCloseable {
         return false;
     }
 
-    /**
-     Parse an xml content and build a map of nodes
-
-     @return
-     @throws XMLStreamException
-     */
     public Map<Integer, XmlNode> buildXmlElementsTree() {
 
         Map<Integer, XmlNode> elementsTree = new TreeMap<>();
@@ -147,12 +130,6 @@ public class StaxStreamProcessor implements AutoCloseable {
     //        return tagsTree;
     //    }
 
-    /**
-     Read all tags as a list
-
-     @return
-     @throws XMLStreamException
-     */
     public List<String> readAllTagNames() {
         List<String> tagNames = new ArrayList<>();
         try{

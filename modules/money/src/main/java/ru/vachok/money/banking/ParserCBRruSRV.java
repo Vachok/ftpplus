@@ -6,10 +6,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import ru.vachok.money.ConstantsFor;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.xml.stream.XMLStreamException;
 import java.io.*;
 import java.net.MalformedURLException;
@@ -23,11 +21,12 @@ import java.util.stream.Stream;
 /**
  <h1>Тянет курсы USD и EURO</h1>
 
+ @see MoneyCtrl
+ @see ParserCBRruSRV
  @since 12.08.2018 (16:12) */
 @Service("ParserCBRruSRV")
 public class ParserCBRruSRV {
 
-    /*Fields*/
     private static final Logger LOGGER = LoggerFactory.getLogger(ParserCBRruSRV.class.getSimpleName());
 
     private Currencies currencies;
@@ -35,9 +34,10 @@ public class ParserCBRruSRV {
     private String userInput = "0 / 0";
 
     /**
-     <i>Используется в модели! Must be <b>public</b></i>.
-
-     @return {@link MoneyCtrl#getMoney(ParserCBRruSRV, Model, BindingResult, HttpServletRequest)}
+     Используется в модели! Must be <b>public</b>
+     <p>
+     Строка пользовательского ввода. <br>
+     Usages: {@link MoneyCtrl#getMoney(ParserCBRruSRV, Model, Currencies)}
      */
     @SuppressWarnings("WeakerAccess")
     public String getUserInput() {

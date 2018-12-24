@@ -152,9 +152,9 @@ public class MailMessages implements Callable<Message[]> {
 
 
     /**
-     <b>Пробует сохранить настройки в файл и в БД.</h2> {@link #getSessionProps()} </b>.
+     Пробует сохранить настройки в файл и в БД
      <p>
-     + {@link MailMessages#SOURCE_CLASS}
+     Usages: {@link #getSessionProps()}
 
      @param sessionProps настройки сокдинения.
      @see InitProperties

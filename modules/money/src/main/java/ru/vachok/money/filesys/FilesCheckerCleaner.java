@@ -63,8 +63,13 @@ public class FilesCheckerCleaner extends SimpleFileVisitor<Path> {
         return FileVisitResult.CONTINUE;
     }
 
+    /**
+     @param file  {@link Path} до текущего анализируемого файла
+     @param attrs {@link BasicFileAttributes}
+     @return {@link FileVisitResult#CONTINUE}
+     */
     @Override
-    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
         boolean isOneYearOld = attrs.lastModifiedTime().toMillis() < System.currentTimeMillis() - TimeUnit.DAYS.toMillis(ConstantsFor.ONE_YEAR);
         if(!isSearch && isOneYearOld){
             resMap.put(file.toString(), attrs.lastAccessTime().toString());
