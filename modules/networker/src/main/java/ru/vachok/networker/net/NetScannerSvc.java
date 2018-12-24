@@ -20,12 +20,13 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.TimeChecker;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
@@ -37,6 +38,7 @@ import java.util.concurrent.locks.ReentrantLock;
 /**
  Управление сервисами LAN-разведки.
  <p>
+
  @since 21.08.2018 (14:40) */
 @Service("netScannerSvc")
 public class NetScannerSvc {
@@ -67,6 +69,12 @@ public class NetScannerSvc {
      {@link RegRuMysql#getDefaultConnection(String)}
      */
     private static Connection c;
+
+    private File newLanLastScan;
+
+
+    private File oldLanLastScan;
+
 
     /**
      {@link AppComponents#adComputers()}
@@ -124,13 +132,50 @@ public class NetScannerSvc {
         return qer;
     }
 
-    /*Instances*/
     static {
         try {
             c = new RegRuMysql().getDefaultConnection(DB_NAME);
         } catch (Exception e) {
             c = new RegRuMysql().getDefaultConnection(DB_NAME);
         }
+    }
+
+    public void setNewLanLastScan(File newLanLastScan) {
+        this.newLanLastScan = newLanLastScan;
+    }
+
+    public String getNewLanLastScanAsStr() {
+        StringBuilder stringBuilder = new StringBuilder();
+
+        try (InputStream inputStream = new FileInputStream(newLanLastScan);
+             InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+             BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
+            while (bufferedReader.ready()) {
+                stringBuilder.append(bufferedReader.readLine());
+            }
+        } catch (IOException | NullPointerException e) {
+            LOGGER.info(e.getMessage(), e);
+        }
+        return stringBuilder.toString();
+    }
+
+    public void setOldLanLastScan(File oldLanLastScan) {
+        this.oldLanLastScan = oldLanLastScan;
+    }
+
+    public String getOldLanLastScanAsStr() {
+        StringBuilder stringBuilder = new StringBuilder();
+
+        try (InputStream inputStream = new FileInputStream(oldLanLastScan);
+             InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+             BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
+            while (bufferedReader.ready()) {
+                stringBuilder.append(bufferedReader.readLine());
+            }
+        } catch (IOException | NullPointerException e) {
+            LOGGER.info(e.getMessage(), e);
+        }
+        return stringBuilder.toString();
     }
 
     /**
