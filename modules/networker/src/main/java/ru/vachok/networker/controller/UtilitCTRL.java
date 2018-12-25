@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.services.PassGenerator;
 import ru.vachok.networker.services.SimpleCalculator;
 
@@ -42,7 +43,7 @@ public class UtilitCTRL {
                 return "ad";
             }
         }
-        model.addAttribute("title", howMuchBytes);
+        model.addAttribute(ConstantsFor.TITLE, howMuchBytes);
         model.addAttribute("pass", passGenerator.generatorPass(howMuchBytes));
         return "ad";
     }

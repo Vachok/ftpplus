@@ -27,7 +27,9 @@ import java.util.Properties;
 /**
  Старт
  <p>
- 1. {@link #main(String[])}<br> 1.1 {@link AppInfoOnLoad#infoForU(ApplicationContext)}
+ 1. {@link #main(String[])}<br>
+ @see AppInfoOnLoad
+ @since 02.05.2018 (10:36)
  */
 @SpringBootApplication
 @EnableScheduling
@@ -54,7 +56,7 @@ public class IntoApplication {
      {@link ConfigurableApplicationContext}
      Usages: {@link #main(String[])},
      */
-    private static ConfigurableApplicationContext configurableApplicationContext;
+    private static ConfigurableApplicationContext configurableApplicationContext = null;
 
     /**
      Usages: {@link SystemTrayHelper#addItems(PopupMenu)}
@@ -82,6 +84,7 @@ public class IntoApplication {
      @see SystemTrayHelper#addItems(PopupMenu)
      {@link AppInfoOnLoad#infoForU(ApplicationContext)}
      */
+    @SuppressWarnings ("JavadocReference")
     public static void main(String[] args) {
         final long stArt = System.currentTimeMillis();
         beforeSt();
@@ -113,7 +116,7 @@ public class IntoApplication {
         String msg = LocalDate.now().getDayOfWeek().getValue() + " - day of week\n" +
             LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault());
         LOGGER.warn(msg);
-        if(THIS_PC.toLowerCase().contains("no0027") || THIS_PC.toLowerCase().contains("home")){
+        if(THIS_PC.toLowerCase().contains(ConstantsFor.NO0027) || THIS_PC.toLowerCase().contains("home")){
             SystemTrayHelper.addTray("icons8-плохие-поросята-32.png");
         }
         else{

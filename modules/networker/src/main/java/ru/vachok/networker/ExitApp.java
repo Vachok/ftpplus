@@ -6,7 +6,6 @@ import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
@@ -15,6 +14,7 @@ import java.util.concurrent.TimeUnit;
  Действия, при выходе
 
  @since 21.12.2018 (12:15) */
+@SuppressWarnings ("StringBufferReplaceableByString")
 public class ExitApp implements Runnable {
 
     /**
@@ -23,43 +23,26 @@ public class ExitApp implements Runnable {
     private static final Logger LOGGER = AppComponents.getLogger();
 
     /**
-     Причина выхода
-     */
-    private String reasonExit;
-
-    /**
-     Имя инициатора
-     */
-    private String name;
-
-    /**
      Переменная для сохранения {@link ConstantsFor#getProps()} в БД
      {@link #run()}
      */
-    private Properties properties;
+    private Properties properties = new Properties();
+
+    /**
+     Причина выхода
+     */
+    private final String reasonExit;
 
     /**
      Uptime в минутах. Как статус {@link System#exit(int)}
      */
-    private long toMinutes = TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - ConstantsFor.START_STAMP);
+    private final long toMinutes = TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - ConstantsFor.START_STAMP);
 
     /**
-     @param name       {@link #name}
      @param reasonExit {@link #reasonExit}
      */
-    public ExitApp(String name, String reasonExit) {
+    public ExitApp(String reasonExit) {
         this.reasonExit = reasonExit;
-        this.name = name;
-    }
-
-    /**
-     {@link #reasonExit} is {@code  "No Reason. From " + ExitApp.class.getSimpleName}
-
-     @param fromClass {@link #name}
-     */
-    public ExitApp(String fromClass) {
-        this.reasonExit = "No Reason. From " + ExitApp.class.getSimpleName();
-        this.name = fromClass;
     }
 
     /**
@@ -68,27 +51,32 @@ public class ExitApp implements Runnable {
     @Override
     public void run() {
         this.properties = ConstantsFor.getProps();
-        LOGGER.info("ExitApp.run");
-        Thread.currentThread().setName("ExitApp.run");
+        LOGGER.info(ConstantsFor.EXIT_APP_RUN);
+        Thread.currentThread().setName(ConstantsFor.EXIT_APP_RUN);
         LOGGER.warn(reasonExit);
-        try{
-            copyAvail();
-        }
-        catch(IOException e){
-            exitAppDO();
-        }
+        copyAvail();
     }
 
-    private void copyAvail() throws IOException {
-        File appLog = new File("\"g:\\\\My_Proj\\\\FtpClientPlus\\\\modules\\\\networker\\\\app.log\"");
-        FileSystemWorker.copyOrDelFile(new File("available_last.txt"), ".\\lan\\vlans200" + System.currentTimeMillis() / 1000 + ".txt", true);
-        FileSystemWorker.copyOrDelFile(new File("old_lan.txt"), ".\\lan\\old_lan_" + System.currentTimeMillis() / 1000 + ".txt", true);
+    /**
+     Копирует логи
+     */
+    @SuppressWarnings ({"HardCodedStringLiteral", "FeatureEnvy"})
+    private void copyAvail() {
+        File appLog = new File("g:\\My_Proj\\FtpClientPlus\\modules\\networker\\app.log\\");
+        FileSystemWorker.copyOrDelFile(new File(ConstantsFor.AVAILABLE_LAST_TXT), new StringBuilder().append(".\\lan\\vlans200").append(System.currentTimeMillis() / 1000).append(".txt").toString(),
+            true);
+        FileSystemWorker.copyOrDelFile(new File(ConstantsFor.OLD_LAN_TXT), new StringBuilder().append(".\\lan\\old_lan_").append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
         if(appLog.exists() && appLog.canRead()){
             FileSystemWorker.copyOrDelFile(appLog, "\\\\10.10.111.1\\Torrents-FTP\\app.log", false);
         }
         exitAppDO();
     }
 
+    /**
+     Сохранение {@link ConstantsFor#saveProps(Properties)}, удаление временного и выход
+     <p>
+     Код выхода = <i>uptime</i> в минутах.
+     */
     private void exitAppDO() {
         ConstantsFor.saveProps(properties);
         IntoApplication.getConfigurableApplicationContext().close();

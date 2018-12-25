@@ -4,6 +4,7 @@ package ru.vachok.networker.controller;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
 
 import javax.servlet.http.HttpServletRequest;
@@ -18,7 +19,7 @@ public class OkCTRL {
         if (request.getQueryString() == null) throw new UnsatisfiedLinkError("Кривая ссылка!");
         else {
             String qStr = request.getQueryString();
-            model.addAttribute("title", qStr);
+            model.addAttribute(ConstantsFor.TITLE, qStr);
             model.addAttribute("pcs", request.getHeader("pcs"));
             AppComponents.getLogger().warn("OK!");
             return "ok";

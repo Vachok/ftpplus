@@ -127,7 +127,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         String msgTimeSp = new StringBuilder()
             .append("FileSystemWorker.readFile: ")
             .append(( float ) (System.currentTimeMillis() - stArt) / 1000)
-            .append(" sec spend")
+            .append(ConstantsFor.STR_SEC_SPEND)
             .toString();
         LOGGER.info(msgTimeSp);
         return stringBuilder.toString();

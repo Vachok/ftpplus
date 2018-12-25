@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.PageFooter;
 
@@ -52,7 +53,7 @@ public class OdinAssSyncCTRL {
     @GetMapping("/odinass")
     public String viewPage(Model model) {
         model.addAttribute("CsvTxt", csvTxt);
-        model.addAttribute("title", OdinAssSyncCTRL.class.getSimpleName());
+        model.addAttribute(ConstantsFor.TITLE, OdinAssSyncCTRL.class.getSimpleName());
         model.addAttribute("footer", new PageFooter().getFooterUtext());
         return "odinass";
     }

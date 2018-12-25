@@ -157,7 +157,7 @@ public class DiapazonedScan implements Runnable {
         Path p = Paths.get(ROOT_PATH_STR + "\\lan\\200_" + System.currentTimeMillis() / 1000 + ".scan");
         String msg1 = "DiapazonedScan.scanNew " + p.toAbsolutePath().toString();
         LOGGER.warn(msg1);
-        File newLanFile = new File("available_last.txt");
+        File newLanFile = new File(ConstantsFor.AVAILABLE_LAST_TXT);
         try (OutputStream outputStream = new FileOutputStream(newLanFile);
              PrintWriter printWriter = new PrintWriter(outputStream, true)) {
             scanLan(printWriter, 200, 218, stArt, "10.200.");
@@ -179,7 +179,7 @@ public class DiapazonedScan implements Runnable {
      @see #scanNew()
      */
     private void scanOldLan(long stArt) {
-        File oldLANFile = new File("old_lan.txt");
+        File oldLANFile = new File(ConstantsFor.OLD_LAN_TXT);
         Path p = Paths.get(ROOT_PATH_STR + "\\lan\\192_" + System.currentTimeMillis() / 1000 + ".scan");
         String msg1 = "scanOldLan " + p.toAbsolutePath().toString();
         LOGGER.warn(msg1);

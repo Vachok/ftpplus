@@ -9,6 +9,7 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.io.*;
 import java.sql.*;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,10 +31,7 @@ public class WeekPCStats implements Runnable {
      */
     private static final List<String> PC_NAMES_IN_TABLE = new ArrayList<>();
 
-    /**
-     Более 3х совпадений в строках
-     */
-    private static final String STR_SEC_SPEND = " sec spend";
+    private String tSpend = ConstantsFor.STR_SEC_SPEND;
 
     /**
      {@link #getFromDB()}
@@ -42,7 +40,8 @@ public class WeekPCStats implements Runnable {
     public void run() {
         final long stArt = System.currentTimeMillis();
         getFromDB();
-        String msgTimeSp = "WeekPCStats.run method. " + ( float ) (System.currentTimeMillis() - stArt) / 1000 + STR_SEC_SPEND;
+        String msgTimeSp = MessageFormat
+            .format("WeekPCStats.run method. {0}{1}", ( float ) (System.currentTimeMillis() - stArt) / 1000, tSpend);
         LOGGER.info(msgTimeSp);
     }
 

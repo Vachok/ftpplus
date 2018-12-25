@@ -19,18 +19,10 @@ import ru.vachok.networker.services.MyCalen;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.io.*;
+import java.sql.*;
 import java.util.Date;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
@@ -96,38 +88,6 @@ public class NetScanCtr {
      */
     private static final int THIS_TOTPC = Integer.parseInt(properties.getOrDefault(KEY_TOTPC, "318").toString());
 
-    /**
-     GET /netscan
-     <p>
-     Usages: {@link #scanIt(HttpServletRequest, Model)}, {@link #mapSizeBigger(Model, Map, HttpServletRequest)} <br> Uses: {@link PageFooter#getFooterUtext()}, {@link
-    AppComponents#lastNetScan()}.setTimeLastScan(new {@link Date}) <br>
-
-     @param request  {@link HttpServletRequest}
-     @param response {@link HttpServletResponse}
-     @param model    {@link Model}
-     @return {@link #AT_NAME_NETSCAN}.html
-     */
-    @GetMapping("/netscan")
-    public String netScan(HttpServletRequest request, HttpServletResponse response, Model model) {
-        netScannerSvc.setThePc("");
-        Map<String, Boolean> netWork = lastScan;
-        boolean isMapSizeBigger = netWork.size() > 2;
-
-        if (isMapSizeBigger) {
-            mapSizeBigger(model, netWork, request);
-        } else {
-            scanIt(request, model);
-        }
-        model
-            .addAttribute("netScannerSvc", netScannerSvc)
-            .addAttribute("serviceinfo", netScannerSvc.someInfo())
-            .addAttribute("thePc", netScannerSvc.getThePc());
-        model.addAttribute("footer", new PageFooter().getFooterUtext() + "<br>First Scan: 2018-05-05");
-        AppComponents.lastNetScan().setTimeLastScan(new Date());
-        response.addHeader("Refresh", "30");
-        return AT_NAME_NETSCAN;
-    }
-
     @GetMapping("/showalldev")
     private String allDevices(Model model, HttpServletRequest request, HttpServletResponse response) {
         NetScanFileWorker netScanFileWorker = NetScanFileWorker.getI();
@@ -145,9 +105,12 @@ public class NetScanCtr {
                     .append(" ~minLeft: ").append(minLeft)
                     .toString();
                 model.addAttribute(ConstantsFor.TITLE, attributeValue);
-                if (netScanFileWorker.equals(DiapazonedScan.getNetScanFileWorker())) {
+                if(netScanFileWorker.equals(DiapazonedScan.getNetScanFileWorker())){
                     model.addAttribute("pcs", netScanFileWorker.getNewLanLastScanAsStr() + "<p>" + netScanFileWorker.getOldLanLastScanAsStr());
-                } else model.addAttribute("pcs", FileSystemWorker.readFile("available_last.txt") + "<p>" + FileSystemWorker.readFile("old_lan.txt"));
+                }
+                else{
+                    model.addAttribute("pcs", FileSystemWorker.readFile(ConstantsFor.AVAILABLE_LAST_TXT) + "<p>" + FileSystemWorker.readFile(ConstantsFor.OLD_LAN_TXT));
+                }
                 response.addHeader("Refresh", "19");
             }
         }
@@ -158,8 +121,82 @@ public class NetScanCtr {
     }
 
     /**
+     GET /netscan
+     <p>
+     Usages: {@link #scanIt(HttpServletRequest, Model)}, {@link #mapSizeBigger(Model, Map, HttpServletRequest)} <br> Uses: {@link PageFooter#getFooterUtext()}, {@link
+    AppComponents#lastNetScan()}.setTimeLastScan(new {@link Date}) <br>
+
+     @param request  {@link HttpServletRequest}
+     @param response {@link HttpServletResponse}
+     @param model    {@link Model}
+     @return {@link #AT_NAME_NETSCAN}.html
+     */
+    @GetMapping ("/netscan")
+    private String netScan(HttpServletRequest request, HttpServletResponse response, Model model) {
+        netScannerSvc.setThePc("");
+        Map<String, Boolean> netWork = lastScan;
+        boolean isMapSizeBigger = netWork.size() > 2;
+
+        if(isMapSizeBigger){
+            mapSizeBigger(model, netWork, request);
+        }
+        else{
+            scanIt(request, model);
+        }
+        model
+            .addAttribute("netScannerSvc", netScannerSvc)
+            .addAttribute("serviceinfo", netScannerSvc.someInfo())
+            .addAttribute("thePc", netScannerSvc.getThePc());
+        model.addAttribute("footer", new PageFooter().getFooterUtext() + "<br>First Scan: 2018-05-05");
+        AppComponents.lastNetScan().setTimeLastScan(new Date());
+        response.addHeader("Refresh", "30");
+        return AT_NAME_NETSCAN;
+    }
+
+    /**
+     Usage in: {@link #netScan(HttpServletRequest, HttpServletResponse, Model)}
+     <p>
+     Uses: <br> 1.1 {@link TForms#fromArray(Map, boolean)} 1.2 {@link #scanIt(HttpServletRequest, Model)}
+
+     @param model   {@link Model} для сборки
+     @param netWork временная {@link Map} для хранения данных во-время работы метода.
+     @param request {@link HttpServletRequest}
+     */
+    private void mapSizeBigger(Model model, Map<String, Boolean> netWork, HttpServletRequest request) {
+        String propertyLastScan = properties.getOrDefault("lastscan", "1515233487000").toString();
+        propLastScanMinusDuration = Long.parseLong(propertyLastScan) + TimeUnit.MINUTES.toMillis(DURATION);
+        boolean isSystemTimeBigger = (System.currentTimeMillis() > propLastScanMinusDuration);
+        long timeLeft = TimeUnit.MILLISECONDS.toSeconds(propLastScanMinusDuration - System.currentTimeMillis());
+        String msg = timeLeft + " seconds (" + ( float ) timeLeft / ConstantsFor.ONE_HOUR_IN_MIN + " min) left<br>Delay period is " + DURATION;
+        LOGGER.warn(msg);
+        int i = THIS_TOTPC - netWork.size();
+
+        model
+            .addAttribute("left", msg)
+            .addAttribute("pc", new TForms().fromArray(netWork, true))
+            .addAttribute(ConstantsFor.TITLE, i + "/" + THIS_TOTPC + " PCs (" + netScannerSvc.getOnLinePCs() + ")");
+        if(0 > i){
+            writeToFile(netWork);
+            model.addAttribute("newpc", "Добавлены компы! " + Math.abs(i) + " шт.");
+            properties.setProperty(KEY_TOTPC, netWork.size() + "");
+        }
+        else{
+            if(3 > i){
+                properties.setProperty(KEY_TOTPC, netWork.size() + "");
+                writeToFile(netWork);
+                if(isSystemTimeBigger){
+                    String msg1 = "isSystemTimeBigger is " + true + " " + netWork.size() + " network map cleared";
+                    LOGGER.warn(msg1);
+                    scanIt(request, model);
+                }
+            }
+        }
+        writeToFile(netWork);
+    }
+
+    /**
      Модель для {@link #netScan(HttpServletRequest, HttpServletResponse, Model)} <br> Делает проверки на {@link HttpServletRequest#getQueryString()}, если != 0: <br> {@link #lastScan}.clear() <br>
-     {@link NetScannerSvc#getPCNamesPref(String)} <br> {@link NetScannerSvc#setQer(String)}
+     {@link NetScannerSvc#getPCNamesPref(String)}
      <p>
      Добавляет в {@link Model}: <br> {@link ConstantsFor#TITLE} = {@link Date}.toString() <br>
      <b>"pc"</b> = {@link TForms#fromArray(Set, boolean)} )} из {@link NetScannerSvc#getPCNamesPref(String)}
@@ -187,24 +224,6 @@ public class NetScanCtr {
             AppComponents.lastNetScan().setTimeLastScan(new Date());
             properties.setProperty("lastscan", System.currentTimeMillis() + "");
             lastScan.clear();
-        }
-    }
-
-    /**
-     @param netWork {@link #lastScan}
-     */
-    private void writeToFile(Map<String, Boolean> netWork) {
-        try (OutputStream outputStream = new FileOutputStream("lastscannet.txt");
-             PrintWriter printWriter = new PrintWriter(outputStream, true)) {
-            printWriter.println("3 > Network Size!");
-            TimeInfo timeInfo = MyCalen.getTimeInfo();
-            timeInfo.computeDetails();
-            printWriter.println(new Date(timeInfo.getReturnTime()));
-            netWork.forEach((x, y) -> {
-                printWriter.println(x + " " + y);
-            });
-        } catch (IOException e) {
-            LOGGER.warn(e.getMessage(), e);
         }
     }
 
@@ -269,42 +288,19 @@ public class NetScanCtr {
     }
 
     /**
-     Usage in: {@link #netScan(HttpServletRequest, HttpServletResponse, Model)}
-     <p>
-     Uses: <br> 1.1 {@link TForms#fromArray(Map, boolean)} 1.2 {@link #scanIt(HttpServletRequest, Model)}
-
-     @param model   {@link Model} для сборки
-     @param netWork временная {@link Map} для хранения данных во-время работы метода.
-     @param request {@link HttpServletRequest}
+     @param netWork {@link #lastScan}
      */
-    private void mapSizeBigger(Model model, Map<String, Boolean> netWork, HttpServletRequest request) {
-        String propertyLastScan = properties.getOrDefault("lastscan", "1515233487000").toString();
-        propLastScanMinusDuration = Long.parseLong(propertyLastScan) + TimeUnit.MINUTES.toMillis(DURATION);
-        boolean isSystemTimeBigger = (System.currentTimeMillis() > propLastScanMinusDuration);
-        long timeLeft = TimeUnit.MILLISECONDS.toSeconds(propLastScanMinusDuration - System.currentTimeMillis());
-        String msg = timeLeft + " seconds (" + (float) timeLeft / ConstantsFor.ONE_HOUR_IN_MIN + " min) left<br>Delay period is " + DURATION;
-        LOGGER.warn(msg);
-        int i = THIS_TOTPC - netWork.size();
-
-        model
-            .addAttribute("left", msg)
-            .addAttribute("pc", new TForms().fromArray(netWork, true))
-            .addAttribute("title", i + "/" + THIS_TOTPC + " PCs (" + netScannerSvc.getOnLinePCs() + ")");
-        if (0 > i) {
-            writeToFile(netWork);
-            model.addAttribute("newpc", "Добавлены компы! " + Math.abs(i) + " шт.");
-            properties.setProperty(KEY_TOTPC, netWork.size() + "");
-        } else {
-            if (3 > i) {
-                properties.setProperty(KEY_TOTPC, netWork.size() + "");
-                writeToFile(netWork);
-                if (isSystemTimeBigger) {
-                    String msg1 = "isSystemTimeBigger is " + true + " " + netWork.size() + " network map cleared";
-                    LOGGER.warn(msg1);
-                    scanIt(request, model);
-                }
-            }
+    private void writeToFile(Map<String, Boolean> netWork) {
+        try(OutputStream outputStream = new FileOutputStream("lastscannet.txt");
+            PrintWriter printWriter = new PrintWriter(outputStream, true)){
+            printWriter.println("3 > Network Size!");
+            TimeInfo timeInfo = MyCalen.getTimeInfo();
+            timeInfo.computeDetails();
+            printWriter.println(new Date(timeInfo.getReturnTime()));
+            netWork.forEach((x, y) -> printWriter.println(x + " " + y));
         }
-        writeToFile(netWork);
+        catch(IOException e){
+            LOGGER.warn(e.getMessage(), e);
+        }
     }
 }

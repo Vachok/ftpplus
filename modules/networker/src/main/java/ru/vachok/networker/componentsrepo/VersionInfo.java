@@ -103,7 +103,7 @@ public class VersionInfo {
         this.appBuild = thisPCName + "." + new SecureRandom().nextInt(( int ) ConstantsFor.MY_AGE);
         ConstantsFor.getProps().setProperty("appBuild", appBuild);
         if(thisPCName.equalsIgnoreCase("home") ||
-            thisPCName.toLowerCase().contains("no0027")){
+            thisPCName.toLowerCase().contains(ConstantsFor.NO0027)){
             this.buildTime = new Date(ConstantsFor.START_STAMP).toString();
             ConstantsFor.getProps().setProperty("buildTime", buildTime);
         }

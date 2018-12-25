@@ -46,9 +46,15 @@ import java.util.concurrent.*;
  @since 12.08.2018 (16:26) */
 public enum ConstantsFor {
     ;
-
-    /*Fields*/
     private static final Properties PROPS = new Properties();
+
+    public static final String NO0027 = "no0027";
+
+    public static final String EXIT_APP_RUN = "ExitApp.run";
+
+    public static final String OLD_LAN_TXT = "old_lan.txt";
+
+    public static final String AVAILABLE_LAST_TXT = "available_last.txt";
 
     public static final int IPS_IN_VELKOM_VLAN = getIPs();
 
@@ -110,6 +116,8 @@ public enum ConstantsFor {
      */
     public static final int USER_EXIT = 222;
 
+    public static final String STR_SEC_SPEND = " sec spend";
+
     /**
      {@link ru.vachok.networker.ad.ADSrv#getDetails(String)}, {@link PCUserResolver#getResolvedName()},
      {@link AppComponents#getCompUsersMap()}, {@link NetScannerSvc#getPCsAsync()}
@@ -120,7 +128,7 @@ public enum ConstantsFor {
         "<p>Для корректной работы, вам нужно положить фото юзеров <a href=\"file://srv-mail3.eatmeat.ru/c$/newmailboxes/fotoraw/\" target=\"_blank\">\\\\srv-mail3.eatmeat" +
             ".ru\\c$\\newmailboxes\\fotoraw\\</a>\n";
 
-    public static final String NO0027 = "10.200.213.85";
+    public static final String NO0027_IP = "10.200.213.85";
 
     public static final String DB_PREFIX = "u0466446_";
 
@@ -179,6 +187,7 @@ public enum ConstantsFor {
 
     public static final String IT_FOLDER = "\\\\srv-fs.eatmeat.ru\\it$$";
 
+    @SuppressWarnings ("NonFinalFieldInEnum")
     private static long atomicTime;
 
     public static Properties getProps() {
@@ -198,7 +207,7 @@ public enum ConstantsFor {
     public static long getBuildStamp() {
         try{
             String hostName = InetAddress.getLocalHost().getHostName();
-            if(hostName.equalsIgnoreCase("home") || hostName.toLowerCase().contains("no0027")){
+            if(hostName.equalsIgnoreCase("home") || hostName.toLowerCase().contains(NO0027)){
                 PROPS.setProperty("build", System.currentTimeMillis() + "");
                 return System.currentTimeMillis();
             }

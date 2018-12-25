@@ -11,10 +11,8 @@ import ru.vachok.networker.TForms;
 
 import java.io.*;
 import java.net.InetAddress;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
+import java.util.Date;
 import java.util.*;
 
 
@@ -64,7 +62,7 @@ public class ADSrv implements Runnable {
                             " Время проверки: " +
                             resultSet.getString("timerec") +
                             "</summary><small>" +
-                            resultSet.getString("users") +
+                            resultSet.getString(ConstantsFor.USERS) +
                             "</small></details>";
                         ownerRights.add(owner);
                     }

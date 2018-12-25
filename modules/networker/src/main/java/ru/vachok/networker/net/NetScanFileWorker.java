@@ -2,6 +2,7 @@ package ru.vachok.networker.net;
 
 
 import org.slf4j.Logger;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
@@ -66,7 +67,7 @@ class NetScanFileWorker {
         try {
             return FileSystemWorker.readFile(newLanLastScan.getAbsolutePath());
         } catch (NullPointerException e) {
-            return FileSystemWorker.readFile("available_last.txt") + "<p>";
+            return FileSystemWorker.readFile(ConstantsFor.AVAILABLE_LAST_TXT) + "<p>";
         }
     }
 
@@ -84,7 +85,7 @@ class NetScanFileWorker {
         try {
             return FileSystemWorker.readFile(oldLanLastScan.getAbsolutePath());
         } catch (NullPointerException ignore) {
-            return FileSystemWorker.readFile("old_lan.txt");
+            return FileSystemWorker.readFile(ConstantsFor.OLD_LAN_TXT);
         }
     }
 }

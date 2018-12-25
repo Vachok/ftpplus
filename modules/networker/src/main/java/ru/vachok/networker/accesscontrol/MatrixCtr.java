@@ -101,13 +101,19 @@ public class MatrixCtr {
         return "starting";
     }
 
-    private void lastLogsGetter(Model model) {
-        Map<String, String> vachokEthosdistro = new AppComponents().getLastLogs();
-        String logsFromDB = new TForms().fromArray(vachokEthosdistro);
-        model.addAttribute("logdb", logsFromDB);
-        model.addAttribute("starttime", new Date(ConstantsFor.START_STAMP));
-        model.addAttribute(FOOTER_NAME, new PageFooter().getFooterUtext());
-        model.addAttribute("title", metricMatrixStart);
+    private String getCommonAccessRights(String workPos, Model model) {
+        ADSrv adSrv = AppComponents.adSrv();
+        try{
+            String users = workPos.split(": ")[1];
+            String commonRights = adSrv.checkCommonRightsForUserName(users);
+            model.addAttribute(WHOIS_STR, commonRights);
+            model.addAttribute(ConstantsFor.TITLE, workPos);
+            model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext());
+        }
+        catch(ArrayIndexOutOfBoundsException e){
+            LOGGER.error(e.getMessage(), e);
+        }
+        return MATRIX_STRING_NAME;
     }
 
     @PostMapping("/matrix")
@@ -189,18 +195,13 @@ public class MatrixCtr {
         return MATRIX_STRING_NAME;
     }
 
-    private String getCommonAccessRights(String workPos, Model model) {
-        ADSrv adSrv = AppComponents.adSrv();
-        try {
-            String users = workPos.split(": ")[1];
-            String commonRights = adSrv.checkCommonRightsForUserName(users);
-            model.addAttribute(WHOIS_STR, commonRights);
-            model.addAttribute("title", workPos);
-            model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext());
-        } catch (ArrayIndexOutOfBoundsException e) {
-            LOGGER.error(e.getMessage(), e);
-        }
-        return MATRIX_STRING_NAME;
+    private void lastLogsGetter(Model model) {
+        Map<String, String> vachokEthosdistro = new AppComponents().getLastLogs();
+        String logsFromDB = new TForms().fromArray(vachokEthosdistro);
+        model.addAttribute("logdb", logsFromDB);
+        model.addAttribute("starttime", new Date(ConstantsFor.START_STAMP));
+        model.addAttribute(FOOTER_NAME, new PageFooter().getFooterUtext());
+        model.addAttribute(ConstantsFor.TITLE, metricMatrixStart);
     }
 
     private String calculateDoubles(String workPos, Model model) {

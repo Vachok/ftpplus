@@ -7,6 +7,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.common.CommonScan2YOlder;
 import ru.vachok.networker.componentsrepo.PageFooter;
@@ -31,7 +32,7 @@ public class FileCleanerCTRL {
     @GetMapping("/cleaner")
     public String getFilesInfo(Model model, HttpServletResponse response) {
         Thread.currentThread().setName(getClass().getSimpleName() + "GET");
-        model.addAttribute("title", "Инфо о файлах");
+        model.addAttribute(ConstantsFor.TITLE, "Инфо о файлах");
         model.addAttribute("commonScan2YOlder", commonScan2YOlder);
         return "cleaner";
     }
@@ -42,7 +43,7 @@ public class FileCleanerCTRL {
         this.commonScan2YOlder = commonScan2YOlder;
         model.addAttribute("commonScan2YOlder", commonScan2YOlder);
         String startPath = commonScan2YOlder.getStartPath();
-        model.addAttribute("title", startPath);
+        model.addAttribute(ConstantsFor.TITLE, startPath);
         model.addAttribute("call", callMe());
         model.addAttribute("header", new PageFooter().getHeaderUtext());
         model.addAttribute("footer", new PageFooter().getFooterUtext());

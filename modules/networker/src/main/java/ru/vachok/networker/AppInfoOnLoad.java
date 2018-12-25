@@ -40,12 +40,7 @@ public class AppInfoOnLoad implements Runnable {
     /**
      Повторение более 3х раз в строках
      */
-    private static final String STR_SEC_SPEND = " sec spend";
-
-    /**
-     Имя ПК. no0027.
-     */
-    private static final String STR_PC_NO0027 = "no0027";
+    private static final String STR_SEC_SPEND = ConstantsFor.STR_SEC_SPEND;
 
     /**
      Задержка выполнения для этого класса
@@ -78,7 +73,7 @@ public class AppInfoOnLoad implements Runnable {
             .append(ConstantsFor.getBuildStamp()).toString();
         LOGGER.info(msg);
         schedStarter();
-        String msgTimeSp = "IntoApplication.infoForU method. " + (float) (System.currentTimeMillis() - stArt) / 1000 +
+        String msgTimeSp = "IntoApplication.infoForU method. " + ( float ) (System.currentTimeMillis() - stArt) / 1000 +
             STR_SEC_SPEND;
         LOGGER.info(msgTimeSp);
     }
@@ -90,9 +85,10 @@ public class AppInfoOnLoad implements Runnable {
      */
     private void schedStarter() {
         Runnable speedRun = null;
-        try {
+        try{
             speedRun = new SpeedRunActualize();
-        } catch (ExceptionInInitializerError e) {
+        }
+        catch(ExceptionInInitializerError e){
             LOGGER.warn(e.getMessage(), e);
         }
         Runnable swAval = new SwitchesAvailability();
@@ -100,7 +96,8 @@ public class AppInfoOnLoad implements Runnable {
 
         executorService
             .scheduleWithFixedDelay(Objects.requireNonNull(speedRun), ConstantsFor.INIT_DELAY, TimeUnit.MINUTES.toSeconds(ConstantsFor.DELAY), TimeUnit.SECONDS);
-        if (!ConstantsFor.thisPC().toLowerCase().contains("home")) {
+        String thisPC = ConstantsFor.thisPC();
+        if(!thisPC.toLowerCase().contains("home")){
             executorService
                 .scheduleWithFixedDelay(swAval, 10, ConstantsFor.DELAY, TimeUnit.SECONDS);
         }
@@ -113,11 +110,12 @@ public class AppInfoOnLoad implements Runnable {
 
         dateSchedulers();
 
-        if (ConstantsFor.thisPC().toLowerCase().contains(STR_PC_NO0027) ||
-            ConstantsFor.thisPC().toLowerCase().contains("rups")) {
+        if(thisPC.toLowerCase().contains(ConstantsFor.NO0027) ||
+            thisPC.toLowerCase().contains("rups")){
             runCommonScan();
-        } else {
-            LOGGER.info(ConstantsFor.thisPC());
+        }
+        else{
+            LOGGER.info(thisPC);
         }
     }
 
@@ -151,9 +149,10 @@ public class AppInfoOnLoad implements Runnable {
      */
     private static void runCommonScan() {
         Runnable r = () -> {
-            try {
+            try{
                 Files.walkFileTree(Paths.get("\\\\srv-fs.eatmeat.ru\\common_new"), new CommonRightsChecker());
-            } catch (IOException e) {
+            }
+            catch(IOException e){
                 LOGGER.warn(e.getMessage(), e);
             }
         };
@@ -161,11 +160,12 @@ public class AppInfoOnLoad implements Runnable {
         long delay = TimeUnit.DAYS.toMillis(ConstantsFor.ONE_MONTH_DAYS);
         ScheduledFuture<?> scheduleWithFixedDelay = new ThreadConfig().threadPoolTaskScheduler().scheduleWithFixedDelay(
             r, startTime, delay);
-        try {
+        try{
             String msg = "Common scanner : " + startTime.toString() + "  ||  " + delay + " TimeUnit.DAYS.toMillis(ConstantsFor.ONE_MONTH_DAYS)";
             LOGGER.warn(msg);
             scheduleWithFixedDelay.get();
-        } catch (InterruptedException | ExecutionException e) {
+        }
+        catch(InterruptedException | ExecutionException e){
             LOGGER.error(e.getMessage(), e);
             Thread.currentThread().interrupt();
             r.run();

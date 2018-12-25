@@ -33,9 +33,8 @@ import static java.lang.System.err;
  Если трэй доступен.
 
  @since 29.09.2018 (22:33) */
-public class SystemTrayHelper {
+public final class SystemTrayHelper {
 
-    /*Fields*/
     /**
      Путь к папке со значками
      */
@@ -86,7 +85,7 @@ public class SystemTrayHelper {
      */
     static void addTray(String iconFileName) {
         boolean myPC;
-        myPC = THIS_PC.toLowerCase().contains("no0027") || THIS_PC.equalsIgnoreCase("home");
+        myPC = THIS_PC.toLowerCase().contains(ConstantsFor.NO0027) || THIS_PC.equalsIgnoreCase("home");
         if(iconFileName==null){
             iconFileName = "icons8-ip-адрес-15.png";
         }
@@ -103,8 +102,8 @@ public class SystemTrayHelper {
         Image image = Toolkit.getDefaultToolkit().getImage(SystemTrayHelper.class.getResource(iconFileName));
         PopupMenu popupMenu = new PopupMenu();
         MenuItem defItem = new MenuItem();
-        TrayIcon trayIcon = new TrayIcon(image, AppComponents.versionInfo().getAppBuild() + " v. " +
-            AppComponents.versionInfo().getAppVersion() + " " + AppComponents.versionInfo().getBuildTime(), popupMenu);
+        TrayIcon trayIcon = new TrayIcon(image,
+            new StringBuilder().append(AppComponents.versionInfo().getAppBuild()).append(" v. ").append(AppComponents.versionInfo().getAppVersion()).append(" ").append(AppComponents.versionInfo().getBuildTime()).toString(), popupMenu);
         ActionListener actionListener = e -> {
             try{
                 Desktop.getDesktop().browse(URI.create("http://localhost:8880"));
@@ -113,10 +112,8 @@ public class SystemTrayHelper {
                 LOGGER.error(e1.getMessage(), e1);
             }
         };
-        ActionListener exitApp = e -> {
-            new ThreadConfig().threadPoolTaskExecutor()
-                .execute(new ExitApp(SystemTrayHelper.class.getSimpleName(), ".scanAll() line 111"));
-        };
+        ActionListener exitApp = e -> new ThreadConfig().threadPoolTaskExecutor()
+            .execute(new ExitApp(SystemTrayHelper.class.getSimpleName()));
 
         addItems(popupMenu);
         trayIcon.setImageAutoSize(true);
