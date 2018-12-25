@@ -20,7 +20,9 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.TimeChecker;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.*;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
@@ -40,20 +42,14 @@ import java.util.concurrent.locks.ReentrantLock;
  <p>
 
  @since 21.08.2018 (14:40) */
+@SuppressWarnings("MethodWithMultipleReturnPoints")
 @Service("netScannerSvc")
 public class NetScannerSvc {
-
-    /*Fields*/
 
     /**
      Префиксы имён ПК Велком.
      */
     private static final String[] PC_PREFIXES = {"do", "pp", "td", "no", "a"};
-
-    /**
-     {@link NetScannerSvc#getClass()}.getSimpleName()
-     */
-    private static final String SOURCE_CLASS = NetScannerSvc.class.getSimpleName();
 
     /**
      {@link ConstantsFor#DB_PREFIX} + velkom
@@ -70,48 +66,30 @@ public class NetScannerSvc {
      */
     private static Connection c;
 
-    private File newLanLastScan;
-
-
-    private File oldLanLastScan;
-
-
     /**
      {@link AppComponents#adComputers()}
      */
-    private static List<ADComputer> adComputers = AppComponents.adComputers();
+    private static final List<ADComputer> AD_COMPUTERS = AppComponents.adComputers();
 
     /**
      new {@link HashSet}
      */
-    private static Set<String> pcNames = new HashSet<>();
-
-    /**
-     {@link AppComponents#lock()}
-     */
-    private static ReentrantLock lock = AppComponents.lock();
+    private static final Set<String> PC_NAMES = new HashSet<>();
 
     /**
      new {@link NetScannerSvc}
      */
     private static volatile NetScannerSvc netScannerSvc;
 
-    private int onLinePCs = 0;
-
     /**
-     /netscan {@link HttpServletRequest#getQueryString()}
+     Компьютеры онлайн
      */
-    private String qer;
+    private int onLinePCs = 0;
 
     /**
      {@link AppComponents#lastNetScan()}
      */
     private Map<String, Boolean> netWork;
-
-    /**
-     {@link ThreadConfig}
-     */
-    private ThreadConfig threadConfig = new ThreadConfig();
 
     /**
      /netscan POST форма
@@ -121,16 +99,10 @@ public class NetScannerSvc {
      */
     private String thePc;
 
-    private static final String SHOW_MEM = ConstantsFor.showMem();
-
-    private ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadConfig().threadPoolTaskExecutor();
-
     /**
-     @return {@link #qer}
+     {@link ThreadConfig#threadPoolTaskExecutor()}
      */
-    public String getQer() {
-        return qer;
-    }
+    private ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadConfig().threadPoolTaskExecutor();
 
     static {
         try {
@@ -140,62 +112,12 @@ public class NetScannerSvc {
         }
     }
 
-    public void setNewLanLastScan(File newLanLastScan) {
-        this.newLanLastScan = newLanLastScan;
-    }
-
-    public String getNewLanLastScanAsStr() {
-        StringBuilder stringBuilder = new StringBuilder();
-
-        try (InputStream inputStream = new FileInputStream(newLanLastScan);
-             InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-             BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
-            while (bufferedReader.ready()) {
-                stringBuilder.append(bufferedReader.readLine());
-            }
-        } catch (IOException | NullPointerException e) {
-            LOGGER.info(e.getMessage(), e);
-        }
-        return stringBuilder.toString();
-    }
-
-    public void setOldLanLastScan(File oldLanLastScan) {
-        this.oldLanLastScan = oldLanLastScan;
-    }
-
-    public String getOldLanLastScanAsStr() {
-        StringBuilder stringBuilder = new StringBuilder();
-
-        try (InputStream inputStream = new FileInputStream(oldLanLastScan);
-             InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-             BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
-            while (bufferedReader.ready()) {
-                stringBuilder.append(bufferedReader.readLine());
-            }
-        } catch (IOException | NullPointerException e) {
-            LOGGER.info(e.getMessage(), e);
-        }
-        return stringBuilder.toString();
-    }
-
-    /**
-     {@link #qer} Usage: {@link NetScanCtr#scanIt(HttpServletRequest, Model)} <br> Uses: - <br>
-
-     @param qer {@link HttpServletRequest}.getQueryString()
-     */
-    void setQer(String qer) {
-        this.qer = qer;
-    }
-
-    public int getOnLinePCs() {
-        return onLinePCs;
-    }
-
     /**
      @return {@link #netScannerSvc}
      */
     public static NetScannerSvc getI() {
         ConstantsFor.showMem();
+        //noinspection DoubleCheckedLocking
         if (netScannerSvc == null) {
             synchronized (NetScannerSvc.class) {
                 if (netScannerSvc == null) {
@@ -212,11 +134,11 @@ public class NetScannerSvc {
      @return web-страница с результатом
      */
     public String getInfoFromDB() {
+        StringBuilder sql = new StringBuilder();
         if (thePc.isEmpty()) {
             IllegalArgumentException argumentException = new IllegalArgumentException("Must be NOT NULL!");
-            return argumentException.getMessage();
+            sql.append(argumentException.getMessage());
         }
-        StringBuilder sql = new StringBuilder();
         sql
             .append("select * from velkompc where NamePP like '%")
             .append(thePc)
@@ -264,6 +186,13 @@ public class NetScannerSvc {
     }
 
     /**
+     @return {@link #onLinePCs}
+     */
+    int getOnLinePCs() {
+        return onLinePCs;
+    }
+
+    /**
      {@link #thePc}
 
      @param thePc имя ПК
@@ -275,14 +204,14 @@ public class NetScannerSvc {
     /**
      1 {@link ThreadConfig#threadPoolTaskExecutor()}
 
-     @return {@link #pcNames}
+     @return {@link #PC_NAMES}
      @see NetScanCtr#scanIt(HttpServletRequest, Model)
      */
     Set<String> getPcNames() {
-        ThreadPoolTaskExecutor executor = threadConfig.threadPoolTaskExecutor();
+        ThreadPoolTaskExecutor executor = this.threadPoolTaskExecutor;
         Runnable getPCs = this::getPCsAsync;
         executor.execute(getPCs);
-        return pcNames;
+        return PC_NAMES;
     }
 
     /**
@@ -298,7 +227,7 @@ public class NetScannerSvc {
     #getNamesCount(String)} 1.2 {@link #getSomeMore(String, boolean)} 1.2.1 {@link #onLinesCheck(String, String)} 1.2.1.1 {@link ThreadConfig#threadPoolTaskExecutor()} 1.2.1.2 {@link
     PCUserResolver#namesToFile(String)} 1.2.2 {@link #offLinesCheckUser(String, String)} 1.3 {@link #getSomeMore(String, boolean)} 1.3.1 {@link #onLinesCheck(String, String)} 1.3.1.1 {@link
     ThreadConfig#threadPoolTaskExecutor()} 1.3.1.2 {@link PCUserResolver#namesToFile(String)} 1.4 {@link #getSomeMore(String, boolean)} 1.4.1 {@link #onLinesCheck(String, String)} 1.4.1.1 {@link
-    ThreadConfig#threadPoolTaskExecutor()} 1.4.1.2 {@link PCUserResolver#namesToFile(String)} 1.4.2 {@link #offLinesCheckUser(String, String)} 1.5 {@link #writeDB(Collection)} 1.5.1 {@link
+    ThreadConfig#threadPoolTaskExecutor()} 1.4.1.2 {@link PCUserResolver#namesToFile(String)} 1.4.2 {@link #offLinesCheckUser(String, String)} 1.5 {@link #writeDB()} 1.5.1 {@link
     TForms#fromArray(List, boolean)} <br>
      <p>
      2 {@link TForms#fromArray(Map)} <br>
@@ -310,6 +239,7 @@ public class NetScannerSvc {
      @see PCUserResolver#getResolvedName()
      @see #getPcNames()
      */
+    @SuppressWarnings("OverlyLongLambda")
     public void getPCsAsync() {
         final long stArt = System.currentTimeMillis();
         AtomicReference<String> msg = new AtomicReference<>("");
@@ -320,21 +250,18 @@ public class NetScannerSvc {
                 .append(Thread.currentThread().getId())
                 .append(" with name ")
                 .append(Thread.currentThread().getName())
-                .append(" is locked = ")
-                .append(lock.isLocked()).toString());
+                .append(" is locked = ").toString());
             final long startMethod = System.currentTimeMillis();
             LOGGER.warn(msg.get());
             for (String s : PC_PREFIXES) {
-                Thread.currentThread().setName(lock.isLocked() + " lock*" + s);
-                pcNames.clear();
-                pcNames.addAll(getPCNamesPref(s));
+                PC_NAMES.clear();
+                PC_NAMES.addAll(getPCNamesPref(s));
             }
             String elapsedTime = "Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethod) + " sec.";
-            pcNames.add(elapsedTime);
+            PC_NAMES.add(elapsedTime);
             LOGGER.warn(msg.get());
 
             new Thread(() -> {
-                Thread.currentThread().setName(lock.isLocked() + " lock*SMTP");
                 MessageToUser mailMSG = new ESender("143500@gmail.com");
                 float upTime = (float) (TimeUnit.MILLISECONDS
                     .toSeconds(System.currentTimeMillis() - ConstantsFor.START_STAMP)) / 60f;
@@ -344,10 +271,16 @@ public class NetScannerSvc {
                 String psUser = new TForms().fromArrayUsers(ConstantsFor.PC_U_MAP, false);
                 String thisPCStr;
                 thisPCStr = ConstantsFor.thisPC();
+                //noinspection SpellCheckingInspection
                 mailMSG.info(
-                    SOURCE_CLASS + " onlines: " + onLinePCs,
+                    this.getClass().getSimpleName() + " online: " + onLinePCs,
                     upTime + " min uptime. " + thisPCStr + " COMPNAME_USERS_MAP size",
-                    SHOW_MEM + "\n" + ConstantsFor.showMem() + "\n\n" + retLogs + " \n" + psUser + "\n" + fromArray);
+                    new StringBuilder()
+                        .append(ConstantsFor.showMem())
+                        .append("\n\n")
+                        .append(retLogs).append(" \n")
+                        .append(psUser).append("\n").append(fromArray).toString());
+                //noinspection SpellCheckingInspection
                 FileSystemWorker.recFile("lasusers.txt",
                     Collections.singletonList(new String(fromArray.getBytes(), StandardCharsets.UTF_8)));
 
@@ -363,19 +296,18 @@ public class NetScannerSvc {
     }
 
     /**
-     Сборщик для {@link #pcNames} <br> 1. {@link #getCycleNames(String)} 1.1 {@link #getNamesCount(String)} <br> 2. {@link #getSomeMore(String, boolean)} 2.1 {@link #onLinesCheck(String, String)} 2
+     Сборщик для {@link #PC_NAMES} <br> 1. {@link #getCycleNames(String)} 1.1 {@link #getNamesCount(String)} <br> 2. {@link #getSomeMore(String, boolean)} 2.1 {@link #onLinesCheck(String, String)} 2
      .1.1 {@link ThreadConfig#threadPoolTaskExecutor()} 2.1.2 {@link PCUserResolver#namesToFile(String)} <br> 2.2 {@link #offLinesCheckUser(String, String)} <br> 3. {@link #getSomeMore(String,
         boolean)} 3.1 {@link #onLinesCheck(String, String)} 3.1.1 {@link ThreadConfig#threadPoolTaskExecutor()} 3.1.2 {@link PCUserResolver#namesToFile(String)} <br> 4. {@link #getSomeMore(String,
-        boolean)} 4.1 {@link ThreadConfig#threadPoolTaskExecutor()} 4.1.2 {@link PCUserResolver#namesToFile(String)} 4.2 {@link #offLinesCheckUser(String, String)} <br> 5. {@link #writeDB(Collection)} 5.1
+        boolean)} 4.1 {@link ThreadConfig#threadPoolTaskExecutor()} 4.1.2 {@link PCUserResolver#namesToFile(String)} 4.2 {@link #offLinesCheckUser(String, String)} <br> 5. {@link #writeDB()} 5.1
      {@link TForms#fromArray(List, boolean)}
 
      @param prefixPcName префикс имени ПК
-     @return {@link #pcNames}
+     @return {@link #PC_NAMES}
      @see NetScanCtr#scanIt(HttpServletRequest, Model)
      @see #getPCsAsync()
      */
     Set<String> getPCNamesPref(String prefixPcName) {
-        this.qer = prefixPcName;
         final long startMethTime = System.currentTimeMillis();
         boolean reachable;
         InetAddress byName;
@@ -391,7 +323,7 @@ public class NetScannerSvc {
                         .append(false)
                         .append("<br>").toString();
 
-                    pcNames.add(pcName + ":" + byName.getHostAddress() + " " + onLines);
+                    PC_NAMES.add(pcName + ":" + byName.getHostAddress() + " " + onLines);
                     String format = MessageFormat.format("{0} {1} | {2}", pcName, onLines, someMore);
                     netWork.putIfAbsent(pcName + " last name is " + someMore, false);
                     LOGGER.warn(format);
@@ -405,7 +337,7 @@ public class NetScannerSvc {
                         .append(true)
                         .append("<br><br>").toString();
                     String format = MessageFormat.format("{0} {1} | {2}", pcName, onLines, someMore);
-                    pcNames.add(pcName + ":" + byName.getHostAddress() + onLines);
+                    PC_NAMES.add(pcName + ":" + byName.getHostAddress() + onLines);
                     String printStr = new StringBuilder().append("<br><b><a href=\"/ad?")
                         .append(pcName.split(".eatm")[0]).append("\" >")
                         .append(pcName).append("</b></a>     ")
@@ -418,11 +350,11 @@ public class NetScannerSvc {
                 Thread.currentThread().interrupt();
             }
         }
-        netWork.put("<h4>" + prefixPcName + "     " + pcNames.size() + "</h4>", true);
-        String pcsString = writeDB(pcNames);
+        netWork.put("<h4>" + prefixPcName + "     " + PC_NAMES.size() + "</h4>", true);
+        String pcsString = writeDB();
         LOGGER.info(pcsString);
-        pcNames.add("<b>Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethTime) + " sec.</b>");
-        return pcNames;
+        PC_NAMES.add("<b>Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethTime) + " sec.</b>");
+        return PC_NAMES;
     }
 
     /**
@@ -477,14 +409,14 @@ public class NetScannerSvc {
      <p>
      1 {@link TForms#fromArray(List, boolean)}
 
-     @param pcNames имена компьютеров
      @return строка в html-формате
      @see #getPCNamesPref(String)
      */
-    private static String writeDB(Collection<String> pcNames) {
+    @SuppressWarnings({"OverlyComplexMethod", "OverlyLongLambda", "OverlyLongMethod"})
+    private static String writeDB() {
         List<String> list = new ArrayList<>();
         try (PreparedStatement p = c.prepareStatement("insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow) values (?,?,?,?)")) {
-            pcNames.stream().sorted().forEach(x -> {
+            NetScannerSvc.PC_NAMES.stream().sorted().forEach(x -> {
                 String pcSerment = "Я не знаю...";
                 LOGGER.info(x);
                 if (x.contains("200.200")) {
@@ -605,7 +537,7 @@ public class NetScannerSvc {
         List<Integer> onLine = new ArrayList<>();
         List<Integer> offLine = new ArrayList<>();
         StringBuilder stringBuilder = new StringBuilder();
-        this.threadPoolTaskExecutor = threadConfig.threadPoolTaskExecutor();
+        this.threadPoolTaskExecutor = new ThreadConfig().threadPoolTaskExecutor();
         try (PreparedStatement statement = c.prepareStatement(sql)) {
             Runnable r = () -> pcUserResolver.namesToFile(pcName);
             execSet(r);
@@ -621,7 +553,7 @@ public class NetScannerSvc {
                     if (onlineNow == 0) {
                         offLine.add(onlineNow);
                     }
-                    adComputers.add(adComputer);
+                    AD_COMPUTERS.add(adComputer);
                 }
             }
         } catch (SQLException | NullPointerException e) {
@@ -641,6 +573,7 @@ public class NetScannerSvc {
      @param pcName имя ПК
      @return имя юзера, если есть.
      */
+    @SuppressWarnings("MethodWithMultipleLoops")
     private String offLinesCheckUser(String sql, String pcName) {
         StringBuilder stringBuilder = new StringBuilder();
         try (PreparedStatement p = c.prepareStatement(sql);
@@ -701,8 +634,6 @@ public class NetScannerSvc {
         StringBuilder stringBuilder = new StringBuilder();
         String str = new TimeChecker().call().getMessage().toString();
         stringBuilder
-            .append("threadConfig.toString() <font color=\"yellow\">")
-            .append(threadConfig.toString())
             .append("</font><p> new TimeChecker().call():<br> <font color=\"yellow\">")
             .append(str)
             .append("</font>");
@@ -712,14 +643,18 @@ public class NetScannerSvc {
 
     private void tryKillSleepTHR(String str) {
         Thread.currentThread().checkAccess();
-        Thread.getAllStackTraces().forEach((x, y) -> {
+        for (Map.Entry<Thread, StackTraceElement[]> entry : Thread.getAllStackTraces().entrySet()) {
+            Thread x = entry.getKey();
             if (x.getState().equals(Thread.State.WAITING) && x.getName().contains("eatmeat.ru")) {
                 x.checkAccess();
                 x.interrupt();
                 threadPoolTaskExecutor.destroy();
-                String s = str + "\n\n\n"
-                    + new TForms().fromArray(x.getStackTrace(), false) + "\n" +
-                    x.isAlive() + " isAlive. Total active = " + Thread.activeCount();
+                String s = new StringBuilder()
+                    .append(str)
+                    .append("\n\n\n")
+                    .append(new TForms().fromArray(x.getStackTrace(), false))
+                    .append("\n").append(x.isAlive()).append(" isAlive. Total active = ")
+                    .append(Thread.activeCount()).toString();
                 String name = x.getName() + "log.txt";
                 try (OutputStream outputStream = new FileOutputStream(name)) {
                     outputStream.write(s.getBytes());
@@ -727,6 +662,7 @@ public class NetScannerSvc {
                     LOGGER.info(e.getMessage());
                 }
             }
-        });
+        }
     }
+
 }

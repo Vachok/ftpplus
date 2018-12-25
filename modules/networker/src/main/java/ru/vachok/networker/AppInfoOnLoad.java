@@ -9,14 +9,12 @@ import ru.vachok.networker.accesscontrol.common.CommonRightsChecker;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.config.ThreadConfig;
-import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.mailserver.MailIISLogsCleaner;
 import ru.vachok.networker.net.DiapazonedScan;
 import ru.vachok.networker.net.SwitchesAvailability;
 import ru.vachok.networker.services.MyCalen;
 import ru.vachok.networker.services.WeekPCStats;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -50,23 +48,11 @@ public class AppInfoOnLoad implements Runnable {
     private static final String STR_PC_NO0027 = "no0027";
 
     /**
-     {@link File} - const.txt
-     */
-    private static final File CONST_TXT = new File("const.txt");
-
-    /**
      Задержка выполнения для этого класса
 
      @see #schedStarter()
      */
     private static final int THIS_DELAY = 111;
-
-    /**
-     @return {@link #CONST_TXT}
-     */
-    public static File getConstTxt() {
-        return CONST_TXT;
-    }
 
     /**
      @see #infoForU(ApplicationContext)
@@ -131,7 +117,7 @@ public class AppInfoOnLoad implements Runnable {
             ConstantsFor.thisPC().toLowerCase().contains("rups")) {
             runCommonScan();
         } else {
-            FileSystemWorker.cpConstTxt(true);
+            LOGGER.info(ConstantsFor.thisPC());
         }
     }
 

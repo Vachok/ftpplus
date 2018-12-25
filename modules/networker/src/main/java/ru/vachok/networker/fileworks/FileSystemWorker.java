@@ -1,16 +1,12 @@
 package ru.vachok.networker.fileworks;
 
 
-import org.apache.commons.net.ntp.TimeInfo;
 import org.slf4j.Logger;
 import ru.vachok.messenger.email.ESender;
-import ru.vachok.networker.AppInfoOnLoad;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.common.CommonScan2YOlder;
 import ru.vachok.networker.componentsrepo.AppComponents;
-import ru.vachok.networker.config.ThreadConfig;
-import ru.vachok.networker.services.MyCalen;
 
 import java.io.*;
 import java.nio.file.*;
@@ -24,55 +20,10 @@ import java.util.List;
  @since 19.12.2018 (9:57) */
 public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
 
-
-    /**
-     {@link AppInfoOnLoad#getConstTxt()}
-     */
-    private static final File CONST_TXT = AppInfoOnLoad.getConstTxt();
-
-    /**
-     {@link ThreadConfig}
-     */
-    private static final ThreadConfig THREAD_CONFIG = new ThreadConfig();
-
     /**
      {@link AppComponents#getLogger()}
      */
     static final Logger LOGGER = AppComponents.getLogger();
-
-
-    /**
-     @param atHome дома / не дома
-     */
-    public static synchronized void cpConstTxt(boolean atHome) {
-        if(atHome){
-            fileMake();
-        }
-    }
-
-    /**
-     Пишет {@link #CONST_TXT}
-     <p>
-     <code>
-     printWriter.println(new Date(timeInfo.getReturnTime())); printWriter.println(ConstantsFor.toStringS() + "\n\n" + MyCalen.toStringS());
-     </code> <br>
-     Копирует в {@code G:\My_Proj\FtpClientPlus\modules\networker\src\main\resources\static\texts\}, если дома.
-     */
-    private static synchronized void fileMake() {
-        synchronized(CONST_TXT) {
-            try(OutputStream outputStream = new FileOutputStream(CONST_TXT);
-                PrintWriter printWriter = new PrintWriter(outputStream, true)){
-                TimeInfo timeInfo = MyCalen.getTimeInfo();
-                timeInfo.computeDetails();
-                printWriter.println(new Date(timeInfo.getReturnTime()));
-                printWriter.println(ConstantsFor.toStringS() + "\n\n" + MyCalen.toStringS());
-                THREAD_CONFIG.threadPoolTaskExecutor().execute(new FilesCP());
-            }
-            catch(IOException e){
-                LOGGER.warn(e.getMessage());
-            }
-        }
-    }
 
     /**
      Запись файла
@@ -207,30 +158,5 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
             return toCpFile.exists();
         }
         return toCpFile.exists();
-    }
-
-    /**
-     Метод для копирования.
-
-     @see #fileMake()
-     */
-    synchronized void cpConstTxt() {
-        Path toCopy =
-            Paths.get("G:\\My_Proj\\FtpClientPlus\\modules\\networker\\src\\main\\resources\\static\\texts\\const.txt");
-
-        try{
-            boolean canWrite = CONST_TXT.canWrite();
-            if(canWrite){
-                do{
-                    wait();
-                } while(CONST_TXT.canWrite());
-            }
-            Files.deleteIfExists(toCopy);
-            Files.copy(CONST_TXT.toPath(), toCopy);
-        }
-        catch(IOException | InterruptedException e){
-            LOGGER.warn(e.getMessage());
-            Thread.currentThread().interrupt();
-        }
     }
 }

@@ -130,6 +130,7 @@ public class NetScanCtr {
 
     @GetMapping("/showalldev")
     private String allDevices(Model model, HttpServletRequest request, HttpServletResponse response) {
+        NetScanFileWorker netScanFileWorker = NetScanFileWorker.getI();
         model.addAttribute(ConstantsFor.TITLE, "DiapazonedScan.scanAll");
         if (request.getQueryString() != null) {
             StringBuilder stringBuilder = new StringBuilder();
@@ -144,8 +145,8 @@ public class NetScanCtr {
                     .append(" ~minLeft: ").append(minLeft)
                     .toString();
                 model.addAttribute(ConstantsFor.TITLE, attributeValue);
-                if (AppComponents.netScannerSvc().getNewLanLastScanAsStr().isEmpty() && !AppComponents.netScannerSvc().getOldLanLastScanAsStr().isEmpty()) {
-                    model.addAttribute("pcs", AppComponents.netScannerSvc().getNewLanLastScanAsStr() + "<p>" + AppComponents.netScannerSvc().getOldLanLastScanAsStr());
+                if (netScanFileWorker.equals(DiapazonedScan.getNetScanFileWorker())) {
+                    model.addAttribute("pcs", netScanFileWorker.getNewLanLastScanAsStr() + "<p>" + netScanFileWorker.getOldLanLastScanAsStr());
                 } else model.addAttribute("pcs", FileSystemWorker.readFile("available_last.txt") + "<p>" + FileSystemWorker.readFile("old_lan.txt"));
                 response.addHeader("Refresh", "19");
             }
@@ -173,7 +174,6 @@ public class NetScanCtr {
     private void scanIt(HttpServletRequest request, Model model) {
         if (request != null && request.getQueryString() != null) {
             lastScan.clear();
-            netScannerSvc.setQer(request.getQueryString());
             Set<String> pcNames = netScannerSvc.getPCNamesPref(request.getQueryString());
             model
                 .addAttribute(TITLE_STR, new Date().toString())

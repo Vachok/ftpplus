@@ -8,6 +8,7 @@ import ru.vachok.networker.accesscontrol.common.ArchivesAutoCleaner;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.fileworks.SysConsoleToFile;
 import ru.vachok.networker.net.MyServer;
 import ru.vachok.networker.services.DBMessenger;
 import ru.vachok.networker.services.Putty;
@@ -69,8 +70,6 @@ public class SystemTrayHelper {
         return systemTrayHelper;
     }
 
-    /*Instances*/
-
     /**
      Конструктор по-умолчанию
      */
@@ -100,6 +99,7 @@ public class SystemTrayHelper {
             iconFileName = "icons8-отменить-2-20.png";
         }
         iconFileName = IMG_FOLDER_NAME + iconFileName;
+
         Image image = Toolkit.getDefaultToolkit().getImage(SystemTrayHelper.class.getResource(iconFileName));
         PopupMenu popupMenu = new PopupMenu();
         MenuItem defItem = new MenuItem();
@@ -117,6 +117,7 @@ public class SystemTrayHelper {
             new ThreadConfig().threadPoolTaskExecutor()
                 .execute(new ExitApp(SystemTrayHelper.class.getSimpleName(), ".scanAll() line 111"));
         };
+
         addItems(popupMenu);
         trayIcon.setImageAutoSize(true);
         defItem.setLabel("Exit");
@@ -212,13 +213,13 @@ public class SystemTrayHelper {
                 boolean writeArray = new TForms().writeArray(allSources, SystemTrayHelper.class.getSimpleName());
                 String msg = "Write allSources set is " + writeArray;
                 LOGGER.warn(msg);
-                //noinspection Convert2MethodRef
                 Executors.unconfigurableExecutorService(Executors.newSingleThreadScheduledExecutor())
                     .execute(() -> IntoApplication.main(new String[0]));
             });
             noPutty.setLabel("Refresh App Context");
             popupMenu.add(noPutty);
         }
+
         MenuItem delFiles = new MenuItem();
         delFiles.addActionListener(e -> {
             Date date = new Date(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(365));
@@ -236,6 +237,11 @@ public class SystemTrayHelper {
         });
         delFiles.setLabel("Clean last year");
         popupMenu.add(delFiles);
+
+        MenuItem logToFilesystem = new MenuItem();
+        logToFilesystem.setLabel("Log to File");
+        logToFilesystem.addActionListener(e -> new ThreadConfig().threadPoolTaskExecutor().execute(new SysConsoleToFile()));
+        popupMenu.add(logToFilesystem);
     }
 
     /**

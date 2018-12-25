@@ -18,6 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import static ru.vachok.networker.componentsrepo.AppComponents.getLogger;
+
 
 /**
  Скан диапазона адресов
@@ -29,7 +31,7 @@ public class DiapazonedScan implements Runnable {
     /**
      {@link AppComponents#getLogger()}
      */
-    private static final Logger LOGGER = AppComponents.getLogger();
+    private static final Logger LOGGER = getLogger();
 
     /**
      Повторения.
@@ -45,6 +47,12 @@ public class DiapazonedScan implements Runnable {
      Singleton inst
      */
     private static volatile DiapazonedScan ourInstance;
+
+    private static final NetScanFileWorker NET_SCAN_FILE_WORKER = NetScanFileWorker.getI();
+
+    static NetScanFileWorker getNetScanFileWorker() {
+        return NET_SCAN_FILE_WORKER;
+    }
 
     /**
      Singleton
@@ -80,27 +88,22 @@ public class DiapazonedScan implements Runnable {
     }
 
     /**
-     Добавляет в {@link ConstantsFor#ALL_DEVICES} адреса <i>10.200.200-217.254</i>
+     @return /showalldev = {@link NetScanCtr#allDevices(Model, HttpServletRequest, HttpServletResponse)}
      */
-    @SuppressWarnings("all")
-    private void scanNew() {
-        final long stArt = System.currentTimeMillis();
-        Path p = Paths.get(ROOT_PATH_STR + "\\lan\\200_" + System.currentTimeMillis() / 1000 + ".scan");
-        String msg1 = "DiapazonedScan.scanNew " + p.toAbsolutePath().toString();
-        LOGGER.warn(msg1);
-        File newLanFile = new File("available_last.txt");
-        try (OutputStream outputStream = new FileOutputStream(newLanFile);
-             PrintWriter printWriter = new PrintWriter(outputStream, true)) {
-            scanLan(printWriter, 200, 218, stArt, "10.200.");
-        } catch (IOException e) {
-            LOGGER.error(e.getMessage(), e);
-            String msg = "Vlans 200-217 completed.\nTime spend: " +
-                TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - stArt) + "\n\n";
-            LOGGER.warn(msg);
-        }
-        boolean b = FileSystemWorker.copyOrDelFile(newLanFile, p.toAbsolutePath().toString(), false);
-        AppComponents.netScannerSvc().setNewLanLastScan(p.toFile());
-        scanOldLan(stArt);
+    @Override
+    public String toString() {
+        LOGGER.info("DiapazonedScan.toString");
+        final StringBuilder sb = new StringBuilder("DiapazonedScan{ ");
+        sb
+            .append("<a href=\"/showalldev\">ALL_DEVICES ")
+            .append(ConstantsFor.ALL_DEVICES.size())
+            .append("/5610 (")
+            .append((float) ConstantsFor.ALL_DEVICES.size() / (float) (ConstantsFor.IPS_IN_VELKOM_VLAN / 100))
+            .append(" %)");
+        sb.append("</a>}");
+        sb.append(" ROOT_PATH_STR= ").append(ROOT_PATH_STR);
+        sb.append(" NetScanFileWorker= ").append(NET_SCAN_FILE_WORKER.hashCode());
+        return sb.toString();
     }
 
     /**
@@ -146,6 +149,30 @@ public class DiapazonedScan implements Runnable {
     }
 
     /**
+     Добавляет в {@link ConstantsFor#ALL_DEVICES} адреса <i>10.200.200-217.254</i>
+     */
+    @SuppressWarnings("all")
+    private void scanNew() {
+        final long stArt = System.currentTimeMillis();
+        Path p = Paths.get(ROOT_PATH_STR + "\\lan\\200_" + System.currentTimeMillis() / 1000 + ".scan");
+        String msg1 = "DiapazonedScan.scanNew " + p.toAbsolutePath().toString();
+        LOGGER.warn(msg1);
+        File newLanFile = new File("available_last.txt");
+        try (OutputStream outputStream = new FileOutputStream(newLanFile);
+             PrintWriter printWriter = new PrintWriter(outputStream, true)) {
+            scanLan(printWriter, 200, 218, stArt, "10.200.");
+        } catch (IOException e) {
+            LOGGER.error(e.getMessage(), e);
+            String msg = "Vlans 200-217 completed.\nTime spend: " +
+                TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - stArt) + "\n\n";
+            LOGGER.warn(msg);
+        }
+        boolean b = FileSystemWorker.copyOrDelFile(newLanFile, p.toAbsolutePath().toString(), false);
+        NET_SCAN_FILE_WORKER.setNewLanLastScan(p.toFile());
+        scanOldLan(stArt);
+    }
+
+    /**
      192.168.11-14.254
 
      @param stArt таймер начала общего скана
@@ -163,30 +190,10 @@ public class DiapazonedScan implements Runnable {
             LOGGER.error(e.getMessage());
         }
         boolean b = FileSystemWorker.copyOrDelFile(oldLANFile, p.toAbsolutePath().toString(), false);
-        AppComponents.netScannerSvc().setOldLanLastScan(p.toFile());
+        NET_SCAN_FILE_WORKER.setOldLanLastScan(p.toFile());
         String msg = "Vlans 11-14 completed.\nTime spend: " +
             TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - stArt) + "\n" + b + " copyOrDelFile.\n\n";
         LOGGER.warn(msg);
-    }
-
-    /**
-     @return /showalldev = {@link NetScanCtr#allDevices(Model, HttpServletRequest, HttpServletResponse)}
-     */
-    @Override
-    public String toString() {
-        LOGGER.info("DiapazonedScan.toString");
-        final StringBuilder sb = new StringBuilder("DiapazonedScan{ ");
-        sb.append(ourInstance.hashCode()).append(" hash. ");
-        sb
-            .append("<a href=\"/showalldev\">ALL_DEVICES ")
-            .append(ConstantsFor.ALL_DEVICES.size())
-            .append("/5610 (")
-            .append((float) ConstantsFor.ALL_DEVICES.size() / (float) (ConstantsFor.IPS_IN_VELKOM_VLAN / 100))
-            .append(" %)");
-        sb.append("</a>}");
-        sb.append(" FONT_BR_STR= ").append(FONT_BR_STR);
-        sb.append(" ROOT_PATH_STR= ").append(ROOT_PATH_STR);
-        return sb.toString();
     }
 
     /**

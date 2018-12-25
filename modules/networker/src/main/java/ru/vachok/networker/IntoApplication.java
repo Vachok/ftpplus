@@ -13,10 +13,8 @@ import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.config.ThreadConfig;
-import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.awt.*;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.time.LocalDate;
@@ -34,8 +32,6 @@ import java.util.Properties;
 @SpringBootApplication
 @EnableScheduling
 public class IntoApplication {
-
-    /*Fields*/
 
     /**
      {@link AppComponents#getLogger()}
@@ -92,7 +88,6 @@ public class IntoApplication {
         configurableApplicationContext = SpringApplication.run(IntoApplication.class, args);
         ConfigurableApplicationContext run = configurableApplicationContext;
         run.start();
-
         if(args.length > 0 && Arrays.toString(args).contains("off")){
             new ThreadConfig().killAll();
         }
@@ -112,7 +107,6 @@ public class IntoApplication {
      Usages: {@link #main(String[])}
      */
     private static void beforeSt() {
-        FileSystemWorker.copyOrDelFile(new File("const.txt"), ".\\lan\\" + ConstantsFor.thisPC(), true);
         ConstantsFor.takePr();
         ConstantsFor.showMem();
         LOGGER.info("IntoApplication.beforeSt");
