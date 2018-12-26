@@ -198,7 +198,7 @@ public class ADSrv implements Runnable {
      @throws IOException {@link InetAddress}.getByName(queryString + ".eatmeat.ru").isReachable(500))
      */
     String getDetails(String queryString) throws IOException {
-        if (InetAddress.getByName(queryString + ".eatmeat.ru").isReachable(500)) {
+        if(InetAddress.getByName(queryString + ConstantsFor.EATMEAT_RU).isReachable(500)){
             StringBuilder stringBuilder = new StringBuilder();
             stringBuilder.append("<p>   Более подробно про ПК:<br>");
             File filesAsFile = new File(new StringBuilder()
@@ -222,7 +222,7 @@ public class ADSrv implements Runnable {
             }
             ConstantsFor.COMPNAME_USERS_MAP.put(s1, filesAsFile);
             try {
-                new PCUserResolver().recToDB(queryString + ".eatmeat.ru", s1.split(" ")[1]);
+                new PCUserResolver().recToDB(queryString + ConstantsFor.EATMEAT_RU, s1.split(" ")[1]);
             } catch (ArrayIndexOutOfBoundsException ignore) {
                 //
             }

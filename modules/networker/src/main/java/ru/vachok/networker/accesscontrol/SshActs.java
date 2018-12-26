@@ -123,8 +123,11 @@ public class SshActs {
     }
 
     public void setPcName(String pcName) {
-        if (pcName.contains(".eatmeat.ru")) this.pcName = pcName;
-        else this.pcName = new NameOrIPChecker().checkPat(pcName);
+        if(pcName.contains(ConstantsFor.EATMEAT_RU)){
+            this.pcName = pcName;
+        }
+        else
+            this.pcName = new NameOrIPChecker().checkPat(pcName);
     }
 
     public String getInet() {

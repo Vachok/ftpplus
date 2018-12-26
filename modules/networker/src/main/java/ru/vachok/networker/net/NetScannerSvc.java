@@ -25,10 +25,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
@@ -391,7 +388,7 @@ public class NetScannerSvc {
             } else {
                 nameCount = String.format("%03d", ++pcNum);
             }
-            list.add(namePCPrefix + nameCount + ".eatmeat.ru");
+            list.add(namePCPrefix + nameCount + ConstantsFor.EATMEAT_RU);
         }
         return list;
     }

@@ -111,7 +111,7 @@ public class DiapazonedScan implements Runnable {
             .append(" %)");
         sb.append("</a>}");
         sb.append(" ROOT_PATH_STR= ").append(ROOT_PATH_STR);
-        sb.append(" NetScanFileWorker= ").append(NET_SCAN_FILE_WORKER.hashCode());
+        sb.append("<br>NetScanFileWorker hash= ").append(NET_SCAN_FILE_WORKER.hashCode());
         return sb.toString();
     }
 

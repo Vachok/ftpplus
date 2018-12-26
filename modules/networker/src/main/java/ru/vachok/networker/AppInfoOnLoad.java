@@ -5,7 +5,6 @@ import org.slf4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import ru.vachok.mysqlandprops.EMailAndDB.SpeedRunActualize;
-import ru.vachok.networker.accesscontrol.common.CommonRightsChecker;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.config.ThreadConfig;
@@ -15,13 +14,12 @@ import ru.vachok.networker.net.SwitchesAvailability;
 import ru.vachok.networker.services.MyCalen;
 import ru.vachok.networker.services.WeekPCStats;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.time.DayOfWeek;
 import java.util.Date;
 import java.util.Objects;
-import java.util.concurrent.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -81,7 +79,7 @@ public class AppInfoOnLoad implements Runnable {
     /**
      Запуск заданий по-расписанию
      <p>
-     Usages: {@link #infoForU(ApplicationContext)} <br> Uses: 1.1 {@link #dateSchedulers()}, 1.2 {@link ConstantsFor#thisPC()}, 1.3 {@link ConstantsFor#thisPC()}, 1.4 {@link #runCommonScan()} .
+     Usages: {@link #infoForU(ApplicationContext)} <br> Uses: 1.1 {@link #dateSchedulers()}, 1.2 {@link ConstantsFor#thisPC()}, 1.3 {@link ConstantsFor#thisPC()} .
      */
     private void schedStarter() {
         Runnable speedRun = null;
@@ -109,14 +107,6 @@ public class AppInfoOnLoad implements Runnable {
         LOGGER.info(msg);
 
         dateSchedulers();
-
-        if(thisPC.toLowerCase().contains(ConstantsFor.NO0027) ||
-            thisPC.toLowerCase().contains("rups")){
-            runCommonScan();
-        }
-        else{
-            LOGGER.info(thisPC);
-        }
     }
 
     /**
@@ -142,33 +132,4 @@ public class AppInfoOnLoad implements Runnable {
         LOGGER.warn(logStr);
     }
 
-    /**
-     Запускает сканнер прав Common
-     <p>
-     Usages: {@link #schedStarter()} Uses: {@link CommonRightsChecker}
-     */
-    private static void runCommonScan() {
-        Runnable r = () -> {
-            try{
-                Files.walkFileTree(Paths.get("\\\\srv-fs.eatmeat.ru\\common_new"), new CommonRightsChecker());
-            }
-            catch(IOException e){
-                LOGGER.warn(e.getMessage(), e);
-            }
-        };
-        Date startTime = MyCalen.getNextMonth();
-        long delay = TimeUnit.DAYS.toMillis(ConstantsFor.ONE_MONTH_DAYS);
-        ScheduledFuture<?> scheduleWithFixedDelay = new ThreadConfig().threadPoolTaskScheduler().scheduleWithFixedDelay(
-            r, startTime, delay);
-        try{
-            String msg = "Common scanner : " + startTime.toString() + "  ||  " + delay + " TimeUnit.DAYS.toMillis(ConstantsFor.ONE_MONTH_DAYS)";
-            LOGGER.warn(msg);
-            scheduleWithFixedDelay.get();
-        }
-        catch(InterruptedException | ExecutionException e){
-            LOGGER.error(e.getMessage(), e);
-            Thread.currentThread().interrupt();
-            r.run();
-        }
-    }
 }

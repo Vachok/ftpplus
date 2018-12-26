@@ -33,15 +33,9 @@ import java.security.SecureRandom;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.Year;
+import java.time.*;
 import java.time.format.TextStyle;
-import java.util.Date;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.*;
 
 
@@ -52,6 +46,8 @@ import java.util.concurrent.*;
  @since 12.08.2018 (16:26) */
 public enum ConstantsFor {
     ;
+
+    public static final String DOS_ARCHIVE = "dos:archive";
 
     /**
      Имя ПК no0027
@@ -79,7 +75,7 @@ public enum ConstantsFor {
 
      @see DiapazonedScan
      */
-    public static final BlockingQueue<String> ALL_DEVICES = new ArrayBlockingQueue<>(IPS_IN_VELKOM_VLAN);
+
 
     /**
      {@link ru.vachok.networker.ad.ADSrv#getDetails(String)}, {@link PCUserResolver#getResolvedName()}, {@link AppComponents#getCompUsersMap()}, {@link NetScannerSvc#getPCsAsync()}
@@ -213,10 +209,15 @@ public enum ConstantsFor {
      */
     public static final int IPS_IN_VELKOM_VLAN = getIPs();
 
+    public static final BlockingQueue<String> ALL_DEVICES = new ArrayBlockingQueue<>(IPS_IN_VELKOM_VLAN);
     /**
      Порт для {@link ru.vachok.networker.net.MyServer}
      */
     public static final int LISTEN_PORT = Integer.parseInt(PROPS.getOrDefault("lport", "9990").toString());
+
+    public static final String EATMEAT_RU = ".eatmeat.ru";
+
+    public static final String DELETED = " DELETED";
 
     /**
      {@link #getAtomicTime()}

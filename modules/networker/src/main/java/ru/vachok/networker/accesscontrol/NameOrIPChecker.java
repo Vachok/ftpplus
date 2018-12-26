@@ -1,6 +1,7 @@
 package ru.vachok.networker.accesscontrol;
 
 
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 
 import java.net.InetAddress;
@@ -36,7 +37,7 @@ class NameOrIPChecker {
 
     private String resolveName(String userIn) throws UnknownHostException {
 
-        InetAddress[] allByName = InetAddress.getAllByName(userIn + ".eatmeat.ru");
+        InetAddress[] allByName = InetAddress.getAllByName(userIn + ConstantsFor.EATMEAT_RU);
         List<InetAddress> inetAddresses = Arrays.asList(allByName);
         return new TForms().fromArray(inetAddresses, true);
     }

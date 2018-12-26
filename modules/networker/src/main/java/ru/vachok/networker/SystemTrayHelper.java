@@ -5,12 +5,13 @@ import org.slf4j.Logger;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.accesscontrol.common.ArchivesAutoCleaner;
+import ru.vachok.networker.accesscontrol.common.CommonRightsChecker;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.fileworks.SysConsoleToFile;
 import ru.vachok.networker.net.MyServer;
 import ru.vachok.networker.services.DBMessenger;
+import ru.vachok.networker.services.MyCalen;
 import ru.vachok.networker.services.Putty;
 
 import java.awt.*;
@@ -19,6 +20,8 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Date;
 import java.util.Properties;
 import java.util.Set;
@@ -236,8 +239,8 @@ public final class SystemTrayHelper {
         popupMenu.add(delFiles);
 
         MenuItem logToFilesystem = new MenuItem();
-        logToFilesystem.setLabel("Log to File");
-        logToFilesystem.addActionListener(e -> new ThreadConfig().threadPoolTaskExecutor().execute(new SysConsoleToFile()));
+        logToFilesystem.setLabel("Common Rights");
+        logToFilesystem.addActionListener(e -> new ThreadConfig().threadPoolTaskExecutor().execute(SystemTrayHelper::runCommonScan));
         popupMenu.add(logToFilesystem);
     }
 
@@ -260,6 +263,36 @@ public final class SystemTrayHelper {
                 new ThreadConfig().threadPoolTaskExecutor().submit(MyServer.getI());
                 Thread.currentThread().interrupt();
             }
+        }
+    }
+
+    /**
+     Запускает сканнер прав Common
+     <p>
+     Usages: {@link #addItems(PopupMenu)}
+     */
+    private static void runCommonScan() {
+        Runnable r = () -> {
+            try{
+                Files.walkFileTree(Paths.get("\\\\srv-fs.eatmeat.ru\\common_new"), new CommonRightsChecker());
+            }
+            catch(IOException e){
+                LOGGER.warn(e.getMessage(), e);
+            }
+        };
+        Date startTime = MyCalen.getNextMonth();
+        long delay = TimeUnit.DAYS.toMillis(ConstantsFor.ONE_MONTH_DAYS);
+        ScheduledFuture<?> scheduleWithFixedDelay = new ThreadConfig().threadPoolTaskScheduler().scheduleWithFixedDelay(
+            r, startTime, delay);
+        try{
+            String msg = "Common scanner : " + startTime.toString() + "  ||  " + delay + " TimeUnit.DAYS.toMillis(ConstantsFor.ONE_MONTH_DAYS)";
+            LOGGER.warn(msg);
+            scheduleWithFixedDelay.get();
+        }
+        catch(InterruptedException | ExecutionException e){
+            LOGGER.error(e.getMessage(), e);
+            Thread.currentThread().interrupt();
+            r.run();
         }
     }
 }
