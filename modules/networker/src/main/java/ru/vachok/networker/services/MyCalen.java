@@ -42,8 +42,7 @@ public abstract class MyCalen {
     /**
      Дата запуска common scanner
      <p>
-     Usage: {@link ru.vachok.networker.AppInfoOnLoad#runCommonScan()} <br> Uses: -
-     <p>
+     Usage: {@link #toStringS()}
 
      @param hourNeed час
      @param minNeed  минута
