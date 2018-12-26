@@ -43,9 +43,10 @@ public class VersionInfo {
     private void setAppBuild(String appBuild) {
         this.appBuild = appBuild;
     }
+
     public VersionInfo() {
         Thread.currentThread().setName(getClass().getSimpleName());
-        if(thisPCName.toLowerCase().contains("home") || thisPCName.toLowerCase().contains("no0")){
+        if (thisPCName.toLowerCase().contains("home") || thisPCName.toLowerCase().contains("no0")) {
             setParams();
         } else getParams();
     }
@@ -80,6 +81,7 @@ public class VersionInfo {
         setBuildTime(PROPERTIES.getOrDefault("buildTime", System.currentTimeMillis()).toString());
         setAppVersion(PROPERTIES.getOrDefault("appVersion", "no database").toString());
     }
+
     /**
      Usages: {@link AppComponents#versionInfo()} <br> Uses: {@link #setterVersionFromFiles(File)} , {@link #getParams()} , {@link #toString()} , {@link ConstantsFor#saveProps(Properties)}<br>
      */
@@ -90,20 +92,19 @@ public class VersionInfo {
             ConstantsFor.saveProps(PROPERTIES);
         } else {
             file = new File("C:\\Users\\ikudryashov\\IdeaProjects\\spring\\modules\\networker\\build.gradle");
-            if(file.exists()){
+            if (file.exists()) {
                 setterVersionFromFiles(file);
                 ConstantsFor.saveProps(PROPERTIES);
-            }
-            else {
+            } else {
                 getParams();
                 String msg = toString();
                 LOGGER.warn(msg);
             }
         }
-        this.appBuild = thisPCName + "." + new SecureRandom().nextInt(( int ) ConstantsFor.MY_AGE);
+        this.appBuild = thisPCName + "." + new SecureRandom().nextInt((int) ConstantsFor.MY_AGE);
         ConstantsFor.getProps().setProperty("appBuild", appBuild);
-        if(thisPCName.equalsIgnoreCase("home") ||
-            thisPCName.toLowerCase().contains(ConstantsFor.NO0027)){
+        if (thisPCName.equalsIgnoreCase("home") ||
+            thisPCName.toLowerCase().contains(ConstantsFor.NO0027)) {
             this.buildTime = new Date(ConstantsFor.START_STAMP).toString();
             ConstantsFor.getProps().setProperty("buildTime", buildTime);
         }
@@ -118,9 +119,9 @@ public class VersionInfo {
      @param file gradle.build
      */
     private void setterVersionFromFiles(File file) {
-        try(InputStream inputStream = new FileInputStream(file);
-            InputStreamReader reader = new InputStreamReader(inputStream);
-            BufferedReader bufferedReader = new BufferedReader(reader)){
+        try (InputStream inputStream = new FileInputStream(file);
+             InputStreamReader reader = new InputStreamReader(inputStream);
+             BufferedReader bufferedReader = new BufferedReader(reader)) {
             bufferedReader.lines().forEach(x -> {
                 if (x.contains("version = '0.")) {
                     setAppVersion(x.split("'")[1]);
