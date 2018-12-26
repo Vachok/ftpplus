@@ -36,6 +36,7 @@ import static java.lang.System.err;
  Если трэй доступен.
 
  @since 29.09.2018 (22:33) */
+@SuppressWarnings ("InjectedReferences")
 public final class SystemTrayHelper {
 
     /**
@@ -58,18 +59,18 @@ public final class SystemTrayHelper {
     /**
      Instance
      */
-    private static SystemTrayHelper systemTrayHelper = new SystemTrayHelper();
+    private static final SystemTrayHelper SYSTEM_TRAY_HELPER = new SystemTrayHelper();
 
     /**
      {@link DBMessenger}
      */
-    private static MessageToUser messageToUser = new DBMessenger();
+    private static final MessageToUser MESSAGE_TO_USER = new DBMessenger();
 
     /**
-     @return {@link #systemTrayHelper}
+     @return {@link #SYSTEM_TRAY_HELPER}
      */
     public static SystemTrayHelper getInstance() {
-        return systemTrayHelper;
+        return SYSTEM_TRAY_HELPER;
     }
 
     /**
@@ -86,6 +87,7 @@ public final class SystemTrayHelper {
 
      @param iconFileName имя файла-иконки.
      */
+    @SuppressWarnings ("FeatureEnvy")
     static void addTray(String iconFileName) {
         boolean myPC;
         myPC = THIS_PC.toLowerCase().contains(ConstantsFor.NO0027) || THIS_PC.equalsIgnoreCase("home");
@@ -97,10 +99,10 @@ public final class SystemTrayHelper {
                 iconFileName = "icons8-плохие-поросята-48.png";
             }
         }
-        if(!srvGitIs()){
+        if(srvGitIs()){
             iconFileName = "icons8-отменить-2-20.png";
         }
-        iconFileName = IMG_FOLDER_NAME + iconFileName;
+        iconFileName = new StringBuilder().append(IMG_FOLDER_NAME).append(iconFileName).toString();
 
         Image image = Toolkit.getDefaultToolkit().getImage(SystemTrayHelper.class.getResource(iconFileName));
         PopupMenu popupMenu = new PopupMenu();
@@ -149,11 +151,11 @@ public final class SystemTrayHelper {
      */
     private static boolean srvGitIs() {
         try{
-            return InetAddress.getByName("srv-git.eatmeat.ru").isReachable(1000);
+            return !InetAddress.getByName(ConstantsFor.SRV_GIT_EATMEAT_RU).isReachable(1000);
         }
         catch(IOException e){
             LOGGER.error(e.getMessage(), e);
-            return false;
+            return true;
         }
     }
 
@@ -171,19 +173,21 @@ public final class SystemTrayHelper {
         ThreadPoolTaskExecutor executor = threadConfig.threadPoolTaskExecutor();
         Thread thread = executor.createThread(SystemTrayHelper::recOn);
         thread.start();
-
+        int timeOut30 = 30;
         MenuItem gitStartWeb = new MenuItem();
         gitStartWeb.addActionListener(actionEvent -> {
             Callable<String> sshStr = () -> new SSHFactory.Builder(ConstantsFor
-                .SRV_GIT, "sudo git instaweb;" +
-                "sudo cd /usr/home/dpetrov/;" +
-                "sudo git instaweb -p 11111;" +
-                "sudo cd /usr/home/kudr/;" +
-                "sudo git instaweb -p 9999;" +
-                "exit").build().call();
+                .SRV_GIT, new StringBuilder()
+                .append("sudo git instaweb;")
+                .append("sudo cd /usr/home/dpetrov/;")
+                .append("sudo git instaweb -p 11111;")
+                .append("sudo cd /usr/home/kudr/;")
+                .append("sudo git instaweb -p 9999;")
+                .append("exit;")
+                .toString()).build().call();
             Future<String> submit = executor.submit(sshStr);
             try{
-                LOGGER.info(submit.get(30, TimeUnit.SECONDS));
+                LOGGER.info(submit.get(timeOut30, TimeUnit.SECONDS));
             }
             catch(InterruptedException | ExecutionException | TimeoutException e){
                 Thread.currentThread().interrupt();
@@ -211,7 +215,7 @@ public final class SystemTrayHelper {
                 executor.getThreadPoolExecutor().shutdown();
                 threadConfig.killAll();
                 boolean writeArray = new TForms().writeArray(allSources, SystemTrayHelper.class.getSimpleName());
-                String msg = "Write allSources set is " + writeArray;
+                String msg = new StringBuilder().append("Write allSources set is ").append(writeArray).toString();
                 LOGGER.warn(msg);
                 Executors.unconfigurableExecutorService(Executors.newSingleThreadScheduledExecutor())
                     .execute(() -> IntoApplication.main(new String[0]));
@@ -222,8 +226,8 @@ public final class SystemTrayHelper {
 
         MenuItem delFiles = new MenuItem();
         delFiles.addActionListener(e -> {
-            Date date = new Date(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(365));
-            String msg = ("starting clean for " + date).toUpperCase();
+            Date date = new Date(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(ConstantsFor.ONE_YEAR));
+            String msg = (new StringBuilder().append("starting clean for ").append(date).toString()).toUpperCase();
 
             executor.setThreadGroup(new ThreadGroup(("CLR")));
             executor.setThreadNamePrefix("CLEAN");
@@ -259,7 +263,7 @@ public final class SystemTrayHelper {
                 MyServer.reconSock();
             }
             catch(IOException | InterruptedException | NullPointerException e1){
-                messageToUser.errorAlert(SystemTrayHelper.class.getSimpleName(), e1.getMessage(), new TForms().fromArray(e1, false));
+                MESSAGE_TO_USER.errorAlert(SystemTrayHelper.class.getSimpleName(), e1.getMessage(), new TForms().fromArray(e1, false));
                 new ThreadConfig().threadPoolTaskExecutor().submit(MyServer.getI());
                 Thread.currentThread().interrupt();
             }
@@ -285,7 +289,11 @@ public final class SystemTrayHelper {
         ScheduledFuture<?> scheduleWithFixedDelay = new ThreadConfig().threadPoolTaskScheduler().scheduleWithFixedDelay(
             r, startTime, delay);
         try{
-            String msg = "Common scanner : " + startTime.toString() + "  ||  " + delay + " TimeUnit.DAYS.toMillis(ConstantsFor.ONE_MONTH_DAYS)";
+            String msg = new StringBuilder()
+                .append("Common scanner : ")
+                .append(startTime.toString())
+                .append("  ||  ").append(delay)
+                .append(" TimeUnit.DAYS.toMillis(ConstantsFor.ONE_MONTH_DAYS)").toString();
             LOGGER.warn(msg);
             scheduleWithFixedDelay.get();
         }

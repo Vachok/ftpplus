@@ -95,13 +95,17 @@ public class IntoApplication {
             new ThreadConfig().killAll();
         }
         else{
-            String msg = afterSt() + " " + run.toString();
+            String msg = new StringBuilder()
+                .append(afterSt())
+                .append("\n")
+                .append(new TForms().fromArray(run.getBeanDefinitionNames(), false)).toString();
             LOGGER.warn(msg);
         }
         String msgTimeSp = new StringBuilder()
             .append("IntoApplication.main method. ")
             .append(( float ) (System.currentTimeMillis() - stArt) / 1000)
-            .append(" sec spend").toString();
+            .append(" ")
+            .append(ConstantsFor.STR_SEC_SPEND).toString();
         LOGGER.info(msgTimeSp);
     }
 

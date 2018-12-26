@@ -47,6 +47,8 @@ import java.util.concurrent.*;
 public enum ConstantsFor {
     ;
 
+    public static final String SRV_GIT_EATMEAT_RU = "srv-git.eatmeat.ru";
+
     public static final String DOS_ARCHIVE = "dos:archive";
 
     /**
@@ -230,7 +232,7 @@ public enum ConstantsFor {
      */
     public static boolean isPingOK() {
         try {
-            return InetAddress.getByName("srv-git.eatmeat.ru").isReachable(500);
+            return InetAddress.getByName(SRV_GIT_EATMEAT_RU).isReachable(500);
         } catch (IOException e) {
             LoggerFactory.getLogger(ConstantsFor.class.getSimpleName()).error(e.getMessage(), e);
             return false;
