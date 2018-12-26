@@ -1,6 +1,7 @@
 package ru.vachok.networker;
 
 
+import org.apache.commons.net.ntp.TimeInfo;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.ui.Model;
@@ -21,7 +22,6 @@ import ru.vachok.networker.mailserver.MailRule;
 import ru.vachok.networker.net.DiapazonedScan;
 import ru.vachok.networker.net.NetScannerSvc;
 import ru.vachok.networker.services.MyCalen;
-import ru.vachok.networker.services.PassGenerator;
 import ru.vachok.networker.services.TimeChecker;
 
 import javax.servlet.http.HttpServletRequest;
@@ -33,9 +33,15 @@ import java.security.SecureRandom;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.time.*;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.Year;
 import java.time.format.TextStyle;
-import java.util.*;
+import java.util.Date;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.*;
 
 
@@ -46,9 +52,16 @@ import java.util.concurrent.*;
  @since 12.08.2018 (16:26) */
 public enum ConstantsFor {
     ;
-    private static final Properties PROPS = new Properties();
 
+    /**
+     Имя ПК no0027
+     */
     public static final String NO0027 = "no0027";
+
+    /**
+     Число, для Secure Random
+     */
+    public static final long MY_AGE = (long) Year.now().getValue() - 1984;
 
     public static final String EXIT_APP_RUN = "ExitApp.run";
 
@@ -56,7 +69,10 @@ public enum ConstantsFor {
 
     public static final String AVAILABLE_LAST_TXT = "available_last.txt";
 
-    public static final int IPS_IN_VELKOM_VLAN = getIPs();
+    /**
+     Строка из Live Template soutm
+     */
+    public static final String STR_SEC_SPEND = " sec spend";
 
     /**
      Список девайсов и адресов.
@@ -65,12 +81,11 @@ public enum ConstantsFor {
      */
     public static final BlockingQueue<String> ALL_DEVICES = new ArrayBlockingQueue<>(IPS_IN_VELKOM_VLAN);
 
-    private static int getIPs() {
-        int vlansNum = Integer.parseInt(PROPS.getProperty("vlans", "22"));
-        int qSize = vlansNum * 255;
-        PROPS.setProperty("qsize", qSize + "");
-        return qSize;
-    }
+    /**
+     {@link ru.vachok.networker.ad.ADSrv#getDetails(String)}, {@link PCUserResolver#getResolvedName()}, {@link AppComponents#getCompUsersMap()}, {@link NetScannerSvc#getPCsAsync()}
+     */
+    public static final ConcurrentMap<String, File> COMPNAME_USERS_MAP = new ConcurrentHashMap<>();
+
     /**
      <b>1 мегабайт в байтах</b>
      */
@@ -87,9 +102,9 @@ public enum ConstantsFor {
     public static final String FOOTER = "footer";
 
     /**
-     Число, для Secure Random
+     Префикс имени от reg.ru
      */
-    public static final long MY_AGE = ( long ) Year.now().getValue() - 1984;
+    public static final String DB_PREFIX = "u0466446_";
 
     /**
      Первоначальная задержка {@link ThreadConfig#threadPoolTaskScheduler()}
@@ -116,127 +131,144 @@ public enum ConstantsFor {
      */
     public static final int USER_EXIT = 222;
 
-    public static final String STR_SEC_SPEND = " sec spend";
-
     /**
-     {@link ru.vachok.networker.ad.ADSrv#getDetails(String)}, {@link PCUserResolver#getResolvedName()},
-     {@link AppComponents#getCompUsersMap()}, {@link NetScannerSvc#getPCsAsync()}
+     IP srv-nat.eatmeat.ru
      */
-    public static final ConcurrentMap<String, File> COMPNAME_USERS_MAP = new ConcurrentHashMap<>();
-
-    public static final String ALERT_AD_FOTO =
-        "<p>Для корректной работы, вам нужно положить фото юзеров <a href=\"file://srv-mail3.eatmeat.ru/c$/newmailboxes/fotoraw/\" target=\"_blank\">\\\\srv-mail3.eatmeat" +
-            ".ru\\c$\\newmailboxes\\fotoraw\\</a>\n";
-
-    public static final String NO0027_IP = "10.200.213.85";
-
-    public static final String DB_PREFIX = "u0466446_";
-
-    public static final File SSH_ERR = new File("ssh_err.txt");
-
     public static final String SRV_NAT = "192.168.13.30";
 
-    public static final int NOPC = 50;
-
-    public static final int PPPC = 70;
-
+    /**
+     IP stv-git.eatmeat.ru
+     */
     public static final String SRV_GIT = "192.168.13.42";
 
-    public static final int TIMEOUT_5 = 5000;
-
+    /**
+     * {@link #getDelay()}
+     */
     public static final long DELAY = getDelay();
 
-    public static final int DOPC = 250;
+    /**
+     * Кол-во минут в часе
+     */
+    public static final float ONE_HOUR_IN_MIN = 60f;
 
-    public static final int APC = 350;
+    /**
+     * Кол-во байт в килобайте
+     */
+    public static final int KBYTE = 1024;
 
-    public static final int TDPC = 15;
+    /**
+     * Timestamp запуска.
+     */
+    public static final long START_STAMP = System.currentTimeMillis();
 
     public static final int TIMEOUT_650 = 650;
 
-    public static final Long CACHE_TIME_MS = TimeUnit.MINUTES.toMillis(10);
-
-    public static final float ONE_HOUR_IN_MIN = 60f;
-
-    public static final int KBYTE = 1024;
-
-    public static final long START_STAMP = System.currentTimeMillis();
-
+    /**
+     Имя для БД с настройками
+     */
     public static final String APP_NAME = "ru_vachok_networker-";
+
+    /**
+     * Кол-во часов в сутках
+     */
+    public static final int ONE_DAY_HOURS = 24;
+
+    /**
+     * Кол-во миллисек. в 1 неделе
+     */
+    public static final long ONE_WEEK_MILLIS = TimeUnit.HOURS.toMillis(ONE_DAY_HOURS * 7);
+
+    /**
+     * Кол-во байт в гигабайте
+     */
+    public static final long GBYTE = 1073741824;
 
     /**
      {@link ru.vachok.networker.mailserver.ExCTRL#uplFile(MultipartFile, Model)}, {@link ExSRV#getOFields()},
      */
     public static final ConcurrentMap<Integer, MailRule> MAIL_RULES = new ConcurrentHashMap<>();
 
-    public static final int ONE_DAY_HOURS = 24;
-
-    public static final long ONE_WEEK_MILLIS = TimeUnit.HOURS.toMillis(ONE_DAY_HOURS * 7);
-
-    public static final long GBYTE = 1073741824;
-
+    /**
+     Кол-во дней в месяце
+     */
     public static final int ONE_MONTH_DAYS = 30;
 
-    public static final PassGenerator passGenerator = new PassGenerator();
-
-    public static final int LISTEN_PORT = Integer.parseInt(PROPS.getOrDefault("lport", "9990").toString());
-
+    /**
+     * Кол-во дней в году
+     */
     public static final int ONE_YEAR = 365;
 
-    public static final int NETSCAN_DELAY = ( int ) ConstantsFor.DELAY;
-
+    /**
+     * Папка it$$
+     */
     public static final String IT_FOLDER = "\\\\srv-fs.eatmeat.ru\\it$$";
 
-    @SuppressWarnings ("NonFinalFieldInEnum")
+    /**
+     new {@link Properties}
+     */
+    private static final Properties PROPS = new Properties();
+
+    /**
+     Число IP по кол-ву VLANs
+     */
+    public static final int IPS_IN_VELKOM_VLAN = getIPs();
+
+    /**
+     Порт для {@link ru.vachok.networker.net.MyServer}
+     */
+    public static final int LISTEN_PORT = Integer.parseInt(PROPS.getOrDefault("lport", "9990").toString());
+
+    /**
+     {@link #getAtomicTime()}
+     */
+    @SuppressWarnings("NonFinalFieldInEnum")
     private static long atomicTime;
 
-    public static Properties getProps() {
-        return PROPS;
-    }
-
+    /**
+     @return 192.168.13.42 online or offline
+     */
     public static boolean isPingOK() {
-        try{
+        try {
             return InetAddress.getByName("srv-git.eatmeat.ru").isReachable(500);
-        }
-        catch(IOException e){
+        } catch (IOException e) {
             LoggerFactory.getLogger(ConstantsFor.class.getSimpleName()).error(e.getMessage(), e);
             return false;
         }
     }
 
+    public static Properties getProps() {
+        return PROPS;
+    }
+
+    /**
+     @return
+     */
     public static long getBuildStamp() {
-        try{
+        try {
             String hostName = InetAddress.getLocalHost().getHostName();
-            if(hostName.equalsIgnoreCase("home") || hostName.toLowerCase().contains(NO0027)){
+            if (hostName.equalsIgnoreCase("home") || hostName.toLowerCase().contains(NO0027)) {
                 PROPS.setProperty("build", System.currentTimeMillis() + "");
                 return System.currentTimeMillis();
-            }
-            else{
+            } else {
                 return Long.parseLong(PROPS.getProperty("build", "1"));
             }
-        }
-        catch(UnknownHostException e){
+        } catch (UnknownHostException e) {
             return 1L;
         }
     }
 
     public static long getAtomicTime() {
-        ConstantsFor.atomicTime = new TimeChecker().call().getReturnTime();
+        TimeChecker t = new TimeChecker();
+        TimeInfo call = t.call();
+        call.computeDetails();
+        ConstantsFor.atomicTime = call.getReturnTime();
         return atomicTime;
     }
 
-    private static long getDelay() {
-        long delay = new SecureRandom().nextInt(( int ) MY_AGE);
-        if(delay < 14){
-            delay = 14;
-        }
-        return delay;
-    }
-
     public static String showMem() {
-        String msg = ( float ) Runtime.getRuntime().totalMemory() / ConstantsFor.MBYTE + " now totalMemory, " +
-            ( float ) Runtime.getRuntime().freeMemory() / ConstantsFor.MBYTE + " now freeMemory, " +
-            ( float ) Runtime.getRuntime().maxMemory() / ConstantsFor.MBYTE + " now maxMemory.";
+        String msg = (float) Runtime.getRuntime().totalMemory() / ConstantsFor.MBYTE + " now totalMemory, " +
+            (float) Runtime.getRuntime().freeMemory() / ConstantsFor.MBYTE + " now freeMemory, " +
+            (float) Runtime.getRuntime().maxMemory() / ConstantsFor.MBYTE + " now maxMemory.";
         AppComponents.getLogger().warn(msg);
         return msg;
     }
@@ -252,7 +284,7 @@ public enum ConstantsFor {
         localTime = localTime.minusMinutes(LocalTime.now().getMinute());
         localTime = localTime.minusSeconds(LocalTime.now().getSecond());
         boolean workHours = LocalTime.now().isAfter(startDay) && LocalTime.now().isBefore(endDay);
-        if(workHours){
+        if (workHours) {
             int toEndDaySec = localTime.toSecondOfDay();
             int diffSec = allDaySec - toEndDaySec;
             float percDay = ((float) toEndDaySec / (((float) allDaySec) / 100));
@@ -263,8 +295,7 @@ public enum ConstantsFor {
                 .append("(мин.). Ещё ")
                 .append(percDay)
                 .append(" % или ");
-        }
-        else{
+        } else {
             stringBuilder.append("<b> GO HOME! </b><br>");
         }
         stringBuilder.append(localTime.toString());
@@ -273,16 +304,41 @@ public enum ConstantsFor {
 
     public static void saveProps(Properties propsToSave) {
         InitProperties initProperties;
-        try{
+        try {
             initProperties = new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
-        }
-        catch(Exception e){
+        } catch (Exception e) {
             initProperties = new FileProps(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
         }
         initProperties.delProps();
         initProperties.setProps(propsToSave);
         initProperties = new FileProps(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
         initProperties.setProps(propsToSave);
+    }
+
+    public static String thisPC() {
+        try {
+            return InetAddress.getLocalHost().getHostName();
+        } catch (UnknownHostException | ExceptionInInitializerError e) {
+            return e.getMessage();
+        } catch (NullPointerException n) {
+            return "pc";
+        }
+    }
+
+    static void takePr() {
+        InitProperties initProperties;
+        try {
+            initProperties = new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
+            String msg = "Taking DB properties:" + "\n" + initProperties.getClass().getSimpleName();
+            AppComponents.getLogger().info(msg);
+            PROPS.putAll(initProperties.getProps());
+        } catch (Exception e) {
+            initProperties = new FileProps(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
+            String msg = "Taking File properties:" + "\n" + e.getMessage();
+            AppComponents.getLogger().warn(msg);
+            PROPS.putAll(initProperties.getProps());
+            AppComponents.getLogger().warn(msg);
+        }
     }
 
     /**
@@ -300,63 +356,14 @@ public enum ConstantsFor {
         return request.getRemoteAddr();
     }
 
-    public static String thisPC() {
-        try{
-            return InetAddress.getLocalHost().getHostName();
-        }
-        catch(UnknownHostException | ExceptionInInitializerError e){
-            return e.getMessage();
-        }
-        catch(NullPointerException n){
-            return "pc";
-        }
-    }
-
-    public static String toStringS() {
-        final StringBuilder sb = new StringBuilder("ConstantsFor{");
-        sb.append("ALERT_AD_FOTO='").append(ALERT_AD_FOTO).append('\n');
-        sb.append(", APC=").append(APC);
-        sb.append(", APP_NAME='").append(APP_NAME).append('\n');
-        sb.append(", atomicTime=").append(atomicTime);
-        sb.append(", CACHE_TIME_MS=").append(CACHE_TIME_MS);
-        sb.append(", COMPNAME_USERS_MAP=").append(COMPNAME_USERS_MAP);
-        sb.append(", DB_PREFIX='").append(DB_PREFIX).append('\n');
-        sb.append(", DELAY=").append(DELAY);
-        sb.append(", DOPC=").append(DOPC);
-        sb.append(", FOOTER='").append(FOOTER).append('\n');
-        sb.append(", GBYTE=").append(GBYTE);
-        sb.append(", INIT_DELAY=").append(INIT_DELAY);
-        sb.append(", IT_FOLDER='").append(IT_FOLDER).append('\n');
-        sb.append(", KBYTE=").append(KBYTE);
-        sb.append(", LISTEN_PORT=").append(LISTEN_PORT);
-        sb.append(", MAIL_RULES=").append(MAIL_RULES);
-        sb.append(", MBYTE=").append(MBYTE);
-        sb.append(", MY_AGE=").append(MY_AGE);
-        sb.append(", NETSCAN_DELAY=").append(NETSCAN_DELAY);
-        sb.append(", NO0027='").append(NO0027).append('\n');
-        sb.append(", NOPC=").append(NOPC);
-        sb.append(", ONE_DAY_HOURS=").append(ONE_DAY_HOURS);
-        sb.append(", ONE_HOUR_IN_MIN=").append(ONE_HOUR_IN_MIN);
-        sb.append(", ONE_MONTH_DAYS=").append(ONE_MONTH_DAYS);
-        sb.append(", ONE_WEEK_MILLIS=").append(ONE_WEEK_MILLIS);
-        sb.append(", ONE_YEAR=").append(ONE_YEAR);
-        sb.append(", passGenerator=").append(passGenerator);
-        sb.append(", PC_U_MAP=").append(PC_U_MAP);
-        sb.append(", PPPC=").append(PPPC);
-        sb.append(", PROPS=").append(PROPS);
-        sb.append(", SRV_GIT='").append(SRV_GIT).append('\n');
-        sb.append(", SRV_NAT='").append(SRV_NAT).append('\n');
-        sb.append(", SSH_ERR=").append(SSH_ERR);
-        sb.append(", START_STAMP=").append(START_STAMP);
-        sb.append(", TDPC=").append(TDPC);
-        sb.append(", TIMEOUT_5=").append(TIMEOUT_5);
-        sb.append(", TIMEOUT_650=").append(TIMEOUT_650);
-        sb.append(", TITLE='").append(TITLE).append('\n');
-        sb.append(", USER_EXIT=").append(USER_EXIT);
-        sb.append(", USERS='").append(USERS).append('\n');
-        sb.append(", VISITS_MAP=").append(VISITS_MAP);
-        sb.append('}');
-        return sb.toString();
+    /**
+     @return {@link #IPS_IN_VELKOM_VLAN}
+     */
+    private static int getIPs() {
+        int vlansNum = Integer.parseInt(PROPS.getProperty("vlans", "22"));
+        int qSize = vlansNum * 255;
+        PROPS.setProperty("qsize", qSize + "");
+        return qSize;
     }
 
     static String checkDay() {
@@ -370,35 +377,25 @@ public enum ConstantsFor {
         return msg;
     }
 
+    private static long getDelay() {
+        long delay = new SecureRandom().nextInt((int) MY_AGE);
+        if (delay < 14) {
+            delay = 14;
+        }
+        return delay;
+    }
+
     private static void trunkTableUsers() {
         MessageToUser messageToUser = new ESender("143500@gmail.com");
-        try(Connection c = new RegRuMysql().getDefaultConnection(DB_PREFIX + "velkom");
-            PreparedStatement preparedStatement = c.prepareStatement("TRUNCATE TABLE pcuserauto")){
+        try (Connection c = new RegRuMysql().getDefaultConnection(DB_PREFIX + "velkom");
+             PreparedStatement preparedStatement = c.prepareStatement("TRUNCATE TABLE pcuserauto")) {
             preparedStatement.executeUpdate();
             messageToUser.infoNoTitles("TRUNCATE true\n" + ConstantsFor.getUpTime() + " uptime.");
-        }
-        catch(SQLException e){
+        } catch (SQLException e) {
             messageToUser.infoNoTitles("TRUNCATE false\n" + ConstantsFor.getUpTime() + " uptime.");
         }
     }
 
     public static String getUpTime() {
-        return "(" + (+( float ) (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / 60 / 60) + " hrs ago)";
-    }
-
-    static void takePr() {
-        InitProperties initProperties;
-        try{
-            initProperties = new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
-            String msg = "Taking DB properties:" + "\n" + initProperties.getClass().getSimpleName();
-            AppComponents.getLogger().info(msg);
-            PROPS.putAll(initProperties.getProps());
-        }
-        catch(Exception e){
-            initProperties = new FileProps(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
-            String msg = "Taking File properties:" + "\n" + e.getMessage();
-            AppComponents.getLogger().warn(msg);
-            PROPS.putAll(initProperties.getProps());
-            AppComponents.getLogger().warn(msg);
-        }
+        return "(" + (+(float) (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / 60 / 60) + " hrs ago)";
     }}

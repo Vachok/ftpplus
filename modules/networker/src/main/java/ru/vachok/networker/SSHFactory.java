@@ -34,7 +34,11 @@ import java.util.concurrent.RejectedExecutionException;
  */
 public class SSHFactory implements Callable<String> {
 
-    /*Fields*/
+    /**
+     Файл с ошибкой.
+     */
+    private static final File SSH_ERR = new File("ssh_err.txt");
+
     private static final Logger LOGGER = AppComponents.getLogger();
 
     private static final String SOURCE_CLASS = SSHFactory.class.getSimpleName();
@@ -91,7 +95,7 @@ public class SSHFactory implements Callable<String> {
             messageToUser.infoNoTitles(MessageFormat.format("{0} id 82. {1}", SOURCE_CLASS, " JSch channel==null"));
             respChannel.disconnect();
         } else {
-            ((ChannelExec) Objects.requireNonNull(respChannel)).setErrStream(new FileOutputStream(ConstantsFor.SSH_ERR));
+            ((ChannelExec) Objects.requireNonNull(respChannel)).setErrStream(new FileOutputStream(SSH_ERR));
 
             return respChannel.getInputStream();
         }
@@ -112,7 +116,7 @@ public class SSHFactory implements Callable<String> {
         }
         jSch.addIdentity(pem());
         session.setConfig(properties);
-        session.connect(ConstantsFor.TIMEOUT_5);
+        session.connect(ConstantsFor.TIMEOUT_650);
         Objects.requireNonNull(session).setInputStream(System.in);
         String format = MessageFormat.format("{0} {1} connected {2}|SSHFactory.chanRespChannel line 83",
             session.getServerVersion(), session.getHost(), session.isConnected());

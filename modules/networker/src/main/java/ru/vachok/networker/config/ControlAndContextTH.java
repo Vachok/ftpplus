@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.ServletContextTemplateResolver;
-import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 
 import javax.servlet.ServletContext;
@@ -21,7 +20,6 @@ public class ControlAndContextTH {
         super();
         ServletContextTemplateResolver servletContextTemplateResolver = new ServletContextTemplateResolver(servletContext);
         servletContextTemplateResolver.setTemplateMode(TemplateMode.HTML);
-        servletContextTemplateResolver.setCacheTTLMs(ConstantsFor.CACHE_TIME_MS);
         servletContextTemplateResolver.setCacheable(false);
         this.templateEngine = new TemplateEngine();
         this.templateEngine.setTemplateResolver(servletContextTemplateResolver);

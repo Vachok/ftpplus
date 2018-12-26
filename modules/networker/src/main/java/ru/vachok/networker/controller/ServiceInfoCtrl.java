@@ -10,7 +10,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ExitApp;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.*;
+import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.componentsrepo.PageFooter;
+import ru.vachok.networker.componentsrepo.VersionInfo;
+import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.net.DiapazonedScan;
 import ru.vachok.networker.services.MyCalen;
@@ -22,7 +25,6 @@ import java.net.InetAddress;
 import java.nio.file.AccessDeniedException;
 import java.time.LocalTime;
 import java.util.Date;
-import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 
@@ -36,9 +38,6 @@ public class ServiceInfoCtrl {
     private static final Logger LOGGER = LoggerFactory.getLogger(ServiceInfoCtrl.class.getSimpleName());
 
     private boolean authReq;
-
-    /*Fields*/
-    private static final Properties PROPS = ConstantsFor.getProps();
 
     private float getLast() {
         return TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() -
@@ -54,7 +53,7 @@ public class ServiceInfoCtrl {
     public String infoMapping(Model model, HttpServletRequest request, HttpServletResponse response) throws AccessDeniedException {
         this.authReq = request.getRemoteAddr().contains("0:0:0:0") ||
             request.getRemoteAddr().contains("10.10.111") ||
-            request.getRemoteAddr().contains(ConstantsFor.NO0027) ||
+            request.getRemoteAddr().contains("10.200.213.85") ||
             request.getRemoteAddr().contains("172.16.20");
         Visitor visitor = new Visitor(request);
         try {

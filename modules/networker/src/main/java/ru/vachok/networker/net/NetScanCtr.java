@@ -19,10 +19,18 @@ import ru.vachok.networker.services.MyCalen;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.*;
-import java.sql.*;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Date;
-import java.util.*;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
@@ -57,9 +65,9 @@ public class NetScanCtr {
     private static final Properties properties = ConstantsFor.getProps();
 
     /**
-     {@link ConstantsFor#NETSCAN_DELAY}
+     {@link ConstantsFor#DELAY}
      */
-    private static final int DURATION = ConstantsFor.NETSCAN_DELAY;
+    private static final int DURATION = (int) ConstantsFor.DELAY;
 
     /**
      {@link AppComponents#netScannerSvc()}

@@ -3,9 +3,12 @@ package ru.vachok.networker.net;
 
 import org.slf4j.Logger;
 import org.springframework.ui.Model;
+import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.services.DBMessenger;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -24,8 +27,8 @@ import static ru.vachok.networker.componentsrepo.AppComponents.getLogger;
 /**
  Скан диапазона адресов
 
- @since 19.12.2018 (11:35)
- */
+ @since 19.12.2018 (11:35) */
+@SuppressWarnings({"FieldNotUsedInToString", "DoubleCheckedLocking"})
 public class DiapazonedScan implements Runnable {
 
     /**
@@ -48,22 +51,15 @@ public class DiapazonedScan implements Runnable {
      */
     private static volatile DiapazonedScan ourInstance;
 
-    private static final NetScanFileWorker NET_SCAN_FILE_WORKER = NetScanFileWorker.getI();
-
-    static NetScanFileWorker getNetScanFileWorker() {
-        return NET_SCAN_FILE_WORKER;
-    }
-
     /**
-     Singleton
+     {@link NetScanFileWorker#getI()}
      */
-    private DiapazonedScan() {
-    }
+    private static final NetScanFileWorker NET_SCAN_FILE_WORKER = NetScanFileWorker.getI();
 
     /**
      SINGLETON
 
-     @return {@link DiapazonedScan} single.
+     @return single.
      */
     public static DiapazonedScan getInstance() {
         if (ourInstance == null) {
@@ -76,6 +72,19 @@ public class DiapazonedScan implements Runnable {
 
         }
         return ourInstance;
+    }
+
+    /**
+     Singleton
+     */
+    private DiapazonedScan() {
+    }
+
+    /**
+     @return {@link #NET_SCAN_FILE_WORKER}
+     */
+    static NetScanFileWorker getNetScanFileWorker() {
+        return NET_SCAN_FILE_WORKER;
     }
 
     /**
@@ -107,45 +116,25 @@ public class DiapazonedScan implements Runnable {
     }
 
     /**
-     Сканер локальной сети
+     Пингует в 200х VLANах девайсы с 10.200.x.250 по 10.200.x.254
+     <p>
+     Свичи начала сегментов. Вкл. в оптическое ядро.
 
-     @param printWriter Запись в лог
-     @param fromVlan    начало с 3 октета IP
-     @param toVlan      конец с 3 октета IP
-     @param stArt       таймер
-     @param whatVlan    первый 2 октета, с точкоё в конце.
-     @throws IOException запись в файл
+     @return лист важного оборудования
+     @throws IllegalAccessException swF.get(swF).toString()
      */
-    private void scanLan(PrintWriter printWriter, int fromVlan, int toVlan, long stArt, String whatVlan) throws IOException {
-        for (int i = fromVlan; i < toVlan; i++) {
-            StringBuilder msgBuild = new StringBuilder();
-            for (int j = 0; j < 255; j++) {
-                msgBuild = new StringBuilder();
-                byte[] aBytes = InetAddress.getByName(whatVlan + i + "." + j).getAddress();
-                InetAddress byAddress = InetAddress.getByAddress(aBytes);
-                int t = 100;
-                if (ConstantsFor.thisPC().toLowerCase().contains("home")) {
-                    t = 400;
-                }
-                if (byAddress.isReachable(t)) {
-                    printWriter.println(byAddress.getHostName() + " " + byAddress.getHostAddress());
-                    ConstantsFor.ALL_DEVICES.add("<font color=\"green\">" + byAddress.toString() + FONT_BR_STR);
-                } else {
-                    ConstantsFor.ALL_DEVICES.add("<font color=\"red\">" + byAddress.toString() + FONT_BR_STR);
-                }
-                msgBuild.append("IP was ").append(whatVlan).append(i).append("<-i.j->").append(j).append("\n")
-                    .append(j).append(" was j\n");
-                String msg = msgBuild.toString();
-                LOGGER.info(msg);
-            }
-            msgBuild
-                .append(i).append(" was i. Total time: ")
-                .append(TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - stArt))
-                .append("min\n").append(ConstantsFor.ALL_DEVICES.size()).append(" ALL_DEVICES.size()");
-            String msg = msgBuild.toString();
-            LOGGER.warn(msg);
-            printWriter.println(msg);
+    List<String> pingSwitch() throws IllegalAccessException {
+        LOGGER.info("DiapazonedScan.pingSwitch");
+        StringBuilder stringBuilder = new StringBuilder();
+        Field[] swFields = Switches.class.getFields();
+        List<String> swList = new ArrayList<>();
+        for (Field swF : swFields) {
+            swList.add("\n" + swF.get(swF).toString());
         }
+        swList.forEach(stringBuilder::append);
+        String retMe = stringBuilder.toString();
+        LOGGER.warn(retMe);
+        return swList;
     }
 
     /**
@@ -160,7 +149,12 @@ public class DiapazonedScan implements Runnable {
         File newLanFile = new File(ConstantsFor.AVAILABLE_LAST_TXT);
         try (OutputStream outputStream = new FileOutputStream(newLanFile);
              PrintWriter printWriter = new PrintWriter(outputStream, true)) {
-            scanLan(printWriter, 200, 218, stArt, "10.200.");
+            if (ConstantsFor.ALL_DEVICES.remainingCapacity() == 0) {
+                MessageToUser messageToUser = new DBMessenger();
+                messageToUser.infoNoTitles(new TForms().fromArray(ConstantsFor.ALL_DEVICES));
+                ConstantsFor.ALL_DEVICES.clear();
+                scanLan(printWriter, 200, 218, stArt, "10.200.");
+            } else scanLan(printWriter, 200, 218, stArt, "10.200.");
         } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
             String msg = "Vlans 200-217 completed.\nTime spend: " +
@@ -197,25 +191,46 @@ public class DiapazonedScan implements Runnable {
     }
 
     /**
-     Пингует в 200х VLANах девайсы с 10.200.x.250 по 10.200.x.254
-     <p>
-     Свичи начала сегментов. Вкл. в оптическое ядро.
+     Сканер локальной сети
 
-     @return лист важного оборудования
-     @throws IllegalAccessException
+     @param printWriter Запись в лог
+     @param fromVlan    начало с 3 октета IP
+     @param toVlan      конец с 3 октета IP
+     @param stArt       таймер
+     @param whatVlan    первый 2 октета, с точкоё в конце.
+     @throws IOException запись в файл
      */
-    List<String> pingSwitch() throws IllegalAccessException {
-        LOGGER.info("DiapazonedScan.pingSwitch");
-        StringBuilder stringBuilder = new StringBuilder();
-        Field[] swFields = Switches.class.getFields();
-        List<String> swList = new ArrayList<>();
-        for (Field swF : swFields) {
-            swList.add("\n" + swF.get(swF).toString());
+    @SuppressWarnings("MethodWithMultipleLoops")
+    private void scanLan(PrintWriter printWriter, int fromVlan, int toVlan, long stArt, String whatVlan) throws IOException {
+        for (int i = fromVlan; i < toVlan; i++) {
+            StringBuilder msgBuild = new StringBuilder();
+            for (int j = 0; j < 255; j++) {
+                msgBuild = new StringBuilder();
+                byte[] aBytes = InetAddress.getByName(whatVlan + i + "." + j).getAddress();
+                InetAddress byAddress = InetAddress.getByAddress(aBytes);
+                int t = 100;
+                if (ConstantsFor.thisPC().toLowerCase().contains("home")) {
+                    t = 400;
+                }
+                if (byAddress.isReachable(t)) {
+                    printWriter.println(byAddress.getHostName() + " " + byAddress.getHostAddress());
+                    ConstantsFor.ALL_DEVICES.add("<font color=\"green\">" + byAddress.toString() + FONT_BR_STR);
+                } else {
+                    ConstantsFor.ALL_DEVICES.add("<font color=\"red\">" + byAddress.toString() + FONT_BR_STR);
+                }
+                msgBuild.append("IP was ").append(whatVlan).append(i).append("<-i.j->").append(j).append("\n")
+                    .append(j).append(" was j\n");
+                String msg = msgBuild.toString();
+                LOGGER.info(msg);
+            }
+            msgBuild
+                .append(i).append(" was i. Total time: ")
+                .append(TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - stArt))
+                .append("min\n").append(ConstantsFor.ALL_DEVICES.size()).append(" ALL_DEVICES.size()");
+            String msg = msgBuild.toString();
+            LOGGER.warn(msg);
+            printWriter.println(msg);
         }
-        swList.forEach(stringBuilder::append);
-        String retMe = stringBuilder.toString();
-        LOGGER.warn(retMe);
-        return swList;
     }
 
 }

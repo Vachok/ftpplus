@@ -46,6 +46,19 @@ import java.util.concurrent.locks.ReentrantLock;
 @Service("netScannerSvc")
 public class NetScannerSvc {
 
+    private static final int TDPC = 15;
+
+    private static final int APC = 350;
+
+    private static final int DOPC = 250;
+
+    private static final int PPPC = 70;
+
+    /**
+     Кол-во ноутов NO
+     */
+    private static final int NOPC = 50;
+
     /**
      Префиксы имён ПК Велком.
      */
@@ -507,19 +520,19 @@ public class NetScannerSvc {
     private int getNamesCount(String qer) {
         int inDex = 0;
         if (qer.equals("no")) {
-            inDex = ConstantsFor.NOPC;
+            inDex = NOPC;
         }
         if (qer.equals("pp")) {
-            inDex = ConstantsFor.PPPC;
+            inDex = PPPC;
         }
         if (qer.equals("do")) {
-            inDex = ConstantsFor.DOPC;
+            inDex = DOPC;
         }
         if (qer.equals("a")) {
-            inDex = ConstantsFor.APC;
+            inDex = APC;
         }
         if (qer.equals("td")) {
-            inDex = ConstantsFor.TDPC;
+            inDex = TDPC;
         }
         return inDex;
     }

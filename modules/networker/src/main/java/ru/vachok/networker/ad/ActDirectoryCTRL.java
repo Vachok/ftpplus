@@ -23,6 +23,13 @@ import java.util.List;
 @Controller
 public class ActDirectoryCTRL {
 
+    /**
+     Небольшое описание, для показа на сайте.
+     */
+    private static final String ALERT_AD_FOTO =
+        "<p>Для корректной работы, вам нужно положить фото юзеров <a href=\"file://srv-mail3.eatmeat.ru/c$/newmailboxes/fotoraw/\" target=\"_blank\">\\\\srv-mail3.eatmeat" +
+            ".ru\\c$\\newmailboxes\\fotoraw\\</a>\n";
+
     private static final Logger LOGGER = LoggerFactory.getLogger(ActDirectoryCTRL.class.getSimpleName());
 
     private ADSrv adSrv;
@@ -81,7 +88,7 @@ public class ActDirectoryCTRL {
             if (!ConstantsFor.isPingOK()) titleStr = "ping to srv-git.eatmeat.ru is " + false;
             model.addAttribute(ConstantsFor.TITLE, titleStr);
             model.addAttribute("content", photoConverterSRV.psCommands());
-            model.addAttribute("alert", ConstantsFor.ALERT_AD_FOTO);
+            model.addAttribute("alert", ALERT_AD_FOTO);
             model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext());
         } catch (NullPointerException e) {
             LOGGER.error(e.getMessage(), e);
