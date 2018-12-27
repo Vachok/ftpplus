@@ -48,6 +48,8 @@ import java.util.concurrent.*;
 public enum ConstantsFor {
     ;
 
+    public static final String REFERER = "REFERER";
+
     public static final String SRV_GIT_EATMEAT_RU = "srv-git.eatmeat.ru";
 
     public static final String DOS_ARCHIVE = "dos:archive";
@@ -240,7 +242,7 @@ public enum ConstantsFor {
     }
 
     /**
-     @return
+     @return время билда
      */
     public static long getBuildStamp() {
         try {
@@ -302,16 +304,18 @@ public enum ConstantsFor {
     }
 
     public static void saveProps(Properties propsToSave) {
-        InitProperties initProperties;
-        try {
-            initProperties = new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
-        } catch (Exception e) {
+        new Thread(() -> {
+            InitProperties initProperties;
+            try {
+                initProperties = new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
+            } catch (Exception e) {
+                initProperties = new FileProps(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
+            }
+            initProperties.delProps();
+            initProperties.setProps(propsToSave);
             initProperties = new FileProps(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
-        }
-        initProperties.delProps();
-        initProperties.setProps(propsToSave);
-        initProperties = new FileProps(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
-        initProperties.setProps(propsToSave);
+            initProperties.setProps(propsToSave);
+        }).start();
     }
 
     public static String thisPC() {

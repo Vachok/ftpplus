@@ -24,6 +24,7 @@ import java.nio.file.AccessDeniedException;
 import java.time.LocalTime;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 
 /**
@@ -35,22 +36,19 @@ public class ServiceInfoCtrl {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ServiceInfoCtrl.class.getSimpleName());
 
-    private boolean authReq;
+    private boolean authReq = false;
 
     private float getLast() {
         return TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() -
             Long.parseLong(ConstantsFor.getProps().getProperty("lasts", 1544816520000L + ""))) / 60f / 24f;
     }
 
-    private Visitor visitor;
+    private Visitor visitor = null;
 
     @GetMapping("/serviceinfo")
     public String infoMapping(Model model, HttpServletRequest request, HttpServletResponse response) throws AccessDeniedException {
         this.visitor = new AppComponents().visitor(request);
-        this.authReq = request.getRemoteAddr().contains("0:0:0:0") ||
-            request.getRemoteAddr().contains("10.10.111") ||
-            request.getRemoteAddr().contains("10.200.213.85") ||
-            request.getRemoteAddr().contains("172.16.20");
+        this.authReq = Stream.of("0:0:0:0", "10.10.111", "10.200.213.85", "172.16.20").anyMatch(s_p -> request.getRemoteAddr().contains(s_p));
         if (authReq) {
             modModMaker(model, request, visitor);
             response.addHeader("Refresh", "11");
@@ -89,7 +87,7 @@ public class ServiceInfoCtrl {
         model.addAttribute("request", prepareRequest(request));
         model.addAttribute("visit", visitor.toString());
         model.addAttribute("res", MyCalen.toStringS() + "<br>" + AppComponents.versionInfo().toString());
-        model.addAttribute("back", request.getHeader("REFERER".toLowerCase()));
+        model.addAttribute("back", request.getHeader(ConstantsFor.REFERER.toLowerCase()));
         model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext() + "<br>" + getJREVers());
     }
 

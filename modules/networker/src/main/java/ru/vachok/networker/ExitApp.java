@@ -3,6 +3,7 @@ package ru.vachok.networker;
 
 import org.slf4j.Logger;
 import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.io.File;
@@ -83,6 +84,7 @@ public class ExitApp implements Runnable {
         getConfigurableApplicationContext().close();
         FileSystemWorker.delTemp();
         ConstantsFor.saveProps(properties);
+        new ThreadConfig().killAll();
         System.exit(Math.toIntExact(toMinutes));
     }
 }

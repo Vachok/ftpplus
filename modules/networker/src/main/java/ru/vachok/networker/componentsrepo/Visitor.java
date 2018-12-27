@@ -1,6 +1,8 @@
 package ru.vachok.networker.componentsrepo;
 
 
+import ru.vachok.networker.ConstantsFor;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
@@ -35,7 +37,7 @@ public class Visitor {
     public Visitor(HttpServletRequest request) throws NullPointerException, IllegalStateException {
         this.request = request;
         this.session = request.getSession();
-        this.visitPlace = request.getHeader("REFERER".toLowerCase());
+        this.visitPlace = request.getHeader(ConstantsFor.REFERER.toLowerCase());
         this.remAddr = request.getRemoteAddr();
         this.userId = session.getId();
     }

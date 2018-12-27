@@ -631,12 +631,6 @@ public class NetScannerSvc {
         CustomizableThreadCreator customizableThreadCreator = new CustomizableThreadCreator("OnChk: ");
         customizableThreadCreator.setThreadGroup(threadPoolTaskExecutor.getThreadGroup());
         Thread thread = customizableThreadCreator.createThread(r);
-        threadPoolTaskExecutor.setMaxPoolSize(30);
-        threadPoolTaskExecutor.setCorePoolSize(3);
-        threadPoolTaskExecutor.setKeepAliveSeconds(30);
-        threadPoolTaskExecutor.setAllowCoreThreadTimeOut(true);
-        threadPoolTaskExecutor.setQueueCapacity(317);
-        threadPoolTaskExecutor.setAwaitTerminationSeconds(5);
         thread.start();
     }
 

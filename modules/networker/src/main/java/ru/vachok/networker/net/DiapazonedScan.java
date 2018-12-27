@@ -238,6 +238,7 @@ public class DiapazonedScan implements Runnable {
     /**
      @return /showalldev = {@link NetScanCtr#allDevices(Model, HttpServletRequest, HttpServletResponse)}
      */
+    @SuppressWarnings ("StringConcatenation")
     @Override
     public String toString() {
         try{

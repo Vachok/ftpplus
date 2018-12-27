@@ -5,7 +5,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.TForms;
 
 import java.io.*;
 import java.security.SecureRandom;
@@ -180,7 +179,6 @@ public class VersionInfo {
         sb.append(", appVersion='").append(appVersion).append('\'');
         sb.append(", buildTime='").append(buildTime).append('\'');
         sb.append(", DOC_URL='").append(DOC_URL).append('\'');
-        sb.append(", PROPERTIES=").append(new TForms().fromArray(PROPERTIES));
         sb.append(", thisPCName='").append(thisPCName).append('\'');
         sb.append('}');
         return sb.toString();

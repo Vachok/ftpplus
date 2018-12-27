@@ -32,7 +32,7 @@ import static java.lang.System.err;
  Если трэй доступен.
 
  @since 29.09.2018 (22:33) */
-@SuppressWarnings("InjectedReferences")
+@SuppressWarnings ("InjectedReferences")
 public final class SystemTrayHelper {
 
     /**
@@ -76,6 +76,10 @@ public final class SystemTrayHelper {
 
     }
 
+    public static void runCommonScan() {
+        AppInfoOnLoad.runCommonScan(true);
+    }
+
     /**
      Создаёт System Tray Icon
      <p>
@@ -84,19 +88,20 @@ public final class SystemTrayHelper {
 
      @param iconFileName имя файла-иконки.
      */
-    @SuppressWarnings("FeatureEnvy")
+    @SuppressWarnings ("FeatureEnvy")
     static void addTray(String iconFileName) {
         boolean myPC;
         AppInfoOnLoad.runCommonScan(false);
         myPC = THIS_PC.toLowerCase().contains(ConstantsFor.NO0027) || THIS_PC.equalsIgnoreCase("home");
-        if (iconFileName == null) {
+        if(iconFileName==null){
             iconFileName = "icons8-ip-адрес-15.png";
-        } else {
-            if (myPC) {
+        }
+        else{
+            if(myPC){
                 iconFileName = "icons8-плохие-поросята-48.png";
             }
         }
-        if (srvGitIs()) {
+        if(srvGitIs()){
             iconFileName = "icons8-отменить-2-20.png";
         }
         iconFileName = new StringBuilder().append(IMG_FOLDER_NAME).append(iconFileName).toString();
@@ -107,9 +112,11 @@ public final class SystemTrayHelper {
         TrayIcon trayIcon = new TrayIcon(image,
             new StringBuilder().append(AppComponents.versionInfo().getAppBuild()).append(" v. ").append(AppComponents.versionInfo().getAppVersion()).append(" ").append(AppComponents.versionInfo().getBuildTime()).toString(), popupMenu);
         ActionListener actionListener = e -> {
-            try {
-                Desktop.getDesktop().browse(URI.create("http://localhost:8880"));
-            } catch (IOException e1) {
+            try{
+                Desktop.getDesktop().browse(URI.create("http://localhost:8880/"));
+
+            }
+            catch(IOException e1){
                 LOGGER.error(e1.getMessage(), e1);
             }
         };
@@ -122,24 +129,44 @@ public final class SystemTrayHelper {
         defItem.addActionListener(exitApp);
         popupMenu.add(defItem);
         trayIcon.addActionListener(actionListener);
-        try {
-            if (SystemTray.isSupported()) {
+        try{
+            if(SystemTray.isSupported()){
                 SystemTray systemTray = SystemTray.getSystemTray();
                 systemTray.add(trayIcon);
-            } else {
+            }
+            else{
                 LOGGER.warn("Tray not supported!");
                 Thread.currentThread().interrupt();
             }
-        } catch (AWTException e) {
+        }
+        catch(AWTException e){
             LOGGER.warn(e.getMessage(), e);
             Thread.currentThread().interrupt();
         }
     }
 
     /**
+     Проверка доступности <a href="http://srv-git.eatmeat.ru:1234">srv-git.eatmeat.ru</a>
+     <p>
+     Usages: {@link #addTray(String)} <br> Uses: -
+
+     @return srv-git online
+     */
+    private static boolean srvGitIs() {
+        try{
+            return !InetAddress.getByName(ConstantsFor.SRV_GIT_EATMEAT_RU).isReachable(1000);
+        }
+        catch(IOException e){
+            LOGGER.error(e.getMessage(), e);
+            return true;
+        }
+    }
+
+    /**
      Добавление компонентов в меню
      <p>
-     Usages: {@link #addTray(String)} <br> Uses: 1.1 {@link ThreadConfig#threadPoolTaskExecutor()}, 1.2 {@link SSHFactory.Builder#build()}, 1.3 {@link SSHFactory.Builder} 1.4 {@link SSHFactory#call()},
+     Usages: {@link #addTray(String)} <br> Uses: 1.1 {@link ThreadConfig#threadPoolTaskExecutor()}, 1.2 {@link SSHFactory.Builder#build()}, 1.3 {@link SSHFactory.Builder} 1.4
+     {@link SSHFactory#call()},
      1.5 {@link ArchivesAutoCleaner}
 
      @param popupMenu {@link PopupMenu}
@@ -163,9 +190,10 @@ public final class SystemTrayHelper {
                 .append("exit;")
                 .toString()).build().call();
             Future<String> submit = executor.submit(sshStr);
-            try {
+            try{
                 LOGGER.info(submit.get(timeOut30, TimeUnit.SECONDS));
-            } catch (InterruptedException | ExecutionException | TimeoutException e) {
+            }
+            catch(InterruptedException | ExecutionException | TimeoutException e){
                 Thread.currentThread().interrupt();
             }
         });
@@ -177,12 +205,13 @@ public final class SystemTrayHelper {
         toConsole.addActionListener(e -> System.setOut(err));
         popupMenu.add(toConsole);
 
-        if (!ConstantsFor.thisPC().toLowerCase().contains("home")) {
+        if(!ConstantsFor.thisPC().toLowerCase().contains("home")){
             MenuItem puttyStarter = new MenuItem();
             puttyStarter.addActionListener(e -> new Putty().start());
             puttyStarter.setLabel("Putty");
             popupMenu.add(puttyStarter);
-        } else {
+        }
+        else{
             MenuItem noPutty = new MenuItem();
             noPutty.addActionListener(e -> {
                 IntoApplication.getConfigurableApplicationContext().close();
@@ -218,30 +247,16 @@ public final class SystemTrayHelper {
         popupMenu.add(delFiles);
 
         MenuItem logToFilesystem = new MenuItem();
-        logToFilesystem.setLabel("Common Rights");
-        logToFilesystem.addActionListener(e -> new ThreadConfig().threadPoolTaskExecutor().execute(SystemTrayHelper::runCommonScan));
+        logToFilesystem.setLabel("GEN PASS");
+        logToFilesystem.addActionListener(e -> {
+            try{
+                Desktop.getDesktop().browse(URI.create("http://localhost:8880/gen"));
+            }
+            catch(IOException e_p){
+                LOGGER.error(e_p.getMessage(), e_p);
+            }
+        });
         popupMenu.add(logToFilesystem);
-    }
-
-    /**
-     Проверка доступности <a href="http://srv-git.eatmeat.ru:1234">srv-git.eatmeat.ru</a>
-     <p>
-     Usages: {@link #addTray(String)} <br> Uses: -
-
-     @return srv-git online
-     */
-    private static boolean srvGitIs() {
-        try{
-            return !InetAddress.getByName(ConstantsFor.SRV_GIT_EATMEAT_RU).isReachable(1000);
-        }
-        catch(IOException e){
-            LOGGER.error(e.getMessage(), e);
-            return true;
-        }
-    }
-
-    public static void runCommonScan() {
-        AppInfoOnLoad.runCommonScan(true);
     }
 
     /**
@@ -254,10 +269,11 @@ public final class SystemTrayHelper {
         String bSTR = ConstantsFor.checkDay() + " pcuserauto truncated";
         LOGGER.warn(bSTR);
         MyServer.setSocket(new Socket());
-        while (!MyServer.getSocket().isClosed()) {
-            try {
+        while(!MyServer.getSocket().isClosed()){
+            try{
                 MyServer.reconSock();
-            } catch (IOException | InterruptedException | NullPointerException e1) {
+            }
+            catch(IOException | InterruptedException | NullPointerException e1){
                 MESSAGE_TO_USER.errorAlert(SystemTrayHelper.class.getSimpleName(), e1.getMessage(), new TForms().fromArray(e1, false));
                 new ThreadConfig().threadPoolTaskExecutor().submit(MyServer.getI());
                 Thread.currentThread().interrupt();

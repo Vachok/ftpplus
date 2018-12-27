@@ -9,28 +9,14 @@ import ru.vachok.networker.componentsrepo.AppComponents;
 
 
 /**
- * @since 11.09.2018 (11:41)
- */
+ @since 11.09.2018 (11:41) */
+@SuppressWarnings ("MagicNumber")
 @EnableAsync
 public class ThreadConfig extends ThreadPoolTaskExecutor {
 
-    private ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+    private static final ThreadPoolTaskExecutor TASK_EXECUTOR = new ThreadPoolTaskExecutor();
 
-    public ThreadPoolTaskExecutor threadPoolTaskExecutor() {
-        this.executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(5);
-        executor.setMaxPoolSize(5);
-        executor.setThreadNamePrefix(System.currentTimeMillis() + "task");
-        executor.initialize();
-        return executor;
-    }
-
-    public ThreadPoolTaskScheduler threadPoolTaskScheduler() {
-        ThreadPoolTaskScheduler threadPoolTaskScheduler = new ThreadPoolTaskScheduler();
-        threadPoolTaskScheduler.setPoolSize(2);
-        threadPoolTaskScheduler.initialize();
-        return threadPoolTaskScheduler;
-    }
+    private static final ThreadPoolTaskScheduler TASK_SCHEDULER = new ThreadPoolTaskScheduler();
 
     public Runnable taskDecorator(Runnable runnable) {
         TaskDecorator taskDecorator = runnable1 -> runnable;
@@ -40,21 +26,56 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
     }
 
     public void killAll() {
-        threadPoolTaskExecutor().destroy();
+        TASK_EXECUTOR.destroy();
         threadPoolTaskScheduler().destroy();
         Thread.currentThread().checkAccess();
         Thread.currentThread().interrupt();
+
+    }
+
+    public ThreadPoolTaskScheduler threadPoolTaskScheduler() {
+
+        TASK_SCHEDULER.setPoolSize(4);
+        TASK_SCHEDULER.initialize();
+        return TASK_SCHEDULER;
+    }
+
+    public ThreadPoolTaskExecutor threadPoolTaskExecutor() {
+        TASK_EXECUTOR.setCorePoolSize(75);
+        TASK_EXECUTOR.setMaxPoolSize(100);
+        TASK_EXECUTOR.setThreadNamePrefix(System.currentTimeMillis() + "task");
+        TASK_EXECUTOR.initialize();
+        return TASK_EXECUTOR;
+    }
+
+    @Override
+    public int hashCode() {
+        return TASK_EXECUTOR.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object o_p) {
+        if(this==o_p){
+            return true;
+        }
+        if(o_p==null || getClass()!=o_p.getClass()){
+            return false;
+        }
+
+        ThreadConfig that = ( ThreadConfig ) o_p;
+
+        return TASK_EXECUTOR.equals(TASK_EXECUTOR);
     }
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder(executor.getThreadNamePrefix() + "{");
-        sb.append("activeCount/total=").append(executor.getActiveCount()).append("/");
+        final StringBuilder sb = new StringBuilder(TASK_EXECUTOR.getThreadNamePrefix() + "{");
+        sb.append("activeCount/total=").append(TASK_EXECUTOR.getActiveCount()).append("/");
         sb.append(Thread.activeCount());
-        sb.append(", corePoolSize=").append(executor.getCorePoolSize());
-        sb.append(", keepAliveSeconds=").append(executor.getKeepAliveSeconds());
-        sb.append(", maxPoolSize=").append(executor.getMaxPoolSize());
-        sb.append(", poolSize=").append(executor.getPoolSize());
+        sb.append(", corePoolSize=").append(TASK_EXECUTOR.getCorePoolSize());
+        sb.append(", keepAliveSeconds=").append(TASK_EXECUTOR.getKeepAliveSeconds());
+        sb.append(", maxPoolSize=").append(TASK_EXECUTOR.getMaxPoolSize());
+        sb.append(", poolSize=").append(TASK_EXECUTOR.getPoolSize());
         sb.append('}');
         return sb.toString();
     }
