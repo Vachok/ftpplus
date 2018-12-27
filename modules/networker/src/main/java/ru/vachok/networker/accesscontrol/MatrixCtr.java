@@ -13,7 +13,10 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.ADSrv;
-import ru.vachok.networker.componentsrepo.*;
+import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.componentsrepo.PageFooter;
+import ru.vachok.networker.componentsrepo.VersionInfo;
+import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.net.DiapazonedScan;
 import ru.vachok.networker.services.SimpleCalculator;
 import ru.vachok.networker.services.WhoIsWithSRV;
@@ -21,7 +24,10 @@ import ru.vachok.networker.services.WhoIsWithSRV;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 
@@ -29,8 +35,6 @@ import java.util.concurrent.TimeUnit;
  @since 07.09.2018 (0:35) */
 @Controller
 public class MatrixCtr {
-
-    /*Fields*/
 
     private static final Logger LOGGER = AppComponents.getLogger();
 
@@ -68,37 +72,43 @@ public class MatrixCtr {
     @GetMapping("/")
     public String getFirst(final HttpServletRequest request, Model model, HttpServletResponse response) {
         this.visitor = new Visitor(request);
-        String userPC = ConstantsFor.getUserPC(request);
         boolean pcAuth = ConstantsFor.getPcAuth(request);
-        if (request.getQueryString() != null) {
-            String queryString = request.getQueryString();
-            if (queryString.equalsIgnoreCase("eth") && pcAuth) {
-                lastLogsGetter(model);
-                model.addAttribute(FOOTER_NAME, new PageFooter().getFooterUtext());
-                metricMatrixStart = System.currentTimeMillis() - metricMatrixStart;
-                return "logs";
-            }
-        } else {
-            try {
-                LOGGER.warn(visitor.toString());
-            } catch (Exception ignore) {
-                //
-            }
-            String userIP = userPC + ":" + request.getRemotePort() + "<-" + new VersionInfo().getAppVersion();
-            if (!ConstantsFor.isPingOK()) userIP = "ping to srv-git.eatmeat.ru is " + false;
-            model.addAttribute("yourip", userIP);
-            model.addAttribute(MATRIX_STRING_NAME, new MatrixSRV());
-            model.addAttribute(FOOTER_NAME, new PageFooter().getFooterUtext());
-            if (ConstantsFor.getUserPC(request).toLowerCase().contains(ConstantsFor.NO0027) ||
-                ConstantsFor.getUserPC(request).toLowerCase().contains("0:0:0:0")) {
-                model.addAttribute("visit", versionInfo.toString());
-            } else {
-                model.addAttribute("visit", visitor.getTimeSpend() + " timestamp");
-            }
-        }
+        if (request.getQueryString() != null) return qNotNull(request, model, pcAuth);
+        else qIsNull(model, request);
         model.addAttribute("devscan", DiapazonedScan.getInstance().toString());
         response.addHeader("Refresh", "90");
         return "starting";
+    }
+
+    private String qNotNull(HttpServletRequest request, Model model, boolean pcAuth) {
+        String queryString = request.getQueryString();
+        if (queryString.equalsIgnoreCase("eth") && pcAuth) {
+            lastLogsGetter(model);
+            model.addAttribute(FOOTER_NAME, new PageFooter().getFooterUtext());
+            metricMatrixStart = System.currentTimeMillis() - metricMatrixStart;
+            return "logs";
+        }
+        return queryString;
+    }
+
+    private void qIsNull(Model model, HttpServletRequest request) {
+        String userPC = ConstantsFor.getUserPC(request);
+        try {
+            LOGGER.warn(visitor.toString());
+        } catch (Exception ignore) {
+            //
+        }
+        String userIP = userPC + ":" + request.getRemotePort() + "<-" + new VersionInfo().getAppVersion();
+        if (!ConstantsFor.isPingOK()) userIP = "ping to srv-git.eatmeat.ru is " + false;
+        model.addAttribute("yourip", userIP);
+        model.addAttribute(MATRIX_STRING_NAME, new MatrixSRV());
+        model.addAttribute(FOOTER_NAME, new PageFooter().getFooterUtext());
+        if (ConstantsFor.getUserPC(request).toLowerCase().contains(ConstantsFor.NO0027) ||
+            ConstantsFor.getUserPC(request).toLowerCase().contains("0:0:0:0")) {
+            model.addAttribute("visit", versionInfo.toString());
+        } else {
+            model.addAttribute("visit", visitor.getTimeSpend() + " timestamp");
+        }
     }
 
     private String getCommonAccessRights(String workPos, Model model) {

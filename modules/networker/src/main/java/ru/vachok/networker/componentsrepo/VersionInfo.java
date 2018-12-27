@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
 
 import java.io.*;
 import java.security.SecureRandom;
@@ -17,23 +18,40 @@ import java.util.Properties;
 @Component("versioninfo")
 public class VersionInfo {
 
-    /*Fields*/
+    /**
+     {@link LoggerFactory#getLogger(String)}
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(VersionInfo.class.getSimpleName());
 
-    private String appName = ConstantsFor.APP_NAME;
-
-    private String appVersion;
-
-    private String appBuild;
-
-    private String buildTime;
-
+    /**
+     Ссылка на /doc/index.html
+     */
     private static final String DOC_URL = "<a href=\"/doc/index.html\">DOC</a>";
 
+    /**
+     {@link ConstantsFor#getProps()}
+     */
     private static final Properties PROPERTIES = ConstantsFor.getProps();
 
+    /**
+     {@link ConstantsFor#thisPC()}
+     */
     private final String thisPCName = ConstantsFor.thisPC();
-    /*Get&Set*/
+
+    /**
+     Версия
+     */
+    private String appVersion;
+
+    /**
+     * Билд
+     */
+    private String appBuild;
+
+    /**
+     * Время сборки
+     */
+    private String buildTime;
 
     /**
      Usages: {@link #getParams()} <br> Uses: - <br>
@@ -44,6 +62,11 @@ public class VersionInfo {
         this.appBuild = appBuild;
     }
 
+    /**
+     Конструктор по-умолчанию.
+     <p>
+     * Если имя ПК содержит "home" или "no0" {@link #setParams()} , иначе {@link #getParams()}
+     */
     public VersionInfo() {
         Thread.currentThread().setName(getClass().getSimpleName());
         if (thisPCName.toLowerCase().contains("home") || thisPCName.toLowerCase().contains("no0")) {
@@ -51,35 +74,41 @@ public class VersionInfo {
         } else getParams();
     }
 
-    public String getAppBuild() {
-        return appBuild;
-    }
-
-    public String getAppVersion() {
-        return appVersion;
-    }
-
-    public String getAppName() {
-        return appName;
-    }
-
-    public String getBuildTime() {
-        return buildTime;
-    }
-
-    public void setAppName(String appName) {
-        this.appName = appName;
-    }
-    /*Instances*/
-
-    private void setAppVersion(String appVersion) {
-        this.appVersion = appVersion;
-    }
-
+    /**
+     * Загружает из {@link #PROPERTIES} информацию о версии и билде
+     */
     private void getParams() {
         setAppBuild(PROPERTIES.getOrDefault("appBuild", "no database").toString());
         setBuildTime(PROPERTIES.getOrDefault("buildTime", System.currentTimeMillis()).toString());
         setAppVersion(PROPERTIES.getOrDefault("appVersion", "no database").toString());
+    }
+
+    /**
+     @return {@link #appBuild}
+     */
+    public String getAppBuild() {
+        return appBuild;
+    }
+
+    /**
+     @return {@link #appVersion}
+     */
+    public String getAppVersion() {
+        return appVersion;
+    }
+
+    /**
+     @param appVersion {@link #setterVersionFromFiles(File)}
+     */
+    private void setAppVersion(String appVersion) {
+        this.appVersion = appVersion;
+    }
+
+    /**
+     @return {@link #buildTime}
+     */
+    public String getBuildTime() {
+        return buildTime;
     }
 
     /**
@@ -146,13 +175,14 @@ public class VersionInfo {
     public String toString() {
         final StringBuilder sb = new StringBuilder("VersionInfo{");
         sb.append("appBuild='").append(appBuild).append('\'');
+        String appName = ConstantsFor.APP_NAME;
         sb.append(", appName='").append(appName).append('\'');
         sb.append(", appVersion='").append(appVersion).append('\'');
         sb.append(", buildTime='").append(buildTime).append('\'');
         sb.append(", DOC_URL='").append(DOC_URL).append('\'');
+        sb.append(", PROPERTIES=").append(new TForms().fromArray(PROPERTIES));
         sb.append(", thisPCName='").append(thisPCName).append('\'');
         sb.append('}');
-        sb.append("<p>\n");
         return sb.toString();
     }
 }

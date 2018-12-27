@@ -1,36 +1,29 @@
 package ru.vachok.networker.componentsrepo;
 
 
-import ru.vachok.networker.ConstantsFor;
-
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Map;
-import java.util.StringJoiner;
-import java.util.concurrent.TimeUnit;
 
 /**
- @since 12.08.2018 1:19
- */
+ @since 12.08.2018 1:19 */
 public class Visitor {
 
-    private static final long USER_ID = TimeUnit.MILLISECONDS.toSeconds(ConstantsFor.START_STAMP - System.currentTimeMillis());
+    private static final long ST_ART = System.currentTimeMillis();
+
+    private String userId;
 
     /**
      The Time st.
      */
     private String timeSpend = new StringBuilder()
-        .append(System.currentTimeMillis() - ConstantsFor.START_STAMP)
+        .append((float) (System.currentTimeMillis() - ST_ART) / 1000)
         .append(" сек. идёт сессия.")
         .append("\n")
         .toString();
 
-    private String visitPlace;
+    private int clickCounter = 0;
 
-    private String dbInfo;
+    private String visitPlace;
 
     /**
      The Rem addr.
@@ -39,8 +32,12 @@ public class Visitor {
 
     private HttpSession session;
 
-    public Visitor(HttpServletRequest request) {
+    public Visitor(HttpServletRequest request) throws NullPointerException, IllegalStateException {
         this.request = request;
+        this.session = request.getSession();
+        this.visitPlace = request.getHeader("REFERER".toLowerCase());
+        this.remAddr = request.getRemoteAddr();
+        this.userId = session.getId();
     }
 
     public HttpSession getSession() {
@@ -51,61 +48,50 @@ public class Visitor {
         return request;
     }
 
-
-    /**
-     @param request {@link HttpServletRequest}
-     @deprecated 07.11.2018 (13:58)
-     */
-    @Deprecated
-    public void setRequest(HttpServletRequest request) {
-        this.request = request;
-        this.remAddr = request.getRemoteAddr();
-        this.visitPlace = request.getPathInfo();
-        this.session = request.getSession();
-        getVisitsMap().put(USER_ID, request);
-    }
-
-    /**
-     <i>{@link #setRequest(HttpServletRequest)}</i>
-
-     @return {@link ConstantsFor#VISITS_MAP}
-     */
-    public Map<Long, HttpServletRequest> getVisitsMap() {
-        return ConstantsFor.VISITS_MAP;
-    }
-
     private HttpServletRequest request;
 
-    private int clickCounter;
-
-    private Collection<Cookie> cookieCollection = new ArrayList<>();
+    public String getUserId() {
+        return userId;
+    }
 
     public int getClickCounter() {
         return clickCounter;
     }
 
     public void setClickCounter(int clickCounter) {
-        this.clickCounter = this.clickCounter + clickCounter;
-    }
-
-    public Collection<Cookie> getCookieCollection() {
-        return cookieCollection;
-    }
-
-    public void setCookieCollection(Collection<Cookie> cookieCollection) {
-        this.cookieCollection = cookieCollection;
+        this.clickCounter = clickCounter;
     }
 
     public String getVisitPlace() {
         return visitPlace;
     }
 
-    public String getDbInfo() {
-        return dbInfo;
+    @Override
+    public int hashCode() {
+        int result = userId != null ? userId.hashCode() : 0;
+        result = 31 * result + getTimeSpend().hashCode();
+        result = 31 * result + (getVisitPlace() != null ? getVisitPlace().hashCode() : 0);
+        result = 31 * result + (getRemAddr() != null ? getRemAddr().hashCode() : 0);
+        result = 31 * result + (getSession() != null ? getSession().hashCode() : 0);
+        result = 31 * result + getRequest().hashCode();
+        result = 31 * result + getClickCounter();
+        return result;
     }
 
-    public void setDbInfo(String dbInfo) {
-        this.dbInfo = dbInfo;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Visitor)) return false;
+
+        Visitor visitor = (Visitor) o;
+
+        if (getClickCounter() != visitor.getClickCounter()) return false;
+        if (userId != null ? !userId.equals(visitor.userId) : visitor.userId != null) return false;
+        if (!getTimeSpend().equals(visitor.getTimeSpend())) return false;
+        if (getVisitPlace() != null ? !getVisitPlace().equals(visitor.getVisitPlace()) : visitor.getVisitPlace() != null) return false;
+        if (getRemAddr() != null ? !getRemAddr().equals(visitor.getRemAddr()) : visitor.getRemAddr() != null) return false;
+        if (getSession() != null ? !getSession().equals(visitor.getSession()) : visitor.getSession() != null) return false;
+        return getRequest().equals(visitor.getRequest());
     }
 
     /**
@@ -126,25 +112,18 @@ public class Visitor {
         return remAddr;
     }
 
-    /**
-     Sets rem addr.
-
-     @param remAddr the rem addr
-     */
-    public void setRemAddr(String remAddr) {
-        this.remAddr = remAddr;
-    }
-
     @Override
     public String toString() {
-        return new StringJoiner("\n", Visitor.class.getSimpleName() + "\n", "\n")
-            .add("remAddr='" + remAddr + "'\n")
-            .add("timeSpend=" + timeSpend)
-            .add("userID=" + getUserID())
-            .toString();
-    }
-
-    public long getUserID() {
-        return USER_ID;
+        final StringBuilder sb = new StringBuilder("Visitor{");
+        sb.append("clickCounter=").append(clickCounter);
+        sb.append(", remAddr='").append(remAddr).append('\'');
+        sb.append(", request=").append(request.getPathInfo());
+        sb.append(", session=").append(session.getServletContext().getServerInfo());
+        sb.append(", ST_ART=").append(ST_ART);
+        sb.append(", timeSpend='").append(timeSpend).append('\'');
+        sb.append(", userId='").append(userId).append('\'');
+        sb.append(", visitPlace='").append(visitPlace).append('\'');
+        sb.append('}');
+        return sb.toString();
     }
 }

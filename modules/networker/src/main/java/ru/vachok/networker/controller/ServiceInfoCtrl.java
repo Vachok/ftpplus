@@ -3,14 +3,15 @@ package ru.vachok.networker.controller;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ExitApp;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.*;
+import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.componentsrepo.PageFooter;
+import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.net.DiapazonedScan;
 import ru.vachok.networker.services.MyCalen;
@@ -41,26 +42,17 @@ public class ServiceInfoCtrl {
             Long.parseLong(ConstantsFor.getProps().getProperty("lasts", 1544816520000L + ""))) / 60f / 24f;
     }
 
-    @Autowired
-    public ServiceInfoCtrl() {
-        new AppComponents();
-    }
+    private Visitor visitor;
 
     @GetMapping("/serviceinfo")
     public String infoMapping(Model model, HttpServletRequest request, HttpServletResponse response) throws AccessDeniedException {
+        this.visitor = new AppComponents().visitor(request);
         this.authReq = request.getRemoteAddr().contains("0:0:0:0") ||
             request.getRemoteAddr().contains("10.10.111") ||
             request.getRemoteAddr().contains("10.200.213.85") ||
             request.getRemoteAddr().contains("172.16.20");
-        Visitor visitor = new Visitor(request);
-        try {
-            String msg = visitor.toString();
-            LOGGER.warn(msg);
-        } catch (Exception e) {
-            LoggerFactory.getLogger(ServiceInfoCtrl.class.getSimpleName());
-        }
         if (authReq) {
-            modModMaker(model, request);
+            modModMaker(model, request, visitor);
             response.addHeader("Refresh", "11");
             return "vir";
         } else {
@@ -78,7 +70,8 @@ public class ServiceInfoCtrl {
         return "ok";
     }
 
-    private void modModMaker(Model model, HttpServletRequest request) {
+    private void modModMaker(Model model, HttpServletRequest request, Visitor visitor) {
+        if (visitor.getSession().equals(request.getSession())) visitor.setClickCounter(visitor.getClickCounter() + 1);
         model.addAttribute(ConstantsFor.TITLE, getLast() + " (" + getLast() * ConstantsFor.ONE_DAY_HOURS + ")");
         model.addAttribute("mail", ConstantsFor.percToEnd());
         model.addAttribute("ping", pingGit());
@@ -94,8 +87,8 @@ public class ServiceInfoCtrl {
             .append(DiapazonedScan.getInstance().toString())
             .toString());
         model.addAttribute("request", prepareRequest(request));
-        model.addAttribute("visit", new VersionInfo().toString());
-        model.addAttribute("res", MyCalen.toStringS());
+        model.addAttribute("visit", visitor.toString());
+        model.addAttribute("res", MyCalen.toStringS() + "<br>" + AppComponents.versionInfo().toString());
         model.addAttribute("back", request.getHeader("REFERER".toLowerCase()));
         model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext() + "<br>" + getJREVers());
     }
@@ -138,10 +131,6 @@ public class ServiceInfoCtrl {
 
         stringBuilder.append("<center><h3>Атрибуты</h3></center>");
         stringBuilder.append(new TForms().fromEnum(request.getAttributeNames(), true));
-
-        stringBuilder.append("<center><h3>Параметры</h3></center>");
-        stringBuilder.append(new TForms().mapStrStrArr(request.getParameterMap(), true));
-
         return stringBuilder.toString();
     }
 
@@ -165,6 +154,7 @@ public class ServiceInfoCtrl {
 
     @GetMapping ("/pcoff")
     public void offPC(Model model) throws IOException {
-        Runtime.getRuntime().exec("shutdown /p /f");
+        if (authReq) Runtime.getRuntime().exec("shutdown /p /f");
+        else throw new AccessDeniedException("Denied for " + visitor.toString());
     }
 }

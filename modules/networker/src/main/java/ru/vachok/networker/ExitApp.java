@@ -9,6 +9,8 @@ import java.io.File;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
+import static ru.vachok.networker.IntoApplication.getConfigurableApplicationContext;
+
 
 /**
  Действия, при выходе
@@ -68,7 +70,7 @@ public class ExitApp implements Runnable {
         FileSystemWorker.copyOrDelFile(new File(ConstantsFor.OLD_LAN_TXT), new StringBuilder().append(".\\lan\\old_lan_").append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
         if(appLog.exists() && appLog.canRead()){
             FileSystemWorker.copyOrDelFile(appLog, "\\\\10.10.111.1\\Torrents-FTP\\app.log", false);
-        }
+        } else LOGGER.info("No app.log");
         exitAppDO();
     }
 
@@ -78,9 +80,9 @@ public class ExitApp implements Runnable {
      Код выхода = <i>uptime</i> в минутах.
      */
     private void exitAppDO() {
-        ConstantsFor.saveProps(properties);
-        IntoApplication.getConfigurableApplicationContext().close();
+        getConfigurableApplicationContext().close();
         FileSystemWorker.delTemp();
+        ConstantsFor.saveProps(properties);
         System.exit(Math.toIntExact(toMinutes));
     }
 }

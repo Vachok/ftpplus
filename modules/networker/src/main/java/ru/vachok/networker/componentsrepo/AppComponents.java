@@ -10,13 +10,20 @@ import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.accesscontrol.SshActs;
 import ru.vachok.networker.accesscontrol.common.CommonScan2YOlder;
-import ru.vachok.networker.ad.*;
+import ru.vachok.networker.ad.ADComputer;
+import ru.vachok.networker.ad.ADSrv;
+import ru.vachok.networker.ad.ADUser;
+import ru.vachok.networker.ad.PCUserResolver;
 import ru.vachok.networker.mailserver.RuleSet;
 import ru.vachok.networker.net.NetScannerSvc;
 import ru.vachok.networker.services.SimpleCalculator;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.File;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -102,13 +109,14 @@ public class AppComponents {
      @return new {@link VersionInfo}
      */
     @Bean("versioninfo")
+    @Scope("singleton")
     public static VersionInfo versionInfo() {
-        VersionInfo versionInfo = new VersionInfo();
-        if(THIS_PC_NAME.equalsIgnoreCase("home") ||
-            THIS_PC_NAME.toLowerCase().contains(ConstantsFor.NO0027)){
-            versionInfo.setParams();
-        }
-        return versionInfo;
+        return new VersionInfo();
+    }
+
+    @Bean("visitor")
+    public Visitor visitor(HttpServletRequest request) {
+        return new Visitor(request);
     }
 
     /**

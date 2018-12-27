@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import ru.vachok.networker.componentsrepo.Visitor;
 
 import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.concurrent.TimeUnit;
 
@@ -25,13 +24,6 @@ public class CookTheCookie {
         cookie.setDomain("vachok.ru");
         cookie.setMaxAge((int) TimeUnit.DAYS.toSeconds(1));
         response.addCookie(cookie);
-        visitor.getCookieCollection().add(cookie);
         return response;
-    }
-
-    public void addToCollection(HttpServletRequest request) {
-        for (Cookie c : request.getCookies()) {
-            visitor.getCookieCollection().add(c);
-        }
     }
 }
