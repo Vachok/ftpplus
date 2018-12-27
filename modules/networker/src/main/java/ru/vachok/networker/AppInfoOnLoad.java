@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import ru.vachok.mysqlandprops.EMailAndDB.SpeedRunActualize;
+import ru.vachok.networker.accesscontrol.common.CommonRightsChecker;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.config.ThreadConfig;
@@ -14,7 +15,10 @@ import ru.vachok.networker.net.SwitchesAvailability;
 import ru.vachok.networker.services.MyCalen;
 import ru.vachok.networker.services.WeekPCStats;
 
+import java.io.IOException;
+import java.nio.file.*;
 import java.time.DayOfWeek;
+import java.time.LocalTime;
 import java.util.Date;
 import java.util.Objects;
 import java.util.concurrent.Executors;
@@ -46,6 +50,35 @@ public class AppInfoOnLoad implements Runnable {
      @see #schedStarter()
      */
     private static final int THIS_DELAY = 111;
+
+    private static Runnable r = () -> {
+        try{
+            FileVisitor<Path> commonRightsChecker = new CommonRightsChecker();
+            Files.walkFileTree(Paths.get("\\\\srv-fs.eatmeat.ru\\common_new"), commonRightsChecker);
+        }
+        catch(IOException e){
+            LOGGER.warn(e.getMessage(), e);
+        }
+    };
+
+
+    /**
+     Запускает сканнер прав Common
+     */
+    static void runCommonScan(boolean runNow) {
+        if(runNow){
+            Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(r);
+        }
+        else{
+            String msg = new StringBuilder()
+                .append(LocalTime.now()
+                    .plusMinutes(5).toString())
+                .append(" ")
+                .append(CommonRightsChecker.class.getSimpleName())
+                .append(" been run.").toString();
+            LOGGER.info(msg);
+        }
+    }
 
     /**
      @see #infoForU(ApplicationContext)
@@ -90,20 +123,22 @@ public class AppInfoOnLoad implements Runnable {
             LOGGER.warn(e.getMessage(), e);
         }
         Runnable swAval = new SwitchesAvailability();
-        ScheduledExecutorService executorService = Executors.unconfigurableScheduledExecutorService(Executors.newScheduledThreadPool(3));
-
+        ScheduledExecutorService executorService = Executors.unconfigurableScheduledExecutorService(Executors.newScheduledThreadPool(4));
         executorService
             .scheduleWithFixedDelay(Objects.requireNonNull(speedRun), ConstantsFor.INIT_DELAY, TimeUnit.MINUTES.toSeconds(ConstantsFor.DELAY), TimeUnit.SECONDS);
         String thisPC = ConstantsFor.thisPC();
         if(!thisPC.toLowerCase().contains("home")){
             executorService
                 .scheduleWithFixedDelay(swAval, 10, ConstantsFor.DELAY, TimeUnit.SECONDS);
+            executorService.scheduleWithFixedDelay(r, 5, TimeUnit.DAYS.toSeconds(1), TimeUnit.SECONDS);
         }
         executorService
             .scheduleWithFixedDelay(DiapazonedScan.getInstance(), 3, THIS_DELAY, TimeUnit.MINUTES);
-
-        String msg = "Scheduled: DiapazonedScan.getInstance(). Initial delay 1. delay " + THIS_DELAY + " in minutes\n" +
-            new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(THIS_DELAY + 1));
+        String msg = new StringBuilder()
+            .append("Scheduled: DiapazonedScan.getInstance(). Initial delay 1. delay ")
+            .append(THIS_DELAY)
+            .append(" in minutes\n")
+            .append(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(THIS_DELAY + 1))).toString();
         LOGGER.info(msg);
 
         dateSchedulers();
@@ -114,6 +149,7 @@ public class AppInfoOnLoad implements Runnable {
      <p>
      Usages: {@link #schedStarter()} <br> Uses: 1.1 {@link MyCalen#getNextDayofWeek(int, int, DayOfWeek)}, 1.2 {@link ThreadConfig#threadPoolTaskScheduler()}
      */
+    @SuppressWarnings ("MagicNumber")
     private static void dateSchedulers() {
         Date nextStartDay = MyCalen.getNextDayofWeek(23, 57, DayOfWeek.SUNDAY);
         StringBuilder stringBuilder = new StringBuilder();

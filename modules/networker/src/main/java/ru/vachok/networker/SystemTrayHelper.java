@@ -5,13 +5,11 @@ import org.slf4j.Logger;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.accesscontrol.common.ArchivesAutoCleaner;
-import ru.vachok.networker.accesscontrol.common.CommonRightsChecker;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.MyServer;
 import ru.vachok.networker.services.DBMessenger;
-import ru.vachok.networker.services.MyCalen;
 import ru.vachok.networker.services.Putty;
 
 import java.awt.*;
@@ -20,8 +18,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Date;
 import java.util.Properties;
 import java.util.Set;
@@ -91,7 +87,7 @@ public final class SystemTrayHelper {
     @SuppressWarnings("FeatureEnvy")
     static void addTray(String iconFileName) {
         boolean myPC;
-        runCommonScan(false);
+        AppInfoOnLoad.runCommonScan(false);
         myPC = THIS_PC.toLowerCase().contains(ConstantsFor.NO0027) || THIS_PC.equalsIgnoreCase("home");
         if (iconFileName == null) {
             iconFileName = "icons8-ip-адрес-15.png";
@@ -141,52 +137,6 @@ public final class SystemTrayHelper {
     }
 
     /**
-     Запускает сканнер прав Common
-     <p>
-     Usages: {@link #addItems(PopupMenu)}
-     */
-    private static void runCommonScan(boolean runNow) {
-        Runnable r = () -> {
-            try {
-                CommonRightsChecker commonRightsChecker = new CommonRightsChecker();
-                Files.walkFileTree(Paths.get("\\\\srv-fs.eatmeat.ru\\common_new"), commonRightsChecker);
-            } catch (IOException e) {
-                LOGGER.warn(e.getMessage(), e);
-            }
-        };
-        Date startTime = MyCalen.getNextSat(0, 1);
-        long delay = TimeUnit.DAYS.toMillis(ConstantsFor.ONE_MONTH_DAYS);
-        if (runNow) Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(r);
-        else {
-            ScheduledFuture<?> scheduleWithFixedDelay = new ThreadConfig().threadPoolTaskScheduler().scheduleWithFixedDelay(
-                r, startTime, delay);
-            new Thread(() -> {
-                try {
-                    scheduleWithFixedDelay.get();
-                } catch (InterruptedException | ExecutionException e) {
-                    Thread.currentThread().interrupt();
-                }
-            }).start();
-        }
-    }
-
-    /**
-     Проверка доступности <a href="http://srv-git.eatmeat.ru:1234">srv-git.eatmeat.ru</a>
-     <p>
-     Usages: {@link #addTray(String)} <br> Uses: -
-
-     @return srv-git online
-     */
-    private static boolean srvGitIs() {
-        try {
-            return !InetAddress.getByName(ConstantsFor.SRV_GIT_EATMEAT_RU).isReachable(1000);
-        } catch (IOException e) {
-            LOGGER.error(e.getMessage(), e);
-            return true;
-        }
-    }
-
-    /**
      Добавление компонентов в меню
      <p>
      Usages: {@link #addTray(String)} <br> Uses: 1.1 {@link ThreadConfig#threadPoolTaskExecutor()}, 1.2 {@link SSHFactory.Builder#build()}, 1.3 {@link SSHFactory.Builder} 1.4 {@link SSHFactory#call()},
@@ -194,6 +144,7 @@ public final class SystemTrayHelper {
 
      @param popupMenu {@link PopupMenu}
      */
+    @SuppressWarnings ("MagicNumber")
     private static void addItems(PopupMenu popupMenu) {
         ThreadConfig threadConfig = new ThreadConfig();
         ThreadPoolTaskExecutor executor = threadConfig.threadPoolTaskExecutor();
@@ -273,6 +224,27 @@ public final class SystemTrayHelper {
     }
 
     /**
+     Проверка доступности <a href="http://srv-git.eatmeat.ru:1234">srv-git.eatmeat.ru</a>
+     <p>
+     Usages: {@link #addTray(String)} <br> Uses: -
+
+     @return srv-git online
+     */
+    private static boolean srvGitIs() {
+        try{
+            return !InetAddress.getByName(ConstantsFor.SRV_GIT_EATMEAT_RU).isReachable(1000);
+        }
+        catch(IOException e){
+            LOGGER.error(e.getMessage(), e);
+            return true;
+        }
+    }
+
+    public static void runCommonScan() {
+        AppInfoOnLoad.runCommonScan(true);
+    }
+
+    /**
      Reconnect Socket, пока он открыт
      <p>
      Usages: {@link #addItems(PopupMenu)} <br> Uses: 1.1 {@link ConstantsFor#checkDay()}, 1.2 {@link MyServer#reconSock()}, 1.3 {@link TForms#fromArray(Exception, boolean)}, 1.4 {@link
@@ -291,9 +263,5 @@ public final class SystemTrayHelper {
                 Thread.currentThread().interrupt();
             }
         }
-    }
-
-    private static void runCommonScan() {
-        runCommonScan(true);
     }
 }

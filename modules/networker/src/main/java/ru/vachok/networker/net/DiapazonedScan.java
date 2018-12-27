@@ -18,6 +18,7 @@ import java.net.InetAddress;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -49,7 +50,15 @@ public class DiapazonedScan implements Runnable {
     /**
      Singleton inst
      */
-    private static volatile DiapazonedScan ourInstance;
+    private static volatile DiapazonedScan ourInstance = null;
+
+    /**
+     Время файлов
+
+     @see #scanNew()
+     @see #scanOldLan(long)
+     */
+    private String fileTimes = "";
 
     /**
      {@link NetScanFileWorker#getI()}
@@ -66,10 +75,8 @@ public class DiapazonedScan implements Runnable {
             synchronized (DiapazonedScan.class) {
                 if (ourInstance == null) {
                     ourInstance = new DiapazonedScan();
-
                 }
             }
-
         }
         return ourInstance;
     }
@@ -144,6 +151,7 @@ public class DiapazonedScan implements Runnable {
     private void scanNew() {
         final long stArt = System.currentTimeMillis();
         Path p = Paths.get(ROOT_PATH_STR + "\\lan\\200_" + System.currentTimeMillis() / 1000 + ".scan");
+        this.fileTimes = this.fileTimes + "\n" + p.toString() + " " + new Date(p.toFile().lastModified()).toString() + "\n";
         String msg1 = "DiapazonedScan.scanNew " + p.toAbsolutePath().toString();
         LOGGER.warn(msg1);
         File newLanFile = new File(ConstantsFor.AVAILABLE_LAST_TXT);
@@ -172,10 +180,24 @@ public class DiapazonedScan implements Runnable {
      @param stArt таймер начала общего скана
      @see #scanNew()
      */
+    @SuppressWarnings ("MagicNumber")
     private void scanOldLan(long stArt) {
         File oldLANFile = new File(ConstantsFor.OLD_LAN_TXT);
-        Path p = Paths.get(ROOT_PATH_STR + "\\lan\\192_" + System.currentTimeMillis() / 1000 + ".scan");
-        String msg1 = "scanOldLan " + p.toAbsolutePath().toString();
+        Path p = Paths.get(new StringBuilder()
+            .append(ROOT_PATH_STR)
+            .append("\\lan\\192_")
+            .append(System.currentTimeMillis() / 1000)
+            .append(".scan").toString());
+        this.fileTimes = new StringBuilder()
+            .append(this.fileTimes)
+            .append("\n")
+            .append(p.toString())
+            .append(" ")
+            .append(new Date(p.toFile().lastModified()).toString())
+            .append("\n").toString();
+        String msg1 = new StringBuilder()
+            .append("scanOldLan ")
+            .append(p.toAbsolutePath().toString()).toString();
         LOGGER.warn(msg1);
         try (OutputStream outputStream = new FileOutputStream(oldLANFile);
              PrintWriter printWriter = new PrintWriter(outputStream, true)) {

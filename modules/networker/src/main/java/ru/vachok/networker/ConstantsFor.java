@@ -14,7 +14,6 @@ import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.ad.PCUserResolver;
 import ru.vachok.networker.componentsrepo.AppComponents;
-import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.controller.ServiceInfoCtrl;
 import ru.vachok.networker.mailserver.ExSRV;
@@ -35,7 +34,9 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.*;
 import java.time.format.TextStyle;
-import java.util.*;
+import java.util.Date;
+import java.util.Locale;
+import java.util.Properties;
 import java.util.concurrent.*;
 
 
@@ -118,11 +119,6 @@ public enum ConstantsFor {
      {@link Model} имя атрибута
      */
     public static final String TITLE = "title";
-
-    /**
-     {@link Visitor#getVisitsMap()}
-     */
-    public static final Map<Long, HttpServletRequest> VISITS_MAP = new ConcurrentHashMap<>();
 
     /**
      {@link ServiceInfoCtrl#closeApp()}
