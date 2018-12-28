@@ -750,3 +750,5 @@ modules/networker/lan/
 old_lan.txt
 /temp_pat.cfg
 lan/
+PfListsSrv.makeListRunner
+modules/networker/src/main/resources/static/flightrec/flight_recording_1002GMyProjFtpClientPlusmodulesnetworkerbuildlibsnetworker0268jar11016.jfr
