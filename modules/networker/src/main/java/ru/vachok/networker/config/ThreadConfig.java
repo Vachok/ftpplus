@@ -15,8 +15,14 @@ import ru.vachok.networker.componentsrepo.AppComponents;
 @EnableAsync
 public class ThreadConfig extends ThreadPoolTaskExecutor {
 
+    /**
+     {@link ThreadPoolTaskExecutor}
+     */
     private static final ThreadPoolTaskExecutor TASK_EXECUTOR = new ThreadPoolTaskExecutor();
 
+    /**
+     {@link ThreadPoolTaskScheduler}
+     */
     private static final ThreadPoolTaskScheduler TASK_SCHEDULER = new ThreadPoolTaskScheduler();
 
     public Runnable taskDecorator(Runnable runnable) {
@@ -26,15 +32,20 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
         return taskDecorator.decorate(runnable);
     }
 
+    /**
+     * Убивает {@link #TASK_EXECUTOR} и {@link #TASK_SCHEDULER}
+     */
     public void killAll() {
-        TASK_EXECUTOR.destroy();
         threadPoolTaskScheduler().destroy();
         Thread.currentThread().checkAccess();
         Thread.currentThread().interrupt();
+        threadPoolTaskExecutor().setAwaitTerminationSeconds(15);
+        threadPoolTaskExecutor().destroy();
 
     }
 
     public ThreadPoolTaskScheduler threadPoolTaskScheduler() {
+        TASK_SCHEDULER.destroy();
         TASK_SCHEDULER.setThreadNamePrefix("sc-" + (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000);
         TASK_SCHEDULER.setPoolSize(4);
         TASK_SCHEDULER.initialize();
@@ -42,12 +53,9 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
     }
 
     public ThreadPoolTaskExecutor threadPoolTaskExecutor() {
-        TASK_EXECUTOR.setCorePoolSize(75);
+        TASK_EXECUTOR.destroy();
         TASK_EXECUTOR.setMaxPoolSize(100);
-        TASK_EXECUTOR.setKeepAliveSeconds(5);
-        TASK_EXECUTOR.setQueueCapacity(5);
         TASK_EXECUTOR.setThreadNamePrefix("ts-" + (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000);
-        TASK_EXECUTOR.setAwaitTerminationSeconds(10);
         TASK_EXECUTOR.initialize();
         return TASK_EXECUTOR;
     }
@@ -76,11 +84,13 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
         final StringBuilder sb = new StringBuilder(TASK_EXECUTOR.getThreadNamePrefix() + "{");
         sb.append("activeCount/total=").append(TASK_EXECUTOR.getActiveCount()).append("/");
         sb.append(Thread.activeCount());
+        sb.append("(").append(TASK_EXECUTOR.getActiveCount()).append(" TASK_EXECUTOR)");
         sb.append(", corePoolSize=").append(TASK_EXECUTOR.getCorePoolSize());
         sb.append(", keepAliveSeconds=").append(TASK_EXECUTOR.getKeepAliveSeconds());
         sb.append(", maxPoolSize=").append(TASK_EXECUTOR.getMaxPoolSize());
         sb.append(", poolSize=").append(TASK_EXECUTOR.getPoolSize());
-        sb.append(", prefix=").append(TASK_EXECUTOR.getThreadNamePrefix()).append("<br>\n");
+        sb.append(", <b>hash = ").append(TASK_EXECUTOR.hashCode());
+        sb.append("</b>, prefix=").append(TASK_EXECUTOR.getThreadNamePrefix()).append("<br>\n");
         sb.append(", TASK_SCHEDULED= ").append(TASK_SCHEDULER.getActiveCount());
         sb.append(", TASK_SCHEDULER= ").append(TASK_SCHEDULER.getThreadNamePrefix());
         sb.append('}');

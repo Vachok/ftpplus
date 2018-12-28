@@ -73,11 +73,6 @@ public final class SystemTrayHelper {
      Конструктор по-умолчанию
      */
     private SystemTrayHelper() {
-
-    }
-
-    public static void runCommonScan() {
-        AppInfoOnLoad.runCommonScan(true);
     }
 
     /**

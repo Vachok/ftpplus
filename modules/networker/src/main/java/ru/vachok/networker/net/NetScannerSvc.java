@@ -6,8 +6,8 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
 import org.springframework.util.CustomizableThreadCreator;
+import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.messenger.email.ESender;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
@@ -24,11 +24,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
-import java.nio.charset.StandardCharsets;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
@@ -112,7 +116,7 @@ public class NetScannerSvc {
     /**
      {@link ThreadConfig#threadPoolTaskExecutor()}
      */
-    private ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadConfig().threadPoolTaskExecutor();
+    private static final ThreadPoolTaskExecutor TASK_EXECUTOR = new ThreadConfig().threadPoolTaskExecutor();
 
     static {
         try {
@@ -218,7 +222,7 @@ public class NetScannerSvc {
      @see NetScanCtr#scanIt(HttpServletRequest, Model)
      */
     Set<String> getPcNames() {
-        ThreadPoolTaskExecutor executor = this.threadPoolTaskExecutor;
+        ThreadPoolTaskExecutor executor = TASK_EXECUTOR;
         Runnable getPCs = this::getPCsAsync;
         executor.execute(getPCs);
         return PC_NAMES;
@@ -251,10 +255,12 @@ public class NetScannerSvc {
      */
     @SuppressWarnings("OverlyLongLambda")
     public void getPCsAsync() {
+        Properties p = ConstantsFor.getProps();
+        ExecutorService eServ = Executors.unconfigurableExecutorService(Executors.newFixedThreadPool(Integer.parseInt(p.getOrDefault("totpc", "318").toString())));
         final long stArt = System.currentTimeMillis();
-        Thread.currentThread().setName("getPCsAsync");
+        List<String> toFileList = new ArrayList<>();
         AtomicReference<String> msg = new AtomicReference<>("");
-        threadPoolTaskExecutor.execute(() -> {
+        eServ.submit(() -> {
             FileSystemWorker.recFile(this.getClass().getSimpleName() + ".before", Collections.singletonList(ConstantsFor.showMem()));
             msg.set(new StringBuilder()
                 .append("Thread ")
@@ -272,10 +278,10 @@ public class NetScannerSvc {
             String elapsedTime = "Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethod) + " sec.";
             PC_NAMES.add(elapsedTime);
             LOGGER.warn(msg.get());
-
+            toFileList.add(msg.get());
             new Thread(() -> {
                 Thread.currentThread().setName("mailMSG");
-                MessageToUser mailMSG = new ESender(ConstantsFor.GMAIL_COM);
+                MessageToUser mailMSG = new MessageCons();
                 float upTime = (float) (TimeUnit.MILLISECONDS
                     .toSeconds(System.currentTimeMillis() - ConstantsFor.START_STAMP)) / 60f;
                 Map<String, String> lastLogs = new AppComponents().getLastLogs();
@@ -285,26 +291,27 @@ public class NetScannerSvc {
                 String thisPCStr;
                 thisPCStr = ConstantsFor.thisPC();
                 //noinspection SpellCheckingInspection
+                String s1 = new StringBuilder()
+                    .append(ConstantsFor.showMem())
+                    .append("\n\n")
+                    .append(retLogs).append(" \n")
+                    .append(psUser).append("\n").append(fromArray).toString();
                 mailMSG.info(
                     this.getClass().getSimpleName() + " online: " + onLinePCs,
-                    upTime + " min uptime. " + thisPCStr + " COMPNAME_USERS_MAP size",
-                    new StringBuilder()
-                        .append(ConstantsFor.showMem())
-                        .append("\n\n")
-                        .append(retLogs).append(" \n")
-                        .append(psUser).append("\n").append(fromArray).toString());
+                    upTime + " min uptime. " + thisPCStr + " COMPNAME_USERS_MAP size", s1);
                 //noinspection SpellCheckingInspection
-                FileSystemWorker.recFile("lasusers.txt",
-                    Collections.singletonList(new String(fromArray.getBytes(), StandardCharsets.UTF_8)));
-
+                toFileList.add(s1);
                 String s = Thread.activeCount() + " active threads now.";
                 LOGGER.warn(s);
                 this.onLinePCs = 0;
-                FileSystemWorker.recFile(this.getClass().getSimpleName() + ".after",
-                    Collections.singletonList(ConstantsFor.showMem()));
+                toFileList.add(ConstantsFor.showMem());
+                FileSystemWorker.recFile(this.getClass().getSimpleName() + ".after", toFileList);
+                eServ.shutdown();
             }).start();
             String msgTimeSp = "NetScannerSvc.getPCsAsync method. " + (float) (System.currentTimeMillis() - stArt) / 1000 + " sec spend";
+            toFileList.add(msgTimeSp);
             LOGGER.warn(msgTimeSp);
+            ConstantsFor.saveProps(p);
         });
     }
 
@@ -312,8 +319,8 @@ public class NetScannerSvc {
      Сборщик для {@link #PC_NAMES} <br> 1. {@link #getCycleNames(String)} 1.1 {@link #getNamesCount(String)} <br> 2. {@link #getSomeMore(String, boolean)} 2.1 {@link #onLinesCheck(String, String)} 2
      .1.1 {@link ThreadConfig#threadPoolTaskExecutor()} 2.1.2 {@link PCUserResolver#namesToFile(String)} <br> 2.2 {@link #offLinesCheckUser(String, String)} <br> 3. {@link #getSomeMore(String,
         boolean)} 3.1 {@link #onLinesCheck(String, String)} 3.1.1 {@link ThreadConfig#threadPoolTaskExecutor()} 3.1.2 {@link PCUserResolver#namesToFile(String)} <br> 4. {@link #getSomeMore(String,
-        boolean)} 4.1 {@link ThreadConfig#threadPoolTaskExecutor()} 4.1.2 {@link PCUserResolver#namesToFile(String)} 4.2 {@link #offLinesCheckUser(String, String)} <br> 5. {@link #writeDB()} 5.1
-     {@link TForms#fromArray(List, boolean)}
+        boolean)} 4.1 {@link ThreadConfig#threadPoolTaskExecutor()} 4.1.2 {@link PCUserResolver#namesToFile(String)} 4.2 {@link #offLinesCheckUser(String, String)} <br> 5. {@link #writeDB()} 5.1 {@link
+    TForms#fromArray(List, boolean)}
 
      @param prefixPcName префикс имени ПК
      @return {@link #PC_NAMES}
@@ -550,7 +557,6 @@ public class NetScannerSvc {
         List<Integer> onLine = new ArrayList<>();
         List<Integer> offLine = new ArrayList<>();
         StringBuilder stringBuilder = new StringBuilder();
-        this.threadPoolTaskExecutor = new ThreadConfig().threadPoolTaskExecutor();
         try (PreparedStatement statement = c.prepareStatement(sql)) {
             Runnable r = () -> pcUserResolver.namesToFile(pcName);
             execSet(r);
@@ -632,7 +638,7 @@ public class NetScannerSvc {
      */
     private void execSet(Runnable r) {
         CustomizableThreadCreator customizableThreadCreator = new CustomizableThreadCreator("OnChk: ");
-        customizableThreadCreator.setThreadGroup(threadPoolTaskExecutor.getThreadGroup());
+        customizableThreadCreator.setThreadGroup(TASK_EXECUTOR.getThreadGroup());
         Thread thread = customizableThreadCreator.createThread(r);
         thread.start();
     }
@@ -655,7 +661,7 @@ public class NetScannerSvc {
             if (x.getState().equals(Thread.State.WAITING) && x.getName().contains("eatmeat.ru")) {
                 x.checkAccess();
                 x.interrupt();
-                threadPoolTaskExecutor.destroy();
+                TASK_EXECUTOR.destroy();
                 String s = new StringBuilder()
                     .append(str)
                     .append("\n\n\n")

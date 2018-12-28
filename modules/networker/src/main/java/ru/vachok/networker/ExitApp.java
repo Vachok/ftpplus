@@ -26,12 +26,6 @@ public class ExitApp implements Runnable {
     private static final Logger LOGGER = AppComponents.getLogger();
 
     /**
-     Переменная для сохранения {@link ConstantsFor#getProps()} в БД
-     {@link #run()}
-     */
-    private Properties properties = new Properties();
-
-    /**
      Причина выхода
      */
     private final String reasonExit;
@@ -46,6 +40,7 @@ public class ExitApp implements Runnable {
      */
     public ExitApp(String reasonExit) {
         this.reasonExit = reasonExit;
+        ConstantsFor.saveProps(ConstantsFor.getProps());
     }
 
     /**
@@ -53,8 +48,6 @@ public class ExitApp implements Runnable {
      */
     @Override
     public void run() {
-        this.properties = ConstantsFor.getProps();
-
         LOGGER.info(ConstantsFor.EXIT_APP_RUN);
         Thread.currentThread().setName(ConstantsFor.EXIT_APP_RUN);
         LOGGER.warn(reasonExit);

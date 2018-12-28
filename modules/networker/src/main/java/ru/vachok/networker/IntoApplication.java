@@ -89,8 +89,7 @@ public class IntoApplication {
         final long stArt = System.currentTimeMillis();
         beforeSt();
         configurableApplicationContext = SpringApplication.run(IntoApplication.class, args);
-        ConfigurableApplicationContext run = configurableApplicationContext;
-        run.start();
+        configurableApplicationContext.start();
         if(args.length > 0 && Arrays.toString(args).contains("off")){
             new ThreadConfig().killAll();
         }
@@ -98,7 +97,7 @@ public class IntoApplication {
             String msg = new StringBuilder()
                 .append(afterSt())
                 .append("\n")
-                .append(new TForms().fromArray(run.getBeanDefinitionNames(), false)).toString();
+                .append(new TForms().fromArray(configurableApplicationContext.getBeanDefinitionNames(), false)).toString();
             LOGGER.warn(msg);
         }
         String msgTimeSp = new StringBuilder()
@@ -114,7 +113,7 @@ public class IntoApplication {
      Usages: {@link #main(String[])}
      */
     private static void beforeSt() {
-        ConstantsFor.takePr();
+        new ThreadConfig().threadPoolTaskExecutor().execute(ConstantsFor::takePr);
         ConstantsFor.showMem();
         LOGGER.info("IntoApplication.beforeSt");
         String msg = LocalDate.now().getDayOfWeek().getValue() + " - day of week\n" +

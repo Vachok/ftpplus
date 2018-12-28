@@ -19,10 +19,18 @@ import ru.vachok.networker.services.MyCalen;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.*;
-import java.sql.*;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Date;
-import java.util.*;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
@@ -179,10 +187,12 @@ public class NetScanCtr {
             writeToFile(netWork);
             model.addAttribute("newpc", "Добавлены компы! " + Math.abs(i) + " шт.");
             properties.setProperty(KEY_TOTPC, netWork.size() + "");
+            ConstantsFor.saveProps(properties);
         }
         else{
             if(3 > i){
                 properties.setProperty(KEY_TOTPC, netWork.size() + "");
+                ConstantsFor.saveProps(properties);
                 writeToFile(netWork);
                 if(isSystemTimeBigger){
                     String msg1 = "isSystemTimeBigger is " + true + " " + netWork.size() + " network map cleared";
