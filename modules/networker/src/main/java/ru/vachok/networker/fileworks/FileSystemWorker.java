@@ -72,7 +72,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
             Files.walkFileTree(Paths.get(folderToSearch), fileSearcher);
             String oneAddress = "netvisor@velkomfood.ru";
             if(ConstantsFor.thisPC().contains("NO0027")){
-                oneAddress = "143500@gmail.com";
+                oneAddress = ConstantsFor.GMAIL_COM;
             }
             ESender resSend = new ESender(oneAddress);
             List<String> fileSearcherResList = fileSearcher.getResList();

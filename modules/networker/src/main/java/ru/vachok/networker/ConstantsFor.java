@@ -48,6 +48,12 @@ import java.util.concurrent.*;
 public enum ConstantsFor {
     ;
 
+    public static final String GMAIL_COM = "143500@gmail.com";
+
+    public static final String REFRESH = "Refresh";
+
+    public static final String VISIT = "visit";
+
     public static final String REFERER = "REFERER";
 
     public static final String SRV_GIT_EATMEAT_RU = "srv-git.eatmeat.ru";
@@ -304,7 +310,7 @@ public enum ConstantsFor {
     }
 
     public static void saveProps(Properties propsToSave) {
-        new Thread(() -> {
+        new ThreadConfig().threadPoolTaskExecutor().execute(() -> {
             InitProperties initProperties;
             try {
                 initProperties = new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
@@ -315,7 +321,7 @@ public enum ConstantsFor {
             initProperties.setProps(propsToSave);
             initProperties = new FileProps(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
             initProperties.setProps(propsToSave);
-        }).start();
+        });
     }
 
     public static String thisPC() {
@@ -389,7 +395,7 @@ public enum ConstantsFor {
     }
 
     private static void trunkTableUsers() {
-        MessageToUser messageToUser = new ESender("143500@gmail.com");
+        MessageToUser messageToUser = new ESender(GMAIL_COM);
         try (Connection c = new RegRuMysql().getDefaultConnection(DB_PREFIX + "velkom");
              PreparedStatement preparedStatement = c.prepareStatement("TRUNCATE TABLE pcuserauto")) {
             preparedStatement.executeUpdate();

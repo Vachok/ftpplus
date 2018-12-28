@@ -51,7 +51,7 @@ public class ServiceInfoCtrl {
         this.authReq = Stream.of("0:0:0:0", "10.10.111", "10.200.213.85", "172.16.20").anyMatch(s_p -> request.getRemoteAddr().contains(s_p));
         if (authReq) {
             modModMaker(model, request, visitor);
-            response.addHeader("Refresh", "11");
+            response.addHeader(ConstantsFor.REFRESH, "11");
             return "vir";
         } else {
             throw new AccessDeniedException("Sorry. Denied");
@@ -82,10 +82,10 @@ public class ServiceInfoCtrl {
             .append(ConstantsFor.getAtomicTime())
             .append(".<br> Состояние памяти (МБ): <font color=\"#82caff\">")
             .append(ConstantsFor.showMem()).append("</font><br>")
-            .append(DiapazonedScan.getInstance().toString())
+            .append(DiapazonedScan.getInstance().toString() + "<br>" + new ThreadConfig().toString())
             .toString());
         model.addAttribute("request", prepareRequest(request));
-        model.addAttribute("visit", visitor.toString());
+        model.addAttribute(ConstantsFor.VISIT, visitor.toString());
         model.addAttribute("res", MyCalen.toStringS() + "<br>" + AppComponents.versionInfo().toString());
         model.addAttribute("back", request.getHeader(ConstantsFor.REFERER.toLowerCase()));
         model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext() + "<br>" + getJREVers());

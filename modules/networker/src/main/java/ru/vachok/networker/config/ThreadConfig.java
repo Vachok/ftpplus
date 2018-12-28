@@ -5,6 +5,7 @@ import org.springframework.core.task.TaskDecorator;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
 
 
@@ -34,7 +35,7 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
     }
 
     public ThreadPoolTaskScheduler threadPoolTaskScheduler() {
-
+        TASK_SCHEDULER.setThreadNamePrefix("sc-" + (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000);
         TASK_SCHEDULER.setPoolSize(4);
         TASK_SCHEDULER.initialize();
         return TASK_SCHEDULER;
@@ -43,7 +44,10 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
     public ThreadPoolTaskExecutor threadPoolTaskExecutor() {
         TASK_EXECUTOR.setCorePoolSize(75);
         TASK_EXECUTOR.setMaxPoolSize(100);
-        TASK_EXECUTOR.setThreadNamePrefix(System.currentTimeMillis() + "task");
+        TASK_EXECUTOR.setKeepAliveSeconds(5);
+        TASK_EXECUTOR.setQueueCapacity(5);
+        TASK_EXECUTOR.setThreadNamePrefix("ts-" + (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000);
+        TASK_EXECUTOR.setAwaitTerminationSeconds(10);
         TASK_EXECUTOR.initialize();
         return TASK_EXECUTOR;
     }
@@ -76,6 +80,9 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
         sb.append(", keepAliveSeconds=").append(TASK_EXECUTOR.getKeepAliveSeconds());
         sb.append(", maxPoolSize=").append(TASK_EXECUTOR.getMaxPoolSize());
         sb.append(", poolSize=").append(TASK_EXECUTOR.getPoolSize());
+        sb.append(", prefix=").append(TASK_EXECUTOR.getThreadNamePrefix()).append("<br>\n");
+        sb.append(", TASK_SCHEDULED= ").append(TASK_SCHEDULER.getActiveCount());
+        sb.append(", TASK_SCHEDULER= ").append(TASK_SCHEDULER.getThreadNamePrefix());
         sb.append('}');
         return sb.toString();
     }

@@ -54,6 +54,7 @@ public class ExitApp implements Runnable {
     @Override
     public void run() {
         this.properties = ConstantsFor.getProps();
+        ConstantsFor.saveProps(properties);
         LOGGER.info(ConstantsFor.EXIT_APP_RUN);
         Thread.currentThread().setName(ConstantsFor.EXIT_APP_RUN);
         LOGGER.warn(reasonExit);
@@ -72,6 +73,7 @@ public class ExitApp implements Runnable {
         if(appLog.exists() && appLog.canRead()){
             FileSystemWorker.copyOrDelFile(appLog, "\\\\10.10.111.1\\Torrents-FTP\\app.log", false);
         } else LOGGER.info("No app.log");
+
         exitAppDO();
     }
 
@@ -83,7 +85,7 @@ public class ExitApp implements Runnable {
     private void exitAppDO() {
         getConfigurableApplicationContext().close();
         FileSystemWorker.delTemp();
-        ConstantsFor.saveProps(properties);
+
         new ThreadConfig().killAll();
         System.exit(Math.toIntExact(toMinutes));
     }

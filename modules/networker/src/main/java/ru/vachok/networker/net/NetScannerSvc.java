@@ -252,8 +252,9 @@ public class NetScannerSvc {
     @SuppressWarnings("OverlyLongLambda")
     public void getPCsAsync() {
         final long stArt = System.currentTimeMillis();
+        Thread.currentThread().setName("getPCsAsync");
         AtomicReference<String> msg = new AtomicReference<>("");
-        new Thread(() -> {
+        threadPoolTaskExecutor.execute(() -> {
             FileSystemWorker.recFile(this.getClass().getSimpleName() + ".before", Collections.singletonList(ConstantsFor.showMem()));
             msg.set(new StringBuilder()
                 .append("Thread ")
@@ -266,13 +267,15 @@ public class NetScannerSvc {
             for (String s : PC_PREFIXES) {
                 PC_NAMES.clear();
                 PC_NAMES.addAll(getPCNamesPref(s));
+                Thread.currentThread().setName(TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - stArt) + "-sec");
             }
             String elapsedTime = "Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethod) + " sec.";
             PC_NAMES.add(elapsedTime);
             LOGGER.warn(msg.get());
 
             new Thread(() -> {
-                MessageToUser mailMSG = new ESender("143500@gmail.com");
+                Thread.currentThread().setName("mailMSG");
+                MessageToUser mailMSG = new ESender(ConstantsFor.GMAIL_COM);
                 float upTime = (float) (TimeUnit.MILLISECONDS
                     .toSeconds(System.currentTimeMillis() - ConstantsFor.START_STAMP)) / 60f;
                 Map<String, String> lastLogs = new AppComponents().getLastLogs();
@@ -302,7 +305,7 @@ public class NetScannerSvc {
             }).start();
             String msgTimeSp = "NetScannerSvc.getPCsAsync method. " + (float) (System.currentTimeMillis() - stArt) / 1000 + " sec spend";
             LOGGER.warn(msgTimeSp);
-        }).start();
+        });
     }
 
     /**
