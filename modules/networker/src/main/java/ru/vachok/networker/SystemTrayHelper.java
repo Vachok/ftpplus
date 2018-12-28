@@ -120,8 +120,10 @@ public final class SystemTrayHelper {
                 LOGGER.error(e1.getMessage(), e1);
             }
         };
-        ActionListener exitApp = e -> new ThreadConfig().threadPoolTaskExecutor()
-            .execute(new ExitApp(SystemTrayHelper.class.getSimpleName()));
+        ActionListener exitApp = e -> {
+            new ThreadConfig().threadPoolTaskExecutor()
+                .execute(new ExitApp(SystemTrayHelper.class.getSimpleName()));
+        };
 
         addItems(popupMenu);
         trayIcon.setImageAutoSize(true);

@@ -54,7 +54,7 @@ public class ExitApp implements Runnable {
     @Override
     public void run() {
         this.properties = ConstantsFor.getProps();
-        ConstantsFor.saveProps(properties);
+
         LOGGER.info(ConstantsFor.EXIT_APP_RUN);
         Thread.currentThread().setName(ConstantsFor.EXIT_APP_RUN);
         LOGGER.warn(reasonExit);

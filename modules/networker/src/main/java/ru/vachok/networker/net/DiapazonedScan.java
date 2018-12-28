@@ -177,16 +177,21 @@ public class DiapazonedScan implements Runnable {
                 msgBuild = new StringBuilder();
                 byte[] aBytes = InetAddress.getByName(whatVlan + i + "." + j).getAddress();
                 InetAddress byAddress = InetAddress.getByAddress(aBytes);
+
                 int t = 100;
                 if(ConstantsFor.thisPC().toLowerCase().contains("home")){
                     t = 400;
                 }
+                String toString = byAddress.toString();
                 if(byAddress.isReachable(t)){
-                    printWriter.println(byAddress.getHostName() + " " + byAddress.getHostAddress());
-                    ConstantsFor.ALL_DEVICES.add("<font color=\"green\">" + byAddress.toString() + FONT_BR_STR);
+                    String hostName = byAddress.getHostName();
+                    Thread.currentThread().setName(hostName);
+                    printWriter.println(hostName + " " + byAddress.getHostAddress());
+                    ConstantsFor.ALL_DEVICES.add("<font color=\"green\">" + toString + FONT_BR_STR);
                 }
                 else{
-                    ConstantsFor.ALL_DEVICES.add("<font color=\"red\">" + byAddress.toString() + FONT_BR_STR);
+                    Thread.currentThread().setName("no-" + toString);
+                    ConstantsFor.ALL_DEVICES.add("<font color=\"red\">" + toString + FONT_BR_STR);
                 }
                 msgBuild.append("IP was ").append(whatVlan).append(i).append("<-i.j->").append(j).append("\n")
                     .append(j).append(" was j\n");
