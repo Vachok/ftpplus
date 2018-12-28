@@ -24,16 +24,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.*;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -256,7 +250,7 @@ public class NetScannerSvc {
     @SuppressWarnings("OverlyLongLambda")
     public void getPCsAsync() {
         Properties p = ConstantsFor.getProps();
-        ExecutorService eServ = Executors.unconfigurableExecutorService(Executors.newFixedThreadPool(Integer.parseInt(p.getOrDefault("totpc", "318").toString())));
+        ExecutorService eServ = Executors.unconfigurableExecutorService(Executors.newFixedThreadPool(Integer.parseInt(p.getOrDefault(ConstantsFor.STR_TOTPC, "318").toString())));
         final long stArt = System.currentTimeMillis();
         List<String> toFileList = new ArrayList<>();
         AtomicReference<String> msg = new AtomicReference<>("");

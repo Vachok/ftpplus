@@ -49,6 +49,10 @@ import java.util.concurrent.*;
 public enum ConstantsFor {
     ;
 
+    public static final String LASTSCAN = "lastscan";
+
+    public static final String STR_TOTPC = "totpc";
+
     public static final String GMAIL_COM = "143500@gmail.com";
 
     public static final String REFRESH = "Refresh";
@@ -245,6 +249,9 @@ public enum ConstantsFor {
     }
 
     public static Properties getProps() {
+        if(PROPS.isEmpty()){
+            takePr();
+        }
         return PROPS;
     }
 
@@ -349,7 +356,8 @@ public enum ConstantsFor {
             String msg = "Taking File properties:" + "\n" + e.getMessage();
             AppComponents.getLogger().warn(msg);
             PROPS.putAll(initProperties.getProps());
-            AppComponents.getLogger().warn(msg);
+            MessageToUser messageToUser = new MessageSwing();
+            (( MessageSwing ) messageToUser).infoNoTitlesDIA(e.getMessage() + " " + ConstantsFor.class.getSimpleName());
         }
     }
 

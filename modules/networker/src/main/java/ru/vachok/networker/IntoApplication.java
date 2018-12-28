@@ -88,7 +88,6 @@ public class IntoApplication {
      */
     @SuppressWarnings ("JavadocReference")
     public static void main(String[] args) {
-
         final long stArt = System.currentTimeMillis();
         beforeSt();
         configurableApplicationContext = SpringApplication.run(IntoApplication.class, args);
@@ -109,6 +108,13 @@ public class IntoApplication {
             .append(" ")
             .append(ConstantsFor.STR_SEC_SPEND).toString();
         LOGGER.info(msgTimeSp);
+        if(args!=null){
+            for(String s : args){
+                if(s.contains(ConstantsFor.STR_TOTPC)){
+                    ConstantsFor.getProps().setProperty(ConstantsFor.STR_TOTPC, s.replaceAll(ConstantsFor.STR_TOTPC, ""));
+                }
+            }
+        }
     }
 
     /**
@@ -117,7 +123,6 @@ public class IntoApplication {
      */
     private static void beforeSt() {
         MessageToUser messageToUser = new MessageSwing();
-        new ThreadConfig().threadPoolTaskExecutor().execute(ConstantsFor::takePr);
         ConstantsFor.showMem();
         LOGGER.info("IntoApplication.beforeSt");
         String msg = LocalDate.now().getDayOfWeek().getValue() + " - day of week\n" +

@@ -9,6 +9,8 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import ru.vachok.messenger.MessageSwing;
+import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
@@ -19,18 +21,10 @@ import ru.vachok.networker.services.MyCalen;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.io.*;
+import java.sql.*;
 import java.util.Date;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
@@ -89,12 +83,7 @@ public class NetScanCtr {
 
      @see #mapSizeBigger(Model, Map, HttpServletRequest)
      */
-    private static final String KEY_TOTPC = "totpc";
-
-    /**
-     Кол-во насканенных пк<p> Usages: {@link #mapSizeBigger(Model, Map, HttpServletRequest)}
-     */
-    private static final int THIS_TOTPC = Integer.parseInt(properties.getOrDefault(KEY_TOTPC, "318").toString());
+    private static final String KEY_TOTPC = ConstantsFor.STR_TOTPC;
 
     @GetMapping("/showalldev")
     private String allDevices(Model model, HttpServletRequest request, HttpServletResponse response) {
@@ -171,18 +160,26 @@ public class NetScanCtr {
      @param request {@link HttpServletRequest}
      */
     private void mapSizeBigger(Model model, Map<String, Boolean> netWork, HttpServletRequest request) {
-        String propertyLastScan = properties.getOrDefault("lastscan", "1515233487000").toString();
+        Integer thisTotpc = null;
+        try{
+            thisTotpc = Integer.parseInt(properties.getProperty(KEY_TOTPC));
+        }
+        catch(NumberFormatException | NullPointerException e){
+            MessageToUser messageToUser = new MessageSwing();
+            (( MessageSwing ) messageToUser).infoNoTitlesDIA(e.getMessage() + "\nTotal PC");
+        }
+        String propertyLastScan = properties.getProperty(ConstantsFor.LASTSCAN, "1515233487000");
         propLastScanMinusDuration = Long.parseLong(propertyLastScan) + TimeUnit.MINUTES.toMillis(DURATION);
         boolean isSystemTimeBigger = (System.currentTimeMillis() > propLastScanMinusDuration);
         long timeLeft = TimeUnit.MILLISECONDS.toSeconds(propLastScanMinusDuration - System.currentTimeMillis());
         String msg = timeLeft + " seconds (" + ( float ) timeLeft / ConstantsFor.ONE_HOUR_IN_MIN + " min) left<br>Delay period is " + DURATION;
         LOGGER.warn(msg);
-        int i = THIS_TOTPC - netWork.size();
+        int i = thisTotpc - netWork.size();
 
         model
             .addAttribute("left", msg)
             .addAttribute("pc", new TForms().fromArray(netWork, true))
-            .addAttribute(ConstantsFor.TITLE, i + "/" + THIS_TOTPC + " PCs (" + netScannerSvc.getOnLinePCs() + ")");
+            .addAttribute(ConstantsFor.TITLE, i + "/" + thisTotpc + " PCs (" + netScannerSvc.getOnLinePCs() + ")");
         if(0 > i){
             writeToFile(netWork);
             model.addAttribute("newpc", "Добавлены компы! " + Math.abs(i) + " шт.");
@@ -232,7 +229,7 @@ public class NetScanCtr {
                 .addAttribute(TITLE_STR, new Date(this.propLastScanMinusDuration))
                 .addAttribute("pc", new TForms().fromArray(pCsAsync, true));
             AppComponents.lastNetScan().setTimeLastScan(new Date());
-            properties.setProperty("lastscan", System.currentTimeMillis() + "");
+            properties.setProperty(ConstantsFor.LASTSCAN, System.currentTimeMillis() + "");
             lastScan.clear();
         }
     }

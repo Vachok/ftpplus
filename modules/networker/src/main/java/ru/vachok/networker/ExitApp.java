@@ -40,7 +40,6 @@ public class ExitApp implements Runnable {
      */
     public ExitApp(String reasonExit) {
         this.reasonExit = reasonExit;
-        ConstantsFor.saveProps(ConstantsFor.getProps());
     }
 
     /**
