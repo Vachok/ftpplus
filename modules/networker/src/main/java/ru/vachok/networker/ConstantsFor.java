@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.ui.Model;
 import org.springframework.web.multipart.MultipartFile;
+import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.messenger.email.ESender;
 import ru.vachok.mysqlandprops.RegRuMysql;
@@ -315,7 +316,9 @@ public enum ConstantsFor {
             try {
                 initProperties = new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
             } catch (Exception e) {
+                MessageToUser messageToUser = new MessageSwing();
                 initProperties = new FileProps(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
+                (( MessageSwing ) messageToUser).infoNoTitlesDIA(e.getMessage() + "\n" + initProperties.toString());
             }
             initProperties.delProps();
             initProperties.setProps(propsToSave);
