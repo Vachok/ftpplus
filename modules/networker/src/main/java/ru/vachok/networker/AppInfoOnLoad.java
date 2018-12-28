@@ -4,6 +4,8 @@ package ru.vachok.networker;
 import org.slf4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import ru.vachok.messenger.MessageSwing;
+import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.EMailAndDB.SpeedRunActualize;
 import ru.vachok.networker.accesscontrol.common.CommonRightsChecker;
 import ru.vachok.networker.componentsrepo.AppComponents;
@@ -51,6 +53,8 @@ public class AppInfoOnLoad implements Runnable {
      */
     private static final int THIS_DELAY = 111;
 
+    private static MessageToUser messageToUser = new MessageSwing();
+
     private static Runnable r = () -> {
         try{
             FileVisitor<Path> commonRightsChecker = new CommonRightsChecker();
@@ -89,24 +93,27 @@ public class AppInfoOnLoad implements Runnable {
     }
 
     /**
-     <b>1.1 Краткая сводка</b>
-     Немного инфомации о приложении.
-
-     @param appCtx {@link ApplicationContext}
+     Стата за неделю по-ПК
+     <p>
+     Usages: {@link #schedStarter()} <br> Uses: 1.1 {@link MyCalen#getNextDayofWeek(int, int, DayOfWeek)}, 1.2 {@link ThreadConfig#threadPoolTaskScheduler()}
      */
-    private void infoForU(ApplicationContext appCtx) {
-        final long stArt = System.currentTimeMillis();
-        String msg = new StringBuilder()
-            .append(appCtx.getApplicationName())
-            .append(" app name")
-            .append(appCtx.getDisplayName())
-            .append(" app display name\n")
-            .append(ConstantsFor.getBuildStamp()).toString();
-        LOGGER.info(msg);
-        schedStarter();
-        String msgTimeSp = "IntoApplication.infoForU method. " + ( float ) (System.currentTimeMillis() - stArt) / 1000 +
-            STR_SEC_SPEND;
-        LOGGER.info(msgTimeSp);
+    @SuppressWarnings ("MagicNumber")
+    private static void dateSchedulers() {
+        Date nextStartDay = MyCalen.getNextDayofWeek(23, 57, DayOfWeek.SUNDAY);
+        StringBuilder stringBuilder = new StringBuilder();
+        ThreadPoolTaskScheduler threadPoolTaskScheduler = new ThreadConfig().threadPoolTaskScheduler();
+        long delay = TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY_HOURS * 7);
+
+        threadPoolTaskScheduler.scheduleWithFixedDelay(new WeekPCStats(), nextStartDay, delay);
+        stringBuilder.append(nextStartDay.toString()).append(" WeekPCStats() start | \n");
+
+        nextStartDay = new Date(nextStartDay.getTime() - TimeUnit.HOURS.toMillis(1));
+        threadPoolTaskScheduler.scheduleWithFixedDelay(new MailIISLogsCleaner(), nextStartDay, delay);
+        stringBuilder.append(nextStartDay.toString()).append(" MailIISLogsCleaner() start.\n");
+
+        String logStr = stringBuilder.toString();
+        LOGGER.warn(logStr);
+        messageToUser.infoNoTitles(logStr + "\n" + new TForms().fromArray(ConstantsFor.getProps()));
     }
 
     /**
@@ -140,32 +147,28 @@ public class AppInfoOnLoad implements Runnable {
             .append(" in minutes\n")
             .append(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(THIS_DELAY + 1))).toString();
         LOGGER.info(msg);
-
         dateSchedulers();
     }
 
     /**
-     Стата за неделю по-ПК
-     <p>
-     Usages: {@link #schedStarter()} <br> Uses: 1.1 {@link MyCalen#getNextDayofWeek(int, int, DayOfWeek)}, 1.2 {@link ThreadConfig#threadPoolTaskScheduler()}
+     <b>1.1 Краткая сводка</b>
+     Немного инфомации о приложении.
+
+     @param appCtx {@link ApplicationContext}
      */
-    @SuppressWarnings ("MagicNumber")
-    private static void dateSchedulers() {
-        Date nextStartDay = MyCalen.getNextDayofWeek(23, 57, DayOfWeek.SUNDAY);
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("AppInfoOnLoad.dateSchedulers ");
-        ThreadPoolTaskScheduler threadPoolTaskScheduler = new ThreadConfig().threadPoolTaskScheduler();
-        long delay = TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY_HOURS * 7);
-
-        threadPoolTaskScheduler.scheduleWithFixedDelay(new WeekPCStats(), nextStartDay, delay);
-        stringBuilder.append(nextStartDay.toString()).append(" stats start | ");
-
-        nextStartDay = new Date(nextStartDay.getTime() - TimeUnit.HOURS.toMillis(1));
-        threadPoolTaskScheduler.scheduleWithFixedDelay(new MailIISLogsCleaner(), nextStartDay, delay);
-        stringBuilder.append(nextStartDay.toString()).append(" logs IIS cleaner start.");
-
-        String logStr = stringBuilder.toString();
-        LOGGER.warn(logStr);
+    private void infoForU(ApplicationContext appCtx) {
+        final long stArt = System.currentTimeMillis();
+        String msg = new StringBuilder()
+            .append(appCtx.getApplicationName())
+            .append(" app name")
+            .append(appCtx.getDisplayName())
+            .append(" app display name\n")
+            .append(ConstantsFor.getBuildStamp()).toString();
+        LOGGER.info(msg);
+        schedStarter();
+        String msgTimeSp = "IntoApplication.infoForU method. " + ( float ) (System.currentTimeMillis() - stArt) / 1000 +
+            STR_SEC_SPEND;
+        messageToUser.infoNoTitles(MyCalen.toStringS() + "\n" + msgTimeSp);
     }
 
 }

@@ -7,6 +7,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import ru.vachok.messenger.MessageSwing;
+import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
@@ -86,6 +88,7 @@ public class IntoApplication {
      */
     @SuppressWarnings ("JavadocReference")
     public static void main(String[] args) {
+
         final long stArt = System.currentTimeMillis();
         beforeSt();
         configurableApplicationContext = SpringApplication.run(IntoApplication.class, args);
@@ -113,6 +116,7 @@ public class IntoApplication {
      Usages: {@link #main(String[])}
      */
     private static void beforeSt() {
+        MessageToUser messageToUser = new MessageSwing();
         new ThreadConfig().threadPoolTaskExecutor().execute(ConstantsFor::takePr);
         ConstantsFor.showMem();
         LOGGER.info("IntoApplication.beforeSt");
@@ -128,6 +132,7 @@ public class IntoApplication {
         SPRING_APPLICATION.setMainApplicationClass(IntoApplication.class);
         SPRING_APPLICATION.setApplicationContextClass(AppCtx.class);
         System.setProperty("encoding", "UTF8");
+        messageToUser.infoNoTitles(ConstantsFor.showMem() + "\n" + msg);
     }
 
     /**
