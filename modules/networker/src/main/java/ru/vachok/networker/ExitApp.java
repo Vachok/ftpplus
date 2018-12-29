@@ -3,90 +3,82 @@ package ru.vachok.networker;
 
 import org.slf4j.Logger;
 import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
+import static ru.vachok.networker.IntoApplication.getConfigurableApplicationContext;
+
 
 /**
- Действия, для выхода
+ Действия, при выходе
 
  @since 21.12.2018 (12:15) */
+@SuppressWarnings ("StringBufferReplaceableByString")
 public class ExitApp implements Runnable {
 
-    /*Fields*/
+    /**
+     {@link AppComponents#getLogger()}
+     */
     private static final Logger LOGGER = AppComponents.getLogger();
 
-    private String reasonExit;
+    /**
+     Причина выхода
+     */
+    private final String reasonExit;
 
-    private String name;
+    /**
+     Uptime в минутах. Как статус {@link System#exit(int)}
+     */
+    private final long toMinutes = TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - ConstantsFor.START_STAMP);
 
-    private Properties properties;
-
-    private long toMinutes = TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - ConstantsFor.START_STAMP);
-
-    /*Instances*/
-    public ExitApp(String name, String reasonExit) {
+    /**
+     @param reasonExit {@link #reasonExit}
+     */
+    public ExitApp(String reasonExit) {
         this.reasonExit = reasonExit;
-        this.name = name;
     }
 
-    public ExitApp(String fromClass) {
-        this.reasonExit = "No Reason. From " + IntoApplication.class.getSimpleName();
-        this.name = fromClass;
-    }
-
+    /**
+     {@link #copyAvail()}
+     */
     @Override
     public void run() {
-        this.properties = ConstantsFor.getProps();
-        LOGGER.info("ExitApp.run");
-        Thread.currentThread().setName("ExitApp.run");
+        LOGGER.info(ConstantsFor.EXIT_APP_RUN);
+        Thread.currentThread().setName(ConstantsFor.EXIT_APP_RUN);
         LOGGER.warn(reasonExit);
-        try{
-            copyAvail();
-        }
-        catch(IOException e){
-            exitAppDO();
-        }
+        copyAvail();
     }
 
-    private void copyAvail() throws IOException {
-        String avaPathStr = Paths.get(".").toFile().getCanonicalPath();
-        Path logPath = Paths.get(avaPathStr + "\\modules\\networker\\src\\main\\resources\\static\\texts\\available_last.txt");
-        File avalInRoot = new File("available_last.txt");
-        File avalInTexts = new File(logPath.toString());
+    /**
+     Копирует логи
+     */
+    @SuppressWarnings ({"HardCodedStringLiteral", "FeatureEnvy"})
+    private void copyAvail() {
+        File appLog = new File("g:\\My_Proj\\FtpClientPlus\\modules\\networker\\app.log\\");
+        FileSystemWorker.copyOrDelFile(new File(ConstantsFor.AVAILABLE_LAST_TXT), new StringBuilder().append(".\\lan\\vlans200").append(System.currentTimeMillis() / 1000).append(".txt").toString(),
+            true);
+        FileSystemWorker.copyOrDelFile(new File(ConstantsFor.OLD_LAN_TXT), new StringBuilder().append(".\\lan\\old_lan_").append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
+        if(appLog.exists() && appLog.canRead()){
+            FileSystemWorker.copyOrDelFile(appLog, "\\\\10.10.111.1\\Torrents-FTP\\app.log", false);
+        } else LOGGER.info("No app.log");
 
-        if(avalInRoot.exists() && avalInRoot.canRead()){
-            String avalInTextsStr = avalInTexts.toString();
-            avalInTextsStr = avalInTextsStr.replace("available", "available_last");
-            Files.copy(avalInRoot.toPath(), Paths.get(avalInTextsStr));
-            exitAppDO();
-        }
-        else{
-            if(avalInTexts.exists() && avalInTexts.canWrite() && avalInTexts.canRead()){
-                Files.deleteIfExists(avalInTexts.toPath());
-                Files.copy(avalInTexts.toPath(), Paths.get(avalInTexts
-                    .getAbsolutePath().replace("available", "available_last")));
-                exitAppDO();
-            }
-            else{
-                LOGGER.error("NO FILES AVAILABLE!");
-                LOGGER.info(name);
-                exitAppDO();
-            }
-        }
+        exitAppDO();
     }
 
+    /**
+     Сохранение {@link ConstantsFor#saveProps(Properties)}, удаление временного и выход
+     <p>
+     Код выхода = <i>uptime</i> в минутах.
+     */
     private void exitAppDO() {
-        ConstantsFor.saveProps(properties);
-        IntoApplication.getConfigurableApplicationContext().close();
+        getConfigurableApplicationContext().close();
         FileSystemWorker.delTemp();
+
+        new ThreadConfig().killAll();
         System.exit(Math.toIntExact(toMinutes));
     }
 }

@@ -129,13 +129,6 @@ public class TForms {
         }
     }
 
-    public String fromArray(String[] stringsArray) {
-        for(String s : stringsArray){
-            nStringBuilder.append(s).append("\n<br>");
-        }
-        return nStringBuilder.toString();
-    }
-
     public String mapLongString(Map<Long, String> visitsMap) {
         visitsMap.forEach((x, y) -> nStringBuilder.append(x).append(" | ").append(y).append("\n"));
         return nStringBuilder.toString();

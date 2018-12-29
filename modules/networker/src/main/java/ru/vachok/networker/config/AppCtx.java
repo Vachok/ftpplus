@@ -52,9 +52,10 @@ public class AppCtx extends AnnotationConfigApplicationContext {
     private static void qAdd() {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("<p><center><h3>Application Context</center></h3>");
-        String msg = "<p><h3><center>Context</center></h3><b><br>Context loaded. Bean names:</b><br>" +
-            new TForms().fromArray(configApplicationContext.getBeanDefinitionNames()) +
-            "</p>";
+        String msg = new StringBuilder()
+            .append("<p><h3><center>Context</center></h3><b><br>Context loaded. Bean names:</b><br>")
+            .append(new TForms().fromArray(configApplicationContext.getBeanDefinitionNames(), false))
+            .append("</p>").toString();
         stringBuilder.append(msg);
         outQueue.add(msg);
         outQueue.add(AppCtx.CLASSPATH_ALL_URL_PREFIX);

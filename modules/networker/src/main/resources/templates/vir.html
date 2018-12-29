@@ -12,13 +12,11 @@
 <a href="http://srv-git.eatmeat.ru:9999"><font color=""><p th:utext="${ping}"></p></font></a>
 <a href="texts/avalible_last.txt">avalible_last</a> <a href="texts/available.txt">avalible</a>
 <p th:utext="${visit}"/>
-<p th:utext="${request}"/>
 <p th:utext="${res}"/>
+<p th:utext="${request}"/>
 </body>
 <footer>
-    <p align="right" th:utext="${visit}"/>
     <h3><a href="/stop"><font color="yellow">Exit Application</font></a> or <a href="/pcoff"><font color="red">OFF PC</font></a></h3>
-    <a href="/netscan">Netscan Full</a>
-    <a href="/pflists">PfLists</a>
+    <p th:utext="${footer}">
 </footer>
 </html>

@@ -4,10 +4,14 @@ package ru.vachok.networker.fileworks;
 import ru.vachok.networker.ConstantsFor;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
+
 
 /**
  Удаление временных файлов.
@@ -20,51 +24,37 @@ class DeleterTemp extends FileSystemWorker implements Runnable {
      */
     private static PrintWriter printWriter;
 
+    /**
+     Счётчик файлов
+     */
+    private int filesCounter = 0;
+
+    private static final List<String> FROM_FILE = new ArrayList<>();
+
     static {
         try (OutputStream outputStream = new FileOutputStream(DeleterTemp.class.getSimpleName() + "_log.txt")) {
             printWriter = new PrintWriter(outputStream, true);
         } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
         }
+        getList();
     }
-
-    /**
-     Счётчик файлов
-     */
-    private int filesCounter = 0;
 
     @Override
     public void run() {
         LOGGER.info("DeleterTemp.run");
     }
 
-    @Override
-    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-        Thread.currentThread().setName("DeleterTemp.visitFile");
-        this.filesCounter = filesCounter + 1;
-        String fileAbs = file.toAbsolutePath().toString() + " DELETED";
-        if (more2MBOld(attrs)) {
-            Files.setAttribute(file, "dos:archive", true);
-            printWriter.println(file.toAbsolutePath()
-                + ","
-                + (float) file.toFile().length() / ConstantsFor.MBYTE + ""
-                + ","
-                + new Date(attrs.lastAccessTime().toMillis()) +
-                "," +
-                Files.readAttributes(file, "dos:*"));
-        }
-
-        if (tempFile(file.toAbsolutePath())) {
-            try {
-                Files.deleteIfExists(file);
-            } catch (FileSystemException e) {
-                file.toFile().deleteOnExit();
-                return FileVisitResult.CONTINUE;
+    private static void getList() {
+        try (InputStream inputStream = DeleterTemp.class.getResourceAsStream("/BOOT-INF/classes/static/config/temp_pat.cfg");
+             InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
+             BufferedReader bufferedReader = new BufferedReader(reader)) {
+            while (bufferedReader.ready()) {
+                FROM_FILE.add(bufferedReader.readLine());
             }
-            LOGGER.warn(fileAbs);
+        } catch (IOException e) {
+            LOGGER.warn(e.getMessage(), e);
         }
-
-        return FileVisitResult.CONTINUE;
     }
 
     /**
@@ -80,23 +70,46 @@ class DeleterTemp extends FileSystemWorker implements Runnable {
                 .size() > ConstantsFor.MBYTE * 2;
     }
 
+    @Override
+    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+        Thread.currentThread().setName("DeleterTemp.visitFile");
+        this.filesCounter = filesCounter + 1;
+        String fileAbs = new StringBuilder()
+            .append(file.toAbsolutePath().toString())
+            .append(ConstantsFor.DELETED).toString();
+        if (more2MBOld(attrs)) {
+            Files.setAttribute(file, ConstantsFor.DOS_ARCHIVE, true);
+            printWriter.println(new StringBuilder()
+                .append(file.toAbsolutePath())
+                .append(",")
+                .append(( float ) file.toFile().length() / ConstantsFor.MBYTE)
+                .append(",")
+                .append(new Date(attrs.lastAccessTime().toMillis()))
+                .append(",")
+                .append(Files.readAttributes(file, "dos:*")).toString());
+        }
+        if (tempFile(file.toAbsolutePath())) {
+            try {
+                Files.deleteIfExists(file);
+            } catch (FileSystemException e) {
+                file.toFile().deleteOnExit();
+                return FileVisitResult.CONTINUE;
+            }
+            LOGGER.warn(fileAbs);
+        }
+
+        return FileVisitResult.CONTINUE;
+    }
+
     /**
      Проверка файлика на "временность".
+     <p>
+     ClassPath - /BOOT-INF/classes/static/config/temp_pat.cfg <br> .\resources\static\config\temp_pat.cfg
 
      @param filePath {@link Path} до файла
      @return удалять / не удалять
      */
     private boolean tempFile(Path filePath) {
-        return filePath.toString().toLowerCase().contains(".eatmeat.ru") ||
-            filePath.toString().toLowerCase().contains(".log") ||
-            filePath.toString().toLowerCase().contains(".obj") ||
-            filePath.toString().toLowerCase().contains(".after") ||
-            filePath.toString().toLowerCase().contains(".before") ||
-            filePath.toString().toLowerCase().contains(".test") ||
-            filePath.toString().toLowerCase().contains("putty.exe") ||
-            filePath.toString().toLowerCase().contains(".me") ||
-            filePath.toString().toLowerCase().contains(".csv") ||
-            filePath.toString().toLowerCase().contains(".prn");
+        return FROM_FILE.stream().anyMatch(sP -> filePath.toString().toLowerCase().contains(sP));
     }
-
 }

@@ -18,7 +18,6 @@
 <p>
     <a href="http://srv-git.eatmeat.ru/fsa/">Статистика по HTTP-трафику SQUID</a><br>
     <a href="http://srv-git.eatmeat.ru:1234">Локальный GIT, для конфигов и тп. (Может быть выключен)</a> | <a href="/git">вкл</a>|<a href="/git?reboot">выкл</a><br>
-<center><code th:utext="${devscan}"/></center>
 <p>
 <h3>Синтаксис</h3>
 <p>
@@ -28,8 +27,9 @@
     </font>
     Запрос без параметров - запрос в матрицу доступа. Поиск по-должности %олжнос%<br>
 </p>
-<p th:utext="${footer}"/>
 </body>
 <footer>
+    <center><code th:utext="${devscan}"/></center>
+    <p th:utext="${footer}"/>
 </footer>
 </html>

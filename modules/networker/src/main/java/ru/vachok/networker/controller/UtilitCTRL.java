@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.services.PassGenerator;
 import ru.vachok.networker.services.SimpleCalculator;
 
@@ -35,16 +36,16 @@ public class UtilitCTRL {
         if(request.getQueryString()!=null){
             try{
                 howMuchBytes = Integer.parseInt(request.getQueryString());
-                model.addAttribute("pass", passGenerator.generatorPass(howMuchBytes));
+                model.addAttribute("ok", passGenerator.generatorPass(howMuchBytes));
             }
             catch(Exception e){
-                model.addAttribute("pass", e.getMessage());
-                return "ad";
+                model.addAttribute("ok", e.getMessage());
+                return "ok";
             }
         }
-        model.addAttribute("title", howMuchBytes);
-        model.addAttribute("pass", passGenerator.generatorPass(howMuchBytes));
-        return "ad";
+        model.addAttribute(ConstantsFor.TITLE, howMuchBytes);
+        model.addAttribute("ok", passGenerator.generatorPass(howMuchBytes));
+        return "ok";
     }
 
     public double getSumm(List<Double> forCountList) {

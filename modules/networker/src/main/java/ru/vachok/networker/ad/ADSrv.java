@@ -11,10 +11,8 @@ import ru.vachok.networker.TForms;
 
 import java.io.*;
 import java.net.InetAddress;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
+import java.util.Date;
 import java.util.*;
 
 
@@ -64,7 +62,7 @@ public class ADSrv implements Runnable {
                             " Время проверки: " +
                             resultSet.getString("timerec") +
                             "</summary><small>" +
-                            resultSet.getString("users") +
+                            resultSet.getString(ConstantsFor.USERS) +
                             "</small></details>";
                         ownerRights.add(owner);
                     }
@@ -200,7 +198,7 @@ public class ADSrv implements Runnable {
      @throws IOException {@link InetAddress}.getByName(queryString + ".eatmeat.ru").isReachable(500))
      */
     String getDetails(String queryString) throws IOException {
-        if (InetAddress.getByName(queryString + ".eatmeat.ru").isReachable(500)) {
+        if(InetAddress.getByName(queryString + ConstantsFor.EATMEAT_RU).isReachable(500)){
             StringBuilder stringBuilder = new StringBuilder();
             stringBuilder.append("<p>   Более подробно про ПК:<br>");
             File filesAsFile = new File(new StringBuilder()
@@ -224,7 +222,7 @@ public class ADSrv implements Runnable {
             }
             ConstantsFor.COMPNAME_USERS_MAP.put(s1, filesAsFile);
             try {
-                new PCUserResolver().recToDB(queryString + ".eatmeat.ru", s1.split(" ")[1]);
+                new PCUserResolver().recToDB(queryString + ConstantsFor.EATMEAT_RU, s1.split(" ")[1]);
             } catch (ArrayIndexOutOfBoundsException ignore) {
                 //
             }

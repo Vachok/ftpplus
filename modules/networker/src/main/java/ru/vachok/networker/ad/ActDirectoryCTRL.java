@@ -8,7 +8,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.SshActs;
@@ -23,6 +22,13 @@ import java.util.List;
  @since 02.10.2018 (23:06) */
 @Controller
 public class ActDirectoryCTRL {
+
+    /**
+     Небольшое описание, для показа на сайте.
+     */
+    private static final String ALERT_AD_FOTO =
+        "<p>Для корректной работы, вам нужно положить фото юзеров <a href=\"file://srv-mail3.eatmeat.ru/c$/newmailboxes/fotoraw/\" target=\"_blank\">\\\\srv-mail3.eatmeat" +
+            ".ru\\c$\\newmailboxes\\fotoraw\\</a>\n";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ActDirectoryCTRL.class.getSimpleName());
 
@@ -65,29 +71,6 @@ public class ActDirectoryCTRL {
     }
 
     /**
-     <b>AdItem</b>
-     Используемые методы и константы: <br> 1. {@link NetScannerSvc#setThePc(String)} <br> 2. {@link #inputWithInfoFromDB} <br> 3. {@link ADSrv#getDetails(String)} <br> 4. {@link
-    PageFooter#getFooterUtext()}
-
-     @param queryString {@link HttpServletRequest#getQueryString()}
-     @param model       {@link Model}
-     @return aditem.html
-     */
-    private String queryStringExists(String queryString, Model model) {
-        NetScannerSvc iScan = NetScannerSvc.getI();
-        iScan.setThePc(queryString);
-        model.addAttribute("title", queryString + " " + iScan.getInfoFromDB());
-        model.addAttribute(ConstantsFor.USERS, inputWithInfoFromDB);
-        try {
-            model.addAttribute("details", adSrv.getDetails(queryString));
-        } catch (Exception e) {
-            model.addAttribute("details", e.getMessage());
-        }
-        model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext());
-        return "aditem";
-    }
-
-    /**
      Get adphoto.html
      <p>
      Uses: {@link PhotoConverterSRV#psCommands}
@@ -103,13 +86,37 @@ public class ActDirectoryCTRL {
             model.addAttribute("photoConverterSRV", photoConverterSRV);
             model.addAttribute("sshActs", sshActs);
             if (!ConstantsFor.isPingOK()) titleStr = "ping to srv-git.eatmeat.ru is " + false;
-            model.addAttribute("title", titleStr);
+            model.addAttribute(ConstantsFor.TITLE, titleStr);
             model.addAttribute("content", photoConverterSRV.psCommands());
-            model.addAttribute("alert", ConstantsFor.ALERT_AD_FOTO);
+            model.addAttribute("alert", ALERT_AD_FOTO);
             model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext());
         } catch (NullPointerException e) {
             LOGGER.error(e.getMessage(), e);
         }
         return "adphoto";
+    }
+
+    /**
+     <b>AdItem</b>
+     Используемые методы и константы: <br> 1. {@link NetScannerSvc#setThePc(String)} <br> 2. {@link #inputWithInfoFromDB} <br> 3. {@link ADSrv#getDetails(String)} <br> 4. {@link
+    PageFooter#getFooterUtext()}
+
+     @param queryString {@link HttpServletRequest#getQueryString()}
+     @param model       {@link Model}
+     @return aditem.html
+     */
+    private String queryStringExists(String queryString, Model model) {
+        NetScannerSvc iScan = NetScannerSvc.getI();
+        iScan.setThePc(queryString);
+        model.addAttribute(ConstantsFor.TITLE, queryString + " " + iScan.getInfoFromDB());
+        model.addAttribute(ConstantsFor.USERS, inputWithInfoFromDB);
+        try{
+            model.addAttribute("details", adSrv.getDetails(queryString));
+        }
+        catch(Exception e){
+            model.addAttribute("details", e.getMessage());
+        }
+        model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext());
+        return "aditem";
     }
 }

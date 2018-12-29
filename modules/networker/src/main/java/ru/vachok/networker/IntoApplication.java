@@ -10,16 +10,15 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
-import ru.vachok.networker.accesscontrol.MatrixCtr;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.config.ThreadConfig;
 
+import java.awt.*;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.TextStyle;
-import java.util.Arrays;
 import java.util.Locale;
 import java.util.Properties;
 
@@ -27,13 +26,13 @@ import java.util.Properties;
 /**
  Старт
  <p>
- 1. {@link #main(String[])}<br> 1.1 {@link AppInfoOnLoad#infoForU(ApplicationContext)}
- */
+ 1. {@link #main(String[])}<br>
+
+ @see AppInfoOnLoad
+ @since 02.05.2018 (10:36) */
 @SpringBootApplication
 @EnableScheduling
 public class IntoApplication {
-
-    /*Fields*/
 
     /**
      {@link AppComponents#getLogger()}
@@ -45,19 +44,26 @@ public class IntoApplication {
      */
     private static final SpringApplication SPRING_APPLICATION = new SpringApplication();
 
+
     /**
-     Имя ПК, на котором запущена программа.
-     <p>
-     {@link ConstantsFor#thisPC()}
+     {@link ConfigurableApplicationContext} Usages: {@link #main(String[])},
      */
-    private static final String THIS_PC = ConstantsFor.thisPC();
+    private static ConfigurableApplicationContext configurableApplicationContext = null;
 
-    private static ConfigurableApplicationContext configurableApplicationContext;
+    /**
+     Usages: {@link SystemTrayHelper#addItems(PopupMenu)}
 
+     @return {@link #SPRING_APPLICATION}
+     */
     static SpringApplication getSpringApplication() {
         return SPRING_APPLICATION;
     }
 
+    /**
+     Usages: {@link ExitApp#exitAppDO()}, {@link SystemTrayHelper#addItems(PopupMenu)}
+
+     @return {@link #configurableApplicationContext}
+     */
     static ConfigurableApplicationContext getConfigurableApplicationContext() {
         return configurableApplicationContext;
     }
@@ -65,61 +71,69 @@ public class IntoApplication {
     /**
      <h1>1. Точка входа в Spring Boot Application</h1>
      <p>
-     {@link AppInfoOnLoad#infoForU(ApplicationContext)}
 
      @param args null
-     @see MatrixCtr
+     @see SystemTrayHelper#addItems(PopupMenu) {@link AppInfoOnLoad#infoForU(ApplicationContext)}
      */
+    @SuppressWarnings("JavadocReference")
     public static void main(String[] args) {
         final long stArt = System.currentTimeMillis();
         beforeSt();
         configurableApplicationContext = SpringApplication.run(IntoApplication.class, args);
-        ConfigurableApplicationContext run = configurableApplicationContext;
-        run.start();
+        configurableApplicationContext.start();
 
-        if(args.length > 0 && Arrays.toString(args).contains("off")){
-            new ThreadConfig().killAll();
-        }
-        else{
-            String msg = afterSt() + " " + run.toString();
-            LOGGER.warn(msg);
-        }
+        String msg = new StringBuilder()
+            .append(afterSt())
+            .append("\n")
+            .append(new TForms().fromArray(configurableApplicationContext.getBeanDefinitionNames(), false)).toString();
+        LOGGER.warn(msg);
+
         String msgTimeSp = new StringBuilder()
             .append("IntoApplication.main method. ")
-            .append(( float ) (System.currentTimeMillis() - stArt) / 1000)
-            .append(" sec spend").toString();
+            .append((float) (System.currentTimeMillis() - stArt) / 1000)
+            .append(" ")
+            .append(ConstantsFor.STR_SEC_SPEND).toString();
         LOGGER.info(msgTimeSp);
+        if (args.length > 0) {
+            for (String s : args) {
+                LOGGER.info(s);
+                if (s.contains(ConstantsFor.STR_TOTPC)) {
+                    ConstantsFor.getProps().setProperty(ConstantsFor.STR_TOTPC, s.replaceAll(ConstantsFor.STR_TOTPC, ""));
+                }
+                if (s.equalsIgnoreCase("off")) {
+                    new ThreadConfig().killAll();
+                }
+            }
+        }
     }
 
     /**
-     Запуск до старта Spring boot app
+     Запуск до старта Spring boot app <br> Usages: {@link #main(String[])}
      */
     private static void beforeSt() {
-        ConstantsFor.takePr();
         ConstantsFor.showMem();
         LOGGER.info("IntoApplication.beforeSt");
         String msg = LocalDate.now().getDayOfWeek().getValue() + " - day of week\n" +
             LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault());
         LOGGER.warn(msg);
-        if(THIS_PC.toLowerCase().contains("no0027") || THIS_PC.toLowerCase().contains("home")){
+        if (ConstantsFor.thisPC().toLowerCase().contains(ConstantsFor.NO0027) || ConstantsFor.thisPC().toLowerCase().contains("home")) {
             SystemTrayHelper.addTray("icons8-плохие-поросята-32.png");
-        }
-        else{
+        } else {
             SystemTrayHelper.addTray(null);
         }
         SPRING_APPLICATION.setMainApplicationClass(IntoApplication.class);
         SPRING_APPLICATION.setApplicationContextClass(AppCtx.class);
-        System.setProperty("CONST_TXT.encoding", "UTF8");
+        System.setProperty("encoding", "UTF8");
     }
 
     /**
-     Запуск после старта Spring boot app
+     Запуск после старта Spring boot app <br> Usages: {@link #main(String[])}
      */
     private static boolean afterSt() {
         ThreadConfig threadConfig = new ThreadConfig();
         Runnable infoAndSched = new AppInfoOnLoad();
         ConstantsFor.showMem();
-        try{
+        try {
             String s = Paths.get("").toFile().getCanonicalPath().toLowerCase();
             String showPath = Paths.get(".").toString() + "\n abs: " +
                 Paths.get(".").toFile().getAbsolutePath();
@@ -136,8 +150,7 @@ public class IntoApplication {
             LOGGER.error(showPath);
             threadConfig.threadPoolTaskExecutor().execute(infoAndSched);
             return true;
-        }
-        catch(IOException e){
+        } catch (IOException e) {
             LOGGER.warn(e.getMessage(), e);
             return false;
         }

@@ -3,11 +3,13 @@ package ru.vachok.networker.services;
 
 import org.apache.commons.net.ntp.TimeInfo;
 import org.slf4j.Logger;
+import ru.vachok.networker.AppInfoOnLoad;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
 
 import java.time.DayOfWeek;
-import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
@@ -42,8 +44,7 @@ public abstract class MyCalen {
     /**
      Дата запуска common scanner
      <p>
-     Usage: {@link ru.vachok.networker.AppInfoOnLoad#runCommonScan()} <br> Uses: -
-     <p>
+     Usage: {@link #toStringS()}
 
      @param hourNeed час
      @param minNeed  минута
@@ -83,38 +84,26 @@ public abstract class MyCalen {
         }
     }
 
-    public static String toStringS() {
-        final StringBuilder sb = new StringBuilder("MyCalen{");
-        sb.append(" getNextDayofWeek (friday i'm in love!)=").append(getNextDayofWeek(0, 4, DayOfWeek.FRIDAY)).append("\n");
-        sb.append(", getNextMonth=").append(getNextMonth()).append("\n");
-        sb.append(", getNextSat=").append(getNextSat(0, 2)).append("\n");
-        sb.append(", MON IS=").append(getNextDayofWeek(10, 2, DayOfWeek.MONDAY)).append("\n");
-        sb.append('}');
-        return sb.toString();
-    }
-
     /**
-     // TODO: 19.12.2018 проверить метод!
+     Проверка работоспособности.
+     <p>
+     {@code getNextDayofWeek(0, 4, DayOfWeek.FRIDAY; getNextMonth(); getNextSat(0, 2); getNextDayofWeek(10, 2, DayOfWeek.MONDAY)}
 
-     @return дата через месяц.
+     @return результаты методов.
      */
-    public static Date getNextMonth() {
-        LocalDate localDate = LocalDate.now();
-        Calendar.Builder builder = new Calendar.Builder();
-        builder.setDate(localDate.getYear(), localDate.getMonthValue(), localDate.getDayOfMonth());
-        Calendar build = builder.build();
-        build.setWeekDate(localDate.getYear(), build.getWeeksInWeekYear(), Calendar.SATURDAY);
-        Instant instant = build.toInstant();
-        Date date = new Date(instant.toEpochMilli());
-        String msg = instant.toString() + " and ret date is: " + date.toString() + "\n\n";
-        LOGGER.info(msg);
-        return date;
+    public static String toStringS() {
+        final StringBuilder sb = new StringBuilder("MyCalen\n");
+        sb.append(" getNextDayofWeek (FRI) = ").append(getNextDayofWeek(0, 4, DayOfWeek.FRIDAY)).append("\n");
+        sb.append(", getNextMonth = ").append(getNextMonth()).append("\n");
+        sb.append(", getNextSat = ").append(getNextSat(0, 2)).append("\n");
+        sb.append(",  IS = ").append(getNextDayofWeek(10, 2, DayOfWeek.MONDAY)).append("\n");
+        return sb.toString();
     }
 
     /**
      Создание {@link Date}
      <p>
-     Usages: {@link ru.vachok.networker.AppInfoOnLoad#schedStarter()} <br> Uses: -
+     Usages: {@link AppInfoOnLoad#dateSchedulers()} <br> {@link ConstantsFor#checkDay()} .
 
      @param hourNeed  час
      @param minNeed   минута
@@ -151,5 +140,21 @@ public abstract class MyCalen {
             LOGGER.info(msgTimeSp);
             return retDate;
         }
+    }
+
+    /**
+     Usages: {@link #toStringS()}
+
+     @return дата через месяц.
+     */
+    private static LocalDateTime getNextMonth() {
+        LocalDateTime localDateTime = LocalDateTime.now();
+        localDateTime = localDateTime.plusMonths(1);
+        String msg = new StringBuilder()
+            .append(" and ret date is: ")
+            .append(localDateTime.toString())
+            .append("\n").toString();
+        LOGGER.info(msg);
+        return localDateTime;
     }
 }

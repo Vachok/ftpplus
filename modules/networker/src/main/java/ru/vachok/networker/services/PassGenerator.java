@@ -13,12 +13,16 @@ public class PassGenerator {
 
     private static final Logger LOGGER = AppComponents.getLogger();
 
+    private static final int BYTES_LEN_BY_DEFAULT = 30;
+
     public String generatorPass(int howMuchSym) {
-        if (howMuchSym <= 0) howMuchSym = 30;
+        if(howMuchSym <= 0){
+            howMuchSym = BYTES_LEN_BY_DEFAULT;
+        }
         SecureRandom instanceStrong = new SecureRandom();
         byte[] bytes = instanceStrong.generateSeed(howMuchSym);
         String youNewPass = new String(bytes);
-        String msg = youNewPass + " your password";
+        String msg = youNewPass + " your password\n" + instanceStrong.getAlgorithm();
         LOGGER.warn(msg);
         return youNewPass;
     }

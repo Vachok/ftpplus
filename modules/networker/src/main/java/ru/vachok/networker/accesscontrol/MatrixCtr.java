@@ -30,8 +30,6 @@ import java.util.concurrent.TimeUnit;
 @Controller
 public class MatrixCtr {
 
-    /*Fields*/
-
     private static final Logger LOGGER = AppComponents.getLogger();
 
     private static final String MATRIX_STRING_NAME = "matrix";
@@ -68,46 +66,58 @@ public class MatrixCtr {
     @GetMapping("/")
     public String getFirst(final HttpServletRequest request, Model model, HttpServletResponse response) {
         this.visitor = new Visitor(request);
-        String userPC = ConstantsFor.getUserPC(request);
         boolean pcAuth = ConstantsFor.getPcAuth(request);
-        if (request.getQueryString() != null) {
-            String queryString = request.getQueryString();
-            if (queryString.equalsIgnoreCase("eth") && pcAuth) {
-                lastLogsGetter(model);
-                model.addAttribute(FOOTER_NAME, new PageFooter().getFooterUtext());
-                metricMatrixStart = System.currentTimeMillis() - metricMatrixStart;
-                return "logs";
-            }
-        } else {
-            try {
-                LOGGER.warn(visitor.toString());
-            } catch (Exception ignore) {
-                //
-            }
-            String userIP = userPC + ":" + request.getRemotePort() + "<-" + new VersionInfo().getAppVersion();
-            if (!ConstantsFor.isPingOK()) userIP = "ping to srv-git.eatmeat.ru is " + false;
-            model.addAttribute("yourip", userIP);
-            model.addAttribute(MATRIX_STRING_NAME, new MatrixSRV());
-            model.addAttribute(FOOTER_NAME, new PageFooter().getFooterUtext());
-            if (ConstantsFor.getUserPC(request).toLowerCase().contains(ConstantsFor.NO0027) ||
-                ConstantsFor.getUserPC(request).toLowerCase().contains("0:0:0:0")) {
-                model.addAttribute("visit", versionInfo.toString());
-            } else {
-                model.addAttribute("visit", visitor.getTimeSpend() + " timestamp");
-            }
-        }
+        if (request.getQueryString() != null) return qNotNull(request, model, pcAuth);
+        else qIsNull(model, request);
         model.addAttribute("devscan", DiapazonedScan.getInstance().toString());
-        response.addHeader("Refresh", "90");
+        response.addHeader(ConstantsFor.REFRESH, "90");
         return "starting";
     }
 
-    private void lastLogsGetter(Model model) {
-        Map<String, String> vachokEthosdistro = new AppComponents().getLastLogs();
-        String logsFromDB = new TForms().fromArray(vachokEthosdistro);
-        model.addAttribute("logdb", logsFromDB);
-        model.addAttribute("starttime", new Date(ConstantsFor.START_STAMP));
+    private String qNotNull(HttpServletRequest request, Model model, boolean pcAuth) {
+        String queryString = request.getQueryString();
+        if (queryString.equalsIgnoreCase("eth") && pcAuth) {
+            lastLogsGetter(model);
+            model.addAttribute(FOOTER_NAME, new PageFooter().getFooterUtext());
+            metricMatrixStart = System.currentTimeMillis() - metricMatrixStart;
+            return "logs";
+        }
+        return queryString;
+    }
+
+    private void qIsNull(Model model, HttpServletRequest request) {
+        String userPC = ConstantsFor.getUserPC(request);
+        try {
+            LOGGER.warn(visitor.toString());
+        } catch (Exception ignore) {
+            //
+        }
+        String userIP = userPC + ":" + request.getRemotePort() + "<-" + new VersionInfo().getAppVersion();
+        if (!ConstantsFor.isPingOK()) userIP = "ping to srv-git.eatmeat.ru is " + false;
+        model.addAttribute("yourip", userIP);
+        model.addAttribute(MATRIX_STRING_NAME, new MatrixSRV());
         model.addAttribute(FOOTER_NAME, new PageFooter().getFooterUtext());
-        model.addAttribute("title", metricMatrixStart);
+        if (ConstantsFor.getUserPC(request).toLowerCase().contains(ConstantsFor.NO0027) ||
+            ConstantsFor.getUserPC(request).toLowerCase().contains("0:0:0:0")) {
+            model.addAttribute(ConstantsFor.VISIT, versionInfo.toString());
+        } else {
+            model.addAttribute(ConstantsFor.VISIT, visitor.getTimeSpend() + " timestamp");
+        }
+    }
+
+    private String getCommonAccessRights(String workPos, Model model) {
+        ADSrv adSrv = AppComponents.adSrv();
+        try{
+            String users = workPos.split(": ")[1];
+            String commonRights = adSrv.checkCommonRightsForUserName(users);
+            model.addAttribute(WHOIS_STR, commonRights);
+            model.addAttribute(ConstantsFor.TITLE, workPos);
+            model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext());
+        }
+        catch(ArrayIndexOutOfBoundsException e){
+            LOGGER.error(e.getMessage(), e);
+        }
+        return MATRIX_STRING_NAME;
     }
 
     @PostMapping("/matrix")
@@ -189,18 +199,13 @@ public class MatrixCtr {
         return MATRIX_STRING_NAME;
     }
 
-    private String getCommonAccessRights(String workPos, Model model) {
-        ADSrv adSrv = AppComponents.adSrv();
-        try {
-            String users = workPos.split(": ")[1];
-            String commonRights = adSrv.checkCommonRightsForUserName(users);
-            model.addAttribute(WHOIS_STR, commonRights);
-            model.addAttribute("title", workPos);
-            model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext());
-        } catch (ArrayIndexOutOfBoundsException e) {
-            LOGGER.error(e.getMessage(), e);
-        }
-        return MATRIX_STRING_NAME;
+    private void lastLogsGetter(Model model) {
+        Map<String, String> vachokEthosdistro = new AppComponents().getLastLogs();
+        String logsFromDB = new TForms().fromArray(vachokEthosdistro);
+        model.addAttribute("logdb", logsFromDB);
+        model.addAttribute("starttime", new Date(ConstantsFor.START_STAMP));
+        model.addAttribute(FOOTER_NAME, new PageFooter().getFooterUtext());
+        model.addAttribute(ConstantsFor.TITLE, metricMatrixStart);
     }
 
     private String calculateDoubles(String workPos, Model model) {

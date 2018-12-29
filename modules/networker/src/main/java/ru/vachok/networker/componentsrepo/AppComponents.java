@@ -14,11 +14,11 @@ import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.ad.ADUser;
 import ru.vachok.networker.ad.PCUserResolver;
-import ru.vachok.networker.mailserver.ExSRV;
 import ru.vachok.networker.mailserver.RuleSet;
 import ru.vachok.networker.net.NetScannerSvc;
 import ru.vachok.networker.services.SimpleCalculator;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -28,21 +28,49 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.locks.ReentrantLock;
 
 
+/**
+ Компоненты. Бины
+
+ @since 02.05.2018 (22:14) */
 @ComponentScan
 public class AppComponents {
 
-    private static String thisPcName = ConstantsFor.thisPC();
-
     @Bean
     public static Logger getLogger() {
-        Logger logger = LoggerFactory.getLogger("ru_vachok_networker");
-
-        return logger;
+        return LoggerFactory.getLogger("ru_vachok_networker");
     }
 
+    @SuppressWarnings ("SameReturnValue")
+    @Bean
+    @Scope ("Singleton")
+    public ConcurrentMap<String, File> getCompUsersMap() {
+        ConstantsFor.COMPNAME_USERS_MAP.clear();
+        ConstantsFor.COMPNAME_USERS_MAP.put("INIT", new File("."));
+        return ConstantsFor.COMPNAME_USERS_MAP;
+    }
+
+    /**
+     @return new {@link SimpleCalculator}
+     */
+    @Bean ("simpleCalculator")
+    public SimpleCalculator simpleCalculator() {
+        return new SimpleCalculator();
+    }
+
+    /**
+     @return new {@link SshActs}
+     */
+    @Bean
+    @Scope ("singleton")
+    public SshActs sshActs() {
+        return new SshActs();
+    }
+
+    /**
+     @return new {@link ADSrv}
+     */
     @Bean
     public static ADSrv adSrv() {
         ADUser adUser = new ADUser();
@@ -50,70 +78,60 @@ public class AppComponents {
         return new ADSrv(adUser, adComputer);
     }
 
-    @Bean
-    public static ReentrantLock lock() {
-        return new ReentrantLock();
-    }
-
+    /**
+     @return {@link NetScannerSvc#getI()}
+     */
     @Bean
     public static NetScannerSvc netScannerSvc() {
         return NetScannerSvc.getI();
     }
 
+    /**
+     @return {@link #lastNetScan()}.getNetWork
+     */
     @Bean
     @Scope("singleton")
     public static ConcurrentMap<String, Boolean> lastNetScanMap() {
         return lastNetScan().getNetWork();
     }
 
+    /**
+     @return {@link LastNetScan#getLastNetScan()}
+     */
     @Bean
     public static LastNetScan lastNetScan() {
         return LastNetScan.getLastNetScan();
     }
 
+    /**
+     @return new {@link VersionInfo}
+     */
     @Bean("versioninfo")
+    @Scope("singleton")
     public static VersionInfo versionInfo() {
-        VersionInfo versionInfo = new VersionInfo();
-        if (thisPcName.equalsIgnoreCase("home") ||
-            thisPcName.toLowerCase().contains("no0027")) {
-            versionInfo.setParams();
-        }
-        return versionInfo;
+        return new VersionInfo();
     }
 
+    @Bean("visitor")
+    public Visitor visitor(HttpServletRequest request) {
+        return new Visitor(request);
+    }
+
+    /**
+     @return new {@link CommonScan2YOlder}
+     */
     @Bean
     @Scope("singleton")
     public static CommonScan2YOlder archivesSorter() {
         return new CommonScan2YOlder();
     }
 
+    /**
+     @return new {@link ADSrv}(new {@link ADUser}, new {@link ADComputer#getAdComputers()}.getAdComputers)
+     */
     @Bean
     public static List<ADComputer> adComputers() {
         return new ADSrv(new ADUser(), new ADComputer()).getAdComputer().getAdComputers();
-    }
-
-    @Bean("simpleCalculator")
-    public SimpleCalculator simpleCalculator() {
-        return new SimpleCalculator();
-    }
-
-    @Bean
-    public static PCUserResolver pcUserResolver() {
-        return PCUserResolver.getPcUserResolver();
-    }
-
-    @Bean
-    public ExSRV exSRV() {
-        Thread.currentThread().setName("ExSRV");
-        return new ExSRV();
-    }
-
-    @Bean
-    @Scope("Singleton")
-    public ConcurrentMap<String, File> getCompUsersMap() {
-        ConstantsFor.COMPNAME_USERS_MAP.clear();
-        ConstantsFor.COMPNAME_USERS_MAP.put("INIT", new File("."));
-        return ConstantsFor.COMPNAME_USERS_MAP;
     }
 
     /**
@@ -145,10 +163,12 @@ public class AppComponents {
         return lastLogsList;
     }
 
+    /**
+     @return {@link PCUserResolver#getPcUserResolver()}
+     */
     @Bean
-    @Scope("singleton")
-    public SshActs sshActs() {
-        return new SshActs();
+    public static PCUserResolver pcUserResolver() {
+        return PCUserResolver.getPcUserResolver();
     }
 
 }

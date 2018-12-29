@@ -108,9 +108,9 @@ public class CommonScan2YOlder extends SimpleFileVisitor<Path> implements Callab
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
         this.filesCounter = filesCounter + 1;
-        String fileAbs = file.toAbsolutePath().toString() + " DELETED";
+        String fileAbs = file.toAbsolutePath().toString() + ConstantsFor.DELETED;
         if (more2MBOld(attrs)) {
-            Files.setAttribute(file, "dos:archive", true);
+            Files.setAttribute(file, ConstantsFor.DOS_ARCHIVE, true);
             printWriter.println(file.toAbsolutePath()
                 + ","
                 + (float) file.toFile().length() / ConstantsFor.MBYTE + ""
@@ -150,7 +150,7 @@ public class CommonScan2YOlder extends SimpleFileVisitor<Path> implements Callab
      @return file contains(".eatmeat.ru"), contains(".log")
      */
     private boolean tempFile(Path file) {
-        return file.toString().toLowerCase().contains(".eatmeat.ru") ||
+        return file.toString().toLowerCase().contains(ConstantsFor.EATMEAT_RU) ||
             file.toString().toLowerCase().contains(".log");
     }
 

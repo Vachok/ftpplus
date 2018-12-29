@@ -7,6 +7,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.services.SimpleCalculator;
 
@@ -28,7 +29,7 @@ public class CalculateCTRL {
 
     @GetMapping("/calculate")
     public String getM(Model model, HttpServletRequest request) {
-        model.addAttribute("title", "Calculator");
+        model.addAttribute(ConstantsFor.TITLE, "Calculator");
         model.addAttribute("simpleCalculator", simpleCalculator);
         model.addAttribute("footer", new PageFooter().getFooterUtext());
         if (request != null) {
@@ -39,7 +40,7 @@ public class CalculateCTRL {
 
     @PostMapping("/calculate")
     private String timeStamp(@ModelAttribute SimpleCalculator simpleCalculator, Model model, String workPos) {
-        model.addAttribute("title", "Calculator-POS");
+        model.addAttribute(ConstantsFor.TITLE, "Calculator-POS");
         model.addAttribute("simpleCalculator", simpleCalculator);
         model.addAttribute("result", simpleCalculator.getStampFromDate(workPos));
         model.addAttribute("footer", new PageFooter().getFooterUtext());

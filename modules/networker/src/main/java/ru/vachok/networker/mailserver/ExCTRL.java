@@ -6,10 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
@@ -82,7 +79,6 @@ public class ExCTRL {
 
     /**<b>/exchange (POST)</b>
      Модель. <br>
-     1. <i>exSRV</i>, {@link ExSRV} <br>
      2. <i>file</i>, {@link TForms} - парсер массива {@link ConstantsFor#MAIL_RULES}
      3. <i>{@link ConstantsFor#TITLE}</i>, {@link ConstantsFor#MAIL_RULES}.size()
      4. <i>otherfields</i>, {@link ExSRV#getOFields()}
@@ -125,7 +121,7 @@ public class ExCTRL {
         this.ruleSet = ruleSet;
         rawS = ruleSet.getIdentity() + "<br>" + ruleSet.getFromAddressMatchesPatterns() + "<p>" + ruleSet.getCopyToRuleSetter();
         model.addAttribute(AT_NAME_RULESET, ruleSet);
-        model.addAttribute("title", ruleSet.getIdentity());
+        model.addAttribute(ConstantsFor.TITLE, ruleSet.getIdentity());
         model.addAttribute("ok", rawS);
         model.addAttribute("footer", new PageFooter().getFooterUtext());
 
