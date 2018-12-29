@@ -12,6 +12,7 @@ import java.io.*;
 import java.nio.file.*;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Stream;
 
 
 /**
@@ -37,6 +38,15 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
             toFileRec.forEach(printWriter::println);
         }
         catch(IOException e){
+            LOGGER.info(e.getMessage());
+        }
+    }
+
+    public static synchronized void recFile(String fileName, Stream<String> toFileRec) {
+        try (OutputStream outputStream = new FileOutputStream(fileName);
+             PrintWriter printWriter = new PrintWriter(outputStream, true)) {
+            toFileRec.forEach(printWriter::println);
+        } catch (IOException e) {
             LOGGER.info(e.getMessage());
         }
     }

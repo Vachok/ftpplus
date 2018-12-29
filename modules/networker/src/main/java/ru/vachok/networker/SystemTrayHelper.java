@@ -3,6 +3,7 @@ package ru.vachok.networker;
 
 import org.slf4j.Logger;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.accesscontrol.common.ArchivesAutoCleaner;
 import ru.vachok.networker.componentsrepo.AppComponents;
@@ -244,14 +245,9 @@ public final class SystemTrayHelper {
         popupMenu.add(delFiles);
 
         MenuItem logToFilesystem = new MenuItem();
-        logToFilesystem.setLabel("GEN PASS");
+        logToFilesystem.setLabel("Get some info");
         logToFilesystem.addActionListener(e -> {
-            try{
-                Desktop.getDesktop().browse(URI.create("http://localhost:8880/gen"));
-            }
-            catch(IOException e_p){
-                LOGGER.error(e_p.getMessage(), e_p);
-            }
+            new MessageSwing().infoNoTitles(ConstantsFor.getUpTime() + "\n" + Thread.activeCount() + " threads " + ConstantsFor.showMem() + new TForms().fromArray(ConstantsFor.getProps()));
         });
         popupMenu.add(logToFilesystem);
     }

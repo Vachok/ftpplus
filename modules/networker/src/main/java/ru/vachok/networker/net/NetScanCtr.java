@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.messenger.MessageSwing;
-import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
@@ -21,10 +20,18 @@ import ru.vachok.networker.services.MyCalen;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.*;
-import java.sql.*;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Date;
-import java.util.*;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
@@ -162,11 +169,10 @@ public class NetScanCtr {
     private void mapSizeBigger(Model model, Map<String, Boolean> netWork, HttpServletRequest request) {
         Integer thisTotpc = null;
         try{
-            thisTotpc = Integer.parseInt(properties.getProperty(KEY_TOTPC));
+            thisTotpc = ConstantsFor.TOTPC;
         }
         catch(NumberFormatException | NullPointerException e){
-            MessageToUser messageToUser = new MessageSwing();
-            (( MessageSwing ) messageToUser).infoNoTitlesDIA(e.getMessage() + "\nTotal PC");
+            new MessageSwing().infoNoTitlesDIA(e.getMessage() + "\nTotal PC exception");
         }
         String propertyLastScan = properties.getProperty(ConstantsFor.LASTSCAN, "1515233487000");
         propLastScanMinusDuration = Long.parseLong(propertyLastScan) + TimeUnit.MINUTES.toMillis(DURATION);
@@ -183,12 +189,12 @@ public class NetScanCtr {
         if(0 > i){
             writeToFile(netWork);
             model.addAttribute("newpc", "Добавлены компы! " + Math.abs(i) + " шт.");
-            properties.setProperty(KEY_TOTPC, netWork.size() + "");
+            properties.setProperty(ConstantsFor.STR_TOTPC, netWork.size() + "");
             ConstantsFor.saveProps(properties);
         }
         else{
             if(3 > i){
-                properties.setProperty(KEY_TOTPC, netWork.size() + "");
+                properties.setProperty(ConstantsFor.STR_TOTPC, netWork.size() + "");
                 ConstantsFor.saveProps(properties);
                 writeToFile(netWork);
                 if(isSystemTimeBigger){
@@ -198,7 +204,7 @@ public class NetScanCtr {
                 }
             }
         }
-        writeToFile(netWork);
+        FileSystemWorker.recFile("lastscannet.txt", netWork.keySet().stream());
     }
 
     /**

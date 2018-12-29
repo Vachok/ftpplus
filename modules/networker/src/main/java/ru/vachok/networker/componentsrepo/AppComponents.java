@@ -37,8 +37,6 @@ import java.util.concurrent.ConcurrentMap;
 @ComponentScan
 public class AppComponents {
 
-    private static final String THIS_PC_NAME = ConstantsFor.thisPC();
-
     @Bean
     public static Logger getLogger() {
         return LoggerFactory.getLogger("ru_vachok_networker");

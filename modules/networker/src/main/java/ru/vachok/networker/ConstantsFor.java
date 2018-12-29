@@ -33,7 +33,10 @@ import java.security.SecureRandom;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.time.*;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.Year;
 import java.time.format.TextStyle;
 import java.util.Date;
 import java.util.Locale;
@@ -230,6 +233,8 @@ public enum ConstantsFor {
 
     public static final String DELETED = " DELETED";
 
+    public static final Integer TOTPC = Integer.valueOf(getProps().getProperty(STR_TOTPC));
+
     /**
      {@link #getAtomicTime()}
      */
@@ -249,7 +254,7 @@ public enum ConstantsFor {
     }
 
     public static Properties getProps() {
-        if(PROPS.isEmpty()){
+        if (PROPS.size() < 4) {
             takePr();
         }
         return PROPS;
@@ -317,33 +322,6 @@ public enum ConstantsFor {
         return stringBuilder.toString();
     }
 
-    public static void saveProps(Properties propsToSave) {
-        new ThreadConfig().threadPoolTaskExecutor().execute(() -> {
-            InitProperties initProperties;
-            try {
-                initProperties = new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
-            } catch (Exception e) {
-                MessageToUser messageToUser = new MessageSwing();
-                initProperties = new FileProps(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
-                (( MessageSwing ) messageToUser).infoNoTitlesDIA(e.getMessage() + "\n" + initProperties.toString());
-            }
-            initProperties.delProps();
-            initProperties.setProps(propsToSave);
-            initProperties = new FileProps(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
-            initProperties.setProps(propsToSave);
-        });
-    }
-
-    public static String thisPC() {
-        try {
-            return InetAddress.getLocalHost().getHostName();
-        } catch (UnknownHostException | ExceptionInInitializerError e) {
-            return e.getMessage();
-        } catch (NullPointerException n) {
-            return "pc";
-        }
-    }
-
     static void takePr() {
         InitProperties initProperties;
         try {
@@ -356,9 +334,29 @@ public enum ConstantsFor {
             String msg = "Taking File properties:" + "\n" + e.getMessage();
             AppComponents.getLogger().warn(msg);
             PROPS.putAll(initProperties.getProps());
-            MessageToUser messageToUser = new MessageSwing();
-            (( MessageSwing ) messageToUser).infoNoTitlesDIA(e.getMessage() + " " + ConstantsFor.class.getSimpleName());
+
+            new MessageSwing().infoNoTitlesDIA(e.getMessage() + " " + ConstantsFor.class.getSimpleName());
         }
+    }
+
+    public static String thisPC() {
+        try {
+            return InetAddress.getLocalHost().getHostName();
+        } catch (UnknownHostException | ExceptionInInitializerError e) {
+            return e.getMessage();
+        } catch (NullPointerException n) {
+            return "pc";
+        }
+    }
+
+    public static void saveProps(Properties propsToSave) {
+        new ThreadConfig().threadPoolTaskExecutor().execute(() -> {
+            InitProperties initProperties = new FileProps(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
+            initProperties.setProps(propsToSave);
+            initProperties = new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
+            initProperties.delProps();
+            initProperties.setProps(propsToSave);
+        });
     }
 
     /**
