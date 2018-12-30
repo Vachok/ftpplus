@@ -5,9 +5,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.net.NetScanCtr;
+import ru.vachok.networker.net.NetScannerSvc;
 
 import java.io.*;
 import java.net.InetAddress;
@@ -21,7 +25,9 @@ import java.util.*;
 @Service("adsrv")
 public class ADSrv implements Runnable {
 
-    /*Fields*/
+    /**
+     {@link LoggerFactory}
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(ADSrv.class.getName());
 
     /**
@@ -37,7 +43,7 @@ public class ADSrv implements Runnable {
     /**
      Строка из формы на сайте.
      */
-    private String userInputRaw;
+    private String userInputRaw = null;
 
     /**
      Проверяет по-базе, какие папки есть у юзера.
@@ -79,23 +85,41 @@ public class ADSrv implements Runnable {
         }
     }
 
-    ADUser getAdUser() {
-        return adUser;
-    }
-
+    /**
+     @return {@link #adComputer}
+     */
     public ADComputer getAdComputer() {
         return adComputer;
     }
 
+    /**
+     @return {@link #userInputRaw}
+     */
     public String getUserInputRaw() {
         return userInputRaw;
     }
 
+    /**
+     @param userInputRaw пользовательский ввод в строку
+     @see NetScanCtr#pcNameForInfo(NetScannerSvc, BindingResult, Model)
+     */
     public void setUserInputRaw(String userInputRaw) {
         this.userInputRaw = userInputRaw;
     }
 
-    /*Instances*/
+    /**
+     @return {@link #adUser}
+     */
+    ADUser getAdUser() {
+        return adUser;
+    }
+
+    /**
+     Thread name = ADSrv
+
+     @param adUser     {@link ADUser}
+     @param adComputer {@link ADComputer}
+     */
     @Autowired
     public ADSrv(ADUser adUser, ADComputer adComputer) {
         this.adUser = adUser;
@@ -103,6 +127,9 @@ public class ADSrv implements Runnable {
         Thread.currentThread().setName(getClass().getSimpleName());
     }
 
+    /**
+     Запуск.
+     */
     @Override
     public void run() {
         List<ADUser> adUsers = userSetter();

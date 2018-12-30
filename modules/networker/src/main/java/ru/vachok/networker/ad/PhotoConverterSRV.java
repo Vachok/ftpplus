@@ -26,7 +26,7 @@ import java.util.function.BiConsumer;
  <h1>Создаёт команды для MS Power Shell, чтобы добавить фото пользователей</h1>
 
  @since 21.08.2018 (15:57) */
-@Service("photoConverter")
+@Service (ConstantsFor.ATT_PHOTO_CONVERTER)
 public class PhotoConverterSRV {
 
     /**
@@ -38,9 +38,9 @@ public class PhotoConverterSRV {
 
     static {
         try {
-            initProperties = new DBRegProperties(ConstantsFor.APP_NAME + "photoConverter");
+            initProperties = new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.ATT_PHOTO_CONVERTER);
         } catch (Exception e) {
-            initProperties = new FileProps(ConstantsFor.APP_NAME + "photoConverter");
+            initProperties = new FileProps(ConstantsFor.APP_NAME + ConstantsFor.ATT_PHOTO_CONVERTER);
         }
     }
 

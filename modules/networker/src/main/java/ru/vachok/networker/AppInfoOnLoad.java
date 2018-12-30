@@ -53,8 +53,14 @@ public class AppInfoOnLoad implements Runnable {
      */
     private static final int THIS_DELAY = 111;
 
+    /**
+     {@link MessageSwing}
+     */
     private static MessageToUser messageToUser = new MessageSwing();
 
+    /**
+     Запуск {@link CommonRightsChecker}
+     */
     private static Runnable r = () -> {
         try{
             FileVisitor<Path> commonRightsChecker = new CommonRightsChecker();

@@ -33,10 +33,7 @@ import java.security.SecureRandom;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.Year;
+import java.time.*;
 import java.time.format.TextStyle;
 import java.util.Date;
 import java.util.Locale;
@@ -51,6 +48,10 @@ import java.util.concurrent.*;
  @since 12.08.2018 (16:26) */
 public enum ConstantsFor {
     ;
+
+    public static final String ATT_PHOTO_CONVERTER = "photoConverter";
+
+    public static final String ATT_SSH_ACTS = "sshActs";
 
     public static final String LASTSCAN = "lastscan";
 

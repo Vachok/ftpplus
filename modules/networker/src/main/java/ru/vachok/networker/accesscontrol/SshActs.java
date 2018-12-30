@@ -30,7 +30,7 @@ import java.util.Optional;
  SSH-actions class
 
  @since 29.11.2018 (13:01) */
-@Service("sshActs")
+@Service (ConstantsFor.ATT_SSH_ACTS)
 public class SshActs {
 
     /**
@@ -51,7 +51,7 @@ public class SshActs {
     /**
      * Имя аттрибута
      */
-    private static final String AT_NAME_SSHACTS = "sshActs";
+    private static final String AT_NAME_SSHACTS = ConstantsFor.ATT_SSH_ACTS;
 
     /**
      * SSH-command
