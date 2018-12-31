@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.money.ConstantsFor;
+import ru.vachok.money.MoneyApplication;
 import ru.vachok.money.components.AppVersion;
 import ru.vachok.money.config.AppComponents;
 import ru.vachok.money.mycar.MyOpel;
@@ -21,12 +22,22 @@ import java.util.Properties;
 
 
 /**
+ Иконка приложения в System tray.
+
  @since 29.09.2018 (22:33) */
 public class SystemTrayHelper {
 
-    /*Fields*/
+    /**
+     {@link LoggerFactory}
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(SystemTrayHelper.class.getSimpleName());
 
+    /**
+     Добавление иконки в трэй.
+     <p>
+     Задание действия на клик <br>
+     Usages: {@link MoneyApplication#main(String[])}
+     */
     public void addTrayDefaultMinimum() {
         InitProperties initProperties = new FileProps(ConstantsFor.APP_NAME + SystemTrayHelper.class.getSimpleName());
         try{
@@ -36,7 +47,6 @@ public class SystemTrayHelper {
             LOGGER.error(e.getMessage(), e);
         }
         Properties properties = initProperties.getProps();
-        SystemTray systemTray = SystemTray.getSystemTray();
         String defaultValue = "/static/images/icons8-монеты-15.png";
         if(ConstantsFor.localPc().equalsIgnoreCase("home")){
             defaultValue = "/static/images/icons8-скучающий-15.png";
@@ -48,6 +58,7 @@ public class SystemTrayHelper {
         TrayIcon trayIcon = new TrayIcon(image, "Money", popupMenu);
         try{
             if(SystemTray.isSupported()){
+                SystemTray systemTray = SystemTray.getSystemTray();
                 systemTray.add(trayIcon);
             }
             else{
@@ -61,7 +72,7 @@ public class SystemTrayHelper {
         }
         ActionListener actionListener = e -> {
             try{
-                Desktop.getDesktop().browse(URI.create("http://localhost:8881"));
+                Desktop.getDesktop().browse(URI.create(ConstantsFor.HTTP_LOCALHOST_8881));
             }
             catch(IOException e1){
                 LOGGER.error(e1.getMessage(), e1);
@@ -70,6 +81,13 @@ public class SystemTrayHelper {
         trayIcon.addActionListener(actionListener);
     }
 
+    /**
+     Элементы меню.
+     <p>
+     Usages: {@link #addTrayDefaultMinimum()}
+
+     @return {@link PopupMenu}
+     */
     private PopupMenu popMenuSetter() {
         PopupMenu popupMenu = new PopupMenu();
         MenuItem exitItem = new MenuItem();
@@ -132,8 +150,14 @@ public class SystemTrayHelper {
         return popupMenu;
     }
 
+    /**
+     Запуск telnet
+     <p>
+
+     @see TellNetSRV
+     */
     private void tellNetStarter() {
         TellNetSRV tellNetSRV = AppComponents.tellNetSRV();
-        new Thread(() -> tellNetSRV.run()).start();
+        new Thread(tellNetSRV::run).start();
     }
 }

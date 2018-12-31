@@ -35,18 +35,32 @@ import static org.springframework.boot.SpringApplication.run;
 @SpringBootApplication
 public class MoneyApplication {
 
-    private static ConfigurableApplicationContext runningApp;
+    /**
+     {@link ConfigurableApplicationContext}
+     */
+    private static ConfigurableApplicationContext runningApp = null;
 
+    /**
+     @return {@link #runningApp}
+     */
     static ConfigurableApplicationContext getRunningApp() {
         return runningApp;
     }
 
+    /**
+     Запуск
+
+     @param args null
+     */
     public static void main(String[] args) {
         new SystemTrayHelper().addTrayDefaultMinimum();
         runningApp = run(MoneyApplication.class, args);
         startSchedule();
     }
 
+    /**
+     Установка заданий по-распмсанию.
+     */
     private static void startSchedule() {
         ThreadPoolTaskExecutor defaultExecutor = new ThreadConfig().getDefaultExecutor();
         defaultExecutor.execute(new SpeedRunActualize());
@@ -63,6 +77,9 @@ public class MoneyApplication {
         AppComponents.getLogger().warn(msg);
     }
 
+    /**
+     @return имя пк или random-список файлов.
+     */
     private static String filesRnd() {
         String localPc = ConstantsFor.localPc();
         if(localPc.equalsIgnoreCase("home")){

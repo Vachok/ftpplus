@@ -39,7 +39,7 @@ public class URLParser {
 
     public void showContents() {
         InitProperties initProperties = new DBRegProperties(ConstantsFor.APP_NAME + URLParser.class.getSimpleName());
-        String urlStr = initProperties.getProps().getProperty("url", "http://localhost:8881");
+        String urlStr = initProperties.getProps().getProperty("url", ConstantsFor.HTTP_LOCALHOST_8881);
         URL url = null;
         try{
             url = new URL(urlStr);
