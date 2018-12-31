@@ -15,8 +15,6 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component ("CalculatorForSome")
 public class CalculatorForSome {
 
-    /*Fields*/
-
     /**
      Simple Name класса, для поиска настроек
      */

@@ -11,6 +11,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.money.ConstantsFor;
 import ru.vachok.money.components.PageFooter;
 import ru.vachok.money.config.AppComponents;
+import ru.vachok.money.services.TForms;
+
+import java.io.File;
+import java.util.List;
 
 
 /**
@@ -19,13 +23,6 @@ import ru.vachok.money.config.AppComponents;
  @since 29.11.2018 (22:48) */
 @Controller
 public class FilesCTRL {
-
-    /*Fields*/
-
-    /**
-     Simple Name класса, для поиска настроек
-     */
-    private static final String SOURCE_CLASS = FilesCTRL.class.getSimpleName();
 
     /**
      {@link AppComponents#getLogger()}
@@ -37,7 +34,6 @@ public class FilesCTRL {
      */
     private FilesSRV filesSRV;
 
-    /*Instances*/
     @Autowired
     public FilesCTRL(FilesSRV filesSRV) {
         this.filesSRV = filesSRV;
@@ -51,19 +47,29 @@ public class FilesCTRL {
      */
     @GetMapping ("/files")
     public String filesGet(Model model) {
+        List<String> stringList = FileSysWorker.readFileAsList(new File("\\\\10.10.111.1\\Torrents-FTP\\velkom_pcuserauto.txt"));
         LOGGER.info("FilesCTRL.filesGet");
         model.addAttribute(ConstantsFor.TITLE, "File system works");
-        model.addAttribute("filesSrv", filesSRV);
+        model.addAttribute(ConstantsFor.ATT_FILES_SRV, filesSRV);
+        model.addAttribute(ConstantsFor.RESULT, new TForms().toStringFromArray(stringList, true));
         model.addAttribute("head", new PageFooter().getHead());
         model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getTheFooter());
         return "files";
     }
 
+    /**
+     POST /files
+     <p>
+
+     @param filesSRV {@link FilesSRV}
+     @param model    {@link Model}
+     @return files.html
+     */
     @PostMapping ("/files")
     public String filesPOST(@ModelAttribute FilesSRV filesSRV, Model model) {
         LOGGER.info("FilesCTRL.filesPOST");
         this.filesSRV = filesSRV;
-        model.addAttribute("filesSrv", filesSRV);
+        model.addAttribute(ConstantsFor.ATT_FILES_SRV, filesSRV);
         String resStr = filesSRV.getInfo();
         model.addAttribute(ConstantsFor.RESULT, resStr);
         return "files";

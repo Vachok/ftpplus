@@ -19,27 +19,25 @@ import java.util.concurrent.TimeUnit;
 @Service ("CalcSrv")
 public class CalcSrv {
 
-    /*Fields*/
-    private CalculatorForSome calculatorForSome;
-
-    @Autowired
-    private ChooseYouDestiny chooseYouDestiny;
-
-    /*Instances*/
-    @Autowired
-    public CalcSrv(CalculatorForSome calculatorForSome) {
-        this.calculatorForSome = calculatorForSome;
-    }
-
     /**
      Simple Name класса, для поиска настроек
      */
     private static final String SOURCE_CLASS = CalcSrv.class.getSimpleName();
 
     /**
-     {@link }
+     {@link LoggerFactory}
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(SOURCE_CLASS);
+
+    private CalculatorForSome calculatorForSome;
+
+    @Autowired
+    private ChooseYouDestiny chooseYouDestiny = null;
+
+    @Autowired
+    public CalcSrv(CalculatorForSome calculatorForSome) {
+        this.calculatorForSome = calculatorForSome;
+    }
 
     public String resultCalc(String userInp) {
         if(userInp.toLowerCase().contains("time")){
@@ -93,7 +91,11 @@ public class CalcSrv {
         return stringBuilder.toString();
     }
 
-    public String parseInp(String userInp) {
+    String destinyGetter() {
+        return chooseYouDestiny.destinyChooser();
+    }
+
+    private String parseInp(String userInp) {
         List<String> parsedInp = new ArrayList<>();
         List<Double> doubleList = new ArrayList<>();
         String[] toParse = {"\\+", "\\-", "\\:", "\\*"};
@@ -121,10 +123,6 @@ public class CalcSrv {
         }
         return "";
     }
-
-    public String destinyGetter() {
-        return chooseYouDestiny.destinyChooser();
-        }
 
     @Override
     public String toString() {

@@ -34,6 +34,8 @@ public enum ConstantsFor {
     ;
 
 
+    public static final String ATT_FILES_SRV = "filesSrv";
+
     public static final String HTTP_LOCALHOST_8881 = "http://localhost:8881";
 
     public static final String U_0466446_LIFERPG = "u0466446_liferpg";
