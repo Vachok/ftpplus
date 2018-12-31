@@ -8,6 +8,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import ru.vachok.money.ConstantsFor;
 import ru.vachok.money.components.PageFooter;
 import ru.vachok.money.config.AppComponents;
 
@@ -51,10 +52,10 @@ public class FilesCTRL {
     @GetMapping ("/files")
     public String filesGet(Model model) {
         LOGGER.info("FilesCTRL.filesGet");
-        model.addAttribute("title", "File system works");
+        model.addAttribute(ConstantsFor.TITLE, "File system works");
         model.addAttribute("filesSrv", filesSRV);
         model.addAttribute("head", new PageFooter().getHead());
-        model.addAttribute("footer", new PageFooter().getTheFooter());
+        model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getTheFooter());
         return "files";
     }
 
@@ -64,7 +65,7 @@ public class FilesCTRL {
         this.filesSRV = filesSRV;
         model.addAttribute("filesSrv", filesSRV);
         String resStr = filesSRV.getInfo();
-        model.addAttribute("result", resStr);
+        model.addAttribute(ConstantsFor.RESULT, resStr);
         return "files";
     }
 }

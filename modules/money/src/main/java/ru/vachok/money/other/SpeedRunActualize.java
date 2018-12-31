@@ -12,8 +12,8 @@ import ru.vachok.mysqlandprops.RegRuMysql;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import java.sql.*;
-import java.util.*;
 import java.util.Date;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
@@ -53,7 +53,7 @@ public class SpeedRunActualize implements Callable<String> {
      <b>Соединение с параметрами по-умолчанию.</b>
      {@link DataConnectTo#getDefaultConnection(String)}
      */
-    private static final Connection DEF_CON = DATA_CONNECT_TO.getDefaultConnection("u0466446_liferpg");
+    private static final Connection DEF_CON = DATA_CONNECT_TO.getDefaultConnection(ConstantsFor.U_0466446_LIFERPG);
 
     /**
      0. Запуск

@@ -15,6 +15,7 @@ import java.sql.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicReference;
 
 
 /**
@@ -48,13 +49,14 @@ public class MyOpel {
 
     private double avgSpeedRiga;
 
-    private double avgTime;
+    private String avgTime;
 
     private String gosNum;
 
     private String lastTimeNRiga;
 
-    /*Get&Set*/
+    private final String timeSpend = "TimeSpend";
+
     public void setAvgSpeedA107(double avgSpeedA107) {
         this.avgSpeedA107 = avgSpeedA107;
     }
@@ -118,11 +120,34 @@ public class MyOpel {
         this.carMiletage = carMiletage;
     }
 
-    public double getAvgTime() {
+    public String getAvgTime() {
+        List<Double> a107AvgTime = new ArrayList<>();
+        List<Double> rigaAvgTime = new ArrayList<>();
+
+        Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.U_0466446_LIFERPG);
+        try(PreparedStatement p = c.prepareStatement("select * from speed where road=0");
+            PreparedStatement p1 = c.prepareStatement("select * from speed where road=1");
+            ResultSet r = p.executeQuery();
+            ResultSet r1 = p1.executeQuery()){
+            while(r.next()){
+                a107AvgTime.add(r.getDouble(timeSpend));
+            }
+            while(r1.next()){
+                rigaAvgTime.add(r1.getDouble(timeSpend));
+            }
+        }
+        catch(SQLException e){
+            return e.getSQLState() + " - " + e.getMessage();
+        }
+        AtomicReference<Double> a107AvgT = new AtomicReference<>(0d);
+        AtomicReference<Double> rigaAvgT = new AtomicReference<>(0d);
+        a107AvgTime.forEach(x -> a107AvgT.set(a107AvgT.get() + x));
+        rigaAvgTime.forEach(x -> rigaAvgT.set(rigaAvgT.get() + x));
+        this.avgTime = "Avg time in A107 is " + a107AvgT.get() / a107AvgTime.size() + " | Avg timeRiga is " + rigaAvgT.get() / rigaAvgTime.size();
         return avgTime;
     }
 
-    public void setAvgTime(double avgTime) {
+    public void setAvgTime(String avgTime) {
         this.avgTime = avgTime;
     }
 
@@ -145,7 +170,6 @@ public class MyOpel {
         return myOpel;
     }
 
-    /*Instances*/
     private MyOpel() {
         ThreadPoolTaskExecutor defaultExecutor = new ThreadConfig().getDefaultExecutor();
         defaultExecutor.initialize();
@@ -245,6 +269,7 @@ public class MyOpel {
      <b>Среднее по Бетонке</b>
      */
     private Map<String, Double> avgInfo(int road) {
+        String timeSpend = this.timeSpend;
         List<Double> speedsDoubles = new ArrayList<>();
         List<Double> timeDoubles = new ArrayList<>();
         try(PreparedStatement ps = DEF_CON.prepareStatement("select * from speed where Road = ?")){
@@ -252,13 +277,14 @@ public class MyOpel {
             try(ResultSet r = ps.executeQuery()){
                 while(r.next()){
                     speedsDoubles.add(r.getDouble(SPEED));
-                    timeDoubles.add(r.getDouble("TimeSpend"));
+
+                    timeDoubles.add(r.getDouble(timeSpend));
                 }
                 if(r.last() && road==0){
-                    setLastTimeA107(r.getString("TimeStamp"));
+                    setLastTimeA107(r.getString(timeSpend));
                 }
                 if(r.last() && road==1){
-                    setLastTimeNRiga(r.getString("TimeStamp"));
+                    setLastTimeNRiga(r.getString(timeSpend));
                 }
             }
         }

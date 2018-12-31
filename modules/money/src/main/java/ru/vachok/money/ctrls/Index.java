@@ -71,11 +71,11 @@ public class Index {
         float hrsWont = ( float ) TimeUnit.MILLISECONDS
             .toSeconds(lasts) / ConstantsFor.ONE_HOUR / ConstantsFor.ONE_HOUR / ConstantsFor.ONE_DAY_HOURS;
 
-        model.addAttribute("title", hrsWont + " days");
+        model.addAttribute(ConstantsFor.TITLE, hrsWont + " days");
         model.addAttribute("timeleft", timeWorms.timeLeft());
 
         model.addAttribute("dateTimeLoc", dateTimeLoc);
-        model.addAttribute("footer", new PageFooter().getTheFooter());
+        model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getTheFooter());
 
         if(ConstantsFor.localPc().equalsIgnoreCase("home")){
             return "index-start";

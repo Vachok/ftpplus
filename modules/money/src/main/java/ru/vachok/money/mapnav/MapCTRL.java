@@ -6,6 +6,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import ru.vachok.money.ConstantsFor;
 import ru.vachok.money.components.PageFooter;
 
 import javax.servlet.http.HttpServletRequest;
@@ -21,11 +22,11 @@ public class MapCTRL {
     @GetMapping("/nav")
     public String navMod(Model model, HttpServletRequest request, HttpServletResponse response) {
         mapperUnit.setResultTitle(request.getSession().getId());
-        model.addAttribute("title", "Navigation Test");
+        model.addAttribute(ConstantsFor.TITLE, "Navigation Test");
         model.addAttribute("MapperUnit", mapperUnit);
         model.addAttribute("pagetitle", response.getStatus() + " status<br>Encoding is " + response.getCharacterEncoding());
         model.addAttribute("content", request.getRemoteAddr() + "<br>" + response.getContentType());
-        model.addAttribute("footer", "Можно добавить картинки, динамические маршруты и пр.<br>" + new PageFooter().getTheFooter());
+        model.addAttribute(ConstantsFor.FOOTER, "Можно добавить картинки, динамические маршруты и пр.<br>" + new PageFooter().getTheFooter());
         return "nav";
     }
 
@@ -34,9 +35,9 @@ public class MapCTRL {
         this.mapperUnit = mapperUnit;
         model.addAttribute("MapperUnit", mapperUnit);
         String s = new MapCoordinateParser(mapperUnit.getUserEnt()).getResultsAsText();
-        model.addAttribute("title", mapperUnit.getResultTitle());
+        model.addAttribute(ConstantsFor.TITLE, mapperUnit.getResultTitle());
         model.addAttribute("content", s);
-        model.addAttribute("footer", new PageFooter().getTheFooter());
+        model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getTheFooter());
         return "navpost";
     }
 }

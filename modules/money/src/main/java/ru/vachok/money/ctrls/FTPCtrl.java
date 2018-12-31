@@ -46,7 +46,7 @@ public class FTPCtrl {
         Float f = ((float) objects.length / ConstantsFor.FILES_TO_ENC_BLOCK);
         String callStr1 = "<p>" + objects.length + " TOTAL FILES is " + f + " converts<br></p>";
         model.addAttribute("call1" , callStr1);
-        model.addAttribute("footer", new PageFooter().getTheFooter());
+        model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getTheFooter());
         return "ftp";
     }
 }

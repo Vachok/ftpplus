@@ -34,6 +34,16 @@ public enum ConstantsFor {
     ;
 
 
+    public static final String U_0466446_LIFERPG = "u0466446_liferpg";
+
+    public static final String DESTINY = "destiny";
+
+    public static final String FOOTER = "footer";
+
+    public static final String RESULT = "result";
+
+    public static final String TITLE = "title";
+
     /**
      1 год в днях
      <p>
@@ -68,7 +78,7 @@ public enum ConstantsFor {
 
     private static final Logger LOGGER = AppComponents.getLogger();
 
-    public static final String AT_NAME_TITLE = "title";
+    public static final String AT_NAME_TITLE = TITLE;
 
     public static final int MONTH_BIRTH = 1;
 
@@ -90,9 +100,9 @@ public enum ConstantsFor {
 
     public static final int USER_EXIT = 222;
 
-    public static final String AT_NAME_FOOTER = "footer";
+    public static final String AT_NAME_FOOTER = FOOTER;
 
-    public static final String AT_NAME_RESULT = "result";
+    public static final String AT_NAME_RESULT = RESULT;
 
     public static String getAtomTime() {
         TimeChecker timeChecker = new TimeChecker();

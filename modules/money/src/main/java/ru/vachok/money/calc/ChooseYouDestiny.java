@@ -2,13 +2,14 @@ package ru.vachok.money.calc;
 
 
 import org.springframework.stereotype.Component;
+import ru.vachok.money.ConstantsFor;
 
 import java.security.SecureRandom;
 
 
 /**
  @since 31.10.2018 (19:38) */
-@Component ("destiny")
+@Component (ConstantsFor.DESTINY)
 public class ChooseYouDestiny {
 
     /*Fields*/

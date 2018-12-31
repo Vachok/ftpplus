@@ -38,12 +38,12 @@ public class CarDatabase {
     public String showEngineTMP(Model model, HttpServletRequest request) {
         visitor.setRequest(request);
         model.addAttribute("myOpel", myOpel);
-        model.addAttribute("title", "Average speeds");
+        model.addAttribute(ConstantsFor.TITLE, "Average speeds");
         String roadStat = "<center><p>" + myOpel.getAvgSpeedA107() + " A107<br>            " + myOpel.getAvgSpeedRiga() + " Novoriga</p>" +
             "<p>" + myOpel.getLastTimeA107() + " по A107. (" + myOpel.getCountA107() + " total)" + ";<br>" + myOpel.getLastTimeNRiga() + " по Риге.(" + myOpel.getCountRiga() + " total);" + "</p" +
             "></center>";
         model.addAttribute("roadStat", roadStat);
-        model.addAttribute("footer", new PageFooter().getTheFooter());
+        model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getTheFooter());
         return CAR_DB;
     }
 
@@ -55,7 +55,7 @@ public class CarDatabase {
 
     @GetMapping ("/carinfo")
     public String defInfo(Model model) {
-        model.addAttribute("title", "MAF");
+        model.addAttribute(ConstantsFor.TITLE, "MAF");
 
         try{
             String mafAverages = myOpel.getMAFAverages(ConstantsFor.ROWS_COUNT);
@@ -65,7 +65,7 @@ public class CarDatabase {
             LoggerFactory.getLogger(this.getClass().getSimpleName());
         }
 
-        model.addAttribute("footer", new PageFooter().getTheFooter());
+        model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getTheFooter());
         return CAR_DB;
     }
 

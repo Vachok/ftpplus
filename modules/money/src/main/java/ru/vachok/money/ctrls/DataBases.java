@@ -58,7 +58,7 @@ public class DataBases {
         int ind = 10;
         Map<String, String> lastLogsList = new ConcurrentHashMap<>();
         DataConnectTo d = new RegRuMysql();
-        try(Connection c = d.getDefaultConnection("u0466446_liferpg");
+        try(Connection c = d.getDefaultConnection(ConstantsFor.U_0466446_LIFERPG);
             PreparedStatement p = c.prepareStatement(String.format("select * from %s ORDER BY timewhen DESC LIMIT 0 , 50", logTableName));
             ResultSet r = p.executeQuery()
         ){

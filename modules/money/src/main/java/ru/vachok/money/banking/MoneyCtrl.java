@@ -7,6 +7,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import ru.vachok.money.ConstantsFor;
 import ru.vachok.money.components.PageFooter;
 
 
@@ -31,7 +32,7 @@ public class MoneyCtrl {
         parserCBRruSRV.curDownloader();
         model.addAttribute("ParserCBRruSRV", parserCBRruSRV);
         model.addAttribute("currency", parserCBRruSRV.countYourMoney());
-        model.addAttribute("footer", new PageFooter().getTheFooter());
+        model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getTheFooter());
         return "money";
     }
 
@@ -39,8 +40,8 @@ public class MoneyCtrl {
     public String getMoney(@ModelAttribute ParserCBRruSRV parserCBRruSRV, Model model, @ModelAttribute Currencies currencies) {
         this.currencies = currencies;
         model.addAttribute("ParserCBRruSRV", parserCBRruSRV);
-        model.addAttribute("title", parserCBRruSRV.getUserInput());
-        model.addAttribute("result", currencies.toString());
+        model.addAttribute(ConstantsFor.TITLE, parserCBRruSRV.getUserInput());
+        model.addAttribute(ConstantsFor.RESULT, currencies.toString());
         return "ok";
     }
 }

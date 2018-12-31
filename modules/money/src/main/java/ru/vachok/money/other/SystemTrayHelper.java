@@ -3,8 +3,11 @@ package ru.vachok.money.other;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.vachok.messenger.MessageSwing;
 import ru.vachok.money.ConstantsFor;
+import ru.vachok.money.components.AppVersion;
 import ru.vachok.money.config.AppComponents;
+import ru.vachok.money.mycar.MyOpel;
 import ru.vachok.money.services.sockets.TellNetSRV;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
@@ -71,7 +74,7 @@ public class SystemTrayHelper {
         PopupMenu popupMenu = new PopupMenu();
         MenuItem exitItem = new MenuItem();
         MenuItem openSysInfoPage = new MenuItem();
-        MenuItem ideIdea = new MenuItem();
+        MenuItem getInform = new MenuItem();
         MenuItem moneyItem = new MenuItem();
         MenuItem rebootSys = new MenuItem();
         MenuItem offSys = new MenuItem();
@@ -88,28 +91,14 @@ public class SystemTrayHelper {
             }
         });
         openSysInfoPage.setLabel("Открыть System Info Page");
-        ideIdea.addActionListener(e -> {
-            try{
-                String ideExe = "G:\\My_Proj\\.IdeaIC2017.3\\apps\\IDEA-C\\ch-0\\182.4505.22\\bin\\idea64.exe";
-                if(ConstantsFor.localPc().equalsIgnoreCase("home")){
-                    Runtime.getRuntime().exec(ideExe);
-                }
-                else{
-                    Toolkit.getDefaultToolkit().beep();
-                }
-            }
-            catch(IOException e1){
-                LOGGER.error(e1.getMessage(), e1);
-            }
+        getInform.addActionListener(e -> {
+            new MessageSwing().infoNoTitles(new AppVersion().toString() + "\n\n" + Thread.activeCount() + " threads active");
         });
-        ideIdea.setLabel("Запуск Idea");
+        getInform.setLabel("INFO");
         moneyItem.addActionListener(e -> {
-            try{
-                Desktop.getDesktop().browse(URI.create("http://localhost:8881/chkcar"));
-            }
-            catch(IOException e1){
-                LOGGER.error(e1.getMessage(), e1);
-            }
+            MyOpel myOpel = MyOpel.getI();
+            new MessageSwing().infoNoTitles(myOpel.getCountA107() + " on A107\n" + myOpel.getCountRiga() + "  RIGA\n\n" +
+                myOpel.getAvgTime() + " avgTime");
         });
         moneyItem.setLabel("Чекануть дорогу");
         rebootSys.addActionListener(e -> {
@@ -130,8 +119,7 @@ public class SystemTrayHelper {
             }
         });
         offSys.setLabel("TURN OFF THIS PC!");
-
-        popupMenu.add(ideIdea);
+        popupMenu.add(getInform);
         popupMenu.add(moneyItem);
         popupMenu.add(openSysInfoPage);
         popupMenu.addSeparator();

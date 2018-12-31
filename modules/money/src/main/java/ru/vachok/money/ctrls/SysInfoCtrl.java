@@ -50,12 +50,11 @@ public class SysInfoCtrl {
     @GetMapping ("/sysinfo")
     public String gettingInfo(Model model, HttpServletRequest request) {
         AppVersion appVersion = new AppVersion();
-
-        model.addAttribute("title", appVersion.getAppVBuild());
-        model.addAttribute("result", appVersion.toString());
+        model.addAttribute(ConstantsFor.TITLE, appVersion.getAppVBuild());
+        model.addAttribute(ConstantsFor.RESULT, appVersion.toString());
         model.addAttribute("ok", "<a href=\"/cleandir\">cleandir</a><br>");
-        model.addAttribute("footer", new PageFooter().getTheFooter());
-        model.addAttribute("destiny", getSomeShit());
+        model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getTheFooter());
+        model.addAttribute(ConstantsFor.DESTINY, getSomeShit());
         return "ok";
     }
 
@@ -106,9 +105,9 @@ public class SysInfoCtrl {
         FilesCleaner filesCleanerHome = new FilesCleaner("\\\\10.10.111.1\\Torrents-FTP\\home\\");
         String toClean = getFilesToClean(filesCleanerHome);
 
-        model.addAttribute("title", "Cleaning: " + filesCleanerHome.getStartDir());
-        model.addAttribute("result", toClean);
-        model.addAttribute("footer", new PageFooter().getTheFooter());
+        model.addAttribute(ConstantsFor.TITLE, "Cleaning: " + filesCleanerHome.getStartDir());
+        model.addAttribute(ConstantsFor.RESULT, toClean);
+        model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getTheFooter());
 
         MessageToUser messageToUser = new DBMessage();
         messageToUser.infoNoTitles(toClean + "\n\n");
@@ -118,17 +117,18 @@ public class SysInfoCtrl {
         return "ok";
     }
 
-    private String getFilesToClean(FilesCleaner filesCleaner) {
+    private String getFilesToClean(Callable<String> filesCleaner) {
         final long stArt = System.currentTimeMillis();
         Future<String> submit = t.getDefaultExecutor().submit(filesCleaner);
+        String s = "SysInfoCtrl.getFilesToClean method. ";
         try{
-            String msg = "SysInfoCtrl.getFilesToClean method. " + ( float ) (System.currentTimeMillis() - stArt) / 1000 + S_SPEND;
+            String msg = s + ( float ) (System.currentTimeMillis() - stArt) / 1000 + S_SPEND;
             LOGGER.info(msg);
             return submit.get();
         }
         catch(ExecutionException | InterruptedException e){
             Thread.currentThread().interrupt();
-            String msg = "SysInfoCtrl.getFilesToClean method. " + ( float ) (System.currentTimeMillis() - stArt) / 1000 + S_SPEND;
+            String msg = s + ( float ) (System.currentTimeMillis() - stArt) / 1000 + S_SPEND;
             LOGGER.info(msg);
             return e.getMessage();
         }

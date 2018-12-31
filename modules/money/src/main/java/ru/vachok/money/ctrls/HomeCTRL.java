@@ -6,16 +6,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import ru.vachok.money.ConstantsFor;
 import ru.vachok.money.services.TimeWorms;
 import ru.vachok.mysqlandprops.RegRuMysql;
 
 import javax.servlet.http.HttpServletRequest;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.Date;
@@ -32,7 +30,7 @@ public class HomeCTRL {
     /**
      {@link RegRuMysql#getDefaultConnection(String)}
      */
-    private static final Connection c = new RegRuMysql().getDefaultConnection("u0466446_liferpg");
+    private static final Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.U_0466446_LIFERPG);
 
     private static Logger logger = LoggerFactory.getLogger("deprec");
 

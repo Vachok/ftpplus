@@ -37,7 +37,6 @@ public class AppVersion {
 
     private String appVBuild;
 
-    /*Instances*/
     public AppVersion() {
         File no0027 = new File("c:\\Users\\ikudryashov\\IdeaProjects\\spring\\modules\\money\\build.gradle");
         File home = new File("g:\\My_Proj\\FtpClientPlus\\modules\\money\\build.gradle");

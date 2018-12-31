@@ -38,7 +38,7 @@ public class CalcCTRL {
 
     private Visitor visitor;
 
-    private static final String AT_NAME_DESTINY = "destiny";
+    private static final String AT_NAME_DESTINY = ConstantsFor.DESTINY;
 
     @Autowired
     private ChooseYouDestiny chooseYouDestiny;
