@@ -103,16 +103,24 @@ public class ParserCBRruSRV {
         float inEurNow = Float.parseFloat(userMoney) / currencies.getEuro();
         float inUSD = Float.parseFloat(userMoney) / Currencies.USD_2014;
         float inUSDNow = Float.parseFloat(userMoney) / currencies.getUsDollar();
-        return "In euro - " + inEur + " (now - " + inEurNow + ")<br>In USD - " + inUSD + " (now - " + inUSDNow + ")<p>" + procCount();
+        return "In euro - " + inEur + " (now - " + inEurNow + ")<br>In USD - " + inUSD + " (now - " + inUSDNow + ")<p>" + procCount() + procInVal(inUSD, inUSDNow, inEur, inEurNow);
     }
 
     private String procCount() {
         int year = Year.now().getValue();
         int years = year - 2014;
-        float withP = ((Float.parseFloat(userMoney) * Float.parseFloat(userPrc)) * years) / 10;
+        float withP = ((Float.parseFloat(userMoney) / 100) * Float.parseFloat(userPrc)) * years;
+        withP = withP + Float.parseFloat(userMoney);
+        float dovloJ = 422899.46f - withP;
         float inUSD = withP / currencies.getUsDollar();
         float inE = withP / currencies.getEuro();
-        return "With % - " + withP + "<p>" + "Dollars: " + inUSD + "<br>In EUROs: " + inE;
+        return "With % - " + withP + "<p>" + "Dollars: " + inUSD + "<br>In EUROs: " + inE + "<br>Dovloj: " + dovloJ;
+    }
+
+    private String procInVal(float inUSDP, float inUSDNowP, float inEurP, float inEurNowP) {
+        float dollarsDiff = inUSDNowP - inUSDP;
+        float eurDiff = inEurNowP - inEurP;
+        return "<p>In dollar " + dollarsDiff + " ( " + dollarsDiff * currencies.getUsDollar() + " rub) in euro " + eurDiff + " (" + eurDiff * currencies.getEuro() + " rub)";
     }
 
     void curDownloader() {
