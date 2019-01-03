@@ -10,7 +10,8 @@
 <center>
     <form th:action="@{/getmoney}" th:object="${ParserCBRruSRV}" method="POST">
         Сколько и под какой % вы положили в 2014м?
-        <input placeholder="Сколько / Процент" required th:field="*{userInput}" type="text"/>
+        <input placeholder="Сколько" required th:field="*{userMoney}" type="text"/>
+        <input placeholder="Процент" required th:field="*{userPrc}" type="text"/>
         <br>
         <input type="submit" value="Считать"/>
         <br>

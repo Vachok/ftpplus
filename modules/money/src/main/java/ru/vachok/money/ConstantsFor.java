@@ -34,6 +34,10 @@ public enum ConstantsFor {
     ;
 
 
+    public static final String PARSER_CB_RRU_SRV = "ParserCBRruSRV";
+
+    public static final String CURRENCY = "currency";
+
     public static final String ATT_FILES_SRV = "filesSrv";
 
     public static final String HTTP_LOCALHOST_8881 = "http://localhost:8881";

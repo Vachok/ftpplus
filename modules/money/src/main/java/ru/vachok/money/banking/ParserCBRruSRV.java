@@ -12,6 +12,7 @@ import javax.xml.stream.XMLStreamException;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.time.Year;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.RejectedExecutionException;
@@ -24,14 +25,42 @@ import java.util.stream.Stream;
  @see MoneyCtrl
  @see ParserCBRruSRV
  @since 12.08.2018 (16:12) */
-@Service("ParserCBRruSRV")
+@Service (ConstantsFor.PARSER_CB_RRU_SRV)
 public class ParserCBRruSRV {
 
+    /**
+     {@link LoggerFactory}
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(ParserCBRruSRV.class.getSimpleName());
 
+    /**
+     {@link Currencies}
+     */
     private Currencies currencies;
 
-    private String userInput = "0 / 0";
+    /**
+     * Пользовательский ввод сколько денег
+     */
+    private String userMoney = "117500";
+
+    /**
+     Пользовательский ввод под какой процент
+     */
+    private String userPrc = "7.5";
+
+    /**
+     @return {@link #userPrc}
+     */
+    public String getUserPrc() {
+        return userPrc;
+    }
+
+    /**
+     @param userPrc_p {@link #userPrc}
+     */
+    public void setUserPrc(String userPrc_p) {
+        userPrc = userPrc_p;
+    }
 
     /**
      Используется в модели! Must be <b>public</b>
@@ -40,25 +69,50 @@ public class ParserCBRruSRV {
      Usages: {@link MoneyCtrl#getMoney(ParserCBRruSRV, Model, Currencies)}
      */
     @SuppressWarnings("WeakerAccess")
-    public String getUserInput() {
-        return userInput;
+    public String getUserMoney() {
+        return userMoney;
     }
 
-    public void setUserInput(String userInput) {
-        this.userInput = userInput;
+    /**
+     @param userInput {@link #userMoney}
+     */
+    public void setUserMoney(String userInput) {
+        this.userMoney = userInput;
     }
 
+    /**
+     @param currencies {@link #currencies}
+     */
     @Autowired
     public ParserCBRruSRV(Currencies currencies) {
         this.currencies = currencies;
     }
 
-    public String countYourMoney() {
+    /**
+     Usages: {@link MoneyCtrl#money(Model)}
+
+     @return {@link #currencies}.toString
+     */
+    String countYourMoney() {
         curDownloader();
-        String[] stringsInput = userInput.split(" / ");
-        currencies.setHowManyWas(Float.parseFloat(stringsInput[0]));
-        currencies.setPercentBanka(Float.parseFloat(stringsInput[1]));
-        return currencies.toString();
+        return currencies.toString() + "<p>" + noBanks();
+    }
+
+    private String noBanks() {
+        float inEur = Float.parseFloat(userMoney) / Currencies.E_2014;
+        float inEurNow = Float.parseFloat(userMoney) / currencies.getEuro();
+        float inUSD = Float.parseFloat(userMoney) / Currencies.USD_2014;
+        float inUSDNow = Float.parseFloat(userMoney) / currencies.getUsDollar();
+        return "In euro - " + inEur + " (now - " + inEurNow + ")<br>In USD - " + inUSD + " (now - " + inUSDNow + ")<p>" + procCount();
+    }
+
+    private String procCount() {
+        int year = Year.now().getValue();
+        int years = year - 2014;
+        float withP = ((Float.parseFloat(userMoney) * Float.parseFloat(userPrc)) * years) / 10;
+        float inUSD = withP / currencies.getUsDollar();
+        float inE = withP / currencies.getEuro();
+        return "With % - " + withP + "<p>" + "Dollars: " + inUSD + "<br>In EUROs: " + inE;
     }
 
     void curDownloader() {
@@ -129,5 +183,15 @@ public class ParserCBRruSRV {
 
     private List<String> parseList() throws XMLStreamException {
         throw new IllegalAccessError();
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("ParserCBRruSRV{");
+        sb.append("currencies=").append(currencies);
+        sb.append(", userMoney='").append(userMoney).append('\'');
+        sb.append(", userPrc='").append(userPrc).append('\'');
+        sb.append('}');
+        return sb.toString();
     }
 }

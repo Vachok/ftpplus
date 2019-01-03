@@ -2,18 +2,19 @@ package ru.vachok.money.banking;
 
 
 import org.springframework.stereotype.Component;
+import ru.vachok.money.ConstantsFor;
 
 import java.time.LocalDate;
 
 /**
  Created by 14350 on 20.09.2018 23:20
  */
-@Component("currency")
+@Component (ConstantsFor.CURRENCY)
 public class Currencies {
 
-    private static final float USD_2014 = 34.26f;
+    public static final float USD_2014 = 34.26f;
 
-    private static final float E_2014 = 46.8985f;
+    public static final float E_2014 = 46.8985f;
 
     private static final LocalDate DATE_2014 = LocalDate.of(2014, 1, 26);
 
@@ -29,7 +30,7 @@ public class Currencies {
         return howManyWas;
     }
 
-    public void setHowManyWas(float howManyWas) {
+    void setHowManyWas(float howManyWas) {
         this.howManyWas = howManyWas;
     }
 
@@ -37,7 +38,7 @@ public class Currencies {
         return percentBanka;
     }
 
-    public void setPercentBanka(float percentBanka) {
+    void setPercentBanka(float percentBanka) {
         this.percentBanka = percentBanka;
     }
 

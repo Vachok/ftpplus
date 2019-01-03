@@ -20,7 +20,6 @@ public class MoneyCtrl {
 
     private Currencies currencies;
 
-    /*Instances*/
     @Autowired
     public MoneyCtrl(ParserCBRruSRV parserCBRruSRV, Currencies currencies) {
         this.currencies = currencies;
@@ -30,8 +29,8 @@ public class MoneyCtrl {
     @GetMapping("/money")
     public String money(Model model) {
         parserCBRruSRV.curDownloader();
-        model.addAttribute("ParserCBRruSRV", parserCBRruSRV);
-        model.addAttribute("currency", parserCBRruSRV.countYourMoney());
+        model.addAttribute(ConstantsFor.PARSER_CB_RRU_SRV, parserCBRruSRV);
+        model.addAttribute(ConstantsFor.CURRENCY, parserCBRruSRV.countYourMoney());
         model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getTheFooter());
         return "money";
     }
@@ -39,9 +38,9 @@ public class MoneyCtrl {
     @PostMapping("/getmoney")
     public String getMoney(@ModelAttribute ParserCBRruSRV parserCBRruSRV, Model model, @ModelAttribute Currencies currencies) {
         this.currencies = currencies;
-        model.addAttribute("ParserCBRruSRV", parserCBRruSRV);
-        model.addAttribute(ConstantsFor.TITLE, parserCBRruSRV.getUserInput());
-        model.addAttribute(ConstantsFor.RESULT, currencies.toString());
+        model.addAttribute(ConstantsFor.PARSER_CB_RRU_SRV, parserCBRruSRV);
+        model.addAttribute(ConstantsFor.TITLE, parserCBRruSRV.getUserMoney());
+        model.addAttribute(ConstantsFor.RESULT, currencies.toString() + "<p>" + parserCBRruSRV.toString());
         return "ok";
     }
 }
