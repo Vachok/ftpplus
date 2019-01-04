@@ -55,7 +55,7 @@ public class WeekPCStats implements Runnable {
     private void getFromDB() {
         final long stArt = System.currentTimeMillis();
         String sql = "select * from pcuserauto";
-        File file = new File("velkom_pcuserauto.txt");
+        File file = new File(ConstantsFor.VELKOM_PCUSERAUTO_TXT);
         try(Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.DB_PREFIX + "velkom");
             PreparedStatement p = c.prepareStatement(sql);
             ResultSet r = p.executeQuery();

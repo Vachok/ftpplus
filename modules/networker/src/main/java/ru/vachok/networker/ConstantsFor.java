@@ -49,6 +49,8 @@ import java.util.concurrent.*;
 public enum ConstantsFor {
     ;
 
+    public static final String VELKOM_PCUSERAUTO_TXT = "velkom_pcuserauto.txt";
+
     public static final String ATT_PHOTO_CONVERTER = "photoConverter";
 
     public static final String ATT_SSH_ACTS = "sshActs";
