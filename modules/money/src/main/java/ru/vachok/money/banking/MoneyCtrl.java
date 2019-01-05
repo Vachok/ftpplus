@@ -37,11 +37,11 @@ public class MoneyCtrl {
 
     @PostMapping("/getmoney")
     public String getMoney(@ModelAttribute ParserCBRruSRV parserCBRruSRV, Model model, @ModelAttribute Currencies currencies) {
-        this.currencies = currencies;
         this.parserCBRruSRV = parserCBRruSRV;
+        this.currencies = parserCBRruSRV.getCurrencies();
         model.addAttribute(ConstantsFor.PARSER_CB_RRU_SRV, parserCBRruSRV);
         model.addAttribute(ConstantsFor.TITLE, parserCBRruSRV.getUserMoney());
-        model.addAttribute(ConstantsFor.RESULT, currencies.toString() + "<p>" + parserCBRruSRV.toString());
+        model.addAttribute(ConstantsFor.RESULT, parserCBRruSRV.countYourMoney());
         return "ok";
     }
 }

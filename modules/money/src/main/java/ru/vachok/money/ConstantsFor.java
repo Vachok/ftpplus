@@ -34,6 +34,8 @@ public enum ConstantsFor {
     ;
 
 
+    public static final String SINGLETON = "singleton";
+
     public static final String PARSER_CB_RRU_SRV = "ParserCBRruSRV";
 
     public static final String CURRENCY = "currency";

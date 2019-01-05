@@ -36,7 +36,15 @@ public class ParserCBRruSRV {
     /**
      {@link Currencies}
      */
+    @Autowired
     private Currencies currencies;
+
+    /**
+     @param userPrcP {@link #userPrc}
+     */
+    public void setUserPrc(String userPrcP) {
+        userPrc = userPrcP;
+    }
 
     /**
      * Пользовательский ввод сколько денег
@@ -55,11 +63,8 @@ public class ParserCBRruSRV {
         return userPrc;
     }
 
-    /**
-     @param userPrc_p {@link #userPrc}
-     */
-    public void setUserPrc(String userPrc_p) {
-        userPrc = userPrc_p;
+    public Currencies getCurrencies() {
+        return currencies;
     }
 
     /**
@@ -85,7 +90,7 @@ public class ParserCBRruSRV {
      */
     @Autowired
     public ParserCBRruSRV(Currencies currencies) {
-        this.currencies = currencies;
+        this.currencies = new Currencies();
     }
 
     /**
