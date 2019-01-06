@@ -2,6 +2,7 @@ package ru.vachok.networker.fileworks;
 
 
 import org.slf4j.Logger;
+import ru.vachok.messenger.MessageToUser;
 import ru.vachok.messenger.email.ESender;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
@@ -81,10 +82,10 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
             folderToSearch = "\\\\srv-fs.eatmeat.ru\\common_new\\" + folderToSearch;
             Files.walkFileTree(Paths.get(folderToSearch), fileSearcher);
             String oneAddress = "netvisor@velkomfood.ru";
-            if(ConstantsFor.thisPC().contains("NO0027")){
+            if(ConstantsFor.thisPC().toLowerCase().contains("home") || ConstantsFor.thisPC().contains("NO0027")){
                 oneAddress = ConstantsFor.GMAIL_COM;
             }
-            ESender resSend = new ESender(oneAddress);
+            MessageToUser resSend = new ESender(oneAddress);
             List<String> fileSearcherResList = fileSearcher.getResList();
             String resTo = new TForms().fromArray(fileSearcherResList, true);
             if(fileSearcherResList.size() > 0){

@@ -30,7 +30,7 @@ public class OdinAssSyncCTRL {
         model.addAttribute("CsvTxt", csvTxt);
         model.addAttribute("mapfiles", mapFiles());
         model.addAttribute("csvparse", new TForms().fromArray(csvTxt.getPsCommandsList(), true));
-        model.addAttribute("result", getResult());
+        model.addAttribute(ConstantsFor.ATT_RESULT, getResult());
         return "odinass";
     }
 

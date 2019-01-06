@@ -33,7 +33,7 @@ public class CalculateCTRL {
         model.addAttribute("simpleCalculator", simpleCalculator);
         model.addAttribute("footer", new PageFooter().getFooterUtext());
         if (request != null) {
-            model.addAttribute("result", simpleCalculator.getStampFromDate(request.getQueryString()));
+            model.addAttribute(ConstantsFor.ATT_RESULT, simpleCalculator.getStampFromDate(request.getQueryString()));
         }
         return "calculate";
     }
@@ -42,7 +42,7 @@ public class CalculateCTRL {
     private String timeStamp(@ModelAttribute SimpleCalculator simpleCalculator, Model model, String workPos) {
         model.addAttribute(ConstantsFor.TITLE, "Calculator-POS");
         model.addAttribute("simpleCalculator", simpleCalculator);
-        model.addAttribute("result", simpleCalculator.getStampFromDate(workPos));
+        model.addAttribute(ConstantsFor.ATT_RESULT, simpleCalculator.getStampFromDate(workPos));
         model.addAttribute("footer", new PageFooter().getFooterUtext());
         return "calculate";
     }
