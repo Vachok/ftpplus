@@ -34,7 +34,7 @@ public class MailMessages implements Callable<Message[]> {
 
     private boolean cleanMBox;
 
-    private ESender senderToGmail = new ESender("143500@gmail.com");
+    private ESender senderToGmail = new ESender(ConstantsFor.GMAIL_COM);
 
     public ESender getSenderToGmail() {
         return senderToGmail;

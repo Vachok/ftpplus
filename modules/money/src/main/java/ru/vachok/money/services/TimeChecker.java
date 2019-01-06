@@ -5,6 +5,7 @@ import org.apache.commons.net.ntp.NTPUDPClient;
 import org.apache.commons.net.ntp.TimeInfo;
 import org.slf4j.Logger;
 import ru.vachok.money.config.AppComponents;
+import ru.vachok.money.filesys.FileSysWorker;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -47,7 +48,7 @@ public class TimeChecker implements Callable<TimeInfo> {
             sb.append("call=").append(call().getMessage());
         }
         catch(Exception e){
-            LOGGER.error(e.getMessage(), e);
+            FileSysWorker.writeFile(e.getMessage(), new TForms().toStringFromArray(e, false));
         }
         sb.append('}');
         return sb.toString();

@@ -8,7 +8,10 @@ import ru.vachok.money.ConstantsFor;
 import ru.vachok.money.MoneyApplication;
 import ru.vachok.money.components.AppVersion;
 import ru.vachok.money.config.AppComponents;
+import ru.vachok.money.filesys.FileSysWorker;
 import ru.vachok.money.mycar.MyOpel;
+import ru.vachok.money.services.TForms;
+import ru.vachok.money.services.TimeChecker;
 import ru.vachok.money.services.sockets.TellNetSRV;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
@@ -18,6 +21,7 @@ import java.awt.*;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.URI;
+import java.util.Date;
 import java.util.Properties;
 
 
@@ -97,7 +101,15 @@ public class SystemTrayHelper {
         MenuItem rebootSys = new MenuItem();
         MenuItem offSys = new MenuItem();
 
-        ActionListener exitApp = e -> System.exit(0);
+        ActionListener exitApp = e -> {
+            try{
+                FileSysWorker.writeFile("motd", e.getActionCommand() + "\n" + new Date(new TimeChecker().call().getReturnTime()));
+            }
+            catch(Exception e1){
+                FileSysWorker.writeFile(e1.getMessage(), new TForms().toStringFromArray(e1, false));
+            }
+            System.exit(0);
+        };
         exitItem.addActionListener(exitApp);
         exitItem.setLabel("Exit");
         openSysInfoPage.addActionListener(e -> {
@@ -121,7 +133,7 @@ public class SystemTrayHelper {
         moneyItem.setLabel("Чекануть дорогу");
         rebootSys.addActionListener(e -> {
             try{
-                Runtime.getRuntime().exec("shutdown /r /f");
+                Runtime.getRuntime().exec(ConstantsFor.SHUTDOWN_R_F);
             }
             catch(IOException e1){
                 LOGGER.error(e1.getMessage(), e1);
@@ -130,7 +142,7 @@ public class SystemTrayHelper {
         rebootSys.setLabel("REBOOT THIS PC!");
         offSys.addActionListener(e -> {
             try{
-                Runtime.getRuntime().exec("shutdown /p /f");
+                Runtime.getRuntime().exec(ConstantsFor.SHUTDOWN_P_F);
             }
             catch(IOException e1){
                 LOGGER.error(e1.getMessage(), e1);

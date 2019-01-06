@@ -34,6 +34,14 @@ public enum ConstantsFor {
     ;
 
 
+    public static final String ERROR = "error";
+
+    public static final String SHUTDOWN_R_F = "shutdown /r /f";
+
+    public static final String SHUTDOWN_P_F = "shutdown /p /f";
+
+    public static final String GMAIL_COM = "143500@gmail.com";
+
     public static final String SINGLETON = "singleton";
 
     public static final String PARSER_CB_RRU_SRV = "ParserCBRruSRV";
@@ -129,7 +137,7 @@ public enum ConstantsFor {
     }
 
     public static BiConsumer<String, String> ok = (className, msg) -> new Thread(() -> {
-        MessageToUser emailMe = new ESender("143500@gmail.com");
+        MessageToUser emailMe = new ESender(GMAIL_COM);
         emailMe.info(ConstantsFor.APP_NAME, className + " ok", msg);
     }).start();
 

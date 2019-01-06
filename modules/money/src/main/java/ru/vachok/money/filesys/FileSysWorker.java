@@ -23,6 +23,13 @@ public abstract class FileSysWorker extends SimpleFileVisitor<Path> {
      */
     private static final Logger LOGGER = AppComponents.getLogger();
 
+    /**
+     Читает файл в строки.
+     <p>
+
+     @param toRead файл, который надо прочитать
+     @return {@link List} строк из файла.
+     */
     public static List<String> readFileAsList(File toRead) {
         List<String> fileAsList = new ArrayList<>();
         try(InputStream inputStream = new FileInputStream(toRead);
@@ -35,5 +42,15 @@ public abstract class FileSysWorker extends SimpleFileVisitor<Path> {
             LOGGER.warn(e.getMessage(), e);
         }
         return fileAsList;
+    }
+
+    public static void writeFile(String nameFile, String fileStr) {
+        try(OutputStream outputStream = new FileOutputStream(new File(nameFile));
+            PrintWriter printWriter = new PrintWriter(outputStream, true)){
+            printWriter.println(fileStr);
+        }
+        catch(IOException e){
+            LOGGER.error(e.getMessage(), e);
+        }
     }
 }

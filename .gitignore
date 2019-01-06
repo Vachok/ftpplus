@@ -729,3 +729,5 @@ available_last.txt
 lan/
 regSourceForProperties.properties
 temp_pat.cfg
+PfListsSrv.makeListRunner
+pcautodis.txt
