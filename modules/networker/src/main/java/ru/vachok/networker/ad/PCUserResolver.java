@@ -12,10 +12,8 @@ import ru.vachok.networker.net.NetScannerSvc;
 import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
+import java.util.Date;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 
@@ -53,7 +51,7 @@ public class PCUserResolver implements Thread.UncaughtExceptionHandler {
 
     static {
         try {
-            connection = new RegRuMysql().getDefaultConnection("u0466446_velkom");
+            connection = new RegRuMysql().getDefaultConnection(ConstantsFor.U_0466446_VELKOM);
         } catch (Exception e) {
             Throwable[] suppressed = e.getSuppressed();
             for (Throwable t : suppressed) {
@@ -281,7 +279,7 @@ public class PCUserResolver implements Thread.UncaughtExceptionHandler {
      */
     synchronized String offNowGetU(String pcName) {
         StringBuilder v = new StringBuilder();
-        try(Connection c = new RegRuMysql().getDefaultConnection("u0466446_velkom")){
+        try(Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.U_0466446_VELKOM)){
             String userName = "userName";
             String whenQueried = "whenQueried";
             String columnLabel = "pcName";

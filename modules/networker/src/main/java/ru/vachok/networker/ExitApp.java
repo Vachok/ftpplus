@@ -7,6 +7,8 @@ import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
@@ -24,6 +26,8 @@ public class ExitApp implements Runnable {
      {@link AppComponents#getLogger()}
      */
     private static final Logger LOGGER = AppComponents.getLogger();
+
+    private List<String> stringList = new ArrayList<>();
 
     /**
      Причина выхода
@@ -47,9 +51,10 @@ public class ExitApp implements Runnable {
      */
     @Override
     public void run() {
-        LOGGER.info(ConstantsFor.EXIT_APP_RUN);
+        stringList.add(ConstantsFor.EXIT_APP_RUN);
         Thread.currentThread().setName(ConstantsFor.EXIT_APP_RUN);
         LOGGER.warn(reasonExit);
+        stringList.add(reasonExit);
         copyAvail();
     }
 
@@ -64,8 +69,11 @@ public class ExitApp implements Runnable {
         FileSystemWorker.copyOrDelFile(new File(ConstantsFor.OLD_LAN_TXT), new StringBuilder().append(".\\lan\\old_lan_").append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
         if(appLog.exists() && appLog.canRead()){
             FileSystemWorker.copyOrDelFile(appLog, "\\\\10.10.111.1\\Torrents-FTP\\app.log", false);
-        } else LOGGER.info("No app.log");
-
+        }
+        else{
+            stringList.add("No app.log");
+            LOGGER.info("No app.log");
+        }
         exitAppDO();
     }
 
@@ -75,9 +83,10 @@ public class ExitApp implements Runnable {
      Код выхода = <i>uptime</i> в минутах.
      */
     private void exitAppDO() {
+        stringList.add(toMinutes + " uptime");
+        FileSystemWorker.recFile("exit.last", stringList);
         getConfigurableApplicationContext().close();
         FileSystemWorker.delTemp();
-
         new ThreadConfig().killAll();
         System.exit(Math.toIntExact(toMinutes));
     }

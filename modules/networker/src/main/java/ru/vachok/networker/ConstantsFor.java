@@ -39,6 +39,8 @@ import java.util.concurrent.*;
 public enum ConstantsFor {
     ;
 
+    public static final String U_0466446_VELKOM = "u0466446_velkom";
+
     public static final String PR_APP_VERSION = "appVersion";
 
     public static final String PR_QSIZE = "qsize";

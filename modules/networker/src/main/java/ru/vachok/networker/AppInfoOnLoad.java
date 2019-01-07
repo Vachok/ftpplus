@@ -13,6 +13,7 @@ import ru.vachok.networker.accesscontrol.common.CommonRightsChecker;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.config.ThreadConfig;
+import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.mailserver.MailIISLogsCleaner;
 import ru.vachok.networker.net.DiapazonedScan;
 import ru.vachok.networker.net.SwitchesAvailability;
@@ -177,7 +178,7 @@ public class AppInfoOnLoad implements Runnable {
         messageToUser.infoNoTitles(logStr + "\n" +
             checkDay() +
             new TForms().fromArray(ConstantsFor.getProps()) + "\n" +
-            ConstantsFor.showMem());
+            FileSystemWorker.readFile("exit.last"));
     }
 
     private static String checkDay() {
@@ -193,7 +194,7 @@ public class AppInfoOnLoad implements Runnable {
 
     private static void trunkTableUsers() {
         MessageToUser messageToUser = new ESender(ConstantsFor.GMAIL_COM);
-        try(Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.DB_PREFIX + "velkom");
+        try(Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.U_0466446_VELKOM);
             PreparedStatement preparedStatement = c.prepareStatement("TRUNCATE TABLE pcuserauto")){
             preparedStatement.executeUpdate();
             messageToUser.infoNoTitles("TRUNCATE true\n" + ConstantsFor.getUpTime() + " uptime.");
