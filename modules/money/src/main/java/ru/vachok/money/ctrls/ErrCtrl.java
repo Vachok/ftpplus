@@ -9,6 +9,7 @@ import ru.vachok.money.ConstantsFor;
 import ru.vachok.money.components.PageFooter;
 import ru.vachok.money.filesys.FileSysWorker;
 import ru.vachok.money.services.TForms;
+import ru.vachok.money.services.TimeChecker;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -47,7 +48,7 @@ public class ErrCtrl implements ErrorController {
     public void exitApp( HttpServletRequest httpServletRequest , HttpServletResponse response ) throws IOException {
         String s = httpServletRequest.getRequestURL().toString();
         String q = httpServletRequest.getQueryString();
-        FileSysWorker.writeFile("motd", s + "\n" + q);
+        FileSysWorker.writeFile("motd", s + "\n" + q + "\n" + new TimeChecker().toString());
         if (q != null) {
             if(q.contains("shutdown")){
                 Runtime.getRuntime().exec(ConstantsFor.SHUTDOWN_P_F);
