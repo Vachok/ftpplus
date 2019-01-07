@@ -255,12 +255,10 @@ public final class SystemTrayHelper {
     /**
      Reconnect Socket, пока он открыт
      <p>
-     Usages: {@link #addItems(PopupMenu)} <br> Uses: 1.1 {@link ConstantsFor#checkDay()}, 1.2 {@link MyServer#reconSock()}, 1.3 {@link TForms#fromArray(Exception, boolean)}, 1.4 {@link
+     Usages: {@link #addItems(PopupMenu)} <br> Uses: 1.1 {@link AppInfoOnLoad#checkDay()}, 1.2 {@link MyServer#reconSock()}, 1.3 {@link TForms#fromArray(Exception, boolean)}, 1.4 {@link
     ThreadConfig#threadPoolTaskExecutor()}
      */
     private static void recOn() {
-        String bSTR = ConstantsFor.checkDay() + " pcuserauto truncated";
-        LOGGER.warn(bSTR);
         MyServer.setSocket(new Socket());
         while(!MyServer.getSocket().isClosed()){
             try{

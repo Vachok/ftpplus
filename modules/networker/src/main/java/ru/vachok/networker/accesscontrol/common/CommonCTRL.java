@@ -26,8 +26,8 @@ public class CommonCTRL {
     @GetMapping("/common")
     public String commonGET(Model model) {
         commonSRV.setNullToAllFields();
-        model.addAttribute(ConstantsFor.TITLE, ConstantsFor.percToEnd());
-        model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext());
+        model.addAttribute(ConstantsFor.ATT_TITLE, ConstantsFor.percToEnd());
+        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
         model.addAttribute(AT_NAME_COMMON, commonSRV);
 
         return AT_NAME_COMMON;
@@ -37,9 +37,9 @@ public class CommonCTRL {
     public String commonArchPOST(@ModelAttribute CommonSRV commonSRV, Model model) {
         this.commonSRV = commonSRV;
         model.addAttribute(AT_NAME_COMMON, commonSRV);
-        model.addAttribute(ConstantsFor.TITLE, commonSRV.getDelFolderPath() + " (" + commonSRV.getPerionDays() + " дн.) ");
+        model.addAttribute(ConstantsFor.ATT_TITLE, commonSRV.getDelFolderPath() + " (" + commonSRV.getPerionDays() + " дн.) ");
         model.addAttribute(ConstantsFor.ATT_RESULT, commonSRV.reStoreDir());
-        model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext());
+        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
         return AT_NAME_COMMON;
     }
 
@@ -47,8 +47,8 @@ public class CommonCTRL {
     public String commonSearch(@ModelAttribute CommonSRV commonSRV, Model model) {
         this.commonSRV = commonSRV;
         model.addAttribute(AT_NAME_COMMON, commonSRV);
-        model.addAttribute(ConstantsFor.TITLE, commonSRV.getSearchPat() + " - идёт поиск");
-        model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext());
+        model.addAttribute(ConstantsFor.ATT_TITLE, commonSRV.getSearchPat() + " - идёт поиск");
+        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
         model.addAttribute(ConstantsFor.ATT_RESULT, commonSRV.searchByPat());
         return AT_NAME_COMMON;
     }

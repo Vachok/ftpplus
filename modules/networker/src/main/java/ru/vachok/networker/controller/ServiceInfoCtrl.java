@@ -56,7 +56,7 @@ public class ServiceInfoCtrl {
         if(visitor.getSession().equals(request.getSession())){
             visitor.setClickCounter(visitor.getClickCounter() + 1);
         }
-        model.addAttribute(ConstantsFor.TITLE, getLast() + " (" + getLast() * ConstantsFor.ONE_DAY_HOURS + ")");
+        model.addAttribute(ConstantsFor.ATT_TITLE, getLast() + " (" + getLast() * ConstantsFor.ONE_DAY_HOURS + ")");
         model.addAttribute("mail", ConstantsFor.percToEnd());
         model.addAttribute("ping", pingGit());
         model.addAttribute("urls", new StringBuilder()
@@ -74,7 +74,7 @@ public class ServiceInfoCtrl {
         model.addAttribute(ConstantsFor.VISIT, visitor.toString());
         model.addAttribute("res", MyCalen.toStringS() + "<br>" + AppComponents.versionInfo().toString());
         model.addAttribute("back", request.getHeader(ConstantsFor.REFERER.toLowerCase()));
-        model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext() + "<br>" + getJREVers());
+        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<br>" + getJREVers());
     }
 
     private float getLast() {

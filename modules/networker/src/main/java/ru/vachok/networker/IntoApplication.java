@@ -132,7 +132,6 @@ public class IntoApplication {
     private static boolean afterSt() {
         ThreadConfig threadConfig = new ThreadConfig();
         Runnable infoAndSched = new AppInfoOnLoad();
-        ConstantsFor.showMem();
         try {
             String s = Paths.get("").toFile().getCanonicalPath().toLowerCase();
             String showPath = Paths.get(".").toString() + "\n abs: " +
@@ -140,8 +139,8 @@ public class IntoApplication {
             new Thread(() -> {
                 InitProperties initProperties = new FileProps(s + "\\modules\\networker\\src\\main\\resources\\application");
                 Properties props = initProperties.getProps();
-                props.setProperty("build.version", ConstantsFor.getProps().getProperty("appVersion"));
-                props.setProperty("qsize", ConstantsFor.IPS_IN_VELKOM_VLAN + "");
+                props.setProperty("build.version", ConstantsFor.getProps().getProperty(ConstantsFor.PR_APP_VERSION));
+                props.setProperty(ConstantsFor.PR_QSIZE, ConstantsFor.IPS_IN_VELKOM_VLAN + "");
                 initProperties.setProps(props);
                 initProperties = new DBRegProperties(ConstantsFor.APP_NAME + "application");
                 initProperties.delProps();

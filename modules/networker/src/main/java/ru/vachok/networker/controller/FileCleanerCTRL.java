@@ -32,7 +32,7 @@ public class FileCleanerCTRL {
     @GetMapping("/cleaner")
     public String getFilesInfo(Model model, HttpServletResponse response) {
         Thread.currentThread().setName(getClass().getSimpleName() + "GET");
-        model.addAttribute(ConstantsFor.TITLE, "Инфо о файлах");
+        model.addAttribute(ConstantsFor.ATT_TITLE, "Инфо о файлах");
         model.addAttribute("commonScan2YOlder", commonScan2YOlder);
         return "cleaner";
     }
@@ -43,7 +43,7 @@ public class FileCleanerCTRL {
         this.commonScan2YOlder = commonScan2YOlder;
         model.addAttribute("commonScan2YOlder", commonScan2YOlder);
         String startPath = commonScan2YOlder.getStartPath();
-        model.addAttribute(ConstantsFor.TITLE, startPath);
+        model.addAttribute(ConstantsFor.ATT_TITLE, startPath);
         model.addAttribute("call", callMe());
         model.addAttribute("header", new PageFooter().getHeaderUtext());
         model.addAttribute("footer", new PageFooter().getFooterUtext());

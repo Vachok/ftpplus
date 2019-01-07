@@ -100,7 +100,7 @@ public class ActDirectoryCTRL {
             ADComputer adComputer = adSrv.getAdComputer();
             model.addAttribute(ConstantsFor.ATT_PHOTO_CONVERTER, photoConverterSRV);
             model.addAttribute(ConstantsFor.ATT_SSH_ACTS, sshActs);
-            model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext());
+            model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
             model.addAttribute("pcs", new TForms().adPCMap(adComputer.getAdComputers(), true));
             model.addAttribute(ConstantsFor.USERS, new TForms().fromADUsersList(adUsers, true));
         }
@@ -119,7 +119,7 @@ public class ActDirectoryCTRL {
     private String queryStringExists(String queryString, Model model) {
         NetScannerSvc iScan = NetScannerSvc.getI();
         iScan.setThePc(queryString);
-        model.addAttribute(ConstantsFor.TITLE, queryString + " " + iScan.getInfoFromDB());
+        model.addAttribute(ConstantsFor.ATT_TITLE, queryString + " " + iScan.getInfoFromDB());
         model.addAttribute(ConstantsFor.USERS, inputWithInfoFromDB);
         try{
             model.addAttribute("details", adSrv.getDetails(queryString));
@@ -127,7 +127,7 @@ public class ActDirectoryCTRL {
         catch(Exception e){
             model.addAttribute("details", e.getMessage());
         }
-        model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext());
+        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
         return "aditem";
     }
 
@@ -149,10 +149,10 @@ public class ActDirectoryCTRL {
             if(!ConstantsFor.isPingOK()){
                 titleStr = "ping to srv-git.eatmeat.ru is " + false;
             }
-            model.addAttribute(ConstantsFor.TITLE, titleStr);
+            model.addAttribute(ConstantsFor.ATT_TITLE, titleStr);
             model.addAttribute("content", photoConverterSRV.psCommands());
             model.addAttribute("alert", ALERT_AD_FOTO);
-            model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext());
+            model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
         }
         catch(NullPointerException e){
             LOGGER.error(e.getMessage(), e);

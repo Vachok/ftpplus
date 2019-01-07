@@ -74,12 +74,34 @@ public class VersionInfo {
     }
 
     /**
-     * Загружает из {@link #PROPERTIES} информацию о версии и билде
+     Usages: {@link AppComponents#versionInfo()} <br> Uses: {@link #setterVersionFromFiles(File)} , {@link #getParams()} , {@link #toString()} , {@link ConstantsFor#saveProps(Properties)}<br>
      */
-    private void getParams() {
-        setAppBuild(PROPERTIES.getOrDefault("appBuild", "no database").toString());
-        setBuildTime(PROPERTIES.getOrDefault("buildTime", System.currentTimeMillis()).toString());
-        setAppVersion(PROPERTIES.getOrDefault("appVersion", "no database").toString());
+    void setParams() {
+        File file = new File("g:\\My_Proj\\FtpClientPlus\\modules\\networker\\build.gradle");
+        if (file.exists()) {
+            setterVersionFromFiles(file);
+            ConstantsFor.saveProps(PROPERTIES);
+        } else {
+            file = new File("C:\\Users\\ikudryashov\\IdeaProjects\\spring\\modules\\networker\\build.gradle");
+            if (file.exists()) {
+                setterVersionFromFiles(file);
+                ConstantsFor.saveProps(PROPERTIES);
+            } else {
+                getParams();
+                String msg = toString();
+                LOGGER.warn(msg);
+            }
+        }
+        this.appBuild = thisPCName + "." + new SecureRandom().nextInt((int) ConstantsFor.MY_AGE);
+        ConstantsFor.getProps().setProperty("appBuild", appBuild);
+        if (thisPCName.equalsIgnoreCase("home") ||
+            thisPCName.toLowerCase().contains(ConstantsFor.NO0027)) {
+            this.buildTime = new Date(ConstantsFor.START_STAMP).toString();
+            ConstantsFor.getProps().setProperty("buildTime", buildTime);
+        }
+        PROPERTIES.setProperty(ConstantsFor.PR_APP_VERSION, getAppVersion());
+        String msg = this.toString();
+        LOGGER.info(msg);
     }
 
     /**
@@ -111,34 +133,12 @@ public class VersionInfo {
     }
 
     /**
-     Usages: {@link AppComponents#versionInfo()} <br> Uses: {@link #setterVersionFromFiles(File)} , {@link #getParams()} , {@link #toString()} , {@link ConstantsFor#saveProps(Properties)}<br>
+     Загружает из {@link #PROPERTIES} информацию о версии и билде
      */
-    void setParams() {
-        File file = new File("g:\\My_Proj\\FtpClientPlus\\modules\\networker\\build.gradle");
-        if (file.exists()) {
-            setterVersionFromFiles(file);
-            ConstantsFor.saveProps(PROPERTIES);
-        } else {
-            file = new File("C:\\Users\\ikudryashov\\IdeaProjects\\spring\\modules\\networker\\build.gradle");
-            if (file.exists()) {
-                setterVersionFromFiles(file);
-                ConstantsFor.saveProps(PROPERTIES);
-            } else {
-                getParams();
-                String msg = toString();
-                LOGGER.warn(msg);
-            }
-        }
-        this.appBuild = thisPCName + "." + new SecureRandom().nextInt((int) ConstantsFor.MY_AGE);
-        ConstantsFor.getProps().setProperty("appBuild", appBuild);
-        if (thisPCName.equalsIgnoreCase("home") ||
-            thisPCName.toLowerCase().contains(ConstantsFor.NO0027)) {
-            this.buildTime = new Date(ConstantsFor.START_STAMP).toString();
-            ConstantsFor.getProps().setProperty("buildTime", buildTime);
-        }
-        PROPERTIES.setProperty("appVersion", getAppVersion());
-        String msg = this.toString();
-        LOGGER.info(msg);
+    private void getParams() {
+        setAppBuild(PROPERTIES.getOrDefault("appBuild", "no database").toString());
+        setBuildTime(PROPERTIES.getOrDefault("buildTime", System.currentTimeMillis()).toString());
+        setAppVersion(PROPERTIES.getOrDefault(ConstantsFor.PR_APP_VERSION, "no database").toString());
     }
 
     /**

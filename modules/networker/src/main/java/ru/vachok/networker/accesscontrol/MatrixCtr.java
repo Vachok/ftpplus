@@ -111,8 +111,8 @@ public class MatrixCtr {
             String users = workPos.split(": ")[1];
             String commonRights = adSrv.checkCommonRightsForUserName(users);
             model.addAttribute(WHOIS_STR, commonRights);
-            model.addAttribute(ConstantsFor.TITLE, workPos);
-            model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext());
+            model.addAttribute(ConstantsFor.ATT_TITLE, workPos);
+            model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
         }
         catch(ArrayIndexOutOfBoundsException e){
             LOGGER.error(e.getMessage(), e);
@@ -205,7 +205,7 @@ public class MatrixCtr {
         model.addAttribute("logdb", logsFromDB);
         model.addAttribute("starttime", new Date(ConstantsFor.START_STAMP));
         model.addAttribute(FOOTER_NAME, new PageFooter().getFooterUtext());
-        model.addAttribute(ConstantsFor.TITLE, metricMatrixStart);
+        model.addAttribute(ConstantsFor.ATT_TITLE, metricMatrixStart);
     }
 
     private String calculateDoubles(String workPos, Model model) {

@@ -6,7 +6,9 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.messenger.email.ESender;
 import ru.vachok.mysqlandprops.EMailAndDB.SpeedRunActualize;
+import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.accesscontrol.common.CommonRightsChecker;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.AppCtx;
@@ -19,9 +21,15 @@ import ru.vachok.networker.services.WeekPCStats;
 
 import java.io.IOException;
 import java.nio.file.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.format.TextStyle;
 import java.util.Date;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -42,23 +50,6 @@ public class AppInfoOnLoad implements Runnable {
     private static final Logger LOGGER = AppComponents.getLogger();
 
     /**
-     Повторение более 3х раз в строках
-     */
-    private static final String STR_SEC_SPEND = ConstantsFor.STR_SEC_SPEND;
-
-    /**
-     Задержка выполнения для этого класса
-
-     @see #schedStarter()
-     */
-    private static final int THIS_DELAY = 111;
-
-    /**
-     {@link MessageSwing}
-     */
-    private static MessageToUser messageToUser = new MessageSwing();
-
-    /**
      Запуск {@link CommonRightsChecker}
      */
     private static Runnable r = () -> {
@@ -71,6 +62,17 @@ public class AppInfoOnLoad implements Runnable {
         }
     };
 
+    /**
+     Повторение более 3х раз в строках
+     */
+    private static final String STR_SEC_SPEND = ConstantsFor.STR_SEC_SPEND;
+
+    /**
+     Задержка выполнения для этого класса
+
+     @see #schedStarter()
+     */
+    private static final int THIS_DELAY = 111;
 
     /**
      Запускает сканнер прав Common
@@ -91,41 +93,27 @@ public class AppInfoOnLoad implements Runnable {
     }
 
     /**
-     @see #infoForU(ApplicationContext)
+     <b>1.1 Краткая сводка</b>
+     Немного инфомации о приложении.
+
+     @param appCtx {@link ApplicationContext}
      */
-    @Override
-    public void run() {
-        infoForU(AppCtx.scanForBeansAndRefreshContext());
-    }
-
-    /**
-     Стата за неделю по-ПК
-     <p>
-     Usages: {@link #schedStarter()} <br> Uses: 1.1 {@link MyCalen#getNextDayofWeek(int, int, DayOfWeek)}, 1.2 {@link ThreadConfig#threadPoolTaskScheduler()}
-     */
-    @SuppressWarnings ("MagicNumber")
-    private static void dateSchedulers() {
-        Date nextStartDay = MyCalen.getNextDayofWeek(23, 57, DayOfWeek.SUNDAY);
-        StringBuilder stringBuilder = new StringBuilder();
-        ThreadPoolTaskScheduler threadPoolTaskScheduler = new ThreadConfig().threadPoolTaskScheduler();
-        long delay = TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY_HOURS * 7);
-
-        threadPoolTaskScheduler.scheduleWithFixedDelay(new WeekPCStats(), nextStartDay, delay);
-        stringBuilder.append(nextStartDay.toString()).append(" WeekPCStats() start | \n");
-
-        nextStartDay = new Date(nextStartDay.getTime() - TimeUnit.HOURS.toMillis(1));
-        threadPoolTaskScheduler.scheduleWithFixedDelay(new MailIISLogsCleaner(), nextStartDay, delay);
-        stringBuilder.append(nextStartDay.toString()).append(" MailIISLogsCleaner() start.\n");
-
-        String logStr = stringBuilder.toString();
-        LOGGER.warn(logStr);
-        messageToUser.infoNoTitles(logStr + "\n" + new TForms().fromArray(ConstantsFor.getProps()));
+    private void infoForU(ApplicationContext appCtx) {
+        final long stArt = System.currentTimeMillis();
+        String msg = new StringBuilder()
+            .append(appCtx.getApplicationName())
+            .append(" app name")
+            .append(appCtx.getDisplayName())
+            .append(" app display name\n")
+            .append(ConstantsFor.getBuildStamp()).toString();
+        LOGGER.info(msg);
+        schedStarter();
     }
 
     /**
      Запуск заданий по-расписанию
      <p>
-     Usages: {@link #infoForU(ApplicationContext)} <br> Uses: 1.1 {@link #dateSchedulers()}, 1.2 {@link ConstantsFor#thisPC()}, 1.3 {@link ConstantsFor#thisPC()} .
+     Usages: {@link #infoForU(ApplicationContext)} <br> Uses: 1.1 {@link #dateSchedulers()}, 1.2 {@link ConstantsFor#thisPC()}, 1.3 {@link ConstantsFor#thisPC()} .@param s
      */
     private void schedStarter() {
         Runnable speedRun = null;
@@ -157,24 +145,62 @@ public class AppInfoOnLoad implements Runnable {
     }
 
     /**
-     <b>1.1 Краткая сводка</b>
-     Немного инфомации о приложении.
-
-     @param appCtx {@link ApplicationContext}
+     @see #infoForU(ApplicationContext)
      */
-    private void infoForU(ApplicationContext appCtx) {
-        final long stArt = System.currentTimeMillis();
-        String msg = new StringBuilder()
-            .append(appCtx.getApplicationName())
-            .append(" app name")
-            .append(appCtx.getDisplayName())
-            .append(" app display name\n")
-            .append(ConstantsFor.getBuildStamp()).toString();
-        LOGGER.info(msg);
-        schedStarter();
-        String msgTimeSp = "IntoApplication.infoForU method. " + ( float ) (System.currentTimeMillis() - stArt) / 1000 +
-            STR_SEC_SPEND;
-        messageToUser.infoNoTitles(MyCalen.toStringS() + "\n" + msgTimeSp);
+    @Override
+    public void run() {
+        infoForU(AppCtx.scanForBeansAndRefreshContext());
+    }
+
+    /**
+     Стата за неделю по-ПК
+     <p>
+     Usages: {@link #schedStarter()} <br> Uses: 1.1 {@link MyCalen#getNextDayofWeek(int, int, DayOfWeek)}, 1.2 {@link ThreadConfig#threadPoolTaskScheduler()}@param s
+     */
+    @SuppressWarnings ("MagicNumber")
+    private static void dateSchedulers() {
+        MessageToUser messageToUser = new MessageSwing();
+        Date nextStartDay = MyCalen.getNextDayofWeek(23, 57, DayOfWeek.SUNDAY);
+        StringBuilder stringBuilder = new StringBuilder();
+        ThreadPoolTaskScheduler threadPoolTaskScheduler = new ThreadConfig().threadPoolTaskScheduler();
+        long delay = TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY_HOURS * 7);
+
+        threadPoolTaskScheduler.scheduleWithFixedDelay(new WeekPCStats(), nextStartDay, delay);
+        stringBuilder.append(nextStartDay.toString()).append(" WeekPCStats() start | \n");
+
+        nextStartDay = new Date(nextStartDay.getTime() - TimeUnit.HOURS.toMillis(1));
+        threadPoolTaskScheduler.scheduleWithFixedDelay(new MailIISLogsCleaner(), nextStartDay, delay);
+        stringBuilder.append(nextStartDay.toString()).append(" MailIISLogsCleaner() start.\n");
+
+        String logStr = stringBuilder.toString();
+        LOGGER.warn(logStr);
+        messageToUser.infoNoTitles(logStr + "\n" +
+            checkDay() +
+            new TForms().fromArray(ConstantsFor.getProps()) + "\n" +
+            ConstantsFor.showMem());
+    }
+
+    private static String checkDay() {
+        Date dateStart = MyCalen.getNextDayofWeek(10, 0, DayOfWeek.MONDAY);
+        String msg = dateStart + " - date to TRUNCATE , " +
+            LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault()) + "\n" +
+            ConstantsFor.ONE_WEEK_MILLIS + " ms delay.\n";
+        ThreadConfig t = new ThreadConfig();
+        ThreadPoolTaskScheduler threadPoolTaskScheduler = t.threadPoolTaskScheduler();
+        threadPoolTaskScheduler.scheduleWithFixedDelay(AppInfoOnLoad::trunkTableUsers, dateStart, ConstantsFor.ONE_WEEK_MILLIS);
+        return msg;
+    }
+
+    private static void trunkTableUsers() {
+        MessageToUser messageToUser = new ESender(ConstantsFor.GMAIL_COM);
+        try(Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.DB_PREFIX + "velkom");
+            PreparedStatement preparedStatement = c.prepareStatement("TRUNCATE TABLE pcuserauto")){
+            preparedStatement.executeUpdate();
+            messageToUser.infoNoTitles("TRUNCATE true\n" + ConstantsFor.getUpTime() + " uptime.");
+        }
+        catch(SQLException e){
+            messageToUser.infoNoTitles("TRUNCATE false\n" + ConstantsFor.getUpTime() + " uptime.");
+        }
     }
 
 }

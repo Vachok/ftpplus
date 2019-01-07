@@ -3,13 +3,9 @@ package ru.vachok.networker;
 
 import org.apache.commons.net.ntp.TimeInfo;
 import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.ui.Model;
 import org.springframework.web.multipart.MultipartFile;
 import ru.vachok.messenger.MessageSwing;
-import ru.vachok.messenger.MessageToUser;
-import ru.vachok.messenger.email.ESender;
-import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
@@ -21,7 +17,6 @@ import ru.vachok.networker.mailserver.ExSRV;
 import ru.vachok.networker.mailserver.MailRule;
 import ru.vachok.networker.net.DiapazonedScan;
 import ru.vachok.networker.net.NetScannerSvc;
-import ru.vachok.networker.services.MyCalen;
 import ru.vachok.networker.services.TimeChecker;
 
 import javax.servlet.http.HttpServletRequest;
@@ -30,13 +25,8 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.SecureRandom;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.time.*;
-import java.time.format.TextStyle;
-import java.util.Date;
-import java.util.Locale;
+import java.time.LocalTime;
+import java.time.Year;
 import java.util.Properties;
 import java.util.concurrent.*;
 
@@ -48,6 +38,10 @@ import java.util.concurrent.*;
  @since 12.08.2018 (16:26) */
 public enum ConstantsFor {
     ;
+
+    public static final String PR_APP_VERSION = "appVersion";
+
+    public static final String PR_QSIZE = "qsize";
 
     public static final String ATT_RESULT = "result";
 
@@ -121,7 +115,7 @@ public enum ConstantsFor {
     /**
      {@link Model} имя атрибута
      */
-    public static final String FOOTER = "footer";
+    public static final String ATT_FOOTER = "footer";
 
     /**
      Префикс имени от reg.ru
@@ -141,7 +135,7 @@ public enum ConstantsFor {
     /**
      {@link Model} имя атрибута
      */
-    public static final String TITLE = "title";
+    public static final String ATT_TITLE = "title";
 
     /**
      {@link ServiceInfoCtrl#closeApp()}
@@ -240,7 +234,7 @@ public enum ConstantsFor {
 
     public static final String DELETED = " DELETED";
 
-    public static final Integer TOTPC = Integer.valueOf(getProps().getProperty(STR_TOTPC));
+    public static final Integer PR_TOTPC = Integer.valueOf(getProps().getProperty(STR_TOTPC));
 
     /**
      {@link #getAtomicTime()}
@@ -387,19 +381,8 @@ public enum ConstantsFor {
     private static int getIPs() {
         int vlansNum = Integer.parseInt(PROPS.getProperty("vlans", "22"));
         int qSize = vlansNum * 255;
-        PROPS.setProperty("qsize", qSize + "");
+        PROPS.setProperty(PR_QSIZE, qSize + "");
         return qSize;
-    }
-
-    static String checkDay() {
-        Date dateStart = MyCalen.getNextDayofWeek(10, 0, DayOfWeek.MONDAY);
-        String msg = dateStart + " - date to TRUNCATE , " +
-            LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault()) + "\n" +
-            ONE_WEEK_MILLIS + " ms delay.\n";
-        ThreadConfig t = new ThreadConfig();
-        ThreadPoolTaskScheduler threadPoolTaskScheduler = t.threadPoolTaskScheduler();
-        threadPoolTaskScheduler.scheduleWithFixedDelay(ConstantsFor::trunkTableUsers, dateStart, ONE_WEEK_MILLIS);
-        return msg;
     }
 
     private static long getDelay() {
@@ -408,17 +391,6 @@ public enum ConstantsFor {
             delay = 14;
         }
         return delay;
-    }
-
-    private static void trunkTableUsers() {
-        MessageToUser messageToUser = new ESender(GMAIL_COM);
-        try (Connection c = new RegRuMysql().getDefaultConnection(DB_PREFIX + "velkom");
-             PreparedStatement preparedStatement = c.prepareStatement("TRUNCATE TABLE pcuserauto")) {
-            preparedStatement.executeUpdate();
-            messageToUser.infoNoTitles("TRUNCATE true\n" + ConstantsFor.getUpTime() + " uptime.");
-        } catch (SQLException e) {
-            messageToUser.infoNoTitles("TRUNCATE false\n" + ConstantsFor.getUpTime() + " uptime.");
-        }
     }
 
     public static String getUpTime() {
