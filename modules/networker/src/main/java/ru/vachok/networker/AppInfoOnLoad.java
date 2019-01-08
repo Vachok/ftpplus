@@ -20,6 +20,7 @@ import ru.vachok.networker.net.SwitchesAvailability;
 import ru.vachok.networker.services.MyCalen;
 import ru.vachok.networker.services.WeekPCStats;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
 import java.sql.Connection;
@@ -29,9 +30,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.TextStyle;
-import java.util.Date;
-import java.util.Locale;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -175,10 +174,15 @@ public class AppInfoOnLoad implements Runnable {
 
         String logStr = stringBuilder.toString();
         LOGGER.warn(logStr);
-        messageToUser.infoNoTitles(logStr + "\n" +
-            checkDay() +
-            new TForms().fromArray(ConstantsFor.getProps()) + "\n" +
-            FileSystemWorker.readFile("exit.last"));
+        try{
+            messageToUser.infoNoTitles(logStr + "\n" +
+                checkDay() +
+                iisLogSize() + "\n" +
+                FileSystemWorker.readFile("exit.last"));
+        }
+        catch(IOException e){
+            FileSystemWorker.recFile(AppInfoOnLoad.class.getSimpleName() + ".exc185", Collections.singletonList(new TForms().fromArray(e, false)));
+        }
     }
 
     private static String checkDay() {
@@ -202,6 +206,15 @@ public class AppInfoOnLoad implements Runnable {
         catch(SQLException e){
             messageToUser.infoNoTitles("TRUNCATE false\n" + ConstantsFor.getUpTime() + " uptime.");
         }
+    }
+
+    private static String iisLogSize() throws IOException {
+        Path iisLogsDir = Paths.get("\\\\srv-mail3.eatmeat.ru\\c$\\inetpub\\logs\\LogFiles\\W3SVC1\\");
+        long totalSize = 0L;
+        for(File x : iisLogsDir.toFile().listFiles()){
+            totalSize = totalSize + x.length();
+        }
+        return totalSize / ConstantsFor.MBYTE + " MB of " + iisLogsDir + " IIS Logs";
     }
 
 }

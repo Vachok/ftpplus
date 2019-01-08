@@ -7,11 +7,10 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
-import java.io.*;
+import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.Date;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -26,20 +25,12 @@ public class MailIISLogsCleaner extends FileSystemWorker implements Runnable {
 
     private long filesSize = 0;
 
-    private PrintWriter printWriter;
-
-    {
-        try (OutputStream outputStream = new FileOutputStream("iislogsclean.log")) {
-            printWriter = new PrintWriter(outputStream, true);
-        } catch (IOException e) {
-            LOGGER.warn(e.getMessage(), e);
-        }
-    }
+    private List<String> toLog = new ArrayList<>();
 
     @Override
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-        printWriter.println("Current directory: " + dir.toString());
-        printWriter.println("Files: " + Objects.requireNonNull(dir.toFile().listFiles()).length);
+        toLog.add("Current directory: " + dir.toString());
+        toLog.add("Files: " + Objects.requireNonNull(dir.toFile().listFiles()).length);
         return FileVisitResult.CONTINUE;
     }
 
@@ -47,9 +38,9 @@ public class MailIISLogsCleaner extends FileSystemWorker implements Runnable {
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
         if (attrs.isRegularFile() && attrs.creationTime().toMillis() < System.currentTimeMillis() - TimeUnit.DAYS.toMillis(5)) {
             this.filesSize = this.filesSize + file.toFile().length();
-            printWriter.println("Removing file: " + file);
+            toLog.add("Removing file: " + file);
             boolean deleteIfExists = Files.deleteIfExists(file);
-            printWriter.println(deleteIfExists);
+            toLog.add(deleteIfExists + " deleteIfExists");
             return FileVisitResult.CONTINUE;
         }
         return FileVisitResult.CONTINUE;
@@ -57,30 +48,31 @@ public class MailIISLogsCleaner extends FileSystemWorker implements Runnable {
 
     @Override
     public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
-        printWriter.println(file);
-        printWriter.println(new TForms().fromArray(exc, false));
+        toLog.add(file.toString());
+        toLog.add(new TForms().fromArray(exc, false));
         return super.visitFileFailed(file, exc);
     }
 
     @Override
     public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-        printWriter.println(filesSize / ConstantsFor.MBYTE + " total megabytes removed");
-        printWriter.println(Objects.requireNonNull(dir.toFile().listFiles()).length + " files left");
+        toLog.add(filesSize / ConstantsFor.MBYTE + " total megabytes removed");
+        toLog.add(Objects.requireNonNull(dir.toFile().listFiles()).length + " files left");
         return super.postVisitDirectory(dir, exc);
     }
 
     @Override
     public void run() {
         Path iisLogsDir = Paths.get("\\\\srv-mail3.eatmeat.ru\\c$\\inetpub\\logs\\LogFiles\\W3SVC1\\");
-        printWriter.println("Starting IIS logs cleaner.");
-        printWriter.println("Date: ");
-        printWriter.println(new Date(ConstantsFor.getAtomicTime()));
+        toLog.add("Starting IIS logs cleaner.");
+        toLog.add("Date: ");
+        toLog.add(new Date(ConstantsFor.getAtomicTime()).toString());
         try {
             Files.walkFileTree(iisLogsDir, this);
         } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
-            printWriter.println(e.getMessage());
-            printWriter.println(new TForms().fromArray(e, false));
+            toLog.add(e.getMessage());
+            toLog.add(new TForms().fromArray(e, false));
         }
+        FileSystemWorker.recFile(this.getClass().getSimpleName(), toLog);
     }
 }
