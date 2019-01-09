@@ -22,16 +22,10 @@ import ru.vachok.networker.services.TimeChecker;
 import javax.servlet.http.HttpServletRequest;
 import java.io.*;
 import java.net.InetAddress;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.*;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -307,7 +301,7 @@ public class NetScannerSvc {
                 FileSystemWorker.recFile(this.getClass().getSimpleName() + ".after", toFileList);
                 eServ.shutdown();
             }).start();
-            String msgTimeSp = "NetScannerSvc.getPCsAsync method. " + (float) (System.currentTimeMillis() - stArt) / 1000 + " sec spend";
+            String msgTimeSp = "NetScannerSvc.getPCsAsync method. " + ( float ) (System.currentTimeMillis() - stArt) / 1000 + ConstantsFor.STR_SEC_SPEND;
             toFileList.add(msgTimeSp);
             LOGGER.warn(msgTimeSp);
             ConstantsFor.saveProps(p);

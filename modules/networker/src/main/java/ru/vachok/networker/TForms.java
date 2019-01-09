@@ -31,6 +31,8 @@ public class TForms {
 
     private static final ThreadConfig THREAD_CONFIG = new ThreadConfig();
 
+    private static final String LINE_CLASS = " line, class: ";
+
     private StringBuilder brStringBuilder = new StringBuilder();
 
     private StringBuilder nStringBuilder = new StringBuilder();
@@ -104,7 +106,7 @@ public class TForms {
                 .append("At ")
                 .append(stackTraceElement
                     .getClassName())
-                .append(" line, class: ")
+                .append(LINE_CLASS)
                 .append(stackTraceElement.getClassName())
                 .append(" occurred disaster!\n")
                 .append(stackTraceElement.getMethodName())
@@ -114,7 +116,7 @@ public class TForms {
                 .append("At ")
                 .append(stackTraceElement
                     .getClassName())
-                .append(" line, class: ")
+                .append(LINE_CLASS)
                 .append(stackTraceElement.getClassName())
                 .append(" occurred disaster!<br>")
                 .append(stackTraceElement.getMethodName())

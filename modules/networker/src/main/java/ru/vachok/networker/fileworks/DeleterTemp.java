@@ -76,7 +76,7 @@ class DeleterTemp extends FileSystemWorker implements Runnable {
         this.filesCounter = filesCounter + 1;
         String fileAbs = new StringBuilder()
             .append(file.toAbsolutePath().toString())
-            .append(ConstantsFor.DELETED).toString();
+            .append(ConstantsFor.STR_DELETED).toString();
         if (more2MBOld(attrs)) {
             Files.setAttribute(file, ConstantsFor.DOS_ARCHIVE, true);
             printWriter.println(new StringBuilder()

@@ -4,7 +4,6 @@ package ru.vachok.networker.services;
 import org.apache.commons.net.ntp.TimeInfo;
 import org.slf4j.Logger;
 import ru.vachok.networker.AppInfoOnLoad;
-import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
 
 import java.time.DayOfWeek;
@@ -103,7 +102,7 @@ public abstract class MyCalen {
     /**
      Создание {@link Date}
      <p>
-     Usages: {@link AppInfoOnLoad#dateSchedulers()} <br> {@link ConstantsFor#checkDay()} .
+     Usages: {@link AppInfoOnLoad#dateSchedulers()} <br> {@link AppInfoOnLoad#checkDay()} .
 
      @param hourNeed  час
      @param minNeed   минута

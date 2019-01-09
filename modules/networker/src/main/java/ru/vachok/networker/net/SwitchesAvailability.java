@@ -2,14 +2,12 @@ package ru.vachok.networker.net;
 
 
 import org.slf4j.Logger;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.services.TimeChecker;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
@@ -129,7 +127,8 @@ public class SwitchesAvailability implements Runnable {
         String okStr = new TForms().fromArray(okIP, false).replaceAll("/", "");
         String badStr = new TForms().fromArray(badIP, false).replaceAll("/", "");
         writeToFile(okStr, badStr);
-        String msg = "SwitchesAvailability.testAddresses, " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startTime) + " sec spend";
+        String msg = "SwitchesAvailability.testAddresses, " +
+            TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startTime) + ConstantsFor.STR_SEC_SPEND;
         LOGGER.warn(msg);
     }
 

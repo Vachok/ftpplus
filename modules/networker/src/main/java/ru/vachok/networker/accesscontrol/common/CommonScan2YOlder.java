@@ -108,7 +108,7 @@ public class CommonScan2YOlder extends SimpleFileVisitor<Path> implements Callab
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
         this.filesCounter = filesCounter + 1;
-        String fileAbs = file.toAbsolutePath().toString() + ConstantsFor.DELETED;
+        String fileAbs = file.toAbsolutePath().toString() + ConstantsFor.STR_DELETED;
         if (more2MBOld(attrs)) {
             Files.setAttribute(file, ConstantsFor.DOS_ARCHIVE, true);
             printWriter.println(file.toAbsolutePath()
