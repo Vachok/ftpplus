@@ -124,8 +124,8 @@ public class PfListsCtr {
     @PostMapping("/runcom")
     public String runCommand(Model model, @ModelAttribute PfListsSrv pfListsSrv) {
         this.pfListsSrv = pfListsSrv;
-        model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext());
-        model.addAttribute(ConstantsFor.TITLE, pfListsSrv.getCommandForNat());
+        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
+        model.addAttribute(ConstantsFor.ATT_TITLE, pfListsSrv.getCommandForNat());
         model.addAttribute("PfListsSrv", pfListsSrv);
         model.addAttribute("ok", pfListsSrv.runCom());
         return "ok";

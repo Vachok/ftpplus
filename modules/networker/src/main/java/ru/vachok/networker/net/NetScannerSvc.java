@@ -20,14 +20,18 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.TimeChecker;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.InetAddress;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -130,6 +134,7 @@ public class NetScannerSvc {
             synchronized (NetScannerSvc.class) {
                 if (netScannerSvc == null) {
                     netScannerSvc = new NetScannerSvc();
+                    netScannerSvc.countStat();
                 }
             }
         }
@@ -670,6 +675,21 @@ public class NetScannerSvc {
                 }
             }
         }
+    }
+
+    private void countStat() {
+        List<String> readFileAsList = new ArrayList<>();
+        try(InputStream inputStream = new FileInputStream(ConstantsFor.VELKOM_PCUSERAUTO_TXT);
+            InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+            BufferedReader bufferedReader = new BufferedReader(inputStreamReader)){
+            while(inputStreamReader.ready()){
+                readFileAsList.add(bufferedReader.readLine().split("\\Q0) \\E")[1]);
+            }
+        }
+        catch(IOException e){
+            LOGGER.error(e.getMessage(), e);
+        }
+        FileSystemWorker.recFile("pcautodis.txt", readFileAsList.parallelStream().distinct());
     }
 
 }

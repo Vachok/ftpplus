@@ -64,7 +64,6 @@ public enum KassaSBank implements Iterable {
     private static final Logger LOGGER = AppComponents.getLogger();
 
     public static void main(String[] args) {
-
     }
 
     @Override

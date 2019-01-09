@@ -43,7 +43,7 @@ public class UtilitCTRL {
                 return "ok";
             }
         }
-        model.addAttribute(ConstantsFor.TITLE, howMuchBytes);
+        model.addAttribute(ConstantsFor.ATT_TITLE, howMuchBytes);
         model.addAttribute("ok", passGenerator.generatorPass(howMuchBytes));
         return "ok";
     }

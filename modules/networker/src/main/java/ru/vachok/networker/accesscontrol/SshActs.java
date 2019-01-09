@@ -30,7 +30,7 @@ import java.util.Optional;
  SSH-actions class
 
  @since 29.11.2018 (13:01) */
-@Service("sshActs")
+@Service (ConstantsFor.ATT_SSH_ACTS)
 public class SshActs {
 
     /**
@@ -51,7 +51,7 @@ public class SshActs {
     /**
      * Имя аттрибута
      */
-    private static final String AT_NAME_SSHACTS = "sshActs";
+    private static final String AT_NAME_SSHACTS = ConstantsFor.ATT_SSH_ACTS;
 
     /**
      * SSH-command
@@ -431,12 +431,12 @@ public class SshActs {
             LOGGER.warn(pcReq);
             setInet(pcReq);
             if (getAuthentic(pcReq)) {
-                model.addAttribute(ConstantsFor.TITLE, ConstantsFor.percToEnd());
-                model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext());
+                model.addAttribute(ConstantsFor.ATT_TITLE, ConstantsFor.percToEnd());
+                model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
                 model.addAttribute(AT_NAME_SSHACTS, sshActs);
                 if (request.getQueryString() != null) {
                     sshActs.parseReq(request.getQueryString());
-                    model.addAttribute(ConstantsFor.TITLE, sshActs.getPcName());
+                    model.addAttribute(ConstantsFor.ATT_TITLE, sshActs.getPcName());
                     sshActs.setPcName(sshActs.getPcName());
                     LOGGER.warn(request.getQueryString());
                 }
@@ -448,20 +448,20 @@ public class SshActs {
         @PostMapping("/allowdomain")
         public String allowPOST(@ModelAttribute SshActs sshActs, Model model) {
             this.sshActs = sshActs;
-            model.addAttribute(ConstantsFor.TITLE, sshActs.getAllowDomain() + " добавлен");
+            model.addAttribute(ConstantsFor.ATT_TITLE, sshActs.getAllowDomain() + " добавлен");
             model.addAttribute(AT_NAME_SSHACTS, sshActs);
             model.addAttribute("ok", sshActs.toString() + "<p>" + sshActs.allowDomainAdd());
-            model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext());
+            model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
             return "ok";
         }
 
         @PostMapping("/deldomain")
         public String delDomPOST(@ModelAttribute SshActs sshActs, Model model) {
             this.sshActs = sshActs;
-            model.addAttribute(ConstantsFor.TITLE, sshActs.getDelDomain() + " удалён");
+            model.addAttribute(ConstantsFor.ATT_TITLE, sshActs.getDelDomain() + " удалён");
             model.addAttribute(AT_NAME_SSHACTS, sshActs);
             model.addAttribute("ok", sshActs.toString() + "<p>" + sshActs.allowDomainDel());
-            model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext());
+            model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
             return "ok";
         }
     }

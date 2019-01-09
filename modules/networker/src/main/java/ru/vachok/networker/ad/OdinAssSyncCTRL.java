@@ -30,7 +30,7 @@ public class OdinAssSyncCTRL {
         model.addAttribute("CsvTxt", csvTxt);
         model.addAttribute("mapfiles", mapFiles());
         model.addAttribute("csvparse", new TForms().fromArray(csvTxt.getPsCommandsList(), true));
-        model.addAttribute("result", getResult());
+        model.addAttribute(ConstantsFor.ATT_RESULT, getResult());
         return "odinass";
     }
 
@@ -53,7 +53,7 @@ public class OdinAssSyncCTRL {
     @GetMapping("/odinass")
     public String viewPage(Model model) {
         model.addAttribute("CsvTxt", csvTxt);
-        model.addAttribute(ConstantsFor.TITLE, OdinAssSyncCTRL.class.getSimpleName());
+        model.addAttribute(ConstantsFor.ATT_TITLE, OdinAssSyncCTRL.class.getSimpleName());
         model.addAttribute("footer", new PageFooter().getFooterUtext());
         return "odinass";
     }

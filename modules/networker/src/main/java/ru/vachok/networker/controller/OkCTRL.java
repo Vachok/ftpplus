@@ -19,7 +19,7 @@ public class OkCTRL {
         if (request.getQueryString() == null) throw new UnsatisfiedLinkError("Кривая ссылка!");
         else {
             String qStr = request.getQueryString();
-            model.addAttribute(ConstantsFor.TITLE, qStr);
+            model.addAttribute(ConstantsFor.ATT_TITLE, qStr);
             model.addAttribute("pcs", request.getHeader("pcs"));
             AppComponents.getLogger().warn("OK!");
             return "ok";

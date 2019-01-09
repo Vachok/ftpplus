@@ -247,7 +247,7 @@ public final class SystemTrayHelper {
         MenuItem logToFilesystem = new MenuItem();
         logToFilesystem.setLabel("Get some info");
         logToFilesystem.addActionListener(e -> {
-            new MessageSwing().infoNoTitles(ConstantsFor.getUpTime() + "\n" + Thread.activeCount() + " threads " + ConstantsFor.showMem() + new TForms().fromArray(ConstantsFor.getProps()));
+            new MessageSwing().infoNoTitles(ConstantsFor.getUpTime() + "\n" + Thread.activeCount() + " threads " + ConstantsFor.showMem() + AppInfoOnLoad.iisLogSize());
         });
         popupMenu.add(logToFilesystem);
     }
@@ -255,12 +255,10 @@ public final class SystemTrayHelper {
     /**
      Reconnect Socket, пока он открыт
      <p>
-     Usages: {@link #addItems(PopupMenu)} <br> Uses: 1.1 {@link ConstantsFor#checkDay()}, 1.2 {@link MyServer#reconSock()}, 1.3 {@link TForms#fromArray(Exception, boolean)}, 1.4 {@link
+     Usages: {@link #addItems(PopupMenu)} <br> Uses: 1.1 {@link AppInfoOnLoad#checkDay()}, 1.2 {@link MyServer#reconSock()}, 1.3 {@link TForms#fromArray(Exception, boolean)}, 1.4 {@link
     ThreadConfig#threadPoolTaskExecutor()}
      */
     private static void recOn() {
-        String bSTR = ConstantsFor.checkDay() + " pcuserauto truncated";
-        LOGGER.warn(bSTR);
         MyServer.setSocket(new Socket());
         while(!MyServer.getSocket().isClosed()){
             try{

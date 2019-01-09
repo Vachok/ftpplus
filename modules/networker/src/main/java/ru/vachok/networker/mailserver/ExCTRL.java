@@ -53,7 +53,7 @@ public class ExCTRL {
         model.addAttribute("exsrv", exSRV);
         model.addAttribute(AT_NAME_RULESET, ruleSet);
         try {
-            model.addAttribute(ConstantsFor.TITLE, lastChange());
+            model.addAttribute(ConstantsFor.ATT_TITLE, lastChange());
             model.addAttribute("file", exSRV.fileAsStrings());
         } catch (NullPointerException e) {
             model.addAttribute("file",
@@ -64,7 +64,7 @@ public class ExCTRL {
                     .append("Get-TransportRule | fl > имя_файла</textarea></p>").toString());
         }
 
-        model.addAttribute(ConstantsFor.FOOTER, new PageFooter().getFooterUtext());
+        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
         return "exchange";
     }
 
@@ -80,7 +80,7 @@ public class ExCTRL {
     /**<b>/exchange (POST)</b>
      Модель. <br>
      2. <i>file</i>, {@link TForms} - парсер массива {@link ConstantsFor#MAIL_RULES}
-     3. <i>{@link ConstantsFor#TITLE}</i>, {@link ConstantsFor#MAIL_RULES}.size()
+     3. <i>{@link ConstantsFor#ATT_TITLE}</i>, {@link ConstantsFor#MAIL_RULES}.size()
      4. <i>otherfields</i>, {@link ExSRV#getOFields()}
      5. <i>footer</i>, {@link PageFooter#getFooterUtext()}
      @see ExSRV
@@ -100,7 +100,7 @@ public class ExCTRL {
         model.addAttribute("exsrv", exSRV);
         model.addAttribute(AT_NAME_RULESET, ruleSet);
         model.addAttribute("file", rules + s);
-        model.addAttribute(ConstantsFor.TITLE, ConstantsFor.MAIL_RULES.size() + " rules in " +
+        model.addAttribute(ConstantsFor.ATT_TITLE, ConstantsFor.MAIL_RULES.size() + " rules in " +
             exSRV.getFile().getSize() / ConstantsFor.KBYTE + " kb file");
         model.addAttribute("otherfields", exSRV.getOFields());
         model.addAttribute("footer", new PageFooter().getFooterUtext());
@@ -121,7 +121,7 @@ public class ExCTRL {
         this.ruleSet = ruleSet;
         rawS = ruleSet.getIdentity() + "<br>" + ruleSet.getFromAddressMatchesPatterns() + "<p>" + ruleSet.getCopyToRuleSetter();
         model.addAttribute(AT_NAME_RULESET, ruleSet);
-        model.addAttribute(ConstantsFor.TITLE, ruleSet.getIdentity());
+        model.addAttribute(ConstantsFor.ATT_TITLE, ruleSet.getIdentity());
         model.addAttribute("ok", rawS);
         model.addAttribute("footer", new PageFooter().getFooterUtext());
 
