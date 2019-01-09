@@ -20,10 +20,18 @@ import ru.vachok.networker.services.MyCalen;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.*;
-import java.sql.*;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Date;
-import java.util.*;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
@@ -82,7 +90,7 @@ public class NetScanCtr {
 
      @see #mapSizeBigger(Model, Map, HttpServletRequest)
      */
-    private static final String KEY_TOTPC = ConstantsFor.STR_TOTPC;
+    private static final String KEY_TOTPC = ConstantsFor.PR_TOTPC;
 
     /**
      POST /netscan
@@ -139,41 +147,8 @@ public class NetScanCtr {
             .addAttribute("thePc", netScannerSvc.getThePc());
         model.addAttribute("footer", new PageFooter().getFooterUtext() + "<br>First Scan: 2018-05-05");
         AppComponents.lastNetScan().setTimeLastScan(new Date());
-        response.addHeader(ConstantsFor.REFRESH, "30");
+        response.addHeader(ConstantsFor.HEAD_REFRESH, "30");
         return AT_NAME_NETSCAN;
-    }
-
-    @GetMapping ("/showalldev")
-    private String allDevices(Model model, HttpServletRequest request, HttpServletResponse response) {
-        NetScanFileWorker netScanFileWorker = NetScanFileWorker.getI();
-        model.addAttribute(ConstantsFor.ATT_TITLE, "DiapazonedScan.scanAll");
-        if(request.getQueryString()!=null){
-            StringBuilder stringBuilder = new StringBuilder();
-            if(ConstantsFor.ALL_DEVICES.remainingCapacity()==0){
-                ConstantsFor.ALL_DEVICES.forEach(x -> stringBuilder.append(ConstantsFor.ALL_DEVICES.remove()));
-                model.addAttribute("pcs", stringBuilder.toString());
-            }
-            else{
-                final float scansInMin = 45.9f;
-                float minLeft = ConstantsFor.ALL_DEVICES.remainingCapacity() / scansInMin;
-                String attributeValue = new StringBuilder()
-                    .append(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(( long ) minLeft)))
-                    .append(" ~minLeft: ").append(minLeft)
-                    .toString();
-                model.addAttribute(ConstantsFor.ATT_TITLE, attributeValue);
-                if(netScanFileWorker.equals(DiapazonedScan.getNetScanFileWorker())){
-                    model.addAttribute("pcs", netScanFileWorker.getNewLanLastScanAsStr() + "<p>" + netScanFileWorker.getOldLanLastScanAsStr());
-                }
-                else{
-                    model.addAttribute("pcs", FileSystemWorker.readFile(ConstantsFor.AVAILABLE_LAST_TXT) + "<p>" + FileSystemWorker.readFile(ConstantsFor.OLD_LAN_TXT));
-                }
-                response.addHeader(ConstantsFor.REFRESH, "19");
-            }
-        }
-        model.addAttribute("head", new PageFooter().getHeaderUtext() + "<center><p><a href=\"/showalldev?needsopen\"><h2>Show IPs</h2></a></center>");
-        model.addAttribute("ok", DiapazonedScan.getInstance().toString());
-        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + ". Left: " + ConstantsFor.ALL_DEVICES.remainingCapacity() + " IPs.");
-        return "ok";
     }
 
     /**
@@ -188,12 +163,12 @@ public class NetScanCtr {
     private void mapSizeBigger(Model model, Map<String, Boolean> netWork, HttpServletRequest request) {
         Integer thisTotpc = null;
         try{
-            thisTotpc = ConstantsFor.PR_TOTPC;
+            thisTotpc = ConstantsFor.PR_VALUE_TOTPC;
         }
         catch(NumberFormatException | NullPointerException e){
             new MessageSwing().infoNoTitlesDIA(e.getMessage() + "\nTotal PC exception");
         }
-        String propertyLastScan = properties.getProperty(ConstantsFor.LASTSCAN, "1515233487000");
+        String propertyLastScan = properties.getProperty(ConstantsFor.PR_LASTSCAN, "1515233487000");
         propLastScanMinusDuration = Long.parseLong(propertyLastScan) + TimeUnit.MINUTES.toMillis(DURATION);
         boolean isSystemTimeBigger = (System.currentTimeMillis() > propLastScanMinusDuration);
         long timeLeft = TimeUnit.MILLISECONDS.toSeconds(propLastScanMinusDuration - System.currentTimeMillis());
@@ -208,12 +183,12 @@ public class NetScanCtr {
         if(0 > i){
             writeToFile(netWork);
             model.addAttribute("newpc", "Добавлены компы! " + Math.abs(i) + " шт.");
-            properties.setProperty(ConstantsFor.STR_TOTPC, netWork.size() + "");
+            properties.setProperty(ConstantsFor.PR_TOTPC, netWork.size() + "");
             ConstantsFor.saveProps(properties);
         }
         else{
             if(3 > i){
-                properties.setProperty(ConstantsFor.STR_TOTPC, netWork.size() + "");
+                properties.setProperty(ConstantsFor.PR_TOTPC, netWork.size() + "");
                 ConstantsFor.saveProps(properties);
                 writeToFile(netWork);
                 if(isSystemTimeBigger){
@@ -254,9 +229,40 @@ public class NetScanCtr {
                 .addAttribute(TITLE_STR, new Date(this.propLastScanMinusDuration))
                 .addAttribute("pc", new TForms().fromArray(pCsAsync, true));
             AppComponents.lastNetScan().setTimeLastScan(new Date());
-            properties.setProperty(ConstantsFor.LASTSCAN, System.currentTimeMillis() + "");
+            properties.setProperty(ConstantsFor.PR_LASTSCAN, System.currentTimeMillis() + "");
             lastScan.clear();
         }
+    }
+
+    @GetMapping("/showalldev")
+    private String allDevices(Model model, HttpServletRequest request, HttpServletResponse response) {
+        NetScanFileWorker netScanFileWorker = NetScanFileWorker.getI();
+        model.addAttribute(ConstantsFor.ATT_TITLE, "DiapazonedScan.scanAll");
+        if (request.getQueryString() != null) {
+            StringBuilder stringBuilder = new StringBuilder();
+            if (ConstantsFor.ALL_DEVICES.remainingCapacity() == 0) {
+                ConstantsFor.ALL_DEVICES.forEach(x -> stringBuilder.append(ConstantsFor.ALL_DEVICES.remove()));
+                model.addAttribute("pcs", stringBuilder.toString());
+            } else {
+                final float scansInMin = 45.9f;
+                float minLeft = ConstantsFor.ALL_DEVICES.remainingCapacity() / scansInMin;
+                String attributeValue = new StringBuilder()
+                    .append(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis((long) minLeft)))
+                    .append(" ~minLeft: ").append(minLeft)
+                    .toString();
+                model.addAttribute(ConstantsFor.ATT_TITLE, attributeValue);
+                if (netScanFileWorker.equals(DiapazonedScan.getNetScanFileWorker())) {
+                    model.addAttribute("pcs", netScanFileWorker.getNewLanLastScanAsStr() + "<p>" + netScanFileWorker.getOldLanLastScanAsStr());
+                } else {
+                    model.addAttribute("pcs", FileSystemWorker.readFile(ConstantsFor.AVAILABLE_LAST_TXT) + "<p>" + FileSystemWorker.readFile(ConstantsFor.OLD_LAN_TXT));
+                }
+                response.addHeader(ConstantsFor.HEAD_REFRESH, "19");
+            }
+        }
+        model.addAttribute("head", new PageFooter().getHeaderUtext() + "<center><p><a href=\"/showalldev?needsopen\"><h2>Show IPs</h2></a></center>");
+        model.addAttribute("ok", DiapazonedScan.getInstance().toString());
+        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + ". Left: " + ConstantsFor.ALL_DEVICES.remainingCapacity() + " IPs.");
+        return "ok";
     }
 
     /**

@@ -7,7 +7,10 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.util.Collections;
@@ -17,7 +20,7 @@ import java.util.Collections;
  <p>
 
  @since 05.12.2018 (9:07) */
-@Service (ConstantsFor.COMMON)
+@Service(ConstantsFor.ATT_COMMON)
 public class CommonSRV {
 
     /**

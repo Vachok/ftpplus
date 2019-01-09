@@ -15,7 +15,6 @@ import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.controller.ServiceInfoCtrl;
 import ru.vachok.networker.mailserver.ExSRV;
 import ru.vachok.networker.mailserver.MailRule;
-import ru.vachok.networker.net.DiapazonedScan;
 import ru.vachok.networker.net.NetScannerSvc;
 import ru.vachok.networker.services.TimeChecker;
 
@@ -39,33 +38,57 @@ import java.util.concurrent.*;
 public enum ConstantsFor {
     ;
 
+    /**
+     Название БД в reg.ru
+     */
     public static final String U_0466446_VELKOM = "u0466446_velkom";
 
+    /**
+     Название property
+     */
     public static final String PR_APP_VERSION = "appVersion";
 
+    /**
+     * Название property
+     */
     public static final String PR_QSIZE = "qsize";
 
+    /**
+     * Название аттрибута модели.
+     */
     public static final String ATT_RESULT = "result";
 
-    public static final String COMMON = "common";
+    public static final String ATT_COMMON = "common";
 
     public static final String VELKOM_PCUSERAUTO_TXT = "velkom_pcuserauto.txt";
 
+    /**
+     * Название аттрибута модели.
+     */
     public static final String ATT_PHOTO_CONVERTER = "photoConverter";
 
+    /**
+     * Название аттрибута модели.
+     */
     public static final String ATT_SSH_ACTS = "sshActs";
 
-    public static final String LASTSCAN = "lastscan";
+    /**
+     * Название property
+     */
+    public static final String PR_LASTSCAN = "lastscan";
 
-    public static final String STR_TOTPC = "totpc";
+    public static final String PR_TOTPC = "totpc";
 
+    /**
+     Личный e-mail
+     */
     public static final String GMAIL_COM = "143500@gmail.com";
 
-    public static final String REFRESH = "Refresh";
+    public static final String HEAD_REFRESH = "Refresh";
 
     public static final String VISIT = "visit";
 
-    public static final String REFERER = "REFERER";
+    public static final String ATT_REFERER = "ATT_REFERER";
 
     public static final String SRV_GIT_EATMEAT_RU = "srv-git.eatmeat.ru";
 
@@ -91,13 +114,6 @@ public enum ConstantsFor {
      Строка из Live Template soutm
      */
     public static final String STR_SEC_SPEND = " sec spend";
-
-    /**
-     Список девайсов и адресов.
-
-     @see DiapazonedScan
-     */
-
 
     /**
      {@link ru.vachok.networker.ad.ADSrv#getDetails(String)}, {@link PCUserResolver#getResolvedName()}, {@link AppComponents#getCompUsersMap()}, {@link NetScannerSvc#getPCsAsync()}
@@ -132,7 +148,7 @@ public enum ConstantsFor {
     /**
      {@link Model} имя атрибута
      */
-    public static final String USERS = "users";
+    public static final String ATT_USERS = "users";
 
     /**
      {@link Model} имя атрибута
@@ -189,7 +205,7 @@ public enum ConstantsFor {
     /**
      * Кол-во миллисек. в 1 неделе
      */
-    public static final long ONE_WEEK_MILLIS = TimeUnit.HOURS.toMillis(ONE_DAY_HOURS * 7);
+    public static final long ONE_WEEK_MILLIS = TimeUnit.HOURS.toMillis(ONE_DAY_HOURS * (long) 7);
 
     /**
      * Кол-во байт в гигабайте
@@ -212,11 +228,6 @@ public enum ConstantsFor {
     public static final int ONE_YEAR = 365;
 
     /**
-     * Папка it$$
-     */
-    public static final String IT_FOLDER = "\\\\srv-fs.eatmeat.ru\\it$$";
-
-    /**
      new {@link Properties}
      */
     private static final Properties PROPS = new Properties();
@@ -236,7 +247,10 @@ public enum ConstantsFor {
 
     public static final String DELETED = " DELETED";
 
-    public static final Integer PR_TOTPC = Integer.valueOf(getProps().getProperty(STR_TOTPC));
+    /**
+     * Значение property
+     */
+    public static final Integer PR_VALUE_TOTPC = Integer.valueOf(getProps().getProperty(PR_TOTPC));
 
     /**
      {@link #getAtomicTime()}
@@ -256,6 +270,9 @@ public enum ConstantsFor {
         }
     }
 
+    /**
+     @return {@link #PROPS}
+     */
     public static Properties getProps() {
         if (PROPS.size() < 4) {
             takePr();
@@ -387,6 +404,9 @@ public enum ConstantsFor {
         return qSize;
     }
 
+    /**
+     @return {@link #DELAY}
+     */
     private static long getDelay() {
         long delay = new SecureRandom().nextInt((int) MY_AGE);
         if (delay < 14) {

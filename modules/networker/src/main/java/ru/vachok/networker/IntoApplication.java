@@ -97,8 +97,8 @@ public class IntoApplication {
         if (args.length > 0) {
             for (String s : args) {
                 LOGGER.info(s);
-                if (s.contains(ConstantsFor.STR_TOTPC)) {
-                    ConstantsFor.getProps().setProperty(ConstantsFor.STR_TOTPC, s.replaceAll(ConstantsFor.STR_TOTPC, ""));
+                if (s.contains(ConstantsFor.PR_TOTPC)) {
+                    ConstantsFor.getProps().setProperty(ConstantsFor.PR_TOTPC, s.replaceAll(ConstantsFor.PR_TOTPC, ""));
                 }
                 if (s.equalsIgnoreCase("off")) {
                     new ThreadConfig().killAll();

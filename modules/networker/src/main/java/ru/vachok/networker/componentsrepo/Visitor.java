@@ -37,7 +37,7 @@ public class Visitor {
     public Visitor(HttpServletRequest request) throws NullPointerException, IllegalStateException {
         this.request = request;
         this.session = request.getSession();
-        this.visitPlace = request.getHeader(ConstantsFor.REFERER.toLowerCase());
+        this.visitPlace = request.getHeader(ConstantsFor.ATT_REFERER.toLowerCase());
         this.remAddr = request.getRemoteAddr();
         this.userId = session.getId();
     }

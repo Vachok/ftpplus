@@ -255,7 +255,7 @@ public class NetScannerSvc {
     @SuppressWarnings("OverlyLongLambda")
     public void getPCsAsync() {
         Properties p = ConstantsFor.getProps();
-        ExecutorService eServ = Executors.unconfigurableExecutorService(Executors.newFixedThreadPool(Integer.parseInt(p.getOrDefault(ConstantsFor.STR_TOTPC, "318").toString())));
+        ExecutorService eServ = Executors.unconfigurableExecutorService(Executors.newFixedThreadPool(Integer.parseInt(p.getOrDefault(ConstantsFor.PR_TOTPC, "318").toString())));
         final long stArt = System.currentTimeMillis();
         List<String> toFileList = new ArrayList<>();
         AtomicReference<String> msg = new AtomicReference<>("");

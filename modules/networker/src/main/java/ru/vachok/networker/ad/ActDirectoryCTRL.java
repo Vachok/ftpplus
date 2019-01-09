@@ -102,7 +102,7 @@ public class ActDirectoryCTRL {
             model.addAttribute(ConstantsFor.ATT_SSH_ACTS, sshActs);
             model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
             model.addAttribute("pcs", new TForms().adPCMap(adComputer.getAdComputers(), true));
-            model.addAttribute(ConstantsFor.USERS, new TForms().fromADUsersList(adUsers, true));
+            model.addAttribute(ConstantsFor.ATT_USERS, new TForms().fromADUsersList(adUsers, true));
         }
         return "ad";
     }
@@ -120,7 +120,7 @@ public class ActDirectoryCTRL {
         NetScannerSvc iScan = NetScannerSvc.getI();
         iScan.setThePc(queryString);
         model.addAttribute(ConstantsFor.ATT_TITLE, queryString + " " + iScan.getInfoFromDB());
-        model.addAttribute(ConstantsFor.USERS, inputWithInfoFromDB);
+        model.addAttribute(ConstantsFor.ATT_USERS, inputWithInfoFromDB);
         try{
             model.addAttribute("details", adSrv.getDetails(queryString));
         }

@@ -6,7 +6,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import ru.vachok.networker.*;
+import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.ExitApp;
+import ru.vachok.networker.SystemTrayHelper;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
@@ -44,7 +47,7 @@ public class ServiceInfoCtrl {
         this.authReq = Stream.of("0:0:0:0", "10.10.111", "10.200.213.85", "172.16.20").anyMatch(s_p -> request.getRemoteAddr().contains(s_p));
         if(authReq){
             modModMaker(model, request, visitor);
-            response.addHeader(ConstantsFor.REFRESH, "11");
+            response.addHeader(ConstantsFor.HEAD_REFRESH, "11");
             return "vir";
         }
         else{
@@ -73,7 +76,7 @@ public class ServiceInfoCtrl {
         model.addAttribute("request", prepareRequest(request));
         model.addAttribute(ConstantsFor.VISIT, visitor.toString());
         model.addAttribute("res", MyCalen.toStringS() + "<br>" + AppComponents.versionInfo().toString());
-        model.addAttribute("back", request.getHeader(ConstantsFor.REFERER.toLowerCase()));
+        model.addAttribute("back", request.getHeader(ConstantsFor.ATT_REFERER.toLowerCase()));
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<br>" + getJREVers());
     }
 

@@ -93,7 +93,7 @@ public class PfListsCtr {
         }
         propUpd(properties);
         String refreshRate = String.valueOf(TimeUnit.MILLISECONDS.toMinutes(delayRef) * ConstantsFor.ONE_HOUR_IN_MIN);
-        response.addHeader(ConstantsFor.REFRESH, refreshRate);
+        response.addHeader(ConstantsFor.HEAD_REFRESH, refreshRate);
         String msg = TimeUnit.MILLISECONDS.toMinutes(delayRef) + " autorefresh";
         LOGGER.info(msg);
         return pflistsStr;
