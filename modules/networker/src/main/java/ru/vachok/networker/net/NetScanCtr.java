@@ -3,6 +3,7 @@ package ru.vachok.networker.net;
 
 import org.apache.commons.net.ntp.TimeInfo;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -15,23 +16,17 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.PageFooter;
+import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MyCalen;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.io.*;
+import java.lang.reflect.InvocationTargetException;
+import java.sql.*;
 import java.util.Date;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
@@ -71,9 +66,16 @@ public class NetScanCtr {
     private static final int DURATION = (int) ConstantsFor.DELAY;
 
     /**
-     {@link AppComponents#netScannerSvc()}
+     <i>Boiler Plate</i>
      */
-    private static NetScannerSvc netScannerSvc = AppComponents.netScannerSvc();
+    private static final String STR_NETSCAN = "/netscan";
+
+    private static final String ATT_THE_PC = "thePc";
+
+    /**
+     {@link NetScannerSvc#getI()}
+     */
+    private static NetScannerSvc netScannerSvc = NetScannerSvc.getI();
 
     /**
      {@link AppComponents#lastNetScanMap()}
@@ -83,14 +85,7 @@ public class NetScanCtr {
     /**
      Отрезок времени для промежутка в сканировании.
      */
-    private long propLastScanMinusDuration;
-
-    /**
-     Постоянная строка. Название ключа.
-
-     @see #mapSizeBigger(Model, Map, HttpServletRequest)
-     */
-    private static final String KEY_TOTPC = ConstantsFor.PR_TOTPC;
+    private long propLastScanMinusDuration = 0L;
 
     /**
      POST /netscan
@@ -101,7 +96,7 @@ public class NetScanCtr {
      @param model         {@link Model}
      @return redirect:/ad? + {@link NetScannerSvc#getThePc()}
      */
-    @PostMapping ("/netscan")
+    @PostMapping (STR_NETSCAN)
     public String pcNameForInfo(@ModelAttribute NetScannerSvc netScannerSvc, BindingResult result, Model model) {
         String thePc = netScannerSvc.getThePc();
         AppComponents.adSrv().setUserInputRaw(thePc);
@@ -112,7 +107,7 @@ public class NetScanCtr {
             return "ok";
         }
         netScannerSvc.getInfoFromDB();
-        model.addAttribute("thePc", thePc);
+        model.addAttribute(ATT_THE_PC, thePc);
         AppComponents.adSrv().setUserInputRaw(netScannerSvc.getThePc());
         netScannerSvc.setThePc("");
         return "redirect:/ad?" + thePc;
@@ -129,9 +124,11 @@ public class NetScanCtr {
      @param model    {@link Model}
      @return {@link #AT_NAME_NETSCAN}.html
      */
-    @GetMapping ("/netscan")
+    @GetMapping (STR_NETSCAN)
     private String netScan(HttpServletRequest request, HttpServletResponse response, Model model) {
+        Visitor visitor = getVis(request);
         netScannerSvc.setThePc("");
+        LOGGER.warn(visitor.toString());
         Map<String, Boolean> netWork = lastScan;
         boolean isMapSizeBigger = netWork.size() > 2;
 
@@ -142,13 +139,22 @@ public class NetScanCtr {
             scanIt(request, model);
         }
         model
-            .addAttribute("netScannerSvc", netScannerSvc)
+            .addAttribute(NetScannerSvc.STR_NETSCANNERSVC, netScannerSvc)
             .addAttribute("serviceinfo", netScannerSvc.someInfo())
-            .addAttribute("thePc", netScannerSvc.getThePc());
-        model.addAttribute("footer", new PageFooter().getFooterUtext() + "<br>First Scan: 2018-05-05");
+            .addAttribute(ATT_THE_PC, netScannerSvc.getThePc());
+        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<br>First Scan: 2018-05-05");
         AppComponents.lastNetScan().setTimeLastScan(new Date());
         response.addHeader(ConstantsFor.HEAD_REFRESH, "30");
         return AT_NAME_NETSCAN;
+    }
+
+    private Visitor getVis(HttpServletRequest request) {
+        try{
+            return AppComponents.thisVisit(request.getSession().getId());
+        }
+        catch(InvocationTargetException | NullPointerException | NoSuchBeanDefinitionException e){
+            return new AppComponents().visitor(request);
+        }
     }
 
     /**

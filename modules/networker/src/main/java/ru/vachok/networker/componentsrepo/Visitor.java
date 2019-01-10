@@ -14,7 +14,15 @@ import java.util.List;
  @since 12.08.2018 1:19 */
 public class Visitor {
 
+    /**
+     Время в мс инициализации класса
+     */
     private static final long ST_ART = System.currentTimeMillis();
+
+    /**
+     <i>Boiler Plate</i>
+     */
+    private static final String STR_VISIT = "visit_";
 
     private String userId;
 
@@ -49,11 +57,11 @@ public class Visitor {
         visitList.add(new Date(System.currentTimeMillis()).toString());
         visitList.add(this.toString());
         visitList.add(AppComponents.versionInfo().toString());
-        FileSystemWorker.recFile("visit_" + userId, visitList);
+        FileSystemWorker.recFile(STR_VISIT + userId, visitList);
         try {
             AppComponents.configurableApplicationContext().getBeanFactory().registerSingleton(userId, this);
         } catch (IllegalStateException e) {
-            FileSystemWorker.recFile("visit_" + userId, visitList);
+            FileSystemWorker.recFile(STR_VISIT + userId, visitList);
         }
     }
 

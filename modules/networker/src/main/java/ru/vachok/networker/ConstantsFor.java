@@ -43,6 +43,11 @@ public enum ConstantsFor {
     ;
 
     /**
+     <i>Boiler Plate</i>
+     */
+    public static final String STR_CALCULATOR = "simpleCalculator";
+
+    /**
      Диапазон для бинов
      */
     public static final String SINGLETON = "singleton";
@@ -158,7 +163,7 @@ public enum ConstantsFor {
     public static final String STR_SEC_SPEND = " sec spend";
 
     /**
-     {@link ru.vachok.networker.ad.ADSrv#getDetails(String)}, {@link PCUserResolver#getResolvedName()}, {@link AppComponents#getCompUsersMap()}, {@link NetScannerSvc#getPCsAsync()}
+     {@link ru.vachok.networker.ad.ADSrv#getDetails(String)}, {@link PCUserResolver#getResolvedName()}, {@link NetScannerSvc#getPCsAsync()}
      */
     public static final ConcurrentMap<String, File> COMPNAME_USERS_MAP = new ConcurrentHashMap<>();
 

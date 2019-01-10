@@ -36,10 +36,15 @@ import java.util.concurrent.locks.ReentrantLock;
 
  @since 21.08.2018 (14:40) */
 @SuppressWarnings("MethodWithMultipleReturnPoints")
-@Service("netScannerSvc")
+@Service (NetScannerSvc.STR_NETSCANNERSVC)
 public class NetScannerSvc {
 
     private static final int TDPC = 15;
+
+    /**
+     {@link ConstantsFor#DB_PREFIX} + velkom
+     */
+    private static final String DB_NAME = ConstantsFor.U_0466446_VELKOM;
 
     private static final int APC = 350;
 
@@ -58,14 +63,18 @@ public class NetScannerSvc {
     private static final String[] PC_PREFIXES = {"do", "pp", "td", "no", "a"};
 
     /**
-     {@link ConstantsFor#DB_PREFIX} + velkom
+     /netscan POST форма
+     <p>
+
+     @see NetScanCtr {@link }
      */
-    private static final String DB_NAME = ConstantsFor.DB_PREFIX + "velkom";
+    private String thePc = "PC";
 
     /**
      {@link AppComponents#getLogger()}
      */
     private static final Logger LOGGER = AppComponents.getLogger();
+
 
     /**
      {@link RegRuMysql#getDefaultConnection(String)}
@@ -98,12 +107,9 @@ public class NetScannerSvc {
     private Map<String, Boolean> netWork;
 
     /**
-     /netscan POST форма
-     <p>
-
-     @see NetScanCtr {@link }
+     * <i>Boiler Plate</i>
      */
-    private String thePc;
+    static final String STR_NETSCANNERSVC = "netScannerSvc";
 
     /**
      {@link ThreadConfig#threadPoolTaskExecutor()}
