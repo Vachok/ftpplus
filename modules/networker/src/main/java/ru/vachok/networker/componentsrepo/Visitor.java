@@ -2,9 +2,13 @@ package ru.vachok.networker.componentsrepo;
 
 
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 /**
  @since 12.08.2018 1:19 */
@@ -13,6 +17,7 @@ public class Visitor {
     private static final long ST_ART = System.currentTimeMillis();
 
     private String userId;
+
 
     /**
      The Time st.
@@ -35,11 +40,16 @@ public class Visitor {
     private HttpSession session;
 
     public Visitor(HttpServletRequest request) throws NullPointerException, IllegalStateException {
+        List<String> visitList = new ArrayList<>();
         this.request = request;
         this.session = request.getSession();
         this.visitPlace = request.getHeader(ConstantsFor.ATT_REFERER.toLowerCase());
         this.remAddr = request.getRemoteAddr();
         this.userId = session.getId();
+        visitList.add(new Date(System.currentTimeMillis()).toString());
+        visitList.add(this.toString());
+        visitList.add(AppComponents.versionInfo().toString());
+        FileSystemWorker.recFile("visit_" + userId, visitList);
     }
 
     public HttpSession getSession() {
