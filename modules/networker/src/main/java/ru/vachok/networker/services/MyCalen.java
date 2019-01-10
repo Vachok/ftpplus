@@ -24,6 +24,9 @@ public abstract class MyCalen {
 
     }
 
+    /**
+     {@link AppComponents#getLogger()}
+     */
     private static final Logger LOGGER = AppComponents.getLogger();
 
     /**
@@ -31,6 +34,9 @@ public abstract class MyCalen {
      */
     private static final TimeChecker TIME_CHECKER = new TimeChecker();
 
+    /**
+     @return {@link TimeInfo}
+     */
     public static TimeInfo getTimeInfo() {
         return timeInfo;
     }
@@ -49,7 +55,7 @@ public abstract class MyCalen {
      @param minNeed  минута
      @return new {@link Date} следующая суббота 0:01
      */
-    public static Date getNextSat(int hourNeed, int minNeed) {
+    private static Date getNextSat(int hourNeed, int minNeed) {
         final long stArt = System.currentTimeMillis();
         Calendar.Builder builder = new Calendar.Builder();
         LocalDate localDate = LocalDate.now();

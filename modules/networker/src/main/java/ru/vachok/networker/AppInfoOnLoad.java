@@ -17,8 +17,8 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.mailserver.MailIISLogsCleaner;
 import ru.vachok.networker.net.DiapazonedScan;
 import ru.vachok.networker.net.SwitchesAvailability;
+import ru.vachok.networker.net.WeekPCStats;
 import ru.vachok.networker.services.MyCalen;
-import ru.vachok.networker.services.WeekPCStats;
 
 import java.io.File;
 import java.io.IOException;

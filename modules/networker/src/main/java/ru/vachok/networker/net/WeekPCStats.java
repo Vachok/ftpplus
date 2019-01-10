@@ -1,4 +1,4 @@
-package ru.vachok.networker.services;
+package ru.vachok.networker.net;
 
 
 import org.slf4j.Logger;
@@ -8,7 +8,10 @@ import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.io.*;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
