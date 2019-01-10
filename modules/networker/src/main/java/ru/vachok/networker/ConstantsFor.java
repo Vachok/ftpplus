@@ -303,11 +303,6 @@ public enum ConstantsFor {
     public static final String STR_DELETED = " STR_DELETED";
 
     /**
-     Значение property
-     */
-    public static final Integer PR_VALUE_TOTPC = Integer.valueOf(getProps().getProperty(PR_TOTPC));
-
-    /**
      {@link #getAtomicTime()}
      */
     @SuppressWarnings ("NonFinalFieldInEnum")

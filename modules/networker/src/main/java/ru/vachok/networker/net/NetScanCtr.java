@@ -19,6 +19,7 @@ import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MyCalen;
+import ru.vachok.networker.services.TimeChecker;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -167,12 +168,14 @@ public class NetScanCtr {
      @param request {@link HttpServletRequest}
      */
     private void mapSizeBigger(Model model, Map<String, Boolean> netWork, HttpServletRequest request) {
-        Integer thisTotpc = null;
+        Integer thisTotpc;
         try{
-            thisTotpc = ConstantsFor.PR_VALUE_TOTPC;
+            thisTotpc = Integer.valueOf(properties.getProperty(ConstantsFor.PR_TOTPC));
+            ;
         }
         catch(NumberFormatException | NullPointerException e){
-            new MessageSwing().infoNoTitlesDIA(e.getMessage() + "\nTotal PC exception");
+            thisTotpc = 318;
+            new MessageSwing().infoNoTitles(thisTotpc + " PC Exception...\n" + e.getMessage() + " in " + new Date(new TimeChecker().call().getReturnTime()));
         }
         String propertyLastScan = properties.getProperty(ConstantsFor.PR_LASTSCAN, "1515233487000");
         propLastScanMinusDuration = Long.parseLong(propertyLastScan) + TimeUnit.MINUTES.toMillis(DURATION);

@@ -68,12 +68,18 @@ public class MatrixCtr {
      */
     @GetMapping("/")
     public String getFirst(final HttpServletRequest request, Model model, HttpServletResponse response) {
-        this.visitor = new Visitor(request);
+        try{
+            this.visitor = AppComponents.thisVisit(request.getSession().getId());
+        }
+        catch(Exception e){
+            this.visitor = new AppComponents().visitor(request);
+        }
         boolean pcAuth = ConstantsFor.getPcAuth(request);
         if (request.getQueryString() != null) return qNotNull(request, model, pcAuth);
         else qIsNull(model, request);
         model.addAttribute("devscan", DiapazonedScan.getInstance().toString());
         response.addHeader(ConstantsFor.HEAD_REFRESH, "90");
+        LOGGER.info(visitor.toString());
         return "starting";
     }
 
