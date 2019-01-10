@@ -24,10 +24,18 @@ public class ExCTRL {
 
     private static final String AT_NAME_RULESET = "ruleset";
 
+    private static final String RULESET = "/ruleset";
+
+    private static final String EXCHANGE = "/exchange";
+
+    private static final String F_EXCHANGE = "exchange";
+
     private ExSRV exSRV;
 
     private RuleSet ruleSet;
     private static final Logger LOGGER = LoggerFactory.getLogger(ExCTRL.class.getSimpleName());
+
+    private Visitor visitor;
 
     private String rawS;
 
@@ -46,9 +54,9 @@ public class ExCTRL {
      @param request {@link HttpServletRequest}
      @return exchange.html
      */
-    @GetMapping("/exchange")
+    @GetMapping (EXCHANGE)
     public String exchangeWorks(Model model, HttpServletRequest request) {
-        Visitor visitor = new Visitor(request);
+        this.visitor = ConstantsFor.getVis(request);
         LOGGER.warn(visitor.toString());
         model.addAttribute("exsrv", exSRV);
         model.addAttribute(AT_NAME_RULESET, ruleSet);
@@ -64,8 +72,8 @@ public class ExCTRL {
                     .append("Get-TransportRule | fl > имя_файла</textarea></p>").toString());
         }
 
-        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
-        return "exchange";
+        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<p>" + visitor.toString());
+        return F_EXCHANGE;
     }
 
     /**
@@ -88,7 +96,7 @@ public class ExCTRL {
      @param model {@link Model}
      @return exchange.html
      */
-    @PostMapping("/exchange")
+    @PostMapping (EXCHANGE)
     public String uplFile(@RequestParam MultipartFile file, Model model) {
         exSRV.setFile(file);
         String s = new StringBuilder()
@@ -104,7 +112,7 @@ public class ExCTRL {
             exSRV.getFile().getSize() / ConstantsFor.KBYTE + " kb file");
         model.addAttribute("otherfields", exSRV.getOFields());
         model.addAttribute("footer", new PageFooter().getFooterUtext());
-        return "exchange";
+        return F_EXCHANGE;
     }
 
     /**
@@ -116,7 +124,7 @@ public class ExCTRL {
      @param model   {@link Model}
      @return ok.html
      */
-    @PostMapping("/ruleset")
+    @PostMapping (RULESET)
     public String ruleSetPost(@ModelAttribute RuleSet ruleSet, Model model) {
         this.ruleSet = ruleSet;
         rawS = ruleSet.getIdentity() + "<br>" + ruleSet.getFromAddressMatchesPatterns() + "<p>" + ruleSet.getCopyToRuleSetter();
@@ -134,7 +142,7 @@ public class ExCTRL {
      @param response {@link HttpServletResponse}
      @return redirect:/ok?FromAddressMatchesPatterns
      */
-    @GetMapping("/ruleset")
+    @GetMapping (RULESET)
     public String ruleSetGet(Model model, HttpServletResponse response) {
         response.addHeader("pcs", "FromAddressMatchesPatterns");
         model.addAttribute(AT_NAME_RULESET, ruleSet);

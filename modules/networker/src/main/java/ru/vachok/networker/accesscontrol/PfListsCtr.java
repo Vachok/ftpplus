@@ -54,7 +54,6 @@ public class PfListsCtr {
 
     private ThreadConfig threadConfig = new ThreadConfig();
 
-    /*Instances*/
     @Autowired
     public PfListsCtr(PfLists pfLists, PfListsSrv pfListsSrv) {
         threadConfig.taskDecorator(makePFLists);
@@ -70,22 +69,17 @@ public class PfListsCtr {
 
     @GetMapping("/pflists")
     public String pfBean(Model model, HttpServletRequest request, HttpServletResponse response) throws UnknownHostException {
-        this.visitor = new Visitor(request);
-        String pflistsStr = "pflists";
+        this.visitor = ConstantsFor.getVis(request);
+        String pflistsStr = ConstantsFor.PFLISTS;
         this.properties = ConstantsFor.getProps();
-        long lastScan = Long.parseLong(properties.getProperty("pfscan", "1"));
+        long lastScan = Long.parseLong(properties.getProperty(ConstantsFor.PR_PFSCAN, "1"));
         timeOut = lastScan + TimeUnit.MINUTES.toMillis(15);
         if (!pingOK) noPing(model);
-        try {
-            LOGGER.warn(visitor.toString());
-        } catch (IllegalArgumentException | NullPointerException e) {
-            LOGGER.error(e.getMessage(), e);
-        }
         modSet(model);
         if (request.getQueryString() != null) threadConfig.taskDecorator(makePFLists);
-        if (pfLists.getTimeUpd() + TimeUnit.MINUTES.toMillis(170) < System.currentTimeMillis()) {
+        if(pfLists.getTimeUpd() + TimeUnit.MINUTES.toMillis(( int ) (ConstantsFor.DELAY + ConstantsFor.ONE_HOUR_IN_MIN)) < System.currentTimeMillis()){
             model.addAttribute(METRIC_STR, "Требуется обновление!");
-            model.addAttribute("gitstats", pfListsSrv.getExecutor().toString());
+            model.addAttribute(ConstantsFor.ATT_GITSTATS, pfListsSrv.getExecutor().toString());
         } else {
             String msg = "" + (float) (TimeUnit.MILLISECONDS
                 .toSeconds(System.currentTimeMillis() - pfLists.getTimeUpd())) / ConstantsFor.ONE_HOUR_IN_MIN;
@@ -94,7 +88,7 @@ public class PfListsCtr {
         propUpd(properties);
         String refreshRate = String.valueOf(TimeUnit.MILLISECONDS.toMinutes(delayRef) * ConstantsFor.ONE_HOUR_IN_MIN);
         response.addHeader(ConstantsFor.HEAD_REFRESH, refreshRate);
-        String msg = TimeUnit.MILLISECONDS.toMinutes(delayRef) + " autorefresh";
+        String msg = TimeUnit.MILLISECONDS.toMinutes(delayRef) + " autorefresh\n" + visitor.toString();
         LOGGER.info(msg);
         return pflistsStr;
     }
@@ -109,7 +103,7 @@ public class PfListsCtr {
         model.addAttribute("squid", pfLists.getStdSquid());
         model.addAttribute("nat", pfLists.getPfNat());
         model.addAttribute("rules", pfLists.getPfRules());
-        model.addAttribute("gitstats", Thread.activeCount() + " thr, active\nChange: " +
+        model.addAttribute(ConstantsFor.ATT_GITSTATS, Thread.activeCount() + " thr, active\nChange: " +
             (Thread.activeCount() - Long.parseLong(properties.getOrDefault("thr", 1L).toString())));
         model.addAttribute("footer", new PageFooter().getFooterUtext());
 
@@ -136,7 +130,7 @@ public class PfListsCtr {
      */
     private void propUpd(Properties properties) {
 
-        properties.setProperty("pfscan", System.currentTimeMillis() + "");
+        properties.setProperty(ConstantsFor.PR_PFSCAN, System.currentTimeMillis() + "");
         properties.setProperty("thr", Thread.activeCount() + "");
     }
 

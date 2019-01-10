@@ -11,6 +11,7 @@ import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.ad.PCUserResolver;
 import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.controller.ServiceInfoCtrl;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -41,6 +42,41 @@ import java.util.concurrent.*;
  @since 12.08.2018 (16:26) */
 public enum ConstantsFor {
     ;
+
+    /**
+     <i>Boiler Plate</i>
+     */
+    public static final String PR_PFSCAN = "pfscan";
+
+    /**
+     <i>Boiler Plate</i>
+     */
+    public static final String ATT_GITSTATS = "gitstats";
+
+    /**
+     <i>Boiler Plate</i>
+     */
+    public static final String PFLISTS = "pflists";
+
+    /**
+     <i>Boiler Plate</i>
+     */
+    public static final String STR_REBOOT = "reboot";
+
+    /**
+     Комманда cmd
+     */
+    public static final String COM_SHUTDOWN_P_F = "shutdown /p /f";
+
+    /**
+     <i>Boiler Plate</i>
+     */
+    public static final String ATT_E_MESSAGE = "eMessage";
+
+    /**
+     <i>Boiler Plate</i>
+     */
+    public static final String ATT_STATCODE = "statcode";
 
     /**
      <i>Boiler Plate</i>
@@ -498,6 +534,21 @@ public enum ConstantsFor {
             request.getRemoteAddr().contains("10.200.213") ||
             request.getRemoteAddr().contains("10.10.111") ||
             request.getRemoteAddr().contains("172.16.200");
+    }
+
+    /**
+     Парсинг и проверка уникальности для new {@link Visitor}
+
+     @param request {@link HttpServletRequest}
+     @return {@link Visitor}
+     */
+    public static Visitor getVis(HttpServletRequest request) {
+        try{
+            return AppComponents.thisVisit(request.getSession().getId());
+        }
+        catch(Exception e){
+            return new AppComponents().visitor(request);
+        }
     }
 
     public static String getUserPC(HttpServletRequest request) {

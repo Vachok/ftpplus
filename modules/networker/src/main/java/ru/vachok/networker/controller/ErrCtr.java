@@ -12,6 +12,7 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.PageFooter;
+import ru.vachok.networker.componentsrepo.Visitor;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -54,9 +55,10 @@ public class ErrCtr implements ErrorController {
      */
     @GetMapping ("/error")
     public String errHandle(HttpServletRequest httpServletRequest, Model model) {
+        Visitor visitor = ConstantsFor.getVis(httpServletRequest);
         Integer statCode = ( Integer ) httpServletRequest.getAttribute("javax.servlet.error.status_code");
         Exception exception = ( Exception ) httpServletRequest.getAttribute("javax.servlet.error.exception");
-        model.addAttribute("eMessage", httpServletRequest
+        model.addAttribute(ConstantsFor.ATT_E_MESSAGE, httpServletRequest
             .getRequestURL() +
             " тут нет того, что ищешь.<br>" +
             H_2_CENTER.replaceAll("2", "4") +
@@ -65,16 +67,16 @@ public class ErrCtr implements ErrorController {
                 .getServletContext()
                 .getVirtualServerName() +
             H_2_CENTER_CLOSE.replaceAll("2", "4"));
-        model.addAttribute("statcode", H_2_CENTER + statCode + H_2_CENTER_CLOSE);
+        model.addAttribute(ConstantsFor.ATT_STATCODE, H_2_CENTER + statCode + H_2_CENTER_CLOSE);
         if(exception!=null){
-            MessageToUser eMail = new ESender("143500@.gmail.com");
-            setExcept(model, exception, statCode, httpServletRequest);
+            MessageToUser eMail = new ESender(ConstantsFor.GMAIL_COM);
             try{
-                eMail.errorAlert(exception.toString(), exception.getMessage(), new TForms().fromArray(exception, false));
+                eMail.errorAlert(exception.toString(), exception.getMessage(), new TForms().fromArray(exception, false) + "\n\n" + visitor.toString());
             }
             catch(Exception e){
                 LOGGER.error(e.getMessage(), e);
             }
+            setExcept(model, exception, statCode, httpServletRequest);
         }
         return "error";
     }
@@ -101,8 +103,8 @@ public class ErrCtr implements ErrorController {
             model.addAttribute("stackTrace", traceStr);
         }
 
-        model.addAttribute("eMessage", eMessage);
-        model.addAttribute("statcode", H_2_CENTER + statCode + H_2_CENTER_CLOSE);
+        model.addAttribute(ConstantsFor.ATT_E_MESSAGE, eMessage);
+        model.addAttribute(ConstantsFor.ATT_STATCODE, H_2_CENTER + statCode + H_2_CENTER_CLOSE);
         model.addAttribute(ConstantsFor.ATT_TITLE, err);
         model.addAttribute("ref", httpServletRequest.getHeader("referer"));
         model.addAttribute("footer", new PageFooter().getFooterUtext());

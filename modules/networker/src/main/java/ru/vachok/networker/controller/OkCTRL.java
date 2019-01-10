@@ -6,7 +6,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.Visitor;
 
 import javax.servlet.http.HttpServletRequest;
@@ -20,13 +19,12 @@ public class OkCTRL {
 
     @GetMapping("/ok")
     public String okStr(Model model, HttpServletRequest request) throws InvocationTargetException, NullPointerException, NoSuchBeanDefinitionException {
-        Visitor visitor = AppComponents.thisVisit(request.getSession().getId());
+        Visitor visitor = ConstantsFor.getVis(request);
         if (request.getQueryString() == null) throw new UnsatisfiedLinkError("Кривая ссылка!");
         else {
             String qStr = request.getQueryString();
             model.addAttribute(ConstantsFor.ATT_TITLE, qStr);
-            model.addAttribute("pcs", request.getHeader("pcs"));
-            AppComponents.getLogger().warn(visitor.toString());
+            model.addAttribute("pcs", request.getHeader("pcs") + "<p>" + visitor.toString());
             return "ok";
         }
     }

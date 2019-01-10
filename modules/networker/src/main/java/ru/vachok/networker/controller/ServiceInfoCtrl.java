@@ -36,7 +36,7 @@ public class ServiceInfoCtrl {
 
     private boolean authReq = false;
 
-    private Visitor visitor = null;
+    private Visitor visitor;
 
     @GetMapping ("/serviceinfo")
     public String infoMapping(Model model, HttpServletRequest request, HttpServletResponse response) throws AccessDeniedException {
@@ -52,29 +52,14 @@ public class ServiceInfoCtrl {
         }
     }
 
-    private void modModMaker(Model model, HttpServletRequest request, Visitor visitor) {
-        if(visitor.getSession().equals(request.getSession())){
-            visitor.setClickCounter(visitor.getClickCounter() + 1);
+    @GetMapping ("/pcoff")
+    public void offPC(Model model) throws IOException {
+        if(authReq){
+            Runtime.getRuntime().exec(ConstantsFor.COM_SHUTDOWN_P_F);
         }
-        model.addAttribute(ConstantsFor.ATT_TITLE, getLast() + " (" + getLast() * ConstantsFor.ONE_DAY_HOURS + ")");
-        model.addAttribute("mail", ConstantsFor.percToEnd());
-        model.addAttribute("ping", pingGit());
-        model.addAttribute("urls", new StringBuilder()
-            .append("Запущено - ")
-            .append(new Date(ConstantsFor.START_STAMP)).append(ConstantsFor.getUpTime())
-            .append(" (<i>rnd delay is ")
-            .append(ConstantsFor.DELAY)
-            .append("</i>)<br>Точное время: ")
-            .append(ConstantsFor.getAtomicTime())
-            .append(".<br> Состояние памяти (МБ): <font color=\"#82caff\">")
-            .append(ConstantsFor.showMem()).append("</font><br>")
-            .append(DiapazonedScan.getInstance().toString() + "<br>" + new ThreadConfig().toString())
-            .toString());
-        model.addAttribute("request", prepareRequest(request));
-        model.addAttribute(ConstantsFor.ATT_VISIT, visitor.toString());
-        model.addAttribute("res", MyCalen.toStringS() + "<br>" + AppComponents.versionInfo().toString());
-        model.addAttribute("back", request.getHeader(ConstantsFor.ATT_REFERER.toLowerCase()));
-        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<br>" + getJREVers());
+        else{
+            throw new AccessDeniedException("Denied for " + visitor.toString());
+        }
     }
 
     private float getLast() {
@@ -155,13 +140,29 @@ public class ServiceInfoCtrl {
         return "ok";
     }
 
-    @GetMapping ("/pcoff")
-    public void offPC(Model model) throws IOException {
-        if(authReq){
-            Runtime.getRuntime().exec("shutdown /p /f");
+    private void modModMaker(Model model, HttpServletRequest request, Visitor visitor) {
+        this.visitor = ConstantsFor.getVis(request);
+        if(visitor.getSession().equals(request.getSession())){
+            visitor.setClickCounter(visitor.getClickCounter() + 1);
         }
-        else{
-            throw new AccessDeniedException("Denied for " + visitor.toString());
-        }
+        model.addAttribute(ConstantsFor.ATT_TITLE, getLast() + " (" + getLast() * ConstantsFor.ONE_DAY_HOURS + ")");
+        model.addAttribute("mail", ConstantsFor.percToEnd());
+        model.addAttribute("ping", pingGit());
+        model.addAttribute("urls", new StringBuilder()
+            .append("Запущено - ")
+            .append(new Date(ConstantsFor.START_STAMP)).append(ConstantsFor.getUpTime())
+            .append(" (<i>rnd delay is ")
+            .append(ConstantsFor.DELAY)
+            .append("</i>)<br>Точное время: ")
+            .append(ConstantsFor.getAtomicTime())
+            .append(".<br> Состояние памяти (МБ): <font color=\"#82caff\">")
+            .append(ConstantsFor.showMem()).append("</font><br>")
+            .append(DiapazonedScan.getInstance().toString() + "<br>" + new ThreadConfig().toString())
+            .toString());
+        model.addAttribute("request", prepareRequest(request));
+        model.addAttribute(ConstantsFor.ATT_VISIT, visitor.toString());
+        model.addAttribute("res", MyCalen.toStringS() + "<br>" + AppComponents.versionInfo().toString());
+        model.addAttribute("back", request.getHeader(ConstantsFor.ATT_REFERER.toLowerCase()));
+        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<br>" + getJREVers());
     }
 }

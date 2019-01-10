@@ -153,9 +153,9 @@ public class MyServer extends Thread {
             ifNetScan();
         }
         if (readLine.equalsIgnoreCase("shutdown")) {
-            Runtime.getRuntime().exec("shutdown /p /f");
+            Runtime.getRuntime().exec(ConstantsFor.COM_SHUTDOWN_P_F);
         }
-        if (readLine.equalsIgnoreCase("reboot")) {
+        if(readLine.equalsIgnoreCase(ConstantsFor.STR_REBOOT)){
             Runtime.getRuntime().exec("shutdown /r /f");
         } else {
             printToSocket();

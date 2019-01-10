@@ -14,16 +14,33 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.PageFooter;
 
+
 /**
  @since 11.10.2018 (9:12) */
 @Controller
 public class OdinAssSyncCTRL {
 
+    /**
+     {@link LoggerFactory}
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(OdinAssSyncCTRL.class.getSimpleName());
 
+    /**
+     <i>Boiler Plate</i>
+     */
+    private static final String STR_ODINASS = "odinass";
+
+    /**
+     <i>Boiler Plate</i>
+     */
+    private static final String GET_ODINASS = "/odinass";
+
+    /**
+     {@link CsvTxt}
+     */
     private CsvTxt csvTxt = new CsvTxt();
 
-    @PostMapping("/odinass")
+    @PostMapping (GET_ODINASS)
     public String uploadFiles(@RequestParam MultipartFile file, RedirectAttributes redirectAttributes, Model model) {
         csvTxt.setFile(file);
         LOGGER.info(csvTxt.readFileToString());
@@ -31,7 +48,7 @@ public class OdinAssSyncCTRL {
         model.addAttribute("mapfiles", mapFiles());
         model.addAttribute("csvparse", new TForms().fromArray(csvTxt.getPsCommandsList(), true));
         model.addAttribute(ConstantsFor.ATT_RESULT, getResult());
-        return "odinass";
+        return STR_ODINASS;
     }
 
     private String mapFiles() {
@@ -50,12 +67,12 @@ public class OdinAssSyncCTRL {
         return stringBuilder.toString();
     }
 
-    @GetMapping("/odinass")
+    @GetMapping (GET_ODINASS)
     public String viewPage(Model model) {
         model.addAttribute("CsvTxt", csvTxt);
         model.addAttribute(ConstantsFor.ATT_TITLE, OdinAssSyncCTRL.class.getSimpleName());
         model.addAttribute("footer", new PageFooter().getFooterUtext());
-        return "odinass";
+        return STR_ODINASS;
     }
 
     @GetMapping("/resetform")

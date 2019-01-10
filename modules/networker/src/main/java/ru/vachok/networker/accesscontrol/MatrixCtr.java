@@ -41,6 +41,8 @@ public class MatrixCtr {
 
     private static final String WHOIS_STR = "whois";
 
+    private static final String GET_MATRIX = "/matrix";
+
     private MatrixSRV matrixSRV;
 
     private Visitor visitor;
@@ -68,18 +70,12 @@ public class MatrixCtr {
      */
     @GetMapping("/")
     public String getFirst(final HttpServletRequest request, Model model, HttpServletResponse response) {
-        try{
-            this.visitor = AppComponents.thisVisit(request.getSession().getId());
-        }
-        catch(Exception e){
-            this.visitor = new AppComponents().visitor(request);
-        }
+        this.visitor = ConstantsFor.getVis(request);
         boolean pcAuth = ConstantsFor.getPcAuth(request);
         if (request.getQueryString() != null) return qNotNull(request, model, pcAuth);
         else qIsNull(model, request);
-        model.addAttribute("devscan", DiapazonedScan.getInstance().toString());
+        model.addAttribute("devscan", DiapazonedScan.getInstance().toString() + "<p>" + visitor.toString());
         response.addHeader(ConstantsFor.HEAD_REFRESH, "90");
-        LOGGER.info(visitor.toString());
         return "starting";
     }
 
@@ -129,7 +125,7 @@ public class MatrixCtr {
         return MATRIX_STRING_NAME;
     }
 
-    @PostMapping("/matrix")
+    @PostMapping (GET_MATRIX)
     public String getWorkPosition(@ModelAttribute(MATRIX_STRING_NAME) MatrixSRV matrixSRV, BindingResult result, Model model) {
         this.matrixSRV = matrixSRV;
         String workPos = matrixSRV.getWorkPos();
@@ -152,22 +148,20 @@ public class MatrixCtr {
      */
     @GetMapping("/git")
     public String gitOn(Model model, HttpServletRequest request) {
-        try {
-            LOGGER.warn(visitor.toString());
-        } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
-        }
+        this.visitor = ConstantsFor.getVis(request);
         SSHFactory gitOner = new SSHFactory.Builder(ConstantsFor.SRV_GIT, "sudo cd /usr/home/ITDept;sudo git instaweb;exit").build();
         if (request.getQueryString() != null && request.getQueryString().equalsIgnoreCase("reboot")) {
             gitOner = new SSHFactory.Builder(ConstantsFor.SRV_GIT, "sudo reboot").build();
         }
-        LOGGER.info(gitOner.call());
+        String call = gitOner.call() + "\n" + visitor.toString();
+        LOGGER.info(call);
         metricMatrixStart = System.currentTimeMillis() - metricMatrixStart;
         return "redirect:http://srv-git.eatmeat.ru:1234";
     }
 
-    @GetMapping("/matrix")
+    @GetMapping (GET_MATRIX)
     public String showResults(HttpServletRequest request, HttpServletResponse response, Model model) throws IOException {
+        this.visitor = ConstantsFor.getVis(request);
         new Thread(() -> {
             try {
                 LOGGER.warn(visitor.toString());
@@ -186,7 +180,7 @@ public class MatrixCtr {
                 this.getClass().getName() + "<br>");
         }
         model.addAttribute("workPos", workPos);
-        model.addAttribute(FOOTER_NAME, new PageFooter().getFooterUtext());
+        model.addAttribute(FOOTER_NAME, new PageFooter().getFooterUtext() + "<p>" + visitor.toString());
         model.addAttribute("headtitle", matrixSRV.getCountDB() + " позиций   " + TimeUnit.MILLISECONDS.toMinutes(
             System.currentTimeMillis() - ConstantsFor.START_STAMP) + " getUpTime");
         metricMatrixStart = System.currentTimeMillis() - metricMatrixStart;

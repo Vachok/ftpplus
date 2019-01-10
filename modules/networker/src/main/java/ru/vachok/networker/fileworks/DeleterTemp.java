@@ -35,12 +35,10 @@ class DeleterTemp extends FileSystemWorker implements Runnable {
 
     DeleterTemp(String patToDel) {
         this.patToDel = patToDel;
+        this.fromFile.add(patToDel);
     }
 
     DeleterTemp() {
-    }
-
-    {
         try(OutputStream outputStream = new FileOutputStream(DeleterTemp.class.getSimpleName() + "_log.txt")){
             printWriter = new PrintWriter(outputStream, true);
         }
@@ -50,9 +48,9 @@ class DeleterTemp extends FileSystemWorker implements Runnable {
         getList();
     }
 
+
     private void getList() {
         if(patToDel!=null){
-            fromFile.clear();
             fromFile.add(patToDel);
         }
         else{

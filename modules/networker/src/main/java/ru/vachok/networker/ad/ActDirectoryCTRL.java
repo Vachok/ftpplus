@@ -13,6 +13,7 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.SshActs;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.PageFooter;
+import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.net.NetScannerSvc;
 
 import javax.servlet.http.HttpServletRequest;
@@ -49,6 +50,8 @@ public class ActDirectoryCTRL {
      {@link ADSrv}
      */
     private ADSrv adSrv;
+
+    private Visitor visitor;
 
     /**
      {@link SshActs}
@@ -92,6 +95,7 @@ public class ActDirectoryCTRL {
      */
     @GetMapping ("/ad")
     public String adUsersComps(HttpServletRequest request, Model model) {
+        this.visitor = ConstantsFor.getVis(request);
         List<ADUser> adUsers = adSrv.userSetter();
         if(request.getQueryString()!=null){
             return queryStringExists(request.getQueryString(), model);
@@ -100,7 +104,7 @@ public class ActDirectoryCTRL {
             ADComputer adComputer = adSrv.getAdComputer();
             model.addAttribute(ConstantsFor.ATT_PHOTO_CONVERTER, photoConverterSRV);
             model.addAttribute(ConstantsFor.ATT_SSH_ACTS, sshActs);
-            model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
+            model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<p>" + visitor.toString());
             model.addAttribute("pcs", new TForms().adPCMap(adComputer.getAdComputers(), true));
             model.addAttribute(ConstantsFor.ATT_USERS, new TForms().fromADUsersList(adUsers, true));
         }
@@ -152,7 +156,7 @@ public class ActDirectoryCTRL {
             model.addAttribute(ConstantsFor.ATT_TITLE, titleStr);
             model.addAttribute("content", photoConverterSRV.psCommands());
             model.addAttribute("alert", ALERT_AD_FOTO);
-            model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
+            model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<p>" + visitor.toString());
         }
         catch(NullPointerException e){
             LOGGER.error(e.getMessage(), e);
