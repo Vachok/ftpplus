@@ -22,7 +22,7 @@ public class Visitor {
     /**
      <i>Boiler Plate</i>
      */
-    private static final String STR_VISIT = "visit_";
+    private static final String STR_VISIT = ConstantsFor.STR_VISIT;
 
     private String userId;
 

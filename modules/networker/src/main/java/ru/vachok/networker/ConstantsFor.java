@@ -45,6 +45,11 @@ public enum ConstantsFor {
     /**
      <i>Boiler Plate</i>
      */
+    public static final String STR_VISIT = "visit_";
+
+    /**
+     <i>Boiler Plate</i>
+     */
     public static final String STR_CALCULATOR = "simpleCalculator";
 
     /**

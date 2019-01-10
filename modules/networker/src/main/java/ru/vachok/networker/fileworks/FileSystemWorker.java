@@ -170,4 +170,18 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         }
         return toCpFile.exists();
     }
+
+    public static boolean delFilePatterns(String patToDel) {
+        // FIXME: 10.01.2019 path to del always null!
+        File file = new File(".");
+        DeleterTemp deleterTemp = new DeleterTemp(patToDel);
+        try{
+            Path walkFileTree = Files.walkFileTree(file.toPath(), deleterTemp);
+            return walkFileTree.toFile().exists();
+        }
+        catch(IOException e){
+            LOGGER.warn(e.getMessage(), e);
+            return false;
+        }
+    }
 }

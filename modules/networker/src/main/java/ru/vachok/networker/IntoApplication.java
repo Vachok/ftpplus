@@ -13,6 +13,7 @@ import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.config.ThreadConfig;
+import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.awt.*;
 import java.io.IOException;
@@ -78,10 +79,10 @@ public class IntoApplication {
     @SuppressWarnings("JavadocReference")
     public static void main(String[] args) {
         final long stArt = System.currentTimeMillis();
+        FileSystemWorker.delFilePatterns(ConstantsFor.STR_VISIT);
         beforeSt();
         configurableApplicationContext = SpringApplication.run(IntoApplication.class, args);
         configurableApplicationContext.start();
-
         String msg = new StringBuilder()
             .append(afterSt())
             .append("\n")

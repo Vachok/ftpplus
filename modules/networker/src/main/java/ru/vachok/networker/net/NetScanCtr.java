@@ -52,11 +52,6 @@ public class NetScanCtr {
     private static final Logger LOGGER = AppComponents.getLogger();
 
     /**
-     {@link ConstantsFor#ATT_TITLE}
-     */
-    private static final String TITLE_STR = ConstantsFor.ATT_TITLE;
-
-    /**
      {@link ConstantsFor#getProps()}
      */
     private static final Properties properties = ConstantsFor.getProps();
@@ -71,7 +66,15 @@ public class NetScanCtr {
      */
     private static final String STR_NETSCAN = "/netscan";
 
+    /**
+     <i>Boiler Plate</i>
+     */
     private static final String ATT_THE_PC = "thePc";
+
+    /**
+     <i>Boiler Plate</i>
+     */
+    private static final String FNAME_LASTSCANNET_TXT = "lastscannet.txt";
 
     /**
      {@link NetScannerSvc#getI()}
@@ -129,7 +132,7 @@ public class NetScanCtr {
     private String netScan(HttpServletRequest request, HttpServletResponse response, Model model) {
         Visitor visitor = getVis(request);
         netScannerSvc.setThePc("");
-        LOGGER.warn(visitor.toString());
+        LOGGER.warn("{}", visitor);
         Map<String, Boolean> netWork = lastScan;
         boolean isMapSizeBigger = netWork.size() > 2;
 
@@ -171,7 +174,6 @@ public class NetScanCtr {
         Integer thisTotpc;
         try{
             thisTotpc = Integer.valueOf(properties.getProperty(ConstantsFor.PR_TOTPC));
-            ;
         }
         catch(NumberFormatException | NullPointerException e){
             thisTotpc = 318;
@@ -207,7 +209,7 @@ public class NetScanCtr {
                 }
             }
         }
-        FileSystemWorker.recFile("lastscannet.txt", netWork.keySet().stream());
+        FileSystemWorker.recFile(FNAME_LASTSCANNET_TXT, netWork.keySet().stream());
     }
 
     /**
@@ -229,13 +231,13 @@ public class NetScanCtr {
             lastScan.clear();
             Set<String> pcNames = netScannerSvc.getPCNamesPref(request.getQueryString());
             model
-                .addAttribute(TITLE_STR, new Date().toString())
+                .addAttribute(ConstantsFor.ATT_TITLE, new Date().toString())
                 .addAttribute("pc", new TForms().fromArray(pcNames, true));
         } else {
             lastScan.clear();
             Set<String> pCsAsync = netScannerSvc.getPcNames();
             model
-                .addAttribute(TITLE_STR, new Date(this.propLastScanMinusDuration))
+                .addAttribute(ConstantsFor.ATT_TITLE, new Date(this.propLastScanMinusDuration))
                 .addAttribute("pc", new TForms().fromArray(pCsAsync, true));
             AppComponents.lastNetScan().setTimeLastScan(new Date());
             properties.setProperty(ConstantsFor.PR_LASTSCAN, System.currentTimeMillis() + "");
@@ -312,7 +314,7 @@ public class NetScanCtr {
      @param netWork {@link #lastScan}
      */
     private void writeToFile(Map<String, Boolean> netWork) {
-        try(OutputStream outputStream = new FileOutputStream("lastscannet.txt");
+        try(OutputStream outputStream = new FileOutputStream(FNAME_LASTSCANNET_TXT);
             PrintWriter printWriter = new PrintWriter(outputStream, true)){
             printWriter.println("3 > Network Size!");
             TimeInfo timeInfo = MyCalen.getTimeInfo();
