@@ -65,7 +65,7 @@ public class IntoApplication {
 
      @return {@link #configurableApplicationContext}
      */
-    static ConfigurableApplicationContext getConfigurableApplicationContext() {
+    public static ConfigurableApplicationContext getConfigurableApplicationContext() {
         return configurableApplicationContext;
     }
 

@@ -50,6 +50,11 @@ public class Visitor {
         visitList.add(this.toString());
         visitList.add(AppComponents.versionInfo().toString());
         FileSystemWorker.recFile("visit_" + userId, visitList);
+        try {
+            AppComponents.configurableApplicationContext().getBeanFactory().registerSingleton(userId, this);
+        } catch (IllegalStateException e) {
+            FileSystemWorker.recFile("visit_" + userId, visitList);
+        }
     }
 
     public HttpSession getSession() {

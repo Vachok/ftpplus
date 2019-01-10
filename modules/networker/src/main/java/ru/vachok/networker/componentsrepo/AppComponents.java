@@ -3,11 +3,13 @@ package ru.vachok.networker.componentsrepo;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Scope;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.accesscontrol.SshActs;
 import ru.vachok.networker.accesscontrol.common.CommonScan2YOlder;
 import ru.vachok.networker.ad.ADComputer;
@@ -117,6 +119,10 @@ public class AppComponents {
         return new Visitor(request);
     }
 
+    public static Visitor thisVisit() {
+        return (Visitor) configurableApplicationContext().getBean("visitor");
+    }
+
     /**
      @return new {@link CommonScan2YOlder}
      */
@@ -169,6 +175,12 @@ public class AppComponents {
     @Bean
     public static PCUserResolver pcUserResolver() {
         return PCUserResolver.getPcUserResolver();
+    }
+
+    @Bean
+    @Scope(ConstantsFor.SINGLETON)
+    public static ConfigurableApplicationContext configurableApplicationContext() {
+        return IntoApplication.getConfigurableApplicationContext();
     }
 
 }

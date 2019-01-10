@@ -43,6 +43,11 @@ public enum ConstantsFor {
     ;
 
     /**
+     Диапазон для бинов
+     */
+    public static final String SINGLETON = "singleton";
+
+    /**
      new {@link Properties}
      */
     private static final Properties PROPS = new Properties();

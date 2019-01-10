@@ -1,7 +1,6 @@
 package ru.vachok.networker.controller;
 
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,17 +15,15 @@ import javax.servlet.http.HttpServletRequest;
 @Controller
 public class OkCTRL {
 
-    @Autowired
-    private Visitor visitor;
-
     @GetMapping("/ok")
     public String okStr(Model model, HttpServletRequest request) {
+        Visitor visitor = AppComponents.thisVisit();
         if (request.getQueryString() == null) throw new UnsatisfiedLinkError("Кривая ссылка!");
         else {
             String qStr = request.getQueryString();
             model.addAttribute(ConstantsFor.ATT_TITLE, qStr);
             model.addAttribute("pcs", request.getHeader("pcs"));
-            AppComponents.getLogger().warn("OK!");
+            AppComponents.getLogger().warn(visitor.toString());
             return "ok";
         }
     }
