@@ -51,7 +51,7 @@ public class MatrixCtr {
 
     private long metricMatrixStart = System.currentTimeMillis();
 
-    private static final String FOOTER_NAME = "footer";
+    private static final String FOOTER_NAME = ConstantsFor.ATT_FOOTER;
 
     @Autowired
     public MatrixCtr(VersionInfo versionInfo) {
@@ -74,8 +74,9 @@ public class MatrixCtr {
         boolean pcAuth = ConstantsFor.getPcAuth(request);
         if (request.getQueryString() != null) return qNotNull(request, model, pcAuth);
         else qIsNull(model, request);
-        model.addAttribute("devscan", DiapazonedScan.getInstance().toString() + "<p>" + visitor.toString());
-        response.addHeader(ConstantsFor.HEAD_REFRESH, "90");
+        model.addAttribute("devscan", DiapazonedScan.getInstance().toString());
+        response.addHeader(ConstantsFor.HEAD_REFRESH, "120");
+        LOGGER.info("{}", visitor.toString());
         return "starting";
     }
 

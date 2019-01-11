@@ -24,7 +24,6 @@ public class CommonCTRL {
     @GetMapping("/common")
     public String commonGET(Model model) {
         commonSRV.setNullToAllFields();
-        model.addAttribute(ConstantsFor.ATT_TITLE, ConstantsFor.percToEnd());
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
         model.addAttribute(ConstantsFor.ATT_COMMON, commonSRV);
         return ConstantsFor.ATT_COMMON;

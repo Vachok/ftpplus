@@ -13,6 +13,7 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.PageFooter;
+import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.services.WhoIsWithSRV;
 
 import javax.servlet.http.HttpServletRequest;
@@ -425,13 +426,14 @@ public class SshActs {
 
         @GetMapping("/sshacts")
         public String sshActsGET(Model model, HttpServletRequest request) throws AccessDeniedException {
+            Visitor visitor = ConstantsFor.getVis(request);
             sshActs.setAllowDomain("");
             sshActs.setDelDomain("");
             String pcReq = request.getRemoteAddr().toLowerCase();
             LOGGER.warn(pcReq);
             setInet(pcReq);
             if (getAuthentic(pcReq)) {
-                model.addAttribute(ConstantsFor.ATT_TITLE, ConstantsFor.percToEnd());
+                model.addAttribute(ConstantsFor.ATT_TITLE, visitor.getTimeSpend());
                 model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
                 model.addAttribute(AT_NAME_SSHACTS, sshActs);
                 if (request.getQueryString() != null) {

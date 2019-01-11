@@ -13,6 +13,7 @@ import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.net.DiapazonedScan;
 import ru.vachok.networker.services.MyCalen;
+import ru.vachok.networker.services.SpeedChecker;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -44,7 +45,7 @@ public class ServiceInfoCtrl {
         this.authReq = Stream.of("0:0:0:0", "10.10.111", "10.200.213.85", "172.16.20").anyMatch(s_p -> request.getRemoteAddr().contains(s_p));
         if(authReq){
             modModMaker(model, request, visitor);
-            response.addHeader(ConstantsFor.HEAD_REFRESH, "11");
+            response.addHeader(ConstantsFor.HEAD_REFRESH, "90");
             return "vir";
         }
         else{
@@ -142,11 +143,13 @@ public class ServiceInfoCtrl {
 
     private void modModMaker(Model model, HttpServletRequest request, Visitor visitor) {
         this.visitor = ConstantsFor.getVis(request);
+        Long whenCome = new SpeedChecker().call();
+        Date comeD = new Date(whenCome);
         if(visitor.getSession().equals(request.getSession())){
             visitor.setClickCounter(visitor.getClickCounter() + 1);
         }
         model.addAttribute(ConstantsFor.ATT_TITLE, getLast() + " (" + getLast() * ConstantsFor.ONE_DAY_HOURS + ")");
-        model.addAttribute("mail", ConstantsFor.percToEnd());
+        model.addAttribute("mail", ConstantsFor.percToEnd(comeD));
         model.addAttribute("ping", pingGit());
         model.addAttribute("urls", new StringBuilder()
             .append("Запущено - ")

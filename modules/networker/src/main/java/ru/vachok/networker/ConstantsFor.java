@@ -27,11 +27,8 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.SecureRandom;
-import java.time.LocalTime;
-import java.time.Year;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
+import java.time.*;
+import java.util.*;
 import java.util.concurrent.*;
 
 
@@ -447,8 +444,8 @@ public enum ConstantsFor {
      */
     private static long getDelay() {
         long delay = new SecureRandom().nextInt(( int ) MY_AGE);
-        if(delay < 14){
-            delay = 14;
+        if(delay < 16){
+            delay = 16;
         }
         return delay;
     }
@@ -467,11 +464,12 @@ public enum ConstantsFor {
     /**
      @return время до 17:30 в процентах от 8:30
      */
-    public static String percToEnd() {
+    public static String percToEnd(Date timeToStart) {
         StringBuilder stringBuilder = new StringBuilder();
         LocalTime endDay = LocalTime.parse("17:30");
         final int secDayEnd = endDay.toSecondOfDay();
-        LocalTime startDay = LocalTime.parse("08:30");
+        LocalDateTime startDayTime = LocalDateTime.ofEpochSecond(timeToStart.getTime(), 0, ZoneOffset.ofHours(3));
+        LocalTime startDay = startDayTime.toLocalTime();
         final int startSec = startDay.toSecondOfDay();
         final int allDaySec = secDayEnd - startSec;
         LocalTime localTime = endDay.minusHours(LocalTime.now().getHour());
