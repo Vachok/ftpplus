@@ -247,7 +247,10 @@ public final class SystemTrayHelper {
         MenuItem logToFilesystem = new MenuItem();
         logToFilesystem.setLabel("Get some info");
         logToFilesystem.addActionListener(e -> {
-            new MessageSwing().infoNoTitles(ConstantsFor.getUpTime() + "\n" + Thread.activeCount() + " threads " + ConstantsFor.showMem() + AppInfoOnLoad.iisLogSize());
+            new MessageSwing().infoNoTitles(ConstantsFor.getUpTime() + "\n" +
+                Thread.activeCount() + " threads " + ConstantsFor.showMem() + AppInfoOnLoad.iisLogSize() + "\n" +
+                AppComponents.versionInfo().toString() + "\n" +
+                new TForms().fromArray(ConstantsFor.getProps()));
         });
         popupMenu.add(logToFilesystem);
     }

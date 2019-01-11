@@ -11,8 +11,11 @@ import ru.vachok.networker.componentsrepo.AppComponents;
 
 import java.io.*;
 import java.nio.file.*;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Stream;
 
 
@@ -182,5 +185,15 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
             LOGGER.warn(e.getMessage(), e);
             return false;
         }
+    }
+
+    public static ConcurrentMap<String, String> readFiles(List<File> filesToRead) {
+        Collections.sort(filesToRead);
+        ConcurrentMap<String, String> readiedStrings = new ConcurrentHashMap<>();
+        for(File f : filesToRead){
+            String s = readFile(f.getAbsolutePath());
+            readiedStrings.put(f.getAbsolutePath(), s);
+        }
+        return readiedStrings;
     }
 }

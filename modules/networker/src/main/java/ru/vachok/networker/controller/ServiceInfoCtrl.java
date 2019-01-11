@@ -11,17 +11,20 @@ import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.config.ThreadConfig;
+import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.DiapazonedScan;
 import ru.vachok.networker.services.MyCalen;
 import ru.vachok.networker.services.SpeedChecker;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.file.AccessDeniedException;
 import java.time.LocalTime;
-import java.util.Date;
+import java.util.*;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
@@ -164,8 +167,30 @@ public class ServiceInfoCtrl {
             .toString());
         model.addAttribute("request", prepareRequest(request));
         model.addAttribute(ConstantsFor.ATT_VISIT, visitor.toString());
-        model.addAttribute("res", MyCalen.toStringS() + "<br>" + AppComponents.versionInfo().toString());
+        model.addAttribute("res", MyCalen.toStringS() + "<br>" + AppComponents.versionInfo().toString() +
+            "<p><font color=\"grey\">" + listFilesToReadStr() + "</font>");
         model.addAttribute("back", request.getHeader(ConstantsFor.ATT_REFERER.toLowerCase()));
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<br>" + getJREVers());
+    }
+
+    private String listFilesToReadStr() {
+        List<File> readUs = new ArrayList<>();
+        for(File f : Objects.requireNonNull(new File(".").listFiles())){
+            if(f.getName().toLowerCase().contains(ConstantsFor.STR_VISIT)){
+                readUs.add(f);
+            }
+        }
+        ConcurrentMap<String, String> stringStringConcurrentMap = FileSystemWorker.readFiles(readUs);
+        List<String> retListStr = new ArrayList<>();
+        stringStringConcurrentMap.forEach((x, y) -> {
+            try{
+                retListStr.add("<b>" + x.split("FtpClientPlus")[1] + "</b>");
+                retListStr.add(y.split("session=")[0]);
+            }
+            catch(Exception e){
+                retListStr.add(e.getMessage());
+            }
+        });
+        return new TForms().fromArray(retListStr, true);
     }
 }
