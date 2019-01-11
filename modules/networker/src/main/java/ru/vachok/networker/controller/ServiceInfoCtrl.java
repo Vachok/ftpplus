@@ -185,7 +185,7 @@ public class ServiceInfoCtrl {
         stringStringConcurrentMap.forEach((x, y) -> {
             try{
                 retListStr.add("<b>" + x.split("FtpClientPlus")[1] + "</b>");
-                retListStr.add(y.split("session=")[0]);
+                retListStr.add(y.split("идёт сессия")[0]);
             }
             catch(Exception e){
                 retListStr.add(e.getMessage());
