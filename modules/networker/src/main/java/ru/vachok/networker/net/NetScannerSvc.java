@@ -22,16 +22,10 @@ import ru.vachok.networker.services.TimeChecker;
 import javax.servlet.http.HttpServletRequest;
 import java.io.*;
 import java.net.InetAddress;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.*;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -42,10 +36,15 @@ import java.util.concurrent.locks.ReentrantLock;
 
  @since 21.08.2018 (14:40) */
 @SuppressWarnings("MethodWithMultipleReturnPoints")
-@Service("netScannerSvc")
+@Service (NetScannerSvc.STR_NETSCANNERSVC)
 public class NetScannerSvc {
 
     private static final int TDPC = 15;
+
+    /**
+     {@link ConstantsFor#DB_PREFIX} + velkom
+     */
+    private static final String DB_NAME = ConstantsFor.U_0466446_VELKOM;
 
     private static final int APC = 350;
 
@@ -64,14 +63,18 @@ public class NetScannerSvc {
     private static final String[] PC_PREFIXES = {"do", "pp", "td", "no", "a"};
 
     /**
-     {@link ConstantsFor#DB_PREFIX} + velkom
+     /netscan POST форма
+     <p>
+
+     @see NetScanCtr {@link }
      */
-    private static final String DB_NAME = ConstantsFor.DB_PREFIX + "velkom";
+    private String thePc = "PC";
 
     /**
      {@link AppComponents#getLogger()}
      */
     private static final Logger LOGGER = AppComponents.getLogger();
+
 
     /**
      {@link RegRuMysql#getDefaultConnection(String)}
@@ -104,12 +107,9 @@ public class NetScannerSvc {
     private Map<String, Boolean> netWork;
 
     /**
-     /netscan POST форма
-     <p>
-
-     @see NetScanCtr {@link }
+     * <i>Boiler Plate</i>
      */
-    private String thePc;
+    static final String STR_NETSCANNERSVC = "netScannerSvc";
 
     /**
      {@link ThreadConfig#threadPoolTaskExecutor()}
@@ -255,7 +255,7 @@ public class NetScannerSvc {
     @SuppressWarnings("OverlyLongLambda")
     public void getPCsAsync() {
         Properties p = ConstantsFor.getProps();
-        ExecutorService eServ = Executors.unconfigurableExecutorService(Executors.newFixedThreadPool(Integer.parseInt(p.getOrDefault(ConstantsFor.STR_TOTPC, "318").toString())));
+        ExecutorService eServ = Executors.unconfigurableExecutorService(Executors.newFixedThreadPool(Integer.parseInt(p.getOrDefault(ConstantsFor.PR_TOTPC, "318").toString())));
         final long stArt = System.currentTimeMillis();
         List<String> toFileList = new ArrayList<>();
         AtomicReference<String> msg = new AtomicReference<>("");
@@ -307,7 +307,7 @@ public class NetScannerSvc {
                 FileSystemWorker.recFile(this.getClass().getSimpleName() + ".after", toFileList);
                 eServ.shutdown();
             }).start();
-            String msgTimeSp = "NetScannerSvc.getPCsAsync method. " + (float) (System.currentTimeMillis() - stArt) / 1000 + " sec spend";
+            String msgTimeSp = "NetScannerSvc.getPCsAsync method. " + ( float ) (System.currentTimeMillis() - stArt) / 1000 + ConstantsFor.STR_SEC_SPEND;
             toFileList.add(msgTimeSp);
             LOGGER.warn(msgTimeSp);
             ConstantsFor.saveProps(p);

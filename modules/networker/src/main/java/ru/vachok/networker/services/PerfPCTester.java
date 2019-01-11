@@ -3,6 +3,7 @@ package ru.vachok.networker.services;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.vachok.networker.ConstantsFor;
 
 
 /**
@@ -49,7 +50,7 @@ public class PerfPCTester implements Runnable {
         String msgTimeSp = new StringBuilder()
             .append("PerfPCTester.run: ")
             .append(( float ) (System.currentTimeMillis() - stArt) / 1000)
-            .append(" sec spend")
+            .append(ConstantsFor.STR_SEC_SPEND)
             .toString();
         long res = testMe();
         LOGGER.info(msgTimeSp);
@@ -62,7 +63,7 @@ public class PerfPCTester implements Runnable {
         String msgTimeSp = new StringBuilder()
             .append("PerfPCTester.testMe: ")
             .append(( float ) (System.currentTimeMillis() - stArt) / 1000)
-            .append(" sec spend")
+            .append(ConstantsFor.STR_SEC_SPEND)
             .toString();
         LOGGER.info(msgTimeSp);
         return System.currentTimeMillis();

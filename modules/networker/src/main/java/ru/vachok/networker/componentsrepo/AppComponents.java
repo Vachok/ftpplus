@@ -3,27 +3,23 @@ package ru.vachok.networker.componentsrepo;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Scope;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.accesscontrol.SshActs;
 import ru.vachok.networker.accesscontrol.common.CommonScan2YOlder;
-import ru.vachok.networker.ad.ADComputer;
-import ru.vachok.networker.ad.ADSrv;
-import ru.vachok.networker.ad.ADUser;
-import ru.vachok.networker.ad.PCUserResolver;
+import ru.vachok.networker.ad.*;
 import ru.vachok.networker.mailserver.RuleSet;
-import ru.vachok.networker.net.NetScannerSvc;
 import ru.vachok.networker.services.SimpleCalculator;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.File;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.lang.reflect.InvocationTargetException;
+import java.sql.*;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -37,24 +33,23 @@ import java.util.concurrent.ConcurrentMap;
 @ComponentScan
 public class AppComponents {
 
+    /**
+     <i>Boiler Plate</i>
+     */
+    private static final String STR_VISITOR = "visitor";
+
+    /**
+     @return {@link LoggerFactory}
+     */
     @Bean
     public static Logger getLogger() {
         return LoggerFactory.getLogger("ru_vachok_networker");
     }
 
-    @SuppressWarnings ("SameReturnValue")
-    @Bean
-    @Scope ("Singleton")
-    public ConcurrentMap<String, File> getCompUsersMap() {
-        ConstantsFor.COMPNAME_USERS_MAP.clear();
-        ConstantsFor.COMPNAME_USERS_MAP.put("INIT", new File("."));
-        return ConstantsFor.COMPNAME_USERS_MAP;
-    }
-
     /**
      @return new {@link SimpleCalculator}
      */
-    @Bean ("simpleCalculator")
+    @Bean (ConstantsFor.STR_CALCULATOR)
     public SimpleCalculator simpleCalculator() {
         return new SimpleCalculator();
     }
@@ -68,22 +63,9 @@ public class AppComponents {
         return new SshActs();
     }
 
-    /**
-     @return new {@link ADSrv}
-     */
-    @Bean
-    public static ADSrv adSrv() {
-        ADUser adUser = new ADUser();
-        ADComputer adComputer = new ADComputer();
-        return new ADSrv(adUser, adComputer);
-    }
-
-    /**
-     @return {@link NetScannerSvc#getI()}
-     */
-    @Bean
-    public static NetScannerSvc netScannerSvc() {
-        return NetScannerSvc.getI();
+    @Bean (STR_VISITOR)
+    public Visitor visitor(HttpServletRequest request) {
+        return new Visitor(request);
     }
 
     /**
@@ -112,9 +94,20 @@ public class AppComponents {
         return new VersionInfo();
     }
 
-    @Bean("visitor")
-    public Visitor visitor(HttpServletRequest request) {
-        return new Visitor(request);
+    /**
+     new {@link ADComputer} + new {@link ADUser}
+
+     @return new {@link ADSrv}
+     */
+    @Bean
+    public static ADSrv adSrv() {
+        ADUser adUser = new ADUser();
+        ADComputer adComputer = new ADComputer();
+        return new ADSrv(adUser, adComputer);
+    }
+
+    public static Visitor thisVisit(String sessionID) throws InvocationTargetException, NullPointerException, NoSuchBeanDefinitionException {
+        return ( Visitor ) configurableApplicationContext().getBean(sessionID);
     }
 
     /**
@@ -169,6 +162,12 @@ public class AppComponents {
     @Bean
     public static PCUserResolver pcUserResolver() {
         return PCUserResolver.getPcUserResolver();
+    }
+
+    @Bean
+    @Scope(ConstantsFor.SINGLETON)
+    public static ConfigurableApplicationContext configurableApplicationContext() {
+        return IntoApplication.getConfigurableApplicationContext();
     }
 
 }

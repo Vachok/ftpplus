@@ -3,11 +3,12 @@ package ru.vachok.networker.accesscontrol;
 
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import ru.vachok.networker.ConstantsFor;
 
 
 /**
  @since 10.09.2018 (11:35) */
-@Component("pflists")
+@Component (ConstantsFor.PFLISTS)
 @Scope("singleton")
 public class PfLists {
 

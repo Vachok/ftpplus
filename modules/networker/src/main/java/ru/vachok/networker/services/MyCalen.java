@@ -4,7 +4,6 @@ package ru.vachok.networker.services;
 import org.apache.commons.net.ntp.TimeInfo;
 import org.slf4j.Logger;
 import ru.vachok.networker.AppInfoOnLoad;
-import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
 
 import java.time.DayOfWeek;
@@ -25,6 +24,9 @@ public abstract class MyCalen {
 
     }
 
+    /**
+     {@link AppComponents#getLogger()}
+     */
     private static final Logger LOGGER = AppComponents.getLogger();
 
     /**
@@ -32,6 +34,9 @@ public abstract class MyCalen {
      */
     private static final TimeChecker TIME_CHECKER = new TimeChecker();
 
+    /**
+     @return {@link TimeInfo}
+     */
     public static TimeInfo getTimeInfo() {
         return timeInfo;
     }
@@ -50,7 +55,7 @@ public abstract class MyCalen {
      @param minNeed  минута
      @return new {@link Date} следующая суббота 0:01
      */
-    public static Date getNextSat(int hourNeed, int minNeed) {
+    private static Date getNextSat(int hourNeed, int minNeed) {
         final long stArt = System.currentTimeMillis();
         Calendar.Builder builder = new Calendar.Builder();
         LocalDate localDate = LocalDate.now();
@@ -103,7 +108,7 @@ public abstract class MyCalen {
     /**
      Создание {@link Date}
      <p>
-     Usages: {@link AppInfoOnLoad#dateSchedulers()} <br> {@link ConstantsFor#checkDay()} .
+     Usages: {@link AppInfoOnLoad#dateSchedulers()} <br> {@link AppInfoOnLoad#checkDay()} .
 
      @param hourNeed  час
      @param minNeed   минута

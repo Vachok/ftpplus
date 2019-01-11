@@ -4,7 +4,10 @@ package ru.vachok.networker.services;
 import org.springframework.stereotype.Service;
 import ru.vachok.networker.ConstantsFor;
 
-import java.util.*;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.Properties;
 
 
 /**
@@ -14,7 +17,6 @@ public class SimpleCalculator {
 
     private String query;
 
-    /*Fields*/
     private static final Properties PROPS = ConstantsFor.getProps();
 
     public String getQuery() {
@@ -73,7 +75,6 @@ public class SimpleCalculator {
 
     }
 
-    /*Get&Set*/
     private void setToDB(long timeInMillis) {
         ConstantsFor.getProps().setProperty("lasts", String.valueOf(timeInMillis));
         ConstantsFor.saveProps(PROPS);

@@ -13,6 +13,7 @@ import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.config.ThreadConfig;
+import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.awt.*;
 import java.io.IOException;
@@ -64,7 +65,7 @@ public class IntoApplication {
 
      @return {@link #configurableApplicationContext}
      */
-    static ConfigurableApplicationContext getConfigurableApplicationContext() {
+    public static ConfigurableApplicationContext getConfigurableApplicationContext() {
         return configurableApplicationContext;
     }
 
@@ -78,14 +79,13 @@ public class IntoApplication {
     @SuppressWarnings("JavadocReference")
     public static void main(String[] args) {
         final long stArt = System.currentTimeMillis();
+        boolean delFilePatterns = FileSystemWorker.delFilePatterns(ConstantsFor.STR_VISIT);
         beforeSt();
         configurableApplicationContext = SpringApplication.run(IntoApplication.class, args);
         configurableApplicationContext.start();
-
         String msg = new StringBuilder()
             .append(afterSt())
-            .append("\n")
-            .append(new TForms().fromArray(configurableApplicationContext.getBeanDefinitionNames(), false)).toString();
+            .append(" delFilePatterns ").append(delFilePatterns).toString();
         LOGGER.warn(msg);
 
         String msgTimeSp = new StringBuilder()
@@ -97,8 +97,8 @@ public class IntoApplication {
         if (args.length > 0) {
             for (String s : args) {
                 LOGGER.info(s);
-                if (s.contains(ConstantsFor.STR_TOTPC)) {
-                    ConstantsFor.getProps().setProperty(ConstantsFor.STR_TOTPC, s.replaceAll(ConstantsFor.STR_TOTPC, ""));
+                if (s.contains(ConstantsFor.PR_TOTPC)) {
+                    ConstantsFor.getProps().setProperty(ConstantsFor.PR_TOTPC, s.replaceAll(ConstantsFor.PR_TOTPC, ""));
                 }
                 if (s.equalsIgnoreCase("off")) {
                     new ThreadConfig().killAll();

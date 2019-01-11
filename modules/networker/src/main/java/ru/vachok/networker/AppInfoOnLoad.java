@@ -13,12 +13,11 @@ import ru.vachok.networker.accesscontrol.common.CommonRightsChecker;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.config.ThreadConfig;
-import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.mailserver.MailIISLogsCleaner;
 import ru.vachok.networker.net.DiapazonedScan;
 import ru.vachok.networker.net.SwitchesAvailability;
+import ru.vachok.networker.net.WeekPCStats;
 import ru.vachok.networker.services.MyCalen;
-import ru.vachok.networker.services.WeekPCStats;
 
 import java.io.File;
 import java.io.IOException;
@@ -104,7 +103,6 @@ public class AppInfoOnLoad implements Runnable {
      @param appCtx {@link ApplicationContext}
      */
     private void infoForU(ApplicationContext appCtx) {
-        final long stArt = System.currentTimeMillis();
         String msg = new StringBuilder()
             .append(appCtx.getApplicationName())
             .append(" app name")
@@ -131,7 +129,7 @@ public class AppInfoOnLoad implements Runnable {
         Runnable swAval = new SwitchesAvailability();
         ScheduledExecutorService executorService = Executors.unconfigurableScheduledExecutorService(Executors.newScheduledThreadPool(4));
         executorService
-            .scheduleWithFixedDelay(Objects.requireNonNull(speedRun), ConstantsFor.INIT_DELAY, TimeUnit.MINUTES.toSeconds(ConstantsFor.DELAY), TimeUnit.SECONDS);
+            .scheduleWithFixedDelay(Objects.requireNonNull(speedRun), ConstantsFor.INIT_DELAY, TimeUnit.MINUTES.toSeconds(300), TimeUnit.SECONDS);
         String thisPC = ConstantsFor.thisPC();
         if(!thisPC.toLowerCase().contains("home")){
             executorService
@@ -182,7 +180,7 @@ public class AppInfoOnLoad implements Runnable {
         messageToUser.infoNoTitles(logStr + "\n" +
             checkDay() +
             iisLogSize() + "\n" +
-            FileSystemWorker.readFile("exit.last"));
+            AppComponents.versionInfo());
     }
 
     private static String checkDay() {

@@ -27,6 +27,11 @@ public class ExitApp implements Runnable {
      */
     private static final Logger LOGGER = AppComponents.getLogger();
 
+    /**
+     Thread name
+     */
+    private static final String EXIT_APP_RUN = "ExitApp.run";
+
     private List<String> stringList = new ArrayList<>();
 
     /**
@@ -51,8 +56,8 @@ public class ExitApp implements Runnable {
      */
     @Override
     public void run() {
-        stringList.add(ConstantsFor.EXIT_APP_RUN);
-        Thread.currentThread().setName(ConstantsFor.EXIT_APP_RUN);
+        stringList.add(ExitApp.EXIT_APP_RUN);
+        Thread.currentThread().setName(ExitApp.EXIT_APP_RUN);
         LOGGER.warn(reasonExit);
         stringList.add(reasonExit);
         copyAvail();

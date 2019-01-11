@@ -15,8 +15,10 @@ import ru.vachok.networker.net.NetScannerSvc;
 
 import java.io.*;
 import java.net.InetAddress;
-import java.sql.*;
-import java.util.Date;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 
 
@@ -68,7 +70,7 @@ public class ADSrv implements Runnable {
                             " Время проверки: " +
                             resultSet.getString("timerec") +
                             "</summary><small>" +
-                            resultSet.getString(ConstantsFor.USERS) +
+                            resultSet.getString(ConstantsFor.ATT_USERS) +
                             "</small></details>";
                         ownerRights.add(owner);
                     }
