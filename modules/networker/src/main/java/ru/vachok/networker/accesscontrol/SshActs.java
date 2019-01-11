@@ -176,8 +176,8 @@ public class SshActs {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("SshActs{");
-        sb.append("allowDomain='").append(allowDomain).append('\'');
+        final StringBuilder sb = new StringBuilder("SshActs{ ");
+        sb.append("  allowDomain='<a href=\"").append(allowDomain).append("\" target=\"_blank\">").append(allowDomain).append("</a>'");
         sb.append(", AT_NAME_SSHACTS='").append(AT_NAME_SSHACTS).append('\'');
         sb.append(", AT_NAME_SSHDETAIL='").append(AT_NAME_SSHDETAIL).append('\'');
         sb.append(", comment='").append(comment).append('\'');

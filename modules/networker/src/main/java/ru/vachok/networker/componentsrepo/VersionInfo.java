@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 import ru.vachok.networker.ConstantsFor;
 
 import java.io.*;
-import java.security.SecureRandom;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.Properties;
 
@@ -92,7 +92,7 @@ public class VersionInfo {
                 LOGGER.warn(msg);
             }
         }
-        this.appBuild = thisPCName + "." + new SecureRandom().nextInt((int) ConstantsFor.MY_AGE);
+        this.appBuild = thisPCName + "." + LocalDate.now().getDayOfWeek().getValue();
         ConstantsFor.getProps().setProperty("appBuild", appBuild);
         if (thisPCName.equalsIgnoreCase("home") ||
             thisPCName.toLowerCase().contains(ConstantsFor.NO0027)) {

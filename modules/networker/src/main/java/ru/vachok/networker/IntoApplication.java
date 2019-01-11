@@ -79,14 +79,13 @@ public class IntoApplication {
     @SuppressWarnings("JavadocReference")
     public static void main(String[] args) {
         final long stArt = System.currentTimeMillis();
-        FileSystemWorker.delFilePatterns(ConstantsFor.STR_VISIT);
+        boolean delFilePatterns = FileSystemWorker.delFilePatterns(ConstantsFor.STR_VISIT);
         beforeSt();
         configurableApplicationContext = SpringApplication.run(IntoApplication.class, args);
         configurableApplicationContext.start();
         String msg = new StringBuilder()
             .append(afterSt())
-            .append("\n")
-            .append(new TForms().fromArray(configurableApplicationContext.getBeanDefinitionNames(), false)).toString();
+            .append(" delFilePatterns ").append(delFilePatterns).toString();
         LOGGER.warn(msg);
 
         String msgTimeSp = new StringBuilder()

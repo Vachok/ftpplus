@@ -27,9 +27,17 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.SecureRandom;
-import java.time.*;
-import java.util.*;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.Year;
+import java.time.ZoneOffset;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.*;
+
+import static java.time.temporal.ChronoUnit.HOURS;
 
 
 /**
@@ -466,10 +474,10 @@ public enum ConstantsFor {
      */
     public static String percToEnd(Date timeToStart) {
         StringBuilder stringBuilder = new StringBuilder();
-        LocalTime endDay = LocalTime.parse("17:30");
-        final int secDayEnd = endDay.toSecondOfDay();
-        LocalDateTime startDayTime = LocalDateTime.ofEpochSecond(timeToStart.getTime(), 0, ZoneOffset.ofHours(3));
+        LocalDateTime startDayTime = LocalDateTime.ofEpochSecond(timeToStart.getTime() / 1000, 0, ZoneOffset.ofHours(3));
         LocalTime startDay = startDayTime.toLocalTime();
+        LocalTime endDay = startDay.plus(9, HOURS);
+        final int secDayEnd = endDay.toSecondOfDay();
         final int startSec = startDay.toSecondOfDay();
         final int allDaySec = secDayEnd - startSec;
         LocalTime localTime = endDay.minusHours(LocalTime.now().getHour());

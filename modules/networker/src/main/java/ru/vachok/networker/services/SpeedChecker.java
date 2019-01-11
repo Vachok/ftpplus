@@ -8,7 +8,10 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Calendar;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
@@ -56,10 +59,11 @@ public class SpeedChecker implements Callable<Long> {
             ResultSet r = p.executeQuery()){
             while (r.last()) {
                 double timeSpend = r.getDouble("TimeSpend");
-                long timeStamp = r.getTimestamp("TimeStamp").getTime() - TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY - 10);
+                long timeStamp = r.getTimestamp("TimeStamp").getTime();
                 String msg = timeSpend + " time spend;\n" + timeStamp;
-                rtLong = timeStamp;
-                return timeStamp;
+                rtLong = timeStamp + TimeUnit.MINUTES.toMillis(3);
+                LOGGER.info(msg);
+                return rtLong;
             }
         } catch (SQLException e) {
             FileSystemWorker.recFile(SpeedChecker.class.getSimpleName(), ( Stream<String> ) e);
