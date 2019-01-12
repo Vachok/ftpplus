@@ -6,7 +6,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetScannerSvc;
 
 import java.io.*;
@@ -16,6 +18,8 @@ import java.sql.*;
 import java.util.Date;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
 
@@ -26,8 +30,6 @@ import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
  @since 02.10.2018 (17:32) */
 @Service
 public class PCUserResolver implements Thread.UncaughtExceptionHandler {
-
-    /*Fields*/
 
     /**
      {@link Logger}
@@ -42,35 +44,121 @@ public class PCUserResolver implements Thread.UncaughtExceptionHandler {
     /**
      <i>private cons</i>
      */
-    private static PCUserResolver pcUserResolver = new PCUserResolver();
+    public static PCUserResolver pcUserResolver = new PCUserResolver();
 
     /**
      {@link RegRuMysql#getDefaultConnection(String)} - u0466446_velkom
      */
-    private static Connection connection;
+    private static Connection connection = null;
 
-    static {
-        try {
-            connection = new RegRuMysql().getDefaultConnection(ConstantsFor.U_0466446_VELKOM);
-        } catch (Exception e) {
-            Throwable[] suppressed = e.getSuppressed();
-            for (Throwable t : suppressed) {
-                LOGGER.warn(t.getMessage(), t);
-            }
+    /**
+     <b>Рабочий метод</b>
+     Делает запрос в {@code \\c$\Users}, ищет там папки, записывает в массив. <br> Сортирует по дате изменения.
+
+     @return {@link String}, имя последнего измененного объекта.
+     @see #adUsersSetter()
+     */
+    private synchronized String getResolvedName() {
+        List<String> onlineNow = new ArrayList<>();
+        List<String> offNow = new ArrayList<>();
+        StringBuilder stringBuilder = new StringBuilder();
+        if(!lastScanMap.isEmpty()){
+            lastScanMap.forEach((x, y) -> {
+                if(y){
+                    onlineNow.add(x);
+                }
+                else{
+                    offNow.add(x);
+                }
+            });
         }
+        else{
+            NetScannerSvc.getI().getPCsAsync();
+        }
+        onlineNow.forEach(x -> {
+            x = x.replaceAll("<br><b>", "").split("</b><br>")[0];
+            File filesAsFile = new File("\\\\" + x + "\\c$\\Users\\");
+            File[] files = filesAsFile.listFiles();
+            ConstantsFor.COMPNAME_USERS_MAP.put(x, filesAsFile);
+            SortedMap<Long, String> lastMod = new TreeMap<>();
+            if(files!=null){
+                for(File file : files){
+                    lastMod.put(file.lastModified(), file.getName() + " user " + x + " comp\n");
+
+                }
+            }
+            else{
+                stringBuilder
+                    .append(System.currentTimeMillis())
+                    .append(" millis. Can't set user for: ").append(x).append("\n");
+            }
+            Optional<Long> max = lastMod.keySet().stream().max(Long::compareTo);
+            boolean aLongPresent = max.isPresent();
+            if(aLongPresent){
+                Long aLong = max.get();
+
+                stringBuilder
+                    .append(lastMod.get(aLong));
+            }
+        });
+        offNow.forEach(x -> {
+            stringBuilder.append(offNowGetU(x));
+        });
+        String msg = ConstantsFor.COMPNAME_USERS_MAP.size() + ConstantsFor.COMPNAME_USERS_MAP_SIZE;
+        LOGGER.warn(msg);
+        return stringBuilder.toString();
     }
 
     private String lastFileUse;
 
     /**
-     @return {@link #pcUserResolver}
-     @see AppComponents#pcUserResolver()
+     Читает БД на предмет наличия юзера для <b>offline</b> компьютера.<br> {@link #getResolvedName()}
+
+     @param pcName имя ПК
+     @return имя юзера, время записи.
+     @see ADSrv#getDetails(String)
      */
-    public static PCUserResolver getPcUserResolver() {
-        Thread.currentThread().setName(PCUserResolver.class.getSimpleName());
+    synchronized String offNowGetU(String pcName) {
+        StringBuilder v = new StringBuilder();
+        try(Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.U_0466446_VELKOM)){
+            String userName = "userName";
+            String whenQueried = "whenQueried";
+            String columnLabel = "pcName";
+            try(PreparedStatement p = c.prepareStatement("select * from pcuser");
+                PreparedStatement pAuto = c.prepareStatement("select * from pcuserauto where pcName in (select pcName from pcuser) order by pcName asc limit 203");
+                ResultSet resultSet = p.executeQuery();
+                ResultSet resultSetA = pAuto.executeQuery()){
+                while(resultSet.next()){
+
+                    if(resultSet.getString(columnLabel).toLowerCase().contains(pcName)){
+                        v
+                            .append("<b>")
+                            .append(resultSet.getString(userName))
+                            .append("</b> <br>At ")
+                            .append(resultSet.getString(whenQueried));
+                    }
+                }
+                while(resultSetA.next()){
+                    if(resultSetA.getString(columnLabel).toLowerCase().contains(pcName)){
+                        v
+                            .append("<p>")
+                            .append(resultSet.getString(userName))
+                            .append(" auto QUERY at: ")
+                            .append(resultSet.getString(whenQueried));
+                    }
+                }
+            }
+        }
+        catch(SQLException e){
+            FileSystemWorker.recFile(
+                this.getClass().getSimpleName() + ".recAutoDB",
+                Collections.singletonList(new TForms().fromArray(e, false)));
+            NetScannerSvc.getI();
+            NetScannerSvc.reconnectToDB();
+        }
         Thread.currentThread().checkAccess();
-        Thread.currentThread().getThreadGroup().checkAccess();
-        return pcUserResolver;
+        Thread.currentThread().getThreadGroup().interrupt();
+        return v.toString();
     }
 
     /**
@@ -158,6 +246,20 @@ public class PCUserResolver implements Thread.UncaughtExceptionHandler {
         return adUser;
     }
 
+    private PCUserResolver() {
+    }
+
+    /**
+     @return {@link #pcUserResolver}
+     */
+    public static PCUserResolver getPcUserResolver(Connection c) {
+        Thread.currentThread().setName(PCUserResolver.class.getSimpleName());
+        Thread.currentThread().checkAccess();
+        Thread.currentThread().getThreadGroup().checkAccess();
+        connection = c;
+        return pcUserResolver;
+    }
+
     /**
      Запись в БД <b>pcuser</b><br> Запись по-запросу от браузера. <br> pcName - уникальный (таблица не переписывается или не дополняется, при наличии записи по-компу)
 
@@ -177,8 +279,10 @@ public class PCUserResolver implements Thread.UncaughtExceptionHandler {
             pcUMap.put(pcName, msg);
             Thread.currentThread().interrupt();
         } catch (SQLException e) {
-            LOGGER.warn(msg.replace(" set.", " not set!"));
-            Thread.currentThread().interrupt();
+            FileSystemWorker.recFile(
+                this.getClass().getSimpleName() + ".recAutoDB",
+                Collections.singletonList(new TForms().fromArray(e, false)));
+            NetScannerSvc.getI().reconnectToDB();
         }
     }
 
@@ -195,127 +299,25 @@ public class PCUserResolver implements Thread.UncaughtExceptionHandler {
 
         String sql = "insert into pcuser (pcName, userName, lastmod, stamp) values(?,?,?,?)";
         try(PreparedStatement preparedStatement = connection.prepareStatement(sql
-            .replaceAll("pcuser", "pcuserauto"))){
+            .replaceAll(ConstantsFor.STR_PCUSER, ConstantsFor.STR_PCUSERAUTO))){
             String[] split = lastFileUse.split(" ");
             preparedStatement.setString(1, pcName);
             preparedStatement.setString(2, split[0]);
-            preparedStatement.setString(3, split[2] + split[3] + split[4]);
+            preparedStatement.setString(3, IntStream.of(2, 3, 4).mapToObj(i -> split[i]).collect(Collectors.joining()));
             preparedStatement.setString(4, split[7]);
             preparedStatement.executeUpdate();
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().interrupt();
         }
-        catch(SQLException | ArrayIndexOutOfBoundsException | NullPointerException e){
+        catch(SQLException e){
+            FileSystemWorker.recFile(
+                this.getClass().getSimpleName() + ".recAutoDB",
+                Collections.singletonList(new TForms().fromArray(e, false)));
+            NetScannerSvc.getI().reconnectToDB();
+        }
+        catch(ArrayIndexOutOfBoundsException | NullPointerException e){
             LOGGER.error(e.getMessage(), e);
             Thread.currentThread().checkAccess();
             Thread.currentThread().getThreadGroup().destroy();
         }
-    }
-
-    /**
-     <b>Рабочий метод</b>
-     Делает запрос в {@code \\c$\Users}, ищет там папки, записывает в массив. <br> Сортирует по дате изменения.
-
-     @return {@link String}, имя последнего измененного объекта.
-     @see #adUsersSetter()
-     */
-    private synchronized String getResolvedName() {
-        List<String> onlineNow = new ArrayList<>();
-        List<String> offNow = new ArrayList<>();
-        StringBuilder stringBuilder = new StringBuilder();
-        if(!lastScanMap.isEmpty()){
-            lastScanMap.forEach((x, y) -> {
-                if(y){
-                    onlineNow.add(x);
-                }
-                else{
-                    offNow.add(x);
-                }
-            });
-        }
-        else{
-            NetScannerSvc.getI().getPCsAsync();
-        }
-        onlineNow.forEach(x -> {
-            x = x.replaceAll("<br><b>", "").split("</b><br>")[0];
-            File filesAsFile = new File("\\\\" + x + "\\c$\\Users\\");
-            File[] files = filesAsFile.listFiles();
-            ConstantsFor.COMPNAME_USERS_MAP.put(x, filesAsFile);
-            SortedMap<Long, String> lastMod = new TreeMap<>();
-            if(files!=null){
-                for(File file : files){
-                    lastMod.put(file.lastModified(), file.getName() + " user " + x + " comp\n");
-
-                }
-            }
-            else{
-                stringBuilder
-                    .append(System.currentTimeMillis())
-                    .append(" millis. Can't set user for: ").append(x).append("\n");
-            }
-            Optional<Long> max = lastMod.keySet().stream().max(Long::compareTo);
-            boolean aLongPresent = max.isPresent();
-            if(aLongPresent){
-                Long aLong = max.get();
-
-                stringBuilder
-                    .append(lastMod.get(aLong));
-            }
-        });
-        offNow.forEach(x -> {
-            stringBuilder.append(offNowGetU(x));
-        });
-        String msg = ConstantsFor.COMPNAME_USERS_MAP.size() + " COMPNAME_USERS_MAP size";
-        LOGGER.warn(msg);
-        return stringBuilder.toString();
-    }
-
-    /**
-     Читает БД на предмет наличия юзера для <b>offline</b> компьютера.<br> {@link #getResolvedName()}
-
-     @param pcName имя ПК
-     @return имя юзера, время записи.
-     @see ADSrv#getDetails(String)
-     */
-    synchronized String offNowGetU(String pcName) {
-        StringBuilder v = new StringBuilder();
-        try(Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.U_0466446_VELKOM)){
-            String userName = "userName";
-            String whenQueried = "whenQueried";
-            String columnLabel = "pcName";
-            try(PreparedStatement p = c.prepareStatement("select * from pcuser");
-                PreparedStatement pAuto = c.prepareStatement("select * from pcuserauto where pcName in (select pcName from pcuser) order by pcName asc limit 203");
-                ResultSet resultSet = p.executeQuery();
-                ResultSet resultSetA = pAuto.executeQuery()){
-                while(resultSet.next()){
-
-                    if(resultSet.getString(columnLabel).toLowerCase().contains(pcName)){
-                        v
-                            .append("<b>")
-                            .append(resultSet.getString(userName))
-                            .append("</b> <br>At ")
-                            .append(resultSet.getString(whenQueried));
-                    }
-                }
-                while(resultSetA.next()){
-                    if(resultSetA.getString(columnLabel).toLowerCase().contains(pcName)){
-                        v
-                            .append("<p>")
-                            .append(resultSet.getString(userName))
-                            .append(" auto QUERY at: ")
-                            .append(resultSet.getString(whenQueried));
-                    }
-                }
-            }
-        }
-        catch(SQLException e){
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().getThreadGroup().destroy();
-            return e.getMessage();
-        }
-        Thread.currentThread().checkAccess();
-        Thread.currentThread().getThreadGroup().interrupt();
-        return v.toString();
     }
 
 /*END FOR CLASS*/

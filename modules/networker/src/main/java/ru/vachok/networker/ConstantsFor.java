@@ -27,14 +27,8 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.SecureRandom;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.Year;
-import java.time.ZoneOffset;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Properties;
+import java.time.*;
+import java.util.*;
 import java.util.concurrent.*;
 
 import static java.time.temporal.ChronoUnit.HOURS;
@@ -47,6 +41,12 @@ import static java.time.temporal.ChronoUnit.HOURS;
  @since 12.08.2018 (16:26) */
 public enum ConstantsFor {
     ;
+
+    public static final String COMPNAME_USERS_MAP_SIZE = " COMPNAME_USERS_MAP size";
+
+    public static final String STR_PCUSERAUTO = "pcuserauto";
+
+    public static final String STR_PCUSER = "pcuser";
 
     /**
      <i>Boiler Plate</i>

@@ -15,10 +15,8 @@ import ru.vachok.networker.net.NetScannerSvc;
 
 import java.io.*;
 import java.net.InetAddress;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
+import java.util.Date;
 import java.util.*;
 
 
@@ -227,6 +225,7 @@ public class ADSrv implements Runnable {
      @throws IOException {@link InetAddress}.getByName(queryString + ".eatmeat.ru").isReachable(500))
      */
     String getDetails(String queryString) throws IOException {
+        PCUserResolver pcUserResolver = PCUserResolver.getPcUserResolver(new RegRuMysql().getDefaultConnection(ConstantsFor.U_0466446_VELKOM));
         if(InetAddress.getByName(queryString + ConstantsFor.EATMEAT_RU).isReachable(500)){
             StringBuilder stringBuilder = new StringBuilder();
             stringBuilder.append("<p>   Более подробно про ПК:<br>");
@@ -251,7 +250,8 @@ public class ADSrv implements Runnable {
             }
             ConstantsFor.COMPNAME_USERS_MAP.put(s1, filesAsFile);
             try {
-                new PCUserResolver().recToDB(queryString + ConstantsFor.EATMEAT_RU, s1.split(" ")[1]);
+
+                pcUserResolver.recToDB(queryString + ConstantsFor.EATMEAT_RU, s1.split(" ")[1]);
             } catch (ArrayIndexOutOfBoundsException ignore) {
                 //
             }
@@ -259,11 +259,11 @@ public class ADSrv implements Runnable {
                 .append(s1)
                 .append("<br>")
                 .append(ConstantsFor.COMPNAME_USERS_MAP.size())
-                .append(" COMPNAME_USERS_MAP size")
+                .append(ConstantsFor.COMPNAME_USERS_MAP_SIZE)
                 .append("</p></b>");
             return stringBuilder.toString();
         } else {
-            return new PCUserResolver().offNowGetU(queryString);
+            return pcUserResolver.offNowGetU(queryString);
         }
     }
 
