@@ -8,7 +8,6 @@ import org.springframework.ui.Model;
 import org.springframework.util.CustomizableThreadCreator;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
@@ -206,9 +205,9 @@ public class NetScannerSvc {
             }
         }
         catch(SQLException e){
-            boolean reconnectToDBB = reconnectToDB();
+            reconnectToDB();
             FileSystemWorker.recFile(
-                this.getClass().getSimpleName() + "_" + reconnectToDBB +
+                this.getClass().getSimpleName() +
                     GET_INFO_FROM_DB, Collections.singletonList(new TForms().fromArray(e, false)));
             setThePc(e.getMessage());
         }
@@ -224,25 +223,25 @@ public class NetScannerSvc {
     /**
      Реконнект к БД
      */
-    public static boolean reconnectToDB() {
-        DataConnectTo dataConnectTo = new RegRuMysql();
-        dataConnectTo.getDataSource().setDatabaseName(ConstantsFor.U_0466446_VELKOM);
-        try(Connection connection = dataConnectTo.getDataSource().getConnection()){
+    public static void reconnectToDB() {
+        final long stArt = System.currentTimeMillis();
+        Connection connection = new RegRuMysql().getDefaultConnection(ConstantsFor.U_0466446_VELKOM);
+        try{
             connection.clearWarnings();
-            boolean tr = NetScannerSvc.c.equals(connection);
-            c = connection;
-            if(tr){
-                return true;
-            }
         }
         catch(SQLException e){
             FileSystemWorker.recFile(
                 NetScannerSvc.class.getSimpleName() + ".reconnectToDB",
                 Collections.singletonList(new TForms().fromArray(e, false)));
             LOGGER.error(e.getMessage(), e);
-            return false;
         }
-        return false;
+        c = connection;
+        String msgTimeSp = new StringBuilder()
+            .append("NetScannerSvc.reconnectToDB: ")
+            .append(( float ) (System.currentTimeMillis() - stArt) / 1000)
+            .append(ConstantsFor.STR_SEC_SPEND)
+            .toString();
+        LOGGER.info(msgTimeSp);
     }
 
     /**
@@ -554,17 +553,16 @@ public class NetScannerSvc {
                     p.executeUpdate();
                     list.add(x1 + " " + x2 + " " + pcSerment + " " + onLine);
                 } catch (SQLException e) {
-                    boolean toDB = reconnectToDB();
+                    reconnectToDB();
                     FileSystemWorker.recFile(
-                        NetScannerSvc.class.getSimpleName() + "_" + toDB + WRITE_DB,
+                        NetScannerSvc.class.getSimpleName() + WRITE_DB,
                         Collections.singletonList(new TForms().fromArray(e, false)));
                 }
             });
             return new TForms().fromArray(list, true);
         } catch (SQLException e) {
-            boolean toDB = reconnectToDB();
             FileSystemWorker.recFile(
-                NetScannerSvc.class.getSimpleName() + toDB + "_" +
+                NetScannerSvc.class.getSimpleName() +
                     WRITE_DB, Collections.singletonList(new TForms().fromArray(e, false)));
             return e.getMessage();
         }
@@ -645,7 +643,7 @@ public class NetScannerSvc {
      @see #getSomeMore(String, boolean)
      */
     private String onLinesCheck(String sql, String pcName) {
-        PCUserResolver pcUserResolver = PCUserResolver.getPcUserResolver(c); // FIXME: 12.01.2019 ?
+        PCUserResolver pcUserResolver = PCUserResolver.getPcUserResolver(c);
         List<Integer> onLine = new ArrayList<>();
         List<Integer> offLine = new ArrayList<>();
         StringBuilder stringBuilder = new StringBuilder();
@@ -669,9 +667,9 @@ public class NetScannerSvc {
             }
         }
         catch(SQLException e){
-            boolean toDB = reconnectToDB();
+            reconnectToDB();
             FileSystemWorker.recFile(
-                NetScannerSvc.class.getSimpleName() + reconnectToDB() + "_" + ONLINES_CHECK,
+                NetScannerSvc.class.getSimpleName() + ONLINES_CHECK,
                 Collections.singletonList(new TForms().fromArray(e, false)));
             return e.getMessage();
         }
