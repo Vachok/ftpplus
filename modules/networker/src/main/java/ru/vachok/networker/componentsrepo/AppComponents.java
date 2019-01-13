@@ -60,7 +60,7 @@ public class AppComponents {
      @return new {@link SshActs}
      */
     @Bean
-    @Scope ("singleton")
+    @Scope (ConstantsFor.SINGLETON)
     public SshActs sshActs() {
         return new SshActs();
     }
@@ -74,7 +74,7 @@ public class AppComponents {
      @return {@link #lastNetScan()}.getNetWork
      */
     @Bean
-    @Scope("singleton")
+    @Scope (ConstantsFor.SINGLETON)
     public static ConcurrentMap<String, Boolean> lastNetScanMap() {
         return lastNetScan().getNetWork();
     }
@@ -91,7 +91,7 @@ public class AppComponents {
      @return new {@link VersionInfo}
      */
     @Bean("versioninfo")
-    @Scope("singleton")
+    @Scope (ConstantsFor.SINGLETON)
     public static VersionInfo versionInfo() {
         return new VersionInfo();
     }
@@ -116,7 +116,7 @@ public class AppComponents {
      @return new {@link CommonScan2YOlder}
      */
     @Bean
-    @Scope("singleton")
+    @Scope (ConstantsFor.SINGLETON)
     public static CommonScan2YOlder archivesSorter() {
         return new CommonScan2YOlder();
     }

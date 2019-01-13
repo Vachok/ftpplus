@@ -105,7 +105,7 @@ public class NetScannerSvc {
     /**
      new {@link NetScannerSvc}
      */
-    private static volatile NetScannerSvc netScannerSvc;
+    private static volatile NetScannerSvc netScannerSvc = null;
 
     /**
      Компьютеры онлайн
@@ -301,12 +301,14 @@ public class NetScannerSvc {
     @SuppressWarnings("OverlyLongLambda")
     public void getPCsAsync() {
         Properties p = ConstantsFor.getProps();
-        ExecutorService eServ = Executors.unconfigurableExecutorService(Executors.newFixedThreadPool(Integer.parseInt(p.getOrDefault(ConstantsFor.PR_TOTPC, "318").toString())));
+        ExecutorService eServ = Executors.
+            unconfigurableExecutorService(Executors.
+                newFixedThreadPool(Integer.
+                    parseInt(p.getOrDefault(ConstantsFor.PR_TOTPC, "318").toString())));
         final long stArt = System.currentTimeMillis();
         List<String> toFileList = new ArrayList<>();
         AtomicReference<String> msg = new AtomicReference<>("");
         eServ.submit(() -> {
-            FileSystemWorker.recFile(this.getClass().getSimpleName() + ".before", Collections.singletonList(ConstantsFor.showMem()));
             msg.set(new StringBuilder()
                 .append("Thread ")
                 .append(Thread.currentThread().getId())
@@ -349,14 +351,14 @@ public class NetScannerSvc {
                 String s = Thread.activeCount() + " active threads now.";
                 LOGGER.warn(s);
                 this.onLinePCs = 0;
+                ConstantsFor.saveProps(p);
+                toFileList.add(new TForms().fromArray(p, false));
                 toFileList.add(ConstantsFor.showMem());
-                FileSystemWorker.recFile(this.getClass().getSimpleName() + ".after", toFileList);
+                String msgTimeSp = "NetScannerSvc.getPCsAsync method. " + ( float ) (System.currentTimeMillis() - stArt) / 1000 + ConstantsFor.STR_SEC_SPEND;
+                toFileList.add(msgTimeSp);
+                FileSystemWorker.recFile(this.getClass().getSimpleName() + ".log", toFileList);
                 eServ.shutdown();
             }).start();
-            String msgTimeSp = "NetScannerSvc.getPCsAsync method. " + ( float ) (System.currentTimeMillis() - stArt) / 1000 + ConstantsFor.STR_SEC_SPEND;
-            toFileList.add(msgTimeSp);
-            LOGGER.warn(msgTimeSp);
-            ConstantsFor.saveProps(p);
         });
     }
 
@@ -757,4 +759,18 @@ public class NetScannerSvc {
         FileSystemWorker.recFile("pcautodis.txt", readFileAsList.parallelStream().distinct());
     }
 
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("NetScannerSvc{");
+        sb.append("DB_NAME='").append(DB_NAME).append('\'');
+        sb.append(", GET_INFO_FROM_DB='").append(GET_INFO_FROM_DB).append('\'');
+        sb.append(", ONLINE_NOW='").append(ONLINE_NOW).append('\'');
+        sb.append(", onLinePCs=").append(onLinePCs);
+        sb.append(", ONLINES_CHECK='").append(ONLINES_CHECK).append('\'');
+        sb.append(", STR_NETSCANNERSVC='").append(STR_NETSCANNERSVC).append('\'');
+        sb.append(", thePc='").append(thePc).append('\'');
+        sb.append(", WRITE_DB='").append(WRITE_DB).append('\'');
+        sb.append('}');
+        return sb.toString();
+    }
 }

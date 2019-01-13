@@ -5,17 +5,15 @@ import org.slf4j.Logger;
 import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
 
 
 /**
@@ -66,7 +64,7 @@ public class SpeedChecker implements Callable<Long> {
                 return rtLong;
             }
         } catch (SQLException e) {
-            FileSystemWorker.recFile(SpeedChecker.class.getSimpleName(), ( Stream<String> ) e);
+            FileSystemWorker.recFile(SpeedChecker.class.getSimpleName(), Collections.singletonList(new TForms().fromArray(e, false)));
         }
     return rtLong;
     }

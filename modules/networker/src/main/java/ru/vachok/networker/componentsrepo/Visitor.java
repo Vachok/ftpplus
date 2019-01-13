@@ -17,7 +17,7 @@ public class Visitor {
     /**
      Время в мс инициализации класса
      */
-    private static final long ST_ART = System.currentTimeMillis();
+    private long sStart;
 
     /**
      <i>Boiler Plate</i>
@@ -30,11 +30,7 @@ public class Visitor {
     /**
      The Time st.
      */
-    private String timeSpend = new StringBuilder()
-        .append((float) (System.currentTimeMillis() - ST_ART) / 1000)
-        .append(" сек. идёт сессия.")
-        .append("\n")
-        .toString();
+    private String timeSpend;
 
     private int clickCounter = 0;
 
@@ -54,6 +50,12 @@ public class Visitor {
         this.visitPlace = request.getHeader(ConstantsFor.ATT_REFERER.toLowerCase());
         this.remAddr = request.getRemoteAddr();
         this.userId = session.getId();
+        this.sStart = session.getCreationTime();
+        this.timeSpend = new StringBuilder()
+            .append(( float ) (System.currentTimeMillis() - sStart) / 1000)
+            .append(" сек. идёт сессия.")
+            .append("\n")
+            .toString();
         visitList.add(new Date(System.currentTimeMillis()).toString());
         visitList.add(this.toString());
         visitList.add(AppComponents.versionInfo().toString());
@@ -141,10 +143,9 @@ public class Visitor {
     public String toString() {
         final StringBuilder sb = new StringBuilder("Visitor{");
         sb.append("clickCounter=").append(clickCounter);
-        sb.append(", remAddr='").append(remAddr).append('\'');
+        sb.append(", <b>remAddr='").append(remAddr).append("</b>");
         sb.append(", request=").append(request.getPathInfo());
-        sb.append(", session=").append(session.getServletContext().getServerInfo());
-        sb.append(", ST_ART=").append(ST_ART);
+        sb.append(", sStart=").append(sStart);
         sb.append(", timeSpend='").append(timeSpend).append('\'');
         sb.append(", userId='").append(userId).append('\'');
         sb.append(", visitPlace='").append(visitPlace).append('\'');

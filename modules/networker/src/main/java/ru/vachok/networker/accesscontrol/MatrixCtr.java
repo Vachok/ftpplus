@@ -151,7 +151,7 @@ public class MatrixCtr {
     public String gitOn(Model model, HttpServletRequest request) {
         this.visitor = ConstantsFor.getVis(request);
         SSHFactory gitOner = new SSHFactory.Builder(ConstantsFor.SRV_GIT, "sudo cd /usr/home/ITDept;sudo git instaweb;exit").build();
-        if (request.getQueryString() != null && request.getQueryString().equalsIgnoreCase("reboot")) {
+        if(request.getQueryString()!=null && request.getQueryString().equalsIgnoreCase(ConstantsFor.STR_REBOOT)){
             gitOner = new SSHFactory.Builder(ConstantsFor.SRV_GIT, "sudo reboot").build();
         }
         String call = gitOner.call() + "\n" + visitor.toString();

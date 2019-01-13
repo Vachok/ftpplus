@@ -5,11 +5,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import ru.vachok.networker.ConstantsFor;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
+import java.io.*;
 import java.util.Date;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -18,12 +16,11 @@ import java.util.concurrent.ConcurrentMap;
 /**
  @since 22.09.2018 (13:36) */
 @Component("lastnetscan")
-@Scope("singleton")
+@Scope (ConstantsFor.SINGLETON)
 public class LastNetScan implements Serializable {
 
     private static final long serialVersionUID = 1984L;
 
-    /*Fields*/
     private static final transient Logger LOGGER = LoggerFactory.getLogger(LastNetScan.class.getName());
 
     private Date timeLastScan;
@@ -55,8 +52,6 @@ public class LastNetScan implements Serializable {
     public void setNetWork(ConcurrentMap<String, Boolean> netWork) {
         this.netWork = netWork;
     }
-
-    /*Instances*/
 
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();

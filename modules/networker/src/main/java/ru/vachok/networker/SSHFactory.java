@@ -12,16 +12,10 @@ import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.componentsrepo.AppComponents;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.RejectedExecutionException;
@@ -163,13 +157,14 @@ public class SSHFactory implements Callable<String> {
         return pemFile.getAbsolutePath();
     }
 
+    /*END FOR CLASS*/
     /**
      * Builder.
      * <p>
      * Сам строитель.
      */
     @Service("ssh")
-    @Scope("singleton")
+    @Scope (ConstantsFor.SINGLETON)
     public static class Builder {
 
         /*Fields*/

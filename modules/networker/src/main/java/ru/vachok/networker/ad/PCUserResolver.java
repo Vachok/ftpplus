@@ -36,6 +36,8 @@ public class PCUserResolver implements Thread.UncaughtExceptionHandler {
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(PCUserResolver.class.getSimpleName());
 
+    private static final String REC_AUTO_DB = ".recAutoDB";
+
     /**
      {@link AppComponents#lastNetScan()}.getNetWork()
      */
@@ -151,7 +153,7 @@ public class PCUserResolver implements Thread.UncaughtExceptionHandler {
         }
         catch(SQLException e){
             FileSystemWorker.recFile(
-                this.getClass().getSimpleName() + ".recAutoDB",
+                this.getClass().getSimpleName() + REC_AUTO_DB,
                 Collections.singletonList(new TForms().fromArray(e, false)));
             NetScannerSvc.getI();
             NetScannerSvc.reconnectToDB();
@@ -253,7 +255,6 @@ public class PCUserResolver implements Thread.UncaughtExceptionHandler {
      @return {@link #pcUserResolver}
      */
     public static PCUserResolver getPcUserResolver(Connection c) {
-        Thread.currentThread().setName(PCUserResolver.class.getSimpleName());
         Thread.currentThread().checkAccess();
         Thread.currentThread().getThreadGroup().checkAccess();
         connection = c;
@@ -280,7 +281,7 @@ public class PCUserResolver implements Thread.UncaughtExceptionHandler {
             Thread.currentThread().interrupt();
         } catch (SQLException e) {
             FileSystemWorker.recFile(
-                this.getClass().getSimpleName() + ".recAutoDB",
+                this.getClass().getSimpleName() + REC_AUTO_DB,
                 Collections.singletonList(new TForms().fromArray(e, false)));
             NetScannerSvc.getI().reconnectToDB();
         }
@@ -309,7 +310,7 @@ public class PCUserResolver implements Thread.UncaughtExceptionHandler {
         }
         catch(SQLException e){
             FileSystemWorker.recFile(
-                this.getClass().getSimpleName() + ".recAutoDB",
+                this.getClass().getSimpleName() + REC_AUTO_DB,
                 Collections.singletonList(new TForms().fromArray(e, false)));
             NetScannerSvc.getI().reconnectToDB();
         }
