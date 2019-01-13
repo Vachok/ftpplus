@@ -348,6 +348,8 @@ public enum ConstantsFor {
      */
     public static final String STR_DELETED = " STR_DELETED";
 
+    public static final String LOG = ".log";
+
     /**
      {@link #getAtomicTime()}
      */

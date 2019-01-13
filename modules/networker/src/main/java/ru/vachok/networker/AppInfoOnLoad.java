@@ -13,6 +13,7 @@ import ru.vachok.networker.accesscontrol.common.CommonRightsChecker;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.config.ThreadConfig;
+import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.mailserver.MailIISLogsCleaner;
 import ru.vachok.networker.net.DiapazonedScan;
 import ru.vachok.networker.net.SwitchesAvailability;
@@ -21,10 +22,7 @@ import ru.vachok.networker.services.MyCalen;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.FileVisitor;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -32,9 +30,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.TextStyle;
-import java.util.Date;
-import java.util.Locale;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -124,7 +120,9 @@ public class AppInfoOnLoad implements Runnable {
             speedRun = new SpeedRunActualize();
         }
         catch(ExceptionInInitializerError e){
-            LOGGER.warn(e.getMessage(), e);
+            FileSystemWorker.recFile(
+                this.getClass().getSimpleName() + ConstantsFor.LOG,
+                Collections.singletonList(new TForms().fromArray(e.getStackTrace(), false)));
         }
         Runnable swAval = new SwitchesAvailability();
         ScheduledExecutorService executorService = Executors.unconfigurableScheduledExecutorService(Executors.newScheduledThreadPool(4));

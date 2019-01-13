@@ -153,7 +153,7 @@ public class PCUserResolver implements Thread.UncaughtExceptionHandler {
         }
         catch(SQLException e){
             FileSystemWorker.recFile(
-                this.getClass().getSimpleName() + REC_AUTO_DB,
+                this.getClass().getSimpleName() + REC_AUTO_DB + ConstantsFor.LOG,
                 Collections.singletonList(new TForms().fromArray(e, false)));
             NetScannerSvc.getI();
             NetScannerSvc.reconnectToDB();
@@ -281,7 +281,7 @@ public class PCUserResolver implements Thread.UncaughtExceptionHandler {
             Thread.currentThread().interrupt();
         } catch (SQLException e) {
             FileSystemWorker.recFile(
-                this.getClass().getSimpleName() + REC_AUTO_DB,
+                this.getClass().getSimpleName() + REC_AUTO_DB + ConstantsFor.LOG,
                 Collections.singletonList(new TForms().fromArray(e, false)));
             NetScannerSvc.getI().reconnectToDB();
         }
@@ -310,7 +310,7 @@ public class PCUserResolver implements Thread.UncaughtExceptionHandler {
         }
         catch(SQLException e){
             FileSystemWorker.recFile(
-                this.getClass().getSimpleName() + REC_AUTO_DB,
+                this.getClass().getSimpleName() + REC_AUTO_DB + ConstantsFor.LOG,
                 Collections.singletonList(new TForms().fromArray(e, false)));
             NetScannerSvc.getI().reconnectToDB();
         }
@@ -320,8 +320,6 @@ public class PCUserResolver implements Thread.UncaughtExceptionHandler {
             Thread.currentThread().getThreadGroup().destroy();
         }
     }
-
-/*END FOR CLASS*/
 
     /**
      Поиск файлов в папках {@code c-users}.

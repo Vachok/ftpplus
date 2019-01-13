@@ -39,6 +39,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     public static synchronized void recFile(String fileName, List<String> toFileRec) {
         try(OutputStream outputStream = new FileOutputStream(fileName);
             PrintWriter printWriter = new PrintWriter(outputStream, true)){
+            printWriter.println(new Date(ConstantsFor.getAtomicTime()).toString());
             toFileRec.forEach(printWriter::println);
         }
         catch(IOException e){

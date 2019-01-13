@@ -208,13 +208,13 @@ public class NetScannerSvc {
             reconnectToDB();
             FileSystemWorker.recFile(
                 this.getClass().getSimpleName() +
-                    GET_INFO_FROM_DB, Collections.singletonList(new TForms().fromArray(e, false)));
+                    GET_INFO_FROM_DB + ConstantsFor.LOG, Collections.singletonList(new TForms().fromArray(e, false)));
             setThePc(e.getMessage());
         }
         catch(IndexOutOfBoundsException e){
             FileSystemWorker.recFile(
                 this.getClass().getSimpleName() +
-                    GET_INFO_FROM_DB, Collections.singletonList(new TForms().fromArray(e, false)));
+                    GET_INFO_FROM_DB + ConstantsFor.LOG, Collections.singletonList(new TForms().fromArray(e, false)));
             setThePc(e.getMessage());
         }
         return "ok";
@@ -231,7 +231,7 @@ public class NetScannerSvc {
         }
         catch(SQLException e){
             FileSystemWorker.recFile(
-                NetScannerSvc.class.getSimpleName() + ".reconnectToDB",
+                NetScannerSvc.class.getSimpleName() + ".reconnectToDB" + ConstantsFor.LOG,
                 Collections.singletonList(new TForms().fromArray(e, false)));
             LOGGER.error(e.getMessage(), e);
         }
@@ -356,7 +356,7 @@ public class NetScannerSvc {
                 toFileList.add(ConstantsFor.showMem());
                 String msgTimeSp = "NetScannerSvc.getPCsAsync method. " + ( float ) (System.currentTimeMillis() - stArt) / 1000 + ConstantsFor.STR_SEC_SPEND;
                 toFileList.add(msgTimeSp);
-                FileSystemWorker.recFile(this.getClass().getSimpleName() + ".log", toFileList);
+                FileSystemWorker.recFile(this.getClass().getSimpleName() + ".getPCsAsync" + ConstantsFor.LOG, toFileList);
                 eServ.shutdown();
             }).start();
         });
@@ -557,7 +557,7 @@ public class NetScannerSvc {
                 } catch (SQLException e) {
                     reconnectToDB();
                     FileSystemWorker.recFile(
-                        NetScannerSvc.class.getSimpleName() + WRITE_DB,
+                        NetScannerSvc.class.getSimpleName() + WRITE_DB + ConstantsFor.LOG,
                         Collections.singletonList(new TForms().fromArray(e, false)));
                 }
             });
@@ -565,7 +565,7 @@ public class NetScannerSvc {
         } catch (SQLException e) {
             FileSystemWorker.recFile(
                 NetScannerSvc.class.getSimpleName() +
-                    WRITE_DB, Collections.singletonList(new TForms().fromArray(e, false)));
+                    WRITE_DB + ConstantsFor.LOG, Collections.singletonList(new TForms().fromArray(e, false)));
             return e.getMessage();
         }
     }
@@ -628,7 +628,7 @@ public class NetScannerSvc {
         }
         catch(SQLException e){
             FileSystemWorker.recFile(
-                NetScannerSvc.class.getSimpleName() + "offLinesCheckUser",
+                NetScannerSvc.class.getSimpleName() + "offLinesCheckUser" + ConstantsFor.LOG,
                 Collections.singletonList(new TForms().fromArray(e, false)));
             stringBuilder.append(e.getMessage());
             reconnectToDB();
@@ -671,13 +671,13 @@ public class NetScannerSvc {
         catch(SQLException e){
             reconnectToDB();
             FileSystemWorker.recFile(
-                NetScannerSvc.class.getSimpleName() + ONLINES_CHECK,
+                NetScannerSvc.class.getSimpleName() + ONLINES_CHECK + ConstantsFor.LOG,
                 Collections.singletonList(new TForms().fromArray(e, false)));
             return e.getMessage();
         }
         catch(NullPointerException e){
             FileSystemWorker.recFile(
-                NetScannerSvc.class.getSimpleName() + ONLINES_CHECK,
+                NetScannerSvc.class.getSimpleName() + ONLINES_CHECK + ConstantsFor.LOG,
                 Collections.singletonList(new TForms().fromArray(e, false)));
             return e.getMessage();
         }

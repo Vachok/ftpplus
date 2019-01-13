@@ -64,7 +64,7 @@ public class SpeedChecker implements Callable<Long> {
                 return rtLong;
             }
         } catch (SQLException e) {
-            FileSystemWorker.recFile(SpeedChecker.class.getSimpleName(), Collections.singletonList(new TForms().fromArray(e, false)));
+            FileSystemWorker.recFile(SpeedChecker.class.getSimpleName() + ".log", Collections.singletonList(new TForms().fromArray(e, false)));
         }
     return rtLong;
     }
