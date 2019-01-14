@@ -87,7 +87,7 @@ public final class SystemTrayHelper {
     @SuppressWarnings ("FeatureEnvy")
     static void addTray(String iconFileName) {
         boolean myPC;
-        AppInfoOnLoad.runCommonScan(false);
+        AppInfoOnLoad.runCommonScan();
         myPC = THIS_PC.toLowerCase().contains(ConstantsFor.NO0027) || THIS_PC.equalsIgnoreCase("home");
         if(iconFileName==null){
             iconFileName = "icons8-ip-адрес-15.png";

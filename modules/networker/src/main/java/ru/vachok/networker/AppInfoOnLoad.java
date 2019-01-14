@@ -22,7 +22,10 @@ import ru.vachok.networker.services.MyCalen;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.FileVisitor;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -30,7 +33,10 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.TextStyle;
-import java.util.*;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Locale;
+import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -63,11 +69,6 @@ public class AppInfoOnLoad implements Runnable {
     };
 
     /**
-     Повторение более 3х раз в строках
-     */
-    private static final String STR_SEC_SPEND = ConstantsFor.STR_SEC_SPEND;
-
-    /**
      Задержка выполнения для этого класса
 
      @see #schedStarter()
@@ -77,19 +78,14 @@ public class AppInfoOnLoad implements Runnable {
     /**
      Запускает сканнер прав Common
      */
-    static void runCommonScan(boolean runNow) {
-        if(runNow){
-            Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(r);
-        }
-        else{
-            String msg = new StringBuilder()
-                .append(LocalTime.now()
-                    .plusMinutes(5).toString())
-                .append(" ")
-                .append(CommonRightsChecker.class.getSimpleName())
-                .append(" been run.").toString();
-            LOGGER.info(msg);
-        }
+    static void runCommonScan() {
+        String msg = new StringBuilder()
+            .append(LocalTime.now()
+                .plusMinutes(5).toString())
+            .append(" ")
+            .append(CommonRightsChecker.class.getSimpleName())
+            .append(" been run.").toString();
+        LOGGER.info(msg);
     }
 
     /**
@@ -127,7 +123,7 @@ public class AppInfoOnLoad implements Runnable {
         Runnable swAval = new SwitchesAvailability();
         ScheduledExecutorService executorService = Executors.unconfigurableScheduledExecutorService(Executors.newScheduledThreadPool(4));
         executorService
-            .scheduleWithFixedDelay(Objects.requireNonNull(speedRun), ConstantsFor.INIT_DELAY, TimeUnit.MINUTES.toSeconds(300), TimeUnit.SECONDS);
+            .scheduleWithFixedDelay(Objects.requireNonNull(speedRun), ConstantsFor.INIT_DELAY, 300, TimeUnit.SECONDS);
         String thisPC = ConstantsFor.thisPC();
         if(!thisPC.toLowerCase().contains("home")){
             executorService
