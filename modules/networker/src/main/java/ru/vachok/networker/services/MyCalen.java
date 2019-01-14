@@ -4,11 +4,10 @@ package ru.vachok.networker.services;
 import org.apache.commons.net.ntp.TimeInfo;
 import org.slf4j.Logger;
 import ru.vachok.networker.AppInfoOnLoad;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
 
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.*;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
@@ -123,8 +122,8 @@ public abstract class MyCalen {
         if(dayOfWeek.equals(DayOfWeek.MONDAY)){
             toDate = dayOfWeek.getValue() + 7;
         }
-        if (localDate.getDayOfWeek().equals(dayOfWeek)) {
-            return new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(14));
+        if(localDate.getDayOfWeek().equals(dayOfWeek) && LocalTime.now().isBefore(LocalTime.parse(hourNeed + ":00"))){
+            return new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY));
         } else {
             int toDateDays = Math.abs(toDate - localDate.getDayOfWeek().getValue());
             cBuilder
