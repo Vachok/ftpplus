@@ -72,6 +72,7 @@ public class ErrCtr implements ErrorController {
             MessageToUser eMail = new ESender(ConstantsFor.GMAIL_COM);
             try{
                 eMail.errorAlert(exception.toString(), exception.getMessage(), new TForms().fromArray(exception, false) + "\n\n" + visitor.toString());
+                LOGGER.error(exception.getMessage(), exception);
             }
             catch(Exception e){
                 LOGGER.error(e.getMessage(), e);
