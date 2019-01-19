@@ -50,6 +50,10 @@ public class NetScannerSvc {
 
     private static final int DOPC = 250;
 
+    /**
+     new {@link HashSet}
+     */
+    private static final Set<String> PC_NAMES = new HashSet<>(Integer.parseInt(p.getOrDefault(ConstantsFor.PR_TOTPC, "318").toString()));
     private static final int PPPC = 70;
 
     /**
@@ -73,11 +77,7 @@ public class NetScannerSvc {
 
     private static final String ONLINE_NOW = "OnlineNow";
 
-    /**
-     new {@link HashSet}
-     */
-    private static final Set<String> PC_NAMES = new HashSet<>(Integer.parseInt(p
-        .getOrDefault(ConstantsFor.PR_TOTPC, "318").toString()));
+    private static Properties p = ConstantsFor.getProps();
 
     /**
      /netscan POST форма
@@ -104,7 +104,6 @@ public class NetScannerSvc {
      */
     private static final List<ADComputer> AD_COMPUTERS = AppComponents.adComputers();
 
-    private static Properties p = ConstantsFor.getProps();
 
     /**
      new {@link NetScannerSvc}
