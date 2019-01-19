@@ -167,7 +167,7 @@ public class ServiceInfoCtrl {
             .toString());
         model.addAttribute("request", prepareRequest(request));
         model.addAttribute(ConstantsFor.ATT_VISIT, visitor.toString());
-        model.addAttribute("res", MyCalen.toStringS() + "<br>" + AppComponents.versionInfo().toString() +
+        model.addAttribute("res", MyCalen.toStringS() + "<br><br>" + "<b><i>" + AppComponents.versionInfo().toString() + "</i></b>" +
             "<p><font color=\"grey\">" + listFilesToReadStr() + "</font>");
         model.addAttribute("back", request.getHeader(ConstantsFor.ATT_REFERER.toLowerCase()));
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<br>" + getJREVers());
