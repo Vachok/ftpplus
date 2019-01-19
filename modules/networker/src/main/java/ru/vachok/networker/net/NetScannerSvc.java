@@ -50,6 +50,11 @@ public class NetScannerSvc {
 
     private static final int DOPC = 250;
 
+    private static final Properties LOC_PROPS = ConstantsFor.getProps();
+    /**
+     new {@link HashSet}
+     */
+    private static final Set<String> PC_NAMES = new HashSet<>(Integer.parseInt(LOC_PROPS.getOrDefault(ConstantsFor.PR_TOTPC, "318").toString()));
     private static final int PPPC = 70;
 
     /**
@@ -73,11 +78,8 @@ public class NetScannerSvc {
 
     private static final String ONLINE_NOW = "OnlineNow";
 
-    /**
-     new {@link HashSet}
-     */
-    private static final Set<String> PC_NAMES = new HashSet<>(Integer.parseInt(p
-        .getOrDefault(ConstantsFor.PR_TOTPC, "318").toString()));
+    public static final int N_THREADS = 333;
+
 
     /**
      /netscan POST форма
@@ -104,7 +106,6 @@ public class NetScannerSvc {
      */
     private static final List<ADComputer> AD_COMPUTERS = AppComponents.adComputers();
 
-    private static Properties p = ConstantsFor.getProps();
 
     /**
      new {@link NetScannerSvc}
@@ -304,11 +305,9 @@ public class NetScannerSvc {
      */
     @SuppressWarnings("OverlyLongLambda")
     public void getPCsAsync() {
-
-        int anInt = Integer.parseInt(p.getOrDefault(ConstantsFor.PR_TOTPC, "318").toString());
         ExecutorService eServ = Executors.
             unconfigurableExecutorService(Executors.
-                newFixedThreadPool(anInt));
+                newFixedThreadPool(N_THREADS));
         final long stArt = System.currentTimeMillis();
         List<String> toFileList = new ArrayList<>();
         AtomicReference<String> msg = new AtomicReference<>("");
@@ -355,8 +354,8 @@ public class NetScannerSvc {
                 String s = Thread.activeCount() + " active threads now.";
                 LOGGER.warn(s);
                 this.onLinePCs = 0;
-                ConstantsFor.saveProps(p);
-                toFileList.add(new TForms().fromArray(p, false));
+                ConstantsFor.saveProps(LOC_PROPS);
+                toFileList.add(new TForms().fromArray(LOC_PROPS, false));
                 toFileList.add(ConstantsFor.showMem());
                 String msgTimeSp = "NetScannerSvc.getPCsAsync method. " + ( float ) (System.currentTimeMillis() - stArt) / 1000 + ConstantsFor.STR_SEC_SPEND;
                 toFileList.add(msgTimeSp);
