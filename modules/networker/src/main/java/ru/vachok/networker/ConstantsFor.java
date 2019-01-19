@@ -42,6 +42,14 @@ import static java.time.temporal.ChronoUnit.HOURS;
 public enum ConstantsFor {
     ;
 
+    public static final String TIME_SPEND = "TimeSpend";
+
+    public static final String COL_SQL_NAME_TIMESTAMP = "TimeStamp";
+
+    public static final String U_0466446_LIFERPG = "u0466446_liferpg";
+
+    public static final String SELECT_FROM_SPEED = "select * from speed";
+
     public static final String COMPNAME_USERS_MAP_SIZE = " COMPNAME_USERS_MAP size";
 
     public static final String STR_PCUSERAUTO = "pcuserauto";
