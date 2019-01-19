@@ -16,7 +16,6 @@ import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.awt.*;
-import java.io.IOException;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.TextStyle;
@@ -134,6 +133,7 @@ public class IntoApplication {
         ThreadConfig threadConfig = new ThreadConfig();
         Runnable infoAndSched = new AppInfoOnLoad();
         try {
+            (( AppInfoOnLoad ) infoAndSched).spToFile();
             String s = Paths.get("").toFile().getCanonicalPath().toLowerCase();
             String showPath = Paths.get(".").toString() + "\n abs: " +
                 Paths.get(".").toFile().getAbsolutePath();
@@ -150,7 +150,8 @@ public class IntoApplication {
             LOGGER.error(showPath);
             threadConfig.threadPoolTaskExecutor().execute(infoAndSched);
             return true;
-        } catch (IOException e) {
+        }
+        catch(Exception e){
             FileSystemWorker.recFile(IntoApplication.class.getSimpleName() + ConstantsFor.LOG, Collections.singletonList(new TForms().fromArray(e, false)));
             return false;
         }

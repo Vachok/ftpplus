@@ -5,12 +5,10 @@ import org.slf4j.Logger;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.*;
@@ -68,7 +66,7 @@ public class Putty extends Thread {
         File putty = new File(puttyPath);
         InputStream fileInputStream;
         String sql = "select bins from u0466446_liferpg.properties where javaid like 'putty';";
-        try(Connection connection = new RegRuMysql().getDefaultConnection("u0466446_liferpg");
+        try(Connection connection = new RegRuMysql().getDefaultConnection(ConstantsFor.U_0466446_LIFERPG);
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             ResultSet resultSet = preparedStatement.executeQuery();
             FileOutputStream fileOutputStream = new FileOutputStream(putty)) {
