@@ -105,7 +105,7 @@ public class PfListsCtr {
         model.addAttribute("rules", pfLists.getPfRules());
         model.addAttribute(ConstantsFor.ATT_GITSTATS, Thread.activeCount() + " thr, active\nChange: " +
             (Thread.activeCount() - Long.parseLong(properties.getOrDefault("thr", 1L).toString())));
-        model.addAttribute("footer", new PageFooter().getFooterUtext());
+        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
 
     }
 

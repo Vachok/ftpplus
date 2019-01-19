@@ -3,10 +3,12 @@ package ru.vachok.networker.mailserver;
 
 import org.springframework.stereotype.Component;
 import org.springframework.ui.Model;
+import ru.vachok.networker.ConstantsFor;
+
 
 /**<b>Exchange Rules Changer</b>
  @since 09.11.2018 (9:38) */
-@Component("ruleset")
+@Component (ConstantsFor.AT_NAME_RULESET)
 public class RuleSet {
 
     /**

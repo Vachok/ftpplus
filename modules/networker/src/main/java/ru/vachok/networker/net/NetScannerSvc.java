@@ -74,6 +74,12 @@ public class NetScannerSvc {
     private static final String ONLINE_NOW = "OnlineNow";
 
     /**
+     new {@link HashSet}
+     */
+    private static final Set<String> PC_NAMES = new HashSet<>(Integer.parseInt(p
+        .getOrDefault(ConstantsFor.PR_TOTPC, "318").toString()));
+
+    /**
      /netscan POST форма
      <p>
 
@@ -86,6 +92,7 @@ public class NetScannerSvc {
      */
     private static final Logger LOGGER = AppComponents.getLogger();
 
+    public static final String DB_FIELD_WHENQUERIED = "whenQueried";
 
     /**
      {@link RegRuMysql#getDefaultConnection(String)}
@@ -97,10 +104,7 @@ public class NetScannerSvc {
      */
     private static final List<ADComputer> AD_COMPUTERS = AppComponents.adComputers();
 
-    /**
-     new {@link HashSet}
-     */
-    private static final Set<String> PC_NAMES = new HashSet<>();
+    private static Properties p = ConstantsFor.getProps();
 
     /**
      new {@link NetScannerSvc}
@@ -300,11 +304,11 @@ public class NetScannerSvc {
      */
     @SuppressWarnings("OverlyLongLambda")
     public void getPCsAsync() {
-        Properties p = ConstantsFor.getProps();
+
+        int anInt = Integer.parseInt(p.getOrDefault(ConstantsFor.PR_TOTPC, "318").toString());
         ExecutorService eServ = Executors.
             unconfigurableExecutorService(Executors.
-                newFixedThreadPool(Integer.
-                    parseInt(p.getOrDefault(ConstantsFor.PR_TOTPC, "318").toString())));
+                newFixedThreadPool(anInt));
         final long stArt = System.currentTimeMillis();
         List<String> toFileList = new ArrayList<>();
         AtomicReference<String> msg = new AtomicReference<>("");
@@ -330,7 +334,7 @@ public class NetScannerSvc {
                 Thread.currentThread().setName("mailMSG");
                 MessageToUser mailMSG = new MessageCons();
                 float upTime = (float) (TimeUnit.MILLISECONDS
-                    .toSeconds(System.currentTimeMillis() - ConstantsFor.START_STAMP)) / 60f;
+                                            .toSeconds(System.currentTimeMillis() - ConstantsFor.START_STAMP)) / ConstantsFor.ONE_HOUR_IN_MIN;
                 Map<String, String> lastLogs = new AppComponents().getLastLogs();
                 String retLogs = new TForms().fromArray(lastLogs);
                 String fromArray = new TForms().fromArray(ConstantsFor.COMPNAME_USERS_MAP, false);
@@ -613,15 +617,15 @@ public class NetScannerSvc {
                 ResultSet resultSet1 = p1.executeQuery()){
                 while(resultSet.next()){
                     stringBuilder.append("<b>")
-                        .append(resultSet.getString("userName").trim()).append("</b> (time: ")
-                        .append(resultSet.getString("whenQueried")).append(")");
+                        .append(resultSet.getString(ConstantsFor.DB_FIELD_USER).trim()).append("</b> (time: ")
+                        .append(resultSet.getString(DB_FIELD_WHENQUERIED)).append(")");
                 }
                 while(resultSet1.next()){
                     if(resultSet1.last()){
                         return stringBuilder
                             .append("    (AutoResolved name: ")
-                            .append(resultSet1.getString("userName").trim()).append(" (time: ")
-                            .append(resultSet1.getString("whenQueried")).append("))").toString();
+                            .append(resultSet1.getString(ConstantsFor.DB_FIELD_USER).trim()).append(" (time: ")
+                            .append(resultSet1.getString(DB_FIELD_WHENQUERIED)).append("))").toString();
                     }
                 }
             }

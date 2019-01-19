@@ -16,15 +16,15 @@ import ru.vachok.networker.componentsrepo.Visitor;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import java.util.concurrent.ConcurrentMap;
+
 
 /**
  @since 05.10.2018 (9:52) */
 @Controller
 public class ExCTRL {
 
-    private static final String AT_NAME_RULESET = "ruleset";
-
-    private static final String RULESET = "/ruleset";
+    private static final String GET_MAP_RULESET = "/ruleset";
 
     private static final String EXCHANGE = "/exchange";
 
@@ -33,6 +33,9 @@ public class ExCTRL {
     private ExSRV exSRV;
 
     private RuleSet ruleSet;
+
+    private ConcurrentMap<Integer, MailRule> localMap = ConstantsFor.getMailRules();
+
     private static final Logger LOGGER = LoggerFactory.getLogger(ExCTRL.class.getSimpleName());
 
     private Visitor visitor;
@@ -41,7 +44,7 @@ public class ExCTRL {
 
     @Autowired
     public ExCTRL(ExSRV exSRV, RuleSet ruleSet) {
-        ConstantsFor.MAIL_RULES.clear();
+        localMap.clear();
         this.ruleSet = ruleSet;
         this.exSRV = exSRV;
     }
@@ -57,9 +60,10 @@ public class ExCTRL {
     @GetMapping (EXCHANGE)
     public String exchangeWorks(Model model, HttpServletRequest request) {
         this.visitor = ConstantsFor.getVis(request);
-        LOGGER.warn(visitor.toString());
-        model.addAttribute("exsrv", exSRV);
-        model.addAttribute(AT_NAME_RULESET, ruleSet);
+        String s = visitor.toString();
+        LOGGER.warn(s);
+        model.addAttribute(ConstantsFor.ATT_EXSRV, exSRV);
+        model.addAttribute(ConstantsFor.AT_NAME_RULESET, ruleSet);
         try {
             model.addAttribute(ConstantsFor.ATT_TITLE, lastChange());
             model.addAttribute("file", exSRV.fileAsStrings());
@@ -72,7 +76,7 @@ public class ExCTRL {
                     .append("Get-TransportRule | fl > имя_файла</textarea></p>").toString());
         }
 
-        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<p>" + visitor.toString());
+        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<p>" + s);
         return F_EXCHANGE;
     }
 
@@ -104,14 +108,14 @@ public class ExCTRL {
             .append(exSRV.getOFields())
             .append("</textarea>")
             .toString();
-        String rules = new TForms().fromArrayRules(ConstantsFor.MAIL_RULES, true);
-        model.addAttribute("exsrv", exSRV);
-        model.addAttribute(AT_NAME_RULESET, ruleSet);
+        String rules = new TForms().fromArrayRules(localMap, true);
+        model.addAttribute(ConstantsFor.ATT_EXSRV, exSRV);
+        model.addAttribute(ConstantsFor.AT_NAME_RULESET, ruleSet);
         model.addAttribute("file", rules + s);
-        model.addAttribute(ConstantsFor.ATT_TITLE, ConstantsFor.MAIL_RULES.size() + " rules in " +
+        model.addAttribute(ConstantsFor.ATT_TITLE, localMap.size() + " rules in " +
             exSRV.getFile().getSize() / ConstantsFor.KBYTE + " kb file");
         model.addAttribute("otherfields", exSRV.getOFields());
-        model.addAttribute("footer", new PageFooter().getFooterUtext());
+        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
         return F_EXCHANGE;
     }
 
@@ -124,14 +128,14 @@ public class ExCTRL {
      @param model   {@link Model}
      @return ok.html
      */
-    @PostMapping (RULESET)
+    @PostMapping (GET_MAP_RULESET)
     public String ruleSetPost(@ModelAttribute RuleSet ruleSet, Model model) {
         this.ruleSet = ruleSet;
         rawS = ruleSet.getIdentity() + "<br>" + ruleSet.getFromAddressMatchesPatterns() + "<p>" + ruleSet.getCopyToRuleSetter();
-        model.addAttribute(AT_NAME_RULESET, ruleSet);
+        model.addAttribute(ConstantsFor.AT_NAME_RULESET, ruleSet);
         model.addAttribute(ConstantsFor.ATT_TITLE, ruleSet.getIdentity());
         model.addAttribute("ok", rawS);
-        model.addAttribute("footer", new PageFooter().getFooterUtext());
+        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
 
         return "ok";
     }
@@ -142,10 +146,10 @@ public class ExCTRL {
      @param response {@link HttpServletResponse}
      @return redirect:/ok?FromAddressMatchesPatterns
      */
-    @GetMapping (RULESET)
+    @GetMapping (GET_MAP_RULESET)
     public String ruleSetGet(Model model, HttpServletResponse response) {
         response.addHeader("pcs", "FromAddressMatchesPatterns");
-        model.addAttribute(AT_NAME_RULESET, ruleSet);
+        model.addAttribute(ConstantsFor.AT_NAME_RULESET, ruleSet);
         model.addAttribute("ok", rawS);
         return "redirect:/ok?FromAddressMatchesPatterns";
     }

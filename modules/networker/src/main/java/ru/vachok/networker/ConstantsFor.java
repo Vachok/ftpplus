@@ -42,6 +42,17 @@ import static java.time.temporal.ChronoUnit.HOURS;
 public enum ConstantsFor {
     ;
 
+    /**
+     {@link ru.vachok.networker.mailserver.ExCTRL#uplFile(MultipartFile, Model)}, {@link ExSRV#getOFields()},
+     */
+    private static final ConcurrentMap<Integer, MailRule> MAIL_RULES = new ConcurrentHashMap<>();
+
+    public static final String AT_NAME_RULESET = "ruleset";
+
+    public static final String ATT_EXSRV = "exsrv";
+
+    public static final String DB_FIELD_PCNAME = "pcName";
+
     public static final String TIME_SPEND = "TimeSpend";
 
     public static final String COL_SQL_NAME_TIMESTAMP = "TimeStamp";
@@ -316,10 +327,14 @@ public enum ConstantsFor {
      */
     public static final long GBYTE = 1073741824;
 
+    public static final String DB_FIELD_USER = "userName";
+
     /**
-     {@link ru.vachok.networker.mailserver.ExCTRL#uplFile(MultipartFile, Model)}, {@link ExSRV#getOFields()},
+     @return {@link #MAIL_RULES}
      */
-    public static final ConcurrentMap<Integer, MailRule> MAIL_RULES = new ConcurrentHashMap<>();
+    public static ConcurrentMap<Integer, MailRule> getMailRules() {
+        return MAIL_RULES;
+    }
 
     /**
      Кол-во дней в месяце

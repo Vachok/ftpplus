@@ -298,9 +298,9 @@ public class NetScanCtr {
                 String headER = "<h3><center>LAST 20 USER PCs</center></h3>";
                 stringBuilder.append(headER);
                 while (r.next()) {
-                    String pcName = r.getString("pcName");
+                    String pcName = r.getString(ConstantsFor.DB_FIELD_PCNAME);
                     String returnER = "<br><center><a href=\"/ad?" + pcName.split("\\Q.\\E")[0] + "\">" + pcName + "</a> set: " +
-                        r.getString("whenQueried") + "</center>";
+                        r.getString(NetScannerSvc.DB_FIELD_WHENQUERIED) + "</center>";
                     stringBuilder.append(returnER);
                 }
                 return stringBuilder.toString();

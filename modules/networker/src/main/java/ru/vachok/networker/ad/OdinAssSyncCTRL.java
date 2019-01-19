@@ -71,7 +71,7 @@ public class OdinAssSyncCTRL {
     public String viewPage(Model model) {
         model.addAttribute("CsvTxt", csvTxt);
         model.addAttribute(ConstantsFor.ATT_TITLE, OdinAssSyncCTRL.class.getSimpleName());
-        model.addAttribute("footer", new PageFooter().getFooterUtext());
+        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
         return STR_ODINASS;
     }
 

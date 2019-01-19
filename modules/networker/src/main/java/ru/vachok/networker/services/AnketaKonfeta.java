@@ -4,6 +4,7 @@ package ru.vachok.networker.services;
 import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.messenger.email.ESender;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
 
 import java.util.ArrayList;
@@ -63,7 +64,7 @@ public class AnketaKonfeta {
     public void sendKonfeta() {
         List<String> emailsList = new ArrayList<>();
         MessageToUser messageToUser = new ESender(emailsList);
-        emailsList.add("143500@gmail.com");
+        emailsList.add(ConstantsFor.GMAIL_COM);
         try {
             if (this.userMail.isEmpty()) {
                 emailsList.add("ikudryashov@velokmfood.ru");
