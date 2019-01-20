@@ -47,6 +47,8 @@ public enum ConstantsFor {
      */
     private static final ConcurrentMap<Integer, MailRule> MAIL_RULES = new ConcurrentHashMap<>();
 
+    public static final String STR_VELKOM = "velkom";
+
     public static final String AT_NAME_RULESET = "ruleset";
 
     public static final String ATT_EXSRV = "exsrv";

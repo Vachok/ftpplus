@@ -7,10 +7,7 @@ import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -31,7 +28,7 @@ public class DataBaseADUsersSRV {
 
     private boolean dbUploader() {
         DataConnectTo dataConnectTo = new RegRuMysql();
-        Connection defaultConnection = dataConnectTo.getDefaultConnection(ConstantsFor.DB_PREFIX + "velkom");
+        Connection defaultConnection = dataConnectTo.getDefaultConnection(ConstantsFor.DB_PREFIX + ConstantsFor.STR_VELKOM);
         try (InputStream resourceAsStream = getClass().getResourceAsStream("/static/texts/users.txt")) {
             InputStreamReader inputStreamReader = new InputStreamReader(resourceAsStream);
             BufferedReader bufferedReader = new BufferedReader(inputStreamReader);

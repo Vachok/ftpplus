@@ -2,16 +2,14 @@ package ru.vachok.networker.net;
 
 
 import org.slf4j.Logger;
+import ru.vachok.messenger.MessageSwing;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.io.*;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -59,7 +57,7 @@ public class WeekPCStats implements Runnable {
         final long stArt = System.currentTimeMillis();
         String sql = "select * from pcuserauto";
         File file = new File(ConstantsFor.VELKOM_PCUSERAUTO_TXT);
-        try(Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.DB_PREFIX + "velkom");
+        try(Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.DB_PREFIX + ConstantsFor.STR_VELKOM);
             PreparedStatement p = c.prepareStatement(sql);
             ResultSet r = p.executeQuery();
             OutputStream outputStream = new FileOutputStream(file);
@@ -92,5 +90,6 @@ public class WeekPCStats implements Runnable {
             toCopy = file.getName() + "_cp";
         }
         FileSystemWorker.copyOrDelFile(file, toCopy, false);
+        new MessageSwing().infoNoTitlesDIA(this.getClass().getSimpleName() + " ends\n" + PC_NAMES_IN_TABLE.size() + " PC_NAMES_IN_TABLE.size()");
     }
 }

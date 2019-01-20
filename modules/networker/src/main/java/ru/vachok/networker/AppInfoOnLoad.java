@@ -93,6 +93,10 @@ public class AppInfoOnLoad implements Runnable {
     void spToFile() {
         ExecutorService service = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor());
         service.submit(new SpeedChecker.SpFromMail());
+        if(LocalDate.now().getDayOfWeek().equals(DayOfWeek.SUNDAY)){
+            ExecutorService serviceW = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor());
+            serviceW.submit(new WeekPCStats());
+        }
     }
 
     /**

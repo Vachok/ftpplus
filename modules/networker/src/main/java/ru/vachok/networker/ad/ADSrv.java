@@ -56,7 +56,7 @@ public class ADSrv implements Runnable {
         List<String> ownerRights = adUser.getOwnerRights();
         StringBuilder stringBuilder = new StringBuilder();
         String sql = "select * from common where users like ? LIMIT 0, 300";
-        try (Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.DB_PREFIX + "velkom")) {
+        try(Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.DB_PREFIX + ConstantsFor.STR_VELKOM)){
             try (PreparedStatement preparedStatement = c.prepareStatement(sql)) {
                 preparedStatement.setString(1, "%" + users + "%");
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
