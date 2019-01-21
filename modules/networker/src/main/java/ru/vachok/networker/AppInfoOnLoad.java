@@ -22,7 +22,6 @@ import ru.vachok.networker.services.MessageToTray;
 import ru.vachok.networker.services.MyCalen;
 import ru.vachok.networker.services.SpeedChecker;
 
-import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
@@ -32,8 +31,9 @@ import java.sql.SQLException;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.format.TextStyle;
-import java.util.*;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Objects;
 import java.util.concurrent.*;
 
 
@@ -171,18 +171,12 @@ public class AppInfoOnLoad implements Runnable {
 
         String logStr = stringBuilder.toString();
         LOGGER.warn(logStr);
-        String s = logStr + " " +
-            checkDay() +
-            iisLogSize() + " " +
-            AppComponents.versionInfo();
-        SystemTrayHelper.getTrayIcon().displayMessage("Networker Starts", s, TrayIcon.MessageType.INFO);
+        new MessageToTray().infoNoTitles(checkDay() + iisLogSize());
     }
 
     private static String checkDay() {
         Date dateStart = MyCalen.getNextDayofWeek(10, 0, DayOfWeek.MONDAY);
-        String msg = dateStart + " - date to TRUNCATE , " +
-            LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault()) + " " +
-            ConstantsFor.ONE_WEEK_MILLIS + " ms delay. ";
+        String msg = dateStart + " - date to TRUNCATE , ";
         ThreadConfig t = new ThreadConfig();
         ThreadPoolTaskScheduler threadPoolTaskScheduler = t.threadPoolTaskScheduler();
         threadPoolTaskScheduler.scheduleWithFixedDelay(AppInfoOnLoad::trunkTableUsers, dateStart, ConstantsFor.ONE_WEEK_MILLIS);
