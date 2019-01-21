@@ -12,11 +12,13 @@ import ru.vachok.networker.accesscontrol.common.CommonRightsChecker;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.config.ThreadConfig;
+import ru.vachok.networker.errorexceptions.MyNull;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.mailserver.MailIISLogsCleaner;
 import ru.vachok.networker.net.DiapazonedScan;
 import ru.vachok.networker.net.SwitchesAvailability;
 import ru.vachok.networker.net.WeekPCStats;
+import ru.vachok.networker.services.MessageToTray;
 import ru.vachok.networker.services.MyCalen;
 import ru.vachok.networker.services.SpeedChecker;
 
@@ -82,60 +84,6 @@ public class AppInfoOnLoad implements Runnable {
     }
 
     /**
-     Стата за неделю по-ПК
-     <p>
-     Usages: {@link #schedStarter()} <br> Uses: 1.1 {@link MyCalen#getNextDayofWeek(int, int, DayOfWeek)}, 1.2 {@link ThreadConfig#threadPoolTaskScheduler()}@param s
-     */
-    @SuppressWarnings ("MagicNumber")
-    private static void dateSchedulers() {
-        Date nextStartDay = MyCalen.getNextDayofWeek(23, 57, DayOfWeek.SUNDAY);
-        StringBuilder stringBuilder = new StringBuilder();
-        ThreadPoolTaskScheduler threadPoolTaskScheduler = new ThreadConfig().threadPoolTaskScheduler();
-        long delay = TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY_HOURS * 7);
-
-        threadPoolTaskScheduler.scheduleWithFixedDelay(new WeekPCStats(), nextStartDay, delay);
-        stringBuilder.append(nextStartDay.toString()).append(" WeekPCStats() start |  ");
-
-        nextStartDay = new Date(nextStartDay.getTime() - TimeUnit.HOURS.toMillis(1));
-        threadPoolTaskScheduler.scheduleWithFixedDelay(new MailIISLogsCleaner(), nextStartDay, delay);
-        stringBuilder.append(nextStartDay.toString()).append(" MailIISLogsCleaner() start. ");
-
-        String logStr = stringBuilder.toString();
-        LOGGER.warn(logStr);
-        String s = logStr + " " +
-            checkDay() +
-            iisLogSize() + " " +
-            AppComponents.versionInfo();
-        SystemTrayHelper.getTrayIcon().displayMessage("Networker Starts", s, TrayIcon.MessageType.INFO);
-    }
-
-    void spToFile() {
-        ExecutorService service = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor());
-        service.submit(new SpeedChecker.SpFromMail());
-        if(LocalDate.now().getDayOfWeek().equals(DayOfWeek.SUNDAY)){
-            ExecutorService serviceW = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor());
-            serviceW.submit(new WeekPCStats());
-        }
-    }
-
-    /**
-     <b>1.1 Краткая сводка</b>
-     Немного инфомации о приложении.
-
-     @param appCtx {@link ApplicationContext}
-     */
-    private void infoForU(ApplicationContext appCtx) {
-        String msg = new StringBuilder()
-            .append(appCtx.getApplicationName())
-            .append(" app name")
-            .append(appCtx.getDisplayName())
-            .append(" app display name\n")
-            .append(ConstantsFor.getBuildStamp()).toString();
-        LOGGER.info(msg);
-        schedStarter();
-    }
-
-    /**
      Запуск заданий по-расписанию
      <p>
      Usages: {@link #infoForU(ApplicationContext)} <br> Uses: 1.1 {@link #dateSchedulers()}, 1.2 {@link ConstantsFor#thisPC()}, 1.3 {@link ConstantsFor#thisPC()} .@param s
@@ -168,7 +116,66 @@ public class AppInfoOnLoad implements Runnable {
             .append(" in minutes\n")
             .append(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(THIS_DELAY + 1))).toString();
         LOGGER.info(msg);
-        dateSchedulers();
+        try{
+            dateSchedulers();
+        }
+        catch(MyNull e){
+            new MessageToTray().errorAlert(getClass().getSimpleName(), e.getMessage(), new TForms().fromArray(e, false));
+        }
+    }
+
+    void spToFile() {
+        ExecutorService service = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor());
+        service.submit(new SpeedChecker.SpFromMail());
+        if(LocalDate.now().getDayOfWeek().equals(DayOfWeek.SUNDAY)){
+            ExecutorService serviceW = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor());
+            serviceW.submit(new WeekPCStats());
+        }
+    }
+
+    /**
+     <b>1.1 Краткая сводка</b>
+     Немного инфомации о приложении.
+
+     @param appCtx {@link ApplicationContext}
+     */
+    private void infoForU(ApplicationContext appCtx) {
+        String msg = new StringBuilder()
+            .append(appCtx.getApplicationName())
+            .append(" app name")
+            .append(appCtx.getDisplayName())
+            .append(" app display name\n")
+            .append(ConstantsFor.getBuildStamp()).toString();
+        LOGGER.info(msg);
+        schedStarter();
+    }
+
+    /**
+     Стата за неделю по-ПК
+     <p>
+     Usages: {@link #schedStarter()} <br> Uses: 1.1 {@link MyCalen#getNextDayofWeek(int, int, DayOfWeek)}, 1.2 {@link ThreadConfig#threadPoolTaskScheduler()}@param s
+     */
+    @SuppressWarnings ("MagicNumber")
+    private static void dateSchedulers() throws MyNull {
+        Date nextStartDay = MyCalen.getNextDayofWeek(23, 57, DayOfWeek.SUNDAY);
+        StringBuilder stringBuilder = new StringBuilder();
+        ThreadPoolTaskScheduler threadPoolTaskScheduler = new ThreadConfig().threadPoolTaskScheduler();
+        long delay = TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY_HOURS * 7);
+
+        threadPoolTaskScheduler.scheduleWithFixedDelay(new WeekPCStats(), nextStartDay, delay);
+        stringBuilder.append(nextStartDay.toString()).append(" WeekPCStats() start |  ");
+
+        nextStartDay = new Date(nextStartDay.getTime() - TimeUnit.HOURS.toMillis(1));
+        threadPoolTaskScheduler.scheduleWithFixedDelay(new MailIISLogsCleaner(), nextStartDay, delay);
+        stringBuilder.append(nextStartDay.toString()).append(" MailIISLogsCleaner() start. ");
+
+        String logStr = stringBuilder.toString();
+        LOGGER.warn(logStr);
+        String s = logStr + " " +
+            checkDay() +
+            iisLogSize() + " " +
+            AppComponents.versionInfo();
+        SystemTrayHelper.getTrayIcon().displayMessage("Networker Starts", s, TrayIcon.MessageType.INFO);
     }
 
     private static String checkDay() {
@@ -182,13 +189,13 @@ public class AppInfoOnLoad implements Runnable {
         return msg;
     }
 
-    static String iisLogSize() {
+    static String iisLogSize() throws MyNull {
         Path iisLogsDir = Paths.get("\\\\srv-mail3.eatmeat.ru\\c$\\inetpub\\logs\\LogFiles\\W3SVC1\\");
         long totalSize = 0L;
         for(File x : iisLogsDir.toFile().listFiles()){
             totalSize = totalSize + x.length();
         }
-        return totalSize / ConstantsFor.MBYTE + " MB of " + iisLogsDir + " IIS Logs ";
+        return totalSize / ConstantsFor.MBYTE + " MB of " + iisLogsDir + " IIS Logs\n";
     }
 
     /**

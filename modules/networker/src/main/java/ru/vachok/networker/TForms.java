@@ -7,7 +7,6 @@ import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.ADUser;
 import ru.vachok.networker.componentsrepo.AppComponents;
-import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.mailserver.MailRule;
 
 import javax.mail.Address;
@@ -26,10 +25,7 @@ import java.util.concurrent.ConcurrentMap;
  @since 06.09.2018 (9:33) */
 public class TForms {
 
-    /*Fields*/
     private static final Logger LOGGER = AppComponents.getLogger();
-
-    private static final ThreadConfig THREAD_CONFIG = new ThreadConfig();
 
     private static final String LINE_CLASS = " line, class: ";
 
@@ -40,6 +36,10 @@ public class TForms {
     private static final String N_S = "\n";
 
     private static final String BR_S = "<br>";
+
+    private final String STR_DISASTER = " occurred disaster!<br>";
+
+    private final String STR_METHFILE = " method.<br>File: ";
 
     public String fromArray(Map<String, String> stringStringMap) {
         List<String> list = new ArrayList<>();
@@ -118,9 +118,9 @@ public class TForms {
                     .getClassName())
                 .append(LINE_CLASS)
                 .append(stackTraceElement.getClassName())
-                .append(" occurred disaster!<br>")
+                .append(STR_DISASTER)
                 .append(stackTraceElement.getMethodName())
-                .append(" method.<br>File: ")
+                .append(STR_METHFILE)
                 .append(stackTraceElement.getFileName());
         }
         if(!br){
@@ -478,6 +478,39 @@ public class TForms {
                 .append(str).append(x.toString())
                 .append(str1).append(y.toString()).append(N_S);
         });
+        if(b){
+            return brStringBuilder.toString();
+        }
+        else{
+            return nStringBuilder.toString();
+        }
+    }
+
+    public String fromArray(Throwable throwable, boolean b) {
+        brStringBuilder.append("<p>");
+        nStringBuilder.append("\n");
+        for(StackTraceElement stackTraceElement : throwable.getStackTrace()){
+            nStringBuilder
+                .append("At ")
+                .append(stackTraceElement
+                    .getClassName())
+                .append(LINE_CLASS)
+                .append(stackTraceElement.getClassName())
+                .append(" occurred disaster!\n")
+                .append(stackTraceElement.getMethodName())
+                .append(" method.\nFile: ")
+                .append(stackTraceElement.getFileName());
+            brStringBuilder
+                .append("At ")
+                .append(stackTraceElement
+                    .getClassName())
+                .append(LINE_CLASS)
+                .append(stackTraceElement.getClassName())
+                .append(STR_DISASTER)
+                .append(stackTraceElement.getMethodName())
+                .append(STR_METHFILE)
+                .append(stackTraceElement.getFileName());
+        }
         if(b){
             return brStringBuilder.toString();
         }

@@ -8,12 +8,14 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.accesscontrol.common.ArchivesAutoCleaner;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.ThreadConfig;
+import ru.vachok.networker.errorexceptions.MyNull;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.MyServer;
 import ru.vachok.networker.services.DBMessenger;
 import ru.vachok.networker.services.Putty;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -252,11 +254,16 @@ public final class SystemTrayHelper {
 
         MenuItem logToFilesystem = new MenuItem();
         logToFilesystem.setLabel("Get some info");
-        logToFilesystem.addActionListener(e -> {
-            new MessageSwing().infoNoTitles(ConstantsFor.getUpTime() + "\n" +
-                Thread.activeCount() + " threads " + ConstantsFor.showMem() + AppInfoOnLoad.iisLogSize() + "\n" +
-                AppComponents.versionInfo().toString() + "\n" +
-                new TForms().fromArray(ConstantsFor.getProps()));
+        logToFilesystem.addActionListener((ActionEvent e) -> {
+            try{
+                new MessageSwing().infoNoTitles(ConstantsFor.getUpTime() + "\n" +
+                    Thread.activeCount() + " threads " + ConstantsFor.showMem() + AppInfoOnLoad.iisLogSize() + "\n" +
+                    AppComponents.versionInfo().toString() + "\n" +
+                    new TForms().fromArray(ConstantsFor.getProps()));
+            }
+            catch(MyNull myNull){
+                LOGGER.error(myNull.getMessage(), myNull);
+            }
         });
         popupMenu.add(logToFilesystem);
     }
