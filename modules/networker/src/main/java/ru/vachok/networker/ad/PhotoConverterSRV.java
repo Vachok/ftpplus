@@ -158,7 +158,7 @@ public class PhotoConverterSRV {
 
     private Set<String> samAccFromDB() {
         Set<String> samAccounts = new HashSet<>();
-        Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.DB_PREFIX + "velkom");
+        Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.DB_PREFIX + ConstantsFor.STR_VELKOM);
         try (PreparedStatement p = c.prepareStatement("select * from u0466446_velkom.adusers");
              ResultSet r = p.executeQuery()) {
             while (r.next()) {

@@ -46,7 +46,7 @@ public class FileCleanerCTRL {
         model.addAttribute(ConstantsFor.ATT_TITLE, startPath);
         model.addAttribute("call", callMe());
         model.addAttribute("header", new PageFooter().getHeaderUtext());
-        model.addAttribute("footer", new PageFooter().getFooterUtext());
+        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
         return "cleaner";
     }
 

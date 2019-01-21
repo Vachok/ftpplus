@@ -4,11 +4,10 @@ package ru.vachok.networker.services;
 import org.apache.commons.net.ntp.TimeInfo;
 import org.slf4j.Logger;
 import ru.vachok.networker.AppInfoOnLoad;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
 
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.*;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
@@ -19,6 +18,8 @@ import java.util.concurrent.TimeUnit;
 
  @since 09.12.2018 (15:26) */
 public abstract class MyCalen {
+
+    private static final String DATE_RETURNED = " date returned";
 
     private MyCalen() {
 
@@ -45,49 +46,6 @@ public abstract class MyCalen {
      {@link TimeChecker#call()}
      */
     private static TimeInfo timeInfo = TIME_CHECKER.call();
-
-    /**
-     Дата запуска common scanner
-     <p>
-     Usage: {@link #toStringS()}
-
-     @param hourNeed час
-     @param minNeed  минута
-     @return new {@link Date} следующая суббота 0:01
-     */
-    private static Date getNextSat(int hourNeed, int minNeed) {
-        final long stArt = System.currentTimeMillis();
-        Calendar.Builder builder = new Calendar.Builder();
-        LocalDate localDate = LocalDate.now();
-        DayOfWeek satDay = DayOfWeek.SATURDAY;
-        if (localDate.getDayOfWeek().toString().equalsIgnoreCase(satDay.toString())) {
-            timeInfo.computeDetails();
-            return new Date(timeInfo.getReturnTime() + TimeUnit.MINUTES.toMillis(14));
-        } else {
-            int toSat = satDay.getValue() - localDate.getDayOfWeek().getValue();
-            Date retDate = builder
-                .setDate(
-                    localDate.getYear(),
-                    localDate.getMonth().getValue() - 1,
-                    localDate.getDayOfMonth() + toSat)
-                .setTimeOfDay(hourNeed, minNeed, 0).build().getTime();
-            timeInfo.computeDetails();
-
-            String msgTimeSp = new StringBuilder()
-                .append(retDate.toString())
-                .append(" ")
-                .append(toSat)
-                .append("\nTimeChecker information: ")
-                .append(timeInfo.getMessage())
-                .append("\nMyCalen.getNextSat method. ")
-                .append((float) (System.currentTimeMillis() - stArt) / 1000)
-                .append(" sec spend\n")
-                .append(retDate.toString())
-                .append(" date returned").toString();
-            LOGGER.info(msgTimeSp);
-            return retDate;
-        }
-    }
 
     /**
      Проверка работоспособности.
@@ -123,8 +81,8 @@ public abstract class MyCalen {
         if(dayOfWeek.equals(DayOfWeek.MONDAY)){
             toDate = dayOfWeek.getValue() + 7;
         }
-        if (localDate.getDayOfWeek().equals(dayOfWeek)) {
-            return new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(14));
+        if(localDate.getDayOfWeek().equals(dayOfWeek) && LocalTime.now().isBefore(LocalTime.parse(String.format("%02d", hourNeed) + ":01"))){
+            return new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY));
         } else {
             int toDateDays = Math.abs(toDate - localDate.getDayOfWeek().getValue());
             cBuilder
@@ -141,7 +99,51 @@ public abstract class MyCalen {
                 .append(rDiff)
                 .append(" System.currentTimeMillis()-timeInfo.getReturnTime()\n")
                 .append(retDate.toString())
-                .append(" date returned").toString();
+                .append(DATE_RETURNED).toString();
+            LOGGER.info(msgTimeSp);
+            return retDate;
+        }
+    }
+
+    /**
+     Дата запуска common scanner
+     <p>
+     Usage: {@link #toStringS()}
+
+     @param hourNeed час
+     @param minNeed  минута
+     @return new {@link Date} следующая суббота 0:01
+     */
+    private static Date getNextSat(int hourNeed, int minNeed) {
+        final long stArt = System.currentTimeMillis();
+        Calendar.Builder builder = new Calendar.Builder();
+        LocalDate localDate = LocalDate.now();
+        DayOfWeek satDay = DayOfWeek.SATURDAY;
+        if(localDate.getDayOfWeek().toString().equalsIgnoreCase(satDay.toString())){
+            timeInfo.computeDetails();
+            return new Date(timeInfo.getReturnTime() + TimeUnit.MINUTES.toMillis(14));
+        }
+        else{
+            int toSat = satDay.getValue() - localDate.getDayOfWeek().getValue();
+            Date retDate = builder
+                .setDate(
+                    localDate.getYear(),
+                    localDate.getMonth().getValue() - 1,
+                    localDate.getDayOfMonth() + toSat)
+                .setTimeOfDay(hourNeed, minNeed, 0).build().getTime();
+            timeInfo.computeDetails();
+
+            String msgTimeSp = new StringBuilder()
+                .append(retDate.toString())
+                .append(" ")
+                .append(toSat)
+                .append("\nTimeChecker information: ")
+                .append(timeInfo.getMessage())
+                .append("\nMyCalen.getNextSat method. ")
+                .append(( float ) (System.currentTimeMillis() - stArt) / 1000)
+                .append(" sec spend\n")
+                .append(retDate.toString())
+                .append(DATE_RETURNED).toString();
             LOGGER.info(msgTimeSp);
             return retDate;
         }

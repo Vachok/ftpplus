@@ -9,7 +9,7 @@ import ru.vachok.networker.ConstantsFor;
 /**
  @since 10.09.2018 (11:35) */
 @Component (ConstantsFor.PFLISTS)
-@Scope("singleton")
+@Scope (ConstantsFor.SINGLETON)
 public class PfLists {
 
     public String getVipNet() {

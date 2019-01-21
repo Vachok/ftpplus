@@ -290,17 +290,17 @@ public class NetScanCtr {
         } catch (ArrayIndexOutOfBoundsException e) {
             return e.getMessage();
         }
-        try (Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.DB_PREFIX + "velkom");
-             PreparedStatement p = c.prepareStatement("select * from pcuserauto where userName like ? ORDER BY whenQueried DESC LIMIT 0, 20")) {
+        try(Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.DB_PREFIX + ConstantsFor.STR_VELKOM);
+            PreparedStatement p = c.prepareStatement("select * from pcuserauto where userName like ? ORDER BY whenQueried DESC LIMIT 0, 20")) {
             p.setString(1, "%" + userInputRaw + "%");
             try (ResultSet r = p.executeQuery()) {
                 StringBuilder stringBuilder = new StringBuilder();
                 String headER = "<h3><center>LAST 20 USER PCs</center></h3>";
                 stringBuilder.append(headER);
                 while (r.next()) {
-                    String pcName = r.getString("pcName");
+                    String pcName = r.getString(ConstantsFor.DB_FIELD_PCNAME);
                     String returnER = "<br><center><a href=\"/ad?" + pcName.split("\\Q.\\E")[0] + "\">" + pcName + "</a> set: " +
-                        r.getString("whenQueried") + "</center>";
+                        r.getString(NetScannerSvc.DB_FIELD_WHENQUERIED) + "</center>";
                     stringBuilder.append(returnER);
                 }
                 return stringBuilder.toString();

@@ -45,7 +45,7 @@ public class CalculateCTRL {
         model.addAttribute(ConstantsFor.ATT_TITLE, "Calculator-POS");
         model.addAttribute(ConstantsFor.STR_CALCULATOR, simpleCalculator);
         model.addAttribute(ConstantsFor.ATT_RESULT, simpleCalculator.getStampFromDate(workPos));
-        model.addAttribute("footer", new PageFooter().getFooterUtext());
+        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
         return "calculate";
     }
 

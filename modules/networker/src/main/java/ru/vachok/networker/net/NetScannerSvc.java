@@ -50,6 +50,11 @@ public class NetScannerSvc {
 
     private static final int DOPC = 250;
 
+    private static final Properties LOC_PROPS = ConstantsFor.getProps();
+    /**
+     new {@link HashSet}
+     */
+    private static final Set<String> PC_NAMES = new HashSet<>(Integer.parseInt(LOC_PROPS.getOrDefault(ConstantsFor.PR_TOTPC, "318").toString()));
     private static final int PPPC = 70;
 
     /**
@@ -61,6 +66,20 @@ public class NetScannerSvc {
      Префиксы имён ПК Велком.
      */
     private static final String[] PC_PREFIXES = {"do", "pp", "td", "no", "a"};
+
+    /**
+     <i>Boiler Plate</i>
+     */
+    private static final String WRITE_DB = ".writeDB";
+
+    private static final String ONLINES_CHECK = ".onLinesCheck";
+
+    private static final String GET_INFO_FROM_DB = ".getInfoFromDB";
+
+    private static final String ONLINE_NOW = "OnlineNow";
+
+    public static final int N_THREADS = 333;
+
 
     /**
      /netscan POST форма
@@ -75,6 +94,7 @@ public class NetScannerSvc {
      */
     private static final Logger LOGGER = AppComponents.getLogger();
 
+    public static final String DB_FIELD_WHENQUERIED = "whenQueried";
 
     /**
      {@link RegRuMysql#getDefaultConnection(String)}
@@ -86,15 +106,11 @@ public class NetScannerSvc {
      */
     private static final List<ADComputer> AD_COMPUTERS = AppComponents.adComputers();
 
-    /**
-     new {@link HashSet}
-     */
-    private static final Set<String> PC_NAMES = new HashSet<>();
 
     /**
      new {@link NetScannerSvc}
      */
-    private static volatile NetScannerSvc netScannerSvc;
+    private static volatile NetScannerSvc netScannerSvc = null;
 
     /**
      Компьютеры онлайн
@@ -161,7 +177,7 @@ public class NetScannerSvc {
                 List<String> timeNow = new ArrayList<>();
                 List<Integer> integersOff = new ArrayList<>();
                 while (resultSet.next()) {
-                    int onlineNow = resultSet.getInt("OnlineNow");
+                    int onlineNow = resultSet.getInt(ONLINE_NOW);
                     if (onlineNow == 1) {
                         timeNow.add(resultSet.getString("TimeNow"));
                     } else {
@@ -192,10 +208,45 @@ public class NetScannerSvc {
                 setThePc(thePcWithDBInfo);
                 ActDirectoryCTRL.setInputWithInfoFromDB(thePcWithDBInfo);
             }
-        } catch (SQLException | IndexOutOfBoundsException e) {
+        }
+        catch(SQLException e){
+            reconnectToDB();
+            FileSystemWorker.recFile(
+                this.getClass().getSimpleName() +
+                    GET_INFO_FROM_DB + ConstantsFor.LOG, Collections.singletonList(new TForms().fromArray(e, false)));
+            setThePc(e.getMessage());
+        }
+        catch(IndexOutOfBoundsException e){
+            FileSystemWorker.recFile(
+                this.getClass().getSimpleName() +
+                    GET_INFO_FROM_DB + ConstantsFor.LOG, Collections.singletonList(new TForms().fromArray(e, false)));
             setThePc(e.getMessage());
         }
         return "ok";
+    }
+
+    /**
+     Реконнект к БД
+     */
+    public static void reconnectToDB() {
+        final long stArt = System.currentTimeMillis();
+        Connection connection = new RegRuMysql().getDefaultConnection(ConstantsFor.U_0466446_VELKOM);
+        try{
+            connection.clearWarnings();
+        }
+        catch(SQLException e){
+            FileSystemWorker.recFile(
+                NetScannerSvc.class.getSimpleName() + ".reconnectToDB" + ConstantsFor.LOG,
+                Collections.singletonList(new TForms().fromArray(e, false)));
+            LOGGER.error(e.getMessage(), e);
+        }
+        c = connection;
+        String msgTimeSp = new StringBuilder()
+            .append("NetScannerSvc.reconnectToDB: ")
+            .append(( float ) (System.currentTimeMillis() - stArt) / 1000)
+            .append(ConstantsFor.STR_SEC_SPEND)
+            .toString();
+        LOGGER.info(msgTimeSp);
     }
 
     /**
@@ -254,13 +305,13 @@ public class NetScannerSvc {
      */
     @SuppressWarnings("OverlyLongLambda")
     public void getPCsAsync() {
-        Properties p = ConstantsFor.getProps();
-        ExecutorService eServ = Executors.unconfigurableExecutorService(Executors.newFixedThreadPool(Integer.parseInt(p.getOrDefault(ConstantsFor.PR_TOTPC, "318").toString())));
+        ExecutorService eServ = Executors.
+            unconfigurableExecutorService(Executors.
+                newFixedThreadPool(N_THREADS));
         final long stArt = System.currentTimeMillis();
         List<String> toFileList = new ArrayList<>();
         AtomicReference<String> msg = new AtomicReference<>("");
         eServ.submit(() -> {
-            FileSystemWorker.recFile(this.getClass().getSimpleName() + ".before", Collections.singletonList(ConstantsFor.showMem()));
             msg.set(new StringBuilder()
                 .append("Thread ")
                 .append(Thread.currentThread().getId())
@@ -282,7 +333,7 @@ public class NetScannerSvc {
                 Thread.currentThread().setName("mailMSG");
                 MessageToUser mailMSG = new MessageCons();
                 float upTime = (float) (TimeUnit.MILLISECONDS
-                    .toSeconds(System.currentTimeMillis() - ConstantsFor.START_STAMP)) / 60f;
+                                            .toSeconds(System.currentTimeMillis() - ConstantsFor.START_STAMP)) / ConstantsFor.ONE_HOUR_IN_MIN;
                 Map<String, String> lastLogs = new AppComponents().getLastLogs();
                 String retLogs = new TForms().fromArray(lastLogs);
                 String fromArray = new TForms().fromArray(ConstantsFor.COMPNAME_USERS_MAP, false);
@@ -297,20 +348,20 @@ public class NetScannerSvc {
                     .append(psUser).append("\n").append(fromArray).toString();
                 mailMSG.info(
                     this.getClass().getSimpleName() + " online: " + onLinePCs,
-                    upTime + " min uptime. " + thisPCStr + " COMPNAME_USERS_MAP size", s1);
+                    upTime + " min uptime. " + thisPCStr + ConstantsFor.COMPNAME_USERS_MAP_SIZE, s1);
                 //noinspection SpellCheckingInspection
                 toFileList.add(s1);
                 String s = Thread.activeCount() + " active threads now.";
                 LOGGER.warn(s);
                 this.onLinePCs = 0;
+                ConstantsFor.saveProps(LOC_PROPS);
+                toFileList.add(new TForms().fromArray(LOC_PROPS, false));
                 toFileList.add(ConstantsFor.showMem());
-                FileSystemWorker.recFile(this.getClass().getSimpleName() + ".after", toFileList);
+                String msgTimeSp = "NetScannerSvc.getPCsAsync method. " + ( float ) (System.currentTimeMillis() - stArt) / 1000 + ConstantsFor.STR_SEC_SPEND;
+                toFileList.add(msgTimeSp);
+                FileSystemWorker.recFile(this.getClass().getSimpleName() + ".getPCsAsync" + ConstantsFor.LOG, toFileList);
                 eServ.shutdown();
             }).start();
-            String msgTimeSp = "NetScannerSvc.getPCsAsync method. " + ( float ) (System.currentTimeMillis() - stArt) / 1000 + ConstantsFor.STR_SEC_SPEND;
-            toFileList.add(msgTimeSp);
-            LOGGER.warn(msgTimeSp);
-            ConstantsFor.saveProps(p);
         });
     }
 
@@ -434,6 +485,7 @@ public class NetScannerSvc {
     @SuppressWarnings({"OverlyComplexMethod", "OverlyLongLambda", "OverlyLongMethod"})
     private static String writeDB() {
         List<String> list = new ArrayList<>();
+
         try (PreparedStatement p = c.prepareStatement("insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow) values (?,?,?,?)")) {
             NetScannerSvc.PC_NAMES.stream().sorted().forEach(x -> {
                 String pcSerment = "Я не знаю...";
@@ -506,14 +558,17 @@ public class NetScannerSvc {
                     p.executeUpdate();
                     list.add(x1 + " " + x2 + " " + pcSerment + " " + onLine);
                 } catch (SQLException e) {
-                    LOGGER.error(e.getMessage(), e);
-                    c = new RegRuMysql().getDefaultConnection(DB_NAME);
+                    reconnectToDB();
+                    FileSystemWorker.recFile(
+                        NetScannerSvc.class.getSimpleName() + WRITE_DB + ConstantsFor.LOG,
+                        Collections.singletonList(new TForms().fromArray(e, false)));
                 }
             });
             return new TForms().fromArray(list, true);
         } catch (SQLException e) {
-            LOGGER.error(e.getMessage(), e);
-            c = new RegRuMysql().getDefaultConnection(DB_NAME);
+            FileSystemWorker.recFile(
+                NetScannerSvc.class.getSimpleName() +
+                    WRITE_DB + ConstantsFor.LOG, Collections.singletonList(new TForms().fromArray(e, false)));
             return e.getMessage();
         }
     }
@@ -544,6 +599,47 @@ public class NetScannerSvc {
     }
 
     /**
+     <b>Проверяет есть ли в БД имя пользователя</b>
+
+     @param sql    запрос
+     @param pcName имя ПК
+     @return имя юзера, если есть.
+     */
+    @SuppressWarnings ("MethodWithMultipleLoops")
+    private String offLinesCheckUser(String sql, String pcName) {
+        StringBuilder stringBuilder = new StringBuilder();
+        try(PreparedStatement p = c.prepareStatement(sql);
+            PreparedStatement p1 = c.prepareStatement(sql.replaceAll(ConstantsFor.STR_PCUSER, ConstantsFor.STR_PCUSERAUTO))){
+            p.setString(1, pcName);
+            p1.setString(1, pcName);
+            try(ResultSet resultSet = p.executeQuery();
+                ResultSet resultSet1 = p1.executeQuery()){
+                while(resultSet.next()){
+                    stringBuilder.append("<b>")
+                        .append(resultSet.getString(ConstantsFor.DB_FIELD_USER).trim()).append("</b> (time: ")
+                        .append(resultSet.getString(DB_FIELD_WHENQUERIED)).append(")");
+                }
+                while(resultSet1.next()){
+                    if(resultSet1.last()){
+                        return stringBuilder
+                            .append("    (AutoResolved name: ")
+                            .append(resultSet1.getString(ConstantsFor.DB_FIELD_USER).trim()).append(" (time: ")
+                            .append(resultSet1.getString(DB_FIELD_WHENQUERIED)).append("))").toString();
+                    }
+                }
+            }
+        }
+        catch(SQLException e){
+            FileSystemWorker.recFile(
+                NetScannerSvc.class.getSimpleName() + "offLinesCheckUser" + ConstantsFor.LOG,
+                Collections.singletonList(new TForms().fromArray(e, false)));
+            stringBuilder.append(e.getMessage());
+            reconnectToDB();
+        }
+        return "<font color=\"orange\">EXCEPTION in SQL dropped. <br>" + stringBuilder.toString() + "</font>";
+    }
+
+    /**
      Проверяет имя пользователя на ПК онлайн
 
      @param sql    запрос
@@ -552,7 +648,7 @@ public class NetScannerSvc {
      @see #getSomeMore(String, boolean)
      */
     private String onLinesCheck(String sql, String pcName) {
-        PCUserResolver pcUserResolver = new PCUserResolver();
+        PCUserResolver pcUserResolver = PCUserResolver.getPcUserResolver(c);
         List<Integer> onLine = new ArrayList<>();
         List<Integer> offLine = new ArrayList<>();
         StringBuilder stringBuilder = new StringBuilder();
@@ -563,7 +659,7 @@ public class NetScannerSvc {
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
                     ADComputer adComputer = new ADComputer();
-                    int onlineNow = resultSet.getInt("OnlineNow");
+                    int onlineNow = resultSet.getInt(ONLINE_NOW);
                     if (onlineNow == 1) {
                         onLine.add(onlineNow);
                         adComputer.setDnsHostName(pcName);
@@ -574,7 +670,18 @@ public class NetScannerSvc {
                     AD_COMPUTERS.add(adComputer);
                 }
             }
-        } catch (SQLException | NullPointerException e) {
+        }
+        catch(SQLException e){
+            reconnectToDB();
+            FileSystemWorker.recFile(
+                NetScannerSvc.class.getSimpleName() + ONLINES_CHECK + ConstantsFor.LOG,
+                Collections.singletonList(new TForms().fromArray(e, false)));
+            return e.getMessage();
+        }
+        catch(NullPointerException e){
+            FileSystemWorker.recFile(
+                NetScannerSvc.class.getSimpleName() + ONLINES_CHECK + ConstantsFor.LOG,
+                Collections.singletonList(new TForms().fromArray(e, false)));
             return e.getMessage();
         }
         return stringBuilder
@@ -582,43 +689,6 @@ public class NetScannerSvc {
             .append(" offline times and ")
             .append(onLine.size())
             .append(" online times.").toString();
-    }
-
-    /**
-     <b>Проверяет есть ли в БД имя пользователя</b>
-
-     @param sql    запрос
-     @param pcName имя ПК
-     @return имя юзера, если есть.
-     */
-    @SuppressWarnings("MethodWithMultipleLoops")
-    private String offLinesCheckUser(String sql, String pcName) {
-        StringBuilder stringBuilder = new StringBuilder();
-        try (PreparedStatement p = c.prepareStatement(sql);
-             PreparedStatement p1 = c.prepareStatement(sql.replaceAll("pcuser", "pcuserauto"))) {
-            p.setString(1, pcName);
-            p1.setString(1, pcName);
-            try (ResultSet resultSet = p.executeQuery();
-                 ResultSet resultSet1 = p1.executeQuery()) {
-                while (resultSet.next()) {
-                    stringBuilder.append("<b>")
-                        .append(resultSet.getString("userName").trim()).append("</b> (time: ")
-                        .append(resultSet.getString("whenQueried")).append(")");
-                }
-                while (resultSet1.next()) {
-                    if (resultSet1.last()) {
-                        return stringBuilder
-                            .append("    (AutoResolved name: ")
-                            .append(resultSet1.getString("userName").trim()).append(" (time: ")
-                            .append(resultSet1.getString("whenQueried")).append("))").toString();
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            stringBuilder.append(e.getMessage());
-
-        }
-        return "<font color=\"orange\">EXCEPTION in SQL dropped. <br>" + stringBuilder.toString() + "</font>";
     }
 
     /**
@@ -692,4 +762,18 @@ public class NetScannerSvc {
         FileSystemWorker.recFile("pcautodis.txt", readFileAsList.parallelStream().distinct());
     }
 
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("NetScannerSvc{");
+        sb.append("DB_NAME='").append(DB_NAME).append('\'');
+        sb.append(", GET_INFO_FROM_DB='").append(GET_INFO_FROM_DB).append('\'');
+        sb.append(", ONLINE_NOW='").append(ONLINE_NOW).append('\'');
+        sb.append(", onLinePCs=").append(onLinePCs);
+        sb.append(", ONLINES_CHECK='").append(ONLINES_CHECK).append('\'');
+        sb.append(", STR_NETSCANNERSVC='").append(STR_NETSCANNERSVC).append('\'');
+        sb.append(", thePc='").append(thePc).append('\'');
+        sb.append(", WRITE_DB='").append(WRITE_DB).append('\'');
+        sb.append('}');
+        return sb.toString();
+    }
 }

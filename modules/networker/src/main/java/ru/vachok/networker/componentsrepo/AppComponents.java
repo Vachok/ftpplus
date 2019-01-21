@@ -13,7 +13,9 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.accesscontrol.SshActs;
 import ru.vachok.networker.accesscontrol.common.CommonScan2YOlder;
-import ru.vachok.networker.ad.*;
+import ru.vachok.networker.ad.ADComputer;
+import ru.vachok.networker.ad.ADSrv;
+import ru.vachok.networker.ad.ADUser;
 import ru.vachok.networker.mailserver.RuleSet;
 import ru.vachok.networker.services.SimpleCalculator;
 
@@ -58,7 +60,7 @@ public class AppComponents {
      @return new {@link SshActs}
      */
     @Bean
-    @Scope ("singleton")
+    @Scope (ConstantsFor.SINGLETON)
     public SshActs sshActs() {
         return new SshActs();
     }
@@ -72,7 +74,7 @@ public class AppComponents {
      @return {@link #lastNetScan()}.getNetWork
      */
     @Bean
-    @Scope("singleton")
+    @Scope (ConstantsFor.SINGLETON)
     public static ConcurrentMap<String, Boolean> lastNetScanMap() {
         return lastNetScan().getNetWork();
     }
@@ -89,7 +91,7 @@ public class AppComponents {
      @return new {@link VersionInfo}
      */
     @Bean("versioninfo")
-    @Scope("singleton")
+    @Scope (ConstantsFor.SINGLETON)
     public static VersionInfo versionInfo() {
         return new VersionInfo();
     }
@@ -114,7 +116,7 @@ public class AppComponents {
      @return new {@link CommonScan2YOlder}
      */
     @Bean
-    @Scope("singleton")
+    @Scope (ConstantsFor.SINGLETON)
     public static CommonScan2YOlder archivesSorter() {
         return new CommonScan2YOlder();
     }
@@ -154,14 +156,6 @@ public class AppComponents {
             //
         }
         return lastLogsList;
-    }
-
-    /**
-     @return {@link PCUserResolver#getPcUserResolver()}
-     */
-    @Bean
-    public static PCUserResolver pcUserResolver() {
-        return PCUserResolver.getPcUserResolver();
     }
 
     @Bean

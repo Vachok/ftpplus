@@ -465,4 +465,24 @@ public class TForms {
             return false;
         }
     }
+
+    public String fromArray(Properties p, boolean b) {
+        brStringBuilder.append("<p>");
+        p.forEach((x, y) -> {
+            String str = "Property: ";
+            String str1 = ", value: ";
+            brStringBuilder
+                .append(str).append(x.toString())
+                .append(str1).append(y.toString()).append(BR_S);
+            nStringBuilder
+                .append(str).append(x.toString())
+                .append(str1).append(y.toString()).append(N_S);
+        });
+        if(b){
+            return brStringBuilder.toString();
+        }
+        else{
+            return nStringBuilder.toString();
+        }
+    }
 }

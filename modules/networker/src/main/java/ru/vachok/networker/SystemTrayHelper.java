@@ -87,7 +87,7 @@ public final class SystemTrayHelper {
     @SuppressWarnings ("FeatureEnvy")
     static void addTray(String iconFileName) {
         boolean myPC;
-        AppInfoOnLoad.runCommonScan(false);
+        AppInfoOnLoad.runCommonScan();
         myPC = THIS_PC.toLowerCase().contains(ConstantsFor.NO0027) || THIS_PC.equalsIgnoreCase("home");
         if(iconFileName==null){
             iconFileName = "icons8-ip-адрес-15.png";
@@ -247,7 +247,10 @@ public final class SystemTrayHelper {
         MenuItem logToFilesystem = new MenuItem();
         logToFilesystem.setLabel("Get some info");
         logToFilesystem.addActionListener(e -> {
-            new MessageSwing().infoNoTitles(ConstantsFor.getUpTime() + "\n" + Thread.activeCount() + " threads " + ConstantsFor.showMem() + AppInfoOnLoad.iisLogSize());
+            new MessageSwing().infoNoTitles(ConstantsFor.getUpTime() + "\n" +
+                Thread.activeCount() + " threads " + ConstantsFor.showMem() + AppInfoOnLoad.iisLogSize() + "\n" +
+                AppComponents.versionInfo().toString() + "\n" +
+                new TForms().fromArray(ConstantsFor.getProps()));
         });
         popupMenu.add(logToFilesystem);
     }

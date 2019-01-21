@@ -15,10 +15,8 @@ import ru.vachok.networker.net.NetScannerSvc;
 
 import java.io.*;
 import java.net.InetAddress;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
+import java.util.Date;
 import java.util.*;
 
 
@@ -58,7 +56,7 @@ public class ADSrv implements Runnable {
         List<String> ownerRights = adUser.getOwnerRights();
         StringBuilder stringBuilder = new StringBuilder();
         String sql = "select * from common where users like ? LIMIT 0, 300";
-        try (Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.DB_PREFIX + "velkom")) {
+        try(Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.DB_PREFIX + ConstantsFor.STR_VELKOM)){
             try (PreparedStatement preparedStatement = c.prepareStatement(sql)) {
                 preparedStatement.setString(1, "%" + users + "%");
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
@@ -227,7 +225,8 @@ public class ADSrv implements Runnable {
      @throws IOException {@link InetAddress}.getByName(queryString + ".eatmeat.ru").isReachable(500))
      */
     String getDetails(String queryString) throws IOException {
-        if(InetAddress.getByName(queryString + ConstantsFor.EATMEAT_RU).isReachable(500)){
+        PCUserResolver pcUserResolver = PCUserResolver.getPcUserResolver(new RegRuMysql().getDefaultConnection(ConstantsFor.U_0466446_VELKOM));
+        if(InetAddress.getByName(queryString + ConstantsFor.EATMEAT_RU).isReachable(ConstantsFor.TIMEOUT_650)){
             StringBuilder stringBuilder = new StringBuilder();
             stringBuilder.append("<p>   Более подробно про ПК:<br>");
             File filesAsFile = new File(new StringBuilder()
@@ -251,7 +250,8 @@ public class ADSrv implements Runnable {
             }
             ConstantsFor.COMPNAME_USERS_MAP.put(s1, filesAsFile);
             try {
-                new PCUserResolver().recToDB(queryString + ConstantsFor.EATMEAT_RU, s1.split(" ")[1]);
+
+                pcUserResolver.recToDB(queryString + ConstantsFor.EATMEAT_RU, s1.split(" ")[1]);
             } catch (ArrayIndexOutOfBoundsException ignore) {
                 //
             }
@@ -259,11 +259,11 @@ public class ADSrv implements Runnable {
                 .append(s1)
                 .append("<br>")
                 .append(ConstantsFor.COMPNAME_USERS_MAP.size())
-                .append(" COMPNAME_USERS_MAP size")
+                .append(ConstantsFor.COMPNAME_USERS_MAP_SIZE)
                 .append("</p></b>");
             return stringBuilder.toString();
         } else {
-            return new PCUserResolver().offNowGetU(queryString);
+            return pcUserResolver.offNowGetU(queryString);
         }
     }
 

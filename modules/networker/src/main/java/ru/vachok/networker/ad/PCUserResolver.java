@@ -6,7 +6,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetScannerSvc;
 
 import java.io.*;
@@ -16,6 +18,8 @@ import java.sql.*;
 import java.util.Date;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
 
@@ -27,12 +31,17 @@ import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
 @Service
 public class PCUserResolver implements Thread.UncaughtExceptionHandler {
 
-    /*Fields*/
-
     /**
      {@link Logger}
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(PCUserResolver.class.getSimpleName());
+
+    private static final String REC_AUTO_DB = ".recAutoDB";
+
+    /**
+     <i>private cons</i>
+     */
+    public static PCUserResolver pcUserResolver = new PCUserResolver();
 
     /**
      {@link AppComponents#lastNetScan()}.getNetWork()
@@ -40,53 +49,13 @@ public class PCUserResolver implements Thread.UncaughtExceptionHandler {
     private static Map<String, Boolean> lastScanMap = AppComponents.lastNetScan().getNetWork();
 
     /**
-     <i>private cons</i>
-     */
-    private static PCUserResolver pcUserResolver = new PCUserResolver();
-
-    /**
      {@link RegRuMysql#getDefaultConnection(String)} - u0466446_velkom
      */
-    private static Connection connection;
-
-    static {
-        try {
-            connection = new RegRuMysql().getDefaultConnection(ConstantsFor.U_0466446_VELKOM);
-        } catch (Exception e) {
-            Throwable[] suppressed = e.getSuppressed();
-            for (Throwable t : suppressed) {
-                LOGGER.warn(t.getMessage(), t);
-            }
-        }
-    }
+    private static Connection connection = null;
 
     private String lastFileUse;
 
-    /**
-     @return {@link #pcUserResolver}
-     @see AppComponents#pcUserResolver()
-     */
-    public static PCUserResolver getPcUserResolver() {
-        Thread.currentThread().setName(PCUserResolver.class.getSimpleName());
-        Thread.currentThread().checkAccess();
-        Thread.currentThread().getThreadGroup().checkAccess();
-        return pcUserResolver;
-    }
-
-    /**
-     Method invoked when the given thread terminates due to the
-     given uncaught exception.
-     <p>Any exception thrown by this method will be ignored by the
-     Java Virtual Machine.  @param t the thread
-
-     @param e the exception
-     */
-    @Override
-    public synchronized void uncaughtException(Thread t, Throwable e) {
-        t.checkAccess();
-        t.interrupt();
-        String msg = t.toString() + "\n" + e.getMessage();
-        LOGGER.info(msg);
+    private PCUserResolver() {
     }
 
     /**
@@ -134,6 +103,50 @@ public class PCUserResolver implements Thread.UncaughtExceptionHandler {
     }
 
     /**
+     Записывает инфо о пльзователе в <b>pcuserauto</b> <br> Записи добавляются к уже имеющимся.
+     <p>
+     Usages: {@link PCUserResolver#namesToFile(String)} <br>
+     Uses: -
+
+     @param pcName      имя ПК
+     @param lastFileUse строка - имя последнего измененного файла в папке пользователя.
+     */
+    private synchronized void recAutoDB(String pcName, String lastFileUse) {
+
+        String sql = "insert into pcuser (pcName, userName, lastmod, stamp) values(?,?,?,?)";
+        try(PreparedStatement preparedStatement = connection.prepareStatement(sql
+            .replaceAll(ConstantsFor.STR_PCUSER, ConstantsFor.STR_PCUSERAUTO))){
+            String[] split = lastFileUse.split(" ");
+            preparedStatement.setString(1, pcName);
+            preparedStatement.setString(2, split[0]);
+            preparedStatement.setString(3, IntStream.of(2, 3, 4).mapToObj(i -> split[i]).collect(Collectors.joining()));
+            preparedStatement.setString(4, split[7]);
+            preparedStatement.executeUpdate();
+        }
+        catch(SQLException e){
+            FileSystemWorker.recFile(
+                this.getClass().getSimpleName() + REC_AUTO_DB + ConstantsFor.LOG,
+                Collections.singletonList(new TForms().fromArray(e, false)));
+            NetScannerSvc.getI().reconnectToDB();
+        }
+        catch(ArrayIndexOutOfBoundsException | NullPointerException e){
+            LOGGER.error(e.getMessage(), e);
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().getThreadGroup().destroy();
+        }
+    }
+
+    /**
+     @return {@link #pcUserResolver}
+     */
+    public static PCUserResolver getPcUserResolver(Connection c) {
+        Thread.currentThread().checkAccess();
+        Thread.currentThread().getThreadGroup().checkAccess();
+        connection = c;
+        return pcUserResolver;
+    }
+
+    /**
      Запрос на установку пользователя
      <p>
      Usages:  {@link AppComponents#pcUserResolver()} <br>
@@ -156,60 +169,6 @@ public class PCUserResolver implements Thread.UncaughtExceptionHandler {
         }
         Thread.currentThread().interrupt();
         return adUser;
-    }
-
-    /**
-     Запись в БД <b>pcuser</b><br> Запись по-запросу от браузера. <br> pcName - уникальный (таблица не переписывается или не дополняется, при наличии записи по-компу)
-
-     @param userName имя юзера
-     @param pcName   имя ПК
-     @see ADSrv#getDetails(String)
-     */
-    synchronized void recToDB(String userName, String pcName) {
-        String sql = "insert into pcuser (pcName, userName) values(?,?)";
-        ConcurrentMap<String, String> pcUMap = ConstantsFor.PC_U_MAP;
-        String msg = userName + " on pc " + pcName + " is set.";
-        try (PreparedStatement p = connection.prepareStatement(sql)) {
-            p.setString(1, userName);
-            p.setString(2, pcName);
-            p.executeUpdate();
-            LOGGER.info(msg);
-            pcUMap.put(pcName, msg);
-            Thread.currentThread().interrupt();
-        } catch (SQLException e) {
-            LOGGER.warn(msg.replace(" set.", " not set!"));
-            Thread.currentThread().interrupt();
-        }
-    }
-
-    /**
-     Записывает инфо о пльзователе в <b>pcuserauto</b> <br> Записи добавляются к уже имеющимся.
-     <p>
-     Usages: {@link PCUserResolver#namesToFile(String)} <br>
-     Uses: -
-
-     @param pcName      имя ПК
-     @param lastFileUse строка - имя последнего измененного файла в папке пользователя.
-     */
-    private synchronized void recAutoDB(String pcName, String lastFileUse) {
-
-        String sql = "insert into pcuser (pcName, userName, lastmod, stamp) values(?,?,?,?)";
-        try(PreparedStatement preparedStatement = connection.prepareStatement(sql
-            .replaceAll("pcuser", "pcuserauto"))){
-            String[] split = lastFileUse.split(" ");
-            preparedStatement.setString(1, pcName);
-            preparedStatement.setString(2, split[0]);
-            preparedStatement.setString(3, split[2] + split[3] + split[4]);
-            preparedStatement.setString(4, split[7]);
-            preparedStatement.executeUpdate();
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().interrupt();
-        }
-        catch(SQLException | ArrayIndexOutOfBoundsException | NullPointerException e){
-            LOGGER.error(e.getMessage(), e);
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().getThreadGroup().destroy();
-        }
     }
 
     /**
@@ -265,7 +224,7 @@ public class PCUserResolver implements Thread.UncaughtExceptionHandler {
         offNow.forEach(x -> {
             stringBuilder.append(offNowGetU(x));
         });
-        String msg = ConstantsFor.COMPNAME_USERS_MAP.size() + " COMPNAME_USERS_MAP size";
+        String msg = ConstantsFor.COMPNAME_USERS_MAP.size() + ConstantsFor.COMPNAME_USERS_MAP_SIZE;
         LOGGER.warn(msg);
         return stringBuilder.toString();
     }
@@ -277,48 +236,90 @@ public class PCUserResolver implements Thread.UncaughtExceptionHandler {
      @return имя юзера, время записи.
      @see ADSrv#getDetails(String)
      */
-    synchronized String offNowGetU(String pcName) {
+    synchronized String offNowGetU(CharSequence pcName) {
         StringBuilder v = new StringBuilder();
         try(Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.U_0466446_VELKOM)){
-            String userName = "userName";
-            String whenQueried = "whenQueried";
-            String columnLabel = "pcName";
+
             try(PreparedStatement p = c.prepareStatement("select * from pcuser");
                 PreparedStatement pAuto = c.prepareStatement("select * from pcuserauto where pcName in (select pcName from pcuser) order by pcName asc limit 203");
                 ResultSet resultSet = p.executeQuery();
                 ResultSet resultSetA = pAuto.executeQuery()){
                 while(resultSet.next()){
-
-                    if(resultSet.getString(columnLabel).toLowerCase().contains(pcName)){
+                    if(resultSet.getString(ConstantsFor.DB_FIELD_PCNAME).toLowerCase().contains(pcName)){
                         v
                             .append("<b>")
-                            .append(resultSet.getString(userName))
+                            .append(resultSet.getString(ConstantsFor.DB_FIELD_USER))
                             .append("</b> <br>At ")
-                            .append(resultSet.getString(whenQueried));
+                            .append(resultSet.getString(NetScannerSvc.DB_FIELD_WHENQUERIED));
                     }
                 }
                 while(resultSetA.next()){
-                    if(resultSetA.getString(columnLabel).toLowerCase().contains(pcName)){
+                    if(resultSetA.getString(ConstantsFor.DB_FIELD_PCNAME).toLowerCase().contains(pcName)){
                         v
                             .append("<p>")
-                            .append(resultSet.getString(userName))
+                            .append(resultSet.getString(ConstantsFor.DB_FIELD_USER))
                             .append(" auto QUERY at: ")
-                            .append(resultSet.getString(whenQueried));
+                            .append(resultSet.getString(NetScannerSvc.DB_FIELD_WHENQUERIED));
                     }
                 }
             }
         }
         catch(SQLException e){
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().getThreadGroup().destroy();
-            return e.getMessage();
+            FileSystemWorker.recFile(
+                this.getClass().getSimpleName() + REC_AUTO_DB + ConstantsFor.LOG,
+                Collections.singletonList(new TForms().fromArray(e, false)));
+            NetScannerSvc.getI();
+            NetScannerSvc.reconnectToDB();
         }
         Thread.currentThread().checkAccess();
         Thread.currentThread().getThreadGroup().interrupt();
         return v.toString();
     }
 
-/*END FOR CLASS*/
+    /**
+     Запись в БД <b>pcuser</b><br> Запись по-запросу от браузера. <br> pcName - уникальный (таблица не переписывается или не дополняется, при наличии записи по-компу)
+
+     @param userName имя юзера
+     @param pcName   имя ПК
+     @see ADSrv#getDetails(String)
+     */
+    synchronized void recToDB(String userName, String pcName) {
+        String sql = "insert into pcuser (pcName, userName) values(?,?)";
+        ConcurrentMap<String, String> pcUMap = ConstantsFor.PC_U_MAP;
+        String msg = userName + " on pc " + pcName + " is set.";
+        try(PreparedStatement p = connection.prepareStatement(sql)){
+            p.setString(1, userName);
+            p.setString(2, pcName);
+            p.executeUpdate();
+            LOGGER.info(msg);
+            pcUMap.put(pcName, msg);
+            Thread.currentThread().interrupt();
+        }
+        catch(SQLException e){
+            FileSystemWorker.recFile(
+                this.getClass().getSimpleName() + REC_AUTO_DB + ConstantsFor.LOG,
+                Collections.singletonList(new TForms().fromArray(e, false)));
+            NetScannerSvc.getI().reconnectToDB();
+        }
+    }
+
+    /**
+     Method invoked when the given thread terminates due to the
+     given uncaught exception.
+     <p>Any exception thrown by this method will be ignored by the
+     Java Virtual Machine.  @param t the thread
+
+     @param e the exception
+     */
+    @Override
+    public synchronized void uncaughtException(Thread t, Throwable e) {
+        t.checkAccess();
+        t.interrupt();
+        String msg = t.toString() + "\n" + e.getMessage();
+        LOGGER.info(msg);
+    }
+
+    /*END FOR CLASS*/
 
     /**
      Поиск файлов в папках {@code c-users}.

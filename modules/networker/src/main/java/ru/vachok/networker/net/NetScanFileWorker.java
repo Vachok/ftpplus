@@ -22,12 +22,12 @@ class NetScanFileWorker {
     /**
      {@link DiapazonedScan#scanNew()}
      */
-    private File newLanLastScan;
+    private File newLanLastScan = null;
 
     /**
      {@link DiapazonedScan#scanOldLan(long)}
      */
-    private File oldLanLastScan;
+    private File oldLanLastScan = null;
 
     private NetScanFileWorker() {
 

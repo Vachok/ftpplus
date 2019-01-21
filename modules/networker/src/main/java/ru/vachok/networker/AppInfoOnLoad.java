@@ -13,18 +13,17 @@ import ru.vachok.networker.accesscontrol.common.CommonRightsChecker;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.config.ThreadConfig;
+import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.mailserver.MailIISLogsCleaner;
 import ru.vachok.networker.net.DiapazonedScan;
 import ru.vachok.networker.net.SwitchesAvailability;
 import ru.vachok.networker.net.WeekPCStats;
 import ru.vachok.networker.services.MyCalen;
+import ru.vachok.networker.services.SpeedChecker;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.FileVisitor;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -32,12 +31,8 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.TextStyle;
-import java.util.Date;
-import java.util.Locale;
-import java.util.Objects;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
+import java.util.concurrent.*;
 
 
 /**
@@ -67,11 +62,6 @@ public class AppInfoOnLoad implements Runnable {
     };
 
     /**
-     Повторение более 3х раз в строках
-     */
-    private static final String STR_SEC_SPEND = ConstantsFor.STR_SEC_SPEND;
-
-    /**
      Задержка выполнения для этого класса
 
      @see #schedStarter()
@@ -81,18 +71,31 @@ public class AppInfoOnLoad implements Runnable {
     /**
      Запускает сканнер прав Common
      */
-    static void runCommonScan(boolean runNow) {
-        if(runNow){
-            Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(r);
+    static void runCommonScan() {
+        String msg = new StringBuilder()
+            .append(LocalTime.now()
+                .plusMinutes(5).toString())
+            .append(" ")
+            .append(CommonRightsChecker.class.getSimpleName())
+            .append(" been run.").toString();
+        LOGGER.info(msg);
+    }
+
+    static String iisLogSize() {
+        Path iisLogsDir = Paths.get("\\\\srv-mail3.eatmeat.ru\\c$\\inetpub\\logs\\LogFiles\\W3SVC1\\");
+        long totalSize = 0L;
+        for(File x : iisLogsDir.toFile().listFiles()){
+            totalSize = totalSize + x.length();
         }
-        else{
-            String msg = new StringBuilder()
-                .append(LocalTime.now()
-                    .plusMinutes(5).toString())
-                .append(" ")
-                .append(CommonRightsChecker.class.getSimpleName())
-                .append(" been run.").toString();
-            LOGGER.info(msg);
+        return "\n" + totalSize / ConstantsFor.MBYTE + " MB of " + iisLogsDir + " IIS Logs";
+    }
+
+    void spToFile() {
+        ExecutorService service = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor());
+        service.submit(new SpeedChecker.SpFromMail());
+        if(LocalDate.now().getDayOfWeek().equals(DayOfWeek.SUNDAY)){
+            ExecutorService serviceW = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor());
+            serviceW.submit(new WeekPCStats());
         }
     }
 
@@ -124,12 +127,14 @@ public class AppInfoOnLoad implements Runnable {
             speedRun = new SpeedRunActualize();
         }
         catch(ExceptionInInitializerError e){
-            LOGGER.warn(e.getMessage(), e);
+            FileSystemWorker.recFile(
+                this.getClass().getSimpleName() + ConstantsFor.LOG,
+                Collections.singletonList(new TForms().fromArray(e.getStackTrace(), false)));
         }
         Runnable swAval = new SwitchesAvailability();
         ScheduledExecutorService executorService = Executors.unconfigurableScheduledExecutorService(Executors.newScheduledThreadPool(4));
         executorService
-            .scheduleWithFixedDelay(Objects.requireNonNull(speedRun), ConstantsFor.INIT_DELAY, TimeUnit.MINUTES.toSeconds(300), TimeUnit.SECONDS);
+            .scheduleWithFixedDelay(Objects.requireNonNull(speedRun), 3, 3, TimeUnit.MINUTES);
         String thisPC = ConstantsFor.thisPC();
         if(!thisPC.toLowerCase().contains("home")){
             executorService
@@ -145,14 +150,6 @@ public class AppInfoOnLoad implements Runnable {
             .append(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(THIS_DELAY + 1))).toString();
         LOGGER.info(msg);
         dateSchedulers();
-    }
-
-    /**
-     @see #infoForU(ApplicationContext)
-     */
-    @Override
-    public void run() {
-        infoForU(AppCtx.scanForBeansAndRefreshContext());
     }
 
     /**
@@ -194,6 +191,14 @@ public class AppInfoOnLoad implements Runnable {
         return msg;
     }
 
+    /**
+     @see #infoForU(ApplicationContext)
+     */
+    @Override
+    public void run() {
+        infoForU(AppCtx.scanForBeansAndRefreshContext());
+    }
+
     private static void trunkTableUsers() {
         MessageToUser messageToUser = new ESender(ConstantsFor.GMAIL_COM);
         try(Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.U_0466446_VELKOM);
@@ -204,15 +209,6 @@ public class AppInfoOnLoad implements Runnable {
         catch(SQLException e){
             messageToUser.infoNoTitles("TRUNCATE false\n" + ConstantsFor.getUpTime() + " uptime.");
         }
-    }
-
-    static String iisLogSize() {
-        Path iisLogsDir = Paths.get("\\\\srv-mail3.eatmeat.ru\\c$\\inetpub\\logs\\LogFiles\\W3SVC1\\");
-        long totalSize = 0L;
-        for(File x : iisLogsDir.toFile().listFiles()){
-            totalSize = totalSize + x.length();
-        }
-        return "\n" + totalSize / ConstantsFor.MBYTE + " MB of " + iisLogsDir + " IIS Logs";
     }
 
 }

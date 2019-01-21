@@ -21,7 +21,7 @@ import java.util.function.Consumer;
 
 /**
  @since 05.10.2018 (9:56) */
-@Service("exsrv")
+@Service (ConstantsFor.ATT_EXSRV)
 public class ExSRV {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ExSRV.class.getSimpleName());
@@ -31,6 +31,8 @@ public class ExSRV {
     public MultipartFile getFile() {
         return file;
     }
+
+    private ConcurrentMap<Integer, MailRule> localMap = ConstantsFor.getMailRules();
 
     private List<String> fileAsList = new ArrayList<>();
 
@@ -51,7 +53,7 @@ public class ExSRV {
             .append(x)
             .append("\n");
         try {
-            for (MailRule mailRule : ConstantsFor.MAIL_RULES.values()) {
+            for(MailRule mailRule : ConstantsFor.getMailRules().values()){
                 mailRule.getOtherFields().forEach(consumer);
             }
         } catch (NullPointerException ignore) {
@@ -76,7 +78,7 @@ public class ExSRV {
      */
     private void getRulesFromFile() {
         Charset charset = StandardCharsets.UTF_16;
-        ConstantsFor.MAIL_RULES.clear();
+        localMap.clear();
         fileAsList.clear();
         try (InputStream inputStream = file.getInputStream();
              DataInputStream dataInputStream = new DataInputStream(inputStream);
@@ -104,9 +106,9 @@ public class ExSRV {
                 setRule(index);
             }
         }
-        String msg = new TForms().fromArrayRules(ConstantsFor.MAIL_RULES, false);
+        String msg = new TForms().fromArrayRules(localMap, false);
         LOGGER.info(msg);
-        msg = ConstantsFor.MAIL_RULES.size() + " rules map size";
+        msg = localMap.size() + " rules map size";
         LOGGER.warn(msg);
     }
 
@@ -116,7 +118,7 @@ public class ExSRV {
      @param start внутренний ID правила. {@link #readRule()}
      */
     private void setRule(int start)  {
-        ConcurrentMap<Integer, MailRule> map = ConstantsFor.MAIL_RULES;
+        ConcurrentMap<Integer, MailRule> map = localMap;
         MailRule newRule = new MailRule();
         List<String> otherFields = new ArrayList<>();
         newRule.setRuleID(start);
@@ -141,7 +143,8 @@ public class ExSRV {
             }
             map.put(ruleList.size() - start, newRule);
         }
-        String msg = newRule.getRuleID() + " ID. End rule.\nRULE name IS " + newRule.getName() + ", rules size is " + ConstantsFor.MAIL_RULES.size();
+        String msg = newRule.getRuleID() + " ID. End rule.\nRULE name IS " + newRule.getName() +
+            ", rules size is " + ConstantsFor.getMailRules().size() + "/" + localMap.size();
         LOGGER.warn(msg);
         newRule.setOtherFields(otherFields);
     }
