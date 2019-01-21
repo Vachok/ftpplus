@@ -4,7 +4,6 @@ package ru.vachok.networker;
 import org.slf4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
-import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.messenger.email.ESender;
 import ru.vachok.mysqlandprops.EMailAndDB.SpeedRunActualize;
@@ -21,6 +20,7 @@ import ru.vachok.networker.net.WeekPCStats;
 import ru.vachok.networker.services.MyCalen;
 import ru.vachok.networker.services.SpeedChecker;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
@@ -81,13 +81,32 @@ public class AppInfoOnLoad implements Runnable {
         LOGGER.info(msg);
     }
 
-    static String iisLogSize() {
-        Path iisLogsDir = Paths.get("\\\\srv-mail3.eatmeat.ru\\c$\\inetpub\\logs\\LogFiles\\W3SVC1\\");
-        long totalSize = 0L;
-        for(File x : iisLogsDir.toFile().listFiles()){
-            totalSize = totalSize + x.length();
-        }
-        return "\n" + totalSize / ConstantsFor.MBYTE + " MB of " + iisLogsDir + " IIS Logs";
+    /**
+     Стата за неделю по-ПК
+     <p>
+     Usages: {@link #schedStarter()} <br> Uses: 1.1 {@link MyCalen#getNextDayofWeek(int, int, DayOfWeek)}, 1.2 {@link ThreadConfig#threadPoolTaskScheduler()}@param s
+     */
+    @SuppressWarnings ("MagicNumber")
+    private static void dateSchedulers() {
+        Date nextStartDay = MyCalen.getNextDayofWeek(23, 57, DayOfWeek.SUNDAY);
+        StringBuilder stringBuilder = new StringBuilder();
+        ThreadPoolTaskScheduler threadPoolTaskScheduler = new ThreadConfig().threadPoolTaskScheduler();
+        long delay = TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY_HOURS * 7);
+
+        threadPoolTaskScheduler.scheduleWithFixedDelay(new WeekPCStats(), nextStartDay, delay);
+        stringBuilder.append(nextStartDay.toString()).append(" WeekPCStats() start |  ");
+
+        nextStartDay = new Date(nextStartDay.getTime() - TimeUnit.HOURS.toMillis(1));
+        threadPoolTaskScheduler.scheduleWithFixedDelay(new MailIISLogsCleaner(), nextStartDay, delay);
+        stringBuilder.append(nextStartDay.toString()).append(" MailIISLogsCleaner() start. ");
+
+        String logStr = stringBuilder.toString();
+        LOGGER.warn(logStr);
+        String s = logStr + " " +
+            checkDay() +
+            iisLogSize() + " " +
+            AppComponents.versionInfo();
+        SystemTrayHelper.getTrayIcon().displayMessage("Networker Starts", s, TrayIcon.MessageType.INFO);
     }
 
     void spToFile() {
@@ -152,43 +171,24 @@ public class AppInfoOnLoad implements Runnable {
         dateSchedulers();
     }
 
-    /**
-     Стата за неделю по-ПК
-     <p>
-     Usages: {@link #schedStarter()} <br> Uses: 1.1 {@link MyCalen#getNextDayofWeek(int, int, DayOfWeek)}, 1.2 {@link ThreadConfig#threadPoolTaskScheduler()}@param s
-     */
-    @SuppressWarnings ("MagicNumber")
-    private static void dateSchedulers() {
-        MessageToUser messageToUser = new MessageSwing();
-        Date nextStartDay = MyCalen.getNextDayofWeek(23, 57, DayOfWeek.SUNDAY);
-        StringBuilder stringBuilder = new StringBuilder();
-        ThreadPoolTaskScheduler threadPoolTaskScheduler = new ThreadConfig().threadPoolTaskScheduler();
-        long delay = TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY_HOURS * 7);
-
-        threadPoolTaskScheduler.scheduleWithFixedDelay(new WeekPCStats(), nextStartDay, delay);
-        stringBuilder.append(nextStartDay.toString()).append(" WeekPCStats() start | \n");
-
-        nextStartDay = new Date(nextStartDay.getTime() - TimeUnit.HOURS.toMillis(1));
-        threadPoolTaskScheduler.scheduleWithFixedDelay(new MailIISLogsCleaner(), nextStartDay, delay);
-        stringBuilder.append(nextStartDay.toString()).append(" MailIISLogsCleaner() start.\n");
-
-        String logStr = stringBuilder.toString();
-        LOGGER.warn(logStr);
-        messageToUser.infoNoTitles(logStr + "\n" +
-            checkDay() +
-            iisLogSize() + "\n" +
-            AppComponents.versionInfo());
-    }
-
     private static String checkDay() {
         Date dateStart = MyCalen.getNextDayofWeek(10, 0, DayOfWeek.MONDAY);
         String msg = dateStart + " - date to TRUNCATE , " +
-            LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault()) + "\n" +
-            ConstantsFor.ONE_WEEK_MILLIS + " ms delay.\n";
+            LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault()) + " " +
+            ConstantsFor.ONE_WEEK_MILLIS + " ms delay. ";
         ThreadConfig t = new ThreadConfig();
         ThreadPoolTaskScheduler threadPoolTaskScheduler = t.threadPoolTaskScheduler();
         threadPoolTaskScheduler.scheduleWithFixedDelay(AppInfoOnLoad::trunkTableUsers, dateStart, ConstantsFor.ONE_WEEK_MILLIS);
         return msg;
+    }
+
+    static String iisLogSize() {
+        Path iisLogsDir = Paths.get("\\\\srv-mail3.eatmeat.ru\\c$\\inetpub\\logs\\LogFiles\\W3SVC1\\");
+        long totalSize = 0L;
+        for(File x : iisLogsDir.toFile().listFiles()){
+            totalSize = totalSize + x.length();
+        }
+        return totalSize / ConstantsFor.MBYTE + " MB of " + iisLogsDir + " IIS Logs ";
     }
 
     /**

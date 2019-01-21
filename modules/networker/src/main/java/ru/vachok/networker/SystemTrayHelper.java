@@ -63,6 +63,12 @@ public final class SystemTrayHelper {
      */
     private static final MessageToUser MESSAGE_TO_USER = new DBMessenger();
 
+    private static TrayIcon trayIcon = null;
+
+    public static TrayIcon getTrayIcon() {
+        return trayIcon;
+    }
+
     /**
      @return {@link #SYSTEM_TRAY_HELPER}
      */
@@ -105,11 +111,11 @@ public final class SystemTrayHelper {
         Image image = Toolkit.getDefaultToolkit().getImage(SystemTrayHelper.class.getResource(iconFileName));
         PopupMenu popupMenu = new PopupMenu();
         MenuItem defItem = new MenuItem();
-        TrayIcon trayIcon = new TrayIcon(image,
+        trayIcon = new TrayIcon(image,
             new StringBuilder().append(AppComponents.versionInfo().getAppBuild()).append(" v. ").append(AppComponents.versionInfo().getAppVersion()).append(" ").append(AppComponents.versionInfo().getBuildTime()).toString(), popupMenu);
         ActionListener actionListener = e -> {
             try{
-                Desktop.getDesktop().browse(URI.create("http://localhost:8880/"));
+                Desktop.getDesktop().browse(URI.create("http://localhost:8880/serviceinfo"));
 
             }
             catch(IOException e1){

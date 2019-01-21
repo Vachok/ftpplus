@@ -10,6 +10,7 @@ import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.SystemTrayHelper;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.ActDirectoryCTRL;
@@ -20,10 +21,12 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.TimeChecker;
 
 import javax.servlet.http.HttpServletRequest;
+import java.awt.*;
 import java.io.*;
 import java.net.InetAddress;
 import java.sql.*;
 import java.text.MessageFormat;
+import java.util.List;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicReference;
@@ -346,9 +349,11 @@ public class NetScannerSvc {
                     .append("\n\n")
                     .append(retLogs).append(" \n")
                     .append(psUser).append("\n").append(fromArray).toString();
+                String s2 = " min uptime. ";
+                String s3 = " online: ";
                 mailMSG.info(
-                    this.getClass().getSimpleName() + " online: " + onLinePCs,
-                    upTime + " min uptime. " + thisPCStr + ConstantsFor.COMPNAME_USERS_MAP_SIZE, s1);
+                    this.getClass().getSimpleName() + s3 + onLinePCs,
+                    upTime + s2 + thisPCStr + ConstantsFor.COMPNAME_USERS_MAP_SIZE, s1);
                 //noinspection SpellCheckingInspection
                 toFileList.add(s1);
                 String s = Thread.activeCount() + " active threads now.";
@@ -361,6 +366,8 @@ public class NetScannerSvc {
                 toFileList.add(msgTimeSp);
                 FileSystemWorker.recFile(this.getClass().getSimpleName() + ".getPCsAsync" + ConstantsFor.LOG, toFileList);
                 eServ.shutdown();
+                SystemTrayHelper.getTrayIcon().displayMessage("Netscan complete. " + msgTimeSp, s3 + onLinePCs +
+                    upTime + s2 + thisPCStr + ConstantsFor.COMPNAME_USERS_MAP_SIZE, TrayIcon.MessageType.INFO);
             }).start();
         });
     }

@@ -420,7 +420,6 @@ public enum ConstantsFor {
             String msg = "Taking File properties:" + "\n" + e.getMessage();
             AppComponents.getLogger().warn(msg);
             PROPS.putAll(initProperties.getProps());
-
             new MessageSwing().infoNoTitlesDIA(e.getMessage() + " " + ConstantsFor.class.getSimpleName());
         }
     }
