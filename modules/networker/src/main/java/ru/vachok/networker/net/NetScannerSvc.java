@@ -25,6 +25,7 @@ import java.io.*;
 import java.net.InetAddress;
 import java.sql.*;
 import java.text.MessageFormat;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicReference;
@@ -429,7 +430,7 @@ public class NetScannerSvc {
         netWork.put("<h4>" + prefixPcName + "     " + PC_NAMES.size() + "</h4>", true);
         String pcsString = writeDB();
         LOGGER.info(pcsString);
-        String e = "<b>Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethTime) + " sec.</b>";
+        String e = "<b>Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethTime) + " sec.</b> " + LocalTime.now();
         PC_NAMES.add(e);
         new MessageToTray().infoNoTitles(e);
         return PC_NAMES;
