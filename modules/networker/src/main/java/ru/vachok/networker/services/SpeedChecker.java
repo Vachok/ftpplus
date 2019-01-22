@@ -14,13 +14,18 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import javax.mail.Message;
 import javax.mail.MessagingException;
-import javax.sql.DataSource;
 import java.io.IOException;
 import java.io.InputStream;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
@@ -79,12 +84,11 @@ public class SpeedChecker implements Callable<Long> {
         return rtLong;
     }
 
-    /*END FOR CLASS*/
     public static final class SpFromMail implements Runnable {
 
         @Override
         public void run() {
-            chechMail();
+            LOGGER.info(chechMail());
         }
 
         private String chechMail() {
@@ -96,6 +100,12 @@ public class SpeedChecker implements Callable<Long> {
                 try(InputStream inputStream = m.getInputStream()){
                     String subjMail = m.getSubject();
                     if(subjMail.toLowerCase().contains("speed:")){
+                        byte[] bytes = new byte[inputStream.available()];
+                        while (inputStream.available() > 0) {
+                            int read = inputStream.read(bytes);
+                            String msg = getClass().getSimpleName() + " " + read + " bytes read.";
+                            LOGGER.info(msg);
+                        }
                         if(chDB.contains("okok")){
                             eSender.info(SpFromMail.class.getSimpleName(), true + " sending to base", chDB);
                         }
@@ -120,7 +130,6 @@ public class SpeedChecker implements Callable<Long> {
         private Map<String, String> checkDB() {
             Map<String, String> retMap = new HashMap<>();
             DataConnectTo dataConnectTo = new RegRuMysql();
-            DataSource source = dataConnectTo.getDataSource();
             String sql = ConstantsFor.SELECT_FROM_SPEED;
             try(Connection c = dataConnectTo.getDefaultConnection(ConstantsFor.U_0466446_LIFERPG);
                 PreparedStatement p = c.prepareStatement(sql);
