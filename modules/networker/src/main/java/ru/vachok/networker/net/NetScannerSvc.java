@@ -429,7 +429,9 @@ public class NetScannerSvc {
         netWork.put("<h4>" + prefixPcName + "     " + PC_NAMES.size() + "</h4>", true);
         String pcsString = writeDB();
         LOGGER.info(pcsString);
-        PC_NAMES.add("<b>Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethTime) + " sec.</b>");
+        String e = "<b>Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethTime) + " sec.</b>";
+        PC_NAMES.add(e);
+        new MessageToTray().infoNoTitles(e);
         return PC_NAMES;
     }
 
