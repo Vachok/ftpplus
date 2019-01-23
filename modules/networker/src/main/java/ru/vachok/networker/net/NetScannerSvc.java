@@ -432,7 +432,6 @@ public class NetScannerSvc {
         LOGGER.info(pcsString);
         String e = "<b>Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethTime) + " sec.</b> " + LocalTime.now();
         PC_NAMES.add(e);
-        new MessageToTray().infoNoTitles(e);
         return PC_NAMES;
     }
 

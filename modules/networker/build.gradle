@@ -42,8 +42,8 @@ dependencies {
 //    compile group: 'com.github.fonimus', name: 'spring-boot-ssh-shell-starter', version: '1.0.6'
     // https://mvnrepository.com/artifact/com.jcraft/jsch
     compile group: 'com.jcraft', name: 'jsch', version: '0.1.54'
-    testCompile("junit:junit")
-    testCompile("org.springframework.boot:spring-boot-starter-test")
+// https://mvnrepository.com/artifact/org.testng/testng
+    testCompile group: 'org.testng', name: 'testng', version: '7.0.0-beta3'
 
 }
 
