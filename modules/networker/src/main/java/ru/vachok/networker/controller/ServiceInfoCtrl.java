@@ -16,6 +16,7 @@ import ru.vachok.networker.net.DiapazonedScan;
 import ru.vachok.networker.services.MyCalen;
 import ru.vachok.networker.services.SpeedChecker;
 
+import javax.net.ssl.SSLException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
@@ -43,7 +44,7 @@ public class ServiceInfoCtrl {
     private Visitor visitor;
 
     @GetMapping ("/serviceinfo")
-    public String infoMapping(Model model, HttpServletRequest request, HttpServletResponse response) throws AccessDeniedException {
+    public String infoMapping(Model model, HttpServletRequest request, HttpServletResponse response) throws AccessDeniedException, SSLException {
         this.visitor = new AppComponents().visitor(request);
         this.authReq = Stream.of("0:0:0:0", "10.10.111", "10.200.213.85", "172.16.20").anyMatch(s_p -> request.getRemoteAddr().contains(s_p));
         if(authReq){
@@ -144,7 +145,7 @@ public class ServiceInfoCtrl {
         return "ok";
     }
 
-    private void modModMaker(Model model, HttpServletRequest request, Visitor visitor) {
+    private void modModMaker(Model model, HttpServletRequest request, Visitor visitor) throws SSLException {
         this.visitor = ConstantsFor.getVis(request);
         Long whenCome = new SpeedChecker().call();
         Date comeD = new Date(whenCome);

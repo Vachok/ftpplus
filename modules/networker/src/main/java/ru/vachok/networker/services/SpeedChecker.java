@@ -2,6 +2,7 @@ package ru.vachok.networker.services;
 
 
 import org.slf4j.Logger;
+import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.messenger.email.ESender;
 import ru.vachok.mysqlandprops.DataConnectTo;
@@ -14,6 +15,7 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import javax.mail.Message;
 import javax.mail.MessagingException;
+import javax.net.ssl.SSLException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.*;
@@ -50,39 +52,56 @@ public class SpeedChecker implements Callable<Long> {
      @see Thread#run()
      */
     @Override
-    public Long call() {
+    public Long call() throws SSLException {
         Long chkForLastLong = chkForLast();
         String msg = new java.util.Date(chkForLastLong) + " from " + SpeedChecker.class.getSimpleName();
         LOGGER.info(msg);
         return chkForLastLong;
     }
 
-    private static Long chkForLast() {
+    private static Long chkForLast() throws SSLException {
+        new MessageCons().infoNoTitles("SpeedChecker.chkForLast");
+        final long stArt = System.currentTimeMillis();
         String sql = ConstantsFor.SELECT_FROM_SPEED;
         Long rtLong = Calendar.getInstance().getTimeInMillis() - ConstantsFor.getAtomicTime();
         try(Connection c = DATA_CONNECT_TO.getDefaultConnection(ConstantsFor.DB_PREFIX + "liferpg");
             PreparedStatement p = c.prepareStatement(sql);
             ResultSet r = p.executeQuery()){
-            while(r.last()){
-                double timeSpend = r.getDouble(ConstantsFor.TIME_SPEND);
-                long timeStamp = r.getTimestamp(ConstantsFor.COL_SQL_NAME_TIMESTAMP).getTime();
-                String msg = timeSpend + " time spend;\n" + timeStamp;
-                rtLong = timeStamp + TimeUnit.MINUTES.toMillis(3);
-                LOGGER.info(msg);
-                return rtLong;
+            while(r.next()){
+                if(r.last()){
+                    double timeSpend = r.getDouble(ConstantsFor.TIME_SPEND);
+                    long timeStamp = r.getTimestamp(ConstantsFor.COL_SQL_NAME_TIMESTAMP).getTime();
+                    String msg = timeSpend + " time spend;\n" + timeStamp;
+                    rtLong = timeStamp + TimeUnit.MINUTES.toMillis(3);
+                    LOGGER.info(msg);
+                    return rtLong;
+                }
             }
         }
         catch(SQLException e){
             FileSystemWorker.recFile(SpeedChecker.class.getSimpleName() + ".log", Collections.singletonList(new TForms().fromArray(e, false)));
         }
+        methMetr(stArt);
         return rtLong;
     }
 
+    private static void methMetr(long stArt) {
+        float f = ( float ) (System.currentTimeMillis() - stArt) / 1000;
+        String msgTimeSp = new StringBuilder()
+            .append("SpeedChecker.chkForLast: ")
+            .append(f)
+            .append(ConstantsFor.STR_SEC_SPEND)
+            .toString();
+        LOGGER.info(msgTimeSp);
+    }
+
+    /*END FOR CLASS*/
     public static final class SpFromMail implements Runnable {
 
         @Override
         public void run() {
-            LOGGER.info(chechMail());
+            String msg = chechMail();
+            LOGGER.info(msg);
         }
 
         private String chechMail() {
@@ -95,7 +114,7 @@ public class SpeedChecker implements Callable<Long> {
                     String subjMail = m.getSubject();
                     if(subjMail.toLowerCase().contains("speed:")){
                         byte[] bytes = new byte[inputStream.available()];
-                        while (inputStream.available() > 0) {
+                        while(inputStream.available() > 0){
                             int read = inputStream.read(bytes);
                             String msg = getClass().getSimpleName() + " " + read + " bytes read.";
                             LOGGER.info(msg);
