@@ -31,7 +31,12 @@ public class MessageToTray implements MessageToUser {
     @Override
     public void errorAlert(String s, String s1, String s2) {
         if(SystemTray.isSupported()){
-            SystemTrayHelper.getTrayIcon().displayMessage(s, s1 + " " + s2, TrayIcon.MessageType.ERROR);
+            TrayIcon trayIcon = SystemTrayHelper.getTrayIcon();
+            if(aListener!=null){
+                trayIcon.addActionListener(aListener);
+            }
+            trayIcon.displayMessage(s, s1 + " " + s2, TrayIcon.MessageType.ERROR);
+
         }
         else{
             new MessageCons().errorAlert(s, s1, s2);
@@ -54,7 +59,11 @@ public class MessageToTray implements MessageToUser {
     @Override
     public void infoNoTitles(String s) {
         if(SystemTray.isSupported()){
-            SystemTrayHelper.getTrayIcon().displayMessage("FYI", s, TrayIcon.MessageType.INFO);
+            TrayIcon trayIcon = SystemTrayHelper.getTrayIcon();
+            trayIcon.displayMessage("FYI", s, TrayIcon.MessageType.INFO);
+            if(aListener!=null){
+                trayIcon.addActionListener(aListener);
+            }
         }
         else{
             new MessageCons().infoNoTitles(s);

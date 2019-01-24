@@ -22,6 +22,8 @@ import ru.vachok.networker.services.MessageToTray;
 import ru.vachok.networker.services.MyCalen;
 import ru.vachok.networker.services.SpeedChecker;
 
+import javax.swing.*;
+import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
@@ -171,7 +173,16 @@ public class AppInfoOnLoad implements Runnable {
 
         String logStr = stringBuilder.toString();
         LOGGER.warn(logStr);
-        new MessageToTray().infoNoTitles(checkDay() + iisLogSize());
+        new MessageToTray(new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Thread threadSP = new ThreadConfig().threadPoolTaskExecutor().createThread(new SpeedRunActualize());
+                threadSP.setName("SpeedRunActualize");
+                threadSP.start();
+                new MessageToTray().info("SpeedRunActualize running", threadSP.isAlive() + "", LocalTime.now().toString());
+            }
+        }).infoNoTitles(checkDay() + iisLogSize());
     }
 
     private static String checkDay() {
