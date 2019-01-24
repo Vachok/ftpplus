@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
 import org.springframework.util.CustomizableThreadCreator;
 import ru.vachok.messenger.MessageCons;
+import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
@@ -21,13 +22,24 @@ import ru.vachok.networker.services.MessageToTray;
 import ru.vachok.networker.services.TimeChecker;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.io.*;
 import java.net.InetAddress;
-import java.sql.*;
+import java.net.URI;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.time.LocalTime;
+import java.util.List;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -342,7 +354,6 @@ public class NetScannerSvc {
                 String psUser = new TForms().fromArrayUsers(ConstantsFor.PC_U_MAP, false);
                 String thisPCStr;
                 thisPCStr = ConstantsFor.thisPC();
-                //noinspection SpellCheckingInspection
                 String s1 = new StringBuilder()
                     .append(ConstantsFor.showMem())
                     .append("\n\n")
@@ -353,7 +364,6 @@ public class NetScannerSvc {
                 mailMSG.info(
                     this.getClass().getSimpleName() + s3 + onLinePCs,
                     upTime + s2 + thisPCStr + ConstantsFor.COMPNAME_USERS_MAP_SIZE, s1);
-                //noinspection SpellCheckingInspection
                 toFileList.add(s1);
                 String s = Thread.activeCount() + " active threads now.";
                 LOGGER.warn(s);
@@ -364,7 +374,19 @@ public class NetScannerSvc {
                 toFileList.add(msgTimeSp);
                 FileSystemWorker.recFile(this.getClass().getSimpleName() + ".getPCsAsync" + ConstantsFor.LOG, toFileList);
                 eServ.shutdown();
-                new MessageToTray().info("Netscan complete!",
+                new MessageToTray(new AbstractAction() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        try {
+                            Desktop.getDesktop().browse(URI.create("http://localhost:8880/netscan"));
+                        } catch (IOException e1) {
+                            new MessageSwing().errorAlert(
+                                "NetScannerSvc",
+                                "actionPerformed",
+                                new TForms().fromArray(e1, false));
+                        }
+                    }
+                }).info("Netscan complete!",
                     s3 + onLinePCs,
                     ( float ) (TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - stArt)) / ConstantsFor.ONE_HOUR_IN_MIN + s2);
                 this.onLinePCs = 0;

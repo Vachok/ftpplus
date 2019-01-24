@@ -8,6 +8,7 @@ import ru.vachok.networker.SystemTrayHelper;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.awt.*;
+import java.awt.event.ActionListener;
 import java.util.Collections;
 
 
@@ -17,6 +18,15 @@ import java.util.Collections;
 
  @since 21.01.2019 (23:46) */
 public class MessageToTray implements MessageToUser {
+
+    private ActionListener aListener = null;
+
+    public MessageToTray() {
+    }
+
+    public MessageToTray(ActionListener aListener) {
+        this.aListener = aListener;
+    }
 
     @Override
     public void errorAlert(String s, String s1, String s2) {
@@ -32,7 +42,9 @@ public class MessageToTray implements MessageToUser {
     @Override
     public void info(String s, String s1, String s2) {
         if(SystemTray.isSupported()){
-            SystemTrayHelper.getTrayIcon().displayMessage(s, s1 + " " + s2, TrayIcon.MessageType.INFO);
+            TrayIcon trayIcon = SystemTrayHelper.getTrayIcon();
+            if (aListener != null) trayIcon.addActionListener(aListener);
+            trayIcon.displayMessage(s, s1 + " " + s2, TrayIcon.MessageType.INFO);
         }
         else{
             new MessageCons().info(s, s1, s2);
