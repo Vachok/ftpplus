@@ -51,6 +51,8 @@ public class DiapazonedScan implements Runnable {
      */
     private static final NetScanFileWorker NET_SCAN_FILE_WORKER = NetScanFileWorker.getI();
 
+    private static final int MAX_IN_VLAN = 255;
+
     /**
      Singleton inst
      */
@@ -173,7 +175,7 @@ public class DiapazonedScan implements Runnable {
     private void scanLan(PrintWriter printWriter, int fromVlan, int toVlan, long stArt, String whatVlan) throws IOException {
         for(int i = fromVlan; i < toVlan; i++){
             StringBuilder msgBuild = new StringBuilder();
-            for(int j = 0; j < 255; j++){
+            for(int j = 0; j < MAX_IN_VLAN; j++){
                 msgBuild = new StringBuilder();
                 byte[] aBytes = InetAddress.getByName(whatVlan + i + "." + j).getAddress();
                 InetAddress byAddress = InetAddress.getByAddress(aBytes);
@@ -185,7 +187,7 @@ public class DiapazonedScan implements Runnable {
                 String toString = byAddress.toString();
                 if(byAddress.isReachable(t)){
                     String hostName = byAddress.getHostName();
-                    Thread.currentThread().setName(hostName);
+                    Thread.currentThread().setName(ConstantsFor.getUpTime());
                     printWriter.println(hostName + " " + byAddress.getHostAddress());
                     ConstantsFor.ALL_DEVICES.add("<font color=\"green\">" + toString + FONT_BR_STR);
                 }

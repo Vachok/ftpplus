@@ -30,7 +30,8 @@ public class UtilitCTRL {
      @return "ad".html
      */
     @GetMapping ("/gen")
-    public String passGen(HttpServletRequest request, Model model) {
+    private String passGen(HttpServletRequest request, Model model) {
+        Thread.currentThread().setName("UtilitCTRL.passGen");
         PassGenerator passGenerator = new PassGenerator();
         int howMuchBytes = 17;
         if(request.getQueryString()!=null){

@@ -16,7 +16,9 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.security.SecureRandom;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
 import static java.lang.System.*;
@@ -50,7 +52,7 @@ public class MyServer extends Thread {
 
      @see ConstantsFor#LISTEN_PORT
      */
-    private static ServerSocket serverSocket;
+    private static ServerSocket serverSocket = null;
 
     /**
      {@link DBMessenger}
@@ -62,9 +64,7 @@ public class MyServer extends Thread {
      <p>
      {@link #getSocket()} , {@link #setSocket(Socket)}
      */
-    private static Socket socket;
-
-    private static final Properties propsToSave = ConstantsFor.getProps();
+    private static Socket socket = null;
 
     /**
      <i>{@link SystemTrayHelper#recOn()}</i>
@@ -91,12 +91,11 @@ public class MyServer extends Thread {
         return myServer;
     }
 
-    /*Instances*/
-
     /**
      {@link #myServer}
      */
     private MyServer() {
+        Thread.currentThread().setName("MyServer.MyServer");
     }
 
     static {

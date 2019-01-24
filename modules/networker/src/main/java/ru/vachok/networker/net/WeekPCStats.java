@@ -39,6 +39,7 @@ public class WeekPCStats implements Runnable {
      */
     @Override
     public void run() {
+        Thread.currentThread().setName("WeekPCStats.run");
         final long stArt = System.currentTimeMillis();
         getFromDB();
         String msgTimeSp = MessageFormat

@@ -23,12 +23,14 @@ import javax.servlet.http.HttpServletRequest;
 @Controller
 public class ErrCtr implements ErrorController {
 
-    /*Fields*/
     /**
      Центрировать (левый тэг)
      */
     private static final String H_2_CENTER = "<h2><center>";
 
+    /**
+     {@link AppComponents#getLogger()}
+     */
     private static final Logger LOGGER = AppComponents.getLogger();
 
     /**
@@ -37,12 +39,9 @@ public class ErrCtr implements ErrorController {
     private static final String H_2_CENTER_CLOSE = "</h2></center>";
 
     /**
-     @return путь к ошибке для броузера
+     * Boiler Plate
      */
-    @Override
-    public String getErrorPath() {
-        return "/error";
-    }
+    private static final String MAPPING_ERROR = "/error";
 
     /**
      <b>Страница обработчика ошибок</b>
@@ -53,7 +52,7 @@ public class ErrCtr implements ErrorController {
      @return error.html
      @see TForms
      */
-    @GetMapping ("/error")
+    @GetMapping (MAPPING_ERROR)
     public String errHandle(HttpServletRequest httpServletRequest, Model model) {
         Visitor visitor = ConstantsFor.getVis(httpServletRequest);
         Integer statCode = ( Integer ) httpServletRequest.getAttribute("javax.servlet.error.status_code");
@@ -92,6 +91,7 @@ public class ErrCtr implements ErrorController {
      @see #errHandle(HttpServletRequest, Model)
      */
     private void setExcept(Model model, Exception exception, Integer statCode, HttpServletRequest httpServletRequest) {
+        Thread.currentThread().setName("ErrCtr.setExcept");
         String eMessage = H_2_CENTER + exception.getMessage() + H_2_CENTER_CLOSE;
         String eLocalizedMessage = H_2_CENTER + exception.getMessage() + H_2_CENTER_CLOSE;
         String err = statCode + " Научно-Исследовательский Институт Химии Удобрений и Ядов";
@@ -109,5 +109,13 @@ public class ErrCtr implements ErrorController {
         model.addAttribute(ConstantsFor.ATT_TITLE, err);
         model.addAttribute("ref", httpServletRequest.getHeader("referer"));
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
+    }
+
+    /**
+     @return путь к ошибке для броузера
+     */
+    @Override
+    public String getErrorPath() {
+        return MAPPING_ERROR;
     }
 }

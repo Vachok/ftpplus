@@ -23,7 +23,6 @@ import ru.vachok.networker.services.MessageToTray;
 import ru.vachok.networker.services.MyCalen;
 import ru.vachok.networker.services.SpeedChecker;
 
-import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
@@ -94,6 +93,51 @@ public class AppInfoOnLoad implements Runnable {
     }
 
     /**
+     Стата за неделю по-ПК
+     <p>
+     Usages: {@link #schedStarter()} <br> Uses: 1.1 {@link MyCalen#getNextDayofWeek(int, int, DayOfWeek)}, 1.2
+     {@link ThreadConfig#threadPoolTaskScheduler()}@param s
+     */
+    @SuppressWarnings ("MagicNumber")
+    private static void dateSchedulers() throws MyNull {
+        Thread.currentThread().setName("AppInfoOnLoad.dateSchedulers");
+        long stArt = System.currentTimeMillis();
+        Date nextStartDay = MyCalen.getNextDayofWeek(23, 57, DayOfWeek.SUNDAY);
+        StringBuilder stringBuilder = new StringBuilder();
+        ThreadPoolTaskScheduler threadPoolTaskScheduler = new ThreadConfig().threadPoolTaskScheduler();
+        long delay = TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY_HOURS * 7);
+
+        threadPoolTaskScheduler.scheduleWithFixedDelay(new WeekPCStats(), nextStartDay, delay);
+        stringBuilder.append(nextStartDay.toString()).append(" WeekPCStats() start |  ");
+
+        nextStartDay = new Date(nextStartDay.getTime() - TimeUnit.HOURS.toMillis(1));
+        threadPoolTaskScheduler.scheduleWithFixedDelay(new MailIISLogsCleaner(), nextStartDay, delay);
+        stringBuilder.append(nextStartDay.toString()).append(" MailIISLogsCleaner() start. ");
+
+        String logStr = stringBuilder.toString();
+        LOGGER.warn(logStr);
+        new MessageToTray((ActionEvent e) -> {
+            long when = e.getWhen();
+            Thread threadSP = new ThreadConfig().threadPoolTaskExecutor().createThread(new SpeedRunActualize());
+            threadSP.setName("SpeedRunActualize");
+            threadSP.start();
+            String messageSW = "SpeedRunActualize running " + threadSP.isAlive() + "\n" +
+                LocalTime.now().toString() + " now.\nAction at: \n" +
+                new Date(when) + "\n" +
+                AppInfoOnLoad.class.getSimpleName();
+            new MessageSwing().infoNoTitles(messageSW, 461, 384);
+        }).info(checkDay(), iisLogSize(), methMetr(stArt));
+    }
+
+    /**
+     @see #infoForU(ApplicationContext)
+     */
+    @Override
+    public void run() {
+        infoForU(AppCtx.scanForBeansAndRefreshContext());
+    }
+
+    /**
      Запуск заданий по-расписанию
      <p>
      Usages: {@link #infoForU(ApplicationContext)} <br> Uses: 1.1 {@link #dateSchedulers()}, 1.2 {@link ConstantsFor#thisPC()}, 1.3
@@ -146,42 +190,6 @@ public class AppInfoOnLoad implements Runnable {
         schedStarter();
     }
 
-    /**
-     Стата за неделю по-ПК
-     <p>
-     Usages: {@link #schedStarter()} <br> Uses: 1.1 {@link MyCalen#getNextDayofWeek(int, int, DayOfWeek)}, 1.2
-     {@link ThreadConfig#threadPoolTaskScheduler()}@param s
-     */
-    @SuppressWarnings ("MagicNumber")
-    private static void dateSchedulers() throws MyNull {
-        long stArt = System.currentTimeMillis();
-        Date nextStartDay = MyCalen.getNextDayofWeek(23, 57, DayOfWeek.SUNDAY);
-        StringBuilder stringBuilder = new StringBuilder();
-        ThreadPoolTaskScheduler threadPoolTaskScheduler = new ThreadConfig().threadPoolTaskScheduler();
-        long delay = TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY_HOURS * 7);
-
-        threadPoolTaskScheduler.scheduleWithFixedDelay(new WeekPCStats(), nextStartDay, delay);
-        stringBuilder.append(nextStartDay.toString()).append(" WeekPCStats() start |  ");
-
-        nextStartDay = new Date(nextStartDay.getTime() - TimeUnit.HOURS.toMillis(1));
-        threadPoolTaskScheduler.scheduleWithFixedDelay(new MailIISLogsCleaner(), nextStartDay, delay);
-        stringBuilder.append(nextStartDay.toString()).append(" MailIISLogsCleaner() start. ");
-
-        String logStr = stringBuilder.toString();
-        LOGGER.warn(logStr);
-        new MessageToTray(new AbstractAction() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Thread threadSP = new ThreadConfig().threadPoolTaskExecutor().createThread(new SpeedRunActualize());
-                threadSP.setName("SpeedRunActualize");
-                threadSP.start();
-                String messageSW = "SpeedRunActualize running " + threadSP.isAlive() + "\n" + LocalTime.now().toString();
-                new MessageSwing().infoNoTitles(messageSW, 461, 384);
-            }
-        }).info(checkDay(), iisLogSize(), methMetr(stArt));
-    }
-
     private static String methMetr(long stArt) {
         String msgTimeSp = new StringBuilder()
             .append("AppInfoOnLoad.schedStarter: ")
@@ -190,14 +198,6 @@ public class AppInfoOnLoad implements Runnable {
             .toString();
         new MessageCons().infoNoTitles(msgTimeSp);
         return msgTimeSp;
-    }
-
-    /**
-     @see #infoForU(ApplicationContext)
-     */
-    @Override
-    public void run() {
-        infoForU(AppCtx.scanForBeansAndRefreshContext());
     }
 
     private static String checkDay() {

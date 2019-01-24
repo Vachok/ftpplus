@@ -26,6 +26,7 @@ public class CalculateCTRL {
     @Autowired
     public CalculateCTRL(SimpleCalculator simpleCalculator) {
         this.simpleCalculator = simpleCalculator;
+        Thread.currentThread().setName("CalculateCTRL.CalculateCTRL");
     }
 
     @GetMapping("/calculate")

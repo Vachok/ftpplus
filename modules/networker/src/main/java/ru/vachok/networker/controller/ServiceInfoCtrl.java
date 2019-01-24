@@ -37,14 +37,21 @@ import java.util.stream.Stream;
 @Controller
 public class ServiceInfoCtrl {
 
+    /**
+     {@link LoggerFactory#getLogger(Class)}
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(ServiceInfoCtrl.class.getSimpleName());
 
     private boolean authReq = false;
 
-    private Visitor visitor;
+    /**
+     {@link Visitor}
+     */
+    private Visitor visitor = null;
 
     @GetMapping ("/serviceinfo")
     public String infoMapping(Model model, HttpServletRequest request, HttpServletResponse response) throws AccessDeniedException, SSLException {
+        Thread.currentThread().setName("ServiceInfoCtrl.infoMapping");
         this.visitor = new AppComponents().visitor(request);
         this.authReq = Stream.of("0:0:0:0", "10.10.111", "10.200.213.85", "172.16.20").anyMatch(s_p -> request.getRemoteAddr().contains(s_p));
         if(authReq){

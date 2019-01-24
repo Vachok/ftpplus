@@ -130,6 +130,7 @@ public class NetScanCtr {
      */
     @GetMapping (STR_NETSCAN)
     private String netScan(HttpServletRequest request, HttpServletResponse response, Model model) {
+        Thread.currentThread().setName("NetScanCtr.netScan");
         Visitor visitor = getVis(request);
         netScannerSvc.setThePc("");
         LOGGER.warn("{}", visitor);

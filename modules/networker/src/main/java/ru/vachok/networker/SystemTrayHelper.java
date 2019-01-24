@@ -82,6 +82,7 @@ public final class SystemTrayHelper {
      Конструктор по-умолчанию
      */
     private SystemTrayHelper() {
+        Thread.currentThread().setName("SystemTrayHelper.SystemTrayHelper");
     }
 
     /**
