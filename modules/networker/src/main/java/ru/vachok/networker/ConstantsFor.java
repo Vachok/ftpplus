@@ -27,8 +27,14 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.SecureRandom;
-import java.time.*;
-import java.util.*;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.Year;
+import java.time.ZoneOffset;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.*;
 
 import static java.time.temporal.ChronoUnit.HOURS;
@@ -420,7 +426,6 @@ public enum ConstantsFor {
             String msg = "Taking File properties:" + "\n" + e.getMessage();
             AppComponents.getLogger().warn(msg);
             PROPS.putAll(initProperties.getProps());
-
             new MessageSwing().infoNoTitlesDIA(e.getMessage() + " " + ConstantsFor.class.getSimpleName());
         }
     }
@@ -459,9 +464,11 @@ public enum ConstantsFor {
      @return Время работы в часах.
      */
     public static String getUpTime() {
-        return "(" + (+( float ) (System.currentTimeMillis() -
-                                      ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN / ConstantsFor.ONE_HOUR_IN_MIN) +
-            " hrs ago)";
+
+        float hrsOn = (float) (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN / ConstantsFor.ONE_HOUR_IN_MIN;
+
+        return "(" + String.format("%.03f", hrsOn) +
+            "h up)";
     }
 
     /**
@@ -520,7 +527,7 @@ public enum ConstantsFor {
                 .append(TimeUnit.SECONDS.toMinutes(diffSec));
             stringBuilder
                 .append("(мин.). Ещё ")
-                .append(percDay)
+                .append(String.format("%.02f", percDay))
                 .append(" % или ");
         }
         else{

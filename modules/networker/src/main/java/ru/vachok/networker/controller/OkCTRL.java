@@ -19,6 +19,7 @@ public class OkCTRL {
 
     @GetMapping("/ok")
     public String okStr(Model model, HttpServletRequest request) throws InvocationTargetException, NullPointerException, NoSuchBeanDefinitionException {
+        Thread.currentThread().setName("OkCTRL.okStr");
         Visitor visitor = ConstantsFor.getVis(request);
         if (request.getQueryString() == null) throw new UnsatisfiedLinkError("Кривая ссылка!");
         else {

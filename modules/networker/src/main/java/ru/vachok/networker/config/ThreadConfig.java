@@ -5,13 +5,14 @@ import org.springframework.core.task.TaskDecorator;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import org.springframework.util.CustomizableThreadCreator;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
 
 
 /**
  @since 11.09.2018 (11:41) */
-@SuppressWarnings ("MagicNumber")
+@SuppressWarnings("MagicNumber")
 @EnableAsync
 public class ThreadConfig extends ThreadPoolTaskExecutor {
 
@@ -25,6 +26,18 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
      */
     private static final ThreadPoolTaskScheduler TASK_SCHEDULER = new ThreadPoolTaskScheduler();
 
+    /**
+     Запуск {@link Runnable}, как {@link Thread}
+
+     @param r {@link Runnable}
+     */
+    public static void executeAsThread(Runnable r) {
+        CustomizableThreadCreator customizableThreadCreator = new CustomizableThreadCreator("OnChk: ");
+        customizableThreadCreator.setThreadGroup(TASK_EXECUTOR.getThreadGroup());
+        Thread thread = customizableThreadCreator.createThread(r);
+        thread.start();
+    }
+
     public Runnable taskDecorator(Runnable runnable) {
         TaskDecorator taskDecorator = runnable1 -> runnable;
         String msg = taskDecorator.toString() + " " + this.getClass().getSimpleName() + ".taskDecorator(Runnable runnable)";
@@ -33,7 +46,7 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
     }
 
     /**
-     * Убивает {@link #TASK_EXECUTOR} и {@link #TASK_SCHEDULER}
+     Убивает {@link #TASK_EXECUTOR} и {@link #TASK_SCHEDULER}
      */
     public void killAll() {
         threadPoolTaskScheduler().destroy();
@@ -61,38 +74,12 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
     }
 
     @Override
-    public int hashCode() {
-        return TASK_EXECUTOR.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object o_p) {
-        if(this==o_p){
-            return true;
-        }
-        if(o_p==null || getClass()!=o_p.getClass()){
-            return false;
-        }
-
-        ThreadConfig that = ( ThreadConfig ) o_p;
-
-        return TASK_EXECUTOR.equals(TASK_EXECUTOR);
-    }
-
-    @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder(TASK_EXECUTOR.getThreadNamePrefix() + "{");
-        sb.append("activeCount/total=").append(TASK_EXECUTOR.getActiveCount()).append("/");
-        sb.append(Thread.activeCount());
-        sb.append("(").append(TASK_EXECUTOR.getActiveCount()).append(" TASK_EXECUTOR)");
-        sb.append(", corePoolSize=").append(TASK_EXECUTOR.getCorePoolSize());
-        sb.append(", keepAliveSeconds=").append(TASK_EXECUTOR.getKeepAliveSeconds());
-        sb.append(", maxPoolSize=").append(TASK_EXECUTOR.getMaxPoolSize());
-        sb.append(", poolSize=").append(TASK_EXECUTOR.getPoolSize());
-        sb.append(", <b>hash = ").append(TASK_EXECUTOR.hashCode());
-        sb.append("</b>, prefix=").append(TASK_EXECUTOR.getThreadNamePrefix()).append("<br>\n");
-        sb.append(", TASK_SCHEDULED= ").append(TASK_SCHEDULER.getActiveCount());
-        sb.append(", TASK_SCHEDULER= ").append(TASK_SCHEDULER.getThreadNamePrefix());
+        final StringBuilder sb = new StringBuilder("ThreadConfig{");
+        sb.append("TASK_EXECUTOR=").append(TASK_EXECUTOR);
+        sb.append(", TASK_SCHEDULER=").append(TASK_SCHEDULER);
+        sb.append(", threadPoolTaskExecutor=").append(threadPoolTaskExecutor());
+        sb.append(", threadPoolTaskScheduler=").append(threadPoolTaskScheduler());
         sb.append('}');
         return sb.toString();
     }

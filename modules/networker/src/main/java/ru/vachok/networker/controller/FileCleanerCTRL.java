@@ -22,14 +22,17 @@ import java.util.concurrent.Future;
 @Controller
 public class FileCleanerCTRL {
 
+    private static final String MAPPING_CLEANER = "/cleaner";
+
     private CommonScan2YOlder commonScan2YOlder;
 
     @Autowired
     public FileCleanerCTRL(CommonScan2YOlder commonScan2YOlder) {
         this.commonScan2YOlder = commonScan2YOlder;
+        Thread.currentThread().setName("FileCleanerCTRL.FileCleanerCTRL");
     }
 
-    @GetMapping("/cleaner")
+    @GetMapping (MAPPING_CLEANER)
     public String getFilesInfo(Model model, HttpServletResponse response) {
         Thread.currentThread().setName(getClass().getSimpleName() + "GET");
         model.addAttribute(ConstantsFor.ATT_TITLE, "Инфо о файлах");
@@ -37,7 +40,7 @@ public class FileCleanerCTRL {
         return "cleaner";
     }
 
-    @PostMapping("/cleaner")
+    @PostMapping (MAPPING_CLEANER)
     public String postFile(Model model, @ModelAttribute CommonScan2YOlder commonScan2YOlder) {
         Thread.currentThread().setName(getClass().getSimpleName() + "POST");
         this.commonScan2YOlder = commonScan2YOlder;

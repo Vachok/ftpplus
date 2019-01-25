@@ -14,8 +14,10 @@ import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.systray.SystemTrayHelper;
 
 import java.awt.*;
+import java.io.IOException;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.TextStyle;
@@ -50,15 +52,6 @@ public class IntoApplication {
      {@link ConfigurableApplicationContext} Usages: {@link #main(String[])},
      */
     private static ConfigurableApplicationContext configurableApplicationContext = null;
-
-    /**
-     Usages: {@link SystemTrayHelper#addItems(PopupMenu)}
-
-     @return {@link #SPRING_APPLICATION}
-     */
-    static SpringApplication getSpringApplication() {
-        return SPRING_APPLICATION;
-    }
 
     /**
      Usages: {@link ExitApp#exitAppDO()}, {@link SystemTrayHelper#addItems(PopupMenu)}
@@ -129,24 +122,16 @@ public class IntoApplication {
     /**
      Запуск после старта Spring boot app <br> Usages: {@link #main(String[])}
      */
+    @SuppressWarnings("MethodWithMultipleReturnPoints")
     private static boolean afterSt() {
         ThreadConfig threadConfig = new ThreadConfig();
-        Runnable infoAndSched = new AppInfoOnLoad();
+        AppInfoOnLoad infoAndSched = new AppInfoOnLoad();
+        Runnable r = IntoApplication::appProperties;
         try {
-            (( AppInfoOnLoad ) infoAndSched).spToFile();
-            String s = Paths.get("").toFile().getCanonicalPath().toLowerCase();
+            infoAndSched.spToFile();
             String showPath = Paths.get(".").toString() + "\n abs: " +
                 Paths.get(".").toFile().getAbsolutePath();
-            new Thread(() -> {
-                InitProperties initProperties = new FileProps(s + "\\modules\\networker\\src\\main\\resources\\application");
-                Properties props = initProperties.getProps();
-                props.setProperty("build.version", ConstantsFor.getProps().getProperty(ConstantsFor.PR_APP_VERSION));
-                props.setProperty(ConstantsFor.PR_QSIZE, ConstantsFor.IPS_IN_VELKOM_VLAN + "");
-                initProperties.setProps(props);
-                initProperties = new DBRegProperties(ConstantsFor.APP_NAME + "application");
-                initProperties.delProps();
-                initProperties.setProps(props);
-            }).start();
+            new ThreadConfig().threadPoolTaskExecutor().execute(r);
             LOGGER.error(showPath);
             threadConfig.threadPoolTaskExecutor().execute(infoAndSched);
             return true;
@@ -155,5 +140,23 @@ public class IntoApplication {
             FileSystemWorker.recFile(IntoApplication.class.getSimpleName() + ConstantsFor.LOG, Collections.singletonList(new TForms().fromArray(e, false)));
             return false;
         }
+    }
+
+    private static void appProperties() {
+        String s = null;
+        try {
+            s = Paths.get("").toFile().getCanonicalPath().toLowerCase();
+        } catch (IOException e) {
+            FileSystemWorker.recFile(IntoApplication.class.getSimpleName(), e.getMessage() + "\n" + new TForms().fromArray(e, false));
+            LOGGER.warn(e.getMessage());
+        }
+        InitProperties initProperties = new FileProps(s + "\\modules\\networker\\src\\main\\resources\\application");
+        Properties props = initProperties.getProps();
+        props.setProperty("build.version", ConstantsFor.getProps().getProperty(ConstantsFor.PR_APP_VERSION));
+        props.setProperty(ConstantsFor.PR_QSIZE, ConstantsFor.IPS_IN_VELKOM_VLAN + "");
+        initProperties.setProps(props);
+        initProperties = new DBRegProperties(ConstantsFor.APP_NAME + "application");
+        initProperties.delProps();
+        initProperties.setProps(props);
     }
 }

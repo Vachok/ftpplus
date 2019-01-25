@@ -4,17 +4,19 @@ package ru.vachok.networker.accesscontrol.common;
 import org.slf4j.Logger;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.systray.SystemTrayHelper;
 
 import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Date;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
  Очистка папки \\192.168.14.10\IT-Backup\SRV-FS\Archives
 
- @see ru.vachok.networker.SystemTrayHelper
+ @see SystemTrayHelper
  @since 15.11.2018 (14:09) */
 public class ArchivesAutoCleaner extends SimpleFileVisitor<Path> implements Runnable {
 
@@ -25,6 +27,7 @@ public class ArchivesAutoCleaner extends SimpleFileVisitor<Path> implements Runn
      */
     private static final String SRV_FS_ARCHIVES = "\\\\192.168.14.10\\IT-Backup\\SRV-FS\\Archives\\";
 
+    @SuppressWarnings("CanBeFinal")
     private static PrintWriter printWriter;
 
     static {
@@ -41,12 +44,13 @@ public class ArchivesAutoCleaner extends SimpleFileVisitor<Path> implements Runn
         String msg = new StringBuilder().append("Cleaning the directory: ")
             .append(dir.toString()).append("\n")
             .append(attrs.lastModifiedTime()).append(" is last modified time.")
-            .append(dir.toFile().listFiles().length)
+            .append(Objects.requireNonNull(dir.toFile().listFiles()).length)
             .append(" files in.").toString();
         LOGGER.info(msg);
         return FileVisitResult.CONTINUE;
     }
 
+    @SuppressWarnings("MethodWithMultipleReturnPoints")
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
         File ditToCopyFiles = new File("\\\\192.168.14.10\\IT-Backup\\SRV-FS\\bluray\\");
@@ -71,12 +75,13 @@ public class ArchivesAutoCleaner extends SimpleFileVisitor<Path> implements Runn
     }
 
     @Override
-    public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+    public FileVisitResult visitFileFailed(Path file, IOException exc) {
         String size = exc.getMessage() + " visit failed (" + file.toAbsolutePath() + ")";
         LOGGER.info(size);
         return FileVisitResult.CONTINUE;
     }
 
+    @SuppressWarnings("MethodWithMultipleReturnPoints")
     @Override
     public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
         try {

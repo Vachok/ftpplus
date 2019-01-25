@@ -61,6 +61,7 @@ public class PfListsCtr {
         this.pfLists = pfLists;
         this.pfListsSrv = pfListsSrv;
         this.pingOK = ConstantsFor.isPingOK();
+        Thread.currentThread().setName("PfListsCtr.PfListsCtr");
     }
 
     static {

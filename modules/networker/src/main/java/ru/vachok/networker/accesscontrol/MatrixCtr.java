@@ -56,6 +56,7 @@ public class MatrixCtr {
     @Autowired
     public MatrixCtr(VersionInfo versionInfo) {
         this.versionInfo = versionInfo;
+        Thread.currentThread().setName("MatrixCtr.MatrixCtr");
     }
 
     /**

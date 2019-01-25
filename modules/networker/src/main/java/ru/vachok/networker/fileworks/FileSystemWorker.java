@@ -8,6 +8,7 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.common.CommonScan2YOlder;
 import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.systray.SystemTrayHelper;
 
 import java.io.*;
 import java.nio.file.*;
@@ -59,7 +60,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     /**
      Удаление временных файлов.
      <p>
-     Usages: {@link ru.vachok.networker.SystemTrayHelper#addTray(String)}, {@link ru.vachok.networker.controller.ServiceInfoCtrl#closeApp()}, {@link ru.vachok.networker.net.MyServer#reconSock()}. <br>
+     Usages: {@link SystemTrayHelper#addTray(String)}, {@link ru.vachok.networker.controller.ServiceInfoCtrl#closeApp()}, {@link ru.vachok.networker.net.MyServer#reconSock()}. <br>
      Uses: {@link CommonScan2YOlder} <br>
      */
     public static void delTemp() {
@@ -79,6 +80,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
      @return список файлов или {@link Exception}
      @see FileSearcher
      */
+    @SuppressWarnings("MethodWithMultipleReturnPoints")
     public static String searchInCommon(String[] folderPath) {
         FileSearcher fileSearcher = new FileSearcher(folderPath[0]);
         try{
@@ -155,6 +157,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
      @param s        строка путь
      @return удача/нет
      */
+    @SuppressWarnings("MethodWithMultipleReturnPoints")
     public static boolean copyOrDelFile(File origFile, String s, boolean needDel) {
         File toCpFile = new File(s);
         try{
@@ -175,14 +178,14 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         return toCpFile.exists();
     }
 
+    @SuppressWarnings("MethodWithMultipleReturnPoints")
     public static boolean delFilePatterns(String patToDel) {
         File file = new File(".");
         FileVisitor<Path> deleterTemp = new DeleterTemp(patToDel);
         try{
             Path walkFileTree = Files.walkFileTree(file.toPath(), deleterTemp);
             return walkFileTree.toFile().exists();
-        }
-        catch(IOException e){
+        } catch(IOException e){
             LOGGER.warn(e.getMessage(), e);
             return false;
         }
@@ -196,5 +199,9 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
             readiedStrings.put(f.getAbsolutePath(), s);
         }
         return readiedStrings;
+    }
+
+    public static void recFile(String fileNameLOG, String toWriteStr) {
+        recFile(fileNameLOG + ConstantsFor.LOG, Collections.singletonList(toWriteStr));
     }
 }

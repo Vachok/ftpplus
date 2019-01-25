@@ -5,18 +5,20 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
 import ru.vachok.mysqlandprops.RegRuMysql;
-import ru.vachok.mysqlandprops.props.DBRegProperties;
-import ru.vachok.mysqlandprops.props.FileProps;
-import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -26,6 +28,7 @@ import java.util.function.BiConsumer;
  <h1>Создаёт команды для MS Power Shell, чтобы добавить фото пользователей</h1>
 
  @since 21.08.2018 (15:57) */
+@SuppressWarnings("unused")
 @Service (ConstantsFor.ATT_PHOTO_CONVERTER)
 public class PhotoConverterSRV {
 
@@ -34,27 +37,7 @@ public class PhotoConverterSRV {
      */
     private static final Logger LOGGER = AppComponents.getLogger();
 
-    private static InitProperties initProperties;
-
-    static {
-        try {
-            initProperties = new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.ATT_PHOTO_CONVERTER);
-        } catch (Exception e) {
-            initProperties = new FileProps(ConstantsFor.APP_NAME + ConstantsFor.ATT_PHOTO_CONVERTER);
-        }
-    }
-
-    private Properties properties = getProps();
-
-    private static Properties getProps() {
-        try{
-            return initProperties.getProps();
-        }
-        catch(Exception e){
-            PhotoConverterSRV.initProperties = new DBRegProperties(ConstantsFor.APP_NAME + PhotoConverterSRV.class.getSimpleName());
-            return initProperties.getProps();
-        }
-    }
+    private final Properties properties = ConstantsFor.getProps();
 
     /**
      Путь до папки с фото.
@@ -66,13 +49,14 @@ public class PhotoConverterSRV {
      */
     private File adFotoFile;
 
-    private List<String> psCommands = new ArrayList<>();
+    private final List<String> psCommands = new ArrayList<>();
 
     /**
      <b>Преобразование в JPG</b>
      Подготавливает фотографии для импорта в ActiveDirectory. Преобразует любой понимаемый {@link BufferedImage} формат в jpg.
      */
-    private BiConsumer<String, BufferedImage> imageBiConsumer = (x, y) -> {
+    @SuppressWarnings("OverlyLongLambda")
+    private final BiConsumer<String, BufferedImage> imageBiConsumer = (String x, BufferedImage y) -> {
         String pathName = properties.getOrDefault("pathName", "\\\\srv-mail3.eatmeat.ru\\c$\\newmailboxes\\foto\\").toString();
         File outFile = new File(pathName + x + ".jpg");
         String fName = "jpg";
@@ -98,6 +82,7 @@ public class PhotoConverterSRV {
         }
     };
 
+    @SuppressWarnings("unused")
     public File getAdFotoFile() {
         return adFotoFile;
     }
@@ -122,11 +107,12 @@ public class PhotoConverterSRV {
      @return Комманды Exchange PowerShell
      @throws NullPointerException если нет фото
      */
-    String psCommands() throws NullPointerException {
+    String psCommands() {
         try {
             convertFoto();
-        } catch (IOException e) {
-            LOGGER.error(e.getMessage(), e);
+        } catch (IOException | NullPointerException e) {
+            FileSystemWorker.recFile(getClass().getSimpleName(), e.getMessage() + "\n" + new TForms().fromArray(e, false));
+            LOGGER.error(e.getMessage());
         }
         StringBuilder stringBuilder = new StringBuilder();
         for (String s : psCommands) {
@@ -152,8 +138,7 @@ public class PhotoConverterSRV {
         } catch (NullPointerException e) {
             filesList.put("ERROR", null);
         }
-        initProperties.delProps();
-        initProperties.setProps(properties);
+        ConstantsFor.saveProps(properties);
     }
 
     private Set<String> samAccFromDB() {

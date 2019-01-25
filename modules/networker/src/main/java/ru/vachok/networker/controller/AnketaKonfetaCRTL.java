@@ -35,6 +35,7 @@ public class AnketaKonfetaCRTL {
     @Autowired
     public AnketaKonfetaCRTL(AnketaKonfeta anketaKonfeta) {
         this.anketaKonfeta = anketaKonfeta;
+        Thread.currentThread().setName("AnketaKonfetaCRTL.AnketaKonfetaCRTL");
     }
 
     @GetMapping("/anketa")
