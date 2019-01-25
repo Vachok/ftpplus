@@ -1,10 +1,9 @@
-package ru.vachok.networker.services;
+package ru.vachok.networker.systray;
 
 
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.SystemTrayHelper;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.awt.*;
@@ -19,26 +18,36 @@ import java.util.Collections;
  @since 21.01.2019 (23:46) */
 public class MessageToTray implements MessageToUser {
 
-    private ActionListener aListener = null;
+    private final ActionListener aListener;
+
+    /**
+     {@link SystemTrayHelper#getTrayIcon()}
+     */
+    private final TrayIcon trayIcon = SystemTrayHelper.getTrayIcon();
 
     public MessageToTray() {
+        this.aListener = new ActionDefault();
+        delActions();
+    }
+
+    private void delActions() {
+        ActionListener[] actionListeners = trayIcon.getActionListeners();
+        for (ActionListener a : actionListeners) {
+            trayIcon.removeActionListener(a);
+        }
     }
 
     public MessageToTray(ActionListener aListener) {
         this.aListener = aListener;
+        delActions();
     }
 
     @Override
     public void errorAlert(String s, String s1, String s2) {
-        if(SystemTray.isSupported()){
-            TrayIcon trayIcon = SystemTrayHelper.getTrayIcon();
-            if(aListener!=null){
-                trayIcon.addActionListener(aListener);
-            }
+        if (SystemTray.isSupported()) {
+            trayIcon.addActionListener(aListener);
             trayIcon.displayMessage(s, s1 + " " + s2, TrayIcon.MessageType.ERROR);
-
-        }
-        else{
+        } else {
             new MessageCons().errorAlert(s, s1, s2);
         }
         FileSystemWorker.recFile(s + ConstantsFor.LOG, Collections.singletonList((s1 + "\n\n" + s2)));
@@ -46,33 +55,27 @@ public class MessageToTray implements MessageToUser {
 
     @Override
     public void info(String s, String s1, String s2) {
-        if(SystemTray.isSupported()){
-            TrayIcon trayIcon = SystemTrayHelper.getTrayIcon();
-            if (aListener != null) trayIcon.addActionListener(aListener);
+        if (SystemTray.isSupported()) {
+            trayIcon.addActionListener(aListener);
             trayIcon.displayMessage(s, s1 + " " + s2, TrayIcon.MessageType.INFO);
-        }
-        else{
+        } else {
             new MessageCons().info(s, s1, s2);
-        }
-    }
-
-    @Override
-    public void infoNoTitles(String s) {
-        if(SystemTray.isSupported()){
-            TrayIcon trayIcon = SystemTrayHelper.getTrayIcon();
-            trayIcon.displayMessage("FYI", s, TrayIcon.MessageType.INFO);
-            if(aListener!=null){
-                trayIcon.addActionListener(aListener);
-            }
-        }
-        else{
-            new MessageCons().infoNoTitles(s);
         }
     }
 
     @Override
     public void infoTimer(int i, String s) {
         throw new UnsupportedOperationException("Not impl to " + getClass().getSimpleName());
+    }
+
+    @Override
+    public void infoNoTitles(String s) {
+        if (SystemTray.isSupported()) {
+            trayIcon.displayMessage("FYI", s, TrayIcon.MessageType.INFO);
+            trayIcon.addActionListener(aListener);
+        } else {
+            new MessageCons().infoNoTitles(s);
+        }
     }
 
     @Override

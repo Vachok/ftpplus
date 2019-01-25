@@ -15,13 +15,18 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import javax.mail.Message;
 import javax.mail.MessagingException;
-import javax.net.ssl.SSLException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
@@ -52,14 +57,15 @@ public class SpeedChecker implements Callable<Long> {
      @see Thread#run()
      */
     @Override
-    public Long call() throws SSLException {
+    public Long call() {
         Long chkForLastLong = chkForLast();
         String msg = new java.util.Date(chkForLastLong) + " from " + SpeedChecker.class.getSimpleName();
         LOGGER.info(msg);
         return chkForLastLong;
     }
 
-    private static Long chkForLast() throws SSLException {
+    @SuppressWarnings("MethodWithMultipleReturnPoints")
+    private static Long chkForLast() {
         new MessageCons().infoNoTitles("SpeedChecker.chkForLast");
         final long stArt = System.currentTimeMillis();
         String sql = ConstantsFor.SELECT_FROM_SPEED;
@@ -95,7 +101,7 @@ public class SpeedChecker implements Callable<Long> {
         LOGGER.info(msgTimeSp);
     }
 
-    /*END FOR CLASS*/
+
     public static final class SpFromMail implements Runnable {
 
         @Override
@@ -152,7 +158,7 @@ public class SpeedChecker implements Callable<Long> {
                         " road, " +
                         r.getString("Speed") +
                         " speed, " + r.getString(ConstantsFor.TIME_SPEND) + " time in min, " +
-                        DayOfWeek.of(r.getInt("WeekDay"));
+                        DayOfWeek.of(r.getInt("WeekDay") - 1);
                     retMap.put(r.getTimestamp(ConstantsFor.COL_SQL_NAME_TIMESTAMP).toString(), valueS);
                 }
                 retMap.put(LocalDateTime.now().toString(), "okok");

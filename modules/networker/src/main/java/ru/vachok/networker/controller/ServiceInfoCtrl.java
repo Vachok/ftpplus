@@ -6,7 +6,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import ru.vachok.networker.*;
+import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.ExitApp;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
@@ -15,6 +17,7 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.DiapazonedScan;
 import ru.vachok.networker.services.MyCalen;
 import ru.vachok.networker.services.SpeedChecker;
+import ru.vachok.networker.systray.SystemTrayHelper;
 
 import javax.net.ssl.SSLException;
 import javax.servlet.http.HttpServletRequest;
@@ -24,7 +27,10 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.file.AccessDeniedException;
 import java.time.LocalTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
@@ -79,24 +85,36 @@ public class ServiceInfoCtrl {
             Long.parseLong(ConstantsFor.getProps().getProperty("lasts", 1544816520000L + ""))) / 60f / 24f;
     }
 
-    private String pingGit() {
-        boolean reachable = false;
-        try{
-            InetAddress byName = InetAddress.getByName(ConstantsFor.SRV_GIT_EATMEAT_RU);
-            reachable = byName.isReachable(1000);
+    private void modModMaker(Model model, HttpServletRequest request, Visitor visitor) throws SSLException {
+        this.visitor = ConstantsFor.getVis(request);
+        Long whenCome = new SpeedChecker().call();
+        Date comeD = new Date(whenCome);
+        if (visitor.getSession().equals(request.getSession())) {
+            visitor.setClickCounter(visitor.getClickCounter() + 1);
         }
-        catch(IOException e){
-            LOGGER.error(e.getMessage(), e);
-        }
-        String s = "</b> srv-git.eatmeat.ru.</font> Checked at: <i>";
-        String s2 = "</i><br>";
-        String s1 = "<b><font color=\"#77ff72\">" + true + s + LocalTime.now() + s2;
-        if(reachable){
-            return s1;
-        }
-        else{
-            return "<b><font color=\"#ff2121\">" + true + s + LocalTime.now() + s2;
-        }
+        model.addAttribute(ConstantsFor.ATT_TITLE, getLast() + " (" + getLast() * ConstantsFor.ONE_DAY_HOURS + ")");
+        model.addAttribute("mail", ConstantsFor.percToEnd(comeD));
+        model.addAttribute("ping", pingGit());
+        model.addAttribute("urls", new StringBuilder()
+            .append("Запущено - ")
+            .append(new Date(ConstantsFor.START_STAMP)).append(ConstantsFor.getUpTime())
+            .append(" (<i>rnd delay is ")
+            .append(ConstantsFor.DELAY)
+            .append("</i>)<br>Точное время: ")
+            .append(ConstantsFor.getAtomicTime())
+            .append(".<br> Состояние памяти (МБ): <font color=\"#82caff\">")
+            .append(ConstantsFor.showMem())
+            .append("</font><br>")
+            .append(DiapazonedScan.getInstance().toString())
+            .append("<br>")
+            .append(new ThreadConfig().toString())
+            .toString());
+        model.addAttribute("request", prepareRequest(request));
+        model.addAttribute(ConstantsFor.ATT_VISIT, visitor.toString());
+        model.addAttribute("res", MyCalen.toStringS() + "<br><br>" + "<b><i>" + AppComponents.versionInfo().toString() + "</i></b>" +
+            "<p><font color=\"grey\">" + listFilesToReadStr() + "</font>");
+        model.addAttribute("back", request.getHeader(ConstantsFor.ATT_REFERER.toLowerCase()));
+        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<br>" + getJREVers());
     }
 
     private String prepareRequest(HttpServletRequest request) {
@@ -152,33 +170,23 @@ public class ServiceInfoCtrl {
         return "ok";
     }
 
-    private void modModMaker(Model model, HttpServletRequest request, Visitor visitor) throws SSLException {
-        this.visitor = ConstantsFor.getVis(request);
-        Long whenCome = new SpeedChecker().call();
-        Date comeD = new Date(whenCome);
-        if(visitor.getSession().equals(request.getSession())){
-            visitor.setClickCounter(visitor.getClickCounter() + 1);
+    @SuppressWarnings("MethodWithMultipleReturnPoints")
+    private String pingGit() {
+        boolean reachable = false;
+        try {
+            InetAddress byName = InetAddress.getByName(ConstantsFor.SRV_GIT_EATMEAT_RU);
+            reachable = byName.isReachable(1000);
+        } catch (IOException e) {
+            LOGGER.error(e.getMessage(), e);
         }
-        model.addAttribute(ConstantsFor.ATT_TITLE, getLast() + " (" + getLast() * ConstantsFor.ONE_DAY_HOURS + ")");
-        model.addAttribute("mail", ConstantsFor.percToEnd(comeD));
-        model.addAttribute("ping", pingGit());
-        model.addAttribute("urls", new StringBuilder()
-            .append("Запущено - ")
-            .append(new Date(ConstantsFor.START_STAMP)).append(ConstantsFor.getUpTime())
-            .append(" (<i>rnd delay is ")
-            .append(ConstantsFor.DELAY)
-            .append("</i>)<br>Точное время: ")
-            .append(ConstantsFor.getAtomicTime())
-            .append(".<br> Состояние памяти (МБ): <font color=\"#82caff\">")
-            .append(ConstantsFor.showMem()).append("</font><br>")
-            .append(DiapazonedScan.getInstance().toString() + "<br>" + new ThreadConfig().toString())
-            .toString());
-        model.addAttribute("request", prepareRequest(request));
-        model.addAttribute(ConstantsFor.ATT_VISIT, visitor.toString());
-        model.addAttribute("res", MyCalen.toStringS() + "<br><br>" + "<b><i>" + AppComponents.versionInfo().toString() + "</i></b>" +
-            "<p><font color=\"grey\">" + listFilesToReadStr() + "</font>");
-        model.addAttribute("back", request.getHeader(ConstantsFor.ATT_REFERER.toLowerCase()));
-        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<br>" + getJREVers());
+        String s = "</b> srv-git.eatmeat.ru.</font> Checked at: <i>";
+        String s2 = "</i><br>";
+        String s1 = "<b><font color=\"#77ff72\">" + true + s + LocalTime.now() + s2;
+        if (reachable) {
+            return s1;
+        } else {
+            return "<b><font color=\"#ff2121\">" + true + s + LocalTime.now() + s2;
+        }
     }
 
     private String listFilesToReadStr() {
@@ -190,7 +198,8 @@ public class ServiceInfoCtrl {
         }
         ConcurrentMap<String, String> stringStringConcurrentMap = FileSystemWorker.readFiles(readUs);
         List<String> retListStr = new ArrayList<>();
-        stringStringConcurrentMap.forEach((x, y) -> {
+        //noinspection OverlyLongLambda
+        stringStringConcurrentMap.forEach((String x, String y) -> {
             try{
                 retListStr.add(y.split("userId")[0]);
                 retListStr.add("<b>" + x.split("FtpClientPlus")[1] + "</b>");

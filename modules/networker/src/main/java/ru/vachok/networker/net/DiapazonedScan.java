@@ -192,7 +192,7 @@ public class DiapazonedScan implements Runnable {
                     ConstantsFor.ALL_DEVICES.add("<font color=\"green\">" + toString + FONT_BR_STR);
                 }
                 else{
-                    Thread.currentThread().setName("no-" + toString);
+                    Thread.currentThread().setName(ConstantsFor.ALL_DEVICES.size() + " of " + ConstantsFor.IPS_IN_VELKOM_VLAN);
                     ConstantsFor.ALL_DEVICES.add("<font color=\"red\">" + toString + FONT_BR_STR);
                 }
                 msgBuild.append("IP was ").append(whatVlan).append(i).append("<-i.j->").append(j).append("\n")

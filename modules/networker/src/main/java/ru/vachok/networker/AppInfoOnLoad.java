@@ -5,7 +5,6 @@ import org.slf4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import ru.vachok.messenger.MessageCons;
-import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.messenger.email.ESender;
 import ru.vachok.mysqlandprops.EMailAndDB.SpeedRunActualize;
@@ -19,14 +18,17 @@ import ru.vachok.networker.mailserver.MailIISLogsCleaner;
 import ru.vachok.networker.net.DiapazonedScan;
 import ru.vachok.networker.net.SwitchesAvailability;
 import ru.vachok.networker.net.WeekPCStats;
-import ru.vachok.networker.services.MessageToTray;
 import ru.vachok.networker.services.MyCalen;
 import ru.vachok.networker.services.SpeedChecker;
+import ru.vachok.networker.systray.ActionOnAppStart;
+import ru.vachok.networker.systray.MessageToTray;
 
-import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.FileVisitor;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -34,7 +36,11 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Date;
-import java.util.concurrent.*;
+import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -53,15 +59,7 @@ public class AppInfoOnLoad implements Runnable {
     /**
      Запуск {@link CommonRightsChecker}
      */
-    private static Runnable r = () -> {
-        try{
-            FileVisitor<Path> commonRightsChecker = new CommonRightsChecker();
-            Files.walkFileTree(Paths.get("\\\\srv-fs.eatmeat.ru\\common_new"), commonRightsChecker);
-        }
-        catch(IOException e){
-            LOGGER.warn(e.getMessage(), e);
-        }
-    };
+    private static final Runnable r = AppInfoOnLoad::commonRights;
 
     /**
      Задержка выполнения для этого класса
@@ -73,7 +71,7 @@ public class AppInfoOnLoad implements Runnable {
     /**
      Запускает сканнер прав Common
      */
-    static void runCommonScan() {
+    protected static void runCommonScan() {
         String msg = new StringBuilder()
             .append(LocalTime.now()
                 .plusMinutes(5).toString())
@@ -81,6 +79,16 @@ public class AppInfoOnLoad implements Runnable {
             .append(CommonRightsChecker.class.getSimpleName())
             .append(" been run.").toString();
         LOGGER.info(msg);
+    }
+
+    private static void commonRights() {
+        LOGGER.warn("AppInfoOnLoad.commonRights");
+        try {
+            FileVisitor<Path> commonRightsChecker = new CommonRightsChecker();
+            Files.walkFileTree(Paths.get("\\\\srv-fs.eatmeat.ru\\common_new"), commonRightsChecker);
+        } catch (IOException e) {
+            LOGGER.warn(e.getMessage(), e);
+        }
     }
 
     void spToFile() {
@@ -116,17 +124,7 @@ public class AppInfoOnLoad implements Runnable {
 
         String logStr = stringBuilder.toString();
         LOGGER.warn(logStr);
-        new MessageToTray((ActionEvent e) -> {
-            long when = e.getWhen();
-            Thread threadSP = new ThreadConfig().threadPoolTaskExecutor().createThread(new SpeedRunActualize());
-            threadSP.setName("SpeedRunActualize");
-            threadSP.start();
-            String messageSW = "SpeedRunActualize running " + threadSP.isAlive() + "\n" +
-                LocalTime.now().toString() + " now.\nAction at: \n" +
-                new Date(when) + "\n" +
-                AppInfoOnLoad.class.getSimpleName();
-            new MessageSwing().infoNoTitles(messageSW, 461, 384);
-        }).info(checkDay(), iisLogSize(), methMetr(stArt));
+        new MessageToTray(new ActionOnAppStart()).info(checkDay(), iisLogSize(), methMetr(stArt));
     }
 
     /**
@@ -209,10 +207,10 @@ public class AppInfoOnLoad implements Runnable {
         return msg;
     }
 
-    static String iisLogSize() throws MyNull {
+    public static String iisLogSize() throws MyNull {
         Path iisLogsDir = Paths.get("\\\\srv-mail3.eatmeat.ru\\c$\\inetpub\\logs\\LogFiles\\W3SVC1\\");
         long totalSize = 0L;
-        for(File x : iisLogsDir.toFile().listFiles()){
+        for (File x : Objects.requireNonNull(iisLogsDir.toFile().listFiles())) {
             totalSize = totalSize + x.length();
         }
         return totalSize / ConstantsFor.MBYTE + " MB of " + iisLogsDir + " IIS Logs\n";

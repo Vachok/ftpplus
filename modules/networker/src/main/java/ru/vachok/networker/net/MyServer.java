@@ -5,12 +5,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.SystemTrayHelper;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.VersionInfo;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.DBMessenger;
+import ru.vachok.networker.systray.SystemTrayHelper;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -21,13 +21,15 @@ import java.util.Date;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
-import static java.lang.System.*;
+import static java.lang.System.err;
+import static java.lang.System.out;
 
 
 /**
  Телнет-сервер получения информации и ввода команд приложения.
 
  @since 03.11.2018 (23:51) */
+@SuppressWarnings("resource")
 public class MyServer extends Thread {
 
     /*Fields*/
@@ -40,24 +42,25 @@ public class MyServer extends Thread {
     /**
      {@link AppComponents#getLogger()}
      */
-    public static final Logger LOGGER = AppComponents.getLogger();
+    private static final Logger LOGGER = AppComponents.getLogger();
 
     /**
      <b>Single Instance</b>
      */
-    private static MyServer myServer = new MyServer();
+    private static final MyServer myServer = new MyServer();
+
+    /**
+     {@link DBMessenger}
+     */
+    private static final MessageToUser messageToUser = new DBMessenger();
 
     /**
      <b>Сокет для сервера</b>
 
      @see ConstantsFor#LISTEN_PORT
      */
+    @SuppressWarnings("CanBeFinal")
     private static ServerSocket serverSocket = null;
-
-    /**
-     {@link DBMessenger}
-     */
-    private static MessageToUser messageToUser = new DBMessenger();
 
     /**
      <b>Сокет для клиента</b>
@@ -125,8 +128,7 @@ public class MyServer extends Thread {
         BufferedReader bufferedReader = new BufferedReader(reader);
         try{
             printStream.println(new VersionInfo().toString());
-        }
-        catch(RuntimeException e){
+        } catch(RuntimeException e){
             LOGGER.warn(e.getMessage());
         }
         printStream.println((System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN + " min up | " + ConstantsFor.APP_NAME);
@@ -134,6 +136,17 @@ public class MyServer extends Thread {
         printStream.println(ConstantsFor.showMem());
         printStream.println("Press Enter or enter command:\n");
         String readLine = bufferedReader.readLine();
+        makeDeal(readLine);
+    }
+
+    /**
+     Упрощение {@link #reconSock()}
+
+     @param readLine {@link #reconSock()}
+     @throws IOException          socket and files
+     @throws InterruptedException sleeping threads
+     */
+    private static void makeDeal(String readLine) throws IOException, InterruptedException {
         if (readLine.toLowerCase().contains("exit")) {
             FileSystemWorker.delTemp();
             socket.close();
