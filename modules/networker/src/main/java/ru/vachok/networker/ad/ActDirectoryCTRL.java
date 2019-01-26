@@ -20,7 +20,6 @@ import ru.vachok.networker.systray.MessageToTray;
 
 import javax.servlet.http.HttpServletRequest;
 import java.awt.event.ActionEvent;
-import java.time.LocalTime;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -138,10 +137,10 @@ public class ActDirectoryCTRL {
             String adSrvDetails = adSrv.getDetails(queryString);
             model.addAttribute(ATT_DETAILS, adSrvDetails);
             adSrvDetails = adSrvDetails.replaceAll("</br>", "\n").replaceAll("<p>", "\n\n").replaceAll("<p><b>", "\n\n");
-            long l = new Calendar.Builder().setTimeOfDay(LocalTime.now().getHour(), 0, 0).build().getTimeInMillis();
+            long l = new Calendar.Builder().setTimeOfDay(0, 0, 0).build().getTimeInMillis();
             String finalAdSrvDetails = adSrvDetails;
             new MessageToTray((ActionEvent e) -> new MessageSwing().infoNoTitles(queryString + "\n\n" + attributeValue + "\n" + finalAdSrvDetails)).info(queryString, attributeValue,
-                ConstantsFor.percToEnd(new Date(l), 1));
+                ConstantsFor.percToEnd(new Date(l), 24));
         }
         catch(Exception e){
             model.addAttribute(ATT_DETAILS, e.getMessage());
