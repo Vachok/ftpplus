@@ -8,6 +8,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import ru.vachok.messenger.MessageSwing;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.SshActs;
@@ -15,8 +16,13 @@ import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.net.NetScannerSvc;
+import ru.vachok.networker.systray.MessageToTray;
 
 import javax.servlet.http.HttpServletRequest;
+import java.awt.event.ActionEvent;
+import java.time.LocalTime;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 
@@ -38,6 +44,8 @@ public class ActDirectoryCTRL {
      {@link LoggerFactory}
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(ActDirectoryCTRL.class.getSimpleName());
+
+    private static final String ATT_DETAILS = "details";
 
     /**
      Доступность пк. online|offline сколько раз.
@@ -123,13 +131,20 @@ public class ActDirectoryCTRL {
     private String queryStringExists(String queryString, Model model) {
         NetScannerSvc iScan = NetScannerSvc.getI();
         iScan.setThePc(queryString);
-        model.addAttribute(ConstantsFor.ATT_TITLE, queryString + " " + iScan.getInfoFromDB());
+        String attributeValue = iScan.getInfoFromDB();
+        model.addAttribute(ConstantsFor.ATT_TITLE, queryString + " " + attributeValue);
         model.addAttribute(ConstantsFor.ATT_USERS, inputWithInfoFromDB);
         try{
-            model.addAttribute("details", adSrv.getDetails(queryString));
+            String adSrvDetails = adSrv.getDetails(queryString);
+            model.addAttribute(ATT_DETAILS, adSrvDetails);
+            adSrvDetails = adSrvDetails.replaceAll("</br>", "\n").replaceAll("<p>", "\n\n").replaceAll("<p><b>", "\n\n");
+            long l = new Calendar.Builder().setTimeOfDay(LocalTime.now().getHour(), 0, 0).build().getTimeInMillis();
+            String finalAdSrvDetails = adSrvDetails;
+            new MessageToTray((ActionEvent e) -> new MessageSwing().infoNoTitles(queryString + "\n\n" + attributeValue + "\n" + finalAdSrvDetails)).info(queryString, attributeValue,
+                ConstantsFor.percToEnd(new Date(l), 1));
         }
         catch(Exception e){
-            model.addAttribute("details", e.getMessage());
+            model.addAttribute(ATT_DETAILS, e.getMessage());
         }
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
         return "aditem";

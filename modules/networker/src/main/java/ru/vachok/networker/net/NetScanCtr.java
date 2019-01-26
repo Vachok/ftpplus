@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.messenger.MessageSwing;
+import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
@@ -20,22 +21,16 @@ import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MyCalen;
 import ru.vachok.networker.services.TimeChecker;
+import ru.vachok.networker.systray.ActionOnAppStart;
+import ru.vachok.networker.systray.MessageToTray;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintWriter;
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.Date;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
@@ -145,15 +140,22 @@ public class NetScanCtr {
         try (Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.DB_PREFIX + ConstantsFor.STR_VELKOM);
              PreparedStatement p = c.prepareStatement("select * from pcuserauto where userName like ? ORDER BY whenQueried DESC LIMIT 0, 20")) {
             p.setString(1, "%" + userInputRaw + "%");
-            try (ResultSet r = p.executeQuery()) {
+            try(ResultSet r = p.executeQuery()){
                 StringBuilder stringBuilder = new StringBuilder();
                 String headER = "<h3><center>LAST 20 USER PCs</center></h3>";
                 stringBuilder.append(headER);
-                while (r.next()) {
+                while(r.next()){
                     String pcName = r.getString(ConstantsFor.DB_FIELD_PCNAME);
                     String returnER = "<br><center><a href=\"/ad?" + pcName.split("\\Q.\\E")[0] + "\">" + pcName + "</a> set: " +
-                        r.getString(ConstantsNet.DB_FIELD_WHENQUERIED) + "</center>";
+                        r.getString(ConstantsNet.DB_FIELD_WHENQUERIED) + ConstantsFor.HTML_CENTER;
                     stringBuilder.append(returnER);
+                    if(r.last()){
+                        MessageToUser messageToUser = new MessageToTray(new ActionOnAppStart());
+                        messageToUser.info(
+                            r.getString(ConstantsFor.DB_FIELD_PCNAME),
+                            r.getTimestamp("stamp").toLocalDateTime().toString(),
+                            r.getString(ConstantsFor.DB_FIELD_USER));
+                    }
                 }
                 return stringBuilder.toString();
             }

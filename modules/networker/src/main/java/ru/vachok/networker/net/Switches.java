@@ -1,6 +1,8 @@
 package ru.vachok.networker.net;
 
 
+import ru.vachok.networker.ConstantsFor;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Collections;
@@ -77,14 +79,14 @@ public enum Switches {
                         .append("<font color=\"#00ff69\">")
                         .append(s)
                         .append("</font>");
-                    stringBuilder.append("</center>");
+                    stringBuilder.append(ConstantsFor.HTML_CENTER);
                 } else {
                     stringBuilder.append("<center>");
                     stringBuilder
                         .append("<strike><font color=\"red\">")
                         .append(s)
                         .append("</font></strike>");
-                    stringBuilder.append("</center>");
+                    stringBuilder.append(ConstantsFor.HTML_CENTER);
                 }
             }
         } catch (IllegalAccessException | IOException e) {

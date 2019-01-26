@@ -367,6 +367,8 @@ public enum ConstantsFor {
 
     public static final String LOG = ".log";
 
+    public static final String HTML_CENTER = "</center>";
+
     /**
      {@link #getAtomicTime()}
      */
@@ -495,11 +497,11 @@ public enum ConstantsFor {
     /**
      @return время до 17:30 в процентах от 8:30
      */
-    public static String percToEnd(Date timeToStart) {
+    public static String percToEnd(Date timeToStart, long amountH) {
         StringBuilder stringBuilder = new StringBuilder();
         LocalDateTime startDayTime = LocalDateTime.ofEpochSecond(timeToStart.getTime() / 1000, 0, ZoneOffset.ofHours(3));
         LocalTime startDay = startDayTime.toLocalTime();
-        LocalTime endDay = startDay.plus(9, HOURS);
+        LocalTime endDay = startDay.plus(amountH, HOURS);
         final int secDayEnd = endDay.toSecondOfDay();
         final int startSec = startDay.toSecondOfDay();
         final int allDaySec = secDayEnd - startSec;

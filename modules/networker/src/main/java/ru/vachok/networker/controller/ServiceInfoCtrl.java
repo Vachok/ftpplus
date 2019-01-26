@@ -27,10 +27,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.file.AccessDeniedException;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
@@ -93,7 +90,7 @@ public class ServiceInfoCtrl {
             visitor.setClickCounter(visitor.getClickCounter() + 1);
         }
         model.addAttribute(ConstantsFor.ATT_TITLE, getLast() + " (" + getLast() * ConstantsFor.ONE_DAY_HOURS + ")");
-        model.addAttribute("mail", ConstantsFor.percToEnd(comeD));
+        model.addAttribute("mail", ConstantsFor.percToEnd(comeD, 9));
         model.addAttribute("ping", pingGit());
         model.addAttribute("urls", new StringBuilder()
             .append("Запущено - ")
