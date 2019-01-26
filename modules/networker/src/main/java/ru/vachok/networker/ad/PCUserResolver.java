@@ -14,10 +14,8 @@ import ru.vachok.networker.net.NetScannerSvc;
 import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
+import java.util.Date;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
@@ -94,7 +92,7 @@ public class PCUserResolver implements Thread.UncaughtExceptionHandler {
     }
 
     /**
-     Читает БД на предмет наличия юзера для <b>offline</b> компьютера.<br> {@link #getResolvedName()}
+     Читает БД на предмет наличия юзера для <b>offline</b> компьютера.<br>
 
      @param pcName имя ПК
      @return имя юзера, время записи.

@@ -21,17 +21,11 @@ import ru.vachok.networker.systray.MessageToTray;
 import javax.servlet.http.HttpServletRequest;
 import java.io.*;
 import java.net.InetAddress;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.time.LocalTime;
 import java.util.*;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -253,7 +247,6 @@ public class NetScannerSvc {
      <p>
      4 {@link TForms#fromArrayUsers(ConcurrentMap, boolean)}
 
-     @see PCUserResolver#getResolvedName()
      @see #getPcNames()
      */
     @SuppressWarnings({"OverlyLongLambda", "OverlyLongMethod"})
