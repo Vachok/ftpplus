@@ -3,6 +3,7 @@ package ru.vachok.networker.net;
 
 import org.slf4j.Logger;
 import ru.vachok.messenger.MessageSwing;
+import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
@@ -55,6 +56,7 @@ public class WeekPCStats implements Runnable {
      Usages: {@link #run()}
      */
     private void getFromDB() {
+        MessageToUser messageToUser = new MessageSwing();
         final long stArt = System.currentTimeMillis();
         String sql = "select * from pcuserauto";
         File file = new File(ConstantsFor.VELKOM_PCUSERAUTO_TXT);
@@ -84,13 +86,13 @@ public class WeekPCStats implements Runnable {
             LOGGER.warn(msgTimeSp);
         }
         catch(SQLException | IOException e){
-            LOGGER.warn(e.getMessage());
+            messageToUser.infoNoTitles(e.getMessage());
         }
         String toCopy = "\\\\10.10.111.1\\Torrents-FTP\\" + file.getName();
         if(!ConstantsFor.thisPC().toLowerCase().contains("home")){
             toCopy = file.getName() + "_cp";
         }
         FileSystemWorker.copyOrDelFile(file, toCopy, false);
-        new MessageSwing().infoNoTitlesDIA(this.getClass().getSimpleName() + " ends\n" + PC_NAMES_IN_TABLE.size() + " PC_NAMES_IN_TABLE.size()");
+        messageToUser.infoNoTitles(this.getClass().getSimpleName() + " ends\n" + PC_NAMES_IN_TABLE.size() + " PC_NAMES_IN_TABLE.size()");
     }
 }

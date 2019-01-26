@@ -169,8 +169,8 @@ public final class SystemTrayHelper extends AppInfoOnLoad {
             popupMenu.add(puttyStarter);
         } else {
             MenuItem reloadContext = new MenuItem();
-            reloadContext.addActionListener(new ActionReloadCTX());
-            reloadContext.setLabel("Refresh App Context");
+            reloadContext.addActionListener(new ActionTests());
+            reloadContext.setLabel("Run tests");
             popupMenu.add(reloadContext);
         }
         MenuItem delFiles = new MenuItem();

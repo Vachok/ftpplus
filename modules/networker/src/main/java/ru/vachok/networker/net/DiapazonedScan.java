@@ -19,6 +19,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import static ru.vachok.networker.componentsrepo.AppComponents.getLogger;
@@ -123,7 +124,6 @@ public class DiapazonedScan implements Runnable {
     @Override
     public void run() {
         LOGGER.warn("DiapazonedScan.run");
-
         scanNew();
     }
 
@@ -134,7 +134,6 @@ public class DiapazonedScan implements Runnable {
     private void scanNew() {
         final long stArt = System.currentTimeMillis();
         Path p = Paths.get(ROOT_PATH_STR + "\\lan\\200_" + System.currentTimeMillis() / 1000 + ".scan");
-
         String msg1 = "DiapazonedScan.scanNew " + p.toAbsolutePath().toString();
         LOGGER.warn(msg1);
         File newLanFile = new File(ConstantsFor.AVAILABLE_LAST_TXT);
@@ -197,8 +196,6 @@ public class DiapazonedScan implements Runnable {
                 }
                 msgBuild.append("IP was ").append(whatVlan).append(i).append("<-i.j->").append(j).append("\n")
                     .append(j).append(" was j\n");
-                String msg = msgBuild.toString();
-                LOGGER.info(msg);
             }
             msgBuild
                 .append(i).append(" was i. Total time: ")
@@ -206,7 +203,6 @@ public class DiapazonedScan implements Runnable {
                 .append("min\n").append(ConstantsFor.ALL_DEVICES.size()).append(" ALL_DEVICES.size()");
             String msg = msgBuild.toString();
             LOGGER.warn(msg);
-            printWriter.println(msg);
         }
     }
 
@@ -240,6 +236,8 @@ public class DiapazonedScan implements Runnable {
         String msg = "Vlans 11-14 completed.\nTime spend: " +
             TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - stArt) + "\n" + b + " copyOrDelFile.\n\n";
         LOGGER.warn(msg);
+        Executors.unconfigurableScheduledExecutorService(Executors
+            .newSingleThreadScheduledExecutor()).scheduleWithFixedDelay(new ScanOnline(), 1, 1, TimeUnit.MINUTES);
     }
 
     /**

@@ -12,21 +12,17 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.systray.MessageToTray;
 
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Date;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
@@ -61,6 +57,7 @@ public class SpeedChecker implements Callable<Long> {
         Long chkForLastLong = chkForLast();
         String msg = new java.util.Date(chkForLastLong) + " from " + SpeedChecker.class.getSimpleName();
         LOGGER.info(msg);
+        new MessageToTray().infoNoTitles(new Date(chkForLastLong).toString());
         return chkForLastLong;
     }
 

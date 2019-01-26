@@ -32,8 +32,13 @@ public class MessageToTray implements MessageToUser {
 
     private void delActions() {
         ActionListener[] actionListeners = trayIcon.getActionListeners();
-        for (ActionListener a : actionListeners) {
-            trayIcon.removeActionListener(a);
+        if(actionListeners.length > 0){
+            for(ActionListener a : actionListeners){
+                trayIcon.removeActionListener(a);
+            }
+        }
+        else{
+            new MessageCons().info(getClass().getSimpleName(), "delActions", "actionListeners.length is 0");
         }
     }
 
@@ -44,10 +49,11 @@ public class MessageToTray implements MessageToUser {
 
     @Override
     public void errorAlert(String s, String s1, String s2) {
-        if (SystemTray.isSupported()) {
+        if(SystemTray.isSupported()){
             trayIcon.addActionListener(aListener);
             trayIcon.displayMessage(s, s1 + " " + s2, TrayIcon.MessageType.ERROR);
-        } else {
+        }
+        else{
             new MessageCons().errorAlert(s, s1, s2);
         }
         FileSystemWorker.recFile(s + ConstantsFor.LOG, Collections.singletonList((s1 + "\n\n" + s2)));
@@ -55,27 +61,29 @@ public class MessageToTray implements MessageToUser {
 
     @Override
     public void info(String s, String s1, String s2) {
-        if (SystemTray.isSupported()) {
+        if(SystemTray.isSupported()){
             trayIcon.addActionListener(aListener);
             trayIcon.displayMessage(s, s1 + " " + s2, TrayIcon.MessageType.INFO);
-        } else {
+        }
+        else{
             new MessageCons().info(s, s1, s2);
+        }
+    }
+
+    @Override
+    public void infoNoTitles(String s) {
+        if(SystemTray.isSupported() && trayIcon!=null){
+            trayIcon.displayMessage("FYI", s, TrayIcon.MessageType.INFO);
+            trayIcon.addActionListener(aListener);
+        }
+        else{
+            new MessageCons().infoNoTitles(s);
         }
     }
 
     @Override
     public void infoTimer(int i, String s) {
         throw new UnsupportedOperationException("Not impl to " + getClass().getSimpleName());
-    }
-
-    @Override
-    public void infoNoTitles(String s) {
-        if (SystemTray.isSupported()) {
-            trayIcon.displayMessage("FYI", s, TrayIcon.MessageType.INFO);
-            trayIcon.addActionListener(aListener);
-        } else {
-            new MessageCons().infoNoTitles(s);
-        }
     }
 
     @Override
