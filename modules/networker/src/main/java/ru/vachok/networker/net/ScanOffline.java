@@ -38,6 +38,9 @@ public class ScanOffline implements Runnable {
                     offLines.remove(x);
                     onLinesResolve.put(x, LocalTime.now().toString());
                 }
+                else{
+                    onLinesResolve.remove(x);
+                }
             } catch (IOException e) {
                 LOGGER.throwing("ScanOffline", "scanOff", e);
             }
