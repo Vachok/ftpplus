@@ -24,6 +24,6 @@ public class ActionTests extends AbstractAction {
     public void actionPerformed(ActionEvent e) {
         new SpeedChecker().call();
         new SpeedRunActualize().run();
-        new ScanOnline().run();
+        LOGGER.warn(ScanOnline.getI().toString());
     }
 }

@@ -18,10 +18,12 @@ import javax.mail.Message;
 import javax.mail.MessagingException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
@@ -67,8 +69,8 @@ public class SpeedChecker implements Callable<Long> {
         final long stArt = System.currentTimeMillis();
         String sql = ConstantsFor.SELECT_FROM_SPEED;
         Long rtLong = Calendar.getInstance().getTimeInMillis() - ConstantsFor.getAtomicTime();
-        try(Connection c = DATA_CONNECT_TO.getDefaultConnection(ConstantsFor.DB_PREFIX + "liferpg");
-            PreparedStatement p = c.prepareStatement(sql);
+        Connection c = DATA_CONNECT_TO.getDefaultConnection(ConstantsFor.DB_PREFIX + "liferpg");
+        try (PreparedStatement p = c.prepareStatement(sql);
             ResultSet r = p.executeQuery()){
             while(r.next()){
                 if(r.last()){
@@ -82,7 +84,9 @@ public class SpeedChecker implements Callable<Long> {
             }
         }
         catch(SQLException e){
-            FileSystemWorker.recFile(SpeedChecker.class.getSimpleName() + ".log", Collections.singletonList(new TForms().fromArray(e, false)));
+            FileSystemWorker.recFile(
+                SpeedChecker.class.getSimpleName() + ".log",
+                Collections.singletonList(new TForms().fromArray(e, false)));
         }
         methMetr(stArt);
         return rtLong;

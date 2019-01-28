@@ -15,7 +15,9 @@ import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.errorexceptions.MyNull;
 import ru.vachok.networker.mailserver.MailIISLogsCleaner;
-import ru.vachok.networker.net.*;
+import ru.vachok.networker.net.DiapazonedScan;
+import ru.vachok.networker.net.ScanOnline;
+import ru.vachok.networker.net.WeekPCStats;
 import ru.vachok.networker.services.MyCalen;
 import ru.vachok.networker.services.SpeedChecker;
 import ru.vachok.networker.systray.ActionOnAppStart;
@@ -23,7 +25,10 @@ import ru.vachok.networker.systray.MessageToTray;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.FileVisitor;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -32,7 +37,10 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Date;
 import java.util.Objects;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -136,19 +144,16 @@ public class AppInfoOnLoad implements Runnable {
     private void schedStarter() {
         final long stArt = System.currentTimeMillis();
         Runnable speedRun = new SpeedRunActualize();
-        Runnable swAval = new SwitchesAvailability();
-        ScheduledExecutorService executorService = Executors.unconfigurableScheduledExecutorService(Executors.newScheduledThreadPool(5));
+        ScheduledExecutorService executorService = Executors.unconfigurableScheduledExecutorService(Executors.newScheduledThreadPool(4));
         executorService.scheduleWithFixedDelay(speedRun, 3, 3, TimeUnit.MINUTES);
         String thisPC = ConstantsFor.thisPC();
         if(!thisPC.toLowerCase().contains("home")){
-            executorService
-                .scheduleWithFixedDelay(swAval, 10, ConstantsFor.DELAY, TimeUnit.SECONDS);
             executorService.scheduleWithFixedDelay(r, 5, TimeUnit.DAYS.toSeconds(1), TimeUnit.SECONDS);
         }
         executorService
             .scheduleWithFixedDelay(DiapazonedScan.getInstance(), 3, THIS_DELAY, TimeUnit.MINUTES);
 
-        executorService.scheduleWithFixedDelay(new ScanOnline(), 4, 1, TimeUnit.MINUTES);
+        executorService.scheduleWithFixedDelay(ScanOnline.getI(), 4, 1, TimeUnit.MINUTES);
         String msg = new StringBuilder()
             .append(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(THIS_DELAY)))
             .append(DiapazonedScan.getInstance().getClass().getSimpleName())

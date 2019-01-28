@@ -26,11 +26,19 @@ import ru.vachok.networker.systray.MessageToTray;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.*;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Date;
-import java.util.*;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
@@ -104,11 +112,11 @@ public class NetScanCtr {
      @return redirect:/ad? + {@link NetScannerSvc#getThePc()}
      */
     @SuppressWarnings("MethodWithMultipleReturnPoints")
-    @PostMapping (STR_NETSCAN)
+    @PostMapping(STR_NETSCAN)
     public String pcNameForInfo(@ModelAttribute NetScannerSvc netScannerSvc, BindingResult result, Model model) {
         String thePc = netScannerSvc.getThePc();
         AppComponents.adSrv().setUserInputRaw(thePc);
-        if(thePc.toLowerCase().contains("user: ")){
+        if (thePc.toLowerCase().contains("user: ")) {
             model.addAttribute("ok", getUserFromDB(thePc));
             model.addAttribute(ConstantsFor.ATT_TITLE, thePc);
             model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
@@ -140,16 +148,16 @@ public class NetScanCtr {
         try (Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.DB_PREFIX + ConstantsFor.STR_VELKOM);
              PreparedStatement p = c.prepareStatement("select * from pcuserauto where userName like ? ORDER BY whenQueried DESC LIMIT 0, 20")) {
             p.setString(1, "%" + userInputRaw + "%");
-            try(ResultSet r = p.executeQuery()){
+            try (ResultSet r = p.executeQuery()) {
                 StringBuilder stringBuilder = new StringBuilder();
                 String headER = "<h3><center>LAST 20 USER PCs</center></h3>";
                 stringBuilder.append(headER);
-                while(r.next()){
+                while (r.next()) {
                     String pcName = r.getString(ConstantsFor.DB_FIELD_PCNAME);
                     String returnER = "<br><center><a href=\"/ad?" + pcName.split("\\Q.\\E")[0] + "\">" + pcName + "</a> set: " +
                         r.getString(ConstantsNet.DB_FIELD_WHENQUERIED) + ConstantsFor.HTML_CENTER;
                     stringBuilder.append(returnER);
-                    if(r.last()){
+                    if (r.last()) {
                         MessageToUser messageToUser = new MessageToTray(new ActionOnAppStart());
                         messageToUser.info(
                             r.getString(ConstantsFor.DB_FIELD_PCNAME),
@@ -176,7 +184,7 @@ public class NetScanCtr {
      @param model    {@link Model}
      @return {@link #AT_NAME_NETSCAN}.html
      */
-    @GetMapping (STR_NETSCAN)
+    @GetMapping(STR_NETSCAN)
     private String netScan(HttpServletRequest request, HttpServletResponse response, Model model) {
         Thread.currentThread().setName("NetScanCtr.netScan");
         Visitor visitor = getVis(request);
@@ -185,10 +193,9 @@ public class NetScanCtr {
         Map<String, Boolean> netWork = lastScan;
         boolean isMapSizeBigger = netWork.size() > 2;
 
-        if(isMapSizeBigger){
+        if (isMapSizeBigger) {
             mapSizeBigger(model, netWork, request);
-        }
-        else{
+        } else {
             scanIt(request, model);
         }
         model
@@ -203,9 +210,9 @@ public class NetScanCtr {
 
     @SuppressWarnings("MethodWithMultipleReturnPoints")
     private Visitor getVis(HttpServletRequest request) {
-        try{
+        try {
             return AppComponents.thisVisit(request.getSession().getId());
-        } catch(InvocationTargetException | NullPointerException | NoSuchBeanDefinitionException e){
+        } catch (InvocationTargetException | NullPointerException | NoSuchBeanDefinitionException e) {
             return new AppComponents().visitor(request);
         }
     }
@@ -253,25 +260,30 @@ public class NetScanCtr {
                 ConstantsFor.ALL_DEVICES.forEach(x -> stringBuilder.append(ConstantsFor.ALL_DEVICES.remove()));
                 model.addAttribute("pcs", stringBuilder.toString());
             } else {
-                final float scansInMin = 45.9f;
-                float minLeft = ConstantsFor.ALL_DEVICES.remainingCapacity() / scansInMin;
-                String attributeValue = new StringBuilder()
-                    .append(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis((long) minLeft)))
-                    .append(" ~minLeft: ").append(minLeft)
-                    .toString();
-                model.addAttribute(ConstantsFor.ATT_TITLE, attributeValue);
-                if (netScanFileWorker.equals(DiapazonedScan.getNetScanFileWorker())) {
-                    model.addAttribute("pcs", netScanFileWorker.getNewLanLastScanAsStr() + "<p>" + netScanFileWorker.getOldLanLastScanAsStr());
-                } else {
-                    model.addAttribute("pcs", FileSystemWorker.readFile(ConstantsFor.AVAILABLE_LAST_TXT) + "<p>" + FileSystemWorker.readFile(ConstantsFor.OLD_LAN_TXT));
-                }
-                response.addHeader(ConstantsFor.HEAD_REFRESH, "19");
+                allDevNotNull(model, netScanFileWorker, response);
             }
         }
         model.addAttribute("head", new PageFooter().getHeaderUtext() + "<center><p><a href=\"/showalldev?needsopen\"><h2>Show IPs</h2></a></center>");
         model.addAttribute("ok", DiapazonedScan.getInstance().toString());
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + ". Left: " + ConstantsFor.ALL_DEVICES.remainingCapacity() + " IPs.");
         return "ok";
+    }
+
+    private void allDevNotNull(Model model, NetScanFileWorker netScanFileWorker, HttpServletResponse response) {
+        final float scansInMin = 45.9f;
+        float minLeft = ConstantsFor.ALL_DEVICES.remainingCapacity() / scansInMin;
+        String attributeValue = new StringBuilder()
+            .append(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis((long) minLeft)))
+            .append(" ~minLeft: ").append(minLeft)
+            .toString();
+        model.addAttribute(ConstantsFor.ATT_TITLE, attributeValue);
+        if (netScanFileWorker.equals(DiapazonedScan.getNetScanFileWorker())) {
+            model.addAttribute("pcs",
+                "OFF: " + ScanOnline.getI().toString() + "<p>" + netScanFileWorker.getNewLanLastScanAsStr() + "<p>" + netScanFileWorker.getOldLanLastScanAsStr());
+        } else {
+            model.addAttribute("pcs", FileSystemWorker.readFile(ConstantsFor.AVAILABLE_LAST_TXT) + "<p>" + FileSystemWorker.readFile(ConstantsFor.OLD_LAN_TXT));
+        }
+        response.addHeader(ConstantsFor.HEAD_REFRESH, "19");
     }
 
     /**
@@ -327,15 +339,14 @@ public class NetScanCtr {
      @param netWork {@link #lastScan}
      */
     private void writeToFile(Map<String, Boolean> netWork) {
-        try(OutputStream outputStream = new FileOutputStream(FNAME_LASTSCANNET_TXT);
-            PrintWriter printWriter = new PrintWriter(outputStream, true)){
+        try (OutputStream outputStream = new FileOutputStream(FNAME_LASTSCANNET_TXT);
+             PrintWriter printWriter = new PrintWriter(outputStream, true)) {
             printWriter.println("3 > Network Size!");
             TimeInfo timeInfo = MyCalen.getTimeInfo();
             timeInfo.computeDetails();
             printWriter.println(new Date(timeInfo.getReturnTime()));
             netWork.forEach((x, y) -> printWriter.println(x + " " + y));
-        }
-        catch(IOException e){
+        } catch (IOException e) {
             LOGGER.warn(e.getMessage(), e);
         }
     }
