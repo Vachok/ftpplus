@@ -4,6 +4,7 @@ package ru.vachok.networker.net;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import ru.vachok.messenger.MessageCons;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -27,7 +28,7 @@ class NetScanFileWorker {
 
     private static NetScanFileWorker ourInst = new NetScanFileWorker();
 
-    private long lastStamp;
+    private long lastStamp = System.currentTimeMillis();
 
     public long getLastStamp() {
         return lastStamp;
@@ -117,7 +118,7 @@ class NetScanFileWorker {
     }
 
     private NetScanFileWorker() {
-
+        new MessageCons().infoNoTitles("NetScanFileWorker.NetScanFileWorker");
     }
 
     @Override

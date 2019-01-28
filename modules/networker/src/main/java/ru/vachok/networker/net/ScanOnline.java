@@ -5,7 +5,6 @@ import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.systray.MessageToTray;
 
@@ -17,11 +16,9 @@ import java.net.URI;
 import java.net.UnknownHostException;
 import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -33,6 +30,11 @@ import java.util.concurrent.TimeUnit;
 public class ScanOnline implements Runnable {
 
     /**
+     <i>Boiler Plate</i>
+     */
+    private static final String STR_RUN_PING = "runPing";
+
+    /**
      new {@link ScanOnline}
      */
     private static ScanOnline scanOnline = new ScanOnline();
@@ -42,7 +44,7 @@ public class ScanOnline implements Runnable {
      */
     private MessageToUser messageToUser = new MessageToTray((ActionEvent e) -> {
         try {
-            Desktop.getDesktop().browse(URI.create("http://localhost:8880/showalldev?needsopen"));
+            Desktop.getDesktop().browse(URI.create(ConstantsFor.SHOWALLDEV_NEEDSOPEN));
         } catch (IOException ignore) {
             //
         }
@@ -139,20 +141,19 @@ public class ScanOnline implements Runnable {
                     x.toString(),
                     "is online: " + xReachable);
                 if (!xReachable) {
-                    offLines.put(x.toString(), LocalTime.now().toString());
-                    new Thread(() -> new SwitchesAvailability().run()).start();
-                    new ThreadConfig().threadPoolTaskScheduler()
-                        .schedule(new ScanOffline(),
-                            new Date(System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(10)));
+                    messageToUser.infoNoTitles(offLines.putIfAbsent(x.toString(), LocalTime.now().toString()));
                 }
             } catch (IOException e) {
                 messageToUser = new MessageToTray();
                 FileSystemWorker.recFile(
                     getClass().getSimpleName() + ConstantsFor.LOG,
                     e.getMessage() + "\n" + new TForms().fromArray(e, false));
-                messageToUser.errorAlert(getClass().getSimpleName(), "runPing", e.getMessage());
+                messageToUser.errorAlert(getClass().getSimpleName(), STR_RUN_PING, e.getMessage());
             }
         });
+        if(!offLines.isEmpty()){
+            new Thread(() -> new SwitchesAvailability().run()).start();
+        }
         messageToUser.info(
             getClass().getSimpleName(),
             ConstantsFor.getUpTime(),

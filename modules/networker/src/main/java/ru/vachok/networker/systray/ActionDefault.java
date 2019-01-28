@@ -16,15 +16,25 @@ import java.net.URI;
 
  @see SystemTrayHelper
  @since 25.01.2019 (9:56) */
-class ActionDefault extends AbstractAction {
+public class ActionDefault extends AbstractAction {
 
     private static final Logger LOGGER = AppComponents.getLogger();
+
+    private String goTo;
+
+    public ActionDefault(String goTo) {
+        this.goTo = goTo;
+    }
+
+    ActionDefault() {
+        this.goTo = "http://localhost:8880/serviceinfo";
+    }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         LOGGER.warn("ActionDefault.actionPerformed");
         try {
-            Desktop.getDesktop().browse(URI.create("http://localhost:8880/serviceinfo"));
+            Desktop.getDesktop().browse(URI.create(goTo));
         } catch (IOException e1) {
             LOGGER.error(e1.getMessage(), e1);
         }

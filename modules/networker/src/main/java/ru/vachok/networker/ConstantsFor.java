@@ -26,14 +26,8 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.SecureRandom;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.Year;
-import java.time.ZoneOffset;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Properties;
+import java.time.*;
+import java.util.*;
 import java.util.concurrent.*;
 
 import static java.time.temporal.ChronoUnit.HOURS;
@@ -56,6 +50,8 @@ public enum ConstantsFor {
      new {@link Properties}
      */
     private static final Properties PROPS = new Properties();
+
+    public static final String SHOWALLDEV_NEEDSOPEN = "http://localhost:8880/showalldev?needsopen";
 
     public static final String STR_VELKOM = "velkom";
 
