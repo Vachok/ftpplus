@@ -14,9 +14,12 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -27,8 +30,14 @@ import java.util.concurrent.Executors;
  @since 26.01.2019 (11:18) */
 public class ScanOnline implements Runnable {
 
+    /**
+     new {@link ScanOnline}
+     */
     private static ScanOnline scanOnline = new ScanOnline();
 
+    /**
+     {@link MessageToTray} with {@link ru.vachok.networker.systray.ActionDefault}
+     */
     private MessageToUser messageToUser = new MessageToTray((ActionEvent e) -> {
         try {
             Desktop.getDesktop().browse(URI.create("http://localhost:8880/showalldev?needsopen"));
@@ -37,7 +46,22 @@ public class ScanOnline implements Runnable {
         }
     });
 
-    private List<String> offLines = new ArrayList<>();
+    private ConcurrentMap<String, String> offLines = new ConcurrentHashMap<>();
+
+    @Override
+    public String toString() {
+        if (!offLines.isEmpty()) {
+            final StringBuilder sb = new StringBuilder("ScanOnline{");
+            sb.append("Minutes past=")
+                .append(TimeUnit.MILLISECONDS
+                    .toMinutes(System.currentTimeMillis() - NetScanFileWorker.getI().getLastStamp()));
+            sb.append(" OffLines=<font color=\"red\">").append(new TForms().fromArray(offLines, true));
+            sb.append("</font>}");
+            return sb.toString();
+        } else {
+            return "<font color=\"green\">NO</font>";
+        }
+    }
 
     private ScanOnline() {
     }
@@ -64,16 +88,8 @@ public class ScanOnline implements Runnable {
         return offLines != null ? offLines.equals(that.offLines) : that.offLines == null;
     }
 
-    @Override
-    public String toString() {
-        if (!offLines.isEmpty()) {
-            final StringBuilder sb = new StringBuilder("ScanOnline{");
-            sb.append("offLines=").append(new TForms().fromArray(offLines, true));
-            sb.append('}');
-            return sb.toString();
-        } else {
-            return "NO";
-        }
+    ConcurrentMap<String, String> getOffLines() {
+        return offLines;
     }
 
     @Override
@@ -114,8 +130,8 @@ public class ScanOnline implements Runnable {
                     x.toString(),
                     "is online: " + xReachable);
                 if (!xReachable) {
-                    offLines.add(x.toString());
-                    Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(new SwitchesAvailability());
+                    offLines.put(x.toString(), LocalTime.now().toString());
+                    new Thread(() -> new SwitchesAvailability().run()).start();
                 }
 
             } catch (IOException e) {

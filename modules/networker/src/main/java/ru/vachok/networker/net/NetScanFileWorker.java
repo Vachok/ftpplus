@@ -27,6 +27,16 @@ class NetScanFileWorker {
 
     private static NetScanFileWorker ourInst = new NetScanFileWorker();
 
+    private long lastStamp;
+
+    public long getLastStamp() {
+        return lastStamp;
+    }
+
+    void setLastStamp(long lastStamp) {
+        this.lastStamp = lastStamp;
+    }
+
     /**
      {@link DiapazonedScan#scanNew()}
      */
@@ -52,8 +62,6 @@ class NetScanFileWorker {
     }
 
     public static NetScanFileWorker getI() {
-        String hashCodeAndName = ourInst.hashCode() + " " + ourInst.getClass().getSimpleName();
-        LOGGER.info(hashCodeAndName);
         return ourInst;
     }
 
