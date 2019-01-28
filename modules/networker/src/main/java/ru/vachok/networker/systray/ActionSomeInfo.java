@@ -8,9 +8,13 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.errorexceptions.MyNull;
+import ru.vachok.networker.net.DiapazonedScan;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
+import java.util.Date;
+import java.util.concurrent.TimeUnit;
+
 
 /**
  Action Some Info
@@ -26,7 +30,8 @@ class ActionSomeInfo extends AbstractAction {
     public void actionPerformed(ActionEvent e) {
         LOGGER.warn("ActionSomeInfo.actionPerformed");
         try {
-            new MessageSwing().infoNoTitles(ConstantsFor.getUpTime() + "\n" +
+            Date newScan = new Date(DiapazonedScan.getInstance().getStopClass() + TimeUnit.MINUTES.toMillis(111));
+            new MessageSwing().infoNoTitles("New Scan at: " + newScan.toString() + " | " + ConstantsFor.getUpTime() + "\n" +
                 Thread.activeCount() + " threads " + ConstantsFor.showMem() + AppInfoOnLoad.iisLogSize() + "\n" +
                 AppComponents.versionInfo().toString() + "\n" +
                 new TForms().fromArray(ConstantsFor.getProps()));

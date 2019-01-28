@@ -85,9 +85,9 @@ public class ScanOnline implements Runnable {
     public String toString() {
         if (!offLines.isEmpty()) {
             final StringBuilder sb = new StringBuilder("ScanOnOffline{");
-            sb.append(" OffLines=<font color=\"red\">")
+            sb.append(" OffLines (").append(offLines.size()).append(") = <font color=\"red\">")
                 .append(new TForms().fromArray(offLines, true)).append("</font><br>");
-            sb.append(" OnLineAgain=<font color=\"green\">")
+            sb.append(" OnLineAgain (").append(onLinesResolve.size()).append(") = <font color=\"green\">")
                 .append(new TForms().fromArray(onLinesResolve, true)).append("</font><p>");
             return sb.toString();
         } else {

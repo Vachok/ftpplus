@@ -9,6 +9,7 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.DBMessenger;
+import ru.vachok.networker.services.TimeChecker;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -65,6 +66,12 @@ public class DiapazonedScan implements Runnable {
      @see #scanOldLan(long)
      */
     private String fileTimes = "";
+
+    private long stopClass = System.currentTimeMillis();
+
+    public long getStopClass() {
+        return stopClass;
+    }
 
     /**
      SINGLETON
@@ -266,6 +273,7 @@ public class DiapazonedScan implements Runnable {
         LOGGER.warn(msg);
         ScanOnline.getI().getOffLines().clear();
         ScanOnline.getI().getOnLinesResolve().clear();
+        this.stopClass = new TimeChecker().call().getReturnTime();
     }
 
 }
