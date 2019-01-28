@@ -204,7 +204,7 @@ public class NetScanCtr {
             .addAttribute(ATT_THE_PC, netScannerSvc.getThePc());
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<br>First Scan: 2018-05-05");
         AppComponents.lastNetScan().setTimeLastScan(new Date());
-        response.addHeader(ConstantsFor.HEAD_REFRESH, "30");
+        response.addHeader(ConstantsFor.HEAD_REFRESH, "60");
         return AT_NAME_NETSCAN;
     }
 
@@ -283,7 +283,7 @@ public class NetScanCtr {
         } else {
             model.addAttribute("pcs", FileSystemWorker.readFile(ConstantsFor.AVAILABLE_LAST_TXT) + "<p>" + FileSystemWorker.readFile(ConstantsFor.OLD_LAN_TXT));
         }
-        response.addHeader(ConstantsFor.HEAD_REFRESH, "19");
+        response.addHeader(ConstantsFor.HEAD_REFRESH, "60");
     }
 
     /**

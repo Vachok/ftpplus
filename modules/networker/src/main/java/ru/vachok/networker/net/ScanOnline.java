@@ -5,6 +5,7 @@ import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.systray.MessageToTray;
 
@@ -16,6 +17,7 @@ import java.net.URI;
 import java.net.UnknownHostException;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -48,19 +50,14 @@ public class ScanOnline implements Runnable {
 
     private ConcurrentMap<String, String> offLines = new ConcurrentHashMap<>();
 
+    private ConcurrentMap<String, String> onLinesResolve = new ConcurrentHashMap<>();
+
     @Override
-    public String toString() {
-        if (!offLines.isEmpty()) {
-            final StringBuilder sb = new StringBuilder("ScanOnline{");
-            sb.append("Minutes past=")
-                .append(TimeUnit.MILLISECONDS
-                    .toMinutes(System.currentTimeMillis() - NetScanFileWorker.getI().getLastStamp()));
-            sb.append(" OffLines=<font color=\"red\">").append(new TForms().fromArray(offLines, true));
-            sb.append("</font>}");
-            return sb.toString();
-        } else {
-            return "<font color=\"green\">NO</font>";
-        }
+    public int hashCode() {
+        int result = messageToUser.hashCode();
+        result = 31 * result + getOffLines().hashCode();
+        result = 31 * result + getOnLinesResolve().hashCode();
+        return result;
     }
 
     private ScanOnline() {
@@ -71,21 +68,33 @@ public class ScanOnline implements Runnable {
     }
 
     @Override
-    public int hashCode() {
-        int result = messageToUser != null ? messageToUser.hashCode() : 0;
-        result = 31 * result + (offLines != null ? offLines.hashCode() : 0);
-        return result;
-    }
-
-    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof ScanOnline)) return false;
 
         ScanOnline that = (ScanOnline) o;
 
-        if (messageToUser != null ? !messageToUser.equals(that.messageToUser) : that.messageToUser != null) return false;
-        return offLines != null ? offLines.equals(that.offLines) : that.offLines == null;
+        if (!messageToUser.equals(that.messageToUser)) return false;
+        if (!getOffLines().equals(that.getOffLines())) return false;
+        return getOnLinesResolve().equals(that.getOnLinesResolve());
+    }
+
+    @Override
+    public String toString() {
+        if (!offLines.isEmpty()) {
+            final StringBuilder sb = new StringBuilder("ScanOnOffline{");
+            sb.append(" OffLines=<font color=\"red\">")
+                .append(new TForms().fromArray(offLines, true)).append("</font><br>");
+            sb.append(" OnLineAgain=<font color=\"green\">")
+                .append(new TForms().fromArray(onLinesResolve, true)).append("</font><p>");
+            return sb.toString();
+        } else {
+            return "<font color=\"green\">NO</font>";
+        }
+    }
+
+    ConcurrentMap<String, String> getOnLinesResolve() {
+        return onLinesResolve;
     }
 
     ConcurrentMap<String, String> getOffLines() {
@@ -132,8 +141,10 @@ public class ScanOnline implements Runnable {
                 if (!xReachable) {
                     offLines.put(x.toString(), LocalTime.now().toString());
                     new Thread(() -> new SwitchesAvailability().run()).start();
+                    new ThreadConfig().threadPoolTaskScheduler()
+                        .schedule(new ScanOffline(),
+                            new Date(System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(10)));
                 }
-
             } catch (IOException e) {
                 messageToUser = new MessageToTray();
                 FileSystemWorker.recFile(

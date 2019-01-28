@@ -265,6 +265,7 @@ public class DiapazonedScan implements Runnable {
             TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - stArt) + "\n" + b + " copyOrDelFile.\n\n";
         LOGGER.warn(msg);
         ScanOnline.getI().getOffLines().clear();
+        ScanOnline.getI().getOnLinesResolve().clear();
     }
 
 }
