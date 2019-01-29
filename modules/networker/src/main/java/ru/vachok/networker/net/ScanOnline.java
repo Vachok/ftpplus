@@ -56,6 +56,8 @@ public class ScanOnline implements Runnable {
 
     private ConcurrentMap<String, String> onLinesResolve = new ConcurrentHashMap<>();
 
+    private List<String> okIP = new ArrayList<>();
+
     @Override
     public int hashCode() {
         int result = messageToUser.hashCode();
@@ -90,7 +92,9 @@ public class ScanOnline implements Runnable {
             sb.append(" OffLines (").append(offLines.size()).append(") = <font color=\"red\">")
                 .append(new TForms().fromArray(offLines, true)).append("</font><br>");
             sb.append(" OnLineAgain (").append(onLinesResolve.size()).append(") = <font color=\"green\">")
-                .append(new TForms().fromArray(onLinesResolve, true)).append("</font><p>");
+                .append(new TForms().fromArray(onLinesResolve, true)).append("</font><br>")
+                .append("<font color=\"gray\">Switches: ")
+                .append(new TForms().fromArray(okIP, true)).append("</font>");
             return sb.toString();
         } else {
             return "<font color=\"green\">NO</font>";
@@ -154,8 +158,12 @@ public class ScanOnline implements Runnable {
             }
         });
         if(!offLines.isEmpty()){
-            AppComponents.getLogger().warn("ScanOnline.runPing");
-            ThreadConfig.executeAsThread(new SwitchesAvailability());
+            ThreadConfig.executeAsThread(() -> {
+                AppComponents.getLogger().warn("ScanOnline.runPing");
+                SwitchesAvailability switchesAvailability = new SwitchesAvailability();
+                switchesAvailability.run();
+                okIP.addAll(switchesAvailability.getOkIP());
+            });
         }
         messageToUser.info(
             getClass().getSimpleName(),

@@ -13,7 +13,6 @@ import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -41,13 +40,19 @@ public class SwitchesAvailability implements Runnable {
      */
     private List<InetAddress> swAddr = new ArrayList<>();
 
+    private List<String> okIP = new ArrayList<>();
+
+    public List<String> getOkIP() {
+        return okIP;
+    }
+
     private String okStr;
 
     private String badStr;
 
     @Override
     public void run() {
-        LOGGER.info("SwitchesAvailability.run");
+        LOGGER.warn("SwitchesAvailability.run");
         this.swAddr.clear();
         this.startTime = System.currentTimeMillis();
         try {
@@ -56,12 +61,6 @@ public class SwitchesAvailability implements Runnable {
             swAddr.add(InetAddress.getByAddress(bytes));
             addFirst();
         } catch (IOException e) {
-            LOGGER.warn(e.getMessage());
-        }
-        try {
-            List<String> stringList = DiapazonedScan.getInstance().pingSwitch();
-            LOGGER.info(new TForms().fromArray(stringList, false));
-        } catch (IllegalAccessException e) {
             LOGGER.warn(e.getMessage());
         }
     }
@@ -132,12 +131,12 @@ public class SwitchesAvailability implements Runnable {
      */
     private void testAddresses() throws IOException {
         LOGGER.warn("SwitchesAvailability.testAddresses");
-        List<String> okIP = new ArrayList<>();
+
         List<String> badIP = new ArrayList<>();
         for (InetAddress ipSW : swAddr) {
             if (ipSW.isReachable(500)) {
                 okIP.add(ipSW.toString());
-                ScanOnline.getI().getOnLinesResolve().put(ipSW.toString(), SimpleDateFormat.getInstance().format(new Date()));
+
             }
             else badIP.add(ipSW.toString());
         }
