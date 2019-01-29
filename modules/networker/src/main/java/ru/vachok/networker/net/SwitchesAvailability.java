@@ -13,10 +13,7 @@ import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  Проверка свичей в локальной сети.
@@ -40,9 +37,9 @@ public class SwitchesAvailability implements Runnable {
      */
     private List<InetAddress> swAddr = new ArrayList<>();
 
-    private List<String> okIP = new ArrayList<>();
+    private Set<String> okIP = new HashSet<>();
 
-    public List<String> getOkIP() {
+    Set<String> getOkIP() {
         return okIP;
     }
 
@@ -131,7 +128,6 @@ public class SwitchesAvailability implements Runnable {
      */
     private void testAddresses() throws IOException {
         LOGGER.warn("SwitchesAvailability.testAddresses");
-
         List<String> badIP = new ArrayList<>();
         for (InetAddress ipSW : swAddr) {
             if (ipSW.isReachable(500)) {
@@ -140,7 +136,6 @@ public class SwitchesAvailability implements Runnable {
             }
             else badIP.add(ipSW.toString());
         }
-        Collections.sort(okIP);
         Collections.sort(badIP);
         this.okStr = new TForms().fromArray(okIP, false).replaceAll("/", "");
         this.badStr = new TForms().fromArray(badIP, false).replaceAll("/", "");
