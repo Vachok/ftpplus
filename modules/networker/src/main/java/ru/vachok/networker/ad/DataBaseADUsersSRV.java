@@ -29,7 +29,7 @@ public class DataBaseADUsersSRV {
     private boolean dbUploader() {
         DataConnectTo dataConnectTo = new RegRuMysql();
         Connection defaultConnection = dataConnectTo.getDefaultConnection(ConstantsFor.DB_PREFIX + ConstantsFor.STR_VELKOM);
-        try (InputStream resourceAsStream = getClass().getResourceAsStream("/static/texts/users.txt")) {
+        try(InputStream resourceAsStream = getClass().getResourceAsStream(ConstantsFor.USERS_TXT)){
             InputStreamReader inputStreamReader = new InputStreamReader(resourceAsStream);
             BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
             ConcurrentMap<String, String> paramNameValueMap = fileRead(bufferedReader);

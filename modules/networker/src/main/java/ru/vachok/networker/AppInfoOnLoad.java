@@ -15,20 +15,14 @@ import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.errorexceptions.MyNull;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.mailserver.MailIISLogsCleaner;
-import ru.vachok.networker.net.DiapazonedScan;
-import ru.vachok.networker.net.ScanOffline;
-import ru.vachok.networker.net.ScanOnline;
-import ru.vachok.networker.net.WeekPCStats;
+import ru.vachok.networker.net.*;
 import ru.vachok.networker.services.MyCalen;
 import ru.vachok.networker.services.SpeedChecker;
 import ru.vachok.networker.systray.ActionOnAppStart;
 import ru.vachok.networker.systray.MessageToTray;
 
 import java.io.*;
-import java.nio.file.FileVisitor;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -39,10 +33,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Date;
 import java.util.Objects;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 
 /**
@@ -63,7 +54,7 @@ public class AppInfoOnLoad implements Runnable {
      */
     private static final Runnable r = AppInfoOnLoad::commonRights;
 
-    private DiapazonedScan diapazonedScan = DiapazonedScan.getInstance();
+    private static DiapazonedScan diapazonedScan = DiapazonedScan.getInstance();
 
     /**
      Задержка выполнения для этого класса
@@ -109,15 +100,15 @@ public class AppInfoOnLoad implements Runnable {
      */
     @Override
     public void run() {
-        diaScanReader();
         infoForU(AppCtx.scanForBeansAndRefreshContext());
     }
 
-    private void diaScanReader() {
-        try (ObjectInput input = new ObjectInputStream(new FileInputStream(diapazonedScan.getClass().getSimpleName()))) {
-            this.diapazonedScan = (DiapazonedScan) input.readObject();
+    public static void diaScanReader() {
+        new MessageCons().infoNoTitles("AppInfoOnLoad.diaScanReader");
+        try(ObjectInput input = new ObjectInputStream(new FileInputStream(diapazonedScan.getClass().getSimpleName() + ".dev"))){
+            DiapazonedScan.getInstance().readExternal(input);
         } catch (IOException | ClassNotFoundException e) {
-            LOGGER.error(getClass().getSimpleName(), e.getMessage(), e);
+            LOGGER.error(AppInfoOnLoad.class.getSimpleName(), e.getMessage(), e);
         }
     }
 

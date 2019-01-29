@@ -2,6 +2,7 @@ package ru.vachok.networker.config;
 
 
 import org.springframework.core.io.DefaultResourceLoader;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.ResoCache;
 
 import java.io.File;
@@ -18,7 +19,7 @@ public class ResLoader extends DefaultResourceLoader {
     private ResoCache resoCache = ResoCache.getResoCache();
 
     public boolean loadNew() {
-        String path = getClass().getResource("/static/texts/users.txt").getPath();
+        String path = getClass().getResource(ConstantsFor.USERS_TXT).getPath();
         Path pathRes;
         try{
             pathRes = Paths.get(path).toRealPath();

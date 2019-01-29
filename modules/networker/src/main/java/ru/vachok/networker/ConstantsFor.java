@@ -51,6 +51,10 @@ public enum ConstantsFor {
      */
     private static final Properties PROPS = new Properties();
 
+    public static final String HTTP_LOCALHOST_8880 = "http://localhost:8880/";
+
+    public static final String USERS_TXT = "/static/texts/users.txt";
+
     public static final String SHOWALLDEV_NEEDSOPEN = "http://localhost:8880/showalldev?needsopen";
 
     public static final String STR_VELKOM = "velkom";
@@ -350,7 +354,11 @@ public enum ConstantsFor {
     /**
      Все возможные IP из диапазонов {@link DiapazonedScan}
      */
-    public static final BlockingQueue<String> ALL_DEVICES = new ArrayBlockingQueue<>(IPS_IN_VELKOM_VLAN);
+    public static BlockingDeque<String> ALL_DEVICES = new LinkedBlockingDeque<>(IPS_IN_VELKOM_VLAN);
+
+    public static void setAllDevices(BlockingDeque<String> allDevices) {
+        ALL_DEVICES = allDevices;
+    }
 
     /**
      Порт для {@link ru.vachok.networker.net.MyServer}

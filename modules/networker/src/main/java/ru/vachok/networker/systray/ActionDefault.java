@@ -2,6 +2,7 @@ package ru.vachok.networker.systray;
 
 
 import org.slf4j.Logger;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
 
 import javax.swing.*;
@@ -20,6 +21,8 @@ public class ActionDefault extends AbstractAction {
 
     private static final Logger LOGGER = AppComponents.getLogger();
 
+    public static final String ACTION_PERFORMED = "actionPerformed";
+
     private String goTo;
 
     public ActionDefault(String goTo) {
@@ -27,7 +30,7 @@ public class ActionDefault extends AbstractAction {
     }
 
     ActionDefault() {
-        this.goTo = "http://localhost:8880/";
+        this.goTo = ConstantsFor.HTTP_LOCALHOST_8880;
     }
 
     @Override

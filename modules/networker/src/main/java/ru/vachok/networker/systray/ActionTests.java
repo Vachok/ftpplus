@@ -1,6 +1,10 @@
 package ru.vachok.networker.systray;
 
 
+import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.config.ThreadConfig;
+import ru.vachok.networker.net.DiapazonedScan;
+
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 
@@ -14,6 +18,9 @@ public class ActionTests extends AbstractAction {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        throw new UnsupportedOperationException("Only for tests");
+        ThreadConfig.executeAsThread(DiapazonedScan.getInstance());
+        new MessageToTray(
+            new ActionDefault(ConstantsFor.HTTP_LOCALHOST_8880 + "/showalldev?needsopen"))
+            .errorAlert(ConstantsFor.ALL_DEVICES.size() + " deq size");
     }
 }

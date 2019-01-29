@@ -15,10 +15,7 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.systray.ActionDefault;
 import ru.vachok.networker.systray.MessageToTray;
 
-import javax.mail.Flags;
-import javax.mail.Folder;
-import javax.mail.Message;
-import javax.mail.MessagingException;
+import javax.mail.*;
 import java.sql.*;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -93,6 +90,7 @@ public class SpeedChecker implements Callable<Long> {
     }
 
 
+    /*END FOR CLASS*/
     public static final class ChkMailAndUpdateDB implements Runnable {
 
         private MailMessages mailMessages = new MailMessages();
@@ -152,7 +150,7 @@ public class SpeedChecker implements Callable<Long> {
                     if (writeDB(m.getSubject().toLowerCase().split("speed:")[1], dayOfWeek, timeSt)) delMessage(m);
                     eSender.info(ChkMailAndUpdateDB.class.getSimpleName(), true + " sending to base", chDB);
                 } else {
-                    new MessageToTray(new ActionDefault("http://localhost:8880/")).infoNoTitles("No new messages");
+                    new MessageToTray(new ActionDefault(ConstantsFor.HTTP_LOCALHOST_8880)).infoNoTitles("No new messages");
                 }
             } catch (MessagingException e) {
                 eSender.errorAlert(

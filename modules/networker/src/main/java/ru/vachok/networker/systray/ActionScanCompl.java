@@ -26,7 +26,7 @@ public class ActionScanCompl extends AbstractAction {
         } catch (IOException e1) {
             new MessageSwing().errorAlert(
                 "NetScannerSvc",
-                "actionPerformed",
+                ActionDefault.ACTION_PERFORMED,
                 new TForms().fromArray(e1, false));
         }
     }
