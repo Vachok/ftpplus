@@ -3,6 +3,7 @@ package ru.vachok.networker.systray;
 
 import org.slf4j.Logger;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.*;
 import ru.vachok.networker.accesscontrol.common.ArchivesAutoCleaner;
@@ -56,11 +57,25 @@ public final class SystemTrayHelper extends AppInfoOnLoad {
     /**
      {@link DBMessenger}
      */
-    private static final MessageToUser MESSAGE_TO_USER = new DBMessenger();
+    private static final MessageToUser MESSAGE_TO_USER = new MessageCons();
 
     private static TrayIcon trayIcon = null;
 
-    private static final ThreadPoolTaskExecutor executor = new ThreadConfig().threadPoolTaskExecutor();
+    private static final ThreadPoolTaskExecutor TASK_EXECUTOR = new ThreadConfig().threadPoolTaskExecutor();
+
+    /**
+     Конструктор по-умолчанию
+     */
+    private SystemTrayHelper() {
+        if (!SystemTray.isSupported()) throw new UnsupportedOperationException("SystemTray is not supported");
+    }
+
+    /**
+     @return {@link #SYSTEM_TRAY_HELPER}
+     */
+    public static SystemTrayHelper getInstance() {
+        return SYSTEM_TRAY_HELPER;
+    }
 
     /**
      Создаёт System Tray Icon
@@ -99,6 +114,7 @@ public final class SystemTrayHelper extends AppInfoOnLoad {
         defItem.setLabel("Exit");
         defItem.addActionListener(new ActionExit());
         popupMenu.add(defItem);
+        trayIcon.addActionListener(new ActionDefault());
         try {
             if (SystemTray.isSupported()) {
                 SystemTray systemTray = SystemTray.getSystemTray();
@@ -111,19 +127,6 @@ public final class SystemTrayHelper extends AppInfoOnLoad {
             LOGGER.warn(e.getMessage(), e);
             Thread.currentThread().interrupt();
         }
-    }
-
-    /**
-     @return {@link #SYSTEM_TRAY_HELPER}
-     */
-    public static SystemTrayHelper getInstance() {
-        return SYSTEM_TRAY_HELPER;
-    }
-
-    /**
-     Конструктор по-умолчанию
-     */
-    private SystemTrayHelper() {
     }
 
     /**
@@ -152,10 +155,10 @@ public final class SystemTrayHelper extends AppInfoOnLoad {
      @param popupMenu {@link PopupMenu}
      */
     private static void addItems(PopupMenu popupMenu) {
-        Thread thread = executor.createThread(SystemTrayHelper::recOn);
+        Thread thread = TASK_EXECUTOR.createThread(SystemTrayHelper::recOn);
         thread.start();
         MenuItem gitStartWeb = new MenuItem();
-        gitStartWeb.addActionListener(new ActionGITStart(executor));
+        gitStartWeb.addActionListener(new ActionGITStart(TASK_EXECUTOR));
         gitStartWeb.setLabel("GIT WEB ON");
         popupMenu.add(gitStartWeb);
         MenuItem toConsole = new MenuItem();
@@ -174,7 +177,7 @@ public final class SystemTrayHelper extends AppInfoOnLoad {
             popupMenu.add(reloadContext);
         }
         MenuItem delFiles = new MenuItem();
-        delFiles.addActionListener(new ActionDelTMP(executor, delFiles, popupMenu));
+        delFiles.addActionListener(new ActionDelTMP(TASK_EXECUTOR, delFiles, popupMenu));
         delFiles.setLabel("Clean last year");
         popupMenu.add(delFiles);
         MenuItem logToFilesystem = new MenuItem();

@@ -27,7 +27,7 @@ public class ActionDefault extends AbstractAction {
     }
 
     ActionDefault() {
-        this.goTo = "http://localhost:8880/serviceinfo";
+        this.goTo = "http://localhost:8880/";
     }
 
     @Override

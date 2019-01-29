@@ -21,7 +21,7 @@ import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MyCalen;
 import ru.vachok.networker.services.TimeChecker;
-import ru.vachok.networker.systray.ActionOnAppStart;
+import ru.vachok.networker.systray.ActionDefault;
 import ru.vachok.networker.systray.MessageToTray;
 
 import javax.servlet.http.HttpServletRequest;
@@ -158,7 +158,7 @@ public class NetScanCtr {
                         r.getString(ConstantsNet.DB_FIELD_WHENQUERIED) + ConstantsFor.HTML_CENTER;
                     stringBuilder.append(returnER);
                     if (r.last()) {
-                        MessageToUser messageToUser = new MessageToTray(new ActionOnAppStart());
+                        MessageToUser messageToUser = new MessageToTray(new ActionDefault("http://localhost:8880/netscan"));
                         messageToUser.info(
                             r.getString(ConstantsFor.DB_FIELD_PCNAME),
                             r.getTimestamp("stamp").toLocalDateTime().toString(),

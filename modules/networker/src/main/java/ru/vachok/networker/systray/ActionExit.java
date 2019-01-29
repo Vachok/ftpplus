@@ -19,6 +19,6 @@ class ActionExit extends AbstractAction {
     @Override
     public void actionPerformed(ActionEvent e) {
         new MessageCons().infoNoTitles(getClass().getSimpleName() + ".actionPerformed");
-        new ThreadConfig().threadPoolTaskExecutor().execute(new ExitApp(SystemTrayHelper.class.getSimpleName()));
+        ThreadConfig.executeAsThread(new ExitApp(SystemTrayHelper.class.getSimpleName()));
     }
 }

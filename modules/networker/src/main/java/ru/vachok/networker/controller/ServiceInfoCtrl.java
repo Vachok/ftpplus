@@ -19,7 +19,6 @@ import ru.vachok.networker.services.MyCalen;
 import ru.vachok.networker.services.SpeedChecker;
 import ru.vachok.networker.systray.SystemTrayHelper;
 
-import javax.net.ssl.SSLException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
@@ -27,9 +26,11 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.file.AccessDeniedException;
 import java.time.LocalTime;
-import java.util.*;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.TimeUnit;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.*;
 import java.util.stream.Stream;
 
 
@@ -53,10 +54,11 @@ public class ServiceInfoCtrl {
     private Visitor visitor = null;
 
     @GetMapping ("/serviceinfo")
-    public String infoMapping(Model model, HttpServletRequest request, HttpServletResponse response) throws AccessDeniedException, SSLException {
+    public String infoMapping(Model model, HttpServletRequest request, HttpServletResponse response) throws AccessDeniedException, ExecutionException, InterruptedException {
         Thread.currentThread().setName("ServiceInfoCtrl.infoMapping");
+        ThreadConfig.executeAsThread(new SpeedChecker.ChkMailAndUpdateDB());
         this.visitor = new AppComponents().visitor(request);
-        this.authReq = Stream.of("0:0:0:0", "10.10.111", "10.200.213.85", "172.16.20").anyMatch(s_p -> request.getRemoteAddr().contains(s_p));
+        this.authReq = Stream.of("0:0:0:0", "10.10.111", "10.200.213.85", "172.16.20").anyMatch(sP -> request.getRemoteAddr().contains(sP));
         if(authReq){
             modModMaker(model, request, visitor);
             response.addHeader(ConstantsFor.HEAD_REFRESH, "90");
@@ -82,10 +84,10 @@ public class ServiceInfoCtrl {
             Long.parseLong(ConstantsFor.getProps().getProperty("lasts", 1544816520000L + ""))) / 60f / 24f;
     }
 
-    private void modModMaker(Model model, HttpServletRequest request, Visitor visitor) throws SSLException {
+    private void modModMaker(Model model, HttpServletRequest request, Visitor visitor) throws ExecutionException, InterruptedException {
         this.visitor = ConstantsFor.getVis(request);
-        Long whenCome = new SpeedChecker().call();
-        Date comeD = new Date(whenCome);
+        Future<Long> whenCome = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(new SpeedChecker());
+        Date comeD = new Date(whenCome.get());
         if (visitor.getSession().equals(request.getSession())) {
             visitor.setClickCounter(visitor.getClickCounter() + 1);
         }

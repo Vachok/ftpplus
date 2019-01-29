@@ -7,7 +7,6 @@ import ru.vachok.networker.AppInfoOnLoad;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
-import ru.vachok.networker.errorexceptions.MyNull;
 import ru.vachok.networker.net.DiapazonedScan;
 
 import javax.swing.*;
@@ -29,14 +28,10 @@ class ActionSomeInfo extends AbstractAction {
     @Override
     public void actionPerformed(ActionEvent e) {
         LOGGER.warn("ActionSomeInfo.actionPerformed");
-        try {
-            Date newScan = new Date(DiapazonedScan.getInstance().getStopClass() + TimeUnit.MINUTES.toMillis(111));
-            new MessageSwing().infoNoTitles("New Scan at: " + newScan.toString() + " | " + ConstantsFor.getUpTime() + "\n" +
-                Thread.activeCount() + " threads " + ConstantsFor.showMem() + AppInfoOnLoad.iisLogSize() + "\n" +
-                AppComponents.versionInfo().toString() + "\n" +
-                new TForms().fromArray(ConstantsFor.getProps()));
-        } catch (MyNull myNull) {
-            LOGGER.error(myNull.getMessage(), myNull);
-        }
+        Date newScan = new Date(DiapazonedScan.getInstance().getStopClass() + TimeUnit.MINUTES.toMillis(111));
+        new MessageSwing().infoNoTitles("New Scan at: " + newScan.toString() + " | " + ConstantsFor.getUpTime() + "\n" +
+            Thread.activeCount() + " threads " + ConstantsFor.showMem() + AppInfoOnLoad.iisLogSize() + "\n" +
+            AppComponents.versionInfo().toString() + "\n" +
+            new TForms().fromArray(ConstantsFor.getProps()));
     }
 }

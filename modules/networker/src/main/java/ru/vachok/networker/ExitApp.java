@@ -7,6 +7,7 @@ import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.io.File;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -37,12 +38,12 @@ public class ExitApp implements Runnable {
     /**
      Причина выхода
      */
-    private final String reasonExit;
+    private String reasonExit;
 
     /**
      Uptime в минутах. Как статус {@link System#exit(int)}
      */
-    private final long toMinutes = TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - ConstantsFor.START_STAMP);
+    private long toMinutes = TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - ConstantsFor.START_STAMP);
 
     /**
      @param reasonExit {@link #reasonExit}
@@ -56,7 +57,6 @@ public class ExitApp implements Runnable {
      */
     @Override
     public void run() {
-        stringList.add(ExitApp.EXIT_APP_RUN);
         Thread.currentThread().setName(ExitApp.EXIT_APP_RUN);
         LOGGER.warn(reasonExit);
         stringList.add(reasonExit);
@@ -88,7 +88,7 @@ public class ExitApp implements Runnable {
      Код выхода = <i>uptime</i> в минутах.
      */
     private void exitAppDO() {
-        stringList.add(toMinutes + " uptime");
+        stringList.add("exit at " + LocalDateTime.now().toString() + ConstantsFor.getUpTime());
         FileSystemWorker.recFile("exit.last", stringList);
         getConfigurableApplicationContext().close();
         FileSystemWorker.delTemp();

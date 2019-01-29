@@ -2,19 +2,22 @@ package ru.vachok.networker.net;
 
 
 import org.slf4j.Logger;
-import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.services.TimeChecker;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
  Проверка свичей в локальной сети.
@@ -37,6 +40,10 @@ public class SwitchesAvailability implements Runnable {
      {@link InetAddress} свчичей.
      */
     private List<InetAddress> swAddr = new ArrayList<>();
+
+    private String okStr;
+
+    private String badStr;
 
     @Override
     public void run() {
@@ -108,6 +115,15 @@ public class SwitchesAvailability implements Runnable {
         testAddresses();
     }
 
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("SwitchesAvailability{");
+        sb.append(", okStr='").append(okStr).append('\'');
+        sb.append(", startTime=").append(new Date(startTime));
+        sb.append('}');
+        return sb.toString();
+    }
+
     /**
      Проверяет пинги
      <p>
@@ -115,21 +131,21 @@ public class SwitchesAvailability implements Runnable {
      @throws IOException если адрес недоступен.
      */
     private void testAddresses() throws IOException {
-        LOGGER.info("SwitchesAvailability.testAddresses");
+        LOGGER.warn("SwitchesAvailability.testAddresses");
         List<String> okIP = new ArrayList<>();
         List<String> badIP = new ArrayList<>();
         for (InetAddress ipSW : swAddr) {
-            if (ipSW.isReachable(500)) okIP.add(ipSW.toString());
+            if (ipSW.isReachable(500)) {
+                okIP.add(ipSW.toString());
+                ScanOnline.getI().getOnLinesResolve().put(ipSW.toString(), SimpleDateFormat.getInstance().format(new Date()));
+            }
             else badIP.add(ipSW.toString());
         }
         Collections.sort(okIP);
         Collections.sort(badIP);
-        String okStr = new TForms().fromArray(okIP, false).replaceAll("/", "");
-        String badStr = new TForms().fromArray(badIP, false).replaceAll("/", "");
+        this.okStr = new TForms().fromArray(okIP, false).replaceAll("/", "");
+        this.badStr = new TForms().fromArray(badIP, false).replaceAll("/", "");
         writeToFile(okStr, badStr);
-        String msg = "SwitchesAvailability.testAddresses, " +
-            TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startTime) + ConstantsFor.STR_SEC_SPEND;
-        LOGGER.warn(msg);
     }
 
     /**
@@ -142,6 +158,7 @@ public class SwitchesAvailability implements Runnable {
      @param badIP лист офлайн адресов
      */
     private void writeToFile(String okIP, String badIP) {
+        LOGGER.warn("SwitchesAvailability.writeToFile");
         File file = new File("sw.list.log");
         try (OutputStream outputStream = new FileOutputStream(file)) {
             String toWrite = new StringBuilder()
@@ -156,5 +173,4 @@ public class SwitchesAvailability implements Runnable {
             LOGGER.warn(e.getMessage(), e);
         }
     }
-
 }

@@ -3,12 +3,12 @@ package ru.vachok.networker.net;
 
 import org.slf4j.Logger;
 import org.springframework.ui.Model;
+import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.services.DBMessenger;
 import ru.vachok.networker.services.TimeChecker;
 
 import javax.servlet.http.HttpServletRequest;
@@ -177,7 +177,7 @@ public class DiapazonedScan implements Runnable {
         try (OutputStream outputStream = new FileOutputStream(newLanFile);
              PrintWriter printWriter = new PrintWriter(outputStream, true)) {
             if (ConstantsFor.ALL_DEVICES.remainingCapacity() == 0) {
-                MessageToUser messageToUser = new DBMessenger();
+                MessageToUser messageToUser = new MessageCons();
                 messageToUser.infoNoTitles(new TForms().fromArray(ConstantsFor.ALL_DEVICES));
                 ConstantsFor.ALL_DEVICES.clear();
                 scanLan(printWriter, 200, 218, stArt, "10.200.");

@@ -4,11 +4,14 @@ package ru.vachok.networker.systray;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.services.TimeChecker;
 
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.util.Collections;
+import java.util.Date;
 
 
 /**
@@ -18,28 +21,27 @@ import java.util.Collections;
  @since 21.01.2019 (23:46) */
 public class MessageToTray implements MessageToUser {
 
-    private final ActionListener aListener;
+    private ActionListener aListener;
 
     /**
      {@link SystemTrayHelper#getTrayIcon()}
      */
-    private final TrayIcon trayIcon = SystemTrayHelper.getTrayIcon();
+    private TrayIcon trayIcon = SystemTrayHelper.getTrayIcon();
+
+    private String headerMsg = ConstantsFor.APP_NAME.replace('-', ' ');
+
+    private String titleMsg = new Date(new TimeChecker().call().getReturnTime()).toString();
+
+    private String bodyMsg = "No body";
 
     public MessageToTray() {
         this.aListener = new ActionDefault();
         delActions();
     }
 
-    private void delActions() {
-        ActionListener[] actionListeners = trayIcon.getActionListeners();
-        if(actionListeners.length > 0){
-            for(ActionListener a : actionListeners){
-                trayIcon.removeActionListener(a);
-            }
-        }
-        else{
-            new MessageCons().info(getClass().getSimpleName(), "delActions", "actionListeners.length is 0");
-        }
+    public void errorAlert(String bodyMsg) {
+        this.bodyMsg = bodyMsg;
+        errorAlert(headerMsg, titleMsg, bodyMsg);
     }
 
     public MessageToTray(ActionListener aListener) {
@@ -48,36 +50,55 @@ public class MessageToTray implements MessageToUser {
     }
 
     @Override
-    public void errorAlert(String s, String s1, String s2) {
+    public void errorAlert(String headerMsg, String titleMsg, String bodyMsg) {
+        this.headerMsg = headerMsg;
+        this.titleMsg = titleMsg;
+        this.bodyMsg = bodyMsg;
         if(SystemTray.isSupported()){
             trayIcon.addActionListener(aListener);
-            trayIcon.displayMessage(s, s1 + " " + s2, TrayIcon.MessageType.ERROR);
+            trayIcon.displayMessage(headerMsg, titleMsg + " " + bodyMsg, TrayIcon.MessageType.ERROR);
         }
         else{
-            new MessageCons().errorAlert(s, s1, s2);
+            new MessageCons().errorAlert(headerMsg, titleMsg, bodyMsg);
         }
-        FileSystemWorker.recFile(s + ConstantsFor.LOG, Collections.singletonList((s1 + "\n\n" + s2)));
+        FileSystemWorker.recFile(headerMsg + ConstantsFor.LOG, Collections.singletonList((titleMsg + "\n\n" + bodyMsg)));
     }
 
     @Override
-    public void info(String s, String s1, String s2) {
+    public void info(String headerMsg, String titleMsg, String bodyMsg) {
+        this.headerMsg = headerMsg;
+        this.titleMsg = titleMsg;
+        this.bodyMsg = bodyMsg;
         if(SystemTray.isSupported()){
             trayIcon.addActionListener(aListener);
-            trayIcon.displayMessage(s, s1 + " " + s2, TrayIcon.MessageType.INFO);
+            trayIcon.displayMessage(headerMsg, titleMsg + " " + bodyMsg, TrayIcon.MessageType.INFO);
         }
         else{
-            new MessageCons().info(s, s1, s2);
+            new MessageCons().info(headerMsg, titleMsg, bodyMsg);
         }
     }
 
     @Override
-    public void infoNoTitles(String s) {
+    public void infoNoTitles(String bodyMsg) {
+        this.bodyMsg = bodyMsg;
         if(SystemTray.isSupported() && trayIcon!=null){
-            trayIcon.displayMessage("FYI", s, TrayIcon.MessageType.INFO);
+            trayIcon.displayMessage(headerMsg, bodyMsg, TrayIcon.MessageType.INFO);
             trayIcon.addActionListener(aListener);
         }
         else{
-            new MessageCons().infoNoTitles(s);
+            new MessageCons().info(headerMsg, titleMsg, bodyMsg);
+        }
+    }
+
+    private void delActions() {
+        ActionListener[] actionListeners = trayIcon.getActionListeners();
+        if (actionListeners.length > 0) {
+            for (ActionListener a : actionListeners) {
+                trayIcon.removeActionListener(a);
+                AppComponents.getLogger().info(a.getClass().getSimpleName() + " removed");
+            }
+        } else {
+            new MessageCons().info(getClass().getSimpleName(), "delActions", "actionListeners.length is 0");
         }
     }
 
