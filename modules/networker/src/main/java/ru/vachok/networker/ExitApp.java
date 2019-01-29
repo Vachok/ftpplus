@@ -5,8 +5,9 @@ import org.slf4j.Logger;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.DiapazonedScan;
 
-import java.io.File;
+import java.io.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -78,6 +79,11 @@ public class ExitApp implements Runnable {
         else{
             stringList.add("No app.log");
             LOGGER.info("No app.log");
+        }
+        try (ObjectOutput objectOutput = new ObjectOutputStream(new FileOutputStream(DiapazonedScan.class.getSimpleName()))) {
+            DiapazonedScan.getInstance().writeExternal(objectOutput);
+        } catch (IOException e) {
+            LOGGER.error(getClass().getSimpleName(), e.getMessage(), e);
         }
         exitAppDO();
     }

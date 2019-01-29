@@ -32,7 +32,7 @@ import static ru.vachok.networker.componentsrepo.AppComponents.getLogger;
 
  @since 19.12.2018 (11:35) */
 @SuppressWarnings({"FieldNotUsedInToString", "DoubleCheckedLocking"})
-public class DiapazonedScan implements Runnable {
+public class DiapazonedScan implements Runnable, Externalizable {
 
     /**
      {@link AppComponents#getLogger()}
@@ -106,12 +106,6 @@ public class DiapazonedScan implements Runnable {
     }
 
     /**
-     Singleton
-     */
-    private DiapazonedScan() {
-    }
-
-    /**
      @return /showalldev = {@link NetScanCtr#allDevices(Model, HttpServletRequest, HttpServletResponse)}
      */
     @SuppressWarnings("StringConcatenation")
@@ -149,6 +143,16 @@ public class DiapazonedScan implements Runnable {
     public void run() {
         LOGGER.warn("DiapazonedScan.run");
         scanNew();
+    }
+
+    @Override
+    public void writeExternal(ObjectOutput out) throws IOException {
+        out.writeObject(this);
+    }
+
+    @Override
+    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+        in.readObject();
     }
 
     /**

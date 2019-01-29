@@ -24,8 +24,7 @@ import ru.vachok.networker.services.SpeedChecker;
 import ru.vachok.networker.systray.ActionOnAppStart;
 import ru.vachok.networker.systray.MessageToTray;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -63,6 +62,8 @@ public class AppInfoOnLoad implements Runnable {
      Запуск {@link CommonRightsChecker}
      */
     private static final Runnable r = AppInfoOnLoad::commonRights;
+
+    private DiapazonedScan diapazonedScan = DiapazonedScan.getInstance();
 
     /**
      Задержка выполнения для этого класса
@@ -104,6 +105,23 @@ public class AppInfoOnLoad implements Runnable {
     }
 
     /**
+     @see #infoForU(ApplicationContext)
+     */
+    @Override
+    public void run() {
+        diaScanReader();
+        infoForU(AppCtx.scanForBeansAndRefreshContext());
+    }
+
+    private void diaScanReader() {
+        try (ObjectInput input = new ObjectInputStream(new FileInputStream(diapazonedScan.getClass().getSimpleName()))) {
+            this.diapazonedScan = (DiapazonedScan) input.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            LOGGER.error(getClass().getSimpleName(), e.getMessage(), e);
+        }
+    }
+
+    /**
      Запуск заданий по-расписанию
      <p>
      Usages: {@link #infoForU(ApplicationContext)} <br> Uses: 1.1 {@link #dateSchedulers()}, 1.2 {@link ConstantsFor#thisPC()}, 1.3
@@ -117,7 +135,7 @@ public class AppInfoOnLoad implements Runnable {
             executorService.scheduleWithFixedDelay(r, 5, TimeUnit.DAYS.toSeconds(1), TimeUnit.SECONDS);
         }
         executorService
-            .scheduleWithFixedDelay(DiapazonedScan.getInstance(), 3, THIS_DELAY, TimeUnit.MINUTES);
+            .scheduleWithFixedDelay(diapazonedScan, 3, THIS_DELAY, TimeUnit.MINUTES);
 
         executorService.scheduleWithFixedDelay(ScanOnline.getI(), 4, 1, TimeUnit.MINUTES);
         executorService.scheduleWithFixedDelay(ScanOffline.getI(), 5, 2, TimeUnit.MINUTES);
@@ -134,14 +152,6 @@ public class AppInfoOnLoad implements Runnable {
         catch(MyNull e){
             new MessageToTray().errorAlert(getClass().getSimpleName(), e.getMessage(), new TForms().fromArray(e, false));
         }
-    }
-
-    /**
-     @see #infoForU(ApplicationContext)
-     */
-    @Override
-    public void run() {
-        infoForU(AppCtx.scanForBeansAndRefreshContext());
     }
 
     /**
