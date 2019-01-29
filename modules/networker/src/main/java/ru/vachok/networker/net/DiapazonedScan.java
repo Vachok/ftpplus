@@ -19,7 +19,9 @@ import java.net.InetAddress;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static ru.vachok.networker.componentsrepo.AppComponents.getLogger;
@@ -41,6 +43,13 @@ public class DiapazonedScan implements Runnable {
      Повторения.
      */
     private static final String FONT_BR_STR = "</font><br>";
+
+    private static Map<String, String> nameAddr = new HashMap<>();
+
+    static Map<String, String> getNameAddr() {
+        LOGGER.warn("DiapazonedScan.getNameAddr");
+        return nameAddr;
+    }
 
     /**
      Корень директории.
@@ -151,16 +160,14 @@ public class DiapazonedScan implements Runnable {
      @throws IllegalAccessException swF.get(swF).toString()
      */
     List<String> pingSwitch() throws IllegalAccessException {
-        LOGGER.info("DiapazonedScan.pingSwitch");
-        StringBuilder stringBuilder = new StringBuilder();
-        Field[] swFields = Switches.class.getFields();
+        LOGGER.warn("DiapazonedScan.pingSwitch");
+        Field[] swFields = SwitchesWiFi.class.getFields();
         List<String> swList = new ArrayList<>();
         for (Field swF : swFields) {
-            swList.add("\n" + swF.get(swF).toString());
+            String ipAddrStr = swF.get(swF).toString();
+            swList.add(ipAddrStr);
+            nameAddr.put(swF.getName(), ipAddrStr);
         }
-        swList.forEach(stringBuilder::append);
-        String retMe = stringBuilder.toString();
-        LOGGER.warn(retMe);
         return swList;
     }
 
@@ -208,13 +215,14 @@ public class DiapazonedScan implements Runnable {
      */
     @SuppressWarnings("MethodWithMultipleLoops")
     private void scanLan(PrintWriter printWriter, int fromVlan, int toVlan, long stArt, String whatVlan) throws IOException {
+        String msg1 = "DiapazonedScan.scanLan " + whatVlan;
+        LOGGER.warn(msg1);
         for (int i = fromVlan; i < toVlan; i++) {
             StringBuilder msgBuild = new StringBuilder();
             for (int j = 0; j < MAX_IN_VLAN; j++) {
                 msgBuild = new StringBuilder();
                 byte[] aBytes = InetAddress.getByName(whatVlan + i + "." + j).getAddress();
                 InetAddress byAddress = InetAddress.getByAddress(aBytes);
-
                 int t = 100;
                 if (ConstantsFor.thisPC().toLowerCase().contains("home")) {
                     t = 400;

@@ -309,7 +309,7 @@ public class TForms {
             return brStringBuilder.toString();
         }
         else{
-            return brStringBuilder.toString();
+            return nStringBuilder.toString();
         }
     }
 

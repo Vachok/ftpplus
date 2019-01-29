@@ -179,13 +179,13 @@ public class NetScanCtr {
      Usages: {@link #scanIt(HttpServletRequest, Model)}, {@link #mapSizeBigger(Model, Map, HttpServletRequest)} <br> Uses: {@link PageFooter#getFooterUtext()}, {@link
     AppComponents#lastNetScan()}.setTimeLastScan(new {@link Date}) <br>
 
+     @return {@link #AT_NAME_NETSCAN}.html
      @param request  {@link HttpServletRequest}
      @param response {@link HttpServletResponse}
      @param model    {@link Model}
-     @return {@link #AT_NAME_NETSCAN}.html
      */
     @GetMapping(STR_NETSCAN)
-    private String netScan(HttpServletRequest request, HttpServletResponse response, Model model) {
+    public String netScan(HttpServletRequest request, HttpServletResponse response, Model model) {
         Thread.currentThread().setName("NetScanCtr.netScan");
         Visitor visitor = getVis(request);
         netScannerSvc.setThePc("");
@@ -204,7 +204,7 @@ public class NetScanCtr {
             .addAttribute(ATT_THE_PC, netScannerSvc.getThePc());
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<br>First Scan: 2018-05-05");
         AppComponents.lastNetScan().setTimeLastScan(new Date());
-        response.addHeader(ConstantsFor.HEAD_REFRESH, "60");
+        response.addHeader(ConstantsFor.HEAD_REFRESH, "30");
         return AT_NAME_NETSCAN;
     }
 
@@ -251,7 +251,7 @@ public class NetScanCtr {
     }
 
     @GetMapping("/showalldev")
-    private String allDevices(Model model, HttpServletRequest request, HttpServletResponse response) {
+    public String allDevices(Model model, HttpServletRequest request, HttpServletResponse response) {
         NetScanFileWorker netScanFileWorker = NetScanFileWorker.getI();
         model.addAttribute(ConstantsFor.ATT_TITLE, "DiapazonedScan.scanAll");
         if (request.getQueryString() != null) {

@@ -1,6 +1,7 @@
 package ru.vachok.networker.net;
 
 
+import org.slf4j.Logger;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
@@ -19,6 +20,7 @@ import java.net.UnknownHostException;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -35,6 +37,8 @@ public class ScanOnline implements Runnable {
      <i>Boiler Plate</i>
      */
     private static final String STR_RUN_PING = "runPing";
+
+    private static final Logger LOGGER = AppComponents.getLogger();
 
     /**
      new {@link ScanOnline}
@@ -93,7 +97,7 @@ public class ScanOnline implements Runnable {
                 .append(new TForms().fromArray(offLines, true)).append("</font><br>");
             sb.append(" OnLineAgain (").append(onLinesResolve.size()).append(") = <font color=\"green\">")
                 .append(new TForms().fromArray(onLinesResolve, true)).append("</font><br>")
-                .append("<font color=\"gray\">Switches: ")
+                .append("<font color=\"gray\">SwitchesWiFi: ")
                 .append(new TForms().fromArray(okIP, true)).append("</font>");
             return sb.toString();
         } else {
@@ -122,6 +126,7 @@ public class ScanOnline implements Runnable {
     }
 
     private List<InetAddress> onlinesAddressesList() throws IOException {
+        LOGGER.warn("ScanOnline.onlinesAddressesList");
         messageToUser = new MessageCons();
         List<InetAddress> onlineAddresses = new ArrayList<>();
         List<String> fileAsList = NetScanFileWorker.getI().getListOfOnlineDev();
@@ -138,6 +143,7 @@ public class ScanOnline implements Runnable {
     }
 
     private void runPing(List<InetAddress> onList) {
+        LOGGER.warn("ScanOnline.runPing");
         onList.forEach((InetAddress x) -> {
             try {
                 messageToUser = new MessageCons();
@@ -162,7 +168,10 @@ public class ScanOnline implements Runnable {
                 AppComponents.getLogger().warn("ScanOnline.runPing");
                 SwitchesAvailability switchesAvailability = new SwitchesAvailability();
                 switchesAvailability.run();
-                okIP.addAll(switchesAvailability.getOkIP());
+                Set<String> availabilityOkIP = switchesAvailability.getOkIP();
+                this.okIP = new ArrayList<>();
+                boolean addAll = okIP.addAll(availabilityOkIP);
+                messageToUser.info(getClass().getSimpleName(), okIP.size() + " sw ips", addAll + " added");
             });
         }
         messageToUser.info(

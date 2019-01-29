@@ -10,7 +10,10 @@ import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.io.*;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,16 +36,16 @@ public class WeekPCStats implements Runnable {
      */
     private static final List<String> PC_NAMES_IN_TABLE = new ArrayList<>();
 
-    private String tSpend = ConstantsFor.STR_SEC_SPEND;
-
     /**
      {@link #getFromDB()}
      */
     @Override
     public void run() {
         Thread.currentThread().setName("WeekPCStats.run");
+        LOGGER.warn("WeekPCStats.run");
         final long stArt = System.currentTimeMillis();
         getFromDB();
+        String tSpend = ConstantsFor.STR_SEC_SPEND;
         String msgTimeSp = MessageFormat
             .format("WeekPCStats.run method. {0}{1}", ( float ) (System.currentTimeMillis() - stArt) / 1000, tSpend);
         LOGGER.info(msgTimeSp);
