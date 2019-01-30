@@ -16,12 +16,11 @@ import ru.vachok.networker.services.Putty;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Properties;
-
-import static java.lang.System.err;
 
 
 /**
@@ -129,6 +128,13 @@ public final class SystemTrayHelper extends AppInfoOnLoad {
         }
     }
 
+    public static void delOldActions() {
+        LOGGER.warn("SystemTrayHelper.delOldActions");
+        for (ActionListener actionListener : trayIcon.getActionListeners()) {
+            trayIcon.removeActionListener(actionListener);
+        }
+    }
+
     /**
      Проверка доступности <a href="http://srv-git.eatmeat.ru:1234">srv-git.eatmeat.ru</a>
      <p>
@@ -163,7 +169,7 @@ public final class SystemTrayHelper extends AppInfoOnLoad {
         popupMenu.add(gitStartWeb);
         MenuItem toConsole = new MenuItem();
         toConsole.setLabel("Console Back");
-        toConsole.addActionListener((ActionEvent e) -> System.setOut(err));
+        toConsole.addActionListener((ActionEvent e) -> System.setOut(System.err));
         popupMenu.add(toConsole);
         if (!ConstantsFor.thisPC().toLowerCase().contains("home")) {
             MenuItem puttyStarter = new MenuItem();

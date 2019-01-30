@@ -8,12 +8,16 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.common.CommonScan2YOlder;
 import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.services.TimeChecker;
 import ru.vachok.networker.systray.MessageToTray;
 import ru.vachok.networker.systray.SystemTrayHelper;
 
 import java.io.*;
 import java.nio.file.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Stream;
@@ -222,5 +226,29 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
             retList.add(new TForms().fromArray(e, true));
         }
         return retList;
+    }
+
+    public static void error(String classMeth, Exception e) {
+        File f = new File(classMeth + ConstantsFor.LOG);
+        try (OutputStream outputStream = new FileOutputStream(f);
+             PrintStream printStream = new PrintStream(outputStream, true)) {
+            printStream.println(new Date(new TimeChecker().call().getReturnTime()));
+            printStream.println();
+            printStream.println();
+            printStream.println(e.getMessage());
+            printStream.println();
+            printStream.println(new TForms().fromArray(e, false));
+            printStream.println();
+            printStream.println("Suppressed:");
+            printStream.println();
+            if (e.getSuppressed().length > 0) {
+                for (Throwable throwable : e.getSuppressed()) {
+                    printStream.println(throwable.getMessage());
+                    printStream.println(new TForms().fromArray(throwable, false));
+                }
+            }
+        } catch (IOException ex) {
+            LOGGER.error("FileSystemWorker.error", ex.getMessage(), ex);
+        }
     }
 }

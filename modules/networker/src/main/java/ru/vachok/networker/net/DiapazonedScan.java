@@ -6,16 +6,17 @@ import org.springframework.ui.Model;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.AppInfoOnLoad;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.TimeChecker;
+import ru.vachok.networker.systray.ActionDefault;
+import ru.vachok.networker.systray.MessageToTray;
+import ru.vachok.networker.systray.ReaderForScannedIP;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.awt.event.ActionEvent;
 import java.io.*;
 import java.lang.reflect.Field;
 import java.net.InetAddress;
@@ -23,6 +24,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.TimeUnit;
 
 import static ru.vachok.networker.componentsrepo.AppComponents.getLogger;
@@ -109,6 +111,74 @@ public class DiapazonedScan implements Runnable, Externalizable {
     }
 
     /**
+     @return /showalldev = {@link NetScanCtr#allDevices(Model, HttpServletRequest, HttpServletResponse)}
+     */
+    @SuppressWarnings("StringConcatenation")
+    @Override
+    public String toString() {
+        try {
+            fileTimes = ConstantsFor.AVAILABLE_LAST_TXT + " " +
+                Paths.get(ConstantsFor.AVAILABLE_LAST_TXT).toFile().lastModified() + "\n" +
+                ConstantsFor.OLD_LAN_TXT +
+                " " +
+                Paths.get(ConstantsFor.OLD_LAN_TXT).toFile().lastModified();
+        } catch (NullPointerException e) {
+            LOGGER.info("NO FILES!");
+        }
+        LOGGER.info("DiapazonedScan.toString");
+        final StringBuilder sb = new StringBuilder("DiapazonedScan{ ");
+        sb
+            .append("<a href=\"/showalldev\">ALL_DEVICES ")
+            .append(allDevices.size())
+            .append("/5610 (")
+            .append((float) allDevices.size() / (float) (ConstantsFor.IPS_IN_VELKOM_VLAN / 100))
+            .append(" %)");
+        sb.append("</a>}");
+        sb.append(" ROOT_PATH_STR= ").append(ROOT_PATH_STR);
+        sb.append(" fileTimes= ").append(fileTimes);
+        sb.append("<br>NetScanFileWorker hash= ").append(NET_SCAN_FILE_WORKER.hashCode());
+
+        return sb.toString();
+    }
+
+    /**
+     {@link #scanNew()}
+     */
+    @Override
+    public void run() {
+        LOGGER.warn("DiapazonedScan.run");
+        scanNew();
+    }
+
+    @Override
+    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+        Object readObject = in.readObject();
+        ConstantsFor.setAllDevices((BlockingDeque<String>) readObject);
+        this.allDevices = ConstantsFor.ALL_DEVICES;
+        new MessageToTray().info(getClass().getSimpleName(), "readExternal", ConstantsFor.ALL_DEVICES.size() + "/" + ConstantsFor.IPS_IN_VELKOM_VLAN + " IP scanned");
+    }
+
+    /**
+     Пингует в 200х VLANах девайсы с 10.200.x.250 по 10.200.x.254
+     <p>
+     Свичи начала сегментов. Вкл. в оптическое ядро.
+
+     @return лист важного оборудования
+     @throws IllegalAccessException swF.get(swF).toString()
+     */
+    List<String> pingSwitch() throws IllegalAccessException {
+        LOGGER.warn("DiapazonedScan.pingSwitch");
+        Field[] swFields = SwitchesWiFi.class.getFields();
+        List<String> swList = new ArrayList<>();
+        for (Field swF : swFields) {
+            String ipAddrStr = swF.get(swF).toString();
+            swList.add(ipAddrStr);
+            nameAddr.put(swF.getName(), ipAddrStr);
+        }
+        return swList;
+    }
+
+    /**
      Добавляет в {@link ConstantsFor#ALL_DEVICES} адреса <i>10.200.200-217.254</i>
      */
     @SuppressWarnings("all")
@@ -120,7 +190,7 @@ public class DiapazonedScan implements Runnable, Externalizable {
         File newLanFile = new File(ConstantsFor.AVAILABLE_LAST_TXT);
         try (OutputStream outputStream = new FileOutputStream(newLanFile);
              PrintWriter printWriter = new PrintWriter(outputStream, true)) {
-            if(allDevices.remainingCapacity()==0){
+            if (allDevices.remainingCapacity() == 0) {
                 MessageToUser messageToUser = new MessageCons();
                 messageToUser.infoNoTitles(new TForms().fromArray(allDevices));
                 allDevices.clear();
@@ -141,15 +211,6 @@ public class DiapazonedScan implements Runnable, Externalizable {
     }
 
     /**
-     {@link #scanNew()}
-     */
-    @Override
-    public void run() {
-        LOGGER.warn("DiapazonedScan.run");
-        scanNew();
-    }
-
-    /**
      Сканер локальной сети
 
      @param printWriter Запись в лог
@@ -163,17 +224,7 @@ public class DiapazonedScan implements Runnable, Externalizable {
     private void scanLan(PrintWriter printWriter, int fromVlan, int toVlan, long stArt, String whatVlan) throws IOException {
         String msg1 = "DiapazonedScan.scanLan " + whatVlan;
         LOGGER.warn(msg1);
-        try{
-            String lasiIP = allDevices.getLast().split(">/")[1];
-            lasiIP = lasiIP.split("</f")[0] + " last ip";
-            new MessageSwing().infoTimer(lasiIP + "\n" + msg1);
-        }
-        catch(NoSuchElementException e){
-            new MessageSwing((ActionEvent e1) -> {
-                LOGGER.warn(new Date(e1.getWhen()).toString());
-                AppInfoOnLoad.diaScanReader();
-            }).infoTimer(e.getMessage());
-        }
+        welcomeMessage(msg1);
         for (int i = fromVlan; i < toVlan; i++) {
             StringBuilder msgBuild = new StringBuilder();
             for (int j = 0; j < MAX_IN_VLAN; j++) {
@@ -207,68 +258,9 @@ public class DiapazonedScan implements Runnable, Externalizable {
         }
     }
 
-    /**
-     @return /showalldev = {@link NetScanCtr#allDevices(Model, HttpServletRequest, HttpServletResponse)}
-     */
-    @SuppressWarnings ("StringConcatenation")
-    @Override
-    public String toString() {
-        try{
-            fileTimes = ConstantsFor.AVAILABLE_LAST_TXT + " " +
-                Paths.get(ConstantsFor.AVAILABLE_LAST_TXT).toFile().lastModified() + "\n" +
-                ConstantsFor.OLD_LAN_TXT +
-                " " +
-                Paths.get(ConstantsFor.OLD_LAN_TXT).toFile().lastModified();
-        }
-        catch(NullPointerException e){
-            LOGGER.info("NO FILES!");
-        }
-        LOGGER.info("DiapazonedScan.toString");
-        final StringBuilder sb = new StringBuilder("DiapazonedScan{ ");
-        sb
-            .append("<a href=\"/showalldev\">ALL_DEVICES ")
-            .append(allDevices.size())
-            .append("/5610 (")
-            .append(( float ) allDevices.size() / ( float ) (ConstantsFor.IPS_IN_VELKOM_VLAN / 100))
-            .append(" %)");
-        sb.append("</a>}");
-        sb.append(" ROOT_PATH_STR= ").append(ROOT_PATH_STR);
-        sb.append(" fileTimes= ").append(fileTimes);
-        sb.append("<br>NetScanFileWorker hash= ").append(NET_SCAN_FILE_WORKER.hashCode());
-
-        return sb.toString();
-    }
-
-    /**
-     Пингует в 200х VLANах девайсы с 10.200.x.250 по 10.200.x.254
-     <p>
-     Свичи начала сегментов. Вкл. в оптическое ядро.
-
-     @return лист важного оборудования
-     @throws IllegalAccessException swF.get(swF).toString()
-     */
-    List<String> pingSwitch() throws IllegalAccessException {
-        LOGGER.warn("DiapazonedScan.pingSwitch");
-        Field[] swFields = SwitchesWiFi.class.getFields();
-        List<String> swList = new ArrayList<>();
-        for(Field swF : swFields){
-            String ipAddrStr = swF.get(swF).toString();
-            swList.add(ipAddrStr);
-            nameAddr.put(swF.getName(), ipAddrStr);
-        }
-        return swList;
-    }
-
     @Override
     public void writeExternal(ObjectOutput out) throws IOException {
         out.writeObject(allDevices);
-    }
-
-    @Override
-    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-        Object readObject = in.readObject();
-        ConstantsFor.setAllDevices(( BlockingDeque<String> ) readObject);
-        this.allDevices = ConstantsFor.ALL_DEVICES;
     }
 
     /**
@@ -300,9 +292,19 @@ public class DiapazonedScan implements Runnable, Externalizable {
         String msg = "Vlans 11-14 completed.\nTime spend: " +
             TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - stArt) + "\n" + b + " copyOrDelFile.\n\n";
         LOGGER.warn(msg);
-        ScanOnline.getI().getOffLines().clear();
-        ScanOnline.getI().getOnLinesResolve().clear();
+        PingListCreator.setOffLines(new ConcurrentSkipListMap<>());
+        PingListCreator.setOnLinesResolve(new ConcurrentSkipListMap<>());
         this.stopClass = new TimeChecker().call().getReturnTime();
+    }
+
+    private void welcomeMessage(String msg1) {
+        try {
+            String lasiIP = allDevices.getLast().split(">/")[1];
+            lasiIP = lasiIP.split("</f")[0] + " last ip";
+            new MessageSwing(new ActionDefault(ConstantsFor.HTTP_LOCALHOST_8880_SLASH + "showalldev?needsopen")).infoTimer(lasiIP + "\n" + msg1);
+        } catch (NoSuchElementException e) {
+            new MessageSwing(new ReaderForScannedIP()).infoTimer(getClass().getSimpleName(), msg1, e.getMessage(), 30);
+        }
     }
 
 }

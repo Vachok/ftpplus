@@ -19,9 +19,10 @@ import java.net.URI;
  @since 25.01.2019 (9:56) */
 public class ActionDefault extends AbstractAction {
 
+    /**
+     {@link AppComponents#getLogger()}
+     */
     private static final Logger LOGGER = AppComponents.getLogger();
-
-    public static final String ACTION_PERFORMED = "actionPerformed";
 
     private String goTo;
 
@@ -30,7 +31,7 @@ public class ActionDefault extends AbstractAction {
     }
 
     ActionDefault() {
-        this.goTo = ConstantsFor.HTTP_LOCALHOST_8880;
+        this.goTo = ConstantsFor.HTTP_LOCALHOST_8880_SLASH;
     }
 
     @Override
@@ -42,4 +43,5 @@ public class ActionDefault extends AbstractAction {
             LOGGER.error(e1.getMessage(), e1);
         }
     }
+
 }

@@ -8,7 +8,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
-import ru.vachok.messenger.MessageSwing;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.SshActs;
@@ -16,10 +15,10 @@ import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.net.NetScannerSvc;
+import ru.vachok.networker.systray.ListenUserInfo;
 import ru.vachok.networker.systray.MessageToTray;
 
 import javax.servlet.http.HttpServletRequest;
-import java.awt.event.ActionEvent;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -139,7 +138,7 @@ public class ActDirectoryCTRL {
             adSrvDetails = adSrvDetails.replaceAll("</br>", "\n").replaceAll("<p>", "\n\n").replaceAll("<p><b>", "\n\n");
             long l = new Calendar.Builder().setTimeOfDay(0, 0, 0).build().getTimeInMillis();
             String finalAdSrvDetails = adSrvDetails;
-            new MessageToTray((ActionEvent e) -> new MessageSwing().infoNoTitles(queryString + "\n\n" + attributeValue + "\n" + finalAdSrvDetails)).info(queryString, attributeValue,
+            new MessageToTray(new ListenUserInfo(queryString, attributeValue, finalAdSrvDetails)).info(queryString, attributeValue,
                 ConstantsFor.percToEnd(new Date(l), 24));
         }
         catch(Exception e){
@@ -177,4 +176,5 @@ public class ActDirectoryCTRL {
         }
         return "adphoto";
     }
+
 }

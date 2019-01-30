@@ -15,7 +15,10 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.systray.ActionDefault;
 import ru.vachok.networker.systray.MessageToTray;
 
-import javax.mail.*;
+import javax.mail.Flags;
+import javax.mail.Folder;
+import javax.mail.Message;
+import javax.mail.MessagingException;
 import java.sql.*;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -71,9 +74,8 @@ public class SpeedChecker implements Callable<Long> {
                 }
             }
         } catch (SQLException e) {
-            FileSystemWorker.recFile(
-                SpeedChecker.class.getSimpleName() + ".log",
-                Collections.singletonList(new TForms().fromArray(e, false)));
+            new MessageCons().errorAlert("SpeedChecker", "chkForLast", e.getMessage());
+            FileSystemWorker.error("SpeedChecker.chkForLast", e);
         }
         methMetr(stArt);
         return rtLong;
@@ -89,8 +91,6 @@ public class SpeedChecker implements Callable<Long> {
         LOGGER.info(msgTimeSp);
     }
 
-
-    /*END FOR CLASS*/
     public static final class ChkMailAndUpdateDB implements Runnable {
 
         private MailMessages mailMessages = new MailMessages();
@@ -150,7 +150,7 @@ public class SpeedChecker implements Callable<Long> {
                     if (writeDB(m.getSubject().toLowerCase().split("speed:")[1], dayOfWeek, timeSt)) delMessage(m);
                     eSender.info(ChkMailAndUpdateDB.class.getSimpleName(), true + " sending to base", chDB);
                 } else {
-                    new MessageToTray(new ActionDefault(ConstantsFor.HTTP_LOCALHOST_8880)).infoNoTitles("No new messages");
+                    new MessageToTray(new ActionDefault(ConstantsFor.HTTP_LOCALHOST_8880_SLASH)).infoNoTitles("No new messages");
                 }
             } catch (MessagingException e) {
                 eSender.errorAlert(
@@ -179,10 +179,8 @@ public class SpeedChecker implements Callable<Long> {
                 new MessageToTray().info("DB updated", "Today is " + DayOfWeek.of(dayOfWeek), " Time spend " + timeSpend);
                 return true;
             } catch (SQLException e) {
-                LOGGER.error(getClass().getSimpleName(), e.getMessage(), e);
-                FileSystemWorker.recFile(
-                    getClass().getSimpleName() + ConstantsFor.LOG,
-                    (e.getMessage() + "\n" + new TForms().fromArray(e, false)));
+                new MessageCons().errorAlert("ChkMailAndUpdateDB", "writeDB", e.getMessage());
+                FileSystemWorker.error("ChkMailAndUpdateDB.writeDB", e);
                 return false;
             }
         }
@@ -193,7 +191,8 @@ public class SpeedChecker implements Callable<Long> {
                 inboxFolder.getMessage(m.getMessageNumber()).setFlag(Flags.Flag.DELETED, true);
                 inboxFolder.close(true);
             } catch (MessagingException e) {
-                LOGGER.error(e.getMessage(), e);
+                new MessageCons().errorAlert("ChkMailAndUpdateDB", "delMessage", e.getMessage());
+                FileSystemWorker.error("ChkMailAndUpdateDB.delMessage", e);
             }
         }
     }

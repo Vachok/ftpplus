@@ -71,6 +71,7 @@ public class IntoApplication {
      */
     @SuppressWarnings("JavadocReference")
     public static void main(String[] args) {
+        LOGGER.warn("IntoApplication.main");
         final long stArt = System.currentTimeMillis();
         boolean delFilePatterns = FileSystemWorker.delFilePatterns(ConstantsFor.STR_VISIT);
         beforeSt();
@@ -105,7 +106,7 @@ public class IntoApplication {
      */
     private static void beforeSt() {
         ConstantsFor.showMem();
-        LOGGER.info("IntoApplication.beforeSt");
+        LOGGER.warn("IntoApplication.beforeSt");
         String msg = LocalDate.now().getDayOfWeek().getValue() + " - day of week\n" +
             LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault());
         LOGGER.warn(msg);
@@ -143,11 +144,12 @@ public class IntoApplication {
     }
 
     private static void appProperties() {
+        LOGGER.warn("IntoApplication.appProperties");
         String s = null;
         try {
             s = Paths.get("").toFile().getCanonicalPath().toLowerCase();
         } catch (IOException e) {
-            FileSystemWorker.recFile(IntoApplication.class.getSimpleName(), e.getMessage() + "\n" + new TForms().fromArray(e, false));
+            FileSystemWorker.recFile(IntoApplication.class.getSimpleName() + ConstantsFor.LOG, e.getMessage() + "\n" + new TForms().fromArray(e, false));
             LOGGER.warn(e.getMessage());
         }
         InitProperties initProperties = new FileProps(s + "\\modules\\networker\\src\\main\\resources\\application");

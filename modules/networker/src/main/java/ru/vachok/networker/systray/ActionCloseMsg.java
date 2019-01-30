@@ -13,7 +13,7 @@ import java.awt.event.ActionListener;
  @since 29.01.2019 (12:21) */
 public class ActionCloseMsg extends AbstractAction {
 
-    private TrayIcon trayIcon;
+    private transient TrayIcon trayIcon;
 
     ActionCloseMsg(TrayIcon trayIcon) {
         this.trayIcon = trayIcon;

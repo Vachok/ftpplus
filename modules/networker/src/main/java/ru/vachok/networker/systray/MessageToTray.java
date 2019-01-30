@@ -5,12 +5,10 @@ import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
-import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.TimeChecker;
 
 import java.awt.*;
 import java.awt.event.ActionListener;
-import java.util.Collections;
 import java.util.Date;
 
 
@@ -45,8 +43,8 @@ public class MessageToTray implements MessageToUser {
     }
 
     public MessageToTray(ActionListener aListener) {
+        SystemTrayHelper.delOldActions();
         this.aListener = aListener;
-        delActions();
     }
 
     @Override
@@ -61,7 +59,6 @@ public class MessageToTray implements MessageToUser {
         else{
             new MessageCons().errorAlert(headerMsg, titleMsg, bodyMsg);
         }
-        FileSystemWorker.recFile(headerMsg + ConstantsFor.LOG, Collections.singletonList((titleMsg + "\n\n" + bodyMsg)));
     }
 
     @Override

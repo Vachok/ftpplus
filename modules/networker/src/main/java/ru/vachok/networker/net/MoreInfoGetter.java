@@ -22,12 +22,6 @@ import java.util.List;
  @since 25.01.2019 (11:06) */
 class MoreInfoGetter extends NetScannerSvc {
 
-// --Commented out by Inspection START (25.01.2019 13:45):
-//    MoreInfoGetter() {
-//        super();
-//    }
-// --Commented out by Inspection STOP (25.01.2019 13:45)
-
     /**
      Поиск имён пользователей компьютера <br> Обращения: <br> 1 {@link #onLinesCheck(String, String)} 1.1 {@link ThreadConfig#threadPoolTaskExecutor()} 1.2 {@link PCUserResolver#namesToFile(String)}
      <br> 2. {@link #offLinesCheckUser(String, String)}

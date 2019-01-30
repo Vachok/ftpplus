@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
@@ -77,7 +76,7 @@ public class PhotoConverterSRV {
             LOGGER.warn(msg);
             psCommands.add(msg);
         } catch (Exception e) {
-            AppComponents.getLogger().error(e.getMessage(), e);
+            FileSystemWorker.error("PhotoConverterSRV.imageBiConsumer", e);
             psCommands.add(e.getMessage());
         }
     };
@@ -108,10 +107,11 @@ public class PhotoConverterSRV {
      @throws NullPointerException если нет фото
      */
     String psCommands() {
+
         try {
             convertFoto();
         } catch (IOException | NullPointerException e) {
-            FileSystemWorker.recFile(getClass().getSimpleName(), e.getMessage() + "\n" + new TForms().fromArray(e, false));
+            FileSystemWorker.error("PhotoConverterSRV.psCommands", e);
             LOGGER.error(e.getMessage());
         }
         StringBuilder stringBuilder = new StringBuilder();
@@ -142,6 +142,7 @@ public class PhotoConverterSRV {
     }
 
     private Set<String> samAccFromDB() {
+
         Set<String> samAccounts = new HashSet<>();
         Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.DB_PREFIX + ConstantsFor.STR_VELKOM);
         try (PreparedStatement p = c.prepareStatement("select * from u0466446_velkom.adusers");
@@ -150,7 +151,7 @@ public class PhotoConverterSRV {
                 samAccounts.add(r.getString("samAccountName"));
             }
         } catch (SQLException e) {
-            LOGGER.error(e.getMessage(), e);
+            FileSystemWorker.error("PhotoConverterSRV.samAccFromDB", e);
         }
         return samAccounts;
     }

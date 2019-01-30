@@ -245,7 +245,6 @@ public class NetScanCtr {
                 .addAttribute(ConstantsFor.ATT_TITLE, new Date(this.propLastScanMinusDuration))
                 .addAttribute("pc", new TForms().fromArray(pCsAsync, true));
             AppComponents.lastNetScan().setTimeLastScan(new Date());
-            properties.setProperty(ConstantsFor.PR_LASTSCAN, System.currentTimeMillis() + "");
             lastScan.clear();
         }
     }

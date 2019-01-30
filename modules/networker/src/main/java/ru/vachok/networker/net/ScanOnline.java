@@ -16,12 +16,10 @@ import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URI;
-import java.net.UnknownHostException;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 
@@ -56,19 +54,7 @@ public class ScanOnline implements Runnable {
         }
     });
 
-    private ConcurrentMap<String, String> offLines = new ConcurrentHashMap<>();
-
-    private ConcurrentMap<String, String> onLinesResolve = new ConcurrentHashMap<>();
-
     private List<String> okIP = new ArrayList<>();
-
-    @Override
-    public int hashCode() {
-        int result = messageToUser.hashCode();
-        result = 31 * result + getOffLines().hashCode();
-        result = 31 * result + getOnLinesResolve().hashCode();
-        return result;
-    }
 
     private ScanOnline() {
     }
@@ -78,68 +64,15 @@ public class ScanOnline implements Runnable {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof ScanOnline)) return false;
-
-        ScanOnline that = (ScanOnline) o;
-
-        if (!messageToUser.equals(that.messageToUser)) return false;
-        if (!getOffLines().equals(that.getOffLines())) return false;
-        return getOnLinesResolve().equals(that.getOnLinesResolve());
-    }
-
-    @Override
-    public String toString() {
-        if (!offLines.isEmpty()) {
-            final StringBuilder sb = new StringBuilder("ScanOnOffline{");
-            sb.append(" OffLines (").append(offLines.size()).append(") = <font color=\"red\">")
-                .append(new TForms().fromArray(offLines, true)).append("</font><br>");
-            sb.append(" OnLineAgain (").append(onLinesResolve.size()).append(") = <font color=\"green\">")
-                .append(new TForms().fromArray(onLinesResolve, true)).append("</font><br>")
-                .append("<font color=\"gray\">SwitchesWiFi: ")
-                .append(new TForms().fromArray(okIP, true)).append("</font>");
-            return sb.toString();
-        } else {
-            return "<font color=\"green\">NO</font>";
-        }
-    }
-
-    ConcurrentMap<String, String> getOnLinesResolve() {
-        return onLinesResolve;
-    }
-
-    ConcurrentMap<String, String> getOffLines() {
-        return offLines;
-    }
-
-    @Override
     public void run() {
         messageToUser.infoNoTitles("ScanOnline.run");
         try {
-            List<InetAddress> onList = onlinesAddressesList();
+            List<InetAddress> onList = PingListCreator.onlinesAddressesList();
             runPing(onList);
         } catch (IOException e) {
             messageToUser = new MessageCons();
             messageToUser.errorAlert(getClass().getSimpleName(), e.getMessage(), new TForms().fromArray(e, false));
         }
-    }
-
-    private List<InetAddress> onlinesAddressesList() throws IOException {
-        LOGGER.warn("ScanOnline.onlinesAddressesList");
-        messageToUser = new MessageCons();
-        List<InetAddress> onlineAddresses = new ArrayList<>();
-        List<String> fileAsList = NetScanFileWorker.getI().getListOfOnlineDev();
-        fileAsList.forEach((String x) -> {
-            try {
-                String[] sS = x.split(" ");
-                byte[] inetBytesAddr = InetAddress.getByName(sS[1]).getAddress();
-                onlineAddresses.add(InetAddress.getByAddress(inetBytesAddr));
-            } catch (ArrayIndexOutOfBoundsException | UnknownHostException ignore) {
-                //
-            }
-        });
-        return onlineAddresses;
     }
 
     private void runPing(List<InetAddress> onList) {
@@ -153,7 +86,7 @@ public class ScanOnline implements Runnable {
                     x.toString(),
                     "is online: " + xReachable);
                 if (!xReachable) {
-                    messageToUser.infoNoTitles(offLines.putIfAbsent(x.toString(), LocalTime.now().toString()));
+                    messageToUser.infoNoTitles(PingListCreator.getOffLines().putIfAbsent(x.toString(), LocalTime.now().toString()));
                 }
             } catch (IOException e) {
                 messageToUser = new MessageToTray();
@@ -163,7 +96,7 @@ public class ScanOnline implements Runnable {
                 messageToUser.errorAlert(getClass().getSimpleName(), STR_RUN_PING, e.getMessage());
             }
         });
-        if(!offLines.isEmpty()){
+        if (!PingListCreator.getOffLines().isEmpty()) {
             ThreadConfig.executeAsThread(() -> {
                 AppComponents.getLogger().warn("ScanOnline.runPing");
                 SwitchesAvailability switchesAvailability = new SwitchesAvailability();
@@ -174,9 +107,26 @@ public class ScanOnline implements Runnable {
                 messageToUser.info(getClass().getSimpleName(), okIP.size() + " sw ips", addAll + " added");
             });
         }
-        messageToUser.info(
-            getClass().getSimpleName(),
-            ConstantsFor.getUpTime(),
-            onList.size() + " online. Scanned: " + ConstantsFor.ALL_DEVICES.size() + "/" + ConstantsFor.IPS_IN_VELKOM_VLAN);
+        messageToUser.info(getClass().getSimpleName(), ConstantsFor.getUpTime(), onList.size() +
+            " online. Scanned: " + ConstantsFor.ALL_DEVICES.size() + "/" + ConstantsFor.IPS_IN_VELKOM_VLAN);
     }
+
+    @Override
+    public String toString() {
+        if (!PingListCreator.getOffLines().isEmpty()) {
+            final StringBuilder sb = new StringBuilder("ScanOnOffline{");
+            ConcurrentMap<String, String> offLines = PingListCreator.getOffLines();
+            ConcurrentMap<String, String> onLinesResolve = PingListCreator.getOnLinesResolve();
+            sb.append(" OffLines (").append(offLines.size()).append(") = <font color=\"red\">")
+                .append(new TForms().fromArray(offLines, true)).append("</font><br>");
+            sb.append(" OnLineAgain (").append(onLinesResolve.size()).append(") = <font color=\"green\">")
+                .append(new TForms().fromArray(onLinesResolve, true)).append("</font><br>")
+                .append("<font color=\"gray\">SwitchesWiFi: ")
+                .append(new TForms().fromArray(okIP, true)).append("</font>");
+            return sb.toString();
+        } else {
+            return "<font color=\"green\">NO</font>";
+        }
+    }
+
 }

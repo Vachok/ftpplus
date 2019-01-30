@@ -26,8 +26,14 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.SecureRandom;
-import java.time.*;
-import java.util.*;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.Year;
+import java.time.ZoneOffset;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.*;
 
 import static java.time.temporal.ChronoUnit.HOURS;
@@ -51,7 +57,7 @@ public enum ConstantsFor {
      */
     private static final Properties PROPS = new Properties();
 
-    public static final String HTTP_LOCALHOST_8880 = "http://localhost:8880/";
+    public static final String HTTP_LOCALHOST_8880_SLASH = "http://localhost:8880/";
 
     public static final String USERS_TXT = "/static/texts/users.txt";
 

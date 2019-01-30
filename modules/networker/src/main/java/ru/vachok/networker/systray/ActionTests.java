@@ -20,7 +20,7 @@ public class ActionTests extends AbstractAction {
     public void actionPerformed(ActionEvent e) {
         ThreadConfig.executeAsThread(DiapazonedScan.getInstance());
         new MessageToTray(
-            new ActionDefault(ConstantsFor.HTTP_LOCALHOST_8880 + "/showalldev?needsopen"))
+            new ActionDefault(ConstantsFor.HTTP_LOCALHOST_8880_SLASH + "/showalldev?needsopen"))
             .errorAlert(ConstantsFor.ALL_DEVICES.size() + " deq size");
     }
 }

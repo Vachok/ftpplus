@@ -23,13 +23,20 @@ import java.util.concurrent.TimeUnit;
  @since 25.01.2019 (9:33) */
 class ActionSomeInfo extends AbstractAction {
 
+    /**
+     {@link AppComponents#getLogger()}
+     */
     private static final Logger LOGGER = AppComponents.getLogger();
+
+    ActionSomeInfo() {
+        SystemTrayHelper.delOldActions();
+    }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         LOGGER.warn("ActionSomeInfo.actionPerformed");
         Date newScan = new Date(DiapazonedScan.getInstance().getStopClass() + TimeUnit.MINUTES.toMillis(111));
-        new MessageSwing().infoNoTitles("New Scan at: " + newScan.toString() + " | " + ConstantsFor.getUpTime() + "\n" +
+        new MessageSwing(400, 440, 35, 20).infoNoTitles("New Scan at: " + newScan.toString() + " | " + ConstantsFor.getUpTime() + "\n" +
             Thread.activeCount() + " threads " + ConstantsFor.showMem() + AppInfoOnLoad.iisLogSize() + "\n" +
             AppComponents.versionInfo().toString() + "\n" +
             new TForms().fromArray(ConstantsFor.getProps()));

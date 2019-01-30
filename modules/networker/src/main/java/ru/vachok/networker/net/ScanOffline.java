@@ -1,9 +1,14 @@
 package ru.vachok.networker.net;
 
 
+import ru.vachok.messenger.MessageCons;
+import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.fileworks.FileSystemWorker;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.time.LocalTime;
+import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Logger;
 
 /**
@@ -17,7 +22,13 @@ public class ScanOffline implements Runnable {
 
     private ScanOnline scanOnline = ScanOnline.getI();
 
+    private static MessageToUser messageToUser = new MessageCons();
+
     private static ScanOffline scanOffline = new ScanOffline();
+
+    private ConcurrentMap<String, String> onLinesResolve = PingListCreator.getOnLinesResolve();
+
+    private ConcurrentMap<String, String> offLines = PingListCreator.getOffLines();
 
     public static ScanOffline getI() {
         return scanOffline;
@@ -35,41 +46,49 @@ public class ScanOffline implements Runnable {
         }
     }
 
-    private void scanOff() {
-        scanOnline.getOffLines().forEach((x, y) -> {
-            try {
-                byte[] address = InetAddress.getByName(x.replaceFirst("\\Q/\\E", "")).getAddress();
-                InetAddress byAddress = InetAddress.getByAddress(address);
-                if (byAddress.isReachable(500)) {
-                    scanOnline.getOffLines().remove(x);
-                    scanOnline.getOnLinesResolve().put(x, LocalTime.now().toString());
-                }
-            } catch (IOException e) {
-                LOGGER.throwing("ScanOffline", "scanOff", e);
-            }
-        });
-        scanOnline.getOnLinesResolve().forEach((x, y) -> {
-            try{
-                byte[] aBytes = InetAddress.getByName(x).getAddress();
-                InetAddress inetAddress = InetAddress.getByAddress(aBytes);
-                if(!inetAddress.isReachable(500)){
-                    scanOnline.getOnLinesResolve().remove(x);
-                    scanOnline.getOffLines().put(x, LocalTime.now().toString());
-                }
-            }
-            catch(IOException e){
-                LOGGER.throwing(getClass().getSimpleName(), e.getMessage(), e);
-            }
-        });
-    }
-
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("ScanOffline{");
         sb.append(getClass().getSimpleName()).append(" is running...\n");
-        sb.append(scanOnline.getOffLines().size()).append("scanOnline.getOffLines().size()");
-        sb.append(scanOnline.getOnLinesResolve().size()).append("scanOnline.getOnLinesResolve().size()");
+        sb.append(PingListCreator.getOffLines().size()).append("scanOnline.getOffLines().size()");
+        sb.append(onLinesResolve.size()).append("scanOnline.getOnLinesResolve().size()");
         sb.append('}');
         return sb.toString();
+    }
+
+    private void scanOff() {
+        this.offLines.forEach(this::offlinesActions);
+        this.onLinesResolve.forEach(this::onlinesActions);
+        PingListCreator.setOnLinesResolve(this.onLinesResolve);
+        PingListCreator.setOffLines(this.onLinesResolve);
+    }
+
+    private void offlinesActions(String x, String y) {
+        LOGGER.info("ScanOffline.offlinesActions");
+        try {
+            byte[] address = InetAddress.getByName(x.replaceFirst("\\Q/\\E", "")).getAddress();
+            InetAddress byAddress = InetAddress.getByAddress(address);
+            if (byAddress.isReachable(500)) {
+                offLines.remove(x);
+                messageToUser.infoNoTitles(onLinesResolve.putIfAbsent(x, LocalTime.now().toString()));
+            }
+        } catch (IOException e) {
+            LOGGER.throwing("ScanOffline", "scanOff", e);
+        }
+    }
+
+    private void onlinesActions(String x, String y) {
+        LOGGER.info("ScanOffline.onlinesActions");
+        try {
+            byte[] aBytes = InetAddress.getByName(x).getAddress();
+            InetAddress inetAddress = InetAddress.getByAddress(aBytes);
+            if (!inetAddress.isReachable(500)) {
+                onLinesResolve.remove(x);
+                messageToUser.infoNoTitles(offLines.putIfAbsent(x, LocalTime.now().toString()));
+            }
+        } catch (IOException e) {
+            new MessageCons().errorAlert("ScanOffline", "onlinesActions", e.getMessage());
+            FileSystemWorker.error("ScanOffline.onlinesActions", e);
+        }
     }
 }

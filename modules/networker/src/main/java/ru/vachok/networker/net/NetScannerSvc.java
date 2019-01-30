@@ -15,7 +15,7 @@ import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.TimeChecker;
-import ru.vachok.networker.systray.ActionScanCompl;
+import ru.vachok.networker.systray.ActionDefault;
 import ru.vachok.networker.systray.MessageToTray;
 
 import javax.servlet.http.HttpServletRequest;
@@ -46,6 +46,10 @@ import java.util.concurrent.locks.ReentrantLock;
 public class NetScannerSvc {
 
 
+    private static final String CLASS_NAME = "NetScannerSvc";
+
+    private static Set<String> unusedIPs = new TreeSet<>();
+
     /**
      /netscan POST форма
      <p>
@@ -56,11 +60,12 @@ public class NetScannerSvc {
 
     private static final Properties p = ConstantsFor.getProps();
 
+    private String thrName = Thread.currentThread().getName();
+
     /**
      {@link RegRuMysql#getDefaultConnection(String)}
      */
     static Connection c;
-
 
     /**
      new {@link NetScannerSvc}
@@ -91,6 +96,7 @@ public class NetScannerSvc {
     NetScannerSvc() {
         this.netWork = AppComponents.lastNetScanMap();
     }
+
     /**
      @return {@link #netScannerSvc}
      */
@@ -159,18 +165,14 @@ public class NetScannerSvc {
                 setThePc(thePcWithDBInfo);
                 ActDirectoryCTRL.setInputWithInfoFromDB(thePcWithDBInfo);
             }
-        }
-        catch(SQLException e){
+        } catch (SQLException e) {
             reconnectToDB();
-            FileSystemWorker.recFile(
-                this.getClass().getSimpleName() +
-                    ConstantsNet.GET_INFO_FROM_DB + ConstantsFor.LOG, Collections.singletonList(new TForms().fromArray(e, false)));
+            new MessageCons().errorAlert(CLASS_NAME, "getInfoFromDB", e.getMessage());
+            FileSystemWorker.error("NetScannerSvc.getInfoFromDB", e);
             setThePc(e.getMessage());
-        }
-        catch(IndexOutOfBoundsException e){
-            FileSystemWorker.recFile(
-                this.getClass().getSimpleName() +
-                    ConstantsNet.GET_INFO_FROM_DB + ConstantsFor.LOG, Collections.singletonList(new TForms().fromArray(e, false)));
+        } catch (IndexOutOfBoundsException e) {
+            new MessageCons().errorAlert(CLASS_NAME, "getInfoFromDB", e.getMessage());
+            FileSystemWorker.error("NetScannerSvc.getInfoFromDB", e);
             setThePc(e.getMessage());
         }
         return "ok";
@@ -182,10 +184,9 @@ public class NetScannerSvc {
     public static void reconnectToDB() {
         final long stArt = System.currentTimeMillis();
         Connection connection = new RegRuMysql().getDefaultConnection(ConstantsFor.U_0466446_VELKOM);
-        try{
+        try {
             connection.clearWarnings();
-        }
-        catch(SQLException e){
+        } catch (SQLException e) {
             FileSystemWorker.recFile(
                 NetScannerSvc.class.getSimpleName() + ".reconnectToDB" + ConstantsFor.LOG,
                 Collections.singletonList(new TForms().fromArray(e, false)));
@@ -194,7 +195,7 @@ public class NetScannerSvc {
         c = connection;
         String msgTimeSp = new StringBuilder()
             .append("NetScannerSvc.reconnectToDB: ")
-            .append(( float ) (System.currentTimeMillis() - stArt) / 1000)
+            .append((float) (System.currentTimeMillis() - stArt) / 1000)
             .append(ConstantsFor.STR_SEC_SPEND)
             .toString();
         ConstantsNet.LOGGER.info(msgTimeSp);
@@ -239,11 +240,11 @@ public class NetScannerSvc {
 
     /**
      Сканирующий метод. Запускает отдельный {@link Thread}, который блокируется с помощью {@link ReentrantLock} <br> 1 {@link #getPCNamesPref(String)} 1.1 {@link #getCycleNames(String)} 1.1.1 {@link
-    #getNamesCount(String)} 1.2 {@link MoreInfoGetter#getSomeMore(String, boolean)} 1.2.1 {@link MoreInfoGetter#onLinesCheck(String, String)} 1.2.1.1 {@link ThreadConfig#threadPoolTaskExecutor()} 1.2.1.2 {@link
-    PCUserResolver#namesToFile(String)} 1.2.2 {@link MoreInfoGetter#offLinesCheckUser(String, String)} 1.3 {@link MoreInfoGetter#getSomeMore(String, boolean)} 1.3.1 {@link MoreInfoGetter#onLinesCheck(String, String)} 1.3.1.1 {@link
-    ThreadConfig#threadPoolTaskExecutor()} 1.3.1.2 {@link PCUserResolver#namesToFile(String)} 1.4 {@link MoreInfoGetter#getSomeMore(String, boolean)} 1.4.1 {@link MoreInfoGetter#onLinesCheck(String, String)} 1.4.1.1 {@link
-    ThreadConfig#threadPoolTaskExecutor()} 1.4.1.2 {@link PCUserResolver#namesToFile(String)} 1.4.2 {@link MoreInfoGetter#offLinesCheckUser(String, String)} 1.5 {@link #writeDB()} 1.5.1 {@link
-    TForms#fromArray(List, boolean)} <br>
+    #getNamesCount(String)} 1.2 {@link MoreInfoGetter#getSomeMore(String, boolean)} 1.2.1 {@link MoreInfoGetter#onLinesCheck(String, String)} 1.2.1.1 {@link ThreadConfig#threadPoolTaskExecutor()}
+     1.2.1.2 {@link PCUserResolver#namesToFile(String)} 1.2.2 {@link MoreInfoGetter#offLinesCheckUser(String, String)} 1.3 {@link MoreInfoGetter#getSomeMore(String, boolean)} 1.3.1 {@link
+    MoreInfoGetter#onLinesCheck(String, String)} 1.3.1.1 {@link ThreadConfig#threadPoolTaskExecutor()} 1.3.1.2 {@link PCUserResolver#namesToFile(String)} 1.4 {@link MoreInfoGetter#getSomeMore(String,
+        boolean)} 1.4.1 {@link MoreInfoGetter#onLinesCheck(String, String)} 1.4.1.1 {@link ThreadConfig#threadPoolTaskExecutor()} 1.4.1.2 {@link PCUserResolver#namesToFile(String)} 1.4.2 {@link
+    MoreInfoGetter#offLinesCheckUser(String, String)} 1.5 {@link #writeDB()} 1.5.1 {@link TForms#fromArray(List, boolean)} <br>
      <p>
      2 {@link TForms#fromArray(Map)} <br>
      <p>
@@ -271,14 +272,16 @@ public class NetScannerSvc {
             final long startMethod = System.currentTimeMillis();
             ConstantsNet.LOGGER.warn(msg.get());
             for (String s : ConstantsNet.PC_PREFIXES) {
+                this.thrName = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - stArt) + "-sec";
                 ConstantsNet.PC_NAMES.clear();
                 ConstantsNet.PC_NAMES.addAll(getPCNamesPref(s));
-                Thread.currentThread().setName(TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - stArt) + "-sec");
+                Thread.currentThread().setName(thrName);
             }
             String elapsedTime = "Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethod) + " sec.";
             ConstantsNet.PC_NAMES.add(elapsedTime);
             ConstantsNet.LOGGER.warn(msg.get());
             toFileList.add(msg.get());
+
             Runnable runAfterAll = () -> {
                 Thread.currentThread().setName("mailMSG");
                 MessageToUser mailMSG = new MessageCons();
@@ -306,22 +309,26 @@ public class NetScannerSvc {
                 ConstantsFor.saveProps(ConstantsNet.LOC_PROPS);
                 toFileList.add(new TForms().fromArray(ConstantsNet.LOC_PROPS, false));
                 toFileList.add(ConstantsFor.showMem());
-                String msgTimeSp = "NetScannerSvc.getPCsAsync method. " + ( float ) (System.currentTimeMillis() - stArt) / 1000 + ConstantsFor.STR_SEC_SPEND;
+                String msgTimeSp = "NetScannerSvc.getPCsAsync method. " + (float) (System.currentTimeMillis() - stArt) / 1000 + ConstantsFor.STR_SEC_SPEND;
                 toFileList.add(msgTimeSp);
                 FileSystemWorker.recFile(this.getClass().getSimpleName() + ".getPCsAsync" + ConstantsFor.LOG, toFileList);
                 eServ.shutdown();
-                new MessageToTray(new ActionScanCompl()).info("Netscan complete!",
-                    s3 + onLinePCs,
-                    ( float ) (TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - stArt)) / ConstantsFor.ONE_HOUR_IN_MIN + s2);
+                new MessageToTray(new ActionDefault("http://localhost:8880/netscan")).info("Netscan complete!", s3 + onLinePCs,
+                    (float) (TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - stArt)) / ConstantsFor.ONE_HOUR_IN_MIN + s2);
                 NetScannerSvc.setOnLinePCsToZero();
+                FileSystemWorker.recFile("unused.ips", unusedIPs.stream());
+                ConstantsFor.getProps().setProperty(ConstantsFor.PR_LASTSCAN, System.currentTimeMillis() + "");
             };
             ThreadConfig.executeAsThread(runAfterAll);
         });
     }
 
     /**
-     Сборщик для {@link ConstantsNet#PC_NAMES} <br> 1. {@link #getCycleNames(String)} 1.1 {@link #getNamesCount(String)} <br> 2. {@link MoreInfoGetter#getSomeMore(String, boolean)} 2.1 {@link MoreInfoGetter#onLinesCheck(String, String)} 2
-     .1.1 {@link ThreadConfig#threadPoolTaskExecutor()} 2.1.2 {@link PCUserResolver#namesToFile(String)} <br> 2.2 {@link MoreInfoGetter#offLinesCheckUser(String, String)} <br> 3. {@link MoreInfoGetter#getSomeMore(String, boolean)} 3.1 {@link MoreInfoGetter#onLinesCheck(String, String)} 3.1.1 {@link ThreadConfig#threadPoolTaskExecutor()} 3.1.2 {@link PCUserResolver#namesToFile(String)} <br> 4. {@link MoreInfoGetter#getSomeMore(String, boolean)} 4.1 {@link ThreadConfig#threadPoolTaskExecutor()} 4.1.2 {@link PCUserResolver#namesToFile(String)} 4.2 {@link MoreInfoGetter#offLinesCheckUser(String, String)} <br> 5. {@link #writeDB()} 5.1 {@link
+     Сборщик для {@link ConstantsNet#PC_NAMES} <br> 1. {@link #getCycleNames(String)} 1.1 {@link #getNamesCount(String)} <br> 2. {@link MoreInfoGetter#getSomeMore(String, boolean)} 2.1 {@link
+    MoreInfoGetter#onLinesCheck(String, String)} 2 .1.1 {@link ThreadConfig#threadPoolTaskExecutor()} 2.1.2 {@link PCUserResolver#namesToFile(String)} <br> 2.2 {@link
+    MoreInfoGetter#offLinesCheckUser(String, String)} <br> 3. {@link MoreInfoGetter#getSomeMore(String, boolean)} 3.1 {@link MoreInfoGetter#onLinesCheck(String, String)} 3.1.1 {@link
+    ThreadConfig#threadPoolTaskExecutor()} 3.1.2 {@link PCUserResolver#namesToFile(String)} <br> 4. {@link MoreInfoGetter#getSomeMore(String, boolean)} 4.1 {@link
+    ThreadConfig#threadPoolTaskExecutor()} 4.1.2 {@link PCUserResolver#namesToFile(String)} 4.2 {@link MoreInfoGetter#offLinesCheckUser(String, String)} <br> 5. {@link #writeDB()} 5.1 {@link
     TForms#fromArray(List, boolean)}
 
      @param prefixPcName префикс имени ПК
@@ -339,16 +346,7 @@ public class NetScannerSvc {
                 byName = InetAddress.getByName(pcName);
                 reachable = byName.isReachable(ConstantsFor.TIMEOUT_650);
                 if (!reachable) {
-                    String someMore = MoreInfoGetter.getSomeMore(pcName, false);
-                    String onLines = new StringBuilder()
-                        .append("online ")
-                        .append(false)
-                        .append("<br>").toString();
-
-                    ConstantsNet.PC_NAMES.add(pcName + ":" + byName.getHostAddress() + " " + onLines);
-                    String format = MessageFormat.format("{0} {1} | {2}", pcName, onLines, someMore);
-                    netWork.putIfAbsent(pcName + " last name is " + someMore, false);
-                    ConstantsNet.LOGGER.warn(format);
+                    pcNameUnreach(pcName, byName);
                 } else {
                     String someMore = new StringBuilder().append("<i><font color=\"yellow\">last name is ")
                         .append(MoreInfoGetter.getSomeMore(pcName, false)).append("</i></font> ")
@@ -369,7 +367,8 @@ public class NetScannerSvc {
                     ConstantsNet.LOGGER.info(format);
                 }
             } catch (IOException e) {
-                Thread.currentThread().interrupt();
+                unusedIPs.add(e.getMessage());
+                FileSystemWorker.error("NetScannerSvc.getPCNamesPref", e);
             }
         }
         netWork.put("<h4>" + prefixPcName + "     " + ConstantsNet.PC_NAMES.size() + "</h4>", true);
@@ -378,6 +377,27 @@ public class NetScannerSvc {
         String e = "<b>Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethTime) + " sec.</b> " + LocalTime.now();
         ConstantsNet.PC_NAMES.add(e);
         return ConstantsNet.PC_NAMES;
+    }
+
+    /**
+     Если ПК не пингуется
+     <p>
+
+     @param pcName имя ПК
+     @param byName {@link InetAddress}
+     @see #getPCNamesPref(String)
+     */
+    private void pcNameUnreach(String pcName, InetAddress byName) {
+        String someMore = MoreInfoGetter.getSomeMore(pcName, false);
+        String onLines = new StringBuilder()
+            .append("online ")
+            .append(false)
+            .append("<br>").toString();
+
+        ConstantsNet.PC_NAMES.add(pcName + ":" + byName.getHostAddress() + " " + onLines);
+        String format = MessageFormat.format("{0} {1} | {2}", pcName, onLines, someMore);
+        netWork.putIfAbsent(pcName + " last name is " + someMore, false);
+        ConstantsNet.LOGGER.warn(format);
     }
 
     /**
@@ -532,6 +552,7 @@ public class NetScannerSvc {
         if (qer.equals("td")) {
             inDex = ConstantsNet.TDPC;
         }
+        new MessageToTray(new ActionDefault("http://localhost:8880/netscan")).info("NetScannerSvc.getNamesCount", qer + inDex, "\n" + thrName);
         return inDex;
     }
 
@@ -572,14 +593,13 @@ public class NetScannerSvc {
 
     private void countStat() {
         List<String> readFileAsList = new ArrayList<>();
-        try(InputStream inputStream = new FileInputStream(ConstantsFor.VELKOM_PCUSERAUTO_TXT);
-            InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-            BufferedReader bufferedReader = new BufferedReader(inputStreamReader)){
-            while(inputStreamReader.ready()){
+        try (InputStream inputStream = new FileInputStream(ConstantsFor.VELKOM_PCUSERAUTO_TXT);
+             InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+             BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
+            while (inputStreamReader.ready()) {
                 readFileAsList.add(bufferedReader.readLine().split("\\Q0) \\E")[1]);
             }
-        }
-        catch(IOException e){
+        } catch (IOException e) {
             ConstantsNet.LOGGER.error(e.getMessage(), e);
         }
         FileSystemWorker.recFile("pcautodis.txt", readFileAsList.parallelStream().distinct());

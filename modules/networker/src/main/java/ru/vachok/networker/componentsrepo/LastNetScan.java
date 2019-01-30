@@ -7,7 +7,10 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import ru.vachok.networker.ConstantsFor;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.Date;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -45,7 +48,7 @@ public class LastNetScan implements Serializable {
         this.timeLastScan = timeLastScan;
     }
 
-    public ConcurrentMap<String, Boolean> getNetWork() {
+    ConcurrentMap<String, Boolean> getNetWork() {
         return netWork;
     }
 
