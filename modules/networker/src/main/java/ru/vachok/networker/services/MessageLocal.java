@@ -22,6 +22,11 @@ public class MessageLocal implements MessageToUser {
         errorAlert(headerMsg, titleMsg, bodyMsg);
     }
 
+    public void warn(String s) {
+        this.bodyMsg = s;
+        warning(bodyMsg);
+    }
+
     @Override
     public void errorAlert(String headerMsg, String titleMsg, String bodyMsg) {
         this.headerMsg = headerMsg;

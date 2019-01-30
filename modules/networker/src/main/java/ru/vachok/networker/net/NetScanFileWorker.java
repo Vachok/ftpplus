@@ -11,8 +11,8 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.Objects;
 
 
@@ -53,6 +53,7 @@ class NetScanFileWorker {
      */
     void setNewLanLastScan(File newLanLastScan) {
         this.newLanLastScan = newLanLastScan;
+        new MessageCons().infoNoTitles("newLanLastScan = [" + this.newLanLastScan.getAbsolutePath() + "]");
     }
 
     /**
@@ -60,6 +61,7 @@ class NetScanFileWorker {
      */
     void setOldLanLastScan(File oldLanLastScan) {
         this.oldLanLastScan = oldLanLastScan;
+        new MessageCons().infoNoTitles("oldLanLastScan = [" + this.oldLanLastScan.getAbsolutePath() + "]");
     }
 
     public static NetScanFileWorker getI() {
@@ -83,8 +85,17 @@ class NetScanFileWorker {
         }
     }
 
-    List<String> getListOfOnlineDev() throws IOException {
-        List<String> retList = new ArrayList<>();
+    /**
+     Читает из файлов строки
+     <p>
+
+     @return {@link Deque} строк - содержимое {@link #oldLanLastScan} и {@link #newLanLastScan}
+     @throws IOException files
+     @see PingListKeeper#onlinesAddressesList()
+     */
+    Deque<String> getListOfOnlineDev() throws IOException {
+        LOGGER.warn("NetScanFileWorker.getListOfOnlineDev");
+        Deque<String> retList = new ArrayDeque<>();
         String msg = newLanLastScan.getAbsolutePath() + oldLanLastScan.getAbsolutePath() + " is created by " + getClass().getSimpleName();
         if(newLanLastScan.exists() && newLanLastScan.canRead()){
             retList.addAll(FileSystemWorker.readFileToList(newLanLastScan.getAbsolutePath()));

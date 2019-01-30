@@ -29,6 +29,8 @@ public class TForms {
 
     private static final String LINE_CLASS = " line, class: ";
 
+    private static final String STR_VALUE = ", value: ";
+
     private StringBuilder brStringBuilder = new StringBuilder();
 
     private StringBuilder nStringBuilder = new StringBuilder();
@@ -40,6 +42,12 @@ public class TForms {
     private final String STR_DISASTER = " occurred disaster!<br>";
 
     private final String STR_METHFILE = " method.<br>File: ";
+
+    private static final String N_STR_ENTER = "\n";
+
+    private static final String BR_STR_HTML_ENTER = "<br>";
+
+    private static final String P_STR_HTML_PARAGRAPH = "<p>";
 
     public String fromArray(Map<String, String> stringStringMap) {
         List<String> list = new ArrayList<>();
@@ -67,17 +75,17 @@ public class TForms {
     public String fromArray(Properties properties) {
         InitProperties initProperties = new FileProps(ConstantsFor.APP_NAME);
         initProperties.setProps(properties);
-        nStringBuilder.append("\n");
+        nStringBuilder.append(N_STR_ENTER);
         properties.forEach((x, y) -> {
             String msg = x + " : " + y;
             LOGGER.info(msg);
-            nStringBuilder.append(x).append(" :: ").append(y).append("\n");
+            nStringBuilder.append(x).append(" :: ").append(y).append(N_STR_ENTER);
         });
         return nStringBuilder.toString();
     }
 
     public String mapStringBoolean(Map<String, Boolean> call) {
-        brStringBuilder.append("<p>");
+        brStringBuilder.append(P_STR_HTML_PARAGRAPH);
         call.forEach((x, y) -> {
             String msg = x + y;
             LOGGER.info(msg);
@@ -85,7 +93,7 @@ public class TForms {
                 .append(x)
                 .append(" - ")
                 .append(y)
-                .append("<br>");
+                .append(BR_STR_HTML_ENTER);
         });
         brStringBuilder.append("</p>");
         return brStringBuilder.toString();
@@ -93,14 +101,14 @@ public class TForms {
 
     public String stringObjectMapParser(Map<String, Object> stringObjectMap) {
         stringObjectMap.forEach((x, y) -> {
-            nStringBuilder.append(x).append("  ").append(y.toString()).append("\n");
+            nStringBuilder.append(x).append("  ").append(y.toString()).append(N_STR_ENTER);
         });
         return nStringBuilder.toString();
     }
 
     public String fromArray(Exception e, boolean br) {
-        brStringBuilder.append("<p>");
-        nStringBuilder.append("\n");
+        brStringBuilder.append(P_STR_HTML_PARAGRAPH);
+        nStringBuilder.append(N_STR_ENTER);
         for(StackTraceElement stackTraceElement : e.getStackTrace()){
             nStringBuilder
                 .append("At ")
@@ -132,19 +140,19 @@ public class TForms {
     }
 
     public String mapLongString(Map<Long, String> visitsMap) {
-        visitsMap.forEach((x, y) -> nStringBuilder.append(x).append(" | ").append(y).append("\n"));
+        visitsMap.forEach((x, y) -> nStringBuilder.append(x).append(" | ").append(y).append(N_STR_ENTER));
         return nStringBuilder.toString();
     }
 
     public String fromEnum(Enumeration<String> enumStrings, boolean br) {
-        nStringBuilder.append("\n");
-        brStringBuilder.append("<p>");
+        nStringBuilder.append(N_STR_ENTER);
+        brStringBuilder.append(P_STR_HTML_PARAGRAPH);
         while(enumStrings.hasMoreElements()){
             String str = enumStrings.nextElement();
-            nStringBuilder.append(str).append("\n");
-            brStringBuilder.append(str).append("<br>");
+            nStringBuilder.append(str).append(N_STR_ENTER);
+            brStringBuilder.append(str).append(BR_STR_HTML_ENTER);
         }
-        nStringBuilder.append("\n");
+        nStringBuilder.append(N_STR_ENTER);
         brStringBuilder.append("</p>");
         if(br){
             return brStringBuilder.toString();
@@ -155,9 +163,9 @@ public class TForms {
     }
 
     public String fromArray(Queue<String> stringQueue) {
-        brStringBuilder.append("<p>");
+        brStringBuilder.append(P_STR_HTML_PARAGRAPH);
         while(stringQueue.iterator().hasNext()){
-            brStringBuilder.append(stringQueue.poll()).append("<br>");
+            brStringBuilder.append(stringQueue.poll()).append(BR_STR_HTML_ENTER);
         }
         brStringBuilder.append("</p>");
         return brStringBuilder.toString();
@@ -169,10 +177,10 @@ public class TForms {
             stringList.add(x + " " + y);
         });
         Collections.sort(stringList);
-        brStringBuilder.append("<p>");
+        brStringBuilder.append(P_STR_HTML_PARAGRAPH);
         for(String s : stringList){
-            brStringBuilder.append(s).append("<br>");
-            nStringBuilder.append(s).append("\n");
+            brStringBuilder.append(s).append(BR_STR_HTML_ENTER);
+            nStringBuilder.append(s).append(N_STR_ENTER);
         }
         if(br){
             return brStringBuilder.toString();
@@ -183,15 +191,15 @@ public class TForms {
     }
 
     public String mapStrStrArr(Map<String, String[]> parameterMap, boolean br) {
-        brStringBuilder.append("<p>");
+        brStringBuilder.append(P_STR_HTML_PARAGRAPH);
         parameterMap.forEach((x, y) -> {
             brStringBuilder.append("<h4>").append(x).append("</h4><br>");
             int i = 1;
             for(String s : y){
-                brStringBuilder.append(i++).append(")").append(s).append("<br>");
-                nStringBuilder.append(i++).append(")").append(s).append("\n");
+                brStringBuilder.append(i++).append(")").append(s).append(BR_STR_HTML_ENTER);
+                nStringBuilder.append(i++).append(")").append(s).append(N_STR_ENTER);
             }
-            nStringBuilder.append(x).append("\n");
+            nStringBuilder.append(x).append(N_STR_ENTER);
             brStringBuilder.append("</p>");
         });
         if(br){
@@ -203,12 +211,12 @@ public class TForms {
     }
 
     public String fromArray(Cookie[] cookies, boolean br) {
-        brStringBuilder.append("<p>");
+        brStringBuilder.append(P_STR_HTML_PARAGRAPH);
         for(Cookie c : cookies){
             brStringBuilder
-                .append(c.getName()).append(" ").append(c.getComment()).append(" ").append(c.getMaxAge()).append("<br>");
+                .append(c.getName()).append(" ").append(c.getComment()).append(" ").append(c.getMaxAge()).append(BR_STR_HTML_ENTER);
             nStringBuilder
-                .append(c.getName()).append(" ").append(c.getComment()).append(" ").append(c.getMaxAge()).append("\n");
+                .append(c.getName()).append(" ").append(c.getComment()).append(" ").append(c.getMaxAge()).append(N_STR_ENTER);
         }
         if(br){
             return brStringBuilder.toString();
@@ -219,15 +227,15 @@ public class TForms {
     }
 
     public String fromADUsersList(List<ADUser> adUsers, boolean br) {
-        nStringBuilder.append("\n");
+        nStringBuilder.append(N_STR_ENTER);
         for(ADUser ad : adUsers){
             brStringBuilder
                 .append(ad.toStringBR());
             nStringBuilder
                 .append(ad.toString())
-                .append("\n");
+                .append(N_STR_ENTER);
         }
-        nStringBuilder.append("\n");
+        nStringBuilder.append(N_STR_ENTER);
         if(br){
             return brStringBuilder.toString();
         }
@@ -237,12 +245,12 @@ public class TForms {
     }
 
     public String adPCMap(List<ADComputer> adComputers, boolean br) {
-        brStringBuilder.append("<p>");
-        nStringBuilder.append("\n");
+        brStringBuilder.append(P_STR_HTML_PARAGRAPH);
+        nStringBuilder.append(N_STR_ENTER);
         for(ADComputer ad : adComputers){
             brStringBuilder
                 .append(ad.toString())
-                .append("<br>");
+                .append(BR_STR_HTML_ENTER);
             nStringBuilder
                 .append(ad.toString())
                 .append("\n\n");
@@ -259,10 +267,10 @@ public class TForms {
 
     public String adMap(Map<ADComputer, ADUser> adComputerADUserMap) {
         adComputerADUserMap.forEach((x, y) -> {
-            brStringBuilder.append("<p>");
+            brStringBuilder.append(P_STR_HTML_PARAGRAPH);
             brStringBuilder
                 .append(x.toString())
-                .append("<br>")
+                .append(BR_STR_HTML_ENTER)
                 .append(y.toString())
                 .append("</p>");
         });
@@ -276,7 +284,7 @@ public class TForms {
                 .append("br");
             nStringBuilder
                 .append(address.toString())
-                .append("\n");
+                .append(N_STR_ENTER);
         }
         if(br){
             return brStringBuilder.toString();
@@ -295,15 +303,15 @@ public class TForms {
     }
 
     public String fromArray(Set<?> cacheSet, boolean br) {
-        brStringBuilder.append("<p>");
-        nStringBuilder.append("\n");
+        brStringBuilder.append(P_STR_HTML_PARAGRAPH);
+        nStringBuilder.append(N_STR_ENTER);
         for(Object o : cacheSet){
             brStringBuilder
                 .append(o.toString())
-                .append("<br>");
+                .append(BR_STR_HTML_ENTER);
             nStringBuilder
                 .append(o.toString())
-                .append("\n");
+                .append(N_STR_ENTER);
         }
         if(br){
             return brStringBuilder.toString();
@@ -359,16 +367,18 @@ public class TForms {
         }
     }
 
-    public String fromArray(ConcurrentMap<?, ?> filesFailMap, boolean br) {
-        brStringBuilder.append("<p>");
-        filesFailMap.forEach((x, y) -> {
-            brStringBuilder.append("<br>")
+    public String fromArray(ConcurrentMap<?, ?> mapDefObj, boolean br) {
+        brStringBuilder.append(P_STR_HTML_PARAGRAPH);
+        mapDefObj.forEach((x, y) -> {
+            brStringBuilder.append(BR_STR_HTML_ENTER)
+                .append("Key: ")
                 .append(x.toString())
-                .append(" ")
+                .append(STR_VALUE)
                 .append(y.toString());
-            nStringBuilder.append("\n")
+            nStringBuilder.append(N_STR_ENTER)
+                .append("Key: ")
                 .append(x.toString())
-                .append(" ")
+                .append(STR_VALUE)
                 .append(y.toString());
         });
         if(br){
@@ -438,7 +448,7 @@ public class TForms {
     }
 
     public String fromArray(Object[] objects, boolean b) {
-        brStringBuilder.append("<p>");
+        brStringBuilder.append(P_STR_HTML_PARAGRAPH);
         for(Object o : objects){
             brStringBuilder
                 .append(o.toString())
@@ -467,10 +477,10 @@ public class TForms {
     }
 
     public String fromArray(Properties p, boolean b) {
-        brStringBuilder.append("<p>");
+        brStringBuilder.append(P_STR_HTML_PARAGRAPH);
         p.forEach((x, y) -> {
             String str = "Property: ";
-            String str1 = ", value: ";
+            String str1 = STR_VALUE;
             brStringBuilder
                 .append(str).append(x.toString())
                 .append(str1).append(y.toString()).append(BR_S);
@@ -487,8 +497,8 @@ public class TForms {
     }
 
     public String fromArray(Throwable throwable, boolean b) {
-        brStringBuilder.append("<p>");
-        nStringBuilder.append("\n");
+        brStringBuilder.append(P_STR_HTML_PARAGRAPH);
+        nStringBuilder.append(N_STR_ENTER);
         for(StackTraceElement stackTraceElement : throwable.getStackTrace()){
             nStringBuilder
                 .append("At ")

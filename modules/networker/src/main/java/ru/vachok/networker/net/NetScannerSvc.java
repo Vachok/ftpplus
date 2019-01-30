@@ -1,6 +1,7 @@
 package ru.vachok.networker.net;
 
 
+import org.slf4j.Logger;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
@@ -14,6 +15,7 @@ import ru.vachok.networker.ad.PCUserResolver;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.TimeChecker;
 import ru.vachok.networker.systray.ActionDefault;
 import ru.vachok.networker.systray.MessageToTray;
@@ -21,17 +23,11 @@ import ru.vachok.networker.systray.MessageToTray;
 import javax.servlet.http.HttpServletRequest;
 import java.io.*;
 import java.net.InetAddress;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.time.LocalTime;
 import java.util.*;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -48,7 +44,9 @@ public class NetScannerSvc {
 
     private static final String CLASS_NAME = "NetScannerSvc";
 
-    private static Set<String> unusedIPs = new TreeSet<>();
+    private static final Logger LOGGER = AppComponents.getLogger();
+
+    private static Collection<String> unusedIPs = new TreeSet<>();
 
     /**
      /netscan POST форма
@@ -91,16 +89,10 @@ public class NetScannerSvc {
     private Map<String, Boolean> netWork;
 
     /**
-     @see AppComponents#lastNetScanMap()
-     */
-    NetScannerSvc() {
-        this.netWork = AppComponents.lastNetScanMap();
-    }
-
-    /**
      @return {@link #netScannerSvc}
      */
     public static NetScannerSvc getI() {
+        LOGGER.warn("NetScannerSvc.getI");
         ConstantsFor.showMem();
         //noinspection DoubleCheckedLocking
         if (netScannerSvc == null) {
@@ -129,6 +121,9 @@ public class NetScannerSvc {
             .append("select * from velkompc where NamePP like '%")
             .append(thePc)
             .append("%'");
+        String classMeth = "NetScannerSvc.getInfoFromDB";
+
+        String getInfoFromDB = "getInfoFromDB";
         try (PreparedStatement preparedStatement = c.prepareStatement(sql.toString())) {
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 List<String> timeNow = new ArrayList<>();
@@ -167,12 +162,10 @@ public class NetScannerSvc {
             }
         } catch (SQLException e) {
             reconnectToDB();
-            new MessageCons().errorAlert(CLASS_NAME, "getInfoFromDB", e.getMessage());
-            FileSystemWorker.error("NetScannerSvc.getInfoFromDB", e);
+            new MessageCons().errorAlert(CLASS_NAME, getInfoFromDB, e.getMessage());
             setThePc(e.getMessage());
         } catch (IndexOutOfBoundsException e) {
-            new MessageCons().errorAlert(CLASS_NAME, "getInfoFromDB", e.getMessage());
-            FileSystemWorker.error("NetScannerSvc.getInfoFromDB", e);
+            new MessageCons().errorAlert(CLASS_NAME, getInfoFromDB, e.getMessage());
             setThePc(e.getMessage());
         }
         return "ok";
@@ -182,23 +175,20 @@ public class NetScannerSvc {
      Реконнект к БД
      */
     public static void reconnectToDB() {
-        final long stArt = System.currentTimeMillis();
         Connection connection = new RegRuMysql().getDefaultConnection(ConstantsFor.U_0466446_VELKOM);
         try {
             connection.clearWarnings();
         } catch (SQLException e) {
-            FileSystemWorker.recFile(
-                NetScannerSvc.class.getSimpleName() + ".reconnectToDB" + ConstantsFor.LOG,
-                Collections.singletonList(new TForms().fromArray(e, false)));
-            ConstantsNet.LOGGER.error(e.getMessage(), e);
+            new MessageCons().errorAlert(CLASS_NAME, "reconnectToDB", e.getMessage());
         }
         c = connection;
-        String msgTimeSp = new StringBuilder()
-            .append("NetScannerSvc.reconnectToDB: ")
-            .append((float) (System.currentTimeMillis() - stArt) / 1000)
-            .append(ConstantsFor.STR_SEC_SPEND)
-            .toString();
-        ConstantsNet.LOGGER.info(msgTimeSp);
+    }
+
+    /**
+     @see AppComponents#lastNetScanMap()
+     */
+    private NetScannerSvc() {
+        this.netWork = AppComponents.lastNetScanMap();
     }
 
     /**
@@ -239,88 +229,100 @@ public class NetScannerSvc {
     }
 
     /**
-     Сканирующий метод. Запускает отдельный {@link Thread}, который блокируется с помощью {@link ReentrantLock} <br> 1 {@link #getPCNamesPref(String)} 1.1 {@link #getCycleNames(String)} 1.1.1 {@link
-    #getNamesCount(String)} 1.2 {@link MoreInfoGetter#getSomeMore(String, boolean)} 1.2.1 {@link MoreInfoGetter#onLinesCheck(String, String)} 1.2.1.1 {@link ThreadConfig#threadPoolTaskExecutor()}
-     1.2.1.2 {@link PCUserResolver#namesToFile(String)} 1.2.2 {@link MoreInfoGetter#offLinesCheckUser(String, String)} 1.3 {@link MoreInfoGetter#getSomeMore(String, boolean)} 1.3.1 {@link
-    MoreInfoGetter#onLinesCheck(String, String)} 1.3.1.1 {@link ThreadConfig#threadPoolTaskExecutor()} 1.3.1.2 {@link PCUserResolver#namesToFile(String)} 1.4 {@link MoreInfoGetter#getSomeMore(String,
-        boolean)} 1.4.1 {@link MoreInfoGetter#onLinesCheck(String, String)} 1.4.1.1 {@link ThreadConfig#threadPoolTaskExecutor()} 1.4.1.2 {@link PCUserResolver#namesToFile(String)} 1.4.2 {@link
-    MoreInfoGetter#offLinesCheckUser(String, String)} 1.5 {@link #writeDB()} 1.5.1 {@link TForms#fromArray(List, boolean)} <br>
+     Запись в таблицу <b>velkompc</b> текущего состояния. <br>
      <p>
-     2 {@link TForms#fromArray(Map)} <br>
-     <p>
-     3 {@link TForms#fromArray(java.util.concurrent.ConcurrentMap, boolean)} <br>
-     <p>
-     4 {@link TForms#fromArrayUsers(ConcurrentMap, boolean)}
+     1 {@link TForms#fromArray(List, boolean)}
 
-     @see #getPcNames()
+     @return строка в html-формате
+     @see #getPCNamesPref(String)
      */
-    @SuppressWarnings({"OverlyLongLambda", "OverlyLongMethod"})
-    private void getPCsAsync() {
-        ExecutorService eServ = Executors.
-            unconfigurableExecutorService(Executors.
-                newFixedThreadPool(ConstantsNet.N_THREADS));
-        final long stArt = System.currentTimeMillis();
-        List<String> toFileList = new ArrayList<>();
-        AtomicReference<String> msg = new AtomicReference<>("");
-        eServ.submit(() -> {
-            msg.set(new StringBuilder()
-                .append("Thread ")
-                .append(Thread.currentThread().getId())
-                .append(" with name ")
-                .append(Thread.currentThread().getName())
-                .append(" is locked = ").toString());
-            final long startMethod = System.currentTimeMillis();
-            ConstantsNet.LOGGER.warn(msg.get());
-            for (String s : ConstantsNet.PC_PREFIXES) {
-                this.thrName = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - stArt) + "-sec";
-                ConstantsNet.PC_NAMES.clear();
-                ConstantsNet.PC_NAMES.addAll(getPCNamesPref(s));
-                Thread.currentThread().setName(thrName);
-            }
-            String elapsedTime = "Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethod) + " sec.";
-            ConstantsNet.PC_NAMES.add(elapsedTime);
-            ConstantsNet.LOGGER.warn(msg.get());
-            toFileList.add(msg.get());
+    @SuppressWarnings ({"OverlyComplexMethod", "OverlyLongLambda", "OverlyLongMethod"})
+    private static String writeDB() {
+        List<String> list = new ArrayList<>();
 
-            Runnable runAfterAll = () -> {
-                Thread.currentThread().setName("mailMSG");
-                MessageToUser mailMSG = new MessageCons();
-                float upTime = (float) (TimeUnit.MILLISECONDS
-                    .toSeconds(System.currentTimeMillis() - ConstantsFor.START_STAMP)) / ConstantsFor.ONE_HOUR_IN_MIN;
-                Map<String, String> lastLogs = new AppComponents().getLastLogs();
-                String retLogs = new TForms().fromArray(lastLogs);
-                String fromArray = new TForms().fromArray(ConstantsFor.COMPNAME_USERS_MAP, false);
-                String psUser = new TForms().fromArrayUsers(ConstantsFor.PC_U_MAP, false);
-                String thisPCStr;
-                thisPCStr = ConstantsFor.thisPC();
-                String s1 = new StringBuilder()
-                    .append(ConstantsFor.showMem())
-                    .append("\n\n")
-                    .append(retLogs).append(" \n")
-                    .append(psUser).append("\n").append(fromArray).toString();
-                String s2 = " min uptime. ";
-                String s3 = " Online: ";
-                mailMSG.info(
-                    this.getClass().getSimpleName() + s3 + onLinePCs,
-                    upTime + s2 + thisPCStr + ConstantsFor.COMPNAME_USERS_MAP_SIZE, s1);
-                toFileList.add(s1);
-                String s = Thread.activeCount() + " active threads now.";
-                ConstantsNet.LOGGER.warn(s);
-                ConstantsFor.saveProps(ConstantsNet.LOC_PROPS);
-                toFileList.add(new TForms().fromArray(ConstantsNet.LOC_PROPS, false));
-                toFileList.add(ConstantsFor.showMem());
-                String msgTimeSp = "NetScannerSvc.getPCsAsync method. " + (float) (System.currentTimeMillis() - stArt) / 1000 + ConstantsFor.STR_SEC_SPEND;
-                toFileList.add(msgTimeSp);
-                FileSystemWorker.recFile(this.getClass().getSimpleName() + ".getPCsAsync" + ConstantsFor.LOG, toFileList);
-                eServ.shutdown();
-                new MessageToTray(new ActionDefault("http://localhost:8880/netscan")).info("Netscan complete!", s3 + onLinePCs,
-                    (float) (TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - stArt)) / ConstantsFor.ONE_HOUR_IN_MIN + s2);
-                NetScannerSvc.setOnLinePCsToZero();
-                FileSystemWorker.recFile("unused.ips", unusedIPs.stream());
-                ConstantsFor.getProps().setProperty(ConstantsFor.PR_LASTSCAN, System.currentTimeMillis() + "");
-            };
-            ThreadConfig.executeAsThread(runAfterAll);
-        });
+        try(PreparedStatement p = c.prepareStatement("insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow) values (?,?,?,?)")){
+            ConstantsNet.PC_NAMES.stream().sorted().forEach(x -> {
+                String pcSerment = "Я не знаю...";
+                ConstantsNet.LOGGER.info(x);
+                if(x.contains("200.200")){
+                    pcSerment = "Торговый дом";
+                }
+                if(x.contains("200.201")){
+                    pcSerment = "IP телефоны";
+                }
+                if(x.contains("200.202")){
+                    pcSerment = "Техслужба";
+                }
+                if(x.contains("200.203")){
+                    pcSerment = "СКУД";
+                }
+                if(x.contains("200.204")){
+                    pcSerment = "Упаковка";
+                }
+                if(x.contains("200.205")){
+                    pcSerment = "МХВ";
+                }
+                if(x.contains("200.206")){
+                    pcSerment = "Здание склада 5";
+                }
+                if(x.contains("200.207")){
+                    pcSerment = "Сырокопоть";
+                }
+                if(x.contains("200.208")){
+                    pcSerment = "Участок убоя";
+                }
+                if(x.contains("200.209")){
+                    pcSerment = "Да ладно?";
+                }
+                if(x.contains("200.210")){
+                    pcSerment = "Мастера колб";
+                }
+                if(x.contains("200.212")){
+                    pcSerment = "Мастера деликатесов";
+                }
+                if(x.contains("200.213")){
+                    pcSerment = "2й этаж. АДМ.";
+                }
+                if(x.contains("200.214")){
+                    pcSerment = "WiFiCorp";
+                }
+                if(x.contains("200.215")){
+                    pcSerment = "WiFiFree";
+                }
+                if(x.contains("200.217")){
+                    pcSerment = "1й этаж АДМ";
+                }
+                if(x.contains("192.168")){
+                    pcSerment = "Может быть в разных местах...";
+                }
+                if(x.contains("172.16.200")){
+                    pcSerment = "Open VPN авторизация - сертификат";
+                }
+                boolean onLine = false;
+                try{
+                    if(x.contains("true")){
+                        onLine = true;
+                    }
+                    String x1 = x.split(":")[0];
+                    p.setString(1, x1);
+                    String x2 = x.split(":")[1];
+                    p.setString(2, x2.split("<")[0]);
+                    p.setString(3, pcSerment);
+                    p.setBoolean(4, onLine);
+                    p.executeUpdate();
+                    list.add(x1 + " " + x2 + " " + pcSerment + " " + onLine);
+                }
+                catch(SQLException e){
+                    reconnectToDB();
+                    String writeDB = "writeDB";
+                    new MessageCons().errorAlert(CLASS_NAME, writeDB, e.getMessage());
+                }
+            });
+            return new TForms().fromArray(list, true);
+        }
+        catch(SQLException e){
+            return e.getMessage();
+        }
     }
 
     /**
@@ -368,7 +370,6 @@ public class NetScannerSvc {
                 }
             } catch (IOException e) {
                 unusedIPs.add(e.getMessage());
-                FileSystemWorker.error("NetScannerSvc.getPCNamesPref", e);
             }
         }
         netWork.put("<h4>" + prefixPcName + "     " + ConstantsNet.PC_NAMES.size() + "</h4>", true);
@@ -426,110 +427,6 @@ public class NetScannerSvc {
         return list;
     }
 
-    private static void setOnLinePCsToZero() {
-        p.setProperty("onlinepc", onLinePCs + "");
-        NetScannerSvc.onLinePCs = 0;
-    }
-
-    /**
-     Запись в таблицу <b>velkompc</b> текущего состояния. <br>
-     <p>
-     1 {@link TForms#fromArray(List, boolean)}
-
-     @return строка в html-формате
-     @see #getPCNamesPref(String)
-     */
-    @SuppressWarnings({"OverlyComplexMethod", "OverlyLongLambda", "OverlyLongMethod"})
-    private static String writeDB() {
-        List<String> list = new ArrayList<>();
-
-        try (PreparedStatement p = c.prepareStatement("insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow) values (?,?,?,?)")) {
-            ConstantsNet.PC_NAMES.stream().sorted().forEach(x -> {
-                String pcSerment = "Я не знаю...";
-                ConstantsNet.LOGGER.info(x);
-                if (x.contains("200.200")) {
-                    pcSerment = "Торговый дом";
-                }
-                if (x.contains("200.201")) {
-                    pcSerment = "IP телефоны";
-                }
-                if (x.contains("200.202")) {
-                    pcSerment = "Техслужба";
-                }
-                if (x.contains("200.203")) {
-                    pcSerment = "СКУД";
-                }
-                if (x.contains("200.204")) {
-                    pcSerment = "Упаковка";
-                }
-                if (x.contains("200.205")) {
-                    pcSerment = "МХВ";
-                }
-                if (x.contains("200.206")) {
-                    pcSerment = "Здание склада 5";
-                }
-                if (x.contains("200.207")) {
-                    pcSerment = "Сырокопоть";
-                }
-                if (x.contains("200.208")) {
-                    pcSerment = "Участок убоя";
-                }
-                if (x.contains("200.209")) {
-                    pcSerment = "Да ладно?";
-                }
-                if (x.contains("200.210")) {
-                    pcSerment = "Мастера колб";
-                }
-                if (x.contains("200.212")) {
-                    pcSerment = "Мастера деликатесов";
-                }
-                if (x.contains("200.213")) {
-                    pcSerment = "2й этаж. АДМ.";
-                }
-                if (x.contains("200.214")) {
-                    pcSerment = "WiFiCorp";
-                }
-                if (x.contains("200.215")) {
-                    pcSerment = "WiFiFree";
-                }
-                if (x.contains("200.217")) {
-                    pcSerment = "1й этаж АДМ";
-                }
-                if (x.contains("192.168")) {
-                    pcSerment = "Может быть в разных местах...";
-                }
-                if (x.contains("172.16.200")) {
-                    pcSerment = "Open VPN авторизация - сертификат";
-                }
-                boolean onLine = false;
-                try {
-                    if (x.contains("true")) {
-                        onLine = true;
-                    }
-                    String x1 = x.split(":")[0];
-                    p.setString(1, x1);
-                    String x2 = x.split(":")[1];
-                    p.setString(2, x2.split("<")[0]);
-                    p.setString(3, pcSerment);
-                    p.setBoolean(4, onLine);
-                    p.executeUpdate();
-                    list.add(x1 + " " + x2 + " " + pcSerment + " " + onLine);
-                } catch (SQLException e) {
-                    reconnectToDB();
-                    FileSystemWorker.recFile(
-                        NetScannerSvc.class.getSimpleName() + ConstantsNet.WRITE_DB + ConstantsFor.LOG,
-                        Collections.singletonList(new TForms().fromArray(e, false)));
-                }
-            });
-            return new TForms().fromArray(list, true);
-        } catch (SQLException e) {
-            FileSystemWorker.recFile(
-                NetScannerSvc.class.getSimpleName() +
-                    ConstantsNet.WRITE_DB + ConstantsFor.LOG, Collections.singletonList(new TForms().fromArray(e, false)));
-            return e.getMessage();
-        }
-    }
-
     /**
      @param qer префикс имени ПК
      @return кол-во ПК, для пересичления
@@ -537,23 +434,120 @@ public class NetScannerSvc {
      */
     private int getNamesCount(String qer) {
         int inDex = 0;
-        if (qer.equals("no")) {
+        if(qer.equals("no")){
             inDex = ConstantsNet.NOPC;
         }
-        if (qer.equals("pp")) {
+        if(qer.equals("pp")){
             inDex = ConstantsNet.PPPC;
         }
-        if (qer.equals("do")) {
+        if(qer.equals("do")){
             inDex = ConstantsNet.DOPC;
         }
-        if (qer.equals("a")) {
+        if(qer.equals("a")){
             inDex = ConstantsNet.APC;
         }
-        if (qer.equals("td")) {
+        if(qer.equals("td")){
             inDex = ConstantsNet.TDPC;
         }
-        new MessageToTray(new ActionDefault("http://localhost:8880/netscan")).info("NetScannerSvc.getNamesCount", qer + inDex, "\n" + thrName);
+        new MessageToTray().info("NetScannerSvc.getNamesCount", qer + inDex, "\n" + thrName);
         return inDex;
+    }
+
+    /**
+     Сканирующий метод. Запускает отдельный {@link Thread}, который блокируется с помощью {@link ReentrantLock} <br> 1 {@link #getPCNamesPref(String)} 1
+     .1 {@link #getCycleNames(String)} 1.1.1 {@link
+    #getNamesCount(String)} 1.2 {@link MoreInfoGetter#getSomeMore(String, boolean)} 1.2.1 {@link MoreInfoGetter#onLinesCheck(String, String)} 1.2.1.1
+     {@link ThreadConfig#threadPoolTaskExecutor()}
+     1.2.1.2 {@link PCUserResolver#namesToFile(String)} 1.2.2 {@link MoreInfoGetter#offLinesCheckUser(String, String)} 1.3
+     {@link MoreInfoGetter#getSomeMore(String, boolean)} 1.3.1 {@link
+    MoreInfoGetter#onLinesCheck(String, String)} 1.3.1.1 {@link ThreadConfig#threadPoolTaskExecutor()} 1.3.1.2
+     {@link PCUserResolver#namesToFile(String)} 1.4 {@link MoreInfoGetter#getSomeMore(String,
+        boolean)} 1.4.1 {@link MoreInfoGetter#onLinesCheck(String, String)} 1.4.1.1 {@link ThreadConfig#threadPoolTaskExecutor()} 1.4.1.2
+     {@link PCUserResolver#namesToFile(String)} 1.4.2 {@link
+    MoreInfoGetter#offLinesCheckUser(String, String)} 1.5 {@link #writeDB()} 1.5.1 {@link TForms#fromArray(List, boolean)} <br>
+     <p>
+     2 {@link TForms#fromArray(Map)} <br>
+     <p>
+     3 {@link TForms#fromArray(java.util.concurrent.ConcurrentMap, boolean)} <br>
+     <p>
+     4 {@link TForms#fromArrayUsers(ConcurrentMap, boolean)}
+
+     @see #getPcNames()
+     */
+    @SuppressWarnings ({"OverlyLongLambda", "OverlyLongMethod"})
+    private void getPCsAsync() {
+        ExecutorService eServ = Executors.
+            unconfigurableExecutorService(Executors.
+                newFixedThreadPool(ConstantsNet.N_THREADS));
+        final long stArt = System.currentTimeMillis();
+        List<String> toFileList = new ArrayList<>();
+        AtomicReference<String> msg = new AtomicReference<>("");
+        eServ.submit(() -> {
+            msg.set(new StringBuilder()
+                .append("Thread ")
+                .append(Thread.currentThread().getId())
+                .append(" with name ")
+                .append(Thread.currentThread().getName())
+                .append(" is locked = ").toString());
+            final long startMethod = System.currentTimeMillis();
+            ConstantsNet.LOGGER.warn(msg.get());
+            for(String s : ConstantsNet.PC_PREFIXES){
+                this.thrName = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - stArt) + "-sec";
+                ConstantsNet.PC_NAMES.clear();
+                ConstantsNet.PC_NAMES.addAll(getPCNamesPref(s));
+                Thread.currentThread().setName(thrName);
+            }
+            String elapsedTime = "Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethod) + " sec.";
+            ConstantsNet.PC_NAMES.add(elapsedTime);
+            ConstantsNet.LOGGER.warn(msg.get());
+            toFileList.add(msg.get());
+
+            Runnable runAfterAll = () -> {
+                Thread.currentThread().setName("mailMSG");
+                MessageToUser mailMSG = new MessageCons();
+                float upTime = ( float ) (TimeUnit.MILLISECONDS
+                                              .toSeconds(System.currentTimeMillis() - ConstantsFor.START_STAMP)) / ConstantsFor.ONE_HOUR_IN_MIN;
+                Map<String, String> lastLogs = new AppComponents().getLastLogs();
+                String retLogs = new TForms().fromArray(lastLogs);
+                String fromArray = new TForms().fromArray(ConstantsFor.COMPNAME_USERS_MAP, false);
+                String psUser = new TForms().fromArrayUsers(ConstantsFor.PC_U_MAP, false);
+                String thisPCStr;
+                thisPCStr = ConstantsFor.thisPC();
+                String s1 = new StringBuilder()
+                    .append(ConstantsFor.showMem())
+                    .append("\n\n")
+                    .append(retLogs).append(" \n")
+                    .append(psUser).append("\n").append(fromArray).toString();
+                String s2 = " min uptime. ";
+                String s3 = " Online: ";
+                mailMSG.info(
+                    this.getClass().getSimpleName() + s3 + onLinePCs,
+                    upTime + s2 + thisPCStr + ConstantsFor.COMPNAME_USERS_MAP_SIZE, s1);
+                toFileList.add(s1);
+                String s = Thread.activeCount() + " active threads now.";
+                ConstantsNet.LOGGER.warn(s);
+                ConstantsFor.saveProps(ConstantsNet.LOC_PROPS);
+                toFileList.add(new TForms().fromArray(ConstantsNet.LOC_PROPS, false));
+                toFileList.add(ConstantsFor.showMem());
+                String msgTimeSp =
+                    "NetScannerSvc.getPCsAsync method. " + ( float ) (System.currentTimeMillis() - stArt) / 1000 + ConstantsFor.STR_SEC_SPEND;
+                toFileList.add(msgTimeSp);
+                FileSystemWorker.recFile(this.getClass().getSimpleName() + ".getPCsAsync" + ConstantsFor.LOG, toFileList);
+                eServ.shutdown();
+                new MessageToTray(new ActionDefault(ConstantsNet.HTTP_LOCALHOST_8880_NETSCAN)).info("Netscan complete!", s3 + onLinePCs,
+                    ( float ) (TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - stArt)) / ConstantsFor.ONE_HOUR_IN_MIN + s2);
+                NetScannerSvc.setOnLinePCsToZero();
+                FileSystemWorker.recFile("unused.ips", unusedIPs.stream());
+                ConstantsFor.getProps().setProperty(ConstantsNet.PR_LASTSCAN,
+                    System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY) + "");
+            };
+            ThreadConfig.executeAsThread(runAfterAll);
+        });
+    }
+
+    private static void setOnLinePCsToZero() {
+        p.setProperty(ConstantsNet.ONLINEPC, onLinePCs + "");
+        NetScannerSvc.onLinePCs = 0;
     }
 
     String someInfo() {

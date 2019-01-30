@@ -20,7 +20,6 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ConcurrentMap;
 
 
 /**
@@ -37,6 +36,8 @@ public class ScanOnline implements Runnable {
     private static final String STR_RUN_PING = "runPing";
 
     private static final Logger LOGGER = AppComponents.getLogger();
+
+    private static final String CLASS_NAME = "ScanOnline";
 
     /**
      new {@link ScanOnline}
@@ -67,7 +68,7 @@ public class ScanOnline implements Runnable {
     public void run() {
         messageToUser.infoNoTitles("ScanOnline.run");
         try {
-            List<InetAddress> onList = PingListCreator.onlinesAddressesList();
+            List<InetAddress> onList = PingListKeeper.onlinesAddressesList();
             runPing(onList);
         } catch (IOException e) {
             messageToUser = new MessageCons();
@@ -76,51 +77,66 @@ public class ScanOnline implements Runnable {
     }
 
     private void runPing(List<InetAddress> onList) {
-        LOGGER.warn("ScanOnline.runPing");
-        onList.forEach((InetAddress x) -> {
-            try {
-                messageToUser = new MessageCons();
-                boolean xReachable = x.isReachable(250);
-                messageToUser.info(
-                    getClass().getSimpleName(),
-                    x.toString(),
-                    "is online: " + xReachable);
-                if (!xReachable) {
-                    messageToUser.infoNoTitles(PingListCreator.getOffLines().putIfAbsent(x.toString(), LocalTime.now().toString()));
-                }
-            } catch (IOException e) {
-                messageToUser = new MessageToTray();
-                FileSystemWorker.recFile(
-                    getClass().getSimpleName() + ConstantsFor.LOG,
-                    e.getMessage() + "\n" + new TForms().fromArray(e, false));
-                messageToUser.errorAlert(getClass().getSimpleName(), STR_RUN_PING, e.getMessage());
-            }
-        });
-        if (!PingListCreator.getOffLines().isEmpty()) {
-            ThreadConfig.executeAsThread(() -> {
-                AppComponents.getLogger().warn("ScanOnline.runPing");
-                SwitchesAvailability switchesAvailability = new SwitchesAvailability();
-                switchesAvailability.run();
-                Set<String> availabilityOkIP = switchesAvailability.getOkIP();
-                this.okIP = new ArrayList<>();
-                boolean addAll = okIP.addAll(availabilityOkIP);
-                messageToUser.info(getClass().getSimpleName(), okIP.size() + " sw ips", addAll + " added");
-            });
+        String clMt = "ScanOnline.runPing";
+        LOGGER.warn(clMt);
+        for(InetAddress inetAddress : onList){
+            pingAddr(inetAddress);
         }
         messageToUser.info(getClass().getSimpleName(), ConstantsFor.getUpTime(), onList.size() +
             " online. Scanned: " + ConstantsFor.ALL_DEVICES.size() + "/" + ConstantsFor.IPS_IN_VELKOM_VLAN);
     }
 
+    /**
+     Пингует конкрктный {@link InetAddress}
+     <p>
+     TimeOut is 250 mSec.
+     <p>
+     <b>Схема:</b> <br>
+     1. {@link PingListKeeper#getOffLines()}. Если нет пинга, добавляет {@code inetAddress.toString, LocalTime.now.toString} и запускает: <br>
+     2. {@link ThreadConfig#executeAsThread(java.lang.Runnable)}. {@link #offlineNotEmptyActions()} <br>
+     <p>
+
+     @param inetAddress {@link InetAddress}. 3. {@link FileSystemWorker#error(java.lang.String, java.lang.Exception)}
+     */
+    private void pingAddr(InetAddress inetAddress) {
+        String classMeth = "ScanOnline.pingAddr";
+        LOGGER.warn(classMeth);
+        try{
+            messageToUser = new MessageCons();
+            boolean xReachable = inetAddress.isReachable(250);
+            if(!xReachable){
+                PingListKeeper.getOffLines().put(inetAddress.toString(), LocalTime.now().toString());
+                ThreadConfig.executeAsThread(this::offlineNotEmptyActions);
+                messageToUser.infoNoTitles(inetAddress.toString() + " is " + false);
+            }
+            else{
+                messageToUser.info(CLASS_NAME, STR_RUN_PING, inetAddress.toString() + " " + true);
+            }
+        }
+        catch(IOException e){
+            new MessageCons().errorAlert(CLASS_NAME, "pingAddr", e.getMessage());
+            FileSystemWorker.error(classMeth, e);
+        }
+    }
+
+    private void offlineNotEmptyActions() {
+        SwitchesAvailability switchesAvailability = new SwitchesAvailability();
+        switchesAvailability.run();
+        Set<String> availabilityOkIP = switchesAvailability.getOkIP();
+        this.okIP = new ArrayList<>();
+        boolean addAll = okIP.addAll(availabilityOkIP);
+        messageToUser.info(getClass().getSimpleName(), okIP.size() + " sw ips", addAll + " added");
+    }
+
     @Override
     public String toString() {
-        if (!PingListCreator.getOffLines().isEmpty()) {
+        new MessageCons().infoNoTitles("ScanOnline.toString");
+        if(!PingListKeeper.getOffLines().isEmpty()){
             final StringBuilder sb = new StringBuilder("ScanOnOffline{");
-            ConcurrentMap<String, String> offLines = PingListCreator.getOffLines();
-            ConcurrentMap<String, String> onLinesResolve = PingListCreator.getOnLinesResolve();
-            sb.append(" OffLines (").append(offLines.size()).append(") = <font color=\"red\">")
-                .append(new TForms().fromArray(offLines, true)).append("</font><br>");
-            sb.append(" OnLineAgain (").append(onLinesResolve.size()).append(") = <font color=\"green\">")
-                .append(new TForms().fromArray(onLinesResolve, true)).append("</font><br>")
+            sb.append(" OffLines (").append(PingListKeeper.getOffLines().size()).append(") = <font color=\"red\">")
+                .append(new TForms().fromArray(PingListKeeper.getOffLines(), true)).append("</font><br>");
+            sb.append(" OnLineAgain (").append(PingListKeeper.getOnLinesResolve().size()).append(") = <font color=\"green\">")
+                .append(new TForms().fromArray(PingListKeeper.getOnLinesResolve(), true)).append("</font><br>")
                 .append("<font color=\"gray\">SwitchesWiFi: ")
                 .append(new TForms().fromArray(okIP, true)).append("</font>");
             return sb.toString();

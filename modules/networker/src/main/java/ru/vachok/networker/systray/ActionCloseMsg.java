@@ -15,6 +15,13 @@ public class ActionCloseMsg extends AbstractAction {
 
     private transient TrayIcon trayIcon;
 
+    /**
+     Creates an {@code Action}.@param LOGGER
+     */
+    public ActionCloseMsg(Logger LOGGER) {
+        LOGGER.warn("ActionCloseMsg.ActionCloseMsg");
+    }
+
     ActionCloseMsg(TrayIcon trayIcon) {
         this.trayIcon = trayIcon;
     }

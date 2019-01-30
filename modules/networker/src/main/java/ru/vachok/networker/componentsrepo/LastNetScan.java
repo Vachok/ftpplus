@@ -5,12 +5,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import ru.vachok.messenger.MessageCons;
 import ru.vachok.networker.ConstantsFor;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
+import java.io.*;
 import java.util.Date;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -46,6 +44,7 @@ public class LastNetScan implements Serializable {
 
     public void setTimeLastScan(Date timeLastScan) {
         this.timeLastScan = timeLastScan;
+        new MessageCons().infoNoTitles("LastNetScan.setTimeLastScan\n" + timeLastScan.toString());
     }
 
     ConcurrentMap<String, Boolean> getNetWork() {

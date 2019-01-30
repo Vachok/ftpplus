@@ -26,14 +26,8 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.SecureRandom;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.Year;
-import java.time.ZoneOffset;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Properties;
+import java.time.*;
+import java.util.*;
 import java.util.concurrent.*;
 
 import static java.time.temporal.ChronoUnit.HOURS;
@@ -174,11 +168,6 @@ public enum ConstantsFor {
      Название аттрибута модели.
      */
     public static final String ATT_SSH_ACTS = "sshActs";
-
-    /**
-     Название property
-     */
-    public static final String PR_LASTSCAN = "lastscan";
 
     /**
      Название property

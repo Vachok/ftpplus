@@ -24,7 +24,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.BlockingDeque;
-import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.TimeUnit;
 
 import static ru.vachok.networker.componentsrepo.AppComponents.getLogger;
@@ -292,8 +291,6 @@ public class DiapazonedScan implements Runnable, Externalizable {
         String msg = "Vlans 11-14 completed.\nTime spend: " +
             TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - stArt) + "\n" + b + " copyOrDelFile.\n\n";
         LOGGER.warn(msg);
-        PingListCreator.setOffLines(new ConcurrentSkipListMap<>());
-        PingListCreator.setOnLinesResolve(new ConcurrentSkipListMap<>());
         this.stopClass = new TimeChecker().call().getReturnTime();
     }
 

@@ -8,16 +8,14 @@ import ru.vachok.messenger.MessageCons;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.ConstantsNet;
 import ru.vachok.networker.net.NetScannerSvc;
+import ru.vachok.networker.net.enums.ConstantsNet;
 
 import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
+import java.util.Date;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
@@ -86,8 +84,6 @@ public class PCUserResolver implements Thread.UncaughtExceptionHandler {
             Thread.currentThread().checkAccess();
         }
         catch(IOException | ArrayIndexOutOfBoundsException e){
-            new MessageCons().errorAlert(PC_USER_RESOLVER_CLASS_NAME, "namesToFile", e.getMessage());
-            FileSystemWorker.error("PCUserResolver.namesToFile", e);
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
         }
@@ -106,8 +102,6 @@ public class PCUserResolver implements Thread.UncaughtExceptionHandler {
             Collections.sort(timePath);
             return timePath.get(timePath.size() - 1);
         } catch (IOException | IndexOutOfBoundsException e) {
-            new MessageCons().errorAlert(PC_USER_RESOLVER_CLASS_NAME, "getLastTimeUse", e.getMessage());
-            FileSystemWorker.error("PCUserResolver.getLastTimeUse", e);
             return e.getMessage();
         }
     }
@@ -123,6 +117,7 @@ public class PCUserResolver implements Thread.UncaughtExceptionHandler {
      */
     private synchronized void recAutoDB(String pcName, String lastFileUse) {
         String sql = "insert into pcuser (pcName, userName, lastmod, stamp) values(?,?,?,?)";
+        String classMeth = "PCUserResolver.recAutoDB";
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql
             .replaceAll(ConstantsFor.STR_PCUSER, ConstantsFor.STR_PCUSERAUTO))) {
             String[] split = lastFileUse.split(" ");
@@ -134,12 +129,12 @@ public class PCUserResolver implements Thread.UncaughtExceptionHandler {
         }
         catch(SQLException e){
             new MessageCons().errorAlert(PC_USER_RESOLVER_CLASS_NAME, "recAutoDB", e.getMessage());
-            FileSystemWorker.error("PCUserResolver.recAutoDB", e);
+            FileSystemWorker.error(classMeth, e);
             NetScannerSvc.getI();
             NetScannerSvc.reconnectToDB();
         } catch (ArrayIndexOutOfBoundsException | NullPointerException e) {
             new MessageCons().errorAlert(PC_USER_RESOLVER_CLASS_NAME, "recAutoDB", e.getMessage());
-            FileSystemWorker.error("PCUserResolver.recAutoDB", e);
+            FileSystemWorker.error(classMeth, e);
             Thread.currentThread().checkAccess();
             Thread.currentThread().getThreadGroup().destroy();
         }
@@ -304,8 +299,6 @@ public class PCUserResolver implements Thread.UncaughtExceptionHandler {
             Thread.currentThread().interrupt();
         } catch (SQLException e) {
             new MessageCons().errorAlert(PC_USER_RESOLVER_CLASS_NAME, "recToDB", e.getMessage());
-            FileSystemWorker.error("PCUserResolver.recToDB", e);
-            NetScannerSvc.reconnectToDB();
         }
     }
 
