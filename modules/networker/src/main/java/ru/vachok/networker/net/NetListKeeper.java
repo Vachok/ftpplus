@@ -55,9 +55,9 @@ class NetListKeeper implements Serializable {
             if (s != null) {
                 byte[] inetBytesAddr = InetAddress.getByName(s.split(" ")[1]).getAddress();
                 onlineAddresses.add(InetAddress.getByAddress(inetBytesAddr));
-                LOGGER.info(classMeth, onlineAddresses.size() + " onlineAddresses.size", fileAsDeque.size() + " fileAsDeque.size");
             }
         }
+        LOGGER.info(classMeth, "returning: " + onlineAddresses.size(), " onlineAddresses");
         return onlineAddresses;
     }
 

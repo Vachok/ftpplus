@@ -212,6 +212,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     }
 
     public static List<String> readFileToList(String absolutePath) {
+        LOGGER.warn("FileSystemWorker.readFileToList");
         List<String> retList = new ArrayList<>();
         try(InputStream inputStream = new FileInputStream(absolutePath);
             InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
@@ -226,6 +227,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
             retList.add(e.getMessage());
             retList.add(new TForms().fromArray(e, true));
         }
+        new MessageCons().info("absolutePath = [" + absolutePath + "]", " input parameters.\nReturns:", "java.util.List<java.lang.String>");
         return retList;
     }
 

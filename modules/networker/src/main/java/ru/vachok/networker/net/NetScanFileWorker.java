@@ -104,8 +104,7 @@ class NetScanFileWorker {
             boolean oldLanLastScanNewFile = oldLanLastScan.createNewFile();
             msg = oldLanLastScanNewFile + " " + msg;
         }
-
-        LOGGER.warn(msg);
+        new MessageCons().info(msg + " " + retDeque.size(), "positions] [Returns:", "java.util.Deque<java.lang.String>");
         return retDeque;
     }
 
