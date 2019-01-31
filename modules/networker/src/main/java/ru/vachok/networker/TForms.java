@@ -11,7 +11,7 @@ import ru.vachok.networker.mailserver.MailRule;
 
 import javax.mail.Address;
 import javax.servlet.http.Cookie;
-import java.io.*;
+import java.io.File;
 import java.net.InetAddress;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
@@ -49,17 +49,6 @@ public class TForms {
 
     private static final String P_STR_HTML_PARAGRAPH = "<p>";
 
-    public String fromArray(Map<String, String> stringStringMap) {
-        List<String> list = new ArrayList<>();
-        stringStringMap.forEach((x, y) -> list.add(x + "    " + y + "<br>\n"));
-        Collections.sort(list);
-        for(String s : list){
-            brStringBuilder.append(s);
-            LOGGER.info(s);
-        }
-        return brStringBuilder.toString();
-    }
-
     public String fromArray(File[] dirFiles) {
         for(File f : dirFiles){
             if(f.getName().contains(".jar")){
@@ -80,28 +69,6 @@ public class TForms {
             String msg = x + " : " + y;
             LOGGER.info(msg);
             nStringBuilder.append(x).append(" :: ").append(y).append(N_STR_ENTER);
-        });
-        return nStringBuilder.toString();
-    }
-
-    public String mapStringBoolean(Map<String, Boolean> call) {
-        brStringBuilder.append(P_STR_HTML_PARAGRAPH);
-        call.forEach((x, y) -> {
-            String msg = x + y;
-            LOGGER.info(msg);
-            brStringBuilder
-                .append(x)
-                .append(" - ")
-                .append(y)
-                .append(BR_STR_HTML_ENTER);
-        });
-        brStringBuilder.append("</p>");
-        return brStringBuilder.toString();
-    }
-
-    public String stringObjectMapParser(Map<String, Object> stringObjectMap) {
-        stringObjectMap.forEach((x, y) -> {
-            nStringBuilder.append(x).append("  ").append(y.toString()).append(N_STR_ENTER);
         });
         return nStringBuilder.toString();
     }
@@ -139,11 +106,6 @@ public class TForms {
         }
     }
 
-    public String mapLongString(Map<Long, String> visitsMap) {
-        visitsMap.forEach((x, y) -> nStringBuilder.append(x).append(" | ").append(y).append(N_STR_ENTER));
-        return nStringBuilder.toString();
-    }
-
     public String fromEnum(Enumeration<String> enumStrings, boolean br) {
         nStringBuilder.append(N_STR_ENTER);
         brStringBuilder.append(P_STR_HTML_PARAGRAPH);
@@ -162,46 +124,15 @@ public class TForms {
         }
     }
 
-    public String fromArray(Queue<String> stringQueue) {
+    public String fromArray(Queue<String> stringQueue, boolean br) {
+        brStringBuilder = new StringBuilder();
+        nStringBuilder = new StringBuilder();
         brStringBuilder.append(P_STR_HTML_PARAGRAPH);
         while(stringQueue.iterator().hasNext()){
             brStringBuilder.append(stringQueue.poll()).append(BR_STR_HTML_ENTER);
+            nStringBuilder.append(stringQueue.poll()).append(N_S);
         }
         brStringBuilder.append("</p>");
-        return brStringBuilder.toString();
-    }
-
-    public String fromArray(Map<String, Boolean> stringBooleanMap, boolean br) {
-        List<String> stringList = new ArrayList<>();
-        stringBooleanMap.forEach((x, y) -> {
-            stringList.add(x + " " + y);
-        });
-        Collections.sort(stringList);
-        brStringBuilder.append(P_STR_HTML_PARAGRAPH);
-        for(String s : stringList){
-            brStringBuilder.append(s).append(BR_STR_HTML_ENTER);
-            nStringBuilder.append(s).append(N_STR_ENTER);
-        }
-        if(br){
-            return brStringBuilder.toString();
-        }
-        else{
-            return nStringBuilder.toString();
-        }
-    }
-
-    public String mapStrStrArr(Map<String, String[]> parameterMap, boolean br) {
-        brStringBuilder.append(P_STR_HTML_PARAGRAPH);
-        parameterMap.forEach((x, y) -> {
-            brStringBuilder.append("<h4>").append(x).append("</h4><br>");
-            int i = 1;
-            for(String s : y){
-                brStringBuilder.append(i++).append(")").append(s).append(BR_STR_HTML_ENTER);
-                nStringBuilder.append(i++).append(")").append(s).append(N_STR_ENTER);
-            }
-            nStringBuilder.append(x).append(N_STR_ENTER);
-            brStringBuilder.append("</p>");
-        });
         if(br){
             return brStringBuilder.toString();
         }
@@ -263,18 +194,6 @@ public class TForms {
         else{
             return nStringBuilder.toString();
         }
-    }
-
-    public String adMap(Map<ADComputer, ADUser> adComputerADUserMap) {
-        adComputerADUserMap.forEach((x, y) -> {
-            brStringBuilder.append(P_STR_HTML_PARAGRAPH);
-            brStringBuilder
-                .append(x.toString())
-                .append(BR_STR_HTML_ENTER)
-                .append(y.toString())
-                .append("</p>");
-        });
-        return brStringBuilder.toString();
     }
 
     public String fromArray(Address[] mailAddress, boolean br) {
@@ -367,21 +286,22 @@ public class TForms {
         }
     }
 
-    public String fromArray(ConcurrentMap<?, ?> mapDefObj, boolean br) {
+    public String fromArray(Map<?, ?> mapDefObj, boolean br) {
+        brStringBuilder = new StringBuilder();
+        nStringBuilder = new StringBuilder();
+
         brStringBuilder.append(P_STR_HTML_PARAGRAPH);
-        mapDefObj.forEach((x, y) -> {
-            brStringBuilder.append(BR_STR_HTML_ENTER)
-                .append("Key: ")
-                .append(x.toString())
-                .append(STR_VALUE)
-                .append(y.toString());
-            nStringBuilder.append(N_STR_ENTER)
-                .append("Key: ")
-                .append(x.toString())
-                .append(STR_VALUE)
-                .append(y.toString());
-        });
+        Set<?> keySet = mapDefObj.keySet();
+        List<String> list = new ArrayList<>(keySet.size());
+        keySet.forEach(x -> list.add(x.toString()));
+        Collections.sort(list);
+        for (String keyMap : list) {
+            String valueMap = mapDefObj.get(keyMap).toString();
+            brStringBuilder.append(keyMap).append(" ").append(valueMap).append("<br>");
+            nStringBuilder.append(keyMap).append(" ").append(valueMap).append("\n");
+        }
         if(br){
+            brStringBuilder.append(P_STR_HTML_PARAGRAPH);
             return brStringBuilder.toString();
         }
         else{
@@ -462,17 +382,6 @@ public class TForms {
         }
         else{
             return nStringBuilder.toString();
-        }
-    }
-
-    public boolean writeArray(Set<?> set, String name) {
-        try(OutputStream outputStream = new FileOutputStream(System.currentTimeMillis() + " " + name + ".set");
-            PrintWriter printWriter = new PrintWriter(outputStream, true)){
-            set.forEach(x -> printWriter.println(x.toString()));
-            return true;
-        }
-        catch(IOException e){
-            return false;
         }
     }
 

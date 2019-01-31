@@ -13,7 +13,10 @@ import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.systray.ActionCloseMsg;
 import ru.vachok.networker.systray.MessageToTray;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 
 /**
@@ -95,5 +98,4 @@ class MoreInfoGetter {
         }
         return retBuilder.toString();
     }
-
 }

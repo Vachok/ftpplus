@@ -81,7 +81,7 @@ public class ExitApp implements Runnable {
             LOGGER.info("No app.log");
         }
         try(ObjectOutput objectOutput = new ObjectOutputStream(new FileOutputStream(DiapazonedScan.class.getSimpleName() + ".dev"))){
-            DiapazonedScan.getInstance().writeExternal(objectOutput);
+            DiapazonedScan.getInstance();
         } catch (IOException e) {
             LOGGER.error(getClass().getSimpleName(), e.getMessage(), e);
         }

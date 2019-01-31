@@ -11,7 +11,10 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 
 import javax.servlet.http.HttpServletResponse;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -137,6 +140,8 @@ class ConditionChecker {
             model.addAttribute("pcs", stringBuilder.toString());
         }
         else{
+            ThreadConfig.executeAsThread(ScanOffline.getI());
+            ThreadConfig.executeAsThread(ScanOnline.getI());
             allDevNotNull(model, netScanFileWorker, response);
         }
     }
@@ -160,17 +165,27 @@ class ConditionChecker {
         float minLeft = ConstantsFor.ALL_DEVICES.remainingCapacity() / scansInMin;
         String attributeValue = new StringBuilder().append(minLeft).append(" ~minLeft. ")
             .append(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(( long ) minLeft))).toString();
-
         model.addAttribute(ConstantsFor.ATT_TITLE, attributeValue);
 
         if(netScanFileWorker.equals(DiapazonedScan.getNetScanFileWorker())){
-            model.addAttribute("pcs",
-                "OFF: " + ScanOnline.getI().toString() + "<p>" + netScanFileWorker.getNewLanLastScanAsStr() + "<p>" + netScanFileWorker.getOldLanLastScanAsStr());
+            String scOnLine = ScanOnline.getI().toString();
+            String scOffLine = ScanOffline.getI().toString() + "<p>" + netScanFileWorker.getNewLanLastScanAsStr() + "<br>" + netScanFileWorker.getOldLanLastScanAsStr();
+            model.addAttribute("pcs", scOnLine + "<br>" + scOffLine);
         }
         else{
-            model.addAttribute("pcs",
-                FileSystemWorker.readFile(ConstantsFor.AVAILABLE_LAST_TXT) + "<p>" + FileSystemWorker.readFile(ConstantsFor.OLD_LAN_TXT));
+            model.addAttribute("pcs", FileSystemWorker
+                .readFile(ConstantsFor.AVAILABLE_LAST_TXT) + "<p>" + FileSystemWorker
+                .readFile(ConstantsFor.OLD_LAN_TXT));
         }
         response.addHeader(ConstantsFor.HEAD_REFRESH, "60");
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("ConditionChecker{");
+        sb.append("c=").append(c.toString());
+        sb.append(", CLASS_NAME='").append(CLASS_NAME).append('\'');
+        sb.append('}');
+        return sb.toString();
     }
 }

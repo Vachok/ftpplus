@@ -33,8 +33,8 @@ public class MessageToTray implements MessageToUser {
     private String bodyMsg = "No body";
 
     public MessageToTray() {
-        this.aListener = new ActionDefault();
         delActions();
+        this.aListener = new ActionDefault();
     }
 
     public void errorAlert(String bodyMsg) {
@@ -52,7 +52,7 @@ public class MessageToTray implements MessageToUser {
         this.headerMsg = headerMsg;
         this.titleMsg = titleMsg;
         this.bodyMsg = bodyMsg;
-        if(SystemTray.isSupported()){
+        if (SystemTray.isSupported() && trayIcon.equals(SystemTrayHelper.getTrayIcon())) {
             trayIcon.addActionListener(aListener);
             trayIcon.displayMessage(headerMsg, titleMsg + " " + bodyMsg, TrayIcon.MessageType.ERROR);
         }
@@ -108,5 +108,17 @@ public class MessageToTray implements MessageToUser {
     public String confirm(String s, String s1, String s2) {
         throw new UnsupportedOperationException("Not impl to " + getClass().getSimpleName());
 
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("MessageToTray{");
+        sb.append("aListener=").append(aListener.hashCode());
+        sb.append(", bodyMsg='").append(bodyMsg).append('\'');
+        sb.append(", headerMsg='").append(headerMsg).append('\'');
+        sb.append(", titleMsg='").append(titleMsg).append('\'');
+        sb.append(", trayIcon=").append(SystemTray.isSupported() && trayIcon.equals(SystemTrayHelper.getTrayIcon()));
+        sb.append('}');
+        return sb.toString();
     }
 }

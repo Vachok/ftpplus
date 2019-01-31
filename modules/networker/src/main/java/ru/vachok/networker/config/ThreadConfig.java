@@ -1,6 +1,7 @@
 package ru.vachok.networker.config;
 
 
+import org.slf4j.Logger;
 import org.springframework.core.task.TaskDecorator;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -27,15 +28,25 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
     private static final ThreadPoolTaskScheduler TASK_SCHEDULER = new ThreadPoolTaskScheduler();
 
     /**
+     {@link AppComponents#getLogger()}
+     */
+    private static Logger LOGGER = AppComponents.getLogger();
+
+    /**
      Запуск {@link Runnable}, как {@link Thread}
 
      @param r {@link Runnable}
      */
-    public static void executeAsThread(Runnable r) {
-        CustomizableThreadCreator customizableThreadCreator = new CustomizableThreadCreator("OnChk: ");
+    public static void executeAsThread(Runnable r, boolean asDaemoExec) {
+        CustomizableThreadCreator customizableThreadCreator = new CustomizableThreadCreator("AsThread: ");
         customizableThreadCreator.setThreadGroup(TASK_EXECUTOR.getThreadGroup());
         Thread thread = customizableThreadCreator.createThread(r);
+        thread.setDaemon(asDaemoExec);
         thread.start();
+    }
+
+    public static void executeAsThread(Runnable runnable) {
+        executeAsThread(runnable, false);
     }
 
     public Runnable taskDecorator(Runnable runnable) {
@@ -49,16 +60,14 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
      Убивает {@link #TASK_EXECUTOR} и {@link #TASK_SCHEDULER}
      */
     public void killAll() {
-        threadPoolTaskScheduler().destroy();
-        Thread.currentThread().checkAccess();
-        Thread.currentThread().interrupt();
-        threadPoolTaskExecutor().setAwaitTerminationSeconds(15);
-        threadPoolTaskExecutor().destroy();
-
+        TASK_SCHEDULER.setAwaitTerminationSeconds(10);
+        TASK_EXECUTOR.setAwaitTerminationSeconds(15);
+        TASK_SCHEDULER.shutdown();
+        TASK_EXECUTOR.shutdown();
     }
 
     public ThreadPoolTaskScheduler threadPoolTaskScheduler() {
-        TASK_SCHEDULER.destroy();
+        TASK_SCHEDULER.initialize();
         TASK_SCHEDULER.setThreadNamePrefix("sc-" + (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000);
         TASK_SCHEDULER.setPoolSize(4);
         TASK_SCHEDULER.initialize();
@@ -66,7 +75,7 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
     }
 
     public ThreadPoolTaskExecutor threadPoolTaskExecutor() {
-        TASK_EXECUTOR.destroy();
+        TASK_EXECUTOR.initialize();
         TASK_EXECUTOR.setMaxPoolSize(100);
         TASK_EXECUTOR.setThreadNamePrefix("ts-" + (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000);
         TASK_EXECUTOR.initialize();
@@ -76,10 +85,10 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("ThreadConfig{");
-        sb.append("TASK_EXECUTOR=").append(TASK_EXECUTOR);
-        sb.append(", TASK_SCHEDULER=").append(TASK_SCHEDULER);
-        sb.append(", threadPoolTaskExecutor=").append(threadPoolTaskExecutor());
-        sb.append(", threadPoolTaskScheduler=").append(threadPoolTaskScheduler());
+        sb.append("TASK_EXECUTOR=").append(TASK_EXECUTOR.getThreadNamePrefix());
+        sb.append(", activeCount=").append(threadPoolTaskExecutor().getActiveCount());
+        sb.append(", TASK_SCHEDULER=").append(TASK_SCHEDULER.getThreadNamePrefix());
+        sb.append(", activeCount=").append(threadPoolTaskScheduler().getActiveCount());
         sb.append('}');
         return sb.toString();
     }

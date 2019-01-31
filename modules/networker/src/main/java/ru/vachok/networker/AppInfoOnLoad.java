@@ -15,14 +15,19 @@ import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.errorexceptions.MyNull;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.mailserver.MailIISLogsCleaner;
-import ru.vachok.networker.net.*;
+import ru.vachok.networker.net.DiapazonedScan;
+import ru.vachok.networker.net.WeekPCStats;
 import ru.vachok.networker.services.MyCalen;
 import ru.vachok.networker.services.SpeedChecker;
 import ru.vachok.networker.systray.ActionOnAppStart;
 import ru.vachok.networker.systray.MessageToTray;
 
-import java.io.*;
-import java.nio.file.*;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.FileVisitor;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -33,7 +38,10 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Date;
 import java.util.Objects;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -103,15 +111,6 @@ public class AppInfoOnLoad implements Runnable {
         infoForU(AppCtx.scanForBeansAndRefreshContext());
     }
 
-    public static void diaScanReader() {
-        new MessageCons().infoNoTitles("AppInfoOnLoad.diaScanReader");
-        try(ObjectInput input = new ObjectInputStream(new FileInputStream(diapazonedScan.getClass().getSimpleName() + ".dev"))){
-            DiapazonedScan.getInstance().readExternal(input);
-        } catch (IOException | ClassNotFoundException e) {
-            LOGGER.error(AppInfoOnLoad.class.getSimpleName(), e.getMessage(), e);
-        }
-    }
-
     /**
      Запуск заданий по-расписанию
      <p>
@@ -120,16 +119,13 @@ public class AppInfoOnLoad implements Runnable {
      */
     private void schedStarter() {
         final long stArt = System.currentTimeMillis();
-        ScheduledExecutorService executorService = Executors.unconfigurableScheduledExecutorService(Executors.newScheduledThreadPool(4));
+        ScheduledExecutorService executorService = Executors.unconfigurableScheduledExecutorService(Executors.newScheduledThreadPool(2));
         String thisPC = ConstantsFor.thisPC();
         if(!thisPC.toLowerCase().contains("home")){
             executorService.scheduleWithFixedDelay(r, 5, TimeUnit.DAYS.toSeconds(1), TimeUnit.SECONDS);
         }
         executorService
-            .scheduleWithFixedDelay(diapazonedScan, 3, THIS_DELAY, TimeUnit.MINUTES);
-
-        executorService.scheduleWithFixedDelay(ScanOnline.getI(), 4, 1, TimeUnit.MINUTES);
-        executorService.scheduleWithFixedDelay(ScanOffline.getI(), 5, 2, TimeUnit.MINUTES);
+            .scheduleWithFixedDelay(diapazonedScan, 2, THIS_DELAY, TimeUnit.MINUTES);
         String msg = new StringBuilder()
             .append(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(THIS_DELAY)))
             .append(DiapazonedScan.getInstance().getClass().getSimpleName())

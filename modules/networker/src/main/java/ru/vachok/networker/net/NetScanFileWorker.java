@@ -20,7 +20,7 @@ import java.util.Objects;
  Файловые работы.
 
  @since 25.12.2018 (10:43) */
-@Scope (ConstantsFor.SINGLETON)
+@Scope(ConstantsFor.SINGLETON)
 @Component
 class NetScanFileWorker {
 
@@ -29,14 +29,6 @@ class NetScanFileWorker {
     private static NetScanFileWorker ourInst = new NetScanFileWorker();
 
     private long lastStamp = System.currentTimeMillis();
-
-    public long getLastStamp() {
-        return lastStamp;
-    }
-
-    void setLastStamp(long lastStamp) {
-        this.lastStamp = lastStamp;
-    }
 
     /**
      {@link DiapazonedScan#scanNew()}
@@ -64,66 +56,66 @@ class NetScanFileWorker {
         new MessageCons().infoNoTitles("oldLanLastScan = [" + this.oldLanLastScan.getAbsolutePath() + "]");
     }
 
-    public static NetScanFileWorker getI() {
-        return ourInst;
+    public long getLastStamp() {
+        return lastStamp;
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(newLanLastScan, oldLanLastScan);
+    void setLastStamp(long lastStamp) {
+        this.lastStamp = lastStamp;
+    }
+
+    public static NetScanFileWorker getI() {
+        return ourInst;
     }
 
     /**
      @return {@link #newLanLastScan}, как строчка
      */
     String getNewLanLastScanAsStr() {
-        try{
+        try {
             return FileSystemWorker.readFile(newLanLastScan.getAbsolutePath());
-        }
-        catch(NullPointerException e){
+        } catch (NullPointerException e) {
             return FileSystemWorker.readFile(ConstantsFor.AVAILABLE_LAST_TXT) + "<p>";
         }
     }
 
     /**
-     Читает из файлов строки
+     Читает построчно
      <p>
 
      @return {@link Deque} строк - содержимое {@link #oldLanLastScan} и {@link #newLanLastScan}
      @throws IOException files
-     @see PingListKeeper#onlinesAddressesList()
+     @see NetListKeeper#onlinesAddressesList()
      */
     Deque<String> getListOfOnlineDev() throws IOException {
         LOGGER.warn("NetScanFileWorker.getListOfOnlineDev");
-        Deque<String> retList = new ArrayDeque<>();
+        Deque<String> retDeque = new ArrayDeque<>();
         String msg = newLanLastScan.getAbsolutePath() + oldLanLastScan.getAbsolutePath() + " is created by " + getClass().getSimpleName();
-        if(newLanLastScan.exists() && newLanLastScan.canRead()){
-            retList.addAll(FileSystemWorker.readFileToList(newLanLastScan.getAbsolutePath()));
-        }
-        else{
+
+        if (newLanLastScan.exists() && newLanLastScan.canRead()) {
+            retDeque.addAll(FileSystemWorker.readFileToList(newLanLastScan.getAbsolutePath()));
+        } else {
             boolean newFile = newLanLastScan.createNewFile();
             msg = newFile + " " + msg;
-            LOGGER.warn(msg);
         }
-        if(oldLanLastScan.exists() && oldLanLastScan.canRead()){
-            retList.addAll(FileSystemWorker.readFileToList(oldLanLastScan.getAbsolutePath()));
-        }
-        else{
+        if (oldLanLastScan.exists() && oldLanLastScan.canRead()) {
+            retDeque.addAll(FileSystemWorker.readFileToList(oldLanLastScan.getAbsolutePath()));
+        } else {
             boolean oldLanLastScanNewFile = oldLanLastScan.createNewFile();
             msg = oldLanLastScanNewFile + " " + msg;
-            LOGGER.warn(msg);
         }
-        return retList;
+
+        LOGGER.warn(msg);
+        return retDeque;
     }
 
     /**
      @return {@link #oldLanLastScan}, как строчка
      */
     String getOldLanLastScanAsStr() {
-        try{
+        try {
             return FileSystemWorker.readFile(oldLanLastScan.getAbsolutePath());
-        }
-        catch(NullPointerException ignore){
+        } catch (NullPointerException ignore) {
             return FileSystemWorker.readFile(ConstantsFor.OLD_LAN_TXT);
         }
     }
@@ -133,15 +125,31 @@ class NetScanFileWorker {
     }
 
     @Override
+    public int hashCode() {
+        return Objects.hash(newLanLastScan, oldLanLastScan);
+    }
+
+    @Override
     public boolean equals(Object o) {
-        if(this==o){
+        if (this == o) {
             return true;
         }
-        if(!(o instanceof NetScanFileWorker)){
+        if (!(o instanceof NetScanFileWorker)) {
             return false;
         }
-        NetScanFileWorker that = ( NetScanFileWorker ) o;
+        NetScanFileWorker that = (NetScanFileWorker) o;
         return Objects.equals(newLanLastScan, that.newLanLastScan) &&
             Objects.equals(oldLanLastScan, that.oldLanLastScan);
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("NetScanFileWorker{");
+        sb.append("lastStamp=").append(lastStamp);
+        sb.append(", newLanLastScan=").append(newLanLastScan.getAbsolutePath());
+        sb.append(", oldLanLastScan=").append(oldLanLastScan.getAbsolutePath());
+        sb.append(", ourInst=").append(ourInst.hashCode());
+        sb.append('}');
+        return sb.toString();
     }
 }

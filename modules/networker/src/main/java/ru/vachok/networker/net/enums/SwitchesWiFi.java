@@ -1,7 +1,8 @@
-package ru.vachok.networker.net;
+package ru.vachok.networker.net.enums;
 
 
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.net.DiapazonedScan;
 
 import java.io.IOException;
 import java.net.InetAddress;

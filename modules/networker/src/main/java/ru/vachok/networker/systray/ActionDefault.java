@@ -33,7 +33,6 @@ public class ActionDefault extends AbstractAction {
     ActionDefault() {
         this.goTo = ConstantsFor.HTTP_LOCALHOST_8880_SLASH;
     }
-
     @Override
     public void actionPerformed(ActionEvent e) {
         LOGGER.warn("ActionDefault.actionPerformed");
@@ -44,4 +43,11 @@ public class ActionDefault extends AbstractAction {
         }
     }
 
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("ActionDefault{");
+        sb.append("goTo='").append(goTo).append('\'');
+        sb.append('}');
+        return sb.toString();
+    }
 }

@@ -214,7 +214,7 @@ public class MatrixCtr {
 
     private void lastLogsGetter(Model model) {
         Map<String, String> vachokEthosdistro = new AppComponents().getLastLogs();
-        String logsFromDB = new TForms().fromArray(vachokEthosdistro);
+        String logsFromDB = new TForms().fromArray(vachokEthosdistro, false);
         model.addAttribute("logdb", logsFromDB);
         model.addAttribute("starttime", new Date(ConstantsFor.START_STAMP));
         model.addAttribute(FOOTER_NAME, new PageFooter().getFooterUtext());

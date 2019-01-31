@@ -32,8 +32,6 @@ import static java.lang.System.out;
 @SuppressWarnings("resource")
 public class MyServer extends Thread {
 
-    /*Fields*/
-
     /**
      Simple Name класса, для поиска настроек
      */
@@ -333,5 +331,17 @@ public class MyServer extends Thread {
         } catch (IOException e) {
             LoggerFactory.getLogger(SOURCE_CLASS).error(e.getMessage(), e);
         }
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("MyServer{");
+        sb.append("messageToUser=").append(messageToUser);
+        sb.append(", myServer=").append(myServer);
+        sb.append(", serverSocket=").append(serverSocket);
+        sb.append(", socket=").append(socket);
+        sb.append(", SOURCE_CLASS='").append(SOURCE_CLASS).append('\'');
+        sb.append('}');
+        return sb.toString();
     }
 }

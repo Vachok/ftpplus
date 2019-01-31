@@ -2,6 +2,7 @@ package ru.vachok.networker.fileworks;
 
 
 import org.slf4j.Logger;
+import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.messenger.email.ESender;
 import ru.vachok.networker.ConstantsFor;
@@ -9,7 +10,6 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.common.CommonScan2YOlder;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.services.TimeChecker;
-import ru.vachok.networker.systray.MessageToTray;
 import ru.vachok.networker.systray.SystemTrayHelper;
 
 import java.io.*;
@@ -221,7 +221,8 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
             }
         }
         catch(IOException e){
-            new MessageToTray().errorAlert(FileSystemWorker.class.getSimpleName(), "readFileToList", e.getMessage());
+            new MessageCons().errorAlert("FileSystemWorker", "readFileToList", e.getMessage());
+            FileSystemWorker.error("FileSystemWorker.readFileToList", e);
             retList.add(e.getMessage());
             retList.add(new TForms().fromArray(e, true));
         }

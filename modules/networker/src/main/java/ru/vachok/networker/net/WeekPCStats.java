@@ -98,4 +98,12 @@ public class WeekPCStats implements Runnable {
         FileSystemWorker.copyOrDelFile(file, toCopy, false);
         messageToUser.infoNoTitles(this.getClass().getSimpleName() + " ends\n" + PC_NAMES_IN_TABLE.size() + " PC_NAMES_IN_TABLE.size()");
     }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("WeekPCStats{");
+        sb.append("PC_NAMES_IN_TABLE=").append(PC_NAMES_IN_TABLE);
+        sb.append('}');
+        return sb.toString();
+    }
 }

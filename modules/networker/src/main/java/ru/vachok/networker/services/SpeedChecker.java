@@ -103,7 +103,7 @@ public class SpeedChecker implements Callable<Long> {
 
         private String chechMail() {
             Message[] messagesBot = mailMessages.call();
-            String chDB = new TForms().fromArray(checkDB());
+            String chDB = new TForms().fromArray(checkDB(), false);
             FileSystemWorker.recFile(this.getClass().getSimpleName() + ConstantsFor.LOG, Collections.singletonList(chDB));
             for (Message m : messagesBot) {
                 parseMsg(m, chDB);

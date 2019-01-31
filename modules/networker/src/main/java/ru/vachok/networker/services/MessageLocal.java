@@ -37,7 +37,7 @@ public class MessageLocal implements MessageToUser {
 
     @Override
     public void info(String headerMsg, String titleMsg, String bodyMsg) {
-        throw new UnsupportedOperationException();
+        new MessageCons().info(headerMsg, titleMsg, bodyMsg);
     }
 
     @Override
@@ -53,5 +53,15 @@ public class MessageLocal implements MessageToUser {
     @Override
     public String confirm(String s, String s1, String s2) {
         return null;
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("MessageLocal{");
+        sb.append("bodyMsg='").append(bodyMsg).append('\'');
+        sb.append(", headerMsg='").append(headerMsg).append('\'');
+        sb.append(", titleMsg='").append(titleMsg).append('\'');
+        sb.append('}');
+        return sb.toString();
     }
 }

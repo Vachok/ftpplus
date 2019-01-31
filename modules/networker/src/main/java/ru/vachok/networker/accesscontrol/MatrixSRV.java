@@ -90,7 +90,7 @@ public class MatrixSRV {
         } catch (SQLException e) {
             LOGGER.error(e.getMessage(), e);
         }
-        String s = new TForms().fromArray(doljAndAccess);
+        String s = new TForms().fromArray(doljAndAccess, true);
         this.workPos = s;
         return s;
     }

@@ -124,9 +124,34 @@ public class SwitchesAvailability implements Runnable {
     }
 
     @Override
+    public int hashCode() {
+        int result = swAddr != null ? swAddr.hashCode() : 0;
+        result = 31 * result + getOkIP().hashCode();
+        result = 31 * result + (okStr != null ? okStr.hashCode() : 0);
+        result = 31 * result + (badStr != null ? badStr.hashCode() : 0);
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof SwitchesAvailability)) return false;
+
+        SwitchesAvailability that = (SwitchesAvailability) o;
+
+        if (swAddr != null ? !swAddr.equals(that.swAddr) : that.swAddr != null) return false;
+        if (!getOkIP().equals(that.getOkIP())) return false;
+        if (okStr != null ? !okStr.equals(that.okStr) : that.okStr != null) return false;
+        return badStr != null ? badStr.equals(that.badStr) : that.badStr == null;
+    }
+
+    @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("SwitchesAvailability{");
-        sb.append("\n Map=").append(new TForms().fromArray(DiapazonedScan.getNameAddr()));
+        sb.append("badStr='").append(badStr).append('\'');
+        sb.append(", okIP=").append(okIP);
+        sb.append(", okStr='").append(okStr).append('\'');
+        sb.append(", swAddr=").append(swAddr);
         sb.append('}');
         return sb.toString();
     }

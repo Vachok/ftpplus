@@ -20,6 +20,7 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentMap;
 
 
 /**
@@ -37,12 +38,18 @@ public class ScanOnline implements Runnable {
 
     private static final Logger LOGGER = AppComponents.getLogger();
 
+    private static final NetListKeeper NET_LIST_KEEPER = ScanOffline.getNetListKeeper();
+
     private static final String CLASS_NAME = "ScanOnline";
 
     /**
      new {@link ScanOnline}
      */
     private static ScanOnline scanOnline = new ScanOnline();
+
+    private ConcurrentMap<String, String> offPc = NET_LIST_KEEPER.getOffLines();
+
+    private ConcurrentMap<String, String> onPc = NET_LIST_KEEPER.getOnLinesResolve();
 
     /**
      {@link MessageToTray} with {@link ru.vachok.networker.systray.ActionDefault}
@@ -57,29 +64,18 @@ public class ScanOnline implements Runnable {
 
     private List<String> okIP = new ArrayList<>();
 
-    private ScanOnline() {
-    }
-
     public static ScanOnline getI() {
         return scanOnline;
     }
 
-    @Override
-    public void run() {
-        messageToUser.infoNoTitles("ScanOnline.run");
-        try {
-            List<InetAddress> onList = PingListKeeper.onlinesAddressesList();
-            runPing(onList);
-        } catch (IOException e) {
-            messageToUser = new MessageCons();
-            messageToUser.errorAlert(getClass().getSimpleName(), e.getMessage(), new TForms().fromArray(e, false));
-        }
+    private ScanOnline() {
+        LOGGER.warn("ScanOnline.ScanOnline");
     }
 
     private void runPing(List<InetAddress> onList) {
         String clMt = "ScanOnline.runPing";
         LOGGER.warn(clMt);
-        for(InetAddress inetAddress : onList){
+        for (InetAddress inetAddress : onList) {
             pingAddr(inetAddress);
         }
         messageToUser.info(getClass().getSimpleName(), ConstantsFor.getUpTime(), onList.size() +
@@ -92,31 +88,32 @@ public class ScanOnline implements Runnable {
      TimeOut is 250 mSec.
      <p>
      <b>Схема:</b> <br>
-     1. {@link PingListKeeper#getOffLines()}. Если нет пинга, добавляет {@code inetAddress.toString, LocalTime.now.toString} и запускает: <br>
-     2. {@link ThreadConfig#executeAsThread(java.lang.Runnable)}. {@link #offlineNotEmptyActions()} <br>
+     1. {@link NetListKeeper#getOffLines()}. Если нет пинга, добавляет {@code inetAddress.toString, LocalTime.now.toString} и запускает: <br> 2. {@link
+    ThreadConfig#executeAsThread(java.lang.Runnable)}. {@link #offlineNotEmptyActions()} <br>
      <p>
 
      @param inetAddress {@link InetAddress}. 3. {@link FileSystemWorker#error(java.lang.String, java.lang.Exception)}
      */
     private void pingAddr(InetAddress inetAddress) {
         String classMeth = "ScanOnline.pingAddr";
+        ConcurrentMap<String, String> offLines = new NetListKeeper().getOffLines();
         LOGGER.warn(classMeth);
-        try{
+        try {
             messageToUser = new MessageCons();
             boolean xReachable = inetAddress.isReachable(250);
-            if(!xReachable){
-                PingListKeeper.getOffLines().put(inetAddress.toString(), LocalTime.now().toString());
+            if (!xReachable) {
+                offLines.put(inetAddress.toString(), LocalTime.now().toString());
                 ThreadConfig.executeAsThread(this::offlineNotEmptyActions);
                 messageToUser.infoNoTitles(inetAddress.toString() + " is " + false);
-            }
-            else{
+            } else {
                 messageToUser.info(CLASS_NAME, STR_RUN_PING, inetAddress.toString() + " " + true);
             }
-        }
-        catch(IOException e){
+        } catch (IOException e) {
             new MessageCons().errorAlert(CLASS_NAME, "pingAddr", e.getMessage());
             FileSystemWorker.error(classMeth, e);
         }
+        String valStr = "inetAddress = " + inetAddress + " ScanOnline.pingAddr";
+        java.util.logging.Logger.getGlobal().warning(valStr);
     }
 
     private void offlineNotEmptyActions() {
@@ -124,25 +121,57 @@ public class ScanOnline implements Runnable {
         switchesAvailability.run();
         Set<String> availabilityOkIP = switchesAvailability.getOkIP();
         this.okIP = new ArrayList<>();
-        boolean addAll = okIP.addAll(availabilityOkIP);
-        messageToUser.info(getClass().getSimpleName(), okIP.size() + " sw ips", addAll + " added");
+        boolean addAllavailabilityOkIP = okIP.addAll(availabilityOkIP);
+        String valStr = "addAllavailabilityOkIP = " + addAllavailabilityOkIP + " ScanOnline.offlineNotEmptyActions";
+        java.util.logging.Logger.getGlobal().warning(valStr);
+    }
+
+    @Override
+    public void run() {
+        LOGGER.warn("ScanOnline.run");
+        try {
+            List<InetAddress> onList = NetListKeeper.onlinesAddressesList();
+            runPing(onList);
+        } catch (IOException e) {
+            messageToUser = new MessageCons();
+            messageToUser.errorAlert(getClass().getSimpleName(), e.getMessage(), new TForms().fromArray(e, false));
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        int result = offPc.hashCode();
+        result = 31 * result + onPc.hashCode();
+        result = 31 * result + messageToUser.hashCode();
+        result = 31 * result + okIP.hashCode();
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ScanOnline)) return false;
+
+        ScanOnline that = (ScanOnline) o;
+
+        if (!offPc.equals(that.offPc)) return false;
+        if (!onPc.equals(that.onPc)) return false;
+        if (!messageToUser.equals(that.messageToUser)) return false;
+        return okIP.equals(that.okIP);
     }
 
     @Override
     public String toString() {
-        new MessageCons().infoNoTitles("ScanOnline.toString");
-        if(!PingListKeeper.getOffLines().isEmpty()){
-            final StringBuilder sb = new StringBuilder("ScanOnOffline{");
-            sb.append(" OffLines (").append(PingListKeeper.getOffLines().size()).append(") = <font color=\"red\">")
-                .append(new TForms().fromArray(PingListKeeper.getOffLines(), true)).append("</font><br>");
-            sb.append(" OnLineAgain (").append(PingListKeeper.getOnLinesResolve().size()).append(") = <font color=\"green\">")
-                .append(new TForms().fromArray(PingListKeeper.getOnLinesResolve(), true)).append("</font><br>")
-                .append("<font color=\"gray\">SwitchesWiFi: ")
-                .append(new TForms().fromArray(okIP, true)).append("</font>");
-            return sb.toString();
-        } else {
-            return "<font color=\"green\">NO</font>";
-        }
+        final StringBuilder sb = new StringBuilder("<font color=\"green\">ScanOnline{").append(this.hashCode()).append("<br>");
+        sb.append("CLASS_NAME='").append(CLASS_NAME).append('\'');
+        sb.append(", messageToUser=").append(messageToUser.getClass().getSimpleName());
+        sb.append(", NET_LIST_KEEPER=").append(NET_LIST_KEEPER.hashCode());
+        sb.append(", <b>offPc=").append(offPc.size());
+        sb.append(", okIP=").append(okIP.size());
+        sb.append(", onPc=").append(onPc.size());
+        sb.append(", </b>scanOnline=").append(scanOnline.hashCode());
+        sb.append(", STR_RUN_PING='").append(STR_RUN_PING).append('\'');
+        sb.append("}</font>");
+        return sb.toString();
     }
-
 }

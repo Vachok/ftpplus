@@ -26,8 +26,14 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.SecureRandom;
-import java.time.*;
-import java.util.*;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.Year;
+import java.time.ZoneOffset;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.*;
 
 import static java.time.temporal.ChronoUnit.HOURS;
@@ -349,11 +355,7 @@ public enum ConstantsFor {
     /**
      Все возможные IP из диапазонов {@link DiapazonedScan}
      */
-    public static BlockingDeque<String> ALL_DEVICES = new LinkedBlockingDeque<>(IPS_IN_VELKOM_VLAN);
-
-    public static void setAllDevices(BlockingDeque<String> allDevices) {
-        ALL_DEVICES = allDevices;
-    }
+    public static final BlockingDeque<String> ALL_DEVICES = new LinkedBlockingDeque<>(IPS_IN_VELKOM_VLAN);
 
     /**
      Порт для {@link ru.vachok.networker.net.MyServer}
