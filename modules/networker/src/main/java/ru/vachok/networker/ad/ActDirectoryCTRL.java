@@ -8,12 +8,14 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import ru.vachok.messenger.MessageCons;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.SshActs;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetScannerSvc;
 import ru.vachok.networker.systray.ListenUserInfo;
 import ru.vachok.networker.systray.MessageToTray;
@@ -158,7 +160,9 @@ public class ActDirectoryCTRL {
      @return adphoto.html
      */
     @GetMapping ("/adphoto")
-    private String adFoto(@ModelAttribute PhotoConverterSRV photoConverterSRV, Model model) {
+    public String adFoto(@ModelAttribute PhotoConverterSRV photoConverterSRV, Model model, HttpServletRequest request) {
+        this.visitor = ConstantsFor.getVis(request);
+
         this.photoConverterSRV = photoConverterSRV;
         try{
             model.addAttribute("photoConverterSRV", photoConverterSRV);
@@ -169,10 +173,11 @@ public class ActDirectoryCTRL {
             model.addAttribute(ConstantsFor.ATT_TITLE, titleStr);
             model.addAttribute("content", photoConverterSRV.psCommands());
             model.addAttribute("alert", ALERT_AD_FOTO);
-            model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<p>" + visitor.toString());
+            model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<br>" + visitor.toString());
         }
         catch(NullPointerException e){
-            LOGGER.error(e.getMessage(), e);
+            new MessageCons().errorAlert("ActDirectoryCTRL", "adFoto", e.getMessage());
+            FileSystemWorker.error("ActDirectoryCTRL.adFoto", e);
         }
         return "adphoto";
     }

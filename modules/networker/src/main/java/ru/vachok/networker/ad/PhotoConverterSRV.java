@@ -41,7 +41,7 @@ public class PhotoConverterSRV {
     /**
      Путь до папки с фото.
      */
-    private String adPhotosPath = properties.getProperty("adphotopath");
+    private String adPhotosPath = properties.getProperty("adphotopath", "\\\\srv-mail3.eatmeat.ru\\c$\\newmailboxes\\fotoraw\\");
 
     /**
      Файл-фото
@@ -107,7 +107,6 @@ public class PhotoConverterSRV {
      @throws NullPointerException если нет фото
      */
     String psCommands() {
-
         try {
             convertFoto();
         } catch (IOException | NullPointerException e) {
@@ -123,16 +122,18 @@ public class PhotoConverterSRV {
     }
 
     private void convertFoto() throws NullPointerException, IOException {
-        File[] fotoFiles = new File(this.adPhotosPath).listFiles();
         Map<String, BufferedImage> filesList = new HashMap<>();
-        if (fotoFiles != null) {
+        File[] fotoFiles = new File(this.adPhotosPath).listFiles();
+        if (fotoFiles != null && !adPhotosPath.isEmpty()) {
             for (File f : fotoFiles) {
                 for (String format : ImageIO.getWriterFormatNames()) {
                     String key = f.getName();
                     if (key.contains(format)) filesList.put(key.replaceFirst("\\Q.\\E" + format, ""), ImageIO.read(f));
                 }
             }
-        } else filesList.put("No files", null);
+        } else {
+            filesList.put("No files. requireNonNull adPhotosPath is: " + adPhotosPath, null);
+        }
         try {
             filesList.forEach(imageBiConsumer);
         } catch (NullPointerException e) {
