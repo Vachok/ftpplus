@@ -22,10 +22,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
-import java.util.Date;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
@@ -204,7 +201,7 @@ public class NetScanCtr {
                 .append(LocalDateTime.ofEpochSecond(lastSt / 1000, 0, ZoneOffset.ofHours(3)).toLocalTime().toString()).toString());
 
         if (newPSs) {
-            FileSystemWorker.recFile("lastnetscan", new TForms().fromArray(lastScanMAP, false));
+            FileSystemWorker.recFile(ConstantsNet.STR_LASTNETSCAN, new TForms().fromArray(lastScanMAP, false));
             model.addAttribute("newpc", "Добавлены компы! " + Math.abs(remainPC) + " шт.");
             properties.setProperty(ConstantsFor.PR_TOTPC, lastScanMAP.size() + "");
         } else {
@@ -231,7 +228,9 @@ public class NetScanCtr {
      @param model   {@link Model} для сборки
      */
     private void scanIt(HttpServletRequest request, Model model, long propLastScanMinusDuration) {
-        LOGGER.warn("NetScanCtr.scanIt");
+        String propMsg = "NetScanCtr.scanIt. " + LocalDateTime.ofEpochSecond((propLastScanMinusDuration / 1000), 0, ZoneOffset.ofHours(3));
+        properties.setProperty("propmsg", propMsg);
+        LOGGER.warn(propMsg);
         if (request != null && request.getQueryString() != null) {
             lastScanMAP.clear();
             Set<String> pcNames = netScannerSvc.getPCNamesPref(request.getQueryString());

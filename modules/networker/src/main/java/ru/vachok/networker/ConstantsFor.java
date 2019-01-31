@@ -26,14 +26,8 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.SecureRandom;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.Year;
-import java.time.ZoneOffset;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Properties;
+import java.time.*;
+import java.util.*;
 import java.util.concurrent.*;
 
 import static java.time.temporal.ChronoUnit.HOURS;
@@ -56,6 +50,8 @@ public enum ConstantsFor {
      new {@link Properties}
      */
     private static final Properties PROPS = new Properties();
+
+    public static final String JAVA_LANG_STRING_NAME = "java.lang.String";
 
     public static final String HTTP_LOCALHOST_8880_SLASH = "http://localhost:8880/";
 
@@ -375,6 +371,8 @@ public enum ConstantsFor {
     public static final String LOG = ".log";
 
     public static final String HTML_CENTER = "</center>";
+
+    public static final String STR_INPUT_OUTPUT = "input/output";
 
     /**
      {@link #getAtomicTime()}

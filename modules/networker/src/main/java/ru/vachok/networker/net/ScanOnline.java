@@ -55,9 +55,10 @@ public class ScanOnline implements Runnable {
      {@link MessageToTray} with {@link ru.vachok.networker.systray.ActionDefault}
      */
     private MessageToUser messageToUser = new MessageToTray((ActionEvent e) -> {
-        try {
+        try{
             Desktop.getDesktop().browse(URI.create(ConstantsFor.SHOWALLDEV_NEEDSOPEN));
-        } catch (IOException ignore) {
+        }
+        catch(IOException ignore){
             //
         }
     });
@@ -65,21 +66,78 @@ public class ScanOnline implements Runnable {
     private List<String> okIP = new ArrayList<>();
 
     public static ScanOnline getI() {
+        new MessageCons().errorAlert("ScanOnline.getI");
+        new MessageCons().info(ConstantsFor.STR_INPUT_OUTPUT, scanOnline.hashCode() + " hash", "ru.vachok.networker.net.ScanOnline");
         return scanOnline;
     }
 
     private ScanOnline() {
-        LOGGER.warn("ScanOnline.ScanOnline");
+        new MessageCons().errorAlert("ScanOnline.ScanOnline");
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if(this==o){
+            return true;
+        }
+        if(!(o instanceof ScanOnline)){
+            return false;
+        }
+
+        ScanOnline that = ( ScanOnline ) o;
+
+        if(!offPc.equals(that.offPc)){
+            return false;
+        }
+        if(!onPc.equals(that.onPc)){
+            return false;
+        }
+        if(!messageToUser.equals(that.messageToUser)){
+            return false;
+        }
+        return okIP.equals(that.okIP);
+    }
+
+    @Override
+    public void run() {
+        LOGGER.warn("ScanOnline.run");
+        try{
+            List<InetAddress> onList = NetListKeeper.onlinesAddressesList();
+            runPing(onList);
+        }
+        catch(IOException e){
+            messageToUser = new MessageCons();
+            messageToUser.errorAlert(getClass().getSimpleName(), e.getMessage(), new TForms().fromArray(e, false));
+        }
     }
 
     private void runPing(List<InetAddress> onList) {
         String clMt = "ScanOnline.runPing";
         LOGGER.warn(clMt);
-        for (InetAddress inetAddress : onList) {
+        for(InetAddress inetAddress : onList){
             pingAddr(inetAddress);
         }
         messageToUser.info(getClass().getSimpleName(), ConstantsFor.getUpTime(), onList.size() +
             " online. Scanned: " + ConstantsFor.ALL_DEVICES.size() + "/" + ConstantsFor.IPS_IN_VELKOM_VLAN);
+    }
+
+    private void offlineNotEmptyActions() {
+        SwitchesAvailability switchesAvailability = new SwitchesAvailability();
+        switchesAvailability.run();
+        Set<String> availabilityOkIP = switchesAvailability.getOkIP();
+        this.okIP = new ArrayList<>();
+        boolean addAllavailabilityOkIP = okIP.addAll(availabilityOkIP);
+        String valStr = "addAllavailabilityOkIP = " + addAllavailabilityOkIP + " ScanOnline.offlineNotEmptyActions";
+        java.util.logging.Logger.getGlobal().warning(valStr);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = offPc.hashCode();
+        result = 31 * result + onPc.hashCode();
+        result = 31 * result + messageToUser.hashCode();
+        result = 31 * result + okIP.hashCode();
+        return result;
     }
 
     /**
@@ -98,66 +156,24 @@ public class ScanOnline implements Runnable {
         String classMeth = "ScanOnline.pingAddr";
         ConcurrentMap<String, String> offLines = new NetListKeeper().getOffLines();
         LOGGER.warn(classMeth);
-        try {
+        try{
             messageToUser = new MessageCons();
             boolean xReachable = inetAddress.isReachable(250);
-            if (!xReachable) {
+            if(!xReachable){
                 offLines.put(inetAddress.toString(), LocalTime.now().toString());
                 ThreadConfig.executeAsThread(this::offlineNotEmptyActions);
                 messageToUser.infoNoTitles(inetAddress.toString() + " is " + false);
-            } else {
+            }
+            else{
                 messageToUser.info(CLASS_NAME, STR_RUN_PING, inetAddress.toString() + " " + true);
             }
-        } catch (IOException e) {
+        }
+        catch(IOException e){
             new MessageCons().errorAlert(CLASS_NAME, "pingAddr", e.getMessage());
             FileSystemWorker.error(classMeth, e);
         }
         String valStr = "inetAddress = " + inetAddress + " ScanOnline.pingAddr";
         java.util.logging.Logger.getGlobal().warning(valStr);
-    }
-
-    private void offlineNotEmptyActions() {
-        SwitchesAvailability switchesAvailability = new SwitchesAvailability();
-        switchesAvailability.run();
-        Set<String> availabilityOkIP = switchesAvailability.getOkIP();
-        this.okIP = new ArrayList<>();
-        boolean addAllavailabilityOkIP = okIP.addAll(availabilityOkIP);
-        String valStr = "addAllavailabilityOkIP = " + addAllavailabilityOkIP + " ScanOnline.offlineNotEmptyActions";
-        java.util.logging.Logger.getGlobal().warning(valStr);
-    }
-
-    @Override
-    public void run() {
-        LOGGER.warn("ScanOnline.run");
-        try {
-            List<InetAddress> onList = NetListKeeper.onlinesAddressesList();
-            runPing(onList);
-        } catch (IOException e) {
-            messageToUser = new MessageCons();
-            messageToUser.errorAlert(getClass().getSimpleName(), e.getMessage(), new TForms().fromArray(e, false));
-        }
-    }
-
-    @Override
-    public int hashCode() {
-        int result = offPc.hashCode();
-        result = 31 * result + onPc.hashCode();
-        result = 31 * result + messageToUser.hashCode();
-        result = 31 * result + okIP.hashCode();
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof ScanOnline)) return false;
-
-        ScanOnline that = (ScanOnline) o;
-
-        if (!offPc.equals(that.offPc)) return false;
-        if (!onPc.equals(that.onPc)) return false;
-        if (!messageToUser.equals(that.messageToUser)) return false;
-        return okIP.equals(that.okIP);
     }
 
     @Override

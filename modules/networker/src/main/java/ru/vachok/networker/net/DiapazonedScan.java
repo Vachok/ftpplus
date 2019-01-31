@@ -85,6 +85,8 @@ public class DiapazonedScan implements Runnable, Serializable {
      @return single.
      */
     public static DiapazonedScan getInstance() {
+        new MessageCons().errorAlert("DiapazonedScan.getInstance");
+        new MessageCons().info(ConstantsFor.STR_INPUT_OUTPUT, "", "ru.vachok.networker.net.DiapazonedScan");
         return OUR_INSTANCE;
     }
 

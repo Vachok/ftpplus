@@ -1,12 +1,12 @@
 package ru.vachok.networker.config;
 
 
-import org.slf4j.Logger;
 import org.springframework.core.task.TaskDecorator;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.util.CustomizableThreadCreator;
+import ru.vachok.messenger.MessageCons;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
 
@@ -18,19 +18,48 @@ import ru.vachok.networker.componentsrepo.AppComponents;
 public class ThreadConfig extends ThreadPoolTaskExecutor {
 
     /**
+     <i>Boiler Plate</i>
+     */
+    private static final String STR_ACTIVE_COUNT = ", activeCount=";
+
+    /**
      {@link ThreadPoolTaskExecutor}
      */
-    private static final ThreadPoolTaskExecutor TASK_EXECUTOR = new ThreadPoolTaskExecutor();
+    private ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
 
     /**
      {@link ThreadPoolTaskScheduler}
      */
-    private static final ThreadPoolTaskScheduler TASK_SCHEDULER = new ThreadPoolTaskScheduler();
+    private ThreadPoolTaskScheduler taskScheduler = new ThreadPoolTaskScheduler();
+
+    public Runnable taskDecorator(Runnable runnable) {
+        new MessageCons().errorAlert("ThreadConfig.taskDecorator");
+        new MessageCons().info(ConstantsFor.STR_INPUT_OUTPUT, "runnable = [" + runnable + "]", "java.lang.Runnable");
+        TaskDecorator taskDecorator = runnable1 -> runnable;
+        String msg = taskDecorator.toString() + " " + this.getClass().getSimpleName() + ".taskDecorator(Runnable runnable)";
+        AppComponents.getLogger().info(msg);
+        return taskDecorator.decorate(runnable);
+    }
+
+    public static void executeAsThread(Runnable runnable) {
+        executeAsThread(runnable, false);
+    }
 
     /**
-     {@link AppComponents#getLogger()}
+     Убивает {@link #taskExecutor} и {@link #taskScheduler}
      */
-    private static Logger LOGGER = AppComponents.getLogger();
+    public void killAll() {
+        taskExecutor.setAwaitTerminationSeconds(15);
+
+        taskScheduler.setWaitForTasksToCompleteOnShutdown(false);
+        taskExecutor.setWaitForTasksToCompleteOnShutdown(true);
+
+        taskScheduler.shutdown();
+        taskScheduler.destroy();
+
+        taskExecutor.shutdown();
+        taskExecutor.destroy();
+    }
 
     /**
      Запуск {@link Runnable}, как {@link Thread}
@@ -39,57 +68,40 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
      */
     public static void executeAsThread(Runnable r, boolean asDaemoExec) {
         CustomizableThreadCreator customizableThreadCreator = new CustomizableThreadCreator("AsThread: ");
-        customizableThreadCreator.setThreadGroup(TASK_EXECUTOR.getThreadGroup());
+        ThreadPoolTaskExecutor taskExecutor = new ThreadConfig().threadPoolTaskExecutor();
+        customizableThreadCreator.setThreadGroup(taskExecutor.getThreadGroup());
         Thread thread = customizableThreadCreator.createThread(r);
         thread.setDaemon(asDaemoExec);
         thread.start();
     }
 
-    public static void executeAsThread(Runnable runnable) {
-        executeAsThread(runnable, false);
-    }
-
-    public Runnable taskDecorator(Runnable runnable) {
-        TaskDecorator taskDecorator = runnable1 -> runnable;
-        String msg = taskDecorator.toString() + " " + this.getClass().getSimpleName() + ".taskDecorator(Runnable runnable)";
-        AppComponents.getLogger().info(msg);
-        return taskDecorator.decorate(runnable);
-    }
-
-    /**
-     Убивает {@link #TASK_EXECUTOR} и {@link #TASK_SCHEDULER}
-     */
-    public void killAll() {
-        TASK_SCHEDULER.setAwaitTerminationSeconds(10);
-        TASK_EXECUTOR.setAwaitTerminationSeconds(15);
-        TASK_SCHEDULER.shutdown();
-        TASK_EXECUTOR.shutdown();
-    }
-
-    public ThreadPoolTaskScheduler threadPoolTaskScheduler() {
-        TASK_SCHEDULER.initialize();
-        TASK_SCHEDULER.setThreadNamePrefix("sc-" + (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000);
-        TASK_SCHEDULER.setPoolSize(4);
-        TASK_SCHEDULER.initialize();
-        return TASK_SCHEDULER;
-    }
-
     public ThreadPoolTaskExecutor threadPoolTaskExecutor() {
-        TASK_EXECUTOR.initialize();
-        TASK_EXECUTOR.setMaxPoolSize(100);
-        TASK_EXECUTOR.setThreadNamePrefix("ts-" + (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000);
-        TASK_EXECUTOR.initialize();
-        return TASK_EXECUTOR;
+
+        taskExecutor.initialize();
+        taskExecutor.setMaxPoolSize(100);
+        taskExecutor.setThreadNamePrefix("ts-" + (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000);
+        return taskExecutor;
     }
 
     @Override
     public String toString() {
+        this.taskExecutor = threadPoolTaskExecutor();
+        this.taskScheduler = threadPoolTaskScheduler();
+
         final StringBuilder sb = new StringBuilder("ThreadConfig{");
-        sb.append("TASK_EXECUTOR=").append(TASK_EXECUTOR.getThreadNamePrefix());
-        sb.append(", activeCount=").append(threadPoolTaskExecutor().getActiveCount());
-        sb.append(", TASK_SCHEDULER=").append(TASK_SCHEDULER.getThreadNamePrefix());
-        sb.append(", activeCount=").append(threadPoolTaskScheduler().getActiveCount());
+        sb.append("taskExecutor=").append(taskExecutor.getThreadNamePrefix());
+        sb.append(STR_ACTIVE_COUNT).append(threadPoolTaskExecutor().getActiveCount());
+        sb.append(", taskScheduler=").append(taskScheduler.getThreadNamePrefix());
+        sb.append(STR_ACTIVE_COUNT).append(threadPoolTaskScheduler().getActiveCount());
         sb.append('}');
         return sb.toString();
+    }
+
+    public ThreadPoolTaskScheduler threadPoolTaskScheduler() {
+
+        taskScheduler.initialize();
+        taskScheduler.setThreadNamePrefix("sc-" + (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000);
+        taskScheduler.setPoolSize(10);
+        return taskScheduler;
     }
 }

@@ -17,6 +17,8 @@ import java.util.*;
  @since 25.01.2019 (10:30) */
 public enum ConstantsNet {;
 
+    public static final String STR_LASTNETSCAN = "lastnetscan";
+
     public static final String ONLINEPC = "onlinepc";
 
     public static final String HTTP_LOCALHOST_8880_NETSCAN = "http://localhost:8880/netscan";

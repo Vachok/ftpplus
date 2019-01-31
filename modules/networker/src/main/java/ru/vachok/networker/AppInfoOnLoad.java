@@ -15,8 +15,7 @@ import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.errorexceptions.MyNull;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.mailserver.MailIISLogsCleaner;
-import ru.vachok.networker.net.DiapazonedScan;
-import ru.vachok.networker.net.WeekPCStats;
+import ru.vachok.networker.net.*;
 import ru.vachok.networker.services.MyCalen;
 import ru.vachok.networker.services.SpeedChecker;
 import ru.vachok.networker.systray.ActionOnAppStart;
@@ -24,10 +23,7 @@ import ru.vachok.networker.systray.MessageToTray;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.FileVisitor;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -36,12 +32,8 @@ import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.Date;
-import java.util.Objects;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
+import java.util.concurrent.*;
 
 
 /**
@@ -60,9 +52,9 @@ public class AppInfoOnLoad implements Runnable {
     /**
      Запуск {@link CommonRightsChecker}
      */
-    private static final Runnable r = AppInfoOnLoad::commonRights;
+    private static final Runnable commonRights = AppInfoOnLoad::commonRights;
 
-    private static DiapazonedScan diapazonedScan = DiapazonedScan.getInstance();
+    private static final String CLASS_NAME = "AppInfoOnLoad";
 
     /**
      Задержка выполнения для этого класса
@@ -70,6 +62,8 @@ public class AppInfoOnLoad implements Runnable {
      @see #schedStarter()
      */
     private static final int THIS_DELAY = 111;
+
+    private static DiapazonedScan diapazonedScan = DiapazonedScan.getInstance();
 
     /**
      Запускает сканнер прав Common
@@ -85,11 +79,12 @@ public class AppInfoOnLoad implements Runnable {
     }
 
     private static void commonRights() {
-        LOGGER.warn("AppInfoOnLoad.commonRights");
-        try {
+        new MessageCons().errorAlert("AppInfoOnLoad.commonRights");
+        try{
             FileVisitor<Path> commonRightsChecker = new CommonRightsChecker();
             Files.walkFileTree(Paths.get("\\\\srv-fs.eatmeat.ru\\common_new"), commonRightsChecker);
-        } catch (IOException e) {
+        }
+        catch(IOException e){
             LOGGER.warn(e.getMessage(), e);
         }
     }
@@ -108,7 +103,32 @@ public class AppInfoOnLoad implements Runnable {
      */
     @Override
     public void run() {
-        infoForU(AppCtx.scanForBeansAndRefreshContext());
+        try{
+            infoForU(AppCtx.scanForBeansAndRefreshContext());
+        }
+        catch(ExecutionException | InterruptedException | TimeoutException e){
+            new MessageCons().errorAlert(CLASS_NAME, "run", e.getMessage());
+            FileSystemWorker.error("AppInfoOnLoad.run", e);
+        }
+    }
+
+    /**
+     <b>1.1 Краткая сводка</b>
+     Немного инфомации о приложении.
+
+     @param appCtx {@link ApplicationContext}
+     */
+    private void infoForU(ApplicationContext appCtx) throws ExecutionException, InterruptedException, TimeoutException {
+        new MessageCons().errorAlert("AppInfoOnLoad.infoForU");
+        new MessageCons().info(ConstantsFor.STR_INPUT_OUTPUT, "appCtx = [" + appCtx + "]", "void");
+        String msg = new StringBuilder()
+            .append(appCtx.getApplicationName())
+            .append(" app name")
+            .append(appCtx.getDisplayName())
+            .append(" app display name\n")
+            .append(ConstantsFor.getBuildStamp()).toString();
+        LOGGER.info(msg);
+        schedStarter();
     }
 
     /**
@@ -117,38 +137,69 @@ public class AppInfoOnLoad implements Runnable {
      Usages: {@link #infoForU(ApplicationContext)} <br> Uses: 1.1 {@link #dateSchedulers()}, 1.2 {@link ConstantsFor#thisPC()}, 1.3
      {@link ConstantsFor#thisPC()} .@param s
      */
-    private void schedStarter() {
+    @SuppressWarnings ("MagicNumber")
+    private void schedStarter() throws ExecutionException, InterruptedException, TimeoutException {
+        new MessageCons().errorAlert("AppInfoOnLoad.schedStarter");
         final long stArt = System.currentTimeMillis();
-        ScheduledExecutorService executorService = Executors.unconfigurableScheduledExecutorService(Executors.newScheduledThreadPool(2));
+
+        List<String> miniLogger = new ArrayList<>();
+        miniLogger.add(this.getClass().getSimpleName());
+
+        ThreadConfig threadConfig = new ThreadConfig();
+        ScanOffline scanOffline = ScanOffline.getI();
+        ScanOnline scanOnline = ScanOnline.getI();
         String thisPC = ConstantsFor.thisPC();
+        miniLogger.add(thisPC);
+
+        ScheduledExecutorService executorService = threadConfig.threadPoolTaskScheduler().getScheduledThreadPoolExecutor();
         if(!thisPC.toLowerCase().contains("home")){
-            executorService.scheduleWithFixedDelay(r, 5, TimeUnit.DAYS.toSeconds(1), TimeUnit.SECONDS);
+            executorService.scheduleWithFixedDelay(commonRights, 10, TimeUnit.DAYS.toSeconds(1), TimeUnit.SECONDS);
+            miniLogger.add(commonRights.toString());
+            miniLogger.add(threadConfig.toString());
         }
-        executorService
-            .scheduleWithFixedDelay(diapazonedScan, 2, THIS_DELAY, TimeUnit.MINUTES);
+        executorService.scheduleWithFixedDelay(diapazonedScan, 2, THIS_DELAY, TimeUnit.MINUTES);
+        executorService.scheduleWithFixedDelay(scanOnline, 3, 1, TimeUnit.MINUTES);
+        executorService.scheduleWithFixedDelay(scanOffline, 200, 70, TimeUnit.SECONDS);
+
         String msg = new StringBuilder()
             .append(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(THIS_DELAY)))
             .append(DiapazonedScan.getInstance().getClass().getSimpleName())
             .append(" is starts next time.\n")
             .append(methMetr(stArt))
             .toString();
-        new MessageCons().infoNoTitles(msg);
+        miniLogger.add(msg);
+
         try{
             dateSchedulers();
         }
         catch(MyNull e){
-            new MessageToTray().errorAlert(getClass().getSimpleName(), e.getMessage(), new TForms().fromArray(e, false));
+            new MessageCons().errorAlert(CLASS_NAME, "schedStarter", e.getMessage());
         }
+        new MessageCons().infoNoTitles(new TForms().fromArray(miniLogger, false));
+        FileSystemWorker.recFile(CLASS_NAME, miniLogger.stream());
+    }
+
+    private static String methMetr(long stArt) {
+        String msgTimeSp = new StringBuilder()
+            .append("AppInfoOnLoad.schedStarter: ")
+            .append(( float ) (System.currentTimeMillis() - stArt) / 1000)
+            .append(ConstantsFor.STR_SEC_SPEND)
+            .toString();
+        new MessageCons().infoNoTitles(msgTimeSp);
+        return msgTimeSp;
     }
 
     /**
      Стата за неделю по-ПК
      <p>
-     Usages: {@link #schedStarter()} <br> Uses: 1.1 {@link MyCalen#getNextDayofWeek(int, int, DayOfWeek)}, 1.2 {@link ThreadConfig#threadPoolTaskScheduler()}@param s
+     Usages: {@link #schedStarter()} <br> Uses: 1.1 {@link MyCalen#getNextDayofWeek(int, int, DayOfWeek)}, 1.2
+     {@link ThreadConfig#threadPoolTaskScheduler()}@param s
      */
-    @SuppressWarnings("MagicNumber")
+    @SuppressWarnings ("MagicNumber")
     private static void dateSchedulers() throws MyNull {
-        Thread.currentThread().setName("AppInfoOnLoad.dateSchedulers");
+        String classMeth = "AppInfoOnLoad.dateSchedulers";
+        new MessageCons().errorAlert(classMeth);
+        Thread.currentThread().setName(classMeth);
         long stArt = System.currentTimeMillis();
         Date nextStartDay = MyCalen.getNextDayofWeek(23, 57, DayOfWeek.SUNDAY);
         StringBuilder stringBuilder = new StringBuilder();
@@ -163,7 +214,7 @@ public class AppInfoOnLoad implements Runnable {
         stringBuilder.append(nextStartDay.toString()).append(" MailIISLogsCleaner() start. ");
 
         String exitLast = "No file";
-        if (new File("exit.last").exists()) {
+        if(new File("exit.last").exists()){
             exitLast = new TForms().fromArray(FileSystemWorker.readFileToList("exit.last"), false);
         }
         stringBuilder.append("\n").append(methMetr(stArt));
@@ -172,47 +223,25 @@ public class AppInfoOnLoad implements Runnable {
         new MessageToTray(new ActionOnAppStart()).info(checkDay(), exitLast, iisLogSize());
     }
 
-    /**
-     <b>1.1 Краткая сводка</b>
-     Немного инфомации о приложении.
-
-     @param appCtx {@link ApplicationContext}
-     */
-    private void infoForU(ApplicationContext appCtx) {
-        String msg = new StringBuilder()
-            .append(appCtx.getApplicationName())
-            .append(" app name")
-            .append(appCtx.getDisplayName())
-            .append(" app display name\n")
-            .append(ConstantsFor.getBuildStamp()).toString();
-        LOGGER.info(msg);
-        schedStarter();
-    }
-
-    private static String methMetr(long stArt) {
-        String msgTimeSp = new StringBuilder()
-            .append("AppInfoOnLoad.schedStarter: ")
-            .append(( float ) (System.currentTimeMillis() - stArt) / 1000)
-            .append(ConstantsFor.STR_SEC_SPEND)
-            .toString();
-        new MessageCons().infoNoTitles(msgTimeSp);
-        return msgTimeSp;
-    }
-
     private static String checkDay() {
+        new MessageCons().errorAlert("AppInfoOnLoad.checkDay");
+        new MessageCons().info(ConstantsFor.STR_INPUT_OUTPUT, "", ConstantsFor.JAVA_LANG_STRING_NAME);
         Date dateStart = MyCalen.getNextDayofWeek(10, 0, DayOfWeek.MONDAY);
         DateFormat dateFormat = new SimpleDateFormat();
         String msg = dateFormat.format(dateStart) + " pcuserauto";
         ThreadConfig t = new ThreadConfig();
         ThreadPoolTaskScheduler threadPoolTaskScheduler = t.threadPoolTaskScheduler();
         threadPoolTaskScheduler.scheduleWithFixedDelay(AppInfoOnLoad::trunkTableUsers, dateStart, ConstantsFor.ONE_WEEK_MILLIS);
+        new MessageCons().infoNoTitles("msg = " + msg);
         return msg;
     }
 
     public static String iisLogSize() {
+        new MessageCons().errorAlert("AppInfoOnLoad.iisLogSize");
+        new MessageCons().info(ConstantsFor.STR_INPUT_OUTPUT, "", ConstantsFor.JAVA_LANG_STRING_NAME);
         Path iisLogsDir = Paths.get("\\\\srv-mail3.eatmeat.ru\\c$\\inetpub\\logs\\LogFiles\\W3SVC1\\");
         long totalSize = 0L;
-        for (File x : Objects.requireNonNull(iisLogsDir.toFile().listFiles())) {
+        for(File x : Objects.requireNonNull(iisLogsDir.toFile().listFiles())){
             totalSize = totalSize + x.length();
         }
         String s = totalSize / ConstantsFor.MBYTE + " MB IIS Logs\n";

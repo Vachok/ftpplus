@@ -11,10 +11,7 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 
 import javax.servlet.http.HttpServletResponse;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -140,8 +137,6 @@ class ConditionChecker {
             model.addAttribute("pcs", stringBuilder.toString());
         }
         else{
-            ThreadConfig.executeAsThread(ScanOffline.getI());
-            ThreadConfig.executeAsThread(ScanOnline.getI());
             allDevNotNull(model, netScanFileWorker, response);
         }
     }
