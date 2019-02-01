@@ -2,16 +2,19 @@ package ru.vachok.networker.fileworks;
 
 
 import org.slf4j.Logger;
+import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.messenger.email.ESender;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.common.CommonScan2YOlder;
 import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.services.TimeChecker;
 import ru.vachok.networker.systray.SystemTrayHelper;
 
 import java.io.*;
 import java.nio.file.*;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -31,6 +34,16 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
      */
     static final Logger LOGGER = AppComponents.getLogger();
 
+    public static synchronized void recFile(String fileName, Stream<String> toFileRec) {
+        try(OutputStream outputStream = new FileOutputStream(fileName);
+            PrintWriter printWriter = new PrintWriter(outputStream, true)){
+            toFileRec.forEach(printWriter::println);
+        }
+        catch(IOException e){
+            LOGGER.info(e.getMessage());
+        }
+    }
+
     /**
      Запись файла
 
@@ -48,19 +61,11 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         }
     }
 
-    public static synchronized void recFile(String fileName, Stream<String> toFileRec) {
-        try (OutputStream outputStream = new FileOutputStream(fileName);
-             PrintWriter printWriter = new PrintWriter(outputStream, true)) {
-            toFileRec.forEach(printWriter::println);
-        } catch (IOException e) {
-            LOGGER.info(e.getMessage());
-        }
-    }
-
     /**
      Удаление временных файлов.
      <p>
-     Usages: {@link SystemTrayHelper#addTray(String)}, {@link ru.vachok.networker.controller.ServiceInfoCtrl#closeApp()}, {@link ru.vachok.networker.net.MyServer#reconSock()}. <br>
+     Usages: {@link SystemTrayHelper#addTray(String)}, {@link ru.vachok.networker.controller.ServiceInfoCtrl#closeApp()},
+     {@link ru.vachok.networker.net.MyServer#reconSock()}. <br>
      Uses: {@link CommonScan2YOlder} <br>
      */
     public static void delTemp() {
@@ -80,7 +85,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
      @return список файлов или {@link Exception}
      @see FileSearcher
      */
-    @SuppressWarnings("MethodWithMultipleReturnPoints")
+    @SuppressWarnings ("MethodWithMultipleReturnPoints")
     public static String searchInCommon(String[] folderPath) {
         FileSearcher fileSearcher = new FileSearcher(folderPath[0]);
         try{
@@ -102,6 +107,62 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         catch(Exception e){
             return e.getMessage();
         }
+    }
+
+    /**
+     Простое копирование файла.
+
+     @param origFile файл, для копирования
+     @param s        строка путь
+     @return удача/нет
+     */
+    @SuppressWarnings ("MethodWithMultipleReturnPoints")
+    public static boolean copyOrDelFile(File origFile, String s, boolean needDel) {
+        File toCpFile = new File(s);
+        try{
+            Path targetPath = toCpFile.toPath();
+            Path directories = Files.createDirectories(targetPath.getParent());
+            toCpFile = targetPath.toFile();
+            Path copy = Files.copy(origFile.toPath(), targetPath, StandardCopyOption.REPLACE_EXISTING);
+            if(needDel){
+                Files.deleteIfExists(origFile.toPath());
+            }
+            String msg = directories + " getParent directory. " + copy.toString() + " " + toCpFile.exists();
+            LOGGER.info(msg);
+        }
+        catch(IOException | NullPointerException e){
+            LOGGER.warn(e.getMessage(), e);
+            return toCpFile.exists();
+        }
+        return toCpFile.exists();
+    }
+
+    public static ConcurrentMap<String, String> readFiles(List<File> filesToRead) {
+        Collections.sort(filesToRead);
+        ConcurrentMap<String, String> readiedStrings = new ConcurrentHashMap<>();
+        for(File f : filesToRead){
+            String s = readFile(f.getAbsolutePath());
+            readiedStrings.put(f.getAbsolutePath(), s);
+        }
+        return readiedStrings;
+    }
+
+    @SuppressWarnings ("MethodWithMultipleReturnPoints")
+    public static boolean delFilePatterns(String patToDel) {
+        File file = new File(".");
+        FileVisitor<Path> deleterTemp = new DeleterTemp(patToDel);
+        try{
+            Path walkFileTree = Files.walkFileTree(file.toPath(), deleterTemp);
+            return walkFileTree.toFile().exists();
+        }
+        catch(IOException e){
+            LOGGER.warn(e.getMessage(), e);
+            return false;
+        }
+    }
+
+    public static void recFile(String fileNameLOG, String toWriteStr) {
+        recFile(fileNameLOG + ConstantsFor.LOG, Collections.singletonList(toWriteStr));
     }
 
     /**
@@ -150,58 +211,47 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         return stringBuilder.toString();
     }
 
-    /**
-     Простое копирование файла.
-
-     @param origFile файл, для копирования
-     @param s        строка путь
-     @return удача/нет
-     */
-    @SuppressWarnings("MethodWithMultipleReturnPoints")
-    public static boolean copyOrDelFile(File origFile, String s, boolean needDel) {
-        File toCpFile = new File(s);
-        try{
-            Path targetPath = toCpFile.toPath();
-            Path directories = Files.createDirectories(targetPath.getParent());
-            toCpFile = targetPath.toFile();
-            Path copy = Files.copy(origFile.toPath(), targetPath, StandardCopyOption.REPLACE_EXISTING);
-            if(needDel){
-                Files.deleteIfExists(origFile.toPath());
+    public static List<String> readFileToList(String absolutePath) {
+        LOGGER.warn("FileSystemWorker.readFileToList");
+        List<String> retList = new ArrayList<>();
+        try(InputStream inputStream = new FileInputStream(absolutePath);
+            InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+            BufferedReader reader = new BufferedReader(inputStreamReader)){
+            while(reader.ready()){
+                retList.add(reader.readLine());
             }
-            String msg = directories + " getParent directory. " + copy.toString() + " " + toCpFile.exists();
-            LOGGER.info(msg);
         }
-        catch(IOException | NullPointerException e){
-            LOGGER.warn(e.getMessage(), e);
-            return toCpFile.exists();
+        catch(IOException e){
+            new MessageCons().errorAlert("FileSystemWorker", "readFileToList", e.getMessage());
+            FileSystemWorker.error("FileSystemWorker.readFileToList", e);
+            retList.add(e.getMessage());
+            retList.add(new TForms().fromArray(e, true));
         }
-        return toCpFile.exists();
+        new MessageCons().info("absolutePath = [" + absolutePath + "]", " input parameters.\nReturns:", "java.util.List<java.lang.String>");
+        return retList;
     }
 
-    @SuppressWarnings("MethodWithMultipleReturnPoints")
-    public static boolean delFilePatterns(String patToDel) {
-        File file = new File(".");
-        FileVisitor<Path> deleterTemp = new DeleterTemp(patToDel);
-        try{
-            Path walkFileTree = Files.walkFileTree(file.toPath(), deleterTemp);
-            return walkFileTree.toFile().exists();
-        } catch(IOException e){
-            LOGGER.warn(e.getMessage(), e);
-            return false;
+    public static void error(String classMeth, Exception e) {
+        File f = new File(classMeth + ConstantsFor.LOG);
+        try (OutputStream outputStream = new FileOutputStream(f);
+             PrintStream printStream = new PrintStream(outputStream, true)) {
+            printStream.println(new Date(new TimeChecker().call().getReturnTime()));
+            printStream.println();
+            printStream.println();
+            printStream.println(e.getMessage());
+            printStream.println();
+            printStream.println(new TForms().fromArray(e, false));
+            printStream.println();
+            printStream.println("Suppressed:");
+            printStream.println();
+            if (e.getSuppressed().length > 0) {
+                for (Throwable throwable : e.getSuppressed()) {
+                    printStream.println(throwable.getMessage());
+                    printStream.println(new TForms().fromArray(throwable, false));
+                }
+            }
+        } catch (IOException ex) {
+            LOGGER.error("FileSystemWorker.error", ex.getMessage(), ex);
         }
-    }
-
-    public static ConcurrentMap<String, String> readFiles(List<File> filesToRead) {
-        Collections.sort(filesToRead);
-        ConcurrentMap<String, String> readiedStrings = new ConcurrentHashMap<>();
-        for(File f : filesToRead){
-            String s = readFile(f.getAbsolutePath());
-            readiedStrings.put(f.getAbsolutePath(), s);
-        }
-        return readiedStrings;
-    }
-
-    public static void recFile(String fileNameLOG, String toWriteStr) {
-        recFile(fileNameLOG + ConstantsFor.LOG, Collections.singletonList(toWriteStr));
     }
 }

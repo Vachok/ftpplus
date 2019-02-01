@@ -1,4 +1,4 @@
-package ru.vachok.networker.net;
+package ru.vachok.networker.net.enums;
 
 
 import org.slf4j.Logger;

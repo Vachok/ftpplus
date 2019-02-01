@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
@@ -42,7 +41,7 @@ public class PhotoConverterSRV {
     /**
      Путь до папки с фото.
      */
-    private String adPhotosPath = properties.getProperty("adphotopath");
+    private String adPhotosPath = properties.getProperty("adphotopath", "\\\\srv-mail3.eatmeat.ru\\c$\\newmailboxes\\fotoraw\\");
 
     /**
      Файл-фото
@@ -77,7 +76,7 @@ public class PhotoConverterSRV {
             LOGGER.warn(msg);
             psCommands.add(msg);
         } catch (Exception e) {
-            AppComponents.getLogger().error(e.getMessage(), e);
+            FileSystemWorker.error("PhotoConverterSRV.imageBiConsumer", e);
             psCommands.add(e.getMessage());
         }
     };
@@ -111,7 +110,7 @@ public class PhotoConverterSRV {
         try {
             convertFoto();
         } catch (IOException | NullPointerException e) {
-            FileSystemWorker.recFile(getClass().getSimpleName(), e.getMessage() + "\n" + new TForms().fromArray(e, false));
+            FileSystemWorker.error("PhotoConverterSRV.psCommands", e);
             LOGGER.error(e.getMessage());
         }
         StringBuilder stringBuilder = new StringBuilder();
@@ -123,16 +122,18 @@ public class PhotoConverterSRV {
     }
 
     private void convertFoto() throws NullPointerException, IOException {
-        File[] fotoFiles = new File(this.adPhotosPath).listFiles();
         Map<String, BufferedImage> filesList = new HashMap<>();
-        if (fotoFiles != null) {
+        File[] fotoFiles = new File(this.adPhotosPath).listFiles();
+        if (fotoFiles != null && !adPhotosPath.isEmpty()) {
             for (File f : fotoFiles) {
                 for (String format : ImageIO.getWriterFormatNames()) {
                     String key = f.getName();
                     if (key.contains(format)) filesList.put(key.replaceFirst("\\Q.\\E" + format, ""), ImageIO.read(f));
                 }
             }
-        } else filesList.put("No files", null);
+        } else {
+            filesList.put("No files. requireNonNull adPhotosPath is: " + adPhotosPath, null);
+        }
         try {
             filesList.forEach(imageBiConsumer);
         } catch (NullPointerException e) {
@@ -142,6 +143,7 @@ public class PhotoConverterSRV {
     }
 
     private Set<String> samAccFromDB() {
+
         Set<String> samAccounts = new HashSet<>();
         Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.DB_PREFIX + ConstantsFor.STR_VELKOM);
         try (PreparedStatement p = c.prepareStatement("select * from u0466446_velkom.adusers");
@@ -150,7 +152,7 @@ public class PhotoConverterSRV {
                 samAccounts.add(r.getString("samAccountName"));
             }
         } catch (SQLException e) {
-            LOGGER.error(e.getMessage(), e);
+            FileSystemWorker.error("PhotoConverterSRV.samAccFromDB", e);
         }
         return samAccounts;
     }

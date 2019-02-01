@@ -77,7 +77,7 @@ public class CsvTxt {
             stringBuilder.append("<p>");
         });
         equivalentList(odinAssList);
-        String fromArray = new TForms().fromArray(odinAssList);
+        String fromArray = new TForms().fromArray(odinAssList, true);
         String msg = new String(fromArray.getBytes(), StandardCharsets.UTF_8);
         LOGGER.info(msg);
     }

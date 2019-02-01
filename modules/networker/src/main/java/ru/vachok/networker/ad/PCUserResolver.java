@@ -4,12 +4,12 @@ package ru.vachok.networker.ad;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import ru.vachok.messenger.MessageCons;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.TForms;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.ConstantsNet;
 import ru.vachok.networker.net.NetScannerSvc;
+import ru.vachok.networker.net.enums.ConstantsNet;
 
 import java.io.*;
 import java.nio.file.*;
@@ -52,6 +52,8 @@ public class PCUserResolver implements Thread.UncaughtExceptionHandler {
 //    private static final Map<String, Boolean> lastScanMap = AppComponents.lastNetScan().getNetWork();
 // --Commented out by Inspection STOP (25.01.2019 13:58)
 
+    private static final String PC_USER_RESOLVER_CLASS_NAME = "PCUserResolver";
+
     /**
      {@link RegRuMysql#getDefaultConnection(String)} - u0466446_velkom
      */
@@ -60,6 +62,16 @@ public class PCUserResolver implements Thread.UncaughtExceptionHandler {
     private String lastFileUse;
 
     private PCUserResolver() {
+    }
+
+    /**
+     @return {@link #pcUserResolver}
+     */
+    public static PCUserResolver getPcUserResolver(Connection c) {
+        Thread.currentThread().checkAccess();
+        Thread.currentThread().getThreadGroup().checkAccess();
+        connection = c;
+        return pcUserResolver;
     }
 
     /**
@@ -72,8 +84,8 @@ public class PCUserResolver implements Thread.UncaughtExceptionHandler {
         Thread.currentThread().setName(pcName);
         Thread.currentThread().setPriority(3);
         File[] files;
-        try(OutputStream outputStream = new FileOutputStream(pcName);
-            PrintWriter writer = new PrintWriter(outputStream, true)){
+        try (OutputStream outputStream = new FileOutputStream(pcName);
+             PrintWriter writer = new PrintWriter(outputStream, true)) {
             String pathAsStr = "\\\\" + pcName + "\\c$\\Users\\";
             lastFileUse = getLastTimeUse(pathAsStr).split("Users")[1];
             files = new File(pathAsStr).listFiles();
@@ -82,19 +94,18 @@ public class PCUserResolver implements Thread.UncaughtExceptionHandler {
                 .append("\n\n\n")
                 .append(lastFileUse);
             Thread.currentThread().checkAccess();
-        }
-        catch(IOException | ArrayIndexOutOfBoundsException e){
+        } catch (IOException | ArrayIndexOutOfBoundsException e) {
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
         }
-        if(lastFileUse!=null){
+        if (lastFileUse != null) {
             recAutoDB(pcName, lastFileUse);
             Thread.currentThread().interrupt();
         }
     }
 
     /**
-     Читает БД на предмет наличия юзера для <b>offline</b> компьютера.<br> {@link #getResolvedName()}
+     Читает БД на предмет наличия юзера для <b>offline</b> компьютера.<br>
 
      @param pcName имя ПК
      @return имя юзера, время записи.
@@ -127,11 +138,9 @@ public class PCUserResolver implements Thread.UncaughtExceptionHandler {
                     }
                 }
             }
-        }
-        catch(SQLException e){
-            FileSystemWorker.recFile(
-                this.getClass().getSimpleName() + REC_AUTO_DB + ConstantsFor.LOG,
-                Collections.singletonList(new TForms().fromArray(e, false)));
+        } catch (SQLException e) {
+            new MessageCons().errorAlert(PC_USER_RESOLVER_CLASS_NAME, "offNowGetU", e.getMessage());
+            FileSystemWorker.error("PCUserResolver.offNowGetU", e);
             NetScannerSvc.getI();
             NetScannerSvc.reconnectToDB();
         }
@@ -159,21 +168,8 @@ public class PCUserResolver implements Thread.UncaughtExceptionHandler {
             pcUMap.put(pcName, msg);
             Thread.currentThread().interrupt();
         } catch (SQLException e) {
-            FileSystemWorker.recFile(
-                this.getClass().getSimpleName() + REC_AUTO_DB + ConstantsFor.LOG,
-                Collections.singletonList(new TForms().fromArray(e, false)));
-            NetScannerSvc.reconnectToDB();
+            new MessageCons().errorAlert(PC_USER_RESOLVER_CLASS_NAME, "recToDB", e.getMessage());
         }
-    }
-
-    /**
-     @return {@link #pcUserResolver}
-     */
-    public static PCUserResolver getPcUserResolver(Connection c) {
-        Thread.currentThread().checkAccess();
-        Thread.currentThread().getThreadGroup().checkAccess();
-        connection = c;
-        return pcUserResolver;
     }
 
 // --Commented out by Inspection START (25.01.2019 13:03):
@@ -262,7 +258,7 @@ public class PCUserResolver implements Thread.UncaughtExceptionHandler {
     @SuppressWarnings("MethodWithMultipleReturnPoints")
     private synchronized String getLastTimeUse(String pathAsStr) {
         WalkerToUserFolder walkerToUserFolder = new WalkerToUserFolder();
-        try{
+        try {
             Files.walkFileTree(Paths.get(pathAsStr), Collections.singleton(FOLLOW_LINKS), 2, walkerToUserFolder);
             List<String> timePath = walkerToUserFolder.getTimePath();
             Collections.sort(timePath);
@@ -275,15 +271,14 @@ public class PCUserResolver implements Thread.UncaughtExceptionHandler {
     /**
      Записывает инфо о пльзователе в <b>pcuserauto</b> <br> Записи добавляются к уже имеющимся.
      <p>
-     Usages: {@link PCUserResolver#namesToFile(String)} <br>
-     Uses: -
+     Usages: {@link PCUserResolver#namesToFile(String)} <br> Uses: -
 
      @param pcName      имя ПК
      @param lastFileUse строка - имя последнего измененного файла в папке пользователя.
      */
     private synchronized void recAutoDB(String pcName, String lastFileUse) {
-
         String sql = "insert into pcuser (pcName, userName, lastmod, stamp) values(?,?,?,?)";
+        String classMeth = "PCUserResolver.recAutoDB";
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql
             .replaceAll(ConstantsFor.STR_PCUSER, ConstantsFor.STR_PCUSERAUTO))) {
             String[] split = lastFileUse.split(" ");
@@ -292,23 +287,21 @@ public class PCUserResolver implements Thread.UncaughtExceptionHandler {
             preparedStatement.setString(3, IntStream.of(2, 3, 4).mapToObj(i -> split[i]).collect(Collectors.joining()));
             preparedStatement.setString(4, split[7]);
             preparedStatement.executeUpdate();
-        }
-        catch(SQLException e){
-            FileSystemWorker.recFile(
-                this.getClass().getSimpleName() + REC_AUTO_DB + ConstantsFor.LOG,
-                Collections.singletonList(new TForms().fromArray(e, false)));
+        } catch (SQLException e) {
+            new MessageCons().errorAlert(PC_USER_RESOLVER_CLASS_NAME, classMeth, e.getMessage());
+            FileSystemWorker.error(classMeth, e);
             NetScannerSvc.getI();
             NetScannerSvc.reconnectToDB();
         } catch (ArrayIndexOutOfBoundsException | NullPointerException e) {
-            LOGGER.error(e.getMessage(), e);
+            new MessageCons().errorAlert(PC_USER_RESOLVER_CLASS_NAME, classMeth, e.getMessage());
+            FileSystemWorker.error(classMeth, e);
             Thread.currentThread().checkAccess();
             Thread.currentThread().getThreadGroup().destroy();
         }
     }
 
     /**
-     Method invoked when the given thread terminates due to the
-     given uncaught exception.
+     Method invoked when the given thread terminates due to the given uncaught exception.
      <p>Any exception thrown by this method will be ignored by the
      Java Virtual Machine.  @param t the thread
 
@@ -332,6 +325,10 @@ public class PCUserResolver implements Thread.UncaughtExceptionHandler {
 
         private final List<String> timePath = new ArrayList<>();
 
+        List<String> getTimePath() {
+            return timePath;
+        }
+
         @Override
         public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
             return FileVisitResult.CONTINUE;
@@ -351,10 +348,6 @@ public class PCUserResolver implements Thread.UncaughtExceptionHandler {
         @Override
         public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
             return FileVisitResult.CONTINUE;
-        }
-
-        List<String> getTimePath() {
-            return timePath;
         }
     }
 }

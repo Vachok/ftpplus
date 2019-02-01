@@ -32,8 +32,6 @@ import static java.lang.System.out;
 @SuppressWarnings("resource")
 public class MyServer extends Thread {
 
-    /*Fields*/
-
     /**
      Simple Name класса, для поиска настроек
      */
@@ -133,7 +131,7 @@ public class MyServer extends Thread {
         }
         printStream.println((System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN + " min up | " + ConstantsFor.APP_NAME);
         printStream.println(Thread.activeCount() + " active THREADS");
-        printStream.println(ConstantsFor.showMem());
+        printStream.println(ConstantsFor.getMemoryInfo());
         printStream.println("Press Enter or enter command:\n");
         String readLine = bufferedReader.readLine();
         makeDeal(readLine);
@@ -333,5 +331,17 @@ public class MyServer extends Thread {
         } catch (IOException e) {
             LoggerFactory.getLogger(SOURCE_CLASS).error(e.getMessage(), e);
         }
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("MyServer{");
+        sb.append("messageToUser=").append(messageToUser);
+        sb.append(", myServer=").append(myServer);
+        sb.append(", serverSocket=").append(serverSocket);
+        sb.append(", socket=").append(socket);
+        sb.append(", SOURCE_CLASS='").append(SOURCE_CLASS).append('\'');
+        sb.append('}');
+        return sb.toString();
     }
 }

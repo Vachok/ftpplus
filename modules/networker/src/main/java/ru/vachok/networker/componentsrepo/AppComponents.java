@@ -8,6 +8,8 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Scope;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import ru.vachok.messenger.MessageCons;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.IntoApplication;
@@ -16,12 +18,15 @@ import ru.vachok.networker.accesscontrol.common.CommonScan2YOlder;
 import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.ad.ADUser;
+import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.mailserver.RuleSet;
 import ru.vachok.networker.services.SimpleCalculator;
 
 import javax.servlet.http.HttpServletRequest;
-import java.lang.reflect.InvocationTargetException;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -39,6 +44,15 @@ public class AppComponents {
      <i>Boiler Plate</i>
      */
     private static final String STR_VISITOR = "visitor";
+
+    @Bean
+    @Scope(ConstantsFor.SINGLETON)
+    public static ThreadPoolTaskScheduler getSchedExecutor() {
+        ThreadPoolTaskScheduler service = new ThreadConfig().threadPoolTaskScheduler();
+        String valStr = "service = " + service + " AppComponents.getSchedExecutorService";
+        new MessageCons().info("SOUTV", "AppComponents.getSchedExecutorService", valStr);
+        return service;
+    }
 
     /**
      @return {@link LoggerFactory}
@@ -108,8 +122,22 @@ public class AppComponents {
         return new ADSrv(adUser, adComputer);
     }
 
-    public static Visitor thisVisit(String sessionID) throws InvocationTargetException, NullPointerException, NoSuchBeanDefinitionException {
-        return ( Visitor ) configurableApplicationContext().getBean(sessionID);
+    @Bean
+    public Map<String, String> getLastLogs() {
+        int ind = 10;
+        Map<String, String> lastLogsList = new ConcurrentHashMap<>();
+        String tbl = "ru_vachok_networker";
+        Connection c = new RegRuMysql().getDefaultConnection("u0466446_webapp");
+        try (PreparedStatement p = c.prepareStatement(String.format("select * from %s ORDER BY timewhen DESC LIMIT 0 , 30", tbl));
+             ResultSet r = p.executeQuery()) {
+            while (r.next()) {
+                lastLogsList.put(++ind + ") " + r.getString("classname") + " - " + r.getString("msgtype"),
+                    r.getString("msgvalue") + " at: " + r.getString("timewhen"));
+            }
+        } catch (SQLException ignore) {
+            //
+        }
+        return lastLogsList;
     }
 
     /**
@@ -140,28 +168,25 @@ public class AppComponents {
         return new RuleSet();
     }
 
-    @Bean
-    public Map<String, String> getLastLogs() {
-        int ind = 10;
-        Map<String, String> lastLogsList = new ConcurrentHashMap<>();
-        String tbl = "eth";
-        Connection c = new RegRuMysql().getDefaultConnection("u0466446_webapp");
-        try (PreparedStatement p = c.prepareStatement(String.format("select * from %s ORDER BY timewhen DESC LIMIT 0 , 50", tbl));
-             ResultSet r = p.executeQuery()) {
-            while (r.next()) {
-                lastLogsList.put(++ind + ") " + r.getString("classname") + " - " + r.getString("msgtype"),
-                    r.getString("msgvalue") + " at: " + r.getString("timewhen"));
-            }
-        } catch (SQLException ignore) {
-            //
-        }
-        return lastLogsList;
+    public static Visitor thisVisit(String sessionID) throws NullPointerException, NoSuchBeanDefinitionException {
+        return (Visitor) configurableApplicationContext().getBean(sessionID);
     }
 
     @Bean
     @Scope(ConstantsFor.SINGLETON)
-    public static ConfigurableApplicationContext configurableApplicationContext() {
+    static ConfigurableApplicationContext configurableApplicationContext() {
         return IntoApplication.getConfigurableApplicationContext();
     }
 
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("AppComponents{");
+        sb.append("lastLogs=").append(getLastLogs());
+        sb.append(", ruleSet=").append(ruleSet());
+        sb.append(", simpleCalculator=").append(simpleCalculator());
+        sb.append(", sshActs=").append(sshActs());
+        sb.append(", STR_VISITOR='").append(STR_VISITOR).append('\'');
+        sb.append('}');
+        return sb.toString();
+    }
 }

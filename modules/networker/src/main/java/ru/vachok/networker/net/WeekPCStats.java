@@ -3,13 +3,17 @@ package ru.vachok.networker.net;
 
 import org.slf4j.Logger;
 import ru.vachok.messenger.MessageSwing;
+import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.io.*;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,16 +36,16 @@ public class WeekPCStats implements Runnable {
      */
     private static final List<String> PC_NAMES_IN_TABLE = new ArrayList<>();
 
-    private String tSpend = ConstantsFor.STR_SEC_SPEND;
-
     /**
      {@link #getFromDB()}
      */
     @Override
     public void run() {
         Thread.currentThread().setName("WeekPCStats.run");
+        LOGGER.warn("WeekPCStats.run");
         final long stArt = System.currentTimeMillis();
         getFromDB();
+        String tSpend = ConstantsFor.STR_SEC_SPEND;
         String msgTimeSp = MessageFormat
             .format("WeekPCStats.run method. {0}{1}", ( float ) (System.currentTimeMillis() - stArt) / 1000, tSpend);
         LOGGER.info(msgTimeSp);
@@ -55,6 +59,7 @@ public class WeekPCStats implements Runnable {
      Usages: {@link #run()}
      */
     private void getFromDB() {
+        MessageToUser messageToUser = new MessageSwing();
         final long stArt = System.currentTimeMillis();
         String sql = "select * from pcuserauto";
         File file = new File(ConstantsFor.VELKOM_PCUSERAUTO_TXT);
@@ -84,13 +89,21 @@ public class WeekPCStats implements Runnable {
             LOGGER.warn(msgTimeSp);
         }
         catch(SQLException | IOException e){
-            LOGGER.warn(e.getMessage());
+            messageToUser.infoNoTitles(e.getMessage());
         }
         String toCopy = "\\\\10.10.111.1\\Torrents-FTP\\" + file.getName();
         if(!ConstantsFor.thisPC().toLowerCase().contains("home")){
             toCopy = file.getName() + "_cp";
         }
         FileSystemWorker.copyOrDelFile(file, toCopy, false);
-        new MessageSwing().infoNoTitlesDIA(this.getClass().getSimpleName() + " ends\n" + PC_NAMES_IN_TABLE.size() + " PC_NAMES_IN_TABLE.size()");
+        messageToUser.infoNoTitles(this.getClass().getSimpleName() + " ends\n" + PC_NAMES_IN_TABLE.size() + " PC_NAMES_IN_TABLE.size()");
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("WeekPCStats{");
+        sb.append("PC_NAMES_IN_TABLE=").append(PC_NAMES_IN_TABLE);
+        sb.append('}');
+        return sb.toString();
     }
 }

@@ -17,9 +17,7 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.DiapazonedScan;
 import ru.vachok.networker.services.MyCalen;
 import ru.vachok.networker.services.SpeedChecker;
-import ru.vachok.networker.systray.SystemTrayHelper;
 
-import javax.net.ssl.SSLException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
@@ -31,8 +29,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.stream.Stream;
 
 
@@ -55,45 +52,58 @@ public class ServiceInfoCtrl {
      */
     private Visitor visitor = null;
 
-    @GetMapping ("/serviceinfo")
-    public String infoMapping(Model model, HttpServletRequest request, HttpServletResponse response) throws AccessDeniedException, SSLException {
-        Thread.currentThread().setName("ServiceInfoCtrl.infoMapping");
-        this.visitor = new AppComponents().visitor(request);
-        this.authReq = Stream.of("0:0:0:0", "10.10.111", "10.200.213.85", "172.16.20").anyMatch(s_p -> request.getRemoteAddr().contains(s_p));
-        if(authReq){
-            modModMaker(model, request, visitor);
-            response.addHeader(ConstantsFor.HEAD_REFRESH, "90");
-            return "vir";
-        }
-        else{
-            throw new AccessDeniedException("Sorry. Denied");
-        }
-    }
-
-    @GetMapping ("/pcoff")
-    public void offPC(Model model) throws IOException {
-        if(authReq){
-            Runtime.getRuntime().exec(ConstantsFor.COM_SHUTDOWN_P_F);
-        }
-        else{
-            throw new AccessDeniedException("Denied for " + visitor.toString());
-        }
-    }
-
     private float getLast() {
         return TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() -
             Long.parseLong(ConstantsFor.getProps().getProperty("lasts", 1544816520000L + ""))) / 60f / 24f;
     }
 
-    private void modModMaker(Model model, HttpServletRequest request, Visitor visitor) throws SSLException {
+    private String getJREVers() {
+        return System.getProperty("java.version");
+    }
+
+    @GetMapping("/serviceinfo")
+    public String infoMapping(Model model, HttpServletRequest request, HttpServletResponse response) throws AccessDeniedException, ExecutionException, InterruptedException {
+        Thread.currentThread().setName("ServiceInfoCtrl.infoMapping");
+        ThreadConfig.executeAsThread(new SpeedChecker.ChkMailAndUpdateDB());
+        this.visitor = new AppComponents().visitor(request);
+        this.authReq = Stream.of("0:0:0:0", "10.10.111", "10.200.213.85", "172.16.20").anyMatch(sP -> request.getRemoteAddr().contains(sP));
+        if (authReq) {
+            modModMaker(model, request, visitor);
+            response.addHeader(ConstantsFor.HEAD_REFRESH, "90");
+            return "vir";
+        } else {
+            throw new AccessDeniedException("Sorry. Denied");
+        }
+    }
+
+    @GetMapping("/pcoff")
+    public void offPC(Model model) throws IOException {
+        if (authReq) {
+            Runtime.getRuntime().exec(ConstantsFor.COM_SHUTDOWN_P_F);
+        } else {
+            throw new AccessDeniedException("Denied for " + visitor.toString());
+        }
+    }
+
+    @GetMapping("/stop")
+    public String closeApp() throws AccessDeniedException {
+        if (authReq) {
+            ThreadConfig.executeAsThread(new ExitApp(ConstantsFor.getUpTime() + " " + ConstantsFor.getMemoryInfo()));
+        } else {
+            throw new AccessDeniedException("DENY!");
+        }
+        return "ok";
+    }
+
+    private void modModMaker(Model model, HttpServletRequest request, Visitor visitor) throws ExecutionException, InterruptedException {
         this.visitor = ConstantsFor.getVis(request);
-        Long whenCome = new SpeedChecker().call();
-        Date comeD = new Date(whenCome);
+        Future<Long> whenCome = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(new SpeedChecker());
+        Date comeD = new Date(whenCome.get());
         if (visitor.getSession().equals(request.getSession())) {
             visitor.setClickCounter(visitor.getClickCounter() + 1);
         }
         model.addAttribute(ConstantsFor.ATT_TITLE, getLast() + " (" + getLast() * ConstantsFor.ONE_DAY_HOURS + ")");
-        model.addAttribute("mail", ConstantsFor.percToEnd(comeD));
+        model.addAttribute("mail", ConstantsFor.percToEnd(comeD, 9));
         model.addAttribute("ping", pingGit());
         model.addAttribute("urls", new StringBuilder()
             .append("Запущено - ")
@@ -103,7 +113,7 @@ public class ServiceInfoCtrl {
             .append("</i>)<br>Точное время: ")
             .append(ConstantsFor.getAtomicTime())
             .append(".<br> Состояние памяти (МБ): <font color=\"#82caff\">")
-            .append(ConstantsFor.showMem())
+            .append(ConstantsFor.getMemoryInfo())
             .append("</font><br>")
             .append(DiapazonedScan.getInstance().toString())
             .append("<br>")
@@ -154,22 +164,6 @@ public class ServiceInfoCtrl {
         return stringBuilder.toString();
     }
 
-    private String getJREVers() {
-        return System.getProperty("java.version");
-    }
-
-    @GetMapping ("/stop")
-    public String closeApp() throws AccessDeniedException {
-        if(authReq){
-            new ThreadConfig().threadPoolTaskExecutor()
-                .execute(new ExitApp(SystemTrayHelper.class.getSimpleName()));
-        }
-        else{
-            throw new AccessDeniedException("DENY!");
-        }
-        return "ok";
-    }
-
     @SuppressWarnings("MethodWithMultipleReturnPoints")
     private String pingGit() {
         boolean reachable = false;
@@ -191,8 +185,8 @@ public class ServiceInfoCtrl {
 
     private String listFilesToReadStr() {
         List<File> readUs = new ArrayList<>();
-        for(File f : Objects.requireNonNull(new File(".").listFiles())){
-            if(f.getName().toLowerCase().contains(ConstantsFor.STR_VISIT)){
+        for (File f : Objects.requireNonNull(new File(".").listFiles())) {
+            if (f.getName().toLowerCase().contains(ConstantsFor.STR_VISIT)) {
                 readUs.add(f);
             }
         }
@@ -200,11 +194,10 @@ public class ServiceInfoCtrl {
         List<String> retListStr = new ArrayList<>();
         //noinspection OverlyLongLambda
         stringStringConcurrentMap.forEach((String x, String y) -> {
-            try{
+            try {
                 retListStr.add(y.split("userId")[0]);
                 retListStr.add("<b>" + x.split("FtpClientPlus")[1] + "</b>");
-            }
-            catch(Exception e){
+            } catch (Exception e) {
                 retListStr.add(e.getMessage());
             }
         });

@@ -3,6 +3,7 @@ package ru.vachok.networker.systray;
 
 import org.slf4j.Logger;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.*;
 import ru.vachok.networker.accesscontrol.common.ArchivesAutoCleaner;
@@ -15,12 +16,11 @@ import ru.vachok.networker.services.Putty;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Properties;
-
-import static java.lang.System.err;
 
 
 /**
@@ -56,11 +56,25 @@ public final class SystemTrayHelper extends AppInfoOnLoad {
     /**
      {@link DBMessenger}
      */
-    private static final MessageToUser MESSAGE_TO_USER = new DBMessenger();
+    private static final MessageToUser MESSAGE_TO_USER = new MessageCons();
 
     private static TrayIcon trayIcon = null;
 
-    private static final ThreadPoolTaskExecutor executor = new ThreadConfig().threadPoolTaskExecutor();
+    private static final ThreadPoolTaskExecutor TASK_EXECUTOR = new ThreadConfig().threadPoolTaskExecutor();
+
+    /**
+     Конструктор по-умолчанию
+     */
+    private SystemTrayHelper() {
+
+    }
+
+    /**
+     @return {@link #SYSTEM_TRAY_HELPER}
+     */
+    public static SystemTrayHelper getInstance() {
+        return SYSTEM_TRAY_HELPER;
+    }
 
     /**
      Создаёт System Tray Icon
@@ -72,6 +86,9 @@ public final class SystemTrayHelper extends AppInfoOnLoad {
      */
     @SuppressWarnings("FeatureEnvy")
     public static void addTray(String iconFileName) {
+        String classMeth = "SystemTrayHelper.addTray";
+        new MessageCons().info("iconFileName = [" + iconFileName + "]", "input parameters. Returns:", "void");
+        new MessageCons().errorAlert(classMeth);
         boolean myPC;
         AppInfoOnLoad.runCommonScan();
         myPC = THIS_PC.toLowerCase().contains(ConstantsFor.NO0027) || THIS_PC.equalsIgnoreCase("home");
@@ -97,8 +114,9 @@ public final class SystemTrayHelper extends AppInfoOnLoad {
         addItems(popupMenu);
         trayIcon.setImageAutoSize(true);
         defItem.setLabel("Exit");
-        defItem.addActionListener(new ActionExit());
+        defItem.addActionListener(new ActionExit(classMeth));
         popupMenu.add(defItem);
+        trayIcon.addActionListener(new ActionDefault());
         try {
             if (SystemTray.isSupported()) {
                 SystemTray systemTray = SystemTray.getSystemTray();
@@ -113,17 +131,11 @@ public final class SystemTrayHelper extends AppInfoOnLoad {
         }
     }
 
-    /**
-     @return {@link #SYSTEM_TRAY_HELPER}
-     */
-    public static SystemTrayHelper getInstance() {
-        return SYSTEM_TRAY_HELPER;
-    }
-
-    /**
-     Конструктор по-умолчанию
-     */
-    private SystemTrayHelper() {
+    static void delOldActions() {
+        LOGGER.warn("SystemTrayHelper.delOldActions");
+        for (ActionListener actionListener : trayIcon.getActionListeners()) {
+            trayIcon.removeActionListener(actionListener);
+        }
     }
 
     /**
@@ -152,15 +164,15 @@ public final class SystemTrayHelper extends AppInfoOnLoad {
      @param popupMenu {@link PopupMenu}
      */
     private static void addItems(PopupMenu popupMenu) {
-        Thread thread = executor.createThread(SystemTrayHelper::recOn);
+        Thread thread = TASK_EXECUTOR.createThread(SystemTrayHelper::recOn);
         thread.start();
         MenuItem gitStartWeb = new MenuItem();
-        gitStartWeb.addActionListener(new ActionGITStart(executor));
+        gitStartWeb.addActionListener(new ActionGITStart(TASK_EXECUTOR));
         gitStartWeb.setLabel("GIT WEB ON");
         popupMenu.add(gitStartWeb);
         MenuItem toConsole = new MenuItem();
         toConsole.setLabel("Console Back");
-        toConsole.addActionListener((ActionEvent e) -> System.setOut(err));
+        toConsole.addActionListener((ActionEvent e) -> System.setOut(System.err));
         popupMenu.add(toConsole);
         if (!ConstantsFor.thisPC().toLowerCase().contains("home")) {
             MenuItem puttyStarter = new MenuItem();
@@ -169,12 +181,12 @@ public final class SystemTrayHelper extends AppInfoOnLoad {
             popupMenu.add(puttyStarter);
         } else {
             MenuItem reloadContext = new MenuItem();
-            reloadContext.addActionListener(new ActionReloadCTX());
-            reloadContext.setLabel("Refresh App Context");
+            reloadContext.addActionListener(new ActionTests());
+            reloadContext.setLabel("Run tests");
             popupMenu.add(reloadContext);
         }
         MenuItem delFiles = new MenuItem();
-        delFiles.addActionListener(new ActionDelTMP(executor, delFiles, popupMenu));
+        delFiles.addActionListener(new ActionDelTMP(TASK_EXECUTOR, delFiles, popupMenu));
         delFiles.setLabel("Clean last year");
         popupMenu.add(delFiles);
         MenuItem logToFilesystem = new MenuItem();

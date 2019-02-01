@@ -71,6 +71,7 @@ public class IntoApplication {
      */
     @SuppressWarnings("JavadocReference")
     public static void main(String[] args) {
+        LOGGER.warn("IntoApplication.main");
         final long stArt = System.currentTimeMillis();
         boolean delFilePatterns = FileSystemWorker.delFilePatterns(ConstantsFor.STR_VISIT);
         beforeSt();
@@ -104,8 +105,8 @@ public class IntoApplication {
      Запуск до старта Spring boot app <br> Usages: {@link #main(String[])}
      */
     private static void beforeSt() {
-        ConstantsFor.showMem();
-        LOGGER.info("IntoApplication.beforeSt");
+        ConstantsFor.getMemoryInfo();
+        LOGGER.warn("IntoApplication.beforeSt");
         String msg = LocalDate.now().getDayOfWeek().getValue() + " - day of week\n" +
             LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault());
         LOGGER.warn(msg);
@@ -135,19 +136,19 @@ public class IntoApplication {
             LOGGER.error(showPath);
             threadConfig.threadPoolTaskExecutor().execute(infoAndSched);
             return true;
-        }
-        catch(Exception e){
+        } catch (Exception e) {
             FileSystemWorker.recFile(IntoApplication.class.getSimpleName() + ConstantsFor.LOG, Collections.singletonList(new TForms().fromArray(e, false)));
             return false;
         }
     }
 
     private static void appProperties() {
+        LOGGER.warn("IntoApplication.appProperties");
         String s = null;
         try {
             s = Paths.get("").toFile().getCanonicalPath().toLowerCase();
         } catch (IOException e) {
-            FileSystemWorker.recFile(IntoApplication.class.getSimpleName(), e.getMessage() + "\n" + new TForms().fromArray(e, false));
+            FileSystemWorker.recFile(IntoApplication.class.getSimpleName() + ConstantsFor.LOG, e.getMessage() + "\n" + new TForms().fromArray(e, false));
             LOGGER.warn(e.getMessage());
         }
         InitProperties initProperties = new FileProps(s + "\\modules\\networker\\src\\main\\resources\\application");

@@ -9,7 +9,6 @@ import ru.vachok.messenger.MessageSwing;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
-import ru.vachok.networker.ad.PCUserResolver;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.config.ThreadConfig;
@@ -52,6 +51,19 @@ public enum ConstantsFor {
      {@link ru.vachok.networker.mailserver.ExCTRL#uplFile(MultipartFile, Model)}, {@link ExSRV#getOFields()},
      */
     private static final ConcurrentMap<Integer, MailRule> MAIL_RULES = new ConcurrentHashMap<>();
+
+    /**
+     new {@link Properties}
+     */
+    private static final Properties PROPS = new Properties();
+
+    public static final String JAVA_LANG_STRING_NAME = "java.lang.String";
+
+    public static final String HTTP_LOCALHOST_8880_SLASH = "http://localhost:8880/";
+
+    public static final String USERS_TXT = "/static/texts/users.txt";
+
+    public static final String SHOWALLDEV_NEEDSOPEN = "http://localhost:8880/showalldev?needsopen";
 
     public static final String STR_VELKOM = "velkom";
 
@@ -126,11 +138,6 @@ public enum ConstantsFor {
     public static final String SINGLETON = "singleton";
 
     /**
-     new {@link Properties}
-     */
-    private static final Properties PROPS = new Properties();
-
-    /**
      Название БД в reg.ru
      */
     public static final String U_0466446_VELKOM = "u0466446_velkom";
@@ -169,11 +176,6 @@ public enum ConstantsFor {
      Название аттрибута модели.
      */
     public static final String ATT_SSH_ACTS = "sshActs";
-
-    /**
-     Название property
-     */
-    public static final String PR_LASTSCAN = "lastscan";
 
     /**
      Название property
@@ -236,7 +238,7 @@ public enum ConstantsFor {
     public static final String STR_SEC_SPEND = " sec spend";
 
     /**
-     {@link ru.vachok.networker.ad.ADSrv#getDetails(String)}, {@link PCUserResolver#getResolvedName()}, {@link NetScannerSvc#getPCsAsync()}
+     {@link NetScannerSvc#getPCsAsync()}
      */
     public static final ConcurrentMap<String, File> COMPNAME_USERS_MAP = new ConcurrentHashMap<>();
 
@@ -338,13 +340,6 @@ public enum ConstantsFor {
     public static final String DB_FIELD_USER = "userName";
 
     /**
-     @return {@link #MAIL_RULES}
-     */
-    public static ConcurrentMap<Integer, MailRule> getMailRules() {
-        return MAIL_RULES;
-    }
-
-    /**
      Кол-во дней в месяце
      */
     public static final int ONE_MONTH_DAYS = 30;
@@ -360,9 +355,9 @@ public enum ConstantsFor {
     public static final int IPS_IN_VELKOM_VLAN = getIPs();
 
     /**
-     * Все возможные IP из диапазонов {@link DiapazonedScan}
+     Все возможные IP из диапазонов {@link DiapazonedScan}
      */
-    public static final BlockingQueue<String> ALL_DEVICES = new ArrayBlockingQueue<>(IPS_IN_VELKOM_VLAN);
+    public static final BlockingDeque<String> ALL_DEVICES = new LinkedBlockingDeque<>(IPS_IN_VELKOM_VLAN);
 
     /**
      Порт для {@link ru.vachok.networker.net.MyServer}
@@ -381,11 +376,22 @@ public enum ConstantsFor {
 
     public static final String LOG = ".log";
 
+    public static final String HTML_CENTER = "</center>";
+
+    public static final String STR_INPUT_OUTPUT = "input/output";
+
     /**
      {@link #getAtomicTime()}
      */
     @SuppressWarnings ("NonFinalFieldInEnum")
     private static long atomicTime;
+
+    /**
+     @return {@link #MAIL_RULES}
+     */
+    public static ConcurrentMap<Integer, MailRule> getMailRules() {
+        return MAIL_RULES;
+    }
 
     /**
      @return 192.168.13.42 online or offline
@@ -411,23 +417,15 @@ public enum ConstantsFor {
     }
 
     /**
-     * Тащит {@link #PROPS} из БД или файла
+     @return Время работы в часах.
      */
-    static void takePr() {
-        InitProperties initProperties;
-        try{
-            initProperties = new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
-            String msg = "Taking DB properties:" + "\n" + initProperties.getClass().getSimpleName();
-            AppComponents.getLogger().info(msg);
-            PROPS.putAll(initProperties.getProps());
-        }
-        catch(Exception e){
-            initProperties = new FileProps(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
-            String msg = "Taking File properties:" + "\n" + e.getMessage();
-            AppComponents.getLogger().warn(msg);
-            PROPS.putAll(initProperties.getProps());
-            new MessageSwing().infoNoTitlesDIA(e.getMessage() + " " + ConstantsFor.class.getSimpleName());
-        }
+    public static String getUpTime() {
+
+        float hrsOn =
+            ( float ) (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN / ConstantsFor.ONE_HOUR_IN_MIN;
+
+        return "(" + String.format("%.03f", hrsOn) +
+            "h up)";
     }
 
     /**
@@ -461,14 +459,18 @@ public enum ConstantsFor {
     }
 
     /**
-     @return Время работы в часах.
+     Сохраняет {@link Properties} в БД {@link #APP_NAME} с ID {@code ConstantsFor}
+
+     @param propsToSave {@link Properties}
      */
-    public static String getUpTime() {
-
-        float hrsOn = (float) (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN / ConstantsFor.ONE_HOUR_IN_MIN;
-
-        return "(" + String.format("%.03f", hrsOn) +
-            "h up)";
+    public static void saveProps(Properties propsToSave) {
+        new ThreadConfig().threadPoolTaskExecutor().execute(() -> {
+            InitProperties initProperties = new FileProps(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
+            initProperties.setProps(propsToSave);
+            initProperties = new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
+            initProperties.delProps();
+            initProperties.setProps(propsToSave);
+        });
     }
 
     /**
@@ -486,8 +488,8 @@ public enum ConstantsFor {
      */
     private static long getDelay() {
         long delay = new SecureRandom().nextInt(( int ) MY_AGE);
-        if(delay < 16){
-            delay = 16;
+        if (delay < 17) {
+            delay = 17;
         }
         return delay;
     }
@@ -495,7 +497,7 @@ public enum ConstantsFor {
     /**
      @return кол-во выделенной, используемой и свободной памяти в МБ
      */
-    public static String showMem() {
+    public static String getMemoryInfo() {
         String msg = ( float ) Runtime.getRuntime().totalMemory() / ConstantsFor.MBYTE + " now totalMemory, " +
             ( float ) Runtime.getRuntime().freeMemory() / ConstantsFor.MBYTE + " now freeMemory, " +
             ( float ) Runtime.getRuntime().maxMemory() / ConstantsFor.MBYTE + " now maxMemory.";
@@ -506,11 +508,11 @@ public enum ConstantsFor {
     /**
      @return время до 17:30 в процентах от 8:30
      */
-    public static String percToEnd(Date timeToStart) {
+    public static String percToEnd(Date timeToStart, long amountH) {
         StringBuilder stringBuilder = new StringBuilder();
         LocalDateTime startDayTime = LocalDateTime.ofEpochSecond(timeToStart.getTime() / 1000, 0, ZoneOffset.ofHours(3));
         LocalTime startDay = startDayTime.toLocalTime();
-        LocalTime endDay = startDay.plus(9, HOURS);
+        LocalTime endDay = startDay.plus(amountH, HOURS);
         final int secDayEnd = endDay.toSecondOfDay();
         final int startSec = startDay.toSecondOfDay();
         final int allDaySec = secDayEnd - startSec;
@@ -552,17 +554,23 @@ public enum ConstantsFor {
     }
 
     /**
-     Сохраняет {@link Properties} в БД {@link #APP_NAME} с ID {@code ConstantsFor}
-     @param propsToSave {@link Properties}
+     Тащит {@link #PROPS} из БД или файла
      */
-    public static void saveProps(Properties propsToSave) {
-        new ThreadConfig().threadPoolTaskExecutor().execute(() -> {
-            InitProperties initProperties = new FileProps(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
-            initProperties.setProps(propsToSave);
+    static void takePr() {
+        InitProperties initProperties;
+        try{
             initProperties = new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
-            initProperties.delProps();
-            initProperties.setProps(propsToSave);
-        });
+            String msg = "Taking DB properties:" + "\n" + initProperties.getClass().getSimpleName();
+            AppComponents.getLogger().info(msg);
+            PROPS.putAll(initProperties.getProps());
+        }
+        catch(Exception e){
+            initProperties = new FileProps(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
+            String msg = "Taking File properties:" + "\n" + e.getMessage();
+            AppComponents.getLogger().warn(msg);
+            PROPS.putAll(initProperties.getProps());
+            new MessageSwing().infoNoTitlesDIA(e.getMessage() + " " + ConstantsFor.class.getSimpleName());
+        }
     }
 
     /**

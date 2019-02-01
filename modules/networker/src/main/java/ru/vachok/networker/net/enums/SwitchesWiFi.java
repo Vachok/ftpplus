@@ -1,5 +1,8 @@
-package ru.vachok.networker.net;
+package ru.vachok.networker.net.enums;
 
+
+import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.net.DiapazonedScan;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -10,7 +13,7 @@ import java.util.List;
  Свичи
 
  @since 20.12.2018 (10:14) */
-public enum Switches {
+public enum SwitchesWiFi {
     ;
 
     public static final String CORE_HP_3800 = "10.200.200.1";
@@ -57,7 +60,15 @@ public enum Switches {
 
     public static final String WTF = "10.200.215.250";
 
-    public static final String CONTROL = "192.168.13.13";
+    public static final String C_207_4_SK = "10.200.207.4";
+
+    public static final String C_207_3_SK = "10.200.207.3";
+
+    public static final String C_204_2_UPAK = "10.200.204.2";
+
+    public static final String C_204_3_UPAK = "10.200.204.3";
+
+    public static final String C_204_10_GP = "10.200.204.10";
 
     public static String toStringS() {
         StringBuilder stringBuilder = new StringBuilder();
@@ -77,14 +88,14 @@ public enum Switches {
                         .append("<font color=\"#00ff69\">")
                         .append(s)
                         .append("</font>");
-                    stringBuilder.append("</center>");
+                    stringBuilder.append(ConstantsFor.HTML_CENTER);
                 } else {
                     stringBuilder.append("<center>");
                     stringBuilder
                         .append("<strike><font color=\"red\">")
                         .append(s)
                         .append("</font></strike>");
-                    stringBuilder.append("</center>");
+                    stringBuilder.append(ConstantsFor.HTML_CENTER);
                 }
             }
         } catch (IllegalAccessException | IOException e) {

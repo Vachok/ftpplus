@@ -5,7 +5,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import ru.vachok.messenger.MessageCons;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.net.enums.ConstantsNet;
 
 import java.io.*;
 import java.util.Date;
@@ -15,7 +17,7 @@ import java.util.concurrent.ConcurrentMap;
 
 /**
  @since 22.09.2018 (13:36) */
-@Component("lastnetscan")
+@Component (ConstantsNet.STR_LASTNETSCAN)
 @Scope (ConstantsFor.SINGLETON)
 public class LastNetScan implements Serializable {
 
@@ -43,9 +45,10 @@ public class LastNetScan implements Serializable {
 
     public void setTimeLastScan(Date timeLastScan) {
         this.timeLastScan = timeLastScan;
+        new MessageCons().infoNoTitles("LastNetScan.setTimeLastScan\n" + timeLastScan.toString());
     }
 
-    public ConcurrentMap<String, Boolean> getNetWork() {
+    ConcurrentMap<String, Boolean> getNetWork() {
         return netWork;
     }
 
