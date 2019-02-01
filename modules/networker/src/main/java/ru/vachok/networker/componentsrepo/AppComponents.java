@@ -8,6 +8,8 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Scope;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import ru.vachok.messenger.MessageCons;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.IntoApplication;
@@ -16,6 +18,7 @@ import ru.vachok.networker.accesscontrol.common.CommonScan2YOlder;
 import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.ad.ADUser;
+import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.mailserver.RuleSet;
 import ru.vachok.networker.services.SimpleCalculator;
 
@@ -41,6 +44,15 @@ public class AppComponents {
      <i>Boiler Plate</i>
      */
     private static final String STR_VISITOR = "visitor";
+
+    @Bean
+    @Scope(ConstantsFor.SINGLETON)
+    public static ThreadPoolTaskScheduler getSchedExecutor() {
+        ThreadPoolTaskScheduler service = new ThreadConfig().threadPoolTaskScheduler();
+        String valStr = "service = " + service + " AppComponents.getSchedExecutorService";
+        new MessageCons().info("SOUTV", "AppComponents.getSchedExecutorService", valStr);
+        return service;
+    }
 
     /**
      @return {@link LoggerFactory}

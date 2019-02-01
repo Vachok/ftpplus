@@ -26,8 +26,14 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.SecureRandom;
-import java.time.*;
-import java.util.*;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.Year;
+import java.time.ZoneOffset;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.*;
 
 import static java.time.temporal.ChronoUnit.HOURS;
@@ -491,7 +497,7 @@ public enum ConstantsFor {
     /**
      @return кол-во выделенной, используемой и свободной памяти в МБ
      */
-    public static String showMem() {
+    public static String getMemoryInfo() {
         String msg = ( float ) Runtime.getRuntime().totalMemory() / ConstantsFor.MBYTE + " now totalMemory, " +
             ( float ) Runtime.getRuntime().freeMemory() / ConstantsFor.MBYTE + " now freeMemory, " +
             ( float ) Runtime.getRuntime().maxMemory() / ConstantsFor.MBYTE + " now maxMemory.";

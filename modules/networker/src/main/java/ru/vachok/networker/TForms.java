@@ -31,17 +31,9 @@ public class TForms {
 
     private static final String STR_VALUE = ", value: ";
 
-    private StringBuilder brStringBuilder = new StringBuilder();
-
-    private StringBuilder nStringBuilder = new StringBuilder();
-
     private static final String N_S = "\n";
 
     private static final String BR_S = "<br>";
-
-    private final String STR_DISASTER = " occurred disaster!<br>";
-
-    private final String STR_METHFILE = " method.<br>File: ";
 
     private static final String N_STR_ENTER = "\n";
 
@@ -49,12 +41,52 @@ public class TForms {
 
     private static final String P_STR_HTML_PARAGRAPH = "<p>";
 
-    public String fromArray(File[] dirFiles) {
-        for(File f : dirFiles){
-            if(f.getName().contains(".jar")){
-                return f.getName().replace(".jar", "");
+    private static final String STR_DISASTER = " occurred disaster!<br>";
+
+    private static final String STR_METHFILE = " method.<br>File: ";
+
+    private StringBuilder brStringBuilder = new StringBuilder();
+
+    private StringBuilder nStringBuilder = new StringBuilder();
+
+    public static String from(Exception e) {
+        StringBuilder stringBuilder = new StringBuilder();
+
+        stringBuilder
+            .append(new Date()).append(N_S)
+            .append("Exception message: ").append(e.getMessage()).append(N_S)
+            .append("Trace: \n");
+        for (StackTraceElement elem : e.getStackTrace()) {
+            appendNElement(stringBuilder, elem);
+        }
+        if (e.getSuppressed() != null) {
+            for (Throwable throwable : e.getSuppressed()) {
+                for (StackTraceElement element : throwable.getStackTrace()) {
+                    appendNElement(stringBuilder, element);
+                }
             }
-            else{
+        } else stringBuilder.append("Suppressed is null");
+        return stringBuilder.toString();
+    }
+
+    private static void appendNElement(StringBuilder stringBuilder, StackTraceElement elem) {
+        String strNative = "NATIVE***>>>  ";
+        if (elem.isNativeMethod()) {
+            stringBuilder.append(strNative);
+        }
+        stringBuilder
+            .append("Line ")
+            .append(elem.getLineNumber())
+            .append(" in ")
+            .append(elem.getClassName()).append(".").append(elem.getMethodName())
+            .append(" (").append(elem.getFileName()).append(")").append(N_S);
+    }
+
+    public String fromArray(File[] dirFiles) {
+        for (File f : dirFiles) {
+            if (f.getName().contains(".jar")) {
+                return f.getName().replace(".jar", "");
+            } else {
                 return System.getProperties().getProperty("version");
             }
         }
@@ -76,7 +108,7 @@ public class TForms {
     public String fromArray(Exception e, boolean br) {
         brStringBuilder.append(P_STR_HTML_PARAGRAPH);
         nStringBuilder.append(N_STR_ENTER);
-        for(StackTraceElement stackTraceElement : e.getStackTrace()){
+        for (StackTraceElement stackTraceElement : e.getStackTrace()) {
             nStringBuilder
                 .append("At ")
                 .append(stackTraceElement
@@ -98,10 +130,9 @@ public class TForms {
                 .append(STR_METHFILE)
                 .append(stackTraceElement.getFileName());
         }
-        if(!br){
+        if (!br) {
             return nStringBuilder.toString();
-        }
-        else{
+        } else {
             return brStringBuilder.toString();
         }
     }
@@ -109,17 +140,16 @@ public class TForms {
     public String fromEnum(Enumeration<String> enumStrings, boolean br) {
         nStringBuilder.append(N_STR_ENTER);
         brStringBuilder.append(P_STR_HTML_PARAGRAPH);
-        while(enumStrings.hasMoreElements()){
+        while (enumStrings.hasMoreElements()) {
             String str = enumStrings.nextElement();
             nStringBuilder.append(str).append(N_STR_ENTER);
             brStringBuilder.append(str).append(BR_STR_HTML_ENTER);
         }
         nStringBuilder.append(N_STR_ENTER);
         brStringBuilder.append("</p>");
-        if(br){
+        if (br) {
             return brStringBuilder.toString();
-        }
-        else{
+        } else {
             return nStringBuilder.toString();
         }
     }
@@ -128,38 +158,36 @@ public class TForms {
         brStringBuilder = new StringBuilder();
         nStringBuilder = new StringBuilder();
         brStringBuilder.append(P_STR_HTML_PARAGRAPH);
-        while(stringQueue.iterator().hasNext()){
+        while (stringQueue.iterator().hasNext()) {
             brStringBuilder.append(stringQueue.poll()).append(BR_STR_HTML_ENTER);
             nStringBuilder.append(stringQueue.poll()).append(N_S);
         }
         brStringBuilder.append("</p>");
-        if(br){
+        if (br) {
             return brStringBuilder.toString();
-        }
-        else{
+        } else {
             return nStringBuilder.toString();
         }
     }
 
     public String fromArray(Cookie[] cookies, boolean br) {
         brStringBuilder.append(P_STR_HTML_PARAGRAPH);
-        for(Cookie c : cookies){
+        for (Cookie c : cookies) {
             brStringBuilder
                 .append(c.getName()).append(" ").append(c.getComment()).append(" ").append(c.getMaxAge()).append(BR_STR_HTML_ENTER);
             nStringBuilder
                 .append(c.getName()).append(" ").append(c.getComment()).append(" ").append(c.getMaxAge()).append(N_STR_ENTER);
         }
-        if(br){
+        if (br) {
             return brStringBuilder.toString();
-        }
-        else{
+        } else {
             return nStringBuilder.toString();
         }
     }
 
     public String fromADUsersList(List<ADUser> adUsers, boolean br) {
         nStringBuilder.append(N_STR_ENTER);
-        for(ADUser ad : adUsers){
+        for (ADUser ad : adUsers) {
             brStringBuilder
                 .append(ad.toStringBR());
             nStringBuilder
@@ -167,10 +195,9 @@ public class TForms {
                 .append(N_STR_ENTER);
         }
         nStringBuilder.append(N_STR_ENTER);
-        if(br){
+        if (br) {
             return brStringBuilder.toString();
-        }
-        else{
+        } else {
             return nStringBuilder.toString();
         }
     }
@@ -178,7 +205,7 @@ public class TForms {
     public String adPCMap(List<ADComputer> adComputers, boolean br) {
         brStringBuilder.append(P_STR_HTML_PARAGRAPH);
         nStringBuilder.append(N_STR_ENTER);
-        for(ADComputer ad : adComputers){
+        for (ADComputer ad : adComputers) {
             brStringBuilder
                 .append(ad.toString())
                 .append(BR_STR_HTML_ENTER);
@@ -188,16 +215,15 @@ public class TForms {
         }
         brStringBuilder.append("</p>");
         nStringBuilder.append("\n\n\n");
-        if(br){
+        if (br) {
             return brStringBuilder.toString();
-        }
-        else{
+        } else {
             return nStringBuilder.toString();
         }
     }
 
     public String fromArray(Address[] mailAddress, boolean br) {
-        for(Address address : mailAddress){
+        for (Address address : mailAddress) {
             brStringBuilder
                 .append(address.toString())
                 .append("br");
@@ -205,17 +231,16 @@ public class TForms {
                 .append(address.toString())
                 .append(N_STR_ENTER);
         }
-        if(br){
+        if (br) {
             return brStringBuilder.toString();
-        }
-        else{
+        } else {
             return nStringBuilder.toString();
         }
     }
 
     public String fromArray(Throwable[] suppressed) {
         nStringBuilder.append("suppressed throwable!\n".toUpperCase());
-        for(Throwable throwable : suppressed){
+        for (Throwable throwable : suppressed) {
             nStringBuilder.append(throwable.getMessage());
         }
         return nStringBuilder.toString();
@@ -224,7 +249,7 @@ public class TForms {
     public String fromArray(Set<?> cacheSet, boolean br) {
         brStringBuilder.append(P_STR_HTML_PARAGRAPH);
         nStringBuilder.append(N_STR_ENTER);
-        for(Object o : cacheSet){
+        for (Object o : cacheSet) {
             brStringBuilder
                 .append(o.toString())
                 .append(BR_STR_HTML_ENTER);
@@ -232,10 +257,9 @@ public class TForms {
                 .append(o.toString())
                 .append(N_STR_ENTER);
         }
-        if(br){
+        if (br) {
             return brStringBuilder.toString();
-        }
-        else{
+        } else {
             return nStringBuilder.toString();
         }
     }
@@ -256,10 +280,9 @@ public class TForms {
                 .append(y.toString())
                 .append("</p>");
         });
-        if(br){
+        if (br) {
             return brStringBuilder.toString();
-        }
-        else{
+        } else {
             return nStringBuilder.toString();
         }
     }
@@ -278,10 +301,9 @@ public class TForms {
                 .append(y)
                 .append("</p>");
         });
-        if(br){
+        if (br) {
             return brStringBuilder.toString();
-        }
-        else{
+        } else {
             return nStringBuilder.toString();
         }
     }
@@ -300,18 +322,17 @@ public class TForms {
             brStringBuilder.append(keyMap).append(" ").append(valueMap).append("<br>");
             nStringBuilder.append(keyMap).append(" ").append(valueMap).append("\n");
         }
-        if(br){
+        if (br) {
             brStringBuilder.append(P_STR_HTML_PARAGRAPH);
             return brStringBuilder.toString();
-        }
-        else{
+        } else {
             return nStringBuilder.toString();
         }
     }
 
     public String fromArray(InetAddress[] allByName, boolean b) {
         brStringBuilder.append(BR_S);
-        for(InetAddress inetAddress : allByName){
+        for (InetAddress inetAddress : allByName) {
             brStringBuilder
                 .append(inetAddress.toString())
                 .append(BR_S);
@@ -319,10 +340,9 @@ public class TForms {
                 .append(inetAddress.toString())
                 .append(N_S);
         }
-        if(b){
+        if (b) {
             return brStringBuilder.toString();
-        }
-        else{
+        } else {
             return nStringBuilder.toString();
         }
     }
@@ -337,10 +357,9 @@ public class TForms {
                 .append(x.toString())
                 .append(N_S);
         });
-        if(b){
+        if (b) {
             return brStringBuilder.toString();
-        }
-        else{
+        } else {
             return nStringBuilder.toString();
         }
     }
@@ -351,7 +370,7 @@ public class TForms {
             .append(" stack length<br>");
         nStringBuilder.append(y.length)
             .append(" stack length\n");
-        for(StackTraceElement st : y){
+        for (StackTraceElement st : y) {
             nStringBuilder
                 .append(st.toString())
                 .append(N_S);
@@ -359,17 +378,16 @@ public class TForms {
                 .append(st.toString())
                 .append(BR_S);
         }
-        if(b){
+        if (b) {
             return brStringBuilder.toString();
-        }
-        else{
+        } else {
             return nStringBuilder.toString();
         }
     }
 
     public String fromArray(Object[] objects, boolean b) {
         brStringBuilder.append(P_STR_HTML_PARAGRAPH);
-        for(Object o : objects){
+        for (Object o : objects) {
             brStringBuilder
                 .append(o.toString())
                 .append(BR_S);
@@ -377,10 +395,9 @@ public class TForms {
                 .append(o.toString())
                 .append(N_S);
         }
-        if(b){
+        if (b) {
             return brStringBuilder.toString();
-        }
-        else{
+        } else {
             return nStringBuilder.toString();
         }
     }
@@ -397,10 +414,9 @@ public class TForms {
                 .append(str).append(x.toString())
                 .append(str1).append(y.toString()).append(N_S);
         });
-        if(b){
+        if (b) {
             return brStringBuilder.toString();
-        }
-        else{
+        } else {
             return nStringBuilder.toString();
         }
     }
@@ -408,7 +424,7 @@ public class TForms {
     public String fromArray(Throwable throwable, boolean b) {
         brStringBuilder.append(P_STR_HTML_PARAGRAPH);
         nStringBuilder.append(N_STR_ENTER);
-        for(StackTraceElement stackTraceElement : throwable.getStackTrace()){
+        for (StackTraceElement stackTraceElement : throwable.getStackTrace()) {
             nStringBuilder
                 .append("At ")
                 .append(stackTraceElement
@@ -430,10 +446,9 @@ public class TForms {
                 .append(STR_METHFILE)
                 .append(stackTraceElement.getFileName());
         }
-        if(b){
+        if (b) {
             return brStringBuilder.toString();
-        }
-        else{
+        } else {
             return nStringBuilder.toString();
         }
     }

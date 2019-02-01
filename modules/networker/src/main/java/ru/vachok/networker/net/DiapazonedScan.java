@@ -129,12 +129,13 @@ public class DiapazonedScan implements Runnable, Serializable {
      */
     @SuppressWarnings("all")
     private void scanNew() {
-        LOGGER.warn("DiapazonedScan.scanNew");
         final long stArt = System.currentTimeMillis();
+
         Path p = Paths.get(ROOT_PATH_STR + "\\lan\\200_" + System.currentTimeMillis() / 1000 + ".scan");
+
         String msg1 = "DiapazonedScan.scanNew " + p.toAbsolutePath().toString();
-        LOGGER.warn(msg1);
         File newLanFile = new File(ConstantsFor.AVAILABLE_LAST_TXT);
+
         try (OutputStream outputStream = new FileOutputStream(newLanFile);
              PrintWriter printWriter = new PrintWriter(outputStream, true)) {
             writeToFileByConditions(printWriter, stArt);

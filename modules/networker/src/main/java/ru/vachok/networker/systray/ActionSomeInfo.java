@@ -37,7 +37,7 @@ class ActionSomeInfo extends AbstractAction {
         LOGGER.warn("ActionSomeInfo.actionPerformed");
         Date newScan = new Date(DiapazonedScan.getInstance().getStopClass() + TimeUnit.MINUTES.toMillis(111));
         new MessageSwing(400, 440, 35, 20).infoNoTitles("New Scan at: " + newScan.toString() + " | " + ConstantsFor.getUpTime() + "\n" +
-            Thread.activeCount() + " threads " + ConstantsFor.showMem() + AppInfoOnLoad.iisLogSize() + "\n" +
+            Thread.activeCount() + " threads " + ConstantsFor.getMemoryInfo() + AppInfoOnLoad.iisLogSize() + "\n" +
             AppComponents.versionInfo().toString() + "\n" +
             new TForms().fromArray(ConstantsFor.getProps()));
     }

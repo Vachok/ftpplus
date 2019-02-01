@@ -3,7 +3,6 @@ package ru.vachok.networker.net;
 
 import org.slf4j.Logger;
 import ru.vachok.messenger.MessageCons;
-import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
@@ -40,8 +39,6 @@ public class ScanOffline implements Runnable {
     }
 
     public static ScanOffline getI() {
-        new MessageCons().errorAlert("ScanOffline.getI");
-        new MessageCons().info(ConstantsFor.STR_INPUT_OUTPUT, scanOffline.hashCode() + " hash", "ru.vachok.networker.net.ScanOffline");
         return scanOffline;
     }
 
@@ -131,7 +128,6 @@ public class ScanOffline implements Runnable {
 
     @Override
     public void run() {
-        LOGGER.warn("ScanOffline.run");
         scanComps();
     }
 }

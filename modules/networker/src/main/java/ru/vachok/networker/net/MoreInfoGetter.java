@@ -86,7 +86,7 @@ class MoreInfoGetter {
                         MessageToUser messageToUser = new MessageToTray(new ActionCloseMsg(AppComponents.getLogger()));
                         messageToUser.info(
                             r.getString(ConstantsFor.DB_FIELD_PCNAME),
-                            r.getTimestamp("stamp").toLocalDateTime().toString(),
+                            r.getString("whenQueried"),
                             r.getString(ConstantsFor.DB_FIELD_USER));
                     }
                 }

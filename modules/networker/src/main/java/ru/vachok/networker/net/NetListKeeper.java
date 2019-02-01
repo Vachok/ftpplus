@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentMap;
  <p>
 
  @since 30.01.2019 (17:02) */
-class NetListKeeper implements Serializable {
+public class NetListKeeper implements Serializable {
 
     private static final long serialVersionUID = 42L;
 

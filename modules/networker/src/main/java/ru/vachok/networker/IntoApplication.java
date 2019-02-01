@@ -105,7 +105,7 @@ public class IntoApplication {
      Запуск до старта Spring boot app <br> Usages: {@link #main(String[])}
      */
     private static void beforeSt() {
-        ConstantsFor.showMem();
+        ConstantsFor.getMemoryInfo();
         LOGGER.warn("IntoApplication.beforeSt");
         String msg = LocalDate.now().getDayOfWeek().getValue() + " - day of week\n" +
             LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault());
@@ -136,8 +136,7 @@ public class IntoApplication {
             LOGGER.error(showPath);
             threadConfig.threadPoolTaskExecutor().execute(infoAndSched);
             return true;
-        }
-        catch(Exception e){
+        } catch (Exception e) {
             FileSystemWorker.recFile(IntoApplication.class.getSimpleName() + ConstantsFor.LOG, Collections.singletonList(new TForms().fromArray(e, false)));
             return false;
         }

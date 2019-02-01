@@ -66,7 +66,7 @@ public final class SystemTrayHelper extends AppInfoOnLoad {
      Конструктор по-умолчанию
      */
     private SystemTrayHelper() {
-        if (!SystemTray.isSupported()) throw new UnsupportedOperationException("SystemTray is not supported");
+
     }
 
     /**
@@ -86,6 +86,9 @@ public final class SystemTrayHelper extends AppInfoOnLoad {
      */
     @SuppressWarnings("FeatureEnvy")
     public static void addTray(String iconFileName) {
+        String classMeth = "SystemTrayHelper.addTray";
+        new MessageCons().info("iconFileName = [" + iconFileName + "]", "input parameters. Returns:", "void");
+        new MessageCons().errorAlert(classMeth);
         boolean myPC;
         AppInfoOnLoad.runCommonScan();
         myPC = THIS_PC.toLowerCase().contains(ConstantsFor.NO0027) || THIS_PC.equalsIgnoreCase("home");
@@ -111,7 +114,7 @@ public final class SystemTrayHelper extends AppInfoOnLoad {
         addItems(popupMenu);
         trayIcon.setImageAutoSize(true);
         defItem.setLabel("Exit");
-        defItem.addActionListener(new ActionExit());
+        defItem.addActionListener(new ActionExit(classMeth));
         popupMenu.add(defItem);
         trayIcon.addActionListener(new ActionDefault());
         try {
@@ -128,7 +131,7 @@ public final class SystemTrayHelper extends AppInfoOnLoad {
         }
     }
 
-    public static void delOldActions() {
+    static void delOldActions() {
         LOGGER.warn("SystemTrayHelper.delOldActions");
         for (ActionListener actionListener : trayIcon.getActionListeners()) {
             trayIcon.removeActionListener(actionListener);

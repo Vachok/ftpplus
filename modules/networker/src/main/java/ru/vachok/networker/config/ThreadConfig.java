@@ -13,7 +13,7 @@ import ru.vachok.networker.componentsrepo.AppComponents;
 
 /**
  @since 11.09.2018 (11:41) */
-@SuppressWarnings("MagicNumber")
+@SuppressWarnings({"MagicNumber", "FieldNotUsedInToString"})
 @EnableAsync
 public class ThreadConfig extends ThreadPoolTaskExecutor {
 
@@ -98,9 +98,8 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
     }
 
     public ThreadPoolTaskScheduler threadPoolTaskScheduler() {
-
         taskScheduler.initialize();
-        taskScheduler.setThreadNamePrefix("sc-" + (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000);
+        taskScheduler.setThreadNamePrefix("sch-" + (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000);
         taskScheduler.setPoolSize(10);
         return taskScheduler;
     }

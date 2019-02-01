@@ -131,7 +131,7 @@ public class MyServer extends Thread {
         }
         printStream.println((System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN + " min up | " + ConstantsFor.APP_NAME);
         printStream.println(Thread.activeCount() + " active THREADS");
-        printStream.println(ConstantsFor.showMem());
+        printStream.println(ConstantsFor.getMemoryInfo());
         printStream.println("Press Enter or enter command:\n");
         String readLine = bufferedReader.readLine();
         makeDeal(readLine);

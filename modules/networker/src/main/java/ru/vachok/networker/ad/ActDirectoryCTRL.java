@@ -129,9 +129,9 @@ public class ActDirectoryCTRL {
      @return aditem.html
      */
     private String queryStringExists(String queryString, Model model) {
-        NetScannerSvc iScan = NetScannerSvc.getI();
-        iScan.setThePc(queryString);
-        String attributeValue = iScan.getInfoFromDB();
+        NetScannerSvc netScannerSvc = NetScannerSvc.getI();
+        netScannerSvc.setThePc(queryString);
+        String attributeValue = netScannerSvc.getInfoFromDB();
         model.addAttribute(ConstantsFor.ATT_TITLE, queryString + " " + attributeValue);
         model.addAttribute(ConstantsFor.ATT_USERS, inputWithInfoFromDB);
         try{

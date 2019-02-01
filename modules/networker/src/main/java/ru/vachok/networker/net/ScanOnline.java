@@ -66,8 +66,6 @@ public class ScanOnline implements Runnable {
     private List<String> okIP = new ArrayList<>();
 
     public static ScanOnline getI() {
-        new MessageCons().errorAlert("ScanOnline.getI");
-        new MessageCons().info(ConstantsFor.STR_INPUT_OUTPUT, scanOnline.hashCode() + " hash", "ru.vachok.networker.net.ScanOnline");
         return scanOnline;
     }
 

@@ -2,6 +2,7 @@ package ru.vachok.networker.net;
 
 
 import org.slf4j.Logger;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -22,7 +23,11 @@ import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
-import java.util.*;
+import java.util.Date;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
@@ -110,44 +115,40 @@ public class NetScanCtr {
     }
 
     /**
-     GET /{@link #STR_NETSCAN}
-     <p>
-     1. {@link ConstantsFor#getVis(javax.servlet.http.HttpServletRequest)}. Записываем визит. <br>
-     2. {@link NetScannerSvc#setThePc(java.lang.String)}, обнулим строку ввода через {@link #netScannerSvc}. <br>
-     3. {@link #mapSizeBigger(org.springframework.ui.Model, java.util.Map, javax.servlet.http.HttpServletRequest, long)}.
-     Если {@link #lastScanMAP} больше 2х, запустим это. <br>
+     GET /{@link #STR_NETSCAN Старт сканера локальных ПК
+    <p>
+    1. {@link ConstantsFor#getVis(javax.servlet.http.HttpServletRequest)}. Записываем визит. <br> 2. {@link NetScannerSvc#setThePc(java.lang.String)}, обнулим строку ввода через {@link
+    #netScannerSvc}. <br> 3. {@link #mapSizeBigger(org.springframework.ui.Model, java.util.Map, javax.servlet.http.HttpServletRequest, long)}. Если {@link #lastScanMAP} больше 2х, запустим это. <br>
 
-     <p>
+    <p>
 
-     @param request {@link HttpServletRequest}
-     @param response {@link HttpServletResponse}
-     @param model {@link Model}
-     @return {@link #AT_NAME_NETSCAN}
+    @param request  {@link HttpServletRequest}
+    @param response {@link HttpServletResponse}
+    @param model    {@link Model}
+    @return {@link #AT_NAME_NETSCAN}
      */
     @GetMapping(STR_NETSCAN)
     public String netScan(HttpServletRequest request, HttpServletResponse response, Model model) {
         String classMeth = "NetScanCtr.netScan";
-        LOGGER.warn(classMeth);
+        new MessageCons().errorAlert(classMeth);
+        new MessageCons().info(
+            "request = [" + request + "], response = [" + response + "], model = [" + model + "]",
+            "input parameters] [Returns:",
+            "java.lang.String");
         Thread.currentThread().setName(classMeth);
 
         ConstantsFor.getVis(request);
         netScannerSvc.setThePc("");
 
-        boolean isMapSizeBigger = lastScanMAP.size() > 2;
-        long lastSt = Long.parseLong(properties.getProperty(ConstantsNet.PR_LASTSCAN, "1548919734742"));
+        checkMapSizeAndDoAction(model, request);
 
-        if (isMapSizeBigger) {
-            mapSizeBigger(model, request, lastSt);
-        } else {
-            scanIt(request, model, lastSt);
-        }
-        model
-            .addAttribute(ConstantsNet.STR_NETSCANNERSVC, netScannerSvc)
+        model.addAttribute(ConstantsNet.STR_NETSCANNERSVC, netScannerSvc)
             .addAttribute("serviceinfo", netScannerSvc.someInfo())
             .addAttribute(ATT_THE_PC, netScannerSvc.getThePc());
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<br>First Scan: 2018-05-05");
-        AppComponents.lastNetScan().setTimeLastScan(new Date());
         response.addHeader(ConstantsFor.HEAD_REFRESH, "30");
+
+        AppComponents.lastNetScan().setTimeLastScan(new Date());
         return AT_NAME_NETSCAN;
     }
 
@@ -164,6 +165,35 @@ public class NetScanCtr {
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + ". Left: " + ConstantsFor.ALL_DEVICES.remainingCapacity() + " " +
             "IPs.");
         return "ok";
+    }
+
+    private void checkMapSizeAndDoAction(Model model, HttpServletRequest request) {
+        ThreadPoolTaskScheduler executorService = AppComponents.getSchedExecutor();
+        long lastSt = Long.parseLong(properties.getProperty(ConstantsNet.PR_LASTSCAN, "1548919734742"));
+        boolean isMapSizeBigger = lastScanMAP.size() > 2;
+
+        BlockingQueue<Runnable> runnableBlockingQueue = executorService.getScheduledThreadPoolExecutor().getQueue();
+        Runnable runnableScan = () -> {
+            if (isMapSizeBigger) {
+                mapSizeBigger(model, request, lastSt);
+            } else {
+                scanIt(request, model, lastSt);
+            }
+        };
+
+        if (!runnableBlockingQueue.contains(runnableScan)) {
+            executorService.getScheduledThreadPoolExecutor()
+                .scheduleWithFixedDelay(runnableScan, 0, ConstantsFor.DELAY, TimeUnit.MINUTES);
+        } else {
+            runnableBlockingQueue.stream().iterator().forEachRemaining(x ->
+                new MessageCons()
+                    .info("Runnables", executorService.getThreadNamePrefix(), x.getClass().getSimpleName()));
+        }
+        new MessageCons().errorAlert("NetScanCtr.checkMapSizeAndDoAction");
+        new MessageCons().info(
+            "model = [" + model + "], request = [" + request + "]",
+            "input parameters] [Returns:",
+            "void");
     }
 
     /**
@@ -229,52 +259,39 @@ public class NetScanCtr {
      */
     private void scanIt(HttpServletRequest request, Model model, long propLastScanMinusDuration) {
         String propMsg = "NetScanCtr.scanIt. " + LocalDateTime.ofEpochSecond((propLastScanMinusDuration / 1000), 0, ZoneOffset.ofHours(3));
+        String valStr = "propMsg = " + propMsg;
+        new MessageCons().info(Thread.currentThread().getName(), "NetScanCtr.scanIt", valStr);
+
         properties.setProperty("propmsg", propMsg);
-        LOGGER.warn(propMsg);
         if (request != null && request.getQueryString() != null) {
             lastScanMAP.clear();
             Set<String> pcNames = netScannerSvc.getPCNamesPref(request.getQueryString());
-            model
-                .addAttribute(ConstantsFor.ATT_TITLE, new Date().toString())
+            model.addAttribute(ConstantsFor.ATT_TITLE, new Date().toString())
                 .addAttribute("pc", new TForms().fromArray(pcNames, true));
         } else {
             lastScanMAP.clear();
             Set<String> pCsAsync = netScannerSvc.getPcNames();
-            model
-                .addAttribute(ConstantsFor.ATT_TITLE, new Date(propLastScanMinusDuration))
+            model.addAttribute(ConstantsFor.ATT_TITLE, new Date(propLastScanMinusDuration))
                 .addAttribute("pc", new TForms().fromArray(pCsAsync, true));
             AppComponents.lastNetScan().setTimeLastScan(new Date());
-            lastScanMAP.clear();
         }
     }
 
     private void timeCheck(int remainPC, long lastScanEpoch, HttpServletRequest request, Model model) {
-        LOGGER.warn("NetScanCtr.timeCheck");
+        String classMeth = " NetScanCtr.timeCheck";
+        LocalTime nextScanTime = LocalDateTime.ofEpochSecond(lastScanEpoch, 0, ZoneOffset.ofHours(3)).toLocalTime();
 
-        LocalTime localTime = LocalDateTime.ofEpochSecond(lastScanEpoch, 0, ZoneOffset.ofHours(3)).toLocalTime();
+        new MessageCons().errorAlert(classMeth);
         boolean isSystemTimeBigger = (System.currentTimeMillis() > lastScanEpoch * 1000) && remainPC <= 0;
         long eSecNow = System.currentTimeMillis() / 1000;
 
-        String pamStr = new StringBuilder()
-            .append(eSecNow).append("(")
-            .append((eSecNow - lastScanEpoch) / ConstantsFor.ONE_HOUR_IN_MIN).append(" min diff, current-last)\n")
-            .append(eSecNow > lastScanEpoch).append(" currentTimeMillis() >lastScanMAP(")
-            .append(lastScanEpoch).append("\n")
-            .append(lastScanMAP.size() <= 0).append(" netWork.size()<=0\nremainPC = [")
-            .append(remainPC).append("], netWork = [").append(lastScanMAP.size()).append("], lastScanEpoch = [")
-            .append(lastScanEpoch).append("], min left = ").append("[")
-            .append(TimeUnit.SECONDS.toMinutes(LocalTime.parse("07:00").toSecondOfDay() - LocalTime.now().toSecondOfDay())).append("], uptime = [")
-            .append(ConstantsFor.getUpTime()).append("]").toString();
-
         if (isSystemTimeBigger) {
-            String msg1 = new StringBuilder().append("isSystemTimeBigger is ")
-                .append(true).append(" ")
-                .append(lastScanMAP.size()).append(" network map cleared\n")
-                .append(localTime.toString()).toString();
-            LOGGER.warn(msg1);
-            scanIt(request, model, lastScanEpoch);
+            String valStr = "isSystemTimeBigger = " + true;
+            new MessageCons().info(Thread.currentThread().getName(), "NetScanCtr.timeCheck", valStr);
+            scanIt(request, model, eSecNow * 1000);
         } else {
-            new MessageCons().infoNoTitles(pamStr);
+            String valStr = "nextScanTime = " + nextScanTime;
+            new MessageCons().info(Thread.currentThread().getName(), "NetScanCtr.timeCheck", valStr);
         }
     }
 
