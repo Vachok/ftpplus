@@ -125,6 +125,7 @@ public enum ConstantsFor {
     /**
      <i>Boiler Plate</i>
      */
+    public static final String STRS_VISIT[] = {"visit_", ".tmp"};
     public static final String STR_VISIT = "visit_";
 
     /**

@@ -73,13 +73,11 @@ public class IntoApplication {
     public static void main(String[] args) {
         LOGGER.warn("IntoApplication.main");
         final long stArt = System.currentTimeMillis();
-        boolean delFilePatterns = FileSystemWorker.delFilePatterns(ConstantsFor.STR_VISIT);
+        FileSystemWorker.delFilePatterns(ConstantsFor.STRS_VISIT);
         beforeSt();
         configurableApplicationContext = SpringApplication.run(IntoApplication.class, args);
         configurableApplicationContext.start();
-        String msg = new StringBuilder()
-            .append(afterSt())
-            .append(" delFilePatterns ").append(delFilePatterns).toString();
+        String msg = new StringBuilder().append(afterSt()).toString();
         LOGGER.warn(msg);
 
         String msgTimeSp = new StringBuilder()

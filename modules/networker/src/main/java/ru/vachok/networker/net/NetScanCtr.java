@@ -2,6 +2,7 @@ package ru.vachok.networker.net;
 
 
 import org.slf4j.Logger;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -16,13 +17,16 @@ import ru.vachok.networker.componentsrepo.LastNetScan;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
+import ru.vachok.networker.systray.MessageToTray;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.util.*;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
@@ -158,6 +162,7 @@ public class NetScanCtr {
         boolean isMapSizeBigger = lastScanMAP.size() > 1;
         int thisTotpc = Integer.parseInt(properties.getProperty(ConstantsFor.PR_TOTPC, "318"));
         int remainPC = thisTotpc - lastScanMAP.size();
+        ThreadPoolTaskExecutor taskExecutor = AppComponents.threadConfig().threadPoolTaskExecutor();
         final Runnable runnableScan = () -> {
             String s = "isMapSizeBigger = ";
             if(isMapSizeBigger){
@@ -165,12 +170,20 @@ public class NetScanCtr {
                 mapSizeBigger(model, request, lastSt, remainPC, thisTotpc);
             }
             else{
-                new MessageCons().infoNoTitles(s + false);
+                new MessageToTray().infoNoTitles(s + false);
                 scanIt(request, model, new Date(lastSt));
             }
         };
-        new Thread(runnableScan).start();
-        new MessageCons().errorAlert("NetScanCtr.checkMapSizeAndDoAction");
+        BlockingQueue<Runnable> queue = taskExecutor.getThreadPoolExecutor().getQueue();
+        String methName = "NetScanCtr.checkMapSizeAndDoAction";
+        File f = new File("scan.tmp");
+        if(f.isFile() && f.exists()){
+            mapSizeBigger(model, request, lastSt, remainPC, thisTotpc);
+        }
+        else{
+            taskExecutor.submit(runnableScan);
+        }
+        new MessageCons().errorAlert(methName);
         new MessageCons().info(
             "model = [" + model + "], request = [" + request + "]",
             ConstantsFor.STR_INPUT_PARAMETERS_RETURNS,

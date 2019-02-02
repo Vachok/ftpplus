@@ -22,6 +22,8 @@ import ru.vachok.networker.systray.MessageToTray;
 
 import java.io.*;
 import java.net.InetAddress;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.sql.*;
 import java.text.MessageFormat;
 import java.time.LocalTime;
@@ -189,8 +191,9 @@ public class NetScannerSvc {
         final long stArt = System.currentTimeMillis();
         new MessageCons().errorAlert(METH_GET_PCS_ASYNC);
         List<String> toFileList = new ArrayList<>();
-
-        new MessageToTray(new ActionCloseMsg(AppComponents.getLogger())).info("NetScannerSvc started scan", ConstantsFor.getUpTime(), "\n" + thrName);
+        boolean fileCreate = fileCreate();
+        new MessageToTray(new ActionCloseMsg(AppComponents.getLogger())).info("NetScannerSvc started scan",
+            ConstantsFor.getUpTime(), "\nFile: " + fileCreate);
         eServ.submit(() -> {
             msg.set(new StringBuilder()
                 .append("Thread ")
@@ -256,6 +259,17 @@ public class NetScannerSvc {
         });
     }
 
+    private boolean fileCreate() {
+        try{
+            File file = Files.createFile(Paths.get("scan.tmp")).toFile();
+            return file.exists();
+        }
+        catch(IOException e){
+            FileSystemWorker.error("NetScannerSvc.fileCreate", e);
+            return false;
+        }
+    }
+
     /**
      @param prefixPcName префикс имени ПК
      @return {@link ConstantsNet#PC_NAMES}
@@ -313,6 +327,7 @@ public class NetScannerSvc {
             while(inputStreamReader.ready()){
                 readFileAsList.add(bufferedReader.readLine().split("\\Q0) \\E")[1]);
             }
+            Files.deleteIfExists(Paths.get("scan.tmp"));
         }
         catch(IOException e){
             new MessageCons().errorAlert(CLASS_NAME, "countStat", e.getMessage());
