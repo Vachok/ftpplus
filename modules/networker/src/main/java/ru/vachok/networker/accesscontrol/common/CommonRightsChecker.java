@@ -2,10 +2,8 @@ package ru.vachok.networker.accesscontrol.common;
 
 
 import org.slf4j.Logger;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
-import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileOut;
 
 import java.io.File;
@@ -25,11 +23,6 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> {
      {@link AppComponents#getLogger()}
      */
     private static final Logger LOGGER = AppComponents.getLogger();
-
-    /**
-     {@link ThreadConfig#threadPoolTaskExecutor()}
-     */
-    private static final ThreadPoolTaskExecutor TASK_EXECUTOR = new ThreadConfig().threadPoolTaskExecutor();
 
     /**
      @throws IOException deleteIfExists старые файлы.
@@ -80,6 +73,6 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> {
     }
 
     private void writeFile(String fileName, byte[] appendToFileBytes) {
-        TASK_EXECUTOR.execute(new FileOut(fileName, appendToFileBytes));
+        new Thread(new FileOut(fileName, appendToFileBytes)).start();
     }
 }

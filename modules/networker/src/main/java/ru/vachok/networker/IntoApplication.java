@@ -69,7 +69,7 @@ public class IntoApplication {
      @param args null
      @see SystemTrayHelper#addItems(PopupMenu) {@link AppInfoOnLoad#infoForU(ApplicationContext)}
      */
-    @SuppressWarnings("JavadocReference")
+    @SuppressWarnings ("JavadocReference")
     public static void main(String[] args) {
         LOGGER.warn("IntoApplication.main");
         final long stArt = System.currentTimeMillis();
@@ -84,18 +84,18 @@ public class IntoApplication {
 
         String msgTimeSp = new StringBuilder()
             .append("IntoApplication.main method. ")
-            .append((float) (System.currentTimeMillis() - stArt) / 1000)
+            .append(( float ) (System.currentTimeMillis() - stArt) / 1000)
             .append(" ")
             .append(ConstantsFor.STR_SEC_SPEND).toString();
         LOGGER.info(msgTimeSp);
-        if (args.length > 0) {
-            for (String s : args) {
+        if(args.length > 0){
+            for(String s : args){
                 LOGGER.info(s);
-                if (s.contains(ConstantsFor.PR_TOTPC)) {
+                if(s.contains(ConstantsFor.PR_TOTPC)){
                     ConstantsFor.getProps().setProperty(ConstantsFor.PR_TOTPC, s.replaceAll(ConstantsFor.PR_TOTPC, ""));
                 }
-                if (s.equalsIgnoreCase("off")) {
-                    new ThreadConfig().killAll();
+                if(s.equalsIgnoreCase("off")){
+                    AppComponents.threadConfig().killAll();
                 }
             }
         }
@@ -110,9 +110,10 @@ public class IntoApplication {
         String msg = LocalDate.now().getDayOfWeek().getValue() + " - day of week\n" +
             LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault());
         LOGGER.warn(msg);
-        if (ConstantsFor.thisPC().toLowerCase().contains(ConstantsFor.NO0027) || ConstantsFor.thisPC().toLowerCase().contains("home")) {
+        if(ConstantsFor.thisPC().toLowerCase().contains(ConstantsFor.NO0027) || ConstantsFor.thisPC().toLowerCase().contains("home")){
             SystemTrayHelper.addTray("icons8-плохие-поросята-32.png");
-        } else {
+        }
+        else{
             SystemTrayHelper.addTray(null);
         }
         SPRING_APPLICATION.setMainApplicationClass(IntoApplication.class);
@@ -125,14 +126,14 @@ public class IntoApplication {
      */
     @SuppressWarnings("MethodWithMultipleReturnPoints")
     private static boolean afterSt() {
-        ThreadConfig threadConfig = new ThreadConfig();
+        ThreadConfig threadConfig = AppComponents.threadConfig();
         AppInfoOnLoad infoAndSched = new AppInfoOnLoad();
         Runnable r = IntoApplication::appProperties;
         try {
             infoAndSched.spToFile();
             String showPath = Paths.get(".").toString() + "\n abs: " +
                 Paths.get(".").toFile().getAbsolutePath();
-            new ThreadConfig().threadPoolTaskExecutor().execute(r);
+            AppComponents.threadConfig().threadPoolTaskExecutor().execute(r);
             LOGGER.error(showPath);
             threadConfig.threadPoolTaskExecutor().execute(infoAndSched);
             return true;
@@ -145,9 +146,10 @@ public class IntoApplication {
     private static void appProperties() {
         LOGGER.warn("IntoApplication.appProperties");
         String s = null;
-        try {
+        try{
             s = Paths.get("").toFile().getCanonicalPath().toLowerCase();
-        } catch (IOException e) {
+        }
+        catch(IOException e){
             FileSystemWorker.recFile(IntoApplication.class.getSimpleName() + ConstantsFor.LOG, e.getMessage() + "\n" + new TForms().fromArray(e, false));
             LOGGER.warn(e.getMessage());
         }

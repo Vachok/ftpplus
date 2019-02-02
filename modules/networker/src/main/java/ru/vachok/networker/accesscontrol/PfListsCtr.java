@@ -3,6 +3,7 @@ package ru.vachok.networker.accesscontrol;
 
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,7 +13,6 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
-import ru.vachok.networker.config.ThreadConfig;
 
 import javax.naming.TimeLimitExceededException;
 import javax.servlet.http.HttpServletRequest;
@@ -50,13 +50,13 @@ public class PfListsCtr {
 
     private int delayRef = new SecureRandom().nextInt((int) TimeUnit.MINUTES.toMillis(250));
 
-    private final Runnable makePFLists = this::runningList;
+    private static final TaskExecutor TASK_EXECUTOR = AppComponents.threadConfig().threadPoolTaskExecutor();
 
-    private ThreadConfig threadConfig = new ThreadConfig();
+    private final Runnable makePFLists = this::runningList;
 
     @Autowired
     public PfListsCtr(PfLists pfLists, PfListsSrv pfListsSrv) {
-        threadConfig.taskDecorator(makePFLists);
+        TASK_EXECUTOR.execute(makePFLists);
         this.properties = ConstantsFor.getProps();
         this.pfLists = pfLists;
         this.pfListsSrv = pfListsSrv;
@@ -77,7 +77,9 @@ public class PfListsCtr {
         timeOut = lastScan + TimeUnit.MINUTES.toMillis(15);
         if (!pingOK) noPing(model);
         modSet(model);
-        if (request.getQueryString() != null) threadConfig.taskDecorator(makePFLists);
+        if(request.getQueryString()!=null){
+            TASK_EXECUTOR.execute(makePFLists);
+        }
         if(pfLists.getTimeUpd() + TimeUnit.MINUTES.toMillis(( int ) (ConstantsFor.DELAY + ConstantsFor.ONE_HOUR_IN_MIN)) < System.currentTimeMillis()){
             model.addAttribute(METRIC_STR, "Требуется обновление!");
             model.addAttribute(ConstantsFor.ATT_GITSTATS, pfListsSrv.getExecutor().toString());

@@ -25,10 +25,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.file.AccessDeniedException;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Stream;
 
@@ -117,7 +114,7 @@ public class ServiceInfoCtrl {
             .append("</font><br>")
             .append(DiapazonedScan.getInstance().toString())
             .append("<br>")
-            .append(new ThreadConfig().toString())
+            .append(AppComponents.threadConfig().toString())
             .toString());
         model.addAttribute("request", prepareRequest(request));
         model.addAttribute(ConstantsFor.ATT_VISIT, visitor.toString());

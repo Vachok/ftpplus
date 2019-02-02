@@ -2,7 +2,7 @@ package ru.vachok.networker.systray;
 
 
 import ru.vachok.networker.AppInfoOnLoad;
-import ru.vachok.networker.config.ThreadConfig;
+import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.services.SpeedChecker;
 
 import javax.swing.*;
@@ -23,7 +23,7 @@ public class ActionOnAppStart extends AbstractAction {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        Future<Long> submit = new ThreadConfig().threadPoolTaskExecutor().submit(new SpeedChecker());
+        Future<Long> submit = AppComponents.threadConfig().threadPoolTaskExecutor().submit(new SpeedChecker());
         String messageSW = null;
         try {
             DateFormat dateFormat = new SimpleDateFormat();

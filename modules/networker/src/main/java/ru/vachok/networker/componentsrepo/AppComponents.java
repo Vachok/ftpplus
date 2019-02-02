@@ -8,7 +8,6 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Scope;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
@@ -23,10 +22,7 @@ import ru.vachok.networker.mailserver.RuleSet;
 import ru.vachok.networker.services.SimpleCalculator;
 
 import javax.servlet.http.HttpServletRequest;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -45,21 +41,20 @@ public class AppComponents {
      */
     private static final String STR_VISITOR = "visitor";
 
-    @Bean
-    @Scope(ConstantsFor.SINGLETON)
-    public static ThreadPoolTaskScheduler getSchedExecutor() {
-        ThreadPoolTaskScheduler service = new ThreadConfig().threadPoolTaskScheduler();
-        String valStr = "service = " + service + " AppComponents.getSchedExecutorService";
-        new MessageCons().info("SOUTV", "AppComponents.getSchedExecutorService", valStr);
-        return service;
-    }
-
     /**
      @return {@link LoggerFactory}
      */
     @Bean
     public static Logger getLogger() {
-        return LoggerFactory.getLogger("ru_vachok_networker");
+        return LoggerFactory.getLogger(ConstantsFor.APP_NAME);
+    }
+
+    @Bean
+    @Scope (ConstantsFor.SINGLETON)
+    public static ThreadConfig threadConfig() {
+        new MessageCons().errorAlert("AppComponents.threadConfig");
+        ThreadConfig threadConfig = ThreadConfig.getI();
+        return threadConfig;
     }
 
     /**

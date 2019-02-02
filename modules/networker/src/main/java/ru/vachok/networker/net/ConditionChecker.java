@@ -3,6 +3,7 @@ package ru.vachok.networker.net;
 
 import org.springframework.ui.Model;
 import ru.vachok.messenger.MessageCons;
+import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.PCUserResolver;
@@ -17,8 +18,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static ru.vachok.networker.net.NetScannerSvc.reconnectToDB;
-
 
 /**
  Проверки из классов.
@@ -31,7 +30,7 @@ class ConditionChecker {
 
     private static final String CLASS_NAME = ConditionChecker.class.getSimpleName();
 
-    private static Connection c = NetScannerSvc.c;
+    private static Connection c = new RegRuMysql().getDefaultConnection(ConstantsNet.DB_NAME);
 
     private ConditionChecker() {
         new MessageCons().infoNoTitles("ConditionChecker.ConditionChecker");
@@ -46,7 +45,7 @@ class ConditionChecker {
      @see MoreInfoGetter#getSomeMore(String, boolean)
      */
     static String onLinesCheck(String sql, String pcName) {
-        PCUserResolver pcUserResolver = PCUserResolver.getPcUserResolver(c);
+        PCUserResolver pcUserResolver = PCUserResolver.getPcUserResolver();
         List<Integer> onLine = new ArrayList<>();
         List<Integer> offLine = new ArrayList<>();
         StringBuilder stringBuilder = new StringBuilder();
@@ -73,14 +72,12 @@ class ConditionChecker {
             }
         }
         catch(SQLException e){
-            reconnectToDB();
+            c = reconnectToDB();
             new MessageCons().errorAlert(CLASS_NAME, methName, e.getMessage());
             FileSystemWorker.error(classMeth, e);
             stringBuilder.append(e.getMessage());
         }
         catch(NullPointerException e){
-            new MessageCons().errorAlert(CLASS_NAME, methName, e.getMessage());
-            FileSystemWorker.error(classMeth, e);
             stringBuilder.append(e.getMessage());
         }
         return stringBuilder
@@ -88,6 +85,19 @@ class ConditionChecker {
             .append(" offline times and ")
             .append(onLine.size())
             .append(" online times.").toString();
+    }
+
+    private static Connection reconnectToDB() {
+        try{
+            c.close();
+            c = null;
+            Connection connection = new RegRuMysql().getDefaultConnection(ConstantsNet.DB_NAME);
+            c = connection;
+        }
+        catch(SQLException e){
+            new MessageCons().errorAlert("ConditionChecker", ConstantsNet.RECONNECT_TO_DB, e.getMessage());
+        }
+        return c;
     }
 
     /**
@@ -125,7 +135,7 @@ class ConditionChecker {
             new MessageCons().errorAlert(CLASS_NAME, "offLinesCheckUser", e.getMessage());
             FileSystemWorker.error("ConditionChecker.offLinesCheckUser", e);
             stringBuilder.append(e.getMessage());
-            reconnectToDB();
+            c = reconnectToDB();
         }
         return "<font color=\"orange\">EXCEPTION in SQL dropped. <br>" + stringBuilder.toString() + "</font>";
     }

@@ -288,7 +288,6 @@ public class DiapazonedScan implements Runnable, Serializable {
     @SuppressWarnings("StringConcatenation")
     @Override
     public String toString() {
-
         try {
             fileTimes = ConstantsFor.AVAILABLE_LAST_TXT + " " +
                 Paths.get(ConstantsFor.AVAILABLE_LAST_TXT).toFile().lastModified() + "\n" +

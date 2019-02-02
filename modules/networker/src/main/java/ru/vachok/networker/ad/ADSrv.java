@@ -225,7 +225,7 @@ public class ADSrv implements Runnable {
      @throws IOException {@link InetAddress}.getByName(queryString + ".eatmeat.ru").isReachable(500))
      */
     String getDetails(String queryString) throws IOException {
-        PCUserResolver pcUserResolver = PCUserResolver.getPcUserResolver(new RegRuMysql().getDefaultConnection(ConstantsFor.U_0466446_VELKOM));
+        PCUserResolver pcUserResolver = PCUserResolver.getPcUserResolver();
         if(InetAddress.getByName(queryString + ConstantsFor.EATMEAT_RU).isReachable(ConstantsFor.TIMEOUT_650)){
             StringBuilder stringBuilder = new StringBuilder();
             stringBuilder.append("<p>   Более подробно про ПК:<br>");

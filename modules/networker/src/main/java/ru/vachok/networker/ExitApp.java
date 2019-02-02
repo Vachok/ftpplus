@@ -4,7 +4,6 @@ package ru.vachok.networker;
 import org.slf4j.Logger;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.networker.componentsrepo.AppComponents;
-import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.io.*;
@@ -116,7 +115,7 @@ public class ExitApp implements Runnable {
         FileSystemWorker.recFile("exit.last", stringList);
         FileSystemWorker.delTemp();
         getConfigurableApplicationContext().close();
-        new ThreadConfig().killAll();
+        AppComponents.threadConfig().killAll();
         System.exit(Math.toIntExact(toMinutes));
     }
 

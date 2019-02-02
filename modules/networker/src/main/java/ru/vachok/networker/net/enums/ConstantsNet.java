@@ -2,11 +2,9 @@ package ru.vachok.networker.net.enums;
 
 
 import org.slf4j.Logger;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.componentsrepo.AppComponents;
-import ru.vachok.networker.config.ThreadConfig;
 
 import java.util.*;
 
@@ -16,6 +14,8 @@ import java.util.*;
 
  @since 25.01.2019 (10:30) */
 public enum ConstantsNet {;
+
+    public static final String RECONNECT_TO_DB = "reconnectToDB";
 
     public static final String STR_LASTNETSCAN = "lastnetscan";
 
@@ -87,8 +87,4 @@ public enum ConstantsNet {;
      <i>Boiler Plate</i>
      */
     public static final String STR_NETSCANNERSVC = "netScannerSvc";
-
-    /**
-     {@link ThreadConfig#threadPoolTaskExecutor()}
-     */
-    public static final ThreadPoolTaskExecutor TASK_EXECUTOR = new ThreadConfig().threadPoolTaskExecutor();}
+}
