@@ -73,7 +73,6 @@ public class NetScannerSvc {
     /**
      /netscan POST форма
      <p>
-
      @see NetScanCtr {@link }
      */
     private String thePc = "PC";

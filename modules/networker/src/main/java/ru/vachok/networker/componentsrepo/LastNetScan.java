@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.net.NetScanCtr;
 import ru.vachok.networker.net.enums.ConstantsNet;
 
 import java.io.*;
@@ -43,6 +44,10 @@ public class LastNetScan implements Serializable {
         return timeLastScan;
     }
 
+    /**
+     @param timeLastScan дата последнего скана
+     @see NetScanCtr#netScan(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, org.springframework.ui.Model)
+     */
     public void setTimeLastScan(Date timeLastScan) {
         this.timeLastScan = timeLastScan;
         new MessageCons().infoNoTitles("LastNetScan.setTimeLastScan\n" + timeLastScan.toString());

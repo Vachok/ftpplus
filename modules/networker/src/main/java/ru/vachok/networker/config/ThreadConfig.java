@@ -121,6 +121,7 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
 
     public ThreadPoolTaskExecutor threadPoolTaskExecutor() {
         taskExecutor.initialize();
+        taskExecutor.setQueueCapacity(500);
         new MessageCons().info("ThreadConfig.threadPoolTaskExecutor", INITIALIZED, LocalDateTime.now().toString());
         taskExecutor.setMaxPoolSize(100);
         taskExecutor.setThreadNamePrefix("ts-" + (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000);

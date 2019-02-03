@@ -15,10 +15,7 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.systray.ActionDefault;
 import ru.vachok.networker.systray.MessageToTray;
 
-import javax.mail.Flags;
-import javax.mail.Folder;
-import javax.mail.Message;
-import javax.mail.MessagingException;
+import javax.mail.*;
 import java.sql.*;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -91,6 +88,7 @@ public class SpeedChecker implements Callable<Long> {
         LOGGER.info(msgTimeSp);
     }
 
+    /*END FOR CLASS*/
     public static final class ChkMailAndUpdateDB implements Runnable {
 
         private MailMessages mailMessages = new MailMessages();
@@ -104,7 +102,7 @@ public class SpeedChecker implements Callable<Long> {
         private String chechMail() {
             Message[] messagesBot = mailMessages.call();
             String chDB = new TForms().fromArray(checkDB(), false);
-            FileSystemWorker.recFile(this.getClass().getSimpleName() + ConstantsFor.LOG, Collections.singletonList(chDB));
+            FileSystemWorker.recFile(this.getClass().getSimpleName() + ".chechMail", Collections.singletonList(chDB));
             for (Message m : messagesBot) {
                 parseMsg(m, chDB);
             }
