@@ -2,11 +2,18 @@ package ru.vachok.networker.net.enums;
 
 
 import org.slf4j.Logger;
+import org.springframework.ui.Model;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ad.ADComputer;
+import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.net.NetScannerSvc;
 
+import javax.servlet.http.HttpServletRequest;
+import java.io.File;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  Константы пакета
@@ -40,6 +47,10 @@ public enum ConstantsNet {;
 
     /**
      new {@link HashSet}
+     <p>
+
+     @see ru.vachok.networker.net.NetScannerSvc#getPCNamesPref(String)
+     @see ru.vachok.networker.net.NetScanCtr#scanIt(HttpServletRequest, Model, Date)
      */
     public static final Set<String> PC_NAMES = new HashSet<>(Integer.parseInt(LOC_PROPS.getOrDefault(ConstantsFor.PR_TOTPC, "318").toString()));
 
@@ -56,14 +67,23 @@ public enum ConstantsNet {;
     public static final String[] PC_PREFIXES = {"do", "pp", "td", "no", "a"};
 
     /**
-     <i>Boiler Plate</i>
-     */
-    public static final String WRITE_DB = ".writeDB";
-
-    /**
      Название property
      */
     public static final String PR_LASTSCAN = "lastscan";
+
+    /**
+     {@link NetScannerSvc#getPCsAsync()}
+
+     @see ADSrv#getDetails(java.lang.String)
+     */
+    public static final ConcurrentMap<String, File> COMPNAME_USERS_MAP = new ConcurrentHashMap<>();
+
+    /**
+     {@link ru.vachok.networker.ad.PCUserResolver#recToDB(String, String)}
+     */
+    public static final ConcurrentMap<String, String> PC_U_MAP = new ConcurrentHashMap<>();
+
+    public static final String STR_COMPNAME_USERS_MAP_SIZE = " COMPNAME_USERS_MAP size";
 
     static final String ONLINES_CHECK = ".onLinesCheck";
 

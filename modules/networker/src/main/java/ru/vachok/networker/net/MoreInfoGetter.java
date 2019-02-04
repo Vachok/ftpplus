@@ -6,9 +6,7 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.ad.PCUserResolver;
 import ru.vachok.networker.componentsrepo.AppComponents;
-import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.systray.ActionCloseMsg;
 import ru.vachok.networker.systray.MessageToTray;
@@ -31,9 +29,14 @@ class MoreInfoGetter {
     }
 
     /**
-     Поиск имён пользователей компьютера <br> Обращения: <br> 1 {@link ConditionChecker#onLinesCheck(String, String)} 1.1
-     {@link ThreadConfig#threadPoolTaskExecutor()} 1.2 {@link PCUserResolver#namesToFile(String)}
-     <br> 2. {@link ConditionChecker#offLinesCheckUser(String, String)}
+     Поиск имён пользователей компьютера
+     <p>
+     Вернуть: <br>
+     1. {@link ConditionChecker#onLinesCheck(String, String)}. Если ПК онлайн. Прибавить 1 к {@link NetScannerSvc#onLinePCs}. <br>
+     {@code select * from velkompc where NamePP like ?} <br>
+     2. {@link ConditionChecker#offLinesCheckUser(String, String)}. Если ПК офлайн. <br>
+     {@code select * from pcuser where pcName like ?}
+     <p>
 
      @param pcName   имя компьютера
      @param isOnline онлайн = true

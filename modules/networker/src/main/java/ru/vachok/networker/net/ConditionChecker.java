@@ -12,7 +12,10 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 
 import javax.servlet.http.HttpServletResponse;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -37,7 +40,8 @@ class ConditionChecker {
     }
 
     /**
-     Проверяет имя пользователя на ПК онлайн
+     Проверяет имя пользователя когда ПК онлайн
+     <p>
 
      @param sql    запрос
      @param pcName имя ПК

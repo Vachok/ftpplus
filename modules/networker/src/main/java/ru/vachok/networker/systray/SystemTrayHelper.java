@@ -108,6 +108,7 @@ public final class SystemTrayHelper extends AppInfoOnLoad {
             new StringBuilder().append(AppComponents.versionInfo().getAppBuild()).append(" v. ")
                 .append(AppComponents.versionInfo().getAppVersion()).append(" ")
                 .append(AppComponents.versionInfo().getBuildTime()).toString(), popupMenu);
+        trayIcon.addActionListener(new ActionDefault());
         addItems(popupMenu);
         trayIcon.setImageAutoSize(true);
         defItem.setLabel("Exit");

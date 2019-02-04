@@ -14,8 +14,10 @@ import ru.vachok.networker.net.enums.ConstantsNet;
 import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.sql.*;
-import java.util.Date;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
@@ -258,7 +260,7 @@ public class PCUserResolver {
 //            }
 //        });
 //        offNow.forEach((String x) -> stringBuilder.append(offNowGetU(x)));
-//        String msg = ConstantsFor.COMPNAME_USERS_MAP.size() + ConstantsFor.COMPNAME_USERS_MAP_SIZE;
+//        String msg = ConstantsFor.COMPNAME_USERS_MAP.size() + ConstantsFor.STR_COMPNAME_USERS_MAP_SIZE;
 //        LOGGER.warn(msg);
 //        return stringBuilder.toString();
 //    }
@@ -278,16 +280,19 @@ public class PCUserResolver {
     }
 
     /**
-     Запись в БД <b>pcuser</b><br> Запись по-запросу от браузера. <br> pcName - уникальный (таблица не переписывается или не дополняется, при наличии
-     записи по-компу)
-
+     Запись в БД <b>pcuser</b><br> Запись по-запросу от браузера.
+     <p>
+     pcName - уникальный (таблица не переписывается или не дополняется, при наличиизаписи по-компу)
+     <p>
+     Лог - <b>PCUserResolver.recToDB</b> в папке запуска.
+     <p>
      @param userName имя юзера
      @param pcName   имя ПК
      @see ADSrv#getDetails(String)
      */
     synchronized void recToDB(String userName, String pcName) {
         String sql = "insert into pcuser (pcName, userName) values(?,?)";
-        ConcurrentMap<String, String> pcUMap = ConstantsFor.PC_U_MAP;
+        ConcurrentMap<String, String> pcUMap = ConstantsNet.PC_U_MAP;
         String msg = userName + " on pc " + pcName + " is set.";
         try(PreparedStatement p = connection.prepareStatement(sql)){
             p.setString(1, userName);

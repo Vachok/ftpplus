@@ -131,7 +131,7 @@ public class ActDirectoryCTRL {
     private String queryStringExists(String queryString, Model model) {
         NetScannerSvc netScannerSvc = NetScannerSvc.getI();
         netScannerSvc.setThePc(queryString);
-        String attributeValue = netScannerSvc.getInfoFromDB();
+        String attributeValue = NetScannerSvc.getInfoFromDB();
         model.addAttribute(ConstantsFor.ATT_TITLE, queryString + " " + attributeValue);
         model.addAttribute(ConstantsFor.ATT_USERS, inputWithInfoFromDB);
         try{
