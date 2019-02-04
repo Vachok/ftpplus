@@ -74,11 +74,6 @@ public class NetScanCtr {
     private static final String ATT_THE_PC = "thePc";
 
     /**
-     <i>Boiler Plate</i>
-     */
-    private static final String FNAME_LASTSCANNET_TXT = "lastscannet.txt";
-
-    /**
      {@link NetScannerSvc#getI()}
      */
     private static final NetScannerSvc netScannerSvc = NetScannerSvc.getI();
@@ -124,27 +119,29 @@ public class NetScanCtr {
      GET /{@link #STR_NETSCAN Старт сканера локальных ПК
     <p>
     1. {@link ConstantsFor#getVis(javax.servlet.http.HttpServletRequest)}. Запись {@link Visitor } <br> 2. {@link NetScannerSvc#setThePc(java.lang.String)} обнуляем строку в форме. <br> 3. {@link
-    NetScannerSvc#getThePc()} получаем пользовательский ввод. <br> 4. {@link PageFooter#getFooterUtext()} текст footer. 5 {@link PageFooter#PageFooter()} <br> 6. {@link AppComponents#lastNetScan()} 7.{@link LastNetScan#setTimeLastScan(java.util.Date)} - ставим дату последнего скана сейчас. <br> 8. {@link #checkMapSizeAndDoAction(Model, HttpServletRequest)} начинаем проверку.
+    NetScannerSvc#getThePc()} получаем пользовательский ввод. <br> 4. {@link PageFooter#getFooterUtext()} текст footer. 5 {@link PageFooter#PageFooter()} <br> 6. {@link AppComponents#lastNetScan()}
+    7.{@link LastNetScan#setTimeLastScan(java.util.Date)} - ставим дату последнего скана сейчас. <br> 8. {@link #checkMapSizeAndDoAction(Model, HttpServletRequest, long) } начинаем проверку.
      */
     @GetMapping(STR_NETSCAN)
     public String netScan(HttpServletRequest request, HttpServletResponse response, Model model) {
         String classMeth = "NetScanCtr.netScan";
+        long lastSt = Long.parseLong(properties.getProperty(ConstantsNet.PR_LASTSCAN, "1548919734742"));
         new MessageCons().errorAlert(classMeth);
         new MessageCons().info(
             STR_REQUEST + request + "], response = [" + response + STR_MODEL + model + "]",
             ConstantsFor.STR_INPUT_PARAMETERS_RETURNS,
             ConstantsFor.JAVA_LANG_STRING_NAME);
-        Thread.currentThread().setName(classMeth);
 
+        Thread.currentThread().setName(classMeth);
         ConstantsFor.getVis(request);
+        model.addAttribute("serviceinfo", (float) TimeUnit.MILLISECONDS.toSeconds(lastSt - System.currentTimeMillis()) / ConstantsFor.ONE_HOUR_IN_MIN);
         netScannerSvc.setThePc("");
         model.addAttribute("pc", FileSystemWorker.readFile("lastnetscan.log"));
-        model.addAttribute(ConstantsFor.ATT_TITLE, AppComponents.lastNetScan().getTimeLastScan());
-        model.addAttribute(ConstantsNet.STR_NETSCANNERSVC, netScannerSvc)
-            .addAttribute(ATT_THE_PC, netScannerSvc.getThePc());
+        model.addAttribute(ConstantsFor.ATT_TITLE, new Date(lastSt));
+        model.addAttribute(ConstantsNet.STR_NETSCANNERSVC, netScannerSvc).addAttribute(ATT_THE_PC, netScannerSvc.getThePc());
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<br>First Scan: 2018-05-05");
         response.addHeader(ConstantsFor.HEAD_REFRESH, "30");
-        checkMapSizeAndDoAction(model, request);
+        checkMapSizeAndDoAction(model, request, lastSt);
         return AT_NAME_NETSCAN;
     }
 
@@ -177,15 +174,14 @@ public class NetScanCtr {
 
      @param model   {@link Model}
      @param request {@link HttpServletRequest}
+     @param lastSt  timestamp из {@link #properties}
      @see #netScan(HttpServletRequest, HttpServletResponse, Model)
      */
-    private void checkMapSizeAndDoAction(Model model, HttpServletRequest request) {
-        long lastSt = Long.parseLong(properties.getProperty(ConstantsNet.PR_LASTSCAN, "1548919734742"));
+    private void checkMapSizeAndDoAction(Model model, HttpServletRequest request, long lastSt) {
         boolean isMapSizeBigger = lastScanMAP.size() > 1;
         int thisTotpc = Integer.parseInt(properties.getProperty(ConstantsFor.PR_TOTPC, "318"));
         ThreadPoolTaskExecutor taskExecutor = AppComponents.threadConfig().threadPoolTaskExecutor();
         final Runnable runnableScan = () -> {
-            String s = "isMapSizeBigger = ";
             if (isMapSizeBigger) {
                 mapSizeBigger(model, request, lastSt, thisTotpc);
             } else {
@@ -209,14 +205,14 @@ public class NetScanCtr {
      <p>
      1. {@link TForms#fromArray(java.util.Map, boolean)} добавим в {@link Model} содержимое {@link #lastScanMAP} <br> 2. {@link NetScannerSvc#getOnLinePCs()} - в заголовке страницы, при обновлении,
      отображение остатка ПК. <br> 3. {@link TForms#fromArray(java.util.Map, boolean)} запишем файл {@link ConstantsNet#STR_LASTNETSCAN}, 4. {@link FileSystemWorker#recFile(java.lang.String,
-        java.lang.String)} <br> 5. {@link #timeCheck(int, long, HttpServletRequest, Model)} переходим в проверке времени.
+        java.lang.String)} <br> 5. {@link #timeCheck(int, long, HttpServletRequest, Model, String)} переходим в проверке времени.
      <p>
 
      @param model     {@link Model}
      @param request   {@link HttpServletRequest}
      @param lastSt    время последнего скана. Берется из {@link #properties}. Default: {@code 1548919734742}.
      @param thisTotpc кол-во ПК для скана. Берется из {@link #properties}. Default: {@code 318}.
-     @see #checkMapSizeAndDoAction(Model, HttpServletRequest)
+     @see #checkMapSizeAndDoAction(Model, HttpServletRequest, long)
      */
     private void mapSizeBigger(Model model, HttpServletRequest request, long lastSt, int thisTotpc) {
         new MessageCons().errorAlert("NetScanCtr.mapSizeBigger");
@@ -238,7 +234,6 @@ public class NetScanCtr {
                 .append(netScannerSvc.getOnLinePCs()).append("/")
                 .append(pcWas).append(" at ")
                 .append(LocalDateTime.ofEpochSecond(lastSt / 1000, 0, ZoneOffset.ofHours(3)).toLocalTime().toString()).toString());
-
         if (newPSs) {
             FileSystemWorker.recFile(ConstantsNet.STR_LASTNETSCAN, new TForms().fromArray(lastScanMAP, false));
             model.addAttribute("newpc", "Добавлены компы! " + Math.abs(remainPC) + " шт.");
@@ -258,9 +253,8 @@ public class NetScanCtr {
     NetScannerSvc#getPCNamesPref(java.lang.String)}, где параметр это наша {@link HttpServletRequest#getQueryString()}. <br> В {@link Model}, добавим аттрибуты {@code title, pc}. new {@link Date} и
      {@link Set} pcNames, полученный из {@link NetScannerSvc#getPCNamesPref(java.lang.String)}
      <p>
-     Иначе: <br> Очищаем {@link #lastScanMAP} <br>
-     Запускаем {@link NetScannerSvc#getPcNames()} <br>
-     В {@link Model} добавим {@code lastScanDate} как {@code title}, и {@link Set} {@link NetScannerSvc#getPcNames()}.
+     Иначе: <br> Очищаем {@link #lastScanMAP} <br> Запускаем {@link NetScannerSvc#getPcNames()} <br> В {@link Model} добавим {@code lastScanDate} как {@code title}, и {@link Set} {@link
+    NetScannerSvc#getPcNames()}.
 
      @param request      {@link HttpServletRequest}
      @param model        {@link Model}
@@ -293,17 +287,16 @@ public class NetScanCtr {
      сообщение в консоль, с временем след. запуска.
      <p>
 
+     @see #mapSizeBigger(Model, HttpServletRequest, long, int)
      @param remainPC      осталось ПК
      @param lastScanEpoch последнее сканирование Timestamp как <b>EPOCH Seconds</b>
      @param request       {@link HttpServletRequest}
      @param model         {@link Model}
-     @see #mapSizeBigger(Model, HttpServletRequest, long, int)
      */
     private void timeCheck(int remainPC, long lastScanEpoch, HttpServletRequest request, Model model) {
         String classMeth = " NetScanCtr.timeCheck";
         LocalTime lastScanLocalTime = LocalDateTime.ofEpochSecond(lastScanEpoch, 0, ZoneOffset.ofHours(3)).toLocalTime();
         boolean isSystemTimeBigger = (System.currentTimeMillis() > lastScanEpoch * 1000) && remainPC <= 0;
-
         if (isSystemTimeBigger) {
             String valStr = "isSystemTimeBigger = " + true;
             new MessageCons().info(Thread.currentThread().getName(), classMeth, valStr);
@@ -320,7 +313,6 @@ public class NetScanCtr {
         sb.append("AT_NAME_NETSCAN='").append(AT_NAME_NETSCAN).append('\'');
         sb.append(", ATT_THE_PC='").append(ATT_THE_PC).append('\'');
         sb.append(", DURATION=").append(DURATION);
-        sb.append(", FNAME_LASTSCANNET_TXT='").append(FNAME_LASTSCANNET_TXT).append('\'');
         sb.append(", lastScanMAP=").append(lastScanMAP.size());
         sb.append(", properties=").append(properties);
         sb.append(", STR_NETSCAN='").append(STR_NETSCAN).append('\'');

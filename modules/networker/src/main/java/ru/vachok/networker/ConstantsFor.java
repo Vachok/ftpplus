@@ -166,11 +166,6 @@ public enum ConstantsFor {
     public static final String ATT_COMMON = "common";
 
     /**
-     Выгрузка из БД {@link #U_0466446_VELKOM}-pcuserauto
-     */
-    public static final String VELKOM_PCUSERAUTO_TXT = "velkom_pcuserauto.txt";
-
-    /**
      Название аттрибута модели.
      */
     public static final String ATT_PHOTO_CONVERTER = "photoConverter";

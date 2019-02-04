@@ -14,7 +14,10 @@ import ru.vachok.networker.systray.SystemTrayHelper;
 
 import java.io.*;
 import java.nio.file.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Stream;
@@ -175,7 +178,6 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         return stringBuilder.toString();
     }
 
-    @SuppressWarnings ("MethodWithMultipleReturnPoints")
     public static void delFilePatterns(String[] patToDelArr) {
         File file = new File(".");
         for(String patToDel : patToDelArr){
@@ -255,4 +257,5 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
             LOGGER.error("FileSystemWorker.error", ex.getMessage(), ex);
         }
     }
+
 }

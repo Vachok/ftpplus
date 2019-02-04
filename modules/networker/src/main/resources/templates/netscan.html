@@ -7,11 +7,12 @@
     <link rel="stylesheet" type="text/css" media="all" href="css/main.css" th:href="@{css/main.css}"/>
 </head>
 <body>
-<a href="/">
+
     <center><h2 th:utext="${left}"></h2><br>
         <h3 th:utext="${newpc}"/></center>
-</a>
-    <center th:utext="${serviceinfo}"></center>
+    <a href="/">
+        <center th:utext="${serviceinfo}"></center>
+    </a>
 <form th:action="@{/netscan}" th:object="${netScannerSvc}" method="POST">
     Интересуемый ПК:
     <input type="text" th:field="*{thePc}"/>

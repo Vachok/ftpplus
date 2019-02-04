@@ -768,3 +768,7 @@ do0200.eatmeat.ru
 *.dev
 *.col
 /unused.ips
+/ChkMailAndUpdateDB.chechMail
+AppInfoOnLoad
+*.ser
+NetScannerSvc.getPCsAsync

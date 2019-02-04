@@ -85,9 +85,10 @@ public enum ConstantsNet {;
 
     public static final String STR_COMPNAME_USERS_MAP_SIZE = " COMPNAME_USERS_MAP size";
 
-    static final String ONLINES_CHECK = ".onLinesCheck";
-
-    static final String GET_INFO_FROM_DB = ".getInfoFromDB";
+    /**
+     Выгрузка из БД {@link #U_0466446_VELKOM}-pcuserauto
+     */
+    public static final String VELKOM_PCUSERAUTO_TXT = "velkom_pcuserauto.txt";
 
     public static final String ONLINE_NOW = "OnlineNow";
 

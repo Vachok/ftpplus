@@ -19,7 +19,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -61,14 +60,25 @@ public class PCUserResolver {
 
     private String lastFileUse;
 
-    private PCUserResolver() {
-    }
-
     /**
      @return {@link #pcUserResolver}
      */
     public static PCUserResolver getPcUserResolver() {
         return pcUserResolver;
+    }
+
+    private PCUserResolver() {
+    }
+
+    private static Connection reconnectToDB() {
+        try {
+            connection.close();
+            connection = null;
+            connection = new RegRuMysql().getDefaultConnection(ConstantsNet.DB_NAME);
+        } catch (SQLException e) {
+            FileSystemWorker.error("PCUserResolver.reconnectToDB", e);
+        }
+        return connection;
     }
 
     /**
@@ -97,47 +107,6 @@ public class PCUserResolver {
         if (lastFileUse != null) {
             recAutoDB(pcName, lastFileUse);
         }
-    }
-
-    /**
-     Записывает инфо о пльзователе в <b>pcuserauto</b> <br> Записи добавляются к уже имеющимся.
-     <p>
-     Usages: {@link PCUserResolver#namesToFile(String)} <br> Uses: -
-
-     @param pcName      имя ПК
-     @param lastFileUse строка - имя последнего измененного файла в папке пользователя.
-     */
-    private synchronized void recAutoDB(String pcName, String lastFileUse) {
-        String sql = "insert into pcuser (pcName, userName, lastmod, stamp) values(?,?,?,?)";
-        String classMeth = "PCUserResolver.recAutoDB";
-        try(PreparedStatement preparedStatement = connection.prepareStatement(sql
-            .replaceAll(ConstantsFor.STR_PCUSER, ConstantsFor.STR_PCUSERAUTO))){
-            String[] split = lastFileUse.split(" ");
-            preparedStatement.setString(1, pcName);
-            preparedStatement.setString(2, split[0]);
-            preparedStatement.setString(3, IntStream.of(2, 3, 4).mapToObj(i -> split[i]).collect(Collectors.joining()));
-            preparedStatement.setString(4, split[7]);
-            preparedStatement.executeUpdate();
-        }
-        catch(SQLException e){
-            FileSystemWorker.error(classMeth, e);
-            connection = reconnectToDB();
-        }
-        catch(ArrayIndexOutOfBoundsException | NullPointerException e){
-            FileSystemWorker.error(classMeth, e);
-        }
-    }
-
-    private static Connection reconnectToDB() {
-        try{
-            connection.close();
-            connection = null;
-            connection = new RegRuMysql().getDefaultConnection(ConstantsNet.DB_NAME);
-        }
-        catch(SQLException e){
-            FileSystemWorker.error("PCUserResolver.reconnectToDB", e);
-        }
-        return connection;
     }
 
     /**
@@ -177,94 +146,62 @@ public class PCUserResolver {
         } catch (SQLException e) {
             new MessageCons().errorAlert(PC_USER_RESOLVER_CLASS_NAME, "offNowGetU", e.getMessage());
             FileSystemWorker.error("PCUserResolver.offNowGetU", e);
-            NetScannerSvc.getI();
-            connection = reconnectToDB();
         }
         return v.toString();
     }
 
-// --Commented out by Inspection START (25.01.2019 13:03):
-//    /**
-//     Запрос на установку пользователя
-//     <p>
-//     Usages:  {@link AppComponents#pcUserResolver()} <br>
-//     Uses: {@link AppComponents#adSrv()} <br>
-//
-//     @return {@link ADSrv#getAdUser()}
-//     @see ActDirectoryCTRL
-//     */
-//    ADUser adUsersSetter() {
-//        ADSrv adSrv = AppComponents.adSrv();
-//        ADUser adUser = adSrv.getAdUser();
-//        try{
-//            String resolvedName = getResolvedName();
-//            LOGGER.info(resolvedName);
-//            adUser.setUserName(resolvedName);
-//        }
-//        catch(NullPointerException e){
-//            LOGGER.warn("I cant set User for");
-//            Thread.currentThread().interrupt();
-//        }
-//        Thread.currentThread().interrupt();
-//        return adUser;
-//    }
-// --Commented out by Inspection STOP (25.01.2019 13:03)
+    /**
+     Запись в БД <b>pcuser</b><br> Запись по-запросу от браузера.
+     <p>
+     pcName - уникальный (таблица не переписывается или не дополняется, при наличиизаписи по-компу)
+     <p>
+     Лог - <b>PCUserResolver.recToDB</b> в папке запуска.
+     <p>
 
-// --Commented out by Inspection START (25.01.2019 13:45):
-//    /**
-//     <b>Рабочий метод</b>
-//     Делает запрос в {@code \\c$\Users}, ищет там папки, записывает в массив. <br> Сортирует по дате изменения.
-//
-//     @return {@link String}, имя последнего измененного объекта.
-//     @see #adUsersSetter()
-//     */
-//    private synchronized String getResolvedName() {
-//        List<String> onlineNow = new ArrayList<>();
-//        List<String> offNow = new ArrayList<>();
-//        StringBuilder stringBuilder = new StringBuilder();
-//        if(!lastScanMap.isEmpty()){
-//            lastScanMap.forEach((x, y) -> {
-//                if(y){
-//                    onlineNow.add(x);
-//                }
-//                else{
-//                    offNow.add(x);
-//                }
-//            });
-//        }
-//        else{
-//            NetScannerSvc.getI().getPCsAsync();
-//        }
-//        onlineNow.stream().map(x -> x.replaceAll("<br><b>", "").split("</b><br>")[0]).forEach(x -> {
-//            File filesAsFile = new File("\\\\" + x + "\\c$\\Users\\");
-//            File[] files = filesAsFile.listFiles();
-//            ConstantsFor.COMPNAME_USERS_MAP.put(x, filesAsFile);
-//            SortedMap<Long, String> lastMod = new TreeMap<>();
-//            if (files != null) {
-//                for (File file : files) {
-//                    lastMod.put(file.lastModified(), file.getName() + " user " + x + " comp\n");
-//
-//                }
-//            } else {
-//                stringBuilder
-//                    .append(System.currentTimeMillis())
-//                    .append(" millis. Can't set user for: ").append(x).append("\n");
-//            }
-//            Optional<Long> max = lastMod.keySet().stream().max(Long::compareTo);
-//            boolean aLongPresent = max.isPresent();
-//            if (aLongPresent) {
-//                Long aLong = max.get();
-//
-//                stringBuilder
-//                    .append(lastMod.get(aLong));
-//            }
-//        });
-//        offNow.forEach((String x) -> stringBuilder.append(offNowGetU(x)));
-//        String msg = ConstantsFor.COMPNAME_USERS_MAP.size() + ConstantsFor.STR_COMPNAME_USERS_MAP_SIZE;
-//        LOGGER.warn(msg);
-//        return stringBuilder.toString();
-//    }
-// --Commented out by Inspection STOP (25.01.2019 13:45)
+     @param userName имя юзера
+     @param pcName   имя ПК
+     @see ADSrv#getDetails(String)
+     */
+    synchronized void recToDB(String userName, String pcName) {
+        String sql = "insert into pcuser (pcName, userName) values(?,?)";
+        String msg = userName + " on pc " + pcName + " is set.";
+        try (PreparedStatement p = connection.prepareStatement(sql)) {
+            p.setString(1, userName);
+            p.setString(2, pcName);
+            p.executeUpdate();
+            LOGGER.info(msg);
+            ConstantsNet.PC_U_MAP.put(pcName, msg);
+        } catch (SQLException e) {
+            FileSystemWorker.error("PCUserResolver.recToDB", e);
+        }
+    }
+
+    /**
+     Записывает инфо о пльзователе в <b>pcuserauto</b> <br> Записи добавляются к уже имеющимся.
+     <p>
+     Usages: {@link PCUserResolver#namesToFile(String)} <br> Uses: -
+
+     @param pcName      имя ПК
+     @param lastFileUse строка - имя последнего измененного файла в папке пользователя.
+     */
+    private synchronized void recAutoDB(String pcName, String lastFileUse) {
+        String sql = "insert into pcuser (pcName, userName, lastmod, stamp) values(?,?,?,?)";
+        String classMeth = "PCUserResolver.recAutoDB";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql
+            .replaceAll(ConstantsFor.STR_PCUSER, ConstantsFor.STR_PCUSERAUTO))) {
+            String[] split = lastFileUse.split(" ");
+            preparedStatement.setString(1, pcName);
+            preparedStatement.setString(2, split[0]);
+            preparedStatement.setString(3, IntStream.of(2, 3, 4).mapToObj(i -> split[i]).collect(Collectors.joining()));
+            preparedStatement.setString(4, split[7]);
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            FileSystemWorker.error(classMeth, e);
+            connection = reconnectToDB();
+        } catch (ArrayIndexOutOfBoundsException | NullPointerException e) {
+            FileSystemWorker.error(classMeth, e);
+        }
+    }
 
     @SuppressWarnings("MethodWithMultipleReturnPoints")
     private synchronized String getLastTimeUse(String pathAsStr) {
@@ -279,32 +216,6 @@ public class PCUserResolver {
         }
     }
 
-    /**
-     Запись в БД <b>pcuser</b><br> Запись по-запросу от браузера.
-     <p>
-     pcName - уникальный (таблица не переписывается или не дополняется, при наличиизаписи по-компу)
-     <p>
-     Лог - <b>PCUserResolver.recToDB</b> в папке запуска.
-     <p>
-     @param userName имя юзера
-     @param pcName   имя ПК
-     @see ADSrv#getDetails(String)
-     */
-    synchronized void recToDB(String userName, String pcName) {
-        String sql = "insert into pcuser (pcName, userName) values(?,?)";
-        ConcurrentMap<String, String> pcUMap = ConstantsNet.PC_U_MAP;
-        String msg = userName + " on pc " + pcName + " is set.";
-        try(PreparedStatement p = connection.prepareStatement(sql)){
-            p.setString(1, userName);
-            p.setString(2, pcName);
-            p.executeUpdate();
-            LOGGER.info(msg);
-            pcUMap.put(pcName, msg);
-        }
-        catch(SQLException e){
-            FileSystemWorker.error("PCUserResolver.recToDB", e);
-        }
-    }
 
     /**
      Поиск файлов в папках {@code c-users}.
