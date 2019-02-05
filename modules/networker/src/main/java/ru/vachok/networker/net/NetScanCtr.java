@@ -148,10 +148,10 @@ public class NetScanCtr {
     @GetMapping("/showalldev")
     public String allDevices(Model model, HttpServletRequest request, HttpServletResponse response) {
         LOGGER.warn("NetScanCtr.allDevices");
-        NetScanFileWorker netScanFileWorker = NetScanFileWorker.getI();
         model.addAttribute(ConstantsFor.ATT_TITLE, "DiapazonedScan.scanAll");
+        model.addAttribute("pcs", ScanOnline.getI().toString());
         if (request.getQueryString() != null) {
-            ConditionChecker.qerNotNullScanAllDevices(model, netScanFileWorker, response);
+            ConditionChecker.qerNotNullScanAllDevices(model, response);
         }
         model.addAttribute("head", new PageFooter().getHeaderUtext() + "<center><p><a href=\"/showalldev?needsopen\"><h2>Show IPs</h2></a></center>");
         model.addAttribute("ok", DiapazonedScan.getInstance().toString());

@@ -16,7 +16,9 @@ import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.errorexceptions.MyNull;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.mailserver.MailIISLogsCleaner;
-import ru.vachok.networker.net.*;
+import ru.vachok.networker.net.DiapazonedScan;
+import ru.vachok.networker.net.NetMonitor;
+import ru.vachok.networker.net.WeekPCStats;
 import ru.vachok.networker.services.MyCalen;
 import ru.vachok.networker.services.SpeedChecker;
 
@@ -150,8 +152,6 @@ public class AppInfoOnLoad implements Runnable {
         miniLogger.add(this.getClass().getSimpleName());
 
         ThreadConfig threadConfig = AppComponents.threadConfig();
-        ScanOffline scanOffline = ScanOffline.getI();
-        ScanOnline scanOnline = ScanOnline.getI();
         String thisPC = ConstantsFor.thisPC();
         miniLogger.add(thisPC);
 
@@ -161,8 +161,6 @@ public class AppInfoOnLoad implements Runnable {
             miniLogger.add(threadConfig.toString());
         }
         scheduledExecutorService.scheduleWithFixedDelay(diapazonedScan, 2, THIS_DELAY, TimeUnit.MINUTES);
-        scheduledExecutorService.scheduleWithFixedDelay(scanOnline, 3, 1, TimeUnit.MINUTES);
-        scheduledExecutorService.scheduleWithFixedDelay(scanOffline, 200, 70, TimeUnit.SECONDS);
         scheduledExecutorService.scheduleWithFixedDelay(new NetMonitor(), 0, 10, TimeUnit.SECONDS);
 
         String msg = new StringBuilder()

@@ -28,7 +28,7 @@ import java.util.concurrent.TimeUnit;
  Пинги, и тп
 
  @since 31.01.2019 (0:20) */
-@SuppressWarnings ("StaticMethodOnlyUsedInOneClass")
+@SuppressWarnings("StaticMethodOnlyUsedInOneClass")
 class ConditionChecker {
 
     private static final String CLASS_NAME = ConditionChecker.class.getSimpleName();
@@ -56,32 +56,30 @@ class ConditionChecker {
         String classMeth = "ConditionChecker.onLinesCheck";
 
         String methName = "onLinesCheck";
-        try(PreparedStatement statement = NetScannerSvc.c.prepareStatement(sql)){
+        try (PreparedStatement statement = NetScannerSvc.c.prepareStatement(sql)) {
             Runnable r = () -> pcUserResolver.namesToFile(pcName);
             ThreadConfig.executeAsThread(r);
             statement.setString(1, pcName);
-            try(ResultSet resultSet = statement.executeQuery()){
-                while(resultSet.next()){
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
                     ADComputer adComputer = new ADComputer();
                     int onlineNow = resultSet.getInt(ConstantsNet.ONLINE_NOW);
-                    if(onlineNow==1){
+                    if (onlineNow == 1) {
                         onLine.add(onlineNow);
                         adComputer.setDnsHostName(pcName);
                     }
-                    if(onlineNow==0){
+                    if (onlineNow == 0) {
                         offLine.add(onlineNow);
                     }
                     ConstantsNet.AD_COMPUTERS.add(adComputer);
                 }
             }
-        }
-        catch(SQLException e){
+        } catch (SQLException e) {
             c = reconnectToDB();
             new MessageCons().errorAlert(CLASS_NAME, methName, e.getMessage());
             FileSystemWorker.error(classMeth, e);
             stringBuilder.append(e.getMessage());
-        }
-        catch(NullPointerException e){
+        } catch (NullPointerException e) {
             stringBuilder.append(e.getMessage());
         }
         return stringBuilder
@@ -91,19 +89,6 @@ class ConditionChecker {
             .append(" online times.").toString();
     }
 
-    private static Connection reconnectToDB() {
-        try{
-            c.close();
-            c = null;
-            Connection connection = new RegRuMysql().getDefaultConnection(ConstantsNet.DB_NAME);
-            c = connection;
-        }
-        catch(SQLException e){
-            new MessageCons().errorAlert("ConditionChecker", ConstantsNet.RECONNECT_TO_DB, e.getMessage());
-        }
-        return c;
-    }
-
     /**
      <b>Проверяет есть ли в БД имя пользователя</b>
 
@@ -111,22 +96,22 @@ class ConditionChecker {
      @param pcName имя ПК
      @return имя юзера, если есть.
      */
-    @SuppressWarnings ({"MethodWithMultipleLoops", "MethodWithMultipleReturnPoints"})
+    @SuppressWarnings({"MethodWithMultipleLoops", "MethodWithMultipleReturnPoints"})
     static String offLinesCheckUser(String sql, String pcName) {
         StringBuilder stringBuilder = new StringBuilder();
-        try(PreparedStatement p = c.prepareStatement(sql);
-            PreparedStatement p1 = c.prepareStatement(sql.replaceAll(ConstantsFor.STR_PCUSER, ConstantsFor.STR_PCUSERAUTO))){
+        try (PreparedStatement p = c.prepareStatement(sql);
+             PreparedStatement p1 = c.prepareStatement(sql.replaceAll(ConstantsFor.STR_PCUSER, ConstantsFor.STR_PCUSERAUTO))) {
             p.setString(1, pcName);
             p1.setString(1, pcName);
-            try(ResultSet resultSet = p.executeQuery();
-                ResultSet resultSet1 = p1.executeQuery()){
-                while(resultSet.next()){
+            try (ResultSet resultSet = p.executeQuery();
+                 ResultSet resultSet1 = p1.executeQuery()) {
+                while (resultSet.next()) {
                     stringBuilder.append("<b>")
                         .append(resultSet.getString(ConstantsFor.DB_FIELD_USER).trim()).append("</b> (time: ")
                         .append(resultSet.getString(ConstantsNet.DB_FIELD_WHENQUERIED)).append(")");
                 }
-                while(resultSet1.next()){
-                    if(resultSet1.last()){
+                while (resultSet1.next()) {
+                    if (resultSet1.last()) {
                         return stringBuilder
                             .append("    (AutoResolved name: ")
                             .append(resultSet1.getString(ConstantsFor.DB_FIELD_USER).trim()).append(" (time: ")
@@ -134,8 +119,7 @@ class ConditionChecker {
                     }
                 }
             }
-        }
-        catch(SQLException e){
+        } catch (SQLException e) {
             new MessageCons().errorAlert(CLASS_NAME, "offLinesCheckUser", e.getMessage());
             FileSystemWorker.error("ConditionChecker.offLinesCheckUser", e);
             stringBuilder.append(e.getMessage());
@@ -144,48 +128,48 @@ class ConditionChecker {
         return "<font color=\"orange\">EXCEPTION in SQL dropped. <br>" + stringBuilder.toString() + "</font>";
     }
 
-    static void qerNotNullScanAllDevices(Model model, NetScanFileWorker netScanFileWorker, HttpServletResponse response) {
+    static void qerNotNullScanAllDevices(Model model, HttpServletResponse response) {
         StringBuilder stringBuilder = new StringBuilder();
-        if(ConstantsFor.ALL_DEVICES.remainingCapacity()==0){
+        if (ConstantsFor.ALL_DEVICES.remainingCapacity() == 0) {
             ConstantsFor.ALL_DEVICES.forEach(x -> stringBuilder.append(ConstantsFor.ALL_DEVICES.remove()));
             model.addAttribute("pcs", stringBuilder.toString());
+        } else {
+            allDevNotNull(model, response);
         }
-        else{
-            allDevNotNull(model, netScanFileWorker, response);
+    }
+
+    private static Connection reconnectToDB() {
+        try {
+            c.close();
+            c = null;
+            Connection connection = new RegRuMysql().getDefaultConnection(ConstantsNet.DB_NAME);
+            c = connection;
+        } catch (SQLException e) {
+            new MessageCons().errorAlert("ConditionChecker", ConstantsNet.RECONNECT_TO_DB, e.getMessage());
         }
+        return c;
     }
 
     /**
      Если размер {@link ConstantsFor#ALL_DEVICES} более 0
      <p> <br>
      <b>Схема:</b> <br>
-     Убедимся в правильности {@link NetScanFileWorker} : <br>
-     1. {@link DiapazonedScan#getNetScanFileWorker()} <br>
-     2. {@link NetScanFileWorker#equals(java.lang.Object)} <br><br>
-     Если всё верно:
-     3. {@link ScanOnline#getI()} + {@link ScanOnline#toString()}
+     Убедимся в правильности {@link NetScanFileWorker} : <br> 1. {@link DiapazonedScan#getNetScanFileWorker()} <br> 2. {@link NetScanFileWorker#equals(java.lang.Object)} <br><br> Если всё верно: 3.
+     {@link ScanOnline#getI()} + {@link ScanOnline#toString()}
 
      @param model             {@link Model}
      @param netScanFileWorker {@link NetScanFileWorker}
      @param response          {@link HttpServletResponse}
      */
-    private static void allDevNotNull(Model model, NetScanFileWorker netScanFileWorker, HttpServletResponse response) {
+    private static void allDevNotNull(Model model, HttpServletResponse response) {
         final float scansInMin = 45.9f;
         float minLeft = ConstantsFor.ALL_DEVICES.remainingCapacity() / scansInMin;
         String attributeValue = new StringBuilder().append(minLeft).append(" ~minLeft. ")
-            .append(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(( long ) minLeft))).toString();
+            .append(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis((long) minLeft))).toString();
         model.addAttribute(ConstantsFor.ATT_TITLE, attributeValue);
-
-        if(netScanFileWorker.equals(DiapazonedScan.getNetScanFileWorker())){
-            String scOnLine = ScanOnline.getI().toString();
-            String scOffLine = ScanOffline.getI().toString() + "<p>" + netScanFileWorker.getNewLanLastScanAsStr() + "<br>" + netScanFileWorker.getOldLanLastScanAsStr();
-            model.addAttribute("pcs", scOnLine + "<br>" + scOffLine);
-        }
-        else{
-            model.addAttribute("pcs", FileSystemWorker
-                .readFile(ConstantsFor.AVAILABLE_LAST_TXT) + "<p>" + FileSystemWorker
-                .readFile(ConstantsFor.OLD_LAN_TXT));
-        }
+        model.addAttribute("pcs", FileSystemWorker
+            .readFile(ConstantsFor.AVAILABLE_LAST_TXT) + "<p>" + FileSystemWorker
+            .readFile(ConstantsFor.OLD_LAN_TXT));
         response.addHeader(ConstantsFor.HEAD_REFRESH, "60");
     }
 

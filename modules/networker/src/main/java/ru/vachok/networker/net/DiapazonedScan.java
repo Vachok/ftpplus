@@ -8,6 +8,7 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.SwitchesWiFi;
 import ru.vachok.networker.services.TimeChecker;
@@ -322,6 +323,8 @@ public class DiapazonedScan implements Runnable, Serializable {
     @Override
     public void run() {
         LOGGER.warn("DiapazonedScan.run");
+        Runnable taskDecorator = ThreadConfig.getI().taskDecorator(ScanOnline.getI());
+        ThreadConfig.executeAsThread(taskDecorator);
         scanNew();
     }
 

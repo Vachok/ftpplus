@@ -23,6 +23,12 @@ public class NetListKeeper implements Serializable {
 
     private static final long serialVersionUID = 42L;
 
+    private static final NetListKeeper NET_LIST_KEEPER = new NetListKeeper();
+
+    public static NetListKeeper getI() {
+        return NET_LIST_KEEPER;
+    }
+
     /**
      {@link MessageLocal}
      */
@@ -40,11 +46,14 @@ public class NetListKeeper implements Serializable {
         return this.offLines;
     }
 
+    private NetListKeeper() {
+    }
+
     /**
      @return {@link List} of {@link InetAddress}, из
      @throws IOException файловая система
      */
-    static List<InetAddress> onlinesAddressesList() throws IOException {
+    List<InetAddress> onlinesAddressesList() throws IOException {
         String classMeth = "NetListKeeper.onlinesAddressesList";
         new MessageCons().info(classMeth, "returns:", "java.util.List<java.net.InetAddress>");
         List<InetAddress> onlineAddresses = new ArrayList<>();

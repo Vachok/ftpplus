@@ -9,6 +9,7 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.systray.MessageToTray;
 
 import java.awt.*;
@@ -16,11 +17,10 @@ import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URI;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ConcurrentMap;
 
 
 /**
@@ -38,18 +38,14 @@ public class ScanOnline implements Runnable {
 
     private static final Logger LOGGER = AppComponents.getLogger();
 
-    private static final NetListKeeper NET_LIST_KEEPER = ScanOffline.getNetListKeeper();
+    private static final NetListKeeper NET_LIST_KEEPER = NetListKeeper.getI();
 
     private static final String CLASS_NAME = "ScanOnline";
 
     /**
      new {@link ScanOnline}
      */
-    private static ScanOnline scanOnline = new ScanOnline();
-
-    private ConcurrentMap<String, String> offPc = NET_LIST_KEEPER.getOffLines();
-
-    private ConcurrentMap<String, String> onPc = NET_LIST_KEEPER.getOnLinesResolve();
+    private static final ScanOnline SCAN_ONLINE = new ScanOnline();
 
     /**
      {@link MessageToTray} with {@link ru.vachok.networker.systray.ActionDefault}
@@ -63,50 +59,13 @@ public class ScanOnline implements Runnable {
         }
     });
 
-    private List<String> okIP = new ArrayList<>();
-
     public static ScanOnline getI() {
-        return scanOnline;
+        new MessageLocal().errorAlert("ScanOnline.getI");
+        return SCAN_ONLINE;
     }
 
     private ScanOnline() {
         new MessageCons().errorAlert("ScanOnline.ScanOnline");
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if(this==o){
-            return true;
-        }
-        if(!(o instanceof ScanOnline)){
-            return false;
-        }
-
-        ScanOnline that = ( ScanOnline ) o;
-
-        if(!offPc.equals(that.offPc)){
-            return false;
-        }
-        if(!onPc.equals(that.onPc)){
-            return false;
-        }
-        if(!messageToUser.equals(that.messageToUser)){
-            return false;
-        }
-        return okIP.equals(that.okIP);
-    }
-
-    @Override
-    public void run() {
-        LOGGER.warn("ScanOnline.run");
-        try{
-            List<InetAddress> onList = NetListKeeper.onlinesAddressesList();
-            runPing(onList);
-        }
-        catch(IOException e){
-            messageToUser = new MessageCons();
-            messageToUser.errorAlert(getClass().getSimpleName(), e.getMessage(), new TForms().fromArray(e, false));
-        }
     }
 
     private void runPing(List<InetAddress> onList) {
@@ -115,6 +74,7 @@ public class ScanOnline implements Runnable {
         for(InetAddress inetAddress : onList){
             pingAddr(inetAddress);
         }
+        ThreadConfig.executeAsThread(this::offlineNotEmptyActions);
         messageToUser.info(getClass().getSimpleName(), ConstantsFor.getUpTime(), onList.size() +
             " online. Scanned: " + ConstantsFor.ALL_DEVICES.size() + "/" + ConstantsFor.IPS_IN_VELKOM_VLAN);
     }
@@ -123,19 +83,7 @@ public class ScanOnline implements Runnable {
         SwitchesAvailability switchesAvailability = new SwitchesAvailability();
         switchesAvailability.run();
         Set<String> availabilityOkIP = switchesAvailability.getOkIP();
-        this.okIP = new ArrayList<>();
-        boolean addAllavailabilityOkIP = okIP.addAll(availabilityOkIP);
-        String valStr = "addAllavailabilityOkIP = " + addAllavailabilityOkIP + " ScanOnline.offlineNotEmptyActions";
-        java.util.logging.Logger.getGlobal().warning(valStr);
-    }
-
-    @Override
-    public int hashCode() {
-        int result = offPc.hashCode();
-        result = 31 * result + onPc.hashCode();
-        result = 31 * result + messageToUser.hashCode();
-        result = 31 * result + okIP.hashCode();
-        return result;
+        availabilityOkIP.forEach(x -> NET_LIST_KEEPER.getOnLinesResolve().put(x, LocalDateTime.now().toString()));
     }
 
     /**
@@ -152,17 +100,16 @@ public class ScanOnline implements Runnable {
      */
     private void pingAddr(InetAddress inetAddress) {
         String classMeth = "ScanOnline.pingAddr";
-        ConcurrentMap<String, String> offLines = new NetListKeeper().getOffLines();
         LOGGER.warn(classMeth);
         try{
             messageToUser = new MessageCons();
             boolean xReachable = inetAddress.isReachable(250);
             if(!xReachable){
-                offLines.put(inetAddress.toString(), LocalTime.now().toString());
-                ThreadConfig.executeAsThread(this::offlineNotEmptyActions);
+                NET_LIST_KEEPER.getOffLines().put(inetAddress.toString(), LocalTime.now().toString());
                 messageToUser.infoNoTitles(inetAddress.toString() + " is " + false);
             }
             else{
+                NET_LIST_KEEPER.getOnLinesResolve().putIfAbsent(inetAddress.toString(), LocalTime.now().toString());
                 messageToUser.info(CLASS_NAME, STR_RUN_PING, inetAddress.toString() + " " + true);
             }
         }
@@ -171,21 +118,28 @@ public class ScanOnline implements Runnable {
             FileSystemWorker.error(classMeth, e);
         }
         String valStr = "inetAddress = " + inetAddress + " ScanOnline.pingAddr";
-        java.util.logging.Logger.getGlobal().warning(valStr);
+        messageToUser = new MessageLocal();
+        messageToUser.infoNoTitles(valStr);
+    }
+
+    @Override
+    public void run() {
+        LOGGER.warn("ScanOnline.run");
+        try {
+            List<InetAddress> onList = NET_LIST_KEEPER.onlinesAddressesList();
+            runPing(onList);
+        } catch (IOException e) {
+            messageToUser = new MessageCons();
+            messageToUser.errorAlert(getClass().getSimpleName(), e.getMessage(), new TForms().fromArray(e, false));
+        }
     }
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("<font color=\"green\">ScanOnline{").append(this.hashCode()).append("<br>");
-        sb.append("CLASS_NAME='").append(CLASS_NAME).append('\'');
-        sb.append(", messageToUser=").append(messageToUser.getClass().getSimpleName());
-        sb.append(", NET_LIST_KEEPER=").append(NET_LIST_KEEPER.hashCode());
-        sb.append(", <b>offPc=").append(offPc.size());
-        sb.append(", okIP=").append(okIP.size());
-        sb.append(", onPc=").append(onPc.size());
-        sb.append(", </b>scanOnline=").append(scanOnline.hashCode());
-        sb.append(", STR_RUN_PING='").append(STR_RUN_PING).append('\'');
-        sb.append("}</font>");
+        final StringBuilder sb = new StringBuilder("ScanOnline{");
+        sb.append("offPc=<font color=\"red\">").append(new TForms().fromArray(NET_LIST_KEEPER.getOffLines(), true));
+        sb.append("</font>, onPc=<font color=\"#00ff69\">").append(new TForms().fromArray(NET_LIST_KEEPER.getOnLinesResolve(), true));
+        sb.append("</font>}");
         return sb.toString();
     }
 }

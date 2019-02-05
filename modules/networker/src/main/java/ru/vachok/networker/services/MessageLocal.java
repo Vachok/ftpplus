@@ -30,6 +30,11 @@ public class MessageLocal implements MessageToUser {
         warning(bodyMsg);
     }
 
+    public void errorAlert(String s) {
+        this.bodyMsg = s;
+        errorAlert(headerMsg, titleMsg, s);
+    }
+
     @Override
     public void errorAlert(String headerMsg, String titleMsg, String bodyMsg) {
         Logger logger = LoggerFactory.getLogger(headerMsg);
