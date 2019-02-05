@@ -14,10 +14,7 @@ import ru.vachok.networker.systray.SystemTrayHelper;
 
 import java.io.*;
 import java.nio.file.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Stream;
@@ -141,7 +138,6 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
      */
     public static String readFile(String fileName) {
         final long stArt = System.currentTimeMillis();
-
         StringBuilder stringBuilder = new StringBuilder();
         boolean exists = new File(fileName).exists();
         if(exists){

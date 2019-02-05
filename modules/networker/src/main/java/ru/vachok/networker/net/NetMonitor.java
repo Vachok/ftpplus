@@ -20,13 +20,11 @@ import java.util.Objects;
  @since 05.02.2019 (9:00) */
 public class NetMonitor implements Runnable {
 
-    private OutputStream outputStream;
-
-    private PrintWriter printWriter = new PrintWriter(Objects.requireNonNull(outputStream), true);
-
+    private PrintWriter printWriter = null;
     {
         try {
-            outputStream = new FileOutputStream("ping.tv");
+            OutputStream outputStream = new FileOutputStream("ping.tv");
+            printWriter = new PrintWriter(Objects.requireNonNull(outputStream), true);
         } catch (FileNotFoundException e) {
             new MessageLocal().errorAlert("NetMonitor", "instance initializer", e.getMessage());
             FileSystemWorker.error("NetMonitor.instance initializer", e);

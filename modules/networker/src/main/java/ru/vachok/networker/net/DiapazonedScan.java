@@ -2,6 +2,7 @@ package ru.vachok.networker.net;
 
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ui.Model;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
@@ -25,8 +26,6 @@ import java.util.List;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.TimeUnit;
 
-import static ru.vachok.networker.componentsrepo.AppComponents.getLogger;
-
 
 /**
  Скан диапазона адресов
@@ -40,7 +39,7 @@ public class DiapazonedScan implements Runnable, Serializable {
     /**
      {@link AppComponents#getLogger()}
      */
-    private static final Logger LOGGER = getLogger();
+    private static final Logger LOGGER = LoggerFactory.getLogger(DiapazonedScan.class.getSimpleName());
 
     /**
      Повторения.
@@ -151,20 +150,13 @@ public class DiapazonedScan implements Runnable, Serializable {
         scanOldLan(stArt);
     }
 
-    private void writeToFileByConditions(PrintWriter printWriter, long stArt) throws IOException {
-        LOGGER.warn("DiapazonedScan.writeToFileByConditions");
-        new MessageCons().info("printWriter = [" + printWriter.checkError() + "], stArt = [" + stArt + "]", "returns:", "void");
-
-        if (allDevices.remainingCapacity() == 0) {
-            MessageToUser messageToUser = new MessageCons();
-            messageToUser.infoNoTitles(new TForms().fromArray(allDevices, false));
-            allDevices.clear();
-            scanLan(printWriter, 200, 218, stArt, "10.200.");
-        } else {
-            scanLan(printWriter, 200, 218, stArt, "10.200.");
-        }
-
-        NetScanFileWorker.getI().setLastStamp(System.currentTimeMillis());
+    private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
+        LOGGER.warn("DiapazonedScan.readObject");
+        new MessageCons().info("in = [" + in.toString() + "]", ConstantsFor.STR_RETURNS, "void");
+        DiapazonedScan diapazonedScan = ( DiapazonedScan ) in.readObject();
+        LOGGER.warn("DiapazonedScan.readObject");
+        String valStr = "diapazonedScan = " + (diapazonedScan!=null) + " DiapazonedScan.readObject";
+        java.util.logging.Logger.getGlobal().warning(valStr);
     }
 
     /**
@@ -254,13 +246,21 @@ public class DiapazonedScan implements Runnable, Serializable {
         out.writeObject(this);
     }
 
-    private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
-        LOGGER.warn("DiapazonedScan.readObject");
-        new MessageCons().info("in = [" + in.toString() + "]", "returns:", "void");
-        DiapazonedScan diapazonedScan = (DiapazonedScan) in.readObject();
-        LOGGER.warn("DiapazonedScan.readObject");
-        String valStr = "diapazonedScan = " + (diapazonedScan != null) + " DiapazonedScan.readObject";
-        java.util.logging.Logger.getGlobal().warning(valStr);
+    private void writeToFileByConditions(PrintWriter printWriter, long stArt) throws IOException {
+        LOGGER.warn("DiapazonedScan.writeToFileByConditions");
+        new MessageCons().info("printWriter = [" + printWriter.checkError() + "], stArt = [" + stArt + "]", ConstantsFor.STR_RETURNS, "void");
+
+        if(allDevices.remainingCapacity()==0){
+            MessageToUser messageToUser = new MessageCons();
+            messageToUser.infoNoTitles(new TForms().fromArray(allDevices, false));
+            allDevices.clear();
+            scanLan(printWriter, 200, 218, stArt, "10.200.");
+        }
+        else{
+            scanLan(printWriter, 200, 218, stArt, "10.200.");
+        }
+
+        NetScanFileWorker.getI().setLastStamp(System.currentTimeMillis());
     }
 
     @Override

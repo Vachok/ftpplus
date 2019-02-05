@@ -12,11 +12,8 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.systray.MessageToTray;
 
-import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
@@ -31,16 +28,9 @@ import java.util.Set;
  @since 26.01.2019 (11:18) */
 public class ScanOnline implements Runnable {
 
-    /**
-     <i>Boiler Plate</i>
-     */
-    private static final String STR_RUN_PING = "runPing";
-
     private static final Logger LOGGER = AppComponents.getLogger();
 
     private static final NetListKeeper NET_LIST_KEEPER = NetListKeeper.getI();
-
-    private static final String CLASS_NAME = "ScanOnline";
 
     /**
      new {@link ScanOnline}
@@ -50,33 +40,32 @@ public class ScanOnline implements Runnable {
     /**
      {@link MessageToTray} with {@link ru.vachok.networker.systray.ActionDefault}
      */
-    private MessageToUser messageToUser = new MessageToTray((ActionEvent e) -> {
-        try{
-            Desktop.getDesktop().browse(URI.create(ConstantsFor.SHOWALLDEV_NEEDSOPEN));
-        }
-        catch(IOException ignore){
-            //
-        }
-    });
+    private MessageToUser messageToUser = new MessageLocal();
 
-    public static ScanOnline getI() {
-        new MessageLocal().errorAlert("ScanOnline.getI");
-        return SCAN_ONLINE;
+    public static void main(String[] args) {
+        ScanOnline.getI().run();
     }
 
     private ScanOnline() {
         new MessageCons().errorAlert("ScanOnline.ScanOnline");
     }
 
-    private void runPing(List<InetAddress> onList) {
-        String clMt = "ScanOnline.runPing";
-        LOGGER.warn(clMt);
-        for(InetAddress inetAddress : onList){
-            pingAddr(inetAddress);
-        }
+    @Override
+    public void run() {
         ThreadConfig.executeAsThread(this::offlineNotEmptyActions);
-        messageToUser.info(getClass().getSimpleName(), ConstantsFor.getUpTime(), onList.size() +
-            " online. Scanned: " + ConstantsFor.ALL_DEVICES.size() + "/" + ConstantsFor.IPS_IN_VELKOM_VLAN);
+        try{
+            List<InetAddress> onList = NET_LIST_KEEPER.onlinesAddressesList();
+            runPing(onList);
+        }
+        catch(IOException e){
+            messageToUser = new MessageCons();
+            messageToUser.errorAlert(getClass().getSimpleName(), e.getMessage(), new TForms().fromArray(e, false));
+        }
+    }
+
+    public static ScanOnline getI() {
+        new MessageLocal().warning("ScanOnline.getI");
+        return SCAN_ONLINE;
     }
 
     private void offlineNotEmptyActions() {
@@ -84,6 +73,17 @@ public class ScanOnline implements Runnable {
         switchesAvailability.run();
         Set<String> availabilityOkIP = switchesAvailability.getOkIP();
         availabilityOkIP.forEach(x -> NET_LIST_KEEPER.getOnLinesResolve().put(x, LocalDateTime.now().toString()));
+    }
+
+    private void runPing(List<InetAddress> onList) {
+        String clMt = "ScanOnline.runPing. IPs to ping: " + onList.size();
+        messageToUser.infoNoTitles(clMt);
+        for(InetAddress inetAddress : onList){
+            pingAddr(inetAddress);
+        }
+        messageToUser.info(getClass().getSimpleName(), ConstantsFor.getUpTime(), onList.size() +
+            " online. Scanned: " + ConstantsFor.ALL_DEVICES.size() + "/" + ConstantsFor.IPS_IN_VELKOM_VLAN);
+        new MessageLocal().warning(NET_LIST_KEEPER.getOffLines().size() + " off; " + NET_LIST_KEEPER.getOnLinesResolve().size() + " on");
     }
 
     /**
@@ -99,38 +99,18 @@ public class ScanOnline implements Runnable {
      @param inetAddress {@link InetAddress}. 3. {@link FileSystemWorker#error(java.lang.String, java.lang.Exception)}
      */
     private void pingAddr(InetAddress inetAddress) {
-        String classMeth = "ScanOnline.pingAddr";
-        LOGGER.warn(classMeth);
         try{
-            messageToUser = new MessageCons();
+            messageToUser = new MessageLocal();
             boolean xReachable = inetAddress.isReachable(250);
             if(!xReachable){
                 NET_LIST_KEEPER.getOffLines().put(inetAddress.toString(), LocalTime.now().toString());
-                messageToUser.infoNoTitles(inetAddress.toString() + " is " + false);
             }
             else{
                 NET_LIST_KEEPER.getOnLinesResolve().putIfAbsent(inetAddress.toString(), LocalTime.now().toString());
-                messageToUser.info(CLASS_NAME, STR_RUN_PING, inetAddress.toString() + " " + true);
             }
         }
         catch(IOException e){
-            new MessageCons().errorAlert(CLASS_NAME, "pingAddr", e.getMessage());
-            FileSystemWorker.error(classMeth, e);
-        }
-        String valStr = "inetAddress = " + inetAddress + " ScanOnline.pingAddr";
-        messageToUser = new MessageLocal();
-        messageToUser.infoNoTitles(valStr);
-    }
-
-    @Override
-    public void run() {
-        LOGGER.warn("ScanOnline.run");
-        try {
-            List<InetAddress> onList = NET_LIST_KEEPER.onlinesAddressesList();
-            runPing(onList);
-        } catch (IOException e) {
-            messageToUser = new MessageCons();
-            messageToUser.errorAlert(getClass().getSimpleName(), e.getMessage(), new TForms().fromArray(e, false));
+            FileSystemWorker.error("ScanOnline.pingAddr", e);
         }
     }
 

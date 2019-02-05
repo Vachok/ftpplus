@@ -21,8 +21,10 @@ public class MessageLocal implements MessageToUser {
     private String headerMsg = getClass().getSimpleName() + "-" + LocalTime.now();
 
     public void warning(String bodyMsg) {
+        Logger logger = LoggerFactory.getLogger(headerMsg);
         this.bodyMsg = bodyMsg;
-        errorAlert(headerMsg, titleMsg, bodyMsg);
+        String join = String.join(" ", headerMsg, titleMsg, bodyMsg);
+        logger.warn(join);
     }
 
     public void warn(String s) {
@@ -41,7 +43,7 @@ public class MessageLocal implements MessageToUser {
         this.headerMsg = headerMsg;
         this.titleMsg = titleMsg;
         this.bodyMsg = bodyMsg;
-        String logRec = headerMsg + " " + titleMsg + " " + bodyMsg;
+        String logRec = String.join(" ", headerMsg, titleMsg, bodyMsg);
         logger.error(logRec);
     }
 
@@ -51,15 +53,14 @@ public class MessageLocal implements MessageToUser {
         this.headerMsg = headerMsg;
         this.titleMsg = titleMsg;
         this.bodyMsg = bodyMsg;
-        String logRec = headerMsg + " " + titleMsg + " " + bodyMsg;
+        String logRec = String.join(" ", headerMsg, titleMsg, bodyMsg);
         logger.info(logRec);
     }
 
     @Override
     public void infoNoTitles(String s) {
         this.bodyMsg = s;
-        Logger logger = LoggerFactory.getLogger(headerMsg);
-        logger.info(s);
+        info(headerMsg, titleMsg, s);
     }
 
     @Override

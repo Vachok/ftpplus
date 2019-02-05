@@ -11,7 +11,6 @@ import ru.vachok.messenger.MessageCons;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
 
-import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
 
 
@@ -53,12 +52,10 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
     private ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
 
     static {
-        new MessageCons().errorAlert("ThreadConfig.static initializer");
         taskSchedulerConf();
     }
 
     public Runnable taskDecorator(Runnable runnable) {
-        new MessageCons().errorAlert("ThreadConfig.taskDecorator");
         new MessageCons().info(ConstantsFor.STR_INPUT_OUTPUT, "runnable = [" + runnable + "]", "java.lang.Runnable");
         TaskDecorator taskDecorator = runnable1 -> runnable;
         String msg = taskDecorator.toString() + " " + this.getClass().getSimpleName() + ".taskDecorator(Runnable runnable)";
@@ -102,7 +99,6 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
 
     public static void taskSchedulerConf() {
         TASK_SCHEDULER.initialize();
-        new MessageCons().info("ThreadConfig.threadPoolTaskScheduler", INITIALIZED, LocalDateTime.now().toString());
         TASK_SCHEDULER.setThreadNamePrefix("schMIN-" + TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - ConstantsFor.START_STAMP));
         TASK_SCHEDULER.setPoolSize(15);
     }
