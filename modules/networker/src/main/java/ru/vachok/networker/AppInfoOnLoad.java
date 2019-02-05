@@ -22,7 +22,10 @@ import ru.vachok.networker.services.SpeedChecker;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.FileVisitor;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -32,7 +35,10 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -157,6 +163,7 @@ public class AppInfoOnLoad implements Runnable {
         scheduledExecutorService.scheduleWithFixedDelay(diapazonedScan, 2, THIS_DELAY, TimeUnit.MINUTES);
         scheduledExecutorService.scheduleWithFixedDelay(scanOnline, 3, 1, TimeUnit.MINUTES);
         scheduledExecutorService.scheduleWithFixedDelay(scanOffline, 200, 70, TimeUnit.SECONDS);
+        scheduledExecutorService.scheduleWithFixedDelay(new NetMonitor(), 0, 10, TimeUnit.SECONDS);
 
         String msg = new StringBuilder()
             .append(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(THIS_DELAY)))

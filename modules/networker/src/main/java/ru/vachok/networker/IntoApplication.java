@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import ru.vachok.messenger.MessageCons;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
@@ -14,6 +15,7 @@ import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.systray.SystemTrayHelper;
 
 import java.awt.*;
@@ -47,7 +49,6 @@ public class IntoApplication {
      */
     private static final SpringApplication SPRING_APPLICATION = new SpringApplication();
 
-
     /**
      {@link ConfigurableApplicationContext} Usages: {@link #main(String[])},
      */
@@ -69,7 +70,7 @@ public class IntoApplication {
      @param args null
      @see SystemTrayHelper#addItems(PopupMenu) {@link AppInfoOnLoad#infoForU(ApplicationContext)}
      */
-    @SuppressWarnings ("JavadocReference")
+    @SuppressWarnings("JavadocReference")
     public static void main(String[] args) {
         LOGGER.warn("IntoApplication.main");
         final long stArt = System.currentTimeMillis();
@@ -82,17 +83,17 @@ public class IntoApplication {
 
         String msgTimeSp = new StringBuilder()
             .append("IntoApplication.main method. ")
-            .append(( float ) (System.currentTimeMillis() - stArt) / 1000)
+            .append((float) (System.currentTimeMillis() - stArt) / 1000)
             .append(" ")
             .append(ConstantsFor.STR_SEC_SPEND).toString();
         LOGGER.info(msgTimeSp);
-        if(args.length > 0){
-            for(String s : args){
+        if (args.length > 0) {
+            for (String s : args) {
                 LOGGER.info(s);
-                if(s.contains(ConstantsFor.PR_TOTPC)){
+                if (s.contains(ConstantsFor.PR_TOTPC)) {
                     ConstantsFor.getProps().setProperty(ConstantsFor.PR_TOTPC, s.replaceAll(ConstantsFor.PR_TOTPC, ""));
                 }
-                if(s.equalsIgnoreCase("off")){
+                if (s.equalsIgnoreCase("off")) {
                     AppComponents.threadConfig().killAll();
                 }
             }
@@ -103,20 +104,20 @@ public class IntoApplication {
      Запуск до старта Spring boot app <br> Usages: {@link #main(String[])}
      */
     private static void beforeSt() {
-        ConstantsFor.getMemoryInfo();
+        new MessageCons().infoNoTitles(ConstantsNet.getProvider());
         LOGGER.warn("IntoApplication.beforeSt");
         String msg = LocalDate.now().getDayOfWeek().getValue() + " - day of week\n" +
             LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault());
         LOGGER.warn(msg);
-        if(ConstantsFor.thisPC().toLowerCase().contains(ConstantsFor.NO0027) || ConstantsFor.thisPC().toLowerCase().contains("home")){
+        if (ConstantsFor.thisPC().toLowerCase().contains(ConstantsFor.NO0027) || ConstantsFor.thisPC().toLowerCase().contains("home")) {
             SystemTrayHelper.addTray("icons8-плохие-поросята-32.png");
-        }
-        else{
+        } else {
             SystemTrayHelper.addTray(null);
         }
         SPRING_APPLICATION.setMainApplicationClass(IntoApplication.class);
         SPRING_APPLICATION.setApplicationContextClass(AppCtx.class);
         System.setProperty("encoding", "UTF8");
+        FileSystemWorker.recFile("system", new TForms().fromArray(System.getProperties()));
     }
 
     /**
@@ -144,10 +145,9 @@ public class IntoApplication {
     private static void appProperties() {
         LOGGER.warn("IntoApplication.appProperties");
         String s = null;
-        try{
+        try {
             s = Paths.get("").toFile().getCanonicalPath().toLowerCase();
-        }
-        catch(IOException e){
+        } catch (IOException e) {
             FileSystemWorker.recFile(IntoApplication.class.getSimpleName() + ConstantsFor.LOG, e.getMessage() + "\n" + new TForms().fromArray(e, false));
             LOGGER.warn(e.getMessage());
         }

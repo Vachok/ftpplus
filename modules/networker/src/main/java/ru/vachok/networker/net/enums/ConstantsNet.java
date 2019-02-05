@@ -3,17 +3,24 @@ package ru.vachok.networker.net.enums;
 
 import org.slf4j.Logger;
 import org.springframework.ui.Model;
+import ru.vachok.messenger.MessageCons;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.config.ThreadConfig;
+import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetScannerSvc;
+import ru.vachok.networker.net.TraceRoute;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 /**
  Константы пакета
@@ -108,4 +115,16 @@ public enum ConstantsNet {;
      <i>Boiler Plate</i>
      */
     public static final String STR_NETSCANNERSVC = "netScannerSvc";
-}
+
+    public static String getProvider() {
+        Future<String> submit = ThreadConfig.getI().threadPoolTaskExecutor().submit(new TraceRoute());
+        try {
+            String s = submit.get();
+            FileSystemWorker.recFile("trace", s);
+            return s;
+        } catch (InterruptedException | ExecutionException e) {
+            new MessageCons().errorAlert("ConstantsNet", "getProvider", TForms.from(e));
+            Thread.currentThread().interrupt();
+            return e.getMessage();
+        }
+    }}

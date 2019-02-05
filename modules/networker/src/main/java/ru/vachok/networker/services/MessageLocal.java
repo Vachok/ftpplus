@@ -1,8 +1,11 @@
 package ru.vachok.networker.services;
 
 
-import ru.vachok.messenger.MessageCons;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.vachok.messenger.MessageToUser;
+
+import java.time.LocalTime;
 
 /**
  Локальная имплементация {@link MessageToUser}
@@ -15,7 +18,7 @@ public class MessageLocal implements MessageToUser {
 
     private String titleMsg = "NO TITLE";
 
-    private String headerMsg = "NO HEADER";
+    private String headerMsg = getClass().getSimpleName() + "-" + LocalTime.now();
 
     public void warning(String bodyMsg) {
         this.bodyMsg = bodyMsg;
@@ -29,20 +32,29 @@ public class MessageLocal implements MessageToUser {
 
     @Override
     public void errorAlert(String headerMsg, String titleMsg, String bodyMsg) {
+        Logger logger = LoggerFactory.getLogger(headerMsg);
         this.headerMsg = headerMsg;
         this.titleMsg = titleMsg;
         this.bodyMsg = bodyMsg;
-        new MessageCons().errorAlert(headerMsg, titleMsg, bodyMsg);
+        String logRec = headerMsg + " " + titleMsg + " " + bodyMsg;
+        logger.error(logRec);
     }
 
     @Override
     public void info(String headerMsg, String titleMsg, String bodyMsg) {
-        new MessageCons().info(headerMsg, titleMsg, bodyMsg);
+        Logger logger = LoggerFactory.getLogger(headerMsg);
+        this.headerMsg = headerMsg;
+        this.titleMsg = titleMsg;
+        this.bodyMsg = bodyMsg;
+        String logRec = headerMsg + " " + titleMsg + " " + bodyMsg;
+        logger.info(logRec);
     }
 
     @Override
     public void infoNoTitles(String s) {
-        throw new UnsupportedOperationException();
+        this.bodyMsg = s;
+        Logger logger = LoggerFactory.getLogger(headerMsg);
+        logger.info(s);
     }
 
     @Override
@@ -52,7 +64,7 @@ public class MessageLocal implements MessageToUser {
 
     @Override
     public String confirm(String s, String s1, String s2) {
-        return null;
+        throw new UnsupportedOperationException(headerMsg);
     }
 
     @Override

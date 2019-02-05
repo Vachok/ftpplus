@@ -25,7 +25,10 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.file.AccessDeniedException;
 import java.time.LocalTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.*;
 import java.util.stream.Stream;
 
@@ -63,7 +66,7 @@ public class ServiceInfoCtrl {
         Thread.currentThread().setName("ServiceInfoCtrl.infoMapping");
         ThreadConfig.executeAsThread(new SpeedChecker.ChkMailAndUpdateDB());
         this.visitor = new AppComponents().visitor(request);
-        this.authReq = Stream.of("0:0:0:0", "10.10.111", "10.200.213.85", "172.16.20").anyMatch(sP -> request.getRemoteAddr().contains(sP));
+        this.authReq = Stream.of("0:0:0:0", "10.10.111", "10.200.213.85", "172.16.20", "10.200.214.80").anyMatch(sP -> request.getRemoteAddr().contains(sP));
         if (authReq) {
             modModMaker(model, request, visitor);
             response.addHeader(ConstantsFor.HEAD_REFRESH, "90");
