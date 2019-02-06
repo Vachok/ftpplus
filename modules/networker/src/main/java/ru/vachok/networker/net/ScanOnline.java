@@ -1,12 +1,10 @@
 package ru.vachok.networker.net;
 
 
-import org.slf4j.Logger;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
@@ -16,6 +14,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -27,8 +26,6 @@ import java.util.Set;
  @see DiapazonedScan
  @since 26.01.2019 (11:18) */
 public class ScanOnline implements Runnable {
-
-    private static final Logger LOGGER = AppComponents.getLogger();
 
     private static final NetListKeeper NET_LIST_KEEPER = NetListKeeper.getI();
 
@@ -42,30 +39,13 @@ public class ScanOnline implements Runnable {
      */
     private MessageToUser messageToUser = new MessageLocal();
 
-    public static void main(String[] args) {
-        ScanOnline.getI().run();
+    public static ScanOnline getI() {
+        new MessageLocal().warning("ScanOnline.getI");
+        return SCAN_ONLINE;
     }
 
     private ScanOnline() {
         new MessageCons().errorAlert("ScanOnline.ScanOnline");
-    }
-
-    @Override
-    public void run() {
-        ThreadConfig.executeAsThread(this::offlineNotEmptyActions);
-        try{
-            List<InetAddress> onList = NET_LIST_KEEPER.onlinesAddressesList();
-            runPing(onList);
-        }
-        catch(IOException e){
-            messageToUser = new MessageCons();
-            messageToUser.errorAlert(getClass().getSimpleName(), e.getMessage(), new TForms().fromArray(e, false));
-        }
-    }
-
-    public static ScanOnline getI() {
-        new MessageLocal().warning("ScanOnline.getI");
-        return SCAN_ONLINE;
     }
 
     private void offlineNotEmptyActions() {
@@ -78,7 +58,7 @@ public class ScanOnline implements Runnable {
     private void runPing(List<InetAddress> onList) {
         String clMt = "ScanOnline.runPing. IPs to ping: " + onList.size();
         messageToUser.infoNoTitles(clMt);
-        for(InetAddress inetAddress : onList){
+        for (InetAddress inetAddress : onList) {
             pingAddr(inetAddress);
         }
         messageToUser.info(getClass().getSimpleName(), ConstantsFor.getUpTime(), onList.size() +
@@ -99,27 +79,42 @@ public class ScanOnline implements Runnable {
      @param inetAddress {@link InetAddress}. 3. {@link FileSystemWorker#error(java.lang.String, java.lang.Exception)}
      */
     private void pingAddr(InetAddress inetAddress) {
-        try{
-            messageToUser = new MessageLocal();
+        try {
             boolean xReachable = inetAddress.isReachable(250);
-            if(!xReachable){
+            if (!xReachable) {
                 NET_LIST_KEEPER.getOffLines().put(inetAddress.toString(), LocalTime.now().toString());
-            }
-            else{
+                if (NET_LIST_KEEPER.getOnLinesResolve().containsKey(inetAddress.toString())) {
+                    NET_LIST_KEEPER.getOffLines().remove(inetAddress.toString());
+                }
+            } else {
                 NET_LIST_KEEPER.getOnLinesResolve().putIfAbsent(inetAddress.toString(), LocalTime.now().toString());
             }
-        }
-        catch(IOException e){
+        } catch (IOException e) {
             FileSystemWorker.error("ScanOnline.pingAddr", e);
         }
     }
 
     @Override
+    public void run() {
+        ThreadConfig.executeAsThread(this::offlineNotEmptyActions);
+        try {
+            List<InetAddress> onList = NET_LIST_KEEPER.onlinesAddressesList();
+            runPing(onList);
+        } catch (IOException e) {
+            messageToUser = new MessageCons();
+            messageToUser.errorAlert(getClass().getSimpleName(), e.getMessage(), new TForms().fromArray(e, false));
+        }
+    }
+
+    @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("ScanOnline{");
-        sb.append("offPc=<font color=\"red\">").append(new TForms().fromArray(NET_LIST_KEEPER.getOffLines(), true));
-        sb.append("</font>, onPc=<font color=\"#00ff69\">").append(new TForms().fromArray(NET_LIST_KEEPER.getOnLinesResolve(), true));
-        sb.append("</font>}");
+        final StringBuilder sb = new StringBuilder();
+        sb.append("<b>Since ").append(new Date(ConstantsFor.START_STAMP)).append(new MoreInfoGetter().getTVNetInfo()).append("</b><br>");
+        sb.append("Offline pc is <font color=\"red\">").append(new TForms().fromArray(NET_LIST_KEEPER.getOffLines(), true)).append("</font>");
+        sb.append("Online  pc is<font color=\"#00ff69\"> ").append(new TForms().fromArray(NET_LIST_KEEPER.getOnLinesResolve(), true)).append("</font>");
+        sb.append("NET_LIST_KEEPER=").append(NET_LIST_KEEPER.hashCode());
+        sb.append(", SCAN_ONLINE=").append(SCAN_ONLINE.hashCode());
+        sb.append(", messageToUser=").append(messageToUser.toString());
         return sb.toString();
     }
 }

@@ -18,6 +18,7 @@ import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.VersionInfo;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.net.DiapazonedScan;
+import ru.vachok.networker.net.MoreInfoGetter;
 import ru.vachok.networker.services.SimpleCalculator;
 import ru.vachok.networker.services.WhoIsWithSRV;
 
@@ -55,8 +56,6 @@ public class MatrixCtr {
 
     private VersionInfo versionInfo;
 
-    private DiapazonedScan diapazonedScan = DiapazonedScan.getInstance();
-
     private long metricMatrixStart = System.currentTimeMillis();
 
     private static final String FOOTER_NAME = ConstantsFor.ATT_FOOTER;
@@ -83,7 +82,7 @@ public class MatrixCtr {
         boolean pcAuth = ConstantsFor.getPcAuth(request);
         if (request.getQueryString() != null) return qNotNull(request, model, pcAuth);
         else qIsNull(model, request);
-        model.addAttribute("devscan", diapazonedScan.toString());
+        model.addAttribute("devscan", "Since " + new Date(ConstantsFor.START_STAMP) + new MoreInfoGetter().getTVNetInfo());
         response.addHeader(ConstantsFor.HEAD_REFRESH, "120");
         LOGGER.info("{}", visitor.toString());
         return "starting";

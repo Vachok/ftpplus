@@ -27,10 +27,6 @@ public class NetListKeeper implements Serializable {
 
     private static final NetListKeeper NET_LIST_KEEPER = new NetListKeeper();
 
-    public static NetListKeeper getI() {
-        return NET_LIST_KEEPER;
-    }
-
     /**
      {@link MessageLocal}
      */
@@ -39,6 +35,10 @@ public class NetListKeeper implements Serializable {
     private ConcurrentMap<String, String> onLinesResolve = new ConcurrentHashMap<>();
 
     private ConcurrentMap<String, String> offLines = new ConcurrentHashMap<>();
+
+    public static NetListKeeper getI() {
+        return NET_LIST_KEEPER;
+    }
 
     ConcurrentMap<String, String> getOnLinesResolve() {
         return this.onLinesResolve;
@@ -61,11 +61,10 @@ public class NetListKeeper implements Serializable {
         List<InetAddress> onlineAddresses = new ArrayList<>();
         Deque<String> fileAsDeque = NetScanFileWorker.getI().getListOfOnlineDev();
         fileAsDeque.forEach(x -> {
-            try{
+            try {
                 byte[] bytes = InetAddress.getByName(x.split(" ")[1]).getAddress();
                 onlineAddresses.add(InetAddress.getByAddress(bytes));
-            }
-            catch(UnknownHostException e){
+            } catch (UnknownHostException e) {
                 new MessageCons().errorAlert("NetListKeeper", "onlinesAddressesList", e.getMessage());
                 FileSystemWorker.error(classMeth, e);
             }
@@ -95,11 +94,13 @@ public class NetListKeeper implements Serializable {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("NetListKeeper{");
-        sb.append("LOGGER=").append(LOGGER.toString());
-        sb.append(", offLines=").append(offLines);
+        sb.append("serialVersionUID=").append(serialVersionUID);
+        sb.append(", NET_LIST_KEEPER=").append(NET_LIST_KEEPER.hashCode());
+        sb.append(", LOGGER=").append(LOGGER.toString());
         sb.append(", onLinesResolve=").append(onLinesResolve);
-        sb.append(", serialVersionUID=").append(serialVersionUID);
+        sb.append(", offLines=").append(offLines);
         sb.append('}');
         return sb.toString();
     }
+
 }

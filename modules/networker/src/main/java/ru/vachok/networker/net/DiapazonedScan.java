@@ -9,7 +9,6 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
-import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.SwitchesWiFi;
 import ru.vachok.networker.services.TimeChecker;
@@ -153,9 +152,9 @@ public class DiapazonedScan implements Runnable, Serializable {
     private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
         LOGGER.warn("DiapazonedScan.readObject");
         new MessageCons().info("in = [" + in.toString() + "]", ConstantsFor.STR_RETURNS, "void");
-        DiapazonedScan diapazonedScan = ( DiapazonedScan ) in.readObject();
+        DiapazonedScan diapazonedScan = (DiapazonedScan) in.readObject();
         LOGGER.warn("DiapazonedScan.readObject");
-        String valStr = "diapazonedScan = " + (diapazonedScan!=null) + " DiapazonedScan.readObject";
+        String valStr = "diapazonedScan = " + (diapazonedScan != null) + " DiapazonedScan.readObject";
         java.util.logging.Logger.getGlobal().warning(valStr);
     }
 
@@ -210,6 +209,7 @@ public class DiapazonedScan implements Runnable, Serializable {
             allDevices.add("<font color=\"red\">" + toString + FONT_BR_STR);
         }
     }
+
     /**
      192.168.11-14.254
 
@@ -250,13 +250,12 @@ public class DiapazonedScan implements Runnable, Serializable {
         LOGGER.warn("DiapazonedScan.writeToFileByConditions");
         new MessageCons().info("printWriter = [" + printWriter.checkError() + "], stArt = [" + stArt + "]", ConstantsFor.STR_RETURNS, "void");
 
-        if(allDevices.remainingCapacity()==0){
+        if (allDevices.remainingCapacity() == 0) {
             MessageToUser messageToUser = new MessageCons();
             messageToUser.infoNoTitles(new TForms().fromArray(allDevices, false));
             allDevices.clear();
             scanLan(printWriter, 200, 218, stArt, "10.200.");
-        }
-        else{
+        } else {
             scanLan(printWriter, 200, 218, stArt, "10.200.");
         }
 
@@ -323,8 +322,6 @@ public class DiapazonedScan implements Runnable, Serializable {
     @Override
     public void run() {
         LOGGER.warn("DiapazonedScan.run");
-        Runnable taskDecorator = ThreadConfig.getI().taskDecorator(ScanOnline.getI());
-        ThreadConfig.executeAsThread(taskDecorator);
         scanNew();
     }
 

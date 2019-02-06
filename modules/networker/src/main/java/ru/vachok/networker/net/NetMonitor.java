@@ -30,7 +30,6 @@ public class NetMonitor implements Runnable {
             FileSystemWorker.error("NetMonitor.instance initializer", e);
         }
     }
-
     private void pingIPTV() throws Exception {
         InetAddress ptv1 = InetAddress.getByName("ptv1.eatmeat.ru");
         InetAddress ptv2 = InetAddress.getByName("ptv2.eatmeat.ru");

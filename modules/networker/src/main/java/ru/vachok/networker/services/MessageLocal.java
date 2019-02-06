@@ -5,8 +5,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.vachok.messenger.MessageToUser;
 
-import java.time.LocalTime;
-
 /**
  Локальная имплементация {@link MessageToUser}
  <p>
@@ -16,9 +14,9 @@ public class MessageLocal implements MessageToUser {
 
     private String bodyMsg = "NO BODY";
 
-    private String titleMsg = "NO TITLE";
+    private String titleMsg = "";
 
-    private String headerMsg = getClass().getSimpleName() + "-" + LocalTime.now();
+    private String headerMsg = "";
 
     public void warning(String bodyMsg) {
         Logger logger = LoggerFactory.getLogger(headerMsg);
