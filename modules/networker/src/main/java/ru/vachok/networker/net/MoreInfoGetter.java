@@ -11,10 +11,7 @@ import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.systray.ActionCloseMsg;
 import ru.vachok.networker.systray.MessageToTray;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -37,8 +34,8 @@ public class MoreInfoGetter {
                 else offList.add(s.split("/")[0]);
             }
         });
-        String ptv1Str = "ptv1.eatmeat.ru";
-        String ptv2Str = "ptv2.eatmeat.ru";
+        String ptv1Str = ConstantsNet.PTV1_EATMEAT_RU;
+        String ptv2Str = ConstantsNet.PTV2_EATMEAT_RU;
         int frequencyOffPTV1 = Collections.frequency(offList, ptv1Str);
         int frequencyOnPTV1 = Collections.frequency(onList, ptv1Str);
         int frequencyOnPTV2 = Collections.frequency(onList, ptv2Str);

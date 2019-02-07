@@ -17,10 +17,7 @@ import ru.vachok.networker.net.TraceRoute;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 /**
  Константы пакета
@@ -28,6 +25,10 @@ import java.util.concurrent.Future;
 
  @since 25.01.2019 (10:30) */
 public enum ConstantsNet {;
+
+    public static final String PTV2_EATMEAT_RU = "ptv2.eatmeat.ru";
+
+    public static final String PTV1_EATMEAT_RU = "ptv1.eatmeat.ru";
 
     public static final String RECONNECT_TO_DB = "reconnectToDB";
 

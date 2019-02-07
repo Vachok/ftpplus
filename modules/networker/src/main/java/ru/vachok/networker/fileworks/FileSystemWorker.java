@@ -2,13 +2,13 @@ package ru.vachok.networker.fileworks;
 
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.messenger.email.ESender;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.common.CommonScan2YOlder;
-import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.services.TimeChecker;
 import ru.vachok.networker.systray.SystemTrayHelper;
 
@@ -29,9 +29,9 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     private static final String CLASS_NAME = "FileSystemWorker";
 
     /**
-     {@link AppComponents#getLogger()}
+     {@link LoggerFactory#getLogger(String)}
      */
-    static final Logger LOGGER = AppComponents.getLogger();
+    static final Logger LOGGER = LoggerFactory.getLogger(CLASS_NAME);
 
     public static synchronized void recFile(String fileName, Stream<String> toFileRec) {
         try(OutputStream outputStream = new FileOutputStream(fileName);
@@ -114,7 +114,10 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         }
         catch(IOException | NullPointerException e){
             LOGGER.warn(e.getMessage(), e);
-            return toCpFile.exists();
+            if(toCpFile.exists()){
+                toCpFile.deleteOnExit();
+                return toCpFile.delete();
+            }
         }
         return toCpFile.exists();
     }
