@@ -203,7 +203,7 @@ public class DiapazonedScan implements Runnable, Serializable {
             allDevices.add("<font color=\"green\">" + toString + FONT_BR_STR);
 
             String valStr = "host = " + hostName + "/" + hostAddress + " is online: " + true;
-            java.util.logging.Logger.getGlobal().warning(valStr);
+            LOGGER.info(valStr);
         } else {
             Thread.currentThread().setName(allDevices.size() + " of " + ConstantsFor.IPS_IN_VELKOM_VLAN);
             allDevices.add("<font color=\"red\">" + toString + FONT_BR_STR);
