@@ -11,10 +11,14 @@ import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.systray.ActionCloseMsg;
 import ru.vachok.networker.systray.MessageToTray;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 /**
@@ -93,18 +97,25 @@ public class MoreInfoGetter {
                 StringBuilder stringBuilder = new StringBuilder();
                 String headER = "<h3><center>LAST 20 USER PCs</center></h3>";
                 stringBuilder.append(headER);
+                List<String> stringList = new ArrayList<>();
                 while (r.next()) {
                     String pcName = r.getString(ConstantsFor.DB_FIELD_PCNAME);
+                    stringList.add(pcName);
                     String returnER = "<br><center><a href=\"/ad?" + pcName.split("\\Q.\\E")[0] + "\">" + pcName + "</a> set: " +
                         r.getString(ConstantsNet.DB_FIELD_WHENQUERIED) + ConstantsFor.HTML_CENTER;
                     stringBuilder.append(returnER);
-                    if (r.last()) {
-                        MessageToUser messageToUser = new MessageToTray(new ActionCloseMsg(AppComponents.getLogger()));
-                        messageToUser.info(
-                            r.getString(ConstantsFor.DB_FIELD_PCNAME),
-                            r.getString("whenQueried"),
-                            r.getString(ConstantsFor.DB_FIELD_USER));
-                    }
+                }
+                List<String> collect = stringList.stream().distinct().collect(Collectors.toList());
+                for (String x : collect) {
+                    int frequency = Collections.frequency(stringList, x);
+                    stringBuilder.append(frequency).append(") ").append(x).append("<br>");
+                }
+                if (r.last()) {
+                    MessageToUser messageToUser = new MessageToTray(new ActionCloseMsg(AppComponents.getLogger()));
+                    messageToUser.info(
+                        r.getString(ConstantsFor.DB_FIELD_PCNAME),
+                        r.getString("whenQueried"),
+                        r.getString(ConstantsFor.DB_FIELD_USER));
                 }
                 return stringBuilder.toString();
             }

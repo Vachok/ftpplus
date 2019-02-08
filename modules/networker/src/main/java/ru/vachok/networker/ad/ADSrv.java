@@ -141,7 +141,6 @@ public class ADSrv implements Runnable {
         try (InputStream usrInputStream = getClass().getResourceAsStream(ConstantsFor.USERS_TXT);
              InputStreamReader inputStreamReader = new InputStreamReader(usrInputStream);
              BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
-
             while (bufferedReader.ready()) {
                 fileAsList.add(bufferedReader.readLine());
             }

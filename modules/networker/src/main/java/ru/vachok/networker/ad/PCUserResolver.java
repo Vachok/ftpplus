@@ -37,8 +37,6 @@ public class PCUserResolver {
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(PCUserResolver.class.getSimpleName());
 
-    private static final String REC_AUTO_DB = ".recAutoDB";
-
     /**
      <i>private cons</i>
      */
@@ -119,7 +117,6 @@ public class PCUserResolver {
     synchronized String offNowGetU(CharSequence pcName) {
         StringBuilder v = new StringBuilder();
         try (Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.U_0466446_VELKOM)) {
-
             try (PreparedStatement p = c.prepareStatement("select * from pcuser");
                  PreparedStatement pAuto = c.prepareStatement("select * from pcuserauto where pcName in (select pcName from pcuser) order by pcName asc limit 203");
                  ResultSet resultSet = p.executeQuery();
