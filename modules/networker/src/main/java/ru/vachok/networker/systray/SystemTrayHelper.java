@@ -2,7 +2,6 @@ package ru.vachok.networker.systray;
 
 
 import org.slf4j.Logger;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.*;
@@ -60,8 +59,6 @@ public final class SystemTrayHelper extends AppInfoOnLoad {
 
     private static TrayIcon trayIcon = null;
 
-    private static final ThreadPoolTaskExecutor TASK_EXECUTOR = new ThreadConfig().threadPoolTaskExecutor();
-
     /**
      Конструктор по-умолчанию
      */
@@ -111,6 +108,7 @@ public final class SystemTrayHelper extends AppInfoOnLoad {
             new StringBuilder().append(AppComponents.versionInfo().getAppBuild()).append(" v. ")
                 .append(AppComponents.versionInfo().getAppVersion()).append(" ")
                 .append(AppComponents.versionInfo().getBuildTime()).toString(), popupMenu);
+        trayIcon.addActionListener(new ActionDefault());
         addItems(popupMenu);
         trayIcon.setImageAutoSize(true);
         defItem.setLabel("Exit");
@@ -164,10 +162,10 @@ public final class SystemTrayHelper extends AppInfoOnLoad {
      @param popupMenu {@link PopupMenu}
      */
     private static void addItems(PopupMenu popupMenu) {
-        Thread thread = TASK_EXECUTOR.createThread(SystemTrayHelper::recOn);
+        Thread thread = AppComponents.threadConfig().createThread(SystemTrayHelper::recOn);
         thread.start();
         MenuItem gitStartWeb = new MenuItem();
-        gitStartWeb.addActionListener(new ActionGITStart(TASK_EXECUTOR));
+        gitStartWeb.addActionListener(new ActionGITStart(AppComponents.threadConfig()));
         gitStartWeb.setLabel("GIT WEB ON");
         popupMenu.add(gitStartWeb);
         MenuItem toConsole = new MenuItem();
@@ -186,7 +184,7 @@ public final class SystemTrayHelper extends AppInfoOnLoad {
             popupMenu.add(reloadContext);
         }
         MenuItem delFiles = new MenuItem();
-        delFiles.addActionListener(new ActionDelTMP(TASK_EXECUTOR, delFiles, popupMenu));
+        delFiles.addActionListener(new ActionDelTMP(AppComponents.threadConfig().threadPoolTaskExecutor(), delFiles, popupMenu));
         delFiles.setLabel("Clean last year");
         popupMenu.add(delFiles);
         MenuItem logToFilesystem = new MenuItem();
@@ -208,7 +206,7 @@ public final class SystemTrayHelper extends AppInfoOnLoad {
                 MyServer.reconSock();
             } catch (IOException | InterruptedException | NullPointerException e1) {
                 MESSAGE_TO_USER.errorAlert(SystemTrayHelper.class.getSimpleName(), e1.getMessage(), new TForms().fromArray(e1, false));
-                new ThreadConfig().threadPoolTaskExecutor().submit(MyServer.getI());
+                AppComponents.threadConfig().threadPoolTaskExecutor().submit(MyServer.getI());
                 Thread.currentThread().interrupt();
             }
         }

@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import ru.vachok.messenger.MessageCons;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
@@ -14,6 +15,7 @@ import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.systray.SystemTrayHelper;
 
 import java.awt.*;
@@ -47,7 +49,6 @@ public class IntoApplication {
      */
     private static final SpringApplication SPRING_APPLICATION = new SpringApplication();
 
-
     /**
      {@link ConfigurableApplicationContext} Usages: {@link #main(String[])},
      */
@@ -73,13 +74,11 @@ public class IntoApplication {
     public static void main(String[] args) {
         LOGGER.warn("IntoApplication.main");
         final long stArt = System.currentTimeMillis();
-        boolean delFilePatterns = FileSystemWorker.delFilePatterns(ConstantsFor.STR_VISIT);
+        FileSystemWorker.delFilePatterns(ConstantsFor.STRS_VISIT);
         beforeSt();
         configurableApplicationContext = SpringApplication.run(IntoApplication.class, args);
         configurableApplicationContext.start();
-        String msg = new StringBuilder()
-            .append(afterSt())
-            .append(" delFilePatterns ").append(delFilePatterns).toString();
+        String msg = new StringBuilder().append(afterSt()).toString();
         LOGGER.warn(msg);
 
         String msgTimeSp = new StringBuilder()
@@ -95,7 +94,7 @@ public class IntoApplication {
                     ConstantsFor.getProps().setProperty(ConstantsFor.PR_TOTPC, s.replaceAll(ConstantsFor.PR_TOTPC, ""));
                 }
                 if (s.equalsIgnoreCase("off")) {
-                    new ThreadConfig().killAll();
+                    AppComponents.threadConfig().killAll();
                 }
             }
         }
@@ -105,7 +104,7 @@ public class IntoApplication {
      Запуск до старта Spring boot app <br> Usages: {@link #main(String[])}
      */
     private static void beforeSt() {
-        ConstantsFor.getMemoryInfo();
+        new MessageCons().infoNoTitles(ConstantsNet.getProvider());
         LOGGER.warn("IntoApplication.beforeSt");
         String msg = LocalDate.now().getDayOfWeek().getValue() + " - day of week\n" +
             LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault());
@@ -118,6 +117,7 @@ public class IntoApplication {
         SPRING_APPLICATION.setMainApplicationClass(IntoApplication.class);
         SPRING_APPLICATION.setApplicationContextClass(AppCtx.class);
         System.setProperty("encoding", "UTF8");
+        FileSystemWorker.recFile("system", new TForms().fromArray(System.getProperties()));
     }
 
     /**
@@ -125,14 +125,14 @@ public class IntoApplication {
      */
     @SuppressWarnings("MethodWithMultipleReturnPoints")
     private static boolean afterSt() {
-        ThreadConfig threadConfig = new ThreadConfig();
+        ThreadConfig threadConfig = AppComponents.threadConfig();
         AppInfoOnLoad infoAndSched = new AppInfoOnLoad();
         Runnable r = IntoApplication::appProperties;
         try {
             infoAndSched.spToFile();
             String showPath = Paths.get(".").toString() + "\n abs: " +
                 Paths.get(".").toFile().getAbsolutePath();
-            new ThreadConfig().threadPoolTaskExecutor().execute(r);
+            AppComponents.threadConfig().threadPoolTaskExecutor().execute(r);
             LOGGER.error(showPath);
             threadConfig.threadPoolTaskExecutor().execute(infoAndSched);
             return true;

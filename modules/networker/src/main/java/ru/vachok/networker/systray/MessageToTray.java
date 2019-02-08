@@ -43,8 +43,10 @@ public class MessageToTray implements MessageToUser {
     }
 
     public MessageToTray(ActionListener aListener) {
-        SystemTrayHelper.delOldActions();
-        this.aListener = aListener;
+        if(SystemTray.isSupported() || SystemTray.getSystemTray()!=null){
+            this.aListener = aListener;
+        }
+
     }
 
     @Override
@@ -66,7 +68,7 @@ public class MessageToTray implements MessageToUser {
         this.headerMsg = headerMsg;
         this.titleMsg = titleMsg;
         this.bodyMsg = bodyMsg;
-        if(SystemTray.isSupported()){
+        if(SystemTray.isSupported() && SystemTrayHelper.getTrayIcon()!=null){
             trayIcon.addActionListener(aListener);
             trayIcon.displayMessage(headerMsg, titleMsg + " " + bodyMsg, TrayIcon.MessageType.INFO);
         }

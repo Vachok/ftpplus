@@ -4,7 +4,6 @@ package ru.vachok.networker;
 import org.slf4j.Logger;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.networker.componentsrepo.AppComponents;
-import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.io.*;
@@ -83,6 +82,7 @@ public class ExitApp implements Runnable {
         FileSystemWorker.copyOrDelFile(new File(ConstantsFor.AVAILABLE_LAST_TXT), new StringBuilder().append(".\\lan\\vlans200").append(System.currentTimeMillis() / 1000).append(".txt").toString(),
             true);
         FileSystemWorker.copyOrDelFile(new File(ConstantsFor.OLD_LAN_TXT), new StringBuilder().append(".\\lan\\old_lan_").append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
+        FileSystemWorker.copyOrDelFile(new File("ping.tv"), ".\\lan\\tv_" + System.currentTimeMillis() / 1000 + ".ping", true);
         if (appLog.exists() && appLog.canRead()) {
             FileSystemWorker.copyOrDelFile(appLog, "\\\\10.10.111.1\\Torrents-FTP\\app.log", false);
         } else {
@@ -116,7 +116,7 @@ public class ExitApp implements Runnable {
         FileSystemWorker.recFile("exit.last", stringList);
         FileSystemWorker.delTemp();
         getConfigurableApplicationContext().close();
-        new ThreadConfig().killAll();
+        AppComponents.threadConfig().killAll();
         System.exit(Math.toIntExact(toMinutes));
     }
 

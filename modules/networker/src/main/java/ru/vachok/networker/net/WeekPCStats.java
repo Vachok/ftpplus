@@ -8,6 +8,7 @@ import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.enums.ConstantsNet;
 
 import java.io.*;
 import java.sql.Connection;
@@ -62,7 +63,7 @@ public class WeekPCStats implements Runnable {
         MessageToUser messageToUser = new MessageSwing();
         final long stArt = System.currentTimeMillis();
         String sql = "select * from pcuserauto";
-        File file = new File(ConstantsFor.VELKOM_PCUSERAUTO_TXT);
+        File file = new File(ConstantsNet.VELKOM_PCUSERAUTO_TXT);
         try(Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.DB_PREFIX + ConstantsFor.STR_VELKOM);
             PreparedStatement p = c.prepareStatement(sql);
             ResultSet r = p.executeQuery();

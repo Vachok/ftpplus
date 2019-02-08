@@ -1,7 +1,8 @@
 package ru.vachok.networker.services;
 
 
-import ru.vachok.messenger.MessageCons;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.vachok.messenger.MessageToUser;
 
 /**
@@ -13,13 +14,15 @@ public class MessageLocal implements MessageToUser {
 
     private String bodyMsg = "NO BODY";
 
-    private String titleMsg = "NO TITLE";
+    private String titleMsg = "";
 
-    private String headerMsg = "NO HEADER";
+    private String headerMsg = "";
 
     public void warning(String bodyMsg) {
+        Logger logger = LoggerFactory.getLogger(headerMsg);
         this.bodyMsg = bodyMsg;
-        errorAlert(headerMsg, titleMsg, bodyMsg);
+        String join = String.join(" ", headerMsg, titleMsg, bodyMsg);
+        logger.warn(join);
     }
 
     public void warn(String s) {
@@ -27,22 +30,35 @@ public class MessageLocal implements MessageToUser {
         warning(bodyMsg);
     }
 
+    public void errorAlert(String s) {
+        this.bodyMsg = s;
+        errorAlert(headerMsg, titleMsg, s);
+    }
+
     @Override
     public void errorAlert(String headerMsg, String titleMsg, String bodyMsg) {
+        Logger logger = LoggerFactory.getLogger(headerMsg);
         this.headerMsg = headerMsg;
         this.titleMsg = titleMsg;
         this.bodyMsg = bodyMsg;
-        new MessageCons().errorAlert(headerMsg, titleMsg, bodyMsg);
+        String logRec = String.join(" ", headerMsg, titleMsg, bodyMsg);
+        logger.error(logRec);
     }
 
     @Override
     public void info(String headerMsg, String titleMsg, String bodyMsg) {
-        new MessageCons().info(headerMsg, titleMsg, bodyMsg);
+        Logger logger = LoggerFactory.getLogger(headerMsg);
+        this.headerMsg = headerMsg;
+        this.titleMsg = titleMsg;
+        this.bodyMsg = bodyMsg;
+        String logRec = String.join(" ", headerMsg, titleMsg, bodyMsg);
+        logger.info(logRec);
     }
 
     @Override
     public void infoNoTitles(String s) {
-        throw new UnsupportedOperationException();
+        this.bodyMsg = s;
+        info(headerMsg, titleMsg, s);
     }
 
     @Override
@@ -52,7 +68,7 @@ public class MessageLocal implements MessageToUser {
 
     @Override
     public String confirm(String s, String s1, String s2) {
-        return null;
+        throw new UnsupportedOperationException(headerMsg);
     }
 
     @Override

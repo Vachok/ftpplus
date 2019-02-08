@@ -17,23 +17,15 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.mailserver.ExSRV;
 import ru.vachok.networker.mailserver.MailRule;
 import ru.vachok.networker.net.DiapazonedScan;
-import ru.vachok.networker.net.NetScannerSvc;
 import ru.vachok.networker.services.TimeChecker;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.SecureRandom;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.Year;
-import java.time.ZoneOffset;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Properties;
+import java.time.*;
+import java.util.*;
 import java.util.concurrent.*;
 
 import static java.time.temporal.ChronoUnit.HOURS;
@@ -56,6 +48,14 @@ public enum ConstantsFor {
      new {@link Properties}
      */
     private static final Properties PROPS = new Properties();
+
+    private static final int MIN_DELAY = 17;
+
+    public static final String STR_RETURNS = "returns:";
+
+    public static final String STR_INPUT_PARAMETERS_RETURNS = "input parameters] [Returns:";
+
+    public static final String SOUTV = "SOUTV";
 
     public static final String JAVA_LANG_STRING_NAME = "java.lang.String";
 
@@ -80,8 +80,6 @@ public enum ConstantsFor {
     public static final String U_0466446_LIFERPG = "u0466446_liferpg";
 
     public static final String SELECT_FROM_SPEED = "select * from speed";
-
-    public static final String COMPNAME_USERS_MAP_SIZE = " COMPNAME_USERS_MAP size";
 
     public static final String STR_PCUSERAUTO = "pcuserauto";
 
@@ -125,6 +123,7 @@ public enum ConstantsFor {
     /**
      <i>Boiler Plate</i>
      */
+    public static final String[] STRS_VISIT = {"visit_", ".tmp"};
     public static final String STR_VISIT = "visit_";
 
     /**
@@ -161,11 +160,6 @@ public enum ConstantsFor {
      Название аттрибута модели.
      */
     public static final String ATT_COMMON = "common";
-
-    /**
-     Выгрузка из БД {@link #U_0466446_VELKOM}-pcuserauto
-     */
-    public static final String VELKOM_PCUSERAUTO_TXT = "velkom_pcuserauto.txt";
 
     /**
      Название аттрибута модели.
@@ -238,19 +232,9 @@ public enum ConstantsFor {
     public static final String STR_SEC_SPEND = " sec spend";
 
     /**
-     {@link NetScannerSvc#getPCsAsync()}
-     */
-    public static final ConcurrentMap<String, File> COMPNAME_USERS_MAP = new ConcurrentHashMap<>();
-
-    /**
      <b>1 мегабайт в байтах</b>
      */
     public static final int MBYTE = 1048576;
-
-    /**
-     {@link ru.vachok.networker.ad.PCUserResolver#recToDB(String, String)}
-     */
-    public static final ConcurrentMap<String, String> PC_U_MAP = new ConcurrentHashMap<>();
 
     /**
      {@link Model} имя атрибута
@@ -459,18 +443,14 @@ public enum ConstantsFor {
     }
 
     /**
-     Сохраняет {@link Properties} в БД {@link #APP_NAME} с ID {@code ConstantsFor}
-
-     @param propsToSave {@link Properties}
+     @return {@link #DELAY}
      */
-    public static void saveProps(Properties propsToSave) {
-        new ThreadConfig().threadPoolTaskExecutor().execute(() -> {
-            InitProperties initProperties = new FileProps(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
-            initProperties.setProps(propsToSave);
-            initProperties = new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
-            initProperties.delProps();
-            initProperties.setProps(propsToSave);
-        });
+    private static long getDelay() {
+        long delay = new SecureRandom().nextInt(( int ) MY_AGE);
+        if(delay < MIN_DELAY){
+            delay = MIN_DELAY;
+        }
+        return delay;
     }
 
     /**
@@ -484,14 +464,18 @@ public enum ConstantsFor {
     }
 
     /**
-     @return {@link #DELAY}
+     Сохраняет {@link Properties} в БД {@link #APP_NAME} с ID {@code ConstantsFor}
+
+     @param propsToSave {@link Properties}
      */
-    private static long getDelay() {
-        long delay = new SecureRandom().nextInt(( int ) MY_AGE);
-        if (delay < 17) {
-            delay = 17;
-        }
-        return delay;
+    public static void saveProps(Properties propsToSave) {
+        new Thread(() -> {
+            InitProperties initProperties = new FileProps(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
+            initProperties.setProps(propsToSave);
+            initProperties = new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
+            initProperties.delProps();
+            initProperties.setProps(propsToSave);
+        }).start();
     }
 
     /**

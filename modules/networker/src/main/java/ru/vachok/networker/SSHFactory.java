@@ -12,19 +12,25 @@ import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.componentsrepo.AppComponents;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.RejectedExecutionException;
 
 
 /**
- * Ssh factory.
- * <p>
- * Фабрика, для ssh-комманд.
+ Ssh factory.
+ <p>
+ Фабрика, для ssh-комманд.
  */
 public class SSHFactory implements Callable<String> {
 
@@ -68,16 +74,31 @@ public class SSHFactory implements Callable<String> {
     }
 
     /**
-     * Gets command ssh.
-     *
-     * @return the command ssh
+     Gets command ssh.
+
+     @return the command ssh
      */
-    public String getCommandSSH() {
+    private String getCommandSSH() {
         return commandSSH;
     }
 
     public void setCommandSSH(String commandSSH) {
         this.commandSSH = commandSSH;
+    }
+
+    private String getConnectToSrv() {
+        return connectToSrv;
+    }
+
+    public void setConnectToSrv(String connectToSrv) {
+        this.connectToSrv = connectToSrv;
+    }
+
+    private SSHFactory(Builder builder) {
+        this.connectToSrv = builder.connectToSrv;
+        this.commandSSH = builder.commandSSH;
+        this.sessionType = builder.sessionType;
+        this.userName = builder.userName;
     }
 
     private InputStream connect() throws IOException, JSchException {
@@ -120,11 +141,9 @@ public class SSHFactory implements Callable<String> {
         Objects.requireNonNull(respChannel);
     }
 
-    private SSHFactory(Builder builder) {
-        this.connectToSrv = builder.connectToSrv;
-        this.commandSSH = builder.commandSSH;
-        this.sessionType = builder.sessionType;
-        this.userName = builder.userName;
+    private String pem() {
+        File pemFile = new File("a161.pem");
+        return pemFile.getAbsolutePath();
     }
 
     public String call() {
@@ -144,27 +163,14 @@ public class SSHFactory implements Callable<String> {
         }
     }
 
-    public String getConnectToSrv() {
-        return connectToSrv;
-    }
 
-    public void setConnectToSrv(String connectToSrv) {
-        this.connectToSrv = connectToSrv;
-    }
-
-    private String pem() {
-        File pemFile = new File("a161.pem");
-        return pemFile.getAbsolutePath();
-    }
-
-    /*END FOR CLASS*/
     /**
-     * Builder.
-     * <p>
-     * Сам строитель.
+     Builder.
+     <p>
+     Сам строитель.
      */
     @Service("ssh")
-    @Scope (ConstantsFor.SINGLETON)
+    @Scope(ConstantsFor.SINGLETON)
     public static class Builder {
 
         /*Fields*/
@@ -178,29 +184,20 @@ public class SSHFactory implements Callable<String> {
 
         private String commandSSH;
 
-        protected Builder() {
-
-        }
-
-        public Builder(String connectToSrv, String commandSSH) {
-            this.commandSSH = commandSSH;
-            this.connectToSrv = connectToSrv;
-        }
-
         /**
-         * Gets session type.
-         *
-         * @return the session type
+         Gets session type.
+
+         @return the session type
          */
         public String getSessionType() {
             return sessionType;
         }
 
         /**
-         * Sets session type.
-         *
-         * @param sessionType the session type
-         * @return the session type
+         Sets session type.
+
+         @param sessionType the session type
+         @return the session type
          */
         public Builder setSessionType(String sessionType) {
             this.sessionType = sessionType;
@@ -208,19 +205,19 @@ public class SSHFactory implements Callable<String> {
         }
 
         /**
-         * Gets connect to srv.
-         *
-         * @return the connect to srv
+         Gets connect to srv.
+
+         @return the connect to srv
          */
         public String getConnectToSrv() {
             return connectToSrv;
         }
 
         /**
-         * Sets connect to srv.
-         *
-         * @param connectToSrv the connect to srv
-         * @return the connect to srv
+         Sets connect to srv.
+
+         @param connectToSrv the connect to srv
+         @return the connect to srv
          */
         public Builder setConnectToSrv(String connectToSrv) {
             this.connectToSrv = connectToSrv;
@@ -228,19 +225,19 @@ public class SSHFactory implements Callable<String> {
         }
 
         /**
-         * Gets user name.
-         *
-         * @return the user name
+         Gets user name.
+
+         @return the user name
          */
         public String getUserName() {
             return userName;
         }
 
         /**
-         * Sets user name.
-         *
-         * @param userName the user name
-         * @return the user name
+         Sets user name.
+
+         @param userName the user name
+         @return the user name
          */
         public Builder setUserName(String userName) {
             this.userName = userName;
@@ -248,12 +245,52 @@ public class SSHFactory implements Callable<String> {
         }
 
         /**
-         * Gets pass.
-         *
-         * @return the pass
+         Gets pass.
+
+         @return the pass
          */
         public String getPass() {
             return pass;
+        }
+
+        /**
+         Sets pass.
+
+         @param pass the pass
+         @return the pass
+         */
+        public Builder setPass(String pass) {
+            this.pass = pass;
+            return this;
+        }
+
+        /**
+         Gets command ssh.
+
+         @return the command ssh
+         */
+        public String getCommandSSH() {
+            return commandSSH;
+        }
+
+        /**
+         Sets command ssh.
+
+         @param commandSSH the command ssh
+         @return the command ssh
+         */
+        public Builder setCommandSSH(String commandSSH) {
+            this.commandSSH = commandSSH;
+            return this;
+        }
+
+        public Builder(String connectToSrv, String commandSSH) {
+            this.commandSSH = commandSSH;
+            this.connectToSrv = connectToSrv;
+        }
+
+        protected Builder() {
+
         }
 
         public Map<String, Boolean> call() {
@@ -264,14 +301,12 @@ public class SSHFactory implements Callable<String> {
         }
 
         /**
-         * Sets pass.
-         *
-         * @param pass the pass
-         * @return the pass
+         Build ssh factory.
+
+         @return the ssh factory
          */
-        public Builder setPass(String pass) {
-            this.pass = pass;
-            return this;
+        public synchronized SSHFactory build() {
+            return new SSHFactory(this);
         }
 
         @Override
@@ -289,37 +324,6 @@ public class SSHFactory implements Callable<String> {
                 userName +
                 '\'' +
                 '}';
-        }
-
-        /**
-         * Build ssh factory.
-         *
-         * @return the ssh factory
-         */
-        public synchronized SSHFactory build() {
-            return new SSHFactory(this);
-        }
-
-
-        /**
-         * Gets command ssh.
-         *
-         * @return the command ssh
-         */
-        public String getCommandSSH() {
-            return commandSSH;
-        }
-
-
-        /**
-         * Sets command ssh.
-         *
-         * @param commandSSH the command ssh
-         * @return the command ssh
-         */
-        public Builder setCommandSSH(String commandSSH) {
-            this.commandSSH = commandSSH;
-            return this;
         }
     }
 }

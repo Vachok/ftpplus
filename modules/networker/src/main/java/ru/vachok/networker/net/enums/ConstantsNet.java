@@ -2,13 +2,22 @@ package ru.vachok.networker.net.enums;
 
 
 import org.slf4j.Logger;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.ui.Model;
+import ru.vachok.messenger.MessageCons;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.ADComputer;
+import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.ThreadConfig;
+import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.NetScannerSvc;
+import ru.vachok.networker.net.TraceRoute;
 
+import javax.servlet.http.HttpServletRequest;
+import java.io.File;
 import java.util.*;
+import java.util.concurrent.*;
 
 /**
  Константы пакета
@@ -16,6 +25,12 @@ import java.util.*;
 
  @since 25.01.2019 (10:30) */
 public enum ConstantsNet {;
+
+    public static final String PTV2_EATMEAT_RU = "ptv2.eatmeat.ru";
+
+    public static final String PTV1_EATMEAT_RU = "ptv1.eatmeat.ru";
+
+    public static final String RECONNECT_TO_DB = "reconnectToDB";
 
     public static final String STR_LASTNETSCAN = "lastnetscan";
 
@@ -40,6 +55,10 @@ public enum ConstantsNet {;
 
     /**
      new {@link HashSet}
+     <p>
+
+     @see ru.vachok.networker.net.NetScannerSvc#getPCNamesPref(String)
+     @see ru.vachok.networker.net.NetScanCtr#scanIt(HttpServletRequest, Model, Date)
      */
     public static final Set<String> PC_NAMES = new HashSet<>(Integer.parseInt(LOC_PROPS.getOrDefault(ConstantsFor.PR_TOTPC, "318").toString()));
 
@@ -56,18 +75,28 @@ public enum ConstantsNet {;
     public static final String[] PC_PREFIXES = {"do", "pp", "td", "no", "a"};
 
     /**
-     <i>Boiler Plate</i>
-     */
-    public static final String WRITE_DB = ".writeDB";
-
-    /**
      Название property
      */
     public static final String PR_LASTSCAN = "lastscan";
 
-    static final String ONLINES_CHECK = ".onLinesCheck";
+    /**
+     {@link NetScannerSvc#getPCsAsync()}
 
-    static final String GET_INFO_FROM_DB = ".getInfoFromDB";
+     @see ADSrv#getDetails(java.lang.String)
+     */
+    public static final ConcurrentMap<String, File> COMPNAME_USERS_MAP = new ConcurrentHashMap<>();
+
+    /**
+     {@link ru.vachok.networker.ad.PCUserResolver#recToDB(String, String)}
+     */
+    public static final ConcurrentMap<String, String> PC_U_MAP = new ConcurrentHashMap<>();
+
+    public static final String STR_COMPNAME_USERS_MAP_SIZE = " COMPNAME_USERS_MAP size";
+
+    /**
+     Выгрузка из БД {@link #U_0466446_VELKOM}-pcuserauto
+     */
+    public static final String VELKOM_PCUSERAUTO_TXT = "velkom_pcuserauto.txt";
 
     public static final String ONLINE_NOW = "OnlineNow";
 
@@ -88,7 +117,15 @@ public enum ConstantsNet {;
      */
     public static final String STR_NETSCANNERSVC = "netScannerSvc";
 
-    /**
-     {@link ThreadConfig#threadPoolTaskExecutor()}
-     */
-    public static final ThreadPoolTaskExecutor TASK_EXECUTOR = new ThreadConfig().threadPoolTaskExecutor();}
+    public static String getProvider() {
+        Future<String> submit = ThreadConfig.getI().threadPoolTaskExecutor().submit(new TraceRoute());
+        try {
+            String s = submit.get();
+            FileSystemWorker.recFile("trace", s);
+            return s;
+        } catch (InterruptedException | ExecutionException e) {
+            new MessageCons().errorAlert("ConstantsNet", "getProvider", TForms.from(e));
+            Thread.currentThread().interrupt();
+            return e.getMessage();
+        }
+    }}

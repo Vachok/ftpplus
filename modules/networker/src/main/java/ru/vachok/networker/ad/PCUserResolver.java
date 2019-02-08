@@ -19,7 +19,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -31,14 +30,12 @@ import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
 
  @since 02.10.2018 (17:32) */
 @Service
-public class PCUserResolver implements Thread.UncaughtExceptionHandler {
+public class PCUserResolver {
 
     /**
      {@link Logger}
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(PCUserResolver.class.getSimpleName());
-
-    private static final String REC_AUTO_DB = ".recAutoDB";
 
     /**
      <i>private cons</i>
@@ -57,21 +54,29 @@ public class PCUserResolver implements Thread.UncaughtExceptionHandler {
     /**
      {@link RegRuMysql#getDefaultConnection(String)} - u0466446_velkom
      */
-    private static Connection connection = null;
+    private static Connection connection = new RegRuMysql().getDefaultConnection(ConstantsNet.DB_NAME);
 
     private String lastFileUse;
-
-    private PCUserResolver() {
-    }
 
     /**
      @return {@link #pcUserResolver}
      */
-    public static PCUserResolver getPcUserResolver(Connection c) {
-        Thread.currentThread().checkAccess();
-        Thread.currentThread().getThreadGroup().checkAccess();
-        connection = c;
+    public static PCUserResolver getPcUserResolver() {
         return pcUserResolver;
+    }
+
+    private PCUserResolver() {
+    }
+
+    private static Connection reconnectToDB() {
+        try {
+            connection.close();
+            connection = null;
+            connection = new RegRuMysql().getDefaultConnection(ConstantsNet.DB_NAME);
+        } catch (SQLException e) {
+            FileSystemWorker.error("PCUserResolver.reconnectToDB", e);
+        }
+        return connection;
     }
 
     /**
@@ -93,14 +98,12 @@ public class PCUserResolver implements Thread.UncaughtExceptionHandler {
                 .append(Arrays.toString(files).replace(", ", "\n"))
                 .append("\n\n\n")
                 .append(lastFileUse);
-            Thread.currentThread().checkAccess();
+
         } catch (IOException | ArrayIndexOutOfBoundsException e) {
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().interrupt();
+            FileSystemWorker.error("PCUserResolver.namesToFile", e);
         }
         if (lastFileUse != null) {
             recAutoDB(pcName, lastFileUse);
-            Thread.currentThread().interrupt();
         }
     }
 
@@ -114,7 +117,6 @@ public class PCUserResolver implements Thread.UncaughtExceptionHandler {
     synchronized String offNowGetU(CharSequence pcName) {
         StringBuilder v = new StringBuilder();
         try (Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.U_0466446_VELKOM)) {
-
             try (PreparedStatement p = c.prepareStatement("select * from pcuser");
                  PreparedStatement pAuto = c.prepareStatement("select * from pcuserauto where pcName in (select pcName from pcuser) order by pcName asc limit 203");
                  ResultSet resultSet = p.executeQuery();
@@ -141,16 +143,17 @@ public class PCUserResolver implements Thread.UncaughtExceptionHandler {
         } catch (SQLException e) {
             new MessageCons().errorAlert(PC_USER_RESOLVER_CLASS_NAME, "offNowGetU", e.getMessage());
             FileSystemWorker.error("PCUserResolver.offNowGetU", e);
-            NetScannerSvc.getI();
-            NetScannerSvc.reconnectToDB();
         }
-        Thread.currentThread().checkAccess();
-        Thread.currentThread().getThreadGroup().interrupt();
         return v.toString();
     }
 
     /**
-     Запись в БД <b>pcuser</b><br> Запись по-запросу от браузера. <br> pcName - уникальный (таблица не переписывается или не дополняется, при наличии записи по-компу)
+     Запись в БД <b>pcuser</b><br> Запись по-запросу от браузера.
+     <p>
+     pcName - уникальный (таблица не переписывается или не дополняется, при наличиизаписи по-компу)
+     <p>
+     Лог - <b>PCUserResolver.recToDB</b> в папке запуска.
+     <p>
 
      @param userName имя юзера
      @param pcName   имя ПК
@@ -158,113 +161,15 @@ public class PCUserResolver implements Thread.UncaughtExceptionHandler {
      */
     synchronized void recToDB(String userName, String pcName) {
         String sql = "insert into pcuser (pcName, userName) values(?,?)";
-        ConcurrentMap<String, String> pcUMap = ConstantsFor.PC_U_MAP;
         String msg = userName + " on pc " + pcName + " is set.";
         try (PreparedStatement p = connection.prepareStatement(sql)) {
             p.setString(1, userName);
             p.setString(2, pcName);
             p.executeUpdate();
             LOGGER.info(msg);
-            pcUMap.put(pcName, msg);
-            Thread.currentThread().interrupt();
+            ConstantsNet.PC_U_MAP.put(pcName, msg);
         } catch (SQLException e) {
-            new MessageCons().errorAlert(PC_USER_RESOLVER_CLASS_NAME, "recToDB", e.getMessage());
-        }
-    }
-
-// --Commented out by Inspection START (25.01.2019 13:03):
-//    /**
-//     Запрос на установку пользователя
-//     <p>
-//     Usages:  {@link AppComponents#pcUserResolver()} <br>
-//     Uses: {@link AppComponents#adSrv()} <br>
-//
-//     @return {@link ADSrv#getAdUser()}
-//     @see ActDirectoryCTRL
-//     */
-//    ADUser adUsersSetter() {
-//        ADSrv adSrv = AppComponents.adSrv();
-//        ADUser adUser = adSrv.getAdUser();
-//        try{
-//            String resolvedName = getResolvedName();
-//            LOGGER.info(resolvedName);
-//            adUser.setUserName(resolvedName);
-//        }
-//        catch(NullPointerException e){
-//            LOGGER.warn("I cant set User for");
-//            Thread.currentThread().interrupt();
-//        }
-//        Thread.currentThread().interrupt();
-//        return adUser;
-//    }
-// --Commented out by Inspection STOP (25.01.2019 13:03)
-
-// --Commented out by Inspection START (25.01.2019 13:45):
-//    /**
-//     <b>Рабочий метод</b>
-//     Делает запрос в {@code \\c$\Users}, ищет там папки, записывает в массив. <br> Сортирует по дате изменения.
-//
-//     @return {@link String}, имя последнего измененного объекта.
-//     @see #adUsersSetter()
-//     */
-//    private synchronized String getResolvedName() {
-//        List<String> onlineNow = new ArrayList<>();
-//        List<String> offNow = new ArrayList<>();
-//        StringBuilder stringBuilder = new StringBuilder();
-//        if(!lastScanMap.isEmpty()){
-//            lastScanMap.forEach((x, y) -> {
-//                if(y){
-//                    onlineNow.add(x);
-//                }
-//                else{
-//                    offNow.add(x);
-//                }
-//            });
-//        }
-//        else{
-//            NetScannerSvc.getI().getPCsAsync();
-//        }
-//        onlineNow.stream().map(x -> x.replaceAll("<br><b>", "").split("</b><br>")[0]).forEach(x -> {
-//            File filesAsFile = new File("\\\\" + x + "\\c$\\Users\\");
-//            File[] files = filesAsFile.listFiles();
-//            ConstantsFor.COMPNAME_USERS_MAP.put(x, filesAsFile);
-//            SortedMap<Long, String> lastMod = new TreeMap<>();
-//            if (files != null) {
-//                for (File file : files) {
-//                    lastMod.put(file.lastModified(), file.getName() + " user " + x + " comp\n");
-//
-//                }
-//            } else {
-//                stringBuilder
-//                    .append(System.currentTimeMillis())
-//                    .append(" millis. Can't set user for: ").append(x).append("\n");
-//            }
-//            Optional<Long> max = lastMod.keySet().stream().max(Long::compareTo);
-//            boolean aLongPresent = max.isPresent();
-//            if (aLongPresent) {
-//                Long aLong = max.get();
-//
-//                stringBuilder
-//                    .append(lastMod.get(aLong));
-//            }
-//        });
-//        offNow.forEach((String x) -> stringBuilder.append(offNowGetU(x)));
-//        String msg = ConstantsFor.COMPNAME_USERS_MAP.size() + ConstantsFor.COMPNAME_USERS_MAP_SIZE;
-//        LOGGER.warn(msg);
-//        return stringBuilder.toString();
-//    }
-// --Commented out by Inspection STOP (25.01.2019 13:45)
-
-    @SuppressWarnings("MethodWithMultipleReturnPoints")
-    private synchronized String getLastTimeUse(String pathAsStr) {
-        WalkerToUserFolder walkerToUserFolder = new WalkerToUserFolder();
-        try {
-            Files.walkFileTree(Paths.get(pathAsStr), Collections.singleton(FOLLOW_LINKS), 2, walkerToUserFolder);
-            List<String> timePath = walkerToUserFolder.getTimePath();
-            Collections.sort(timePath);
-            return timePath.get(timePath.size() - 1);
-        } catch (IOException | IndexOutOfBoundsException e) {
-            return e.getMessage();
+            FileSystemWorker.error("PCUserResolver.recToDB", e);
         }
     }
 
@@ -288,31 +193,24 @@ public class PCUserResolver implements Thread.UncaughtExceptionHandler {
             preparedStatement.setString(4, split[7]);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            new MessageCons().errorAlert(PC_USER_RESOLVER_CLASS_NAME, classMeth, e.getMessage());
             FileSystemWorker.error(classMeth, e);
-            NetScannerSvc.getI();
-            NetScannerSvc.reconnectToDB();
+            connection = reconnectToDB();
         } catch (ArrayIndexOutOfBoundsException | NullPointerException e) {
-            new MessageCons().errorAlert(PC_USER_RESOLVER_CLASS_NAME, classMeth, e.getMessage());
             FileSystemWorker.error(classMeth, e);
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().getThreadGroup().destroy();
         }
     }
 
-    /**
-     Method invoked when the given thread terminates due to the given uncaught exception.
-     <p>Any exception thrown by this method will be ignored by the
-     Java Virtual Machine.  @param t the thread
-
-     @param e the exception
-     */
-    @Override
-    public synchronized void uncaughtException(Thread t, Throwable e) {
-        t.checkAccess();
-        t.interrupt();
-        String msg = t.toString() + "\n" + e.getMessage();
-        LOGGER.info(msg);
+    @SuppressWarnings("MethodWithMultipleReturnPoints")
+    private synchronized String getLastTimeUse(String pathAsStr) {
+        WalkerToUserFolder walkerToUserFolder = new WalkerToUserFolder();
+        try {
+            Files.walkFileTree(Paths.get(pathAsStr), Collections.singleton(FOLLOW_LINKS), 2, walkerToUserFolder);
+            List<String> timePath = walkerToUserFolder.getTimePath();
+            Collections.sort(timePath);
+            return timePath.get(timePath.size() - 1);
+        } catch (IOException | IndexOutOfBoundsException e) {
+            return e.getMessage();
+        }
     }
 
 

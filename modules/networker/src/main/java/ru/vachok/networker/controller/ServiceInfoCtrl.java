@@ -66,7 +66,7 @@ public class ServiceInfoCtrl {
         Thread.currentThread().setName("ServiceInfoCtrl.infoMapping");
         ThreadConfig.executeAsThread(new SpeedChecker.ChkMailAndUpdateDB());
         this.visitor = new AppComponents().visitor(request);
-        this.authReq = Stream.of("0:0:0:0", "10.10.111", "10.200.213.85", "172.16.20").anyMatch(sP -> request.getRemoteAddr().contains(sP));
+        this.authReq = Stream.of("0:0:0:0", "10.10.111", "10.200.213.85", "172.16.20", "10.200.214.80").anyMatch(sP -> request.getRemoteAddr().contains(sP));
         if (authReq) {
             modModMaker(model, request, visitor);
             response.addHeader(ConstantsFor.HEAD_REFRESH, "90");
@@ -117,7 +117,7 @@ public class ServiceInfoCtrl {
             .append("</font><br>")
             .append(DiapazonedScan.getInstance().toString())
             .append("<br>")
-            .append(new ThreadConfig().toString())
+            .append(AppComponents.threadConfig().toString())
             .toString());
         model.addAttribute("request", prepareRequest(request));
         model.addAttribute(ConstantsFor.ATT_VISIT, visitor.toString());

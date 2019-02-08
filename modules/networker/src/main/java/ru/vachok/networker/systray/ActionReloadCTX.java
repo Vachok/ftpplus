@@ -3,7 +3,7 @@ package ru.vachok.networker.systray;
 
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import ru.vachok.networker.IntoApplication;
-import ru.vachok.networker.config.ThreadConfig;
+import ru.vachok.networker.componentsrepo.AppComponents;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -20,9 +20,9 @@ class ActionReloadCTX extends AbstractAction {
     @Override
     public void actionPerformed(ActionEvent e) {
         IntoApplication.getConfigurableApplicationContext().close();
-        ThreadPoolTaskExecutor executor = new ThreadConfig().threadPoolTaskExecutor();
+        ThreadPoolTaskExecutor executor = AppComponents.threadConfig().threadPoolTaskExecutor();
         executor.getThreadPoolExecutor().shutdown();
-        new ThreadConfig().killAll();
+        AppComponents.threadConfig().killAll();
         Executors.unconfigurableExecutorService(Executors.newSingleThreadScheduledExecutor())
             .execute(() -> IntoApplication.main(new String[0]));
     }

@@ -98,17 +98,16 @@ public class ActDirectoryCTRL {
 
     /**
      @param request {@link HttpServletRequest}
-     @param model {@link Model}
+     @param model   {@link Model}
      @return ad.html
      */
-    @GetMapping ("/ad")
+    @GetMapping("/ad")
     public String adUsersComps(HttpServletRequest request, Model model) {
         this.visitor = ConstantsFor.getVis(request);
         List<ADUser> adUsers = adSrv.userSetter();
-        if(request.getQueryString()!=null){
+        if (request.getQueryString() != null) {
             return queryStringExists(request.getQueryString(), model);
-        }
-        else{
+        } else {
             ADComputer adComputer = adSrv.getAdComputer();
             model.addAttribute(ConstantsFor.ATT_PHOTO_CONVERTER, photoConverterSRV);
             model.addAttribute(ConstantsFor.ATT_SSH_ACTS, sshActs);
@@ -117,6 +116,37 @@ public class ActDirectoryCTRL {
             model.addAttribute(ConstantsFor.ATT_USERS, new TForms().fromADUsersList(adUsers, true));
         }
         return "ad";
+    }
+
+    /**
+     Get adphoto.html
+     <p>
+     Uses: {@link PhotoConverterSRV#psCommands}
+
+     @param photoConverterSRV {@link PhotoConverterSRV}
+     @param model             {@link Model}
+     @return adphoto.html
+     */
+    @GetMapping("/adphoto")
+    public String adFoto(@ModelAttribute PhotoConverterSRV photoConverterSRV, Model model, HttpServletRequest request) {
+        this.visitor = ConstantsFor.getVis(request);
+
+        this.photoConverterSRV = photoConverterSRV;
+        try {
+            model.addAttribute("photoConverterSRV", photoConverterSRV);
+            model.addAttribute(ConstantsFor.ATT_SSH_ACTS, sshActs);
+            if (!ConstantsFor.isPingOK()) {
+                titleStr = "ping to srv-git.eatmeat.ru is " + false;
+            }
+            model.addAttribute(ConstantsFor.ATT_TITLE, titleStr);
+            model.addAttribute("content", photoConverterSRV.psCommands());
+            model.addAttribute("alert", ALERT_AD_FOTO);
+            model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<br>" + visitor.toString());
+        } catch (NullPointerException e) {
+            new MessageCons().errorAlert("ActDirectoryCTRL", "adFoto", e.getMessage());
+            FileSystemWorker.error("ActDirectoryCTRL.adFoto", e);
+        }
+        return "adphoto";
     }
 
     /**
@@ -131,10 +161,10 @@ public class ActDirectoryCTRL {
     private String queryStringExists(String queryString, Model model) {
         NetScannerSvc netScannerSvc = NetScannerSvc.getI();
         netScannerSvc.setThePc(queryString);
-        String attributeValue = netScannerSvc.getInfoFromDB();
+        String attributeValue = NetScannerSvc.getInfoFromDB();
         model.addAttribute(ConstantsFor.ATT_TITLE, queryString + " " + attributeValue);
         model.addAttribute(ConstantsFor.ATT_USERS, inputWithInfoFromDB);
-        try{
+        try {
             String adSrvDetails = adSrv.getDetails(queryString);
             model.addAttribute(ATT_DETAILS, adSrvDetails);
             adSrvDetails = adSrvDetails.replaceAll("</br>", "\n").replaceAll("<p>", "\n\n").replaceAll("<p><b>", "\n\n");
@@ -142,44 +172,11 @@ public class ActDirectoryCTRL {
             String finalAdSrvDetails = adSrvDetails;
             new MessageToTray(new ListenUserInfo(queryString, attributeValue, finalAdSrvDetails)).info(queryString, attributeValue,
                 ConstantsFor.percToEnd(new Date(l), 24));
-        }
-        catch(Exception e){
+        } catch (Exception e) {
             model.addAttribute(ATT_DETAILS, e.getMessage());
         }
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
         return "aditem";
-    }
-
-    /**
-     Get adphoto.html
-     <p>
-     Uses: {@link PhotoConverterSRV#psCommands}
-
-     @param photoConverterSRV {@link PhotoConverterSRV}
-     @param model             {@link Model}
-     @return adphoto.html
-     */
-    @GetMapping ("/adphoto")
-    public String adFoto(@ModelAttribute PhotoConverterSRV photoConverterSRV, Model model, HttpServletRequest request) {
-        this.visitor = ConstantsFor.getVis(request);
-
-        this.photoConverterSRV = photoConverterSRV;
-        try{
-            model.addAttribute("photoConverterSRV", photoConverterSRV);
-            model.addAttribute(ConstantsFor.ATT_SSH_ACTS, sshActs);
-            if(!ConstantsFor.isPingOK()){
-                titleStr = "ping to srv-git.eatmeat.ru is " + false;
-            }
-            model.addAttribute(ConstantsFor.ATT_TITLE, titleStr);
-            model.addAttribute("content", photoConverterSRV.psCommands());
-            model.addAttribute("alert", ALERT_AD_FOTO);
-            model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<br>" + visitor.toString());
-        }
-        catch(NullPointerException e){
-            new MessageCons().errorAlert("ActDirectoryCTRL", "adFoto", e.getMessage());
-            FileSystemWorker.error("ActDirectoryCTRL.adFoto", e);
-        }
-        return "adphoto";
     }
 
 }

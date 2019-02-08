@@ -5,17 +5,41 @@ import org.springframework.core.task.TaskDecorator;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import org.springframework.stereotype.Service;
 import org.springframework.util.CustomizableThreadCreator;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
+
+import java.util.concurrent.TimeUnit;
 
 
 /**
  @since 11.09.2018 (11:41) */
 @SuppressWarnings({"MagicNumber", "FieldNotUsedInToString"})
 @EnableAsync
+@Service
 public class ThreadConfig extends ThreadPoolTaskExecutor {
+
+    /**
+     {@link ThreadPoolTaskScheduler}
+     */
+    private static final ThreadPoolTaskScheduler TASK_SCHEDULER = new ThreadPoolTaskScheduler();
+
+    private static final String INITIALIZED = " initialized";
+
+    private static final ThreadConfig THREAD_CONFIG = new ThreadConfig();
+
+    public static ThreadConfig getI() {
+        return THREAD_CONFIG;
+    }
+
+    public ThreadPoolTaskScheduler getTaskScheduler() {
+        return TASK_SCHEDULER;
+    }
+
+    private ThreadConfig() {
+    }
 
     /**
      <i>Boiler Plate</i>
@@ -27,13 +51,11 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
      */
     private ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
 
-    /**
-     {@link ThreadPoolTaskScheduler}
-     */
-    private ThreadPoolTaskScheduler taskScheduler = new ThreadPoolTaskScheduler();
+    static {
+        taskSchedulerConf();
+    }
 
     public Runnable taskDecorator(Runnable runnable) {
-        new MessageCons().errorAlert("ThreadConfig.taskDecorator");
         new MessageCons().info(ConstantsFor.STR_INPUT_OUTPUT, "runnable = [" + runnable + "]", "java.lang.Runnable");
         TaskDecorator taskDecorator = runnable1 -> runnable;
         String msg = taskDecorator.toString() + " " + this.getClass().getSimpleName() + ".taskDecorator(Runnable runnable)";
@@ -46,16 +68,16 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
     }
 
     /**
-     Убивает {@link #taskExecutor} и {@link #taskScheduler}
+     Убивает {@link #taskExecutor} и {@link #TASK_SCHEDULER}
      */
     public void killAll() {
         taskExecutor.setAwaitTerminationSeconds(15);
 
-        taskScheduler.setWaitForTasksToCompleteOnShutdown(false);
+        TASK_SCHEDULER.setWaitForTasksToCompleteOnShutdown(false);
         taskExecutor.setWaitForTasksToCompleteOnShutdown(true);
 
-        taskScheduler.shutdown();
-        taskScheduler.destroy();
+        TASK_SCHEDULER.shutdown();
+        TASK_SCHEDULER.destroy();
 
         taskExecutor.shutdown();
         taskExecutor.destroy();
@@ -75,32 +97,30 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
         thread.start();
     }
 
-    public ThreadPoolTaskExecutor threadPoolTaskExecutor() {
-
-        taskExecutor.initialize();
-        taskExecutor.setMaxPoolSize(100);
-        taskExecutor.setThreadNamePrefix("ts-" + (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000);
-        return taskExecutor;
+    public static void taskSchedulerConf() {
+        TASK_SCHEDULER.initialize();
+        TASK_SCHEDULER.setThreadNamePrefix("schMIN-" + TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - ConstantsFor.START_STAMP));
+        TASK_SCHEDULER.setPoolSize(15);
     }
 
     @Override
     public String toString() {
         this.taskExecutor = threadPoolTaskExecutor();
-        this.taskScheduler = threadPoolTaskScheduler();
-
         final StringBuilder sb = new StringBuilder("ThreadConfig{");
         sb.append("taskExecutor=").append(taskExecutor.getThreadNamePrefix());
         sb.append(STR_ACTIVE_COUNT).append(threadPoolTaskExecutor().getActiveCount());
-        sb.append(", taskScheduler=").append(taskScheduler.getThreadNamePrefix());
-        sb.append(STR_ACTIVE_COUNT).append(threadPoolTaskScheduler().getActiveCount());
+        sb.append(", TASK_SCHEDULER=").append(TASK_SCHEDULER.getThreadNamePrefix());
+        sb.append(STR_ACTIVE_COUNT).append(TASK_SCHEDULER.getActiveCount());
         sb.append('}');
         return sb.toString();
     }
 
-    public ThreadPoolTaskScheduler threadPoolTaskScheduler() {
-        taskScheduler.initialize();
-        taskScheduler.setThreadNamePrefix("sch-" + (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000);
-        taskScheduler.setPoolSize(10);
-        return taskScheduler;
+    public ThreadPoolTaskExecutor threadPoolTaskExecutor() {
+        taskExecutor.initialize();
+        taskExecutor.setQueueCapacity(500);
+        taskExecutor.setMaxPoolSize(100);
+        taskExecutor.setThreadNamePrefix("ts-" + (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000);
+        return taskExecutor;
     }
+
 }

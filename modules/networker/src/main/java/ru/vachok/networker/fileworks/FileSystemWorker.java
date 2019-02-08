@@ -2,22 +2,19 @@ package ru.vachok.networker.fileworks;
 
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.messenger.email.ESender;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.common.CommonScan2YOlder;
-import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.services.TimeChecker;
 import ru.vachok.networker.systray.SystemTrayHelper;
 
 import java.io.*;
 import java.nio.file.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Stream;
@@ -29,31 +26,16 @@ import java.util.stream.Stream;
  @since 19.12.2018 (9:57) */
 public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
 
+    private static final String CLASS_NAME = "FileSystemWorker";
+
     /**
-     {@link AppComponents#getLogger()}
+     {@link LoggerFactory#getLogger(String)}
      */
-    static final Logger LOGGER = AppComponents.getLogger();
+    static final Logger LOGGER = LoggerFactory.getLogger(CLASS_NAME);
 
     public static synchronized void recFile(String fileName, Stream<String> toFileRec) {
         try(OutputStream outputStream = new FileOutputStream(fileName);
             PrintWriter printWriter = new PrintWriter(outputStream, true)){
-            toFileRec.forEach(printWriter::println);
-        }
-        catch(IOException e){
-            LOGGER.info(e.getMessage());
-        }
-    }
-
-    /**
-     Запись файла
-
-     @param fileName  имя файла
-     @param toFileRec {@link List} строчек на запись.
-     */
-    public static synchronized void recFile(String fileName, List<String> toFileRec) {
-        try(OutputStream outputStream = new FileOutputStream(fileName);
-            PrintWriter printWriter = new PrintWriter(outputStream, true)){
-            printWriter.println(new Date(ConstantsFor.getAtomicTime()).toString());
             toFileRec.forEach(printWriter::println);
         }
         catch(IOException e){
@@ -132,7 +114,10 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         }
         catch(IOException | NullPointerException e){
             LOGGER.warn(e.getMessage(), e);
-            return toCpFile.exists();
+            if(toCpFile.exists()){
+                toCpFile.deleteOnExit();
+                return toCpFile.delete();
+            }
         }
         return toCpFile.exists();
     }
@@ -147,24 +132,6 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         return readiedStrings;
     }
 
-    @SuppressWarnings ("MethodWithMultipleReturnPoints")
-    public static boolean delFilePatterns(String patToDel) {
-        File file = new File(".");
-        FileVisitor<Path> deleterTemp = new DeleterTemp(patToDel);
-        try{
-            Path walkFileTree = Files.walkFileTree(file.toPath(), deleterTemp);
-            return walkFileTree.toFile().exists();
-        }
-        catch(IOException e){
-            LOGGER.warn(e.getMessage(), e);
-            return false;
-        }
-    }
-
-    public static void recFile(String fileNameLOG, String toWriteStr) {
-        recFile(fileNameLOG + ConstantsFor.LOG, Collections.singletonList(toWriteStr));
-    }
-
     /**
      Чтение файла из файловой системы.
      <p>
@@ -174,7 +141,6 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
      */
     public static String readFile(String fileName) {
         final long stArt = System.currentTimeMillis();
-
         StringBuilder stringBuilder = new StringBuilder();
         boolean exists = new File(fileName).exists();
         if(exists){
@@ -211,6 +177,41 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         return stringBuilder.toString();
     }
 
+    public static void delFilePatterns(String[] patToDelArr) {
+        File file = new File(".");
+        for(String patToDel : patToDelArr){
+            FileVisitor<Path> deleterTemp = new DeleterTemp(patToDel);
+            try{
+                Path walkFileTree = Files.walkFileTree(file.toPath(), deleterTemp);
+                new MessageCons().infoNoTitles("walkFileTree = " + walkFileTree);
+            }
+            catch(IOException e){
+                new MessageCons().errorAlert(CLASS_NAME, "delFilePatterns", e.getMessage());
+            }
+        }
+    }
+
+    public static void recFile(String fileNameLOG, String toWriteStr) {
+        recFile(fileNameLOG + ConstantsFor.LOG, Collections.singletonList(toWriteStr));
+    }
+
+    /**
+     Запись файла
+
+     @param fileName  имя файла
+     @param toFileRec {@link List} строчек на запись.
+     */
+    public static synchronized void recFile(String fileName, List<String> toFileRec) {
+        try(OutputStream outputStream = new FileOutputStream(fileName);
+            PrintWriter printWriter = new PrintWriter(outputStream, true)){
+            printWriter.println(new Date(ConstantsFor.getAtomicTime()).toString());
+            toFileRec.forEach(printWriter::println);
+        }
+        catch(IOException e){
+            LOGGER.info(e.getMessage());
+        }
+    }
+
     public static List<String> readFileToList(String absolutePath) {
         LOGGER.warn("FileSystemWorker.readFileToList");
         List<String> retList = new ArrayList<>();
@@ -222,7 +223,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
             }
         }
         catch(IOException e){
-            new MessageCons().errorAlert("FileSystemWorker", "readFileToList", e.getMessage());
+            new MessageCons().errorAlert(CLASS_NAME, "readFileToList", e.getMessage());
             FileSystemWorker.error("FileSystemWorker.readFileToList", e);
             retList.add(e.getMessage());
             retList.add(new TForms().fromArray(e, true));
@@ -233,8 +234,8 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
 
     public static void error(String classMeth, Exception e) {
         File f = new File(classMeth + ConstantsFor.LOG);
-        try (OutputStream outputStream = new FileOutputStream(f);
-             PrintStream printStream = new PrintStream(outputStream, true)) {
+        try(OutputStream outputStream = new FileOutputStream(f);
+            PrintStream printStream = new PrintStream(outputStream, true)){
             printStream.println(new Date(new TimeChecker().call().getReturnTime()));
             printStream.println();
             printStream.println();
@@ -244,14 +245,16 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
             printStream.println();
             printStream.println("Suppressed:");
             printStream.println();
-            if (e.getSuppressed().length > 0) {
-                for (Throwable throwable : e.getSuppressed()) {
+            if(e.getSuppressed().length > 0){
+                for(Throwable throwable : e.getSuppressed()){
                     printStream.println(throwable.getMessage());
                     printStream.println(new TForms().fromArray(throwable, false));
                 }
             }
-        } catch (IOException ex) {
+        }
+        catch(IOException ex){
             LOGGER.error("FileSystemWorker.error", ex.getMessage(), ex);
         }
     }
+
 }
