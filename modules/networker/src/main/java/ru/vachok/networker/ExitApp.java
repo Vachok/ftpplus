@@ -50,8 +50,10 @@ public class ExitApp implements Runnable {
     private long toMinutes = TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - ConstantsFor.START_STAMP);
 
     /**
+     Сохранение состояния объектов.
+     <p>
      @param reasonExit причина выхода
-     @param объект,    для сохранения на диск
+     @param toWriteObj,  {@link Object}  для сохранения на диск
      @param out        если требуется сохранить состояние
      */
     public ExitApp(String reasonExit, FileOutputStream out, Object toWriteObj) {

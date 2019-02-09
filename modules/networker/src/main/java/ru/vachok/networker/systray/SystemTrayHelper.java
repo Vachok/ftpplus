@@ -19,6 +19,7 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.Objects;
 import java.util.Properties;
 
 
@@ -101,10 +102,17 @@ public final class SystemTrayHelper extends AppInfoOnLoad {
         }
         iconFileName = new StringBuilder().append(IMG_FOLDER_NAME).append(iconFileName).toString();
 
-        Image image = Toolkit.getDefaultToolkit().getImage(SystemTrayHelper.class.getResource(iconFileName));
+        Image image = null;
+        try{
+            image = Toolkit.getDefaultToolkit().getImage(SystemTrayHelper.class.getResource(iconFileName));
+        }
+        catch(Exception e){
+            new MessageCons().errorAlert("SystemTrayHelper", "addTray", e.getMessage());
+            FileSystemWorker.error(classMeth, e);
+        }
         PopupMenu popupMenu = new PopupMenu();
         MenuItem defItem = new MenuItem();
-        trayIcon = new TrayIcon(image,
+        trayIcon = new TrayIcon(Objects.requireNonNull(image),
             new StringBuilder().append(AppComponents.versionInfo().getAppBuild()).append(" v. ")
                 .append(AppComponents.versionInfo().getAppVersion()).append(" ")
                 .append(AppComponents.versionInfo().getBuildTime()).toString(), popupMenu);
@@ -196,8 +204,12 @@ public final class SystemTrayHelper extends AppInfoOnLoad {
     /**
      Reconnect Socket, пока он открыт
      <p>
-     Usages: {@link #addItems(PopupMenu)} <br> Uses: 1.1 {@link AppInfoOnLoad#checkDay()}, 1.2 {@link MyServer#reconSock()}, 1.3 {@link TForms#fromArray(Exception, boolean)}, 1.4 {@link
-    ThreadConfig#threadPoolTaskExecutor()}
+     1. {@link MyServer#setSocket(java.net.Socket)}. Создаём новый {@link Socket}. <br>
+     2. {@link MyServer#getSocket()} - пока он не {@code isClosed}, 3. {@link MyServer#reconSock()} реконнект. <br><br>
+     {@link IOException}, {@link InterruptedException}, {@link NullPointerException} : <br>
+     4. {@link TForms#fromArray(java.lang.Exception, boolean)} - преобразуем исключение в строку. <br>
+     5. {@link AppComponents#threadConfig()} , 6 {@link ThreadConfig#threadPoolTaskExecutor()} перезапуск {@link MyServer#getI()}
+     <p>
      */
     private static void recOn() {
         MyServer.setSocket(new Socket());

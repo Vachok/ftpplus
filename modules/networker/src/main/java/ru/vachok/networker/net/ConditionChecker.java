@@ -12,10 +12,7 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 
 import javax.servlet.http.HttpServletResponse;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -158,7 +155,6 @@ class ConditionChecker {
      {@link ScanOnline#getI()} + {@link ScanOnline#toString()}
 
      @param model             {@link Model}
-     @param netScanFileWorker {@link NetScanFileWorker}
      @param response          {@link HttpServletResponse}
      */
     private static void allDevNotNull(Model model, HttpServletResponse response) {

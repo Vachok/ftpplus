@@ -3,7 +3,6 @@ package ru.vachok.networker.services;
 
 import org.apache.commons.net.ntp.TimeInfo;
 import org.slf4j.Logger;
-import ru.vachok.networker.AppInfoOnLoad;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
 
@@ -66,8 +65,8 @@ public abstract class MyCalen {
     /**
      Создание {@link Date}
      <p>
-     Usages: {@link AppInfoOnLoad#dateSchedulers()} <br> {@link AppInfoOnLoad#checkDay()} .
-
+     След. день недели.
+     <p>
      @param hourNeed  час
      @param minNeed   минута
      @param dayOfWeek день недели

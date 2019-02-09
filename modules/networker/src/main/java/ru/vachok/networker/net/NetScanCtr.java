@@ -117,7 +117,7 @@ public class NetScanCtr {
     }
 
     /**
-     GET /{@link #STR_NETSCAN Старт сканера локальных ПК
+     GET /{@link #STR_NETSCAN} Старт сканера локальных ПК
     <p>
     1. {@link ConstantsFor#getVis(javax.servlet.http.HttpServletRequest)}. Запись {@link Visitor } <br> 2. {@link NetScannerSvc#setThePc(java.lang.String)} обнуляем строку в форме. <br> 3. {@link
     NetScannerSvc#getThePc()} получаем пользовательский ввод. <br> 4. {@link PageFooter#getFooterUtext()} текст footer. 5 {@link PageFooter#PageFooter()} <br> 6. {@link AppComponents#lastNetScan()}
@@ -222,7 +222,7 @@ public class NetScanCtr {
      <p>
      1. {@link TForms#fromArray(java.util.Map, boolean)} добавим в {@link Model} содержимое {@link #lastScanMAP} <br> 2. {@link NetScannerSvc#getOnLinePCs()} - в заголовке страницы, при обновлении,
      отображение остатка ПК. <br> 3. {@link TForms#fromArray(java.util.Map, boolean)} запишем файл {@link ConstantsNet#STR_LASTNETSCAN}, 4. {@link FileSystemWorker#recFile(java.lang.String,
-        java.lang.String)} <br> 5. {@link #timeCheck(int, long, HttpServletRequest, Model, String)} переходим в проверке времени.
+        java.lang.String)} <br> 5. {@link #timeCheck(int, long, HttpServletRequest, Model)} переходим в проверке времени.
      <p>
 
      @param model     {@link Model}

@@ -94,7 +94,7 @@ public enum ConstantsNet {;
     public static final String STR_COMPNAME_USERS_MAP_SIZE = " COMPNAME_USERS_MAP size";
 
     /**
-     Выгрузка из БД {@link #U_0466446_VELKOM}-pcuserauto
+     Выгрузка из БД {@link ConstantsFor#DB_PREFIX} {@code velkom} - pcuserauto
      */
     public static final String VELKOM_PCUSERAUTO_TXT = "velkom_pcuserauto.txt";
 

@@ -11,7 +11,6 @@ import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.Visitor;
-import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.controller.ServiceInfoCtrl;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.mailserver.ExSRV;
@@ -247,7 +246,7 @@ public enum ConstantsFor {
     public static final String DB_PREFIX = "u0466446_";
 
     /**
-     Первоначальная задержка {@link ThreadConfig#threadPoolTaskScheduler()}
+     Первоначальная задержка шедулера.
      */
     public static final long INIT_DELAY = TimeUnit.MINUTES.toSeconds(MY_AGE);
 

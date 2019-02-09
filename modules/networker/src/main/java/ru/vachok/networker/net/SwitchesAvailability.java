@@ -6,10 +6,7 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.services.TimeChecker;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -101,8 +98,8 @@ public class SwitchesAvailability implements Runnable {
     /**
      Запись в файл информации
      <p>
-     Usages: {@link #testAddresses()} <br> Uses: 1.1 {@link TimeChecker#call()}
-
+     1. {@link TimeChecker#call()}
+     <p>
      @param okIP  лист он-лайн адресов
      @param badIP лист офлайн адресов
      */
