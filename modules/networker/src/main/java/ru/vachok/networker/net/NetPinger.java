@@ -2,7 +2,6 @@ package ru.vachok.networker.net;
 
 
 import org.springframework.web.multipart.MultipartFile;
-import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageFile;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
@@ -110,7 +109,6 @@ public class NetPinger implements Runnable {
     }
 
     private void pingSW() {
-        new MessageCons().errorAlert(METH_PINGSW);
         for(InetAddress inetAddress : ipAsList){
             try{
                 resList.add(inetAddress.toString() + " is " + inetAddress.isReachable(ConstantsFor.TIMEOUT_650));
