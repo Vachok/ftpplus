@@ -12,10 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.AppComponents;
-import ru.vachok.networker.componentsrepo.LastNetScan;
-import ru.vachok.networker.componentsrepo.PageFooter;
-import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.componentsrepo.*;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
@@ -29,10 +26,7 @@ import java.time.ZoneOffset;
 import java.util.Date;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 
 /**
@@ -82,6 +76,10 @@ public class NetScanCtr {
     private static final String STR_REQUEST = "request = [";
 
     private static final String STR_MODEL = "], model = [";
+
+    private static final String PINGRESULT_LOG = "pingresult";
+
+    private static final String ATT_NET_PINGER = "netPinger";
 
     /**
      {@link AppComponents#lastNetScanMap()}
@@ -165,18 +163,18 @@ public class NetScanCtr {
 
     @GetMapping("/ping")
     public String pingAddr(Model model, HttpServletRequest request, HttpServletResponse response) {
-        model.addAttribute("netPinger", netPinger);
-        model.addAttribute("pingResult", netPinger.getPingResult());
+        model.addAttribute(ATT_NET_PINGER, netPinger);
+        model.addAttribute("pingResult", FileSystemWorker.readFile(PINGRESULT_LOG));
         return "ping";
     }
 
     @PostMapping("/ping")
     public String pingPost(Model model, HttpServletRequest request, @ModelAttribute NetPinger netPinger) throws ExecutionException, InterruptedException {
         this.netPinger = netPinger;
-        ThreadConfig.getI().threadPoolTaskExecutor().getThreadPoolExecutor().submit(netPinger);
-        model.addAttribute("netPinger", netPinger);
-        model.addAttribute("pingResult", netPinger.getPingResult());
-        return "ping";
+        netPinger.run();
+        model.addAttribute(ATT_NET_PINGER, netPinger);
+        model.addAttribute("ok", FileSystemWorker.readFile(PINGRESULT_LOG));
+        return "ok";
     }
 
     /**

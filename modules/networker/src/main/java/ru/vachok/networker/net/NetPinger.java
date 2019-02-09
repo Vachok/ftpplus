@@ -3,19 +3,18 @@ package ru.vachok.networker.net;
 
 import org.springframework.web.multipart.MultipartFile;
 import ru.vachok.messenger.MessageCons;
+import ru.vachok.messenger.MessageFile;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -27,6 +26,8 @@ import java.util.concurrent.TimeUnit;
 public class NetPinger implements Runnable {
 
     private static final String CLASS_NAME = "NetPinger";
+
+    private static final String METH_PINGSW = "NetPinger.pingSW";
 
     private List<InetAddress> ipAsList = new ArrayList<>();
 
@@ -94,18 +95,6 @@ public class NetPinger implements Runnable {
         }
     }
 
-    private void pingSW() {
-        new MessageCons().errorAlert("NetPinger.pingSW");
-        for (InetAddress inetAddress : ipAsList) {
-            try {
-                resList.add(inetAddress.toString() + " is " + inetAddress.isReachable(ConstantsFor.TIMEOUT_650));
-            } catch (IOException e) {
-                new MessageLocal().errorAlert(CLASS_NAME, "pingSW", e.getMessage());
-                FileSystemWorker.error("NetPinger.pingSW", e);
-            }
-        }
-    }
-
     @Override
     public void run() {
         final long startSt = System.currentTimeMillis();
@@ -116,6 +105,32 @@ public class NetPinger implements Runnable {
             pingSW();
         }
         this.pingResult = new TForms().fromArray(resList, true);
-        messageToUser.infoNoTitles(new TForms().fromArray(resList, false));
+        messageToUser.infoNoTitles(pingResult);
+        parseResult();
+    }
+
+    private void pingSW() {
+        new MessageCons().errorAlert(METH_PINGSW);
+        for(InetAddress inetAddress : ipAsList){
+            try{
+                resList.add(inetAddress.toString() + " is " + inetAddress.isReachable(ConstantsFor.TIMEOUT_650));
+            }
+            catch(IOException e){
+                new MessageLocal().errorAlert(CLASS_NAME, "pingSW", e.getMessage());
+                FileSystemWorker.error(METH_PINGSW, e);
+            }
+        }
+    }
+
+    private void parseResult() {
+        List<String> pingsList = new ArrayList<>();
+        resList.stream().distinct().forEach(x -> {
+            int frequency = Collections.frequency(resList, x);
+            pingsList.add(frequency + " times " + x + "\n");
+        });
+        messageToUser.infoNoTitles(pingResult);
+        FileSystemWorker.recFile("pingresult", pingsList);
+        messageToUser = new MessageFile();
+        messageToUser.infoNoTitles(pingResult);
     }
 }
