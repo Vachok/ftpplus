@@ -16,6 +16,7 @@ import ru.vachok.networker.ad.ActDirectoryCTRL;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
+import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.systray.ActionCloseMsg;
 import ru.vachok.networker.systray.ActionDefault;
 import ru.vachok.networker.systray.MessageToTray;
@@ -25,12 +26,10 @@ import java.io.*;
 import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.time.LocalTime;
+import java.util.Date;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -418,14 +417,14 @@ public class NetScannerSvc {
 
      @see #getPcNames()
      */
-    @SuppressWarnings({"OverlyLongLambda"})
+    @SuppressWarnings ("OverlyLongLambda")
     private void getPCsAsync() {
         ExecutorService eServ = Executors.unconfigurableExecutorService(Executors.newFixedThreadPool(ConstantsNet.N_THREADS * 5));
         AtomicReference<String> msg = new AtomicReference<>("");
         this.stArt = System.currentTimeMillis();
         new MessageCons().errorAlert(METH_GET_PCS_ASYNC);
         boolean fileCreate = fileCreate(true);
-        new MessageToTray(new ActionCloseMsg(AppComponents.getLogger()))
+        new MessageToTray(new ActionCloseMsg(new MessageLocal()))
             .info("NetScannerSvc started scan", ConstantsFor.getUpTime(), " File: " + fileCreate);
         eServ.submit(() -> {
             msg.set(new StringBuilder()

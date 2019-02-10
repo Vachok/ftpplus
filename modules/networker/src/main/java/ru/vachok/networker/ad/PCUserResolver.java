@@ -14,10 +14,8 @@ import ru.vachok.networker.net.enums.ConstantsNet;
 import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
+import java.util.Date;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -42,21 +40,18 @@ public class PCUserResolver {
      */
     private static final PCUserResolver pcUserResolver = new PCUserResolver();
 
-// --Commented out by Inspection START (25.01.2019 13:58):
-//    /**
-//     {@link AppComponents#lastNetScan()}.getNetWork()
-//     */
-//    private static final Map<String, Boolean> lastScanMap = AppComponents.lastNetScan().getNetWork();
-// --Commented out by Inspection STOP (25.01.2019 13:58)
-
     private static final String PC_USER_RESOLVER_CLASS_NAME = "PCUserResolver";
 
     /**
-     {@link RegRuMysql#getDefaultConnection(String)} - u0466446_velkom
+     {@link RegRuMysql#getDefaultConnection(String)} - u0466446_velkom ({@link ConstantsNet#DB_NAME})
      */
-    private static Connection connection = new RegRuMysql().getDefaultConnection(ConstantsNet.DB_NAME);
+    private static Connection connection;
 
-    private String lastFileUse;
+    private String lastFileUse = null;
+
+    static {
+        connection = new RegRuMysql().getDefaultConnection(ConstantsNet.DB_NAME);
+    }
 
     /**
      @return {@link #pcUserResolver}
@@ -91,7 +86,7 @@ public class PCUserResolver {
         File[] files;
         try (OutputStream outputStream = new FileOutputStream(pcName);
              PrintWriter writer = new PrintWriter(outputStream, true)) {
-            String pathAsStr = "\\\\" + pcName + "\\c$\\Users\\";
+            String pathAsStr = new StringBuilder().append("\\\\").append(pcName).append("\\c$\\Users\\").toString();
             lastFileUse = getLastTimeUse(pathAsStr).split("Users")[1];
             files = new File(pathAsStr).listFiles();
             writer

@@ -5,16 +5,13 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
+import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.systray.ActionCloseMsg;
 import ru.vachok.networker.systray.MessageToTray;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -111,10 +108,10 @@ public class MoreInfoGetter {
                     stringBuilder.append(frequency).append(") ").append(x).append("<br>");
                 }
                 if (r.last()) {
-                    MessageToUser messageToUser = new MessageToTray(new ActionCloseMsg(AppComponents.getLogger()));
+                    MessageToUser messageToUser = new MessageToTray(new ActionCloseMsg(new MessageLocal()));
                     messageToUser.info(
                         r.getString(ConstantsFor.DB_FIELD_PCNAME),
-                        r.getString("whenQueried"),
+                        r.getString(ConstantsNet.DB_FIELD_WHENQUERIED),
                         r.getString(ConstantsFor.DB_FIELD_USER));
                 }
                 return stringBuilder.toString();

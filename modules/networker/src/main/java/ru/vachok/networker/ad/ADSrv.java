@@ -16,10 +16,8 @@ import ru.vachok.networker.net.enums.ConstantsNet;
 
 import java.io.*;
 import java.net.InetAddress;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
+import java.util.Date;
 import java.util.*;
 
 
@@ -265,9 +263,9 @@ public class ADSrv implements Runnable {
         } catch (ArrayIndexOutOfBoundsException ignore) {
             //
         }
-        stringBuilder.append("<p><b>")
+        stringBuilder.append("\n\n<p><b>")
             .append(timestUserLast)
-            .append("<br>")
+            .append("<br>\n")
             .append(ConstantsNet.COMPNAME_USERS_MAP.size())
             .append(ConstantsNet.STR_COMPNAME_USERS_MAP_SIZE)
             .append("</p></b>");
