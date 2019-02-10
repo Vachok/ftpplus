@@ -19,6 +19,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Stream;
 
+import static ru.vachok.networker.ConstantsFor.LOG;
+
 
 /**
  Вспомогательная работа с файлами.
@@ -194,8 +196,8 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         }
     }
 
-    public static void recFile(String fileNameLOG, String toWriteStr) {
-        recFile(fileNameLOG + ConstantsFor.LOG, Collections.singletonList(toWriteStr));
+    public static void recFile(String fileName, String toWriteStr) {
+        recFile(fileName, Collections.singletonList(toWriteStr));
     }
 
     /**
@@ -236,11 +238,10 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     }
 
     public static void error(String classMeth, Exception e) {
-        File f = new File(classMeth + ConstantsFor.LOG);
+        File f = new File(classMeth + LOG);
         try(OutputStream outputStream = new FileOutputStream(f);
             PrintStream printStream = new PrintStream(outputStream, true)){
             printStream.println(new Date(new TimeChecker().call().getReturnTime()));
-            printStream.println();
             printStream.println();
             printStream.println(e.getMessage());
             printStream.println();

@@ -57,7 +57,7 @@ public enum ConstantsNet {;
 
     /**
      new {@link HashSet}
-     <p>
+
      @see ru.vachok.networker.net.NetScannerSvc#getPCNamesPref(String)
      @see ru.vachok.networker.net.NetScanCtr#scanIt(HttpServletRequest, Model, Date)
      */

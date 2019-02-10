@@ -110,24 +110,16 @@ public class TForms {
         nStringBuilder.append(N_STR_ENTER);
         for (StackTraceElement stackTraceElement : e.getStackTrace()) {
             nStringBuilder
-                .append("At ")
-                .append(stackTraceElement
-                    .getClassName())
-                .append(LINE_CLASS)
-                .append(stackTraceElement.getClassName())
-                .append(" occurred disaster!\n")
-                .append(stackTraceElement.getMethodName())
-                .append(" method.\nFile: ")
-                .append(stackTraceElement.getFileName());
+                .append("At *").append(stackTraceElement.getLineNumber()).append("* line, classname is *")
+                .append(stackTraceElement.getClassName()).append("* occurred disaster!\n*Method is native: *")
+                .append(stackTraceElement.isNativeMethod()).append("*\n")
+                .append(stackTraceElement.getMethodName()).append("* method.\nFile: *")
+                .append(stackTraceElement.getFileName()).append("*\n");
             brStringBuilder
                 .append("At ")
-                .append(stackTraceElement
-                    .getClassName())
-                .append(LINE_CLASS)
-                .append(stackTraceElement.getClassName())
-                .append(STR_DISASTER)
-                .append(stackTraceElement.getMethodName())
-                .append(STR_METHFILE)
+                .append(stackTraceElement.getClassName()).append(" ")
+                .append(stackTraceElement.getLineNumber()).append(" ").append(LINE_CLASS).append(STR_DISASTER)
+                .append(stackTraceElement.getMethodName()).append(STR_METHFILE)
                 .append(stackTraceElement.getFileName());
         }
         if (!br) {
@@ -422,34 +414,12 @@ public class TForms {
     }
 
     public String fromArray(Throwable throwable, boolean b) {
-        brStringBuilder.append(P_STR_HTML_PARAGRAPH);
-        nStringBuilder.append(N_STR_ENTER);
-        for (StackTraceElement stackTraceElement : throwable.getStackTrace()) {
-            nStringBuilder
-                .append("At ")
-                .append(stackTraceElement
-                    .getClassName())
-                .append(LINE_CLASS)
-                .append(stackTraceElement.getClassName())
-                .append(" occurred disaster!\n")
-                .append(stackTraceElement.getMethodName())
-                .append(" method.\nFile: ")
-                .append(stackTraceElement.getFileName());
-            brStringBuilder
-                .append("At ")
-                .append(stackTraceElement
-                    .getClassName())
-                .append(LINE_CLASS)
-                .append(stackTraceElement.getClassName())
-                .append(STR_DISASTER)
-                .append(stackTraceElement.getMethodName())
-                .append(STR_METHFILE)
-                .append(stackTraceElement.getFileName());
+        StackTraceElement[] throwableStackTrace = throwable.getStackTrace();
+        if(b){
+            return new TForms().fromArray(throwableStackTrace, true);
         }
-        if (b) {
-            return brStringBuilder.toString();
-        } else {
-            return nStringBuilder.toString();
+        else{
+            return new TForms().fromArray(throwableStackTrace, false);
         }
     }
 }

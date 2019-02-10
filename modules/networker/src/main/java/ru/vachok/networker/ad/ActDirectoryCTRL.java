@@ -121,10 +121,16 @@ public class ActDirectoryCTRL {
     /**
      Get adphoto.html
      <p>
-     Uses: {@link PhotoConverterSRV#psCommands}
-
+     1. {@link ConstantsFor#getVis(javax.servlet.http.HttpServletRequest)}. Записываем визит ({@link Visitor}). <br>
+     2. {@link ConstantsFor#isPingOK()}. Доступность проверим. <br>
+     3. {@link PhotoConverterSRV#psCommands} - {@link Model} аттрибут {@code content} <br>
+     4.5. {@link PageFooter#getFooterUtext()} - аттрибут {@link ConstantsFor#ATT_FOOTER} + 6. {@link Visitor#toString()} <br><br>
+     <b>{@link NullPointerException}:</b><br>
+     7. {@link FileSystemWorker#error(java.lang.String, java.lang.Exception)} пишем в файл.
+     <p>
      @param photoConverterSRV {@link PhotoConverterSRV}
      @param model             {@link Model}
+     @param request {@link HttpServletRequest}.
      @return adphoto.html
      */
     @GetMapping("/adphoto")
@@ -136,7 +142,7 @@ public class ActDirectoryCTRL {
             model.addAttribute("photoConverterSRV", photoConverterSRV);
             model.addAttribute(ConstantsFor.ATT_SSH_ACTS, sshActs);
             if (!ConstantsFor.isPingOK()) {
-                titleStr = "ping to srv-git.eatmeat.ru is " + false;
+                titleStr = "ping srv-git.eatmeat.ru is " + false;
             }
             model.addAttribute(ConstantsFor.ATT_TITLE, titleStr);
             model.addAttribute("content", photoConverterSRV.psCommands());

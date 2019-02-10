@@ -91,6 +91,7 @@ public class NetScannerSvc {
     /**
      Статистика скана.
      <p>
+     {@link #runAfterAllScan()}
      */
     private Runnable runAfterAll = this::runAfterAllScan;
 
@@ -341,6 +342,12 @@ public class NetScannerSvc {
 
     /**
      Реконнект к БД
+     <p>
+     Восстанавливаем соединение, если {@link SQLException}.
+
+     @return {@link RegRuMysql#getDefaultConnection(String)} DB - {@link ConstantsFor#U_0466446_VELKOM}
+     @see #getInfoFromDB()
+     @see #writeDB()
      */
     private static Connection reconnectToDB() {
         c = null;
@@ -416,7 +423,10 @@ public class NetScannerSvc {
     /**
      Основной скан-метод.
      <p>
-
+     1. {@link #fileCreate(boolean)}. Убедимся, что файл создан. <br>
+     2. {@link ActionCloseMsg} , 3. {@link MessageToTray}. Создаём взаимодействие с юзером. <br>
+     3. {@link ConstantsFor#getUpTime()} - uptime приложения в 4. {@link MessageToTray#info(java.lang.String, java.lang.String, java.lang.String)}. <br>
+     5. {@link NetScannerSvc#getPCNamesPref(java.lang.String)} - скан сегмента. <br>
      @see #getPcNames()
      */
     @SuppressWarnings ("OverlyLongLambda")
@@ -426,8 +436,7 @@ public class NetScannerSvc {
         this.stArt = System.currentTimeMillis();
         new MessageCons().errorAlert(METH_GET_PCS_ASYNC);
         boolean fileCreate = fileCreate(true);
-        new MessageToTray(new ActionCloseMsg(new MessageLocal()))
-            .info("NetScannerSvc started scan", ConstantsFor.getUpTime(), " File: " + fileCreate);
+        new MessageToTray(new ActionCloseMsg(new MessageLocal())).info("NetScannerSvc started scan", ConstantsFor.getUpTime(), " File: " + fileCreate);
         eServ.submit(() -> {
             msg.set(new StringBuilder()
                 .append("Thread id ")

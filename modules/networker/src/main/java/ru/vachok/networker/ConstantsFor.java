@@ -377,6 +377,7 @@ public enum ConstantsFor {
     }
 
     /**
+     Доступность srv-git.eatmeat.ru.
      @return 192.168.13.42 online or offline
      */
     public static boolean isPingOK() {
