@@ -97,12 +97,12 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
      Простое копирование файла.
 
      @param origFile файл, для копирования
-     @param s        строка путь
+     @param pathToCopy        строка путь
      @return удача/нет
      */
     @SuppressWarnings ("MethodWithMultipleReturnPoints")
-    public static boolean copyOrDelFile(File origFile, String s, boolean needDel) {
-        File toCpFile = new File(s);
+    public static boolean copyOrDelFile(File origFile, String pathToCopy, boolean needDel) {
+        File toCpFile = new File(pathToCopy);
         try{
             Path targetPath = toCpFile.toPath();
             Path directories = Files.createDirectories(targetPath.getParent());

@@ -11,10 +11,7 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 
 import java.io.*;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -96,7 +93,7 @@ public class WeekPCStats implements Runnable {
         if(!ConstantsFor.thisPC().toLowerCase().contains("home")){
             toCopy = file.getName() + "_cp";
         }
-        FileSystemWorker.copyOrDelFile(file, toCopy, false);
+        FileSystemWorker.copyOrDelFile(file, toCopy, true);
         messageToUser.infoNoTitles(this.getClass().getSimpleName() + " ends\n" + PC_NAMES_IN_TABLE.size() + " PC_NAMES_IN_TABLE.size()");
     }
 

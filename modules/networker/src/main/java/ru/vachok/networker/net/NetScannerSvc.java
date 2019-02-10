@@ -62,6 +62,8 @@ public class NetScannerSvc {
      */
     private static final String METH_GET_PCS_ASYNC = "NetScannerSvc.getPCsAsync";
 
+    private static final String FILE_PCAUTODISTXT = "pcautodis.txt";
+
     /**
      {@link RegRuMysql#getDefaultConnection(String)}
      */
@@ -486,9 +488,14 @@ public class NetScannerSvc {
         } catch (IOException e) {
             new MessageCons().errorAlert(CLASS_NAME, "countStat", e.getMessage());
         }
-        FileSystemWorker.recFile("pcautodis.txt", readFileAsList.parallelStream().distinct());
-        String valStr = FileSystemWorker.readFile("pcautodis.txt");
+        FileSystemWorker.recFile(FILE_PCAUTODISTXT, readFileAsList.parallelStream().distinct());
+        String valStr = FileSystemWorker.readFile(FILE_PCAUTODISTXT);
         new MessageCons().info(ConstantsFor.SOUTV, "NetScannerSvc.countStat", valStr);
+        if(ConstantsFor.thisPC().toLowerCase().contains("home")){
+            String toCopy = "\\\\10.10.111.1\\Torrents-FTP\\" + FILE_PCAUTODISTXT;
+            FileSystemWorker.copyOrDelFile(new File(FILE_PCAUTODISTXT), toCopy, true);
+
+        }
     }
 
     /**
