@@ -60,6 +60,14 @@ public class SwitchesAvailability implements Runnable {
         }
     }
 
+    /**
+     Преобразователь строк в адреса.
+     <p>
+     1. {@link SwitchesAvailability#testAddresses(java.util.Queue)} - тестируем онлайность.
+     <p>
+
+     @throws IOException если хост unknown.
+     */
     private void makeAddrQ() throws IOException {
         Queue<InetAddress> inetAddressesQ = new ConcurrentLinkedQueue<>();
         for (String s : swAddr) {
@@ -73,8 +81,12 @@ public class SwitchesAvailability implements Runnable {
     /**
      Проверяет пинги
      <p>
-
+     1. {@link TForms#fromArray(java.util.Set, boolean)} - лист онлайн ИП в строку. {@link #okIP}. <br>
+     2. {@link TForms#fromArray(java.util.List, boolean)} - - лист онлайн ИП в строку. <br>
+     3. {@link SwitchesAvailability#writeToFile(java.lang.String, java.lang.String)}
+     <p>
      @throws IOException если адрес недоступен.
+     @param inetAddressQueue преобразованный лист строк в ИП. {@link #makeAddrQ()}
      */
     private void testAddresses(Queue<InetAddress> inetAddressQueue) throws IOException {
         LOGGER.warn("SwitchesAvailability.testAddresses");

@@ -98,7 +98,6 @@ public class DiapazonedScan implements Runnable, Serializable {
 
     /**
      Приватный конструктор
-     <p>
      */
     private DiapazonedScan() {
         LOGGER.warn("DiapazonedScan.DiapazonedScan");

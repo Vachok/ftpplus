@@ -209,7 +209,6 @@ public final class SystemTrayHelper extends AppInfoOnLoad {
      {@link IOException}, {@link InterruptedException}, {@link NullPointerException} : <br>
      4. {@link TForms#fromArray(java.lang.Exception, boolean)} - преобразуем исключение в строку. <br>
      5. {@link AppComponents#threadConfig()} , 6 {@link ThreadConfig#threadPoolTaskExecutor()} перезапуск {@link MyServer#getI()}
-     <p>
      */
     private static void recOn() {
         MyServer.setSocket(new Socket());

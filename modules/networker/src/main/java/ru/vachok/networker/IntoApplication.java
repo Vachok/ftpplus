@@ -15,6 +15,7 @@ import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.WeekPCStats;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.systray.SystemTrayHelper;
 
@@ -122,6 +123,17 @@ public class IntoApplication {
 
     /**
      Запуск после старта Spring boot app <br> Usages: {@link #main(String[])}
+     <p>
+     1. {@link AppComponents#threadConfig()}. Управление запуском и трэдами. <br><br>
+     <b>Runnable</b><br>
+     2. {@link AppInfoOnLoad#spToFile()} собирает инфо о скорости в файл. Если воскресенье, запускает {@link WeekPCStats} <br><br>
+     <b>Далее:</b><br>
+     3. {@link AppComponents#threadConfig()} (4. {@link ThreadConfig#threadPoolTaskExecutor()}) - запуск <b>Runnable</b> <br>
+     5. {@link ThreadConfig#threadPoolTaskExecutor()} - запуск {@link AppInfoOnLoad}. <br><br>
+     <b>{@link Exception}:</b><br>
+     6. {@link TForms#fromArray(java.lang.Exception, boolean)} - искл. в строку. 7. {@link FileSystemWorker#recFile(java.lang.String, java.util.List)} и
+     запишем в файл.
+     @return запускилось = {@code true}.
      */
     @SuppressWarnings("MethodWithMultipleReturnPoints")
     private static boolean afterSt() {
@@ -133,7 +145,7 @@ public class IntoApplication {
             String showPath = Paths.get(".").toString() + "\n abs: " +
                 Paths.get(".").toFile().getAbsolutePath();
             AppComponents.threadConfig().threadPoolTaskExecutor().execute(r);
-            LOGGER.error(showPath);
+            LOGGER.warn(showPath);
             threadConfig.threadPoolTaskExecutor().execute(infoAndSched);
             return true;
         } catch (Exception e) {

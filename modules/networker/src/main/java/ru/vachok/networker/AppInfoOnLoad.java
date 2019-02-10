@@ -194,6 +194,9 @@ public class AppInfoOnLoad implements Runnable {
      {@link TForms#fromArray(java.util.List, boolean)} <br><br>
      3. {@link AppInfoOnLoad#methMetr(long)} метрика. <br>
      4. {@link AppInfoOnLoad#checkDay(java.util.concurrent.ScheduledExecutorService)}. Выведем сообщение, когда и что ствртует.
+     <p>
+     @throws MyNull искл.
+     @param scheduledExecutorService {@link ScheduledExecutorService}.
      */
     @SuppressWarnings ("MagicNumber")
     private static void dateSchedulers(ScheduledExecutorService scheduledExecutorService) throws MyNull {

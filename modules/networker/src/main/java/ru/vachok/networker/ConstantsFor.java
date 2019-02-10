@@ -489,11 +489,15 @@ public enum ConstantsFor {
     }
 
     /**
+     Считает время до конца дня.
+     <p>
+     @param timeStart - время старта
+     @param amountH - сколько часов до конца
      @return время до 17:30 в процентах от 8:30
      */
-    public static String percToEnd(Date timeToStart, long amountH) {
+    public static String percToEnd(Date timeStart, long amountH) {
         StringBuilder stringBuilder = new StringBuilder();
-        LocalDateTime startDayTime = LocalDateTime.ofEpochSecond(timeToStart.getTime() / 1000, 0, ZoneOffset.ofHours(3));
+        LocalDateTime startDayTime = LocalDateTime.ofEpochSecond(timeStart.getTime() / 1000, 0, ZoneOffset.ofHours(3));
         LocalTime startDay = startDayTime.toLocalTime();
         LocalTime endDay = startDay.plus(amountH, HOURS);
         final int secDayEnd = endDay.toSecondOfDay();

@@ -98,6 +98,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
 
      @param origFile файл, для копирования
      @param pathToCopy        строка путь
+     @param needDel удалить или нет исходник
      @return удача/нет
      */
     @SuppressWarnings ("MethodWithMultipleReturnPoints")
