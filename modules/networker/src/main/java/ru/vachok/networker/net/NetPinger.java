@@ -4,9 +4,11 @@ package ru.vachok.networker.net;
 import org.springframework.web.multipart.MultipartFile;
 import ru.vachok.messenger.MessageFile;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.messenger.email.ESender;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 
 import java.io.*;
@@ -16,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
 
 /**
  Пингует заданные адреса.
@@ -44,14 +47,6 @@ public class NetPinger implements Runnable {
         return pingResult;
     }
 
-    public String getTimeToScan() {
-        return timeToScan;
-    }
-
-    public void setTimeToScan(String timeToScan) {
-        this.timeToScan = timeToScan;
-    }
-
     public MultipartFile getMultipartFile() {
         return multipartFile;
     }
@@ -60,52 +55,41 @@ public class NetPinger implements Runnable {
         this.multipartFile = multipartFile;
     }
 
+    @Override
+    public void run() {
+        final long startSt = System.currentTimeMillis();
+        if(multipartFile!=null){
+            parseFile();
+        }
+        long userIn = TimeUnit.MINUTES.toMillis(Long.parseLong(getTimeToScan()));
+        while(System.currentTimeMillis() < startSt + userIn){
+            pingSW();
+        }
+        this.pingResult = new TForms().fromArray(resList, true);
+        messageToUser.infoNoTitles(pingResult);
+        parseResult(userIn);
+    }
+
     private void parseFile() {
-        try (InputStream inputStream = multipartFile.getInputStream();
-             InputStreamReader reader = new InputStreamReader(inputStream);
-             BufferedReader bufferedReader = new BufferedReader(reader)) {
-            while (bufferedReader.ready()) {
+        try(InputStream inputStream = multipartFile.getInputStream();
+            InputStreamReader reader = new InputStreamReader(inputStream);
+            BufferedReader bufferedReader = new BufferedReader(reader)){
+            while(bufferedReader.ready()){
                 bufferedReader.lines().forEach(this::parseAddr);
             }
-        } catch (IOException e) {
+        }
+        catch(IOException e){
             new MessageLocal().errorAlert(CLASS_NAME, "parseFile", e.getMessage());
             FileSystemWorker.error("NetPinger.parseFile", e);
         }
     }
 
-    private void parseAddr(String readLine) {
-        InetAddress byName;
-        try {
-            byName = InetAddress.getByName(readLine);
-        } catch (UnknownHostException e) {
-            byName = ipIsIP(readLine);
-        }
-        ipAsList.add(byName);
+    public String getTimeToScan() {
+        return timeToScan;
     }
 
-    private InetAddress ipIsIP(String readLine) {
-        try {
-            byte[] address = InetAddress.getByName(readLine).getAddress();
-            return InetAddress.getByAddress(address);
-        } catch (UnknownHostException e) {
-            new MessageLocal().errorAlert(CLASS_NAME, "ipIsIP", e.getMessage());
-            FileSystemWorker.error("NetPinger.ipIsIP", e);
-            throw new IllegalStateException();
-        }
-    }
-
-    @Override
-    public void run() {
-        final long startSt = System.currentTimeMillis();
-        if (multipartFile != null) {
-            parseFile();
-        }
-        while (System.currentTimeMillis() < startSt + TimeUnit.MINUTES.toMillis(Long.parseLong(getTimeToScan()))) {
-            pingSW();
-        }
-        this.pingResult = new TForms().fromArray(resList, true);
-        messageToUser.infoNoTitles(pingResult);
-        parseResult();
+    public void setTimeToScan(String timeToScan) {
+        this.timeToScan = timeToScan;
     }
 
     private void pingSW() {
@@ -120,15 +104,46 @@ public class NetPinger implements Runnable {
         }
     }
 
-    private void parseResult() {
+    private void parseResult(long userIn) {
         List<String> pingsList = new ArrayList<>();
         resList.stream().distinct().forEach(x -> {
             int frequency = Collections.frequency(resList, x);
             pingsList.add(frequency + " times " + x + "\n");
         });
         messageToUser.infoNoTitles(pingResult);
-        FileSystemWorker.recFile("pingresult", pingsList);
+        FileSystemWorker.recFile(ConstantsNet.PINGRESULT_LOG, pingsList);
         messageToUser = new MessageFile();
         messageToUser.infoNoTitles(pingResult);
+        if(userIn >= TimeUnit.MINUTES.toMillis(3)){
+            try{
+                ESender.sendM(Collections.singletonList(ConstantsFor.GMAIL_COM), getClass().getSimpleName(), new TForms().fromArray(pingsList, false));
+            }
+            catch(Exception e){
+                FileSystemWorker.error("NetPinger.parseResult", e);
+            }
+        }
+    }
+
+    private void parseAddr(String readLine) {
+        InetAddress byName;
+        try{
+            byName = InetAddress.getByName(readLine);
+        }
+        catch(UnknownHostException e){
+            byName = ipIsIP(readLine);
+        }
+        ipAsList.add(byName);
+    }
+
+    private InetAddress ipIsIP(String readLine) {
+        try{
+            byte[] address = InetAddress.getByName(readLine).getAddress();
+            return InetAddress.getByAddress(address);
+        }
+        catch(UnknownHostException e){
+            new MessageLocal().errorAlert(CLASS_NAME, "ipIsIP", e.getMessage());
+            FileSystemWorker.error("NetPinger.ipIsIP", e);
+            throw new IllegalStateException();
+        }
     }
 }

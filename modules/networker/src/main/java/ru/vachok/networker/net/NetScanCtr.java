@@ -77,8 +77,6 @@ public class NetScanCtr {
 
     private static final String STR_MODEL = "], model = [";
 
-    private static final String PINGRESULT_LOG = "pingresult";
-
     private static final String ATT_NET_PINGER = "netPinger";
 
     /**
@@ -164,7 +162,7 @@ public class NetScanCtr {
     @GetMapping("/ping")
     public String pingAddr(Model model, HttpServletRequest request, HttpServletResponse response) {
         model.addAttribute(ATT_NET_PINGER, netPinger);
-        model.addAttribute("pingResult", FileSystemWorker.readFile(PINGRESULT_LOG));
+        model.addAttribute("pingResult", FileSystemWorker.readFile(ConstantsNet.PINGRESULT_LOG));
         return "ping";
     }
 
@@ -173,7 +171,7 @@ public class NetScanCtr {
         this.netPinger = netPinger;
         netPinger.run();
         model.addAttribute(ATT_NET_PINGER, netPinger);
-        model.addAttribute("ok", FileSystemWorker.readFile(PINGRESULT_LOG));
+        model.addAttribute("ok", FileSystemWorker.readFile(ConstantsNet.PINGRESULT_LOG));
         return "ok";
     }
 

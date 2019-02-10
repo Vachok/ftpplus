@@ -26,6 +26,8 @@ import java.util.concurrent.*;
  @since 25.01.2019 (10:30) */
 public enum ConstantsNet {;
 
+    public static final String PINGRESULT_LOG = "pingresult";
+
     public static final String PTV2_EATMEAT_RU = "ptv2.eatmeat.ru";
 
     public static final String PTV1_EATMEAT_RU = "ptv1.eatmeat.ru";

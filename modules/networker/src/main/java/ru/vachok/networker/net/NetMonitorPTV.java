@@ -2,6 +2,7 @@ package ru.vachok.networker.net;
 
 
 import ru.vachok.messenger.MessageCons;
+import ru.vachok.messenger.email.ESender;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
@@ -10,6 +11,7 @@ import ru.vachok.networker.services.MessageLocal;
 import java.io.*;
 import java.net.InetAddress;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.Objects;
 
 /**
@@ -19,13 +21,15 @@ import java.util.Objects;
  @since 05.02.2019 (9:00) */
 public class NetMonitorPTV implements Runnable {
 
+    private OutputStream outputStream = null;
+
     private PrintWriter printWriter = null;
 
     private static final String CLASS_NAME = "NetMonitorPTV";
 
     {
         try {
-            OutputStream outputStream = new FileOutputStream("ping.tv");
+            outputStream = new FileOutputStream("ping.tv");
             printWriter = new PrintWriter(Objects.requireNonNull(outputStream), true);
         } catch (FileNotFoundException e) {
             new MessageLocal().errorAlert(CLASS_NAME, "instance initializer", e.getMessage());
@@ -50,6 +54,18 @@ public class NetMonitorPTV implements Runnable {
             printWriter.close();
             boolean b = FileSystemWorker.copyOrDelFile(pingTv, ".\\lan\\tv_" + System.currentTimeMillis() / 1000 + ".ping", true);
             new MessageCons().infoNoTitles(b + " " + pingTv.toPath() + " " + pingTv.length() / ConstantsFor.KBYTE);
+            if(b){
+                this.printWriter = new PrintWriter(outputStream, true);
+            }
+            else{
+                try{
+                    ESender.sendM(Collections.singletonList(ConstantsFor.GMAIL_COM), getClass().getSimpleName(), pingTv.getAbsolutePath()
+                        + " is " + pingTv.exists());
+                }
+                catch(Exception e){
+                    FileSystemWorker.error("NetMonitorPTV.checkSize", e);
+                }
+            }
         }
     }
 
