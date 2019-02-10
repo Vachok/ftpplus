@@ -223,7 +223,7 @@ public class AppInfoOnLoad implements Runnable {
         LOGGER.warn(logStr);
         new MessageCons().info(ConstantsFor.STR_INPUT_OUTPUT, "scheduledExecutorService = [" + scheduledExecutorService.toString() + "]", "void");
         String finalExitLast = exitLast;
-        new MessageSwing().infoTimer(finalExitLast + "\n" + checkDay(scheduledExecutorService));
+        new MessageSwing().infoTimer(45, finalExitLast + "\n" + checkDay(scheduledExecutorService));
     }
 
     private static String checkDay(ScheduledExecutorService scheduledExecutorService) {
