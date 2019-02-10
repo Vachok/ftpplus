@@ -93,7 +93,7 @@ public class WeekPCStats implements Runnable {
         if(!ConstantsFor.thisPC().toLowerCase().contains("home")){
             toCopy = file.getName() + "_cp";
         }
-        FileSystemWorker.copyOrDelFile(file, toCopy, true);
+        FileSystemWorker.copyOrDelFile(file, toCopy, false);
         messageToUser.infoNoTitles(this.getClass().getSimpleName() + " ends\n" + PC_NAMES_IN_TABLE.size() + " PC_NAMES_IN_TABLE.size()");
     }
 
