@@ -6,6 +6,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import ru.vachok.messenger.MessageCons;
+import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.messenger.email.ESender;
 import ru.vachok.mysqlandprops.RegRuMysql;
@@ -16,19 +17,13 @@ import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.errorexceptions.MyNull;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.mailserver.MailIISLogsCleaner;
-import ru.vachok.networker.net.DiapazonedScan;
-import ru.vachok.networker.net.NetMonitorPTV;
-import ru.vachok.networker.net.ScanOnline;
-import ru.vachok.networker.net.WeekPCStats;
+import ru.vachok.networker.net.*;
 import ru.vachok.networker.services.MyCalen;
 import ru.vachok.networker.services.SpeedChecker;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.FileVisitor;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -38,10 +33,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 
 /**
@@ -196,6 +188,12 @@ public class AppInfoOnLoad implements Runnable {
     /**
      Стата за неделю по-ПК
      <p>
+     1. {@link MyCalen#getNextDayofWeek(int, int, java.time.DayOfWeek)}. Получим {@link Date}, след. воскресенье 23:57.<br>
+     {@link ThreadPoolTaskScheduler}, запланируем new {@link WeekPCStats} и new {@link MailIISLogsCleaner} на это время и на это время -1 час.<br><br>
+     2. {@link FileSystemWorker#readFileToList(java.lang.String)}. Прочитаем exit.last, если он существует.
+     {@link TForms#fromArray(java.util.List, boolean)} <br><br>
+     3. {@link AppInfoOnLoad#methMetr(long)} метрика. <br>
+     4. {@link AppInfoOnLoad#checkDay(java.util.concurrent.ScheduledExecutorService)}. Выведем сообщение, когда и что ствртует.
      */
     @SuppressWarnings ("MagicNumber")
     private static void dateSchedulers(ScheduledExecutorService scheduledExecutorService) throws MyNull {
@@ -223,9 +221,9 @@ public class AppInfoOnLoad implements Runnable {
         stringBuilder.append("\n").append(methMetr(stArt));
         String logStr = stringBuilder.toString();
         LOGGER.warn(logStr);
-        new MessageCons().info(ConstantsFor.STR_INPUT_OUTPUT, "scheduledExecutorService = [" + scheduledExecutorService + "]", "void");
+        new MessageCons().info(ConstantsFor.STR_INPUT_OUTPUT, "scheduledExecutorService = [" + scheduledExecutorService.toString() + "]", "void");
         String finalExitLast = exitLast;
-        new MessageCons().errorAlert(finalExitLast + "\n" + checkDay(scheduledExecutorService));
+        new MessageSwing().infoTimer(finalExitLast + "\n" + checkDay(scheduledExecutorService));
     }
 
     private static String checkDay(ScheduledExecutorService scheduledExecutorService) {

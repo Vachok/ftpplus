@@ -28,6 +28,8 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
 
     private static final String CLASS_NAME = "FileSystemWorker";
 
+    private static final String CLASS_METH = "FileSystemWorker.readFileToList";
+
     /**
      {@link LoggerFactory#getLogger(String)}
      */
@@ -213,7 +215,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     }
 
     public static List<String> readFileToList(String absolutePath) {
-        LOGGER.warn("FileSystemWorker.readFileToList");
+        LOGGER.warn(CLASS_METH);
         List<String> retList = new ArrayList<>();
         try(InputStream inputStream = new FileInputStream(absolutePath);
             InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
@@ -224,7 +226,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         }
         catch(IOException e){
             new MessageCons().errorAlert(CLASS_NAME, "readFileToList", e.getMessage());
-            FileSystemWorker.error("FileSystemWorker.readFileToList", e);
+            FileSystemWorker.error(CLASS_METH, e);
             retList.add(e.getMessage());
             retList.add(new TForms().fromArray(e, true));
         }
