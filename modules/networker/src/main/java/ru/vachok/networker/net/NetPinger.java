@@ -35,7 +35,7 @@ public class NetPinger implements Runnable {
 
     private MessageToUser messageToUser = new MessageLocal();
 
-    private String timeToScan;
+    private String timeToScan = "3";
 
     private String pingResult = "No result yet";
 
@@ -62,8 +62,11 @@ public class NetPinger implements Runnable {
             parseFile();
         }
         long userIn = TimeUnit.MINUTES.toMillis(Long.parseLong(getTimeToScan()));
-        while(System.currentTimeMillis() < startSt + userIn){
+        long totalMillis = startSt + userIn;
+        while(System.currentTimeMillis() < totalMillis){
             pingSW();
+            messageToUser.infoNoTitles(getClass().getSimpleName() + " left " +
+                ( float ) TimeUnit.MILLISECONDS.toSeconds(totalMillis - System.currentTimeMillis()) / ConstantsFor.ONE_HOUR_IN_MIN);
         }
         this.pingResult = new TForms().fromArray(resList, true);
         messageToUser.infoNoTitles(pingResult);
@@ -84,6 +87,7 @@ public class NetPinger implements Runnable {
         }
     }
 
+    @SuppressWarnings ("WeakerAccess")
     public String getTimeToScan() {
         return timeToScan;
     }
@@ -98,7 +102,7 @@ public class NetPinger implements Runnable {
                 resList.add(inetAddress.toString() + " is " + inetAddress.isReachable(ConstantsFor.TIMEOUT_650));
             }
             catch(IOException e){
-                new MessageLocal().errorAlert(CLASS_NAME, "pingSW", e.getMessage());
+                messageToUser.errorAlert(CLASS_NAME, "pingSW", e.getMessage());
                 FileSystemWorker.error(METH_PINGSW, e);
             }
         }
