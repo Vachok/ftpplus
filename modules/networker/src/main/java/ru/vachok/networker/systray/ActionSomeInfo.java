@@ -8,6 +8,7 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.net.DiapazonedScan;
+import ru.vachok.networker.services.SpeedChecker;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -36,7 +37,9 @@ class ActionSomeInfo extends AbstractAction {
     public void actionPerformed(ActionEvent e) {
         LOGGER.warn("ActionSomeInfo.actionPerformed");
         Date newScan = new Date(DiapazonedScan.getInstance().getStopClass() + TimeUnit.MINUTES.toMillis(111));
-        new MessageSwing(400, 500, 35, 20).infoNoTitles("New Scan at: " + newScan.toString() + " | " + ConstantsFor.getUpTime() + "\n" +
+        new MessageSwing(400, 500, 35, 20).infoNoTitles("New Scan at: " +
+            newScan.toString() +
+            " | " + ConstantsFor.getUpTime() + ", " + SpeedChecker.ChkMailAndUpdateDB.todayInfo() + "\n" +
             Thread.activeCount() + " threads " + ConstantsFor.getMemoryInfo() + AppInfoOnLoad.iisLogSize() + "\n" +
             AppComponents.versionInfo().toString() + "\n" +
             new TForms().fromArray(ConstantsFor.getProps()));
