@@ -149,8 +149,9 @@ public class SpeedChecker implements Callable<Long> {
          DB name - {@link ConstantsFor#U_0466446_LIFERPG} speed.
          <p>
          <b>{@link SQLException}:</b> <br>
-         {@link TForms#fromArray(java.lang.Exception, boolean)} запишем исключение в файл.
-
+         {@link TForms#fromArray(java.lang.Exception, boolean)} запишем исключение в файл. <br><br>
+         <b>Далее:</b><br>
+         {@link #todayInfo()} вывод через {@link #LOGGER} <br>
          @return {@link Map}. {@link ConstantsFor#COL_SQL_NAME_TIMESTAMP} - значения.
          */
         private Map<String, String> checkDB() {
@@ -171,6 +172,8 @@ public class SpeedChecker implements Callable<Long> {
             } catch (SQLException e) {
                 retMap.put(e.getMessage(), new TForms().fromArray(e, false));
             }
+            String todayInfoStr = todayInfo();
+            LOGGER.info(todayInfoStr);
             return retMap;
         }
 
