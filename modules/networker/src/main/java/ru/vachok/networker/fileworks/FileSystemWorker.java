@@ -14,7 +14,10 @@ import ru.vachok.networker.systray.SystemTrayHelper;
 
 import java.io.*;
 import java.nio.file.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Stream;
@@ -237,6 +240,18 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         return retList;
     }
 
+    /**
+     Пишем исключения.
+     <p>
+     Название файла {@code classMeth}.log
+     <p>
+     1. {@link TimeChecker#call()} сверим часы. <br> 2. {@link TForms#fromArray(java.lang.Exception, boolean)} приведём исключение к {@link String} <br><br>
+     <b>Если есть Suppressed: </b><br>
+     3. {@link TForms#fromArray(java.lang.Throwable, boolean)}
+
+     @param classMeth класс метод.
+     @param e         исключение
+     */
     public static void error(String classMeth, Exception e) {
         File f = new File(classMeth + LOG);
         try(OutputStream outputStream = new FileOutputStream(f);
@@ -255,8 +270,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
                     printStream.println(new TForms().fromArray(throwable, false));
                 }
             }
-        }
-        catch(IOException ex){
+        } catch(IOException ex){
             LOGGER.error("FileSystemWorker.error", ex.getMessage(), ex);
         }
     }
