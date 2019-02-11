@@ -14,10 +14,7 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.common.CommonRightsChecker;
-import ru.vachok.networker.componentsrepo.AppComponents;
-import ru.vachok.networker.componentsrepo.PageFooter;
-import ru.vachok.networker.componentsrepo.VersionInfo;
-import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.componentsrepo.*;
 import ru.vachok.networker.net.DiapazonedScan;
 import ru.vachok.networker.net.MoreInfoGetter;
 import ru.vachok.networker.services.SimpleCalculator;
@@ -26,10 +23,7 @@ import ru.vachok.networker.services.WhoIsWithSRV;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 
@@ -47,9 +41,20 @@ public class MatrixCtr {
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(MatrixCtr.class.getSimpleName());
 
+    /**
+     redirect:/matrix
+     */
     private static final String REDIRECT_MATRIX = "redirect:/matrix";
 
+    /**
+     /matrix
+     */
     private static final String GET_MATRIX = "/matrix";
+
+    /**
+     * dinner
+     */
+    private static final String ATT_DINNER = "dinner";
 
     /**
      {@link MatrixSRV}
@@ -131,10 +136,10 @@ public class MatrixCtr {
         if (workPos.toLowerCase().contains("whois:")) return WhoIsWithSRV.whoisStat(workPos, model);
         else if (workPos.toLowerCase().contains("calc:")) return calculateDoubles(workPos, model);
         else if (workPos.toLowerCase().contains("common: ")) {
-            return CommonRightsChecker.getCommonAccessRights(workPos, model);
-        } else if (workPos.toLowerCase().contains("calctime:") || workPos.toLowerCase().contains("calctimes:")) {
-            timeStamp(new SimpleCalculator(), model, workPos);
-        } else return matrixAccess(workPos);
+                return CommonRightsChecker.getCommonAccessRights(workPos, model);
+            } else if (workPos.toLowerCase().contains("calctime:") || workPos.toLowerCase().contains("calctimes:")) {
+                timeStamp(new SimpleCalculator(), model, workPos);
+            } else return matrixAccess(workPos);
         return ConstantsFor.MATRIX_STRING_NAME;
     }
 
@@ -267,6 +272,18 @@ public class MatrixCtr {
         model.addAttribute(ConstantsFor.ATT_TITLE, metricMatrixStart);
     }
 
+    /**
+     Считаем числа с плавающей точкой.
+     <p>
+     1. {@link AppComponents#simpleCalculator()} <br>
+     2. {@link SimpleCalculator#countDoubles(java.util.List)} подсчёт суммы чисел. <br>
+     3. {@link MatrixSRV#setWorkPos(java.lang.String)} результат + {@link String} - Dinner price
+     <p>
+
+     @param workPos {@link MatrixSRV#getWorkPos()}
+     @param model {@link Model}
+     @return {@link ConstantsFor#MATRIX_STRING_NAME}
+     */
     private String calculateDoubles(String workPos, Model model) {
         List<Double> list = new ArrayList<>();
         String[] doubles = workPos.split(": ")[1].split(" ");
@@ -276,21 +293,44 @@ public class MatrixCtr {
         double v = new AppComponents().simpleCalculator().countDoubles(list);
         String pos = v + " Dinner price";
         matrixSRV.setWorkPos(pos);
-        model.addAttribute("dinner", pos);
+        model.addAttribute(ATT_DINNER, pos);
         return ConstantsFor.MATRIX_STRING_NAME;
     }
 
-    private String timeStamp(@ModelAttribute SimpleCalculator simpleCalculator, Model model, String workPos) {
-        model.addAttribute(ConstantsFor.STR_CALCULATOR, simpleCalculator);
-        model.addAttribute("dinner", simpleCalculator.getStampFromDate(workPos));
-        return "redirect:/calculate";
-    }
+    /**
+     Запрос к матрице доступа.
+     <p>
+     <b>SQL - </b> select * from matrix where Doljnost like '%%%s%%
+     <p>
+     1. {@link MatrixSRV#getWorkPosition(java.lang.String)} проверим базу на наличие позиции. <br>
+     2. {@link MatrixSRV#setWorkPos(java.lang.String)}.
+     <p>
 
+     @param workPos {@link MatrixSRV#getWorkPos()}
+     @return {@link #REDIRECT_MATRIX}
+     */
     private String matrixAccess(String workPos) {
         String workPosition = this.matrixSRV.getWorkPosition(String
             .format("select * from matrix where Doljnost like '%%%s%%';", workPos));
         this.matrixSRV.setWorkPos(workPosition);
         LOGGER.info(workPosition);
         return REDIRECT_MATRIX;
+    }
+
+    /**
+     Перевод времени из long в {@link Date} и обратно.
+     <p>
+     1. {@link SimpleCalculator#getStampFromDate(java.lang.String)} метод перевода.
+     <p>
+
+     @param simpleCalculator {@link SimpleCalculator}
+     @param model {@link Model}
+     @param workPos {@link MatrixSRV#getWorkPos()}
+     @return redirect:/calculate
+     */
+    private String timeStamp(@ModelAttribute SimpleCalculator simpleCalculator, Model model, String workPos) {
+        model.addAttribute(ConstantsFor.STR_CALCULATOR, simpleCalculator);
+        model.addAttribute(ATT_DINNER, simpleCalculator.getStampFromDate(workPos));
+        return "redirect:/calculate";
     }
 }
