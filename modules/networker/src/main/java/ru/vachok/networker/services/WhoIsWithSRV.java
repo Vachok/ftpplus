@@ -4,10 +4,12 @@ package ru.vachok.networker.services;
 import org.apache.commons.net.whois.WhoisClient;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
+import org.springframework.ui.Model;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.componentsrepo.PageFooter;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -21,6 +23,20 @@ public class WhoIsWithSRV {
      {@link }
      */
     private static final Logger LOGGER = AppComponents.getLogger();
+
+    public static String whoisStat(String workPos, Model model) {
+        try {
+            WhoIsWithSRV whoIsWithSRV = new WhoIsWithSRV();
+            workPos = workPos.split(": ")[1];
+            String attributeValue = whoIsWithSRV.whoIs(workPos);
+            model.addAttribute(ConstantsFor.WHOIS_STR, attributeValue);
+            model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
+        } catch (ArrayIndexOutOfBoundsException e) {
+            model.addAttribute(ConstantsFor.WHOIS_STR, workPos + "<p>" + e.getMessage());
+            return ConstantsFor.MATRIX_STRING_NAME;
+        }
+        return ConstantsFor.MATRIX_STRING_NAME;
+    }
 
     public String whoIs(String inetAddr) {
         StringBuilder geoLocation = new StringBuilder();

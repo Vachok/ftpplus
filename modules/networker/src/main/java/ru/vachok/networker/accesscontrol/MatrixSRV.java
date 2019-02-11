@@ -2,12 +2,12 @@ package ru.vachok.networker.accesscontrol;
 
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.ResoCache;
 import ru.vachok.networker.config.ResLoader;
 
@@ -24,8 +24,19 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service("matrix")
 public class MatrixSRV {
 
-    private static final Logger LOGGER = AppComponents.getLogger();
+    /**
+     Логгер
+     <p>
+     {@link LoggerFactory#getLogger(String)}
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(MatrixSRV.class.getSimpleName());
 
+    /**
+     Пользовательский ввод
+     <p>
+
+     @see MatrixCtr
+     */
     private String workPos;
 
     private int countDB;

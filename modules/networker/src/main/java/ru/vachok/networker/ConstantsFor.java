@@ -23,8 +23,14 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.SecureRandom;
-import java.time.*;
-import java.util.*;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.Year;
+import java.time.ZoneOffset;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.*;
 
 import static java.time.temporal.ChronoUnit.HOURS;
@@ -362,6 +368,10 @@ public enum ConstantsFor {
     public static final String HTML_CENTER = "</center>";
 
     public static final String STR_INPUT_OUTPUT = "input/output";
+
+    public static final String MATRIX_STRING_NAME = "matrix";
+
+    public static final String WHOIS_STR = "whois";
 
     /**
      {@link #getAtomicTime()}
