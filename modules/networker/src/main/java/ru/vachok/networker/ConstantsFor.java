@@ -129,6 +129,7 @@ public enum ConstantsFor {
      <i>Boiler Plate</i>
      */
     public static final String[] STRS_VISIT = {"visit_", ".tmp"};
+
     public static final String STR_VISIT = "visit_";
 
     /**
@@ -558,13 +559,13 @@ public enum ConstantsFor {
         InitProperties initProperties;
         try{
             initProperties = new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
-            String msg = "Taking DB properties:" + "\n" + initProperties.getClass().getSimpleName();
+            String msg = "Taking File properties:" + "\n" + initProperties.getClass().getSimpleName();
             AppComponents.getLogger().info(msg);
             PROPS.putAll(initProperties.getProps());
         }
         catch(Exception e){
             initProperties = new FileProps(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
-            String msg = "Taking File properties:" + "\n" + e.getMessage();
+            String msg = "Taking DB properties:" + "\n" + e.getMessage();
             AppComponents.getLogger().warn(msg);
             PROPS.putAll(initProperties.getProps());
             new MessageSwing().infoNoTitlesDIA(e.getMessage() + " " + ConstantsFor.class.getSimpleName());

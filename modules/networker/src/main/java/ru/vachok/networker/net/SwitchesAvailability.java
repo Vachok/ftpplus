@@ -6,7 +6,10 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.services.TimeChecker;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -89,9 +92,7 @@ public class SwitchesAvailability implements Runnable {
      @param inetAddressQueue преобразованный лист строк в ИП. {@link #makeAddrQ()}
      */
     private void testAddresses(Queue<InetAddress> inetAddressQueue) throws IOException {
-        LOGGER.warn("SwitchesAvailability.testAddresses");
         List<String> badIP = new ArrayList<>();
-
         while (inetAddressQueue.iterator().hasNext()) {
             InetAddress poll = inetAddressQueue.poll();
             if (poll != null && poll.isReachable(500)) {

@@ -40,6 +40,8 @@ public class NetPinger implements Runnable {
      */
     private static final String METH_PINGSW = "NetPinger.pingSW";
 
+    private long pingSleep = Long.parseLong(ConstantsFor.getProps().getProperty("pingsleep", "20"));
+
     /**
      * Лист {@link InetAddress}.
      <p>
@@ -141,12 +143,16 @@ public class NetPinger implements Runnable {
      Результат ({@link InetAddress#toString()} is {@link InetAddress#isReachable(int)}) добавляется в {@link #resList}.
      */
     private void pingSW() {
+        final Properties properties = ConstantsFor.getProps();
+        properties.setProperty("pingsleep", pingSleep + "");
         for (InetAddress inetAddress : ipAsList) {
             try {
                 resList.add(inetAddress.toString() + " is " + inetAddress.isReachable(ConstantsFor.TIMEOUT_650));
-            } catch (IOException e) {
+                Thread.sleep(pingSleep);
+            } catch (IOException | InterruptedException e) {
                 messageToUser.errorAlert(CLASS_NAME, "pingSW", e.getMessage());
                 FileSystemWorker.error(METH_PINGSW, e);
+                Thread.currentThread().interrupt();
             }
         }
     }
@@ -171,7 +177,7 @@ public class NetPinger implements Runnable {
         });
         FileSystemWorker.recFile(ConstantsNet.PINGRESULT_LOG, pingsList);
         messageToUser = new MessageFile();
-        pingsList.add("Total - " + ((float) TimeUnit.MILLISECONDS.toMinutes(userIn) / ConstantsFor.ONE_HOUR_IN_MIN) + " hours spend");
+        pingsList.add(((float) TimeUnit.MILLISECONDS.toMinutes(userIn) / ConstantsFor.ONE_HOUR_IN_MIN) + " hours spend");
         if (userIn >= TimeUnit.MINUTES.toMillis(3)) {
             try {
                 ESender.sendM(Collections.singletonList(ConstantsFor.GMAIL_COM), getClass().getSimpleName(), new TForms().fromArray(pingsList, false));

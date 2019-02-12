@@ -112,12 +112,12 @@ public class DiapazonedScan implements Runnable, Serializable {
      @throws IllegalAccessException swF.get(swF).toString()
      */
     public List<String> pingSwitch() throws IllegalAccessException {
-        LOGGER.warn("DiapazonedScan.pingSwitch");
         Field[] swFields = SwitchesWiFi.class.getFields();
         List<String> swList = new ArrayList<>();
         for (Field swF : swFields) {
             String ipAddrStr = swF.get(swF).toString();
             swList.add(ipAddrStr);
+            new MessageCons().infoNoTitles(ipAddrStr);
         }
         return swList;
     }
