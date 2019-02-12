@@ -17,10 +17,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
@@ -167,12 +164,14 @@ public class NetPinger implements Runnable {
      */
     private void parseResult(long userIn) {
         List<String> pingsList = new ArrayList<>();
+        pingsList.add("Pinger is start at " + new Date(System.currentTimeMillis() - userIn));
         resList.stream().distinct().forEach(x -> {
             int frequency = Collections.frequency(resList, x);
             pingsList.add(frequency + " times " + x + "\n");
         });
         FileSystemWorker.recFile(ConstantsNet.PINGRESULT_LOG, pingsList);
         messageToUser = new MessageFile();
+        pingsList.add("Total - " + ((float) TimeUnit.MILLISECONDS.toMinutes(userIn) / ConstantsFor.ONE_HOUR_IN_MIN) + " hours spend");
         if (userIn >= TimeUnit.MINUTES.toMillis(3)) {
             try {
                 ESender.sendM(Collections.singletonList(ConstantsFor.GMAIL_COM), getClass().getSimpleName(), new TForms().fromArray(pingsList, false));
@@ -234,7 +233,8 @@ public class NetPinger implements Runnable {
      <p>
      Если {@link #multipartFile} не null, 1. {@link #parseFile()}. <br>
      2. {@link #getTimeToScan()}. Парсинг строки в {@link Long}. <br>
-     3. Пока {@link System#currentTimeMillis()} меньше чем время старта ({@code final long startSt}), запускать {@link #pingSW()}. <br>
+     3. Пока {@link System#currentTimeMillis()} меньше чем время старта ({@code final long startSt}), запускать {@link #pingSW()}.
+     Устанавливаем {@link Thread#setName(java.lang.String)} - {@link ConstantsFor#getUpTime()}.<br>
      4. {@link TForms#fromArray(java.util.List, boolean)}. Устанавливаем {@link #pingResult}, после сканирования. <br>
      5. {@link #parseResult(long)}. Парсим результат пингера.
      <p>
@@ -251,6 +251,7 @@ public class NetPinger implements Runnable {
         long totalMillis = startSt + userIn;
         while (System.currentTimeMillis() < totalMillis) {
             pingSW();
+            Thread.currentThread().setName(ConstantsFor.getUpTime());
             messageToUser.infoNoTitles(getClass().getSimpleName() + " left " +
                 (float) TimeUnit.MILLISECONDS.toSeconds(totalMillis - System.currentTimeMillis()) / ConstantsFor.ONE_HOUR_IN_MIN);
         }
