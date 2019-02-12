@@ -17,19 +17,13 @@ import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.errorexceptions.MyNull;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.mailserver.MailIISLogsCleaner;
-import ru.vachok.networker.net.DiapazonedScan;
-import ru.vachok.networker.net.NetMonitorPTV;
-import ru.vachok.networker.net.ScanOnline;
-import ru.vachok.networker.net.WeekPCStats;
+import ru.vachok.networker.net.*;
 import ru.vachok.networker.services.MyCalen;
 import ru.vachok.networker.services.SpeedChecker;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.FileVisitor;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -39,10 +33,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 
 /**
@@ -81,6 +72,8 @@ public class AppInfoOnLoad implements Runnable {
      {@link ConstantsFor#getProps()}
      */
     private static final Properties APP_PROPS = ConstantsFor.getProps();
+
+    private static final String STR_UPTIME = " uptime.";
 
     /**
      {@link DiapazonedScan#getInstance()}
@@ -177,7 +170,7 @@ public class AppInfoOnLoad implements Runnable {
         LOGGER.warn(logStr);
         new MessageCons().info(ConstantsFor.STR_INPUT_OUTPUT, "scheduledExecutorService = [" + scheduledExecutorService.toString() + "]", "void");
         String finalExitLast = exitLast;
-        new MessageSwing(515, 313, 36, 31).infoTimer(45, finalExitLast);
+        new MessageSwing(555, 333, 36, 31).infoTimer(45, finalExitLast);
     }
 
     private static String checkDay(ScheduledExecutorService scheduledExecutorService) {
@@ -198,9 +191,9 @@ public class AppInfoOnLoad implements Runnable {
         try (Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.U_0466446_VELKOM);
              PreparedStatement preparedStatement = c.prepareStatement("TRUNCATE TABLE pcuserauto")) {
             preparedStatement.executeUpdate();
-            messageToUser.infoNoTitles("TRUNCATE true\n" + ConstantsFor.getUpTime() + " uptime.");
+            messageToUser.infoNoTitles("TRUNCATE true\n" + ConstantsFor.getUpTime() + STR_UPTIME);
         } catch (SQLException e) {
-            messageToUser.infoNoTitles("TRUNCATE false\n" + ConstantsFor.getUpTime() + " uptime.");
+            messageToUser.infoNoTitles("TRUNCATE false\n" + ConstantsFor.getUpTime() + STR_UPTIME);
         }
     }
 

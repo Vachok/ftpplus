@@ -29,6 +29,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.*;
 import java.text.MessageFormat;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Date;
 import java.util.*;
@@ -36,6 +37,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+
+import static java.time.format.TextStyle.FULL_STANDALONE;
 
 
 /**
@@ -517,7 +520,11 @@ public class NetScannerSvc {
             bodyMsg);
         FileSystemWorker.recFile(this.getClass().getSimpleName() + ".getPCsAsync", toFileList);
         FileSystemWorker.recFile("unused.ips", unusedNames.stream());
-        new MessageSwing(438, 500).infoTimer(70, "E-mail. " + ConstantsFor.GMAIL_COM + " " + LocalTime.now().toSecondOfDay() + "\n" + bodyMsg);
+        new MessageSwing(444, 550).infoTimer(50,
+            "E-mail sent. Daysec: " +
+                LocalTime.now().toSecondOfDay() + " " +
+                LocalDate.now().getDayOfWeek().getDisplayName(FULL_STANDALONE, Locale.getDefault()) + "\n" +
+                bodyMsg);
     }
 
     /**
