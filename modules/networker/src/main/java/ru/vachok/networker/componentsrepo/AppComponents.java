@@ -19,6 +19,7 @@ import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.ad.ADUser;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.mailserver.RuleSet;
+import ru.vachok.networker.net.NetPinger;
 import ru.vachok.networker.services.SimpleCalculator;
 
 import javax.servlet.http.HttpServletRequest;
@@ -40,6 +41,12 @@ public class AppComponents {
      <i>Boiler Plate</i>
      */
     private static final String STR_VISITOR = "visitor";
+
+    @Bean
+    @Scope (ConstantsFor.SINGLETON)
+    public static NetPinger netPinger() {
+        return new NetPinger();
+    }
 
     /**
      @return {@link LoggerFactory}

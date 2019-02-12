@@ -2,6 +2,7 @@ package ru.vachok.networker.net;
 
 
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,6 +19,7 @@ import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
+import ru.vachok.networker.services.MessageLocal;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -86,7 +88,8 @@ public class NetScanCtr {
      */
     private static ConcurrentMap<String, Boolean> lastScanMAP = AppComponents.lastNetScanMap();
 
-    private NetPinger netPinger = new NetPinger();
+    @Autowired
+    private NetPinger netPinger = AppComponents.netPinger();
 
     /**
      POST /netscan
@@ -314,6 +317,7 @@ public class NetScanCtr {
         }
     }
 
+    @SuppressWarnings ("WeakerAccess")
     @GetMapping ("/showalldev")
     public String allDevices(Model model, HttpServletRequest request, HttpServletResponse response) {
         LOGGER.warn("NetScanCtr.allDevices");
@@ -333,15 +337,22 @@ public class NetScanCtr {
     public String pingAddr(Model model, HttpServletRequest request, HttpServletResponse response) {
         model.addAttribute(ATT_NET_PINGER, netPinger);
         model.addAttribute("pingResult", FileSystemWorker.readFile(ConstantsNet.PINGRESULT_LOG));
+        model.addAttribute(ConstantsFor.ATT_TITLE, netPinger.getTimeToEnd() + " pinger hash: " + netPinger.hashCode());
+        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
+        response.addHeader(ConstantsFor.HEAD_REFRESH, "60");
         return "ping";
     }
 
     @PostMapping ("/ping")
-    public String pingPost(Model model, HttpServletRequest request, @ModelAttribute NetPinger netPinger) throws ExecutionException, InterruptedException {
+    public String pingPost(Model model, HttpServletRequest request, @ModelAttribute NetPinger netPinger, HttpServletResponse response) throws ExecutionException, InterruptedException {
         this.netPinger = netPinger;
         netPinger.run();
         model.addAttribute(ATT_NET_PINGER, netPinger);
+        String npEq = "Netpinger equals is " + netPinger.equals(this.netPinger);
+        model.addAttribute(ConstantsFor.ATT_TITLE, npEq);
         model.addAttribute("ok", FileSystemWorker.readFile(ConstantsNet.PINGRESULT_LOG));
+        new MessageLocal().infoNoTitles("npEq = " + npEq);
+        response.addHeader(ConstantsFor.HEAD_REFRESH, properties.getProperty(NetPinger.PROP_PINGSLEEP, "60"));
         return "ok";
     }
 

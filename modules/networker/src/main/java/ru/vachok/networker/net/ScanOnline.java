@@ -114,7 +114,7 @@ public class ScanOnline implements Runnable {
         sb.append("Online  pc is<font color=\"#00ff69\"> ").append(new TForms().fromArray(NET_LIST_KEEPER.getOnLinesResolve(), true)).append("</font>");
         sb.append("NET_LIST_KEEPER=").append(NET_LIST_KEEPER.hashCode());
         sb.append(", SCAN_ONLINE=").append(SCAN_ONLINE.hashCode());
-        sb.append(", messageToUser=").append(messageToUser.toString());
+        sb.append(ConstantsFor.TOSTRING_MESSAGE_TO_USER).append(messageToUser.toString());
         return sb.toString();
     }
 }
