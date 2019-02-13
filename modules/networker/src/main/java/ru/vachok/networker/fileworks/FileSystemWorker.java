@@ -14,10 +14,7 @@ import ru.vachok.networker.systray.SystemTrayHelper;
 
 import java.io.*;
 import java.nio.file.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Stream;
@@ -33,12 +30,12 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
 
     private static final String CLASS_NAME = "FileSystemWorker";
 
-    private static final String CLASS_METH = "FileSystemWorker.readFileToList";
-
     /**
      {@link LoggerFactory#getLogger(String)}
      */
     static final Logger LOGGER = LoggerFactory.getLogger(CLASS_NAME);
+
+    private static final String CLASS_METH = "FileSystemWorker.readFileToList";
 
     public static synchronized void recFile(String fileName, Stream<String> toFileRec) {
         try(OutputStream outputStream = new FileOutputStream(fileName);
@@ -101,9 +98,9 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     /**
      Простое копирование файла.
 
-     @param origFile файл, для копирования
-     @param pathToCopy        строка путь
-     @param needDel удалить или нет исходник
+     @param origFile   файл, для копирования
+     @param pathToCopy строка путь
+     @param needDel    удалить или нет исходник
      @return удача/нет
      */
     @SuppressWarnings ("MethodWithMultipleReturnPoints")
@@ -245,7 +242,8 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
      <p>
      Название файла {@code classMeth}.log
      <p>
-     1. {@link TimeChecker#call()} сверим часы. <br> 2. {@link TForms#fromArray(java.lang.Exception, boolean)} приведём исключение к {@link String} <br><br>
+     1. {@link TimeChecker#call()} сверим часы. <br>
+     2. {@link TForms#fromArray(java.lang.Exception, boolean)} приведём исключение к {@link String} <br><br>
      <b>Если есть Suppressed: </b><br>
      3. {@link TForms#fromArray(java.lang.Throwable, boolean)}
 
@@ -258,7 +256,8 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
             PrintStream printStream = new PrintStream(outputStream, true)){
             printStream.println(new Date(new TimeChecker().call().getReturnTime()));
             printStream.println();
-            printStream.println(e.getMessage());
+            printStream.println(e.getClass().getName() + " e.getClass().getName()");
+            printStream.println(e.getMessage() + " e.getMessage()");
             printStream.println();
             printStream.println(new TForms().fromArray(e, false));
             printStream.println();
@@ -270,7 +269,8 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
                     printStream.println(new TForms().fromArray(throwable, false));
                 }
             }
-        } catch(IOException ex){
+        }
+        catch(IOException ex){
             LOGGER.error("FileSystemWorker.error", ex.getMessage(), ex);
         }
     }

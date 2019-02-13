@@ -61,13 +61,7 @@ public class PCUserResolver extends ADSrv {
      @see #recAutoDB(String, String)
      */
     private static Connection reconnectToDB() {
-        try {
-            connection.close();
-            connection = null;
-            connection = new RegRuMysql().getDefaultConnection(ConstantsNet.DB_NAME);
-        } catch (SQLException e) {
-            FileSystemWorker.error("PCUserResolver.reconnectToDB", e);
-        }
+        connection = new RegRuMysql().getDefaultConnection(ConstantsNet.DB_NAME);
         return connection;
     }
 
