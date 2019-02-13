@@ -1,0 +1,20 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${title}">ХЗ</title>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type"/>
+    <link href="css/main.css" media="all" rel="stylesheet" th:href="@{css/main.css}" type="text/css"/>
+</head>
+<body>
+<form method="POST" th:action="@{/userget}" th:object="${aduser}"><br>
+    Введите %username% :<br>
+    <input placeholder="kudr" required th:field="*{inputName}" type="text"/>
+    <br>
+    <input type="submit" value="Посмотреть..."/><br>
+</form>
+<center><p th:utext="${result}"></center>
+</body>
+<footer>
+    <p th:utext="${footer}"/>
+</footer>
+</html>

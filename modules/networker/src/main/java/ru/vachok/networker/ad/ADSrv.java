@@ -32,12 +32,12 @@ import java.util.*;
 @Service("adsrv")
 public class ADSrv implements Runnable {
 
+    protected static final String PC_USER_RESOLVER_CLASS_NAME = "PCUserResolver";
+
     /**
      {@link LoggerFactory}
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(ADSrv.class.getName());
-
-    protected static final String PC_USER_RESOLVER_CLASS_NAME = "PCUserResolver";
 
     /**
      {@link RegRuMysql#getDefaultConnection(String)} - u0466446_velkom ({@link ConstantsNet#DB_NAME})
@@ -84,7 +84,7 @@ public class ADSrv implements Runnable {
     /**
      @return {@link #adUser}
      */
-    ADUser getAdUser() {
+    public ADUser getAdUser() {
         return adUser;
     }
 
@@ -99,6 +99,17 @@ public class ADSrv implements Runnable {
         this.adUser = adUser;
         this.adComputer = adComputer;
         Thread.currentThread().setName(getClass().getSimpleName());
+    }
+
+    public ADSrv(ADUser adUser) {
+        this.userInputRaw = adUser.getInputName();
+        this.adUser = adUser;
+        userSetter().stream().findAny().ifPresent(x -> {
+            boolean contains = x.getSamAccountName().toLowerCase().contains(adUser.getInputName().toLowerCase());
+            if (contains) {
+                this.adUser = x;
+            }
+        });
     }
 
     protected ADSrv() {
@@ -138,7 +149,7 @@ public class ADSrv implements Runnable {
      @return имя юзера, время записи.
      @see ADSrv#getDetails(String)
      */
-    protected static synchronized String offNowGetU(CharSequence pcName) {
+    private static synchronized String offNowGetU(CharSequence pcName) {
         StringBuilder v = new StringBuilder();
         try (Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.U_0466446_VELKOM)) {
             try (PreparedStatement p = c.prepareStatement("select * from pcuser");
@@ -286,6 +297,7 @@ public class ADSrv implements Runnable {
     /**
      Резолвит онлайн пользователя ПК.
      <p>
+
      @param queryString запрос из браузера
      @return {@link #getUserName(String, PCUserResolver)} или {@link ADSrv#offNowGetU(CharSequence)}
      @throws IOException {@link InetAddress}.getByName(queryString + ".eatmeat.ru").isReachable(650))
@@ -313,11 +325,10 @@ public class ADSrv implements Runnable {
     /**
      Информация о пользователе ПК.
      <p>
-     {@link List} со строками {@code file.lastModified() file.getName }, для папок из директории Users , компьютера из запроса. <br>
-     {@link String} timestUserLast - последняя строка из сортированого списка <br>
-     Цикл резолвит время файла в папке. <br>
+     {@link List} со строками {@code file.lastModified() file.getName }, для папок из директории Users , компьютера из запроса. <br> {@link String} timestUserLast - последняя строка из
+     сортированого списка <br> Цикл резолвит время файла в папке. <br>
 
-     @param queryString запрос (имя ПК) {@code http://localhost:8880/ad?queryString}
+     @param queryString    запрос (имя ПК) {@code http://localhost:8880/ad?queryString}
      @param pcUserResolver {@link PCUserResolver}
      @return html Более подробно о ПК: из http://localhost:8880/ad?
      */
@@ -360,8 +371,7 @@ public class ADSrv implements Runnable {
      */
     @Override
     public void run() {
-        List<ADUser> adUsers = userSetter();
-        adUser.setAdUsers(adUsers);
+        new MessageCons().errorAlert("ADSrv.run");
     }
 
 }
