@@ -1,21 +1,18 @@
-package ru.vachok.networker.ad;
+package ru.vachok.networker.ad.user;
 
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
-import ru.vachok.messenger.MessageCons;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.NetScannerSvc;
 import ru.vachok.networker.net.enums.ConstantsNet;
 
 import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.sql.*;
-import java.util.Date;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -27,42 +24,42 @@ import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
  <b>Ищет имя пользователя</b>
 
  @since 02.10.2018 (17:32) */
-@Service
-public class PCUserResolver {
+public class PCUserResolver extends ADSrv {
 
     /**
-     {@link Logger}
+     New instance
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(PCUserResolver.class.getSimpleName());
+    private static final PCUserResolver PC_USER_RESOLVER = new PCUserResolver();
 
     /**
-     <i>private cons</i>
+     * Последний измененный файл.
+     * @see #getLastTimeUse(String)
      */
-    private static final PCUserResolver pcUserResolver = new PCUserResolver();
-
-    private static final String PC_USER_RESOLVER_CLASS_NAME = "PCUserResolver";
-
-    /**
-     {@link RegRuMysql#getDefaultConnection(String)} - u0466446_velkom ({@link ConstantsNet#DB_NAME})
-     */
-    private static Connection connection;
-
     private String lastFileUse = null;
+
+    /**
+     @return {@link #PC_USER_RESOLVER}
+     */
+    public static PCUserResolver getPcUserResolver() {
+        return PC_USER_RESOLVER;
+    }
 
     static {
         connection = new RegRuMysql().getDefaultConnection(ConstantsNet.DB_NAME);
     }
 
     /**
-     @return {@link #pcUserResolver}
+     Default-конструктор
      */
-    public static PCUserResolver getPcUserResolver() {
-        return pcUserResolver;
-    }
-
     private PCUserResolver() {
     }
 
+    /**
+     Реконнект к БД.
+
+     @return {@link Connection}
+     @see #recAutoDB(String, String)
+     */
     private static Connection reconnectToDB() {
         try {
             connection.close();
@@ -75,10 +72,20 @@ public class PCUserResolver {
     }
 
     /**
-     Записывает содержимое c-users в файл с именем ПК <br> 1 {@link #recAutoDB(String, String)}
+     Записывает содержимое c-users в файл с именем ПК
+     <p>
+     Создаёт {@link String} пути к пользовательской папке, через
+     {@link StringBuilder#append(java.lang.String)}: "\\\\" + name + "\\c$\\Users\\"
+     <p>
+     1 {@link #getLastTimeUse(java.lang.String)}. Получение строки, с последним модифицированным файлом.
+     <p>
+     <b>{@link IOException}, {@link ArrayIndexOutOfBoundsException}:</b><br>
+     {@link FileSystemWorker#error(java.lang.String, java.lang.Exception)}.
+     <p>
+     Если {@link #lastFileUse} != 0: {@link #recAutoDB(String, String)}
 
      @param pcName имя компьютера
-     @see NetScannerSvc
+     @see ru.vachok.networker.net.ConditionChecker#onLinesCheck(String, String)
      */
     public synchronized void namesToFile(String pcName) {
         Thread.currentThread().setName(pcName);
@@ -103,76 +110,16 @@ public class PCUserResolver {
     }
 
     /**
-     Читает БД на предмет наличия юзера для <b>offline</b> компьютера.<br>
-
-     @param pcName имя ПК
-     @return имя юзера, время записи.
-     @see ADSrv#getDetails(String)
-     */
-    synchronized String offNowGetU(CharSequence pcName) {
-        StringBuilder v = new StringBuilder();
-        try (Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.U_0466446_VELKOM)) {
-            try (PreparedStatement p = c.prepareStatement("select * from pcuser");
-                 PreparedStatement pAuto = c.prepareStatement("select * from pcuserauto where pcName in (select pcName from pcuser) order by pcName asc limit 203");
-                 ResultSet resultSet = p.executeQuery();
-                 ResultSet resultSetA = pAuto.executeQuery()) {
-                while (resultSet.next()) {
-                    if (resultSet.getString(ConstantsFor.DB_FIELD_PCNAME).toLowerCase().contains(pcName)) {
-                        v
-                            .append("<b>")
-                            .append(resultSet.getString(ConstantsFor.DB_FIELD_USER))
-                            .append("</b> <br>At ")
-                            .append(resultSet.getString(ConstantsNet.DB_FIELD_WHENQUERIED));
-                    }
-                }
-                while (resultSetA.next()) {
-                    if (resultSetA.getString(ConstantsFor.DB_FIELD_PCNAME).toLowerCase().contains(pcName)) {
-                        v
-                            .append("<p>")
-                            .append(resultSet.getString(ConstantsFor.DB_FIELD_USER))
-                            .append(" auto QUERY at: ")
-                            .append(resultSet.getString(ConstantsNet.DB_FIELD_WHENQUERIED));
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            new MessageCons().errorAlert(PC_USER_RESOLVER_CLASS_NAME, "offNowGetU", e.getMessage());
-            FileSystemWorker.error("PCUserResolver.offNowGetU", e);
-        }
-        return v.toString();
-    }
-
-    /**
-     Запись в БД <b>pcuser</b><br> Запись по-запросу от браузера.
+     Записывает инфо о пльзователе в <b>pcuserauto</b>
      <p>
-     pcName - уникальный (таблица не переписывается или не дополняется, при наличиизаписи по-компу)
+     Записи добавляются к уже имеющимся.
      <p>
-     Лог - <b>PCUserResolver.recToDB</b> в папке запуска.
+     <b>{@link SQLException}: </b>
+     1. {@link FileSystemWorker#error(java.lang.String, java.lang.Exception)} <br>
+     2. {@link #reconnectToDB()}
      <p>
-
-     @param userName имя юзера
-     @param pcName   имя ПК
-     @see ADSrv#getDetails(String)
-     */
-    synchronized void recToDB(String userName, String pcName) {
-        String sql = "insert into pcuser (pcName, userName) values(?,?)";
-        String msg = userName + " on pc " + pcName + " is set.";
-        try (PreparedStatement p = connection.prepareStatement(sql)) {
-            p.setString(1, userName);
-            p.setString(2, pcName);
-            p.executeUpdate();
-            LOGGER.info(msg);
-            ConstantsNet.PC_U_MAP.put(pcName, msg);
-        } catch (SQLException e) {
-            FileSystemWorker.error("PCUserResolver.recToDB", e);
-        }
-    }
-
-    /**
-     Записывает инфо о пльзователе в <b>pcuserauto</b> <br> Записи добавляются к уже имеющимся.
-     <p>
-     Usages: {@link PCUserResolver#namesToFile(String)} <br> Uses: -
-
+     <b>{@link ArrayIndexOutOfBoundsException}, {@link NullPointerException}:</b><br>
+     {@link FileSystemWorker#error(java.lang.String, java.lang.Exception)}
      @param pcName      имя ПК
      @param lastFileUse строка - имя последнего измененного файла в папке пользователя.
      */
@@ -195,7 +142,17 @@ public class PCUserResolver {
         }
     }
 
-    @SuppressWarnings("MethodWithMultipleReturnPoints")
+    /**
+     Ищет в подпапках папки Users, файлы.
+     <p>
+     Работа в new {@link WalkerToUserFolder}. <br> В {@link Files#walkFileTree(java.nio.file.Path, java.util.Set, int, java.nio.file.FileVisitor)}, отправляем параметры: <br> 1. Путь<br>
+     2. {@link FileVisitOption#FOLLOW_LINKS} <br> 3. Макс. глубина 2 <br> 4. {@link WalkerToUserFolder}
+     <p>
+     Сортируем {@link WalkerToUserFolder#getTimePath()} по Timestamp. От меньшего к большему.
+
+     @param pathAsStr путь, который нужно пролистать.
+     @return {@link WalkerToUserFolder#getTimePath()} последняя запись из списка.
+     */
     private synchronized String getLastTimeUse(String pathAsStr) {
         WalkerToUserFolder walkerToUserFolder = new WalkerToUserFolder();
         try {
@@ -208,36 +165,77 @@ public class PCUserResolver {
         }
     }
 
-
     /**
      Поиск файлов в папках {@code c-users}.
 
+     @see #getLastTimeUse(String)
      @since 22.11.2018 (14:46)
      */
     static class WalkerToUserFolder extends SimpleFileVisitor<Path> {
 
+        /**
+         * new {@link ArrayList}, список файлов, с отметками {@link File#lastModified()}
+         * @see #visitFile(Path, BasicFileAttributes)
+         */
         private final List<String> timePath = new ArrayList<>();
 
+        /**
+         @return {@link #timePath}
+         */
         List<String> getTimePath() {
             return timePath;
         }
 
+        /**
+         Предпросмотр директории.
+         <p>
+         До листинга файлов.
+
+         @param dir  {@link Path}
+         @param attrs {@link BasicFileAttributes}
+         @return {@link FileVisitResult#CONTINUE}
+         */
         @Override
         public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
             return FileVisitResult.CONTINUE;
         }
 
+        /**
+         Просмотр файла.
+         <p>
+         Добавляет в {@link #timePath}: <br>
+         Время модификации файла {@link File#lastModified()} + файл {@link Path#toString()} + new {@link Date}(java.io.File#lastModified()) + {@link File#lastModified()}.
+         @param file {@link Path}
+         @param attrs {@link BasicFileAttributes}
+         @return {@link FileVisitResult#CONTINUE}
+         */
         @Override
         public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
             timePath.add(file.toFile().lastModified() + " " + file + " " + new Date(file.toFile().lastModified()) + " " + file.toFile().lastModified());
             return FileVisitResult.CONTINUE;
         }
 
+        /**
+         Просмотр файла не удался.
+         <p>
+         @param file {@link Path}
+         @param  exc {@link IOException}
+         @return {@link FileVisitResult#CONTINUE}
+         */
         @Override
         public FileVisitResult visitFileFailed(Path file, IOException exc) {
             return FileVisitResult.CONTINUE;
         }
 
+        /**
+         Постпросмотр директории.
+         <p>
+         После листинга файлов.
+
+         @param dir {@link Path}
+         @param exc {@link IOException}
+         @return {@link FileVisitResult#CONTINUE}
+         */
         @Override
         public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
             return FileVisitResult.CONTINUE;

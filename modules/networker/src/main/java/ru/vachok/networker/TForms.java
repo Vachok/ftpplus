@@ -5,7 +5,7 @@ import org.slf4j.Logger;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.ad.ADComputer;
-import ru.vachok.networker.ad.ADUser;
+import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.mailserver.MailRule;
 

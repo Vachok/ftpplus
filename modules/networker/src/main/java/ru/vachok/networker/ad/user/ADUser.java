@@ -1,4 +1,4 @@
-package ru.vachok.networker.ad;
+package ru.vachok.networker.ad.user;
 
 
 import org.springframework.context.annotation.Scope;

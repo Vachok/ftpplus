@@ -17,7 +17,10 @@ import ru.vachok.networker.net.TraceRoute;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 /**
  Константы пакета
@@ -88,7 +91,7 @@ public enum ConstantsNet {;
     public static final ConcurrentMap<String, File> COMPNAME_USERS_MAP = new ConcurrentHashMap<>();
 
     /**
-     {@link ru.vachok.networker.ad.PCUserResolver#recToDB(String, String)}
+     {@link ADSrv#recToDB(String, String)}
      */
     public static final ConcurrentMap<String, String> PC_U_MAP = new ConcurrentHashMap<>();
 

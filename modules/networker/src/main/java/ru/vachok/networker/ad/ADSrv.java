@@ -7,17 +7,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import ru.vachok.messenger.MessageCons;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.ad.user.ADUser;
+import ru.vachok.networker.ad.user.PCUserResolver;
+import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetScanCtr;
 import ru.vachok.networker.net.NetScannerSvc;
 import ru.vachok.networker.net.enums.ConstantsNet;
 
 import java.io.*;
 import java.net.InetAddress;
-import java.sql.*;
-import java.util.Date;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 
 
@@ -30,6 +36,13 @@ public class ADSrv implements Runnable {
      {@link LoggerFactory}
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(ADSrv.class.getName());
+
+    protected static final String PC_USER_RESOLVER_CLASS_NAME = "PCUserResolver";
+
+    /**
+     {@link RegRuMysql#getDefaultConnection(String)} - u0466446_velkom ({@link ConstantsNet#DB_NAME})
+     */
+    protected static Connection connection;
 
     /**
      {@link ADUser}
@@ -86,6 +99,76 @@ public class ADSrv implements Runnable {
         this.adUser = adUser;
         this.adComputer = adComputer;
         Thread.currentThread().setName(getClass().getSimpleName());
+    }
+
+    protected ADSrv() {
+
+    }
+
+    /**
+     Запись в БД <b>pcuser</b><br> Запись по-запросу от браузера.
+     <p>
+     pcName - уникальный (таблица не переписывается или не дополняется, при наличиизаписи по-компу)
+     <p>
+     Лог - <b>PCUserResolver.recToDB</b> в папке запуска.
+     <p>
+
+     @param userName имя юзера
+     @param pcName   имя ПК
+     @see ADSrv#getDetails(String)
+     */
+    protected static synchronized void recToDB(String userName, String pcName) {
+        String sql = "insert into pcuser (pcName, userName) values(?,?)";
+        String msg = userName + " on pc " + pcName + " is set.";
+        try (PreparedStatement p = connection.prepareStatement(sql)) {
+            p.setString(1, userName);
+            p.setString(2, pcName);
+            p.executeUpdate();
+            LOGGER.info(msg);
+            ConstantsNet.PC_U_MAP.put(pcName, msg);
+        } catch (SQLException e) {
+            FileSystemWorker.error("PCUserResolver.recToDB", e);
+        }
+    }
+
+    /**
+     Читает БД на предмет наличия юзера для <b>offline</b> компьютера.<br>
+
+     @param pcName имя ПК
+     @return имя юзера, время записи.
+     @see ADSrv#getDetails(String)
+     */
+    protected static synchronized String offNowGetU(CharSequence pcName) {
+        StringBuilder v = new StringBuilder();
+        try (Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.U_0466446_VELKOM)) {
+            try (PreparedStatement p = c.prepareStatement("select * from pcuser");
+                 PreparedStatement pAuto = c.prepareStatement("select * from pcuserauto where pcName in (select pcName from pcuser) order by pcName asc limit 203");
+                 ResultSet resultSet = p.executeQuery();
+                 ResultSet resultSetA = pAuto.executeQuery()) {
+                while (resultSet.next()) {
+                    if (resultSet.getString(ConstantsFor.DB_FIELD_PCNAME).toLowerCase().contains(pcName)) {
+                        v
+                            .append("<b>")
+                            .append(resultSet.getString(ConstantsFor.DB_FIELD_USER))
+                            .append("</b> <br>At ")
+                            .append(resultSet.getString(ConstantsNet.DB_FIELD_WHENQUERIED));
+                    }
+                }
+                while (resultSetA.next()) {
+                    if (resultSetA.getString(ConstantsFor.DB_FIELD_PCNAME).toLowerCase().contains(pcName)) {
+                        v
+                            .append("<p>")
+                            .append(resultSet.getString(ConstantsFor.DB_FIELD_USER))
+                            .append(" auto QUERY at: ")
+                            .append(resultSet.getString(ConstantsNet.DB_FIELD_WHENQUERIED));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            new MessageCons().errorAlert(PC_USER_RESOLVER_CLASS_NAME, "offNowGetU", e.getMessage());
+            FileSystemWorker.error("PCUserResolver.offNowGetU", e);
+        }
+        return v.toString();
     }
 
     /**
@@ -204,7 +287,7 @@ public class ADSrv implements Runnable {
      Резолвит онлайн пользователя ПК.
      <p>
      @param queryString запрос из браузера
-     @return {@link #getUserName(String, PCUserResolver)} или {@link PCUserResolver#offNowGetU(CharSequence)}
+     @return {@link #getUserName(String, PCUserResolver)} или {@link ADSrv#offNowGetU(CharSequence)}
      @throws IOException {@link InetAddress}.getByName(queryString + ".eatmeat.ru").isReachable(650))
      @see ActDirectoryCTRL#queryStringExists(java.lang.String, org.springframework.ui.Model)
      */
@@ -213,7 +296,7 @@ public class ADSrv implements Runnable {
         if (InetAddress.getByName(queryString + ConstantsFor.EATMEAT_RU).isReachable(ConstantsFor.TIMEOUT_650)) {
             return getUserName(queryString, pcUserResolver);
         } else {
-            return pcUserResolver.offNowGetU(queryString);
+            return offNowGetU(queryString);
         }
     }
 
@@ -259,7 +342,7 @@ public class ADSrv implements Runnable {
         }
         ConstantsNet.COMPNAME_USERS_MAP.put(timestUserLast, filesAsFile);
         try {
-            pcUserResolver.recToDB(queryString + ConstantsFor.EATMEAT_RU, timestUserLast.split(" ")[1]);
+            recToDB(queryString + ConstantsFor.EATMEAT_RU, timestUserLast.split(" ")[1]);
         } catch (ArrayIndexOutOfBoundsException ignore) {
             //
         }
