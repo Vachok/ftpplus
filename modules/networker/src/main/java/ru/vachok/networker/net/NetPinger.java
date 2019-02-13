@@ -12,10 +12,7 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.*;
@@ -75,7 +72,7 @@ public class NetPinger implements Runnable {
     /**
      Ввод минут из браузера. По-умолчанию 3.
 
-     @see NetScanCtr#pingPost(org.springframework.ui.Model, javax.servlet.http.HttpServletRequest, ru.vachok.networker.net.NetPinger)
+     @see NetScanCtr#pingPost(org.springframework.ui.Model, javax.servlet.http.HttpServletRequest, ru.vachok.networker.net.NetPinger, javax.servlet.http.HttpServletResponse)
      */
     private String timeToScan = "3";
 
@@ -99,7 +96,7 @@ public class NetPinger implements Runnable {
     /**
      Файл, загружаемый из браузера.
 
-     @see NetScanCtr#pingPost(org.springframework.ui.Model, javax.servlet.http.HttpServletRequest, ru.vachok.networker.net.NetPinger)
+     @see NetScanCtr#pingPost(org.springframework.ui.Model, javax.servlet.http.HttpServletRequest, ru.vachok.networker.net.NetPinger, javax.servlet.http.HttpServletResponse)
      */
     private MultipartFile multipartFile = null;
 

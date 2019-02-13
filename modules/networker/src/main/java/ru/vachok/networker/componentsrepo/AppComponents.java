@@ -23,10 +23,7 @@ import ru.vachok.networker.net.NetPinger;
 import ru.vachok.networker.services.SimpleCalculator;
 
 import javax.servlet.http.HttpServletRequest;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -175,6 +172,12 @@ public class AppComponents {
 
     public static Visitor thisVisit(String sessionID) throws NullPointerException, NoSuchBeanDefinitionException {
         return (Visitor) configurableApplicationContext().getBean(sessionID);
+    }
+
+    @Bean
+    @Scope (ConstantsFor.SINGLETON)
+    public static ADSrv adSrv(ADUser adUser) {
+        return new ADSrv(adUser);
     }
 
     @Bean

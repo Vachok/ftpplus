@@ -21,7 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  @since 07.09.2018 (9:45) */
-@Service("matrix")
+@Service (ConstantsFor.MATRIX_STRING_NAME)
 public class MatrixSRV {
 
     /**
@@ -32,14 +32,20 @@ public class MatrixSRV {
     private static final Logger LOGGER = LoggerFactory.getLogger(MatrixSRV.class.getSimpleName());
 
     /**
+     Имя колонки в sql-таблице.
+
+     @see #getWorkPos()
+     */
+    private static final String SQLCOL_CHANGES = "changes";
+
+    /**
      Пользовательский ввод
-     <p>
 
      @see MatrixCtr
      */
-    private String workPos;
+    private String workPos = "";
 
-    private int countDB;
+    private int countDB = 0;
 
     public int getCountDB() {
         return countDB;
@@ -49,7 +55,7 @@ public class MatrixSRV {
         this.countDB = countDB;
     }
 
-    public String getWorkPos() throws IllegalStateException {
+    public String getWorkPos() {
         return workPos;
     }
 
@@ -57,53 +63,58 @@ public class MatrixSRV {
         this.workPos = workPos;
     }
 
-    public String getWorkPosition(String sql) {
+    String getWorkPosition(String sql) {
         Map<String, String> doljAndAccess = new ConcurrentHashMap<>();
         Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.DB_PREFIX + ConstantsFor.STR_VELKOM);
         try (PreparedStatement statement = c.prepareStatement(sql);
              ResultSet r = statement.executeQuery()) {
             while (r.next()) {
-                StringBuilder stringBuilder = new StringBuilder();
-                countDB = countDB + 1;
-                int fullinet = r.getInt("fullinet");
-                int stdinet = r.getInt("stdinet");
-                int limitinet = r.getInt("limitinet");
-                int owaasync = r.getInt("owaasync");
-                int vpn = r.getInt("VPN");
-                int sendmail = r.getInt("sendmail");
-                if (fullinet == 1) {
-                    stringBuilder.append(" - полный достув в интернет <br>");
-                }
-                if (stdinet == 1) {
-                    stringBuilder.append(" - доступ с ограничениями (mail.ru и тп). Стандарт для большинства <br>");
-                }
-                if (limitinet == 1) {
-                    stringBuilder.append(" - досту только к определённым спискам сайтов <br>");
-                }
-                if (owaasync == 1) {
-                    stringBuilder.append(" - owa and async (почта удалённо) <br>");
-                }
-                if (vpn == 1) {
-                    stringBuilder.append(" - VPN <br>");
-                }
-                if (sendmail == 1) {
-                    stringBuilder.append(" - отправка за пределы компании<br>");
-                }
-                doljAndAccess.put("<p><h5>" + r.getString(2) + " - " + r.getString(3) + ":</h5>",
-                    stringBuilder.toString());
-                Blob changes = r.getBlob("changes");
-                if (changes.length() > ConstantsFor.KBYTE) {
-                    r.getBlob("changes");
-                    String fileType = r.getString("filetype");
-                    doljAndAccess.put("Reason", downBlob(changes.getBytes(1, Math.toIntExact(changes.length())), fileType));
-                }
+                getInfo(r, doljAndAccess);
             }
-        } catch (SQLException e) {
+        }
+        catch(SQLException e){
             LOGGER.error(e.getMessage(), e);
         }
         String s = new TForms().fromArray(doljAndAccess, true);
         this.workPos = s;
         return s;
+    }
+
+    private void getInfo(ResultSet r, Map<String, String> doljAndAccess) throws SQLException {
+        StringBuilder stringBuilder = new StringBuilder();
+        countDB = countDB + 1;
+        int fullinet = r.getInt("fullinet");
+        int stdinet = r.getInt("stdinet");
+        int limitinet = r.getInt("limitinet");
+        int owaasync = r.getInt("owaasync");
+        int vpn = r.getInt("VPN");
+        int sendmail = r.getInt("sendmail");
+        if(fullinet==1){
+            stringBuilder.append(" - полный достув в интернет <br>");
+        }
+        if(stdinet==1){
+            stringBuilder.append(" - доступ с ограничениями (mail.ru и тп). Стандарт для большинства <br>");
+        }
+        if(limitinet==1){
+            stringBuilder.append(" - досту только к определённым спискам сайтов <br>");
+        }
+        if(owaasync==1){
+            stringBuilder.append(" - owa and async (почта удалённо) <br>");
+        }
+        if(vpn==1){
+            stringBuilder.append(" - VPN <br>");
+        }
+        if(sendmail==1){
+            stringBuilder.append(" - отправка за пределы компании<br>");
+        }
+        doljAndAccess.put("<p><h5>" + r.getString(2) + " - " + r.getString(3) + ":</h5>",
+            stringBuilder.toString());
+        Blob changes = r.getBlob(SQLCOL_CHANGES);
+        if(changes.length() > ConstantsFor.KBYTE){
+            r.getBlob(SQLCOL_CHANGES);
+            String fileType = r.getString("filetype");
+            doljAndAccess.put("Reason", downBlob(changes.getBytes(1, Math.toIntExact(changes.length())), fileType));
+        }
     }
 
     private String downBlob(byte[] bytes, String fileType) {
