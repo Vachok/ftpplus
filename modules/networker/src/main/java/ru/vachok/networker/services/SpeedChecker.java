@@ -175,7 +175,7 @@ public class SpeedChecker implements Callable<Long> {
          @return строку из {@link #checkDB()} .
          */
         private String chechMail() {
-            Message[] messagesBot = mailMessages.call();
+            Message[] messagesBot = mailMessages.call(); // TODO: 13.02.2019 java.sql.Connection.close in ru.vachok.mysqlandprops.props.DBRegProperties.getProps
             String chDB = new TForms().fromArray(checkDB(), false);
             FileSystemWorker.recFile(this.getClass().getSimpleName() + ".chechMail", Collections.singletonList(chDB));
             for (Message m : messagesBot) {
@@ -229,8 +229,7 @@ public class SpeedChecker implements Callable<Long> {
         private Map<String, String> checkDB() {
             Map<String, String> retMap = new HashMap<>();
             String sql = ConstantsFor.SELECT_FROM_SPEED;
-            try (Connection c = DEF_CONNECTION;
-                 PreparedStatement p = c.prepareStatement(sql);
+            try (PreparedStatement p = DEF_CONNECTION.prepareStatement(sql);
                  ResultSet r = p.executeQuery()) {
                 while (r.next()) {
                     String valueS = r.getInt("Road") +
