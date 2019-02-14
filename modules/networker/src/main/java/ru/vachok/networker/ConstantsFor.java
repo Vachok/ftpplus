@@ -50,6 +50,8 @@ public enum ConstantsFor {
 
     private static final int MIN_DELAY = 17;
 
+    public static final String TOSTRING_CLASS_NAME = ", CLASS_NAME='";
+
     public static final String ATT_ADUSER = "aduser";
 
     public static final String TOSTRING_MESSAGE_TO_USER = ", messageToUser=";

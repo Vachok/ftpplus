@@ -52,8 +52,6 @@ class ConditionChecker {
         List<Integer> offLine = new ArrayList<>();
         StringBuilder stringBuilder = new StringBuilder();
         String classMeth = "ConditionChecker.onLinesCheck";
-
-        String methName = "onLinesCheck";
         try (PreparedStatement statement = NetScannerSvc.c.prepareStatement(sql)) {
             Runnable r = () -> pcUserResolver.namesToFile(pcName);
             ThreadConfig.executeAsThread(r);
@@ -167,7 +165,7 @@ class ConditionChecker {
     public String toString() {
         final StringBuilder sb = new StringBuilder("ConditionChecker{");
         sb.append("c=").append(c.toString());
-        sb.append(", CLASS_NAME='").append(CLASS_NAME).append('\'');
+        sb.append(ConstantsFor.TOSTRING_CLASS_NAME).append(CLASS_NAME).append('\'');
         sb.append('}');
         return sb.toString();
     }
