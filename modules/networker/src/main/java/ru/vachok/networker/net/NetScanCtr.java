@@ -19,17 +19,18 @@ import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
+import ru.vachok.networker.net.enums.OtherKnownDevices;
 import ru.vachok.networker.services.MessageLocal;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
-import java.util.Date;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.*;
 
 
@@ -339,10 +340,27 @@ public class NetScanCtr {
         model.addAttribute("pingResult", FileSystemWorker.readFile(ConstantsNet.PINGRESULT_LOG));
         model.addAttribute(ConstantsFor.ATT_TITLE, netPinger.getTimeToEnd() + " pinger hash: " + netPinger.hashCode());
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
+        model.addAttribute("pingTest", new TForms().fromArray(netPinger.pingDev(getDeqAddr()), true) + "<br><b>" +
+            netPinger.isReach(OtherKnownDevices.MOB_KUDR) + " my mobile...</b>");
         response.addHeader(ConstantsFor.HEAD_REFRESH, "60");
         return "ping";
     }
 
+    private Deque<InetAddress> getDeqAddr() {
+        Deque<InetAddress> retDeq = new ConcurrentLinkedDeque<>();
+        try{
+            byte[] inetAddressBytes = InetAddress.getByName(OtherKnownDevices.MOB_KUDR).getAddress();
+            retDeq.add(InetAddress.getByAddress(inetAddressBytes));
+            inetAddressBytes = InetAddress.getByName("10.10.111.1").getAddress();
+            retDeq.add(InetAddress.getByAddress(inetAddressBytes));
+        }
+        catch(UnknownHostException e){
+            new MessageCons().errorAlert("NetScanCtr", "getDeqAddr", e.getMessage());
+        }
+        return retDeq;
+    }
+
+    @SuppressWarnings ("WeakerAccess")
     @PostMapping ("/ping")
     public String pingPost(Model model, HttpServletRequest request, @ModelAttribute NetPinger netPinger, HttpServletResponse response) throws ExecutionException, InterruptedException {
         this.netPinger = netPinger;
@@ -352,7 +370,7 @@ public class NetScanCtr {
         model.addAttribute(ConstantsFor.ATT_TITLE, npEq);
         model.addAttribute("ok", FileSystemWorker.readFile(ConstantsNet.PINGRESULT_LOG));
         new MessageLocal().infoNoTitles("npEq = " + npEq);
-        response.addHeader(ConstantsFor.HEAD_REFRESH, properties.getProperty(NetPinger.PROP_PINGSLEEP, "60"));
+        response.addHeader(ConstantsFor.HEAD_REFRESH, properties.getProperty(ConstantsNet.PROP_PINGSLEEP, "60"));
         return "ok";
     }
 

@@ -37,7 +37,7 @@ class ActionSomeInfo extends AbstractAction {
     public void actionPerformed(ActionEvent e) {
         LOGGER.warn("ActionSomeInfo.actionPerformed");
         Date newScan = new Date(DiapazonedScan.getInstance().getStopClass() + TimeUnit.MINUTES.toMillis(111));
-        new MessageSwing(400, 500, 35, 20).infoNoTitles("New Scan at: " +
+        new MessageSwing(550, 500, 45, 35).infoNoTitles("New Scan at: " +
             newScan.toString() +
             " | " + ConstantsFor.getUpTime() + ", " + SpeedChecker.ChkMailAndUpdateDB.todayInfo() + "\n" +
             Thread.activeCount() + " threads " + ConstantsFor.getMemoryInfo() + AppInfoOnLoad.iisLogSize() + "\n" +

@@ -17,10 +17,7 @@ import ru.vachok.networker.net.TraceRoute;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 /**
  Константы пакета
@@ -120,6 +117,15 @@ public enum ConstantsNet {;
      <i>Boiler Plate</i>
      */
     public static final String STR_NETSCANNERSVC = "netScannerSvc";
+
+    /**
+     Название настройки.
+     <p>
+     pingsleep. Сколько делать перерыв в пингах. В <b>миллисекундах</b>.
+
+     @see ConstantsFor#getProps()
+     */
+    public static final String PROP_PINGSLEEP = "pingsleep";
 
     public static String getProvider() {
         Future<String> submit = ThreadConfig.getI().threadPoolTaskExecutor().submit(new TraceRoute());

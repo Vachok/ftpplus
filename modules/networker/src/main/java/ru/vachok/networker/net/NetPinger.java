@@ -27,16 +27,7 @@ import java.util.stream.Stream;
 
  @since 08.02.2019 (9:34) */
 @Service
-public class NetPinger implements Runnable {
-
-    /**
-     Название настройки.
-     <p>
-     pingsleep. Сколько делать перерыв в пингах. В <b>миллисекундах</b>.
-
-     @see ConstantsFor#getProps()
-     */
-    static final String PROP_PINGSLEEP = "pingsleep";
+public class NetPinger implements Runnable, Pinger {
 
     /**
      NetPinger
@@ -53,9 +44,9 @@ public class NetPinger implements Runnable {
      <p>
      Берётся из {@link ConstantsFor#getProps()}. В <b>миллисекундах</b>. По-умолчанию 20 мсек.
 
-     @see #PROP_PINGSLEEP
+     @see ConstantsNet#PROP_PINGSLEEP
      */
-    private long pingSleep = Long.parseLong(ConstantsFor.getProps().getProperty(PROP_PINGSLEEP, "20"));
+    private long pingSleep = Long.parseLong(ConstantsFor.getProps().getProperty(ConstantsNet.PROP_PINGSLEEP, "20"));
 
     /**
      Лист {@link InetAddress}.
@@ -109,6 +100,29 @@ public class NetPinger implements Runnable {
     }
 
     /**
+     Пингер.
+     <p>
+     После обработки {@link #multipartFile} и заполнения {@link #ipAsList}, пингуем адреса. Таймаут - {@link ConstantsFor#TIMEOUT_650}<br> Результат
+     ({@link InetAddress#toString()} is
+     {@link InetAddress#isReachable(int)}) добавляется в {@link #resList}.
+     */
+    private void pingSW() {
+        final Properties properties = ConstantsFor.getProps();
+        properties.setProperty(ConstantsNet.PROP_PINGSLEEP, pingSleep + "");
+        for(InetAddress inetAddress : ipAsList){
+            try{
+                resList.add(inetAddress.toString() + " is " + inetAddress.isReachable(ConstantsFor.TIMEOUT_650));
+                Thread.sleep(pingSleep);
+            }
+            catch(IOException | InterruptedException e){
+                messageToUser.errorAlert(CLASS_NAME, "pingSW", e.getMessage());
+                FileSystemWorker.error(METH_PINGSW, e);
+                Thread.currentThread().interrupt();
+            }
+        }
+    }
+
+    /**
      @return {@link #timeToScan}
      */
     @SuppressWarnings("WeakerAccess")
@@ -141,7 +155,8 @@ public class NetPinger implements Runnable {
     /**
      @return {@link #timeToEnd}
      */
-    String getTimeToEnd() {
+    @Override
+    public String getTimeToEnd() {
         return timeToEnd;
     }
 
@@ -166,24 +181,15 @@ public class NetPinger implements Runnable {
         }
     }
 
-    /**
-     Пингер.
-     <p>
-     После обработки {@link #multipartFile} и заполнения {@link #ipAsList}, пингуем адреса. Таймаут - {@link ConstantsFor#TIMEOUT_650}<br> Результат ({@link InetAddress#toString()} is
-     {@link InetAddress#isReachable(int)}) добавляется в {@link #resList}.
-     */
-    private void pingSW() {
-        final Properties properties = ConstantsFor.getProps();
-        properties.setProperty(PROP_PINGSLEEP, pingSleep + "");
-        for (InetAddress inetAddress : ipAsList) {
-            try {
-                resList.add(inetAddress.toString() + " is " + inetAddress.isReachable(ConstantsFor.TIMEOUT_650));
-                Thread.sleep(pingSleep);
-            } catch (IOException | InterruptedException e) {
-                messageToUser.errorAlert(CLASS_NAME, "pingSW", e.getMessage());
-                FileSystemWorker.error(METH_PINGSW, e);
-                Thread.currentThread().interrupt();
-            }
+    @Override
+    public boolean isReach(String inetAddrStr) {
+        try{
+            byte[] bytesAddr = InetAddress.getByName(inetAddrStr).getAddress();
+            return InetAddress.getByAddress(bytesAddr).isReachable(ConstantsFor.TIMEOUT_650);
+        }
+        catch(IOException e){
+            FileSystemWorker.error("NetPinger.isReach", e);
+            return false;
         }
     }
 
@@ -337,7 +343,7 @@ public class NetPinger implements Runnable {
         sb.append(", multipartFile=").append(multipartFile.getName());
         sb.append(", pingResult='").append(pingResult).append(c);
         sb.append(", pingSleep=").append(pingSleep);
-        sb.append(", PROP_PINGSLEEP='").append(PROP_PINGSLEEP).append(c);
+        sb.append(", PROP_PINGSLEEP='").append(ConstantsNet.PROP_PINGSLEEP).append(c);
         sb.append(", resList=").append(resList.size());
         sb.append(", timeToEnd='").append(timeToEnd).append(c);
         sb.append(", timeToScan='").append(timeToScan).append(c);
