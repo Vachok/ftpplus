@@ -23,6 +23,9 @@ import javax.servlet.http.HttpServletRequest;
 @Controller
 public class UserWebCTRL {
 
+    /**
+     {@link MessageSwing}
+     */
     private static MessageToUser messageToUser = new MessageSwing();
 
     /**
@@ -33,24 +36,24 @@ public class UserWebCTRL {
     /**
      GET /user
      <p>
-
      {@link GetMapping} для /user <br>
      1. Записываем визит. {@link ConstantsFor#getVis(javax.servlet.http.HttpServletRequest)}.
      <p>
-
      <b>Аттрибуты модели:</b> <br>
      {@link ConstantsFor#ATT_ADUSER} - {@link #adUser} <br>
      {@link ConstantsFor#ATT_TITLE} - {@link Class#getSimpleName()}<br>
+     {@link ConstantsFor#ATT_FOOTER} - {@link PageFooter#getFooterUtext()}
 
      @param model   {@link Model}
      @param request {@link HttpServletRequest}
      @return user.html
      */
-    @GetMapping ("/user")
+    @GetMapping("/user")
     public String userGet(Model model, HttpServletRequest request) {
         ConstantsFor.getVis(request);
         model.addAttribute(ConstantsFor.ATT_ADUSER, adUser);
         model.addAttribute(ConstantsFor.ATT_TITLE, getClass().getSimpleName());
+        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
         return "user";
     }
 
@@ -73,7 +76,7 @@ public class UserWebCTRL {
      @param adUser  {@link ADUser}
      @return user.html
      */
-    @PostMapping ("/userget")
+    @PostMapping("/userget")
     public String userPost(Model model, HttpServletRequest request, @ModelAttribute ADUser adUser) {
         this.adUser = adUser;
         ADSrv adSrv = AppComponents.adSrv(adUser);
