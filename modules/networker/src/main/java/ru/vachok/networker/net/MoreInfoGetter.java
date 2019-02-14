@@ -1,6 +1,7 @@
 package ru.vachok.networker.net;
 
 
+import org.springframework.ui.Model;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
@@ -11,8 +12,14 @@ import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.systray.ActionCloseMsg;
 import ru.vachok.networker.systray.MessageToTray;
 
-import java.sql.*;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,15 +32,19 @@ import java.util.stream.Collectors;
  @since 25.01.2019 (11:06) */
 public class MoreInfoGetter {
 
-    public String getTVNetInfo() {
+    /**
+     <b>ptv1</b> and <b>ptv2</b> ping stats
+
+     @return статистика пинга ptv
+     @see ru.vachok.networker.accesscontrol.MatrixCtr#getFirst(HttpServletRequest, Model, HttpServletResponse)
+     */
+    public static String getTVNetInfo() {
         List<String> readFileToList = FileSystemWorker.readFileToList("ping.tv");
         List<String> onList = new ArrayList<>();
         List<String> offList = new ArrayList<>();
-        readFileToList.forEach((x) -> {
-            for (String s : x.split(", ")) {
-                if (s.contains("true")) onList.add(s.split("/")[0]);
-                else offList.add(s.split("/")[0]);
-            }
+        readFileToList.stream().flatMap((String x) -> Arrays.stream(x.split(", "))).forEach((String s) -> {
+            if (s.contains("true")) onList.add(s.split("/")[0]);
+            else offList.add(s.split("/")[0]);
         });
         String ptv1Str = ConstantsNet.PTV1_EATMEAT_RU;
         String ptv2Str = ConstantsNet.PTV2_EATMEAT_RU;
@@ -58,7 +69,6 @@ public class MoreInfoGetter {
      @return выдержка из БД (когда последний раз был онлайн + кол-во проверок) либо хранимый в БД юзернейм (для offlines)
      @see NetScannerSvc#getPCNamesPref(String)
      */
-    @SuppressWarnings("MethodWithMultipleReturnPoints")
     static String getSomeMore(String pcName, boolean isOnline) {
         String sql;
         if (isOnline) {
@@ -78,7 +88,6 @@ public class MoreInfoGetter {
      @param userInputRaw {@link NetScannerSvc#getThePc()}
      @return LAST 20 USER PCs
      */
-    @SuppressWarnings("MethodWithMultipleReturnPoints")
     static String getUserFromDB(String userInputRaw) {
         StringBuilder retBuilder = new StringBuilder();
         String sql = "select * from pcuserauto where userName like ? ORDER BY whenQueried DESC LIMIT 0, 20";

@@ -121,13 +121,11 @@ public class SSHFactory implements Callable<String> {
     private void chanRespChannel() throws JSchException {
         JSch jSch = new JSch();
         Session session = jSch.getSession(userName, getConnectToSrv());
-        Properties properties;
+        Properties properties = new Properties();
         try {
             properties = initProperties.getProps();
         } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
-            initProperties = new FileProps(SOURCE_CLASS);
-            properties = initProperties.getProps();
+            sshException(e);
         }
         jSch.addIdentity(pem());
         session.setConfig(properties);
@@ -139,6 +137,12 @@ public class SSHFactory implements Callable<String> {
         respChannel = session.openChannel(sessionType);
         ((ChannelExec) respChannel).setCommand(commandSSH);
         Objects.requireNonNull(respChannel);
+    }
+
+    private Properties sshException(Exception e) {
+        LOGGER.error(e.getMessage(), e);
+        initProperties = new FileProps(SOURCE_CLASS);
+        return initProperties.getProps();
     }
 
     private String pem() {

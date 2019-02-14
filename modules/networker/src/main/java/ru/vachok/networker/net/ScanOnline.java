@@ -109,7 +109,7 @@ public class ScanOnline implements Runnable {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder();
-        sb.append("<b>Since ").append(new Date(ConstantsFor.START_STAMP)).append(new MoreInfoGetter().getTVNetInfo()).append("</b><br>");
+        sb.append("<b>Since ").append(new Date(ConstantsFor.START_STAMP)).append(MoreInfoGetter.getTVNetInfo()).append("</b><br>");
         sb.append("Offline pc is <font color=\"red\">").append(new TForms().fromArray(NET_LIST_KEEPER.getOffLines(), true)).append("</font>");
         sb.append("Online  pc is<font color=\"#00ff69\"> ").append(new TForms().fromArray(NET_LIST_KEEPER.getOnLinesResolve(), true)).append("</font>");
         sb.append("NET_LIST_KEEPER=").append(NET_LIST_KEEPER.hashCode());

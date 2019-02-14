@@ -23,7 +23,10 @@ import ru.vachok.networker.net.NetPinger;
 import ru.vachok.networker.services.SimpleCalculator;
 
 import javax.servlet.http.HttpServletRequest;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -159,25 +162,27 @@ public class AppComponents {
         return new ADSrv(new ADUser(), new ADComputer()).getAdComputer().getAdComputers();
     }
 
-    /**
-     {@link org.springframework.ui.Model} attribute "ruleset"
-
-     @return {@link RuleSet}
-     */
     @Bean
-    public RuleSet ruleSet() {
-        Thread.currentThread().setName("RuleSet");
-        return new RuleSet();
+    @Scope(ConstantsFor.SINGLETON)
+    public static ADSrv adSrvForUser(ADUser adUser) {
+        ADSrv adSrv = new ADSrv(adUser);
+        adSrv.setUserInputRaw(adUser.getInputName());
+        return adSrv;
     }
 
     public static Visitor thisVisit(String sessionID) throws NullPointerException, NoSuchBeanDefinitionException {
         return (Visitor) configurableApplicationContext().getBean(sessionID);
     }
 
+    /**
+     {@link org.springframework.ui.Model} attribute "ruleset"
+
+     @return {@link RuleSet}
+     */
     @Bean
-    @Scope (ConstantsFor.SINGLETON)
-    public static ADSrv adSrv(ADUser adUser) {
-        return new ADSrv(adUser);
+    private RuleSet ruleSet() {
+        Thread.currentThread().setName("RuleSet");
+        return new RuleSet();
     }
 
     @Bean

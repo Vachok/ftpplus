@@ -14,7 +14,10 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.common.CommonRightsChecker;
-import ru.vachok.networker.componentsrepo.*;
+import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.componentsrepo.PageFooter;
+import ru.vachok.networker.componentsrepo.VersionInfo;
+import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.net.DiapazonedScan;
 import ru.vachok.networker.net.MoreInfoGetter;
 import ru.vachok.networker.services.SimpleCalculator;
@@ -23,7 +26,10 @@ import ru.vachok.networker.services.WhoIsWithSRV;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 
@@ -93,9 +99,15 @@ public class MatrixCtr {
      <p>
      starting.html
      <p>
-     1. {@link ConstantsFor#getVis(javax.servlet.http.HttpServletRequest)}. Записиваем визит. <br> 2. {@link ConstantsFor#getPcAuth(javax.servlet.http.HttpServletRequest)}. Получение авторизованных ПК.
-     3. {@link #qNotNull(HttpServletRequest, Model, boolean)}. <br> 3. {@link #qIsNull(Model, HttpServletRequest)}
+     1. {@link ConstantsFor#getVis(javax.servlet.http.HttpServletRequest)}. Записиваем визит. <br>
+     2. {@link #qIsNull(Model, HttpServletRequest)}. Нулевой {@link HttpServletRequest#getQueryString()}
      <p>
+     <b>{@link Model}-аттрибуты:</b><br>
+     {@code "devscan"} = {@link MoreInfoGetter#getTVNetInfo()} так же дата запуска приложения.
+     <p>
+     {@link HttpServletResponse#addHeader(java.lang.String, java.lang.String)}. {@link ConstantsFor#HEAD_REFRESH} = 120 <br>
+     {@link Logger#info(java.lang.String, java.lang.Object)} = this {@link Visitor#toString()}
+
      @param request  {@link HttpServletRequest}
      @param model    {@link Model}
      @param response {@link HttpServletResponse}
@@ -105,10 +117,8 @@ public class MatrixCtr {
     @GetMapping("/")
     public String getFirst(final HttpServletRequest request, Model model, HttpServletResponse response) {
         this.visitor = ConstantsFor.getVis(request);
-        boolean pcAuth = ConstantsFor.getPcAuth(request);
-        if (request.getQueryString() != null) return qNotNull(request, model, pcAuth);
-        else qIsNull(model, request);
-        model.addAttribute("devscan", "Since " + new Date(ConstantsFor.START_STAMP) + new MoreInfoGetter().getTVNetInfo());
+        qIsNull(model, request);
+        model.addAttribute("devscan", "Since " + new Date(ConstantsFor.START_STAMP) + MoreInfoGetter.getTVNetInfo());
         response.addHeader(ConstantsFor.HEAD_REFRESH, "120");
         LOGGER.info("{}", visitor.toString());
         return "starting";
@@ -196,30 +206,6 @@ public class MatrixCtr {
             System.currentTimeMillis() - ConstantsFor.START_STAMP) + " getUpTime");
         metricMatrixStart = System.currentTimeMillis() - metricMatrixStart;
         return ConstantsFor.MATRIX_STRING_NAME;
-    }
-
-    /**
-     Обработка query из запроса.
-     <p>
-     Если запрос "eth" вернуть logs.html <br> Иначе {@link HttpServletRequest#getQueryString()}
-     <p>
-
-     @param request {@link HttpServletRequest}
-     @param model   {@link Model}
-     @param pcAuth  авторизован-ли ПК
-     @return logs.html или {@link HttpServletRequest#getQueryString()}
-     @deprecated since 11.02.2019 (13:40)
-     */
-    @Deprecated
-    private String qNotNull(HttpServletRequest request, Model model, boolean pcAuth) {
-        String queryString = request.getQueryString();
-        if (queryString.equalsIgnoreCase("eth") && pcAuth) {
-            lastLogsGetter(model);
-            model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
-            metricMatrixStart = System.currentTimeMillis() - metricMatrixStart;
-            return "logs";
-        }
-        return queryString;
     }
 
     /**

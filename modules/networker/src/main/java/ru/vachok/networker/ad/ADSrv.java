@@ -25,6 +25,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 
 /**
@@ -89,6 +91,29 @@ public class ADSrv implements Runnable {
     }
 
     /**
+     {@link ADUser}, как {@link ConcurrentHashMap}
+     <p>
+     {@link ADSrv#userSetter()}.{@link Optional#ifPresent(java.util.function.Consumer)}. <br>
+     Поиск соответсвия {@link #adUser} и {@link #userInputRaw} <br>
+
+     @return new {@link ConcurrentHashMap} key: <b>AD field name</b>, value: <b>x.get...</b>
+     */
+    public ConcurrentMap<String, String> getUserCommonRights() {
+        ConcurrentMap<String, String> retMap = new ConcurrentHashMap<>();
+        //noinspection OverlyLongLambda
+        userSetter().stream().findAny().ifPresent((ADUser x) -> {
+            boolean contains = x.getSamAccountName().toLowerCase().contains(adUser.getInputName().toLowerCase());
+            if (contains) {
+                ADSrv.this.adUser = x;
+                retMap.put("InputName", x.getInputName());
+                retMap.put("SamAccountName", x.getSamAccountName());
+                retMap.put("Sid", x.getSid());
+            }
+        });
+        return retMap;
+    }
+
+    /**
      Thread name = ADSrv
 
      @param adUser     {@link ADUser}
@@ -104,12 +129,6 @@ public class ADSrv implements Runnable {
     public ADSrv(ADUser adUser) {
         this.userInputRaw = adUser.getInputName();
         this.adUser = adUser;
-        userSetter().stream().findAny().ifPresent(x -> {
-            boolean contains = x.getSamAccountName().toLowerCase().contains(adUser.getInputName().toLowerCase());
-            if (contains) {
-                this.adUser = x;
-            }
-        });
     }
 
     protected ADSrv() {

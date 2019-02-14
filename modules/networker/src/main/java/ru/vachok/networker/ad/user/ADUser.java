@@ -317,7 +317,6 @@ public class ADUser {
         sb.append(", givenName='").append(givenName).append('\'');
         sb.append(", inputName='").append(inputName).append('\'');
         sb.append(", ownerRights=").append(ownerRights.size());
-        sb.append(", userPhoto=").append(userPhoto.hashCode());
         sb.append('}');
         return sb.toString();
     }

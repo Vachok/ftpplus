@@ -10,6 +10,7 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.services.MessageLocal;
 
 import java.rmi.UnexpectedException;
 import java.util.ArrayList;
@@ -31,6 +32,14 @@ public class PfListsSrv {
 
     private String commandForNat;
 
+    /**
+     {@link SSHFactory.Builder}
+     */
+    private SSHFactory.Builder builder;
+
+    private ThreadPoolTaskExecutor executor;
+
+    @SuppressWarnings("WeakerAccess")
     public String getCommandForNat() {
         return commandForNat;
     }
@@ -39,12 +48,10 @@ public class PfListsSrv {
         this.commandForNat = commandForNat;
     }
 
-    /**
-     {@link SSHFactory.Builder}
-     */
-    private SSHFactory.Builder builder;
-
-    private ThreadPoolTaskExecutor executor;
+    ThreadPoolTaskExecutor getExecutor() {
+        makeListRunner();
+        return executor;
+    }
 
     /**
      @param pfLists {@link #pfLists}
@@ -62,25 +69,20 @@ public class PfListsSrv {
         return builder.build().call();
     }
 
-    ThreadPoolTaskExecutor getExecutor() {
-        makeListRunner();
-        return executor;
-    }
-
+    /**
+     Формирует списки <b>pf</b>
+     <p>
+     Если {@link ConstantsFor#thisPC()} contains {@code rups} - {@link #buildCommands()} <br>
+     Else {@link MessageLocal#warn(java.lang.String)} {@link String} = {@link ConstantsFor#thisPC()}
+     */
     private void makeListRunner() {
         ThreadConfig threadConfig = AppComponents.threadConfig();
         executor = threadConfig.threadPoolTaskExecutor();
-        executor.execute(() -> {
-            try {
-                buildFactory();
-            } catch (Exception e) {
-                List<String> stringArrayList = new ArrayList<>();
-                stringArrayList.add("Line 78 threw: ");
-                stringArrayList.add(e.getMessage());
-                stringArrayList.add(new TForms().fromArray(e, false));
-                FileSystemWorker.recFile(this.getClass().getSimpleName() + ".makeListRunner", stringArrayList);
-            }
-        });
+        if (ConstantsFor.thisPC().toLowerCase().contains("rups")) {
+            executor.execute(this::buildCommands);
+        } else {
+            new MessageLocal().warn(ConstantsFor.thisPC());
+        }
     }
 
     /**
@@ -99,8 +101,8 @@ public class PfListsSrv {
      <i>rules current</i>
      <p>
 
-     @see SSHFactory
      @throws UnexpectedException если нет связи с srv-git. Проверка сети. <i>e: No ping</i>
+     @see SSHFactory
      */
     private void buildFactory() throws UnexpectedException, NullPointerException {
         if (!ConstantsFor.isPingOK()) {
@@ -132,5 +134,24 @@ public class PfListsSrv {
         buildGit.call();
         pfLists.setGitStats(new Date(endMeth).getTime());
         Thread.currentThread().interrupt();
+    }
+
+    /**
+     Строитель команд.
+     <p>
+     {@link PfListsSrv#buildFactory()} <br>
+     <b>{@link Exception}:</b><br>
+     {@link FileSystemWorker#recFile(java.lang.String, java.util.List)} - {@code this.getClass().getSimpleName() + ".makeListRunner", stringArrayList}
+     */
+    private void buildCommands() {
+        try {
+            buildFactory();
+        } catch (Exception e) {
+            List<String> stringArrayList = new ArrayList<>();
+            stringArrayList.add("Line 150 threw: ");
+            stringArrayList.add(e.getMessage());
+            stringArrayList.add(new TForms().fromArray(e, false));
+            FileSystemWorker.recFile(this.getClass().getSimpleName() + ".makeListRunner", stringArrayList);
+        }
     }
 }
