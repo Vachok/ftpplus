@@ -47,7 +47,15 @@ public interface Pinger {
         while(!devicesDeq.isEmpty()){
             try{
                 InetAddress inetAddress = devicesDeq.removeFirst();
-                resList.add(inetAddress.toString() + " is " + inetAddress.isReachable(ConstantsFor.TIMEOUT_650));
+                boolean reachable = inetAddress.isReachable(ConstantsFor.TIMEOUT_650);
+                String msg = "";
+                if(reachable){
+                    msg = "<font color=\"#00ff69\">" + inetAddress.toString() + " is " + true + "</font>";
+                }
+                else{
+                    msg = "<font color=\"red\">" + inetAddress.toString() + " is " + false + "</font>";
+                }
+                resList.add(msg);
                 Thread.sleep(pingSleep);
             }
             catch(IOException | InterruptedException e){
