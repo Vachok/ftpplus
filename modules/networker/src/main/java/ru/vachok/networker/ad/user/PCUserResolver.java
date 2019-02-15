@@ -73,8 +73,10 @@ public class PCUserResolver extends ADSrv {
      <p>
      1 {@link #getLastTimeUse(java.lang.String)}. Получение строки, с последним модифицированным файлом.
      <p>
-     <b>{@link IOException}, {@link ArrayIndexOutOfBoundsException}:</b><br>
-     {@link FileSystemWorker#error(java.lang.String, java.lang.Exception)}.
+     <b>{@link IOException}</b>:<br>
+     {@link FileSystemWorker#error(java.lang.String, java.lang.Exception)} <br>
+     {@link ArrayIndexOutOfBoundsException}:<br>
+     IGNORED
      <p>
      Если {@link #lastFileUse} != 0: {@link #recAutoDB(String, String)}
 
@@ -95,8 +97,10 @@ public class PCUserResolver extends ADSrv {
                 .append("\n\n\n")
                 .append(lastFileUse);
 
-        } catch (IOException | ArrayIndexOutOfBoundsException e) {
+        } catch (IOException e) {
             FileSystemWorker.error("PCUserResolver.namesToFile", e);
+        } catch (ArrayIndexOutOfBoundsException ignore) {
+            //
         }
         if (lastFileUse != null) {
             recAutoDB(pcName, lastFileUse);

@@ -2,7 +2,6 @@ package ru.vachok.networker.net;
 
 
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -30,7 +29,10 @@ import java.net.UnknownHostException;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
-import java.util.*;
+import java.util.Date;
+import java.util.Deque;
+import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.*;
 
 
@@ -89,7 +91,6 @@ public class NetScanCtr {
      */
     private static ConcurrentMap<String, Boolean> lastScanMAP = AppComponents.lastNetScanMap();
 
-    @Autowired
     private NetPinger netPinger = AppComponents.netPinger();
 
     /**
@@ -101,7 +102,6 @@ public class NetScanCtr {
      @param model         {@link Model}
      @return redirect:/ad? + {@link NetScannerSvc#getThePc()}
      */
-    @SuppressWarnings ("MethodWithMultipleReturnPoints")
     @PostMapping (STR_NETSCAN)
     public String pcNameForInfo(@ModelAttribute NetScannerSvc netScannerSvc, BindingResult result, Model model) {
         LOGGER.warn("NetScanCtr.pcNameForInfo");
@@ -159,50 +159,6 @@ public class NetScanCtr {
     }
 
     /**
-     Начало проверок перед сканом.
-     <p>
-     1. {@link AppComponents#threadConfig()}, 2. {@link ThreadConfig#threadPoolTaskExecutor()}. Получаем сконфигурированный {@link ThreadPoolTaskExecutor}
-     <p>
-     <b>Runnable:</b>
-     3. {@link #mapSizeBigger(Model, HttpServletRequest, long, int)} когда {@link #lastScanMAP} больше 1. <br> или <br> 4.
-     {@link #scanIt(HttpServletRequest, Model, Date)}.
-     <p>
-     Объявим дополнительно lock {@link File} {@code scan.tmp}. Чтобы исключить запуск, если предидущий скан не закончен. <br> Проверяем его наличие.
-     Если он существует - запускаем {@link
-    #mapSizeBigger(Model, HttpServletRequest, long, int)}, иначе отправляем <b>Runnable</b> в {@link ThreadConfig#threadPoolTaskExecutor()} (1)
-     <p>
-
-     @param model   {@link Model}
-     @param request {@link HttpServletRequest}
-     @param lastSt  timestamp из {@link #properties}
-     @see #netScan(HttpServletRequest, HttpServletResponse, Model)
-     */
-    private void checkMapSizeAndDoAction(Model model, HttpServletRequest request, long lastSt) {
-        boolean isMapSizeBigger = lastScanMAP.size() > 1;
-        int thisTotpc = Integer.parseInt(properties.getProperty(ConstantsFor.PR_TOTPC, "318"));
-        ThreadPoolTaskExecutor taskExecutor = AppComponents.threadConfig().threadPoolTaskExecutor();
-        final Runnable runnableScan = () -> {
-            if(isMapSizeBigger){
-                mapSizeBigger(model, request, lastSt, thisTotpc);
-            }
-            else{
-                scanIt(request, model, new Date(lastSt));
-            }
-        };
-        BlockingQueue<Runnable> queue = taskExecutor.getThreadPoolExecutor().getQueue();
-        String methName = "NetScanCtr.checkMapSizeAndDoAction";
-        File f = new File("scan.tmp");
-        if(f.isFile() && f.exists()){
-            mapSizeBigger(model, request, lastSt, thisTotpc);
-        }
-        else{
-            taskExecutor.submit(runnableScan);
-            new MessageCons().infoNoTitles("queue = " + queue.remainingCapacity());
-        }
-        new MessageCons().errorAlert(methName);
-    }
-
-    /**
      Если {@link #lastScanMAP} более 1
      <p>
      1. {@link TForms#fromArray(java.util.Map, boolean)} добавим в {@link Model} содержимое {@link #lastScanMAP} <br> 2.
@@ -218,7 +174,7 @@ public class NetScanCtr {
      @param thisTotpc кол-во ПК для скана. Берется из {@link #properties}. Default: {@code 318}.
      @see #checkMapSizeAndDoAction(Model, HttpServletRequest, long)
      */
-    private void mapSizeBigger(Model model, HttpServletRequest request, long lastSt, int thisTotpc) {
+    private static void mapSizeBigger(Model model, HttpServletRequest request, long lastSt, int thisTotpc) {
         new MessageCons().errorAlert("NetScanCtr.mapSizeBigger");
         long timeLeft = TimeUnit.MILLISECONDS.toSeconds(lastSt - System.currentTimeMillis());
         int pcWas = Integer.parseInt(properties.getProperty(ConstantsNet.ONLINEPC, "0"));
@@ -268,7 +224,7 @@ public class NetScanCtr {
      @param model        {@link Model}
      @param lastScanDate дата последнего скана
      */
-    private void scanIt(HttpServletRequest request, Model model, Date lastScanDate) {
+    private static void scanIt(HttpServletRequest request, Model model, Date lastScanDate) {
         String propMsg = "NetScanCtr.scanIt. " + lastScanDate;
         properties.setProperty("propmsg", propMsg);
         if(request!=null && request.getQueryString()!=null){
@@ -285,7 +241,7 @@ public class NetScanCtr {
             AppComponents.lastNetScan().setTimeLastScan(new Date());
         }
 
-        new MessageCons().info(ConstantsFor.STR_INPUT_OUTPUT,
+        new MessageLocal().info(ConstantsFor.STR_INPUT_OUTPUT,
             STR_REQUEST + request + STR_MODEL + model + "], lastScanDate = [" + lastScanDate + "]", "void");
     }
 
@@ -303,8 +259,9 @@ public class NetScanCtr {
      @param model         {@link Model}
      @see #mapSizeBigger(Model, HttpServletRequest, long, int)
      */
-    private void timeCheck(int remainPC, long lastScanEpoch, HttpServletRequest request, Model model) {
+    private static void timeCheck(int remainPC, long lastScanEpoch, HttpServletRequest request, Model model) {
         String classMeth = " NetScanCtr.timeCheck";
+        LOGGER.warn(classMeth);
         LocalTime lastScanLocalTime = LocalDateTime.ofEpochSecond(lastScanEpoch, 0, ZoneOffset.ofHours(3)).toLocalTime();
         boolean isSystemTimeBigger = (System.currentTimeMillis() > lastScanEpoch * 1000) && remainPC <= 0;
         if(isSystemTimeBigger){
@@ -318,7 +275,48 @@ public class NetScanCtr {
         }
     }
 
-    @SuppressWarnings ("WeakerAccess")
+    /**
+     Начало проверок перед сканом.
+     <p>
+     1. {@link AppComponents#threadConfig()}, 2. {@link ThreadConfig#threadPoolTaskExecutor()}. Получаем сконфигурированный {@link ThreadPoolTaskExecutor}
+     <p>
+     <b>Runnable:</b>
+     3. {@link #mapSizeBigger(Model, HttpServletRequest, long, int)} когда {@link #lastScanMAP} больше 1. <br> или <br> 4.
+     {@link #scanIt(HttpServletRequest, Model, Date)}.
+     <p>
+     Объявим дополнительно lock {@link File} {@code scan.tmp}. Чтобы исключить запуск, если предидущий скан не закончен. <br> Проверяем его наличие.
+     Если он существует - запускаем {@link
+    #mapSizeBigger(Model, HttpServletRequest, long, int)}, иначе отправляем <b>Runnable</b> в {@link ThreadConfig#threadPoolTaskExecutor()} (1)
+     <p>
+
+     @param model   {@link Model}
+     @param request {@link HttpServletRequest}
+     @param lastSt  timestamp из {@link #properties}
+     @see #netScan(HttpServletRequest, HttpServletResponse, Model)
+     */
+    private void checkMapSizeAndDoAction(Model model, HttpServletRequest request, long lastSt) {
+        boolean isMapSizeBigger = lastScanMAP.size() > 1;
+        int thisTotpc = Integer.parseInt(properties.getProperty(ConstantsFor.PR_TOTPC, "318"));
+        ThreadPoolTaskExecutor taskExecutor = AppComponents.threadConfig().threadPoolTaskExecutor();
+        final Runnable runnableScan = () -> {
+            if (isMapSizeBigger) {
+                mapSizeBigger(model, request, lastSt, thisTotpc);
+            } else {
+                scanIt(request, model, new Date(lastSt));
+            }
+        };
+        BlockingQueue<Runnable> queue = taskExecutor.getThreadPoolExecutor().getQueue();
+        String methName = "NetScanCtr.checkMapSizeAndDoAction";
+        File f = new File("scan.tmp");
+        if (f.isFile() && f.exists()) {
+            mapSizeBigger(model, request, lastSt, thisTotpc);
+        } else {
+            taskExecutor.submit(runnableScan);
+            new MessageCons().infoNoTitles("queue = " + queue.remainingCapacity());
+        }
+        new MessageLocal().errorAlert(methName);
+    }
+
     @GetMapping ("/showalldev")
     public String allDevices(Model model, HttpServletRequest request, HttpServletResponse response) {
         LOGGER.warn("NetScanCtr.allDevices");
@@ -360,7 +358,6 @@ public class NetScanCtr {
         return retDeq;
     }
 
-    @SuppressWarnings ("WeakerAccess")
     @PostMapping ("/ping")
     public String pingPost(Model model, HttpServletRequest request, @ModelAttribute NetPinger netPinger, HttpServletResponse response) throws ExecutionException, InterruptedException {
         this.netPinger = netPinger;

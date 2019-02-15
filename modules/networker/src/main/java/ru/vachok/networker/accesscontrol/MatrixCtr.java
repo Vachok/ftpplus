@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
-import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.common.CommonRightsChecker;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.PageFooter;
@@ -29,7 +28,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 
@@ -241,24 +239,6 @@ public class MatrixCtr {
     }
 
     /**
-     Логи из БД.
-     <p>
-     1. {@link AppComponents#getLastLogs()} логи Ethosdistro <br>
-
-     @param model {@link Model}
-     @deprecated since 11.02.2019 (13:42)
-     */
-    @Deprecated
-    private void lastLogsGetter(Model model) {
-        Map<String, String> vachokEthosdistro = new AppComponents().getLastLogs();
-        String logsFromDB = new TForms().fromArray(vachokEthosdistro, false);
-        model.addAttribute("logdb", logsFromDB);
-        model.addAttribute("starttime", new Date(ConstantsFor.START_STAMP));
-        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
-        model.addAttribute(ConstantsFor.ATT_TITLE, metricMatrixStart);
-    }
-
-    /**
      Считаем числа с плавающей точкой.
      <p>
      1. {@link AppComponents#simpleCalculator()} <br>
@@ -296,8 +276,7 @@ public class MatrixCtr {
      @return {@link #REDIRECT_MATRIX}
      */
     private String matrixAccess(String workPos) {
-        String workPosition = this.matrixSRV.getWorkPosition(String
-            .format("select * from matrix where Doljnost like '%%%s%%';", workPos));
+        String workPosition = this.matrixSRV.getWorkPosition(String.format("select * from matrix where Doljnost like '%%%s%%';", workPos));
         this.matrixSRV.setWorkPos(workPosition);
         LOGGER.info(workPosition);
         return REDIRECT_MATRIX;

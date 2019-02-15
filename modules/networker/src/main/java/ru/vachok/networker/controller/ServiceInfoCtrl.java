@@ -64,7 +64,6 @@ public class ServiceInfoCtrl {
     @GetMapping("/serviceinfo")
     public String infoMapping(Model model, HttpServletRequest request, HttpServletResponse response) throws AccessDeniedException, ExecutionException, InterruptedException {
         Thread.currentThread().setName("ServiceInfoCtrl.infoMapping");
-        ThreadConfig.executeAsThread(new SpeedChecker.ChkMailAndUpdateDB());
         this.visitor = new AppComponents().visitor(request);
         this.authReq = Stream.of("0:0:0:0", "10.10.111", "10.200.213.85", "172.16.20", "10.200.214.80").anyMatch(sP -> request.getRemoteAddr().contains(sP));
         if (authReq) {
@@ -97,7 +96,8 @@ public class ServiceInfoCtrl {
 
     private void modModMaker(Model model, HttpServletRequest request, Visitor visitor) throws ExecutionException, InterruptedException {
         this.visitor = ConstantsFor.getVis(request);
-        Future<Long> whenCome = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(new SpeedChecker());
+        Callable<Long> callWhenCome = new SpeedChecker();
+        Future<Long> whenCome = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(callWhenCome);
         Date comeD = new Date(whenCome.get());
         if (visitor.getSession().equals(request.getSession())) {
             visitor.setClickCounter(visitor.getClickCounter() + 1);
@@ -164,7 +164,6 @@ public class ServiceInfoCtrl {
         return stringBuilder.toString();
     }
 
-    @SuppressWarnings("MethodWithMultipleReturnPoints")
     private String pingGit() {
         boolean reachable = false;
         try {
