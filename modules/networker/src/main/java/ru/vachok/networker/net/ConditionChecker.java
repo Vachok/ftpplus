@@ -5,17 +5,15 @@ import org.springframework.ui.Model;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.ADComputer;
-import ru.vachok.networker.ad.PCUserResolver;
+import ru.vachok.networker.ad.user.PCUserResolver;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 
 import javax.servlet.http.HttpServletResponse;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -54,8 +52,6 @@ class ConditionChecker {
         List<Integer> offLine = new ArrayList<>();
         StringBuilder stringBuilder = new StringBuilder();
         String classMeth = "ConditionChecker.onLinesCheck";
-
-        String methName = "onLinesCheck";
         try (PreparedStatement statement = NetScannerSvc.c.prepareStatement(sql)) {
             Runnable r = () -> pcUserResolver.namesToFile(pcName);
             ThreadConfig.executeAsThread(r);
@@ -76,7 +72,7 @@ class ConditionChecker {
             }
         } catch (SQLException e) {
             c = reconnectToDB();
-            new MessageCons().errorAlert(CLASS_NAME, methName, e.getMessage());
+            new MessageCons().errorAlert(CLASS_NAME, e.getMessage(), new TForms().fromArray(e, false));
             FileSystemWorker.error(classMeth, e);
             stringBuilder.append(e.getMessage());
         } catch (NullPointerException e) {
@@ -139,14 +135,7 @@ class ConditionChecker {
     }
 
     private static Connection reconnectToDB() {
-        try {
-            c.close();
-            c = null;
-            Connection connection = new RegRuMysql().getDefaultConnection(ConstantsNet.DB_NAME);
-            c = connection;
-        } catch (SQLException e) {
-            new MessageCons().errorAlert("ConditionChecker", ConstantsNet.RECONNECT_TO_DB, e.getMessage());
-        }
+        c = new RegRuMysql().getDefaultConnection(ConstantsNet.DB_NAME);
         return c;
     }
 
@@ -158,7 +147,6 @@ class ConditionChecker {
      {@link ScanOnline#getI()} + {@link ScanOnline#toString()}
 
      @param model             {@link Model}
-     @param netScanFileWorker {@link NetScanFileWorker}
      @param response          {@link HttpServletResponse}
      */
     private static void allDevNotNull(Model model, HttpServletResponse response) {
@@ -177,7 +165,7 @@ class ConditionChecker {
     public String toString() {
         final StringBuilder sb = new StringBuilder("ConditionChecker{");
         sb.append("c=").append(c.toString());
-        sb.append(", CLASS_NAME='").append(CLASS_NAME).append('\'');
+        sb.append(ConstantsFor.TOSTRING_CLASS_NAME).append(CLASS_NAME).append('\'');
         sb.append('}');
         return sb.toString();
     }

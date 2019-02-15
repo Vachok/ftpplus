@@ -772,3 +772,14 @@ do0200.eatmeat.ru
 AppInfoOnLoad
 *.ser
 NetScannerSvc.getPCsAsync
+lastnetscan
+ping.tv
+ru_vachok_networker-105.res
+system
+theBlob.pdf
+modules/networker/src/main/resources/build.gradle
+modules/networker/src/main/resources/settings.gradle
+networker.jar
+ping.txt
+pingresult
+scan.tmp

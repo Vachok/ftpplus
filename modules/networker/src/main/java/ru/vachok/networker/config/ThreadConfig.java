@@ -63,10 +63,6 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
         return taskDecorator.decorate(runnable);
     }
 
-    public static void executeAsThread(Runnable runnable) {
-        executeAsThread(runnable, false);
-    }
-
     /**
      Убивает {@link #taskExecutor} и {@link #TASK_SCHEDULER}
      */
@@ -84,16 +80,18 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
     }
 
     /**
-     Запуск {@link Runnable}, как {@link Thread}
-
+     Запуск {@link Runnable}, как {@link Thread}@param r {@link Runnable}
+     <p>
+     1. {@link ThreadConfig#threadPoolTaskExecutor()} - управление запуском.
+     <p>
      @param r {@link Runnable}
      */
-    public static void executeAsThread(Runnable r, boolean asDaemoExec) {
+    public static void executeAsThread(Runnable r) {
         CustomizableThreadCreator customizableThreadCreator = new CustomizableThreadCreator("AsThread: ");
         ThreadPoolTaskExecutor taskExecutor = new ThreadConfig().threadPoolTaskExecutor();
         customizableThreadCreator.setThreadGroup(taskExecutor.getThreadGroup());
         Thread thread = customizableThreadCreator.createThread(r);
-        thread.setDaemon(asDaemoExec);
+        thread.setDaemon(false);
         thread.start();
     }
 

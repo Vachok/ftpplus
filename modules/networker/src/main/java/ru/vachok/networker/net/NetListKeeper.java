@@ -87,8 +87,7 @@ public class NetListKeeper implements Serializable {
 
         NetListKeeper that = (NetListKeeper) o;
 
-        if (!getOnLinesResolve().equals(that.getOnLinesResolve())) return false;
-        return getOffLines().equals(that.getOffLines());
+        return getOnLinesResolve().equals(that.getOnLinesResolve()) && getOffLines().equals(that.getOffLines());
     }
 
     @Override

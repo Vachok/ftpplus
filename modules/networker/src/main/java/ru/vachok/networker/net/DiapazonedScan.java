@@ -98,7 +98,6 @@ public class DiapazonedScan implements Runnable, Serializable {
 
     /**
      Приватный конструктор
-     <p>
      */
     private DiapazonedScan() {
         LOGGER.warn("DiapazonedScan.DiapazonedScan");
@@ -113,12 +112,12 @@ public class DiapazonedScan implements Runnable, Serializable {
      @throws IllegalAccessException swF.get(swF).toString()
      */
     public List<String> pingSwitch() throws IllegalAccessException {
-        LOGGER.warn("DiapazonedScan.pingSwitch");
         Field[] swFields = SwitchesWiFi.class.getFields();
         List<String> swList = new ArrayList<>();
         for (Field swF : swFields) {
             String ipAddrStr = swF.get(swF).toString();
             swList.add(ipAddrStr);
+            new MessageCons().infoNoTitles(ipAddrStr);
         }
         return swList;
     }
@@ -203,7 +202,7 @@ public class DiapazonedScan implements Runnable, Serializable {
             allDevices.add("<font color=\"green\">" + toString + FONT_BR_STR);
 
             String valStr = "host = " + hostName + "/" + hostAddress + " is online: " + true;
-            java.util.logging.Logger.getGlobal().warning(valStr);
+            LOGGER.info(valStr);
         } else {
             Thread.currentThread().setName(allDevices.size() + " of " + ConstantsFor.IPS_IN_VELKOM_VLAN);
             allDevices.add("<font color=\"red\">" + toString + FONT_BR_STR);

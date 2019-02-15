@@ -56,19 +56,45 @@ public enum SwitchesWiFi {
 
     public static final String HP_3500_YL_217_SCHETFAKT = "10.200.217.252";
 
+    public static final String HP_2530_217 = "10.200.217.253";
+
     public static final String HP_2530_48_ADM_YURDEP = "10.200.213.253";
 
     public static final String WTF = "10.200.215.250";
 
-    public static final String C_207_4_SK = "10.200.207.4";
+    public static final String DIR_615_SB = "10.200.200.47";
 
-    public static final String C_207_3_SK = "10.200.207.3";
+    public static final String C_202_57_TECH = "10.200.202.57";
+
+    public static final String C_203_2_STOLOVKA = "10.200.203.2";
 
     public static final String C_204_2_UPAK = "10.200.204.2";
 
     public static final String C_204_3_UPAK = "10.200.204.3";
 
     public static final String C_204_10_GP = "10.200.204.10";
+
+    public static final String C_207_4_SK = "10.200.207.4";
+
+    public static final String C_207_3_SK = "10.200.207.3";
+
+    public static final String C_210_3_PF = "10.200.210.3";
+
+    public static final String C_213_5_2FLOOR = "10.200.213.5";
+
+    public static final String C_213_4_2FLOOR = "10.200.213.4";
+
+    public static final String C_213_RV_2FLOOR = "10.200.213.104";
+
+    public static final String C_213_6_2FLOOR = "10.200.213.6";
+
+    public static final String WPG_1000 = "10.200.214.3";
+
+    public static final String C_216_2_HOTEL = "10.200.216.2";
+
+    public static final String C_216_3_HOTEL = "10.200.216.3";
+
+    public static final String C_216_4_HOTEL = "10.200.216.4";
 
     public static String toStringS() {
         StringBuilder stringBuilder = new StringBuilder();

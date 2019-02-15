@@ -35,15 +35,6 @@ public class PerfPCTester implements Runnable {
     private PerfPCTester() {
     }
 
-    /**
-     @deprecated 23.12.2018 (20:47)
-     */
-    @Deprecated
-    public static void main(String[] args) {
-        new PerfPCTester().run();
-
-    }
-
     @Override
     public void run() {
         final long stArt = System.currentTimeMillis();

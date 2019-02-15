@@ -11,7 +11,6 @@ import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.Visitor;
-import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.controller.ServiceInfoCtrl;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.mailserver.ExSRV;
@@ -50,6 +49,12 @@ public enum ConstantsFor {
     private static final Properties PROPS = new Properties();
 
     private static final int MIN_DELAY = 17;
+
+    public static final String TOSTRING_CLASS_NAME = ", CLASS_NAME='";
+
+    public static final String ATT_ADUSER = "aduser";
+
+    public static final String TOSTRING_MESSAGE_TO_USER = ", messageToUser=";
 
     public static final String STR_RETURNS = "returns:";
 
@@ -124,6 +129,7 @@ public enum ConstantsFor {
      <i>Boiler Plate</i>
      */
     public static final String[] STRS_VISIT = {"visit_", ".tmp"};
+
     public static final String STR_VISIT = "visit_";
 
     /**
@@ -247,7 +253,7 @@ public enum ConstantsFor {
     public static final String DB_PREFIX = "u0466446_";
 
     /**
-     Первоначальная задержка {@link ThreadConfig#threadPoolTaskScheduler()}
+     Первоначальная задержка шедулера.
      */
     public static final long INIT_DELAY = TimeUnit.MINUTES.toSeconds(MY_AGE);
 
@@ -364,6 +370,10 @@ public enum ConstantsFor {
 
     public static final String STR_INPUT_OUTPUT = "input/output";
 
+    public static final String MATRIX_STRING_NAME = "matrix";
+
+    public static final String WHOIS_STR = "whois";
+
     /**
      {@link #getAtomicTime()}
      */
@@ -378,6 +388,7 @@ public enum ConstantsFor {
     }
 
     /**
+     Доступность srv-git.eatmeat.ru.
      @return 192.168.13.42 online or offline
      */
     public static boolean isPingOK() {
@@ -490,11 +501,15 @@ public enum ConstantsFor {
     }
 
     /**
+     Считает время до конца дня.
+     <p>
+     @param timeStart - время старта
+     @param amountH - сколько часов до конца
      @return время до 17:30 в процентах от 8:30
      */
-    public static String percToEnd(Date timeToStart, long amountH) {
+    public static String percToEnd(Date timeStart, long amountH) {
         StringBuilder stringBuilder = new StringBuilder();
-        LocalDateTime startDayTime = LocalDateTime.ofEpochSecond(timeToStart.getTime() / 1000, 0, ZoneOffset.ofHours(3));
+        LocalDateTime startDayTime = LocalDateTime.ofEpochSecond(timeStart.getTime() / 1000, 0, ZoneOffset.ofHours(3));
         LocalTime startDay = startDayTime.toLocalTime();
         LocalTime endDay = startDay.plus(amountH, HOURS);
         final int secDayEnd = endDay.toSecondOfDay();
@@ -544,13 +559,13 @@ public enum ConstantsFor {
         InitProperties initProperties;
         try{
             initProperties = new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
-            String msg = "Taking DB properties:" + "\n" + initProperties.getClass().getSimpleName();
+            String msg = "Taking File properties:" + "\n" + initProperties.getClass().getSimpleName();
             AppComponents.getLogger().info(msg);
             PROPS.putAll(initProperties.getProps());
         }
         catch(Exception e){
             initProperties = new FileProps(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
-            String msg = "Taking File properties:" + "\n" + e.getMessage();
+            String msg = "Taking DB properties:" + "\n" + e.getMessage();
             AppComponents.getLogger().warn(msg);
             PROPS.putAll(initProperties.getProps());
             new MessageSwing().infoNoTitlesDIA(e.getMessage() + " " + ConstantsFor.class.getSimpleName());

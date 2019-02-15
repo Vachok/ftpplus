@@ -2,13 +2,22 @@ package ru.vachok.networker.accesscontrol.common;
 
 
 import org.slf4j.Logger;
+import org.springframework.ui.Model;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.fileworks.FileOut;
+import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.services.MessageLocal;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.AclEntry;
 import java.nio.file.attribute.AclFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -40,6 +49,21 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> {
             .append(" ")
             .append(b1).toString();
         LOGGER.warn(msg);
+    }
+
+    public static String getCommonAccessRights(String workPos, Model model) {
+        ADSrv adSrv = AppComponents.adSrv();
+        try {
+            String users = workPos.split(": ")[1];
+            String commonRights = adSrv.checkCommonRightsForUserName(users);
+            model.addAttribute(ConstantsFor.WHOIS_STR, commonRights);
+            model.addAttribute(ConstantsFor.ATT_TITLE, workPos);
+            model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
+        } catch (ArrayIndexOutOfBoundsException e) {
+            new MessageLocal().errorAlert("CommonRightsChecker", "getCommonAccessRights", e.getMessage());
+            FileSystemWorker.error("CommonRightsChecker.getCommonAccessRights", e);
+        }
+        return ConstantsFor.MATRIX_STRING_NAME;
     }
 
     @Override

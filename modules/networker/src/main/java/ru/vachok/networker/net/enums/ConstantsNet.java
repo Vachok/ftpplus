@@ -26,6 +26,8 @@ import java.util.concurrent.*;
  @since 25.01.2019 (10:30) */
 public enum ConstantsNet {;
 
+    public static final String PINGRESULT_LOG = "pingresult";
+
     public static final String PTV2_EATMEAT_RU = "ptv2.eatmeat.ru";
 
     public static final String PTV1_EATMEAT_RU = "ptv1.eatmeat.ru";
@@ -55,7 +57,6 @@ public enum ConstantsNet {;
 
     /**
      new {@link HashSet}
-     <p>
 
      @see ru.vachok.networker.net.NetScannerSvc#getPCNamesPref(String)
      @see ru.vachok.networker.net.NetScanCtr#scanIt(HttpServletRequest, Model, Date)
@@ -87,14 +88,14 @@ public enum ConstantsNet {;
     public static final ConcurrentMap<String, File> COMPNAME_USERS_MAP = new ConcurrentHashMap<>();
 
     /**
-     {@link ru.vachok.networker.ad.PCUserResolver#recToDB(String, String)}
+     {@link ADSrv#recToDB(String, String)}
      */
     public static final ConcurrentMap<String, String> PC_U_MAP = new ConcurrentHashMap<>();
 
     public static final String STR_COMPNAME_USERS_MAP_SIZE = " COMPNAME_USERS_MAP size";
 
     /**
-     Выгрузка из БД {@link #U_0466446_VELKOM}-pcuserauto
+     Выгрузка из БД {@link ConstantsFor#DB_PREFIX} {@code velkom} - pcuserauto
      */
     public static final String VELKOM_PCUSERAUTO_TXT = "velkom_pcuserauto.txt";
 
@@ -116,6 +117,15 @@ public enum ConstantsNet {;
      <i>Boiler Plate</i>
      */
     public static final String STR_NETSCANNERSVC = "netScannerSvc";
+
+    /**
+     Название настройки.
+     <p>
+     pingsleep. Сколько делать перерыв в пингах. В <b>миллисекундах</b>.
+
+     @see ConstantsFor#getProps()
+     */
+    public static final String PROP_PINGSLEEP = "pingsleep";
 
     public static String getProvider() {
         Future<String> submit = ThreadConfig.getI().threadPoolTaskExecutor().submit(new TraceRoute());

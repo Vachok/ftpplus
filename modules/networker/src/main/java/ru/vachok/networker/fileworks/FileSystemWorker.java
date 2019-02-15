@@ -19,6 +19,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Stream;
 
+import static ru.vachok.networker.ConstantsFor.LOG;
+
 
 /**
  Вспомогательная работа с файлами.
@@ -32,6 +34,8 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
      {@link LoggerFactory#getLogger(String)}
      */
     static final Logger LOGGER = LoggerFactory.getLogger(CLASS_NAME);
+
+    private static final String CLASS_METH = "FileSystemWorker.readFileToList";
 
     public static synchronized void recFile(String fileName, Stream<String> toFileRec) {
         try(OutputStream outputStream = new FileOutputStream(fileName);
@@ -94,13 +98,14 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     /**
      Простое копирование файла.
 
-     @param origFile файл, для копирования
-     @param s        строка путь
+     @param origFile   файл, для копирования
+     @param pathToCopy строка путь
+     @param needDel    удалить или нет исходник
      @return удача/нет
      */
     @SuppressWarnings ("MethodWithMultipleReturnPoints")
-    public static boolean copyOrDelFile(File origFile, String s, boolean needDel) {
-        File toCpFile = new File(s);
+    public static boolean copyOrDelFile(File origFile, String pathToCopy, boolean needDel) {
+        File toCpFile = new File(pathToCopy);
         try{
             Path targetPath = toCpFile.toPath();
             Path directories = Files.createDirectories(targetPath.getParent());
@@ -191,8 +196,8 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         }
     }
 
-    public static void recFile(String fileNameLOG, String toWriteStr) {
-        recFile(fileNameLOG + ConstantsFor.LOG, Collections.singletonList(toWriteStr));
+    public static void recFile(String fileName, String toWriteStr) {
+        recFile(fileName, Collections.singletonList(toWriteStr));
     }
 
     /**
@@ -213,7 +218,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     }
 
     public static List<String> readFileToList(String absolutePath) {
-        LOGGER.warn("FileSystemWorker.readFileToList");
+        LOGGER.warn(CLASS_METH);
         List<String> retList = new ArrayList<>();
         try(InputStream inputStream = new FileInputStream(absolutePath);
             InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
@@ -224,7 +229,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         }
         catch(IOException e){
             new MessageCons().errorAlert(CLASS_NAME, "readFileToList", e.getMessage());
-            FileSystemWorker.error("FileSystemWorker.readFileToList", e);
+            FileSystemWorker.error(CLASS_METH, e);
             retList.add(e.getMessage());
             retList.add(new TForms().fromArray(e, true));
         }
@@ -232,14 +237,27 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         return retList;
     }
 
+    /**
+     Пишем исключения.
+     <p>
+     Название файла {@code classMeth}.log
+     <p>
+     1. {@link TimeChecker#call()} сверим часы. <br>
+     2. {@link TForms#fromArray(java.lang.Exception, boolean)} приведём исключение к {@link String} <br><br>
+     <b>Если есть Suppressed: </b><br>
+     3. {@link TForms#fromArray(java.lang.Throwable, boolean)}
+
+     @param classMeth класс метод.
+     @param e         исключение
+     */
     public static void error(String classMeth, Exception e) {
-        File f = new File(classMeth + ConstantsFor.LOG);
+        File f = new File(classMeth + LOG);
         try(OutputStream outputStream = new FileOutputStream(f);
             PrintStream printStream = new PrintStream(outputStream, true)){
             printStream.println(new Date(new TimeChecker().call().getReturnTime()));
             printStream.println();
-            printStream.println();
-            printStream.println(e.getMessage());
+            printStream.println(e.getClass().getName() + " e.getClass().getName()");
+            printStream.println(e.getMessage() + " e.getMessage()");
             printStream.println();
             printStream.println(new TForms().fromArray(e, false));
             printStream.println();

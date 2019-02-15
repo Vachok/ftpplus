@@ -2,15 +2,16 @@ package ru.vachok.networker;
 
 
 import org.slf4j.Logger;
-import ru.vachok.messenger.MessageCons;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.ConfigurableApplicationContext;
 import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.io.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import static ru.vachok.networker.IntoApplication.getConfigurableApplicationContext;
@@ -24,15 +25,24 @@ import static ru.vachok.networker.IntoApplication.getConfigurableApplicationCont
 public class ExitApp implements Runnable {
 
     /**
-     {@link AppComponents#getLogger()}
+     {@link LoggerFactory#getLogger(java.lang.String)}
+     <p>
+     Logger name = {@link Class#getSimpleName()}
      */
-    private static final Logger LOGGER = AppComponents.getLogger();
+    private static final Logger LOGGER = LoggerFactory.getLogger(ExitApp.class.getSimpleName());
 
     /**
      Thread name
+     <p>
+     "ExitApp.run"
      */
     private static final String EXIT_APP_RUN = "ExitApp.run";
 
+    /**
+     new {@link ArrayList}, записываемый в "exit.last"
+
+     @see #exitAppDO()
+     */
     private List<String> stringList = new ArrayList<>();
 
     /**
@@ -40,8 +50,16 @@ public class ExitApp implements Runnable {
      */
     private String reasonExit;
 
+    /**
+     Объект для записи, {@link Externalizable}
+     */
     private Object toWriteObj;
 
+    /**
+     Для записи {@link #toWriteObj}
+
+     @see #writeObj()
+     */
     private FileOutputStream out;
 
     /**
@@ -50,20 +68,17 @@ public class ExitApp implements Runnable {
     private long toMinutes = TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - ConstantsFor.START_STAMP);
 
     /**
-     @param reasonExit причина выхода
-     @param объект,    для сохранения на диск
-     @param out        если требуется сохранить состояние
+     Сохранение состояния объектов.
+     <p>
+
+     @param reasonExit  причина выхода
+     @param toWriteObj, {@link Object}  для сохранения на диск
+     @param out         если требуется сохранить состояние
      */
     public ExitApp(String reasonExit, FileOutputStream out, Object toWriteObj) {
         this.reasonExit = reasonExit;
         this.toWriteObj = toWriteObj;
         this.out = out;
-    }
-
-    public ExitApp(String reasonExit, FileOutputStream out) {
-        this.reasonExit = reasonExit;
-        this.out = out;
-        this.toWriteObj = ConstantsFor.class;
     }
 
     /**
@@ -75,6 +90,8 @@ public class ExitApp implements Runnable {
 
     /**
      Копирует логи
+
+     @see FileSystemWorker
      */
     @SuppressWarnings({"HardCodedStringLiteral", "FeatureEnvy"})
     private void copyAvail() {
@@ -92,13 +109,26 @@ public class ExitApp implements Runnable {
         writeObj();
     }
 
+    /**
+     Запись {@link Externalizable}
+     <p>
+     Возможность сохранить состояние объекта.
+     <p>
+     Если {@link #toWriteObj} не {@code null} - {@link ObjectOutput#writeObject(java.lang.Object)}
+     <b>{@link IOException}:</b><br>
+     {@link FileSystemWorker#error(java.lang.String, java.lang.Exception)}
+     <p>
+     Или {@link #stringList} add {@code "No object"}.
+     <p>
+     Запуск {@link #exitAppDO()}
+     */
     private void writeObj() {
         if (toWriteObj != null) {
             stringList.add(toWriteObj.toString());
             try (ObjectOutput objectOutput = new ObjectOutputStream(out)) {
                 objectOutput.writeObject(toWriteObj);
             } catch (IOException e) {
-                new MessageCons().errorAlert("ExitApp", "writeObj", TForms.from(e));
+                FileSystemWorker.error("ExitApp.writeObj", e);
             }
         } else {
             stringList.add("No object");
@@ -107,9 +137,14 @@ public class ExitApp implements Runnable {
     }
 
     /**
-     Сохранение {@link ConstantsFor#saveProps(Properties)}, удаление временного и выход
+     Метод выхода
      <p>
-     Код выхода = <i>uptime</i> в минутах.
+     Добавление в {@link #stringList}: {@code "exit at " + LocalDateTime.now().toString() + ConstantsFor.getUpTime()} <br>
+     {@link FileSystemWorker#recFile(java.lang.String, java.util.List)}. {@link List} = {@link #stringList} <br>
+     {@link FileSystemWorker#delTemp()}. Удаление мусора <br>
+     {@link ConfigurableApplicationContext#close()}. Остановка контекста. <br>
+     {@link ThreadConfig#killAll()} закрытие {@link java.util.concurrent.ExecutorService} и {@link java.util.concurrent.ScheduledExecutorService} <br>
+     {@link System#exit(int)} int = <i>uptime</i> в минутах.
      */
     private void exitAppDO() {
         stringList.add("exit at " + LocalDateTime.now().toString() + ConstantsFor.getUpTime());

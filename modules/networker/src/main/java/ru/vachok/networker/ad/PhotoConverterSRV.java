@@ -3,7 +3,6 @@ package ru.vachok.networker.ad;
 
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
-import org.springframework.ui.Model;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
@@ -14,10 +13,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.List;
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -101,10 +97,9 @@ public class PhotoConverterSRV {
     /**
      Создание списка PoShe комманд для добавления фото
      <p>
-     Usages: {@link ActDirectoryCTRL#adFoto(PhotoConverterSRV, Model)} , {@link ADSrv#psComm()} <br> Uses: {@link #convertFoto()}
-
+     1. {@link #convertFoto()} запуск конверсии. <br>
+     2. {@link FileSystemWorker#error(java.lang.String, java.lang.Exception)} - запишем исключение.
      @return Комманды Exchange PowerShell
-     @throws NullPointerException если нет фото
      */
     String psCommands() {
         try {

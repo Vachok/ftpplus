@@ -16,13 +16,17 @@ import ru.vachok.networker.accesscontrol.SshActs;
 import ru.vachok.networker.accesscontrol.common.CommonScan2YOlder;
 import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.ADSrv;
-import ru.vachok.networker.ad.ADUser;
+import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.mailserver.RuleSet;
+import ru.vachok.networker.net.NetPinger;
 import ru.vachok.networker.services.SimpleCalculator;
 
 import javax.servlet.http.HttpServletRequest;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -40,6 +44,12 @@ public class AppComponents {
      <i>Boiler Plate</i>
      */
     private static final String STR_VISITOR = "visitor";
+
+    @Bean
+    @Scope (ConstantsFor.SINGLETON)
+    public static NetPinger netPinger() {
+        return new NetPinger();
+    }
 
     /**
      @return {@link LoggerFactory}
@@ -152,19 +162,27 @@ public class AppComponents {
         return new ADSrv(new ADUser(), new ADComputer()).getAdComputer().getAdComputers();
     }
 
+    @Bean
+    @Scope(ConstantsFor.SINGLETON)
+    public static ADSrv adSrvForUser(ADUser adUser) {
+        ADSrv adSrv = new ADSrv(adUser);
+        adSrv.setUserInputRaw(adUser.getInputName());
+        return adSrv;
+    }
+
+    public static Visitor thisVisit(String sessionID) throws NullPointerException, NoSuchBeanDefinitionException {
+        return (Visitor) configurableApplicationContext().getBean(sessionID);
+    }
+
     /**
      {@link org.springframework.ui.Model} attribute "ruleset"
 
      @return {@link RuleSet}
      */
     @Bean
-    public RuleSet ruleSet() {
+    private RuleSet ruleSet() {
         Thread.currentThread().setName("RuleSet");
         return new RuleSet();
-    }
-
-    public static Visitor thisVisit(String sessionID) throws NullPointerException, NoSuchBeanDefinitionException {
-        return (Visitor) configurableApplicationContext().getBean(sessionID);
     }
 
     @Bean

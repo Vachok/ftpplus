@@ -2,6 +2,7 @@ package ru.vachok.networker.accesscontrol;
 
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -11,8 +12,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
-import ru.vachok.networker.TForms;
-import ru.vachok.networker.ad.ADSrv;
+import ru.vachok.networker.accesscontrol.common.CommonRightsChecker;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.VersionInfo;
@@ -28,38 +28,64 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 
 /**
+ Контроллер / , /matrix , /git
+
  @since 07.09.2018 (0:35) */
 @Controller
 public class MatrixCtr {
 
     /**
-     {@link AppComponents#getLogger()}
+     Логгер
+     <p>
+     {@link LoggerFactory#getLogger(java.lang.String)}
      */
-    private static final Logger LOGGER = AppComponents.getLogger();
+    private static final Logger LOGGER = LoggerFactory.getLogger(MatrixCtr.class.getSimpleName());
 
-    private static final String MATRIX_STRING_NAME = "matrix";
-
+    /**
+     redirect:/matrix
+     */
     private static final String REDIRECT_MATRIX = "redirect:/matrix";
 
-    private static final String WHOIS_STR = "whois";
-
+    /**
+     /matrix
+     */
     private static final String GET_MATRIX = "/matrix";
 
+    /**
+     * dinner
+     */
+    private static final String ATT_DINNER = "dinner";
+
+    /**
+     {@link MatrixSRV}
+     */
     private MatrixSRV matrixSRV;
 
+    /**
+     {@link Visitor}
+     */
     private Visitor visitor;
 
+    /**
+     {@link VersionInfo}
+     */
     private VersionInfo versionInfo;
 
+    /**
+     {@link System#currentTimeMillis()}. Время инициализации класса.
+     */
     private long metricMatrixStart = System.currentTimeMillis();
 
-    private static final String FOOTER_NAME = ConstantsFor.ATT_FOOTER;
+    /**
+     Конструктор autowired
+     <p>
 
+     @param versionInfo {@link AppComponents#versionInfo()}
+     */
     @Autowired
     public MatrixCtr(VersionInfo versionInfo) {
         this.versionInfo = versionInfo;
@@ -68,7 +94,17 @@ public class MatrixCtr {
 
     /**
      Начальная страница
-     <a href="http://rups00.eatmeat.ru:8880/" target="_blank">Matrix.Html</a>
+     <p>
+     starting.html
+     <p>
+     1. {@link ConstantsFor#getVis(javax.servlet.http.HttpServletRequest)}. Записиваем визит. <br>
+     2. {@link #qIsNull(Model, HttpServletRequest)}. Нулевой {@link HttpServletRequest#getQueryString()}
+     <p>
+     <b>{@link Model}-аттрибуты:</b><br>
+     {@code "devscan"} = {@link MoreInfoGetter#getTVNetInfo()} так же дата запуска приложения.
+     <p>
+     {@link HttpServletResponse#addHeader(java.lang.String, java.lang.String)}. {@link ConstantsFor#HEAD_REFRESH} = 120 <br>
+     {@link Logger#info(java.lang.String, java.lang.Object)} = this {@link Visitor#toString()}
 
      @param request  {@link HttpServletRequest}
      @param model    {@link Model}
@@ -79,73 +115,40 @@ public class MatrixCtr {
     @GetMapping("/")
     public String getFirst(final HttpServletRequest request, Model model, HttpServletResponse response) {
         this.visitor = ConstantsFor.getVis(request);
-        boolean pcAuth = ConstantsFor.getPcAuth(request);
-        if (request.getQueryString() != null) return qNotNull(request, model, pcAuth);
-        else qIsNull(model, request);
-        model.addAttribute("devscan", "Since " + new Date(ConstantsFor.START_STAMP) + new MoreInfoGetter().getTVNetInfo());
+        qIsNull(model, request);
+        model.addAttribute("devscan", "Since " + new Date(ConstantsFor.START_STAMP) + MoreInfoGetter.getTVNetInfo());
         response.addHeader(ConstantsFor.HEAD_REFRESH, "120");
         LOGGER.info("{}", visitor.toString());
         return "starting";
     }
 
-    private String qNotNull(HttpServletRequest request, Model model, boolean pcAuth) {
-        String queryString = request.getQueryString();
-        if (queryString.equalsIgnoreCase("eth") && pcAuth) {
-            lastLogsGetter(model);
-            model.addAttribute(FOOTER_NAME, new PageFooter().getFooterUtext());
-            metricMatrixStart = System.currentTimeMillis() - metricMatrixStart;
-            return "logs";
-        }
-        return queryString;
-    }
-
-    private void qIsNull(Model model, HttpServletRequest request) {
-        String userPC = ConstantsFor.getUserPC(request);
-        try {
-            LOGGER.warn(visitor.toString());
-        } catch (Exception ignore) {
-            //
-        }
-        String userIP = userPC + ":" + request.getRemotePort() + "<-" + new VersionInfo().getAppVersion();
-        if (!ConstantsFor.isPingOK()) userIP = "ping to srv-git.eatmeat.ru is " + false;
-        model.addAttribute("yourip", userIP);
-        model.addAttribute(MATRIX_STRING_NAME, new MatrixSRV());
-        model.addAttribute(FOOTER_NAME, new PageFooter().getFooterUtext());
-        if (ConstantsFor.getUserPC(request).toLowerCase().contains(ConstantsFor.NO0027) ||
-            ConstantsFor.getUserPC(request).toLowerCase().contains("0:0:0:0")) {
-            model.addAttribute(ConstantsFor.ATT_VISIT, versionInfo.toString());
-        } else {
-            model.addAttribute(ConstantsFor.ATT_VISIT, visitor.getTimeSpend() + " timestamp");
-        }
-    }
-
-    private String getCommonAccessRights(String workPos, Model model) {
-        ADSrv adSrv = AppComponents.adSrv();
-        try{
-            String users = workPos.split(": ")[1];
-            String commonRights = adSrv.checkCommonRightsForUserName(users);
-            model.addAttribute(WHOIS_STR, commonRights);
-            model.addAttribute(ConstantsFor.ATT_TITLE, workPos);
-            model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
-        }
-        catch(ArrayIndexOutOfBoundsException e){
-            LOGGER.error(e.getMessage(), e);
-        }
-        return MATRIX_STRING_NAME;
-    }
-
-    @PostMapping (GET_MATRIX)
-    public String getWorkPosition(@ModelAttribute(MATRIX_STRING_NAME) MatrixSRV matrixSRV, BindingResult result, Model model) {
+    /**
+     Получить должность. {@code Post}.
+     <p>
+     1. {@link MatrixSRV#getWorkPos()}. Получим пользовательскую строку ввода в {@link String} {@code workPos}. <br>
+     2. {@link WhoIsWithSRV#whoisStat(java.lang.String, org.springframework.ui.Model)}, если строка содержит {@code whois:} <br>
+     3. {@link #calculateDoubles(java.lang.String, org.springframework.ui.Model)}. Подсчёт {@link Double}, если строка содержит {@code calc:} <br>
+     4. {@link CommonRightsChecker#getCommonAccessRights(java.lang.String, org.springframework.ui.Model)}, если строка содержит {@code common: } <br>
+     5. {@link #timeStamp(ru.vachok.networker.services.SimpleCalculator, org.springframework.ui.Model, java.lang.String)}, если строка содержит {@code calctime:} или {@code calctimes:} <br>
+     6. {@link #matrixAccess(java.lang.String)}, в ином случае.
+     <p>
+     @param matrixSRV {@link #matrixSRV}
+     @param result {@link BindingResult}
+     @param model {@link Model}
+     @return {@link ConstantsFor#MATRIX_STRING_NAME}.html
+     */
+    @PostMapping(GET_MATRIX)
+    public String getWorkPosition(@ModelAttribute(ConstantsFor.MATRIX_STRING_NAME) MatrixSRV matrixSRV, BindingResult result, Model model) {
         this.matrixSRV = matrixSRV;
         String workPos = matrixSRV.getWorkPos();
-        if (workPos.toLowerCase().contains("whois:")) return whois(workPos, model);
+        if (workPos.toLowerCase().contains("whois:")) return WhoIsWithSRV.whoisStat(workPos, model);
         else if (workPos.toLowerCase().contains("calc:")) return calculateDoubles(workPos, model);
         else if (workPos.toLowerCase().contains("common: ")) {
-            return getCommonAccessRights(workPos, model);
-        } else if (workPos.toLowerCase().contains("calctime:") || workPos.toLowerCase().contains("calctimes:")) {
-            timeStamp(new SimpleCalculator(), model, workPos);
-        } else return matrixAccess(workPos);
-        return MATRIX_STRING_NAME;
+                return CommonRightsChecker.getCommonAccessRights(workPos, model);
+            } else if (workPos.toLowerCase().contains("calctime:") || workPos.toLowerCase().contains("calctimes:")) {
+                timeStamp(new SimpleCalculator(), model, workPos);
+            } else return matrixAccess(workPos);
+        return ConstantsFor.MATRIX_STRING_NAME;
     }
 
     /**
@@ -159,7 +162,7 @@ public class MatrixCtr {
     public String gitOn(Model model, HttpServletRequest request) {
         this.visitor = ConstantsFor.getVis(request);
         SSHFactory gitOner = new SSHFactory.Builder(ConstantsFor.SRV_GIT, "sudo cd /usr/home/ITDept;sudo git instaweb;exit").build();
-        if(request.getQueryString()!=null && request.getQueryString().equalsIgnoreCase(ConstantsFor.STR_REBOOT)){
+        if (request.getQueryString() != null && request.getQueryString().equalsIgnoreCase(ConstantsFor.STR_REBOOT)) {
             gitOner = new SSHFactory.Builder(ConstantsFor.SRV_GIT, "sudo reboot").build();
         }
         String call = gitOner.call() + "\n" + visitor.toString();
@@ -168,17 +171,24 @@ public class MatrixCtr {
         return "redirect:http://srv-git.eatmeat.ru:1234";
     }
 
-    @GetMapping (GET_MATRIX)
+    /**
+     Вывод результата.
+     <p>
+     1. {@link ConstantsFor#getVis(javax.servlet.http.HttpServletRequest)}. Запишем визит ({@link Visitor}) <br>
+     2. {@link MatrixSRV#getWorkPos()}. Пользовательский ввод. <br>
+     3. {@link PageFooter#getFooterUtext()}, 4. new {@link PageFooter}, 5. {@link Visitor#toString()}. Компонент модели {@link ConstantsFor#ATT_FOOTER} <br>
+     6. {@link MatrixSRV#getCountDB()}. Компонент {@code headtitle}
+     <p>
+     @param request {@link HttpServletRequest}
+     @param response {@link HttpServletResponse}
+     @param model {@link Model}
+     @return {@link ConstantsFor#MATRIX_STRING_NAME}.html
+     @throws IOException обработка {@link HttpServletResponse#sendError(int, java.lang.String)}
+     */
+    @GetMapping(GET_MATRIX)
     public String showResults(HttpServletRequest request, HttpServletResponse response, Model model) throws IOException {
         this.visitor = ConstantsFor.getVis(request);
-        new Thread(() -> {
-            try {
-                LOGGER.warn(visitor.toString());
-            } catch (IllegalArgumentException e) {
-                LOGGER.error(e.getMessage(), e);
-            }
-        }).start();
-        model.addAttribute(MATRIX_STRING_NAME, matrixSRV);
+        model.addAttribute(ConstantsFor.MATRIX_STRING_NAME, matrixSRV);
         String workPos;
         try {
             workPos = matrixSRV.getWorkPos();
@@ -189,37 +199,57 @@ public class MatrixCtr {
                 this.getClass().getName() + "<br>");
         }
         model.addAttribute("workPos", workPos);
-        model.addAttribute(FOOTER_NAME, new PageFooter().getFooterUtext() + "<p>" + visitor.toString());
+        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<p>" + visitor.toString());
         model.addAttribute("headtitle", matrixSRV.getCountDB() + " позиций   " + TimeUnit.MILLISECONDS.toMinutes(
             System.currentTimeMillis() - ConstantsFor.START_STAMP) + " getUpTime");
         metricMatrixStart = System.currentTimeMillis() - metricMatrixStart;
-        return MATRIX_STRING_NAME;
+        return ConstantsFor.MATRIX_STRING_NAME;
     }
 
-    private String whois(String workPos, Model model) {
+    /**
+     Query string отсутствует в реквесте.
+     <p>
+     1. {@link ConstantsFor#getUserPC(javax.servlet.http.HttpServletRequest)}. Для заголовка страницы. <br> 2. {@link Visitor#toString()} отобразим в {@link #LOGGER} <br> 3. {@link
+    VersionInfo#getAppVersion()}. Компонент заголовка. 4. {@link VersionInfo} <br> 5. {@link ConstantsFor#isPingOK()}. Если {@code false} - аттрибут модели {@code ping to srv-git.eatmeat.ru is "
+    false} <br> 6. {@link PageFooter#getFooterUtext()}, 7. new {@link PageFooter}. Низ страницы. <br> 8-9 {@link ConstantsFor#getUserPC(javax.servlet.http.HttpServletRequest)} если содержит {@link
+    ConstantsFor#NO0027} или {@code 0:0:0:0}, аттрибут {@link ConstantsFor#ATT_VISIT} - 10. {@link VersionInfo#toString()}, иначе - 11. {@link Visitor#getTimeSpend()}.
+     <p>
+
+     @param model   {@link Model}
+     @param request {@link HttpServletRequest}
+     */
+    private void qIsNull(Model model, HttpServletRequest request) {
+        String userPC = ConstantsFor.getUserPC(request);
         try {
-            WhoIsWithSRV whoIsWithSRV = new WhoIsWithSRV();
-            workPos = workPos.split(": ")[1];
-            String attributeValue = whoIsWithSRV.whoIs(workPos);
-            model.addAttribute(WHOIS_STR, attributeValue);
-            model.addAttribute(FOOTER_NAME, new PageFooter().getFooterUtext());
-        } catch (ArrayIndexOutOfBoundsException e) {
-            model.addAttribute(WHOIS_STR, workPos + "<p>" + e.getMessage());
-            return MATRIX_STRING_NAME;
+            LOGGER.warn(visitor.toString());
+        } catch (Exception ignore) {
+            //
         }
-        metricMatrixStart = System.currentTimeMillis() - metricMatrixStart;
-        return MATRIX_STRING_NAME;
+        String userIP = userPC + ":" + request.getRemotePort() + "<-" + new VersionInfo().getAppVersion();
+        if (!ConstantsFor.isPingOK()) userIP = "ping to srv-git.eatmeat.ru is " + false;
+        model.addAttribute("yourip", userIP);
+        model.addAttribute(ConstantsFor.MATRIX_STRING_NAME, new MatrixSRV());
+        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
+        if (ConstantsFor.getUserPC(request).toLowerCase().contains(ConstantsFor.NO0027) ||
+            ConstantsFor.getUserPC(request).toLowerCase().contains("0:0:0:0")) {
+            model.addAttribute(ConstantsFor.ATT_VISIT, versionInfo.toString());
+        } else {
+            model.addAttribute(ConstantsFor.ATT_VISIT, visitor.getTimeSpend() + " timestamp");
+        }
     }
 
-    private void lastLogsGetter(Model model) {
-        Map<String, String> vachokEthosdistro = new AppComponents().getLastLogs();
-        String logsFromDB = new TForms().fromArray(vachokEthosdistro, false);
-        model.addAttribute("logdb", logsFromDB);
-        model.addAttribute("starttime", new Date(ConstantsFor.START_STAMP));
-        model.addAttribute(FOOTER_NAME, new PageFooter().getFooterUtext());
-        model.addAttribute(ConstantsFor.ATT_TITLE, metricMatrixStart);
-    }
+    /**
+     Считаем числа с плавающей точкой.
+     <p>
+     1. {@link AppComponents#simpleCalculator()} <br>
+     2. {@link SimpleCalculator#countDoubles(java.util.List)} подсчёт суммы чисел. <br>
+     3. {@link MatrixSRV#setWorkPos(java.lang.String)} результат + {@link String} - Dinner price
+     <p>
 
+     @param workPos {@link MatrixSRV#getWorkPos()}
+     @param model {@link Model}
+     @return {@link ConstantsFor#MATRIX_STRING_NAME}
+     */
     private String calculateDoubles(String workPos, Model model) {
         List<Double> list = new ArrayList<>();
         String[] doubles = workPos.split(": ")[1].split(" ");
@@ -229,21 +259,43 @@ public class MatrixCtr {
         double v = new AppComponents().simpleCalculator().countDoubles(list);
         String pos = v + " Dinner price";
         matrixSRV.setWorkPos(pos);
-        model.addAttribute("dinner", pos);
-        return MATRIX_STRING_NAME;
+        model.addAttribute(ATT_DINNER, pos);
+        return ConstantsFor.MATRIX_STRING_NAME;
     }
 
-    private String timeStamp(@ModelAttribute SimpleCalculator simpleCalculator, Model model, String workPos) {
-        model.addAttribute(ConstantsFor.STR_CALCULATOR, simpleCalculator);
-        model.addAttribute("dinner", simpleCalculator.getStampFromDate(workPos));
-        return "redirect:/calculate";
-    }
+    /**
+     Запрос к матрице доступа.
+     <p>
+     <b>SQL - </b> select * from matrix where Doljnost like '%%%s%%
+     <p>
+     1. {@link MatrixSRV#getWorkPosition(java.lang.String)} проверим базу на наличие позиции. <br>
+     2. {@link MatrixSRV#setWorkPos(java.lang.String)}.
+     <p>
 
+     @param workPos {@link MatrixSRV#getWorkPos()}
+     @return {@link #REDIRECT_MATRIX}
+     */
     private String matrixAccess(String workPos) {
-        String workPosition = this.matrixSRV.getWorkPosition(String
-            .format("select * from matrix where Doljnost like '%%%s%%';", workPos));
+        String workPosition = this.matrixSRV.getWorkPosition(String.format("select * from matrix where Doljnost like '%%%s%%';", workPos));
         this.matrixSRV.setWorkPos(workPosition);
         LOGGER.info(workPosition);
         return REDIRECT_MATRIX;
+    }
+
+    /**
+     Перевод времени из long в {@link Date} и обратно.
+     <p>
+     1. {@link SimpleCalculator#getStampFromDate(java.lang.String)} метод перевода.
+     <p>
+
+     @param simpleCalculator {@link SimpleCalculator}
+     @param model {@link Model}
+     @param workPos {@link MatrixSRV#getWorkPos()}
+     @return redirect:/calculate
+     */
+    private String timeStamp(@ModelAttribute SimpleCalculator simpleCalculator, Model model, String workPos) {
+        model.addAttribute(ConstantsFor.STR_CALCULATOR, simpleCalculator);
+        model.addAttribute(ATT_DINNER, simpleCalculator.getStampFromDate(workPos));
+        return "redirect:/calculate";
     }
 }
