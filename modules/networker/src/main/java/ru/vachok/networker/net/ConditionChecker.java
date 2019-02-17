@@ -52,7 +52,7 @@ class ConditionChecker {
         List<Integer> offLine = new ArrayList<>();
         StringBuilder stringBuilder = new StringBuilder();
         String classMeth = "ConditionChecker.onLinesCheck";
-        try (PreparedStatement statement = NetScannerSvc.c.prepareStatement(sql)) {
+        try(PreparedStatement statement = c.prepareStatement(sql)){
             Runnable r = () -> pcUserResolver.namesToFile(pcName);
             ThreadConfig.executeAsThread(r);
             statement.setString(1, pcName);
