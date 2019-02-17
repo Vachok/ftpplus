@@ -17,19 +17,13 @@ import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.errorexceptions.MyNull;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.mailserver.MailIISLogsCleaner;
-import ru.vachok.networker.net.DiapazonedScan;
-import ru.vachok.networker.net.NetMonitorPTV;
-import ru.vachok.networker.net.ScanOnline;
-import ru.vachok.networker.net.WeekPCStats;
+import ru.vachok.networker.net.*;
 import ru.vachok.networker.services.MyCalen;
 import ru.vachok.networker.services.SpeedChecker;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.FileVisitor;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -39,10 +33,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 
 /**
@@ -124,8 +115,8 @@ public class AppInfoOnLoad implements Runnable {
      Если {@link LocalDate#getDayOfWeek()} equals {@link DayOfWeek#SUNDAY}, запуск new {@link WeekPCStats}
      */
     static void spToFile() {
-        ExecutorService service = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor());
-        service.submit(new SpeedChecker.ChkMailAndUpdateDB());
+        ScheduledExecutorService service = Executors.unconfigurableScheduledExecutorService(Executors.newSingleThreadScheduledExecutor());
+        service.scheduleWithFixedDelay(new SpeedChecker.ChkMailAndUpdateDB(), 0, ConstantsFor.DELAY, TimeUnit.MINUTES);
         if (LocalDate.now().getDayOfWeek().equals(DayOfWeek.SUNDAY)) {
             ExecutorService serviceW = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor());
             serviceW.submit(new WeekPCStats());

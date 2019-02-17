@@ -122,7 +122,7 @@ public final class NetScannerSvc {
     private String thePc = "PC";
 
     /**
-     * Название {@link Thread}
+     Название {@link Thread}
      <p>
      {@link Thread#getName()}
      */
@@ -328,40 +328,6 @@ public final class NetScannerSvc {
         ConstantsNet.LOGGER.warn(format);
     }
 
-    static {
-        try{
-            connection = new RegRuMysql().getDefaultConnection(ConstantsNet.DB_NAME);
-        }
-        catch(Exception e){
-            connection = reconnectToDB();
-        }
-    }
-
-    /**
-     @param qer префикс имени ПК
-     @return кол-во ПК, для пересичления
-     @see #getCycleNames(String)
-     */
-    private int getNamesCount(String qer) {
-        int inDex = 0;
-        if(qer.equals("no")){
-            inDex = ConstantsNet.NOPC;
-        }
-        if(qer.equals("pp")){
-            inDex = ConstantsNet.PPPC;
-        }
-        if(qer.equals("do")){
-            inDex = ConstantsNet.DOPC;
-        }
-        if(qer.equals("a")){
-            inDex = ConstantsNet.APC;
-        }
-        if(qer.equals("td")){
-            inDex = ConstantsNet.TDPC;
-        }
-        return inDex;
-    }
-
     /**
      Запись в таблицу <b>velkompc</b> текущего состояния. <br>
      <p>
@@ -458,6 +424,15 @@ public final class NetScannerSvc {
         }
     }
 
+    static {
+        try{
+            connection = new RegRuMysql().getDefaultConnection(ConstantsNet.DB_NAME);
+        }
+        catch(Exception e){
+            connection = reconnectToDB();
+        }
+    }
+
     /**
      Реконнект к БД
      <p>
@@ -470,6 +445,55 @@ public final class NetScannerSvc {
     private static Connection reconnectToDB() {
         connection = new RegRuMysql().getDefaultConnection(ConstantsFor.U_0466446_VELKOM);
         return connection;
+    }
+
+    /**
+     Сортирует по-алфавиту.
+     <p>
+     {@link NetScannerSvc#getThePc()} <br>
+     {@link LastNetScan#getTimeLastScan()} <br>
+     {@link NetScannerSvc#setThePc(java.lang.String)} <br>
+     {@link ActDirectoryCTRL#setInputWithInfoFromDB(java.lang.String)}
+
+     @param timeNow {@link ArrayList}, показываемый на странице.
+     */
+    private static void sortList(List<String> timeNow) {
+        Collections.sort(timeNow);
+        String str = timeNow.get(timeNow.size() - 1);
+        String thePcWithDBInfo = new StringBuilder().append(NetScannerSvc.getI().getThePc()).append("Last online: ")
+            .append(str).append(" (").append(")<br>Actual on: ").toString();
+        thePcWithDBInfo = thePcWithDBInfo + AppComponents.lastNetScan().getTimeLastScan() + "</center></font>";
+        NetScannerSvc.getI().setThePc(thePcWithDBInfo);
+        ActDirectoryCTRL.setInputWithInfoFromDB(thePcWithDBInfo);
+
+    }
+
+    /**
+     Создание lock-файла
+     <p>
+
+     @param create создать или удалить файл.
+     @return scan.tmp exist
+     @see #getPCsAsync()
+     */
+    private boolean fileCreate(boolean create) {
+        File file = new File("scan.tmp");
+        try{
+            if(create){
+                file = Files.createFile(file.toPath()).toFile();
+            }
+            else{
+                Files.deleteIfExists(Paths.get("scan.tmp"));
+            }
+        }
+        catch(IOException e){
+            FileSystemWorker.error("NetScannerSvc.fileCreate", e);
+        }
+        boolean exists = file.exists();
+        if(exists){
+            file.deleteOnExit();
+        }
+        return exists;
     }
 
     /**
@@ -498,7 +522,6 @@ public final class NetScannerSvc {
      {@link FileSystemWorker#recFile(java.lang.String, java.util.stream.Stream)} - {@link #unusedNames}.
      <p>
      {@link MessageSwing#infoTimer(int, java.lang.String)}
-
      */
     @SuppressWarnings ("MagicNumber")
     private void runAfterAllScan() {
@@ -585,34 +608,6 @@ public final class NetScannerSvc {
             FileSystemWorker.copyOrDelFile(new File(FILE_PCAUTODISTXT), toCopy, true);
 
         }
-    }
-
-    /**
-     Создание lock-файла
-     <p>
-
-     @param create создать или удалить файл.
-     @return scan.tmp exist
-     @see #getPCsAsync()
-     */
-    private boolean fileCreate(boolean create) {
-        File file = new File("scan.tmp");
-        try{
-            if(create){
-                file = Files.createFile(file.toPath()).toFile();
-            }
-            else{
-                Files.deleteIfExists(Paths.get("scan.tmp"));
-            }
-        }
-        catch(IOException e){
-            FileSystemWorker.error("NetScannerSvc.fileCreate", e);
-        }
-        boolean exists = file.exists();
-        if(exists){
-            file.deleteOnExit();
-        }
-        return exists;
     }
 
     @Override
@@ -733,22 +728,27 @@ public final class NetScannerSvc {
     }
 
     /**
-     Сортирует по-алфавиту.
-     <p>
-     {@link NetScannerSvc#getThePc()} <br>
-     {@link LastNetScan#getTimeLastScan()} <br>
-     {@link NetScannerSvc#setThePc(java.lang.String)} <br>
-     {@link ActDirectoryCTRL#setInputWithInfoFromDB(java.lang.String)}
-     @param timeNow {@link ArrayList}, показываемый на странице.
+     @param qer префикс имени ПК
+     @return кол-во ПК, для пересичления
+     @see #getCycleNames(String)
      */
-    private static void sortList(List<String> timeNow) {
-        Collections.sort(timeNow);
-        String str = timeNow.get(timeNow.size() - 1);
-        String thePcWithDBInfo = new StringBuilder().append(NetScannerSvc.getI().getThePc()).append("Last online: ")
-            .append(str).append(" (").append(")<br>Actual on: ").toString();
-        thePcWithDBInfo = thePcWithDBInfo + AppComponents.lastNetScan().getTimeLastScan() + "</center></font>";
-        NetScannerSvc.getI().setThePc(thePcWithDBInfo);
-        ActDirectoryCTRL.setInputWithInfoFromDB(thePcWithDBInfo);
-
+    private int getNamesCount(String qer) {
+        int inDex = 0;
+        if(qer.equals("no")){
+            inDex = ConstantsNet.NOPC;
+        }
+        if(qer.equals("pp")){
+            inDex = ConstantsNet.PPPC;
+        }
+        if(qer.equals("do")){
+            inDex = ConstantsNet.DOPC;
+        }
+        if(qer.equals("a")){
+            inDex = ConstantsNet.APC;
+        }
+        if(qer.equals("td")){
+            inDex = ConstantsNet.TDPC;
+        }
+        return inDex;
     }
 }
