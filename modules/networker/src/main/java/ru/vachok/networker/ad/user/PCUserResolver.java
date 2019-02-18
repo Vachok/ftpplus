@@ -1,6 +1,7 @@
 package ru.vachok.networker.ad.user;
 
 
+import ru.vachok.messenger.MessageCons;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ad.ADSrv;
@@ -161,6 +162,20 @@ public class PCUserResolver extends ADSrv {
         } catch (IOException | IndexOutOfBoundsException e) {
             return e.getMessage();
         }
+    }
+
+    public ADUser searchForUser(String userInput) {
+        ADUser adUser = new ADUser();
+        DataBaseADUsersSRV adUsersSRV = new DataBaseADUsersSRV(adUser);
+        Map<String, String> fileParser = adUsersSRV.fileParser(FileSystemWorker.readFileToList("static/texts/users.txt"));
+        Set<String> stringSet = fileParser.keySet();
+        stringSet.forEach(x -> {
+            String s = fileParser.get(x);
+            if (s.contains(userInput)) {
+                new MessageCons().infoNoTitles(s + " " + s.contains(userInput));
+            }
+        });
+        return adUser;
     }
 
     /**

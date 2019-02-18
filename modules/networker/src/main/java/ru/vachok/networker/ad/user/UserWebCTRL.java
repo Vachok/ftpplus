@@ -80,14 +80,8 @@ public class UserWebCTRL {
     public String userPost(Model model, HttpServletRequest request, @ModelAttribute ADUser adUser) {
         this.adUser = adUser;
         ADSrv adSrv = AppComponents.adSrvForUser(adUser);
-        adSrv.setUserInputRaw(adUser.getInputName());
-
-        String adUsersEquals = "ModelAttribute adUser.equals(this.adUser): " + adUser.equals(this.adUser) + "<br> adSrv.getAdUser.equals this.adUser: "
-            + adSrv.getAdUser().equals(this.adUser) + "<p>";
-        messageToUser.infoTimer(60, adUsersEquals);
-
         model.addAttribute(ConstantsFor.ATT_ADUSER, adUser);
-        model.addAttribute(ConstantsFor.ATT_RESULT, adUsersEquals + adSrv.getAdUser());
+        model.addAttribute(ConstantsFor.ATT_RESULT, adSrv.toString());
         model.addAttribute(ConstantsFor.ATT_TITLE, ConstantsFor.getMemoryInfo());
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
         return "user";

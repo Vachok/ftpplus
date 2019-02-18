@@ -129,10 +129,10 @@ public class ADSrv implements Runnable {
     public ADSrv(ADUser adUser) {
         this.userInputRaw = adUser.getInputName();
         this.adUser = adUser;
+        PCUserResolver.getPcUserResolver().searchForUser(adUser.getInputName());
     }
 
     protected ADSrv() {
-
     }
 
     /**
@@ -242,6 +242,23 @@ public class ADSrv implements Runnable {
     }
 
     /**
+     Резолвит онлайн пользователя ПК.
+     <p>
+
+     @param queryString запрос из браузера
+     @return {@link #getUserName(String)} или {@link ADSrv#offNowGetU(CharSequence)}
+     @throws IOException {@link InetAddress}.getByName(queryString + ".eatmeat.ru").isReachable(650))
+     @see ActDirectoryCTRL#queryStringExists(java.lang.String, org.springframework.ui.Model)
+     */
+    String getDetails(String queryString) throws IOException {
+        if (InetAddress.getByName(queryString + ConstantsFor.EATMEAT_RU).isReachable(ConstantsFor.TIMEOUT_650)) {
+            return getUserName(queryString);
+        } else {
+            return offNowGetU(queryString);
+        }
+    }
+
+    /**
      Читает /static/texts/users.txt
 
      @return {@link ADUser} как {@link List}
@@ -314,44 +331,15 @@ public class ADSrv implements Runnable {
     }
 
     /**
-     Резолвит онлайн пользователя ПК.
-     <p>
-
-     @param queryString запрос из браузера
-     @return {@link #getUserName(String, PCUserResolver)} или {@link ADSrv#offNowGetU(CharSequence)}
-     @throws IOException {@link InetAddress}.getByName(queryString + ".eatmeat.ru").isReachable(650))
-     @see ActDirectoryCTRL#queryStringExists(java.lang.String, org.springframework.ui.Model)
-     */
-    String getDetails(String queryString) throws IOException {
-        PCUserResolver pcUserResolver = PCUserResolver.getPcUserResolver();
-        if (InetAddress.getByName(queryString + ConstantsFor.EATMEAT_RU).isReachable(ConstantsFor.TIMEOUT_650)) {
-            return getUserName(queryString, pcUserResolver);
-        } else {
-            return offNowGetU(queryString);
-        }
-    }
-
-    /**
-     <b>Запрос на конвертацию фото</b>
-
-     @see PhotoConverterSRV
-     */
-    private void psComm() {
-        PhotoConverterSRV photoConverterSRV = new PhotoConverterSRV();
-        photoConverterSRV.psCommands();
-    }
-
-    /**
      Информация о пользователе ПК.
      <p>
      {@link List} со строками {@code file.lastModified() file.getName }, для папок из директории Users , компьютера из запроса. <br> {@link String} timestUserLast - последняя строка из
      сортированого списка <br> Цикл резолвит время файла в папке. <br>
 
      @param queryString    запрос (имя ПК) {@code http://localhost:8880/ad?queryString}
-     @param pcUserResolver {@link PCUserResolver}
      @return html Более подробно о ПК: из http://localhost:8880/ad?
      */
-    private String getUserName(String queryString, PCUserResolver pcUserResolver) {
+    private String getUserName(String queryString) {
         List<String> timeName = new ArrayList<>();
         StringBuilder stringBuilder = new StringBuilder();
         File filesAsFile = new File("\\\\" + queryString + ".eatmeat.ru\\c$\\Users\\");
@@ -383,6 +371,26 @@ public class ADSrv implements Runnable {
             .append(ConstantsNet.STR_COMPNAME_USERS_MAP_SIZE)
             .append("</p></b>");
         return stringBuilder.toString();
+    }
+
+    /**
+     <b>Запрос на конвертацию фото</b>
+
+     @see PhotoConverterSRV
+     */
+    private void psComm() {
+        PhotoConverterSRV photoConverterSRV = new PhotoConverterSRV();
+        photoConverterSRV.psCommands();
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("ADSrv{");
+        sb.append("PC_USER_RESOLVER_CLASS_NAME='").append(PC_USER_RESOLVER_CLASS_NAME).append('\'');
+        sb.append(", adUser=").append(adUser.toString());
+        sb.append(", userInputRaw='").append(userInputRaw).append('\'');
+        sb.append('}');
+        return sb.toString();
     }
 
     /**
