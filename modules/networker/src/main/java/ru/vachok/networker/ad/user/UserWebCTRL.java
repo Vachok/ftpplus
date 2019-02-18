@@ -20,6 +20,7 @@ import javax.servlet.http.HttpServletRequest;
  Страница user.html {@link Controller}
 
  @since 13.02.2019 (15:52) */
+@SuppressWarnings ("SameReturnValue")
 @Controller
 public class UserWebCTRL {
 
@@ -64,7 +65,7 @@ public class UserWebCTRL {
      <b>Атрибуты {@link Model}</b>:<br>
      {@link ConstantsFor#ATT_ADUSER} - {@link ADUser} <br>
      {@link ConstantsFor#ATT_TITLE} - {@link ConstantsFor#getMemoryInfo()} <br>
-     {@link ConstantsFor#ATT_RESULT} - {@code adUsersEquals}+ {@link ADUser#toStringBR()}.
+     {@link ConstantsFor#ATT_RESULT} - {@code adUsersEquals}+ {@link ADUser#toString()}.
      Выведем {@code adUsersEquals} через {@link MessageToUser#infoTimer(int, java.lang.String)} <br>
      {@link ConstantsFor#ATT_FOOTER} - new {@link PageFooter#getFooterUtext()}
      <p>
