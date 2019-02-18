@@ -22,10 +22,8 @@ import ru.vachok.networker.services.MessageLocal;
 
 import java.io.*;
 import java.net.InetAddress;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
+import java.util.Date;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -36,34 +34,36 @@ import java.util.concurrent.ConcurrentMap;
 @Service("adsrv")
 public class ADSrv implements Runnable {
 
-    protected static final String PC_USER_RESOLVER_CLASS_NAME = "PCUserResolver";
+    private static final String PROP_SAMACCOUNTNAME = "SamAccountName";
+
+    private static final String PC_USER_RESOLVER_CLASS_NAME = "PCUserResolver";
 
     /**
      {@link LoggerFactory}
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(ADSrv.class.getName());
 
+    private static final MessageToUser MESSAGE_TO_USER = new MessageLocal();
+
     /**
      {@link RegRuMysql#getDefaultConnection(String)} - u0466446_velkom ({@link ConstantsNet#DB_NAME})
      */
-    protected static Connection connection;
+    private static Connection connection = new RegRuMysql().getDefaultConnection(ConstantsNet.DB_NAME);
 
     /**
      {@link ADUser}
      */
-    private ADUser adUser;
-
-    /**
-     {@link ADComputer}
-     */
-    private ADComputer adComputer;
+    private ADUser adUser = null;
 
     /**
      Строка из формы на сайте.
      */
     private String userInputRaw = null;
 
-    private MessageToUser messageToUser = new MessageLocal();
+    /**
+     {@link ADComputer}
+     */
+    private ADComputer adComputer = null;
 
     /**
      @return {@link #adComputer}
@@ -110,7 +110,7 @@ public class ADSrv implements Runnable {
             if (contains) {
                 ADSrv.this.adUser = x;
                 retMap.put("InputName", x.getInputName());
-                retMap.put("SamAccountName", x.getSamAccountName());
+                retMap.put(PROP_SAMACCOUNTNAME, x.getSamAccountName());
                 retMap.put("Sid", x.getSid());
             }
         });
@@ -130,42 +130,92 @@ public class ADSrv implements Runnable {
         Thread.currentThread().setName(getClass().getSimpleName());
     }
 
-    public ADSrv(ADUser adUser) {
-        this.userInputRaw = adUser.getInputName();
-        this.adUser = adUser;
-        try {
-            parseFile();
-        } catch (IndexOutOfBoundsException ingnore) {
-            //
+    /**
+     Читает /static/texts/users.txt
+
+     @return {@link ADUser} как {@link List}
+     */
+    List<ADUser> userSetter() {
+        List<String> fileAsList = new ArrayList<>();
+        List<ADUser> adUserList = new ArrayList<>();
+        try(InputStream usrInputStream = getClass().getResourceAsStream(ConstantsFor.USERS_TXT);
+            InputStreamReader inputStreamReader = new InputStreamReader(usrInputStream);
+            BufferedReader bufferedReader = new BufferedReader(inputStreamReader)){
+            while(bufferedReader.ready()){
+                fileAsList.add(bufferedReader.readLine());
+            }
         }
+        catch(IOException e){
+            LOGGER.error(e.getMessage(), e);
+        }
+        int indexUser = 0;
+        int h = 10;
+        ADUser adU = new ADUser();
+        for(int i = 0; i < fileAsList.size(); i += 10){
+            indexUser++;
+            try{
+                List<String> list = fileAsList.subList(i, h);
+                for(String s : list){
+                    if(s.contains("DistinguishedName")){
+                        adU.setDistinguishedName(s.split(": ")[1]);
+                    }
+                    if(s.contains("Enabled")){
+                        adU.setEnabled(s.split(": ")[1]);
+                    }
+                    if(s.contains("GivenName")){
+                        adU.setGivenName(s.split(": ")[1]);
+                    }
+                    if(s.contains("Name")){
+                        adU.setName(s.split(": ")[1]);
+                    }
+                    if(s.contains("ObjectClass")){
+                        adU.setObjectClass(s.split(": ")[1]);
+                    }
+                    if(s.contains("ObjectGUID")){
+                        adU.setObjectGUID(s.split(": ")[1]);
+                    }
+                    if(s.contains(PROP_SAMACCOUNTNAME)){
+                        adU.setSamAccountName(s.split(": ")[1]);
+                    }
+                    if(s.contains("SID")){
+                        adU.setSid(s.split(": ")[1]);
+                    }
+                    if(s.contains("Surname")){
+                        adU.setSurname(s.split(": ")[1]);
+                    }
+                    if(s.contains("UserPrincipalName")){
+                        adU.setUserPrincipalName(s.split(": ")[1]);
+                    }
+                    else{
+                        if(s.equals("")){
+                            adUserList.add(adU);
+                            adU = new ADUser();
+                        }
+                    }
+                }
+            }
+            catch(IndexOutOfBoundsException | IllegalArgumentException ignore){
+                //
+            }
+            h += 10;
+        }
+        String msg = indexUser + " users read";
+        LOGGER.warn(msg);
+        psComm();
+        return adUserList;
     }
 
     protected ADSrv() {
     }
 
-    /**
-     Запись в БД <b>pcuser</b><br> Запись по-запросу от браузера.
-     <p>
-     pcName - уникальный (таблица не переписывается или не дополняется, при наличиизаписи по-компу)
-     <p>
-     Лог - <b>PCUserResolver.recToDB</b> в папке запуска.
-     <p>
-
-     @param userName имя юзера
-     @param pcName   имя ПК
-     @see ADSrv#getDetails(String)
-     */
-    protected static synchronized void recToDB(String userName, String pcName) {
-        String sql = "insert into pcuser (pcName, userName) values(?,?)";
-        String msg = userName + " on pc " + pcName + " is set.";
-        try (PreparedStatement p = connection.prepareStatement(sql)) {
-            p.setString(1, userName);
-            p.setString(2, pcName);
-            p.executeUpdate();
-            LOGGER.info(msg);
-            ConstantsNet.PC_U_MAP.put(pcName, msg);
-        } catch (SQLException e) {
-            FileSystemWorker.error("PCUserResolver.recToDB", e);
+    public ADSrv(ADUser adUser) {
+        this.userInputRaw = adUser.getInputName();
+        this.adUser = adUser;
+        try {
+            parseFile();
+        }
+        catch(IndexOutOfBoundsException ignored){
+            //
         }
     }
 
@@ -266,79 +316,33 @@ public class ADSrv implements Runnable {
         }
     }
 
-    /**
-     Читает /static/texts/users.txt
-
-     @return {@link ADUser} как {@link List}
-     */
-    List<ADUser> userSetter() {
-        List<String> fileAsList = new ArrayList<>();
-        List<ADUser> adUserList = new ArrayList<>();
-        try (InputStream usrInputStream = getClass().getResourceAsStream(ConstantsFor.USERS_TXT);
-             InputStreamReader inputStreamReader = new InputStreamReader(usrInputStream);
-             BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
-            while (bufferedReader.ready()) {
-                fileAsList.add(bufferedReader.readLine());
-            }
-        } catch (IOException e) {
-            LOGGER.error(e.getMessage(), e);
-        }
-        int indexUser = 0;
-        int h = 10;
-        ADUser adU = new ADUser();
-        for (int i = 0; i < fileAsList.size(); i += 10) {
-            indexUser++;
-            try {
-                List<String> list = fileAsList.subList(i, h);
-                for (String s : list) {
-                    if (s.contains("DistinguishedName")) {
-                        adU.setDistinguishedName(s.split(": ")[1]);
-                    }
-                    if (s.contains("Enabled")) {
-                        adU.setEnabled(s.split(": ")[1]);
-                    }
-                    if (s.contains("GivenName")) {
-                        adU.setGivenName(s.split(": ")[1]);
-                    }
-                    if (s.contains("Name")) {
-                        adU.setName(s.split(": ")[1]);
-                    }
-                    if (s.contains("ObjectClass")) {
-                        adU.setObjectClass(s.split(": ")[1]);
-                    }
-                    if (s.contains("ObjectGUID")) {
-                        adU.setObjectGUID(s.split(": ")[1]);
-                    }
-                    if (s.contains("SamAccountName")) {
-                        adU.setSamAccountName(s.split(": ")[1]);
-                    }
-                    if (s.contains("SID")) {
-                        adU.setSid(s.split(": ")[1]);
-                    }
-                    if (s.contains("Surname")) {
-                        adU.setSurname(s.split(": ")[1]);
-                    }
-                    if (s.contains("UserPrincipalName")) {
-                        adU.setUserPrincipalName(s.split(": ")[1]);
-                    } else {
-                        if (s.equals("")) {
-                            adUserList.add(adU);
-                            adU = new ADUser();
-                        }
-                    }
+    private void parseFile() {
+        List<String> stringList;
+        List<ADUser> adUsers = new ArrayList<>();
+        if(adUser.getUsersAD()!=null){
+            List<Integer> indexEmptyStrs = new ArrayList<>();
+            stringList = adUsrFromFile();
+            for(int i = 0; i < stringList.size(); i++){
+                String s = stringList.get(i);
+                if(s.equals("")){
+                    indexEmptyStrs.add(i);
                 }
-            } catch (IndexOutOfBoundsException | IllegalArgumentException ignore) {
-                //
             }
-            h += 10;
+            for(int i = 0; i < indexEmptyStrs.size(); i++){
+                List<String> oneUser = stringList.subList(indexEmptyStrs.get(i), indexEmptyStrs.get(i + 1));
+                adUsers.add(setUserFromInput(oneUser));
+            }
+            MESSAGE_TO_USER.infoNoTitles(adUsers.size() + "");
         }
-        String msg = indexUser + " users read";
-        LOGGER.warn(msg);
-        psComm();
-        return adUserList;
+        else{
+            PCUserResolver.getPcUserResolver().searchForUser(adUser.getInputName());
+        }
+        for(ADUser adUserth : adUsers){
+            MESSAGE_TO_USER.infoNoTitles(adUserth.toString());
+        }
     }
 
-    ADUser setUserFromInput(List<String> uList) {
+    private ADUser setUserFromInput(List<String> uList) {
         ADUser adU = new ADUser();
         for (String s : uList) {
             if (s.contains("DistinguishedName")) {
@@ -359,7 +363,7 @@ public class ADSrv implements Runnable {
             if (s.contains("ObjectGUID")) {
                 adU.setObjectGUID(s.split(": ")[1]);
             }
-            if (s.contains("SamAccountName")) {
+            if(s.contains(PROP_SAMACCOUNTNAME)){
                 adU.setSamAccountName(s.split(": ")[1]);
             }
             if (s.contains("SID")) {
@@ -375,26 +379,30 @@ public class ADSrv implements Runnable {
         return adU;
     }
 
-    private void parseFile() {
-        List<String> stringList;
-        List<ADUser> adUsers = new ArrayList<>();
-        if (adUser.getUsersAD() != null) {
-            List<Integer> indexEmptyStrs = new ArrayList<>();
-            stringList = adUsrFromFile();
-            for (int i = 0; i < stringList.size(); i++) {
-                String s = stringList.get(i);
-                if (s.equals("")) indexEmptyStrs.add(i);
-            }
-            for (int i = 0; i < indexEmptyStrs.size(); i++) {
-                List<String> oneUser = stringList.subList(indexEmptyStrs.get(i), indexEmptyStrs.get(i + 1));
-                adUsers.add(setUserFromInput(oneUser));
-            }
-            messageToUser.infoNoTitles(adUsers.size() + "");
-        } else {
-            PCUserResolver.getPcUserResolver().searchForUser(adUser.getInputName());
+    /**
+     Запись в БД <b>pcuser</b><br> Запись по-запросу от браузера.
+     <p>
+     pcName - уникальный (таблица не переписывается или не дополняется, при наличиизаписи по-компу)
+     <p>
+     Лог - <b>PCUserResolver.recToDB</b> в папке запуска.
+     <p>
+
+     @param userName имя юзера
+     @param pcName   имя ПК
+     @see ADSrv#getDetails(String)
+     */
+    private static synchronized void recToDB(String userName, String pcName) {
+        String sql = "insert into pcuser (pcName, userName) values(?,?)";
+        String msg = userName + " on pc " + pcName + " is set.";
+        try(PreparedStatement p = connection.prepareStatement(sql)){
+            p.setString(1, userName);
+            p.setString(2, pcName);
+            p.executeUpdate();
+            LOGGER.info(msg);
+            ConstantsNet.PC_U_MAP.put(pcName, msg);
         }
-        for (ADUser adUserth : adUsers) {
-            messageToUser.infoNoTitles(adUserth.toString());
+        catch(SQLException e){
+            FileSystemWorker.error("PCUserResolver.recToDB", e);
         }
     }
 

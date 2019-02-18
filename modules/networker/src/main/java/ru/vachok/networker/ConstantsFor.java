@@ -23,14 +23,8 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.SecureRandom;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.Year;
-import java.time.ZoneOffset;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Properties;
+import java.time.*;
+import java.util.*;
 import java.util.concurrent.*;
 
 import static java.time.temporal.ChronoUnit.HOURS;
@@ -55,6 +49,8 @@ public enum ConstantsFor {
     private static final Properties PROPS = new Properties();
 
     private static final int MIN_DELAY = 17;
+
+    public static final String TOSTRING_SAMACCOUNTNAME = ", samAccountName='";
 
     public static final String TOSTRING_CLASS_NAME = ", CLASS_NAME='";
 

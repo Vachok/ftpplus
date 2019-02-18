@@ -38,15 +38,13 @@ public class PCUserResolver extends ADSrv {
      */
     private String lastFileUse = null;
 
+    private static Connection connection = new RegRuMysql().getDefaultConnection(ConstantsNet.DB_NAME);
+
     /**
      @return {@link #PC_USER_RESOLVER}
      */
     public static PCUserResolver getPcUserResolver() {
         return PC_USER_RESOLVER;
-    }
-
-    static {
-        connection = new RegRuMysql().getDefaultConnection(ConstantsNet.DB_NAME);
     }
 
     /**
@@ -61,7 +59,7 @@ public class PCUserResolver extends ADSrv {
      @return {@link Connection}
      @see #recAutoDB(String, String)
      */
-    private static Connection reconnectToDB() {
+    protected static Connection reconnectToDB() {
         connection = new RegRuMysql().getDefaultConnection(ConstantsNet.DB_NAME);
         return connection;
     }
@@ -135,7 +133,7 @@ public class PCUserResolver extends ADSrv {
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             FileSystemWorker.error(classMeth, e);
-            connection = reconnectToDB();
+            connection = new RegRuMysql().getDefaultConnection(ConstantsNet.DB_NAME);
         } catch (ArrayIndexOutOfBoundsException | NullPointerException e) {
             FileSystemWorker.error(classMeth, e);
         }

@@ -156,8 +156,6 @@ public class TForms {
     public String fromADUsersList(List<ADUser> adUsers, boolean br) {
         nStringBuilder.append(N_STR);
         for (ADUser ad : adUsers) {
-            brStringBuilder
-                .append(ad.toStringBR());
             nStringBuilder
                 .append(ad.toString())
                 .append(N_STR);
