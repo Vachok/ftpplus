@@ -149,7 +149,7 @@ public class IntoApplication {
      <p>
      1. {@link AppComponents#threadConfig()}. Управление запуском и трэдами. <br><br>
      <b>Runnable</b><br>
-     2. {@link AppInfoOnLoad#spToFile()} собирает инфо о скорости в файл. Если воскресенье, запускает {@link WeekPCStats} <br><br>
+     2. {@link AppInfoOnLoad#getWeekPCStats()} собирает инфо о скорости в файл. Если воскресенье, запускает {@link WeekPCStats} <br><br>
      <b>Далее:</b><br>
      3. {@link AppComponents#threadConfig()} (4. {@link ThreadConfig#threadPoolTaskExecutor()}) - запуск <b>Runnable</b> <br>
      5. {@link ThreadConfig#threadPoolTaskExecutor()} - запуск {@link AppInfoOnLoad}. <br><br>
@@ -164,7 +164,7 @@ public class IntoApplication {
         AppInfoOnLoad infoAndSched = new AppInfoOnLoad();
         Runnable r = IntoApplication::appProperties;
         try {
-            AppInfoOnLoad.spToFile();
+            AppInfoOnLoad.getWeekPCStats();
             String showPath = Paths.get(".").toString() + "\n abs: " +
                 Paths.get(".").toFile().getAbsolutePath();
             AppComponents.threadConfig().threadPoolTaskExecutor().execute(r);

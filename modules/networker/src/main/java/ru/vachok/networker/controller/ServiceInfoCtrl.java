@@ -61,10 +61,26 @@ public class ServiceInfoCtrl {
         return System.getProperty("java.version");
     }
 
+    /**
+     GetMapping /serviceinfo
+     <p>
+     Записываем {@link Visitor}. <br>
+     Выполним как трэд - new {@link SpeedChecker}. <br>
+     Если ПК авторизован - вернуть {@code vir.html}, иначе - throw new {@link AccessDeniedException}
+
+     @param model    {@link Model}
+     @param request  {@link HttpServletRequest}
+     @param response {@link HttpServletResponse}
+     @return vir.html
+     @throws AccessDeniedException если не {@link ConstantsFor#getPcAuth(HttpServletRequest)}
+     @throws ExecutionException    {@link #modModMaker(Model, HttpServletRequest, Visitor)}
+     @throws InterruptedException  {@link #modModMaker(Model, HttpServletRequest, Visitor)}
+     */
     @GetMapping("/serviceinfo")
     public String infoMapping(Model model, HttpServletRequest request, HttpServletResponse response) throws AccessDeniedException, ExecutionException, InterruptedException {
         Thread.currentThread().setName("ServiceInfoCtrl.infoMapping");
         this.visitor = new AppComponents().visitor(request);
+        ThreadConfig.executeAsThread(new SpeedChecker());
         this.authReq = Stream.of("0:0:0:0", "10.10.111", "10.200.213.85", "172.16.20", "10.200.214.80").anyMatch(sP -> request.getRemoteAddr().contains(sP));
         if (authReq) {
             modModMaker(model, request, visitor);

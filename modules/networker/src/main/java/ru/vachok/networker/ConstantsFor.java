@@ -23,8 +23,14 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.SecureRandom;
-import java.time.*;
-import java.util.*;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.Year;
+import java.time.ZoneOffset;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.*;
 
 import static java.time.temporal.ChronoUnit.HOURS;
@@ -561,7 +567,7 @@ public enum ConstantsFor {
             initProperties = new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
             String msg = "Taking File properties:" + "\n" + initProperties.getClass().getSimpleName();
             AppComponents.getLogger().info(msg);
-            PROPS.putAll(initProperties.getProps());
+            PROPS.putAll(initProperties.getProps()); // TODO: 18.02.2019  DBRegProperties:54
         }
         catch(Exception e){
             initProperties = new FileProps(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());

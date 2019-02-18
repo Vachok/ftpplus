@@ -3,6 +3,7 @@ package ru.vachok.networker.services;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ui.Model;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.messenger.email.ESender;
@@ -16,22 +17,33 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.systray.ActionDefault;
 import ru.vachok.networker.systray.MessageToTray;
 
-import javax.mail.*;
+import javax.mail.Flags;
+import javax.mail.Folder;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.awt.event.ActionEvent;
 import java.sql.*;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.TextStyle;
 import java.util.Date;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
-import static java.time.DayOfWeek.*;
+import static java.time.DayOfWeek.SATURDAY;
+import static java.time.DayOfWeek.SUNDAY;
 
 
 /**
- @since 22.08.2018 (9:36) */
+ Обновление инфо о скорости и дороге.
+
+ @since 22.08.2018 (9:36)
+ @see ru.vachok.networker.controller.ServiceInfoCtrl#infoMapping(Model, HttpServletRequest, HttpServletResponse)
+ @see ru.vachok.networker.systray.ActionOnAppStart#actionPerformed(ActionEvent)
+ */
 public class SpeedChecker implements Callable<Long>, Runnable {
 
     /**
@@ -44,34 +56,37 @@ public class SpeedChecker implements Callable<Long>, Runnable {
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(SpeedChecker.class.getSimpleName());
 
+    /**
+     Property name: lastworkstart
+     */
     private static final String PR_LASTWORKSTART = "lastworkstart";
 
-    static boolean noWeekEnd = !(LocalDate.now().getDayOfWeek().equals(SUNDAY) || !LocalDate.now().getDayOfWeek().equals(SATURDAY));
+    /**
+     Выходной день
+     */
+    private static boolean isWeekEnd = (LocalDate.now().getDayOfWeek().equals(SUNDAY) || LocalDate.now().getDayOfWeek().equals(SATURDAY));
 
     /**
      Time as long
      <p>
-     Время из Базы
+     Время из Базы. Берется из {@link ConstantsFor#getProps()} - {@link #PR_LASTWORKSTART}.
      */
-    private Long rtLong = Long.valueOf(ConstantsFor.getProps().getProperty(PR_LASTWORKSTART, "1550207880000"));
+    private Long rtLong = Long.valueOf(ConstantsFor.getProps().getProperty(PR_LASTWORKSTART));
 
-    @Override
-    public Long call() {
-        ThreadConfig.executeAsThread(this);
-        ConstantsFor.getProps().setProperty(PR_LASTWORKSTART, rtLong + "");
-        return rtLong;
-    }
+    /**
+     Метрика метода.
+     <p>
 
-    @Override
-    public void run() {
-        DayOfWeek now = LocalDate.now().getDayOfWeek();
-
-        if(noWeekEnd){
-            ThreadConfig.executeAsThread(this::setRtLong);
-        }
-        else{
-            LOGGER.warn(now.getDisplayName(TextStyle.FULL_STANDALONE, Locale.getDefault()));
-        }
+     @param stArt время начала отсчёта.
+     */
+    private static void methMetr(long stArt) {
+        float f = (float) (System.currentTimeMillis() - stArt) / 1000;
+        String msgTimeSp = new StringBuilder()
+            .append("SpeedChecker.chkForLast: ")
+            .append(f)
+            .append(ConstantsFor.STR_SEC_SPEND)
+            .toString();
+        LOGGER.info(msgTimeSp);
     }
 
     /**
@@ -87,54 +102,63 @@ public class SpeedChecker implements Callable<Long>, Runnable {
      */
     private void setRtLong() {
         String classMeth = "SpeedChecker.chkForLast";
+        String sql = ConstantsFor.SELECT_FROM_SPEED;
+        Properties properties = ConstantsFor.getProps();
         Thread.currentThread().setName(classMeth);
         final long stArt = System.currentTimeMillis();
-        String sql = ConstantsFor.SELECT_FROM_SPEED;
+        new ChkMailAndUpdateDB().run();
         Connection c = DATA_CONNECT_TO.getDefaultConnection(ConstantsFor.DB_PREFIX + "liferpg");
-        try(PreparedStatement p = c.prepareStatement(sql);
-            ResultSet r = p.executeQuery()){
-            while(r.next()){
-                if(r.last()){
+
+        try (PreparedStatement p = c.prepareStatement(sql);
+             ResultSet r = p.executeQuery()) {
+            while (r.next()) {
+                if (r.last()) {
                     double timeSpend = r.getDouble(ConstantsFor.TIME_SPEND);
                     long timeStamp = r.getTimestamp(ConstantsFor.COL_SQL_NAME_TIMESTAMP).getTime();
                     String msg = timeSpend + " time spend;\n" + timeStamp;
                     this.rtLong = timeStamp + TimeUnit.SECONDS.toMillis(90);
+                    properties.setProperty(PR_LASTWORKSTART, rtLong + "");
+                    ConstantsFor.saveProps(properties);
                     LOGGER.info(msg);
                 }
             }
-        }
-        catch(SQLException e){
+        } catch (SQLException e) {
             FileSystemWorker.error(classMeth, e);
         }
         methMetr(stArt);
     }
 
     /**
-     Метрика метода.
-     <p>
-
-     @param stArt время начала отсчёта.
+     @return {@link #rtLong}
      */
-    private static void methMetr(long stArt) {
-        float f = ( float ) (System.currentTimeMillis() - stArt) / 1000;
-        String msgTimeSp = new StringBuilder()
-            .append("SpeedChecker.chkForLast: ")
-            .append(f)
-            .append(ConstantsFor.STR_SEC_SPEND)
-            .toString();
-        LOGGER.info(msgTimeSp);
+    @Override
+    public Long call() {
+        return rtLong;
     }
 
-/*END FOR CLASS*/
+    /**
+     * Запуск.
+     <p>
+     Если прошло 20 часов, с момента {@link #rtLong} или не {@link #isWeekEnd}, запуск {@link #setRtLong()}.
+     Иначе {@link #rtLong} = {@link ConstantsFor#getProps()} {@link #PR_LASTWORKSTART}.
+     */
+    @Override
+    public void run() {
+        long l = rtLong + TimeUnit.HOURS.toMillis(20);
+        boolean is20HRSSpend = System.currentTimeMillis() > l;
+        if (is20HRSSpend || !isWeekEnd) {
+            ThreadConfig.executeAsThread(this::setRtLong);
+        } else {
+            this.rtLong = Long.valueOf(ConstantsFor.getProps().getProperty(PR_LASTWORKSTART));
+        }
+    }
 
     /**
-     Актуализировать БД.
-     <p>
-     Проверяет почту. Обновляет базу.
-
-     @since 21.01.2019 (12:11)
+     Проверка и обновление БД, при необходимости.
+     @since 21.01.2019 (14:20)
+     @see SpeedChecker
      */
-    public static final class ChkMailAndUpdateDB implements Runnable {
+    public final class ChkMailAndUpdateDB implements Runnable {
 
         /**
          ChkMailAndUpdateDB
@@ -144,37 +168,75 @@ public class SpeedChecker implements Callable<Long>, Runnable {
         /**
          {@link DataConnectTo#getDefaultConnection(java.lang.String)} - {@link ConstantsFor#U_0466446_LIFERPG}
          */
-        private static final Connection DEF_CONNECTION = new RegRuMysql().getDefaultConnection(ConstantsFor.U_0466446_LIFERPG);
+        private final Connection defConnection = new RegRuMysql().getDefaultConnection(ConstantsFor.U_0466446_LIFERPG);
 
         /**
          {@link MailMessages}
          */
         private MailMessages mailMessages = new MailMessages();
 
-        @Override
-        public void run() {
-            String msg = LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL_STANDALONE, Locale.getDefault());
-            if(noWeekEnd){
-                msg = chechMail();
+        /**
+         Получение информации о текущем дне недели.
+         <p>
+         <b>{@link SQLException}:</b> <br>
+         1. {@link MessageLocal#errorAlert(java.lang.String, java.lang.String, java.lang.String)} сообщение об ошибке. <br> 2.
+         {@link FileSystemWorker#error(java.lang.String, java.lang.Exception)}
+         запишем в файл. <br><br>
+         <b>Далее:</b><br>
+         3. {@link MessageLocal#infoNoTitles(java.lang.String)} покажем пользователю.
+
+         @return инфо о средней скорости и времени в текущий день недели.
+         */
+        String todayInfo() {
+            StringBuilder stringBuilder = new StringBuilder();
+            String sql = "select * from speed where WeekDay = ?";
+            Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.U_0466446_LIFERPG);
+            try (PreparedStatement p = c.prepareStatement(sql)) {
+                p.setInt(1, (LocalDate.now().getDayOfWeek().getValue() + 1));
+                try (ResultSet r = p.executeQuery()) {
+                    List<Double> speedList = new ArrayList<>();
+                    List<Float> timeList = new ArrayList<>();
+                    while (r.next()) {
+                        speedList.add(r.getDouble("Speed"));
+                        timeList.add(r.getFloat("TimeSpend"));
+                    }
+                    double avSpeed = 0.0;
+                    for (Double aDouble : speedList) {
+                        avSpeed = avSpeed + aDouble;
+                    }
+                    avSpeed = avSpeed / speedList.size();
+                    double avTime = 0.0;
+                    for (Float aFloat : timeList) {
+                        avTime = avTime + aFloat;
+                    }
+                    avTime = avTime / timeList.size();
+                    stringBuilder.append("Today is ").append(LocalDate.now().getDayOfWeek()).append("\n");
+                    stringBuilder.append("AV speed at this day: ").append(avSpeed).append("\n");
+                    stringBuilder.append("AV time: ").append(avTime);
+                }
+            } catch (SQLException e) {
+                new MessageLocal().errorAlert(CLASS_NAME, "todayInfo", e.getMessage());
+                FileSystemWorker.error("ChkMailAndUpdateDB.todayInfo", e);
             }
-            LOGGER.info(msg);
+            new MessageLocal().infoNoTitles(stringBuilder.toString());
+            return stringBuilder.toString();
         }
 
         /**
          Сверяет почту и базу.
          <p>
-         1. {@link #checkDB()} преобразуем в строку 2. {@link TForms#fromArray(java.util.Map, boolean)}. <br> 3.
-         {@link FileSystemWorker#recFile(java.lang.String, java.util.List)} запишем в файл. <br>
+         1. {@link #checkDB()} преобразуем в строку. 2. {@link TForms#fromArray(java.util.Map, boolean)}. <br>
+         3. {@link FileSystemWorker#recFile(java.lang.String, java.util.List)} запишем в файл. <br>
          4. {@link #parseMsg(javax.mail.Message, java.lang.String)} сверка наличия.
 
          @return строку из {@link #checkDB()} .
+         @see #run()
          */
         private String chechMail() {
             Message[] messagesBot = mailMessages.call();
-            // .getProps
             String chDB = new TForms().fromArray(checkDB(), false);
             FileSystemWorker.recFile(this.getClass().getSimpleName() + ".chechMail", Collections.singletonList(chDB));
-            for(Message m : messagesBot){
+            for (Message m : messagesBot) {
                 parseMsg(m, chDB);
             }
             return chDB;
@@ -191,13 +253,14 @@ public class SpeedChecker implements Callable<Long>, Runnable {
          {@link #todayInfo()} вывод через {@link #LOGGER} <br>
 
          @return {@link Map}. {@link ConstantsFor#COL_SQL_NAME_TIMESTAMP} - значения.
+         @see #chechMail()
          */
         private Map<String, String> checkDB() {
             Map<String, String> retMap = new HashMap<>();
             String sql = ConstantsFor.SELECT_FROM_SPEED;
-            try(PreparedStatement p = DEF_CONNECTION.prepareStatement(sql);
-                ResultSet r = p.executeQuery()){
-                while(r.next()){
+            try (PreparedStatement p = defConnection.prepareStatement(sql);
+                 ResultSet r = p.executeQuery()) {
+                while (r.next()) {
                     String valueS = r.getInt("Road") +
                         " road, " +
                         r.getString("Speed") +
@@ -206,39 +269,48 @@ public class SpeedChecker implements Callable<Long>, Runnable {
                     retMap.put(r.getTimestamp(ConstantsFor.COL_SQL_NAME_TIMESTAMP).toString(), valueS);
                 }
                 retMap.put(LocalDateTime.now().toString(), "okok");
-            }
-            catch(SQLException e){
+            } catch (SQLException e) {
                 retMap.put(e.getMessage(), new TForms().fromArray(e, false));
             }
             return retMap;
         }
 
+        /**
+         Парсинг сообщений от бота.
+         <p>
+         {@link ESender} ({@link ConstantsFor#GMAIL_COM}). <br>
+         Если тема сообщения содержит {@code speed:}, берётся дата отправки {@link Message#getSentDate()}.
+         <p>
+         Если {@link #writeDB(String, int, long)}, удалим сообщение {@link #delMessage(Message)}.
+         <p>
+         Отправить почту - {@link #todayInfo()}.
+
+         @param m    {@link Message}
+         @param chDB инфо из БД
+         @see #chechMail()
+         */
         private void parseMsg(Message m, String chDB) {
             MessageToUser eSender = new ESender(ConstantsFor.GMAIL_COM);
-            try{
+            try {
                 String subjMail = m.getSubject();
-                if(subjMail.toLowerCase().contains("speed:")){
+                if (subjMail.toLowerCase().contains("speed:")) {
                     Date dateSent = m.getSentDate();
                     Calendar calendar = Calendar.getInstance();
+                    LocalDate of = LocalDate.of(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH) + 1, calendar.get(Calendar.DAY_OF_MONTH));
                     calendar.setTime(dateSent);
-                    LocalDate of = LocalDate.of(
-                        calendar.get(Calendar.YEAR),
-                        calendar.get(Calendar.MONTH) + 1,
-                        calendar.get(Calendar.DAY_OF_MONTH));
+
                     int dayOfWeek = of.getDayOfWeek().getValue();
                     long timeSt = calendar.getTimeInMillis();
-                    if(writeDB(m.getSubject().toLowerCase().split("speed:")[1], dayOfWeek, timeSt)){
+                    if (writeDB(m.getSubject().toLowerCase().split("speed:")[1], dayOfWeek, timeSt)) {
                         delMessage(m);
                     }
                     String todayInfoStr = todayInfo();
                     eSender.info(ChkMailAndUpdateDB.class.getSimpleName() + " " + ConstantsFor.thisPC(), true + " sending to base",
                         todayInfoStr + "\n" + chDB);
-                }
-                else{
+                } else {
                     new MessageToTray(new ActionDefault(ConstantsFor.HTTP_LOCALHOST_8880_SLASH)).infoNoTitles("No new messages");
                 }
-            }
-            catch(MessagingException e){
+            } catch (MessagingException e) {
                 eSender.errorAlert(
                     this.getClass().getSimpleName(),
                     LocalDateTime.now() + " " + e.getMessage(),
@@ -246,94 +318,69 @@ public class SpeedChecker implements Callable<Long>, Runnable {
             }
         }
 
-        private boolean writeDB(String s, int dayOfWeek, long timeSt) {
+        /**
+         Запись в БД.
+
+         @param speedAndRoad скорость и дорога из письма.
+         @param dayOfWeek день недели
+         @param timeSt дата отправки письма
+         @return добавлена запись в БД
+         @see #parseMsg(Message, String)
+         */
+        private boolean writeDB(String speedAndRoad, int dayOfWeek, long timeSt) {
             double timeSpend;
-            double speedFromStr = Double.parseDouble(s.split(" ")[0]);
-            int roadFromStr = Integer.parseInt(s.split(" ")[1]);
-            if(roadFromStr==0){
+            double speedFromStr = Double.parseDouble(speedAndRoad.split(" ")[0]);
+            int roadFromStr = Integer.parseInt(speedAndRoad.split(" ")[1]);
+            if (roadFromStr == 0) {
                 timeSpend = (21.6 / speedFromStr) * 60;
-            }
-            else{
+            } else {
                 timeSpend = (31.2 / speedFromStr) * 60;
             }
             Timestamp timestamp = new Timestamp(timeSt);
             String sql = "insert into speed (Speed, Road, WeekDay, TimeSpend, TimeStamp) values (?,?,?,?,?)";
-            try(Connection c = new RegRuMysql().getDefaultConnection("u0466446_liferpg");
-                PreparedStatement p = c.prepareStatement(sql)){
+            try (Connection c = new RegRuMysql().getDefaultConnection("u0466446_liferpg");
+                 PreparedStatement p = c.prepareStatement(sql)) {
                 p.setDouble(1, speedFromStr);
                 p.setInt(2, roadFromStr);
                 p.setInt(3, dayOfWeek + 1);
-                p.setFloat(4, ( float ) timeSpend);
+                p.setFloat(4, (float) timeSpend);
                 p.setTimestamp(5, timestamp);
                 p.executeUpdate();
                 new MessageToTray().info("DB updated", "Today is " + DayOfWeek.of(dayOfWeek), " Time spend " + timeSpend);
                 return true;
-            }
-            catch(SQLException e){
+            } catch (SQLException e) {
                 new MessageCons().errorAlert(CLASS_NAME, "writeDB", e.getMessage());
                 FileSystemWorker.error("ChkMailAndUpdateDB.writeDB", e);
                 return false;
             }
         }
 
+        /**
+         Удаление сообщения.
+         @param m {@link Message}
+         @see #parseMsg(Message, String)
+         */
         private void delMessage(Message m) {
             Folder inboxFolder = mailMessages.getInbox();
-            try{
+            try {
                 inboxFolder.getMessage(m.getMessageNumber()).setFlag(Flags.Flag.DELETED, true);
                 inboxFolder.close(true);
-            }
-            catch(MessagingException e){
+            } catch (MessagingException e) {
                 new MessageCons().errorAlert(CLASS_NAME, "delMessage", e.getMessage());
                 FileSystemWorker.error("ChkMailAndUpdateDB.delMessage", e);
             }
         }
 
         /**
-         Получение информации о текущем дне недели.
+         * {@link String} {@code msg}
          <p>
-         <b>{@link SQLException}:</b> <br>
-         1. {@link MessageLocal#errorAlert(java.lang.String, java.lang.String, java.lang.String)} сообщение об ошибке. <br> 2.
-         {@link FileSystemWorker#error(java.lang.String, java.lang.Exception)}
-         запишем в файл. <br><br>
-         <b>Далее:</b><br>
-         3. {@link MessageLocal#infoNoTitles(java.lang.String)} покажем пользователю.
-
-         @return инфо о средней скорости и времени в текущий день недели.
+         msg = {@link #chechMail()} + new {@link Date}({@link #rtLong}).
          */
-        static String todayInfo() {
-            StringBuilder stringBuilder = new StringBuilder();
-            String sql = "select * from speed where WeekDay = ?";
-            Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.U_0466446_LIFERPG);
-            try(PreparedStatement p = c.prepareStatement(sql)){
-                p.setInt(1, (LocalDate.now().getDayOfWeek().getValue() + 1));
-                try(ResultSet r = p.executeQuery()){
-                    List<Double> speedList = new ArrayList<>();
-                    List<Float> timeList = new ArrayList<>();
-                    while(r.next()){
-                        speedList.add(r.getDouble("Speed"));
-                        timeList.add(r.getFloat("TimeSpend"));
-                    }
-                    double avSpeed = 0.0;
-                    for(Double aDouble : speedList){
-                        avSpeed = avSpeed + aDouble;
-                    }
-                    avSpeed = avSpeed / speedList.size();
-                    double avTime = 0.0;
-                    for(Float aFloat : timeList){
-                        avTime = avTime + aFloat;
-                    }
-                    avTime = avTime / timeList.size();
-                    stringBuilder.append("Today is ").append(LocalDate.now().getDayOfWeek()).append("\n");
-                    stringBuilder.append("AV speed at this day: ").append(avSpeed).append("\n");
-                    stringBuilder.append("AV time: ").append(avTime);
-                }
-            }
-            catch(SQLException e){
-                new MessageLocal().errorAlert(CLASS_NAME, "todayInfo", e.getMessage());
-                FileSystemWorker.error("ChkMailAndUpdateDB.todayInfo", e);
-            }
-            new MessageLocal().infoNoTitles(stringBuilder.toString());
-            return stringBuilder.toString();
+        @Override
+        public void run() {
+            String msg = chechMail();
+            msg = msg + "\n" + new Date(rtLong);
+            LOGGER.info(msg);
         }
     }
 }
