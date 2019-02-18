@@ -3,6 +3,7 @@ package ru.vachok.networker.ad.user;
 
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 import ru.vachok.networker.ConstantsFor;
 
 import java.awt.image.BufferedImage;
@@ -37,6 +38,16 @@ public class ADUser {
     private String distinguishedName = "";
 
     private String userPrincipalName = "";
+
+    private MultipartFile usersAD;
+
+    public MultipartFile getUsersAD() {
+        return usersAD;
+    }
+
+    public void setUsersAD(MultipartFile usersAD) {
+        this.usersAD = usersAD;
+    }
 
     private String surname = "";
 

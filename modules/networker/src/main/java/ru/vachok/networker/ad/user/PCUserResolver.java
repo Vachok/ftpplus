@@ -167,7 +167,7 @@ public class PCUserResolver extends ADSrv {
     public ADUser searchForUser(String userInput) {
         ADUser adUser = new ADUser();
         DataBaseADUsersSRV adUsersSRV = new DataBaseADUsersSRV(adUser);
-        Map<String, String> fileParser = adUsersSRV.fileParser(FileSystemWorker.readFileToList("static/texts/users.txt"));
+        Map<String, String> fileParser = adUsersSRV.fileParser(FileSystemWorker.readFileToList("C:\\Users\\ikudryashov\\IdeaProjects\\spring\\modules\\networker\\src\\main\\resources\\static\\texts\\users.txt"));
         Set<String> stringSet = fileParser.keySet();
         stringSet.forEach(x -> {
             String s = fileParser.get(x);

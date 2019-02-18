@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import ru.vachok.messenger.MessageCons;
+import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
@@ -17,6 +18,7 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetScanCtr;
 import ru.vachok.networker.net.NetScannerSvc;
 import ru.vachok.networker.net.enums.ConstantsNet;
+import ru.vachok.networker.services.MessageLocal;
 
 import java.io.*;
 import java.net.InetAddress;
@@ -60,6 +62,8 @@ public class ADSrv implements Runnable {
      Строка из формы на сайте.
      */
     private String userInputRaw = null;
+
+    private MessageToUser messageToUser = new MessageLocal();
 
     /**
      @return {@link #adComputer}
@@ -129,7 +133,11 @@ public class ADSrv implements Runnable {
     public ADSrv(ADUser adUser) {
         this.userInputRaw = adUser.getInputName();
         this.adUser = adUser;
-        PCUserResolver.getPcUserResolver().searchForUser(adUser.getInputName());
+        try {
+            parseFile();
+        } catch (IndexOutOfBoundsException ingnore) {
+            //
+        }
     }
 
     protected ADSrv() {
@@ -330,13 +338,86 @@ public class ADSrv implements Runnable {
         return adUserList;
     }
 
+    ADUser setUserFromInput(List<String> uList) {
+        ADUser adU = new ADUser();
+        for (String s : uList) {
+            if (s.contains("DistinguishedName")) {
+                adU.setDistinguishedName(s.split(": ")[1]);
+            }
+            if (s.contains("Enabled")) {
+                adU.setEnabled(s.split(": ")[1]);
+            }
+            if (s.contains("GivenName")) {
+                adU.setGivenName(s.split(": ")[1]);
+            }
+            if (s.contains("Name")) {
+                adU.setName(s.split(": ")[1]);
+            }
+            if (s.contains("ObjectClass")) {
+                adU.setObjectClass(s.split(": ")[1]);
+            }
+            if (s.contains("ObjectGUID")) {
+                adU.setObjectGUID(s.split(": ")[1]);
+            }
+            if (s.contains("SamAccountName")) {
+                adU.setSamAccountName(s.split(": ")[1]);
+            }
+            if (s.contains("SID")) {
+                adU.setSid(s.split(": ")[1]);
+            }
+            if (s.contains("Surname")) {
+                adU.setSurname(s.split(": ")[1]);
+            }
+            if (s.contains("UserPrincipalName")) {
+                adU.setUserPrincipalName(s.split(": ")[1]);
+            }
+        }
+        return adU;
+    }
+
+    private void parseFile() {
+        List<String> stringList;
+        List<ADUser> adUsers = new ArrayList<>();
+        if (adUser.getUsersAD() != null) {
+            List<Integer> indexEmptyStrs = new ArrayList<>();
+            stringList = adUsrFromFile();
+            for (int i = 0; i < stringList.size(); i++) {
+                String s = stringList.get(i);
+                if (s.equals("")) indexEmptyStrs.add(i);
+            }
+            for (int i = 0; i < indexEmptyStrs.size(); i++) {
+                List<String> oneUser = stringList.subList(indexEmptyStrs.get(i), indexEmptyStrs.get(i + 1));
+                adUsers.add(setUserFromInput(oneUser));
+            }
+            messageToUser.infoNoTitles(adUsers.size() + "");
+        } else {
+            PCUserResolver.getPcUserResolver().searchForUser(adUser.getInputName());
+        }
+        for (ADUser adUserth : adUsers) {
+            messageToUser.infoNoTitles(adUserth.toString());
+        }
+    }
+
+    private List<String> adUsrFromFile() {
+        List<String> retList = new ArrayList<>();
+        try (InputStream inputStream = adUser.getUsersAD().getInputStream();
+             InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+             BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
+            bufferedReader.lines().forEach(retList::add);
+        } catch (IOException e) {
+            new MessageLocal().errorAlert("ADSrv", "adUsrFromFile", e.getMessage());
+            FileSystemWorker.error("ADSrv.adUsrFromFile", e);
+        }
+        return retList;
+    }
+
     /**
      Информация о пользователе ПК.
      <p>
      {@link List} со строками {@code file.lastModified() file.getName }, для папок из директории Users , компьютера из запроса. <br> {@link String} timestUserLast - последняя строка из
      сортированого списка <br> Цикл резолвит время файла в папке. <br>
 
-     @param queryString    запрос (имя ПК) {@code http://localhost:8880/ad?queryString}
+     @param queryString запрос (имя ПК) {@code http://localhost:8880/ad?queryString}
      @return html Более подробно о ПК: из http://localhost:8880/ad?
      */
     private String getUserName(String queryString) {
