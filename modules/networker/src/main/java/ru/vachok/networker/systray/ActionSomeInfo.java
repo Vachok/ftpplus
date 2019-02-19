@@ -40,6 +40,6 @@ class ActionSomeInfo extends AbstractAction {
             ConstantsFor.getUpTime() + ", " + "\n" +
             Thread.activeCount() + " threads " + ConstantsFor.getMemoryInfo() + AppInfoOnLoad.iisLogSize() + "\n" +
             AppComponents.versionInfo().toString() + "\n" +
-            new TForms().fromArray(ConstantsFor.getProps()));
+            new TForms().fromArray(AppComponents.getProps()));
     }
 }

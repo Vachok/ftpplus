@@ -7,17 +7,19 @@ import org.springframework.ui.Model;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.messenger.email.ESender;
-import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.EMailAndDB.MailMessages;
-import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.systray.ActionDefault;
 import ru.vachok.networker.systray.MessageToTray;
 
-import javax.mail.*;
+import javax.mail.Flags;
+import javax.mail.Folder;
+import javax.mail.Message;
+import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.event.ActionEvent;
@@ -30,22 +32,17 @@ import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
-import static java.time.DayOfWeek.*;
+import static java.time.DayOfWeek.SATURDAY;
+import static java.time.DayOfWeek.SUNDAY;
 
 
 /**
  Обновление инфо о скорости и дороге.
 
- @since 22.08.2018 (9:36)
  @see ru.vachok.networker.controller.ServiceInfoCtrl#infoMapping(Model, HttpServletRequest, HttpServletResponse)
  @see ru.vachok.networker.systray.ActionOnAppStart#actionPerformed(ActionEvent)
- */
+ @since 22.08.2018 (9:36) */
 public class SpeedChecker implements Callable<Long>, Runnable {
-
-    /**
-     {@link RegRuMysql}
-     */
-    private static final DataConnectTo DATA_CONNECT_TO = new RegRuMysql();
 
     /**
      Логер. {@link LoggerFactory}
@@ -65,9 +62,9 @@ public class SpeedChecker implements Callable<Long>, Runnable {
     /**
      Time as long
      <p>
-     Время из Базы. Берется из {@link ConstantsFor#getProps()} - {@link #PR_LASTWORKSTART}.
+     Время из Базы. Берется из {@link AppComponents#getProps()} - {@link #PR_LASTWORKSTART}.
      */
-    private Long rtLong = Long.valueOf(ConstantsFor.getProps().getProperty(PR_LASTWORKSTART));
+    private Long rtLong = Long.valueOf(AppComponents.getProps().getProperty(PR_LASTWORKSTART));
 
     /**
      Метрика метода.
@@ -99,13 +96,13 @@ public class SpeedChecker implements Callable<Long>, Runnable {
     private void setRtLong() {
         String classMeth = "SpeedChecker.chkForLast";
         String sql = ConstantsFor.SELECT_FROM_SPEED;
-        Properties properties = ConstantsFor.getProps();
+        Properties properties = AppComponents.getProps();
         Thread.currentThread().setName(classMeth);
         final long stArt = System.currentTimeMillis();
         new ChkMailAndUpdateDB().run();
-        Connection c = DATA_CONNECT_TO.getDefaultConnection(ConstantsFor.DB_PREFIX + "liferpg");
 
-        try (PreparedStatement p = c.prepareStatement(sql);
+        try (Connection connection = new AppComponents().connection(ConstantsFor.DB_PREFIX + "liferpg");
+             PreparedStatement p = connection.prepareStatement(sql);
              ResultSet r = p.executeQuery()) {
             while (r.next()) {
                 if (r.last()) {
@@ -115,12 +112,12 @@ public class SpeedChecker implements Callable<Long>, Runnable {
                     this.rtLong = timeStamp + TimeUnit.SECONDS.toMillis(90);
                     properties.setProperty(PR_LASTWORKSTART, rtLong + "");
                     LOGGER.info(msg);
-                    ConstantsFor.saveProps(properties);
                 }
             }
         } catch (SQLException e) {
             FileSystemWorker.error(classMeth, e);
         }
+        AppComponents.getProps(true);
         methMetr(stArt);
     }
 
@@ -133,7 +130,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
     }
 
     /**
-     * Запуск.
+     Запуск.
      <p>
      Если прошло 20 часов, с момента {@link #rtLong} или не {@link #isWeekEnd}, запуск {@link #setRtLong()}.
      Иначе {@link #rtLong} = {@link ConstantsFor#getProps()} {@link #PR_LASTWORKSTART}.
@@ -145,14 +142,15 @@ public class SpeedChecker implements Callable<Long>, Runnable {
         if (is20HRSSpend || !isWeekEnd) {
             ThreadConfig.executeAsThread(this::setRtLong);
         } else {
-            this.rtLong = Long.valueOf(ConstantsFor.getProps().getProperty(PR_LASTWORKSTART));
+            this.rtLong = Long.valueOf(AppComponents.getProps().getProperty(PR_LASTWORKSTART));
         }
     }
 
     /**
      Проверка и обновление БД, при необходимости.
-     @since 21.01.2019 (14:20)
+
      @see SpeedChecker
+     @since 21.01.2019 (14:20)
      */
     public final class ChkMailAndUpdateDB implements Runnable {
 
@@ -160,11 +158,6 @@ public class SpeedChecker implements Callable<Long>, Runnable {
          ChkMailAndUpdateDB
          */
         private static final String CLASS_NAME = "ChkMailAndUpdateDB";
-
-        /**
-         {@link DataConnectTo#getDefaultConnection(java.lang.String)} - {@link ConstantsFor#U_0466446_LIFERPG}
-         */
-        private final Connection defConnection = new RegRuMysql().getDefaultConnection(ConstantsFor.U_0466446_LIFERPG);
 
         /**
          {@link MailMessages}
@@ -186,8 +179,9 @@ public class SpeedChecker implements Callable<Long>, Runnable {
         String todayInfo() {
             StringBuilder stringBuilder = new StringBuilder();
             String sql = "select * from speed where WeekDay = ?";
-            Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.U_0466446_LIFERPG);
-            try (PreparedStatement p = c.prepareStatement(sql)) {
+
+            try (Connection c = new AppComponents().connection(ConstantsFor.U_0466446_LIFERPG);
+                 PreparedStatement p = c.prepareStatement(sql)) {
                 p.setInt(1, (LocalDate.now().getDayOfWeek().getValue() + 1));
                 try (ResultSet r = p.executeQuery()) {
                     List<Double> speedList = new ArrayList<>();
@@ -254,7 +248,8 @@ public class SpeedChecker implements Callable<Long>, Runnable {
         private Map<String, String> checkDB() {
             Map<String, String> retMap = new HashMap<>();
             String sql = ConstantsFor.SELECT_FROM_SPEED;
-            try (PreparedStatement p = defConnection.prepareStatement(sql);
+            try (Connection defConnection = new AppComponents().connection(ConstantsFor.U_0466446_LIFERPG);
+                 PreparedStatement p = defConnection.prepareStatement(sql);
                  ResultSet r = p.executeQuery()) {
                 while (r.next()) {
                     String valueS = r.getInt("Road") +
@@ -318,8 +313,8 @@ public class SpeedChecker implements Callable<Long>, Runnable {
          Запись в БД.
 
          @param speedAndRoad скорость и дорога из письма.
-         @param dayOfWeek день недели
-         @param timeSt дата отправки письма
+         @param dayOfWeek    день недели
+         @param timeSt       дата отправки письма
          @return добавлена запись в БД
          @see #parseMsg(Message, String)
          */
@@ -334,7 +329,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
             }
             Timestamp timestamp = new Timestamp(timeSt);
             String sql = "insert into speed (Speed, Road, WeekDay, TimeSpend, TimeStamp) values (?,?,?,?,?)";
-            try (Connection c = new RegRuMysql().getDefaultConnection("u0466446_liferpg");
+            try (Connection c = new AppComponents().connection("u0466446_liferpg");
                  PreparedStatement p = c.prepareStatement(sql)) {
                 p.setDouble(1, speedFromStr);
                 p.setInt(2, roadFromStr);
@@ -353,6 +348,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
 
         /**
          Удаление сообщения.
+
          @param m {@link Message}
          @see #parseMsg(Message, String)
          */
@@ -368,7 +364,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
         }
 
         /**
-         * {@link String} {@code msg}
+         {@link String} {@code msg}
          <p>
          msg = {@link #chechMail()} + new {@link Date}({@link #rtLong}).
          */

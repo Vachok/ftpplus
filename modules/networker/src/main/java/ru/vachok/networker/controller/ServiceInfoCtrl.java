@@ -54,7 +54,7 @@ public class ServiceInfoCtrl {
 
     private float getLast() {
         return TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() -
-            Long.parseLong(ConstantsFor.getProps().getProperty("lasts", 1544816520000L + ""))) / 60f / 24f;
+            Long.parseLong(AppComponents.getProps().getProperty("lasts", 1544816520000L + ""))) / 60f / 24f;
     }
 
     private String getJREVers() {

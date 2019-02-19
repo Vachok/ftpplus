@@ -73,7 +73,7 @@ public class AppInfoOnLoad implements Runnable {
     /**
      {@link ConstantsFor#getProps()}
      */
-    private static final Properties APP_PROPS = ConstantsFor.getProps();
+    private static final Properties APP_PROPS = AppComponents.getProps();
 
     /**
      " uptime."

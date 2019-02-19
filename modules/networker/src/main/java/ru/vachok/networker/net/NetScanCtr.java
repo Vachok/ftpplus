@@ -2,6 +2,7 @@ package ru.vachok.networker.net;
 
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -29,8 +30,14 @@ import java.net.UnknownHostException;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.Date;
+import java.util.Deque;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -48,19 +55,19 @@ public class NetScanCtr {
     private static final String AT_NAME_NETSCAN = "netscan";
 
     /**
-     {@link AppComponents#getLogger()}
+     {@link LoggerFactory#getLogger(String)}
      */
-    private static final Logger LOGGER = AppComponents.getLogger();
+    private static final Logger LOGGER = LoggerFactory.getLogger(NetScanCtr.class.getSimpleName());
 
     /**
      {@link ConstantsFor#getProps()}
      */
-    private static final Properties PROPERTIES = ConstantsFor.getProps();
+    private static final Properties PROPERTIES = AppComponents.getProps();
 
     /**
      {@link ConstantsFor#DELAY}
      */
-    private static final int DURATION = ( int ) ConstantsFor.DELAY;
+    private static final int DURATION = (int) ConstantsFor.DELAY;
 
     /**
      <i>Boiler Plate</i>
@@ -73,9 +80,9 @@ public class NetScanCtr {
     private static final String ATT_THEPC = "thePc";
 
     /**
-     {@link NetScannerSvc#getI()}
+     {@link AppComponents#netScannerSvc()}
      */
-    private static final NetScannerSvc NET_SCANNER_SVC = NetScannerSvc.getI();
+    private static final NetScannerSvc NET_SCANNER_SVC = AppComponents.netScannerSvc();
 
     private static final String STR_REQUEST = "request = [";
 
@@ -90,31 +97,17 @@ public class NetScanCtr {
 
     private NetPinger netPinger = AppComponents.netPinger();
 
-    /**
-     POST /netscan
-     <p>
-
-     @param netScannerSvc {@link NetScannerSvc}
-     @param result        {@link BindingResult}
-     @param model         {@link Model}
-     @return redirect:/ad? + {@link NetScannerSvc#getThePc()}
-     */
-    @PostMapping (STR_NETSCAN)
-    public String pcNameForInfo(@ModelAttribute NetScannerSvc netScannerSvc, BindingResult result, Model model) {
-        LOGGER.warn("NetScanCtr.pcNameForInfo");
-        String thePc = netScannerSvc.getThePc();
-        AppComponents.adSrv().setUserInputRaw(thePc);
-        if(thePc.toLowerCase().contains("user: ")){
-            model.addAttribute("ok", MoreInfoGetter.getUserFromDB(thePc));
-            model.addAttribute(ConstantsFor.ATT_TITLE, thePc);
-            model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
-            return "ok";
+    private Deque<InetAddress> getDeqAddr() {
+        Deque<InetAddress> retDeq = new ConcurrentLinkedDeque<>();
+        try {
+            byte[] inetAddressBytes = InetAddress.getByName(OtherKnownDevices.MOB_KUDR).getAddress();
+            retDeq.add(InetAddress.getByAddress(inetAddressBytes));
+            inetAddressBytes = InetAddress.getByName("10.10.111.1").getAddress();
+            retDeq.add(InetAddress.getByAddress(inetAddressBytes));
+        } catch (UnknownHostException e) {
+            new MessageCons().errorAlert("NetScanCtr", "getDeqAddr", e.getMessage());
         }
-        NetScannerSvc.getInfoFromDB();
-        model.addAttribute(ATT_THEPC, thePc);
-        AppComponents.adSrv().setUserInputRaw(netScannerSvc.getThePc());
-        netScannerSvc.setThePc("");
-        return "redirect:/ad?" + thePc;
+        return retDeq;
     }
 
     /**
@@ -127,13 +120,14 @@ public class NetScanCtr {
      5. {@link PageFooter#getFooterUtext()} footer web-страницы. 6. {@link AppComponents#lastNetScan()} <br>
      7. {@link #checkMapSizeAndDoAction(Model, HttpServletRequest, long)} - начинаем проверку.
      <p>
-     @param request {@link HttpServletRequest} для {@link ConstantsFor#getVis(HttpServletRequest)}
+
+     @param request  {@link HttpServletRequest} для {@link ConstantsFor#getVis(HttpServletRequest)}
      @param response {@link HttpServletResponse} добавить {@link ConstantsFor#HEAD_REFRESH} 30 сек
-     @param model {@link Model}
+     @param model    {@link Model}
      @return {@link NetScanCtr#AT_NAME_NETSCAN} (netscan.html)
      */
-    @GetMapping (STR_NETSCAN)
-    public String netScan(HttpServletRequest request, HttpServletResponse response, Model model) {
+    @GetMapping(STR_NETSCAN)
+    public static String netScan(HttpServletRequest request, HttpServletResponse response, Model model) {
         String classMeth = "NetScanCtr.netScan";
         final long lastSt = Long.parseLong(PROPERTIES.getProperty(ConstantsNet.PR_LASTSCAN, "1548919734742"));
         new MessageCons().errorAlert(classMeth);
@@ -144,7 +138,7 @@ public class NetScanCtr {
 
         Thread.currentThread().setName(classMeth);
         ConstantsFor.getVis(request);
-        model.addAttribute("serviceinfo", ( float ) TimeUnit.MILLISECONDS.toSeconds(lastSt - System.currentTimeMillis()) / ConstantsFor.ONE_HOUR_IN_MIN);
+        model.addAttribute("serviceinfo", (float) TimeUnit.MILLISECONDS.toSeconds(lastSt - System.currentTimeMillis()) / ConstantsFor.ONE_HOUR_IN_MIN);
         NET_SCANNER_SVC.setThePc("");
         model.addAttribute("pc", FileSystemWorker.readFile(ConstantsNet.STR_LASTNETSCAN));
         model.addAttribute(ConstantsFor.ATT_TITLE, new Date(lastSt));
@@ -153,50 +147,6 @@ public class NetScanCtr {
         response.addHeader(ConstantsFor.HEAD_REFRESH, "30");
         checkMapSizeAndDoAction(model, request, lastSt);
         return AT_NAME_NETSCAN;
-    }
-
-    /**
-     Начало проверок перед сканом.
-     <p>
-     1. {@link AppComponents#threadConfig()}, 2. {@link ThreadConfig#threadPoolTaskExecutor()}. Получаем сконфигурированный {@link ThreadPoolTaskExecutor}
-     <p>
-     <b>Runnable:</b>
-     3. {@link #mapSizeBigger(Model, HttpServletRequest, long, int)} когда {@link #lastScanMAP} больше 1. <br> или <br> 4.
-     {@link #scanIt(HttpServletRequest, Model, Date)}.
-     <p>
-     Объявим дополнительно lock {@link File} {@code scan.tmp}. Чтобы исключить запуск, если предидущий скан не закончен. <br> Проверяем его наличие.
-     Если он существует - запускаем {@link
-    #mapSizeBigger(Model, HttpServletRequest, long, int)}, иначе отправляем <b>Runnable</b> в {@link ThreadConfig#threadPoolTaskExecutor()} (1)
-     <p>
-
-     @param model   {@link Model}
-     @param request {@link HttpServletRequest}
-     @param lastSt  timestamp из {@link #PROPERTIES}
-     @see #netScan(HttpServletRequest, HttpServletResponse, Model)
-     */
-    private void checkMapSizeAndDoAction(Model model, HttpServletRequest request, long lastSt) {
-        boolean isMapSizeBigger = lastScanMAP.size() > 1;
-        final int thisTotpc = Integer.parseInt(PROPERTIES.getProperty(ConstantsFor.PR_TOTPC, "318"));
-        ThreadPoolTaskExecutor taskExecutor = AppComponents.threadConfig().threadPoolTaskExecutor();
-        final Runnable runnableScan = () -> {
-            if(isMapSizeBigger){
-                mapSizeBigger(model, request, lastSt, thisTotpc);
-            }
-            else{
-                scanIt(request, model, new Date(lastSt));
-            }
-        };
-        BlockingQueue<Runnable> queue = taskExecutor.getThreadPoolExecutor().getQueue();
-        String methName = "NetScanCtr.checkMapSizeAndDoAction";
-        File f = new File("scan.tmp");
-        if(f.isFile() && f.exists()){
-            mapSizeBigger(model, request, lastSt, thisTotpc);
-        }
-        else{
-            taskExecutor.submit(runnableScan);
-            new MessageCons().infoNoTitles("queue = " + queue.remainingCapacity());
-        }
-        new MessageLocal().errorAlert(methName);
     }
 
     /**
@@ -223,7 +173,7 @@ public class NetScanCtr {
         boolean newPSs = 0 > remainPC;
         String msg = new StringBuilder()
             .append(timeLeft).append(" seconds (")
-            .append(( float ) timeLeft / ConstantsFor.ONE_HOUR_IN_MIN).append(" min) left<br>Delay period is ")
+            .append((float) timeLeft / ConstantsFor.ONE_HOUR_IN_MIN).append(" min) left<br>Delay period is ")
             .append(DURATION).toString();
         LOGGER.warn(msg);
         model
@@ -232,16 +182,15 @@ public class NetScanCtr {
             .addAttribute(ConstantsFor.ATT_TITLE, new StringBuilder()
                 .append(remainPC).append("/")
                 .append(thisTotpc).append(" PCs (")
-                .append(NET_SCANNER_SVC.getOnLinePCs()).append("/")
+                .append(NetScannerSvc.getOnLinePCs()).append("/")
                 .append(pcWas).append(" at ")
                 .append(LocalDateTime.ofEpochSecond(lastSt / 1000, 0, ZoneOffset.ofHours(3)).toLocalTime().toString()).toString());
-        if(newPSs){
+        if (newPSs) {
             FileSystemWorker.recFile(ConstantsNet.STR_LASTNETSCAN, new TForms().fromArray(lastScanMAP, false));
             model.addAttribute("newpc", "Добавлены компы! " + Math.abs(remainPC) + " шт.");
             PROPERTIES.setProperty(ConstantsFor.PR_TOTPC, lastScanMAP.size() + "");
-        }
-        else{
-            if(3 > remainPC){
+        } else {
+            if (3 > remainPC) {
                 PROPERTIES.setProperty(ConstantsFor.PR_TOTPC, lastScanMAP.size() + "");
             }
         }
@@ -267,12 +216,11 @@ public class NetScanCtr {
         LOGGER.warn(classMeth);
         LocalTime lastScanLocalTime = LocalDateTime.ofEpochSecond(lastScanEpoch, 0, ZoneOffset.ofHours(3)).toLocalTime();
         boolean isSystemTimeBigger = (System.currentTimeMillis() > lastScanEpoch * 1000) && remainPC <= 0;
-        if(isSystemTimeBigger){
+        if (isSystemTimeBigger) {
             String valStr = "isSystemTimeBigger = " + true;
             new MessageCons().info(Thread.currentThread().getName(), classMeth, valStr);
             scanIt(request, model, new Date(lastScanEpoch * 1000));
-        }
-        else{
+        } else {
             String valStr = "lastScanLocalTime = " + lastScanLocalTime;
             new MessageCons().infoNoTitles(Thread.currentThread().getName() + "\n" + classMeth + "\n" + valStr);
         }
@@ -297,31 +245,87 @@ public class NetScanCtr {
      */
     private static void scanIt(HttpServletRequest request, Model model, Date lastScanDate) {
         String propMsg = "NetScanCtr.scanIt. " + lastScanDate;
-        PROPERTIES.setProperty("propmsg", propMsg);
-        if(request!=null && request.getQueryString()!=null){
+        if (request != null && request.getQueryString() != null) {
             lastScanMAP.clear();
             Set<String> pcNames = NET_SCANNER_SVC.getPCNamesPref(request.getQueryString());
             model.addAttribute(ConstantsFor.ATT_TITLE, new Date().toString())
                 .addAttribute("pc", new TForms().fromArray(pcNames, true));
-        }
-        else{
+        } else {
             lastScanMAP.clear();
             Set<String> pCsAsync = NET_SCANNER_SVC.getPcNames();
             model.addAttribute(ConstantsFor.ATT_TITLE, lastScanDate)
                 .addAttribute("pc", new TForms().fromArray(pCsAsync, true));
             AppComponents.lastNetScan().setTimeLastScan(new Date());
         }
-
-        new MessageLocal().info(ConstantsFor.STR_INPUT_OUTPUT,
-            STR_REQUEST + request + STR_MODEL + model + "], lastScanDate = [" + lastScanDate + "]", "void");
+        String msg = propMsg + "\n" + ConstantsFor.STR_INPUT_OUTPUT + STR_REQUEST + request + STR_MODEL + model + "]+ lastScanDate = [" + lastScanDate + "]";
+        LOGGER.info(msg);
     }
 
-    @GetMapping ("/showalldev")
+    /**
+     Начало проверок перед сканом.
+     <p>
+     1. {@link AppComponents#threadConfig()}, 2. {@link ThreadConfig#threadPoolTaskExecutor()}. Получаем сконфигурированный {@link ThreadPoolTaskExecutor}
+     <p>
+     <b>Runnable:</b>
+     3. {@link #mapSizeBigger(Model, HttpServletRequest, long, int)} когда {@link #lastScanMAP} больше 1. <br> или <br> 4.
+     {@link #scanIt(HttpServletRequest, Model, Date)}.
+     <p>
+     Объявим дополнительно lock {@link File} {@code scan.tmp}. Чтобы исключить запуск, если предидущий скан не закончен. <br> Проверяем его наличие.
+     Если он существует - запускаем {@link
+    #mapSizeBigger(Model, HttpServletRequest, long, int)}, иначе отправляем <b>Runnable</b> в {@link ThreadConfig#threadPoolTaskExecutor()} (1)
+     <p>
+
+     @param model   {@link Model}
+     @param request {@link HttpServletRequest}
+     @param lastSt  timestamp из {@link #PROPERTIES}
+     @see #netScan(HttpServletRequest, HttpServletResponse, Model)
+     */
+    private static void checkMapSizeAndDoAction(Model model, HttpServletRequest request, long lastSt) {
+        boolean isMapSizeBigger = lastScanMAP.size() > 1;
+        final int thisTotpc = Integer.parseInt(PROPERTIES.getProperty(ConstantsFor.PR_TOTPC, "318"));
+        File f = new File("scan.tmp");
+        if (f.isFile() && f.exists()) {
+            mapSizeBigger(model, request, lastSt, thisTotpc);
+        } else if (isMapSizeBigger) {
+            mapSizeBigger(model, request, lastSt, thisTotpc);
+        } else {
+            ThreadConfig.getI().threadPoolTaskExecutor().execute(() -> scanIt(request, model, new Date(lastSt)));
+        }
+    }
+
+    /**
+     POST /netscan
+     <p>
+
+     @param netScannerSvc {@link NetScannerSvc}
+     @param result        {@link BindingResult}
+     @param model         {@link Model}
+     @return redirect:/ad? + {@link NetScannerSvc#getThePc()}
+     */
+    @PostMapping(STR_NETSCAN)
+    public String pcNameForInfo(@ModelAttribute NetScannerSvc netScannerSvc, BindingResult result, Model model) {
+        LOGGER.warn("NetScanCtr.pcNameForInfo");
+        String thePc = netScannerSvc.getThePc();
+        AppComponents.adSrv().setUserInputRaw(thePc);
+        if (thePc.toLowerCase().contains("user: ")) {
+            model.addAttribute("ok", MoreInfoGetter.getUserFromDB(thePc));
+            model.addAttribute(ConstantsFor.ATT_TITLE, thePc);
+            model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
+            return "ok";
+        }
+        NetScannerSvc.getInfoFromDB();
+        model.addAttribute(ATT_THEPC, thePc);
+        AppComponents.adSrv().setUserInputRaw(netScannerSvc.getThePc());
+        netScannerSvc.setThePc("");
+        return "redirect:/ad?" + thePc;
+    }
+
+    @GetMapping("/showalldev")
     public String allDevices(Model model, HttpServletRequest request, HttpServletResponse response) {
         LOGGER.warn("NetScanCtr.allDevices");
         model.addAttribute(ConstantsFor.ATT_TITLE, "DiapazonedScan.scanAll");
         model.addAttribute("pcs", ScanOnline.getI().toString());
-        if(request.getQueryString()!=null){
+        if (request.getQueryString() != null) {
             ConditionChecker.qerNotNullScanAllDevices(model, response);
         }
         model.addAttribute("head", new PageFooter().getHeaderUtext() + "<center><p><a href=\"/showalldev?needsopen\"><h2>Show IPs</h2></a></center>");
@@ -331,7 +335,7 @@ public class NetScanCtr {
         return "ok";
     }
 
-    @GetMapping ("/ping")
+    @GetMapping("/ping")
     public String pingAddr(Model model, HttpServletRequest request, HttpServletResponse response) {
         model.addAttribute(ATT_NET_PINGER, netPinger);
         model.addAttribute("pingResult", FileSystemWorker.readFile(ConstantsNet.PINGRESULT_LOG));
@@ -343,21 +347,7 @@ public class NetScanCtr {
         return "ping";
     }
 
-    private Deque<InetAddress> getDeqAddr() {
-        Deque<InetAddress> retDeq = new ConcurrentLinkedDeque<>();
-        try{
-            byte[] inetAddressBytes = InetAddress.getByName(OtherKnownDevices.MOB_KUDR).getAddress();
-            retDeq.add(InetAddress.getByAddress(inetAddressBytes));
-            inetAddressBytes = InetAddress.getByName("10.10.111.1").getAddress();
-            retDeq.add(InetAddress.getByAddress(inetAddressBytes));
-        }
-        catch(UnknownHostException e){
-            new MessageCons().errorAlert("NetScanCtr", "getDeqAddr", e.getMessage());
-        }
-        return retDeq;
-    }
-
-    @PostMapping ("/ping")
+    @PostMapping("/ping")
     public String pingPost(Model model, HttpServletRequest request, @ModelAttribute NetPinger netPinger, HttpServletResponse response) throws ExecutionException, InterruptedException {
         this.netPinger = netPinger;
         netPinger.run();

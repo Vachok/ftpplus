@@ -4,9 +4,8 @@ package ru.vachok.networker.ad.user;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.mysqlandprops.DataConnectTo;
-import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.services.MessageLocal;
 
 import java.io.BufferedReader;
@@ -141,9 +140,9 @@ public class DataBaseADUsersSRV {
     }
 
     private boolean dbUploader() {
-        DataConnectTo dataConnectTo = new RegRuMysql();
-        Connection defaultConnection = dataConnectTo.getDefaultConnection(ConstantsFor.DB_PREFIX + ConstantsFor.STR_VELKOM);
-        try (InputStream resourceAsStream = getClass().getResourceAsStream(ConstantsFor.USERS_TXT)) {
+
+        try (Connection defaultConnection = new AppComponents().connection(ConstantsFor.DB_PREFIX + ConstantsFor.STR_VELKOM);
+             InputStream resourceAsStream = getClass().getResourceAsStream(ConstantsFor.USERS_TXT)) {
             InputStreamReader inputStreamReader = new InputStreamReader(resourceAsStream);
             BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
             ConcurrentMap<String, String> paramNameValueMap = fileRead(bufferedReader);

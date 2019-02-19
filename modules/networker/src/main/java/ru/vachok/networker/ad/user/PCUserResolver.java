@@ -2,9 +2,9 @@ package ru.vachok.networker.ad.user;
 
 
 import ru.vachok.messenger.MessageCons;
-import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ad.ADSrv;
+import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 
@@ -33,12 +33,11 @@ public class PCUserResolver extends ADSrv {
     private static final PCUserResolver PC_USER_RESOLVER = new PCUserResolver();
 
     /**
-     * Последний измененный файл.
-     * @see #getLastTimeUse(String)
+     Последний измененный файл.
+
+     @see #getLastTimeUse(String)
      */
     private String lastFileUse = null;
-
-    private static Connection connection = new RegRuMysql().getDefaultConnection(ConstantsNet.DB_NAME);
 
     /**
      @return {@link #PC_USER_RESOLVER}
@@ -51,17 +50,6 @@ public class PCUserResolver extends ADSrv {
      Default-конструктор
      */
     private PCUserResolver() {
-    }
-
-    /**
-     Реконнект к БД.
-
-     @return {@link Connection}
-     @see #recAutoDB(String, String)
-     */
-    protected static Connection reconnectToDB() {
-        connection = new RegRuMysql().getDefaultConnection(ConstantsNet.DB_NAME);
-        return connection;
     }
 
     /**
@@ -106,6 +94,20 @@ public class PCUserResolver extends ADSrv {
         }
     }
 
+    public ADUser searchForUser(String userInput) {
+        ADUser adUser = new ADUser();
+        DataBaseADUsersSRV adUsersSRV = new DataBaseADUsersSRV(adUser);
+        Map<String, String> fileParser = adUsersSRV.fileParser(FileSystemWorker.readFileToList("C:\\Users\\ikudryashov\\IdeaProjects\\spring\\modules\\networker\\src\\main\\resources\\static\\texts\\users.txt"));
+        Set<String> stringSet = fileParser.keySet();
+        stringSet.forEach(x -> {
+            String s = fileParser.get(x);
+            if (s.contains(userInput)) {
+                new MessageCons().infoNoTitles(s + " " + s.contains(userInput));
+            }
+        });
+        return adUser;
+    }
+
     /**
      Записывает инфо о пльзователе в <b>pcuserauto</b>
      <p>
@@ -117,14 +119,16 @@ public class PCUserResolver extends ADSrv {
      <p>
      <b>{@link ArrayIndexOutOfBoundsException}, {@link NullPointerException}:</b><br>
      {@link FileSystemWorker#error(java.lang.String, java.lang.Exception)}
+
      @param pcName      имя ПК
      @param lastFileUse строка - имя последнего измененного файла в папке пользователя.
      */
     private synchronized void recAutoDB(String pcName, String lastFileUse) {
         String sql = "insert into pcuser (pcName, userName, lastmod, stamp) values(?,?,?,?)";
         String classMeth = "PCUserResolver.recAutoDB";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql
-            .replaceAll(ConstantsFor.STR_PCUSER, ConstantsFor.STR_PCUSERAUTO))) {
+        try (Connection connection = new AppComponents().connection(ConstantsNet.DB_NAME);
+             PreparedStatement preparedStatement = connection.prepareStatement(sql
+                 .replaceAll(ConstantsFor.STR_PCUSER, ConstantsFor.STR_PCUSERAUTO))) {
             String[] split = lastFileUse.split(" ");
             preparedStatement.setString(1, pcName);
             preparedStatement.setString(2, split[0]);
@@ -133,7 +137,6 @@ public class PCUserResolver extends ADSrv {
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             FileSystemWorker.error(classMeth, e);
-            connection = new RegRuMysql().getDefaultConnection(ConstantsNet.DB_NAME);
         } catch (ArrayIndexOutOfBoundsException | NullPointerException e) {
             FileSystemWorker.error(classMeth, e);
         }
@@ -162,19 +165,6 @@ public class PCUserResolver extends ADSrv {
         }
     }
 
-    public ADUser searchForUser(String userInput) {
-        ADUser adUser = new ADUser();
-        DataBaseADUsersSRV adUsersSRV = new DataBaseADUsersSRV(adUser);
-        Map<String, String> fileParser = adUsersSRV.fileParser(FileSystemWorker.readFileToList("C:\\Users\\ikudryashov\\IdeaProjects\\spring\\modules\\networker\\src\\main\\resources\\static\\texts\\users.txt"));
-        Set<String> stringSet = fileParser.keySet();
-        stringSet.forEach(x -> {
-            String s = fileParser.get(x);
-            if (s.contains(userInput)) {
-                new MessageCons().infoNoTitles(s + " " + s.contains(userInput));
-            }
-        });
-        return adUser;
-    }
 
     /**
      Поиск файлов в папках {@code c-users}.
@@ -185,8 +175,9 @@ public class PCUserResolver extends ADSrv {
     static class WalkerToUserFolder extends SimpleFileVisitor<Path> {
 
         /**
-         * new {@link ArrayList}, список файлов, с отметками {@link File#lastModified()}
-         * @see #visitFile(Path, BasicFileAttributes)
+         new {@link ArrayList}, список файлов, с отметками {@link File#lastModified()}
+
+         @see #visitFile(Path, BasicFileAttributes)
          */
         private final List<String> timePath = new ArrayList<>();
 
@@ -202,7 +193,7 @@ public class PCUserResolver extends ADSrv {
          <p>
          До листинга файлов.
 
-         @param dir  {@link Path}
+         @param dir   {@link Path}
          @param attrs {@link BasicFileAttributes}
          @return {@link FileVisitResult#CONTINUE}
          */
@@ -216,7 +207,8 @@ public class PCUserResolver extends ADSrv {
          <p>
          Добавляет в {@link #timePath}: <br>
          Время модификации файла {@link File#lastModified()} + файл {@link Path#toString()} + new {@link Date}(java.io.File#lastModified()) + {@link File#lastModified()}.
-         @param file {@link Path}
+
+         @param file  {@link Path}
          @param attrs {@link BasicFileAttributes}
          @return {@link FileVisitResult#CONTINUE}
          */
@@ -229,8 +221,9 @@ public class PCUserResolver extends ADSrv {
         /**
          Просмотр файла не удался.
          <p>
+
          @param file {@link Path}
-         @param  exc {@link IOException}
+         @param exc  {@link IOException}
          @return {@link FileVisitResult#CONTINUE}
          */
         @Override

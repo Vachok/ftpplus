@@ -2,9 +2,12 @@ package ru.vachok.networker.services;
 
 
 import org.springframework.stereotype.Service;
-import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.componentsrepo.AppComponents;
 
-import java.util.*;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.Properties;
 
 
 /**
@@ -14,7 +17,7 @@ public class SimpleCalculator {
 
     private String query;
 
-    private static final Properties PROPS = ConstantsFor.getProps();
+    private static final Properties PROPS = AppComponents.getProps();
 
     public String getQuery() {
         return query;
@@ -73,7 +76,7 @@ public class SimpleCalculator {
     }
 
     private void setToDB(long timeInMillis) {
-        ConstantsFor.getProps().setProperty("lasts", String.valueOf(timeInMillis));
+        PROPS.setProperty("lasts", String.valueOf(timeInMillis));
     }
 
     public double countDoubles(List<Double> doubleList) {

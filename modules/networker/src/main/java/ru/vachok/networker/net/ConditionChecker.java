@@ -3,16 +3,19 @@ package ru.vachok.networker.net;
 
 import org.springframework.ui.Model;
 import ru.vachok.messenger.MessageCons;
-import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.user.PCUserResolver;
+import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 
 import javax.servlet.http.HttpServletResponse;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -49,8 +52,9 @@ class ConditionChecker {
         List<Integer> offLine = new ArrayList<>();
         StringBuilder stringBuilder = new StringBuilder();
         String classMeth = "ConditionChecker.onLinesCheck";
-        Connection connection = new RegRuMysql().getDefaultConnection(ConstantsNet.DB_NAME);
-        try(PreparedStatement statement = connection.prepareStatement(sql)){
+
+        try (Connection connection = new AppComponents().connection(ConstantsNet.DB_NAME);
+             PreparedStatement statement = connection.prepareStatement(sql)) {
             Runnable r = () -> pcUserResolver.namesToFile(pcName);
             ThreadConfig.executeAsThread(r);
             statement.setString(1, pcName);
@@ -65,7 +69,6 @@ class ConditionChecker {
                     if (onlineNow == 0) {
                         offLine.add(onlineNow);
                     }
-                    ConstantsNet.AD_COMPUTERS.add(adComputer);
                 }
             }
         } catch (SQLException e) {
@@ -89,12 +92,12 @@ class ConditionChecker {
      @param pcName имя ПК
      @return имя юзера, если есть.
      */
-    @SuppressWarnings({"MethodWithMultipleLoops", "MethodWithMultipleReturnPoints"})
+    @SuppressWarnings({"MethodWithMultipleLoops"})
     static String offLinesCheckUser(String sql, String pcName) {
         StringBuilder stringBuilder = new StringBuilder();
-        try(Connection connection = new RegRuMysql().getDefaultConnection(ConstantsNet.DB_NAME);
-            PreparedStatement p = connection.prepareStatement(sql);
-            PreparedStatement p1 = connection.prepareStatement(sql.replaceAll(ConstantsFor.STR_PCUSER, ConstantsFor.STR_PCUSERAUTO))){
+        try (Connection connection = new AppComponents().connection(ConstantsNet.DB_NAME);
+             PreparedStatement p = connection.prepareStatement(sql);
+             PreparedStatement p1 = connection.prepareStatement(sql.replaceAll(ConstantsFor.STR_PCUSER, ConstantsFor.STR_PCUSERAUTO))){
             p.setString(1, pcName);
             p1.setString(1, pcName);
             try (ResultSet resultSet = p.executeQuery();

@@ -57,6 +57,8 @@ public class IntoApplication {
      */
     private static ConfigurableApplicationContext configurableApplicationContext = null;
 
+    private static Properties properties = AppComponents.getProps();
+
     /**
      Usages: {@link ExitApp#exitAppDO()}, {@link SystemTrayHelper#addItems(PopupMenu)}
 
@@ -112,7 +114,7 @@ public class IntoApplication {
         for (String s : args) {
             LOGGER.info(s);
             if (s.contains(ConstantsFor.PR_TOTPC)) {
-                ConstantsFor.getProps().setProperty(ConstantsFor.PR_TOTPC, s.replaceAll(ConstantsFor.PR_TOTPC, ""));
+                properties.setProperty(ConstantsFor.PR_TOTPC, s.replaceAll(ConstantsFor.PR_TOTPC, ""));
             }
             if (s.equalsIgnoreCase("off")) {
                 AppComponents.threadConfig().killAll();
@@ -202,12 +204,12 @@ public class IntoApplication {
         }
         InitProperties initProperties = new FileProps(rootPathStr + "\\modules\\networker\\src\\main\\resources\\application");
         Properties props = initProperties.getProps();
-        props.setProperty("build.version", ConstantsFor.getProps().getProperty(ConstantsFor.PR_APP_VERSION));
+        props.setProperty("build.version", properties.getProperty(ConstantsFor.PR_APP_VERSION));
         props.setProperty(ConstantsFor.PR_QSIZE, ConstantsFor.IPS_IN_VELKOM_VLAN + "");
         initProperties.setProps(props);
         initProperties = new DBRegProperties(ConstantsFor.APP_NAME + "application");
         initProperties.delProps();
         initProperties.setProps(props);
-        ConstantsFor.getProps().putAll(props);
+        properties.putAll(props);
     }
 }

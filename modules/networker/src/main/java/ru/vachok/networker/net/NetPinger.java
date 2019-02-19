@@ -8,11 +8,15 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.messenger.email.ESender;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.*;
@@ -46,7 +50,7 @@ public class NetPinger implements Runnable, Pinger {
 
      @see ConstantsNet#PROP_PINGSLEEP
      */
-    private long pingSleep = Long.parseLong(ConstantsFor.getProps().getProperty(ConstantsNet.PROP_PINGSLEEP, "20"));
+    private long pingSleep = Long.parseLong(AppComponents.getProps().getProperty(ConstantsNet.PROP_PINGSLEEP, "20"));
 
     /**
      Лист {@link InetAddress}.
@@ -107,7 +111,7 @@ public class NetPinger implements Runnable, Pinger {
      {@link InetAddress#isReachable(int)}) добавляется в {@link #resList}.
      */
     private void pingSW() {
-        final Properties properties = ConstantsFor.getProps();
+        final Properties properties = AppComponents.getProps();
         properties.setProperty(ConstantsNet.PROP_PINGSLEEP, pingSleep + "");
         for(InetAddress inetAddress : ipAsList){
             try{

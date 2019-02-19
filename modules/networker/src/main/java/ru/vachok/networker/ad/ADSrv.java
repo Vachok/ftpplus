@@ -9,11 +9,11 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.ad.user.PCUserResolver;
+import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetScanCtr;
 import ru.vachok.networker.net.NetScannerSvc;
@@ -22,8 +22,10 @@ import ru.vachok.networker.services.MessageLocal;
 
 import java.io.*;
 import java.net.InetAddress;
-import java.sql.*;
-import java.util.Date;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -223,7 +225,7 @@ public class ADSrv implements Runnable {
      */
     private static synchronized String offNowGetU(CharSequence pcName) {
         StringBuilder v = new StringBuilder();
-        try (Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.U_0466446_VELKOM)) {
+        try (Connection c = new AppComponents().connection(ConstantsFor.U_0466446_VELKOM)) {
             try (PreparedStatement p = c.prepareStatement("select * from pcuser");
                  PreparedStatement pAuto = c.prepareStatement("select * from pcuserauto where pcName in (select pcName from pcuser) order by pcName asc limit 203");
                  ResultSet resultSet = p.executeQuery();
@@ -255,42 +257,29 @@ public class ADSrv implements Runnable {
     }
 
     /**
-     Проверяет по-базе, какие папки есть у юзера.
+     Запись в БД <b>pcuser</b><br> Запись по-запросу от браузера.
+     <p>
+     pcName - уникальный (таблица не переписывается или не дополняется, при наличиизаписи по-компу)
+     <p>
+     Лог - <b>PCUserResolver.recToDB</b> в папке запуска.
+     <p>
 
-     @param users Active Dir Username <i>(Example: ikudryashov)</i>
-     @return информация о правах юзера, взятая из БД.
+     @param userName имя юзера
+     @param pcName   имя ПК
+     @see ADSrv#getDetails(String)
      */
-    public String checkCommonRightsForUserName(String users) {
-        String owner;
-        List<String> ownerRights = adUser.getOwnerRights();
-        StringBuilder stringBuilder = new StringBuilder();
-        String sql = "select * from common where users like ? LIMIT 0, 300";
-        try (Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.DB_PREFIX + ConstantsFor.STR_VELKOM)) {
-            try (PreparedStatement preparedStatement = c.prepareStatement(sql)) {
-                preparedStatement.setString(1, "%" + users + "%");
-                try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                    while (resultSet.next()) {
-                        owner = "<details><summary><b>" +
-                            resultSet.getString("dir") +
-                            " </b>***Владелец: " +
-                            resultSet.getString("user") +
-                            " Время проверки: " +
-                            resultSet.getString("timerec") +
-                            "</summary><small>" +
-                            resultSet.getString(ConstantsFor.ATT_USERS) +
-                            "</small></details>";
-                        ownerRights.add(owner);
-                    }
-                }
-            }
-            stringBuilder.append("<font color=\"yellow\">")
-                .append(sql.replaceAll("\\Q?\\E", users))
-                .append("</font><br>Пользователь отмечен в правах на папки:<br>");
-            stringBuilder.append(new TForms().fromArray(ownerRights, true));
-            adUser.setOwnerRights(ownerRights);
-            return stringBuilder.toString();
+    private static synchronized void recToDB(String userName, String pcName) {
+        String sql = "insert into pcuser (pcName, userName) values(?,?)";
+        String msg = userName + " on pc " + pcName + " is set.";
+        try (Connection connection = new AppComponents().connection(ConstantsNet.DB_NAME);
+             PreparedStatement p = connection.prepareStatement(sql)) {
+            p.setString(1, userName);
+            p.setString(2, pcName);
+            p.executeUpdate();
+            LOGGER.info(msg);
+            ConstantsNet.PC_U_MAP.put(pcName, msg);
         } catch (SQLException e) {
-            return e.getMessage();
+            FileSystemWorker.error("PCUserResolver.recToDB", e);
         }
     }
 
@@ -375,30 +364,42 @@ public class ADSrv implements Runnable {
     }
 
     /**
-     Запись в БД <b>pcuser</b><br> Запись по-запросу от браузера.
-     <p>
-     pcName - уникальный (таблица не переписывается или не дополняется, при наличиизаписи по-компу)
-     <p>
-     Лог - <b>PCUserResolver.recToDB</b> в папке запуска.
-     <p>
+     Проверяет по-базе, какие папки есть у юзера.
 
-     @param userName имя юзера
-     @param pcName   имя ПК
-     @see ADSrv#getDetails(String)
+     @param users Active Dir Username <i>(Example: ikudryashov)</i>
+     @return информация о правах юзера, взятая из БД.
      */
-    private static synchronized void recToDB(String userName, String pcName) {
-        String sql = "insert into pcuser (pcName, userName) values(?,?)";
-        String msg = userName + " on pc " + pcName + " is set.";
-        try(Connection connection = new RegRuMysql().getDefaultConnection(ConstantsNet.DB_NAME);
-            PreparedStatement p = connection.prepareStatement(sql)){
-            p.setString(1, userName);
-            p.setString(2, pcName);
-            p.executeUpdate();
-            LOGGER.info(msg);
-            ConstantsNet.PC_U_MAP.put(pcName, msg);
-        }
-        catch(SQLException e){
-            FileSystemWorker.error("PCUserResolver.recToDB", e);
+    public String checkCommonRightsForUserName(String users) {
+        String owner;
+        List<String> ownerRights = adUser.getOwnerRights();
+        StringBuilder stringBuilder = new StringBuilder();
+        String sql = "select * from common where users like ? LIMIT 0, 300";
+        try (Connection c = new AppComponents().connection(ConstantsFor.DB_PREFIX + ConstantsFor.STR_VELKOM)) {
+            try (PreparedStatement preparedStatement = c.prepareStatement(sql)) {
+                preparedStatement.setString(1, "%" + users + "%");
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        owner = "<details><summary><b>" +
+                            resultSet.getString("dir") +
+                            " </b>***Владелец: " +
+                            resultSet.getString("user") +
+                            " Время проверки: " +
+                            resultSet.getString("timerec") +
+                            "</summary><small>" +
+                            resultSet.getString(ConstantsFor.ATT_USERS) +
+                            "</small></details>";
+                        ownerRights.add(owner);
+                    }
+                }
+            }
+            stringBuilder.append("<font color=\"yellow\">")
+                .append(sql.replaceAll("\\Q?\\E", users))
+                .append("</font><br>Пользователь отмечен в правах на папки:<br>");
+            stringBuilder.append(new TForms().fromArray(ownerRights, true));
+            adUser.setOwnerRights(ownerRights);
+            return stringBuilder.toString();
+        } catch (SQLException e) {
+            return e.getMessage();
         }
     }
 

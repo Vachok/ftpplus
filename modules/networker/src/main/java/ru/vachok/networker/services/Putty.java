@@ -4,11 +4,13 @@ package ru.vachok.networker.services;
 import org.slf4j.Logger;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.*;
@@ -42,7 +44,7 @@ public class Putty extends Thread {
     private static void puttyStart() {
         File thisDir = new File(".");
         Path dirPath = Paths.get(thisDir.getAbsolutePath());
-        File puttyExe = new File(String.valueOf(dirPath) + "\\putty.exe");
+        File puttyExe = new File(dirPath + "\\putty.exe");
         String puttyPath = puttyExe.getAbsolutePath();
         if(puttyExe.canExecute()){
             try{
@@ -66,10 +68,10 @@ public class Putty extends Thread {
         File putty = new File(puttyPath);
         InputStream fileInputStream;
         String sql = "select bins from u0466446_liferpg.properties where javaid like 'putty';";
-        try(Connection connection = new RegRuMysql().getDefaultConnection(ConstantsFor.U_0466446_LIFERPG);
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
-            ResultSet resultSet = preparedStatement.executeQuery();
-            FileOutputStream fileOutputStream = new FileOutputStream(putty)) {
+        try (Connection connection = new AppComponents().connection(ConstantsFor.DB_PREFIX + ConstantsFor.STR_VELKOM);
+             PreparedStatement preparedStatement = connection.prepareStatement(sql);
+             ResultSet resultSet = preparedStatement.executeQuery();
+             FileOutputStream fileOutputStream = new FileOutputStream(putty)) {
             if(!resultSet.wasNull()){
                 while(resultSet.next()){
                     puttyB = resultSet.getBlob("bins");

@@ -33,7 +33,7 @@ public class VersionInfo {
     /**
      {@link ConstantsFor#getProps()}
      */
-    private static final Properties PROPERTIES = ConstantsFor.getProps();
+    private static final Properties PROPERTIES = AppComponents.getProps();
 
     private static final String PROP_BUILD_TIME = "buildTime";
 
@@ -81,7 +81,7 @@ public class VersionInfo {
     }
 
     /**
-     Usages: {@link AppComponents#versionInfo()} <br> Uses: {@link #setterVersionFromFiles(File)} , {@link #getParams()} , {@link #toString()} , {@link ConstantsFor#saveProps(Properties)}<br>
+
      */
     void setParams() {
         File file = new File("G:\\My_Proj\\FtpClientPlus\\modules\\networker\\build.gradle");
@@ -102,7 +102,7 @@ public class VersionInfo {
         if (thisPCName.equalsIgnoreCase("home") ||
             thisPCName.toLowerCase().contains(ConstantsFor.NO0027)) {
             this.buildTime = new Date(ConstantsFor.START_STAMP).toString();
-            ConstantsFor.getProps().setProperty(PROP_BUILD_TIME, buildTime);
+            PROPERTIES.setProperty(PROP_BUILD_TIME, buildTime);
         }
         try{
             PROPERTIES.setProperty(ConstantsFor.PR_APP_VERSION, getAppVersion());

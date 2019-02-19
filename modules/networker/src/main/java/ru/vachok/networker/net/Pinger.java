@@ -2,15 +2,18 @@ package ru.vachok.networker.net;
 
 
 import ru.vachok.messenger.MessageCons;
-import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 
@@ -33,14 +36,14 @@ public interface Pinger {
     default List<String> pingDev(Deque<InetAddress> devicesDeq) {
         String classMeth = "Pinger.pingDev";
         new MessageCons().errorAlert(classMeth);
-        final Properties properties = ConstantsFor.getProps();
+        final Properties properties = AppComponents.getProps();
         long pingSleep = ConstantsFor.TIMEOUT_650;
-        MessageToUser messageToUser = new MessageLocal();
+        MessageLocal messageToUser = new MessageLocal();
         try{
             pingSleep = Long.parseLong(properties.getProperty(ConstantsNet.PROP_PINGSLEEP));
         }
         catch(Exception e){
-            (( MessageLocal ) messageToUser).warn(pingSleep + " is " + ConstantsFor.TIMEOUT_650 + "\n" + e.getMessage());
+            messageToUser.warn(pingSleep + " is " + ConstantsFor.TIMEOUT_650 + "\n" + e.getMessage());
         }
         List<String> resList = new ArrayList<>();
         properties.setProperty(ConstantsNet.PROP_PINGSLEEP, pingSleep + "");

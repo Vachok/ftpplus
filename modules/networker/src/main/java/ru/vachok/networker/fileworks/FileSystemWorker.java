@@ -14,7 +14,10 @@ import ru.vachok.networker.systray.SystemTrayHelper;
 
 import java.io.*;
 import java.nio.file.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Stream;
@@ -71,7 +74,6 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
      @return список файлов или {@link Exception}
      @see FileSearcher
      */
-    @SuppressWarnings ("MethodWithMultipleReturnPoints")
     public static String searchInCommon(String[] folderPath) {
         FileSearcher fileSearcher = new FileSearcher(folderPath[0]);
         try{
@@ -103,7 +105,6 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
      @param needDel    удалить или нет исходник
      @return удача/нет
      */
-    @SuppressWarnings ("MethodWithMultipleReturnPoints")
     public static boolean copyOrDelFile(File origFile, String pathToCopy, boolean needDel) {
         File toCpFile = new File(pathToCopy);
         try{

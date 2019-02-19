@@ -6,9 +6,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import ru.vachok.mysqlandprops.DataConnectTo;
-import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.ResoCache;
 import ru.vachok.networker.config.ResLoader;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -171,8 +171,9 @@ public class MatrixSRV {
      */
     String getWorkPosition(String sql) {
         Map<String, String> doljAndAccess = new ConcurrentHashMap<>();
-        Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.DB_PREFIX + ConstantsFor.STR_VELKOM);
-        try (PreparedStatement statement = c.prepareStatement(sql);
+
+        try (Connection c = new AppComponents().connection(ConstantsFor.DB_PREFIX + ConstantsFor.STR_VELKOM);
+             PreparedStatement statement = c.prepareStatement(sql);
              ResultSet r = statement.executeQuery()) {
             while (r.next()) {
                 getInfo(r, doljAndAccess);

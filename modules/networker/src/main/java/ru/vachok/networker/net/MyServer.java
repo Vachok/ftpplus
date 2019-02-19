@@ -225,7 +225,7 @@ public class MyServer extends Thread {
      */
     private static void ifNetScan() throws IOException {
         PrintWriter printWriter = new PrintWriter(socket.getOutputStream(), true);
-        NetScannerSvc i = NetScannerSvc.getI();
+        NetScannerSvc i = AppComponents.netScannerSvc();
         try {
             String thePc = i.getThePc();
             printToSocket();
