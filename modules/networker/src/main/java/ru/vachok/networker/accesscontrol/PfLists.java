@@ -8,31 +8,15 @@ import ru.vachok.networker.ConstantsFor;
 
 /**
  @since 10.09.2018 (11:35) */
-@Component (ConstantsFor.PFLISTS)
-@Scope (ConstantsFor.SINGLETON)
+@Component(ConstantsFor.PFLISTS)
+@Scope(ConstantsFor.SINGLETON)
 public class PfLists {
-
-    public String getVipNet() {
-        return vipNet;
-    }
 
     private String vipNet;
 
-    public String getStdSquid() {
-        return stdSquid;
-    }
-
     private String stdSquid;
 
-    public String getLimitSquid() {
-        return limitSquid;
-    }
-
     private String limitSquid;
-
-    public String getFullSquid() {
-        return fullSquid;
-    }
 
     private String fullSquid;
 
@@ -44,9 +28,50 @@ public class PfLists {
 
     private long timeUpd;
 
-    /*Get&Set*/
+    private String uName;
+
+    public void setuName(String uName) {
+        this.uName = uName;
+    }
+
+    public void setTimeUpd(long timeUpd) {
+        this.timeUpd = timeUpd;
+    }
+
+    public String getVipNet() {
+        return vipNet;
+    }
+
+    public void setVipNet(String vipNet) {
+        this.vipNet = vipNet;
+    }
+
+    public String getStdSquid() {
+        return stdSquid;
+    }
+
+    public void setStdSquid(String stdSquid) {
+        this.stdSquid = stdSquid;
+    }
+
+    public String getLimitSquid() {
+        return limitSquid;
+    }
+
+    public void setLimitSquid(String limitSquid) {
+        this.limitSquid = limitSquid;
+    }
+
+    public String getFullSquid() {
+        return fullSquid;
+    }
+
     public long getTimeUpd() {
         return timeUpd;
+    }
+
+    public void setFullSquid(String fullSquid) {
+        this.fullSquid = fullSquid;
     }
 
     public long getGitStats() {
@@ -55,16 +80,6 @@ public class PfLists {
 
     public void setGitStats(long gitStats) {
         this.gitStats = gitStats;
-    }
-
-    private String uName;
-
-    public void setTimeUpd(long timeUpd) {
-        this.timeUpd = timeUpd;
-    }
-
-    public void setuName(String uName) {
-        this.uName = uName;
     }
 
     public String getPfRules() {
@@ -83,36 +98,23 @@ public class PfLists {
         return pfNat;
     }
 
-    public void setVipNet(String vipNet) {
-        this.vipNet = vipNet;
-    }
-
-    public void setStdSquid(String stdSquid) {
-        this.stdSquid = stdSquid;
-    }
-
-    public void setLimitSquid(String limitSquid) {
-        this.limitSquid = limitSquid;
-    }
-
-    public void setFullSquid(String fullSquid) {
-        this.fullSquid = fullSquid;
-    }
-
     public void setPfNat(String pfNat) {
         this.pfNat = pfNat;
     }
 
     @Override
     public String toString() {
-        return "PfLists{" +
-            "fullSquid='" + fullSquid + '\'' +
-            ", limitSquid='" + limitSquid + '\'' +
-            ", pfNat='" + pfNat + '\'' +
-            ", pfRules='" + pfRules + '\'' +
-            ", stdSquid='" + stdSquid + '\'' +
-            ", uName='" + uName + '\'' +
-            ", vipNet='" + vipNet + '\'' +
-            '}';
+        final StringBuilder sb = new StringBuilder("PfLists{");
+        sb.append("vipNet='").append(vipNet).append('\'');
+        sb.append(", stdSquid='").append(stdSquid).append('\'');
+        sb.append(", limitSquid='").append(limitSquid).append('\'');
+        sb.append(", fullSquid='").append(fullSquid).append('\'');
+        sb.append(", pfRules='").append(pfRules).append('\'');
+        sb.append(", pfNat='").append(pfNat).append('\'');
+        sb.append(", gitStats=").append(gitStats);
+        sb.append(", timeUpd=").append(timeUpd);
+        sb.append(", uName='").append(uName).append('\'');
+        sb.append('}');
+        return sb.toString();
     }
 }

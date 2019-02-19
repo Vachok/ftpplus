@@ -30,7 +30,7 @@ import java.util.stream.Stream;
  Список адресов загружается как текстовый файл, который читаем построчно.
 
  @since 08.02.2019 (9:34) */
-@Service
+@Service("netPinger")
 public class NetPinger implements Runnable, Pinger {
 
     /**

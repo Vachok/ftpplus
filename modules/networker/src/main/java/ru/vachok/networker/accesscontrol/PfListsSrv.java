@@ -28,38 +28,61 @@ public class PfListsSrv {
     /**
      {@link PfLists}
      */
-    private PfLists pfLists;
-
-    private String commandForNat;
+    private PfLists pfListsInstAW;
 
     /**
-     {@link SSHFactory.Builder}
+     SSH-команда.
+     <p>
+     При инициализации: {@code uname -a;exit}.
+
+     @see PfListsCtr#runCommand(org.springframework.ui.Model, ru.vachok.networker.accesscontrol.PfListsSrv)
+     @see #runCom()
      */
-    private SSHFactory.Builder builder;
+    private String commandForNat = "uname -a;exit";
+
+    /**
+     new {@link SSHFactory.Builder}.
+     */
+    private SSHFactory.Builder builderInst;
 
     private ThreadPoolTaskExecutor executor;
 
+    /**
+     @return {@link #}
+     */
     @SuppressWarnings("WeakerAccess")
     public String getCommandForNat() {
         return commandForNat;
     }
 
+    /**
+     @param commandForNat {@link #commandForNat}
+     */
     public void setCommandForNat(String commandForNat) {
         this.commandForNat = commandForNat;
     }
 
+    /**
+     {@link ThreadPoolTaskExecutor}.
+     <p>
+     @return {@link #executor}
+     */
     ThreadPoolTaskExecutor getExecutor() {
         makeListRunner();
         return executor;
     }
 
     /**
+     {@code this.builderInst}
+     <p>
+     new {@link SSHFactory.Builder} ({@link ConstantsFor#SRV_NAT} , {@link #commandForNat}).
+
      @param pfLists {@link #pfLists}
      */
     @Autowired
     public PfListsSrv(PfLists pfLists) {
-        this.builder = new SSHFactory.Builder(ConstantsFor.SRV_NAT, "uname -a;exit");
-        this.pfLists = pfLists;
+        this.builderInst = new SSHFactory.Builder(ConstantsFor.SRV_NAT, commandForNat);
+        this.pfListsInstAW = pfLists;
         makeListRunner();
 
     }
@@ -108,31 +131,31 @@ public class PfListsSrv {
         if (!ConstantsFor.isPingOK()) {
             throw new UnexpectedException("No ping");
         }
-        SSHFactory build = builder.build();
-        pfLists.setuName(build.call());
+        SSHFactory build = builderInst.build();
+        pfListsInstAW.setuName(build.call());
 
         build.setCommandSSH("sudo cat /etc/pf/vipnet;exit");
-        pfLists.setVipNet(build.call());
+        pfListsInstAW.setVipNet(build.call());
 
         build.setCommandSSH("sudo cat /etc/pf/squid;exit");
-        pfLists.setStdSquid(build.call());
+        pfListsInstAW.setStdSquid(build.call());
 
         build.setCommandSSH("sudo cat /etc/pf/tempfull;exit");
-        pfLists.setFullSquid(build.call());
+        pfListsInstAW.setFullSquid(build.call());
 
         build.setCommandSSH("sudo cat /etc/pf/squidlimited;exit");
-        pfLists.setLimitSquid(build.call());
+        pfListsInstAW.setLimitSquid(build.call());
 
         build.setCommandSSH("pfctl -s nat;exit");
-        pfLists.setPfNat(build.call());
+        pfListsInstAW.setPfNat(build.call());
 
         build.setCommandSSH("pfctl -s rules;exit");
-        pfLists.setPfRules(build.call());
+        pfListsInstAW.setPfRules(build.call());
         SSHFactory buildGit = new SSHFactory.Builder(ConstantsFor.SRV_GIT, "sudo /etc/stat.script;exit").build();
         long endMeth = System.currentTimeMillis();
-        pfLists.setTimeUpd(endMeth);
+        pfListsInstAW.setTimeUpd(endMeth);
         buildGit.call();
-        pfLists.setGitStats(new Date(endMeth).getTime());
+        pfListsInstAW.setGitStats(new Date(endMeth).getTime());
         Thread.currentThread().interrupt();
     }
 
@@ -153,5 +176,16 @@ public class PfListsSrv {
             stringArrayList.add(new TForms().fromArray(e, false));
             FileSystemWorker.recFile(this.getClass().getSimpleName() + ".makeListRunner", stringArrayList);
         }
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("PfListsSrv{");
+        sb.append("pfLists=").append(pfListsInstAW.hashCode());
+        sb.append(", commandForNat='").append(commandForNat).append('\'');
+        sb.append(", builderInst=").append(builderInst);
+        sb.append(", executor=").append(executor);
+        sb.append('}');
+        return sb.toString();
     }
 }
