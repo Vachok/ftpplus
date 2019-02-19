@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
@@ -55,7 +54,7 @@ public class PfListsCtr {
     /**
      {@link AppComponents#getProps()}
      */
-    private final ThreadLocal<Properties> properties = ThreadLocal.withInitial(AppComponents::getProps);
+    private Properties properties = AppComponents.getProps();
 
     /**
      {@link PfLists}
@@ -126,7 +125,7 @@ public class PfListsCtr {
     @GetMapping("/pflists")
     public String pfBean(Model model, HttpServletRequest request, HttpServletResponse response) throws UnknownHostException {
         Visitor visitor = ConstantsFor.getVis(request);
-        long lastScan = Long.parseLong(properties.get().getProperty(ConstantsFor.PR_PFSCAN, "1"));
+        long lastScan = Long.parseLong(properties.getProperty(ConstantsFor.PR_PFSCAN, "1"));
         timeOut = lastScan + TimeUnit.MINUTES.toMillis(15);
 
         if (!pingOK) noPing(model);
@@ -142,7 +141,7 @@ public class PfListsCtr {
                 .toSeconds(System.currentTimeMillis() - pfLists.getTimeUpd())) / ConstantsFor.ONE_HOUR_IN_MIN;
             LOGGER.get().warn(msg);
         }
-        propUpd(properties.get());
+        propUpd(properties);
         String refreshRate = String.valueOf(TimeUnit.MILLISECONDS.toMinutes(delayRef) * ConstantsFor.ONE_HOUR_IN_MIN);
         response.addHeader(ConstantsFor.HEAD_REFRESH, refreshRate);
         String msg = TimeUnit.MILLISECONDS.toMinutes(delayRef) + " autorefresh\n" + visitor.toString();
@@ -167,13 +166,14 @@ public class PfListsCtr {
      */
     private static void propUpd(Properties properties) {
         properties.setProperty(ConstantsFor.PR_PFSCAN, System.currentTimeMillis() + "");
-        properties.setProperty("thr", Thread.activeCount() + ". Memory info: " + ConstantsFor.getMemoryInfo());
+        properties.setProperty("meminfo", ConstantsFor.getMemoryInfo());
+        properties.setProperty("thr", Thread.activeCount() + "");
     }
 
     private void modSet(Model model) {
         String metricValue = (float) TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - pfLists.getGitStats()) / ConstantsFor.ONE_HOUR_IN_MIN + " min since upd";
-        String gitstatValue = Thread.activeCount() + " thr, active\nChange: " + (Thread.activeCount() - Long.parseLong(properties.get().getOrDefault("thr", 1L).toString()));
-        gitstatValue = gitstatValue + "\n" + ConstantsFor.getMemoryInfo() + "\n\n" + new TForms().fromArray(properties.get(), false);
+        String thr = properties.getProperty("thr", "1");
+        String gitstatValue = Thread.activeCount() + " thr, active\nChange: " + (Thread.activeCount() - Long.parseLong(thr));
 
         model.addAttribute("PfListsSrv", pfListsSrv);
         model.addAttribute(METRIC_STR.get(), metricValue);
@@ -183,8 +183,7 @@ public class PfListsCtr {
         model.addAttribute("squid", pfLists.getStdSquid());
         model.addAttribute("nat", pfLists.getPfNat());
         model.addAttribute("rules", pfLists.getPfRules());
-
-        model.addAttribute(ConstantsFor.ATT_GITSTATS, gitstatValue);
+        model.addAttribute(ConstantsFor.ATT_GITSTATS, gitstatValue + "\n" + ConstantsFor.getMemoryInfo());
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
 
     }

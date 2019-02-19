@@ -24,10 +24,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.SecureRandom;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.Year;
-import java.time.ZoneOffset;
+import java.time.*;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -353,7 +350,7 @@ public enum ConstantsFor {
     /**
      new {@link Properties}
      */
-    private static final Properties PROPS = takePr();
+    private static final Properties PROPS = takePr(false);
 
     /**
      Число IP по кол-ву VLANs
@@ -410,7 +407,7 @@ public enum ConstantsFor {
     }
 
     /**
-     @return {@link AppComponents#properties()}
+     @return {@link AppComponents#getProps()}
      */
     public static Properties getAppProps() {
         return PROPS;
@@ -482,7 +479,15 @@ public enum ConstantsFor {
      @return {@link #IPS_IN_VELKOM_VLAN}
      */
     private static int getIPs() {
-        int vlansNum = Integer.parseInt(Objects.requireNonNull(PROPS.size() != 0 ? PROPS.getProperty("vlans", "22") : null));
+        int vlansNum = 22;
+        try{
+
+            vlansNum = Integer.parseInt(Objects.requireNonNull(PROPS.size()!=0? PROPS.getProperty("vlans", "22"): null));
+        }
+        catch(NullPointerException e){
+            Properties properties = takePr(true);
+            PROPS.putAll(properties);
+        }
         int qSize = vlansNum * 255;
         PROPS.setProperty(PR_QSIZE, qSize + "");
         return qSize;
@@ -587,18 +592,25 @@ public enum ConstantsFor {
     /**
      Тащит {@link #PROPS} из БД или файла
      */
-    private static Properties takePr() {
+    private static Properties takePr(boolean fromFile) {
         InitProperties initProperties = new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
         Properties retPr;
         try {
             retPr = initProperties.getProps();
+            if(fromFile){
+                retPr = getPFromFile();
+            }
 
         } catch (Exception e) {
-            initProperties = new FileProps(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
-            retPr = initProperties.getProps();
+            retPr = getPFromFile();
             FileSystemWorker.error("ConstantsFor.takePr", e);
         }
         new MessageLocal().info(ConstantsFor.class.getSimpleName(), "takePr", new TForms().fromArray(retPr, false));
         return retPr;
+    }
+
+    private static Properties getPFromFile() {
+        InitProperties initProperties = new FileProps(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
+        return initProperties.getProps();
     }
 }

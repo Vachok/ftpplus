@@ -30,10 +30,7 @@ import java.net.UnknownHostException;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
-import java.util.Date;
-import java.util.Deque;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
@@ -87,7 +84,7 @@ public class NetScanCtr {
 
     private static final String STR_MODEL = "], model = [";
 
-    private static final String ATT_NETPINGER = "netPingerInst";
+    private static final String ATT_NETPINGER = "netPinger";
 
     /**
      {@link AppComponents#lastNetScanMap()}

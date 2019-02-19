@@ -16,10 +16,7 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.systray.ActionDefault;
 import ru.vachok.networker.systray.MessageToTray;
 
-import javax.mail.Flags;
-import javax.mail.Folder;
-import javax.mail.Message;
-import javax.mail.MessagingException;
+import javax.mail.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.event.ActionEvent;
@@ -32,8 +29,7 @@ import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
-import static java.time.DayOfWeek.SATURDAY;
-import static java.time.DayOfWeek.SUNDAY;
+import static java.time.DayOfWeek.*;
 
 
 /**
@@ -64,7 +60,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
      <p>
      Время из Базы. Берется из {@link AppComponents#getProps()} - {@link #PR_LASTWORKSTART}.
      */
-    private Long rtLong = Long.valueOf(AppComponents.getProps().getProperty(PR_LASTWORKSTART));
+    private Long rtLong = Long.valueOf(AppComponents.getProps().getProperty(PR_LASTWORKSTART, "2"));
 
     /**
      Метрика метода.
