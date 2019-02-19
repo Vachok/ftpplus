@@ -148,11 +148,11 @@ public class AppComponents {
     }
 
     @Bean
-    public Connection connection(String dbNamne) throws SQLException {
+    public Connection connection(String dbName) throws SQLException {
         MysqlDataSource source = new RegRuMysql().getDataSource();
         source.setPassword("36e42yoak8");
         source.setUser("u0466446_kudr");
-        source.setDatabaseName(dbNamne);
+        source.setDatabaseName(dbName);
         return source.getConnection();
     }
 
