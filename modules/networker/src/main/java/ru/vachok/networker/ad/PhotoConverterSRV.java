@@ -134,7 +134,6 @@ public class PhotoConverterSRV {
         } catch (NullPointerException e) {
             filesList.put("ERROR", null);
         }
-        ConstantsFor.saveProps(properties);
     }
 
     private Set<String> samAccFromDB() {

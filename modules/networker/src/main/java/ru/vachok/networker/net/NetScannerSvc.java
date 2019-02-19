@@ -540,7 +540,6 @@ public final class NetScannerSvc {
         toFileList.add(new TForms().fromArray(PROPS, false));
 
         PROPS.setProperty(ConstantsNet.PR_LASTSCAN, valueOfPropLastScan);
-        ConstantsFor.saveProps(PROPS);
 
         new MessageToTray(new ActionDefault(ConstantsNet.HTTP_LOCALHOST_8880_NETSCAN)).info(
             "Netscan complete!",
@@ -563,6 +562,7 @@ public final class NetScannerSvc {
                 LocalTime.now().toSecondOfDay() + " " +
                 LocalDate.now().getDayOfWeek().getDisplayName(FULL_STANDALONE, Locale.getDefault()) + "\n" +
                 bodyMsg);
+        ConstantsFor.saveProps(PROPS);
     }
 
     /**

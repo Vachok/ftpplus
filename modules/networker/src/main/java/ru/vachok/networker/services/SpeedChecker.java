@@ -17,10 +17,7 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.systray.ActionDefault;
 import ru.vachok.networker.systray.MessageToTray;
 
-import javax.mail.Flags;
-import javax.mail.Folder;
-import javax.mail.Message;
-import javax.mail.MessagingException;
+import javax.mail.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.event.ActionEvent;
@@ -33,8 +30,7 @@ import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
-import static java.time.DayOfWeek.SATURDAY;
-import static java.time.DayOfWeek.SUNDAY;
+import static java.time.DayOfWeek.*;
 
 
 /**
@@ -118,8 +114,8 @@ public class SpeedChecker implements Callable<Long>, Runnable {
                     String msg = timeSpend + " time spend;\n" + timeStamp;
                     this.rtLong = timeStamp + TimeUnit.SECONDS.toMillis(90);
                     properties.setProperty(PR_LASTWORKSTART, rtLong + "");
-                    ConstantsFor.saveProps(properties);
                     LOGGER.info(msg);
+                    ConstantsFor.saveProps(properties);
                 }
             }
         } catch (SQLException e) {

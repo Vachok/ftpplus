@@ -90,8 +90,8 @@ public class MessageToTray implements MessageToUser {
     }
 
     private void delActions() {
-        ActionListener[] actionListeners = trayIcon.getActionListeners();
-        if (actionListeners.length > 0) {
+        if(trayIcon!=null && trayIcon.getActionListeners().length > 0){
+            ActionListener[] actionListeners = trayIcon.getActionListeners();
             for (ActionListener a : actionListeners) {
                 trayIcon.removeActionListener(a);
                 AppComponents.getLogger().info(a.getClass().getSimpleName() + " removed");

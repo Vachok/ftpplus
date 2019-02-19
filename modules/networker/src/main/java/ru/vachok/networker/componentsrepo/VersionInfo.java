@@ -87,12 +87,10 @@ public class VersionInfo {
         File file = new File("G:\\My_Proj\\FtpClientPlus\\modules\\networker\\build.gradle");
         if (file.exists()) {
             setterVersionFromFiles(file);
-            ConstantsFor.saveProps(PROPERTIES);
         } else {
             file = new File("C:\\Users\\ikudryashov\\IdeaProjects\\spring\\modules\\networker\\build.gradle");
             if (file.exists()) {
                 setterVersionFromFiles(file);
-                ConstantsFor.saveProps(PROPERTIES);
             } else {
                 getParams();
                 String msg = toString();

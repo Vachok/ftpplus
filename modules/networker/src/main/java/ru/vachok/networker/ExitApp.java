@@ -163,6 +163,7 @@ public class ExitApp implements Runnable {
         Thread.currentThread().setName(ExitApp.EXIT_APP_RUN);
         LOGGER.warn(reasonExit);
         stringList.add(reasonExit);
+        ConstantsFor.saveProps(ConstantsFor.getProps());
         copyAvail();
     }
 }

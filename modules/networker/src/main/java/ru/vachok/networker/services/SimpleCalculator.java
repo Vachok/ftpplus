@@ -4,10 +4,7 @@ package ru.vachok.networker.services;
 import org.springframework.stereotype.Service;
 import ru.vachok.networker.ConstantsFor;
 
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 
 /**
@@ -77,7 +74,6 @@ public class SimpleCalculator {
 
     private void setToDB(long timeInMillis) {
         ConstantsFor.getProps().setProperty("lasts", String.valueOf(timeInMillis));
-        ConstantsFor.saveProps(PROPS);
     }
 
     public double countDoubles(List<Double> doubleList) {

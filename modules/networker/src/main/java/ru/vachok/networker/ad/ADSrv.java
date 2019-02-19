@@ -46,11 +46,6 @@ public class ADSrv implements Runnable {
     private static final MessageToUser MESSAGE_TO_USER = new MessageLocal();
 
     /**
-     {@link RegRuMysql#getDefaultConnection(String)} - u0466446_velkom ({@link ConstantsNet#DB_NAME})
-     */
-    private static Connection connection = new RegRuMysql().getDefaultConnection(ConstantsNet.DB_NAME);
-
-    /**
      {@link ADUser}
      */
     private ADUser adUser = null;
@@ -394,7 +389,8 @@ public class ADSrv implements Runnable {
     private static synchronized void recToDB(String userName, String pcName) {
         String sql = "insert into pcuser (pcName, userName) values(?,?)";
         String msg = userName + " on pc " + pcName + " is set.";
-        try(PreparedStatement p = connection.prepareStatement(sql)){
+        try(Connection connection = new RegRuMysql().getDefaultConnection(ConstantsNet.DB_NAME);
+            PreparedStatement p = connection.prepareStatement(sql)){
             p.setString(1, userName);
             p.setString(2, pcName);
             p.executeUpdate();

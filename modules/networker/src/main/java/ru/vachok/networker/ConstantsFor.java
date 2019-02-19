@@ -5,7 +5,6 @@ import org.apache.commons.net.ntp.TimeInfo;
 import org.slf4j.LoggerFactory;
 import org.springframework.ui.Model;
 import org.springframework.web.multipart.MultipartFile;
-import ru.vachok.messenger.MessageSwing;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
@@ -49,6 +48,8 @@ public enum ConstantsFor {
     private static final Properties PROPS = new Properties();
 
     private static final int MIN_DELAY = 17;
+
+    public static final String FILE_RU_VACHOK_NETWORKER_CONSTANTS_FOR = "ru_vachok_networker-ConstantsFor";
 
     public static final String TOSTRING_SAMACCOUNTNAME = ", samAccountName='";
 
@@ -391,6 +392,7 @@ public enum ConstantsFor {
 
     /**
      Доступность srv-git.eatmeat.ru.
+
      @return 192.168.13.42 online or offline
      */
     public static boolean isPingOK() {
@@ -407,10 +409,26 @@ public enum ConstantsFor {
      @return {@link #PROPS}
      */
     public static Properties getProps() {
-        if(PROPS.size() < 4){
-            takePr();
-        }
+        new Thread(() -> {
+            if(PROPS.size() < 4){
+                takePr();
+            }
+        }).start();
         return PROPS;
+    }
+
+    /**
+     Тащит {@link #PROPS} из БД или файла
+     */
+    private static void takePr() {
+        InitProperties initProperties = new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
+        String msg = "Taking File properties:" + "\n" + initProperties.getClass().getSimpleName();
+        AppComponents.getLogger().info(msg);
+        PROPS.putAll(initProperties.getProps());
+        initProperties = new FileProps(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
+        AppComponents.getLogger().warn(msg);
+        PROPS.putAll(initProperties.getProps());
+
     }
 
     /**
@@ -456,6 +474,17 @@ public enum ConstantsFor {
     }
 
     /**
+     @return кол-во выделенной, используемой и свободной памяти в МБ
+     */
+    public static String getMemoryInfo() {
+        String msg = ( float ) Runtime.getRuntime().totalMemory() / ConstantsFor.MBYTE + " now totalMemory, " +
+            ( float ) Runtime.getRuntime().freeMemory() / ConstantsFor.MBYTE + " now freeMemory, " +
+            ( float ) Runtime.getRuntime().maxMemory() / ConstantsFor.MBYTE + " now maxMemory.";
+        AppComponents.getLogger().warn(msg);
+        return msg;
+    }
+
+    /**
      @return {@link #DELAY}
      */
     private static long getDelay() {
@@ -492,21 +521,11 @@ public enum ConstantsFor {
     }
 
     /**
-     @return кол-во выделенной, используемой и свободной памяти в МБ
-     */
-    public static String getMemoryInfo() {
-        String msg = ( float ) Runtime.getRuntime().totalMemory() / ConstantsFor.MBYTE + " now totalMemory, " +
-            ( float ) Runtime.getRuntime().freeMemory() / ConstantsFor.MBYTE + " now freeMemory, " +
-            ( float ) Runtime.getRuntime().maxMemory() / ConstantsFor.MBYTE + " now maxMemory.";
-        AppComponents.getLogger().warn(msg);
-        return msg;
-    }
-
-    /**
      Считает время до конца дня.
      <p>
+
      @param timeStart - время старта
-     @param amountH - сколько часов до конца
+     @param amountH   - сколько часов до конца
      @return время до 17:30 в процентах от 8:30
      */
     public static String percToEnd(Date timeStart, long amountH) {
@@ -551,26 +570,6 @@ public enum ConstantsFor {
             String retStr = new TForms().fromArray(( List<?> ) e, false);
             FileSystemWorker.recFile("this_pc.err", Collections.singletonList(retStr));
             return "pc";
-        }
-    }
-
-    /**
-     Тащит {@link #PROPS} из БД или файла
-     */
-    static void takePr() {
-        InitProperties initProperties;
-        try{
-            initProperties = new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
-            String msg = "Taking File properties:" + "\n" + initProperties.getClass().getSimpleName();
-            AppComponents.getLogger().info(msg);
-            PROPS.putAll(initProperties.getProps()); // TODO: 18.02.2019  DBRegProperties:54
-        }
-        catch(Exception e){
-            initProperties = new FileProps(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
-            String msg = "Taking DB properties:" + "\n" + e.getMessage();
-            AppComponents.getLogger().warn(msg);
-            PROPS.putAll(initProperties.getProps());
-            new MessageSwing().infoNoTitlesDIA(e.getMessage() + " " + ConstantsFor.class.getSimpleName());
         }
     }
 
