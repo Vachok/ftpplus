@@ -639,6 +639,8 @@ public final class NetScannerSvc {
                 LocalTime.now().toSecondOfDay() + " " +
                 LocalDate.now().getDayOfWeek().getDisplayName(FULL_STANDALONE, Locale.getDefault()) + "\n" +
                 bodyMsg);
+        Properties properties = AppComponents.getProps(true);
+        LOGGER.info(new TForms().fromArray(properties, false) + "\n\n" + properties.size());
     }
 
     /**

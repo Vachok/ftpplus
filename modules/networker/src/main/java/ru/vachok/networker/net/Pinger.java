@@ -23,9 +23,9 @@ import java.util.concurrent.ConcurrentLinkedDeque;
  @since 14.02.2019 (23:31) */
 public interface Pinger {
 
-    String getTimeToEnd();
+    String getTimeToEndStr();
 
-    String getPingResult();
+    String getPingResultStr();
 
     /**
      Default метод пингер.
