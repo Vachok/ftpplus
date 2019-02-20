@@ -27,13 +27,11 @@ import java.io.*;
 import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Date;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -468,7 +466,14 @@ public final class NetScannerSvc {
         AtomicReference<String> msg = new AtomicReference<>("");
         this.startClassTime = System.currentTimeMillis();
         boolean fileCreate = fileCreate(true);
-        new MessageToTray(new ActionCloseMsg(new MessageLocal())).info("NetScannerSvc started scan", ConstantsFor.getUpTime(), " File: " + fileCreate);
+        try{
+            new MessageToTray(new ActionCloseMsg(new MessageLocal())).info("NetScannerSvc started scan", ConstantsFor.getUpTime(), " File: " + fileCreate);
+        }
+        catch(Exception e){
+            new MessageCons().errorAlert(CLASS_NAME, "getPCsAsync", e.getMessage());
+            new MessageLocal().info("NetScannerSvc started scan", ConstantsFor.getUpTime(), " File: " + fileCreate);
+            FileSystemWorker.error("NetScannerSvc.getPCsAsync", e);
+        }
         eServ.submit(() -> {
             msg.set(new StringBuilder()
                 .append("Thread id ")

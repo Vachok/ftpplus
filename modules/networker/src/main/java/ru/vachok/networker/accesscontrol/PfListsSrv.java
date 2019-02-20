@@ -24,18 +24,6 @@ import java.rmi.UnexpectedException;
 public class PfListsSrv {
 
     /**
-     {@link PfLists}
-     */
-    @NotNull
-    private final PfLists pfListsInstAW;
-
-    /**
-     {@link AppComponents#threadConfig()}
-     */
-    @NotNull
-    private final ThreadPoolTaskExecutor executor = AppComponents.threadConfig().threadPoolTaskExecutor();
-
-    /**
      SSH-команда.
      <p>
      При инициализации: {@code uname -a;exit}.
@@ -43,24 +31,30 @@ public class PfListsSrv {
      @see PfListsCtr#runCommand(org.springframework.ui.Model, ru.vachok.networker.accesscontrol.PfListsSrv)
      @see #runCom()
      */
-    @NotNull
-    private String commandForNatStr = "uname -a;exit";
+    private @NotNull String commandForNatStr = "uname -a;exit";
+
+    private @NotNull MessageToUser messageToUser = new MessageLocal();
+
+    /**
+     {@link PfLists}
+     */
+    private final @NotNull PfLists pfListsInstAW;
+
+    /**
+     {@link AppComponents#threadConfig()}
+     */
+    private final @NotNull ThreadPoolTaskExecutor executor = AppComponents.threadConfig().threadPoolTaskExecutor();
 
     /**
      new {@link SSHFactory.Builder}.
      */
-    @NotNull
-    private final SSHFactory.Builder builderInst = new SSHFactory.Builder(ConstantsFor.SRV_NAT, commandForNatStr);
-
-    @NotNull
-    private MessageToUser messageToUser = new MessageLocal();
+    private final @NotNull SSHFactory.Builder builderInst = new SSHFactory.Builder(ConstantsFor.SRV_NAT, commandForNatStr);
 
     /**
      {@link #commandForNatStr}
      */
-    @NotNull
-    @SuppressWarnings("WeakerAccess")
-    public String getCommandForNatStr() {
+    @SuppressWarnings ("WeakerAccess")
+    public @NotNull String getCommandForNatStr() {
         return commandForNatStr;
     }
 
@@ -116,7 +110,12 @@ public class PfListsSrv {
             messageToUser
                 .info(this.getClass().getSimpleName(), executor.getThreadNamePrefix() + " executor", executor.getThreadPoolExecutor().getCompletedTaskCount() + " Completed Tasks");
         } else {
-            messageToUser = new MessageToTray();
+            try{
+                messageToUser = new MessageToTray();
+            }
+            catch(ExceptionInInitializerError ignore){
+                messageToUser = new MessageLocal();
+            }
             messageToUser.info(this.getClass().getSimpleName(), "NOT RUNNING ON RUPS!", ConstantsFor.thisPC() + " buildCommands " + false);
         }
     }
@@ -188,9 +187,8 @@ public class PfListsSrv {
         }
     }
 
-    @NotNull
     @Override
-    public String toString() {
+    public @NotNull String toString() {
         final StringBuilder sb = new StringBuilder("PfListsSrv{");
         sb.append("pfListsInstAW=").append(pfListsInstAW.hashCode());
         sb.append(", commandForNatStr='").append(commandForNatStr).append('\'');

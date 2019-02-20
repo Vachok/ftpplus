@@ -7,7 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import ru.vachok.messenger.MessageToUser;
@@ -22,7 +21,6 @@ import ru.vachok.networker.net.WeekPCStats;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.systray.SystemTrayHelper;
 
-import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -54,8 +52,7 @@ public class IntoApplication {
     /**
      new {@link SpringApplication}
      */
-    @NotNull
-    private static final SpringApplication SPRING_APPLICATION = new SpringApplication();
+    private static final @NotNull SpringApplication SPRING_APPLICATION = new SpringApplication();
 
     /**
      {@link AppComponents#getProps(boolean)}
@@ -65,22 +62,17 @@ public class IntoApplication {
     /**
      {@link MessageLocal}
      */
-    @NotNull
-    private static final MessageToUser messageToUser = new MessageLocal();
+    private static final @NotNull MessageToUser messageToUser = new MessageLocal();
 
     /**
      {@link ConfigurableApplicationContext} = null.
      */
-    @NotNull
-    private static ConfigurableApplicationContext configurableApplicationContext;
+    private static @NotNull ConfigurableApplicationContext configurableApplicationContext;
 
     /**
-     Usages: {@link ExitApp#exitAppDO()}, {@link SystemTrayHelper#addItems(PopupMenu)}
-
      @return {@link #configurableApplicationContext}
      */
-    @NotNull
-    public static ConfigurableApplicationContext getConfigurableApplicationContext() {
+    public static @NotNull ConfigurableApplicationContext getConfigurableApplicationContext() {
         return configurableApplicationContext;
     }
 
@@ -99,7 +91,7 @@ public class IntoApplication {
      {@link Logger#info(java.lang.String)} - время работы метода.
 
      @param args аргументы запуска
-     @see SystemTrayHelper#addItems(PopupMenu) {@link AppInfoOnLoad#infoForU(ApplicationContext)}
+     @see SystemTrayHelper
      */
     public static void main(@Nullable String[] args) {
         final long stArt = System.currentTimeMillis();
@@ -163,9 +155,10 @@ public class IntoApplication {
         stringBuilder.append(LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault()));
         messageToUser.info("IntoApplication.beforeSt", "stringBuilder", stringBuilder.toString());
         if (ConstantsFor.thisPC().toLowerCase().contains(ConstantsFor.NO0027) || ConstantsFor.thisPC().toLowerCase().contains("home")) {
-            SystemTrayHelper.addTray("icons8-плохие-поросята-32.png");
+            SystemTrayHelper systemTrayHelper = SystemTrayHelper.getInstance("icons8-плохие-поросята-32.png");
+            systemTrayHelper.addTray();
         } else {
-            SystemTrayHelper.addTray(null);
+            SystemTrayHelper.getInstance(ConstantsFor.ICON_FILE_NAME).addTray();
         }
         SPRING_APPLICATION.setMainApplicationClass(IntoApplication.class);
         SPRING_APPLICATION.setApplicationContextClass(AppCtx.class);
