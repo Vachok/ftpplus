@@ -15,7 +15,7 @@ import java.util.Properties;
 
 
 /**
- Проверяет {@link ConstantsFor#getProps()}
+ Проверяет {@link ru.vachok.networker.componentsrepo.AppComponents#getProps()}
  <p>
 
  @since 19.02.2019 (1:08) */

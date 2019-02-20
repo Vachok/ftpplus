@@ -259,6 +259,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
             printStream.println();
             printStream.println(e.getClass().getName() + " e.getClass().getName()");
             printStream.println(e.getMessage() + " e.getMessage()");
+            printStream.println(e.getCause());
             printStream.println();
             printStream.println(new TForms().fromArray(e, false));
             printStream.println();

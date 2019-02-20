@@ -71,7 +71,7 @@ public class AppInfoOnLoad implements Runnable {
     private static final int THIS_DELAY = 111;
 
     /**
-     {@link ConstantsFor#getProps()}
+     {@link AppComponents#getProps()}
      */
     private static final Properties APP_PROPS = AppComponents.getProps();
 

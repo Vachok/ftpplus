@@ -10,7 +10,7 @@
 
 <form method="POST" th:action="@{/runcom}" th:object="${PfListsSrv}">
     Выполнить комманду на srv-nat:
-    <input th:field="*{commandForNat}" type="text"/>
+    <input th:field="*{commandForNatStr}" type="text"/>
     <br>
     <input type="submit" value="SSH Command"/>
     <br>

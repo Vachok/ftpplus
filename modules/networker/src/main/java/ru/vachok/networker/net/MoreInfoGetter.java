@@ -8,6 +8,7 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
+import ru.vachok.networker.net.enums.OtherKnownDevices;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.systray.ActionCloseMsg;
 import ru.vachok.networker.systray.MessageToTray;
@@ -46,8 +47,8 @@ public class MoreInfoGetter {
             if (s.contains("true")) onList.add(s.split("/")[0]);
             else offList.add(s.split("/")[0]);
         });
-        String ptv1Str = ConstantsNet.PTV1_EATMEAT_RU;
-        String ptv2Str = ConstantsNet.PTV2_EATMEAT_RU;
+        String ptv1Str = OtherKnownDevices.PTV1_EATMEAT_RU;
+        String ptv2Str = OtherKnownDevices.PTV2_EATMEAT_RU;
         int frequencyOffPTV1 = Collections.frequency(offList, ptv1Str);
         int frequencyOnPTV1 = Collections.frequency(onList, ptv1Str);
         int frequencyOnPTV2 = Collections.frequency(onList, ptv2Str);

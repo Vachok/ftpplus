@@ -1,21 +1,19 @@
 package ru.vachok.networker.accesscontrol;
 
 
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
+import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
-import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
-import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
+import ru.vachok.networker.systray.MessageToTray;
 
 import java.rmi.UnexpectedException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 
 
 /**
@@ -28,7 +26,14 @@ public class PfListsSrv {
     /**
      {@link PfLists}
      */
-    private PfLists pfListsInstAW;
+    @NotNull
+    private final PfLists pfListsInstAW;
+
+    /**
+     {@link AppComponents#threadConfig()}
+     */
+    @NotNull
+    private final ThreadPoolTaskExecutor executor = AppComponents.threadConfig().threadPoolTaskExecutor();
 
     /**
      SSH-команда.
@@ -38,73 +43,81 @@ public class PfListsSrv {
      @see PfListsCtr#runCommand(org.springframework.ui.Model, ru.vachok.networker.accesscontrol.PfListsSrv)
      @see #runCom()
      */
-    private String commandForNat = "uname -a;exit";
+    @NotNull
+    private String commandForNatStr = "uname -a;exit";
 
     /**
      new {@link SSHFactory.Builder}.
      */
-    private SSHFactory.Builder builderInst;
+    @NotNull
+    private final SSHFactory.Builder builderInst = new SSHFactory.Builder(ConstantsFor.SRV_NAT, commandForNatStr);
 
-    private ThreadPoolTaskExecutor executor;
+    @NotNull
+    private MessageToUser messageToUser = new MessageLocal();
 
     /**
-     @return {@link #}
+     {@link #commandForNatStr}
      */
+    @NotNull
     @SuppressWarnings("WeakerAccess")
-    public String getCommandForNat() {
-        return commandForNat;
+    public String getCommandForNatStr() {
+        return commandForNatStr;
     }
 
     /**
-     @param commandForNat {@link #commandForNat}
+     @param commandForNatStr {@link #commandForNatStr}
      */
-    public void setCommandForNat(String commandForNat) {
-        this.commandForNat = commandForNat;
+    @SuppressWarnings("unused")
+    public void setCommandForNatStr(@NotNull String commandForNatStr) {
+        this.commandForNatStr = commandForNatStr;
     }
 
-    /**
-     {@link ThreadPoolTaskExecutor}.
-     <p>
-     @return {@link #executor}
-     */
-    ThreadPoolTaskExecutor getExecutor() {
-        makeListRunner();
-        return executor;
-    }
+// --Commented out by Inspection START (20.02.2019 12:13):
+//    /**
+//     {@link ThreadPoolTaskExecutor}.
+//     <p>
+//
+//     @return {@link #executor}
+//     */
+//    ThreadPoolTaskExecutor getExecutor() {
+//
+//        return executor;
+//    }
+// --Commented out by Inspection STOP (20.02.2019 12:13)
 
     /**
      {@code this.builderInst}
      <p>
-     new {@link SSHFactory.Builder} ({@link ConstantsFor#SRV_NAT} , {@link #commandForNat}).
+     new {@link SSHFactory.Builder} ({@link ConstantsFor#SRV_NAT} , {@link #commandForNatStr}).
 
-     @param pfLists {@link #pfLists}
+     @param pfLists {@link #pfListsInstAW}
      */
     @Autowired
-    public PfListsSrv(PfLists pfLists) {
-        this.builderInst = new SSHFactory.Builder(ConstantsFor.SRV_NAT, commandForNat);
+    public PfListsSrv(@NotNull PfLists pfLists) {
         this.pfListsInstAW = pfLists;
         makeListRunner();
-
     }
 
     String runCom() {
-        SSHFactory.Builder builder = new SSHFactory.Builder(ConstantsFor.SRV_NAT, commandForNat);
+        SSHFactory.Builder builder = new SSHFactory.Builder(ConstantsFor.SRV_NAT, commandForNatStr);
         return builder.build().call();
     }
 
     /**
      Формирует списки <b>pf</b>
      <p>
-     Если {@link ConstantsFor#thisPC()} contains {@code rups} - {@link #buildCommands()} <br>
+     Если {@link ConstantsFor#thisPC()} contains {@code rups} - {@link #buildCommands()} через {@link #executor} <br>
      Else {@link MessageLocal#warn(java.lang.String)} {@link String} = {@link ConstantsFor#thisPC()}
      */
-    private void makeListRunner() {
-        ThreadConfig threadConfig = AppComponents.threadConfig();
-        executor = threadConfig.threadPoolTaskExecutor();
+    void makeListRunner() {
         if (ConstantsFor.thisPC().toLowerCase().contains("rups")) {
             executor.execute(this::buildCommands);
+
+            messageToUser
+                .info(this.getClass().getSimpleName(), executor.getThreadNamePrefix() + " executor", executor.getThreadPoolExecutor().getCompletedTaskCount() + " Completed Tasks");
         } else {
-            new MessageLocal().warn(ConstantsFor.thisPC());
+            messageToUser = new MessageToTray();
+            messageToUser.info(this.getClass().getSimpleName(), "NOT RUNNING ON RUPS!", ConstantsFor.thisPC() + " buildCommands " + false);
         }
     }
 
@@ -127,11 +140,13 @@ public class PfListsSrv {
      @throws UnexpectedException если нет связи с srv-git. Проверка сети. <i>e: No ping</i>
      @see SSHFactory
      */
-    private void buildFactory() throws UnexpectedException, NullPointerException {
-        if (!ConstantsFor.isPingOK()) {
-            throw new UnexpectedException("No ping");
-        }
+    private void buildFactory() throws UnexpectedException {
         SSHFactory build = builderInst.build();
+        SSHFactory buildGit = new SSHFactory.Builder(ConstantsFor.SRV_GIT, "sudo /etc/stat.script;exit").build();
+
+        if (!ConstantsFor.isPingOK()) {
+            throw new UnexpectedException("No ping to " + ConstantsFor.SRV_GIT + " cancelling execution");
+        }
         pfListsInstAW.setuName(build.call());
 
         build.setCommandSSH("sudo cat /etc/pf/vipnet;exit");
@@ -151,12 +166,11 @@ public class PfListsSrv {
 
         build.setCommandSSH("pfctl -s rules;exit");
         pfListsInstAW.setPfRules(build.call());
-        SSHFactory buildGit = new SSHFactory.Builder(ConstantsFor.SRV_GIT, "sudo /etc/stat.script;exit").build();
-        long endMeth = System.currentTimeMillis();
-        pfListsInstAW.setTimeUpd(endMeth);
-        buildGit.call();
-        pfListsInstAW.setGitStats(new Date(endMeth).getTime());
-        Thread.currentThread().interrupt();
+
+        String callToStatScript = buildGit.call();
+        messageToUser.info("PfListsSrv.buildFactory", "callToStatScript", callToStatScript);
+
+        pfListsInstAW.setGitStatsUpdatedStampLong(System.currentTimeMillis());
     }
 
     /**
@@ -169,23 +183,22 @@ public class PfListsSrv {
     private void buildCommands() {
         try {
             buildFactory();
-        } catch (Exception e) {
-            List<String> stringArrayList = new ArrayList<>();
-            stringArrayList.add("Line 150 threw: ");
-            stringArrayList.add(e.getMessage());
-            stringArrayList.add(new TForms().fromArray(e, false));
-            FileSystemWorker.recFile(this.getClass().getSimpleName() + ".makeListRunner", stringArrayList);
+        } catch (UnexpectedException e) {
+            FileSystemWorker.error("PfListsSrv.buildCommands", e);
         }
     }
 
+    @NotNull
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("PfListsSrv{");
-        sb.append("pfLists=").append(pfListsInstAW.hashCode());
-        sb.append(", commandForNat='").append(commandForNat).append('\'');
-        sb.append(", builderInst=").append(builderInst);
-        sb.append(", executor=").append(executor);
+        sb.append("pfListsInstAW=").append(pfListsInstAW.hashCode());
+        sb.append(", commandForNatStr='").append(commandForNatStr).append('\'');
+        sb.append(", messageToUser=").append(messageToUser.toString());
+        sb.append(", builderInst=").append(builderInst.hashCode());
+        sb.append(", executor=").append(executor.getActiveCount());
         sb.append('}');
         return sb.toString();
     }
+
 }

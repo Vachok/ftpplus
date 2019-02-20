@@ -30,7 +30,10 @@ import java.net.UnknownHostException;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
-import java.util.*;
+import java.util.Date;
+import java.util.Deque;
+import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
@@ -56,7 +59,7 @@ public class NetScanCtr {
     private static final Logger LOGGER = LoggerFactory.getLogger(NetScanCtr.class.getSimpleName());
 
     /**
-     {@link ConstantsFor#getProps()}
+     {@link AppComponents#getProps()}
      */
     private static final Properties PROPERTIES = AppComponents.getProps();
 

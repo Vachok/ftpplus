@@ -63,7 +63,7 @@ public final class NetScannerSvc {
     private static final Logger LOGGER = LoggerFactory.getLogger(CLASS_NAME);
 
     /**
-     {@link ConstantsFor#getProps()}
+     {@link AppComponents#getProps()}
      */
     private static final Properties PROPS = AppComponents.getProps();
 
@@ -144,7 +144,7 @@ public final class NetScannerSvc {
      Выполняет {@link #getPCsAsync()}.
      <p>
 
-     @return {@link ConstantsNet#PC_NAMES}
+     @return {@link ConstantsNet#getPcNames()}
      @see #getPCNamesPref(String)
      @see NetScanCtr#scanIt(HttpServletRequest, Model, Date)
      */
@@ -379,7 +379,7 @@ public final class NetScannerSvc {
      {@link MoreInfoGetter#getSomeMore(String, boolean)} получает статистику
      (сколько online, сколько offline) <br> Создаётся ссылка {@code a href=\"/ad?"<b>имя</b>/a}. Добавляет в {@link #netWorkMap} put форматированную строку
      {@code printStr, true} <br> Выводит в консоль
-     через {@link #LOGGER} строку {@code printStr}. <br> Добавляет в {@link ConstantsNet#PC_NAMES}, имя, ip и {@code online true}. <br> При
+     через {@link #LOGGER} строку {@code printStr}. <br> Добавляет в {@link ConstantsNet#getPcNames()}, имя, ip и {@code online true}. <br> При
      возникновении {@link IOException}, например если имя ПК не
      существует, добавляет {@code getMessage} в {@link #unusedNamesTree}
      <p>
@@ -584,7 +584,7 @@ public final class NetScannerSvc {
      Все строки + {@link TForms#fromArray(java.util.Properties, boolean)} - {@link #PROPS}, добавим в {@link ArrayList} {@code toFileList}.
      <p>
      {@link Properties#setProperty(java.lang.String, java.lang.String)} = {@code valueOfPropLastScan}. <br>
-     {@link ConstantsFor#saveProps(java.util.Properties)} - {@link #PROPS}.
+     {@link AppComponents#getProps(boolean)} - {@link #PROPS}.
      <p>
      {@link MessageToTray#info(java.lang.String, java.lang.String, java.lang.String)}
      <p>

@@ -31,7 +31,7 @@ public class VersionInfo {
     private static final String DOC_URL = "<a href=\"/doc/index.html\">DOC</a>";
 
     /**
-     {@link ConstantsFor#getProps()}
+     {@link AppComponents#getProps()}
      */
     private static final Properties PROPERTIES = AppComponents.getProps();
 

@@ -46,7 +46,7 @@ public class NetPinger implements Runnable, Pinger {
     /**
      Таймаут метода {@link #pingSW()}.
      <p>
-     Берётся из {@link ConstantsFor#getProps()}. В <b>миллисекундах</b>. По-умолчанию 20 мсек.
+     Берётся из {@link AppComponents#getProps()}. В <b>миллисекундах</b>. По-умолчанию 20 мсек.
 
      @see ConstantsNet#PROP_PINGSLEEP
      */

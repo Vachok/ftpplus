@@ -167,17 +167,17 @@ public class SSHFactory implements Callable<String> {
         }
     }
 
-
     /**
      Builder.
      <p>
      Сам строитель.
+
+     @since <a href="https://github.com/Vachok/ftpplus/commit/7bc45ca4f1968a61dfda3b009d7b0e394d573de5" target=_blank>14.11.2018 (15:25)</a>
      */
     @Service("ssh")
     @Scope(ConstantsFor.SINGLETON)
     public static class Builder {
 
-        /*Fields*/
         private String userName = "ITDept";
 
         private String pass;
@@ -314,20 +314,40 @@ public class SSHFactory implements Callable<String> {
         }
 
         @Override
-        public String toString() {
-            return "SSH {" +
-                "commandSSH='" +
-                commandSSH +
-                '\'' +
-                ", connectToSrv='" +
-                connectToSrv +
-                '\'' +
-                ", sessionType='" +
-                sessionType + '\'' +
-                ", userName='" +
-                userName +
-                '\'' +
-                '}';
+        public int hashCode() {
+            int result = getUserName().hashCode();
+            result = 31 * result + (getPass() != null ? getPass().hashCode() : 0);
+            result = 31 * result + getSessionType().hashCode();
+            result = 31 * result + (getConnectToSrv() != null ? getConnectToSrv().hashCode() : 0);
+            result = 31 * result + (getCommandSSH() != null ? getCommandSSH().hashCode() : 0);
+            return result;
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof Builder)) return false;
+
+            Builder builder = (Builder) o;
+
+            if (!getUserName().equals(builder.getUserName())) return false;
+            if (getPass() != null ? !getPass().equals(builder.getPass()) : builder.getPass() != null) return false;
+            if (!getSessionType().equals(builder.getSessionType())) return false;
+            if (getConnectToSrv() != null ? !getConnectToSrv().equals(builder.getConnectToSrv()) : builder.getConnectToSrv() != null) return false;
+            return getCommandSSH() != null ? getCommandSSH().equals(builder.getCommandSSH()) : builder.getCommandSSH() == null;
+        }
+
+        @Override
+        public String toString() {
+            final StringBuilder sb = new StringBuilder("Builder{");
+            sb.append("userName='").append(userName).append('\'');
+            sb.append(", pass='").append(pass).append('\'');
+            sb.append(", sessionType='").append(sessionType).append('\'');
+            sb.append(", connectToSrv='").append(connectToSrv).append('\'');
+            sb.append(", commandSSH='").append(commandSSH).append('\'');
+            sb.append('}');
+            return sb.toString();
+        }
+
     }
 }

@@ -1,6 +1,8 @@
 package ru.vachok.networker;
 
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
@@ -8,6 +10,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
@@ -16,6 +19,7 @@ import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.WeekPCStats;
+import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.systray.SystemTrayHelper;
 
 import java.awt.*;
@@ -50,22 +54,38 @@ public class IntoApplication {
     /**
      new {@link SpringApplication}
      */
+    @NotNull
     private static final SpringApplication SPRING_APPLICATION = new SpringApplication();
+
+    /**
+     {@link AppComponents#getProps(boolean)}
+     */
+    private static final Properties LOCAL_PROPS = AppComponents.getProps();
+
+    /**
+     {@link MessageLocal}
+     */
+    @NotNull
+    private static final MessageToUser messageToUser = new MessageLocal();
 
     /**
      {@link ConfigurableApplicationContext} = null.
      */
-    private static ConfigurableApplicationContext configurableApplicationContext = null;
-
-    private static Properties properties = AppComponents.getProps();
+    @NotNull
+    private static ConfigurableApplicationContext configurableApplicationContext;
 
     /**
      Usages: {@link ExitApp#exitAppDO()}, {@link SystemTrayHelper#addItems(PopupMenu)}
 
      @return {@link #configurableApplicationContext}
      */
+    @NotNull
     public static ConfigurableApplicationContext getConfigurableApplicationContext() {
         return configurableApplicationContext;
+    }
+
+    static {
+        configurableApplicationContext = SpringApplication.run(IntoApplication.class);
     }
 
     /**
@@ -81,23 +101,28 @@ public class IntoApplication {
      @param args аргументы запуска
      @see SystemTrayHelper#addItems(PopupMenu) {@link AppInfoOnLoad#infoForU(ApplicationContext)}
      */
-    public static void main(String[] args) {
+    public static void main(@Nullable String[] args) {
         final long stArt = System.currentTimeMillis();
         FileSystemWorker.delFilePatterns(ConstantsFor.STRS_VISIT);
+
         beforeSt();
+
         configurableApplicationContext = SpringApplication.run(IntoApplication.class, args);
         configurableApplicationContext.start();
-        String msg = afterSt() + " afterSt";
+
+        @NotNull String msg = afterSt() + " afterSt";
         LOGGER.warn(msg);
-        if (args.length > 0) {
+
+        if (args != null && args.length > 0) {
             readArgs(args);
         }
-        String msgTimeSp = new StringBuilder()
-            .append("IntoApplication.main method. ")
-            .append((float) (System.currentTimeMillis() - stArt) / 1000)
-            .append(" ")
-            .append(ConstantsFor.STR_SEC_SPEND).toString();
-        LOGGER.info(msgTimeSp);
+
+        @NotNull StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("IntoApplication.main method. ");
+        stringBuilder.append((float) (System.currentTimeMillis() - stArt) / 1000);
+        stringBuilder.append(" ");
+        stringBuilder.append(ConstantsFor.STR_SEC_SPEND);
+        messageToUser.info("IntoApplication.main", "stringBuilder.toString()", stringBuilder.toString());
     }
 
     /**
@@ -110,13 +135,13 @@ public class IntoApplication {
 
      @param args аргументы запуска.
      */
-    private static void readArgs(String[] args) {
-        for (String s : args) {
-            LOGGER.info(s);
-            if (s.contains(ConstantsFor.PR_TOTPC)) {
-                properties.setProperty(ConstantsFor.PR_TOTPC, s.replaceAll(ConstantsFor.PR_TOTPC, ""));
+    private static void readArgs(@NotNull String[] args) {
+        for (@NotNull String arg : args) {
+            messageToUser.info("IntoApplication.readArgs", "arg", arg);
+            if (arg.contains(ConstantsFor.PR_TOTPC)) {
+                LOCAL_PROPS.setProperty(ConstantsFor.PR_TOTPC, arg.replaceAll(ConstantsFor.PR_TOTPC, ""));
             }
-            if (s.equalsIgnoreCase("off")) {
+            if (arg.equalsIgnoreCase("off")) {
                 AppComponents.threadConfig().killAll();
             }
         }
@@ -132,9 +157,11 @@ public class IntoApplication {
      {@link SpringApplication#setMainApplicationClass(java.lang.Class)}
      */
     private static void beforeSt() {
-        String msg = LocalDate.now().getDayOfWeek().getValue() + " - day of week\n" +
-            LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault());
-        LOGGER.warn(msg);
+        @NotNull StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(LocalDate.now().getDayOfWeek().getValue());
+        stringBuilder.append(" - day of week\n");
+        stringBuilder.append(LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault()));
+        messageToUser.info("IntoApplication.beforeSt", "stringBuilder", stringBuilder.toString());
         if (ConstantsFor.thisPC().toLowerCase().contains(ConstantsFor.NO0027) || ConstantsFor.thisPC().toLowerCase().contains("home")) {
             SystemTrayHelper.addTray("icons8-плохие-поросята-32.png");
         } else {
@@ -163,12 +190,11 @@ public class IntoApplication {
      */
     private static boolean afterSt() {
         ThreadConfig threadConfig = AppComponents.threadConfig();
-        AppInfoOnLoad infoAndSched = new AppInfoOnLoad();
+        @NotNull AppInfoOnLoad infoAndSched = new AppInfoOnLoad();
         Runnable r = IntoApplication::appProperties;
         try {
             AppInfoOnLoad.getWeekPCStats();
-            String showPath = Paths.get(".").toString() + "\n abs: " +
-                Paths.get(".").toFile().getAbsolutePath();
+            @NotNull String showPath = Paths.get(".").toString() + "\n abs: " + Paths.get(".").toFile().getAbsolutePath();
             AppComponents.threadConfig().threadPoolTaskExecutor().execute(r);
             LOGGER.warn(showPath);
             threadConfig.threadPoolTaskExecutor().execute(infoAndSched);
@@ -180,36 +206,36 @@ public class IntoApplication {
     }
 
     /**
-     application.properties
+     application.LOCAL_PROPS
      <p>
      new {@link FileProps} ({@link File#getCanonicalPath()} - ""+{@code "\\modules\\networker\\src\\main\\resources\\application"}) <br>
      {@link InitProperties#getProps()}. Получаем {@code props} <br>
      Сэтаем в файл:<br>
-     {@code "build.version"} = {@link ConstantsFor#getProps()} {@link ConstantsFor#PR_APP_VERSION} и {@link ConstantsFor#PR_QSIZE} = {@link ConstantsFor#IPS_IN_VELKOM_VLAN} <br>
-     {@link InitProperties#setProps(java.util.Properties)} запись {@code props} в <b>application.properties</b>
+     {@code "build.version"} = {@link AppComponents#getProps()} {@link ConstantsFor#PR_APP_VERSION} и {@link ConstantsFor#PR_QSIZE} = {@link ConstantsFor#IPS_IN_VELKOM_VLAN} <br>
+     {@link InitProperties#setProps(java.util.Properties)} запись {@code props} в <b>application.LOCAL_PROPS</b>
      <p>
      new {@link DBRegProperties} - {@link ConstantsFor#APP_NAME} + {@code "application"} <br>
      {@link InitProperties#delProps()}
      {@link InitProperties#setProps(java.util.Properties)} запись в БД.
      <p>
-     {@link ConstantsFor#getProps()} putAll - {@code props}
+     {@link AppComponents#getProps()} putAll - {@code props}
      */
     private static void appProperties() {
-        String rootPathStr = null;
+        @Nullable String rootPathStr = ".";
         try {
             rootPathStr = Paths.get("").toFile().getCanonicalPath().toLowerCase();
         } catch (IOException e) {
             FileSystemWorker.recFile(IntoApplication.class.getSimpleName() + ConstantsFor.LOG, e.getMessage() + "\n" + new TForms().fromArray(e, false));
             LOGGER.warn(e.getMessage());
         }
-        InitProperties initProperties = new FileProps(rootPathStr + "\\modules\\networker\\src\\main\\resources\\application");
+        @NotNull InitProperties initProperties = new FileProps(rootPathStr + "\\modules\\networker\\src\\main\\resources\\application");
         Properties props = initProperties.getProps();
-        props.setProperty("build.version", properties.getProperty(ConstantsFor.PR_APP_VERSION));
+        props.setProperty("build.version", LOCAL_PROPS.getProperty(ConstantsFor.PR_APP_VERSION));
         props.setProperty(ConstantsFor.PR_QSIZE, ConstantsFor.IPS_IN_VELKOM_VLAN + "");
         initProperties.setProps(props);
         initProperties = new DBRegProperties(ConstantsFor.APP_NAME + "application");
         initProperties.delProps();
         initProperties.setProps(props);
-        properties.putAll(props);
+        LOCAL_PROPS.putAll(props);
     }
 }
