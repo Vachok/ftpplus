@@ -469,10 +469,9 @@ public final class NetScannerSvc {
         try{
             new MessageToTray(new ActionCloseMsg(new MessageLocal())).info("NetScannerSvc started scan", ConstantsFor.getUpTime(), " File: " + fileCreate);
         }
-        catch(Exception e){
-            new MessageCons().errorAlert(CLASS_NAME, "getPCsAsync", e.getMessage());
-            new MessageLocal().info("NetScannerSvc started scan", ConstantsFor.getUpTime(), " File: " + fileCreate);
-            FileSystemWorker.error("NetScannerSvc.getPCsAsync", e);
+        catch(NoClassDefFoundError e){
+            new MessageLocal().errorAlert(CLASS_NAME, "getPCsAsync", e.getMessage());
+            new MessageSwing().info("NetScannerSvc started scan", ConstantsFor.getUpTime(), " File: " + fileCreate);
         }
         eServ.submit(() -> {
             msg.set(new StringBuilder()

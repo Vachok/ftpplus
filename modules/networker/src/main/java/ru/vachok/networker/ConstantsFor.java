@@ -257,9 +257,15 @@ public enum ConstantsFor {
     public static final String DB_PREFIX = "u0466446_";
 
     /**
+     Число, для Secure Random
+     */
+    public static final long MY_AGE = ( long ) Year.now().getValue() - 1984;
+
+    /**
      Первоначальная задержка шедулера.
      */
     public static final long INIT_DELAY = TimeUnit.MINUTES.toSeconds(MY_AGE);
+
 
     /**
      {@link Model} имя атрибута
@@ -316,10 +322,6 @@ public enum ConstantsFor {
      */
     public static final int ONE_DAY_HOURS = 24;
 
-    /**
-     Число, для Secure Random
-     */
-    public static final long MY_AGE = ( long ) Year.now().getValue() - 1984;
 
     /**
      Кол-во байт в гигабайте
