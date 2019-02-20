@@ -7,7 +7,6 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
-import ru.vachok.networker.componentsrepo.VersionInfo;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.DBMessenger;
 import ru.vachok.networker.systray.SystemTrayHelper;
@@ -21,8 +20,7 @@ import java.util.Date;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
-import static java.lang.System.err;
-import static java.lang.System.out;
+import static java.lang.System.*;
 
 
 /**
@@ -125,7 +123,7 @@ public class MyServer extends Thread {
         InputStreamReader reader = new InputStreamReader(inputStream);
         BufferedReader bufferedReader = new BufferedReader(reader);
         try{
-            printStream.println(new VersionInfo().toString());
+            printStream.println(AppComponents.versionInfo().toString());
         } catch(RuntimeException e){
             LOGGER.warn(e.getMessage());
         }
@@ -252,7 +250,7 @@ public class MyServer extends Thread {
         System.setOut(new PrintStream(socket.getOutputStream()));
         printWriter.println((float) (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN + " | " + ConstantsFor.APP_NAME);
         printWriter.println("NEW SOCKET: " + socket.toString());
-        printWriter.println("APP INFO: " + new VersionInfo().toString());
+        printWriter.println("APP INFO: " + AppComponents.versionInfo().toString());
         while (inputStream.available() > 0) {
             byte[] bytes = new byte[3];
             int read = inputStream.read(bytes);
@@ -321,7 +319,7 @@ public class MyServer extends Thread {
                 .append("\n\n\n")
                 .append(new Date())
                 .append(" build ")
-                .append(new VersionInfo().toString());
+                .append(AppComponents.versionInfo().toString());
             printWriter.println(f.toString());
             if (scanner.hasNext()) {
                 while (socket.isConnected()) {

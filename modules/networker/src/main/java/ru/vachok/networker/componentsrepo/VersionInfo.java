@@ -31,18 +31,15 @@ public class VersionInfo {
     private static final String DOC_URL = "<a href=\"/doc/index.html\">DOC</a>";
 
     /**
-     {@link ConstantsFor#getProps()}
+     {@link AppComponents#getProps()}
      */
     private static final Properties PROPERTIES = AppComponents.getProps();
 
-    private static final String PROP_BUILD_TIME = "buildTime";
+    private static final String PR_BUILD_TIME = "buildTime";
 
-    private static final String PROP_APP_BUILD = "appBuild";
+    private static final String PR_APP_BUILD = "appBuild";
 
-    /**
-     {@link ConstantsFor#thisPC()}
-     */
-    private final String thisPCName = ConstantsFor.thisPC();
+    private boolean isBUGged;
 
     /**
      Версия
@@ -60,6 +57,19 @@ public class VersionInfo {
     private String buildTime = null;
 
     /**
+     {@link ConstantsFor#thisPC()}
+     */
+    private final String thisPCNameStr = ConstantsFor.thisPC();
+
+    public boolean isBUGged() {
+        return isBUGged;
+    }
+
+    public void setBUGged(boolean BUGged) {
+        isBUGged = BUGged;
+    }
+
+    /**
      Usages: {@link #getParams()} <br> Uses: - <br>
 
      @param appBuild build (Random num)
@@ -75,7 +85,7 @@ public class VersionInfo {
      */
     public VersionInfo() {
         Thread.currentThread().setName(getClass().getSimpleName());
-        if (thisPCName.toLowerCase().contains("home") || thisPCName.toLowerCase().contains("no0")) {
+        if(thisPCNameStr.toLowerCase().contains("home") || thisPCNameStr.toLowerCase().contains("no0")){
             setParams();
         } else getParams();
     }
@@ -97,12 +107,12 @@ public class VersionInfo {
                 LOGGER.warn(msg);
             }
         }
-        this.appBuild = thisPCName + "." + LocalDate.now().getDayOfWeek().getValue();
-        PROPERTIES.setProperty(PROP_APP_BUILD, appBuild);
-        if (thisPCName.equalsIgnoreCase("home") ||
-            thisPCName.toLowerCase().contains(ConstantsFor.NO0027)) {
+        this.appBuild = thisPCNameStr + "." + LocalDate.now().getDayOfWeek().getValue();
+        PROPERTIES.setProperty(PR_APP_BUILD, appBuild);
+        if(thisPCNameStr.equalsIgnoreCase("home") ||
+            thisPCNameStr.toLowerCase().contains(ConstantsFor.NO0027)){
             this.buildTime = new Date(ConstantsFor.START_STAMP).toString();
-            PROPERTIES.setProperty(PROP_BUILD_TIME, buildTime);
+            PROPERTIES.setProperty(PR_BUILD_TIME, buildTime);
         }
         try{
             PROPERTIES.setProperty(ConstantsFor.PR_APP_VERSION, getAppVersion());
@@ -167,8 +177,8 @@ public class VersionInfo {
      Загружает из {@link #PROPERTIES} информацию о версии и билде
      */
     private void getParams() {
-        setAppBuild(PROPERTIES.getOrDefault(PROP_APP_BUILD, "no database").toString());
-        setBuildTime(PROPERTIES.getOrDefault(PROP_BUILD_TIME, System.currentTimeMillis()).toString());
+        setAppBuild(PROPERTIES.getOrDefault(PR_APP_BUILD, "no database").toString());
+        setBuildTime(PROPERTIES.getOrDefault(PR_BUILD_TIME, System.currentTimeMillis()).toString());
         setAppVersion(PROPERTIES.getOrDefault(ConstantsFor.PR_APP_VERSION, "no database").toString());
     }
 
@@ -185,12 +195,15 @@ public class VersionInfo {
     public String toString() {
         final StringBuilder sb = new StringBuilder("VersionInfo{");
         sb.append("appBuild='").append(appBuild).append('\'');
-        String appName = ConstantsFor.APP_NAME;
-        sb.append(", appName='").append(appName).append('\'');
         sb.append(", appVersion='").append(appVersion).append('\'');
+        sb.append(", BUGged=").append(isBUGged());
         sb.append(", buildTime='").append(buildTime).append('\'');
         sb.append(", DOC_URL='").append(DOC_URL).append('\'');
-        sb.append(", thisPCName='").append(thisPCName).append('\'');
+        sb.append(", <b>***isBUGged=").append(isBUGged).append("***</b>");
+        sb.append(", PR_APP_BUILD='").append(PR_APP_BUILD).append('\'');
+        sb.append(", PR_BUILD_TIME='").append(PR_BUILD_TIME).append('\'');
+        sb.append(", PROPERTIES=").append(PROPERTIES.size());
+        sb.append(", thisPCNameStr='").append(thisPCNameStr).append('\'');
         sb.append('}');
         return sb.toString();
     }
