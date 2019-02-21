@@ -13,10 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.accesscontrol.common.CommonRightsChecker;
-import ru.vachok.networker.componentsrepo.AppComponents;
-import ru.vachok.networker.componentsrepo.PageFooter;
-import ru.vachok.networker.componentsrepo.VersionInfo;
-import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.componentsrepo.*;
 import ru.vachok.networker.net.DiapazonedScan;
 import ru.vachok.networker.net.MoreInfoGetter;
 import ru.vachok.networker.services.SimpleCalculator;
@@ -228,7 +225,7 @@ public class MatrixCtr {
         } catch (Exception ignore) {
             //
         }
-        String userIP = userPC + ":" + request.getRemotePort() + "<-" + new VersionInfo().getAppVersion();
+        String userIP = userPC + ":" + request.getRemotePort() + "<-" + AppComponents.versionInfo().getAppVersion();
         if (!ConstantsFor.isPingOK()) userIP = "ping to srv-git.eatmeat.ru is " + false;
         model.addAttribute("yourip", userIP);
         model.addAttribute(ConstantsFor.MATRIX_STRING_NAME, new MatrixSRV());

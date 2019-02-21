@@ -23,6 +23,7 @@ import ru.vachok.networker.net.NetScannerSvc;
 import ru.vachok.networker.services.SimpleCalculator;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.File;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
@@ -95,7 +96,13 @@ public class AppComponents {
     @Bean("versioninfo")
     @Scope(ConstantsFor.SINGLETON)
     public static VersionInfo versionInfo() {
-        return new VersionInfo();
+        VersionInfo versionInfo = new VersionInfo();
+        boolean isBUGged = false;
+        if(new File("bugged").exists()){
+            isBUGged = true;
+        }
+        versionInfo.setBUGged(isBUGged);
+        return versionInfo;
     }
 
     /**
