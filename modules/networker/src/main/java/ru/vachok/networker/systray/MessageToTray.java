@@ -35,7 +35,7 @@ public class MessageToTray implements MessageToUser {
     private MessageToUser messageToUser = new MessageLocal();
 
     public MessageToTray() throws NullPointerException, IllegalStateException {
-        if(!ConstantsFor.IS_SYS_TRAY_AVAIL){
+        if (!ConstantsFor.IS_SYSTRAY_AVAIL) {
             throw new IllegalStateException("***System Tray not Available!***");
         }
         else{
@@ -58,7 +58,7 @@ public class MessageToTray implements MessageToUser {
     }
 
     public MessageToTray(ActionListener aListener) throws HeadlessException, IllegalStateException {
-        if(ConstantsFor.IS_SYS_TRAY_AVAIL){
+        if (ConstantsFor.IS_SYSTRAY_AVAIL) {
             delActions();
             this.aListener = aListener;
         }

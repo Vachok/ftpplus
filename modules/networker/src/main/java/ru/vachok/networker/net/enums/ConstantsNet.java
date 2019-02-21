@@ -65,7 +65,7 @@ public enum ConstantsNet {;
     private static Set<String> pcNames = new HashSet<>(Integer.parseInt(LOC_PROPS.getOrDefault(ConstantsFor.PR_TOTPC, "318").toString()));
 
     public static String getProvider() {
-        Future<String> submit = ThreadConfig.getI().threadPoolTaskExecutor().submit(new TraceRoute());
+        Future<String> submit = ThreadConfig.getI().getTaskExecutor().submit(new TraceRoute());
         try {
             String s = submit.get();
             FileSystemWorker.recFile("trace", s);

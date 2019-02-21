@@ -26,7 +26,7 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
      */
     private static final ThreadPoolTaskScheduler TASK_SCHEDULER = new ThreadPoolTaskScheduler();
 
-    private static final String INITIALIZED = " initialized";
+    private static final ThreadPoolTaskExecutor TASK_EXECUTOR = new ThreadPoolTaskExecutor();
 
     private static final ThreadConfig THREAD_CONFIG = new ThreadConfig();
 
@@ -46,15 +46,6 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
      */
     private static final String STR_ACTIVE_COUNT = ", activeCount=";
 
-    /**
-     {@link ThreadPoolTaskExecutor}
-     */
-    private ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
-
-    static {
-        taskSchedulerConf();
-    }
-
     public Runnable taskDecorator(Runnable runnable) {
         new MessageCons().info(ConstantsFor.STR_INPUT_OUTPUT, "runnable = [" + runnable + "]", "java.lang.Runnable");
         TaskDecorator taskDecorator = runnable1 -> runnable;
@@ -63,36 +54,28 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
         return taskDecorator.decorate(runnable);
     }
 
+    public ThreadPoolTaskExecutor getTaskExecutor() {
+        TASK_EXECUTOR.initialize();
+        TASK_EXECUTOR.setQueueCapacity(500);
+        TASK_EXECUTOR.setMaxPoolSize(100);
+        TASK_EXECUTOR.setThreadNamePrefix("ts-" + (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000);
+        return TASK_EXECUTOR;
+    }
+
     /**
      Убивает {@link #taskExecutor} и {@link #TASK_SCHEDULER}
      */
     public void killAll() {
-        taskExecutor.setAwaitTerminationSeconds(15);
+        TASK_EXECUTOR.setAwaitTerminationSeconds(15);
 
         TASK_SCHEDULER.setWaitForTasksToCompleteOnShutdown(false);
-        taskExecutor.setWaitForTasksToCompleteOnShutdown(true);
+        TASK_EXECUTOR.setWaitForTasksToCompleteOnShutdown(true);
 
         TASK_SCHEDULER.shutdown();
         TASK_SCHEDULER.destroy();
 
-        taskExecutor.shutdown();
-        taskExecutor.destroy();
-    }
-
-    /**
-     Запуск {@link Runnable}, как {@link Thread}@param r {@link Runnable}
-     <p>
-     1. {@link ThreadConfig#threadPoolTaskExecutor()} - управление запуском.
-     <p>
-     @param r {@link Runnable}
-     */
-    public static void executeAsThread(Runnable r) {
-        CustomizableThreadCreator customizableThreadCreator = new CustomizableThreadCreator("AsThread: ");
-        ThreadPoolTaskExecutor taskExecutor = new ThreadConfig().threadPoolTaskExecutor();
-        customizableThreadCreator.setThreadGroup(taskExecutor.getThreadGroup());
-        Thread thread = customizableThreadCreator.createThread(r);
-        thread.setDaemon(false);
-        thread.start();
+        TASK_EXECUTOR.shutdown();
+        TASK_EXECUTOR.destroy();
     }
 
     public static void taskSchedulerConf() {
@@ -101,24 +84,30 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
         TASK_SCHEDULER.setPoolSize(15);
     }
 
+    /**
+     Запуск {@link Runnable}, как {@link Thread}@param r {@link Runnable}
+     <p>
+     1. {@link ThreadConfig#getTaskExecutor()} - управление запуском.
+     <p>
+     @param r {@link Runnable}
+     */
+    public static void executeAsThread(Runnable r) {
+        CustomizableThreadCreator customizableThreadCreator = new CustomizableThreadCreator("AsThread: ");
+        ThreadPoolTaskExecutor taskExecutor = new ThreadConfig().getTaskExecutor();
+        customizableThreadCreator.setThreadGroup(taskExecutor.getThreadGroup());
+        Thread thread = customizableThreadCreator.createThread(r);
+        thread.setDaemon(false);
+        thread.start();
+    }
+
     @Override
     public String toString() {
-        this.taskExecutor = threadPoolTaskExecutor();
         final StringBuilder sb = new StringBuilder("ThreadConfig{");
-        sb.append("taskExecutor=").append(taskExecutor.getThreadNamePrefix());
-        sb.append(STR_ACTIVE_COUNT).append(threadPoolTaskExecutor().getActiveCount());
+        sb.append("taskExecutor=").append(TASK_EXECUTOR.getThreadNamePrefix());
+        sb.append(STR_ACTIVE_COUNT).append(getTaskExecutor().getActiveCount());
         sb.append(", TASK_SCHEDULER=").append(TASK_SCHEDULER.getThreadNamePrefix());
         sb.append(STR_ACTIVE_COUNT).append(TASK_SCHEDULER.getActiveCount());
         sb.append('}');
         return sb.toString();
     }
-
-    public ThreadPoolTaskExecutor threadPoolTaskExecutor() {
-        taskExecutor.initialize();
-        taskExecutor.setQueueCapacity(500);
-        taskExecutor.setMaxPoolSize(100);
-        taskExecutor.setThreadNamePrefix("ts-" + (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000);
-        return taskExecutor;
-    }
-
 }

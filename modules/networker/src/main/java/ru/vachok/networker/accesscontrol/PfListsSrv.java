@@ -43,7 +43,7 @@ public class PfListsSrv {
     /**
      {@link AppComponents#threadConfig()}
      */
-    private final @NotNull ThreadPoolTaskExecutor executor = AppComponents.threadConfig().threadPoolTaskExecutor();
+    private final @NotNull ThreadPoolTaskExecutor executor = AppComponents.threadConfig().getTaskExecutor();
 
     /**
      new {@link SSHFactory.Builder}.

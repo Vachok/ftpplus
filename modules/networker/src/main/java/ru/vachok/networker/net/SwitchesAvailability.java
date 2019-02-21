@@ -37,7 +37,7 @@ public class SwitchesAvailability implements Runnable {
     public SwitchesAvailability() {
         List<String> stringList = new ArrayList<>();
         try {
-            stringList = DiapazonedScan.getInstance().pingSwitch();
+            stringList = DiapazonedScan.pingSwitch();
         } catch (IllegalAccessException e) {
             LOGGER.error(getClass().getSimpleName(), e.getMessage(), e);
         }

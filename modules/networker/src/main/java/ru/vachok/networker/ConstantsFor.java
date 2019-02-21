@@ -25,7 +25,10 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.SecureRandom;
-import java.time.*;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.Year;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.*;
@@ -224,7 +227,7 @@ public enum ConstantsFor {
      */
     public static final String NO0027 = "no0027";
 
-    public static final boolean IS_SYS_TRAY_AVAIL = SystemTray.isSupported() || SystemTray.getSystemTray()!=null;
+    public static final boolean IS_SYSTRAY_AVAIL = (SystemTray.isSupported() || SystemTray.getSystemTray() != null);
 
     /**
      Название файла старой подсети 192.168.х.х

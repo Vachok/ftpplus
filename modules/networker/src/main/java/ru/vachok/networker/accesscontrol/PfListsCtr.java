@@ -53,9 +53,9 @@ public class PfListsCtr {
     private static final String ATT_METRIC = "metric";
 
     /**
-     {@link ThreadConfig#threadPoolTaskExecutor()}
+     {@link ThreadConfig#getTaskExecutor()}
      */
-    private static final ThreadPoolTaskExecutor TASK_EXECUTOR = AppComponents.threadConfig().threadPoolTaskExecutor();
+    private static final ThreadPoolTaskExecutor TASK_EXECUTOR = AppComponents.threadConfig().getTaskExecutor();
 
     private static final int DELAY_LOCAL_INT = (int) (ConstantsFor.DELAY + ConstantsFor.ONE_HOUR_IN_MIN);
 
