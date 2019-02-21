@@ -3,7 +3,6 @@ package ru.vachok.networker.net;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
 import ru.vachok.messenger.MessageCons;
@@ -147,9 +146,8 @@ public final class NetScannerSvc {
      @see NetScanCtr#scanIt(HttpServletRequest, Model, Date)
      */
     Set<String> getPcNames() {
-        ThreadPoolTaskExecutor executor = AppComponents.threadConfig().getTaskExecutor();
         Runnable getPCs = this::getPCsAsync;
-        executor.execute(getPCs);
+        new Thread(getPCs).start();
         return pcNamesSet;
     }
 

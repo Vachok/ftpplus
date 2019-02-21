@@ -3,6 +3,7 @@ package ru.vachok.networker.net;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -285,41 +286,6 @@ public class NetScanCtr {
     }
 
     /**
-     Запуск скана.
-     <p>
-     Проверяем {@link HttpServletRequest} на наличие {@link HttpServletRequest#getQueryString()}. Если есть, сбрасываем {@link #lastScanMAP}, и
-     запускаем {@link
-    NetScannerSvc#getPCNamesPref(java.lang.String)}, где параметр это наша {@link HttpServletRequest#getQueryString()}. <br> В {@link Model}, добавим
-     аттрибуты {@code title, pc}. new {@link Date} и
-     {@link Set} pcNames, полученный из {@link NetScannerSvc#getPCNamesPref(java.lang.String)}
-     <p>
-     Иначе: <br> Очищаем {@link #lastScanMAP} <br> Запускаем {@link NetScannerSvc#getPcNames()} <br> В {@link Model} добавим {@code lastScanDate} как
-     {@code title}, и {@link Set} {@link
-    NetScannerSvc#getPcNames()}.
-
-     @param request      {@link HttpServletRequest}
-     @param model        {@link Model}
-     @param lastScanDate дата последнего скана
-     */
-    private static void scanIt(HttpServletRequest request, Model model, Date lastScanDate) {
-        String propMsg = "NetScanCtr.scanIt. " + lastScanDate;
-        if (request != null && request.getQueryString() != null) {
-            lastScanMAP.clear();
-            Set<String> pcNames = NETSCANNERSVC_INST.getPCNamesPref(request.getQueryString());
-            model.addAttribute(ConstantsFor.ATT_TITLE, new Date().toString())
-                .addAttribute("pc", new TForms().fromArray(pcNames, true));
-        } else {
-            lastScanMAP.clear();
-            Set<String> pCsAsync = NETSCANNERSVC_INST.getPcNames();
-            model.addAttribute(ConstantsFor.ATT_TITLE, lastScanDate)
-                .addAttribute("pc", new TForms().fromArray(pCsAsync, true));
-            AppComponents.lastNetScan().setTimeLastScan(new Date());
-        }
-        String msg = propMsg + "\n" + ConstantsFor.STR_INPUT_OUTPUT + STR_REQUEST + request + STR_MODEL + model + "]+ lastScanDate = [" + lastScanDate + "]";
-        LOGGER.info(msg);
-    }
-
-    /**
      Начало проверок перед сканом.
      <p>
      1. {@link AppComponents#threadConfig()}, 2. {@link ThreadConfig#getTaskExecutor()}. Получаем сконфигурированный {@link ThreadPoolTaskExecutor}
@@ -342,13 +308,54 @@ public class NetScanCtr {
         boolean isMapSizeBigger = lastScanMAP.size() > 1;
         final int thisTotpc = Integer.parseInt(PROPERTIES.getProperty(ConstantsFor.PR_TOTPC, "318"));
         File f = new File("scan.tmp");
-        if (f.isFile() && f.exists()) {
+        if(f.isFile() && f.exists()){
             mapSizeBigger(model, request, lastSt, thisTotpc);
-        } else if (isMapSizeBigger) {
-            mapSizeBigger(model, request, lastSt, thisTotpc);
-        } else {
-            ThreadConfig.executeAsThread(() -> scanIt(request, model, new Date(lastSt)));
         }
+        else{
+            if(isMapSizeBigger){
+                mapSizeBigger(model, request, lastSt, thisTotpc);
+            }
+            else{
+                Runnable scanRun = () -> scanIt(request, model, new Date(lastSt));
+                AppComponents.threadConfig().executeAsThread(scanRun);
+            }
+        }
+    }
+
+    /**
+     Запуск скана.
+     <p>
+     Проверяем {@link HttpServletRequest} на наличие {@link HttpServletRequest#getQueryString()}. Если есть, сбрасываем {@link #lastScanMAP}, и
+     запускаем {@link
+    NetScannerSvc#getPCNamesPref(java.lang.String)}, где параметр это наша {@link HttpServletRequest#getQueryString()}. <br> В {@link Model}, добавим
+     аттрибуты {@code title, pc}. new {@link Date} и
+     {@link Set} pcNames, полученный из {@link NetScannerSvc#getPCNamesPref(java.lang.String)}
+     <p>
+     Иначе: <br> Очищаем {@link #lastScanMAP} <br> Запускаем {@link NetScannerSvc#getPcNames()} <br> В {@link Model} добавим {@code lastScanDate} как
+     {@code title}, и {@link Set} {@link
+    NetScannerSvc#getPcNames()}.
+
+     @param request      {@link HttpServletRequest}
+     @param model        {@link Model}
+     @param lastScanDate дата последнего скана
+     */
+    @Async
+    private static void scanIt(HttpServletRequest request, Model model, Date lastScanDate) {
+        String propMsg = "NetScanCtr.scanIt. " + lastScanDate;
+        if (request != null && request.getQueryString() != null) {
+            lastScanMAP.clear();
+            Set<String> pcNames = NETSCANNERSVC_INST.getPCNamesPref(request.getQueryString());
+            model.addAttribute(ConstantsFor.ATT_TITLE, new Date().toString())
+                .addAttribute("pc", new TForms().fromArray(pcNames, true));
+        } else {
+            lastScanMAP.clear();
+            Set<String> pCsAsync = NETSCANNERSVC_INST.getPcNames();
+            model.addAttribute(ConstantsFor.ATT_TITLE, lastScanDate)
+                .addAttribute("pc", new TForms().fromArray(pCsAsync, true));
+            AppComponents.lastNetScan().setTimeLastScan(new Date());
+        }
+        String msg = propMsg + "\n" + ConstantsFor.STR_INPUT_OUTPUT + STR_REQUEST + request + STR_MODEL + model + "]+ lastScanDate = [" + lastScanDate + "]";
+        LOGGER.info(msg);
     }
 
     @Override

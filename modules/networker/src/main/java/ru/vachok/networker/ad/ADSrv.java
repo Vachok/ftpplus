@@ -22,10 +22,8 @@ import ru.vachok.networker.services.MessageLocal;
 
 import java.io.*;
 import java.net.InetAddress;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
+import java.util.Date;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -33,7 +31,7 @@ import java.util.concurrent.ConcurrentMap;
 
 /**
  @since 25.09.2018 (15:10) */
-@Service("adsrv")
+@Service ("adSrv")
 public class ADSrv implements Runnable {
 
     private static final String PROP_SAMACCOUNTNAME = "SamAccountName";

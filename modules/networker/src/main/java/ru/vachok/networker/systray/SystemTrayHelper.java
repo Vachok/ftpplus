@@ -74,7 +74,7 @@ public final class SystemTrayHelper extends AppInfoOnLoad {
         defItem.addActionListener(new ActionExit(classMeth));
         popupMenu.add(defItem);
 
-        gitStartWeb.addActionListener(new ActionGITStart(AppComponents.threadConfig()));
+        gitStartWeb.addActionListener(new ActionGITStart());
         gitStartWeb.setLabel("GIT WEB ON");
         popupMenu.add(gitStartWeb);
 

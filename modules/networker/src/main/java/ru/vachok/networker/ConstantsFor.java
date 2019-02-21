@@ -10,7 +10,6 @@ import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.Visitor;
-import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.controller.ServiceInfoCtrl;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.mailserver.ExSRV;
@@ -25,10 +24,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.SecureRandom;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.Year;
-import java.time.ZoneOffset;
+import java.time.*;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.*;
@@ -55,6 +51,8 @@ public enum ConstantsFor {
      new {@link Properties}
      */
     private static final Properties PROPS = takePr(false);
+
+    public static final String METHNAME_ACTIONPERFORMED = "actionPerformed";
 
     public static final String FILE_RU_VACHOK_NETWORKER_CONSTANTS_FOR = "ru_vachok_networker-ConstantsFor";
 
@@ -573,7 +571,7 @@ public enum ConstantsFor {
             initProperties.delProps();
             initProperties.setProps(propsToSave);
         };
-        ThreadConfig.executeAsThread(thread);
+        AppComponents.threadConfig().executeAsThread(thread);
     }
 
     /**

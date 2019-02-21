@@ -12,7 +12,6 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
-import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.DiapazonedScan;
 import ru.vachok.networker.services.MyCalen;
@@ -25,10 +24,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.file.AccessDeniedException;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Stream;
 
@@ -80,7 +76,7 @@ public class ServiceInfoCtrl {
     public String infoMapping(Model model, HttpServletRequest request, HttpServletResponse response) throws AccessDeniedException, ExecutionException, InterruptedException {
         Thread.currentThread().setName("ServiceInfoCtrl.infoMapping");
         this.visitor = new AppComponents().visitor(request);
-        ThreadConfig.executeAsThread(new SpeedChecker());
+        AppComponents.threadConfig().executeAsThread(new SpeedChecker());
         this.authReq = Stream.of("0:0:0:0", "10.10.111", "10.200.213.85", "172.16.20", "10.200.214.80").anyMatch(sP -> request.getRemoteAddr().contains(sP));
         if (authReq) {
             modModMaker(model, request, visitor);
@@ -103,7 +99,7 @@ public class ServiceInfoCtrl {
     @GetMapping("/stop")
     public String closeApp() throws AccessDeniedException {
         if (authReq) {
-            ThreadConfig.executeAsThread(new ExitApp(ConstantsFor.getUpTime() + " " + ConstantsFor.getMemoryInfo()));
+            AppComponents.threadConfig().executeAsThread(new ExitApp(ConstantsFor.getUpTime() + " " + ConstantsFor.getMemoryInfo()));
         } else {
             throw new AccessDeniedException("DENY!");
         }

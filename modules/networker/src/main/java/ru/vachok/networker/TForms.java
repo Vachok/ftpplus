@@ -15,6 +15,7 @@ import java.io.File;
 import java.net.InetAddress;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentMap;
 
 
@@ -380,6 +381,20 @@ public class TForms {
             return new TForms().fromArray(throwableStackTrace, true);
         } else {
             return new TForms().fromArray(throwableStackTrace, false);
+        }
+    }
+
+    public String fromArray(BlockingQueue<Runnable> runnableBlockingQueue, boolean b) {
+        this.nStringBuilder = new StringBuilder();
+        this.brStringBuilder = new StringBuilder();
+        while(!runnableBlockingQueue.isEmpty()){
+            nStringBuilder.append(runnableBlockingQueue.remove(runnableBlockingQueue.element()));
+        }
+        if(b){
+            return brStringBuilder.toString();
+        }
+        else{
+            return nStringBuilder.toString();
         }
     }
 

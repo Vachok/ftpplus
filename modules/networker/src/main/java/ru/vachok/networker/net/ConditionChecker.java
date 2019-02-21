@@ -7,15 +7,11 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.user.PCUserResolver;
 import ru.vachok.networker.componentsrepo.AppComponents;
-import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 
 import javax.servlet.http.HttpServletResponse;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -56,7 +52,7 @@ class ConditionChecker {
         try (Connection connection = new AppComponents().connection(ConstantsNet.DB_NAME);
              PreparedStatement statement = connection.prepareStatement(sql)) {
             Runnable r = () -> pcUserResolver.namesToFile(pcName);
-            ThreadConfig.executeAsThread(r);
+            AppComponents.threadConfig().executeAsThread(r);
             statement.setString(1, pcName);
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
@@ -92,7 +88,7 @@ class ConditionChecker {
      @param pcName имя ПК
      @return имя юзера, если есть.
      */
-    @SuppressWarnings({"MethodWithMultipleLoops"})
+    @SuppressWarnings ("MethodWithMultipleLoops")
     static String offLinesCheckUser(String sql, String pcName) {
         StringBuilder stringBuilder = new StringBuilder();
         try (Connection connection = new AppComponents().connection(ConstantsNet.DB_NAME);
