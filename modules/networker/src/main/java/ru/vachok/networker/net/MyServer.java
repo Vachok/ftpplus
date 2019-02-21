@@ -2,7 +2,6 @@ package ru.vachok.networker.net;
 
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
@@ -20,7 +19,8 @@ import java.util.Date;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
-import static java.lang.System.*;
+import static java.lang.System.err;
+import static java.lang.System.out;
 
 
 /**
@@ -90,19 +90,19 @@ public class MyServer extends Thread {
         return myServer;
     }
 
-    /**
-     {@link #myServer}
-     */
-    private MyServer() {
-        Thread.currentThread().setName("MyServer.MyServer");
-    }
-
     static {
         try {
             serverSocket = new ServerSocket(ConstantsFor.LISTEN_PORT);
         } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
         }
+    }
+
+    /**
+     {@link #myServer}
+     */
+    private MyServer() {
+        Thread.currentThread().setName("MyServer.MyServer");
     }
 
     /**
@@ -122,9 +122,9 @@ public class MyServer extends Thread {
         PrintStream printStream = new PrintStream(socket.getOutputStream());
         InputStreamReader reader = new InputStreamReader(inputStream);
         BufferedReader bufferedReader = new BufferedReader(reader);
-        try{
+        try {
             printStream.println(AppComponents.versionInfo().toString());
-        } catch(RuntimeException e){
+        } catch (RuntimeException e) {
             LOGGER.warn(e.getMessage());
         }
         printStream.println((System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN + " min up | " + ConstantsFor.APP_NAME);
@@ -163,7 +163,7 @@ public class MyServer extends Thread {
         if (readLine.equalsIgnoreCase("shutdown")) {
             Runtime.getRuntime().exec(ConstantsFor.COM_SHUTDOWN_P_F);
         }
-        if(readLine.equalsIgnoreCase(ConstantsFor.STR_REBOOT)){
+        if (readLine.equalsIgnoreCase(ConstantsFor.STR_REBOOT)) {
             Runtime.getRuntime().exec("shutdown /r /f");
         } else {
             printToSocket();
@@ -266,18 +266,6 @@ public class MyServer extends Thread {
     }
 
     /**
-     {@link #runSocket()}
-     */
-    @Override
-    public void run() {
-        try {
-            runSocket();
-        } catch (IOException e) {
-            LOGGER.error(e.getMessage(), e);
-        }
-    }
-
-    /**
      <b>Создаёт {@link ServerSocket}</b>
      <p>
      <i>{@link #run()}</i>
@@ -309,17 +297,17 @@ public class MyServer extends Thread {
      */
     private static void accepSoc(Socket socket) {
         StringBuilder f = new StringBuilder();
+
         try (Scanner scanner = new Scanner(System.in);
              PrintWriter printWriter = new PrintWriter(socket.getOutputStream(), true)) {
             System.setOut(new PrintStream(socket.getOutputStream()));
-            f.append("\n\n")
+            f.append("\n")
                 .append((float) (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / 60)
-                .append(" APP RUNNING \n")
-                .append(ConstantsFor.APP_NAME)
-                .append("\n\n\n")
-                .append(new Date())
-                .append(" build ")
-                .append(AppComponents.versionInfo().toString());
+                .append(" APP RUNNING \n");
+            f.append(ConstantsFor.APP_NAME)
+                .append("\n\n");
+            f.append(new Date()).append(" build ").append(AppComponents.versionInfo().toString()).append("\n");
+            f.append(new NetMonitorPTV().toString());
             printWriter.println(f.toString());
             if (scanner.hasNext()) {
                 while (socket.isConnected()) {
@@ -327,7 +315,20 @@ public class MyServer extends Thread {
                 }
             }
         } catch (IOException e) {
-            LoggerFactory.getLogger(SOURCE_CLASS).error(e.getMessage(), e);
+            messageToUser.errorAlert("MyServer", "accepSoc", e.getMessage());
+            FileSystemWorker.error("MyServer.accepSoc", e);
+        }
+    }
+
+    /**
+     {@link #runSocket()}
+     */
+    @Override
+    public void run() {
+        try {
+            runSocket();
+        } catch (IOException e) {
+            LOGGER.error(e.getMessage(), e);
         }
     }
 
