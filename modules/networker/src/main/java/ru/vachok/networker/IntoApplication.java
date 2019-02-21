@@ -9,6 +9,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
@@ -17,6 +18,7 @@ import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.MyServer;
 import ru.vachok.networker.net.WeekPCStats;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.systray.SystemTrayHelper;
@@ -51,15 +53,23 @@ public class IntoApplication {
      */
     private static final Properties LOCAL_PROPS = AppComponents.getProps();
 
-    /**
-     {@link MessageLocal}
-     */
-    private static final @NotNull MessageToUser messageToUser = new MessageLocal();
+    public static Runnable infoMsgRunnable = () -> {
+        final ThreadPoolTaskExecutor executorFin = AppComponents.threadConfig().getTaskExecutor();
+        new MessageSwing().infoTimer(( int ) ConstantsFor.DELAY, "executor\n" + executorFin.getThreadNamePrefix() +
+            " ThreadNamePrefix\nThreadPoolExecutor " + executorFin.getThreadPoolExecutor().toString());
+    };
 
     /**
      {@link ConfigurableApplicationContext} = null.
      */
     private static @NotNull ConfigurableApplicationContext configurableApplicationContext;
+
+    /**
+     {@link MessageLocal}
+     */
+    private static @NotNull MessageToUser messageToUser = new MessageLocal();
+
+    private static ThreadPoolTaskExecutor executor = AppComponents.threadConfig().getTaskExecutor();
 
     /**
      @return {@link #configurableApplicationContext}
@@ -157,8 +167,8 @@ public class IntoApplication {
      запишем в файл.
      */
     private static void afterSt() {
-        @NotNull AppInfoOnLoad infoAndSched = new AppInfoOnLoad();
-        ThreadPoolTaskExecutor executor = AppComponents.threadConfig().getTaskExecutor();
+        @NotNull Runnable infoAndSched = new AppInfoOnLoad();
+        Runnable mySrv = MyServer.getI();
 
         executor.submit(() -> {
             try {
@@ -169,8 +179,9 @@ public class IntoApplication {
             }
         });
         executor.submit(infoAndSched);
+        executor.submit(mySrv);
 
-        messageToUser.info("IntoApplication.afterSt", "executor.getThreadNamePrefix()", executor.getThreadNamePrefix());
+        new Thread(infoMsgRunnable).start();
     }
 
     /**

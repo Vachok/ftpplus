@@ -27,13 +27,11 @@ import java.io.*;
 import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Date;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -473,7 +471,6 @@ public final class NetScannerSvc {
         }
         catch(NoClassDefFoundError e){
             new MessageLocal().errorAlert(CLASS_NAME, "getPCsAsync", e.getMessage());
-            new MessageSwing().info("NetScannerSvc started scan", ConstantsFor.getUpTime(), " File: " + fileCreate);
         }
         eServ.submit(() -> {
             msg.set(new StringBuilder()
@@ -641,7 +638,7 @@ public final class NetScannerSvc {
         FileSystemWorker.recFile(this.getClass().getSimpleName() + ".getPCsAsync", toFileList);
         FileSystemWorker.recFile("unused.ips", unusedNamesTree.stream());
         new MessageSwing(656, 550, 50, 53).infoTimer(50,
-            "E-mail sent. Daysec: " +
+            "Daysec: " +
                 LocalTime.now().toSecondOfDay() + " " +
                 LocalDate.now().getDayOfWeek().getDisplayName(FULL_STANDALONE, Locale.getDefault()) + "\n" +
                 bodyMsg);

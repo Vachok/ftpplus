@@ -35,7 +35,6 @@ public class ListenUserInfo implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-
         new MessageSwing(750, 750, 66, 38)
             .infoTimer(30, queryString + "\n\n" + attributeValue + "\n" + finalAdSrvDetails.replaceAll("<br>", "\n"));
     }

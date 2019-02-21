@@ -30,10 +30,7 @@ import java.net.UnknownHostException;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
-import java.util.Date;
-import java.util.Deque;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
@@ -47,11 +44,6 @@ import java.util.concurrent.TimeUnit;
 @Controller
 public class NetScanCtr {
 
-
-    /**
-     Имя {@link Model} атрибута.
-     */
-    private static final String ATT_NETSCAN = "netscan";
 
     /**
      {@link LoggerFactory#getLogger(String)}
@@ -190,7 +182,7 @@ public class NetScanCtr {
      @param request  {@link HttpServletRequest} для {@link ConstantsFor#getVis(HttpServletRequest)}
      @param response {@link HttpServletResponse} добавить {@link ConstantsFor#HEAD_REFRESH} 30 сек
      @param model    {@link Model}
-     @return {@link NetScanCtr#ATT_NETSCAN} (netscan.html)
+     @return {@link ConstantsNet#ATT_NETSCAN} (netscan.html)
      */
     @GetMapping(STR_NETSCAN)
     public static String netScan(HttpServletRequest request, HttpServletResponse response, Model model) {
@@ -212,7 +204,7 @@ public class NetScanCtr {
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<br>First Scan: 2018-05-05");
         response.addHeader(ConstantsFor.HEAD_REFRESH, "30");
         checkMapSizeAndDoAction(model, request, lastSt);
-        return ATT_NETSCAN;
+        return ConstantsNet.ATT_NETSCAN;
     }
 
     /**
@@ -355,7 +347,7 @@ public class NetScanCtr {
         } else if (isMapSizeBigger) {
             mapSizeBigger(model, request, lastSt, thisTotpc);
         } else {
-            ThreadConfig.getI().getTaskExecutor().execute(() -> scanIt(request, model, new Date(lastSt)));
+            ThreadConfig.executeAsThread(() -> scanIt(request, model, new Date(lastSt)));
         }
     }
 
@@ -377,7 +369,7 @@ public class NetScanCtr {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("NetScanCtr{");
-        sb.append("ATT_NETSCAN='").append(ATT_NETSCAN).append('\'');
+        sb.append("ATT_NETSCAN='").append(ConstantsNet.ATT_NETSCAN).append('\'');
         sb.append(", PROPERTIES=").append(PROPERTIES.size());
         sb.append(", DURATION_MIN=").append(DURATION_MIN);
         sb.append(", STR_NETSCAN='").append(STR_NETSCAN).append('\'');

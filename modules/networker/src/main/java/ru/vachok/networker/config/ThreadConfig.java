@@ -39,6 +39,8 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
     }
 
     private ThreadConfig() {
+        TASK_SCHEDULER.initialize();
+        TASK_EXECUTOR.initialize();
     }
 
     /**
@@ -55,7 +57,6 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
     }
 
     public ThreadPoolTaskExecutor getTaskExecutor() {
-        TASK_EXECUTOR.initialize();
         TASK_EXECUTOR.setQueueCapacity(500);
         TASK_EXECUTOR.setMaxPoolSize(100);
         TASK_EXECUTOR.setThreadNamePrefix("ts-" + (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000);
@@ -79,7 +80,6 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
     }
 
     public static void taskSchedulerConf() {
-        TASK_SCHEDULER.initialize();
         TASK_SCHEDULER.setThreadNamePrefix("schMIN-" + TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - ConstantsFor.START_STAMP));
         TASK_SCHEDULER.setPoolSize(15);
     }
@@ -97,7 +97,7 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
         customizableThreadCreator.setThreadGroup(taskExecutor.getThreadGroup());
         Thread thread = customizableThreadCreator.createThread(r);
         thread.setDaemon(false);
-        thread.start();
+        TASK_EXECUTOR.execute(thread);
     }
 
     @Override

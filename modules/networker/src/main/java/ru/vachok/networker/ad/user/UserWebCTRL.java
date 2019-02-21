@@ -6,7 +6,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ad.ADSrv;
@@ -23,11 +22,6 @@ import javax.servlet.http.HttpServletRequest;
 @SuppressWarnings ("SameReturnValue")
 @Controller
 public class UserWebCTRL {
-
-    /**
-     {@link MessageSwing}
-     */
-    private static MessageToUser messageToUser = new MessageSwing();
 
     /**
      {@link ADSrv#getAdUser()}
