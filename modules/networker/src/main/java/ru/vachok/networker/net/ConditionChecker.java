@@ -138,7 +138,7 @@ class ConditionChecker {
      Если размер {@link ConstantsFor#ALL_DEVICES} более 0
      <p> <br>
      <b>Схема:</b> <br>
-     Убедимся в правильности {@link NetScanFileWorker} : <br> 1. {@link DiapazonedScan#getNetScanFileWorker()} <br> 2. {@link NetScanFileWorker#equals(java.lang.Object)} <br><br> Если всё верно: 3.
+     Убедимся в правильности {@link NetScanFileWorker} : <br> 1. {@link DiapazonedScan#getNetScanFileWorkerInst()} <br> 2. {@link NetScanFileWorker#equals(java.lang.Object)} <br><br> Если всё верно: 3.
      {@link ScanOnline#getI()} + {@link ScanOnline#toString()}
 
      @param model             {@link Model}

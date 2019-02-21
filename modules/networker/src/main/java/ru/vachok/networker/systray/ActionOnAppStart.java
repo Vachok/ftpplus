@@ -25,7 +25,7 @@ public class ActionOnAppStart extends AbstractAction {
     @Override
     public void actionPerformed(ActionEvent e) {
         Callable<Long> longCallable = new SpeedChecker();
-        Future<Long> submit = AppComponents.threadConfig().threadPoolTaskExecutor().submit(longCallable);
+        Future<Long> submit = AppComponents.threadConfig().getTaskExecutor().submit(longCallable);
         String messageSW = null;
         try {
             DateFormat dateFormat = new SimpleDateFormat();

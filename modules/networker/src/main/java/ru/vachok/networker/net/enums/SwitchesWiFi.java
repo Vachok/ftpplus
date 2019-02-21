@@ -100,7 +100,7 @@ public enum SwitchesWiFi {
         StringBuilder stringBuilder = new StringBuilder();
 
         try {
-            List<String> swListAsStr = DiapazonedScan.getInstance().pingSwitch();
+            List<String> swListAsStr = DiapazonedScan.pingSwitch();
             Collections.sort(swListAsStr);
             for (String s : swListAsStr) {
                 s = s.replaceAll("\n", "");

@@ -33,7 +33,6 @@ class ActionDelTMP extends AbstractAction {
         this.executor = executor;
         this.delFiles = delFiles;
         this.popupMenu = popupMenu;
-        SystemTrayHelper.delOldActions();
     }
 
 

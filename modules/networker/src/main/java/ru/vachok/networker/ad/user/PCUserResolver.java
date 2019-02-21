@@ -2,11 +2,13 @@ package ru.vachok.networker.ad.user;
 
 
 import ru.vachok.messenger.MessageCons;
+import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
+import ru.vachok.networker.services.MessageLocal;
 
 import java.io.*;
 import java.nio.file.*;
@@ -14,6 +16,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Savepoint;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -45,6 +48,8 @@ public class PCUserResolver extends ADSrv {
     public static PCUserResolver getPcUserResolver() {
         return PC_USER_RESOLVER;
     }
+
+    private MessageToUser messageToUser = new MessageLocal();
 
     /**
      Default-конструктор
@@ -113,12 +118,8 @@ public class PCUserResolver extends ADSrv {
      <p>
      Записи добавляются к уже имеющимся.
      <p>
-     <b>{@link SQLException}: </b>
+     <b>{@link SQLException}, {@link ArrayIndexOutOfBoundsException}, {@link NullPointerException}: </b>
      1. {@link FileSystemWorker#error(java.lang.String, java.lang.Exception)} <br>
-     2. {@link #reconnectToDB()}
-     <p>
-     <b>{@link ArrayIndexOutOfBoundsException}, {@link NullPointerException}:</b><br>
-     {@link FileSystemWorker#error(java.lang.String, java.lang.Exception)}
 
      @param pcName      имя ПК
      @param lastFileUse строка - имя последнего измененного файла в папке пользователя.
@@ -126,18 +127,22 @@ public class PCUserResolver extends ADSrv {
     private synchronized void recAutoDB(String pcName, String lastFileUse) {
         String sql = "insert into pcuser (pcName, userName, lastmod, stamp) values(?,?,?,?)";
         String classMeth = "PCUserResolver.recAutoDB";
-        try (Connection connection = new AppComponents().connection(ConstantsNet.DB_NAME);
-             PreparedStatement preparedStatement = connection.prepareStatement(sql
-                 .replaceAll(ConstantsFor.STR_PCUSER, ConstantsFor.STR_PCUSERAUTO))) {
-            String[] split = lastFileUse.split(" ");
-            preparedStatement.setString(1, pcName);
-            preparedStatement.setString(2, split[0]);
-            preparedStatement.setString(3, IntStream.of(2, 3, 4).mapToObj(i -> split[i]).collect(Collectors.joining()));
-            preparedStatement.setString(4, split[7]);
-            preparedStatement.executeUpdate();
-        } catch (SQLException e) {
-            FileSystemWorker.error(classMeth, e);
-        } catch (ArrayIndexOutOfBoundsException | NullPointerException e) {
+        try (Connection connection = new AppComponents().connection(ConstantsNet.DB_NAME)) {
+            Savepoint savepoint = connection.setSavepoint();
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql.replaceAll(ConstantsFor.STR_PCUSER, ConstantsFor.STR_PCUSERAUTO))) {
+                String[] split = lastFileUse.split(" ");
+                preparedStatement.setString(1, pcName);
+                preparedStatement.setString(2, split[0]);
+                preparedStatement.setString(3, IntStream.of(2, 3, 4).mapToObj(i -> split[i]).collect(Collectors.joining()));
+                preparedStatement.setString(4, split[7]);
+                preparedStatement.executeUpdate();
+            } catch (SQLException e) {
+                connection.clearWarnings();
+                connection.releaseSavepoint(savepoint);
+                messageToUser.errorAlert("PCUserResolver", "recAutoDB", e.getMessage());
+                FileSystemWorker.error("PCUserResolver.recAutoDB", e);
+            }
+        } catch (SQLException | ArrayIndexOutOfBoundsException | NullPointerException e) {
             FileSystemWorker.error(classMeth, e);
         }
     }

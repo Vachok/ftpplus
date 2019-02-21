@@ -4,6 +4,7 @@ package ru.vachok.networker.services;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.ConstantsFor;
 
 /**
  Локальная имплементация {@link MessageToUser}
@@ -16,7 +17,7 @@ public class MessageLocal implements MessageToUser {
 
     private String titleMsg = "";
 
-    private String headerMsg = "";
+    private String headerMsg = getClass().getSimpleName() + ":" + ConstantsFor.getUpTime();
 
     public void warning(String bodyMsg) {
         Logger logger = LoggerFactory.getLogger(headerMsg);
@@ -41,7 +42,7 @@ public class MessageLocal implements MessageToUser {
         this.headerMsg = headerMsg;
         this.titleMsg = titleMsg;
         this.bodyMsg = bodyMsg;
-        String logRec = String.join(" ", headerMsg, titleMsg, bodyMsg);
+        String logRec = String.join("! ", headerMsg, titleMsg, bodyMsg);
         logger.error(logRec);
     }
 
@@ -51,19 +52,20 @@ public class MessageLocal implements MessageToUser {
         this.headerMsg = headerMsg;
         this.titleMsg = titleMsg;
         this.bodyMsg = bodyMsg;
-        String logRec = String.join(" ", headerMsg, titleMsg, bodyMsg);
+        String logRec = String.join(", ", headerMsg, titleMsg, bodyMsg);
         logger.info(logRec);
     }
 
     @Override
-    public void infoNoTitles(String s) {
-        this.bodyMsg = s;
-        info(headerMsg, titleMsg, s);
+    public void infoNoTitles(String bodyMsg) {
+        this.bodyMsg = bodyMsg;
+        this.titleMsg = "infoNoTitles";
+        info(headerMsg, titleMsg, bodyMsg);
     }
 
     @Override
     public void infoTimer(int i, String s) {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException(headerMsg);
     }
 
     @Override

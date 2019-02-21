@@ -17,15 +17,13 @@ import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.errorexceptions.MyNull;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.mailserver.MailIISLogsCleaner;
-import ru.vachok.networker.net.DiapazonedScan;
-import ru.vachok.networker.net.NetMonitorPTV;
-import ru.vachok.networker.net.ScanOnline;
-import ru.vachok.networker.net.WeekPCStats;
+import ru.vachok.networker.net.*;
 import ru.vachok.networker.services.MyCalen;
 import ru.vachok.networker.services.SpeedChecker;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.Socket;
 import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -71,7 +69,7 @@ public class AppInfoOnLoad implements Runnable {
     private static final int THIS_DELAY = 111;
 
     /**
-     {@link ConstantsFor#getProps()}
+     {@link AppComponents#getProps()}
      */
     private static final Properties APP_PROPS = AppComponents.getProps();
 
@@ -251,6 +249,28 @@ public class AppInfoOnLoad implements Runnable {
             eSender.infoNoTitles("TRUNCATE true\n" + ConstantsFor.getUpTime() + STR_UPTIME);
         } catch (SQLException e) {
             eSender.infoNoTitles("TRUNCATE false\n" + ConstantsFor.getUpTime() + STR_UPTIME);
+        }
+    }
+
+    /**
+     Reconnect Socket, пока он открыт
+     <p>
+     1. {@link MyServer#setSocket(java.net.Socket)}. Создаём новый {@link Socket}. <br>
+     2. {@link MyServer#getSocket()} - пока он не {@code isClosed}, 3. {@link MyServer#reconSock()} реконнект. <br><br>
+     {@link IOException}, {@link InterruptedException}, {@link NullPointerException} : <br>
+     4. {@link TForms#fromArray(Exception, boolean)} - преобразуем исключение в строку. <br>
+     5. {@link AppComponents#threadConfig()} , 6 {@link ThreadConfig#getTaskExecutor()} перезапуск {@link MyServer#getI()}
+     */
+    private static void starterTelnet() {
+        MyServer.setSocket(new Socket());
+        while (!MyServer.getSocket().isClosed()) {
+            try {
+                MyServer.reconSock();
+            } catch (IOException | InterruptedException | NullPointerException e1) {
+                messageToUser.info("AppInfoOnLoad.starterTelnet", "e1.getMessage()", e1.getMessage());
+                FileSystemWorker.error("SystemTrayHelper.starterTelnet", e1);
+                Thread.currentThread().interrupt();
+            }
         }
     }
 

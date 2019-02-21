@@ -30,7 +30,10 @@ import java.net.UnknownHostException;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
-import java.util.*;
+import java.util.Date;
+import java.util.Deque;
+import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
@@ -56,7 +59,7 @@ public class NetScanCtr {
     private static final Logger LOGGER = LoggerFactory.getLogger(NetScanCtr.class.getSimpleName());
 
     /**
-     {@link ConstantsFor#getProps()}
+     {@link AppComponents#getProps()}
      */
     private static final Properties PROPERTIES = AppComponents.getProps();
 
@@ -327,7 +330,7 @@ public class NetScanCtr {
     /**
      Начало проверок перед сканом.
      <p>
-     1. {@link AppComponents#threadConfig()}, 2. {@link ThreadConfig#threadPoolTaskExecutor()}. Получаем сконфигурированный {@link ThreadPoolTaskExecutor}
+     1. {@link AppComponents#threadConfig()}, 2. {@link ThreadConfig#getTaskExecutor()}. Получаем сконфигурированный {@link ThreadPoolTaskExecutor}
      <p>
      <b>Runnable:</b>
      3. {@link #mapSizeBigger(Model, HttpServletRequest, long, int)} когда {@link #lastScanMAP} больше 1. <br> или <br> 4.
@@ -335,7 +338,7 @@ public class NetScanCtr {
      <p>
      Объявим дополнительно lock {@link File} {@code scan.tmp}. Чтобы исключить запуск, если предидущий скан не закончен. <br> Проверяем его наличие.
      Если он существует - запускаем {@link
-    #mapSizeBigger(Model, HttpServletRequest, long, int)}, иначе отправляем <b>Runnable</b> в {@link ThreadConfig#threadPoolTaskExecutor()} (1)
+    #mapSizeBigger(Model, HttpServletRequest, long, int)}, иначе отправляем <b>Runnable</b> в {@link ThreadConfig#getTaskExecutor()} (1)
      <p>
 
      @param model   {@link Model}
@@ -352,7 +355,7 @@ public class NetScanCtr {
         } else if (isMapSizeBigger) {
             mapSizeBigger(model, request, lastSt, thisTotpc);
         } else {
-            ThreadConfig.getI().threadPoolTaskExecutor().execute(() -> scanIt(request, model, new Date(lastSt)));
+            ThreadConfig.getI().getTaskExecutor().execute(() -> scanIt(request, model, new Date(lastSt)));
         }
     }
 

@@ -16,7 +16,10 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.systray.ActionDefault;
 import ru.vachok.networker.systray.MessageToTray;
 
-import javax.mail.*;
+import javax.mail.Flags;
+import javax.mail.Folder;
+import javax.mail.Message;
+import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.event.ActionEvent;
@@ -29,7 +32,8 @@ import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
-import static java.time.DayOfWeek.*;
+import static java.time.DayOfWeek.SATURDAY;
+import static java.time.DayOfWeek.SUNDAY;
 
 
 /**
@@ -129,7 +133,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
      Запуск.
      <p>
      Если прошло 20 часов, с момента {@link #rtLong} или не {@link #isWeekEnd}, запуск {@link #setRtLong()}.
-     Иначе {@link #rtLong} = {@link ConstantsFor#getProps()} {@link #PR_LASTWORKSTART}.
+     Иначе {@link #rtLong} = {@link AppComponents#getProps()} {@link #PR_LASTWORKSTART}.
      */
     @Override
     public void run() {

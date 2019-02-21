@@ -84,10 +84,15 @@ public class VersionInfo {
      * Если имя ПК содержит "home" или "no0" {@link #setParams()} , иначе {@link #getParams()}
      */
     public VersionInfo() {
-        Thread.currentThread().setName(getClass().getSimpleName());
+        if(new File("bugged").exists()){
+            this.isBUGged = true;
+        }
         if(thisPCNameStr.toLowerCase().contains("home") || thisPCNameStr.toLowerCase().contains("no0")){
             setParams();
-        } else getParams();
+        }
+        else{
+            getParams();
+        }
     }
 
     /**

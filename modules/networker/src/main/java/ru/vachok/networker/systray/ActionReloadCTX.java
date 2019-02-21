@@ -20,7 +20,7 @@ class ActionReloadCTX extends AbstractAction {
     @Override
     public void actionPerformed(ActionEvent e) {
         IntoApplication.getConfigurableApplicationContext().close();
-        ThreadPoolTaskExecutor executor = AppComponents.threadConfig().threadPoolTaskExecutor();
+        ThreadPoolTaskExecutor executor = AppComponents.threadConfig().getTaskExecutor();
         executor.getThreadPoolExecutor().shutdown();
         AppComponents.threadConfig().killAll();
         Executors.unconfigurableExecutorService(Executors.newSingleThreadScheduledExecutor())

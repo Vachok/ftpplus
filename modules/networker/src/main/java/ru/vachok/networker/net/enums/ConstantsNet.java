@@ -33,10 +33,6 @@ public enum ConstantsNet {;
 
     public static final String PINGRESULT_LOG = "pingresult";
 
-    public static final String PTV2_EATMEAT_RU = "ptv2.eatmeat.ru";
-
-    public static final String PTV1_EATMEAT_RU = "ptv1.eatmeat.ru";
-
     public static final String RECONNECT_TO_DB = "reconnectToDB";
 
     public static final String STR_LASTNETSCAN = "lastnetscan";
@@ -69,7 +65,7 @@ public enum ConstantsNet {;
     private static Set<String> pcNames = new HashSet<>(Integer.parseInt(LOC_PROPS.getOrDefault(ConstantsFor.PR_TOTPC, "318").toString()));
 
     public static String getProvider() {
-        Future<String> submit = ThreadConfig.getI().threadPoolTaskExecutor().submit(new TraceRoute());
+        Future<String> submit = ThreadConfig.getI().getTaskExecutor().submit(new TraceRoute());
         try {
             String s = submit.get();
             FileSystemWorker.recFile("trace", s);
@@ -136,7 +132,7 @@ public enum ConstantsNet {;
      <p>
      pingsleep. Сколько делать перерыв в пингах. В <b>миллисекундах</b>.
 
-     @see ConstantsFor#getProps()
+     @see AppComponents#getProps()
      */
     public static final String PROP_PINGSLEEP = "pingsleep";
 
