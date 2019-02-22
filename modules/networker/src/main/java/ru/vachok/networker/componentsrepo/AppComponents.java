@@ -8,8 +8,6 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Scope;
-import ru.vachok.messenger.MessageSwing;
-import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
@@ -21,6 +19,7 @@ import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.net.NetPinger;
 import ru.vachok.networker.net.NetScannerSvc;
 import ru.vachok.networker.services.SimpleCalculator;
+import ru.vachok.networker.systray.MessageToTray;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
@@ -44,8 +43,6 @@ public class AppComponents {
      */
     private static final String STR_VISITOR = "visitor";
 
-    private static MessageToUser messageToUser = new MessageSwing();
-
     /**
      @return {@link LoggerFactory}
      */
@@ -66,7 +63,7 @@ public class AppComponents {
         Properties properties = ConstantsFor.getAppProps();
         if(saveThis){
             boolean isSaved = ConstantsFor.saveAppProps(properties);
-            messageToUser.infoTimer(( int ) ConstantsFor.DELAY, "AppComponents.getProps " + " isSaved" + " = " + isSaved);
+            new MessageToTray().info("AppComponents.getProps ", " isSaved", " = " + isSaved);
         }
         return properties;
     }

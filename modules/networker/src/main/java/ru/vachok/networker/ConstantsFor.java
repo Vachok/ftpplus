@@ -22,7 +22,7 @@ import ru.vachok.networker.services.TimeChecker;
 
 import javax.servlet.http.HttpServletRequest;
 import java.awt.*;
-import java.io.IOException;
+import java.io.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.SecureRandom;
@@ -33,7 +33,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.time.temporal.ChronoUnit.HOURS;
 
@@ -513,24 +513,46 @@ public enum ConstantsFor {
     }
 
     /**
-     Тащит {@link #PROPS} из БД или файла
+     Сохраняет {@link Properties} в БД {@link #APP_NAME} с ID {@code ConstantsFor}
+
+     @param propsToSave {@link Properties}
      */
-    private static Properties takePr(boolean fromFile) {
-        InitProperties initProperties = new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
-        Properties retPr;
-        try{
-            retPr = initProperties.getProps();
-            if(fromFile){
-                retPr = getPFromFile();
+    public static boolean saveAppProps(Properties propsToSave) {
+        String classMeth = "ConstantsFor.saveAppProps";
+        final String javaIDsString = ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName();
+        MysqlDataSource mysqlDataSource = new DBRegProperties(javaIDsString).getRegSourceForProperties();
+        String methName = "saveAppProps";
+        Callable<Boolean> theProphecy = () -> {
+            AtomicBoolean isPropSet = new AtomicBoolean();
+            try(Connection c = mysqlDataSource.getConnection();
+                OutputStream outputStream = new FileOutputStream(ConstantsFor.class.getSimpleName() + ".properties")){
+                Savepoint delPropsPoint = c.setSavepoint("delPropsPoint" + LocalTime.now().format(DateTimeFormatter.ISO_TIME));
+                if(savePropsDelStatement(c, delPropsPoint)){
+                    InitProperties initPropertiesDB = new DBRegProperties(javaIDsString);
+                    boolean setPropDB = initPropertiesDB.setProps(propsToSave);
+                    messageToUser.info(classMeth, "setPropDB", " = " + setPropDB);
+                    isPropSet.set(setPropDB);
+                }
+                propsToSave.store(outputStream, classMeth + isPropSet.get());
+            }
+            catch(SQLException e){
+                messageToUser.errorAlert(ConstantsFor.class.getSimpleName(), methName, e.getMessage());
+                FileSystemWorker.error(classMeth, e);
+                isPropSet.set(false);
             }
 
+            return isPropSet.get();
+        };
+        boolean retBool = false;
+        Future<Boolean> booleanFuture = AppComponents.threadConfig().getTaskExecutor().submit(theProphecy);
+        try{
+            retBool = booleanFuture.get();
         }
-        catch(Exception e){
-            retPr = getPFromFile();
-            FileSystemWorker.error("ConstantsFor.takePr", e);
+        catch(InterruptedException | ExecutionException e){
+            messageToUser.errorAlert(ConstantsFor.class.getSimpleName(), methName, e.getMessage());
+            FileSystemWorker.error(classMeth, e);
         }
-        new MessageLocal().info(ConstantsFor.class.getSimpleName(), "takePr", new TForms().fromArray(retPr, false));
-        return retPr;
+        return retBool;
     }
 
     private static Properties getPFromFile() {
@@ -592,47 +614,6 @@ public enum ConstantsFor {
     }
 
     /**
-     Сохраняет {@link Properties} в БД {@link #APP_NAME} с ID {@code ConstantsFor}
-
-     @param propsToSave {@link Properties}
-     */
-    public static boolean saveAppProps(Properties propsToSave) {
-        String classMeth = "ConstantsFor.saveAppProps";
-        final String javaIDsString = ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName();
-        MysqlDataSource mysqlDataSource = new DBRegProperties(javaIDsString).getRegSourceForProperties();
-        AtomicReference<InitProperties> initProperties = new AtomicReference<>();
-        Callable<Boolean> theProphecy = () -> {
-            boolean isPropSet;
-            initProperties.set(new FileProps(javaIDsString));
-            initProperties.get().setProps(propsToSave);
-            try(Connection c = mysqlDataSource.getConnection()){
-                Savepoint delPropsPoint = c.setSavepoint("delPropsPoint" + LocalTime.now().format(DateTimeFormatter.ISO_TIME));
-                if(savePropsDelStatement(c, delPropsPoint)){
-                    isPropSet = false;
-                }
-            }
-            catch(SQLException e){
-                messageToUser.errorAlert("ConstantsFor", "saveAppProps", e.getMessage());
-                FileSystemWorker.error(classMeth, e);
-                isPropSet = false;
-            }
-            initProperties.set(new DBRegProperties(javaIDsString));
-            isPropSet = initProperties.get().setProps(propsToSave);
-            return isPropSet;
-        };
-        boolean retBool = false;
-        Future<Boolean> booleanFuture = AppComponents.threadConfig().getTaskExecutor().submit(theProphecy);
-        try{
-            retBool = booleanFuture.get();
-        }
-        catch(InterruptedException | ExecutionException e){
-            messageToUser.errorAlert(ConstantsFor.class.getSimpleName(), "saveAppProps", e.getMessage());
-            FileSystemWorker.error(classMeth, e);
-        }
-        return retBool;
-    }
-
-    /**
      Выполнение удаления {@link Properties} из БД
      <p>
 
@@ -642,7 +623,7 @@ public enum ConstantsFor {
      @see #saveAppProps(Properties)
      */
     private static boolean savePropsDelStatement(Connection c, Savepoint delPropsPoint) throws SQLException {
-        boolean noErr = false;
+        boolean noErr;
         final String sql = "delete FROM `ru_vachok_networker` where `javaid` =  'ConstantsFor'";
         try(PreparedStatement preparedStatement = c.prepareStatement(sql)){
             int update = preparedStatement.executeUpdate();
@@ -652,9 +633,33 @@ public enum ConstantsFor {
         catch(SQLException e){
             messageToUser.errorAlert("ConstantsFor", "savePropsDelStatement", e.getMessage());
             c.rollback(delPropsPoint);
+            noErr = false;
         }
-
         return noErr;
+    }
+
+    /**
+     Тащит {@link #PROPS} из БД или файла
+     */
+    private static Properties takePr(boolean fromFile) {
+        InitProperties initProperties = new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
+        Properties retPr;
+        try{
+            retPr = initProperties.getProps();
+            if(fromFile || new File("ff").exists()){
+                try(InputStream inputStream = new FileInputStream(ConstantsFor.class.getSimpleName() + ".properties");){
+                    retPr.load(inputStream);
+                    messageToUser.info("ConstantsFor.takePr", "retPr", " = " + retPr.size());
+                }
+            }
+
+        }
+        catch(Exception e){
+            retPr = getPFromFile();
+            FileSystemWorker.error("ConstantsFor.takePr", e);
+        }
+        new MessageLocal().info(ConstantsFor.class.getSimpleName(), "takePr", new TForms().fromArray(retPr, false));
+        return retPr;
     }
 
     /**

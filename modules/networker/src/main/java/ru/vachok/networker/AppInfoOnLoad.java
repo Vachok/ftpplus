@@ -318,6 +318,6 @@ public class AppInfoOnLoad implements Runnable {
     @Override
     public void run() {
         infoForU(AppCtx.scanForBeansAndRefreshContext());
-        new Thread(this::starterTelnet).start();
+        AppComponents.threadConfig().executeAsThread(MyServer.getI());
     }
 }

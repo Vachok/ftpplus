@@ -304,7 +304,8 @@ public class MyServer extends Thread {
         try {
             runSocket();
         } catch (IOException e) {
-            LOGGER.error(e.getMessage(), e);
+            messageToUser.errorAlert("MyServer", "run", e.getMessage());
+            FileSystemWorker.error("MyServer.run", e);
         }
     }
 
