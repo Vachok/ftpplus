@@ -11,7 +11,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
@@ -32,8 +31,14 @@ import java.net.UnknownHostException;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.Date;
+import java.util.Deque;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -81,6 +86,8 @@ public class NetScanCtr {
 
     private static final String ATT_NETPINGER = "netPinger";
 
+    private static ThreadPoolTaskExecutor locExecutor = AppComponents.threadConfig().getTaskExecutor();
+
     /**
      {@link AppComponents#lastNetScanMap()}
      */
@@ -98,7 +105,7 @@ public class NetScanCtr {
             inetAddressBytes = InetAddress.getByName("10.10.111.1").getAddress();
             retDeq.add(InetAddress.getByAddress(inetAddressBytes));
         } catch (UnknownHostException e) {
-            new MessageCons().errorAlert("NetScanCtr", "getDeqAddr", e.getMessage());
+            messageToUser.errorAlert("NetScanCtr", "getDeqAddr", e.getMessage());
         }
         return retDeq;
     }
@@ -190,8 +197,7 @@ public class NetScanCtr {
     public static String netScan(HttpServletRequest request, HttpServletResponse response, Model model) throws ExecutionException, InterruptedException {
         String classMeth = "NetScanCtr.netScan";
         final long lastSt = Long.parseLong(PROPERTIES.getProperty(ConstantsNet.PR_LASTSCAN, "1548919734742"));
-        new MessageCons().errorAlert(classMeth);
-        new MessageCons().info(
+        messageToUser.info(
             STR_REQUEST + request + "], response = [" + response + STR_MODEL + model + "]",
             ConstantsFor.STR_INPUT_PARAMETERS_RETURNS,
             ConstantsFor.JAVA_LANG_STRING_NAME);
@@ -226,7 +232,6 @@ public class NetScanCtr {
      @see #checkMapSizeAndDoAction(Model, HttpServletRequest, long)
      */
     private static void mapSizeBigger(Model model, HttpServletRequest request, long lastSt, int thisTotpc) {
-        new MessageCons().errorAlert("NetScanCtr.mapSizeBigger");
         long timeLeft = TimeUnit.MILLISECONDS.toSeconds(lastSt - System.currentTimeMillis());
         final int pcWas = Integer.parseInt(PROPERTIES.getProperty(ConstantsNet.ONLINEPC, "0"));
         int remainPC = thisTotpc - lastScanMAP.size();
@@ -272,17 +277,18 @@ public class NetScanCtr {
      @see #mapSizeBigger(Model, HttpServletRequest, long, int)
      */
     private static void timeCheck(int remainPC, long lastScanEpoch, HttpServletRequest request, Model model) {
-        String classMeth = " NetScanCtr.timeCheck";
-        LOGGER.warn(classMeth);
+        final Runnable scanRun = () -> scanIt(request, model, new Date(lastScanEpoch * 1000));
         LocalTime lastScanLocalTime = LocalDateTime.ofEpochSecond(lastScanEpoch, 0, ZoneOffset.ofHours(3)).toLocalTime();
+        String classMeth = "NetScanCtr.timeCheck";
         boolean isSystemTimeBigger = (System.currentTimeMillis() > lastScanEpoch * 1000) && remainPC <= 0;
+
         if (isSystemTimeBigger) {
             String valStr = "isSystemTimeBigger = " + true;
-            new MessageCons().info(Thread.currentThread().getName(), classMeth, valStr);
-            scanIt(request, model, new Date(lastScanEpoch * 1000));
+            messageToUser.info(Thread.currentThread().getName(), classMeth, valStr);
+            locExecutor.execute(scanRun);
         } else {
             String valStr = "lastScanLocalTime = " + lastScanLocalTime;
-            new MessageCons().infoNoTitles(Thread.currentThread().getName() + "\n" + classMeth + "\n" + valStr);
+            messageToUser.infoNoTitles(Thread.currentThread().getName() + "\n" + classMeth + "\n" + valStr);
         }
     }
 
@@ -305,20 +311,19 @@ public class NetScanCtr {
      @param lastSt  timestamp из {@link #PROPERTIES}
      @see #netScan(HttpServletRequest, HttpServletResponse, Model)
      */
-    private static void checkMapSizeAndDoAction(Model model, HttpServletRequest request, long lastSt) throws ExecutionException, InterruptedException {
-        boolean isMapSizeBigger = lastScanMAP.size() > 1;
+    private static void checkMapSizeAndDoAction(Model model, HttpServletRequest request, long lastSt) {
+        final Runnable scanRun = () -> scanIt(request, model, new Date(lastSt));
+        boolean isMapSizeBigger = lastScanMAP.size() > 0;
         final int thisTotpc = Integer.parseInt(PROPERTIES.getProperty(ConstantsFor.PR_TOTPC, "318"));
-        File f = new File("scan.tmp");
-        if(f.isFile() && f.exists()){
+        File scanTemp = new File("scan.tmp");
+
+        if (scanTemp.isFile() && scanTemp.exists()) {
             mapSizeBigger(model, request, lastSt, thisTotpc);
-        }
-        else{
-            if(isMapSizeBigger){
+        } else {
+            if (isMapSizeBigger) {
                 mapSizeBigger(model, request, lastSt, thisTotpc);
-            }
-            else{
-                Runnable scanRun = () -> scanIt(request, model, new Date(lastSt));
-                AppComponents.threadConfig().executeAsThread(scanRun);
+            } else {
+                locExecutor.execute(scanRun);
             }
         }
     }

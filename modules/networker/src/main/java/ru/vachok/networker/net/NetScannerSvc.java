@@ -26,14 +26,14 @@ import java.io.*;
 import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.Date;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
@@ -149,8 +149,6 @@ public final class NetScannerSvc {
      */
     Set<String> getPcNames() {
         getPCsAsync();
-        messageToUser.info("NetScannerSvc.getPcNames", "AppComponents.threadConfig().getTaskExecutor().toString()",
-            " = " + AppComponents.threadConfig().getTaskExecutor().toString());
         return pcNamesSet;
     }
 
@@ -440,7 +438,7 @@ public final class NetScannerSvc {
         try {
             pcsString = writeDB();
         } catch (SQLException e) {
-            new MessageLocal().errorAlert(CLASS_NAME, "getPCNamesPref", e.getMessage());
+            messageToUser.errorAlert(CLASS_NAME, "getPCNamesPref", e.getMessage());
             FileSystemWorker.error("NetScannerSvc.getPCNamesPref", e);
         }
         String elapsedTime = "<b>Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethTime) + " sec.</b> " + LocalTime.now();
@@ -463,7 +461,6 @@ public final class NetScannerSvc {
      */
     @SuppressWarnings("OverlyLongLambda")
     private void getPCsAsync() {
-        ExecutorService eServ = Executors.unconfigurableExecutorService(Executors.newFixedThreadPool(ConstantsNet.N_THREADS));
         AtomicReference<String> msg = new AtomicReference<>("");
         this.startClassTime = System.currentTimeMillis();
         boolean fileCreate = fileCreate(true);
@@ -471,9 +468,9 @@ public final class NetScannerSvc {
             new MessageToTray(new ActionCloseMsg(new MessageLocal())).info("NetScannerSvc started scan", ConstantsFor.getUpTime(), " File: " + fileCreate);
         }
         catch(NoClassDefFoundError e){
-            new MessageLocal().errorAlert(CLASS_NAME, "getPCsAsync", e.getMessage());
+            messageToUser.errorAlert(CLASS_NAME, "getPCsAsync", e.getMessage());
         }
-        eServ.submit(() -> {
+        AppComponents.threadConfig().executeAsThread(() -> {
             Thread.currentThread().setName("E-" + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - ConstantsFor.START_STAMP));
             msg.set(new StringBuilder()
                 .append("Thread id ")
@@ -493,7 +490,7 @@ public final class NetScannerSvc {
             String elapsedTime = "Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime) + " sec.";
             pcNamesSet.add(elapsedTime);
             ConstantsNet.LOGGER.warn(msg.get());
-            eServ.submit(runAfterAll);
+            AppComponents.threadConfig().executeAsThread(runAfterAll);
         });
     }
 

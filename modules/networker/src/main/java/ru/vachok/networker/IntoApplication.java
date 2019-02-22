@@ -9,6 +9,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
@@ -54,10 +55,15 @@ public class IntoApplication {
     private static final Properties LOCAL_PROPS = AppComponents.getProps();
 
     public static Runnable infoMsgRunnable = () -> {
-        final ThreadPoolTaskExecutor executorFin = AppComponents.threadConfig().getTaskExecutor();
-        new MessageSwing().infoTimer(( int ) ConstantsFor.DELAY, "executor\n" + executorFin.getThreadNamePrefix() +
-            " ThreadNamePrefix\nThreadPoolExecutor " + executorFin.getThreadPoolExecutor().toString());
+        final ThreadPoolTaskExecutor taskExecutor = AppComponents.threadConfig().getTaskExecutor();
+        final ThreadPoolTaskScheduler taskScheduler = AppComponents.threadConfig().getTaskScheduler();
+        new MessageSwing().infoTimer((int) ConstantsFor.DELAY, "ThreadPoolTaskExecutor\n" + taskExecutor.getThreadPoolExecutor().toString() +
+            "\nThreadPoolTaskScheduler " + taskScheduler.getScheduledThreadPoolExecutor().toString());
     };
+
+    public static Runnable getInfoMsgRunnable() {
+        return infoMsgRunnable;
+    }
 
     /**
      {@link ConfigurableApplicationContext} = null.
@@ -116,13 +122,14 @@ public class IntoApplication {
      @param args аргументы запуска.
      */
     private static void readArgs(@NotNull String[] args) {
+        ExitApp exitApp = new ExitApp(IntoApplication.class.getSimpleName());
         for (@NotNull String arg : args) {
             messageToUser.info("IntoApplication.readArgs", "arg", arg);
             if (arg.contains(ConstantsFor.PR_TOTPC)) {
                 LOCAL_PROPS.setProperty(ConstantsFor.PR_TOTPC, arg.replaceAll(ConstantsFor.PR_TOTPC, ""));
             }
             if (arg.equalsIgnoreCase("off")) {
-                AppComponents.threadConfig().killAll();
+                AppComponents.threadConfig().executeAsThread(exitApp);
             }
         }
     }

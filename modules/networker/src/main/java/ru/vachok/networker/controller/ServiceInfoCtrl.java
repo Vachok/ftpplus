@@ -24,7 +24,10 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.file.AccessDeniedException;
 import java.time.LocalTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.*;
 import java.util.stream.Stream;
 
@@ -197,7 +200,7 @@ public class ServiceInfoCtrl {
     private String listFilesToReadStr() {
         List<File> readUs = new ArrayList<>();
         for (File f : Objects.requireNonNull(new File(".").listFiles())) {
-            if (f.getName().toLowerCase().contains(ConstantsFor.STR_VISIT)) {
+            if (f.getName().toLowerCase().contains(ConstantsFor.STRS_VISIT[0])) {
                 readUs.add(f);
             }
         }

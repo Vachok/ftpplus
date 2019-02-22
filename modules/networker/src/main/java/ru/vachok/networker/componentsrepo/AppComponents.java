@@ -10,7 +10,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Scope;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.IntoApplication;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.SshActs;
 import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.ADSrv;
@@ -24,9 +24,10 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.Savepoint;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentMap;
+
+import static ru.vachok.networker.IntoApplication.getConfigurableApplicationContext;
 
 
 /**
@@ -133,13 +134,12 @@ public class AppComponents {
     @Bean
     @Scope(ConstantsFor.SINGLETON)
     static ConfigurableApplicationContext configurableApplicationContext() {
-        return IntoApplication.getConfigurableApplicationContext();
+        return getConfigurableApplicationContext();
     }
 
     @Bean
     public Connection connection(String dbName) throws SQLException {
         Connection connection = new RegRuMysql().getDefaultConnection(dbName);
-        Savepoint startSavepoint = connection.setSavepoint("start");
         return connection;
     }
 
@@ -165,4 +165,13 @@ public class AppComponents {
         return new Visitor(request);
     }
 
+    @Override
+    public String toString() {
+        ConfigurableApplicationContext context = getConfigurableApplicationContext();
+        final StringBuilder sb = new StringBuilder("AppComponents{");
+        sb.append("Beans=").append(new TForms().fromArray(context.getBeanDefinitionNames(), false)).append("\n");
+        sb.append(context);
+        sb.append('}');
+        return sb.toString();
+    }
 }

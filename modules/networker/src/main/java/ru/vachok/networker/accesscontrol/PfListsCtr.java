@@ -131,8 +131,9 @@ public class PfListsCtr {
      */
     @GetMapping("/pflists")
     public String pfBean(@NotNull Model model, @NotNull HttpServletRequest request, @NotNull HttpServletResponse response) throws UnknownHostException {
-        Visitor visitor = ConstantsFor.getVis(request);
+        ConstantsFor.getVis(request);
         long lastScan = Long.parseLong(properties.getProperty(ConstantsFor.PR_PFSCAN, "1"));
+
         timeOutLong = lastScan + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY);
 
         if (!pingGITOk) {
@@ -140,23 +141,20 @@ public class PfListsCtr {
         } else {
             modSet(model);
         }
-
         if (request.getQueryString() != null) {
-            TASK_EXECUTOR.execute(pfListsSrvInstAW::makeListRunner);
+            AppComponents.threadConfig().executeAsThread(pfListsSrvInstAW::makeListRunner);
         }
-
         long nextUpd = pfListsInstAW.getGitStatsUpdatedStampLong() + TimeUnit.MINUTES.toMillis(DELAY_LOCAL_INT);
         pfListsInstAW.setTimeStampToNextUpdLong(nextUpd);
 
         if (nextUpd < System.currentTimeMillis()) {
             model.addAttribute(ATT_METRIC, "Требуется обновление!");
             model.addAttribute(ConstantsFor.ATT_GITSTATS, toString());
-            TASK_EXECUTOR.execute(pfListsSrvInstAW::makeListRunner);
+            TASK_EXECUTOR.submit(pfListsSrvInstAW::makeListRunner);
         } else {
             @NotNull String msg = "" + (float) (TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - pfListsInstAW.getGitStatsUpdatedStampLong())) / ConstantsFor.ONE_HOUR_IN_MIN;
             LOGGER.warn(msg);
         }
-
         propUpd(properties);
 
         @NotNull String refreshRate = String.valueOf(TimeUnit.MILLISECONDS.toMinutes(delayRefInt) * ConstantsFor.ONE_HOUR_IN_MIN);
@@ -181,7 +179,7 @@ public class PfListsCtr {
     private static void noPing(Model model) throws UnknownHostException {
         model.addAttribute("vipnet", "No ping to srv-git");
         model.addAttribute(ATT_METRIC, LocalTime.now().toString());
-        throw new UnknownHostException("srv-git");
+        throw new UnknownHostException("srv-git. <font color=\"red\"> NO PING!!!</font>");
     }
 
     /**
@@ -230,7 +228,7 @@ public class PfListsCtr {
     public String toString() {
         final StringBuilder sb = new StringBuilder("PfListsCtr{");
         sb.append("ATT_METRIC='").append(ATT_METRIC).append('\'');
-        sb.append(", TASK_EXECUTOR=").append(TASK_EXECUTOR);
+        sb.append(", TASK_EXECUTOR=").append(TASK_EXECUTOR.getThreadPoolExecutor().toString());
         sb.append(", DELAY_LOCAL_INT=").append(DELAY_LOCAL_INT);
         sb.append(", properties=").append(properties.size());
         sb.append(", pfListsInstAW=").append(pfListsInstAW.hashCode());

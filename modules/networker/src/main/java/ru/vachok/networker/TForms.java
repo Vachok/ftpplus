@@ -387,8 +387,15 @@ public class TForms {
     public String fromArray(BlockingQueue<Runnable> runnableBlockingQueue, boolean b) {
         this.nStringBuilder = new StringBuilder();
         this.brStringBuilder = new StringBuilder();
-        while(!runnableBlockingQueue.isEmpty()){
-            nStringBuilder.append(runnableBlockingQueue.remove(runnableBlockingQueue.element()));
+
+        nStringBuilder.append(N_STR);
+        Iterator<Runnable> runnableIterator = runnableBlockingQueue.stream().iterator();
+        int count = 0;
+        while (runnableIterator.hasNext()) {
+            Runnable next = runnableIterator.next();
+            count++;
+            nStringBuilder.append(count).append(") ").append(next).append(BR_STR);
+            brStringBuilder.append(count).append(") ").append(next).append(N_STR);
         }
         if(b){
             return brStringBuilder.toString();
