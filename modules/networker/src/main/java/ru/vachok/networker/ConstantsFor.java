@@ -225,11 +225,6 @@ public enum ConstantsFor {
     public static final String NO0027 = "no0027";
 
     /**
-     new {@link Properties}
-     */
-    private static final Properties PROPS = takePr(false);
-
-    /**
      Название файла старой подсети 192.168.х.х
      */
     public static final String OLD_LAN_TXT = "old_lan.txt";
@@ -260,11 +255,6 @@ public enum ConstantsFor {
     public static final String DB_PREFIX = "u0466446_";
 
     public static final boolean IS_SYSTRAY_AVAIL = (SystemTray.isSupported() || SystemTray.getSystemTray()!=null);
-
-    /**
-     Первоначальная задержка шедулера.
-     */
-    public static final long INIT_DELAY = MY_AGE;
 
     /**
      {@link Model} имя атрибута
@@ -351,9 +341,19 @@ public enum ConstantsFor {
     public static final String LOG = ".log";
 
     /**
+     new {@link Properties}
+     */
+    private static final Properties PROPS = takePr(false);
+
+    /**
      Число, для Secure Random
      */
     public static final long MY_AGE = ( long ) Year.now().getValue() - 1984;
+
+    /**
+     Первоначальная задержка шедулера.
+     */
+    public static final long INIT_DELAY = MY_AGE;
 
     /**
      Кол-во миллисек. в 1 неделе
@@ -596,29 +596,40 @@ public enum ConstantsFor {
 
      @param propsToSave {@link Properties}
      */
-    public static void saveAppProps(Properties propsToSave) {
+    public static boolean saveAppProps(Properties propsToSave) {
         String classMeth = "ConstantsFor.saveAppProps";
         final String javaIDsString = ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName();
         MysqlDataSource mysqlDataSource = new DBRegProperties(javaIDsString).getRegSourceForProperties();
         AtomicReference<InitProperties> initProperties = new AtomicReference<>();
-
-        initProperties.set(new FileProps(javaIDsString));
-        initProperties.get().setProps(propsToSave);
-
-        try(Connection c = mysqlDataSource.getConnection()){
-            Savepoint delPropsPoint = c.setSavepoint("delPropsPoint" + LocalTime.now().format(DateTimeFormatter.ISO_TIME));
-            savePropsDelStatement(c, delPropsPoint);
+        Callable<Boolean> theProphecy = () -> {
+            boolean isPropSet;
+            initProperties.set(new FileProps(javaIDsString));
+            initProperties.get().setProps(propsToSave);
+            try(Connection c = mysqlDataSource.getConnection()){
+                Savepoint delPropsPoint = c.setSavepoint("delPropsPoint" + LocalTime.now().format(DateTimeFormatter.ISO_TIME));
+                if(savePropsDelStatement(c, delPropsPoint)){
+                    isPropSet = false;
+                }
+            }
+            catch(SQLException e){
+                messageToUser.errorAlert("ConstantsFor", "saveAppProps", e.getMessage());
+                FileSystemWorker.error(classMeth, e);
+                isPropSet = false;
+            }
+            initProperties.set(new DBRegProperties(javaIDsString));
+            isPropSet = initProperties.get().setProps(propsToSave);
+            return isPropSet;
+        };
+        boolean retBool = false;
+        Future<Boolean> booleanFuture = AppComponents.threadConfig().getTaskExecutor().submit(theProphecy);
+        try{
+            retBool = booleanFuture.get();
         }
-        catch(SQLException e){
-            messageToUser.errorAlert("ConstantsFor", "saveAppProps", e.getMessage());
+        catch(InterruptedException | ExecutionException e){
+            messageToUser.errorAlert(ConstantsFor.class.getSimpleName(), "saveAppProps", e.getMessage());
             FileSystemWorker.error(classMeth, e);
         }
-        Runnable thread = () -> {
-            initProperties.set(new DBRegProperties(javaIDsString));
-            initProperties.get().getProps();
-        };
-
-        AppComponents.threadConfig().executeAsThread(thread);
+        return retBool;
     }
 
     /**
@@ -630,17 +641,20 @@ public enum ConstantsFor {
      @throws SQLException делает {@link Connection#rollback(java.sql.Savepoint)}
      @see #saveAppProps(Properties)
      */
-    private static void savePropsDelStatement(Connection c, Savepoint delPropsPoint) throws SQLException {
+    private static boolean savePropsDelStatement(Connection c, Savepoint delPropsPoint) throws SQLException {
+        boolean noErr = false;
         final String sql = "delete FROM `ru_vachok_networker` where `javaid` =  'ConstantsFor'";
         try(PreparedStatement preparedStatement = c.prepareStatement(sql)){
             int update = preparedStatement.executeUpdate();
             messageToUser.info("ConstantsFor.savePropsDelStatement", "update", " = " + update);
+            noErr = true;
         }
         catch(SQLException e){
             messageToUser.errorAlert("ConstantsFor", "savePropsDelStatement", e.getMessage());
             c.rollback(delPropsPoint);
         }
 
+        return noErr;
     }
 
     /**

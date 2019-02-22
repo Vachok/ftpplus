@@ -8,6 +8,8 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Scope;
+import ru.vachok.messenger.MessageSwing;
+import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
@@ -42,6 +44,8 @@ public class AppComponents {
      */
     private static final String STR_VISITOR = "visitor";
 
+    private static MessageToUser messageToUser = new MessageSwing();
+
     /**
      @return {@link LoggerFactory}
      */
@@ -51,33 +55,73 @@ public class AppComponents {
     }
 
     @Bean
-    @Scope(ConstantsFor.SINGLETON)
+    @Scope (ConstantsFor.SINGLETON)
     public static Properties getProps() {
         return getProps(false);
     }
 
     @Bean
-    @Scope(ConstantsFor.SINGLETON)
+    @Scope (ConstantsFor.SINGLETON)
+    public static Properties getProps(boolean saveThis) {
+        Properties properties = ConstantsFor.getAppProps();
+        if(saveThis){
+            boolean isSaved = ConstantsFor.saveAppProps(properties);
+            messageToUser.infoTimer(( int ) ConstantsFor.DELAY, "AppComponents.getProps " + " isSaved" + " = " + isSaved);
+        }
+        return properties;
+    }
+
+    @Bean
+    public Connection connection(String dbName) throws SQLException {
+        Connection connection = new RegRuMysql().getDefaultConnection(dbName);
+        return connection;
+    }
+
+    /**
+     @return new {@link SimpleCalculator}
+     */
+    @Bean (ConstantsFor.STR_CALCULATOR)
+    public SimpleCalculator simpleCalculator() {
+        return new SimpleCalculator();
+    }
+
+    /**
+     @return new {@link SshActs}
+     */
+    @Bean
+    @Scope (ConstantsFor.SINGLETON)
+    public SshActs sshActs() {
+        return new SshActs();
+    }
+
+    @Bean (STR_VISITOR)
+    public Visitor visitor(HttpServletRequest request) {
+        return new Visitor(request);
+    }
+
+    @Bean
+    @Scope (ConstantsFor.SINGLETON)
     public static NetPinger netPinger() {
         return new NetPinger();
     }
 
     @Bean
-    @Scope(ConstantsFor.SINGLETON)
+    @Scope (ConstantsFor.SINGLETON)
     public static ThreadConfig threadConfig() {
         return ThreadConfig.getI();
     }
 
     @Bean
-    @Scope(ConstantsFor.SINGLETON)
+    @Scope (ConstantsFor.SINGLETON)
     public static NetScannerSvc netScannerSvc() {
         return NetScannerSvc.getInst();
     }
+
     /**
      @return {@link #lastNetScan()}.getNetWork
      */
     @Bean
-    @Scope(ConstantsFor.SINGLETON)
+    @Scope (ConstantsFor.SINGLETON)
     public static ConcurrentMap<String, Boolean> lastNetScanMap() {
         return lastNetScan().getNetWork();
     }
@@ -93,8 +137,8 @@ public class AppComponents {
     /**
      @return new {@link VersionInfo}
      */
-    @Bean("versioninfo")
-    @Scope(ConstantsFor.SINGLETON)
+    @Bean ("versioninfo")
+    @Scope (ConstantsFor.SINGLETON)
     public static VersionInfo versionInfo() {
         VersionInfo versionInfo = new VersionInfo();
         boolean isBUGged = false;
@@ -117,52 +161,14 @@ public class AppComponents {
         return new ADSrv(adUser, adComputer);
     }
 
-    @Bean
-    @Scope(ConstantsFor.SINGLETON)
-    public static Properties getProps(boolean saveThis) {
-        Properties properties = ConstantsFor.getAppProps();
-        if (saveThis) {
-            ConstantsFor.saveAppProps(properties);
-        }
-        return properties;
-    }
-
     public static Visitor thisVisit(String sessionID) throws NullPointerException, NoSuchBeanDefinitionException {
-        return (Visitor) configurableApplicationContext().getBean(sessionID);
+        return ( Visitor ) configurableApplicationContext().getBean(sessionID);
     }
 
     @Bean
-    @Scope(ConstantsFor.SINGLETON)
+    @Scope (ConstantsFor.SINGLETON)
     static ConfigurableApplicationContext configurableApplicationContext() {
         return getConfigurableApplicationContext();
-    }
-
-    @Bean
-    public Connection connection(String dbName) throws SQLException {
-        Connection connection = new RegRuMysql().getDefaultConnection(dbName);
-        return connection;
-    }
-
-    /**
-     @return new {@link SimpleCalculator}
-     */
-    @Bean(ConstantsFor.STR_CALCULATOR)
-    public SimpleCalculator simpleCalculator() {
-        return new SimpleCalculator();
-    }
-
-    /**
-     @return new {@link SshActs}
-     */
-    @Bean
-    @Scope(ConstantsFor.SINGLETON)
-    public SshActs sshActs() {
-        return new SshActs();
-    }
-
-    @Bean(STR_VISITOR)
-    public Visitor visitor(HttpServletRequest request) {
-        return new Visitor(request);
     }
 
     @Override
