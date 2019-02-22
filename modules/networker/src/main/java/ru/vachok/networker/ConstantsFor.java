@@ -26,15 +26,10 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.SecureRandom;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Savepoint;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.Year;
-import java.time.ZoneOffset;
+import java.sql.*;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.*;
@@ -50,6 +45,13 @@ import static java.time.temporal.ChronoUnit.HOURS;
  @since 12.08.2018 (16:26) */
 public enum ConstantsFor {
     ;
+
+    /**
+     {@link ru.vachok.networker.mailserver.ExCTRL#uplFile(MultipartFile, Model)}, {@link ExSRV#getOFields()},
+     */
+    private static final ConcurrentMap<Integer, MailRule> MAIL_RULES = new ConcurrentHashMap<>();
+
+    private static final int MIN_DELAY = 17;
 
     public static final String METHNAME_ACTIONPERFORMED = "actionPerformed";
 
@@ -222,7 +224,10 @@ public enum ConstantsFor {
      */
     public static final String NO0027 = "no0027";
 
-    public static final boolean IS_SYSTRAY_AVAIL = (SystemTray.isSupported() || SystemTray.getSystemTray() != null);
+    /**
+     new {@link Properties}
+     */
+    private static final Properties PROPS = takePr(false);
 
     /**
      Название файла старой подсети 192.168.х.х
@@ -254,10 +259,7 @@ public enum ConstantsFor {
      */
     public static final String DB_PREFIX = "u0466446_";
 
-    /**
-     Число, для Secure Random
-     */
-    public static final long MY_AGE = (long) Year.now().getValue() - 1984;
+    public static final boolean IS_SYSTRAY_AVAIL = (SystemTray.isSupported() || SystemTray.getSystemTray()!=null);
 
     /**
      Первоначальная задержка шедулера.
@@ -349,9 +351,14 @@ public enum ConstantsFor {
     public static final String LOG = ".log";
 
     /**
+     Число, для Secure Random
+     */
+    public static final long MY_AGE = ( long ) Year.now().getValue() - 1984;
+
+    /**
      Кол-во миллисек. в 1 неделе
      */
-    public static final long ONE_WEEK_MILLIS = TimeUnit.HOURS.toMillis(ONE_DAY_HOURS * (long) 7);
+    public static final long ONE_WEEK_MILLIS = TimeUnit.HOURS.toMillis(ONE_DAY_HOURS * ( long ) 7);
 
     public static final String HTML_CENTER = "</center>";
 
@@ -364,18 +371,6 @@ public enum ConstantsFor {
     public static final String ICON_FILE_NAME = "icons8-сетевой-менеджер-30.png";
 
     /**
-     Все возможные IP из диапазонов {@link DiapazonedScan}
-     */
-    public static final BlockingDeque<String> ALL_DEVICES = new LinkedBlockingDeque<>(IPS_IN_VELKOM_VLAN);
-
-    /**
-     {@link ru.vachok.networker.mailserver.ExCTRL#uplFile(MultipartFile, Model)}, {@link ExSRV#getOFields()},
-     */
-    private static final ConcurrentMap<Integer, MailRule> MAIL_RULES = new ConcurrentHashMap<>();
-
-    private static final int MIN_DELAY = 17;
-
-    /**
      {@link #getDelay()}
      */
     public static final long DELAY = getDelay();
@@ -386,9 +381,9 @@ public enum ConstantsFor {
     public static final int IPS_IN_VELKOM_VLAN = getIPs();
 
     /**
-     new {@link Properties}
+     Все возможные IP из диапазонов {@link DiapazonedScan}
      */
-    private static final Properties PROPS = takePr(false);
+    public static final BlockingDeque<String> ALL_DEVICES = new LinkedBlockingDeque<>(IPS_IN_VELKOM_VLAN);
 
     /**
      Порт для {@link ru.vachok.networker.net.MyServer}
@@ -398,7 +393,7 @@ public enum ConstantsFor {
     /**
      {@link #getAtomicTime()}
      */
-    @SuppressWarnings("NonFinalFieldInEnum")
+    @SuppressWarnings ("NonFinalFieldInEnum")
     private static long atomicTime;
 
     /**
@@ -419,9 +414,10 @@ public enum ConstantsFor {
      @return 192.168.13.42 online or offline
      */
     public static boolean isPingOK() {
-        try {
+        try{
             return InetAddress.getByName(SRV_GIT_EATMEAT_RU).isReachable(500);
-        } catch (IOException e) {
+        }
+        catch(IOException e){
             LoggerFactory.getLogger(ConstantsFor.class.getSimpleName()).error(e.getMessage(), e);
             return false;
         }
@@ -440,7 +436,7 @@ public enum ConstantsFor {
     public static String getUpTime() {
 
         float hrsOn =
-            (float) (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN / ConstantsFor.ONE_HOUR_IN_MIN;
+            ( float ) (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN / ConstantsFor.ONE_HOUR_IN_MIN;
 
         return "(" + String.format("%.03f", hrsOn) +
             "h up)";
@@ -450,15 +446,17 @@ public enum ConstantsFor {
      @return время билда
      */
     public static long getBuildStamp() {
-        try {
+        try{
             String hostName = InetAddress.getLocalHost().getHostName();
-            if (hostName.equalsIgnoreCase("home") || hostName.toLowerCase().contains(NO0027)) {
+            if(hostName.equalsIgnoreCase("home") || hostName.toLowerCase().contains(NO0027)){
                 PROPS.setProperty("build", System.currentTimeMillis() + "");
                 return System.currentTimeMillis();
-            } else {
+            }
+            else{
                 return Long.parseLong(PROPS.getProperty("build", "1"));
             }
-        } catch (UnknownHostException e) {
+        }
+        catch(UnknownHostException e){
             return 1L;
         }
     }
@@ -478,9 +476,9 @@ public enum ConstantsFor {
      @return кол-во выделенной, используемой и свободной памяти в МБ
      */
     public static String getMemoryInfo() {
-        String msg = (float) Runtime.getRuntime().totalMemory() / ConstantsFor.MBYTE + " now totalMemory, " +
-            (float) Runtime.getRuntime().freeMemory() / ConstantsFor.MBYTE + " now freeMemory, " +
-            (float) Runtime.getRuntime().maxMemory() / ConstantsFor.MBYTE + " now maxMemory.";
+        String msg = ( float ) Runtime.getRuntime().totalMemory() / ConstantsFor.MBYTE + " now totalMemory, " +
+            ( float ) Runtime.getRuntime().freeMemory() / ConstantsFor.MBYTE + " now freeMemory, " +
+            ( float ) Runtime.getRuntime().maxMemory() / ConstantsFor.MBYTE + " now maxMemory.";
         AppComponents.getLogger().warn(msg);
         return msg;
     }
@@ -489,8 +487,8 @@ public enum ConstantsFor {
      @return {@link #DELAY}
      */
     private static long getDelay() {
-        long delay = new SecureRandom().nextInt((int) MY_AGE);
-        if (delay < MIN_DELAY) {
+        long delay = new SecureRandom().nextInt(( int ) MY_AGE);
+        if(delay < MIN_DELAY){
             delay = MIN_DELAY;
         }
         return delay;
@@ -501,16 +499,38 @@ public enum ConstantsFor {
      */
     private static int getIPs() {
         int vlansNum = 22;
-        try {
+        try{
 
-            vlansNum = Integer.parseInt(Objects.requireNonNull(PROPS.size() != 0 ? PROPS.getProperty("vlans", "22") : null));
-        } catch (NullPointerException e) {
+            vlansNum = Integer.parseInt(Objects.requireNonNull(PROPS.size()!=0? PROPS.getProperty("vlans", "22"): null));
+        }
+        catch(NullPointerException e){
             Properties properties = takePr(true);
             PROPS.putAll(properties);
         }
         int qSize = vlansNum * 255;
         PROPS.setProperty(PR_QSIZE, qSize + "");
         return qSize;
+    }
+
+    /**
+     Тащит {@link #PROPS} из БД или файла
+     */
+    private static Properties takePr(boolean fromFile) {
+        InitProperties initProperties = new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
+        Properties retPr;
+        try{
+            retPr = initProperties.getProps();
+            if(fromFile){
+                retPr = getPFromFile();
+            }
+
+        }
+        catch(Exception e){
+            retPr = getPFromFile();
+            FileSystemWorker.error("ConstantsFor.takePr", e);
+        }
+        new MessageLocal().info(ConstantsFor.class.getSimpleName(), "takePr", new TForms().fromArray(retPr, false));
+        return retPr;
     }
 
     private static Properties getPFromFile() {
@@ -538,10 +558,10 @@ public enum ConstantsFor {
         localTime = localTime.minusMinutes(LocalTime.now().getMinute());
         localTime = localTime.minusSeconds(LocalTime.now().getSecond());
         boolean workHours = LocalTime.now().isAfter(startDay) && LocalTime.now().isBefore(endDay);
-        if (workHours) {
+        if(workHours){
             int toEndDaySec = localTime.toSecondOfDay();
             int diffSec = allDaySec - toEndDaySec;
-            float percDay = ((float) toEndDaySec / (((float) allDaySec) / 100));
+            float percDay = (( float ) toEndDaySec / ((( float ) allDaySec) / 100));
             stringBuilder
                 .append("Работаем ")
                 .append(TimeUnit.SECONDS.toMinutes(diffSec));
@@ -549,7 +569,8 @@ public enum ConstantsFor {
                 .append("(мин.). Ещё ")
                 .append(String.format("%.02f", percDay))
                 .append(" % или ");
-        } else {
+        }
+        else{
             stringBuilder.append("<b> GO HOME! </b><br>");
         }
         stringBuilder.append(localTime.toString());
@@ -560,10 +581,11 @@ public enum ConstantsFor {
      @return имя компьютера, где запущено
      */
     public static String thisPC() {
-        try {
+        try{
             return InetAddress.getLocalHost().getHostName();
-        } catch (UnknownHostException | ExceptionInInitializerError | NullPointerException e) {
-            String retStr = new TForms().fromArray((List<?>) e, false);
+        }
+        catch(UnknownHostException | ExceptionInInitializerError | NullPointerException e){
+            String retStr = new TForms().fromArray(( List<?> ) e, false);
             FileSystemWorker.recFile("this_pc.err", Collections.singletonList(retStr));
             return "pc";
         }
@@ -583,10 +605,11 @@ public enum ConstantsFor {
         initProperties.set(new FileProps(javaIDsString));
         initProperties.get().setProps(propsToSave);
 
-        try (Connection c = mysqlDataSource.getConnection()) {
+        try(Connection c = mysqlDataSource.getConnection()){
             Savepoint delPropsPoint = c.setSavepoint("delPropsPoint" + LocalTime.now().format(DateTimeFormatter.ISO_TIME));
             savePropsDelStatement(c, delPropsPoint);
-        } catch (SQLException e) {
+        }
+        catch(SQLException e){
             messageToUser.errorAlert("ConstantsFor", "saveAppProps", e.getMessage());
             FileSystemWorker.error(classMeth, e);
         }
@@ -599,15 +622,38 @@ public enum ConstantsFor {
     }
 
     /**
+     Выполнение удаления {@link Properties} из БД
+     <p>
+
+     @param c             {@link Connection}
+     @param delPropsPoint {@link Savepoint}
+     @throws SQLException делает {@link Connection#rollback(java.sql.Savepoint)}
+     @see #saveAppProps(Properties)
+     */
+    private static void savePropsDelStatement(Connection c, Savepoint delPropsPoint) throws SQLException {
+        final String sql = "delete FROM `ru_vachok_networker` where `javaid` =  'ConstantsFor'";
+        try(PreparedStatement preparedStatement = c.prepareStatement(sql)){
+            int update = preparedStatement.executeUpdate();
+            messageToUser.info("ConstantsFor.savePropsDelStatement", "update", " = " + update);
+        }
+        catch(SQLException e){
+            messageToUser.errorAlert("ConstantsFor", "savePropsDelStatement", e.getMessage());
+            c.rollback(delPropsPoint);
+        }
+
+    }
+
+    /**
      Парсинг и проверка уникальности для new {@link Visitor}
 
      @param request {@link HttpServletRequest}
      @return {@link Visitor}
      */
     public static Visitor getVis(HttpServletRequest request) {
-        try {
+        try{
             return AppComponents.thisVisit(request.getSession().getId());
-        } catch (Exception e) {
+        }
+        catch(Exception e){
             return new AppComponents().visitor(request);
         }
     }
@@ -625,46 +671,5 @@ public enum ConstantsFor {
 
     public static String getUserPC(HttpServletRequest request) {
         return request.getRemoteAddr();
-    }
-
-    /**
-     Выполнение удаления {@link Properties} из БД
-     <p>
-
-     @param c             {@link Connection}
-     @param delPropsPoint {@link Savepoint}
-     @throws SQLException делает {@link Connection#rollback(java.sql.Savepoint)}
-     @see #saveAppProps(Properties)
-     */
-    private static void savePropsDelStatement(Connection c, Savepoint delPropsPoint) throws SQLException {
-        final String sql = "delete FROM `ru_vachok_networker` where `javaid` =  'ConstantsFor'";
-        try (PreparedStatement preparedStatement = c.prepareStatement(sql)) {
-            int update = preparedStatement.executeUpdate();
-            messageToUser.info("ConstantsFor.savePropsDelStatement", "update", " = " + update);
-        } catch (SQLException e) {
-            messageToUser.errorAlert("ConstantsFor", "savePropsDelStatement", e.getMessage());
-            c.rollback(delPropsPoint);
-        }
-
-    }
-
-    /**
-     Тащит {@link #PROPS} из БД или файла
-     */
-    private static Properties takePr(boolean fromFile) {
-        InitProperties initProperties = new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
-        Properties retPr;
-        try {
-            retPr = initProperties.getProps();
-            if (fromFile) {
-                retPr = getPFromFile();
-            }
-
-        } catch (Exception e) {
-            retPr = getPFromFile();
-            FileSystemWorker.error("ConstantsFor.takePr", e);
-        }
-        new MessageLocal().info(ConstantsFor.class.getSimpleName(), "takePr", new TForms().fromArray(retPr, false));
-        return retPr;
     }
 }

@@ -6,7 +6,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.task.TaskExecutor;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,7 +17,6 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
-import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.services.MessageLocal;
 
 import javax.servlet.http.HttpServletRequest;
@@ -49,13 +47,7 @@ public class PfListsCtr {
     /**
      {@link ThreadLocal} {@link String} - {@code metric}
      */
-    @NotNull
-    private static final String ATT_METRIC = "metric";
-
-    /**
-     {@link ThreadConfig#getTaskExecutor()}
-     */
-    private static final ThreadPoolTaskExecutor TASK_EXECUTOR = AppComponents.threadConfig().getTaskExecutor();
+    private static final @NotNull String ATT_METRIC = "metric";
 
     private static final int DELAY_LOCAL_INT = (int) (ConstantsFor.DELAY + ConstantsFor.ONE_HOUR_IN_MIN);
 
@@ -119,7 +111,7 @@ public class PfListsCtr {
      Если {@link #pingGITOk}: <br>
      {@link #modSet(Model)} ; <br>
      Если {@link HttpServletRequest#getQueryString()} не {@code null}: <br>
-     {@link TaskExecutor#execute(java.lang.Runnable)} - {@link #TASK_EXECUTOR} exec {@link PfListsSrv#makeListRunner()} ; <br>
+     {@link TaskExecutor#execute(java.lang.Runnable)} - {@link AppComponents#threadConfig()}exec {@link PfListsSrv#makeListRunner()} ; <br>
      Если {@link PfLists#getTimeStampToNextUpdLong()} плюс 1 час к {@link ConstantsFor#DELAY} меньше чем сейчас: <br>
      {@link Model} аттрибуты: ({@link PfListsCtr#ATT_METRIC} , {@code Требуется обновление!} ; ({@link ConstantsFor#ATT_GITSTATS} , )
 
@@ -150,7 +142,7 @@ public class PfListsCtr {
         if (nextUpd < System.currentTimeMillis()) {
             model.addAttribute(ATT_METRIC, "Требуется обновление!");
             model.addAttribute(ConstantsFor.ATT_GITSTATS, toString());
-            TASK_EXECUTOR.submit(pfListsSrvInstAW::makeListRunner);
+            AppComponents.threadConfig().executeAsThread(pfListsSrvInstAW::makeListRunner);
         } else {
             @NotNull String msg = "" + (float) (TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - pfListsInstAW.getGitStatsUpdatedStampLong())) / ConstantsFor.ONE_HOUR_IN_MIN;
             LOGGER.warn(msg);
@@ -165,7 +157,7 @@ public class PfListsCtr {
 
     @PostMapping("/runcom")
     @NotNull
-    public String runCommand(@NotNull Model model, @NotNull @ModelAttribute PfListsSrv pfListsSrv) {
+    String runCommand(@NotNull Model model, @NotNull @ModelAttribute PfListsSrv pfListsSrv) {
         this.pfListsSrvInstAW = pfListsSrv;
 
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
@@ -228,7 +220,6 @@ public class PfListsCtr {
     public String toString() {
         final StringBuilder sb = new StringBuilder("PfListsCtr{");
         sb.append("ATT_METRIC='").append(ATT_METRIC).append('\'');
-        sb.append(", TASK_EXECUTOR=").append(TASK_EXECUTOR.getThreadPoolExecutor().toString());
         sb.append(", DELAY_LOCAL_INT=").append(DELAY_LOCAL_INT);
         sb.append(", properties=").append(properties.size());
         sb.append(", pfListsInstAW=").append(pfListsInstAW.hashCode());

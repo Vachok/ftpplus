@@ -23,10 +23,7 @@ import ru.vachok.networker.services.SpeedChecker;
 import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
-import java.nio.file.FileVisitor;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -320,7 +317,7 @@ public class AppInfoOnLoad implements Runnable {
      */
     @Override
     public void run() {
-        AppComponents.threadConfig().executeAsThread(this::starterTelnet);
         infoForU(AppCtx.scanForBeansAndRefreshContext());
+        new Thread(this::starterTelnet).start();
     }
 }

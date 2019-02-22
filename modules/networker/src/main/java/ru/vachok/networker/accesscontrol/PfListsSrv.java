@@ -87,10 +87,6 @@ public class PfListsSrv {
     void makeListRunner() {
         if (ConstantsFor.thisPC().toLowerCase().contains("rups")) {
             AppComponents.threadConfig().getTaskExecutor().execute(this::buildCommands);
-            messageToUser.info(
-                this.getClass().getSimpleName(),
-                AppComponents.threadConfig().getThreadNamePrefix() + " executor",
-                AppComponents.threadConfig().getThreadPoolExecutor().getCompletedTaskCount() + " Completed Tasks");
         } else {
             try {
                 messageToUser = new MessageToTray();
