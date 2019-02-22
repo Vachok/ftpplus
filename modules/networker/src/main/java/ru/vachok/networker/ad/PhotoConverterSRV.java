@@ -12,10 +12,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.List;
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -148,7 +145,8 @@ public class PhotoConverterSRV {
             while (r.next()) {
                 samAccounts.add(r.getString("samAccountName"));
             }
-        } catch (SQLException e) {
+        }
+        catch(SQLException | IOException e){
             FileSystemWorker.error("PhotoConverterSRV.samAccFromDB", e);
         }
         return samAccounts;

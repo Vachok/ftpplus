@@ -786,3 +786,6 @@ scan.tmp
 ESender.err
 ru_vachok_networker-1804.res
 AppInfoOnLoad.mini
+ConstantsFor.properties
+DataConnectTo.properties
+RegRuMysql.err

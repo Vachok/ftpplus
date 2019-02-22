@@ -26,13 +26,11 @@ import java.io.*;
 import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Date;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -75,6 +73,10 @@ public final class NetScannerSvc {
      Файл уникальных записей из БД velkom-pcuserauto
      */
     private static final String FILENAME_PCAUTODISTXT = "pcautodis.txt";
+
+    private static Connection connection;
+
+    private static MessageToUser messageToUser = new MessageLocal();
 
     /**
      Компьютеры онлайн
@@ -130,45 +132,6 @@ public final class NetScannerSvc {
      */
     private Map<String, Boolean> netWorkMap;
 
-    private MessageToUser messageToUser = new MessageLocal();
-
-    /**
-     @return {@link #onLinePCsNum}
-     */
-    static int getOnLinePCs() {
-        return onLinePCsNum;
-    }
-
-    /**
-     Выполняет {@link #getPCsAsync()}.
-     <p>
-
-     @return {@link ConstantsNet#getPcNames()}
-     @see #getPCNamesPref(String)
-     @see NetScanCtr#scanIt(HttpServletRequest, Model, Date)
-     */
-    Set<String> getPcNames() {
-        getPCsAsync();
-        return pcNamesSet;
-    }
-
-    /**
-     @return атрибут модели.
-     */
-    @SuppressWarnings("WeakerAccess")
-    public String getThePc() {
-        return thePc;
-    }
-
-    /**
-     {@link #thePc}
-
-     @param thePc имя ПК
-     */
-    public void setThePc(String thePc) {
-        this.thePc = thePc;
-    }
-
     /**
      Выполняет запрос в БД по-пользовательскому вводу
      <p>
@@ -185,7 +148,7 @@ public final class NetScannerSvc {
         } else {
             sqlQBuilder.append("select * from velkompc where NamePP like '%").append(thePcLoc).append("%'");
         }
-        try (Connection connection = new AppComponents().connection(ConstantsNet.DB_NAME);
+        try(
              PreparedStatement preparedStatement = connection.prepareStatement(sqlQBuilder.toString())) {
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 List<String> timeNow = new ArrayList<>();
@@ -221,6 +184,43 @@ public final class NetScannerSvc {
     }
 
     /**
+     @return {@link #onLinePCsNum}
+     */
+    static int getOnLinePCs() {
+        return onLinePCsNum;
+    }
+
+    /**
+     Выполняет {@link #getPCsAsync()}.
+     <p>
+
+     @return {@link ConstantsNet#getPcNames()}
+     @see #getPCNamesPref(String)
+     @see NetScanCtr#scanIt(HttpServletRequest, Model, Date)
+     */
+    Set<String> getPcNames() {
+        getPCsAsync();
+        return pcNamesSet;
+    }
+
+    /**
+     @return атрибут модели.
+     */
+    @SuppressWarnings ("WeakerAccess")
+    public String getThePc() {
+        return thePc;
+    }
+
+    /**
+     {@link #thePc}
+
+     @param thePc имя ПК
+     */
+    public void setThePc(String thePc) {
+        this.thePc = thePc;
+    }
+
+    /**
      @return {@link #netScannerSvcInst}
      */
     public static synchronized NetScannerSvc getInst() {
@@ -245,7 +245,6 @@ public final class NetScannerSvc {
     @SuppressWarnings({"OverlyComplexMethod", "OverlyLongMethod", "resource"})
     private static String writeDB() throws SQLException {
         List<String> list = new ArrayList<>();
-        Connection connection = new AppComponents().connection(ConstantsNet.DB_NAME);
         PreparedStatement p = connection.prepareStatement("insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow) values (?,?,?,?)");
         List<String> toSort = new ArrayList<>(pcNamesSet);
         toSort.sort(null);
@@ -363,6 +362,16 @@ public final class NetScannerSvc {
         new MessageCons().errorAlert("NetScannerSvc.setOnLinePCsToZero");
         PROPS.setProperty(ConstantsNet.ONLINEPC, onLinePCsNum + "");
         NetScannerSvc.onLinePCsNum = 0;
+    }
+
+    static {
+        try{
+            connection = new AppComponents().connection(ConstantsNet.DB_NAME);
+        }
+        catch(SQLException | IOException e){
+            messageToUser.errorAlert("NetScannerSvc", "static initializer", e.getMessage());
+            FileSystemWorker.error("NetScannerSvc.static initializer", e);
+        }
     }
 
     /**

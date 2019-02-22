@@ -390,6 +390,8 @@ public enum ConstantsFor {
      */
     public static final int LISTEN_PORT = Integer.parseInt(PROPS.getOrDefault("lport", "9990").toString());
 
+    public static final String PC_USER_RESOLVER_CLASS_NAME = "PCUserResolver";
+
     /**
      {@link #getAtomicTime()}
      */

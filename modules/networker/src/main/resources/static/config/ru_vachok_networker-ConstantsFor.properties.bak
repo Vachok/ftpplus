@@ -1,0 +1,20 @@
+#oacok  false
+#Fri Feb 22 19:54:33 MSK 2019
+onlinepc=164
+thr=50
+pingsleep=650
+pfscan=1550847057568
+totpc=317
+application.name=Networker
+qsize=5610
+lastworkstart=1550814000000
+spring.servlet.multipart.max-file-size=5MB
+build.version=8.0.1908
+build=1550758009879
+buildTime=Thu Feb 21 17\:06\:37 GMT+03\:00 2019
+appVersion=8.0.1908
+appBuild=NO0027.4
+server.port=8880
+spring.servlet.multipart.max-request-size=5MB
+meminfo=990.5 now totalMemory, 887.23376 now freeMemory, 990.5 now maxMemory.
+lastscan=1550853385224

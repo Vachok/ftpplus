@@ -4,7 +4,9 @@ package ru.vachok.networker.services;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.fileworks.FileSystemWorker;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -34,8 +36,8 @@ public class DBMessenger implements MessageToUser {
             p.setString(3,s2);
             p.executeUpdate();
         }
-        catch(SQLException e){
-            e.printStackTrace();
+        catch(SQLException | IOException e){
+            FileSystemWorker.error("DBMessenger.dbSend", e);
         }
     }
 

@@ -36,8 +36,6 @@ public class ADSrv implements Runnable {
 
     private static final String PROP_SAMACCOUNTNAME = "SamAccountName";
 
-    private static final String PC_USER_RESOLVER_CLASS_NAME = "PCUserResolver";
-
     /**
      {@link LoggerFactory}
      */
@@ -247,8 +245,9 @@ public class ADSrv implements Runnable {
                     }
                 }
             }
-        } catch (SQLException e) {
-            new MessageCons().errorAlert(PC_USER_RESOLVER_CLASS_NAME, "offNowGetU", e.getMessage());
+        }
+        catch(SQLException | IOException e){
+            new MessageCons().errorAlert(ConstantsFor.PC_USER_RESOLVER_CLASS_NAME, "offNowGetU", e.getMessage());
             FileSystemWorker.error("PCUserResolver.offNowGetU", e);
         }
         return v.toString();
@@ -276,7 +275,8 @@ public class ADSrv implements Runnable {
             p.executeUpdate();
             LOGGER.info(msg);
             ConstantsNet.PC_U_MAP.put(pcName, msg);
-        } catch (SQLException e) {
+        }
+        catch(SQLException | IOException e){
             FileSystemWorker.error("PCUserResolver.recToDB", e);
         }
     }
@@ -396,7 +396,8 @@ public class ADSrv implements Runnable {
             stringBuilder.append(new TForms().fromArray(ownerRights, true));
             adUser.setOwnerRights(ownerRights);
             return stringBuilder.toString();
-        } catch (SQLException e) {
+        }
+        catch(SQLException | IOException e){
             return e.getMessage();
         }
     }
@@ -470,7 +471,7 @@ public class ADSrv implements Runnable {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("ADSrv{");
-        sb.append("PC_USER_RESOLVER_CLASS_NAME='").append(PC_USER_RESOLVER_CLASS_NAME).append('\'');
+        sb.append("PC_USER_RESOLVER_CLASS_NAME='").append(ConstantsFor.PC_USER_RESOLVER_CLASS_NAME).append('\'');
         sb.append(", adUser=").append(adUser.toString());
         sb.append(", userInputRaw='").append(userInputRaw).append('\'');
         sb.append('}');

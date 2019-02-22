@@ -19,6 +19,7 @@ import javax.mail.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.event.ActionEvent;
+import java.io.IOException;
 import java.sql.*;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -109,7 +110,8 @@ public class SpeedChecker implements Callable<Long>, Runnable {
                     LOGGER.info(msg);
                 }
             }
-        } catch (SQLException e) {
+        }
+        catch(SQLException | IOException e){
             FileSystemWorker.error(classMeth, e);
         }
         AppComponents.getProps(true);
@@ -199,7 +201,8 @@ public class SpeedChecker implements Callable<Long>, Runnable {
                     stringBuilder.append("AV speed at this day: ").append(avSpeed).append("\n");
                     stringBuilder.append("AV time: ").append(avTime);
                 }
-            } catch (SQLException e) {
+            }
+            catch(SQLException | IOException e){
                 new MessageLocal().errorAlert(CLASS_NAME, "todayInfo", e.getMessage());
                 FileSystemWorker.error("ChkMailAndUpdateDB.todayInfo", e);
             }
@@ -255,7 +258,8 @@ public class SpeedChecker implements Callable<Long>, Runnable {
                     retMap.put(r.getTimestamp(ConstantsFor.COL_SQL_NAME_TIMESTAMP).toString(), valueS);
                 }
                 retMap.put(LocalDateTime.now().toString(), "okok");
-            } catch (SQLException e) {
+            }
+            catch(SQLException | IOException e){
                 retMap.put(e.getMessage(), new TForms().fromArray(e, false));
             }
             return retMap;
@@ -334,7 +338,8 @@ public class SpeedChecker implements Callable<Long>, Runnable {
                 p.executeUpdate();
                 new MessageToTray().info("DB updated", "Today is " + DayOfWeek.of(dayOfWeek), " Time spend " + timeSpend);
                 return true;
-            } catch (SQLException e) {
+            }
+            catch(SQLException | IOException e){
                 new MessageCons().errorAlert(CLASS_NAME, "writeDB", e.getMessage());
                 FileSystemWorker.error("ChkMailAndUpdateDB.writeDB", e);
                 return false;

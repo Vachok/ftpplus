@@ -15,14 +15,9 @@ import ru.vachok.networker.systray.MessageToTray;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.io.IOException;
+import java.sql.*;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -126,7 +121,8 @@ public class MoreInfoGetter {
                 }
                 return stringBuilder.toString();
             }
-        } catch (SQLException e) {
+        }
+        catch(SQLException | IOException e){
             retBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false));
         }
         return retBuilder.toString();

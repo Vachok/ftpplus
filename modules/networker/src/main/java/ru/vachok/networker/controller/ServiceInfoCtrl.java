@@ -14,6 +14,7 @@ import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.DiapazonedScan;
+import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MyCalen;
 import ru.vachok.networker.services.SpeedChecker;
 
@@ -24,10 +25,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.file.AccessDeniedException;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Stream;
 
@@ -151,7 +149,7 @@ public class ServiceInfoCtrl {
             .append("<b>").append(request.getHeader("host")).append(bBr);
         stringBuilder
             .append("CONNECTION: ")
-            .append("<b>").append(request.getHeader("connection")).append(bBr);
+            .append("<b>").append(request.getHeader(ConstantsNet.STR_CONNECTION)).append(bBr);
         stringBuilder
             .append("upgrade-insecure-requests: ".toUpperCase())
             .append("<b>").append(request.getHeader("upgrade-insecure-requests")).append(bBr);

@@ -13,10 +13,8 @@ import ru.vachok.networker.services.MessageLocal;
 import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Savepoint;
+import java.sql.*;
+import java.util.Date;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -34,6 +32,8 @@ public class PCUserResolver extends ADSrv {
      New instance
      */
     private static final PCUserResolver PC_USER_RESOLVER = new PCUserResolver();
+
+    private static final String METHNAME_REC_AUTO_DB = "PCUserResolver.recAutoDB";
 
     /**
      Последний измененный файл.
@@ -126,7 +126,7 @@ public class PCUserResolver extends ADSrv {
      */
     private synchronized void recAutoDB(String pcName, String lastFileUse) {
         String sql = "insert into pcuser (pcName, userName, lastmod, stamp) values(?,?,?,?)";
-        String classMeth = "PCUserResolver.recAutoDB";
+        String classMeth = METHNAME_REC_AUTO_DB;
         try (Connection connection = new AppComponents().connection(ConstantsNet.DB_NAME)) {
             Savepoint savepoint = connection.setSavepoint();
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql.replaceAll(ConstantsFor.STR_PCUSER, ConstantsFor.STR_PCUSERAUTO))) {
@@ -139,10 +139,11 @@ public class PCUserResolver extends ADSrv {
             } catch (SQLException e) {
                 connection.clearWarnings();
                 connection.releaseSavepoint(savepoint);
-                messageToUser.errorAlert("PCUserResolver", "recAutoDB", e.getMessage());
-                FileSystemWorker.error("PCUserResolver.recAutoDB", e);
+                messageToUser.errorAlert(ConstantsFor.PC_USER_RESOLVER_CLASS_NAME, "recAutoDB", e.getMessage());
+                FileSystemWorker.error(METHNAME_REC_AUTO_DB, e);
             }
-        } catch (SQLException | ArrayIndexOutOfBoundsException | NullPointerException e) {
+        }
+        catch(SQLException | ArrayIndexOutOfBoundsException | NullPointerException | IOException e){
             FileSystemWorker.error(classMeth, e);
         }
     }

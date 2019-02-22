@@ -1,6 +1,7 @@
 package ru.vachok.networker.componentsrepo;
 
 
+import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
@@ -8,6 +9,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Scope;
+import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
@@ -16,13 +18,16 @@ import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.config.ThreadConfig;
+import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetPinger;
 import ru.vachok.networker.net.NetScannerSvc;
+import ru.vachok.networker.net.enums.ConstantsNet;
+import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.SimpleCalculator;
 import ru.vachok.networker.systray.MessageToTray;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.File;
+import java.io.*;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
@@ -42,6 +47,8 @@ public class AppComponents {
      <i>Boiler Plate</i>
      */
     private static final String STR_VISITOR = "visitor";
+
+    private static MessageToUser messageToUser = new MessageLocal();
 
     /**
      @return {@link LoggerFactory}
@@ -69,9 +76,21 @@ public class AppComponents {
     }
 
     @Bean
-    public Connection connection(String dbName) throws SQLException {
-        Connection connection = new RegRuMysql().getDefaultConnection(dbName);
-        return connection;
+    public Connection connection(String dbName) throws SQLException, IOException {
+        OutputStream outputStream = new FileOutputStream("AppComponents.connection.log");
+        PrintWriter printWriter = new PrintWriter(outputStream, true);
+        try{
+            MysqlDataSource dataSource = new RegRuMysql().getDataSourceSchema(dbName);
+            dataSource.setAutoReconnect(true);
+            dataSource.setLogWriter(printWriter);
+            return dataSource.getConnection();
+        }
+        catch(Exception e){
+            messageToUser.errorAlert("AppComponents", ConstantsNet.STR_CONNECTION, e.getMessage());
+            FileSystemWorker.error("AppComponents.connection", e);
+            outputStream.close();
+            return new RegRuMysql().getDefaultConnection(dbName);
+        }
     }
 
     /**

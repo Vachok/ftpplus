@@ -178,7 +178,8 @@ public class MatrixSRV {
             while (r.next()) {
                 getInfo(r, doljAndAccess);
             }
-        } catch (SQLException e) {
+        }
+        catch(SQLException | IOException e){
             FileSystemWorker.error("MatrixSRV.getWorkPosition", e);
         }
         String s = new TForms().fromArray(doljAndAccess, true);
