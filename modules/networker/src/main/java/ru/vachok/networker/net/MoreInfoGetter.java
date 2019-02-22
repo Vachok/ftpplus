@@ -3,11 +3,12 @@ package ru.vachok.networker.net;
 
 import org.springframework.ui.Model;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
+import ru.vachok.networker.net.enums.OtherKnownDevices;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.systray.ActionCloseMsg;
 import ru.vachok.networker.systray.MessageToTray;
@@ -46,8 +47,8 @@ public class MoreInfoGetter {
             if (s.contains("true")) onList.add(s.split("/")[0]);
             else offList.add(s.split("/")[0]);
         });
-        String ptv1Str = ConstantsNet.PTV1_EATMEAT_RU;
-        String ptv2Str = ConstantsNet.PTV2_EATMEAT_RU;
+        String ptv1Str = OtherKnownDevices.PTV1_EATMEAT_RU;
+        String ptv2Str = OtherKnownDevices.PTV2_EATMEAT_RU;
         int frequencyOffPTV1 = Collections.frequency(offList, ptv1Str);
         int frequencyOnPTV1 = Collections.frequency(onList, ptv1Str);
         int frequencyOnPTV2 = Collections.frequency(onList, ptv2Str);
@@ -60,7 +61,7 @@ public class MoreInfoGetter {
     /**
      Поиск имён пользователей компьютера
      <p>
-     Вернуть: <br> 1. {@link ConditionChecker#onLinesCheck(String, String)}. Если ПК онлайн. Прибавить 1 к {@link NetScannerSvc#onLinePCs}. <br> {@code select * from velkompc where NamePP like ?} <br>
+     Вернуть: <br> 1. {@link ConditionChecker#onLinesCheck(String, String)}. Если ПК онлайн. Прибавить 1 к {@link NetScannerSvc#onLinePCsNum}. <br> {@code select * from velkompc where NamePP like ?} <br>
      2. {@link ConditionChecker#offLinesCheckUser(String, String)}. Если ПК офлайн. <br> {@code select * from pcuser where pcName like ?}
      <p>
 
@@ -73,8 +74,8 @@ public class MoreInfoGetter {
         String sql;
         if (isOnline) {
             sql = "select * from velkompc where NamePP like ?";
-            NetScannerSvc.onLinePCs = NetScannerSvc.onLinePCs + 1;
-            return ConditionChecker.onLinesCheck(sql, pcName) + " | " + NetScannerSvc.onLinePCs;
+            NetScannerSvc.onLinePCsNum = NetScannerSvc.onLinePCsNum + 1;
+            return ConditionChecker.onLinesCheck(sql, pcName) + " | " + NetScannerSvc.onLinePCsNum;
         } else {
             sql = "select * from pcuser where pcName like ?";
             return ConditionChecker.offLinesCheckUser(sql, pcName);
@@ -96,7 +97,7 @@ public class MoreInfoGetter {
         } catch (ArrayIndexOutOfBoundsException e) {
             retBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false));
         }
-        try (Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.DB_PREFIX + ConstantsFor.STR_VELKOM);
+        try (Connection c = new AppComponents().connection(ConstantsFor.DB_PREFIX + ConstantsFor.STR_VELKOM);
              PreparedStatement p = c.prepareStatement(sql)) {
             p.setString(1, "%" + userInputRaw + "%");
             try (ResultSet r = p.executeQuery()) {

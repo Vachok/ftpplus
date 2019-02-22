@@ -3,7 +3,6 @@ package ru.vachok.networker.ad;
 
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
-import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -13,7 +12,10 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -32,7 +34,7 @@ public class PhotoConverterSRV {
      */
     private static final Logger LOGGER = AppComponents.getLogger();
 
-    private final Properties properties = ConstantsFor.getProps();
+    private final Properties properties = AppComponents.getProps();
 
     /**
      Путь до папки с фото.
@@ -134,14 +136,14 @@ public class PhotoConverterSRV {
         } catch (NullPointerException e) {
             filesList.put("ERROR", null);
         }
-        ConstantsFor.saveProps(properties);
     }
 
     private Set<String> samAccFromDB() {
 
         Set<String> samAccounts = new HashSet<>();
-        Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.DB_PREFIX + ConstantsFor.STR_VELKOM);
-        try (PreparedStatement p = c.prepareStatement("select * from u0466446_velkom.adusers");
+
+        try (Connection c = new AppComponents().connection(ConstantsFor.DB_PREFIX + ConstantsFor.STR_VELKOM);
+             PreparedStatement p = c.prepareStatement("select * from u0466446_velkom.adusers");
              ResultSet r = p.executeQuery()) {
             while (r.next()) {
                 samAccounts.add(r.getString("samAccountName"));

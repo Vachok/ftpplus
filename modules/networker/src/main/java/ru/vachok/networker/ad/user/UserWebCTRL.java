@@ -1,12 +1,13 @@
 package ru.vachok.networker.ad.user;
 
 
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ad.ADSrv;
@@ -20,13 +21,9 @@ import javax.servlet.http.HttpServletRequest;
  Страница user.html {@link Controller}
 
  @since 13.02.2019 (15:52) */
+@SuppressWarnings ("SameReturnValue")
 @Controller
 public class UserWebCTRL {
-
-    /**
-     {@link MessageSwing}
-     */
-    private static MessageToUser messageToUser = new MessageSwing();
 
     /**
      {@link ADSrv#getAdUser()}
@@ -64,7 +61,7 @@ public class UserWebCTRL {
      <b>Атрибуты {@link Model}</b>:<br>
      {@link ConstantsFor#ATT_ADUSER} - {@link ADUser} <br>
      {@link ConstantsFor#ATT_TITLE} - {@link ConstantsFor#getMemoryInfo()} <br>
-     {@link ConstantsFor#ATT_RESULT} - {@code adUsersEquals}+ {@link ADUser#toStringBR()}.
+     {@link ConstantsFor#ATT_RESULT} - {@code adUsersEquals}+ {@link ADUser#toString()}.
      Выведем {@code adUsersEquals} через {@link MessageToUser#infoTimer(int, java.lang.String)} <br>
      {@link ConstantsFor#ATT_FOOTER} - new {@link PageFooter#getFooterUtext()}
      <p>
@@ -79,17 +76,19 @@ public class UserWebCTRL {
     @PostMapping("/userget")
     public String userPost(Model model, HttpServletRequest request, @ModelAttribute ADUser adUser) {
         this.adUser = adUser;
-        ADSrv adSrv = AppComponents.adSrvForUser(adUser);
-        adSrv.setUserInputRaw(adUser.getInputName());
-
-        String adUsersEquals = "ModelAttribute adUser.equals(this.adUser): " + adUser.equals(this.adUser) + "<br> adSrv.getAdUser.equals this.adUser: "
-            + adSrv.getAdUser().equals(this.adUser) + "<p>";
-        messageToUser.infoTimer(60, adUsersEquals);
-
+        ADSrv adSrv = adSrvForUser(adUser);
         model.addAttribute(ConstantsFor.ATT_ADUSER, adUser);
-        model.addAttribute(ConstantsFor.ATT_RESULT, adUsersEquals + adSrv.getAdUser());
+        model.addAttribute(ConstantsFor.ATT_RESULT, adSrv.toString());
         model.addAttribute(ConstantsFor.ATT_TITLE, ConstantsFor.getMemoryInfo());
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
         return "user";
+    }
+
+    @Bean
+    @Scope (ConstantsFor.SINGLETON)
+    public static ADSrv adSrvForUser(ADUser adUser) {
+        ADSrv adSrv = new ADSrv(adUser);
+        adSrv.setUserInputRaw(adUser.getInputName());
+        return adSrv;
     }
 }

@@ -5,6 +5,7 @@ import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
@@ -96,7 +97,7 @@ public class ScanOnline implements Runnable {
 
     @Override
     public void run() {
-        ThreadConfig.executeAsThread(this::offlineNotEmptyActions);
+        AppComponents.threadConfig().executeAsThread(this::offlineNotEmptyActions);
         try {
             List<InetAddress> onList = NET_LIST_KEEPER.onlinesAddressesList();
             runPing(onList);

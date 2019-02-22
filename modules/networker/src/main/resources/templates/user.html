@@ -6,10 +6,12 @@
     <link href="css/main.css" media="all" rel="stylesheet" th:href="@{css/main.css}" type="text/css"/>
 </head>
 <body>
-<form method="POST" th:action="@{/userget}" th:object="${aduser}"><br>
+<form enctype="multipart/form-data" method="POST" th:action="@{/userget}" th:object="${aduser}"><br>
     Введите %username% :<br>
     <input placeholder="kudr" required th:field="*{inputName}" type="text"/>
     <br>
+    Файл-выгрузка из AD: <br>
+    <input th:field="*{usersAD}" type="file"/><br><br>
     <input type="submit" value="Посмотреть..."/><br>
 </form>
 <center><p th:utext="${result}"></center>

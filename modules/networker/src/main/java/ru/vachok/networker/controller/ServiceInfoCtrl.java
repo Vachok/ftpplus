@@ -12,7 +12,6 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
-import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.DiapazonedScan;
 import ru.vachok.networker.services.MyCalen;
@@ -54,17 +53,33 @@ public class ServiceInfoCtrl {
 
     private float getLast() {
         return TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() -
-            Long.parseLong(ConstantsFor.getProps().getProperty("lasts", 1544816520000L + ""))) / 60f / 24f;
+            Long.parseLong(AppComponents.getProps().getProperty("lasts", 1544816520000L + ""))) / 60f / 24f;
     }
 
     private String getJREVers() {
         return System.getProperty("java.version");
     }
 
+    /**
+     GetMapping /serviceinfo
+     <p>
+     Записываем {@link Visitor}. <br>
+     Выполним как трэд - new {@link SpeedChecker}. <br>
+     Если ПК авторизован - вернуть {@code vir.html}, иначе - throw new {@link AccessDeniedException}
+
+     @param model    {@link Model}
+     @param request  {@link HttpServletRequest}
+     @param response {@link HttpServletResponse}
+     @return vir.html
+     @throws AccessDeniedException если не {@link ConstantsFor#getPcAuth(HttpServletRequest)}
+     @throws ExecutionException    {@link #modModMaker(Model, HttpServletRequest, Visitor)}
+     @throws InterruptedException  {@link #modModMaker(Model, HttpServletRequest, Visitor)}
+     */
     @GetMapping("/serviceinfo")
     public String infoMapping(Model model, HttpServletRequest request, HttpServletResponse response) throws AccessDeniedException, ExecutionException, InterruptedException {
         Thread.currentThread().setName("ServiceInfoCtrl.infoMapping");
         this.visitor = new AppComponents().visitor(request);
+        AppComponents.threadConfig().executeAsThread(new SpeedChecker());
         this.authReq = Stream.of("0:0:0:0", "10.10.111", "10.200.213.85", "172.16.20", "10.200.214.80").anyMatch(sP -> request.getRemoteAddr().contains(sP));
         if (authReq) {
             modModMaker(model, request, visitor);
@@ -87,7 +102,7 @@ public class ServiceInfoCtrl {
     @GetMapping("/stop")
     public String closeApp() throws AccessDeniedException {
         if (authReq) {
-            ThreadConfig.executeAsThread(new ExitApp(ConstantsFor.getUpTime() + " " + ConstantsFor.getMemoryInfo()));
+            AppComponents.threadConfig().executeAsThread(new ExitApp(ConstantsFor.getUpTime() + " " + ConstantsFor.getMemoryInfo()));
         } else {
             throw new AccessDeniedException("DENY!");
         }
@@ -185,7 +200,7 @@ public class ServiceInfoCtrl {
     private String listFilesToReadStr() {
         List<File> readUs = new ArrayList<>();
         for (File f : Objects.requireNonNull(new File(".").listFiles())) {
-            if (f.getName().toLowerCase().contains(ConstantsFor.STR_VISIT)) {
+            if (f.getName().toLowerCase().contains(ConstantsFor.STRS_VISIT[0])) {
                 readUs.add(f);
             }
         }

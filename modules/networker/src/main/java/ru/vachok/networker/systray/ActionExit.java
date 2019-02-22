@@ -2,8 +2,9 @@ package ru.vachok.networker.systray;
 
 
 import ru.vachok.messenger.MessageCons;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ExitApp;
-import ru.vachok.networker.config.ThreadConfig;
+import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.net.NetListKeeper;
 
 import javax.swing.*;
@@ -31,9 +32,9 @@ class ActionExit extends AbstractAction {
 
         try {
             FileOutputStream fileOutputStream = new FileOutputStream(NetListKeeper.class.getSimpleName() + ".ser");
-            ThreadConfig.executeAsThread(new ExitApp(reason, fileOutputStream, NetListKeeper.class));
+            AppComponents.threadConfig().executeAsThread(new ExitApp(reason, fileOutputStream, NetListKeeper.class));
         } catch (IOException ex) {
-            new MessageCons().errorAlert("ActionExit", "actionPerformed", ex.getMessage());
+            new MessageCons().errorAlert("ActionExit", ConstantsFor.METHNAME_ACTIONPERFORMED, ex.getMessage());
         }
     }
 }

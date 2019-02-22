@@ -1,13 +1,11 @@
 package ru.vachok.networker.systray;
 
 
-import org.slf4j.Logger;
-import ru.vachok.messenger.MessageSwing;
-import ru.vachok.networker.AppInfoOnLoad;
-import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.messenger.MessageCons;
+import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.net.DiapazonedScan;
+import ru.vachok.networker.services.MessageLocal;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -23,23 +21,17 @@ import java.util.concurrent.TimeUnit;
  @since 25.01.2019 (9:33) */
 class ActionSomeInfo extends AbstractAction {
 
-    /**
-     {@link AppComponents#getLogger()}
-     */
-    private static final Logger LOGGER = AppComponents.getLogger();
+    private transient MessageToUser messageToUser = new MessageLocal();
 
     ActionSomeInfo() {
-        SystemTrayHelper.delOldActions();
+        new MessageCons().errorAlert("ActionSomeInfo.ActionSomeInfo");
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        LOGGER.warn("ActionSomeInfo.actionPerformed");
-        Date newScan = new Date(DiapazonedScan.getInstance().getStopClass() + TimeUnit.MINUTES.toMillis(111));
-        new MessageSwing(660, 520, 45, 35).infoNoTitles("New Scan at: " + newScan.toString() + " | " +
-            ConstantsFor.getUpTime() + ", " + "\n" +
-            Thread.activeCount() + " threads " + ConstantsFor.getMemoryInfo() + AppInfoOnLoad.iisLogSize() + "\n" +
-            AppComponents.versionInfo().toString() + "\n" +
-            new TForms().fromArray(ConstantsFor.getProps()));
+        Date newScan = new Date(DiapazonedScan.getInstance().getStopClassStampLong() + TimeUnit.MINUTES.toMillis(111));
+        new Thread(IntoApplication.infoMsgRunnable).start();
+        messageToUser.info("ActionSomeInfo.actionPerformed", "newScan = ", newScan.toString());
+        SystemTrayHelper.delOldActions();
     }
 }

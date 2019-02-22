@@ -166,7 +166,7 @@ public class ActDirectoryCTRL {
      @return aditem.html
      */
     private String queryStringExists(String queryString, Model model) {
-        NetScannerSvc netScannerSvc = NetScannerSvc.getI();
+        NetScannerSvc netScannerSvc = AppComponents.netScannerSvc();
         netScannerSvc.setThePc(queryString);
         String attributeValue = NetScannerSvc.getInfoFromDB();
         model.addAttribute(ConstantsFor.ATT_TITLE, queryString + " " + attributeValue);

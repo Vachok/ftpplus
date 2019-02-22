@@ -13,7 +13,9 @@ import javax.mail.Address;
 import javax.servlet.http.Cookie;
 import java.io.File;
 import java.net.InetAddress;
+import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentMap;
 
 
@@ -23,7 +25,7 @@ import java.util.concurrent.ConcurrentMap;
  Делает похожие действия, но сразу так, как нужно для {@link ru.vachok.networker.IntoApplication}
 
  @since 06.09.2018 (9:33) */
-@SuppressWarnings ("ClassWithTooManyMethods")
+@SuppressWarnings("ClassWithTooManyMethods")
 public class TForms {
 
     /**
@@ -69,40 +71,26 @@ public class TForms {
      @return {@link #brStringBuilder} или {@link #nStringBuilder}
      */
     public String fromArray(Exception e, boolean isHTML) {
-        brStringBuilder.append(P_STR);
-        nStringBuilder.append(N_STR);
+        this.brStringBuilder = new StringBuilder();
+        this.nStringBuilder = new StringBuilder();
+        nStringBuilder.append(LocalDateTime.now().toString()).append(N_STR).append(e.getMessage()).append(" Exception message.\n");
+        brStringBuilder.append(LocalDateTime.now().toString()).append(BR_STR).append(e.getMessage()).append(" Exception message.<p>");
+
         for (StackTraceElement stackTraceElement : e.getStackTrace()) {
-            nStringBuilder
-                .append("At ").append(stackTraceElement.getLineNumber()).append(" line, classname is ")
-                .append(stackTraceElement.getClassName().toUpperCase()).append(" file: ").append(stackTraceElement.getFileName().toUpperCase())
-                .append("\n*Method is native: ")
-                .append(stackTraceElement.isNativeMethod()).append("\n")
-                .append(stackTraceElement.getMethodName().toUpperCase()).append(" name of method.\n");
-            brStringBuilder
-                .append("At ")
-                .append(stackTraceElement.getClassName()).append(" ")
-                .append(stackTraceElement.getLineNumber()).append(" ").append(STR_LINE_CLASS).append(STR_DISASTER)
-                .append(stackTraceElement.getMethodName()).append(STR_METHFILE)
-                .append(stackTraceElement.getFileName());
+            parseTrace(stackTraceElement);
         }
-        if(isHTML){
+        brStringBuilder.append("<p>");
+        nStringBuilder.append(N_STR).append(N_STR).append(N_STR);
+
+        if (e.getSuppressed().length > 0) {
+            parseThrowable(e);
+        }
+
+        if (isHTML) {
             return brStringBuilder.toString();
-        }
-        else{
+        } else {
             return nStringBuilder.toString();
         }
-    }
-
-    public String fromArray(File[] dirFiles) {
-        for(File f : dirFiles){
-            if(f.getName().contains(".jar")){
-                return f.getName().replace(".jar", "");
-            }
-            else{
-                return System.getProperties().getProperty("version");
-            }
-        }
-        throw new UnsupportedOperationException("Хуя ты ХЕРург");
     }
 
     public String fromEnum(Enumeration<String> enumStrings, boolean br) {
@@ -156,8 +144,6 @@ public class TForms {
     public String fromADUsersList(List<ADUser> adUsers, boolean br) {
         nStringBuilder.append(N_STR);
         for (ADUser ad : adUsers) {
-            brStringBuilder
-                .append(ad.toStringBR());
             nStringBuilder
                 .append(ad.toString())
                 .append(N_STR);
@@ -249,7 +235,7 @@ public class TForms {
 
     public String fromArray(Throwable[] suppressed) {
         nStringBuilder.append("suppressed throwable!\n".toUpperCase());
-        for(Throwable throwable : suppressed){
+        for (Throwable throwable : suppressed) {
             nStringBuilder.append(throwable.getMessage());
         }
         return nStringBuilder.toString();
@@ -389,6 +375,47 @@ public class TForms {
         }
     }
 
+    public String fromArray(Throwable throwable, boolean b) {
+        StackTraceElement[] throwableStackTrace = throwable.getStackTrace();
+        if (b) {
+            return new TForms().fromArray(throwableStackTrace, true);
+        } else {
+            return new TForms().fromArray(throwableStackTrace, false);
+        }
+    }
+
+    public String fromArray(BlockingQueue<Runnable> runnableBlockingQueue, boolean b) {
+        this.nStringBuilder = new StringBuilder();
+        this.brStringBuilder = new StringBuilder();
+
+        nStringBuilder.append(N_STR);
+        Iterator<Runnable> runnableIterator = runnableBlockingQueue.stream().iterator();
+        int count = 0;
+        while (runnableIterator.hasNext()) {
+            Runnable next = runnableIterator.next();
+            count++;
+            nStringBuilder.append(count).append(") ").append(next).append(BR_STR);
+            brStringBuilder.append(count).append(") ").append(next).append(N_STR);
+        }
+        if(b){
+            return brStringBuilder.toString();
+        }
+        else{
+            return nStringBuilder.toString();
+        }
+    }
+
+    public static String fromArray(File[] dirFiles) {
+        for (File f : dirFiles) {
+            if (f.getName().contains(".jar")) {
+                return f.getName().replace(".jar", "");
+            } else {
+                return System.getProperties().getProperty("version");
+            }
+        }
+        throw new UnsupportedOperationException("Хуя ты ХЕРург");
+    }
+
     public static String from(Exception e) {
         StringBuilder stringBuilder = new StringBuilder();
 
@@ -396,17 +423,16 @@ public class TForms {
             .append(new Date()).append(N_STR)
             .append("Exception message: ").append(e.getMessage()).append(N_STR)
             .append("Trace: \n");
-        for(StackTraceElement elem : e.getStackTrace()){
+        for (StackTraceElement elem : e.getStackTrace()) {
             appendNElement(stringBuilder, elem);
         }
-        if(e.getSuppressed()!=null){
-            for(Throwable throwable : e.getSuppressed()){
-                for(StackTraceElement element : throwable.getStackTrace()){
+        if (e.getSuppressed() != null) {
+            for (Throwable throwable : e.getSuppressed()) {
+                for (StackTraceElement element : throwable.getStackTrace()) {
                     appendNElement(stringBuilder, element);
                 }
             }
-        }
-        else{
+        } else {
             stringBuilder.append("Suppressed is null");
         }
         return stringBuilder.toString();
@@ -414,7 +440,7 @@ public class TForms {
 
     private static void appendNElement(StringBuilder stringBuilder, StackTraceElement elem) {
         String strNative = "NATIVE***>>>  ";
-        if(elem.isNativeMethod()){
+        if (elem.isNativeMethod()) {
             stringBuilder.append(strNative);
         }
         stringBuilder
@@ -425,13 +451,57 @@ public class TForms {
             .append(" (").append(elem.getFileName()).append(")").append(N_STR);
     }
 
-    public String fromArray(Throwable throwable, boolean b) {
-        StackTraceElement[] throwableStackTrace = throwable.getStackTrace();
-        if(b){
-            return new TForms().fromArray(throwableStackTrace, true);
+    private void parseThrowable(Exception e) {
+        Throwable[] eSuppressed = e.getSuppressed();
+        for (Throwable throwable : eSuppressed) {
+            nStringBuilder.append(throwable.getMessage()).append(N_STR);
+            brStringBuilder.append(throwable.getMessage()).append(BR_STR);
+            for (StackTraceElement stackTraceElement : throwable.getStackTrace()) {
+                parseTrace(stackTraceElement);
+            }
+            nStringBuilder.append(N_STR).append(N_STR);
+            brStringBuilder.append(BR_STR);
         }
-        else{
-            return new TForms().fromArray(throwableStackTrace, false);
+    }
+
+    private void parseTrace(StackTraceElement stackTraceElement) {
+        String fileName;
+        try {
+            fileName = stackTraceElement.getFileName();
+        } catch (Exception ignore) {
+            fileName = "No fileName!".toUpperCase();
         }
+        nStringBuilder
+            .append("At ").append(stackTraceElement.getLineNumber()).append(" line, classname is ")
+            .append(stackTraceElement.getClassName())
+            .append(" file: ")
+            .append(fileName).append(" ; ")
+            .append(stackTraceElement.getMethodName()).append(" name of method.")
+            .append("\nMethod is native: ")
+            .append(stackTraceElement.isNativeMethod()).append("\n");
+        brStringBuilder
+            .append("At ").append(stackTraceElement.getLineNumber()).append(" line, classname is ")
+            .append(stackTraceElement.getClassName())
+            .append(" file: ")
+            .append(fileName).append(" ; ")
+            .append(stackTraceElement.getMethodName()).append(" name of method.")
+            .append("<br>Method is native: ")
+            .append(stackTraceElement.isNativeMethod()).append(BR_STR);
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("TForms{");
+        sb.append("STR_LINE_CLASS='").append(STR_LINE_CLASS).append('\'');
+        sb.append(", STR_VALUE='").append(STR_VALUE).append('\'');
+        sb.append(", N_STR='").append(N_STR).append('\'');
+        sb.append(", BR_STR='").append(BR_STR).append('\'');
+        sb.append(", P_STR='").append(P_STR).append('\'');
+        sb.append(", STR_DISASTER='").append(STR_DISASTER).append('\'');
+        sb.append(", STR_METHFILE='").append(STR_METHFILE).append('\'');
+        sb.append(", brStringBuilder=").append(brStringBuilder.toString());
+        sb.append(", nStringBuilder=").append(nStringBuilder.toString());
+        sb.append('}');
+        return sb.toString();
     }
 }

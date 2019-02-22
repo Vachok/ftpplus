@@ -4,14 +4,16 @@ package ru.vachok.networker.net;
 import org.slf4j.Logger;
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 
 import java.io.*;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -61,11 +63,11 @@ public class WeekPCStats implements Runnable {
         final long stArt = System.currentTimeMillis();
         String sql = "select * from pcuserauto";
         File file = new File(ConstantsNet.VELKOM_PCUSERAUTO_TXT);
-        try(Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.DB_PREFIX + ConstantsFor.STR_VELKOM);
-            PreparedStatement p = c.prepareStatement(sql);
-            ResultSet r = p.executeQuery();
-            OutputStream outputStream = new FileOutputStream(file);
-            PrintWriter printWriter = new PrintWriter(outputStream, true)){
+        try (Connection c = new AppComponents().connection(ConstantsFor.DB_PREFIX + ConstantsFor.STR_VELKOM);
+             PreparedStatement p = c.prepareStatement(sql);
+             ResultSet r = p.executeQuery();
+             OutputStream outputStream = new FileOutputStream(file);
+             PrintWriter printWriter = new PrintWriter(outputStream, true)){
             while(r.next()){
                 printWriter.println(new StringBuilder()
                     .append(r.getString(1))

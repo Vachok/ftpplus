@@ -1,16 +1,15 @@
 package ru.vachok.networker.systray;
 
 
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
-import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.*;
+import ru.vachok.networker.AppInfoOnLoad;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.accesscontrol.common.ArchivesAutoCleaner;
 import ru.vachok.networker.componentsrepo.AppComponents;
-import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.MyServer;
-import ru.vachok.networker.services.DBMessenger;
+import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.Putty;
 
 import java.awt.*;
@@ -18,9 +17,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.Socket;
-import java.util.Objects;
-import java.util.Properties;
 
 
 /**
@@ -34,196 +30,173 @@ public final class SystemTrayHelper extends AppInfoOnLoad {
     /**
      Путь к папке со значками
      */
-    private static final String IMG_FOLDER_NAME = "/static/images/";
+    private static final @NotNull String IMG_FOLDER_NAME = "/static/images/";
 
     /**
      {@link AppComponents#getLogger()}
      */
     private static final Logger LOGGER = AppComponents.getLogger();
 
+    private static final String CLASS_NAME = SystemTrayHelper.class.getSimpleName();
+
+    private static @NotNull TrayIcon trayIcon;
+    
     /**
-     Имя ПК, где запущено приложение
-     <p>
-     {@link ConstantsFor#thisPC()}
+     {@link MessageLocal}
      */
-    private static final String THIS_PC = ConstantsFor.thisPC();
+    private static MessageToUser messageToUser = new MessageLocal();
 
-    /**
-     Instance
-     */
-    private static final SystemTrayHelper SYSTEM_TRAY_HELPER = new SystemTrayHelper();
-
-    /**
-     {@link DBMessenger}
-     */
-    private static final MessageToUser MESSAGE_TO_USER = new MessageCons();
-
-    private static TrayIcon trayIcon = null;
-
-    /**
-     Конструктор по-умолчанию
-     */
-    private SystemTrayHelper() {
-
-    }
-
-    /**
-     @return {@link #SYSTEM_TRAY_HELPER}
-     */
-    public static SystemTrayHelper getInstance() {
-        return SYSTEM_TRAY_HELPER;
-    }
-
-    /**
-     Создаёт System Tray Icon
-     <p>
-     Usages: {@link IntoApplication#main(String[])} <br> Uses: 1.1 {@link #srvGitIs()}, 1.2 {@link AppComponents#versionInfo()}, 1.3 {@link AppComponents#versionInfo()}, 1.4 {@link
-    AppComponents#versionInfo()}, 1.5 {@link ConstantsFor#saveProps(Properties)}, 1.6 {@link FileSystemWorker#delTemp()}, 1.7 {@link #addItems(PopupMenu)} .
-
-     @param iconFileName имя файла-иконки.
-     */
-    @SuppressWarnings("FeatureEnvy")
-    public static void addTray(String iconFileName) {
-        String classMeth = "SystemTrayHelper.addTray";
-        new MessageCons().info("iconFileName = [" + iconFileName + "]", "input parameters. Returns:", "void");
-        new MessageCons().errorAlert(classMeth);
-        boolean myPC;
-        AppInfoOnLoad.runCommonScan();
-        myPC = THIS_PC.toLowerCase().contains(ConstantsFor.NO0027) || THIS_PC.equalsIgnoreCase("home");
-        if (iconFileName == null) {
-            iconFileName = "icons8-ip-адрес-15.png";
-        } else {
-            if (myPC) {
-                iconFileName = "icons8-плохие-поросята-48.png";
-            }
+    static TrayIcon getTrayIcon() throws ExceptionInInitializerError {
+        if (ConstantsFor.IS_SYSTRAY_AVAIL) {
+            return trayIcon;
         }
-        if (srvGitIs()) {
-            iconFileName = "icons8-отменить-2-20.png";
-        }
-        iconFileName = new StringBuilder().append(IMG_FOLDER_NAME).append(iconFileName).toString();
-
-        Image image = null;
-        try{
-            image = Toolkit.getDefaultToolkit().getImage(SystemTrayHelper.class.getResource(iconFileName));
-        }
-        catch(Exception e){
-            new MessageCons().errorAlert("SystemTrayHelper", "addTray", e.getMessage());
-            FileSystemWorker.error(classMeth, e);
-        }
-        PopupMenu popupMenu = new PopupMenu();
-        MenuItem defItem = new MenuItem();
-        trayIcon = new TrayIcon(Objects.requireNonNull(image),
-            new StringBuilder().append(AppComponents.versionInfo().getAppBuild()).append(" v. ")
-                .append(AppComponents.versionInfo().getAppVersion()).append(" ")
-                .append(AppComponents.versionInfo().getBuildTime()).toString(), popupMenu);
-        trayIcon.addActionListener(new ActionDefault());
-        addItems(popupMenu);
-        trayIcon.setImageAutoSize(true);
-        defItem.setLabel("Exit");
-        defItem.addActionListener(new ActionExit(classMeth));
-        popupMenu.add(defItem);
-        trayIcon.addActionListener(new ActionDefault());
-        try {
-            if (SystemTray.isSupported()) {
-                SystemTray systemTray = SystemTray.getSystemTray();
-                systemTray.add(trayIcon);
-            } else {
-                LOGGER.warn("Tray not supported!");
-                Thread.currentThread().interrupt();
-            }
-        } catch (AWTException e) {
-            LOGGER.warn(e.getMessage(), e);
-            Thread.currentThread().interrupt();
-        }
-    }
-
-    static void delOldActions() {
-        LOGGER.warn("SystemTrayHelper.delOldActions");
-        for (ActionListener actionListener : trayIcon.getActionListeners()) {
-            trayIcon.removeActionListener(actionListener);
-        }
-    }
-
-    /**
-     Проверка доступности <a href="http://srv-git.eatmeat.ru:1234">srv-git.eatmeat.ru</a>
-     <p>
-     Usages: {@link #addTray(String)} <br> Uses: -
-
-     @return srv-git online
-     */
-    @SuppressWarnings("MethodWithMultipleReturnPoints")
-    private static boolean srvGitIs() {
-        try {
-            return !InetAddress.getByName(ConstantsFor.SRV_GIT_EATMEAT_RU).isReachable(1000);
-        } catch (IOException e) {
-            LOGGER.error(e.getMessage(), e);
-            return true;
+        else{
+            throw new UnsupportedOperationException();
         }
     }
 
     /**
      Добавление компонентов в меню
      <p>
-     Usages: {@link #addTray(String)} <br> Uses: 1.1 {@link ThreadConfig#threadPoolTaskExecutor()}, 1.2 {@link SSHFactory.Builder#build()}, 1.3 {@link SSHFactory.Builder} 1.4 {@link SSHFactory#call()},
      1.5 {@link ArchivesAutoCleaner}
-
-     @param popupMenu {@link PopupMenu}
      */
-    private static void addItems(PopupMenu popupMenu) {
-        Thread thread = AppComponents.threadConfig().createThread(SystemTrayHelper::recOn);
-        thread.start();
+    @SuppressWarnings("OverlyLongMethod")
+    private static PopupMenu getMenu() {
+        PopupMenu popupMenu = new PopupMenu();
+        String classMeth = CLASS_NAME + ".getMenu";
+        MenuItem defItem = new MenuItem();
         MenuItem gitStartWeb = new MenuItem();
-        gitStartWeb.addActionListener(new ActionGITStart(AppComponents.threadConfig()));
+        MenuItem toConsole = new MenuItem();
+        MenuItem delFiles = new MenuItem();
+        MenuItem logToFilesystem = new MenuItem();
+
+        defItem.setLabel("Exit");
+        defItem.addActionListener(new ActionExit(classMeth));
+        popupMenu.add(defItem);
+
+        gitStartWeb.addActionListener(new ActionGITStart());
         gitStartWeb.setLabel("GIT WEB ON");
         popupMenu.add(gitStartWeb);
-        MenuItem toConsole = new MenuItem();
+
         toConsole.setLabel("Console Back");
         toConsole.addActionListener((ActionEvent e) -> System.setOut(System.err));
         popupMenu.add(toConsole);
-        if (!ConstantsFor.thisPC().toLowerCase().contains("home")) {
-            MenuItem puttyStarter = new MenuItem();
-            puttyStarter.addActionListener((ActionEvent e) -> new Putty().start());
-            puttyStarter.setLabel("Putty");
-            popupMenu.add(puttyStarter);
-        } else {
+
+        if (ConstantsFor.thisPC().toLowerCase().contains("home")) {
             MenuItem reloadContext = new MenuItem();
             reloadContext.addActionListener(new ActionTests());
             reloadContext.setLabel("Run tests");
             popupMenu.add(reloadContext);
+        } else {
+            MenuItem puttyStarter = new MenuItem();
+            puttyStarter.addActionListener((ActionEvent e) -> new Putty().start());
+            puttyStarter.setLabel("Putty");
+            popupMenu.add(puttyStarter);
         }
-        MenuItem delFiles = new MenuItem();
-        delFiles.addActionListener(new ActionDelTMP(AppComponents.threadConfig().threadPoolTaskExecutor(), delFiles, popupMenu));
+
+        delFiles.addActionListener(new ActionDelTMP(AppComponents.threadConfig().getTaskExecutor(), delFiles, popupMenu));
         delFiles.setLabel("Clean last year");
         popupMenu.add(delFiles);
-        MenuItem logToFilesystem = new MenuItem();
+
         logToFilesystem.setLabel("Get some info");
         logToFilesystem.addActionListener(new ActionSomeInfo());
         popupMenu.add(logToFilesystem);
+        return popupMenu;
     }
 
     /**
-     Reconnect Socket, пока он открыт
-     <p>
-     1. {@link MyServer#setSocket(java.net.Socket)}. Создаём новый {@link Socket}. <br>
-     2. {@link MyServer#getSocket()} - пока он не {@code isClosed}, 3. {@link MyServer#reconSock()} реконнект. <br><br>
-     {@link IOException}, {@link InterruptedException}, {@link NullPointerException} : <br>
-     4. {@link TForms#fromArray(java.lang.Exception, boolean)} - преобразуем исключение в строку. <br>
-     5. {@link AppComponents#threadConfig()} , 6 {@link ThreadConfig#threadPoolTaskExecutor()} перезапуск {@link MyServer#getI()}
+     Конструктор по-умолчанию
      */
-    private static void recOn() {
-        MyServer.setSocket(new Socket());
-        while (!MyServer.getSocket().isClosed()) {
-            try {
-                MyServer.reconSock();
-            } catch (IOException | InterruptedException | NullPointerException e1) {
-                MESSAGE_TO_USER.errorAlert(SystemTrayHelper.class.getSimpleName(), e1.getMessage(), new TForms().fromArray(e1, false));
-                AppComponents.threadConfig().threadPoolTaskExecutor().submit(MyServer.getI());
-                Thread.currentThread().interrupt();
+    private SystemTrayHelper() {
+    }
+
+    /**
+     Создаёт System Tray Icon
+     */
+    public static void addTray(String imageFileName) {
+        trayIcon = new TrayIcon(
+            getImage(imageFileName),
+            new StringBuilder()
+                .append(AppComponents.versionInfo().getAppBuild()).append(" v. ")
+                .append(AppComponents.versionInfo().getAppVersion()).append(" ")
+                .append(AppComponents.versionInfo().getBuildTime()).toString(),
+            getMenu());
+        trayIcon.setImage(getImage(imageFileName));
+        trayIcon.setImageAutoSize(true);
+        trayIcon.addActionListener(new ActionDefault());
+
+        boolean isTrayAdded = addTrayToSys();
+        messageToUser.info("SystemTrayHelper.addTray", "isTrayAdded", String.valueOf(isTrayAdded));
+    }
+
+    static void delOldActions() {
+        Thread.currentThread().setName(CLASS_NAME + ".delOldActions");
+        try {
+            ActionListener[] actionListeners = trayIcon.getActionListeners();
+            for (ActionListener actionListener : actionListeners) {
+                trayIcon.removeActionListener(actionListener);
             }
+        } catch (NullPointerException e) {
+            FileSystemWorker.error("SystemTrayHelper.delOldActions", e);
+            throw new IllegalComponentStateException("actionListeners is " + e.getMessage());
         }
     }
 
-    static TrayIcon getTrayIcon() {
-        return trayIcon;
+    private static boolean addTrayToSys() {
+        boolean retBool = SystemTray.isSupported();
+        try{
+            if(retBool){
+                SystemTray systemTray = SystemTray.getSystemTray();
+                systemTray.add(trayIcon);
+                retBool = systemTray.getTrayIcons().length > 0;
+            }
+            else{
+                LOGGER.warn("Tray not supported!");
+                retBool = false;
+            }
+        }
+        catch(AWTException e){
+            messageToUser.errorAlert(CLASS_NAME, "addTrayToSys", e.getMessage());
+            FileSystemWorker.error("SystemTrayHelper.addTrayToSys", e);
+        }
+        return retBool;
+    }
+
+    /**
+     Проверка доступности <a href="http://srv-git.eatmeat.ru:1234">srv-git.eatmeat.ru</a>
+     <p>
+
+     @return srv-git online
+     */
+    private static boolean isSrvGitOK() {
+        try{
+            return InetAddress.getByName(ConstantsFor.SRV_GIT_EATMEAT_RU).isReachable(1000);
+        } catch (IOException e) {
+            throw new IllegalStateException("***Network Problems Detected***");
+        }
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("SystemTrayHelper{");
+        sb.append("IMG_FOLDER_NAME='").append(IMG_FOLDER_NAME).append('\'');
+        sb.append(", CLASS_NAME='").append(CLASS_NAME).append('\'');
+        sb.append(", trayIcon=").append(trayIcon.hashCode());
+        sb.append(", messageToUser=").append(messageToUser.toString());
+        sb.append('}');
+        return sb.toString();
+    }
+
+    private static Image getImage(String iconFileName) {
+        if (!isSrvGitOK()) {
+            iconFileName = "icons8-disconnected-24.png";
+        }
+        try{
+            return Toolkit.getDefaultToolkit().getImage(SystemTrayHelper.class.getResource(IMG_FOLDER_NAME + iconFileName));
+        } catch (Exception e) {
+            messageToUser.errorAlert(CLASS_NAME, "getImage", e.getMessage());
+            FileSystemWorker.error("SystemTrayHelper.getImage", e);
+        }
+        throw new IllegalArgumentException();
     }
 }

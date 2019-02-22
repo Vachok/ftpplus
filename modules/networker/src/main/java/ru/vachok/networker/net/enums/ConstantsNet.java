@@ -6,18 +6,22 @@ import org.springframework.ui.Model;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.componentsrepo.AppComponents;
-import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetScannerSvc;
 import ru.vachok.networker.net.TraceRoute;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 /**
  Константы пакета
@@ -26,11 +30,12 @@ import java.util.concurrent.*;
  @since 25.01.2019 (10:30) */
 public enum ConstantsNet {;
 
+    /**
+     Имя {@link Model} атрибута.
+     */
+    public static final String ATT_NETSCAN = "netscan";
+
     public static final String PINGRESULT_LOG = "pingresult";
-
-    public static final String PTV2_EATMEAT_RU = "ptv2.eatmeat.ru";
-
-    public static final String PTV1_EATMEAT_RU = "ptv1.eatmeat.ru";
 
     public static final String RECONNECT_TO_DB = "reconnectToDB";
 
@@ -53,7 +58,7 @@ public enum ConstantsNet {;
 
     public static final int DOPC = 250;
 
-    public static final Properties LOC_PROPS = ConstantsFor.getProps();
+    private static final Properties LOC_PROPS = AppComponents.getProps();
 
     /**
      new {@link HashSet}
@@ -61,7 +66,11 @@ public enum ConstantsNet {;
      @see ru.vachok.networker.net.NetScannerSvc#getPCNamesPref(String)
      @see ru.vachok.networker.net.NetScanCtr#scanIt(HttpServletRequest, Model, Date)
      */
-    public static final Set<String> PC_NAMES = new HashSet<>(Integer.parseInt(LOC_PROPS.getOrDefault(ConstantsFor.PR_TOTPC, "318").toString()));
+    private static Set<String> pcNames = new HashSet<>(Integer.parseInt(LOC_PROPS.getOrDefault(ConstantsFor.PR_TOTPC, "318").toString()));
+
+    public static void setPcNames(Set<String> pcNames) {
+        ConstantsNet.pcNames = pcNames;
+    }
 
     public static final int PPPC = 70;
 
@@ -109,11 +118,6 @@ public enum ConstantsNet {;
     public static final Logger LOGGER = AppComponents.getLogger();
 
     /**
-     {@link AppComponents#adComputers()}
-     */
-    public static final List<ADComputer> AD_COMPUTERS = AppComponents.adComputers();
-
-    /**
      <i>Boiler Plate</i>
      */
     public static final String STR_NETSCANNERSVC = "netScannerSvc";
@@ -123,19 +127,25 @@ public enum ConstantsNet {;
      <p>
      pingsleep. Сколько делать перерыв в пингах. В <b>миллисекундах</b>.
 
-     @see ConstantsFor#getProps()
+     @see AppComponents#getProps()
      */
     public static final String PROP_PINGSLEEP = "pingsleep";
 
+    public static Set<String> getPcNames() {
+        return pcNames;
+    }
+
     public static String getProvider() {
-        Future<String> submit = ThreadConfig.getI().threadPoolTaskExecutor().submit(new TraceRoute());
-        try {
+        Future<String> submit = AppComponents.threadConfig().getTaskExecutor().submit(new TraceRoute());
+        try{
             String s = submit.get();
             FileSystemWorker.recFile("trace", s);
             return s;
-        } catch (InterruptedException | ExecutionException e) {
+        }
+        catch(InterruptedException | ExecutionException e){
             new MessageCons().errorAlert("ConstantsNet", "getProvider", TForms.from(e));
             Thread.currentThread().interrupt();
             return e.getMessage();
         }
-    }}
+    }
+}

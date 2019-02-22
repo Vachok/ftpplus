@@ -8,31 +8,15 @@ import ru.vachok.networker.ConstantsFor;
 
 /**
  @since 10.09.2018 (11:35) */
-@Component (ConstantsFor.PFLISTS)
-@Scope (ConstantsFor.SINGLETON)
+@Component(ConstantsFor.PFLISTS)
+@Scope(ConstantsFor.SINGLETON)
 public class PfLists {
-
-    public String getVipNet() {
-        return vipNet;
-    }
 
     private String vipNet;
 
-    public String getStdSquid() {
-        return stdSquid;
-    }
-
     private String stdSquid;
 
-    public String getLimitSquid() {
-        return limitSquid;
-    }
-
     private String limitSquid;
-
-    public String getFullSquid() {
-        return fullSquid;
-    }
 
     private String fullSquid;
 
@@ -40,31 +24,62 @@ public class PfLists {
 
     private String pfNat;
 
-    private long gitStats;
+    private long gitStatsUpdatedStampLong;
 
-    private long timeUpd;
-
-    /*Get&Set*/
-    public long getTimeUpd() {
-        return timeUpd;
-    }
-
-    public long getGitStats() {
-        return gitStats;
-    }
-
-    public void setGitStats(long gitStats) {
-        this.gitStats = gitStats;
-    }
+    private long timeStampToNextUpdLong = System.currentTimeMillis();
 
     private String uName;
 
-    public void setTimeUpd(long timeUpd) {
-        this.timeUpd = timeUpd;
-    }
-
     public void setuName(String uName) {
         this.uName = uName;
+    }
+
+    public String getVipNet() {
+        return vipNet;
+    }
+
+    public void setVipNet(String vipNet) {
+        this.vipNet = vipNet;
+    }
+
+    public String getStdSquid() {
+        return stdSquid;
+    }
+
+    public void setStdSquid(String stdSquid) {
+        this.stdSquid = stdSquid;
+    }
+
+    public String getLimitSquid() {
+        return limitSquid;
+    }
+
+    public void setLimitSquid(String limitSquid) {
+        this.limitSquid = limitSquid;
+    }
+
+    public String getFullSquid() {
+        return fullSquid;
+    }
+
+    public void setFullSquid(String fullSquid) {
+        this.fullSquid = fullSquid;
+    }
+
+    public long getTimeStampToNextUpdLong() {
+        return timeStampToNextUpdLong;
+    }
+
+    public void setTimeStampToNextUpdLong(long timeToNextUpd) {
+        this.timeStampToNextUpdLong = timeToNextUpd;
+    }
+
+    public long getGitStatsUpdatedStampLong() {
+        return gitStatsUpdatedStampLong;
+    }
+
+    public void setGitStatsUpdatedStampLong(long gitStatsUpdatedStampLong) {
+        this.gitStatsUpdatedStampLong = gitStatsUpdatedStampLong;
     }
 
     public String getPfRules() {
@@ -83,36 +98,23 @@ public class PfLists {
         return pfNat;
     }
 
-    public void setVipNet(String vipNet) {
-        this.vipNet = vipNet;
-    }
-
-    public void setStdSquid(String stdSquid) {
-        this.stdSquid = stdSquid;
-    }
-
-    public void setLimitSquid(String limitSquid) {
-        this.limitSquid = limitSquid;
-    }
-
-    public void setFullSquid(String fullSquid) {
-        this.fullSquid = fullSquid;
-    }
-
     public void setPfNat(String pfNat) {
         this.pfNat = pfNat;
     }
 
     @Override
     public String toString() {
-        return "PfLists{" +
-            "fullSquid='" + fullSquid + '\'' +
-            ", limitSquid='" + limitSquid + '\'' +
-            ", pfNat='" + pfNat + '\'' +
-            ", pfRules='" + pfRules + '\'' +
-            ", stdSquid='" + stdSquid + '\'' +
-            ", uName='" + uName + '\'' +
-            ", vipNet='" + vipNet + '\'' +
-            '}';
+        final StringBuilder sb = new StringBuilder("PfLists{");
+        sb.append("fullSquid='").append(fullSquid).append('\'');
+        sb.append(", gitStatsUpdatedStampLong=").append(gitStatsUpdatedStampLong);
+        sb.append(", limitSquid='").append(limitSquid).append('\'');
+        sb.append(", pfNat='").append(pfNat).append('\'');
+        sb.append(", pfRules='").append(pfRules).append('\'');
+        sb.append(", stdSquid='").append(stdSquid).append('\'');
+        sb.append(", timeStampToNextUpdLong=").append(timeStampToNextUpdLong);
+        sb.append(", uName='").append(uName).append('\'');
+        sb.append(", vipNet='").append(vipNet).append('\'');
+        sb.append('}');
+        return sb.toString();
     }
 }

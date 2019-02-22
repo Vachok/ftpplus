@@ -4,7 +4,6 @@ package ru.vachok.networker.systray;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.net.MoreInfoGetter;
 import ru.vachok.networker.net.NetScannerSvc;
-import ru.vachok.networker.services.MessageLocal;
 
 import javax.swing.*;
 import java.awt.*;
@@ -26,12 +25,15 @@ public class ActionCloseMsg extends AbstractAction {
      */
     private transient TrayIcon trayIcon = null;
 
+    private transient MessageToUser messageToUser;
+
     /**
      Creates an {@code Action}.
 
      @param messageToUser {@link MessageToUser}.
      */
     public ActionCloseMsg(MessageToUser messageToUser) {
+        this.messageToUser = messageToUser;
         messageToUser.errorAlert("ActionCloseMsg.ActionCloseMsg", "", new Date().toString());
     }
 
@@ -54,15 +56,22 @@ public class ActionCloseMsg extends AbstractAction {
      */
     @Override
     public void actionPerformed(ActionEvent e) {
-        MessageToUser l = new MessageLocal();
-        l.infoNoTitles("ActionCloseMsg.actionPerformed");
         if(trayIcon!=null && trayIcon.getActionListeners().length > 0){
             ActionListener[] actionListeners = trayIcon.getActionListeners();
             for(ActionListener actionListener : actionListeners){
                 trayIcon.removeActionListener(actionListener);
-                l.info(actionListener.getClass().getSimpleName(), " removed...", actionListeners.length + " listeners left.");
+                messageToUser.info(actionListener.getClass().getSimpleName(), " removed...", actionListeners.length + " listeners left.");
             }
             trayIcon.addActionListener(new ActionDefault());
         }
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("ActionCloseMsg{");
+        sb.append("trayIcon=").append(trayIcon.getActionListeners() != null);
+        sb.append(", messageToUser=").append(messageToUser.toString());
+        sb.append('}');
+        return sb.toString();
     }
 }

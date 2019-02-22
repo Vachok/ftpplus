@@ -13,10 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.accesscontrol.common.CommonRightsChecker;
-import ru.vachok.networker.componentsrepo.AppComponents;
-import ru.vachok.networker.componentsrepo.PageFooter;
-import ru.vachok.networker.componentsrepo.VersionInfo;
-import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.componentsrepo.*;
 import ru.vachok.networker.net.DiapazonedScan;
 import ru.vachok.networker.net.MoreInfoGetter;
 import ru.vachok.networker.services.SimpleCalculator;
@@ -56,7 +53,7 @@ public class MatrixCtr {
     private static final String GET_MATRIX = "/matrix";
 
     /**
-     * dinner
+     dinner
      */
     private static final String ATT_DINNER = "dinner";
 
@@ -132,22 +129,24 @@ public class MatrixCtr {
      5. {@link #timeStamp(ru.vachok.networker.services.SimpleCalculator, org.springframework.ui.Model, java.lang.String)}, если строка содержит {@code calctime:} или {@code calctimes:} <br>
      6. {@link #matrixAccess(java.lang.String)}, в ином случае.
      <p>
+
      @param matrixSRV {@link #matrixSRV}
-     @param result {@link BindingResult}
-     @param model {@link Model}
+     @param result    {@link BindingResult}
+     @param model     {@link Model}
      @return {@link ConstantsFor#MATRIX_STRING_NAME}.html
      */
     @PostMapping(GET_MATRIX)
     public String getWorkPosition(@ModelAttribute(ConstantsFor.MATRIX_STRING_NAME) MatrixSRV matrixSRV, BindingResult result, Model model) {
         this.matrixSRV = matrixSRV;
         String workPos = matrixSRV.getWorkPos();
-        if (workPos.toLowerCase().contains("whois:")) return WhoIsWithSRV.whoisStat(workPos, model);
-        else if (workPos.toLowerCase().contains("calc:")) return calculateDoubles(workPos, model);
+        if (workPos.toLowerCase().contains("whois:")) {
+            return WhoIsWithSRV.whoisStat(workPos, model);
+        } else if (workPos.toLowerCase().contains("calc:")) return calculateDoubles(workPos, model);
         else if (workPos.toLowerCase().contains("common: ")) {
-                return CommonRightsChecker.getCommonAccessRights(workPos, model);
-            } else if (workPos.toLowerCase().contains("calctime:") || workPos.toLowerCase().contains("calctimes:")) {
-                timeStamp(new SimpleCalculator(), model, workPos);
-            } else return matrixAccess(workPos);
+            return CommonRightsChecker.getCommonAccessRights(workPos, model);
+        } else if (workPos.toLowerCase().contains("calctime:") || workPos.toLowerCase().contains("calctimes:")) {
+            timeStamp(new SimpleCalculator(), model, workPos);
+        } else return matrixAccess(workPos);
         return ConstantsFor.MATRIX_STRING_NAME;
     }
 
@@ -179,9 +178,10 @@ public class MatrixCtr {
      3. {@link PageFooter#getFooterUtext()}, 4. new {@link PageFooter}, 5. {@link Visitor#toString()}. Компонент модели {@link ConstantsFor#ATT_FOOTER} <br>
      6. {@link MatrixSRV#getCountDB()}. Компонент {@code headtitle}
      <p>
-     @param request {@link HttpServletRequest}
+
+     @param request  {@link HttpServletRequest}
      @param response {@link HttpServletResponse}
-     @param model {@link Model}
+     @param model    {@link Model}
      @return {@link ConstantsFor#MATRIX_STRING_NAME}.html
      @throws IOException обработка {@link HttpServletResponse#sendError(int, java.lang.String)}
      */
@@ -225,7 +225,7 @@ public class MatrixCtr {
         } catch (Exception ignore) {
             //
         }
-        String userIP = userPC + ":" + request.getRemotePort() + "<-" + new VersionInfo().getAppVersion();
+        String userIP = userPC + ":" + request.getRemotePort() + "<-" + AppComponents.versionInfo().getAppVersion();
         if (!ConstantsFor.isPingOK()) userIP = "ping to srv-git.eatmeat.ru is " + false;
         model.addAttribute("yourip", userIP);
         model.addAttribute(ConstantsFor.MATRIX_STRING_NAME, new MatrixSRV());
@@ -247,7 +247,7 @@ public class MatrixCtr {
      <p>
 
      @param workPos {@link MatrixSRV#getWorkPos()}
-     @param model {@link Model}
+     @param model   {@link Model}
      @return {@link ConstantsFor#MATRIX_STRING_NAME}
      */
     private String calculateDoubles(String workPos, Model model) {
@@ -289,8 +289,8 @@ public class MatrixCtr {
      <p>
 
      @param simpleCalculator {@link SimpleCalculator}
-     @param model {@link Model}
-     @param workPos {@link MatrixSRV#getWorkPos()}
+     @param model            {@link Model}
+     @param workPos          {@link MatrixSRV#getWorkPos()}
      @return redirect:/calculate
      */
     private String timeStamp(@ModelAttribute SimpleCalculator simpleCalculator, Model model, String workPos) {

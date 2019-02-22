@@ -3,12 +3,10 @@ package ru.vachok.networker.net;
 
 import org.springframework.ui.Model;
 import ru.vachok.messenger.MessageCons;
-import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.user.PCUserResolver;
-import ru.vachok.networker.config.ThreadConfig;
+import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 
@@ -31,8 +29,6 @@ class ConditionChecker {
 
     private static final String CLASS_NAME = ConditionChecker.class.getSimpleName();
 
-    private static Connection c = new RegRuMysql().getDefaultConnection(ConstantsNet.DB_NAME);
-
     private ConditionChecker() {
         new MessageCons().infoNoTitles("ConditionChecker.ConditionChecker");
     }
@@ -52,9 +48,11 @@ class ConditionChecker {
         List<Integer> offLine = new ArrayList<>();
         StringBuilder stringBuilder = new StringBuilder();
         String classMeth = "ConditionChecker.onLinesCheck";
-        try (PreparedStatement statement = NetScannerSvc.c.prepareStatement(sql)) {
+
+        try (Connection connection = new AppComponents().connection(ConstantsNet.DB_NAME);
+             PreparedStatement statement = connection.prepareStatement(sql)) {
             Runnable r = () -> pcUserResolver.namesToFile(pcName);
-            ThreadConfig.executeAsThread(r);
+            AppComponents.threadConfig().executeAsThread(r);
             statement.setString(1, pcName);
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
@@ -67,12 +65,10 @@ class ConditionChecker {
                     if (onlineNow == 0) {
                         offLine.add(onlineNow);
                     }
-                    ConstantsNet.AD_COMPUTERS.add(adComputer);
                 }
             }
         } catch (SQLException e) {
-            c = reconnectToDB();
-            new MessageCons().errorAlert(CLASS_NAME, e.getMessage(), new TForms().fromArray(e, false));
+            new MessageCons().errorAlert(CLASS_NAME, "onLinesCheck", e.getMessage());
             FileSystemWorker.error(classMeth, e);
             stringBuilder.append(e.getMessage());
         } catch (NullPointerException e) {
@@ -92,11 +88,12 @@ class ConditionChecker {
      @param pcName имя ПК
      @return имя юзера, если есть.
      */
-    @SuppressWarnings({"MethodWithMultipleLoops", "MethodWithMultipleReturnPoints"})
+    @SuppressWarnings ("MethodWithMultipleLoops")
     static String offLinesCheckUser(String sql, String pcName) {
         StringBuilder stringBuilder = new StringBuilder();
-        try (PreparedStatement p = c.prepareStatement(sql);
-             PreparedStatement p1 = c.prepareStatement(sql.replaceAll(ConstantsFor.STR_PCUSER, ConstantsFor.STR_PCUSERAUTO))) {
+        try (Connection connection = new AppComponents().connection(ConstantsNet.DB_NAME);
+             PreparedStatement p = connection.prepareStatement(sql);
+             PreparedStatement p1 = connection.prepareStatement(sql.replaceAll(ConstantsFor.STR_PCUSER, ConstantsFor.STR_PCUSERAUTO))){
             p.setString(1, pcName);
             p1.setString(1, pcName);
             try (ResultSet resultSet = p.executeQuery();
@@ -116,10 +113,9 @@ class ConditionChecker {
                 }
             }
         } catch (SQLException e) {
-            new MessageCons().errorAlert(CLASS_NAME, "offLinesCheckUser", e.getMessage());
+            new MessageCons().errorAlert("ConditionChecker", "offLinesCheckUser", e.getMessage());
             FileSystemWorker.error("ConditionChecker.offLinesCheckUser", e);
             stringBuilder.append(e.getMessage());
-            c = reconnectToDB();
         }
         return "<font color=\"orange\">EXCEPTION in SQL dropped. <br>" + stringBuilder.toString() + "</font>";
     }
@@ -134,16 +130,11 @@ class ConditionChecker {
         }
     }
 
-    private static Connection reconnectToDB() {
-        c = new RegRuMysql().getDefaultConnection(ConstantsNet.DB_NAME);
-        return c;
-    }
-
     /**
      Если размер {@link ConstantsFor#ALL_DEVICES} более 0
      <p> <br>
      <b>Схема:</b> <br>
-     Убедимся в правильности {@link NetScanFileWorker} : <br> 1. {@link DiapazonedScan#getNetScanFileWorker()} <br> 2. {@link NetScanFileWorker#equals(java.lang.Object)} <br><br> Если всё верно: 3.
+     Убедимся в правильности {@link NetScanFileWorker} : <br> 1. {@link DiapazonedScan#getNetScanFileWorkerInst()} <br> 2. {@link NetScanFileWorker#equals(java.lang.Object)} <br><br> Если всё верно: 3.
      {@link ScanOnline#getI()} + {@link ScanOnline#toString()}
 
      @param model             {@link Model}
@@ -164,7 +155,6 @@ class ConditionChecker {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("ConditionChecker{");
-        sb.append("c=").append(c.toString());
         sb.append(ConstantsFor.TOSTRING_CLASS_NAME).append(CLASS_NAME).append('\'');
         sb.append('}');
         return sb.toString();

@@ -3,7 +3,9 @@ package ru.vachok.networker.ad.user;
 
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
 
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -17,6 +19,8 @@ import java.util.List;
 @Component (ConstantsFor.ATT_ADUSER)
 @Scope("prototype")
 public class ADUser {
+
+    private static final char CHAR_SLASH = '\'';
 
     /**
      <b>eatmeat.ru</b>
@@ -37,6 +41,16 @@ public class ADUser {
     private String distinguishedName = "";
 
     private String userPrincipalName = "";
+
+    private MultipartFile usersAD = null;
+
+    public MultipartFile getUsersAD() {
+        return usersAD;
+    }
+
+    public void setUsersAD(MultipartFile usersAD) {
+        this.usersAD = usersAD;
+    }
 
     private String surname = "";
 
@@ -68,7 +82,7 @@ public class ADUser {
      */
     private List<String> ownerRights = new ArrayList<>();
 
-    private BufferedImage userPhoto;
+    private BufferedImage userPhoto = null;
 
     /**
      @return {@link #inputName}
@@ -173,56 +187,13 @@ public class ADUser {
         this.distinguishedName = distinguishedName;
     }
 
-    public String toStringBR() {
-        final StringBuilder sb = new StringBuilder("ADUser{");
-        sb.append("defaultDomainName='").append(defaultDomainName).append("<br>");
-        sb.append(", userDomain='").append(userDomain).append("<br>");
-        sb.append(", userName='").append(userName).append("<br>");
-        sb.append(", userRealName='").append(userRealName).append("<br>");
-        sb.append(", userSurname='").append(userSurname).append("<br>");
-        sb.append(", distinguishedName='").append(distinguishedName).append("<br>");
-        sb.append(", userPrincipalName='").append(userPrincipalName).append("<br>");
-        sb.append(", surname='").append(surname).append("<br>");
-        sb.append(", sid='").append(sid).append("<br>");
-        sb.append(", samAccountName='").append(samAccountName).append("<br>");
-        sb.append(", objectClass='").append(objectClass).append("<br>");
-        sb.append(", objectGUID='").append(objectGUID).append("<br>");
-        sb.append(", name='").append(name).append("<br>");
-        sb.append(", enabled='").append(enabled).append("<br>");
-        sb.append(", givenName='").append(givenName).append("<br>");
-        sb.append(", inputName='").append(inputName).append("<br>");
-        sb.append(", ownerRights=").append(ownerRights.size());
-        sb.append('}');
-        return sb.toString();
-    }
-
-    @SuppressWarnings({"MethodWithMoreThanThreeNegations", "OverlyComplexMethod"})
     @Override
     public int hashCode() {
         int result = getDefaultDomainName().hashCode();
-        result = 31 * result + (getUserDomain() != null ? getUserDomain().hashCode() : 0);
-        result = 31 * result + (getUserName() != null ? getUserName().hashCode() : 0);
-        result = 31 * result + (getUserRealName() != null ? getUserRealName().hashCode() : 0);
-        result = 31 * result + (getUserSurname() != null ? getUserSurname().hashCode() : 0);
-        result = 31 * result + (getDistinguishedName() != null ? getDistinguishedName().hashCode() : 0);
-        result = 31 * result + (getUserPrincipalName() != null ? getUserPrincipalName().hashCode() : 0);
-        result = 31 * result + (getSurname() != null ? getSurname().hashCode() : 0);
-        result = 31 * result + (getSid() != null ? getSid().hashCode() : 0);
-        result = 31 * result + (getSamAccountName() != null ? getSamAccountName().hashCode() : 0);
-        result = 31 * result + (getObjectClass() != null ? getObjectClass().hashCode() : 0);
-        result = 31 * result + (getObjectGUID() != null ? getObjectGUID().hashCode() : 0);
-        result = 31 * result + (getName() != null ? getName().hashCode() : 0);
-        result = 31 * result + (getEnabled() != null ? getEnabled().hashCode() : 0);
-        result = 31 * result + (getGivenName() != null ? getGivenName().hashCode() : 0);
-        result = 31 * result + (getInputName() != null ? getInputName().hashCode() : 0);
-        result = 31 * result + getOwnerRights().hashCode();
-        result = 31 * result + (getUserPhoto() != null ? getUserPhoto().hashCode() : 0);
+        result = 31 * result + (getUsersAD()!=null? getUsersAD().hashCode(): 0);
+        result = 31 * result + (getSamAccountName()!=null? getSamAccountName().hashCode(): 0);
+        result = 31 * result + (getInputName()!=null? getInputName().hashCode(): 0);
         return result;
-    }
-
-
-    public String getDefaultDomainName() {
-        return defaultDomainName;
     }
 
     public void setDefaultDomainName(String defaultDomainName) {
@@ -269,54 +240,35 @@ public class ADUser {
         this.userDomain = userDomain;
     }
 
-    @SuppressWarnings({"OverlyComplexMethod", "OverlyLongMethod"})
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof ADUser)) return false;
+        if(this==o){
+            return true;
+        }
+        if(o==null || getClass()!=o.getClass()){
+            return false;
+        }
 
-        ADUser adUser = (ADUser) o;
+        ADUser adUser = ( ADUser ) o;
 
-        if (!getDefaultDomainName().equals(adUser.getDefaultDomainName())) return false;
-        if (getUserDomain() != null ? !getUserDomain().equals(adUser.getUserDomain()) : adUser.getUserDomain() != null) return false;
-        if (getUserName() != null ? !getUserName().equals(adUser.getUserName()) : adUser.getUserName() != null) return false;
-        if (getUserRealName() != null ? !getUserRealName().equals(adUser.getUserRealName()) : adUser.getUserRealName() != null) return false;
-        if (getUserSurname() != null ? !getUserSurname().equals(adUser.getUserSurname()) : adUser.getUserSurname() != null) return false;
-        if (getDistinguishedName() != null ? !getDistinguishedName().equals(adUser.getDistinguishedName()) : adUser.getDistinguishedName() != null) return false;
-        if (getUserPrincipalName() != null ? !getUserPrincipalName().equals(adUser.getUserPrincipalName()) : adUser.getUserPrincipalName() != null) return false;
-        if (getSurname() != null ? !getSurname().equals(adUser.getSurname()) : adUser.getSurname() != null) return false;
-        if (getSid() != null ? !getSid().equals(adUser.getSid()) : adUser.getSid() != null) return false;
-        if (getSamAccountName() != null ? !getSamAccountName().equals(adUser.getSamAccountName()) : adUser.getSamAccountName() != null) return false;
-        if (getObjectClass() != null ? !getObjectClass().equals(adUser.getObjectClass()) : adUser.getObjectClass() != null) return false;
-        if (getObjectGUID() != null ? !getObjectGUID().equals(adUser.getObjectGUID()) : adUser.getObjectGUID() != null) return false;
-        if (getName() != null ? !getName().equals(adUser.getName()) : adUser.getName() != null) return false;
-        if (getEnabled() != null ? !getEnabled().equals(adUser.getEnabled()) : adUser.getEnabled() != null) return false;
-        if (getGivenName() != null ? !getGivenName().equals(adUser.getGivenName()) : adUser.getGivenName() != null) return false;
-        if (getInputName() != null ? !getInputName().equals(adUser.getInputName()) : adUser.getInputName() != null) return false;
-        if (!getOwnerRights().equals(adUser.getOwnerRights())) return false;
-        return getUserPhoto() != null ? getUserPhoto().equals(adUser.getUserPhoto()) : adUser.getUserPhoto() == null;
+        return getDefaultDomainName().equals(adUser.getDefaultDomainName()) && (getUsersAD()!=null? getUsersAD().equals(adUser.getUsersAD()):
+                                                                                    adUser.getUsersAD()==null) && (getSamAccountName()!=null?
+                                                                                                                       getSamAccountName().equals(adUser.getSamAccountName()): adUser.getSamAccountName()==null) && (getInputName()!=null? getInputName().equals(adUser.getInputName()): adUser.getInputName()==null);
+    }
+
+    private String getDefaultDomainName() {
+        return defaultDomainName;
     }
 
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("ADUser{");
-        sb.append("defaultDomainName='").append(defaultDomainName).append('\'');
-        sb.append(", userDomain='").append(userDomain).append('\'');
-        sb.append(", userName='").append(userName).append('\'');
-        sb.append(", userRealName='").append(userRealName).append('\'');
-        sb.append(", userSurname='").append(userSurname).append('\'');
-        sb.append(", distinguishedName='").append(distinguishedName).append('\'');
-        sb.append(", userPrincipalName='").append(userPrincipalName).append('\'');
-        sb.append(", surname='").append(surname).append('\'');
-        sb.append(", sid='").append(sid).append('\'');
-        sb.append(", samAccountName='").append(samAccountName).append('\'');
-        sb.append(", objectClass='").append(objectClass).append('\'');
-        sb.append(", objectGUID='").append(objectGUID).append('\'');
-        sb.append(", name='").append(name).append('\'');
-        sb.append(", enabled='").append(enabled).append('\'');
-        sb.append(", givenName='").append(givenName).append('\'');
-        sb.append(", inputName='").append(inputName).append('\'');
-        sb.append(", ownerRights=").append(ownerRights.size());
+        sb.append("enabled='").append(enabled).append(CHAR_SLASH);
+        sb.append(", inputName='").append(inputName).append(CHAR_SLASH);
+        sb.append(", ownerRights=").append(new TForms().fromArray(ownerRights, false));
+        sb.append(ConstantsFor.TOSTRING_SAMACCOUNTNAME).append(samAccountName).append(CHAR_SLASH);
+        sb.append(", sid='").append(sid).append(CHAR_SLASH);
+        sb.append(", usersAD=").append(usersAD.getSize());
         sb.append('}');
         return sb.toString();
     }

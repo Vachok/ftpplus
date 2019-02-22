@@ -2,13 +2,12 @@ package ru.vachok.networker.services;
 
 
 import org.apache.commons.net.whois.WhoisClient;
-import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
+import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.PageFooter;
 
 import java.io.IOException;
@@ -19,58 +18,53 @@ import java.util.Locale;
 @Service
 public class WhoIsWithSRV {
 
-    /**
-     {@link }
-     */
-    private static final Logger LOGGER = AppComponents.getLogger();
-
-    public static String whoisStat(String workPos, Model model) {
-        try {
-            WhoIsWithSRV whoIsWithSRV = new WhoIsWithSRV();
-            workPos = workPos.split(": ")[1];
-            String attributeValue = whoIsWithSRV.whoIs(workPos);
-            model.addAttribute(ConstantsFor.WHOIS_STR, attributeValue);
-            model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
-        } catch (ArrayIndexOutOfBoundsException e) {
-            model.addAttribute(ConstantsFor.WHOIS_STR, workPos + "<p>" + e.getMessage());
-            return ConstantsFor.MATRIX_STRING_NAME;
-        }
-        return ConstantsFor.MATRIX_STRING_NAME;
-    }
+    private MessageToUser messageToUser = new MessageLocal();
 
     public String whoIs(String inetAddr) {
         StringBuilder geoLocation = new StringBuilder();
-        geoLocation.append("<p>");
         Locale locale = Locale.getDefault();
-        geoLocation.append("<h3>").append(inetAddr).append("</h3><br>");
         WhoisClient whoisClient = new WhoisClient();
+        String country = locale.getCountry() + " country, " + locale.getLanguage() + " lang";
+        String traceRoute = traceRt(inetAddr);
+        geoLocation.append(traceRoute).append("<p>");
+        geoLocation.append(country).append("</p>");
+        geoLocation.append("<p>");
+        geoLocation.append("<h3>").append(inetAddr).append("</h3><br>").append("<p>");
+
         try {
-            geoLocation.append("<p>");
             geoLocation.append(whoIsQuery(inetAddr));
-            String replace = geoLocation.toString().replace("% The objects are in RPSL format.\n" +
+            String replacedStr = geoLocation.toString().replace("% The objects are in RPSL format.\n" +
                 "%\n" +
                 "% The RIPE Database is subject to Terms and Conditions.\n" +
                 "% See http://www.ripe.net/db/support/db-terms-conditions.pdf\n" +
                 "\n" +
                 "% Note: this output has been filtered.\n" +
                 "%       To receive output for a database update, use the \"-B\" flag.\n", "");
-            if (replace.contains("ERROR:101")) {
+            if (replacedStr.contains("ERROR:101")) {
                 String hostAddress = InetAddress.getByName(inetAddr).getHostAddress();
-                replace = new WhoIsWithSRV().whoIs(hostAddress);
+                replacedStr = new WhoIsWithSRV().whoIs(hostAddress);
                 whoisClient.disconnect();
-                return replace;
+                return replacedStr;
+            } else {
+                replacedStr = replacedStr + "<p><h4>whois.ripe.net</h4><br>" + whoisClient.query(inetAddr);
+                geoLocation.append(replacedStr).append("</p>");
             }
-            replace = replace + "<p><h4>whois.ripe.net</h4><br>" + whoisClient.query(inetAddr);
-            geoLocation.append(replace).append("</p>");
-        } catch (IOException | RuntimeException e) {
+        } catch (IOException | ArrayIndexOutOfBoundsException | NullPointerException e) {
             geoLocation.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false));
         }
-        String country = locale.getCountry() + " country, " + locale.getLanguage() + " lang";
-        geoLocation.append(country).append("</p>");
-        String traceRoute = traceRt(inetAddr);
-        String msg = geoLocation.toString();
-        LOGGER.info(msg);
-        return traceRoute + "<p>" + msg;
+
+        messageToUser.info(WhoIsWithSRV.class.getSimpleName(), ".whoIs", geoLocation.toString());
+
+        return geoLocation.toString();
+    }
+
+    public static String whoisStat(String workPos, Model model) {
+        WhoIsWithSRV whoIsWithSRV = new WhoIsWithSRV();
+        workPos = workPos.split(": ")[1];
+        String attributeValue = whoIsWithSRV.whoIs(workPos);
+        model.addAttribute(ConstantsFor.WHOIS_STR, attributeValue);
+        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
+        return ConstantsFor.MATRIX_STRING_NAME;
     }
 
     private String traceRt(String inetAddr) {
