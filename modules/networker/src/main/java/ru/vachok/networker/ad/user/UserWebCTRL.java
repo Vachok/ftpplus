@@ -1,12 +1,13 @@
 package ru.vachok.networker.ad.user;
 
 
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ad.ADSrv;
@@ -23,11 +24,6 @@ import javax.servlet.http.HttpServletRequest;
 @SuppressWarnings ("SameReturnValue")
 @Controller
 public class UserWebCTRL {
-
-    /**
-     {@link MessageSwing}
-     */
-    private static MessageToUser messageToUser = new MessageSwing();
 
     /**
      {@link ADSrv#getAdUser()}
@@ -80,11 +76,19 @@ public class UserWebCTRL {
     @PostMapping("/userget")
     public String userPost(Model model, HttpServletRequest request, @ModelAttribute ADUser adUser) {
         this.adUser = adUser;
-        ADSrv adSrv = AppComponents.adSrvForUser(adUser);
+        ADSrv adSrv = adSrvForUser(adUser);
         model.addAttribute(ConstantsFor.ATT_ADUSER, adUser);
         model.addAttribute(ConstantsFor.ATT_RESULT, adSrv.toString());
         model.addAttribute(ConstantsFor.ATT_TITLE, ConstantsFor.getMemoryInfo());
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
         return "user";
+    }
+
+    @Bean
+    @Scope (ConstantsFor.SINGLETON)
+    public static ADSrv adSrvForUser(ADUser adUser) {
+        ADSrv adSrv = new ADSrv(adUser);
+        adSrv.setUserInputRaw(adUser.getInputName());
+        return adSrv;
     }
 }

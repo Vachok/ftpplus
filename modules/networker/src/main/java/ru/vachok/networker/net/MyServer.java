@@ -7,27 +7,25 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.DBMessenger;
-import ru.vachok.networker.systray.SystemTrayHelper;
 
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.security.SecureRandom;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
-import static java.lang.System.err;
-import static java.lang.System.out;
+import static java.lang.System.*;
 
 
 /**
  Телнет-сервер получения информации и ввода команд приложения.
 
  @since 03.11.2018 (23:51) */
-@SuppressWarnings("resource")
+@SuppressWarnings ({"resource", "IOResourceOpenedButNotSafelyClosed"})
 public class MyServer extends Thread {
 
     /**
@@ -65,20 +63,10 @@ public class MyServer extends Thread {
      */
     private static Socket socket = null;
 
-    /**
-     <i>{@link SystemTrayHelper#recOn()}</i>
-
-     @return {@link Socket}
-     */
     public static Socket getSocket() {
         return socket;
     }
 
-    /**
-     <i>{@link SystemTrayHelper#recOn()}</i>
-
-     @param socket подключения для клиента
-     */
     public static void setSocket(Socket socket) {
         MyServer.socket = socket;
     }
@@ -108,8 +96,6 @@ public class MyServer extends Thread {
     /**
      <b>Обработчик ввода из Telnet</b>
      <p>
-     <i>{@link SystemTrayHelper#recOn()}</i>
-     <p>
      Слушает первую строку ввода из Telnet. <br> Обращается в {@link #printToSocket()}
 
      @throws IOException          {@link InputStream} ; {@link Socket} ; {@link #printToSocket()}
@@ -122,11 +108,6 @@ public class MyServer extends Thread {
         PrintStream printStream = new PrintStream(socket.getOutputStream());
         InputStreamReader reader = new InputStreamReader(inputStream);
         BufferedReader bufferedReader = new BufferedReader(reader);
-        try {
-            printStream.println(AppComponents.versionInfo().toString());
-        } catch (RuntimeException e) {
-            LOGGER.warn(e.getMessage());
-        }
         printStream.println((System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN + " min up | " + ConstantsFor.APP_NAME);
         printStream.println(Thread.activeCount() + " active THREADS");
         printStream.println(ConstantsFor.getMemoryInfo());
@@ -143,30 +124,31 @@ public class MyServer extends Thread {
      @throws InterruptedException sleeping threads
      */
     private static void makeDeal(String readLine) throws IOException, InterruptedException {
-        if (readLine.toLowerCase().contains("exit")) {
+        if(readLine.toLowerCase().contains("exit")){
             FileSystemWorker.delTemp();
-            socket.close();
+            MyServer.socket.close();
             System.exit(ConstantsFor.USER_EXIT);
         }
-        if (readLine.toLowerCase().contains("help")) {
-            ifHelp();
+        if(readLine.toLowerCase().contains("help")){
+            MyServer.ifHelp();
         }
-        if (readLine.toLowerCase().contains("con")) {
-            ifCon();
+        if(readLine.toLowerCase().contains("con")){
+            MyServer.ifCon();
         }
-        if (readLine.toLowerCase().contains("thread")) {
-            ifThread();
+        if(readLine.toLowerCase().contains("thread")){
+            MyServer.ifThread();
         }
-        if (readLine.toLowerCase().contains("netscan")) {
-            ifNetScan();
+        if(readLine.toLowerCase().contains(ConstantsNet.ATT_NETSCAN)){
+            MyServer.ifNetScan();
         }
-        if (readLine.equalsIgnoreCase("shutdown")) {
+        if(readLine.equalsIgnoreCase("shutdown")){
             Runtime.getRuntime().exec(ConstantsFor.COM_SHUTDOWN_P_F);
         }
-        if (readLine.equalsIgnoreCase(ConstantsFor.STR_REBOOT)) {
+        if(readLine.equalsIgnoreCase(ConstantsFor.STR_REBOOT)){
             Runtime.getRuntime().exec("shutdown /r /f");
-        } else {
-            printToSocket();
+        }
+        else{
+            MyServer.printToSocket();
         }
     }
 
@@ -203,7 +185,7 @@ public class MyServer extends Thread {
      */
     private static void ifThread() throws IOException, InterruptedException {
         PrintWriter printWriter = new PrintWriter(socket.getOutputStream(), true);
-        long millis = TimeUnit.SECONDS.toMillis(new SecureRandom().nextInt(20));
+        long millis = TimeUnit.SECONDS.toMillis(new SecureRandom().nextInt(( int ) ConstantsFor.MY_AGE));
         printWriter.println(Thread.currentThread().getState() + " current thread state");
         printWriter.println(Thread.currentThread().getName() + " name");
         printWriter.println(Thread.currentThread().getPriority() + " prio");
@@ -250,7 +232,6 @@ public class MyServer extends Thread {
         System.setOut(new PrintStream(socket.getOutputStream()));
         printWriter.println((float) (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN + " | " + ConstantsFor.APP_NAME);
         printWriter.println("NEW SOCKET: " + socket.toString());
-        printWriter.println("APP INFO: " + AppComponents.versionInfo().toString());
         while (inputStream.available() > 0) {
             byte[] bytes = new byte[3];
             int read = inputStream.read(bytes);
@@ -301,13 +282,8 @@ public class MyServer extends Thread {
         try (Scanner scanner = new Scanner(System.in);
              PrintWriter printWriter = new PrintWriter(socket.getOutputStream(), true)) {
             System.setOut(new PrintStream(socket.getOutputStream()));
-            f.append("\n")
-                .append((float) (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / 60)
-                .append(" APP RUNNING \n");
-            f.append(ConstantsFor.APP_NAME)
-                .append("\n\n");
-            f.append(new Date()).append(" build ").append(AppComponents.versionInfo().toString()).append("\n");
-            f.append(new NetMonitorPTV().toString());
+            f.append("\n\n")
+                .append(( float ) (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / 60).append(" APP RUNNING \n");
             printWriter.println(f.toString());
             if (scanner.hasNext()) {
                 while (socket.isConnected()) {

@@ -8,7 +8,6 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.componentsrepo.AppComponents;
-import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetScannerSvc;
 import ru.vachok.networker.net.TraceRoute;
@@ -30,6 +29,11 @@ import java.util.concurrent.Future;
 
  @since 25.01.2019 (10:30) */
 public enum ConstantsNet {;
+
+    /**
+     Имя {@link Model} атрибута.
+     */
+    public static final String ATT_NETSCAN = "netscan";
 
     public static final String PINGRESULT_LOG = "pingresult";
 
@@ -64,17 +68,8 @@ public enum ConstantsNet {;
      */
     private static Set<String> pcNames = new HashSet<>(Integer.parseInt(LOC_PROPS.getOrDefault(ConstantsFor.PR_TOTPC, "318").toString()));
 
-    public static String getProvider() {
-        Future<String> submit = ThreadConfig.getI().getTaskExecutor().submit(new TraceRoute());
-        try {
-            String s = submit.get();
-            FileSystemWorker.recFile("trace", s);
-            return s;
-        } catch (InterruptedException | ExecutionException e) {
-            new MessageCons().errorAlert("ConstantsNet", "getProvider", TForms.from(e));
-            Thread.currentThread().interrupt();
-            return e.getMessage();
-        }
+    public static void setPcNames(Set<String> pcNames) {
+        ConstantsNet.pcNames = pcNames;
     }
 
     public static final int PPPC = 70;
@@ -140,6 +135,17 @@ public enum ConstantsNet {;
         return pcNames;
     }
 
-    public static void setPcNames(Set<String> pcNames) {
-        ConstantsNet.pcNames = pcNames;
-    }}
+    public static String getProvider() {
+        Future<String> submit = AppComponents.threadConfig().getTaskExecutor().submit(new TraceRoute());
+        try{
+            String s = submit.get();
+            FileSystemWorker.recFile("trace", s);
+            return s;
+        }
+        catch(InterruptedException | ExecutionException e){
+            new MessageCons().errorAlert("ConstantsNet", "getProvider", TForms.from(e));
+            Thread.currentThread().interrupt();
+            return e.getMessage();
+        }
+    }
+}

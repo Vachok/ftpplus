@@ -3,7 +3,6 @@ package ru.vachok.networker.net;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
 import ru.vachok.messenger.MessageCons;
@@ -35,8 +34,6 @@ import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
@@ -133,6 +130,8 @@ public final class NetScannerSvc {
      */
     private Map<String, Boolean> netWorkMap;
 
+    private MessageToUser messageToUser = new MessageLocal();
+
     /**
      @return {@link #onLinePCsNum}
      */
@@ -149,9 +148,7 @@ public final class NetScannerSvc {
      @see NetScanCtr#scanIt(HttpServletRequest, Model, Date)
      */
     Set<String> getPcNames() {
-        ThreadPoolTaskExecutor executor = AppComponents.threadConfig().getTaskExecutor();
-        Runnable getPCs = this::getPCsAsync;
-        executor.execute(getPCs);
+        getPCsAsync();
         return pcNamesSet;
     }
 
@@ -441,7 +438,7 @@ public final class NetScannerSvc {
         try {
             pcsString = writeDB();
         } catch (SQLException e) {
-            new MessageLocal().errorAlert(CLASS_NAME, "getPCNamesPref", e.getMessage());
+            messageToUser.errorAlert(CLASS_NAME, "getPCNamesPref", e.getMessage());
             FileSystemWorker.error("NetScannerSvc.getPCNamesPref", e);
         }
         String elapsedTime = "<b>Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethTime) + " sec.</b> " + LocalTime.now();
@@ -464,7 +461,6 @@ public final class NetScannerSvc {
      */
     @SuppressWarnings("OverlyLongLambda")
     private void getPCsAsync() {
-        ExecutorService eServ = Executors.unconfigurableExecutorService(Executors.newFixedThreadPool(ConstantsNet.N_THREADS * 5));
         AtomicReference<String> msg = new AtomicReference<>("");
         this.startClassTime = System.currentTimeMillis();
         boolean fileCreate = fileCreate(true);
@@ -472,10 +468,10 @@ public final class NetScannerSvc {
             new MessageToTray(new ActionCloseMsg(new MessageLocal())).info("NetScannerSvc started scan", ConstantsFor.getUpTime(), " File: " + fileCreate);
         }
         catch(NoClassDefFoundError e){
-            new MessageLocal().errorAlert(CLASS_NAME, "getPCsAsync", e.getMessage());
-            new MessageSwing().info("NetScannerSvc started scan", ConstantsFor.getUpTime(), " File: " + fileCreate);
+            messageToUser.errorAlert(CLASS_NAME, "getPCsAsync", e.getMessage());
         }
-        eServ.submit(() -> {
+        AppComponents.threadConfig().executeAsThread(() -> {
+            Thread.currentThread().setName("E-" + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - ConstantsFor.START_STAMP));
             msg.set(new StringBuilder()
                 .append("Thread id ")
                 .append(Thread.currentThread().getId())
@@ -494,7 +490,7 @@ public final class NetScannerSvc {
             String elapsedTime = "Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime) + " sec.";
             pcNamesSet.add(elapsedTime);
             ConstantsNet.LOGGER.warn(msg.get());
-            eServ.submit(runAfterAll);
+            AppComponents.threadConfig().executeAsThread(runAfterAll);
         });
     }
 
@@ -641,7 +637,7 @@ public final class NetScannerSvc {
         FileSystemWorker.recFile(this.getClass().getSimpleName() + ".getPCsAsync", toFileList);
         FileSystemWorker.recFile("unused.ips", unusedNamesTree.stream());
         new MessageSwing(656, 550, 50, 53).infoTimer(50,
-            "E-mail sent. Daysec: " +
+            "Daysec: " +
                 LocalTime.now().toSecondOfDay() + " " +
                 LocalDate.now().getDayOfWeek().getDisplayName(FULL_STANDALONE, Locale.getDefault()) + "\n" +
                 bodyMsg);

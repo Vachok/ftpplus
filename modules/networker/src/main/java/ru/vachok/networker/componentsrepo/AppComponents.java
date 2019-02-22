@@ -1,7 +1,6 @@
 package ru.vachok.networker.componentsrepo;
 
 
-import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
@@ -11,9 +10,8 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Scope;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.IntoApplication;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.SshActs;
-import ru.vachok.networker.accesscontrol.common.CommonScan2YOlder;
 import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.ad.user.ADUser;
@@ -28,6 +26,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentMap;
+
+import static ru.vachok.networker.IntoApplication.getConfigurableApplicationContext;
 
 
 /**
@@ -127,23 +127,6 @@ public class AppComponents {
         return properties;
     }
 
-    /**
-     @return new {@link CommonScan2YOlder}
-     */
-    @Bean
-    @Scope(ConstantsFor.SINGLETON)
-    public static CommonScan2YOlder archivesSorter() {
-        return new CommonScan2YOlder();
-    }
-
-    @Bean
-    @Scope(ConstantsFor.SINGLETON)
-    public static ADSrv adSrvForUser(ADUser adUser) {
-        ADSrv adSrv = new ADSrv(adUser);
-        adSrv.setUserInputRaw(adUser.getInputName());
-        return adSrv;
-    }
-
     public static Visitor thisVisit(String sessionID) throws NullPointerException, NoSuchBeanDefinitionException {
         return (Visitor) configurableApplicationContext().getBean(sessionID);
     }
@@ -151,16 +134,13 @@ public class AppComponents {
     @Bean
     @Scope(ConstantsFor.SINGLETON)
     static ConfigurableApplicationContext configurableApplicationContext() {
-        return IntoApplication.getConfigurableApplicationContext();
+        return getConfigurableApplicationContext();
     }
 
     @Bean
     public Connection connection(String dbName) throws SQLException {
-        MysqlDataSource source = new RegRuMysql().getDataSource();
-        source.setPassword("36e42yoak8");
-        source.setUser("u0466446_kudr");
-        source.setDatabaseName(dbName);
-        return source.getConnection();
+        Connection connection = new RegRuMysql().getDefaultConnection(dbName);
+        return connection;
     }
 
     /**
@@ -185,4 +165,13 @@ public class AppComponents {
         return new Visitor(request);
     }
 
+    @Override
+    public String toString() {
+        ConfigurableApplicationContext context = getConfigurableApplicationContext();
+        final StringBuilder sb = new StringBuilder("AppComponents{");
+        sb.append("Beans=").append(new TForms().fromArray(context.getBeanDefinitionNames(), false)).append("\n");
+        sb.append(context);
+        sb.append('}');
+        return sb.toString();
+    }
 }

@@ -74,7 +74,7 @@ public final class SystemTrayHelper extends AppInfoOnLoad {
         defItem.addActionListener(new ActionExit(classMeth));
         popupMenu.add(defItem);
 
-        gitStartWeb.addActionListener(new ActionGITStart(AppComponents.threadConfig()));
+        gitStartWeb.addActionListener(new ActionGITStart());
         gitStartWeb.setLabel("GIT WEB ON");
         popupMenu.add(gitStartWeb);
 
@@ -162,15 +162,18 @@ public final class SystemTrayHelper extends AppInfoOnLoad {
         return retBool;
     }
 
-    private static Image getImage(String iconFileName) {
+    /**
+     Проверка доступности <a href="http://srv-git.eatmeat.ru:1234">srv-git.eatmeat.ru</a>
+     <p>
+
+     @return srv-git online
+     */
+    private static boolean isSrvGitOK() {
         try{
-            return Toolkit.getDefaultToolkit().getImage(SystemTrayHelper.class.getResource(IMG_FOLDER_NAME + iconFileName));
+            return InetAddress.getByName(ConstantsFor.SRV_GIT_EATMEAT_RU).isReachable(1000);
+        } catch (IOException e) {
+            throw new IllegalStateException("***Network Problems Detected***");
         }
-        catch(Exception e){
-            messageToUser.errorAlert(CLASS_NAME, "getImage", e.getMessage());
-            FileSystemWorker.error("SystemTrayHelper.getImage", e);
-        }
-        throw new IllegalArgumentException();
     }
 
     @Override
@@ -184,19 +187,16 @@ public final class SystemTrayHelper extends AppInfoOnLoad {
         return sb.toString();
     }
 
-    /**
-     Проверка доступности <a href="http://srv-git.eatmeat.ru:1234">srv-git.eatmeat.ru</a>
-     <p>
-
-     @return srv-git online
-     */
-    private static boolean srvGitIs() {
+    private static Image getImage(String iconFileName) {
+        if (!isSrvGitOK()) {
+            iconFileName = "icons8-disconnected-24.png";
+        }
         try{
-            return !InetAddress.getByName(ConstantsFor.SRV_GIT_EATMEAT_RU).isReachable(1000);
+            return Toolkit.getDefaultToolkit().getImage(SystemTrayHelper.class.getResource(IMG_FOLDER_NAME + iconFileName));
+        } catch (Exception e) {
+            messageToUser.errorAlert(CLASS_NAME, "getImage", e.getMessage());
+            FileSystemWorker.error("SystemTrayHelper.getImage", e);
         }
-        catch(IOException e){
-            LOGGER.error(e.getMessage(), e);
-            return true;
-        }
+        throw new IllegalArgumentException();
     }
 }

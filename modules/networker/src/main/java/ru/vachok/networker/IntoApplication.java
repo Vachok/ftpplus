@@ -9,6 +9,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
@@ -17,6 +19,7 @@ import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.MyServer;
 import ru.vachok.networker.net.WeekPCStats;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.systray.SystemTrayHelper;
@@ -51,15 +54,28 @@ public class IntoApplication {
      */
     private static final Properties LOCAL_PROPS = AppComponents.getProps();
 
-    /**
-     {@link MessageLocal}
-     */
-    private static final @NotNull MessageToUser messageToUser = new MessageLocal();
+    public static Runnable infoMsgRunnable = () -> {
+        final ThreadPoolTaskExecutor taskExecutor = AppComponents.threadConfig().getTaskExecutor();
+        final ThreadPoolTaskScheduler taskScheduler = AppComponents.threadConfig().getTaskScheduler();
+        new MessageSwing().infoTimer((int) ConstantsFor.DELAY, "ThreadPoolTaskExecutor\n" + taskExecutor.getThreadPoolExecutor().toString() +
+            "\nThreadPoolTaskScheduler " + taskScheduler.getScheduledThreadPoolExecutor().toString());
+    };
+
+    public static Runnable getInfoMsgRunnable() {
+        return infoMsgRunnable;
+    }
 
     /**
      {@link ConfigurableApplicationContext} = null.
      */
     private static @NotNull ConfigurableApplicationContext configurableApplicationContext;
+
+    /**
+     {@link MessageLocal}
+     */
+    private static @NotNull MessageToUser messageToUser = new MessageLocal();
+
+    private static ThreadPoolTaskExecutor executor = AppComponents.threadConfig().getTaskExecutor();
 
     /**
      @return {@link #configurableApplicationContext}
@@ -106,13 +122,14 @@ public class IntoApplication {
      @param args аргументы запуска.
      */
     private static void readArgs(@NotNull String[] args) {
+        ExitApp exitApp = new ExitApp(IntoApplication.class.getSimpleName());
         for (@NotNull String arg : args) {
             messageToUser.info("IntoApplication.readArgs", "arg", arg);
             if (arg.contains(ConstantsFor.PR_TOTPC)) {
                 LOCAL_PROPS.setProperty(ConstantsFor.PR_TOTPC, arg.replaceAll(ConstantsFor.PR_TOTPC, ""));
             }
             if (arg.equalsIgnoreCase("off")) {
-                AppComponents.threadConfig().killAll();
+                AppComponents.threadConfig().executeAsThread(exitApp);
             }
         }
     }
@@ -157,8 +174,8 @@ public class IntoApplication {
      запишем в файл.
      */
     private static void afterSt() {
-        @NotNull AppInfoOnLoad infoAndSched = new AppInfoOnLoad();
-        ThreadPoolTaskExecutor executor = AppComponents.threadConfig().getTaskExecutor();
+        @NotNull Runnable infoAndSched = new AppInfoOnLoad();
+        Runnable mySrv = MyServer.getI();
 
         executor.submit(() -> {
             try {
@@ -169,8 +186,9 @@ public class IntoApplication {
             }
         });
         executor.submit(infoAndSched);
+        executor.submit(mySrv);
 
-        messageToUser.info("IntoApplication.afterSt", "executor.getThreadNamePrefix()", executor.getThreadNamePrefix());
+        new Thread(infoMsgRunnable).start();
     }
 
     /**

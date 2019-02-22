@@ -11,15 +11,11 @@ import ru.vachok.mysqlandprops.EMailAndDB.MailMessages;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
-import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.systray.ActionDefault;
 import ru.vachok.networker.systray.MessageToTray;
 
-import javax.mail.Flags;
-import javax.mail.Folder;
-import javax.mail.Message;
-import javax.mail.MessagingException;
+import javax.mail.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.event.ActionEvent;
@@ -32,8 +28,7 @@ import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
-import static java.time.DayOfWeek.SATURDAY;
-import static java.time.DayOfWeek.SUNDAY;
+import static java.time.DayOfWeek.*;
 
 
 /**
@@ -140,7 +135,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
         long l = rtLong + TimeUnit.HOURS.toMillis(20);
         boolean is20HRSSpend = System.currentTimeMillis() > l;
         if (is20HRSSpend || !isWeekEnd) {
-            ThreadConfig.executeAsThread(this::setRtLong);
+            AppComponents.threadConfig().executeAsThread(this::setRtLong);
         } else {
             this.rtLong = Long.valueOf(AppComponents.getProps().getProperty(PR_LASTWORKSTART));
         }

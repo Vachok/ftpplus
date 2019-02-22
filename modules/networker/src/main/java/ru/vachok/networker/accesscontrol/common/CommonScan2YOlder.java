@@ -2,6 +2,8 @@ package ru.vachok.networker.accesscontrol.common;
 
 
 import org.slf4j.Logger;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
@@ -68,13 +70,22 @@ public class CommonScan2YOlder extends SimpleFileVisitor<Path> implements Callab
     public String call() {
         LOGGER.warn("CommonScan2YOlder.call");
         try {
-            Files.walkFileTree(Paths.get(startPath), AppComponents.archivesSorter());
+            Files.walkFileTree(Paths.get(startPath), archivesSorter());
         } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
         }
         String msg = dirsCounter + " dirs scanned";
         LOGGER.warn(msg);
         return fileRead();
+    }
+
+    /**
+     @return new {@link CommonScan2YOlder}
+     */
+    @Bean
+    @Scope (ConstantsFor.SINGLETON)
+    public static CommonScan2YOlder archivesSorter() {
+        return new CommonScan2YOlder();
     }
 
     /**

@@ -3,7 +3,6 @@ package ru.vachok.networker.accesscontrol;
 
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
@@ -24,6 +23,11 @@ import java.rmi.UnexpectedException;
 public class PfListsSrv {
 
     /**
+     {@link PfLists}
+     */
+    private final @NotNull PfLists pfListsInstAW;
+
+    /**
      SSH-команда.
      <p>
      При инициализации: {@code uname -a;exit}.
@@ -33,27 +37,17 @@ public class PfListsSrv {
      */
     private @NotNull String commandForNatStr = "uname -a;exit";
 
-    private @NotNull MessageToUser messageToUser = new MessageLocal();
-
-    /**
-     {@link PfLists}
-     */
-    private final @NotNull PfLists pfListsInstAW;
-
-    /**
-     {@link AppComponents#threadConfig()}
-     */
-    private final @NotNull ThreadPoolTaskExecutor executor = AppComponents.threadConfig().getTaskExecutor();
-
     /**
      new {@link SSHFactory.Builder}.
      */
     private final @NotNull SSHFactory.Builder builderInst = new SSHFactory.Builder(ConstantsFor.SRV_NAT, commandForNatStr);
 
+    private @NotNull MessageToUser messageToUser = new MessageLocal();
+
     /**
      {@link #commandForNatStr}
      */
-    @SuppressWarnings ("WeakerAccess")
+    @SuppressWarnings("WeakerAccess")
     public @NotNull String getCommandForNatStr() {
         return commandForNatStr;
     }
@@ -65,19 +59,6 @@ public class PfListsSrv {
     public void setCommandForNatStr(@NotNull String commandForNatStr) {
         this.commandForNatStr = commandForNatStr;
     }
-
-// --Commented out by Inspection START (20.02.2019 12:13):
-//    /**
-//     {@link ThreadPoolTaskExecutor}.
-//     <p>
-//
-//     @return {@link #executor}
-//     */
-//    ThreadPoolTaskExecutor getExecutor() {
-//
-//        return executor;
-//    }
-// --Commented out by Inspection STOP (20.02.2019 12:13)
 
     /**
      {@code this.builderInst}
@@ -105,17 +86,14 @@ public class PfListsSrv {
      */
     void makeListRunner() {
         if (ConstantsFor.thisPC().toLowerCase().contains("rups")) {
-            executor.execute(this::buildCommands);
-
-            messageToUser
-                .info(this.getClass().getSimpleName(), executor.getThreadNamePrefix() + " executor", executor.getThreadPoolExecutor().getCompletedTaskCount() + " Completed Tasks");
+            AppComponents.threadConfig().getTaskExecutor().execute(this::buildCommands);
         } else {
-            try{
+            try {
                 messageToUser = new MessageToTray();
-            }
-            catch(ExceptionInInitializerError ignore){
+            } catch (ExceptionInInitializerError ignore) {
                 messageToUser = new MessageLocal();
             }
+
             messageToUser.info(this.getClass().getSimpleName(), "NOT RUNNING ON RUPS!", ConstantsFor.thisPC() + " buildCommands " + false);
         }
     }
@@ -194,7 +172,6 @@ public class PfListsSrv {
         sb.append(", commandForNatStr='").append(commandForNatStr).append('\'');
         sb.append(", messageToUser=").append(messageToUser.toString());
         sb.append(", builderInst=").append(builderInst.hashCode());
-        sb.append(", executor=").append(executor.getActiveCount());
         sb.append('}');
         return sb.toString();
     }

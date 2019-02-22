@@ -88,6 +88,12 @@ public class ExitApp implements Runnable {
         this.reasonExit = reasonExit;
     }
 
+    public void reloadCTX() {
+        ThreadConfig threadConfig = AppComponents.threadConfig();
+        getConfigurableApplicationContext().close();
+        threadConfig.killAll();
+    }
+
     /**
      Копирует логи
 
@@ -150,8 +156,11 @@ public class ExitApp implements Runnable {
         stringList.add("exit at " + LocalDateTime.now().toString() + ConstantsFor.getUpTime());
         FileSystemWorker.recFile("exit.last", stringList);
         FileSystemWorker.delTemp();
+
         getConfigurableApplicationContext().close();
+
         AppComponents.threadConfig().killAll();
+
         System.exit(Math.toIntExact(toMinutes));
     }
 

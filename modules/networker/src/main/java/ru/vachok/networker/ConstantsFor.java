@@ -1,16 +1,17 @@
 package ru.vachok.networker;
 
 
+import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.apache.commons.net.ntp.TimeInfo;
 import org.slf4j.LoggerFactory;
 import org.springframework.ui.Model;
 import org.springframework.web.multipart.MultipartFile;
+import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.Visitor;
-import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.controller.ServiceInfoCtrl;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.mailserver.ExSRV;
@@ -25,13 +26,14 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.SecureRandom;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.Year;
-import java.time.ZoneOffset;
+import java.sql.*;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static java.time.temporal.ChronoUnit.HOURS;
 
@@ -51,10 +53,7 @@ public enum ConstantsFor {
 
     private static final int MIN_DELAY = 17;
 
-    /**
-     new {@link Properties}
-     */
-    private static final Properties PROPS = takePr(false);
+    public static final String METHNAME_ACTIONPERFORMED = "actionPerformed";
 
     public static final String FILE_RU_VACHOK_NETWORKER_CONSTANTS_FOR = "ru_vachok_networker-ConstantsFor";
 
@@ -139,8 +138,6 @@ public enum ConstantsFor {
      <i>Boiler Plate</i>
      */
     public static final String[] STRS_VISIT = {"visit_", ".tmp"};
-
-    public static final String STR_VISIT = "visit_";
 
     /**
      <i>Boiler Plate</i>
@@ -227,7 +224,10 @@ public enum ConstantsFor {
      */
     public static final String NO0027 = "no0027";
 
-    public static final boolean IS_SYSTRAY_AVAIL = (SystemTray.isSupported() || SystemTray.getSystemTray() != null);
+    /**
+     new {@link Properties}
+     */
+    private static final Properties PROPS = takePr(false);
 
     /**
      Название файла старой подсети 192.168.х.х
@@ -259,16 +259,12 @@ public enum ConstantsFor {
      */
     public static final String DB_PREFIX = "u0466446_";
 
-    /**
-     Число, для Secure Random
-     */
-    public static final long MY_AGE = ( long ) Year.now().getValue() - 1984;
+    public static final boolean IS_SYSTRAY_AVAIL = (SystemTray.isSupported() || SystemTray.getSystemTray()!=null);
 
     /**
      Первоначальная задержка шедулера.
      */
-    public static final long INIT_DELAY = TimeUnit.MINUTES.toSeconds(MY_AGE);
-
+    public static final long INIT_DELAY = MY_AGE;
 
     /**
      {@link Model} имя атрибута
@@ -325,7 +321,6 @@ public enum ConstantsFor {
      */
     public static final int ONE_DAY_HOURS = 24;
 
-
     /**
      Кол-во байт в гигабайте
      */
@@ -356,6 +351,11 @@ public enum ConstantsFor {
     public static final String LOG = ".log";
 
     /**
+     Число, для Secure Random
+     */
+    public static final long MY_AGE = ( long ) Year.now().getValue() - 1984;
+
+    /**
      Кол-во миллисек. в 1 неделе
      */
     public static final long ONE_WEEK_MILLIS = TimeUnit.HOURS.toMillis(ONE_DAY_HOURS * ( long ) 7);
@@ -368,22 +368,7 @@ public enum ConstantsFor {
 
     public static final String WHOIS_STR = "whois";
 
-    /**
-     Число IP по кол-ву VLANs
-     */
-    public static final int IPS_IN_VELKOM_VLAN = getIPs();
-
     public static final String ICON_FILE_NAME = "icons8-сетевой-менеджер-30.png";
-
-    /**
-     Все возможные IP из диапазонов {@link DiapazonedScan}
-     */
-    public static BlockingDeque<String> ALL_DEVICES = new LinkedBlockingDeque<>(IPS_IN_VELKOM_VLAN);
-
-    /**
-     Порт для {@link ru.vachok.networker.net.MyServer}
-     */
-    public static final int LISTEN_PORT = Integer.parseInt(PROPS.getOrDefault("lport", "9990").toString());
 
     /**
      {@link #getDelay()}
@@ -391,10 +376,30 @@ public enum ConstantsFor {
     public static final long DELAY = getDelay();
 
     /**
+     Число IP по кол-ву VLANs
+     */
+    public static final int IPS_IN_VELKOM_VLAN = getIPs();
+
+    /**
+     Все возможные IP из диапазонов {@link DiapazonedScan}
+     */
+    public static final BlockingDeque<String> ALL_DEVICES = new LinkedBlockingDeque<>(IPS_IN_VELKOM_VLAN);
+
+    /**
+     Порт для {@link ru.vachok.networker.net.MyServer}
+     */
+    public static final int LISTEN_PORT = Integer.parseInt(PROPS.getOrDefault("lport", "9990").toString());
+
+    /**
      {@link #getAtomicTime()}
      */
     @SuppressWarnings ("NonFinalFieldInEnum")
     private static long atomicTime;
+
+    /**
+     {@link MessageLocal}
+     */
+    private static MessageToUser messageToUser = new MessageLocal();
 
     /**
      @return {@link #MAIL_RULES}
@@ -508,6 +513,32 @@ public enum ConstantsFor {
     }
 
     /**
+     Тащит {@link #PROPS} из БД или файла
+     */
+    private static Properties takePr(boolean fromFile) {
+        InitProperties initProperties = new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
+        Properties retPr;
+        try{
+            retPr = initProperties.getProps();
+            if(fromFile){
+                retPr = getPFromFile();
+            }
+
+        }
+        catch(Exception e){
+            retPr = getPFromFile();
+            FileSystemWorker.error("ConstantsFor.takePr", e);
+        }
+        new MessageLocal().info(ConstantsFor.class.getSimpleName(), "takePr", new TForms().fromArray(retPr, false));
+        return retPr;
+    }
+
+    private static Properties getPFromFile() {
+        InitProperties initProperties = new FileProps(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
+        return initProperties.getProps();
+    }
+
+    /**
      Считает время до конца дня.
      <p>
 
@@ -566,14 +597,50 @@ public enum ConstantsFor {
      @param propsToSave {@link Properties}
      */
     public static void saveAppProps(Properties propsToSave) {
+        String classMeth = "ConstantsFor.saveAppProps";
+        final String javaIDsString = ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName();
+        MysqlDataSource mysqlDataSource = new DBRegProperties(javaIDsString).getRegSourceForProperties();
+        AtomicReference<InitProperties> initProperties = new AtomicReference<>();
+
+        initProperties.set(new FileProps(javaIDsString));
+        initProperties.get().setProps(propsToSave);
+
+        try(Connection c = mysqlDataSource.getConnection()){
+            Savepoint delPropsPoint = c.setSavepoint("delPropsPoint" + LocalTime.now().format(DateTimeFormatter.ISO_TIME));
+            savePropsDelStatement(c, delPropsPoint);
+        }
+        catch(SQLException e){
+            messageToUser.errorAlert("ConstantsFor", "saveAppProps", e.getMessage());
+            FileSystemWorker.error(classMeth, e);
+        }
         Runnable thread = () -> {
-            InitProperties initProperties = new FileProps(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
-            initProperties.setProps(propsToSave);
-            initProperties = new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
-            initProperties.delProps();
-            initProperties.setProps(propsToSave);
+            initProperties.set(new DBRegProperties(javaIDsString));
+            initProperties.get().getProps();
         };
-        ThreadConfig.executeAsThread(thread);
+
+        AppComponents.threadConfig().executeAsThread(thread);
+    }
+
+    /**
+     Выполнение удаления {@link Properties} из БД
+     <p>
+
+     @param c             {@link Connection}
+     @param delPropsPoint {@link Savepoint}
+     @throws SQLException делает {@link Connection#rollback(java.sql.Savepoint)}
+     @see #saveAppProps(Properties)
+     */
+    private static void savePropsDelStatement(Connection c, Savepoint delPropsPoint) throws SQLException {
+        final String sql = "delete FROM `ru_vachok_networker` where `javaid` =  'ConstantsFor'";
+        try(PreparedStatement preparedStatement = c.prepareStatement(sql)){
+            int update = preparedStatement.executeUpdate();
+            messageToUser.info("ConstantsFor.savePropsDelStatement", "update", " = " + update);
+        }
+        catch(SQLException e){
+            messageToUser.errorAlert("ConstantsFor", "savePropsDelStatement", e.getMessage());
+            c.rollback(delPropsPoint);
+        }
+
     }
 
     /**
@@ -604,31 +671,5 @@ public enum ConstantsFor {
 
     public static String getUserPC(HttpServletRequest request) {
         return request.getRemoteAddr();
-    }
-
-    private static Properties getPFromFile() {
-        InitProperties initProperties = new FileProps(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
-        return initProperties.getProps();
-    }
-
-    /**
-     Тащит {@link #PROPS} из БД или файла
-     */
-    private static Properties takePr(boolean fromFile) {
-        InitProperties initProperties = new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
-        Properties retPr;
-        try{
-            retPr = initProperties.getProps();
-            if(fromFile){
-                retPr = getPFromFile();
-            }
-
-        }
-        catch(Exception e){
-            retPr = getPFromFile();
-            FileSystemWorker.error("ConstantsFor.takePr", e);
-        }
-        new MessageLocal().info(ConstantsFor.class.getSimpleName(), "takePr", new TForms().fromArray(retPr, false));
-        return retPr;
     }
 }
