@@ -130,6 +130,8 @@ public final class NetScannerSvc {
      */
     private Map<String, Boolean> netWorkMap;
 
+    private MessageToUser messageToUser = new MessageLocal();
+
     /**
      @return {@link #onLinePCsNum}
      */
@@ -146,8 +148,9 @@ public final class NetScannerSvc {
      @see NetScanCtr#scanIt(HttpServletRequest, Model, Date)
      */
     Set<String> getPcNames() {
-        Runnable getPCs = this::getPCsAsync;
-        new Thread(getPCs).start();
+        getPCsAsync();
+        messageToUser.info("NetScannerSvc.getPcNames", "AppComponents.threadConfig().getTaskExecutor().toString()",
+            " = " + AppComponents.threadConfig().getTaskExecutor().toString());
         return pcNamesSet;
     }
 
@@ -460,7 +463,7 @@ public final class NetScannerSvc {
      */
     @SuppressWarnings("OverlyLongLambda")
     private void getPCsAsync() {
-        ExecutorService eServ = Executors.unconfigurableExecutorService(Executors.newFixedThreadPool(ConstantsNet.N_THREADS * 5));
+        ExecutorService eServ = Executors.unconfigurableExecutorService(Executors.newFixedThreadPool(ConstantsNet.N_THREADS));
         AtomicReference<String> msg = new AtomicReference<>("");
         this.startClassTime = System.currentTimeMillis();
         boolean fileCreate = fileCreate(true);
@@ -471,6 +474,7 @@ public final class NetScannerSvc {
             new MessageLocal().errorAlert(CLASS_NAME, "getPCsAsync", e.getMessage());
         }
         eServ.submit(() -> {
+            Thread.currentThread().setName("E-" + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - ConstantsFor.START_STAMP));
             msg.set(new StringBuilder()
                 .append("Thread id ")
                 .append(Thread.currentThread().getId())

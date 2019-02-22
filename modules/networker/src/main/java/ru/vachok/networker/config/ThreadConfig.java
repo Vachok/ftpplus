@@ -58,8 +58,9 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
         TASK_EXECUTOR.setAwaitTerminationSeconds(7);
         TASK_EXECUTOR.setThreadPriority(6);
         TASK_EXECUTOR.setThreadNamePrefix("run-" + (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN);
-
-        messageToUser.info("ThreadConfig.getTaskExecutor", TASK_EXECUTOR_STR, TASK_EXECUTOR.getThreadPoolExecutor().toString());
+        BlockingQueue<Runnable> poolExecutor = TASK_EXECUTOR.getThreadPoolExecutor().getQueue();
+        messageToUser.info("ThreadConfig.getTaskExecutor", "new TForms().fromArray(poolExecutor, false)", " = " + new TForms().fromArray(poolExecutor,
+            false));
         return TASK_EXECUTOR;
     }
 
@@ -110,13 +111,14 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
         CustomizableThreadCreator customizableThreadCreator = new CustomizableThreadCreator("AsThread: ");
         customizableThreadCreator.setThreadPriority(9);
         Thread thread = customizableThreadCreator.createThread(r);
-        Executor asyncExecutor;
+        Executor asyncExecutor = null;
         if(new ASExec().getAsyncExecutor()!=null){
             asyncExecutor = new ASExec().getAsyncExecutor();
         }
         else{
-            asyncExecutor = TASK_EXECUTOR;
+            thread = new Thread(r);
         }
+
         if(asyncExecutor!=null){
             asyncExecutor.execute(thread);
             messageToUser.info(EXECUTE_AS_THREAD_METHNAME, "thread.toString()", " = " + thread.toString());
@@ -153,12 +155,10 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
             }
             TASK_EXECUTOR.setThreadGroupName("A-" + upTimer);
             int countAllCoreThreads = TASK_EXECUTOR.getThreadPoolExecutor().prestartAllCoreThreads();
-
-            messageToUser.info(GET_ASYNC_EXECUTOR_METHNAME, "upTimer", " = " + upTimer);
-            messageToUser.errorAlert(getClass().getSimpleName(), GET_ASYNC_EXECUTOR_METHNAME, TASK_EXECUTOR.getThreadPoolExecutor().toString());
-
             BlockingQueue<Runnable> runnableBlockingQueue = TASK_EXECUTOR.getThreadPoolExecutor().getQueue();
-            messageToUser.infoNoTitles(new TForms().fromArray(runnableBlockingQueue, false));
+
+            messageToUser.info(getClass().getSimpleName(), "up = " + upTimer, new TForms().fromArray(runnableBlockingQueue, false));
+
             return TASK_EXECUTOR;
         }
     }

@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.messenger.MessageCons;
+import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
@@ -32,9 +33,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.util.*;
-import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 
 /**
@@ -86,6 +85,8 @@ public class NetScanCtr {
      {@link AppComponents#lastNetScanMap()}
      */
     private static ConcurrentMap<String, Boolean> lastScanMAP = AppComponents.lastNetScanMap();
+
+    private static MessageToUser messageToUser = new MessageLocal();
 
     private NetPinger netPingerInst = AppComponents.netPinger();
 
@@ -186,7 +187,7 @@ public class NetScanCtr {
      @return {@link ConstantsNet#ATT_NETSCAN} (netscan.html)
      */
     @GetMapping(STR_NETSCAN)
-    public static String netScan(HttpServletRequest request, HttpServletResponse response, Model model) {
+    public static String netScan(HttpServletRequest request, HttpServletResponse response, Model model) throws ExecutionException, InterruptedException {
         String classMeth = "NetScanCtr.netScan";
         final long lastSt = Long.parseLong(PROPERTIES.getProperty(ConstantsNet.PR_LASTSCAN, "1548919734742"));
         new MessageCons().errorAlert(classMeth);
@@ -304,7 +305,7 @@ public class NetScanCtr {
      @param lastSt  timestamp из {@link #PROPERTIES}
      @see #netScan(HttpServletRequest, HttpServletResponse, Model)
      */
-    private static void checkMapSizeAndDoAction(Model model, HttpServletRequest request, long lastSt) {
+    private static void checkMapSizeAndDoAction(Model model, HttpServletRequest request, long lastSt) throws ExecutionException, InterruptedException {
         boolean isMapSizeBigger = lastScanMAP.size() > 1;
         final int thisTotpc = Integer.parseInt(PROPERTIES.getProperty(ConstantsFor.PR_TOTPC, "318"));
         File f = new File("scan.tmp");
