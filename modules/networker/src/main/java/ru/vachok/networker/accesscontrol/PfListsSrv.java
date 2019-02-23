@@ -86,14 +86,13 @@ public class PfListsSrv {
      */
     void makeListRunner() {
         if (ConstantsFor.thisPC().toLowerCase().contains("rups")) {
-            AppComponents.threadConfig().getTaskExecutor().execute(this::buildCommands);
+            AppComponents.threadConfig().executeAsThread(this::buildCommands);
         } else {
             try {
                 messageToUser = new MessageToTray();
             } catch (ExceptionInInitializerError ignore) {
                 messageToUser = new MessageLocal();
             }
-
             messageToUser.info(this.getClass().getSimpleName(), "NOT RUNNING ON RUPS!", ConstantsFor.thisPC() + " buildCommands " + false);
         }
     }
@@ -119,7 +118,7 @@ public class PfListsSrv {
      */
     private void buildFactory() throws UnexpectedException {
         SSHFactory build = builderInst.build();
-        SSHFactory buildGit = new SSHFactory.Builder(ConstantsFor.SRV_GIT, "sudo /etc/stat.script;exit").build();
+        SSHFactory buildGit = new SSHFactory.Builder(ConstantsFor.SRV_GIT, "sudo /etc/stat.script").build();
 
         if (!ConstantsFor.isPingOK()) {
             throw new UnexpectedException("No ping to " + ConstantsFor.SRV_GIT + " cancelling execution");
@@ -141,7 +140,7 @@ public class PfListsSrv {
         build.setCommandSSH("pfctl -s nat;exit");
         pfListsInstAW.setPfNat(build.call());
 
-        build.setCommandSSH("pfctl -s rules;exit");
+        build.setCommandSSH("pfctl -s rules;traceroute 8.8.8.8;exit");
         pfListsInstAW.setPfRules(build.call());
 
         String callToStatScript = buildGit.call();

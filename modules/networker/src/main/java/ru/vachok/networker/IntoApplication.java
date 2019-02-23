@@ -57,8 +57,8 @@ public class IntoApplication {
     public static Runnable infoMsgRunnable = () -> {
         final ThreadPoolTaskExecutor taskExecutor = AppComponents.threadConfig().getTaskExecutor();
         final ThreadPoolTaskScheduler taskScheduler = AppComponents.threadConfig().getTaskScheduler();
-        new MessageSwing().infoTimer((int) ConstantsFor.DELAY, "ThreadPoolTaskExecutor\n" + taskExecutor.getThreadPoolExecutor().toString() +
-            "\nThreadPoolTaskScheduler " + taskScheduler.getScheduledThreadPoolExecutor().toString());
+        new MessageSwing(550, 270, 37, 26).infoTimer(( int ) ConstantsFor.DELAY, "\n\n\n" + taskExecutor.getThreadPoolExecutor().toString() +
+            "\n\n" + taskScheduler.getScheduledThreadPoolExecutor().toString());
     };
 
     public static Runnable getInfoMsgRunnable() {

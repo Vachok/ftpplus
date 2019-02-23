@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.PageFooter;
@@ -50,6 +51,8 @@ public class PfListsCtr {
     private static final @NotNull String ATT_METRIC = "metric";
 
     private static final int DELAY_LOCAL_INT = (int) (ConstantsFor.DELAY + ConstantsFor.ONE_HOUR_IN_MIN);
+
+    private static final String ATT_VIPNET = "vipnet";
 
     /**
      {@link AppComponents#getProps()}
@@ -169,7 +172,7 @@ public class PfListsCtr {
     }
 
     private static void noPing(Model model) throws UnknownHostException {
-        model.addAttribute("vipnet", "No ping to srv-git");
+        model.addAttribute(ATT_VIPNET, "No ping to srv-git");
         model.addAttribute(ATT_METRIC, LocalTime.now().toString());
         throw new UnknownHostException("srv-git. <font color=\"red\"> NO PING!!!</font>");
     }
@@ -206,14 +209,15 @@ public class PfListsCtr {
 
         model.addAttribute("PfListsSrv", pfListsSrvInstAW);
         model.addAttribute(ATT_METRIC, metricValue);
-        model.addAttribute("vipnet", pfListsInstAW.getVipNet());
+        model.addAttribute(ATT_VIPNET, pfListsInstAW.getVipNet());
         model.addAttribute("tempfull", pfListsInstAW.getFullSquid());
         model.addAttribute("squidlimited", pfListsInstAW.getLimitSquid());
         model.addAttribute("squid", pfListsInstAW.getStdSquid());
         model.addAttribute("nat", pfListsInstAW.getPfNat());
         model.addAttribute("rules", pfListsInstAW.getPfRules());
-        model.addAttribute(ConstantsFor.ATT_GITSTATS, gitstatValue + "\n" + ConstantsFor.getMemoryInfo());
+        model.addAttribute(ConstantsFor.ATT_GITSTATS, gitstatValue + "\n" + ConstantsFor.getMemoryInfo() + "\n");
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
+        AppComponents.threadConfig().executeAsThread(IntoApplication.getInfoMsgRunnable());
     }
 
     @Override
