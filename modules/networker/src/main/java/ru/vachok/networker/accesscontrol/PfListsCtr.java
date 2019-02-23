@@ -62,7 +62,7 @@ public class PfListsCtr {
     /**
      {@link PfLists}
      */
-    private final PfLists pfListsInstAW;
+    private PfLists pfListsInstAW;
 
     /**
      {@link ConstantsFor#isPingOK()}
