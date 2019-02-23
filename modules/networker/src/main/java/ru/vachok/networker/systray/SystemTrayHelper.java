@@ -40,68 +40,19 @@ public final class SystemTrayHelper extends AppInfoOnLoad {
     private static final String CLASS_NAME = SystemTrayHelper.class.getSimpleName();
 
     private static @NotNull TrayIcon trayIcon;
-    
+
     /**
      {@link MessageLocal}
      */
     private static MessageToUser messageToUser = new MessageLocal();
 
     static TrayIcon getTrayIcon() throws ExceptionInInitializerError {
-        if (ConstantsFor.IS_SYSTRAY_AVAIL) {
+        if(ConstantsFor.IS_SYSTRAY_AVAIL){
             return trayIcon;
         }
         else{
-            throw new UnsupportedOperationException();
+            throw new IllegalComponentStateException("System tray unavailable");
         }
-    }
-
-    /**
-     Добавление компонентов в меню
-     <p>
-     1.5 {@link ArchivesAutoCleaner}
-     */
-    @SuppressWarnings("OverlyLongMethod")
-    private static PopupMenu getMenu() {
-        PopupMenu popupMenu = new PopupMenu();
-        String classMeth = CLASS_NAME + ".getMenu";
-        MenuItem defItem = new MenuItem();
-        MenuItem gitStartWeb = new MenuItem();
-        MenuItem toConsole = new MenuItem();
-        MenuItem delFiles = new MenuItem();
-        MenuItem logToFilesystem = new MenuItem();
-
-        defItem.setLabel("Exit");
-        defItem.addActionListener(new ActionExit(classMeth));
-        popupMenu.add(defItem);
-
-        gitStartWeb.addActionListener(new ActionGITStart());
-        gitStartWeb.setLabel("GIT WEB ON");
-        popupMenu.add(gitStartWeb);
-
-        toConsole.setLabel("Console Back");
-        toConsole.addActionListener((ActionEvent e) -> System.setOut(System.err));
-        popupMenu.add(toConsole);
-
-        if (ConstantsFor.thisPC().toLowerCase().contains("home")) {
-            MenuItem reloadContext = new MenuItem();
-            reloadContext.addActionListener(new ActionTests());
-            reloadContext.setLabel("Run tests");
-            popupMenu.add(reloadContext);
-        } else {
-            MenuItem puttyStarter = new MenuItem();
-            puttyStarter.addActionListener((ActionEvent e) -> new Putty().start());
-            puttyStarter.setLabel("Putty");
-            popupMenu.add(puttyStarter);
-        }
-
-        delFiles.addActionListener(new ActionDelTMP(AppComponents.threadConfig().getTaskExecutor(), delFiles, popupMenu));
-        delFiles.setLabel("Clean last year");
-        popupMenu.add(delFiles);
-
-        logToFilesystem.setLabel("Get some info");
-        logToFilesystem.addActionListener(new ActionSomeInfo());
-        popupMenu.add(logToFilesystem);
-        return popupMenu;
     }
 
     /**
@@ -129,17 +80,68 @@ public final class SystemTrayHelper extends AppInfoOnLoad {
         messageToUser.info("SystemTrayHelper.addTray", "isTrayAdded", String.valueOf(isTrayAdded));
     }
 
-    static void delOldActions() {
-        Thread.currentThread().setName(CLASS_NAME + ".delOldActions");
-        try {
-            ActionListener[] actionListeners = trayIcon.getActionListeners();
-            for (ActionListener actionListener : actionListeners) {
-                trayIcon.removeActionListener(actionListener);
-            }
-        } catch (NullPointerException e) {
-            FileSystemWorker.error("SystemTrayHelper.delOldActions", e);
-            throw new IllegalComponentStateException("actionListeners is " + e.getMessage());
+    private static Image getImage(String iconFileName) {
+        if(!isSrvGitOK()){
+            iconFileName = "icons8-disconnected-24.png";
         }
+        try{
+            return Toolkit.getDefaultToolkit().getImage(SystemTrayHelper.class.getResource(IMG_FOLDER_NAME + iconFileName));
+        }
+        catch(Exception e){
+            messageToUser.errorAlert(CLASS_NAME, "getImage", e.getMessage());
+            FileSystemWorker.error("SystemTrayHelper.getImage", e);
+        }
+        throw new IllegalArgumentException();
+    }
+
+    /**
+     Добавление компонентов в меню
+     <p>
+     1.5 {@link ArchivesAutoCleaner}
+     */
+    @SuppressWarnings ("OverlyLongMethod")
+    private static PopupMenu getMenu() {
+        PopupMenu popupMenu = new PopupMenu();
+        String classMeth = CLASS_NAME + ".getMenu";
+        MenuItem defItem = new MenuItem();
+        MenuItem gitStartWeb = new MenuItem();
+        MenuItem toConsole = new MenuItem();
+        MenuItem delFiles = new MenuItem();
+        MenuItem logToFilesystem = new MenuItem();
+
+        defItem.setLabel("Exit");
+        defItem.addActionListener(new ActionExit(classMeth));
+        popupMenu.add(defItem);
+
+        gitStartWeb.addActionListener(new ActionGITStart());
+        gitStartWeb.setLabel("GIT WEB ON");
+        popupMenu.add(gitStartWeb);
+
+        toConsole.setLabel("Console Back");
+        toConsole.addActionListener((ActionEvent e) -> System.setOut(System.err));
+        popupMenu.add(toConsole);
+
+        if(ConstantsFor.thisPC().toLowerCase().contains("home")){
+            MenuItem reloadContext = new MenuItem();
+            reloadContext.addActionListener(new ActionTests());
+            reloadContext.setLabel("Run tests");
+            popupMenu.add(reloadContext);
+        }
+        else{
+            MenuItem puttyStarter = new MenuItem();
+            puttyStarter.addActionListener((ActionEvent e) -> new Putty().start());
+            puttyStarter.setLabel("Putty");
+            popupMenu.add(puttyStarter);
+        }
+
+        delFiles.addActionListener(new ActionDelTMP(AppComponents.threadConfig().getTaskExecutor(), delFiles, popupMenu));
+        delFiles.setLabel("Clean last year");
+        popupMenu.add(delFiles);
+
+        logToFilesystem.setLabel("Get some info");
+        logToFilesystem.addActionListener(new ActionSomeInfo());
+        popupMenu.add(logToFilesystem);
+        return popupMenu;
     }
 
     private static boolean addTrayToSys() {
@@ -171,8 +173,20 @@ public final class SystemTrayHelper extends AppInfoOnLoad {
     private static boolean isSrvGitOK() {
         try{
             return InetAddress.getByName(ConstantsFor.SRV_GIT_EATMEAT_RU).isReachable(1000);
-        } catch (IOException e) {
+        }
+        catch(IOException e){
             throw new IllegalStateException("***Network Problems Detected***");
+        }
+    }
+
+    static void delOldActions() {
+        Thread.currentThread().setName(CLASS_NAME + ".delOldActions");
+        ActionListener[] actionListeners;
+        if(trayIcon.getActionListeners()!=null){
+            actionListeners = trayIcon.getActionListeners();
+            for(ActionListener actionListener : actionListeners){
+                trayIcon.removeActionListener(actionListener);
+            }
         }
     }
 
@@ -185,18 +199,5 @@ public final class SystemTrayHelper extends AppInfoOnLoad {
         sb.append(", messageToUser=").append(messageToUser.toString());
         sb.append('}');
         return sb.toString();
-    }
-
-    private static Image getImage(String iconFileName) {
-        if (!isSrvGitOK()) {
-            iconFileName = "icons8-disconnected-24.png";
-        }
-        try{
-            return Toolkit.getDefaultToolkit().getImage(SystemTrayHelper.class.getResource(IMG_FOLDER_NAME + iconFileName));
-        } catch (Exception e) {
-            messageToUser.errorAlert(CLASS_NAME, "getImage", e.getMessage());
-            FileSystemWorker.error("SystemTrayHelper.getImage", e);
-        }
-        throw new IllegalArgumentException();
     }
 }

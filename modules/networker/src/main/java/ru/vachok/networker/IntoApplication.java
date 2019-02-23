@@ -149,9 +149,14 @@ public class IntoApplication {
         stringBuilder.append(" - day of week\n");
         stringBuilder.append(LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault()));
         messageToUser.info("IntoApplication.beforeSt", "stringBuilder", stringBuilder.toString());
-        if (ConstantsFor.thisPC().toLowerCase().contains(ConstantsFor.NO0027) || ConstantsFor.thisPC().toLowerCase().contains("home")) {
+        if(ConstantsFor.thisPC().toLowerCase().contains(ConstantsFor.NO0027)){
             SystemTrayHelper.addTray("icons8-плохие-поросята-32.png");
-        } else {
+        }
+        else
+            if(ConstantsFor.thisPC().toLowerCase().contains("home")){
+                SystemTrayHelper.addTray("icons8-house-26.png");
+            }
+            else{
             SystemTrayHelper.addTray(ConstantsFor.ICON_FILE_NAME);
         }
         SPRING_APPLICATION.setMainApplicationClass(IntoApplication.class);
