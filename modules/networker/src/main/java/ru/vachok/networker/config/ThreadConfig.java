@@ -76,13 +76,10 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
     }
 
     public ThreadPoolTaskScheduler getTaskScheduler() {
-        float localUptimer = upTimer.get();
-        if (localUptimer > ConstantsFor.ONE_HOUR_IN_MIN) {
-            localUptimer /= ConstantsFor.ONE_HOUR_IN_MIN;
-        }
         ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = TASK_SCHEDULER.getScheduledThreadPoolExecutor();
         scheduledThreadPoolExecutor.setCorePoolSize(5);
-        TASK_SCHEDULER.setThreadNamePrefix("SCHED-" + localUptimer);
+        TASK_SCHEDULER.setThreadNamePrefix("SCH-");
+        TASK_SCHEDULER.setThreadPriority(2);
         return TASK_SCHEDULER;
     }
 
@@ -126,8 +123,9 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
         Executor asyncExecutor = null;
         if (new ASExec(TASK_EXECUTOR).getAsyncExecutor() != null) {
             asyncExecutor = new ASExec(TASK_EXECUTOR).getAsyncExecutor();
+
         } else {
-            if(upTimer.get() > 60){
+            if(upTimer.get() > ConstantsFor.ONE_HOUR_IN_MIN){
                 upTimer.set(upTimer.get() / ConstantsFor.ONE_HOUR_IN_MIN);
             }
             thread.setName("ASYN-Null-" + upTimer.get());
@@ -173,13 +171,9 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
 
         @Override
         public Executor getAsyncExecutor() {
-            float localUptimer = upTimer.get();
-            if (localUptimer > ConstantsFor.ONE_HOUR_IN_MIN) {
-                localUptimer /= ConstantsFor.ONE_HOUR_IN_MIN;
-            }
             threadPoolTaskExecutor.setAllowCoreThreadTimeOut(true);
-            threadPoolTaskExecutor.setThreadPriority(10);
-            threadPoolTaskExecutor.setThreadNamePrefix("ASyn-" + localUptimer);
+            threadPoolTaskExecutor.setThreadPriority(9);
+            threadPoolTaskExecutor.setThreadNamePrefix("ASyn-");
             return threadPoolTaskExecutor;
         }
 

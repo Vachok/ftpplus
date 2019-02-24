@@ -19,6 +19,7 @@ import ru.vachok.networker.net.*;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.MyCalen;
 import ru.vachok.networker.services.SpeedChecker;
+import ru.vachok.networker.systray.MessageToTray;
 
 import java.io.File;
 import java.io.IOException;
@@ -103,8 +104,8 @@ public class AppInfoOnLoad implements Runnable {
      */
     static void getWeekPCStats() {
         if (LocalDate.now().getDayOfWeek().equals(DayOfWeek.SUNDAY)) {
-            ExecutorService serviceW = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor());
-            serviceW.submit(new WeekPCStats());
+            AppComponents.threadConfig().executeAsThread(new WeekPCStats());
+            new MessageToTray().errorAlert("AppInfoOnLoad.getWeekPCStats", "WeekPCStats.class.getSimpleName()", " = " + WeekPCStats.class.getSimpleName());
         }
     }
 

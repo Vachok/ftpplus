@@ -10,10 +10,7 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 
 import java.io.*;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,7 +39,6 @@ public class WeekPCStats implements Runnable {
     @Override
     public void run() {
         Thread.currentThread().setName("WeekPCStats.run");
-        LOGGER.warn("WeekPCStats.run");
         final long stArt = System.currentTimeMillis();
         getFromDB();
         String tSpend = ConstantsFor.STR_SEC_SPEND;

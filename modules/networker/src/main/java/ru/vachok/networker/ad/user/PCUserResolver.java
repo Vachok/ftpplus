@@ -13,8 +13,9 @@ import ru.vachok.networker.services.MessageLocal;
 import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.sql.*;
-import java.util.Date;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -126,9 +127,7 @@ public class PCUserResolver extends ADSrv {
      */
     private synchronized void recAutoDB(String pcName, String lastFileUse) {
         String sql = "insert into pcuser (pcName, userName, lastmod, stamp) values(?,?,?,?)";
-        String classMeth = METHNAME_REC_AUTO_DB;
         try (Connection connection = new AppComponents().connection(ConstantsNet.DB_NAME)) {
-            Savepoint savepoint = connection.setSavepoint();
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql.replaceAll(ConstantsFor.STR_PCUSER, ConstantsFor.STR_PCUSERAUTO))) {
                 String[] split = lastFileUse.split(" ");
                 preparedStatement.setString(1, pcName);
@@ -138,13 +137,12 @@ public class PCUserResolver extends ADSrv {
                 preparedStatement.executeUpdate();
             } catch (SQLException e) {
                 connection.clearWarnings();
-                connection.releaseSavepoint(savepoint);
                 messageToUser.errorAlert(ConstantsFor.PC_USER_RESOLVER_CLASS_NAME, "recAutoDB", e.getMessage());
                 FileSystemWorker.error(METHNAME_REC_AUTO_DB, e);
             }
         }
         catch(SQLException | ArrayIndexOutOfBoundsException | NullPointerException | IOException e){
-            FileSystemWorker.error(classMeth, e);
+            FileSystemWorker.error(METHNAME_REC_AUTO_DB, e);
         }
     }
 

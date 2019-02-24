@@ -60,6 +60,7 @@ class ConditionChecker {
      @see MoreInfoGetter#getSomeMore(String, boolean)
      */
     static String onLinesCheck(String sql, String pcName) {
+        thrNameSet();
         PCUserResolver pcUserResolver = PCUserResolver.getPcUserResolver();
         List<Integer> onLine = new ArrayList<>();
         List<Integer> offLine = new ArrayList<>();
@@ -100,6 +101,16 @@ class ConditionChecker {
             .append(" online times.").toString();
     }
 
+    private static void thrNameSet() {
+        float localUptimer = (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN;
+
+        if(localUptimer > ConstantsFor.ONE_HOUR_IN_MIN){
+            localUptimer /= ConstantsFor.ONE_HOUR_IN_MIN;
+        }
+
+        Thread.currentThread().setName(String.valueOf(localUptimer));
+    }
+
     /**
      <b>Проверяет есть ли в БД имя пользователя</b>
 
@@ -109,6 +120,8 @@ class ConditionChecker {
      */
     @SuppressWarnings ("MethodWithMultipleLoops")
     static String offLinesCheckUser(String sql, String pcName) {
+        thrNameSet();
+
         StringBuilder stringBuilder = new StringBuilder();
         try(
             PreparedStatement p = connection.prepareStatement(sql);
