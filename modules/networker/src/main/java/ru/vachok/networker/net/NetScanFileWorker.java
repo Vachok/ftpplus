@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import ru.vachok.messenger.MessageCons;
+import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -28,6 +29,8 @@ class NetScanFileWorker {
 
     private static NetScanFileWorker ourInst = new NetScanFileWorker();
 
+    private static MessageToUser messageToUser = new MessageCons();
+
     private long lastStamp = System.currentTimeMillis();
 
     /**
@@ -45,7 +48,7 @@ class NetScanFileWorker {
      */
     void setNewLanLastScan(File newLanLastScan) {
         this.newLanLastScan = newLanLastScan;
-        new MessageCons().infoNoTitles("newLanLastScan = [" + this.newLanLastScan.getAbsolutePath() + "]");
+        messageToUser.infoNoTitles("newLanLastScan = [" + this.newLanLastScan.getAbsolutePath() + "]");
     }
 
     /**
@@ -53,7 +56,7 @@ class NetScanFileWorker {
      */
     void setOldLanLastScan(File oldLanLastScan) {
         this.oldLanLastScan = oldLanLastScan;
-        new MessageCons().infoNoTitles("oldLanLastScan = [" + this.oldLanLastScan.getAbsolutePath() + "]");
+        messageToUser.infoNoTitles("oldLanLastScan = [" + this.oldLanLastScan.getAbsolutePath() + "]");
     }
 
     public long getLastStamp() {
@@ -104,7 +107,7 @@ class NetScanFileWorker {
             boolean oldLanLastScanNewFile = oldLanLastScan.createNewFile();
             msg = oldLanLastScanNewFile + " " + msg;
         }
-        new MessageCons().info(msg + " " + retDeque.size(), "positions] [Returns:", "java.util.Deque<java.lang.String>");
+        messageToUser.info(msg + " " + retDeque.size(), "positions] [Returns:", "java.util.Deque<java.lang.String>");
         return retDeque;
     }
 
@@ -120,7 +123,6 @@ class NetScanFileWorker {
     }
 
     private NetScanFileWorker() {
-        new MessageCons().infoNoTitles("NetScanFileWorker.NetScanFileWorker");
     }
 
     @Override

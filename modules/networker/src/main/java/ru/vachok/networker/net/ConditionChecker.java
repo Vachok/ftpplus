@@ -2,7 +2,6 @@ package ru.vachok.networker.net;
 
 
 import org.springframework.ui.Model;
-import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ad.ADComputer;
@@ -37,7 +36,7 @@ class ConditionChecker {
     private static MessageToUser messageToUser = new MessageLocal();
 
     private ConditionChecker() {
-        new MessageCons().infoNoTitles("ConditionChecker.ConditionChecker");
+        messageToUser.infoNoTitles("ConditionChecker.ConditionChecker");
     }
 
     static {
@@ -45,7 +44,7 @@ class ConditionChecker {
             connection = new AppComponents().connection(ConstantsNet.DB_NAME);
         }
         catch(SQLException | IOException e){
-            messageToUser.errorAlert("ConditionChecker", "static initializer", e.getMessage());
+            messageToUser.errorAlert(CLASS_NAME, ConstantsFor.METHNAME_STATIC_INITIALIZER, e.getMessage());
             FileSystemWorker.error("ConditionChecker.static initializer", e);
         }
     }
@@ -60,7 +59,7 @@ class ConditionChecker {
      @see MoreInfoGetter#getSomeMore(String, boolean)
      */
     static String onLinesCheck(String sql, String pcName) {
-        thrNameSet();
+        thrNameSet("onChk");
         PCUserResolver pcUserResolver = PCUserResolver.getPcUserResolver();
         List<Integer> onLine = new ArrayList<>();
         List<Integer> offLine = new ArrayList<>();
@@ -87,7 +86,7 @@ class ConditionChecker {
             }
         }
         catch(SQLException e){
-            new MessageCons().errorAlert(CLASS_NAME, "onLinesCheck", e.getMessage());
+            messageToUser.errorAlert(CLASS_NAME, "onLinesCheck", e.getMessage());
             FileSystemWorker.error(classMeth, e);
             stringBuilder.append(e.getMessage());
         }
@@ -101,14 +100,16 @@ class ConditionChecker {
             .append(" online times.").toString();
     }
 
-    private static void thrNameSet() {
+    static void thrNameSet(String className) {
         float localUptimer = (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN;
-
+        String upStr = String.format("%.01f", localUptimer);
+        upStr = upStr + "m";
         if(localUptimer > ConstantsFor.ONE_HOUR_IN_MIN){
             localUptimer /= ConstantsFor.ONE_HOUR_IN_MIN;
+            upStr = String.format("%.02f", localUptimer);
+            upStr = upStr + "h";
         }
-
-        Thread.currentThread().setName(String.valueOf(localUptimer));
+        Thread.currentThread().setName(className + ";" + upStr + ";" + Thread.currentThread().getPriority());
     }
 
     /**
@@ -120,7 +121,7 @@ class ConditionChecker {
      */
     @SuppressWarnings ("MethodWithMultipleLoops")
     static String offLinesCheckUser(String sql, String pcName) {
-        thrNameSet();
+        thrNameSet("offChk");
 
         StringBuilder stringBuilder = new StringBuilder();
         try(
@@ -146,7 +147,7 @@ class ConditionChecker {
             }
         }
         catch(SQLException e){
-            new MessageCons().errorAlert("ConditionChecker", "offLinesCheckUser", e.getMessage());
+            messageToUser.errorAlert("ConditionChecker", "offLinesCheckUser", e.getMessage());
             FileSystemWorker.error("ConditionChecker.offLinesCheckUser", e);
             stringBuilder.append(e.getMessage());
         }

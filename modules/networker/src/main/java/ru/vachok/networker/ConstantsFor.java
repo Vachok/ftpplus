@@ -27,15 +27,13 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.SecureRandom;
 import java.sql.*;
-import java.time.*;
+import java.time.LocalTime;
+import java.time.Year;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import static java.time.temporal.ChronoUnit.HOURS;
 
 
 /**
@@ -52,6 +50,10 @@ public enum ConstantsFor {
     private static final ConcurrentMap<Integer, MailRule> MAIL_RULES = new ConcurrentHashMap<>();
 
     private static final int MIN_DELAY = 17;
+
+    public static final String METHNAME_STATIC_INITIALIZER = "static initializer";
+
+    public static final String HEAD_REFERER = "referer";
 
     public static final String METHNAME_ACTIONPERFORMED = "actionPerformed";
 
@@ -560,45 +562,6 @@ public enum ConstantsFor {
     private static Properties getPFromFile() {
         InitProperties initProperties = new FileProps(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
         return initProperties.getProps();
-    }
-
-    /**
-     Считает время до конца дня.
-     <p>
-
-     @param timeStart - время старта
-     @param amountH   - сколько часов до конца
-     @return время до 17:30 в процентах от 8:30
-     */
-    public static String percToEnd(Date timeStart, long amountH) {
-        StringBuilder stringBuilder = new StringBuilder();
-        LocalDateTime startDayTime = LocalDateTime.ofEpochSecond(timeStart.getTime() / 1000, 0, ZoneOffset.ofHours(3));
-        LocalTime startDay = startDayTime.toLocalTime();
-        LocalTime endDay = startDay.plus(amountH, HOURS);
-        final int secDayEnd = endDay.toSecondOfDay();
-        final int startSec = startDay.toSecondOfDay();
-        final int allDaySec = secDayEnd - startSec;
-        LocalTime localTime = endDay.minusHours(LocalTime.now().getHour());
-        localTime = localTime.minusMinutes(LocalTime.now().getMinute());
-        localTime = localTime.minusSeconds(LocalTime.now().getSecond());
-        boolean workHours = LocalTime.now().isAfter(startDay) && LocalTime.now().isBefore(endDay);
-        if(workHours){
-            int toEndDaySec = localTime.toSecondOfDay();
-            int diffSec = allDaySec - toEndDaySec;
-            float percDay = (( float ) toEndDaySec / ((( float ) allDaySec) / 100));
-            stringBuilder
-                .append("Работаем ")
-                .append(TimeUnit.SECONDS.toMinutes(diffSec));
-            stringBuilder
-                .append("(мин.). Ещё ")
-                .append(String.format("%.02f", percDay))
-                .append(" % или ");
-        }
-        else{
-            stringBuilder.append("<b> GO HOME! </b><br>");
-        }
-        stringBuilder.append(localTime.toString());
-        return stringBuilder.toString();
     }
 
     /**

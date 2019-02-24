@@ -106,7 +106,7 @@ public class ErrCtr implements ErrorController {
         model.addAttribute(ConstantsFor.ATT_E_MESSAGE, eMessage);
         model.addAttribute(ConstantsFor.ATT_STATCODE, H_2_CENTER + statCode + H_2_CENTER_CLOSE);
         model.addAttribute(ConstantsFor.ATT_TITLE, err);
-        model.addAttribute("ref", httpServletRequest.getHeader("referer"));
+        model.addAttribute("ref", httpServletRequest.getHeader(ConstantsFor.HEAD_REFERER));
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
     }
 

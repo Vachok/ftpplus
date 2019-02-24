@@ -6,10 +6,7 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.services.TimeChecker;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -55,7 +52,6 @@ public class SwitchesAvailability implements Runnable {
 
     @Override
     public void run() {
-        LOGGER.warn("SwitchesAvailability.run");
         try {
             makeAddrQ();
         } catch (IOException e) {

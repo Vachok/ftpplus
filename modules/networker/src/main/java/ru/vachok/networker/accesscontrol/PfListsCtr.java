@@ -67,7 +67,7 @@ public class PfListsCtr {
     /**
      {@link ConstantsFor#isPingOK()}
      */
-    private final boolean pingGITOk;
+    private boolean pingGITOk;
 
     /**
      {@link Random#nextInt(int)} - {@link TimeUnit#toMillis(long)} <b>250</b>
@@ -136,24 +136,24 @@ public class PfListsCtr {
         } else {
             modSet(model);
         }
+
         if (request.getQueryString() != null) {
             AppComponents.threadConfig().executeAsThread(pfListsSrvInstAW::makeListRunner);
+            return "redirect:/pflists";
         }
+
         long nextUpd = pfListsInstAW.getGitStatsUpdatedStampLong() + TimeUnit.MINUTES.toMillis(DELAY_LOCAL_INT);
         pfListsInstAW.setTimeStampToNextUpdLong(nextUpd);
-
         if (nextUpd < System.currentTimeMillis()) {
-            model.addAttribute(ATT_METRIC, "Требуется обновление!");
-            model.addAttribute(ConstantsFor.ATT_GITSTATS, toString());
             AppComponents.threadConfig().executeAsThread(pfListsSrvInstAW::makeListRunner);
+            model.addAttribute(ATT_METRIC, "Запущено обновление");
+            model.addAttribute(ConstantsFor.ATT_GITSTATS, toString());
         } else {
             @NotNull String msg = "" + (float) (TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - pfListsInstAW.getGitStatsUpdatedStampLong())) / ConstantsFor.ONE_HOUR_IN_MIN;
             LOGGER.warn(msg);
         }
-        propUpd(properties);
 
         @NotNull String refreshRate = String.valueOf(TimeUnit.MILLISECONDS.toMinutes(delayRefInt) * ConstantsFor.ONE_HOUR_IN_MIN);
-
         response.addHeader(ConstantsFor.HEAD_REFRESH, refreshRate);
         return ConstantsFor.PFLISTS;
     }

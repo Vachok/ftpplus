@@ -16,6 +16,7 @@ import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.controller.ServiceInfoCtrl;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetScannerSvc;
 import ru.vachok.networker.systray.ListenUserInfo;
@@ -178,7 +179,7 @@ public class ActDirectoryCTRL {
             long l = new Calendar.Builder().setTimeOfDay(0, 0, 0).build().getTimeInMillis();
             String finalAdSrvDetails = adSrvDetails;
             new MessageToTray(new ListenUserInfo(queryString, attributeValue, finalAdSrvDetails)).info(queryString, attributeValue,
-                ConstantsFor.percToEnd(new Date(l), 24));
+                ServiceInfoCtrl.percToEnd(new Date(l), 24));
         } catch (Exception e) {
             model.addAttribute(ATT_DETAILS, e.getMessage());
         }

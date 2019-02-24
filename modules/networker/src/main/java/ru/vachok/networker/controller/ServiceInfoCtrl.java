@@ -24,10 +24,14 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.file.AccessDeniedException;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Stream;
+
+import static java.time.temporal.ChronoUnit.HOURS;
 
 
 /**
@@ -116,7 +120,7 @@ public class ServiceInfoCtrl {
             visitor.setClickCounter(visitor.getClickCounter() + 1);
         }
         model.addAttribute(ConstantsFor.ATT_TITLE, getLast() + " (" + getLast() * ConstantsFor.ONE_DAY_HOURS + ")");
-        model.addAttribute("mail", ConstantsFor.percToEnd(comeD, 9));
+        model.addAttribute("mail", percToEnd(comeD, 9));
         model.addAttribute("ping", pingGit());
         model.addAttribute("urls", new StringBuilder()
             .append("Запущено - ")
@@ -140,6 +144,45 @@ public class ServiceInfoCtrl {
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<br>" + getJREVers());
     }
 
+    /**
+     Считает время до конца дня.
+     <p>
+
+     @param timeStart - время старта
+     @param amountH   - сколько часов до конца
+     @return время до 17:30 в процентах от 8:30
+     */
+    public static String percToEnd(Date timeStart, long amountH) {
+        StringBuilder stringBuilder = new StringBuilder();
+        LocalDateTime startDayTime = LocalDateTime.ofEpochSecond(timeStart.getTime() / 1000, 0, ZoneOffset.ofHours(3));
+        LocalTime startDay = startDayTime.toLocalTime();
+        LocalTime endDay = startDay.plus(amountH, HOURS);
+        final int secDayEnd = endDay.toSecondOfDay();
+        final int startSec = startDay.toSecondOfDay();
+        final int allDaySec = secDayEnd - startSec;
+        LocalTime localTime = endDay.minusHours(LocalTime.now().getHour());
+        localTime = localTime.minusMinutes(LocalTime.now().getMinute());
+        localTime = localTime.minusSeconds(LocalTime.now().getSecond());
+        boolean workHours = LocalTime.now().isAfter(startDay) && LocalTime.now().isBefore(endDay);
+        if(workHours){
+            int toEndDaySec = localTime.toSecondOfDay();
+            int diffSec = allDaySec - toEndDaySec;
+            float percDay = (( float ) toEndDaySec / ((( float ) allDaySec) / 100));
+            stringBuilder
+                .append("Работаем ")
+                .append(TimeUnit.SECONDS.toMinutes(diffSec));
+            stringBuilder
+                .append("(мин.). Ещё ")
+                .append(String.format("%.02f", percDay))
+                .append(" % или ");
+        }
+        else{
+            stringBuilder.append("<b> GO HOME! </b><br>");
+        }
+        stringBuilder.append(localTime.toString());
+        return stringBuilder.toString();
+    }
+
     private String prepareRequest(HttpServletRequest request) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("<center><h3>Заголовки</h3></center>");
@@ -161,7 +204,7 @@ public class ServiceInfoCtrl {
             .append("<b>").append(request.getHeader("accept")).append(bBr);
         stringBuilder
             .append("referer: ".toUpperCase())
-            .append("<b>").append(request.getHeader("referer")).append(bBr);
+            .append("<b>").append(request.getHeader(ConstantsFor.HEAD_REFERER)).append(bBr);
         stringBuilder
             .append("accept-encoding: ".toUpperCase())
             .append("<b>").append(request.getHeader("accept-encoding")).append(bBr);

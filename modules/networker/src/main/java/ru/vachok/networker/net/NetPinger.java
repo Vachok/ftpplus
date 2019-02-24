@@ -13,10 +13,7 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.*;
@@ -310,7 +307,8 @@ public class NetPinger implements Runnable, Pinger {
      Старт.
      <p>
      Если {@link #multipartFile} не null, 1. {@link #parseFile()}. <br> 2. {@link #getTimeToScanStr()}. Парсинг строки в {@link Long}. <br> 3. Пока {@link System#currentTimeMillis()} меньше
-     чем время старта ({@code final long startSt}), запускать {@link #pingSW()}. Устанавливаем {@link Thread#setName(java.lang.String)} - {@link ConstantsFor#getUpTime()}.<br> 4. {@link
+     чем время старта ({@code final long startSt}), запускать {@link #pingSW()}. Устанавливаем {@link ConditionChecker#thrNameSet(String)} -
+     {@link ConstantsFor#getUpTime()}.<br> 4. {@link
     TForms#fromArray(java.util.List, boolean)}. Устанавливаем {@link #pingResultStr}, после сканирования. <br> 5. {@link #parseResult(long)}. Парсим результат пингера.
      <p>
      {@link #messageToUser}, выводит после каждого запуска {@link #pingSW()}, {@link MessageToUser#infoNoTitles(java.lang.String)}, остаток времени на пинг в минутах. <br> {@link
@@ -326,7 +324,7 @@ public class NetPinger implements Runnable, Pinger {
         long totalMillis = startSt + userIn;
         while (System.currentTimeMillis() < totalMillis) {
             pingSW();
-            Thread.currentThread().setName(ConstantsFor.getUpTime());
+            ConditionChecker.thrNameSet("NPing");
             this.timeToEndStr = getClass().getSimpleName() + " left " + (float) TimeUnit.MILLISECONDS
                 .toSeconds(totalMillis - System.currentTimeMillis()) / ConstantsFor.ONE_HOUR_IN_MIN;
             messageToUser.infoNoTitles(timeToEndStr);

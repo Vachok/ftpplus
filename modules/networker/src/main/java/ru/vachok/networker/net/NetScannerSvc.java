@@ -359,7 +359,6 @@ public final class NetScannerSvc {
      @see #runAfterAll
      */
     private static void setOnLinePCsToZero() {
-        new MessageCons().errorAlert("NetScannerSvc.setOnLinePCsToZero");
         PROPS.setProperty(ConstantsNet.ONLINEPC, onLinePCsNum + "");
         NetScannerSvc.onLinePCsNum = 0;
     }
@@ -369,7 +368,7 @@ public final class NetScannerSvc {
             connection = new AppComponents().connection(ConstantsNet.DB_NAME);
         }
         catch(SQLException | IOException e){
-            messageToUser.errorAlert("NetScannerSvc", "static initializer", e.getMessage());
+            messageToUser.errorAlert("NetScannerSvc", ConstantsFor.METHNAME_STATIC_INITIALIZER, e.getMessage());
             FileSystemWorker.error("NetScannerSvc.static initializer", e);
         }
     }
@@ -504,34 +503,35 @@ public final class NetScannerSvc {
     }
 
     /**
-     1. {@link #getNamesCount(String)}
-
-     @param namePCPrefix префикс имени ПК
-     @return обработанные имена ПК, для пинга
-     @see #getPCNamesPref(String)
+     Подсчёт статистики по {@link ConstantsNet#VELKOM_PCUSERAUTO_TXT}
+     <p>
+     {@link List} readFileAsList - читает по-строкам {@link ConstantsNet#VELKOM_PCUSERAUTO_TXT}.
+     <p>
+     {@link Stream#distinct()} - запись файла {@link #FILENAME_PCAUTODISTXT}.
+     <p>
+     {@link MessageCons#info(java.lang.String, java.lang.String, java.lang.String)} - покажем в консоль. <br>
+     Cкопируем на 111.1, if {@link String#contains(java.lang.CharSequence)} "home". {@link ConstantsFor#thisPC()}.
      */
-    private Collection<String> getCycleNames(String namePCPrefix) {
-        new MessageCons().errorAlert("NetScannerSvc.getCycleNames");
-        if (namePCPrefix == null) {
-            namePCPrefix = "pp";
-        }
-        int inDex = getNamesCount(namePCPrefix);
-        String nameCount;
-        Collection<String> list = new ArrayList<>();
-        int pcNum = 0;
-        for (int i = 1; i < inDex; i++) {
-            if (namePCPrefix.equals("no") || namePCPrefix.equals("pp") || namePCPrefix.equals("do")) {
-                nameCount = String.format("%04d", ++pcNum);
-            } else {
-                nameCount = String.format("%03d", ++pcNum);
+    private void countStat() {
+        List<String> readFileAsList = new ArrayList<>();
+        try(InputStream inputStream = new FileInputStream(ConstantsNet.VELKOM_PCUSERAUTO_TXT);
+            InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+            BufferedReader bufferedReader = new BufferedReader(inputStreamReader)){
+            while(inputStreamReader.ready()){
+                readFileAsList.add(bufferedReader.readLine().split("\\Q0) \\E")[1]);
             }
-            list.add(namePCPrefix + nameCount + ConstantsFor.EATMEAT_RU);
         }
-        new MessageCons().info(
-            ConstantsFor.STR_INPUT_OUTPUT,
-            "namePCPrefix = [" + namePCPrefix + "]",
-            "java.util.Collection<java.lang.String>");
-        return list;
+        catch(IOException e){
+            messageToUser.errorAlert(CLASS_NAME, "countStat", e.getMessage());
+        }
+        FileSystemWorker.recFile(FILENAME_PCAUTODISTXT, readFileAsList.parallelStream().distinct());
+        String valStr = FileSystemWorker.readFile(FILENAME_PCAUTODISTXT);
+        messageToUser.info(ConstantsFor.SOUTV, "NetScannerSvc.countStat", valStr);
+        if(ConstantsFor.thisPC().toLowerCase().contains("home")){
+            String toCopy = "\\\\10.10.111.1\\Torrents-FTP\\" + FILENAME_PCAUTODISTXT;
+            FileSystemWorker.copyOrDelFile(new File(FILENAME_PCAUTODISTXT), toCopy, true);
+
+        }
     }
 
     /**
@@ -655,34 +655,34 @@ public final class NetScannerSvc {
     }
 
     /**
-     Подсчёт статистики по {@link ConstantsNet#VELKOM_PCUSERAUTO_TXT}
-     <p>
-     {@link List} readFileAsList - читает по-строкам {@link ConstantsNet#VELKOM_PCUSERAUTO_TXT}.
-     <p>
-     {@link Stream#distinct()} - запись файла {@link #FILENAME_PCAUTODISTXT}.
-     <p>
-     {@link MessageCons#info(java.lang.String, java.lang.String, java.lang.String)} - покажем в консоль. <br>
-     Cкопируем на 111.1, if {@link String#contains(java.lang.CharSequence)} "home". {@link ConstantsFor#thisPC()}.
-     */
-    private void countStat() {
-        List<String> readFileAsList = new ArrayList<>();
-        try (InputStream inputStream = new FileInputStream(ConstantsNet.VELKOM_PCUSERAUTO_TXT);
-             InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-             BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
-            while (inputStreamReader.ready()) {
-                readFileAsList.add(bufferedReader.readLine().split("\\Q0) \\E")[1]);
-            }
-        } catch (IOException e) {
-            new MessageCons().errorAlert(CLASS_NAME, "countStat", e.getMessage());
-        }
-        FileSystemWorker.recFile(FILENAME_PCAUTODISTXT, readFileAsList.parallelStream().distinct());
-        String valStr = FileSystemWorker.readFile(FILENAME_PCAUTODISTXT);
-        new MessageCons().info(ConstantsFor.SOUTV, "NetScannerSvc.countStat", valStr);
-        if (ConstantsFor.thisPC().toLowerCase().contains("home")) {
-            String toCopy = "\\\\10.10.111.1\\Torrents-FTP\\" + FILENAME_PCAUTODISTXT;
-            FileSystemWorker.copyOrDelFile(new File(FILENAME_PCAUTODISTXT), toCopy, true);
+     1. {@link #getNamesCount(String)}
 
+     @param namePCPrefix префикс имени ПК
+     @return обработанные имена ПК, для пинга
+     @see #getPCNamesPref(String)
+     */
+    private Collection<String> getCycleNames(String namePCPrefix) {
+        if(namePCPrefix==null){
+            namePCPrefix = "pp";
         }
+        int inDex = getNamesCount(namePCPrefix);
+        String nameCount;
+        Collection<String> list = new ArrayList<>();
+        int pcNum = 0;
+        for(int i = 1; i < inDex; i++){
+            if(namePCPrefix.equals("no") || namePCPrefix.equals("pp") || namePCPrefix.equals("do")){
+                nameCount = String.format("%04d", ++pcNum);
+            }
+            else{
+                nameCount = String.format("%03d", ++pcNum);
+            }
+            list.add(namePCPrefix + nameCount + ConstantsFor.EATMEAT_RU);
+        }
+        messageToUser.info(
+            ConstantsFor.STR_INPUT_OUTPUT,
+            "namePCPrefix = [" + namePCPrefix + "]",
+            "java.util.Collection<java.lang.String>");
+        return list;
     }
 
     /**
