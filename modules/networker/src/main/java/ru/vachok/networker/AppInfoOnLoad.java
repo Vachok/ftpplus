@@ -8,6 +8,7 @@ import ru.vachok.messenger.MessageFile;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.messenger.email.ESender;
 import ru.vachok.mysqlandprops.RegRuMysql;
+import ru.vachok.networker.accesscontrol.SshActs;
 import ru.vachok.networker.accesscontrol.common.CommonRightsChecker;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.AppCtx;
@@ -182,6 +183,7 @@ public class AppInfoOnLoad implements Runnable {
      */
     @SuppressWarnings ("MagicNumber")
     private void schedStarter() {
+        SshActs sshActs = new AppComponents().sshActs();
         String classMeth = "AppInfoOnLoad.schedStarter";
         miniLogger.add("***" + classMeth);
         final long stArt = System.currentTimeMillis();
@@ -196,6 +198,7 @@ public class AppInfoOnLoad implements Runnable {
         scheduledExecutorService.scheduleWithFixedDelay(ScanOnline.getI(), 3, 1, TimeUnit.MINUTES);
         scheduledExecutorService.scheduleWithFixedDelay(DiapazonedScan.getInstance(), 2, THIS_DELAY, TimeUnit.MINUTES);
         scheduledExecutorService.scheduleWithFixedDelay(new NetMonitorPTV(), 0, 10, TimeUnit.SECONDS);
+        scheduledExecutorService.scheduleWithFixedDelay(() -> sshActs.providerTraceStr(), ConstantsFor.DELAY, ConstantsFor.USER_EXIT, TimeUnit.SECONDS);
         String msg = new StringBuilder()
             .append(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(THIS_DELAY)))
             .append(DiapazonedScan.getInstance().getClass().getSimpleName())

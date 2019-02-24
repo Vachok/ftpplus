@@ -111,12 +111,28 @@ public class MatrixCtr {
      */
     @GetMapping("/")
     public String getFirst(final HttpServletRequest request, Model model, HttpServletResponse response) {
+        String gettRoute = getProv();
         this.visitor = ConstantsFor.getVis(request);
         qIsNull(model, request);
-        model.addAttribute("devscan", "Since " + new Date(ConstantsFor.START_STAMP) + MoreInfoGetter.getTVNetInfo());
+        model.addAttribute("devscan", "Since " + new Date(ConstantsFor.START_STAMP) + MoreInfoGetter.getTVNetInfo() + gettRoute);
         response.addHeader(ConstantsFor.HEAD_REFRESH, "120");
         LOGGER.info("{}", visitor.toString());
         return "starting";
+    }
+
+    private String getProv() {
+        SshActs sshActs = new AppComponents().sshActs();
+        sshActs.providerTraceStr();
+        String gettRoute = "<p>" + sshActs.gettRoute();
+        if(gettRoute.contains("91.210.85.173")){
+            gettRoute = "<h3>FORTEX</h3>";
+        }
+        else{
+            if(gettRoute.contains("176.62.185.129")){
+                gettRoute = "<h3>ISTRANET</h3>";
+            }
+        }
+        return gettRoute;
     }
 
     /**

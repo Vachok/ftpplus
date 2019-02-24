@@ -1,7 +1,6 @@
 package ru.vachok.networker.accesscontrol;
 
 
-import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.stereotype.Service;
@@ -9,11 +8,14 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.WhoIsWithSRV;
 
 import javax.servlet.http.HttpServletRequest;
@@ -38,7 +40,7 @@ public class SshActs {
     /**
      {@link AppComponents#getLogger()}
      */
-    private static final Logger LOGGER = AppComponents.getLogger();
+    private static final MessageToUser LOGGER = new MessageLocal();
 
     /**
      sshworks.html
@@ -86,6 +88,16 @@ public class SshActs {
      Комментарий
      */
     private String comment;
+
+    private String tRoute;
+
+    public String gettRoute() {
+        return tRoute;
+    }
+
+    public void settRoute(String tRoute) {
+        this.tRoute = tRoute;
+    }
 
     /**
      Имя домена для удаления.
@@ -157,9 +169,12 @@ public class SshActs {
         return vipNet;
     }
 
-    public String providerTraceStr() {
-
-        return "";
+    public void providerTraceStr() {
+        SSHFactory.Builder builder = new SSHFactory.Builder(ConstantsFor.SRV_GIT, "traceroute 8.8.8.8;exit");
+        SSHFactory build = builder.build();
+        String call = build.call();
+        this.tRoute = call;
+        LOGGER.warn("SshActs.providerTraceStr", "tRoute", " = " + tRoute);
     }
 
     /**
@@ -234,7 +249,8 @@ public class SshActs {
             inetAddress = InetAddress.getByName(s.replaceFirst("\\Q.\\E", ""));
         }
         catch(UnknownHostException e){
-            LOGGER.warn(e.getMessage(), e);
+            LOGGER.errorAlert("SshActs", "resolveIp", e.getMessage());
+            FileSystemWorker.error("SshActs.resolveIp", e);
         }
         return Objects.requireNonNull(inetAddress).getHostAddress();
     }
@@ -282,30 +298,9 @@ public class SshActs {
             outputStream.write(s.getBytes());
         }
         catch(IOException e){
-            LOGGER.warn(e.getMessage(), e);
+            LOGGER.errorAlert("SshActs", "writeToLog", e.getMessage());
+            FileSystemWorker.error("SshActs.writeToLog", e);
         }
-    }
-
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("SshActs{ ");
-        sb.append("  allowDomain='<a href=\"").append(allowDomain).append("\" target=\"_blank\">").append(allowDomain).append("</a>'");
-        sb.append(", AT_NAME_SSHACTS='").append(AT_NAME_SSHACTS).append('\'');
-        sb.append(", AT_NAME_SSHDETAIL='").append(AT_NAME_SSHDETAIL).append('\'');
-        sb.append(", comment='").append(comment).append('\'');
-        sb.append(", delDomain='").append(delDomain).append('\'');
-        sb.append(", inet='").append(inet).append('\'');
-        sb.append(", ipAddrOnly='").append(ipAddrOnly).append('\'');
-        sb.append(", PAGE_NAME='").append(PAGE_NAME).append('\'');
-        sb.append(", pcName='").append(pcName).append('\'');
-        sb.append(", squid=").append(squid);
-        sb.append(", squidLimited=").append(squidLimited);
-        sb.append(", SUDO_ECHO='").append(SUDO_ECHO).append('\'');
-        sb.append(", SUDO_GREP_V='").append(SUDO_GREP_V).append('\'');
-        sb.append(", tempFull=").append(tempFull);
-        sb.append(", vipNet=").append(vipNet);
-        sb.append('}');
-        return sb.toString();
     }
 
     /**
@@ -527,5 +522,23 @@ public class SshActs {
             model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
             return "ok";
         }
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("SshActs{");
+        sb.append("allowDomain='").append(allowDomain).append('\'');
+        sb.append(", comment='").append(comment).append('\'');
+        sb.append(", delDomain='").append(delDomain).append('\'');
+        sb.append(", inet='").append(inet).append('\'');
+        sb.append(", ipAddrOnly='").append(ipAddrOnly).append('\'');
+        sb.append(", pcName='").append(pcName).append('\'');
+        sb.append(", squid=").append(squid);
+        sb.append(", squidLimited=").append(squidLimited);
+        sb.append(", tempFull=").append(tempFull);
+        sb.append(", tRoute='").append(tRoute).append('\'');
+        sb.append(", vipNet=").append(vipNet);
+        sb.append('}');
+        return sb.toString();
     }
 }
