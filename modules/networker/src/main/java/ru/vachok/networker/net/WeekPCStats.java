@@ -2,12 +2,13 @@ package ru.vachok.networker.net;
 
 
 import org.slf4j.Logger;
-import ru.vachok.messenger.MessageSwing;
+import org.slf4j.LoggerFactory;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
+import ru.vachok.networker.systray.MessageToTray;
 
 import java.io.*;
 import java.sql.*;
@@ -26,7 +27,7 @@ public class WeekPCStats implements Runnable {
     /**
      {@link AppComponents#getLogger()}
      */
-    private static final Logger LOGGER = AppComponents.getLogger();
+    private static final Logger LOGGER = LoggerFactory.getLogger(WeekPCStats.class.getSimpleName());
 
     /**
      Лист только с именами ПК
@@ -55,7 +56,7 @@ public class WeekPCStats implements Runnable {
      Usages: {@link #run()}
      */
     private void getFromDB() {
-        MessageToUser messageToUser = new MessageSwing();
+        MessageToUser messageToUser = new MessageToTray();
         final long stArt = System.currentTimeMillis();
         String sql = "select * from pcuserauto";
         File file = new File(ConstantsNet.VELKOM_PCUSERAUTO_TXT);

@@ -192,8 +192,8 @@ public class IntoApplication {
         });
         executor.submit(infoAndSched);
         executor.submit(mySrv);
-
-        new Thread(infoMsgRunnable).start();
+        AppComponents.threadConfig().executeAsThread(infoMsgRunnable);
+        AppComponents.threadConfig().executeAsThread(AppInfoOnLoad::getWeekPCStats);
     }
 
     /**
