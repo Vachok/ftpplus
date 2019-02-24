@@ -29,8 +29,7 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.TextStyle;
-import java.util.Locale;
-import java.util.Properties;
+import java.util.*;
 
 
 /**
@@ -61,10 +60,6 @@ public class IntoApplication {
             "\n\n" + taskScheduler.getScheduledThreadPoolExecutor().toString());
     };
 
-    public static Runnable getInfoMsgRunnable() {
-        return infoMsgRunnable;
-    }
-
     /**
      {@link ConfigurableApplicationContext} = null.
      */
@@ -76,6 +71,10 @@ public class IntoApplication {
     private static @NotNull MessageToUser messageToUser = new MessageLocal();
 
     private static ThreadPoolTaskExecutor executor = AppComponents.threadConfig().getTaskExecutor();
+
+    public static Runnable getInfoMsgRunnable() {
+        return infoMsgRunnable;
+    }
 
     /**
      @return {@link #configurableApplicationContext}
@@ -103,12 +102,14 @@ public class IntoApplication {
      */
     public static void main(@Nullable String[] args) {
         FileSystemWorker.delFilePatterns(ConstantsFor.STRS_VISIT);
-        beforeSt();
-        if (args != null && args.length > 0) {
+        if(args!=null && args.length > 0){
             readArgs(args);
         }
-        configurableApplicationContext.start();
-        afterSt();
+        else{
+            beforeSt(true);
+            configurableApplicationContext.start();
+            afterSt();
+        }
     }
 
     /**
@@ -122,14 +123,68 @@ public class IntoApplication {
      @param args аргументы запуска.
      */
     private static void readArgs(@NotNull String[] args) {
+        boolean isTray = true;
         ExitApp exitApp = new ExitApp(IntoApplication.class.getSimpleName());
-        for (@NotNull String arg : args) {
-            messageToUser.info("IntoApplication.readArgs", "arg", arg);
-            if (arg.contains(ConstantsFor.PR_TOTPC)) {
-                LOCAL_PROPS.setProperty(ConstantsFor.PR_TOTPC, arg.replaceAll(ConstantsFor.PR_TOTPC, ""));
+        List<@NotNull String> argsList = Arrays.asList(args);
+        Map<String, String> argsMap = new HashMap<>(argsList.size());
+        for(int i = 0; i < argsList.size(); i++){
+            String key = argsList.get(i);
+            String value = "true";
+            try{
+                value = argsList.get(i + 1);
             }
-            if (arg.equalsIgnoreCase("off")) {
+            catch(ArrayIndexOutOfBoundsException ignore){
+                //
+            }
+            if(!value.contains("-")){
+                argsMap.put(key, value);
+            }
+            else{
+                if(!key.contains("-")){
+                    argsMap.put("", "");
+                }
+                else{
+                    argsMap.put(key, "true");
+                }
+            }
+        }
+        Set<String> keysSet = argsMap.keySet();
+        Iterator<String> iterator1 = keysSet.iterator();
+        while(iterator1.hasNext()){
+            String key = "";
+            try{
+                key = iterator1.next();
+            }
+            catch(ConcurrentModificationException e){
+                // TODO: 24.02.2019
+            }
+            keysSet.remove(key);
+            if(key.contains(ConstantsFor.PR_TOTPC)){
+                LOCAL_PROPS.setProperty(ConstantsFor.PR_TOTPC, argsMap.get(key));
+            }
+            if(key.equalsIgnoreCase("off")){
                 AppComponents.threadConfig().executeAsThread(exitApp);
+            }
+            if(key.contains("notray")){
+                messageToUser.info("IntoApplication.readArgs", "key", " = " + key);
+                isTray = false;
+            }
+        }
+        beforeSt(isTray);
+        configurableApplicationContext.start();
+        afterSt();
+    }
+
+    private static void trayAdd() {
+        if(ConstantsFor.thisPC().toLowerCase().contains(ConstantsFor.NO0027)){
+            SystemTrayHelper.addTray("icons8-плохие-поросята-32.png");
+        }
+        else{
+            if(ConstantsFor.thisPC().toLowerCase().contains("home")){
+                SystemTrayHelper.addTray("icons8-house-26.png");
+            }
+            else{
+                SystemTrayHelper.addTray(ConstantsFor.ICON_FILE_NAME);
             }
         }
     }
@@ -143,22 +198,15 @@ public class IntoApplication {
      Else - {@link SystemTrayHelper#addTray(java.lang.String)} {@link String} null<br>
      {@link SpringApplication#setMainApplicationClass(java.lang.Class)}
      */
-    private static void beforeSt() {
+    private static void beforeSt(boolean isTrayNeed) {
+        if(isTrayNeed){
+            trayAdd();
+        }
         @NotNull StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(LocalDate.now().getDayOfWeek().getValue());
         stringBuilder.append(" - day of week\n");
         stringBuilder.append(LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault()));
         messageToUser.info("IntoApplication.beforeSt", "stringBuilder", stringBuilder.toString());
-        if(ConstantsFor.thisPC().toLowerCase().contains(ConstantsFor.NO0027)){
-            SystemTrayHelper.addTray("icons8-плохие-поросята-32.png");
-        }
-        else
-            if(ConstantsFor.thisPC().toLowerCase().contains("home")){
-                SystemTrayHelper.addTray("icons8-house-26.png");
-            }
-            else{
-            SystemTrayHelper.addTray(ConstantsFor.ICON_FILE_NAME);
-        }
         SPRING_APPLICATION.setMainApplicationClass(IntoApplication.class);
         SPRING_APPLICATION.setApplicationContextClass(AppCtx.class);
         System.setProperty("encoding", "UTF8");
@@ -183,9 +231,10 @@ public class IntoApplication {
         Runnable mySrv = MyServer.getI();
 
         executor.submit(() -> {
-            try {
+            try{
                 appProperties();
-            } catch (IOException e) {
+            }
+            catch(IOException e){
                 messageToUser.errorAlert("IntoApplication", "afterSt", e.getMessage());
                 FileSystemWorker.error("IntoApplication.afterSt", e);
             }
@@ -202,7 +251,8 @@ public class IntoApplication {
      new {@link FileProps} ({@link File#getCanonicalPath()} - ""+{@code "\\modules\\networker\\src\\main\\resources\\application"}) <br>
      {@link InitProperties#getProps()}. Получаем {@code props} <br>
      Сэтаем в файл:<br>
-     {@code "build.version"} = {@link AppComponents#getProps()} {@link ConstantsFor#PR_APP_VERSION} и {@link ConstantsFor#PR_QSIZE} = {@link ConstantsFor#IPS_IN_VELKOM_VLAN} <br>
+     {@code "build.version"} = {@link AppComponents#getProps()} {@link ConstantsFor#PR_APP_VERSION} и {@link ConstantsFor#PR_QSIZE} =
+     {@link ConstantsFor#IPS_IN_VELKOM_VLAN} <br>
      {@link InitProperties#setProps(java.util.Properties)} запись {@code props} в <b>application.LOCAL_PROPS</b>
      <p>
      new {@link DBRegProperties} - {@link ConstantsFor#APP_NAME} + {@code "application"} <br>
@@ -215,7 +265,7 @@ public class IntoApplication {
         @Nullable String rootPathStr = Paths.get("").toFile().getCanonicalPath().toLowerCase();
         @NotNull InitProperties initProperties = new FileProps(rootPathStr + "\\modules\\networker\\src\\main\\resources\\application");
         Properties props = initProperties.getProps();
-        
+
         props.setProperty("build.version", LOCAL_PROPS.getProperty(ConstantsFor.PR_APP_VERSION));
         props.setProperty(ConstantsFor.PR_QSIZE, ConstantsFor.IPS_IN_VELKOM_VLAN + "");
 

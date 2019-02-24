@@ -2,7 +2,6 @@ package ru.vachok.networker.systray;
 
 
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppInfoOnLoad;
 import ru.vachok.networker.ConstantsFor;
@@ -35,7 +34,7 @@ public final class SystemTrayHelper extends AppInfoOnLoad {
     /**
      {@link AppComponents#getLogger()}
      */
-    private static final Logger LOGGER = AppComponents.getLogger();
+    private static final MessageToUser LOGGER = new MessageLocal();
 
     private static final String CLASS_NAME = SystemTrayHelper.class.getSimpleName();
 
@@ -44,7 +43,9 @@ public final class SystemTrayHelper extends AppInfoOnLoad {
     /**
      {@link MessageLocal}
      */
-    private static MessageToUser messageToUser = new MessageLocal();
+    private static MessageToUser messageToUser = LOGGER;
+
+
 
     static TrayIcon getTrayIcon() throws ExceptionInInitializerError {
         if(ConstantsFor.IS_SYSTRAY_AVAIL){
@@ -61,10 +62,14 @@ public final class SystemTrayHelper extends AppInfoOnLoad {
     private SystemTrayHelper() {
     }
 
+    public static void addTray(String iconFileName) {
+        addTray(iconFileName, true);
+    }
+
     /**
      Создаёт System Tray Icon
      */
-    public static void addTray(String imageFileName) {
+    public static void addTray(String imageFileName, boolean isNeedTray) {
         trayIcon = new TrayIcon(
             getImage(imageFileName),
             new StringBuilder()
@@ -76,7 +81,7 @@ public final class SystemTrayHelper extends AppInfoOnLoad {
         trayIcon.setImageAutoSize(true);
         trayIcon.addActionListener(new ActionDefault());
 
-        boolean isTrayAdded = addTrayToSys();
+        boolean isTrayAdded = addTrayToSys(isNeedTray);
         messageToUser.info("SystemTrayHelper.addTray", "isTrayAdded", String.valueOf(isTrayAdded));
     }
 
@@ -144,24 +149,24 @@ public final class SystemTrayHelper extends AppInfoOnLoad {
         return popupMenu;
     }
 
-    private static boolean addTrayToSys() {
-        boolean retBool = SystemTray.isSupported();
+    private static boolean addTrayToSys(boolean isNeedTray) {
         try{
-            if(retBool){
+            if(isNeedTray && ConstantsFor.IS_SYSTRAY_AVAIL){
                 SystemTray systemTray = SystemTray.getSystemTray();
                 systemTray.add(trayIcon);
-                retBool = systemTray.getTrayIcons().length > 0;
+                isNeedTray = systemTray.getTrayIcons().length > 0;
             }
             else{
                 LOGGER.warn("Tray not supported!");
-                retBool = false;
+                isNeedTray = false;
             }
         }
         catch(AWTException e){
             messageToUser.errorAlert(CLASS_NAME, "addTrayToSys", e.getMessage());
             FileSystemWorker.error("SystemTrayHelper.addTrayToSys", e);
+            isNeedTray = false;
         }
-        return retBool;
+        return isNeedTray;
     }
 
     /**
