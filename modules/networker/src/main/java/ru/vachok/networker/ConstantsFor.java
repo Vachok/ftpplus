@@ -437,12 +437,15 @@ public enum ConstantsFor {
      @return Время работы в часах.
      */
     public static String getUpTime() {
-
-        float hrsOn =
-            ( float ) (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN / ConstantsFor.ONE_HOUR_IN_MIN;
-
-        return "(" + String.format("%.03f", hrsOn) +
-            "h up)";
+        String tUnit = " h";
+        float hrsOn = ( float )
+            (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN / ConstantsFor.ONE_HOUR_IN_MIN;
+        if(hrsOn > 24){
+            hrsOn = hrsOn / ConstantsFor.ONE_DAY_HOURS;
+            tUnit = " d";
+        }
+        String retStr = "(" + String.format("%.03f", hrsOn) + tUnit + " up)";
+        return retStr;
     }
 
     /**
@@ -516,6 +519,44 @@ public enum ConstantsFor {
     }
 
     /**
+     @return имя компьютера, где запущено
+     */
+    public static String thisPC() {
+        try{
+            return InetAddress.getLocalHost().getHostName();
+        }
+        catch(UnknownHostException | ExceptionInInitializerError | NullPointerException e){
+            String retStr = new TForms().fromArray(( List<?> ) e, false);
+            FileSystemWorker.recFile("this_pc.err", Collections.singletonList(retStr));
+            return "pc";
+        }
+    }
+
+    /**
+     Тащит {@link #PROPS} из БД или файла
+     */
+    private static Properties takePr(boolean fromFile) {
+        InitProperties initProperties = new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
+        Properties retPr;
+        try{
+            retPr = initProperties.getProps();
+            if(fromFile || new File("ff").exists()){
+                try(InputStream inputStream = new FileInputStream(ConstantsFor.class.getSimpleName() + ".properties");){
+                    retPr.load(inputStream);
+                    messageToUser.info("ConstantsFor.takePr", "retPr", " = " + retPr.size());
+                }
+            }
+
+        }
+        catch(Exception e){
+            retPr = getPFromFile();
+            FileSystemWorker.error("ConstantsFor.takePr", e);
+        }
+        new MessageLocal().info(ConstantsFor.class.getSimpleName(), "takePr", new TForms().fromArray(retPr, false));
+        return retPr;
+    }
+
+    /**
      Сохраняет {@link Properties} в БД {@link #APP_NAME} с ID {@code ConstantsFor}
 
      @param propsToSave {@link Properties}
@@ -554,25 +595,6 @@ public enum ConstantsFor {
         }
     }
 
-    private static Properties getPFromFile() {
-        InitProperties initProperties = new FileProps(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
-        return initProperties.getProps();
-    }
-
-    /**
-     @return имя компьютера, где запущено
-     */
-    public static String thisPC() {
-        try{
-            return InetAddress.getLocalHost().getHostName();
-        }
-        catch(UnknownHostException | ExceptionInInitializerError | NullPointerException e){
-            String retStr = new TForms().fromArray(( List<?> ) e, false);
-            FileSystemWorker.recFile("this_pc.err", Collections.singletonList(retStr));
-            return "pc";
-        }
-    }
-
     /**
      Выполнение удаления {@link Properties} из БД
      <p>
@@ -596,28 +618,9 @@ public enum ConstantsFor {
         }
     }
 
-    /**
-     Тащит {@link #PROPS} из БД или файла
-     */
-    private static Properties takePr(boolean fromFile) {
-        InitProperties initProperties = new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
-        Properties retPr;
-        try{
-            retPr = initProperties.getProps();
-            if(fromFile || new File("ff").exists()){
-                try(InputStream inputStream = new FileInputStream(ConstantsFor.class.getSimpleName() + ".properties");){
-                    retPr.load(inputStream);
-                    messageToUser.info("ConstantsFor.takePr", "retPr", " = " + retPr.size());
-                }
-            }
-
-        }
-        catch(Exception e){
-            retPr = getPFromFile();
-            FileSystemWorker.error("ConstantsFor.takePr", e);
-        }
-        new MessageLocal().info(ConstantsFor.class.getSimpleName(), "takePr", new TForms().fromArray(retPr, false));
-        return retPr;
+    private static Properties getPFromFile() {
+        InitProperties initProperties = new FileProps(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
+        return initProperties.getProps();
     }
 
     /**
