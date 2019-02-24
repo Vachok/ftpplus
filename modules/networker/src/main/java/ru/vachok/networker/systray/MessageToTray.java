@@ -118,6 +118,36 @@ public class MessageToTray implements MessageToUser {
     }
 
     @Override
+    public void warn(String s, String s1, String s2) {
+        this.headerMsg = s;
+        this.titleMsg = s1;
+        this.bodyMsg = s2;
+        if(ConstantsFor.IS_SYSTRAY_AVAIL && trayIcon!=null){
+            trayIcon.addActionListener(aListener);
+            trayIcon.displayMessage(headerMsg, titleMsg + " " + bodyMsg, TrayIcon.MessageType.WARNING);
+        }
+        else{
+            new MessageLocal().errorAlert(headerMsg, titleMsg, bodyMsg);
+        }
+    }
+
+    @Override
+    public void warn(String s) {
+        this.bodyMsg = s;
+        warn(headerMsg, titleMsg, s);
+    }
+
+    @Override
+    public void warning(String s, String s1, String s2) {
+        warn(s, s1, s2);
+    }
+
+    @Override
+    public void warning(String s) {
+        warn(s);
+    }
+
+    @Override
     public String confirm(String s, String s1, String s2) {
         throw new UnsupportedOperationException("Not impl to " + getClass().getSimpleName());
 

@@ -8,6 +8,7 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.systray.MessageToTray;
@@ -16,7 +17,7 @@ import java.rmi.UnexpectedException;
 
 
 /**
- <h1>Список-выгрузка с сервера доступа в интернет</h1>
+ Список-выгрузка с сервера доступа в интернет
 
  @since 10.09.2018 (11:49) */
 @Service
@@ -25,7 +26,8 @@ public class PfListsSrv {
     /**
      {@link PfLists}
      */
-    private final @NotNull PfLists pfListsInstAW;
+    @SuppressWarnings ("CanBeFinal")
+    private @NotNull PfLists pfListsInstAW;
 
     /**
      SSH-команда.
@@ -40,7 +42,8 @@ public class PfListsSrv {
     /**
      new {@link SSHFactory.Builder}.
      */
-    private final @NotNull SSHFactory.Builder builderInst = new SSHFactory.Builder(ConstantsFor.SRV_NAT, commandForNatStr);
+    @SuppressWarnings ("CanBeFinal")
+    private @NotNull SSHFactory.Builder builderInst = new SSHFactory.Builder(ConstantsFor.SRV_NAT, commandForNatStr);
 
     private @NotNull MessageToUser messageToUser = new MessageLocal();
 
@@ -81,7 +84,8 @@ public class PfListsSrv {
     /**
      Формирует списки <b>pf</b>
      <p>
-     Если {@link ConstantsFor#thisPC()} contains {@code rups} - {@link #buildCommands()} через {@link #executor} <br>
+     Если {@link ConstantsFor#thisPC()} contains {@code rups} - {@link #buildCommands()} через {@link AppComponents#threadConfig()}.
+     {@link ThreadConfig#executeAsThread(java.lang.Runnable)} <br>
      Else {@link MessageLocal#warn(java.lang.String)} {@link String} = {@link ConstantsFor#thisPC()}
      */
     void makeListRunner() {
@@ -93,7 +97,7 @@ public class PfListsSrv {
             } catch (ExceptionInInitializerError ignore) {
                 messageToUser = new MessageLocal();
             }
-            messageToUser.info(this.getClass().getSimpleName(), "NOT RUNNING ON RUPS!", ConstantsFor.thisPC() + " buildCommands " + false);
+            messageToUser.warn(this.getClass().getSimpleName(), "NOT RUNNING ON RUPS!", ConstantsFor.thisPC() + " buildCommands " + false);
         }
     }
 
@@ -169,7 +173,7 @@ public class PfListsSrv {
         final StringBuilder sb = new StringBuilder("PfListsSrv{");
         sb.append("pfListsInstAW=").append(pfListsInstAW.hashCode());
         sb.append(", commandForNatStr='").append(commandForNatStr).append('\'');
-        sb.append(", messageToUser=").append(messageToUser.toString());
+        sb.append(ConstantsFor.TOSTRING_MESSAGE_TO_USER).append(messageToUser.toString());
         sb.append(", builderInst=").append(builderInst.hashCode());
         sb.append('}');
         return sb.toString();

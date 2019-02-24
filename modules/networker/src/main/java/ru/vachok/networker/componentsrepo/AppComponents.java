@@ -70,7 +70,12 @@ public class AppComponents {
         Properties properties = ConstantsFor.getAppProps();
         if(saveThis){
             boolean isSaved = ConstantsFor.saveAppProps(properties);
-            new MessageToTray().info("AppComponents.getProps ", " isSaved", " = " + isSaved);
+            if(isSaved){
+                new MessageToTray().info("AppComponents.getProps ", " isSaved", " = " + isSaved);
+            }
+            else{
+                new MessageToTray().warn("AppComponents.getProps ", " isSaved", " = " + isSaved);
+            }
         }
         return properties;
     }

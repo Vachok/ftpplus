@@ -33,7 +33,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 
 /**
@@ -527,36 +526,32 @@ public enum ConstantsFor {
         MysqlDataSource mysqlDataSource = new DBRegProperties(javaIDsString).getRegSourceForProperties();
         String methName = "saveAppProps";
         Callable<Boolean> theProphecy = () -> {
-            AtomicBoolean isPropSet = new AtomicBoolean();
             try(Connection c = mysqlDataSource.getConnection();
                 OutputStream outputStream = new FileOutputStream(ConstantsFor.class.getSimpleName() + ".properties")){
                 Savepoint delPropsPoint = c.setSavepoint("delPropsPoint" + LocalTime.now().format(DateTimeFormatter.ISO_TIME));
+                boolean retBool = false;
                 if(savePropsDelStatement(c, delPropsPoint)){
                     InitProperties initPropertiesDB = new DBRegProperties(javaIDsString);
-                    boolean setPropDB = initPropertiesDB.setProps(propsToSave);
-                    messageToUser.info(classMeth, "setPropDB", " = " + setPropDB);
-                    isPropSet.set(setPropDB);
+                    retBool = initPropertiesDB.setProps(propsToSave);
+                    propsToSave.store(outputStream, classMeth);
                 }
-                propsToSave.store(outputStream, classMeth + isPropSet.get());
+                return retBool;
             }
             catch(SQLException e){
                 messageToUser.errorAlert(ConstantsFor.class.getSimpleName(), methName, e.getMessage());
                 FileSystemWorker.error(classMeth, e);
-                isPropSet.set(false);
+                return false;
             }
-
-            return isPropSet.get();
         };
-        boolean retBool = false;
         Future<Boolean> booleanFuture = AppComponents.threadConfig().getTaskExecutor().submit(theProphecy);
         try{
-            retBool = booleanFuture.get();
+            return booleanFuture.get();
         }
         catch(InterruptedException | ExecutionException e){
             messageToUser.errorAlert(ConstantsFor.class.getSimpleName(), methName, e.getMessage());
             FileSystemWorker.error(classMeth, e);
+            return false;
         }
-        return retBool;
     }
 
     private static Properties getPFromFile() {
@@ -588,19 +583,17 @@ public enum ConstantsFor {
      @see #saveAppProps(Properties)
      */
     private static boolean savePropsDelStatement(Connection c, Savepoint delPropsPoint) throws SQLException {
-        boolean noErr;
         final String sql = "delete FROM `ru_vachok_networker` where `javaid` =  'ConstantsFor'";
         try(PreparedStatement preparedStatement = c.prepareStatement(sql)){
             int update = preparedStatement.executeUpdate();
             messageToUser.info("ConstantsFor.savePropsDelStatement", "update", " = " + update);
-            noErr = true;
+            return true;
         }
         catch(SQLException e){
             messageToUser.errorAlert("ConstantsFor", "savePropsDelStatement", e.getMessage());
             c.rollback(delPropsPoint);
-            noErr = false;
+            return false;
         }
-        return noErr;
     }
 
     /**

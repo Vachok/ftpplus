@@ -27,6 +27,7 @@ import java.nio.file.AccessDeniedException;
 import java.util.Objects;
 import java.util.Optional;
 
+
 /**
  SSH-actions class
 
@@ -45,22 +46,22 @@ public class SshActs {
     private static final String PAGE_NAME = "sshworks";
 
     /**
-     * Имя аттрибута
+     Имя аттрибута
      */
     private static final String AT_NAME_SSHDETAIL = "sshdetail";
 
     /**
-     * Имя аттрибута
+     Имя аттрибута
      */
     private static final String AT_NAME_SSHACTS = ConstantsFor.ATT_SSH_ACTS;
 
     /**
-     * SSH-command
+     SSH-command
      */
     private static final String SUDO_ECHO = "sudo echo ";
 
     /**
-     * SSH-command
+     SSH-command
      */
     private static final String SUDO_GREP_V = "sudo grep -v '";
 
@@ -70,12 +71,12 @@ public class SshActs {
     private String pcName;
 
     /**
-     * Уровень доступа к инету
+     Уровень доступа к инету
      */
     private String inet;
 
     /**
-     * Разрешить адрес
+     Разрешить адрес
      */
     private String allowDomain;
 
@@ -86,21 +87,29 @@ public class SshActs {
      */
     private String comment;
 
+    /**
+     Имя домена для удаления.
+     */
+    private String delDomain;
+
+    private boolean squid;
+
+    private boolean squidLimited;
+
+    private boolean tempFull;
+
+    private boolean vipNet;
+
+    public void setIpAddrOnly(String ipAddrOnly) {
+        this.ipAddrOnly = ipAddrOnly;
+    }
+
     public String getDelDomain() {
         return delDomain;
     }
 
     public void setDelDomain(String delDomain) {
         this.delDomain = delDomain;
-    }
-
-    /**
-     * Имя домена для удаления.
-     */
-    private String delDomain;
-
-    public void setIpAddrOnly(String ipAddrOnly) {
-        this.ipAddrOnly = ipAddrOnly;
     }
 
     public String getAllowDomain() {
@@ -111,14 +120,6 @@ public class SshActs {
         this.allowDomain = allowDomain;
     }
 
-    private boolean squid;
-
-    private boolean squidLimited;
-
-    private boolean tempFull;
-
-    private boolean vipNet;
-
     public String getPcName() {
         return pcName;
     }
@@ -127,12 +128,17 @@ public class SshActs {
         if(pcName.contains(ConstantsFor.EATMEAT_RU)){
             this.pcName = pcName;
         }
-        else
+        else{
             this.pcName = new NameOrIPChecker().checkPat(pcName);
+        }
     }
 
     public String getInet() {
         return inet;
+    }
+
+    private void setInet(String queryString) {
+        this.inet = queryString;
     }
 
     public boolean isSquid() {
@@ -151,113 +157,9 @@ public class SshActs {
         return vipNet;
     }
 
-    /**
-     Парсинг запроса HTTP
-     <p>
-     Usages: {@link SshActsCTRL#sshActsGET(Model, HttpServletRequest)} Uses: {@link #toString()}
+    public String providerTraceStr() {
 
-     @param queryString {@link HttpServletRequest#getQueryString()}
-     */
-    private void parseReq(String queryString) {
-        String qStr = " ";
-        try {
-            this.pcName = queryString.split("&")[0].replaceAll("pcName=", "");
-            qStr = queryString.split("&")[1];
-        } catch (ArrayIndexOutOfBoundsException e) {
-            setAllFalse();
-        }
-        if (qStr.equalsIgnoreCase("inet=std")) setSquid();
-        if (qStr.equalsIgnoreCase("inet=limit")) setSquidLimited();
-        if (qStr.equalsIgnoreCase("inet=full")) setTempFull();
-        if (qStr.equalsIgnoreCase("inet=nat")) setVipNet();
-        String msg = toString();
-        LOGGER.warn(msg);
-    }
-
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("SshActs{ ");
-        sb.append("  allowDomain='<a href=\"").append(allowDomain).append("\" target=\"_blank\">").append(allowDomain).append("</a>'");
-        sb.append(", AT_NAME_SSHACTS='").append(AT_NAME_SSHACTS).append('\'');
-        sb.append(", AT_NAME_SSHDETAIL='").append(AT_NAME_SSHDETAIL).append('\'');
-        sb.append(", comment='").append(comment).append('\'');
-        sb.append(", delDomain='").append(delDomain).append('\'');
-        sb.append(", inet='").append(inet).append('\'');
-        sb.append(", ipAddrOnly='").append(ipAddrOnly).append('\'');
-        sb.append(", PAGE_NAME='").append(PAGE_NAME).append('\'');
-        sb.append(", pcName='").append(pcName).append('\'');
-        sb.append(", squid=").append(squid);
-        sb.append(", squidLimited=").append(squidLimited);
-        sb.append(", SUDO_ECHO='").append(SUDO_ECHO).append('\'');
-        sb.append(", SUDO_GREP_V='").append(SUDO_GREP_V).append('\'');
-        sb.append(", tempFull=").append(tempFull);
-        sb.append(", vipNet=").append(vipNet);
-        sb.append('}');
-        return sb.toString();
-    }
-
-    private void setSquid() {
-        this.squid = true;
-        this.vipNet = false;
-        this.tempFull = false;
-        this.squidLimited = false;
-    }
-
-    private void setSquidLimited() {
-        this.squid = false;
-        this.vipNet = false;
-        this.tempFull = false;
-        this.squidLimited = true;
-    }
-
-    private void setTempFull() {
-        this.tempFull = true;
-        this.squid = false;
-        this.vipNet = false;
-        this.squidLimited = false;
-    }
-
-    private void setVipNet() {
-        this.vipNet = true;
-        this.squid = false;
-        this.tempFull = false;
-        this.squidLimited = false;
-    }
-
-    private void setInet(String queryString) {
-        this.inet = queryString;
-    }
-
-    private String execByWhatListSwitcher(int whatList, boolean iDel) {
-        if (iDel) {
-            return new StringBuilder()
-                .append(SUDO_GREP_V)
-                .append(Objects.requireNonNull(pcName))
-                .append("' /etc/pf/vipnet > /etc/pf/vipnet_tmp;sudo grep -v '")
-                .append(Objects.requireNonNull(ipAddrOnly))
-                .append("' /etc/pf/vipnet > /etc/pf/vipnet_tmp;sudo cp /etc/pf/vipnet_tmp /etc/pf/vipnet;sudo pfctl -f /etc/srv-nat.conf;sudo grep -v '")
-                .append(Objects.requireNonNull(ipAddrOnly))
-                .append("' /etc/pf/squid > /etc/pf/squid_tmp;sudo cp /etc/pf/squid_tmp /etc/pf/squid;sudo grep -v '")
-                .append(Objects.requireNonNull(ipAddrOnly))
-                .append("' /etc/pf/squidlimited > /etc/pf/squidlimited_tmp;sudo cp /etc/pf/squidlimited_tmp /etc/pf/squidlimited;sudo grep -v '")
-                .append(Objects.requireNonNull(ipAddrOnly))
-                .append("' /etc/pf/tempfull > /etc/pf/tempfull_tmp;sudo cp /etc/pf/tempfull_tmp /etc/pf/tempfull;sudo squid -k reconfigure;sudo /etc/initpf.fw").toString();
-        } else {
-            this.comment = Objects.requireNonNull(ipAddrOnly) + comment;
-            String echoSudo = SUDO_ECHO;
-            switch (whatList) {
-                case 1:
-                    return echoSudo + "\"" + comment + "\"" + " >> /etc/pf/vipnet;sudo /etc/initpf.fw;";
-                case 2:
-                    return echoSudo + "\"" + comment + "\"" + " >> /etc/pf/squid;sudo /etc/initpf.fw;sudo squid -k reconfigure;";
-                case 3:
-                    return echoSudo + "\"" + comment + "\"" + " >> /etc/pf/squidlimited;sudo /etc/initpf.fw;sudo squid -k reconfigure;";
-                case 4:
-                    return echoSudo + "\"" + comment + "\"" + " >> /etc/pf/tempfull;sudo /etc/initpf.fw;sudo squid -k reconfigure;";
-                default:
-                    return "ls";
-            }
-        }
+        return "";
     }
 
     /**
@@ -270,12 +172,14 @@ public class SshActs {
         Objects.requireNonNull(allowDomain, "allowdomain string is null");
         String commandSSH = new StringBuilder()
             .append(SUDO_GREP_V).append(Objects.requireNonNull(allowDomain)).append("' /etc/pf/allowdomain > /etc/pf/allowdomain_tmp;")
-            .append(SUDO_GREP_V).append(Objects.requireNonNull(resolveIp(allowDomain))).append(" #").append(allowDomain).append("' /etc/pf/allowip > /etc/pf/allowip_tmp;")
+            .append(SUDO_GREP_V).append(Objects.requireNonNull(resolveIp(allowDomain))).append(" #").append(allowDomain).append("' /etc/pf/allowip > " +
+                "/etc/pf/allowip_tmp;")
 
             .append("sudo cp /etc/pf/allowdomain_tmp /etc/pf/allowdomain;")
             .append("sudo cp /etc/pf/allowip_tmp /etc/pf/allowip;")
 
-            .append(SUDO_ECHO).append("\"").append(Objects.requireNonNull(allowDomain, "allowdomain string is null")).append("\"").append(" >> /etc/pf/allowdomain;")
+            .append(SUDO_ECHO).append("\"").append(Objects.requireNonNull(allowDomain, "allowdomain string is null")).append("\"").append(" >> " +
+                "/etc/pf/allowdomain;")
             .append(SUDO_ECHO).append("\"").append(resolveIp(allowDomain)).append(" #").append(allowDomain).append("\"").append(" >> /etc/pf/allowip;")
 
             .append("sudo /etc/initpf.fw;")
@@ -290,13 +194,31 @@ public class SshActs {
     }
 
     /**
-     * Установить все списки на <b>false</b>
+     Приведение имени домена в нужный формат
+     <p>
+
+     @return имя домена для применения в /etc/pf/allowdomain
      */
-    private void setAllFalse() {
-        this.squidLimited = false;
-        this.squid = false;
-        this.tempFull = false;
-        this.vipNet = false;
+    private String checkDName() {
+        this.allowDomain = allowDomain.replace("http://", ".");
+        if(allowDomain.contains("https")){
+            this.allowDomain = allowDomain.replace("https://", ".");
+        }
+        char[] chars = allowDomain.toCharArray();
+        try{
+            Character lastChar = chars[chars.length - 1];
+            if(lastChar.equals('/')){
+                chars[chars.length - 1] = ' ';
+                this.allowDomain = new String(chars).trim();
+            }
+            else{
+                this.allowDomain = new String(allowDomain.getBytes(), Charset.defaultCharset());
+            }
+            return allowDomain;
+        }
+        catch(ArrayIndexOutOfBoundsException e){
+            return e.getMessage();
+        }
     }
 
     /**
@@ -308,9 +230,10 @@ public class SshActs {
      */
     private String resolveIp(String s) {
         InetAddress inetAddress = null;
-        try {
+        try{
             inetAddress = InetAddress.getByName(s.replaceFirst("\\Q.\\E", ""));
-        } catch (UnknownHostException e) {
+        }
+        catch(UnknownHostException e){
             LOGGER.warn(e.getMessage(), e);
         }
         return Objects.requireNonNull(inetAddress).getHostAddress();
@@ -348,28 +271,6 @@ public class SshActs {
     }
 
     /**
-     Приведение имени домена в нужный формат
-     <p>
-
-     @return имя домена для применения в /etc/pf/allowdomain
-     */
-    private String checkDName() {
-        this.allowDomain = allowDomain.replace("http://", ".");
-        if (allowDomain.contains("https")) this.allowDomain = allowDomain.replace("https://", ".");
-        char[] chars = allowDomain.toCharArray();
-        try {
-            Character lastChar = chars[chars.length - 1];
-            if (lastChar.equals('/')) {
-                chars[chars.length - 1] = ' ';
-                this.allowDomain = new String(chars).trim();
-            } else this.allowDomain = new String(allowDomain.getBytes(), Charset.defaultCharset());
-            return allowDomain;
-        } catch (ArrayIndexOutOfBoundsException e) {
-            return e.getMessage();
-        }
-    }
-
-    /**
      Запись результата в лог
      <p>
      {@code this.getClass().getSimpleName() + ".log"}
@@ -377,11 +278,163 @@ public class SshActs {
      @param s лог, для записи
      */
     private void writeToLog(String s) {
-        try (OutputStream outputStream = new FileOutputStream(this.getClass().getSimpleName() + ".log")) {
+        try(OutputStream outputStream = new FileOutputStream(this.getClass().getSimpleName() + ".log")){
             outputStream.write(s.getBytes());
-        } catch (IOException e) {
+        }
+        catch(IOException e){
             LOGGER.warn(e.getMessage(), e);
         }
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("SshActs{ ");
+        sb.append("  allowDomain='<a href=\"").append(allowDomain).append("\" target=\"_blank\">").append(allowDomain).append("</a>'");
+        sb.append(", AT_NAME_SSHACTS='").append(AT_NAME_SSHACTS).append('\'');
+        sb.append(", AT_NAME_SSHDETAIL='").append(AT_NAME_SSHDETAIL).append('\'');
+        sb.append(", comment='").append(comment).append('\'');
+        sb.append(", delDomain='").append(delDomain).append('\'');
+        sb.append(", inet='").append(inet).append('\'');
+        sb.append(", ipAddrOnly='").append(ipAddrOnly).append('\'');
+        sb.append(", PAGE_NAME='").append(PAGE_NAME).append('\'');
+        sb.append(", pcName='").append(pcName).append('\'');
+        sb.append(", squid=").append(squid);
+        sb.append(", squidLimited=").append(squidLimited);
+        sb.append(", SUDO_ECHO='").append(SUDO_ECHO).append('\'');
+        sb.append(", SUDO_GREP_V='").append(SUDO_GREP_V).append('\'');
+        sb.append(", tempFull=").append(tempFull);
+        sb.append(", vipNet=").append(vipNet);
+        sb.append('}');
+        return sb.toString();
+    }
+
+    /**
+     @return имя домена, для удаления.
+     */
+    private String checkDNameDel() {
+        this.delDomain = delDomain.replace("http://", ".");
+        if(delDomain.contains("https")){
+            this.delDomain = delDomain.replace("https://", ".");
+        }
+        char[] chars = delDomain.toCharArray();
+        try{
+            Character lastChar = chars[chars.length - 1];
+            if(lastChar.equals('/')){
+                chars[chars.length - 1] = ' ';
+                this.delDomain = new String(chars).trim();
+            }
+            else{
+                this.delDomain = new String(delDomain.getBytes(), Charset.defaultCharset());
+            }
+            return delDomain;
+        }
+        catch(ArrayIndexOutOfBoundsException e){
+            return e.getMessage();
+        }
+    }
+
+    private String execByWhatListSwitcher(int whatList, boolean iDel) {
+        if(iDel){
+            return new StringBuilder()
+                .append(SUDO_GREP_V)
+                .append(Objects.requireNonNull(pcName))
+                .append("' /etc/pf/vipnet > /etc/pf/vipnet_tmp;sudo grep -v '")
+                .append(Objects.requireNonNull(ipAddrOnly))
+                .append("' /etc/pf/vipnet > /etc/pf/vipnet_tmp;sudo cp /etc/pf/vipnet_tmp /etc/pf/vipnet;sudo pfctl -f /etc/srv-nat.conf;sudo grep -v '")
+                .append(Objects.requireNonNull(ipAddrOnly))
+                .append("' /etc/pf/squid > /etc/pf/squid_tmp;sudo cp /etc/pf/squid_tmp /etc/pf/squid;sudo grep -v '")
+                .append(Objects.requireNonNull(ipAddrOnly))
+                .append("' /etc/pf/squidlimited > /etc/pf/squidlimited_tmp;sudo cp /etc/pf/squidlimited_tmp /etc/pf/squidlimited;sudo grep -v '")
+                .append(Objects.requireNonNull(ipAddrOnly))
+                .append("' /etc/pf/tempfull > /etc/pf/tempfull_tmp;sudo cp /etc/pf/tempfull_tmp /etc/pf/tempfull;sudo squid -k reconfigure;sudo " +
+                    "/etc/initpf.fw").toString();
+        }
+        else{
+            this.comment = Objects.requireNonNull(ipAddrOnly) + comment;
+            String echoSudo = SUDO_ECHO;
+            switch(whatList){
+                case 1:
+                    return echoSudo + "\"" + comment + "\"" + " >> /etc/pf/vipnet;sudo /etc/initpf.fw;";
+                case 2:
+                    return echoSudo + "\"" + comment + "\"" + " >> /etc/pf/squid;sudo /etc/initpf.fw;sudo squid -k reconfigure;";
+                case 3:
+                    return echoSudo + "\"" + comment + "\"" + " >> /etc/pf/squidlimited;sudo /etc/initpf.fw;sudo squid -k reconfigure;";
+                case 4:
+                    return echoSudo + "\"" + comment + "\"" + " >> /etc/pf/tempfull;sudo /etc/initpf.fw;sudo squid -k reconfigure;";
+                default:
+                    return "ls";
+            }
+        }
+    }
+
+    /**
+     Парсинг запроса HTTP
+     <p>
+     Usages: {@link SshActsCTRL#sshActsGET(Model, HttpServletRequest)} Uses: {@link #toString()}
+
+     @param queryString {@link HttpServletRequest#getQueryString()}
+     */
+    private void parseReq(String queryString) {
+        String qStr = " ";
+        try{
+            this.pcName = queryString.split("&")[0].replaceAll("pcName=", "");
+            qStr = queryString.split("&")[1];
+        }
+        catch(ArrayIndexOutOfBoundsException e){
+            setAllFalse();
+        }
+        if(qStr.equalsIgnoreCase("inet=std")){
+            setSquid();
+        }
+        if(qStr.equalsIgnoreCase("inet=limit")){
+            setSquidLimited();
+        }
+        if(qStr.equalsIgnoreCase("inet=full")){
+            setTempFull();
+        }
+        if(qStr.equalsIgnoreCase("inet=nat")){
+            setVipNet();
+        }
+        String msg = toString();
+        LOGGER.warn(msg);
+    }
+
+    /**
+     Установить все списки на <b>false</b>
+     */
+    private void setAllFalse() {
+        this.squidLimited = false;
+        this.squid = false;
+        this.tempFull = false;
+        this.vipNet = false;
+    }
+
+    private void setSquid() {
+        this.squid = true;
+        this.vipNet = false;
+        this.tempFull = false;
+        this.squidLimited = false;
+    }
+
+    private void setSquidLimited() {
+        this.squid = false;
+        this.vipNet = false;
+        this.tempFull = false;
+        this.squidLimited = true;
+    }
+
+    private void setTempFull() {
+        this.tempFull = true;
+        this.squid = false;
+        this.vipNet = false;
+        this.squidLimited = false;
+    }
+
+    private void setVipNet() {
+        this.vipNet = true;
+        this.squid = false;
+        this.tempFull = false;
+        this.squidLimited = false;
     }
 
     /**
@@ -392,27 +445,32 @@ public class SshActs {
     @Controller
     public class SshActsCTRL {
 
+        private static final String URL_SSHACTS = "/sshacts";
+
         /**
          {@link SshActs}
          */
         @Autowired
         private SshActs sshActs;
 
-        @PostMapping("/sshacts")
+        @Autowired
+        public SshActsCTRL(SshActs sshActs) {
+            this.sshActs = sshActs;
+        }
+
+        @PostMapping (URL_SSHACTS)
         public String sshActsPOST(@ModelAttribute SshActs sshActs, Model model, HttpServletRequest request) throws AccessDeniedException {
             String pcReq = request.getRemoteAddr().toLowerCase();
-            if (getAuthentic(pcReq)) {
+            if(getAuthentic(pcReq)){
                 this.sshActs = sshActs;
                 model.addAttribute("head", new PageFooter().getHeaderUtext());
                 model.addAttribute(AT_NAME_SSHACTS, sshActs);
                 model.addAttribute(AT_NAME_SSHDETAIL, sshActs.getPcName());
                 return PAGE_NAME;
-            } else throw new AccessDeniedException("NOT Allowed!");
-        }
-
-        @Autowired
-        public SshActsCTRL(SshActs sshActs) {
-            this.sshActs = sshActs;
+            }
+            else{
+                throw new AccessDeniedException("NOT Allowed!");
+            }
         }
 
         private boolean getAuthentic(String pcReq) {
@@ -424,7 +482,7 @@ public class SshActs {
                     pcReq.contains("10.10.111");
         }
 
-        @GetMapping("/sshacts")
+        @GetMapping (URL_SSHACTS)
         public String sshActsGET(Model model, HttpServletRequest request) throws AccessDeniedException {
             Visitor visitor = ConstantsFor.getVis(request);
             sshActs.setAllowDomain("");
@@ -432,11 +490,11 @@ public class SshActs {
             String pcReq = request.getRemoteAddr().toLowerCase();
             LOGGER.warn(pcReq);
             setInet(pcReq);
-            if (getAuthentic(pcReq)) {
+            if(getAuthentic(pcReq)){
                 model.addAttribute(ConstantsFor.ATT_TITLE, visitor.getTimeSpend());
                 model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
                 model.addAttribute(AT_NAME_SSHACTS, sshActs);
-                if (request.getQueryString() != null) {
+                if(request.getQueryString()!=null){
                     sshActs.parseReq(request.getQueryString());
                     model.addAttribute(ConstantsFor.ATT_TITLE, sshActs.getPcName());
                     sshActs.setPcName(sshActs.getPcName());
@@ -444,10 +502,13 @@ public class SshActs {
                 }
                 model.addAttribute(AT_NAME_SSHDETAIL, sshActs.toString());
                 return PAGE_NAME;
-            } else throw new AccessDeniedException("NOT Allowed! ");
+            }
+            else{
+                throw new AccessDeniedException("NOT Allowed! ");
+            }
         }
 
-        @PostMapping("/allowdomain")
+        @PostMapping ("/allowdomain")
         public String allowPOST(@ModelAttribute SshActs sshActs, Model model) {
             this.sshActs = sshActs;
             model.addAttribute(ConstantsFor.ATT_TITLE, sshActs.getAllowDomain() + " добавлен");
@@ -457,7 +518,7 @@ public class SshActs {
             return "ok";
         }
 
-        @PostMapping("/deldomain")
+        @PostMapping ("/deldomain")
         public String delDomPOST(@ModelAttribute SshActs sshActs, Model model) {
             this.sshActs = sshActs;
             model.addAttribute(ConstantsFor.ATT_TITLE, sshActs.getDelDomain() + " удалён");
@@ -465,25 +526,6 @@ public class SshActs {
             model.addAttribute("ok", sshActs.toString() + "<p>" + sshActs.allowDomainDel());
             model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
             return "ok";
-        }
-    }
-
-    /**
-     @return имя домена, для удаления.
-     */
-    private String checkDNameDel() {
-        this.delDomain = delDomain.replace("http://", ".");
-        if (delDomain.contains("https")) this.delDomain = delDomain.replace("https://", ".");
-        char[] chars = delDomain.toCharArray();
-        try {
-            Character lastChar = chars[chars.length - 1];
-            if (lastChar.equals('/')) {
-                chars[chars.length - 1] = ' ';
-                this.delDomain = new String(chars).trim();
-            } else this.delDomain = new String(delDomain.getBytes(), Charset.defaultCharset());
-            return delDomain;
-        } catch (ArrayIndexOutOfBoundsException e) {
-            return e.getMessage();
         }
     }
 }

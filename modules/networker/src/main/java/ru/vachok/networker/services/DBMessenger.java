@@ -59,6 +59,26 @@ public class DBMessenger implements MessageToUser {
         throw new UnsupportedOperationException("07.09.2018 (0:11)");
     }
 
+    @Override
+    public void warn(String s, String s1, String s2) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void warn(String s) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void warning(String s, String s1, String s2) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void warning(String s) {
+        throw new UnsupportedOperationException();
+    }
+
 
     @Override
     public String confirm( String s , String s1 , String s2 ) {

@@ -31,6 +31,11 @@ public class MessageLocal implements MessageToUser {
         warning(bodyMsg);
     }
 
+    @Override
+    public void warn(String s, String s1, String s2) {
+        warning(s, s1, s2);
+    }
+
     public void errorAlert(String s) {
         this.bodyMsg = s;
         errorAlert(headerMsg, titleMsg, s);
@@ -66,6 +71,13 @@ public class MessageLocal implements MessageToUser {
     @Override
     public void infoTimer(int i, String s) {
         throw new UnsupportedOperationException(headerMsg);
+    }
+
+    @Override
+    public void warning(String s, String s1, String s2) {
+        Logger logger = LoggerFactory.getLogger(s);
+        String msg = s1 + " : " + s2;
+        logger.warn(msg);
     }
 
     @Override
