@@ -26,11 +26,13 @@ import java.io.*;
 import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.Date;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -58,9 +60,9 @@ public final class NetScannerSvc {
     private static final Logger LOGGER = LoggerFactory.getLogger(CLASS_NAME);
 
     /**
-     {@link AppComponents#getProps()}
+     {@link AppComponents#getOrSetProps()}
      */
-    private static final Properties PROPS = AppComponents.getProps();
+    private static final Properties LOCAL_PROPS = AppComponents.getOrSetProps();
 
     /**
      Имя метода, как строка.
@@ -351,26 +353,25 @@ public final class NetScannerSvc {
 
     }
 
+    static {
+        try{
+            connection = new AppComponents().connection(ConstantsNet.DB_NAME);
+        } catch (IOException e) {
+            messageToUser.errorAlert(CLASS_NAME, ConstantsFor.METHNAME_STATIC_INITIALIZER, e.getMessage());
+            FileSystemWorker.error("NetScannerSvc.static initializer", e);
+        }
+    }
+
     /**
      Обнуление счётчика онлайн ПК.
      <p>
-     Устанавливает {@link #PROPS} {@link ConstantsNet#ONLINEPC} в "". <br> Устававливает {@link NetScannerSvc#onLinePCsNum} = 0.
+     Устанавливает {@link #LOCAL_PROPS} {@link ConstantsNet#ONLINEPC} в "". <br> Устававливает {@link NetScannerSvc#onLinePCsNum} = 0.
 
      @see #runAfterAll
      */
     private static void setOnLinePCsToZero() {
-        PROPS.setProperty(ConstantsNet.ONLINEPC, onLinePCsNum + "");
+        LOCAL_PROPS.setProperty(ConstantsNet.ONLINEPC, onLinePCsNum + "");
         NetScannerSvc.onLinePCsNum = 0;
-    }
-
-    static {
-        try{
-            connection = new AppComponents().connection(ConstantsNet.DB_NAME);
-        }
-        catch(SQLException | IOException e){
-            messageToUser.errorAlert("NetScannerSvc", ConstantsFor.METHNAME_STATIC_INITIALIZER, e.getMessage());
-            FileSystemWorker.error("NetScannerSvc.static initializer", e);
-        }
     }
 
     /**
@@ -530,7 +531,6 @@ public final class NetScannerSvc {
         if(ConstantsFor.thisPC().toLowerCase().contains("home")){
             String toCopy = "\\\\10.10.111.1\\Torrents-FTP\\" + FILENAME_PCAUTODISTXT;
             FileSystemWorker.copyOrDelFile(new File(FILENAME_PCAUTODISTXT), toCopy, true);
-
         }
     }
 
@@ -591,11 +591,11 @@ public final class NetScannerSvc {
      {@link TForms#fromArrayUsers(java.util.concurrent.ConcurrentMap, boolean)} - преобразуем {@link ConstantsNet#PC_U_MAP}. <br>
      Создадим еще 2 {@link String}, {@code msgTimeSp} - сколько времени прощло после инициализации. {@code valueOfPropLastScan} - когда было последнее
      сканирование.
-     Инфо из {@link #PROPS}. <br>
-     Все строки + {@link TForms#fromArray(java.util.Properties, boolean)} - {@link #PROPS}, добавим в {@link ArrayList} {@code toFileList}.
+     Инфо из {@link #LOCAL_PROPS}. <br>
+     Все строки + {@link TForms#fromArray(java.util.Properties, boolean)} - {@link #LOCAL_PROPS}, добавим в {@link ArrayList} {@code toFileList}.
      <p>
      {@link Properties#setProperty(java.lang.String, java.lang.String)} = {@code valueOfPropLastScan}. <br>
-     {@link AppComponents#getProps(boolean)} - {@link #PROPS}.
+     {@link AppComponents#getOrSetProps(boolean)} - {@link #LOCAL_PROPS}.
      <p>
      {@link MessageToTray#info(java.lang.String, java.lang.String, java.lang.String)}
      <p>
@@ -622,23 +622,25 @@ public final class NetScannerSvc {
         String msgTimeSp = "NetScannerSvc.getPCsAsync method. " + (float) (System.currentTimeMillis() - startClassTime) / 1000 + ConstantsFor.STR_SEC_SPEND;
         String valueOfPropLastScan = System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY) + "";
 
-        PROPS.setProperty(ConstantsNet.PR_LASTSCAN, valueOfPropLastScan);
+        LOCAL_PROPS.setProperty(ConstantsNet.PR_LASTSCAN, valueOfPropLastScan);
 
         toFileList.add(compNameUsers);
         toFileList.add(psUser);
         toFileList.add(msgTimeSp);
-        toFileList.add(new TForms().fromArray(PROPS, false));
-
+        toFileList.add(new TForms().fromArray(LOCAL_PROPS, false));
         new MessageToTray(new ActionDefault(ConstantsNet.HTTP_LOCALHOST_8880_NETSCAN)).info(
             "Netscan complete!",
             "Online: " + onLinePCsNum,
             upTime + " min uptime.");
-
         NetScannerSvc.setOnLinePCsToZero();
         AppComponents.lastNetScan().setTimeLastScan(new Date());
         countStat();
+        boolean props = AppComponents.getOrSetProps(LOCAL_PROPS);
         FileSystemWorker.recFile(ConstantsNet.STR_LASTNETSCAN, new TForms().fromArray(AppComponents.lastNetScanMap(), false));
-        String bodyMsg = ConstantsFor.getMemoryInfo() + "\n" + " scan.tmp exist = " + fileCreate(false) + "\n" + new TForms().fromArray(toFileList, false);
+        String bodyMsg = ConstantsFor.getMemoryInfo() + "\n" +
+            " scan.tmp exist = " + fileCreate(false) + "\n" +
+            "Properties is save = " + props + "\n" +
+            new TForms().fromArray(toFileList, false);
         mailMSG.info(
             this.getClass().getSimpleName(),
             "getPCsAsync " + ConstantsFor.getUpTime() + " " + ConstantsFor.thisPC(),
@@ -650,8 +652,6 @@ public final class NetScannerSvc {
                 LocalTime.now().toSecondOfDay() + " " +
                 LocalDate.now().getDayOfWeek().getDisplayName(FULL_STANDALONE, Locale.getDefault()) + "\n" +
                 bodyMsg);
-        Properties properties = AppComponents.getProps(true);
-        LOGGER.info(new TForms().fromArray(properties, false) + "\n\n" + properties.size());
     }
 
     /**
@@ -734,7 +734,7 @@ public final class NetScannerSvc {
     public String toString() {
         final StringBuilder sb = new StringBuilder("NetScannerSvc{");
         sb.append("CLASS_NAME='").append(CLASS_NAME).append('\'');
-        sb.append(", PROPS=").append(PROPS.equals(AppComponents.getProps()));
+        sb.append(", LOCAL_PROPS=").append(LOCAL_PROPS.equals(AppComponents.getOrSetProps()));
         sb.append(", METHNAME_GET_PCS_ASYNC='").append(METHNAME_GET_PCS_ASYNC).append('\'');
         sb.append(", FILENAME_PCAUTODISTXT='").append(FILENAME_PCAUTODISTXT).append('\'');
         sb.append(", pcNamesSet=").append(pcNamesSet.size());

@@ -12,7 +12,10 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -31,7 +34,7 @@ public class PhotoConverterSRV {
      */
     private static final Logger LOGGER = AppComponents.getLogger();
 
-    private final Properties properties = AppComponents.getProps();
+    private final Properties properties = AppComponents.getOrSetProps();
 
     /**
      Путь до папки с фото.

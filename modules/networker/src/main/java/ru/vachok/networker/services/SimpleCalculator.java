@@ -17,7 +17,7 @@ public class SimpleCalculator {
 
     private String query;
 
-    private static final Properties PROPS = AppComponents.getProps();
+    private static final Properties PROPS = AppComponents.getOrSetProps();
 
     public String getQuery() {
         return query;

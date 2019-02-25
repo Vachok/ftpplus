@@ -56,9 +56,9 @@ public class NetScanCtr {
     private static final Logger LOGGER = LoggerFactory.getLogger(NetScanCtr.class.getSimpleName());
 
     /**
-     {@link AppComponents#getProps()}
+     {@link AppComponents#getOrSetProps()}
      */
-    private static final Properties PROPERTIES = AppComponents.getProps();
+    private static final Properties PROPERTIES = AppComponents.getOrSetProps();
 
     /**
      {@link ConstantsFor#DELAY}

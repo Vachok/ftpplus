@@ -25,8 +25,6 @@ import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.systray.SystemTrayHelper;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.TextStyle;
 import java.util.*;
@@ -49,9 +47,9 @@ public class IntoApplication {
     private static final @NotNull SpringApplication SPRING_APPLICATION = new SpringApplication();
 
     /**
-     {@link AppComponents#getProps(boolean)}
+     {@link AppComponents#getOrSetProps(boolean)}
      */
-    private static final Properties LOCAL_PROPS = AppComponents.getProps();
+    private static final Properties LOCAL_PROPS = AppComponents.getOrSetProps();
 
     public static Runnable infoMsgRunnable = () -> {
         final ThreadPoolTaskExecutor taskExecutor = AppComponents.threadConfig().getTaskExecutor();
@@ -229,16 +227,6 @@ public class IntoApplication {
     private static void afterSt() {
         @NotNull Runnable infoAndSched = new AppInfoOnLoad();
         Runnable mySrv = MyServer.getI();
-
-        executor.submit(() -> {
-            try{
-                appProperties();
-            }
-            catch(IOException e){
-                messageToUser.errorAlert("IntoApplication", "afterSt", e.getMessage());
-                FileSystemWorker.error("IntoApplication.afterSt", e);
-            }
-        });
         executor.submit(infoAndSched);
         executor.submit(mySrv);
         AppComponents.threadConfig().executeAsThread(infoMsgRunnable);
@@ -251,7 +239,7 @@ public class IntoApplication {
      new {@link FileProps} ({@link File#getCanonicalPath()} - ""+{@code "\\modules\\networker\\src\\main\\resources\\application"}) <br>
      {@link InitProperties#getProps()}. Получаем {@code props} <br>
      Сэтаем в файл:<br>
-     {@code "build.version"} = {@link AppComponents#getProps()} {@link ConstantsFor#PR_APP_VERSION} и {@link ConstantsFor#PR_QSIZE} =
+     {@code "build.version"} = {@link AppComponents#getOrSetProps()} {@link ConstantsFor#PR_APP_VERSION} и {@link ConstantsFor#PR_QSIZE} =
      {@link ConstantsFor#IPS_IN_VELKOM_VLAN} <br>
      {@link InitProperties#setProps(java.util.Properties)} запись {@code props} в <b>application.LOCAL_PROPS</b>
      <p>
@@ -259,23 +247,14 @@ public class IntoApplication {
      {@link InitProperties#delProps()}
      {@link InitProperties#setProps(java.util.Properties)} запись в БД.
      <p>
-     {@link AppComponents#getProps()} putAll - {@code props}
+     {@link AppComponents#getOrSetProps()} putAll - {@code props}
      */
-    private static void appProperties() throws IOException {
-        @Nullable String rootPathStr = Paths.get("").toFile().getCanonicalPath().toLowerCase();
-        @NotNull InitProperties initProperties = new FileProps(rootPathStr + "\\modules\\networker\\src\\main\\resources\\application");
-        Properties props = initProperties.getProps();
-
+    private static void appProperties() {
+        Properties props = AppComponents.getOrSetProps();
         props.setProperty("build.version", LOCAL_PROPS.getProperty(ConstantsFor.PR_APP_VERSION));
         props.setProperty(ConstantsFor.PR_QSIZE, ConstantsFor.IPS_IN_VELKOM_VLAN + "");
-
-        initProperties.setProps(props);
-        initProperties = new DBRegProperties(ConstantsFor.APP_NAME + "application");
-        initProperties.delProps();
-        initProperties.setProps(props);
-
         LOCAL_PROPS.putAll(props);
-        messageToUser.info("IntoApplication.appProperties", "new TForms().fromArray(LOCAL_PROPS, false)", new TForms().fromArray(LOCAL_PROPS, false));
+        AppComponents.getOrSetProps(props);
     }
 
     @Override

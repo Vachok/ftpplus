@@ -36,7 +36,7 @@ public interface Pinger {
     default List<String> pingDev(Deque<InetAddress> devicesDeq) {
         String classMeth = "Pinger.pingDev";
         new MessageCons().errorAlert(classMeth);
-        final Properties properties = AppComponents.getProps();
+        final Properties properties = AppComponents.getOrSetProps();
         long pingSleep = ConstantsFor.TIMEOUT_650;
         MessageLocal messageToUser = new MessageLocal();
         try{

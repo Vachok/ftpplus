@@ -156,7 +156,6 @@ public class ExitApp implements Runnable {
         stringList.add("exit at " + LocalDateTime.now().toString() + ConstantsFor.getUpTime());
         FileSystemWorker.recFile("exit.last", stringList);
         FileSystemWorker.delTemp();
-
         getConfigurableApplicationContext().close();
 
         AppComponents.threadConfig().killAll();
@@ -170,9 +169,8 @@ public class ExitApp implements Runnable {
     @Override
     public void run() {
         Thread.currentThread().setName(ExitApp.EXIT_APP_RUN);
-        LOGGER.warn(reasonExit);
         stringList.add(reasonExit);
-        AppComponents.getProps(true);
+        AppComponents.getOrSetProps(true);
         copyAvail();
     }
 }

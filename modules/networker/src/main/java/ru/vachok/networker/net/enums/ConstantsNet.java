@@ -14,8 +14,14 @@ import ru.vachok.networker.net.TraceRoute;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 /**
  Константы пакета
@@ -54,7 +60,14 @@ public enum ConstantsNet {;
 
     public static final int DOPC = 250;
 
-    private static final Properties LOC_PROPS = AppComponents.getProps();
+    /**
+     Название настройки.
+     <p>
+     pingsleep. Сколько делать перерыв в пингах. В <b>миллисекундах</b>.
+
+     @see AppComponents#getOrSetProps()
+     */
+    public static final String PROP_PINGSLEEP = "pingsleep";
 
     /**
      new {@link HashSet}
@@ -118,14 +131,7 @@ public enum ConstantsNet {;
      */
     public static final String STR_NETSCANNERSVC = "netScannerSvc";
 
-    /**
-     Название настройки.
-     <p>
-     pingsleep. Сколько делать перерыв в пингах. В <b>миллисекундах</b>.
-
-     @see AppComponents#getProps()
-     */
-    public static final String PROP_PINGSLEEP = "pingsleep";
+    private static final Properties LOC_PROPS = AppComponents.getOrSetProps();
 
     public static Set<String> getPcNames() {
         return pcNames;

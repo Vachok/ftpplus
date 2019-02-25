@@ -38,13 +38,15 @@ public class NetMonitorPTV implements Runnable {
         return pingResultLast;
     }
 
-    {
+    private static final String FILENAME_PINGTV = "ping.tv";
+
+    public NetMonitorPTV() {
         try {
-            outputStream = new FileOutputStream("ping.tv");
+            outputStream = new FileOutputStream(FILENAME_PINGTV);
             printWriter = new PrintWriter(Objects.requireNonNull(outputStream), true);
         } catch (FileNotFoundException e) {
-            new MessageLocal().errorAlert(CLASS_NAME, "instance initializer", e.getMessage());
-            FileSystemWorker.error("NetMonitorPTV.instance initializer", e);
+            messageToUser.errorAlert("NetMonitorPTV", "NetMonitorPTV", e.getMessage());
+            FileSystemWorker.error("NetMonitorPTV.NetMonitorPTV", e);
         }
     }
 
@@ -85,8 +87,8 @@ public class NetMonitorPTV implements Runnable {
         checkSize();
     }
 
-    private void checkSize() {
-        File pingTv = new File("ping.tv");
+    private void checkSize() throws FileNotFoundException {
+        File pingTv = new File(FILENAME_PINGTV);
         printWriter.print(pingResultLast + " " + LocalDateTime.now());
         printWriter.println();
         if (pingTv.length() > ConstantsFor.MBYTE) {
@@ -97,15 +99,12 @@ public class NetMonitorPTV implements Runnable {
         }
     }
 
-    private void ifPingTVIsBig(File pingTv) {
+    private void ifPingTVIsBig(File pingTv) throws FileNotFoundException {
         boolean isPingTvCopied = FileSystemWorker.copyOrDelFile(pingTv, ".\\lan\\tv_" + System.currentTimeMillis() / 1000 + ".ping", true);
-        Thread.currentThread().setName("PingTVIsBig-" + isPingTvCopied);
         String classMeth = "NetMonitorPTV.ifPingTVIsBig";
-
-        messageToUser.info(classMeth, "isPingTvCopied", String.valueOf(isPingTvCopied));
-
         if (isPingTvCopied) {
-            Thread.currentThread().setName(classMeth);
+            ConditionChecker.thrNameSet(getClass().getSimpleName());
+            this.outputStream = new FileOutputStream(FILENAME_PINGTV);
             this.printWriter = new PrintWriter(outputStream, true);
         } else {
             messageToUser = new MessageFile();

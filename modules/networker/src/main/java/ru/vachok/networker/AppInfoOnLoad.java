@@ -8,7 +8,6 @@ import ru.vachok.messenger.MessageFile;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.messenger.email.ESender;
 import ru.vachok.mysqlandprops.RegRuMysql;
-import ru.vachok.networker.accesscontrol.SshActs;
 import ru.vachok.networker.accesscontrol.common.CommonRightsChecker;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.AppCtx;
@@ -24,7 +23,10 @@ import ru.vachok.networker.services.SpeedChecker;
 import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
-import java.nio.file.*;
+import java.nio.file.FileVisitor;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -33,7 +35,10 @@ import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -57,9 +62,9 @@ public class AppInfoOnLoad implements Runnable {
     private static final int THIS_DELAY = 111;
 
     /**
-     {@link AppComponents#getProps()}
+     {@link AppComponents#getOrSetProps()}
      */
-    private static final Properties APP_PROPS = AppComponents.getProps();
+    private static final Properties APP_PROPS = AppComponents.getOrSetProps();
 
     /**
      " uptime."
@@ -183,7 +188,6 @@ public class AppInfoOnLoad implements Runnable {
      */
     @SuppressWarnings ("MagicNumber")
     private void schedStarter() {
-        SshActs sshActs = new AppComponents().sshActs();
         String classMeth = "AppInfoOnLoad.schedStarter";
         miniLogger.add("***" + classMeth);
         final long stArt = System.currentTimeMillis();
@@ -198,7 +202,7 @@ public class AppInfoOnLoad implements Runnable {
         scheduledExecutorService.scheduleWithFixedDelay(ScanOnline.getI(), 3, 1, TimeUnit.MINUTES);
         scheduledExecutorService.scheduleWithFixedDelay(DiapazonedScan.getInstance(), 2, THIS_DELAY, TimeUnit.MINUTES);
         scheduledExecutorService.scheduleWithFixedDelay(new NetMonitorPTV(), 0, 10, TimeUnit.SECONDS);
-        scheduledExecutorService.scheduleWithFixedDelay(() -> sshActs.providerTraceStr(), ConstantsFor.DELAY, ConstantsFor.USER_EXIT, TimeUnit.SECONDS);
+        scheduledExecutorService.scheduleWithFixedDelay(() -> AppComponents.getOrSetProps(ConstantsFor.getAppProps()), 1, 1, TimeUnit.HOURS);
         String msg = new StringBuilder()
             .append(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(THIS_DELAY)))
             .append(DiapazonedScan.getInstance().getClass().getSimpleName())

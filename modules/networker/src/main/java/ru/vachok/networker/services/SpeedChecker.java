@@ -15,7 +15,10 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.systray.ActionDefault;
 import ru.vachok.networker.systray.MessageToTray;
 
-import javax.mail.*;
+import javax.mail.Flags;
+import javax.mail.Folder;
+import javax.mail.Message;
+import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.event.ActionEvent;
@@ -29,7 +32,8 @@ import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
-import static java.time.DayOfWeek.*;
+import static java.time.DayOfWeek.SATURDAY;
+import static java.time.DayOfWeek.SUNDAY;
 
 
 /**
@@ -58,9 +62,9 @@ public class SpeedChecker implements Callable<Long>, Runnable {
     /**
      Time as long
      <p>
-     Время из Базы. Берется из {@link AppComponents#getProps()} - {@link #PR_LASTWORKSTART}.
+     Время из Базы. Берется из {@link AppComponents#getOrSetProps()} - {@link #PR_LASTWORKSTART}.
      */
-    private Long rtLong = Long.valueOf(AppComponents.getProps().getProperty(PR_LASTWORKSTART, "2"));
+    private Long rtLong = Long.valueOf(AppComponents.getOrSetProps().getProperty(PR_LASTWORKSTART, "2"));
 
     /**
      Метрика метода.
@@ -92,7 +96,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
     private void setRtLong() {
         String classMeth = "SpeedChecker.chkForLast";
         String sql = ConstantsFor.SELECT_FROM_SPEED;
-        Properties properties = AppComponents.getProps();
+        Properties properties = AppComponents.getOrSetProps();
         Thread.currentThread().setName(classMeth);
         final long stArt = System.currentTimeMillis();
         new ChkMailAndUpdateDB().run();
@@ -114,7 +118,6 @@ public class SpeedChecker implements Callable<Long>, Runnable {
         catch(SQLException | IOException e){
             FileSystemWorker.error(classMeth, e);
         }
-        AppComponents.getProps(true);
         methMetr(stArt);
     }
 
@@ -130,7 +133,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
      Запуск.
      <p>
      Если прошло 20 часов, с момента {@link #rtLong} или не {@link #isWeekEnd}, запуск {@link #setRtLong()}.
-     Иначе {@link #rtLong} = {@link AppComponents#getProps()} {@link #PR_LASTWORKSTART}.
+     Иначе {@link #rtLong} = {@link AppComponents#getOrSetProps()} {@link #PR_LASTWORKSTART}.
      */
     @Override
     public void run() {
@@ -139,7 +142,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
         if (is20HRSSpend || !isWeekEnd) {
             AppComponents.threadConfig().executeAsThread(this::setRtLong);
         } else {
-            this.rtLong = Long.valueOf(AppComponents.getProps().getProperty(PR_LASTWORKSTART));
+            this.rtLong = Long.valueOf(AppComponents.getOrSetProps().getProperty(PR_LASTWORKSTART));
         }
     }
 

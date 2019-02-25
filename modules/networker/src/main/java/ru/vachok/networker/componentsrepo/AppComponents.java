@@ -29,7 +29,6 @@ import ru.vachok.networker.systray.MessageToTray;
 import javax.servlet.http.HttpServletRequest;
 import java.io.*;
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentMap;
 
@@ -59,40 +58,24 @@ public class AppComponents {
     }
 
     @Bean
-    @Scope (ConstantsFor.SINGLETON)
-    public static Properties getProps() {
-        return getProps(false);
+    @Scope(ConstantsFor.SINGLETON)
+    public static Properties getOrSetProps() {
+        return getOrSetProps(false);
     }
 
     @Bean
-    @Scope (ConstantsFor.SINGLETON)
-    public static Properties getProps(boolean saveThis) {
-        Properties properties = ConstantsFor.getAppProps();
-        if(saveThis){
-            boolean isSaved = ConstantsFor.saveAppProps(properties);
-            if(isSaved){
-                new MessageToTray().info("AppComponents.getProps ", " isSaved", " = " + isSaved);
-            }
-            else{
-                new MessageToTray().warn("AppComponents.getProps ", " isSaved", " = " + isSaved);
-            }
-        }
-        return properties;
-    }
-
-    @Bean
-    public Connection connection(String dbName) throws SQLException, IOException {
+    public Connection connection(String dbName) throws IOException {
         OutputStream outputStream = new FileOutputStream("AppComponents.connection.log");
         PrintWriter printWriter = new PrintWriter(outputStream, true);
-        try{
+        try {
             MysqlDataSource dataSource = new RegRuMysql().getDataSourceSchema(dbName);
             dataSource.setAutoReconnect(true);
             dataSource.setLogWriter(printWriter);
             return dataSource.getConnection();
-        }
-        catch(Exception e){
+        } catch (Exception e) {
             messageToUser.errorAlert("AppComponents", ConstantsNet.STR_CONNECTION, e.getMessage());
             FileSystemWorker.error("AppComponents.connection", e);
+            printWriter.close();
             outputStream.close();
             return new RegRuMysql().getDefaultConnection(dbName);
         }
@@ -101,7 +84,7 @@ public class AppComponents {
     /**
      @return new {@link SimpleCalculator}
      */
-    @Bean (ConstantsFor.STR_CALCULATOR)
+    @Bean(ConstantsFor.STR_CALCULATOR)
     public SimpleCalculator simpleCalculator() {
         return new SimpleCalculator();
     }
@@ -110,30 +93,47 @@ public class AppComponents {
      @return new {@link SshActs}
      */
     @Bean
-    @Scope (ConstantsFor.SINGLETON)
+    @Scope(ConstantsFor.SINGLETON)
     public SshActs sshActs() {
         return new SshActs();
     }
 
-    @Bean (STR_VISITOR)
+    @Bean(STR_VISITOR)
     public Visitor visitor(HttpServletRequest request) {
         return new Visitor(request);
     }
 
     @Bean
-    @Scope (ConstantsFor.SINGLETON)
+    @Scope(ConstantsFor.SINGLETON)
+    public static Properties getOrSetProps(boolean saveThis) {
+        messageToUser = new MessageToTray();
+        Properties properties = ConstantsFor.getAppProps();
+        if (saveThis) {
+            boolean isSaved = ConstantsFor.saveAppProps(properties);
+            if (isSaved) {
+                messageToUser.info("AppComponents.getOrSetProps ", " isSaved", " = " + true);
+            } else {
+                messageToUser.warn("AppComponents.getOrSetProps ", " isSaved", " = " + false);
+            }
+        }
+        messageToUser = new MessageLocal();
+        return properties;
+    }
+
+    @Bean
+    @Scope(ConstantsFor.SINGLETON)
     public static NetPinger netPinger() {
         return new NetPinger();
     }
 
     @Bean
-    @Scope (ConstantsFor.SINGLETON)
+    @Scope(ConstantsFor.SINGLETON)
     public static ThreadConfig threadConfig() {
         return ThreadConfig.getI();
     }
 
     @Bean
-    @Scope (ConstantsFor.SINGLETON)
+    @Scope(ConstantsFor.SINGLETON)
     public static NetScannerSvc netScannerSvc() {
         return NetScannerSvc.getInst();
     }
@@ -142,7 +142,7 @@ public class AppComponents {
      @return {@link #lastNetScan()}.getNetWork
      */
     @Bean
-    @Scope (ConstantsFor.SINGLETON)
+    @Scope(ConstantsFor.SINGLETON)
     public static ConcurrentMap<String, Boolean> lastNetScanMap() {
         return lastNetScan().getNetWork();
     }
@@ -158,12 +158,12 @@ public class AppComponents {
     /**
      @return new {@link VersionInfo}
      */
-    @Bean ("versioninfo")
-    @Scope (ConstantsFor.SINGLETON)
+    @Bean("versioninfo")
+    @Scope(ConstantsFor.SINGLETON)
     public static VersionInfo versionInfo() {
         VersionInfo versionInfo = new VersionInfo();
         boolean isBUGged = false;
-        if(new File("bugged").exists()){
+        if (new File("bugged").exists()) {
             isBUGged = true;
         }
         versionInfo.setBUGged(isBUGged);
@@ -183,11 +183,17 @@ public class AppComponents {
     }
 
     public static Visitor thisVisit(String sessionID) throws NullPointerException, NoSuchBeanDefinitionException {
-        return ( Visitor ) configurableApplicationContext().getBean(sessionID);
+        return (Visitor) configurableApplicationContext().getBean(sessionID);
+    }
+
+    public static boolean getOrSetProps(Properties localProps) {
+        Properties savePr = ConstantsFor.getAppProps();
+        savePr.putAll(localProps);
+        return ConstantsFor.saveAppProps(localProps);
     }
 
     @Bean
-    @Scope (ConstantsFor.SINGLETON)
+    @Scope(ConstantsFor.SINGLETON)
     static ConfigurableApplicationContext configurableApplicationContext() {
         return getConfigurableApplicationContext();
     }

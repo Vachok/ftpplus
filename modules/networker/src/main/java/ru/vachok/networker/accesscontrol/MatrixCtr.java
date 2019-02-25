@@ -13,7 +13,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.accesscontrol.common.CommonRightsChecker;
-import ru.vachok.networker.componentsrepo.*;
+import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.componentsrepo.PageFooter;
+import ru.vachok.networker.componentsrepo.VersionInfo;
+import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.net.DiapazonedScan;
 import ru.vachok.networker.net.MoreInfoGetter;
 import ru.vachok.networker.services.SimpleCalculator;
@@ -65,17 +68,17 @@ public class MatrixCtr {
     /**
      {@link Visitor}
      */
-    private Visitor visitor;
+    private Visitor visitorInst;
 
     /**
      {@link VersionInfo}
      */
-    private VersionInfo versionInfo;
+    private VersionInfo versionInfoInst;
 
     /**
      {@link System#currentTimeMillis()}. Время инициализации класса.
      */
-    private long metricMatrixStart = System.currentTimeMillis();
+    private long metricMatrixStartLong = System.currentTimeMillis();
 
     /**
      Конструктор autowired
@@ -85,7 +88,7 @@ public class MatrixCtr {
      */
     @Autowired
     public MatrixCtr(VersionInfo versionInfo) {
-        this.versionInfo = versionInfo;
+        this.versionInfoInst = versionInfo;
         Thread.currentThread().setName("MatrixCtr.MatrixCtr");
     }
 
@@ -112,11 +115,10 @@ public class MatrixCtr {
     @GetMapping("/")
     public String getFirst(final HttpServletRequest request, Model model, HttpServletResponse response) {
         String gettRoute = getProv();
-        this.visitor = ConstantsFor.getVis(request);
+        this.visitorInst = ConstantsFor.getVis(request);
         qIsNull(model, request);
         model.addAttribute("devscan", "Since " + new Date(ConstantsFor.START_STAMP) + MoreInfoGetter.getTVNetInfo() + gettRoute);
         response.addHeader(ConstantsFor.HEAD_REFRESH, "120");
-        LOGGER.info("{}", visitor.toString());
         return "starting";
     }
 
@@ -175,14 +177,14 @@ public class MatrixCtr {
      */
     @GetMapping("/git")
     public String gitOn(Model model, HttpServletRequest request) {
-        this.visitor = ConstantsFor.getVis(request);
+        this.visitorInst = ConstantsFor.getVis(request);
         SSHFactory gitOner = new SSHFactory.Builder(ConstantsFor.SRV_GIT, "sudo cd /usr/home/ITDept;sudo git instaweb;exit").build();
         if (request.getQueryString() != null && request.getQueryString().equalsIgnoreCase(ConstantsFor.STR_REBOOT)) {
             gitOner = new SSHFactory.Builder(ConstantsFor.SRV_GIT, "sudo reboot").build();
         }
-        String call = gitOner.call() + "\n" + visitor.toString();
+        String call = gitOner.call() + "\n" + visitorInst.toString();
         LOGGER.info(call);
-        metricMatrixStart = System.currentTimeMillis() - metricMatrixStart;
+        metricMatrixStartLong = System.currentTimeMillis() - metricMatrixStartLong;
         return "redirect:http://srv-git.eatmeat.ru:1234";
     }
 
@@ -203,7 +205,7 @@ public class MatrixCtr {
      */
     @GetMapping(GET_MATRIX)
     public String showResults(HttpServletRequest request, HttpServletResponse response, Model model) throws IOException {
-        this.visitor = ConstantsFor.getVis(request);
+        this.visitorInst = ConstantsFor.getVis(request);
         model.addAttribute(ConstantsFor.MATRIX_STRING_NAME, matrixSRV);
         String workPos;
         try {
@@ -215,10 +217,10 @@ public class MatrixCtr {
                 this.getClass().getName() + "<br>");
         }
         model.addAttribute("workPos", workPos);
-        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<p>" + visitor.toString());
+        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<p>" + visitorInst.toString());
         model.addAttribute("headtitle", matrixSRV.getCountDB() + " позиций   " + TimeUnit.MILLISECONDS.toMinutes(
             System.currentTimeMillis() - ConstantsFor.START_STAMP) + " getUpTime");
-        metricMatrixStart = System.currentTimeMillis() - metricMatrixStart;
+        metricMatrixStartLong = System.currentTimeMillis() - metricMatrixStartLong;
         return ConstantsFor.MATRIX_STRING_NAME;
     }
 
@@ -237,7 +239,7 @@ public class MatrixCtr {
     private void qIsNull(Model model, HttpServletRequest request) {
         String userPC = ConstantsFor.getUserPC(request);
         try {
-            LOGGER.warn(visitor.toString());
+            LOGGER.warn(visitorInst.toString());
         } catch (Exception ignore) {
             //
         }
@@ -248,9 +250,9 @@ public class MatrixCtr {
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
         if (ConstantsFor.getUserPC(request).toLowerCase().contains(ConstantsFor.NO0027) ||
             ConstantsFor.getUserPC(request).toLowerCase().contains("0:0:0:0")) {
-            model.addAttribute(ConstantsFor.ATT_VISIT, versionInfo.toString());
+            model.addAttribute(ConstantsFor.ATT_VISIT, versionInfoInst.toString());
         } else {
-            model.addAttribute(ConstantsFor.ATT_VISIT, visitor.getTimeSpend() + " timestamp");
+            model.addAttribute(ConstantsFor.ATT_VISIT, visitorInst.getTimeSpend() + " timestamp");
         }
     }
 
@@ -313,5 +315,16 @@ public class MatrixCtr {
         model.addAttribute(ConstantsFor.STR_CALCULATOR, simpleCalculator);
         model.addAttribute(ATT_DINNER, simpleCalculator.getStampFromDate(workPos));
         return "redirect:/calculate";
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("MatrixCtr{");
+        sb.append("matrixSRV=").append(matrixSRV.hashCode());
+        sb.append(", metricMatrixStartLong=").append(metricMatrixStartLong);
+        sb.append(", versionInfoInst=").append(versionInfoInst.hashCode());
+        sb.append(", visitorInst=").append(visitorInst.hashCode());
+        sb.append('}');
+        return sb.toString();
     }
 }

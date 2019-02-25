@@ -13,7 +13,10 @@ import ru.vachok.networker.services.MessageLocal;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -42,8 +45,7 @@ class ConditionChecker {
     static {
         try{
             connection = new AppComponents().connection(ConstantsNet.DB_NAME);
-        }
-        catch(SQLException | IOException e){
+        } catch (IOException e) {
             messageToUser.errorAlert(CLASS_NAME, ConstantsFor.METHNAME_STATIC_INITIALIZER, e.getMessage());
             FileSystemWorker.error("ConditionChecker.static initializer", e);
         }

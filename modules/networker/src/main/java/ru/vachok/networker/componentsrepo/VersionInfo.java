@@ -31,9 +31,9 @@ public class VersionInfo {
     private static final String DOC_URL = "<a href=\"/doc/index.html\">DOC</a>";
 
     /**
-     {@link AppComponents#getProps()}
+     {@link AppComponents#getOrSetProps()}
      */
-    private static final Properties PROPERTIES = AppComponents.getProps();
+    private static final Properties PROPERTIES = AppComponents.getOrSetProps();
 
     private static final String PR_BUILD_TIME = "buildTime";
 

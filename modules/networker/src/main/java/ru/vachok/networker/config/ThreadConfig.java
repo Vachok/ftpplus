@@ -101,11 +101,14 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
         TASK_SCHEDULER.shutdown();
         this.messageToUser = new MessageLocal();
         final StringBuilder builder = new StringBuilder();
-
         for (Runnable runnable : TASK_SCHEDULER.getScheduledThreadPoolExecutor().shutdownNow()) {
             builder.append(runnable.toString()).append("\n");
         }
         TASK_EXECUTOR.shutdown();
+        for (Runnable runnable : TASK_EXECUTOR.getThreadPoolExecutor().shutdownNow()) {
+            builder.append(runnable.toString()).append("\n");
+        }
+        messageToUser.warn(builder.toString());
     }
 
     /**

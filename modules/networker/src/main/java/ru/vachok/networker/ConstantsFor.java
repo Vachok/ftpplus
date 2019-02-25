@@ -8,7 +8,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.multipart.MultipartFile;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
-import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.Visitor;
@@ -22,16 +21,18 @@ import ru.vachok.networker.services.TimeChecker;
 
 import javax.servlet.http.HttpServletRequest;
 import java.awt.*;
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.SecureRandom;
-import java.sql.*;
-import java.time.LocalTime;
 import java.time.Year;
-import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.List;
-import java.util.*;
+import java.util.Objects;
+import java.util.Properties;
 import java.util.concurrent.*;
 
 
@@ -427,10 +428,16 @@ public enum ConstantsFor {
     }
 
     /**
-     @return {@link AppComponents#getProps()}
+     @return {@link AppComponents#getOrSetProps()}
      */
     public static Properties getAppProps() {
-        return PROPS;
+        if (PROPS.size() < 3) {
+            Properties takePr = takePr(true);
+            PROPS.putAll(takePr);
+            return takePr;
+        } else {
+            return PROPS;
+        }
     }
 
     /**
@@ -444,8 +451,7 @@ public enum ConstantsFor {
             hrsOn = hrsOn / ConstantsFor.ONE_DAY_HOURS;
             tUnit = " d";
         }
-        String retStr = "(" + String.format("%.03f", hrsOn) + tUnit + " up)";
-        return retStr;
+        return "(" + String.format("%.03f", hrsOn) + tUnit + " up)";
     }
 
     /**
@@ -504,15 +510,7 @@ public enum ConstantsFor {
      @return {@link #IPS_IN_VELKOM_VLAN}
      */
     private static int getIPs() {
-        int vlansNum = 22;
-        try{
-
-            vlansNum = Integer.parseInt(Objects.requireNonNull(PROPS.size()!=0? PROPS.getProperty("vlans", "22"): null));
-        }
-        catch(NullPointerException e){
-            Properties properties = takePr(true);
-            PROPS.putAll(properties);
-        }
+        int vlansNum = Integer.parseInt(Objects.requireNonNull(PROPS.size() != 0 ? PROPS.getProperty("vlans", "22") : null));
         int qSize = vlansNum * 255;
         PROPS.setProperty(PR_QSIZE, qSize + "");
         return qSize;
@@ -533,94 +531,49 @@ public enum ConstantsFor {
     }
 
     /**
-     Тащит {@link #PROPS} из БД или файла
-     */
-    private static Properties takePr(boolean fromFile) {
-        InitProperties initProperties = new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
-        Properties retPr;
-        try{
-            retPr = initProperties.getProps();
-            if(fromFile || new File("ff").exists()){
-                try(InputStream inputStream = new FileInputStream(ConstantsFor.class.getSimpleName() + ".properties");){
-                    retPr.load(inputStream);
-                    messageToUser.info("ConstantsFor.takePr", "retPr", " = " + retPr.size());
-                }
-            }
-
-        }
-        catch(Exception e){
-            retPr = getPFromFile();
-            FileSystemWorker.error("ConstantsFor.takePr", e);
-        }
-        new MessageLocal().info(ConstantsFor.class.getSimpleName(), "takePr", new TForms().fromArray(retPr, false));
-        return retPr;
-    }
-
-    /**
      Сохраняет {@link Properties} в БД {@link #APP_NAME} с ID {@code ConstantsFor}
 
      @param propsToSave {@link Properties}
      */
     public static boolean saveAppProps(Properties propsToSave) {
-        String classMeth = "ConstantsFor.saveAppProps";
         final String javaIDsString = ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName();
-        MysqlDataSource mysqlDataSource = new DBRegProperties(javaIDsString).getRegSourceForProperties();
+        String classMeth = "ConstantsFor.saveAppProps";
         String methName = "saveAppProps";
-        Callable<Boolean> theProphecy = () -> {
-            try(Connection c = mysqlDataSource.getConnection();
-                OutputStream outputStream = new FileOutputStream(ConstantsFor.class.getSimpleName() + ".properties")){
-                Savepoint delPropsPoint = c.setSavepoint("delPropsPoint" + LocalTime.now().format(DateTimeFormatter.ISO_TIME));
-                boolean retBool = false;
-                if(savePropsDelStatement(c, delPropsPoint)){
-                    InitProperties initPropertiesDB = new DBRegProperties(javaIDsString);
-                    retBool = initPropertiesDB.setProps(propsToSave);
-                    propsToSave.store(outputStream, classMeth);
-                }
-                return retBool;
-            }
-            catch(SQLException e){
-                messageToUser.errorAlert(ConstantsFor.class.getSimpleName(), methName, e.getMessage());
-                FileSystemWorker.error(classMeth, e);
-                return false;
-            }
-        };
+        MysqlDataSource mysqlDataSource = new DBRegProperties(javaIDsString).getRegSourceForProperties();
+        mysqlDataSource.setLogger("java.util.Logger");
+
+        Callable<Boolean> theProphecy = new SaveDBPropsCallable(mysqlDataSource, propsToSave, classMeth, methName);
+
         Future<Boolean> booleanFuture = AppComponents.threadConfig().getTaskExecutor().submit(theProphecy);
+
         try{
             return booleanFuture.get();
         }
         catch(InterruptedException | ExecutionException e){
             messageToUser.errorAlert(ConstantsFor.class.getSimpleName(), methName, e.getMessage());
             FileSystemWorker.error(classMeth, e);
-            return false;
+            Thread.currentThread().interrupt();
+            return booleanFuture.isDone();
         }
     }
 
     /**
-     Выполнение удаления {@link Properties} из БД
-     <p>
-
-     @param c             {@link Connection}
-     @param delPropsPoint {@link Savepoint}
-     @throws SQLException делает {@link Connection#rollback(java.sql.Savepoint)}
-     @see #saveAppProps(Properties)
+     Тащит {@link #PROPS} из БД или файла
      */
-    private static boolean savePropsDelStatement(Connection c, Savepoint delPropsPoint) throws SQLException {
-        final String sql = "delete FROM `ru_vachok_networker` where `javaid` =  'ConstantsFor'";
-        try(PreparedStatement preparedStatement = c.prepareStatement(sql)){
-            int update = preparedStatement.executeUpdate();
-            messageToUser.info("ConstantsFor.savePropsDelStatement", "update", " = " + update);
-            return true;
+    private static Properties takePr(boolean fromFile) {
+        InitProperties initProperties = new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
+        Properties retPr = null;
+        try {
+            retPr = initProperties.getProps();
+            if (fromFile || new File("ff").exists()) {
+                try (InputStream inputStream = new FileInputStream(ConstantsFor.class.getSimpleName() + ".properties")) {
+                    retPr.load(inputStream);
+                }
+            }
+        } catch (IOException e) {
+            FileSystemWorker.error("ConstantsFor.takePr", e);
         }
-        catch(SQLException e){
-            messageToUser.errorAlert("ConstantsFor", "savePropsDelStatement", e.getMessage());
-            c.rollback(delPropsPoint);
-            return false;
-        }
-    }
-
-    private static Properties getPFromFile() {
-        InitProperties initProperties = new FileProps(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
-        return initProperties.getProps();
+        return retPr;
     }
 
     /**
@@ -652,4 +605,5 @@ public enum ConstantsFor {
     public static String getUserPC(HttpServletRequest request) {
         return request.getRemoteAddr();
     }
+
 }

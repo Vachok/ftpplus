@@ -27,7 +27,10 @@ import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.*;
 import java.util.stream.Stream;
 
@@ -55,7 +58,7 @@ public class ServiceInfoCtrl {
 
     private float getLast() {
         return TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() -
-            Long.parseLong(AppComponents.getProps().getProperty("lasts", 1544816520000L + ""))) / 60f / 24f;
+            Long.parseLong(AppComponents.getOrSetProps().getProperty("lasts", 1544816520000L + ""))) / 60f / 24f;
     }
 
     private String getJREVers() {
@@ -238,7 +241,7 @@ public class ServiceInfoCtrl {
         }
     }
 
-    private String listFilesToReadStr() {
+    private static String listFilesToReadStr() {
         List<File> readUs = new ArrayList<>();
         for (File f : Objects.requireNonNull(new File(".").listFiles())) {
             if (f.getName().toLowerCase().contains(ConstantsFor.STRS_VISIT[0])) {
@@ -247,7 +250,6 @@ public class ServiceInfoCtrl {
         }
         ConcurrentMap<String, String> stringStringConcurrentMap = FileSystemWorker.readFiles(readUs);
         List<String> retListStr = new ArrayList<>();
-        //noinspection OverlyLongLambda
         stringStringConcurrentMap.forEach((String x, String y) -> {
             try {
                 retListStr.add(y.split("userId")[0]);

@@ -1,11 +1,12 @@
 package ru.vachok.networker.systray;
 
 
-import ru.vachok.messenger.MessageCons;
+import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ExitApp;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.net.NetListKeeper;
+import ru.vachok.networker.services.MessageLocal;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -22,19 +23,19 @@ class ActionExit extends AbstractAction {
 
     private String reason;
 
-    public ActionExit(String reason) {
+    private MessageToUser messageToUser = new MessageLocal();
+
+    ActionExit(String reason) {
         this.reason = reason;
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        new MessageCons().infoNoTitles(getClass().getSimpleName() + ".actionPerformed");
-
-        try {
-            FileOutputStream fileOutputStream = new FileOutputStream(NetListKeeper.class.getSimpleName() + ".ser");
+        messageToUser.infoNoTitles(getClass().getSimpleName() + ".actionPerformed");
+        try (FileOutputStream fileOutputStream = new FileOutputStream(NetListKeeper.class.getSimpleName() + ".ser")) {
             AppComponents.threadConfig().executeAsThread(new ExitApp(reason, fileOutputStream, NetListKeeper.class));
         } catch (IOException ex) {
-            new MessageCons().errorAlert("ActionExit", ConstantsFor.METHNAME_ACTIONPERFORMED, ex.getMessage());
+            messageToUser.errorAlert("ActionExit", ConstantsFor.METHNAME_ACTIONPERFORMED, ex.getMessage());
         }
     }
 }

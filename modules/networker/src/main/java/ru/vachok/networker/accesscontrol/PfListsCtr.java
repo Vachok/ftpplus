@@ -55,9 +55,9 @@ public class PfListsCtr {
     private static final String ATT_VIPNET = "vipnet";
 
     /**
-     {@link AppComponents#getProps()}
+     {@link AppComponents#getOrSetProps()}
      */
-    private final Properties properties = AppComponents.getProps();
+    private final Properties properties = AppComponents.getOrSetProps();
 
     /**
      {@link PfLists}
@@ -155,6 +155,7 @@ public class PfListsCtr {
 
         @NotNull String refreshRate = String.valueOf(TimeUnit.MILLISECONDS.toMinutes(delayRefInt) * ConstantsFor.ONE_HOUR_IN_MIN);
         response.addHeader(ConstantsFor.HEAD_REFRESH, refreshRate);
+        AppComponents.getOrSetProps(true);
         return ConstantsFor.PFLISTS;
     }
 
