@@ -116,6 +116,11 @@ public class ServiceInfoCtrl {
         Callable<Long> callWhenCome = new SpeedChecker();
         Future<Long> whenCome = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(callWhenCome);
         Date comeD = new Date(whenCome.get());
+        String execQueue = "EXEC Q: <br>" + new TForms().fromArray(AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().getQueue(),
+            true);
+        String schQueue =
+            "SCHED Q: <br>" + new TForms().fromArray(AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor().getQueue(), true);
+
         if (visitor.getSession().equals(request.getSession())) {
             visitor.setClickCounter(visitor.getClickCounter() + 1);
         }
@@ -139,7 +144,7 @@ public class ServiceInfoCtrl {
         model.addAttribute("request", prepareRequest(request));
         model.addAttribute(ConstantsFor.ATT_VISIT, visitor.toString());
         model.addAttribute("res", MyCalen.toStringS() + "<br><br>" + "<b><i>" + AppComponents.versionInfo().toString() + "</i></b><p>" +
-            new TForms().fromArray(AppComponents.getOrSetProps(), true) +
+            new TForms().fromArray(AppComponents.getOrSetProps(), true) + "<p>" + execQueue + "<br>" + schQueue +
             "<p><font color=\"grey\">" + listFilesToReadStr() + "</font>");
         model.addAttribute("back", request.getHeader(ConstantsFor.ATT_REFERER.toLowerCase()));
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<br>" + getJREVers());
