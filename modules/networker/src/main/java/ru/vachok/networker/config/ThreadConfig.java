@@ -60,10 +60,10 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
      */
     public ThreadPoolTaskExecutor getTaskExecutor() {
         boolean prestartCoreThread = TASK_EXECUTOR.getThreadPoolExecutor().prestartCoreThread();
-        TASK_EXECUTOR.getThreadPoolExecutor().setCorePoolSize(3);
-        TASK_EXECUTOR.setQueueCapacity(100);
+        TASK_EXECUTOR.getThreadPoolExecutor().setCorePoolSize(5);
+        TASK_EXECUTOR.setQueueCapacity(700);
         TASK_EXECUTOR.setWaitForTasksToCompleteOnShutdown(true);
-        TASK_EXECUTOR.setAwaitTerminationSeconds(7);
+        TASK_EXECUTOR.setAwaitTerminationSeconds(8);
         TASK_EXECUTOR.setThreadPriority(6);
         TASK_EXECUTOR.setThreadNamePrefix("TASK-");
 
@@ -81,9 +81,10 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
 
     public ThreadPoolTaskScheduler getTaskScheduler() {
         ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = TASK_SCHEDULER.getScheduledThreadPoolExecutor();
-        scheduledThreadPoolExecutor.setCorePoolSize(5);
+        scheduledThreadPoolExecutor.setCorePoolSize(4);
         TASK_SCHEDULER.setThreadNamePrefix("SCH-");
         TASK_SCHEDULER.setThreadPriority(2);
+        TASK_SCHEDULER.setWaitForTasksToCompleteOnShutdown(false);
         return TASK_SCHEDULER;
     }
 
