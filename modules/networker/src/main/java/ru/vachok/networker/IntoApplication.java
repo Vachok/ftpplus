@@ -28,6 +28,8 @@ import java.io.File;
 import java.time.LocalDate;
 import java.time.format.TextStyle;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 
 /**
@@ -46,17 +48,17 @@ public class IntoApplication {
      */
     private static final @NotNull SpringApplication SPRING_APPLICATION = new SpringApplication();
 
-    /**
-     {@link AppComponents#getOrSetProps(boolean)}
-     */
-    private static final Properties LOCAL_PROPS = AppComponents.getOrSetProps();
-
-    public static Runnable infoMsgRunnable = () -> {
+    public static final Runnable INFO_MSG_RUNNABLE = () -> {
         final ThreadPoolTaskExecutor taskExecutor = AppComponents.threadConfig().getTaskExecutor();
         final ThreadPoolTaskScheduler taskScheduler = AppComponents.threadConfig().getTaskScheduler();
         new MessageSwing(550, 270, 37, 26).infoTimer(( int ) ConstantsFor.DELAY, "\n\n\n" + taskExecutor.getThreadPoolExecutor().toString() +
             "\n\n" + taskScheduler.getScheduledThreadPoolExecutor().toString());
     };
+
+    /**
+     {@link AppComponents#getOrSetProps(boolean)}
+     */
+    private static final Properties LOCAL_PROPS = new Properties();
 
     /**
      {@link ConfigurableApplicationContext} = null.
@@ -71,7 +73,7 @@ public class IntoApplication {
     private static ThreadPoolTaskExecutor executor = AppComponents.threadConfig().getTaskExecutor();
 
     public static Runnable getInfoMsgRunnable() {
-        return infoMsgRunnable;
+        return INFO_MSG_RUNNABLE;
     }
 
     /**
@@ -100,6 +102,8 @@ public class IntoApplication {
      */
     public static void main(@Nullable String[] args) {
         FileSystemWorker.delFilePatterns(ConstantsFor.STRS_VISIT);
+        LOCAL_PROPS.putAll(AppComponents.getOrSetProps());
+        LOCAL_PROPS.setProperty("ff", "false");
         if(args!=null && args.length > 0){
             readArgs(args);
         }
@@ -124,7 +128,8 @@ public class IntoApplication {
         boolean isTray = true;
         ExitApp exitApp = new ExitApp(IntoApplication.class.getSimpleName());
         List<@NotNull String> argsList = Arrays.asList(args);
-        Map<String, String> argsMap = new HashMap<>(argsList.size());
+        ConcurrentMap<String, String> argsMap = new ConcurrentHashMap<>();
+
         for(int i = 0; i < argsList.size(); i++){
             String key = argsList.get(i);
             String value = "true";
@@ -146,26 +151,23 @@ public class IntoApplication {
                 }
             }
         }
-        Set<String> keysSet = argsMap.keySet();
-        Iterator<String> iterator1 = keysSet.iterator();
-        while(iterator1.hasNext()){
-            String key = "";
-            try{
-                key = iterator1.next();
+
+        for (Map.Entry<String, String> stringStringEntry : argsMap.entrySet()) {
+            if (stringStringEntry.getKey().contains(ConstantsFor.PR_TOTPC)) {
+                LOCAL_PROPS.setProperty(ConstantsFor.PR_TOTPC, stringStringEntry.getValue());
             }
-            catch(ConcurrentModificationException e){
-                // TODO: 24.02.2019
-            }
-            keysSet.remove(key);
-            if(key.contains(ConstantsFor.PR_TOTPC)){
-                LOCAL_PROPS.setProperty(ConstantsFor.PR_TOTPC, argsMap.get(key));
-            }
-            if(key.equalsIgnoreCase("off")){
+            if (stringStringEntry.getKey().equalsIgnoreCase("off")) {
                 AppComponents.threadConfig().executeAsThread(exitApp);
             }
-            if(key.contains("notray")){
-                messageToUser.info("IntoApplication.readArgs", "key", " = " + key);
+            if (stringStringEntry.getKey().contains("notray")) {
+                messageToUser.info("IntoApplication.readArgs", "key", " = " + stringStringEntry.getKey());
                 isTray = false;
+            }
+            if (stringStringEntry.getKey().contains("ff")) {
+                Map<Object, Object> objectMap = Collections.unmodifiableMap(ConstantsFor.takePr(true));
+                LOCAL_PROPS.clear();
+                LOCAL_PROPS.putAll(objectMap);
+                FileSystemWorker.copyOrDelFile(new File("ConstantsFor.properties"), ".\\ConstantsFor.bak", false);
             }
         }
         beforeSt(isTray);
@@ -229,8 +231,9 @@ public class IntoApplication {
         Runnable mySrv = MyServer.getI();
         executor.submit(infoAndSched);
         executor.submit(mySrv);
-        AppComponents.threadConfig().executeAsThread(infoMsgRunnable);
+        AppComponents.threadConfig().executeAsThread(INFO_MSG_RUNNABLE);
         AppComponents.threadConfig().executeAsThread(AppInfoOnLoad::getWeekPCStats);
+        AppComponents.getOrSetProps(LOCAL_PROPS);
     }
 
     /**

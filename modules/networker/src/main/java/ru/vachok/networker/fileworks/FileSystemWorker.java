@@ -262,7 +262,6 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     }
 
     private static synchronized boolean printTo(OutputStream outputStream, Exception e) {
-        Thread.currentThread().setName("FileSystemWorker.printTo");
         PrintStream printStream = new PrintStream(outputStream, true);
         printStream.println(new Date(new TimeChecker().call().getReturnTime()));
         printStream.println();

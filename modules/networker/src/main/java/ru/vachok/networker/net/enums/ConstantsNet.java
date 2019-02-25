@@ -69,18 +69,6 @@ public enum ConstantsNet {;
      */
     public static final String PROP_PINGSLEEP = "pingsleep";
 
-    /**
-     new {@link HashSet}
-
-     @see ru.vachok.networker.net.NetScannerSvc#getPCNamesPref(String)
-     @see ru.vachok.networker.net.NetScanCtr#scanIt(HttpServletRequest, Model, Date)
-     */
-    private static Set<String> pcNames = new HashSet<>(Integer.parseInt(LOC_PROPS.getOrDefault(ConstantsFor.PR_TOTPC, "318").toString()));
-
-    public static void setPcNames(Set<String> pcNames) {
-        ConstantsNet.pcNames = pcNames;
-    }
-
     public static final int PPPC = 70;
 
     /**
@@ -133,18 +121,29 @@ public enum ConstantsNet {;
 
     private static final Properties LOC_PROPS = AppComponents.getOrSetProps();
 
+    /**
+     new {@link HashSet}
+
+     @see ru.vachok.networker.net.NetScannerSvc#getPCNamesPref(String)
+     @see ru.vachok.networker.net.NetScanCtr#scanIt(HttpServletRequest, Model, Date)
+     */
+    private static Set<String> pcNames = new HashSet<>(Integer.parseInt(LOC_PROPS.getOrDefault(ConstantsFor.PR_TOTPC, "318").toString()));
+
     public static Set<String> getPcNames() {
         return pcNames;
     }
 
+    public static void setPcNames(Set<String> pcNames) {
+        ConstantsNet.pcNames = pcNames;
+    }
+
     public static String getProvider() {
         Future<String> submit = AppComponents.threadConfig().getTaskExecutor().submit(new TraceRoute());
-        try{
+        try {
             String s = submit.get();
             FileSystemWorker.recFile("trace", s);
             return s;
-        }
-        catch(InterruptedException | ExecutionException e){
+        } catch (InterruptedException | ExecutionException e) {
             new MessageCons().errorAlert("ConstantsNet", "getProvider", TForms.from(e));
             Thread.currentThread().interrupt();
             return e.getMessage();

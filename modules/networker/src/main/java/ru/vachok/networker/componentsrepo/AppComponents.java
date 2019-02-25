@@ -187,8 +187,6 @@ public class AppComponents {
     }
 
     public static boolean getOrSetProps(Properties localProps) {
-        Properties savePr = ConstantsFor.getAppProps();
-        savePr.putAll(localProps);
         return ConstantsFor.saveAppProps(localProps);
     }
 

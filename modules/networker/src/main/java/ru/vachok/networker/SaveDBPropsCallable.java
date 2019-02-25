@@ -90,6 +90,7 @@ class SaveDBPropsCallable implements Callable<Boolean> {
                     preparedStatement.close();
                 } else {
                     c.rollback();
+                    preparedStatement.close();
                 }
                 propsToSave.store(outputStream, classMeth);
             }

@@ -60,14 +60,18 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
      */
     public ThreadPoolTaskExecutor getTaskExecutor() {
         boolean prestartCoreThread = TASK_EXECUTOR.getThreadPoolExecutor().prestartCoreThread();
-        TASK_EXECUTOR.getThreadPoolExecutor().setCorePoolSize(7);
-        TASK_EXECUTOR.setQueueCapacity(500);
+        TASK_EXECUTOR.getThreadPoolExecutor().setCorePoolSize(3);
+        TASK_EXECUTOR.setQueueCapacity(100);
         TASK_EXECUTOR.setWaitForTasksToCompleteOnShutdown(true);
         TASK_EXECUTOR.setAwaitTerminationSeconds(7);
         TASK_EXECUTOR.setThreadPriority(6);
-        TASK_EXECUTOR.setThreadNamePrefix("TASK-" + (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN);
+        TASK_EXECUTOR.setThreadNamePrefix("TASK-");
+
         BlockingQueue<Runnable> poolExecutor = TASK_EXECUTOR.getThreadPoolExecutor().getQueue();
-        messageToUser.info("ThreadConfig.getTaskExecutor", "prestartCoreThread", " = " + prestartCoreThread + new TForms().fromArray(poolExecutor, false));
+        messageToUser.info(
+            "ThreadConfig.getTaskExecutor",
+            "prestartCoreThread",
+            " = " + prestartCoreThread + new TForms().fromArray(poolExecutor, false));
         return TASK_EXECUTOR;
     }
 
@@ -149,9 +153,9 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
         sb.append(", THREAD_CONFIG_INST=").append(THREAD_CONFIG_INST.hashCode());
         sb.append(", upTimer=").append(upTimer.get());
         sb.append("\n");
-        sb.append(", TASK_SCHEDULER=").append(TASK_SCHEDULER.getScheduledThreadPoolExecutor().toString());
-        sb.append(", TASK_EXECUTOR=").append(TASK_EXECUTOR.getThreadPoolExecutor().toString());
-        sb.append('}');
+        sb.append(", <br><font color=\"#fcf594\">TASK_SCHEDULER=").append(TASK_SCHEDULER.getScheduledThreadPoolExecutor().toString());
+        sb.append(", <br>TASK_EXECUTOR=").append(TASK_EXECUTOR.getThreadPoolExecutor().toString());
+        sb.append("</font>}");
         return sb.toString();
     }
 
