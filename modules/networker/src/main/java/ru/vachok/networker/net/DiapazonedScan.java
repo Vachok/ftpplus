@@ -179,7 +179,7 @@ public class DiapazonedScan implements Runnable {
             t = 500;
         }
         if (byAddress.isReachable(t)) {
-            ConditionChecker.thrNameSet("Dia");
+            AppComponents.threadConfig().thrNameSet("Dia");
             String hostName = byAddress.getHostName();
             String hostAddress = byAddress.getHostAddress();
             printWriter.println(hostName + " " + hostAddress);

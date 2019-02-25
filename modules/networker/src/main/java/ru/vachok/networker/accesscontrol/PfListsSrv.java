@@ -37,7 +37,7 @@ public class PfListsSrv {
      @see PfListsCtr#runCommand(org.springframework.ui.Model, ru.vachok.networker.accesscontrol.PfListsSrv)
      @see #runCom()
      */
-    private @NotNull String commandForNatStr = "uname -a;exit";
+    private @NotNull String commandForNatStr = "traceroute 8.8.8.8;exit";
 
     /**
      new {@link SSHFactory.Builder}.
@@ -46,22 +46,6 @@ public class PfListsSrv {
     private @NotNull SSHFactory.Builder builderInst = new SSHFactory.Builder(ConstantsFor.SRV_NAT, commandForNatStr);
 
     private @NotNull MessageToUser messageToUser = new MessageLocal();
-
-    /**
-     {@link #commandForNatStr}
-     */
-    @SuppressWarnings("WeakerAccess")
-    public @NotNull String getCommandForNatStr() {
-        return commandForNatStr;
-    }
-
-    /**
-     @param commandForNatStr {@link #commandForNatStr}
-     */
-    @SuppressWarnings("unused")
-    public void setCommandForNatStr(@NotNull String commandForNatStr) {
-        this.commandForNatStr = commandForNatStr;
-    }
 
     /**
      {@code this.builderInst}
@@ -73,12 +57,6 @@ public class PfListsSrv {
     @Autowired
     public PfListsSrv(@NotNull PfLists pfLists) {
         this.pfListsInstAW = pfLists;
-        makeListRunner();
-    }
-
-    String runCom() {
-        SSHFactory.Builder builder = new SSHFactory.Builder(ConstantsFor.SRV_NAT, commandForNatStr);
-        return builder.build().call();
     }
 
     /**
@@ -89,15 +67,34 @@ public class PfListsSrv {
      Else {@link MessageLocal#warn(java.lang.String)} {@link String} = {@link ConstantsFor#thisPC()}
      */
     void makeListRunner() {
-        if (ConstantsFor.thisPC().toLowerCase().contains("rups")) {
-            AppComponents.threadConfig().executeAsThread(this::buildCommands);
-        } else {
-            try {
+        if(ConstantsFor.thisPC().toLowerCase().contains("rups")){
+            AppComponents.threadConfig().submit(this::buildCommands);
+        }
+        else{
+            try{
                 messageToUser = new MessageToTray();
-            } catch (ExceptionInInitializerError ignore) {
+            }
+            catch(ExceptionInInitializerError ignore){
                 messageToUser = new MessageLocal();
             }
             messageToUser.warn(this.getClass().getSimpleName(), "NOT RUNNING ON RUPS!", ConstantsFor.thisPC() + " buildCommands " + false);
+        }
+    }
+
+    /**
+     Строитель команд.
+     <p>
+     {@link PfListsSrv#buildFactory()} <br>
+     <b>{@link Exception}:</b><br>
+     {@link FileSystemWorker#recFile(java.lang.String, java.util.List)} - {@code this.getClass().getSimpleName() + ".makeListRunner", stringArrayList}
+     */
+    private void buildCommands() {
+        try{
+            buildFactory();
+        }
+        catch(UnexpectedException e){
+            messageToUser.errorAlert("PfListsSrv", "buildCommands", e.getMessage());
+            FileSystemWorker.error("PfListsSrv.buildCommands", e);
         }
     }
 
@@ -123,8 +120,7 @@ public class PfListsSrv {
     private void buildFactory() throws UnexpectedException {
         SSHFactory build = builderInst.build();
         SSHFactory buildGit = new SSHFactory.Builder(ConstantsFor.SRV_GIT, "sudo /etc/stat.script").build();
-
-        if (!ConstantsFor.isPingOK()) {
+        if(!ConstantsFor.isPingOK()){
             throw new UnexpectedException("No ping to " + ConstantsFor.SRV_GIT + " cancelling execution");
         }
         pfListsInstAW.setuName(build.call());
@@ -153,19 +149,61 @@ public class PfListsSrv {
         pfListsInstAW.setGitStatsUpdatedStampLong(System.currentTimeMillis());
     }
 
-    /**
-     Строитель команд.
-     <p>
-     {@link PfListsSrv#buildFactory()} <br>
-     <b>{@link Exception}:</b><br>
-     {@link FileSystemWorker#recFile(java.lang.String, java.util.List)} - {@code this.getClass().getSimpleName() + ".makeListRunner", stringArrayList}
-     */
-    private void buildCommands() {
-        try {
-            buildFactory();
-        } catch (UnexpectedException e) {
-            FileSystemWorker.error("PfListsSrv.buildCommands", e);
+    String runCom() {
+        SSHFactory.Builder builder = new SSHFactory.Builder(ConstantsFor.SRV_NAT, commandForNatStr);
+        return builder.build().call();
+    }
+
+    @Override
+    public int hashCode() {
+        int result = getPfListsInstAW()!=null? getPfListsInstAW().hashCode(): 0;
+        result = 31 * result + getCommandForNatStr().hashCode();
+        result = 31 * result + builderInst.hashCode();
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if(this==o){
+            return true;
         }
+        if(o==null || getClass()!=o.getClass()){
+            return false;
+        }
+
+        PfListsSrv that = ( PfListsSrv ) o;
+
+        if(getPfListsInstAW()!=null? !getPfListsInstAW().equals(that.getPfListsInstAW()): that.getPfListsInstAW()!=null){
+            return false;
+        }
+        if(!getCommandForNatStr().equals(that.getCommandForNatStr())){
+            return false;
+        }
+        if(!builderInst.equals(that.builderInst)){
+            return false;
+        }
+
+        return true;
+    }
+
+    public PfLists getPfListsInstAW() {
+        return pfListsInstAW;
+    }
+
+    /**
+     {@link #commandForNatStr}
+     */
+    @SuppressWarnings ("WeakerAccess")
+    public @NotNull String getCommandForNatStr() {
+        return commandForNatStr;
+    }
+
+    /**
+     @param commandForNatStr {@link #commandForNatStr}
+     */
+    @SuppressWarnings ("unused")
+    public void setCommandForNatStr(@NotNull String commandForNatStr) {
+        this.commandForNatStr = commandForNatStr;
     }
 
     @Override

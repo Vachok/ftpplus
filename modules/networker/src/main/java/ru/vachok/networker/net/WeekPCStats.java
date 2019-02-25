@@ -1,8 +1,6 @@
 package ru.vachok.networker.net;
 
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
@@ -25,14 +23,11 @@ import java.util.List;
 public class WeekPCStats implements Runnable {
 
     /**
-     {@link AppComponents#getLogger()}
-     */
-    private static final Logger LOGGER = LoggerFactory.getLogger(WeekPCStats.class.getSimpleName());
-
-    /**
      Лист только с именами ПК
      */
     private static final List<String> PC_NAMES_IN_TABLE = new ArrayList<>();
+
+    private static MessageToUser messageToUser = new MessageToTray();
 
     /**
      {@link #getFromDB()}
@@ -45,7 +40,7 @@ public class WeekPCStats implements Runnable {
         String tSpend = ConstantsFor.STR_SEC_SPEND;
         String msgTimeSp = MessageFormat
             .format("WeekPCStats.run method. {0}{1}", ( float ) (System.currentTimeMillis() - stArt) / 1000, tSpend);
-        LOGGER.info(msgTimeSp);
+        messageToUser.info(msgTimeSp);
     }
 
     /**
@@ -56,7 +51,6 @@ public class WeekPCStats implements Runnable {
      Usages: {@link #run()}
      */
     private void getFromDB() {
-        MessageToUser messageToUser = new MessageToTray();
         final long stArt = System.currentTimeMillis();
         String sql = "select * from pcuserauto";
         File file = new File(ConstantsNet.VELKOM_PCUSERAUTO_TXT);
@@ -83,7 +77,7 @@ public class WeekPCStats implements Runnable {
                 .append(file.getAbsolutePath())
                 .append(" ")
                 .append(( float ) file.length() / ConstantsFor.KBYTE).toString();
-            LOGGER.warn(msgTimeSp);
+            messageToUser.warn(msgTimeSp);
         }
         catch(SQLException | IOException e){
             messageToUser.infoNoTitles(e.getMessage());

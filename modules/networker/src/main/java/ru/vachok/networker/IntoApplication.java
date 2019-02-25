@@ -169,6 +169,9 @@ public class IntoApplication {
                 LOCAL_PROPS.putAll(objectMap);
                 FileSystemWorker.copyOrDelFile(new File("ConstantsFor.properties"), ".\\ConstantsFor.bak", false);
             }
+            if(stringStringEntry.getKey().contains("lport")){
+                LOCAL_PROPS.setProperty("lport", stringStringEntry.getValue());
+            }
         }
         beforeSt(isTray);
         configurableApplicationContext.start();

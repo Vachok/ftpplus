@@ -69,6 +69,11 @@ public class MessageLocal implements MessageToUser {
     }
 
     @Override
+    public void info(String s) {
+        infoNoTitles(bodyMsg);
+    }
+
+    @Override
     public void infoTimer(int i, String s) {
         throw new UnsupportedOperationException(headerMsg);
     }

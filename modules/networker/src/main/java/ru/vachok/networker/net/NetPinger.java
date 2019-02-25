@@ -9,14 +9,12 @@ import ru.vachok.messenger.email.ESender;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.*;
@@ -310,7 +308,7 @@ public class NetPinger implements Runnable, Pinger {
      Старт.
      <p>
      Если {@link #multipartFile} не null, 1. {@link #parseFile()}. <br> 2. {@link #getTimeToScanStr()}. Парсинг строки в {@link Long}. <br> 3. Пока {@link System#currentTimeMillis()} меньше
-     чем время старта ({@code final long startSt}), запускать {@link #pingSW()}. Устанавливаем {@link ConditionChecker#thrNameSet(String)} -
+     чем время старта ({@code final long startSt}), запускать {@link #pingSW()}. Устанавливаем {@link ThreadConfig#thrNameSet(String)} -
      {@link ConstantsFor#getUpTime()}.<br> 4. {@link
     TForms#fromArray(java.util.List, boolean)}. Устанавливаем {@link #pingResultStr}, после сканирования. <br> 5. {@link #parseResult(long)}. Парсим результат пингера.
      <p>
@@ -327,7 +325,7 @@ public class NetPinger implements Runnable, Pinger {
         long totalMillis = startSt + userIn;
         while (System.currentTimeMillis() < totalMillis) {
             pingSW();
-            ConditionChecker.thrNameSet("NPing");
+            AppComponents.threadConfig().thrNameSet("NPing");
             this.timeToEndStr = getClass().getSimpleName() + " left " + (float) TimeUnit.MILLISECONDS
                 .toSeconds(totalMillis - System.currentTimeMillis()) / ConstantsFor.ONE_HOUR_IN_MIN;
             messageToUser.infoNoTitles(timeToEndStr);

@@ -4,6 +4,7 @@ package ru.vachok.networker.net;
 import ru.vachok.messenger.MessageFile;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.OtherKnownDevices;
 import ru.vachok.networker.net.enums.SwitchesWiFi;
@@ -103,7 +104,7 @@ public class NetMonitorPTV implements Runnable {
         boolean isPingTvCopied = FileSystemWorker.copyOrDelFile(pingTv, ".\\lan\\tv_" + System.currentTimeMillis() / 1000 + ".ping", true);
         String classMeth = "NetMonitorPTV.ifPingTVIsBig";
         if (isPingTvCopied) {
-            ConditionChecker.thrNameSet(getClass().getSimpleName());
+            AppComponents.threadConfig().thrNameSet(getClass().getSimpleName());
             this.outputStream = new FileOutputStream(FILENAME_PINGTV);
             this.printWriter = new PrintWriter(outputStream, true);
         } else {

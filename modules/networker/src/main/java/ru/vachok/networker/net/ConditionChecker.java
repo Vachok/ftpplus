@@ -13,10 +13,7 @@ import ru.vachok.networker.services.MessageLocal;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -61,7 +58,7 @@ class ConditionChecker {
      @see MoreInfoGetter#getSomeMore(String, boolean)
      */
     static String onLinesCheck(String sql, String pcName) {
-        thrNameSet("onChk");
+        AppComponents.threadConfig().thrNameSet("onChk");
         PCUserResolver pcUserResolver = PCUserResolver.getPcUserResolver();
         List<Integer> onLine = new ArrayList<>();
         List<Integer> offLine = new ArrayList<>();
@@ -102,18 +99,6 @@ class ConditionChecker {
             .append(" online times.").toString();
     }
 
-    static void thrNameSet(String className) {
-        float localUptimer = (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN;
-        String upStr = String.format("%.01f", localUptimer);
-        upStr = upStr + "m";
-        if(localUptimer > ConstantsFor.ONE_HOUR_IN_MIN){
-            localUptimer /= ConstantsFor.ONE_HOUR_IN_MIN;
-            upStr = String.format("%.02f", localUptimer);
-            upStr = upStr + "h";
-        }
-        Thread.currentThread().setName(className + ";" + upStr + ";" + Thread.currentThread().getPriority());
-    }
-
     /**
      <b>Проверяет есть ли в БД имя пользователя</b>
 
@@ -123,7 +108,7 @@ class ConditionChecker {
      */
     @SuppressWarnings ("MethodWithMultipleLoops")
     static String offLinesCheckUser(String sql, String pcName) {
-        thrNameSet("offChk");
+        AppComponents.threadConfig().thrNameSet("offChk");
 
         StringBuilder stringBuilder = new StringBuilder();
         try(

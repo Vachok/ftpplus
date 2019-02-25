@@ -1,7 +1,6 @@
 package ru.vachok.networker.systray;
 
 
-import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.services.MessageLocal;
@@ -38,9 +37,15 @@ public class MessageToTray implements MessageToUser {
         if (!ConstantsFor.IS_SYSTRAY_AVAIL) {
             throw new IllegalStateException("***System Tray not Available!***");
         }
-        else{
+    }
+
+    public MessageToTray(ActionListener aListener) throws HeadlessException, IllegalStateException {
+        if(ConstantsFor.IS_SYSTRAY_AVAIL){
             delActions();
-            this.aListener = new ActionDefault();
+            this.aListener = aListener;
+        }
+        else{
+            throw new IllegalStateException("***System Tray not Available!***");
         }
     }
 
@@ -53,17 +58,7 @@ public class MessageToTray implements MessageToUser {
             }
         }
         else{
-            new MessageCons().info(getClass().getSimpleName(), "delActions", "actionListeners.length is 0");
-        }
-    }
-
-    public MessageToTray(ActionListener aListener) throws HeadlessException, IllegalStateException {
-        if (ConstantsFor.IS_SYSTRAY_AVAIL) {
-            delActions();
-            this.aListener = aListener;
-        }
-        else{
-            throw new IllegalStateException();
+            messageToUser.info(getClass().getSimpleName(), "delActions", "actionListeners.length is 0");
         }
     }
 
@@ -82,7 +77,7 @@ public class MessageToTray implements MessageToUser {
             trayIcon.displayMessage(headerMsg, titleMsg + " " + bodyMsg, TrayIcon.MessageType.ERROR);
         }
         else{
-            new MessageCons().errorAlert(headerMsg, titleMsg, bodyMsg);
+            messageToUser.errorAlert(headerMsg, titleMsg, bodyMsg);
         }
     }
 
@@ -96,7 +91,7 @@ public class MessageToTray implements MessageToUser {
             trayIcon.displayMessage(headerMsg, titleMsg + " " + bodyMsg, TrayIcon.MessageType.INFO);
         }
         else{
-            new MessageCons().info(headerMsg, titleMsg, bodyMsg);
+            messageToUser.info(headerMsg, titleMsg, bodyMsg);
         }
     }
 
@@ -108,8 +103,13 @@ public class MessageToTray implements MessageToUser {
             trayIcon.addActionListener(aListener);
         }
         else{
-            new MessageCons().info(headerMsg, titleMsg, bodyMsg);
+            messageToUser.info(headerMsg, titleMsg, bodyMsg);
         }
+    }
+
+    @Override
+    public void info(String s) {
+        infoNoTitles(s);
     }
 
     @Override
@@ -127,7 +127,7 @@ public class MessageToTray implements MessageToUser {
             trayIcon.displayMessage(headerMsg, titleMsg + " " + bodyMsg, TrayIcon.MessageType.WARNING);
         }
         else{
-            new MessageLocal().errorAlert(headerMsg, titleMsg, bodyMsg);
+            messageToUser.errorAlert(headerMsg, titleMsg, bodyMsg);
         }
     }
 

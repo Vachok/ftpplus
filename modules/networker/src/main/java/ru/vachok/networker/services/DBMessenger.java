@@ -53,6 +53,11 @@ public class DBMessenger implements MessageToUser {
         dbSend(SOURCE_CLASS, "INFO", s);
     }
 
+    @Override
+    public void info(String s) {
+        infoNoTitles(s);
+    }
+
 
     @Override
     public void infoTimer( int i , String s ) {

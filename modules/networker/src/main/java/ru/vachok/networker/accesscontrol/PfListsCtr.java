@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.PageFooter;
@@ -101,7 +100,7 @@ public class PfListsCtr {
         this.pfListsInstAW = pfLists;
         this.pfListsSrvInstAW = pfListsSrv;
         this.pingGITOk = ConstantsFor.isPingOK();
-        Thread.currentThread().setName("PfListsCtr_" + System.currentTimeMillis());
+        AppComponents.threadConfig();
     }
 
     /**
@@ -128,15 +127,12 @@ public class PfListsCtr {
     public String pfBean(@NotNull Model model, @NotNull HttpServletRequest request, @NotNull HttpServletResponse response) throws UnknownHostException {
         ConstantsFor.getVis(request);
         long lastScan = Long.parseLong(properties.getProperty(ConstantsFor.PR_PFSCAN, "1"));
-
         timeOutLong = lastScan + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY);
-
         if (!pingGITOk) {
             noPing(model);
         } else {
             modSet(model);
         }
-
         if (request.getQueryString() != null) {
             AppComponents.threadConfig().executeAsThread(pfListsSrvInstAW::makeListRunner);
             return "redirect:/pflists";
@@ -206,7 +202,12 @@ public class PfListsCtr {
      */
     private void modSet(Model model) {
         @NotNull String metricValue = new Date(pfListsInstAW.getTimeStampToNextUpdLong()) + " will be update";
-        @NotNull String gitstatValue = Thread.activeCount() + " thr, active\nChange: " + (Thread.activeCount() - Long.parseLong(properties.getProperty("thr", "1")));
+        @NotNull String gitstatValue =
+            Thread.activeCount() +
+                " thr, active\nChange: " +
+                (Thread.activeCount() - Long.parseLong(properties.getProperty("thr", "1"))) + "\n" +
+                ConstantsFor.getMemoryInfo() + "\n" +
+                AppComponents.threadConfig().toString();
 
         model.addAttribute("PfListsSrv", pfListsSrvInstAW);
         model.addAttribute(ATT_METRIC, metricValue);
@@ -218,7 +219,6 @@ public class PfListsCtr {
         model.addAttribute("rules", pfListsInstAW.getPfRules());
         model.addAttribute(ConstantsFor.ATT_GITSTATS, gitstatValue + "\n" + ConstantsFor.getMemoryInfo() + "\n");
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
-        AppComponents.threadConfig().executeAsThread(IntoApplication.getInfoMsgRunnable());
     }
 
     @Override
