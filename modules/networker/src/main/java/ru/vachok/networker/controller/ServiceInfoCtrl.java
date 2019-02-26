@@ -27,7 +27,10 @@ import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.*;
 import java.util.stream.Stream;
 
@@ -249,6 +252,7 @@ public class ServiceInfoCtrl {
         for (File f : Objects.requireNonNull(new File(".").listFiles())) {
             if (f.getName().toLowerCase().contains(ConstantsFor.STRS_VISIT[0])) {
                 readUs.add(f);
+                f.deleteOnExit();
             }
         }
         ConcurrentMap<String, String> stringStringConcurrentMap = FileSystemWorker.readFiles(readUs);

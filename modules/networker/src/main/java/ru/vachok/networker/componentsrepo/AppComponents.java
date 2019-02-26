@@ -151,6 +151,7 @@ public class AppComponents {
      @return {@link LastNetScan#getLastNetScan()}
      */
     @Bean
+    @Scope(ConstantsFor.SINGLETON)
     public static LastNetScan lastNetScan() {
         return LastNetScan.getLastNetScan();
     }

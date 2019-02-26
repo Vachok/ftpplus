@@ -41,7 +41,7 @@ public enum ConstantsNet {;
 
     public static final String RECONNECT_TO_DB = "reconnectToDB";
 
-    public static final String STR_LASTNETSCAN = "lastnetscan";
+    public static final String BEANNAME_LASTNETSCAN = "lastnetscan";
 
     public static final String ONLINEPC = "onlinepc";
 
@@ -117,9 +117,14 @@ public enum ConstantsNet {;
     /**
      <i>Boiler Plate</i>
      */
-    public static final String STR_NETSCANNERSVC = "netScannerSvc";
+    public static final String BEANNAME_NETSCANNERSVC = "netScannerSvc";
 
     private static final Properties LOC_PROPS = AppComponents.getOrSetProps();
+
+    /**
+     Файл уникальных записей из БД velkom-pcuserauto
+     */
+    public static final String FILENAME_PCAUTODISTXT = "pcautodis.txt";
 
     /**
      new {@link HashSet}

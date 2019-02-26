@@ -1,15 +1,11 @@
 package ru.vachok.networker.systray;
 
 
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import ru.vachok.networker.ExitApp;
-import ru.vachok.networker.IntoApplication;
-import ru.vachok.networker.componentsrepo.AppComponents;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.util.Arrays;
-import java.util.concurrent.Executors;
 
 /**
  Action on Reload Context button
@@ -23,12 +19,8 @@ class ActionReloadCTX extends AbstractAction {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        IntoApplication.getConfigurableApplicationContext().close();
-        ThreadPoolTaskExecutor executor = AppComponents.threadConfig().getTaskExecutor();
-        executor.getThreadPoolExecutor().shutdown();
         ExitApp exitApp = new ExitApp(getClass().getSimpleName());
         exitApp.reloadCTX();
-        Executors.unconfigurableExecutorService(Executors.newSingleThreadScheduledExecutor()).execute(() -> IntoApplication.main(ARGS));
     }
 
     @Override

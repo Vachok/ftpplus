@@ -68,7 +68,7 @@ public class PfListsSrv {
      */
     void makeListRunner() {
         if(ConstantsFor.thisPC().toLowerCase().contains("rups")){
-            AppComponents.threadConfig().submit(this::buildCommands);
+            AppComponents.threadConfig().getTaskExecutor().submit(this::buildCommands);
         }
         else{
             try{
@@ -179,11 +179,7 @@ public class PfListsSrv {
         if(!getCommandForNatStr().equals(that.getCommandForNatStr())){
             return false;
         }
-        if(!builderInst.equals(that.builderInst)){
-            return false;
-        }
-
-        return true;
+        return builderInst.equals(that.builderInst);
     }
 
     public PfLists getPfListsInstAW() {

@@ -90,8 +90,13 @@ public class ExitApp implements Runnable {
 
     public void reloadCTX() {
         ThreadConfig threadConfig = AppComponents.threadConfig();
-        getConfigurableApplicationContext().close();
-        threadConfig.killAll();
+        threadConfig.getTaskScheduler().getScheduledThreadPoolExecutor().shutdown();
+        threadConfig.getTaskExecutor().getThreadPoolExecutor().shutdown();
+        List<Runnable> runnableList = threadConfig.getTaskScheduler().getScheduledThreadPoolExecutor().shutdownNow();
+        runnableList.clear();
+        runnableList = threadConfig.getTaskExecutor().getThreadPoolExecutor().shutdownNow();
+        runnableList.clear();
+        getConfigurableApplicationContext().refresh();
     }
 
     /**

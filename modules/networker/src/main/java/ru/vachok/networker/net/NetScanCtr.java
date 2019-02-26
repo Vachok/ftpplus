@@ -206,9 +206,9 @@ public class NetScanCtr {
         ConstantsFor.getVis(request);
         model.addAttribute("serviceinfo", (float) TimeUnit.MILLISECONDS.toSeconds(lastSt - System.currentTimeMillis()) / ConstantsFor.ONE_HOUR_IN_MIN);
         NETSCANNERSVC_INST.setThePc("");
-        model.addAttribute("pc", FileSystemWorker.readFile(ConstantsNet.STR_LASTNETSCAN));
+        model.addAttribute("pc", FileSystemWorker.readFile(ConstantsNet.BEANNAME_LASTNETSCAN));
         model.addAttribute(ConstantsFor.ATT_TITLE, new Date(lastSt));
-        model.addAttribute(ConstantsNet.STR_NETSCANNERSVC, NETSCANNERSVC_INST).addAttribute(ATT_THEPC, NETSCANNERSVC_INST.getThePc());
+        model.addAttribute(ConstantsNet.BEANNAME_NETSCANNERSVC, NETSCANNERSVC_INST).addAttribute(ATT_THEPC, NETSCANNERSVC_INST.getThePc());
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<br>First Scan: 2018-05-05");
         response.addHeader(ConstantsFor.HEAD_REFRESH, "30");
         checkMapSizeAndDoAction(model, request, lastSt);
@@ -220,7 +220,7 @@ public class NetScanCtr {
      <p>
      1. {@link TForms#fromArray(java.util.Map, boolean)} добавим в {@link Model} содержимое {@link #lastScanMAP} <br> 2.
      {@link NetScannerSvc#getOnLinePCs()} - в заголовке страницы, при обновлении,
-     отображение остатка ПК. <br> 3. {@link TForms#fromArray(java.util.Map, boolean)} запишем файл {@link ConstantsNet#STR_LASTNETSCAN}, 4.
+     отображение остатка ПК. <br> 3. {@link TForms#fromArray(java.util.Map, boolean)} запишем файл {@link ConstantsNet#BEANNAME_LASTNETSCAN}, 4.
      {@link FileSystemWorker#recFile(java.lang.String,
          java.lang.String)} <br> 5. {@link #timeCheck(int, long, HttpServletRequest, Model)} переходим в проверке времени.
      <p>
@@ -251,7 +251,7 @@ public class NetScanCtr {
                 .append(pcWas).append(" at ")
                 .append(LocalDateTime.ofEpochSecond(lastSt / 1000, 0, ZoneOffset.ofHours(3)).toLocalTime().toString()).toString());
         if (newPSs) {
-            FileSystemWorker.recFile(ConstantsNet.STR_LASTNETSCAN, new TForms().fromArray(lastScanMAP, false));
+            FileSystemWorker.recFile(ConstantsNet.BEANNAME_LASTNETSCAN, new TForms().fromArray(lastScanMAP, false));
             model.addAttribute("newpc", "Добавлены компы! " + Math.abs(remainPC) + " шт.");
             PROPERTIES.setProperty(ConstantsFor.PR_TOTPC, lastScanMAP.size() + "");
         } else {

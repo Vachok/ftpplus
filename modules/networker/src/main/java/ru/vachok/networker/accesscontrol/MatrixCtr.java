@@ -60,6 +60,8 @@ public class MatrixCtr {
      */
     private static final String ATT_DINNER = "dinner";
 
+    private String currentProvider = "Unknown yet";
+
     /**
      {@link MatrixSRV}
      */
@@ -89,7 +91,7 @@ public class MatrixCtr {
     @Autowired
     public MatrixCtr(VersionInfo versionInfo) {
         this.versionInfoInst = versionInfo;
-        Thread.currentThread().setName("MatrixCtr.MatrixCtr");
+        AppComponents.threadConfig().getTaskScheduler().scheduleAtFixedRate(this::getProv, TimeUnit.MINUTES.toMillis(2));
     }
 
     /**
@@ -114,27 +116,28 @@ public class MatrixCtr {
      */
     @GetMapping("/")
     public String getFirst(final HttpServletRequest request, Model model, HttpServletResponse response) {
-        String gettRoute = getProv();
         this.visitorInst = ConstantsFor.getVis(request);
         qIsNull(model, request);
-        model.addAttribute("devscan", "Since " + new Date(ConstantsFor.START_STAMP) + MoreInfoGetter.getTVNetInfo() + gettRoute);
+        model.addAttribute("devscan", "Since " + new Date(ConstantsFor.START_STAMP) + MoreInfoGetter.getTVNetInfo() + "<br>" + currentProvider);
         response.addHeader(ConstantsFor.HEAD_REFRESH, "120");
         return "starting";
     }
 
-    private String getProv() {
-        SshActs sshActs = new AppComponents().sshActs();
-        sshActs.providerTraceStr();
-        String gettRoute = "<p>" + sshActs.gettRoute();
-        if(gettRoute.contains("91.210.85.173")){
-            gettRoute = "<h3>FORTEX</h3>";
-        }
-        else{
-            if(gettRoute.contains("176.62.185.129")){
-                gettRoute = "<h3>ISTRANET</h3>";
-            }
-        }
-        return gettRoute;
+    /**
+     Перевод времени из long в {@link Date} и обратно.
+     <p>
+     1. {@link SimpleCalculator#getStampFromDate(java.lang.String)} метод перевода.
+     <p>
+
+     @param simpleCalculator {@link SimpleCalculator}
+     @param model            {@link Model}
+     @param workPos          {@link MatrixSRV#getWorkPos()}
+     @return redirect:/calculate
+     */
+    private static String timeStamp(@ModelAttribute SimpleCalculator simpleCalculator, Model model, String workPos) {
+        model.addAttribute(ConstantsFor.STR_CALCULATOR, simpleCalculator);
+        model.addAttribute(ATT_DINNER, simpleCalculator.getStampFromDate(workPos));
+        return "redirect:/calculate";
     }
 
     /**
@@ -300,21 +303,17 @@ public class MatrixCtr {
         return REDIRECT_MATRIX;
     }
 
-    /**
-     Перевод времени из long в {@link Date} и обратно.
-     <p>
-     1. {@link SimpleCalculator#getStampFromDate(java.lang.String)} метод перевода.
-     <p>
-
-     @param simpleCalculator {@link SimpleCalculator}
-     @param model            {@link Model}
-     @param workPos          {@link MatrixSRV#getWorkPos()}
-     @return redirect:/calculate
-     */
-    private String timeStamp(@ModelAttribute SimpleCalculator simpleCalculator, Model model, String workPos) {
-        model.addAttribute(ConstantsFor.STR_CALCULATOR, simpleCalculator);
-        model.addAttribute(ATT_DINNER, simpleCalculator.getStampFromDate(workPos));
-        return "redirect:/calculate";
+    private void getProv() {
+        SshActs sshActs = new AppComponents().sshActs();
+        String gettRoute = sshActs.providerTraceStr();
+        if (gettRoute.contains("91.210.85.173")) {
+            gettRoute = "<h3>FORTEX</h3>";
+        } else {
+            if (gettRoute.contains("176.62.185.129")) {
+                gettRoute = "<h3>ISTRANET</h3>";
+            }
+        }
+        this.currentProvider = gettRoute;
     }
 
     @Override

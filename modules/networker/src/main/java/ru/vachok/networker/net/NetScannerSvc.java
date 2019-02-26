@@ -46,7 +46,7 @@ import static java.time.format.TextStyle.FULL_STANDALONE;
  <p>
 
  @since 21.08.2018 (14:40) */
-@Service(ConstantsNet.STR_NETSCANNERSVC)
+@Service(ConstantsNet.BEANNAME_NETSCANNERSVC)
 public final class NetScannerSvc {
 
     /**
@@ -636,7 +636,7 @@ public final class NetScannerSvc {
         AppComponents.lastNetScan().setTimeLastScan(new Date());
         countStat();
         boolean props = AppComponents.getOrSetProps(LOCAL_PROPS);
-        FileSystemWorker.recFile(ConstantsNet.STR_LASTNETSCAN, new TForms().fromArray(AppComponents.lastNetScanMap(), false));
+        FileSystemWorker.recFile(ConstantsNet.BEANNAME_LASTNETSCAN, new TForms().fromArray(AppComponents.lastNetScanMap(), false));
         String bodyMsg = ConstantsFor.getMemoryInfo() + "\n" +
             " scan.tmp exist = " + fileCreate(false) + "\n" +
             "Properties is save = " + props + "\n" +

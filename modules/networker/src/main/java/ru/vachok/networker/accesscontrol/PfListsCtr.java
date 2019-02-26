@@ -144,9 +144,11 @@ public class PfListsCtr {
             AppComponents.threadConfig().executeAsThread(pfListsSrvInstAW::makeListRunner);
             model.addAttribute(ATT_METRIC, "Запущено обновление");
             model.addAttribute(ConstantsFor.ATT_GITSTATS, toString());
+            response.addHeader(ConstantsFor.HEAD_REFRESH, "20");
         } else {
-            @NotNull String msg = "" + (float) (TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - pfListsInstAW.getGitStatsUpdatedStampLong())) / ConstantsFor.ONE_HOUR_IN_MIN;
+            String msg = String.format("%.02f", (float) (TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - pfListsInstAW.getTimeStampToNextUpdLong())) / ConstantsFor.ONE_HOUR_IN_MIN);
             LOGGER.warn(msg);
+            model.addAttribute(ATT_METRIC, msg + " min");
         }
 
         @NotNull String refreshRate = String.valueOf(TimeUnit.MILLISECONDS.toMinutes(delayRefInt) * ConstantsFor.ONE_HOUR_IN_MIN);
@@ -157,7 +159,7 @@ public class PfListsCtr {
 
     @PostMapping("/runcom")
     @NotNull
-    String runCommand(@NotNull Model model, @NotNull @ModelAttribute PfListsSrv pfListsSrv) {
+    public String runCommand(@NotNull Model model, @NotNull @ModelAttribute PfListsSrv pfListsSrv) {
         this.pfListsSrvInstAW = pfListsSrv;
 
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());

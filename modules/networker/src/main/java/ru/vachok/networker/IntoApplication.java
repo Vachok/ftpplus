@@ -43,17 +43,17 @@ import java.util.concurrent.ConcurrentMap;
 @EnableScheduling
 public class IntoApplication {
 
+    public static final Runnable INFO_MSG_RUNNABLE = () -> {
+        final ThreadPoolTaskExecutor taskExecutor = AppComponents.threadConfig().getTaskExecutor();
+        final ThreadPoolTaskScheduler taskScheduler = AppComponents.threadConfig().getTaskScheduler();
+        new MessageSwing(550, 270, 37, 26).infoTimer((int) ConstantsFor.DELAY, "\n\n\n" + taskExecutor.getThreadPoolExecutor().toString() +
+            "\n\n" + taskScheduler.getScheduledThreadPoolExecutor().toString());
+    };
+
     /**
      new {@link SpringApplication}
      */
     private static final @NotNull SpringApplication SPRING_APPLICATION = new SpringApplication();
-
-    public static final Runnable INFO_MSG_RUNNABLE = () -> {
-        final ThreadPoolTaskExecutor taskExecutor = AppComponents.threadConfig().getTaskExecutor();
-        final ThreadPoolTaskScheduler taskScheduler = AppComponents.threadConfig().getTaskScheduler();
-        new MessageSwing(550, 270, 37, 26).infoTimer(( int ) ConstantsFor.DELAY, "\n\n\n" + taskExecutor.getThreadPoolExecutor().toString() +
-            "\n\n" + taskScheduler.getScheduledThreadPoolExecutor().toString());
-    };
 
     /**
      {@link AppComponents#getOrSetProps(boolean)}
@@ -104,10 +104,9 @@ public class IntoApplication {
         FileSystemWorker.delFilePatterns(ConstantsFor.STRS_VISIT);
         LOCAL_PROPS.putAll(AppComponents.getOrSetProps());
         LOCAL_PROPS.setProperty("ff", "false");
-        if(args!=null && args.length > 0){
+        if (args != null && args.length > 0) {
             readArgs(args);
-        }
-        else{
+        } else {
             beforeSt(true);
             configurableApplicationContext.start();
             afterSt();
@@ -124,29 +123,26 @@ public class IntoApplication {
 
      @param args аргументы запуска.
      */
-    private static void readArgs(@NotNull String[] args) {
+    private static void readArgs(@NotNull String... args) {
         boolean isTray = true;
         ExitApp exitApp = new ExitApp(IntoApplication.class.getSimpleName());
         List<@NotNull String> argsList = Arrays.asList(args);
         ConcurrentMap<String, String> argsMap = new ConcurrentHashMap<>();
 
-        for(int i = 0; i < argsList.size(); i++){
+        for (int i = 0; i < argsList.size(); i++) {
             String key = argsList.get(i);
             String value = "true";
-            try{
+            try {
                 value = argsList.get(i + 1);
-            }
-            catch(ArrayIndexOutOfBoundsException ignore){
+            } catch (ArrayIndexOutOfBoundsException ignore) {
                 //
             }
-            if(!value.contains("-")){
+            if (!value.contains("-")) {
                 argsMap.put(key, value);
-            }
-            else{
-                if(!key.contains("-")){
+            } else {
+                if (!key.contains("-")) {
                     argsMap.put("", "");
-                }
-                else{
+                } else {
                     argsMap.put(key, "true");
                 }
             }
@@ -169,7 +165,7 @@ public class IntoApplication {
                 LOCAL_PROPS.putAll(objectMap);
                 FileSystemWorker.copyOrDelFile(new File("ConstantsFor.properties"), ".\\ConstantsFor.bak", false);
             }
-            if(stringStringEntry.getKey().contains("lport")){
+            if (stringStringEntry.getKey().contains("lport")) {
                 LOCAL_PROPS.setProperty("lport", stringStringEntry.getValue());
             }
         }
@@ -179,14 +175,12 @@ public class IntoApplication {
     }
 
     private static void trayAdd() {
-        if(ConstantsFor.thisPC().toLowerCase().contains(ConstantsFor.NO0027)){
+        if (ConstantsFor.thisPC().toLowerCase().contains(ConstantsFor.NO0027)) {
             SystemTrayHelper.addTray("icons8-плохие-поросята-32.png");
-        }
-        else{
-            if(ConstantsFor.thisPC().toLowerCase().contains("home")){
+        } else {
+            if (ConstantsFor.thisPC().toLowerCase().contains("home")) {
                 SystemTrayHelper.addTray("icons8-house-26.png");
-            }
-            else{
+            } else {
                 SystemTrayHelper.addTray(ConstantsFor.ICON_FILE_NAME);
             }
         }
@@ -202,7 +196,7 @@ public class IntoApplication {
      {@link SpringApplication#setMainApplicationClass(java.lang.Class)}
      */
     private static void beforeSt(boolean isTrayNeed) {
-        if(isTrayNeed){
+        if (isTrayNeed) {
             trayAdd();
         }
         @NotNull StringBuilder stringBuilder = new StringBuilder();
@@ -234,8 +228,8 @@ public class IntoApplication {
         Runnable mySrv = MyServer.getI();
         executor.submit(infoAndSched);
         executor.submit(mySrv);
-        AppComponents.threadConfig().executeAsThread(INFO_MSG_RUNNABLE);
-        AppComponents.threadConfig().executeAsThread(AppInfoOnLoad::getWeekPCStats);
+        executor.submit(INFO_MSG_RUNNABLE);
+        executor.submit(AppInfoOnLoad::getWeekPCStats);
         AppComponents.getOrSetProps(LOCAL_PROPS);
     }
 

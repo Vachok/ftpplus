@@ -169,12 +169,12 @@ public class SshActs {
         return vipNet;
     }
 
-    public void providerTraceStr() {
+    String providerTraceStr() {
         SSHFactory.Builder builder = new SSHFactory.Builder(ConstantsFor.SRV_GIT, "traceroute 8.8.8.8;exit");
         SSHFactory build = builder.build();
         String call = build.call();
         this.tRoute = call;
-        LOGGER.warn("SshActs.providerTraceStr", "tRoute", " = " + tRoute);
+        return call;
     }
 
     /**
