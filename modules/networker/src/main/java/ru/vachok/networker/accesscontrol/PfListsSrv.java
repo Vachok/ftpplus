@@ -9,10 +9,11 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.ThreadConfig;
-import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.systray.MessageToTray;
 
+import java.awt.*;
+import java.io.File;
 import java.rmi.UnexpectedException;
 
 
@@ -67,8 +68,8 @@ public class PfListsSrv {
      Else {@link MessageLocal#warn(java.lang.String)} {@link String} = {@link ConstantsFor#thisPC()}
      */
     void makeListRunner() {
-        if(ConstantsFor.thisPC().toLowerCase().contains("rups")){
-            AppComponents.threadConfig().getTaskExecutor().submit(this::buildCommands);
+        if(ConstantsFor.thisPC().toLowerCase().contains("rups") || ConstantsFor.thisPC().toLowerCase().contains("home")){
+            buildFactory();
         }
         else{
             try{
@@ -78,23 +79,6 @@ public class PfListsSrv {
                 messageToUser = new MessageLocal();
             }
             messageToUser.warn(this.getClass().getSimpleName(), "NOT RUNNING ON RUPS!", ConstantsFor.thisPC() + " buildCommands " + false);
-        }
-    }
-
-    /**
-     Строитель команд.
-     <p>
-     {@link PfListsSrv#buildFactory()} <br>
-     <b>{@link Exception}:</b><br>
-     {@link FileSystemWorker#recFile(java.lang.String, java.util.List)} - {@code this.getClass().getSimpleName() + ".makeListRunner", stringArrayList}
-     */
-    private void buildCommands() {
-        try{
-            buildFactory();
-        }
-        catch(UnexpectedException e){
-            messageToUser.errorAlert("PfListsSrv", "buildCommands", e.getMessage());
-            FileSystemWorker.error("PfListsSrv.buildCommands", e);
         }
     }
 
@@ -117,11 +101,14 @@ public class PfListsSrv {
      @throws UnexpectedException если нет связи с srv-git. Проверка сети. <i>e: No ping</i>
      @see SSHFactory
      */
-    private void buildFactory() throws UnexpectedException {
+    private void buildFactory() {
         SSHFactory build = builderInst.build();
         SSHFactory buildGit = new SSHFactory.Builder(ConstantsFor.SRV_GIT, "sudo /etc/stat.script").build();
         if(!ConstantsFor.isPingOK()){
-            throw new UnexpectedException("No ping to " + ConstantsFor.SRV_GIT + " cancelling execution");
+            throw new IllegalMonitorStateException("NO PING TO GIT");
+        }
+        if(!new File("a161.pem").exists()){
+            throw new IllegalComponentStateException("NO CERTIFICATE!");
         }
         pfListsInstAW.setuName(build.call());
 
