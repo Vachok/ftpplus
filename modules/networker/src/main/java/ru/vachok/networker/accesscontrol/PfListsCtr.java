@@ -27,6 +27,7 @@ import java.time.LocalTime;
 import java.util.Date;
 import java.util.Properties;
 import java.util.Random;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 
@@ -100,7 +101,12 @@ public class PfListsCtr {
         this.pfListsInstAW = pfLists;
         this.pfListsSrvInstAW = pfListsSrv;
         this.pingGITOk = ConstantsFor.isPingOK();
-        AppComponents.threadConfig();
+        ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor();
+        long delaySch = TimeUnit.MINUTES.toSeconds(ConstantsFor.DELAY) + 3600;
+        scheduledThreadPoolExecutor.schedule(pfListsSrvInstAW::makeListRunner, delaySch, TimeUnit.SECONDS);
+        messageToUser.info("PfListsSrv. this::makeListRunner", "delay Scheduler", " = " + delaySch);
+        AppComponents.threadConfig().executeAsThread(pfListsSrvInstAW::makeListRunner);
+        messageToUser.info("Executing as THREAD", "pfListsSrvInstAW::makeListRunner", " = " + pfListsSrvInstAW.toString());
     }
 
     /**
@@ -126,7 +132,10 @@ public class PfListsCtr {
     @GetMapping("/pflists")
     public String pfBean(@NotNull Model model, @NotNull HttpServletRequest request, @NotNull HttpServletResponse response) throws UnknownHostException {
         ConstantsFor.getVis(request);
+        AppComponents.threadConfig().thrNameSet("pfget");
+
         long lastScan = Long.parseLong(properties.getProperty(ConstantsFor.PR_PFSCAN, "1"));
+        @NotNull String refreshRate = String.valueOf(TimeUnit.MILLISECONDS.toMinutes(delayRefInt) * ConstantsFor.ONE_HOUR_IN_MIN);
         timeOutLong = lastScan + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY);
         if (!pingGITOk) {
             noPing(model);
@@ -135,7 +144,7 @@ public class PfListsCtr {
         }
         if (request.getQueryString() != null) {
             AppComponents.threadConfig().executeAsThread(pfListsSrvInstAW::makeListRunner);
-            return "redirect:/pflists";
+            model.addAttribute(ATT_METRIC, refreshRate);
         }
 
         long nextUpd = pfListsInstAW.getGitStatsUpdatedStampLong() + TimeUnit.MINUTES.toMillis(DELAY_LOCAL_INT);
@@ -144,14 +153,11 @@ public class PfListsCtr {
             AppComponents.threadConfig().executeAsThread(pfListsSrvInstAW::makeListRunner);
             model.addAttribute(ATT_METRIC, "Запущено обновление");
             model.addAttribute(ConstantsFor.ATT_GITSTATS, toString());
-            response.addHeader(ConstantsFor.HEAD_REFRESH, "20");
         } else {
             String msg = String.format("%.02f", (float) (TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - pfListsInstAW.getTimeStampToNextUpdLong())) / ConstantsFor.ONE_HOUR_IN_MIN);
-            LOGGER.warn(msg);
+            messageToUser.warn(msg);
             model.addAttribute(ATT_METRIC, msg + " min");
         }
-
-        @NotNull String refreshRate = String.valueOf(TimeUnit.MILLISECONDS.toMinutes(delayRefInt) * ConstantsFor.ONE_HOUR_IN_MIN);
         response.addHeader(ConstantsFor.HEAD_REFRESH, refreshRate);
         AppComponents.getOrSetProps(true);
         return ConstantsFor.PFLISTS;
@@ -161,6 +167,7 @@ public class PfListsCtr {
     @NotNull
     public String runCommand(@NotNull Model model, @NotNull @ModelAttribute PfListsSrv pfListsSrv) {
         this.pfListsSrvInstAW = pfListsSrv;
+        AppComponents.threadConfig().thrNameSet("com.pst");
 
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
         model.addAttribute(ConstantsFor.ATT_TITLE, pfListsSrv.getCommandForNatStr());

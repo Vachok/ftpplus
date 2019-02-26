@@ -12,9 +12,9 @@ import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.systray.MessageToTray;
 
-import java.awt.*;
 import java.io.File;
 import java.rmi.UnexpectedException;
+import java.util.concurrent.RejectedExecutionException;
 
 
 /**
@@ -58,6 +58,7 @@ public class PfListsSrv {
     @Autowired
     public PfListsSrv(@NotNull PfLists pfLists) {
         this.pfListsInstAW = pfLists;
+        AppComponents.threadConfig().thrNameSet("pfsrv");
     }
 
     /**
@@ -68,7 +69,7 @@ public class PfListsSrv {
      Else {@link MessageLocal#warn(java.lang.String)} {@link String} = {@link ConstantsFor#thisPC()}
      */
     void makeListRunner() {
-        if(ConstantsFor.thisPC().toLowerCase().contains("rups") || ConstantsFor.thisPC().toLowerCase().contains("home")){
+        if(ConstantsFor.thisPC().toLowerCase().contains("rups")){
             buildFactory();
         }
         else{
@@ -105,10 +106,10 @@ public class PfListsSrv {
         SSHFactory build = builderInst.build();
         SSHFactory buildGit = new SSHFactory.Builder(ConstantsFor.SRV_GIT, "sudo /etc/stat.script").build();
         if(!ConstantsFor.isPingOK()){
-            throw new IllegalMonitorStateException("NO PING TO GIT");
+            throw new RejectedExecutionException("NO PING TO GIT");
         }
         if(!new File("a161.pem").exists()){
-            throw new IllegalComponentStateException("NO CERTIFICATE!");
+            throw new RejectedExecutionException("NO CERTIFICATE a161.pem...");
         }
         pfListsInstAW.setuName(build.call());
 
@@ -127,10 +128,10 @@ public class PfListsSrv {
         build.setCommandSSH("pfctl -s nat;exit");
         pfListsInstAW.setPfNat(build.call());
 
-        build.setCommandSSH("pfctl -s rules;traceroute 8.8.8.8;exit");
+        build.setCommandSSH("pfctl -s rules");
         pfListsInstAW.setPfRules(build.call());
 
-        build.setCommandSSH("sudo cat /home/kudr/inet.log;exit");
+        build.setCommandSSH("sudo cat /home/kudr/inet.log;traceroute 8.8.8.8");
         pfListsInstAW.setInetLog(build.call());
 
         pfListsInstAW.setGitStatsUpdatedStampLong(System.currentTimeMillis());
