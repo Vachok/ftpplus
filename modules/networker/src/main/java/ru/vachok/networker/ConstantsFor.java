@@ -21,17 +21,13 @@ import ru.vachok.networker.services.TimeChecker;
 
 import javax.servlet.http.HttpServletRequest;
 import java.awt.*;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.SecureRandom;
 import java.time.Year;
-import java.util.Collections;
 import java.util.List;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -430,16 +426,13 @@ public enum ConstantsFor {
     public static Properties getAppProps() {
         String classMeth = "ConstantsFor.getAppProps";
         if(PROPS.size() < 3){
-            takePr(false);
-            messageToUser.info(classMeth, "From File", " = " + false);
-            messageToUser.info(classMeth, "PROPS", " = " + PROPS.size());
+            messageToUser.info("PROPS", "return takePr(false)", " = " + PROPS.size());
+            return takePr(false);
         }
         else{
-            takePr(true);
-            messageToUser.warn(classMeth, "From File", " = " + true);
-            messageToUser.info(classMeth, "PROPS", " = " + PROPS.size());
+            messageToUser.info("PROPS", "return PROPS", " = " + PROPS.size());
+            return PROPS;
         }
-        return PROPS;
     }
 
     /**
@@ -447,28 +440,44 @@ public enum ConstantsFor {
      */
     static Properties takePr(boolean fromFile) {
         AppComponents.threadConfig().thrNameSet("gProps");
+
         InitProperties initProperties = new DBRegProperties(ConstantsFor.APP_NAME + ConstantsFor.class.getSimpleName());
         Properties retPr = new Properties();
-        try{
-            if(fromFile || new File("ff").exists()){
-                try(InputStream inputStream = new FileInputStream(ConstantsFor.class.getSimpleName() + ".properties")){
-                    retPr.load(inputStream);
+        File prFile = new File(ConstantsFor.class.getSimpleName() + ".properties");
+        StringBuilder stringBuilder = new StringBuilder();
+
+        if(fromFile || new File("ff").exists()){
+            try(InputStream inputStream = new FileInputStream(prFile)){
+                retPr.load(inputStream);
+                stringBuilder.append("fromFile: ").append(fromFile).append("\n");
+                stringBuilder.append("File \"ff\": ").append(new File("ff").exists()).append("\n");
+            }
+            catch(IOException e){
+                stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false)).append("\n");
+                FileSystemWorker.error("ConstantsFor.takePr", e);
+            }
+        }
+        else{
+            try(OutputStream outputStream = new FileOutputStream(prFile)){
+                long millisOf24HRS = TimeUnit.DAYS.toMillis(1);
+                retPr = initProperties.getProps();
+                if(!prFile.exists() || (System.currentTimeMillis() - millisOf24HRS) > prFile.lastModified()){
+                    retPr.store(outputStream, ConstantsFor.class.getSimpleName() + ".takePr");
+                    stringBuilder.append(prFile.getName() + " is exist: ").append(!prFile.exists()).append("\n");
+                    if(prFile.exists()){
+                        stringBuilder.append(prFile.getName()).append("last modified: ").append(new Date(prFile.lastModified())).append("\n");
+                    }
                 }
             }
-            else{
-                retPr = initProperties.getProps();
+            catch(IOException e){
+                stringBuilder.append(e.getMessage()).append(new TForms().fromArray(e, false)).append("\n");
+                FileSystemWorker.error("ConstantsFor.takePr", e);
             }
-            PROPS.clear();
-            PROPS.putAll(retPr);
         }
-        catch(IOException e){
-            messageToUser.warn(
-                "Can't load properties.",
-                "Check for file " + new File(ConstantsFor.class.getSimpleName() + ".properties").getAbsolutePath(),
-                e.getMessage());
-            messageToUser.errorAlert("ConstantsFor.takePr", "PROPS", " = " + PROPS.size());
-            FileSystemWorker.error("ConstantsFor.takePr", e);
-        }
+        PROPS.clear();
+        PROPS.putAll(retPr);
+        stringBuilder.append(PROPS.size()).append(" is PROPS size, PROPS equals retPr: ").append(PROPS.equals(retPr));
+        messageToUser.warn("ConstantsFor.takePr", "results", " = " + stringBuilder.toString());
         return retPr;
     }
 
