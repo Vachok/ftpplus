@@ -143,8 +143,8 @@ public class PfListsSrv {
         build.setCommandSSH("pfctl -s rules;traceroute 8.8.8.8;exit");
         pfListsInstAW.setPfRules(build.call());
 
-        String callToStatScript = buildGit.call();
-        messageToUser.info("PfListsSrv.buildFactory", "callToStatScript", callToStatScript);
+        build.setCommandSSH("sudo cat /home/kudr/inet.log;exit");
+        pfListsInstAW.setInetLog(build.call());
 
         pfListsInstAW.setGitStatsUpdatedStampLong(System.currentTimeMillis());
     }

@@ -32,7 +32,7 @@ public class PhotoConverterSRV {
     /**
      {@link Logger}
      */
-    private static final Logger LOGGER = AppComponents.getLogger();
+    private static final Logger LOGGER = AppComponents.getLogger(PhotoConverterSRV.class.getSimpleName());
 
     private final Properties properties = AppComponents.getOrSetProps();
 

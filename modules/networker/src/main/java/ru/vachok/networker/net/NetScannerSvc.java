@@ -256,7 +256,7 @@ public final class NetScannerSvc {
             toSort.sort(null);
             for (String x : toSort) {
                 String pcSerment = "Я не знаю...";
-                ConstantsNet.LOGGER.info(x);
+                LOGGER.info(x);
                 if (x.contains("200.200")) {
                     pcSerment = "Торговый дом";
                 }
@@ -483,7 +483,7 @@ public final class NetScannerSvc {
                 .append(Thread.currentThread().getName())
                 .toString());
 
-            ConstantsNet.LOGGER.warn(msg.get());
+            LOGGER.warn(msg.get());
 
             for (String s : ConstantsNet.PC_PREFIXES) {
                 this.thrName = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime) + "-sec";
@@ -493,7 +493,7 @@ public final class NetScannerSvc {
             }
             String elapsedTime = "Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime) + " sec.";
             pcNamesSet.add(elapsedTime);
-            ConstantsNet.LOGGER.warn(msg.get());
+            LOGGER.warn(msg.get());
             AppComponents.threadConfig().executeAsThread(runAfterAll);
         });
     }

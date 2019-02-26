@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class CommonScan2YOlder extends SimpleFileVisitor<Path> implements Callable<String> {
 
-    private static final Logger LOGGER = AppComponents.getLogger();
+    private static final Logger LOGGER = AppComponents.getLogger(CommonScan2YOlder.class.getSimpleName());
 
     private PrintWriter printWriter;
 

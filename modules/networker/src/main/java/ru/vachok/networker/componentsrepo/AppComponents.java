@@ -49,18 +49,15 @@ public class AppComponents {
 
     private static MessageToUser messageToUser = new MessageLocal();
 
-    /**
-     @return {@link LoggerFactory}
-     */
-    @Bean
-    public static Logger getLogger() {
-        return LoggerFactory.getLogger(ConstantsFor.APP_NAME);
-    }
-
     @Bean
     @Scope(ConstantsFor.SINGLETON)
     public static Properties getOrSetProps() {
         return getOrSetProps(false);
+    }
+
+    @Bean
+    public static Logger getLogger(String className) {
+        return LoggerFactory.getLogger(className);
     }
 
     @Bean

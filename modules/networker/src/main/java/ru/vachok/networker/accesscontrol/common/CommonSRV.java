@@ -26,7 +26,7 @@ public class CommonSRV {
     /**
      {@link AppComponents#getLogger()}
      */
-    private static final Logger LOGGER = AppComponents.getLogger();
+    private static final Logger LOGGER = AppComponents.getLogger(CommonSRV.class.getSimpleName());
 
     /**
      Пользовательский ввод через форму на сайте

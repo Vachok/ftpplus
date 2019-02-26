@@ -24,6 +24,16 @@ public class PfLists {
 
     private String pfNat;
 
+    private String inetLog;
+
+    public String getInetLog() {
+        return inetLog;
+    }
+
+    public void setInetLog(String inetLog) {
+        this.inetLog = inetLog;
+    }
+
     private long gitStatsUpdatedStampLong;
 
     private long timeStampToNextUpdLong = System.currentTimeMillis();
@@ -135,11 +145,7 @@ public class PfLists {
         if(getLimitSquid()!=null? !getLimitSquid().equals(pfLists.getLimitSquid()): pfLists.getLimitSquid()!=null){
             return false;
         }
-        if(getFullSquid()!=null? !getFullSquid().equals(pfLists.getFullSquid()): pfLists.getFullSquid()!=null){
-            return false;
-        }
-
-        return true;
+        return getFullSquid() != null ? getFullSquid().equals(pfLists.getFullSquid()) : pfLists.getFullSquid() == null;
     }
 
     @Override
@@ -147,6 +153,7 @@ public class PfLists {
         final StringBuilder sb = new StringBuilder("PfLists{");
         sb.append("fullSquid='").append(fullSquid).append('\'');
         sb.append(", gitStatsUpdatedStampLong=").append(gitStatsUpdatedStampLong);
+        sb.append(", inetLog='").append(inetLog).append('\'');
         sb.append(", limitSquid='").append(limitSquid).append('\'');
         sb.append(", pfNat='").append(pfNat).append('\'');
         sb.append(", pfRules='").append(pfRules).append('\'');

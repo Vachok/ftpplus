@@ -19,7 +19,8 @@ import java.util.Arrays;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
-import static java.lang.System.*;
+import static java.lang.System.err;
+import static java.lang.System.out;
 
 
 /**
@@ -37,7 +38,7 @@ public class MyServer extends Thread {
     /**
      {@link AppComponents#getLogger()}
      */
-    private static final Logger LOGGER = AppComponents.getLogger();
+    private static final Logger LOGGER = AppComponents.getLogger(MyServer.class.getSimpleName());
 
     /**
      <b>Single Instance</b>

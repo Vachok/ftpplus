@@ -205,7 +205,8 @@ public class PfListsCtr {
     private void modSet(Model model) {
         @NotNull String metricValue = new Date(pfListsInstAW.getTimeStampToNextUpdLong()) + " will be update";
         @NotNull String gitstatValue =
-            Thread.activeCount() +
+            pfListsInstAW.getInetLog() + "\n" +
+                Thread.activeCount() +
                 " thr, active\nChange: " +
                 (Thread.activeCount() - Long.parseLong(properties.getProperty("thr", "1"))) + "\n" +
                 ConstantsFor.getMemoryInfo() + "\n" +

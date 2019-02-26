@@ -31,7 +31,7 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> {
     /**
      {@link AppComponents#getLogger()}
      */
-    private static final Logger LOGGER = AppComponents.getLogger();
+    private static final Logger LOGGER = AppComponents.getLogger(CommonRightsChecker.class.getSimpleName());
 
     /**
      @throws IOException deleteIfExists старые файлы.

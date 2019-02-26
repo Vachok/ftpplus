@@ -71,7 +71,7 @@ public class AnketaKonfeta {
             } else {
                 emailsList.add(userMail);
             }
-            AppComponents.getLogger().info(toString());
+            AppComponents.getLogger(AnketaKonfeta.class.getSimpleName()).info(toString());
         } catch (NullPointerException e) {
             messageToUser.errorAlert(this.getClass().getSimpleName(), "sendKonfeta", e.getMessage() + " in 64 ");
         }

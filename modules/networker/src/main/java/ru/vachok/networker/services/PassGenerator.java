@@ -11,7 +11,7 @@ import java.security.SecureRandom;
  */
 public class PassGenerator {
 
-    private static final Logger LOGGER = AppComponents.getLogger();
+    private static final Logger LOGGER = AppComponents.getLogger(PassGenerator.class.getSimpleName());
 
     private static final int BYTES_LEN_BY_DEFAULT = 30;
 

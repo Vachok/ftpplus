@@ -2,6 +2,7 @@ package ru.vachok.networker.services;
 
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
@@ -24,7 +25,7 @@ public class Putty extends Thread {
 
     private static final String SOURCE_CLASS = Putty.class.getSimpleName();
 
-    private static final Logger LOGGER = AppComponents.getLogger();
+    private static final Logger LOGGER = LoggerFactory.getLogger(Putty.class.getSimpleName());
 
     private static MessageToUser messageToUser = new MessageCons();
 

@@ -26,7 +26,7 @@ public class AnketaKonfetaCRTL {
     /**
      {@link AppComponents#getLogger()}
      */
-    private static final Logger LOGGER = AppComponents.getLogger();
+    private static final Logger LOGGER = AppComponents.getLogger(AnketaKonfetaCRTL.class.getSimpleName());
 
     private static final String RET_ANKETA = "anketa";
 

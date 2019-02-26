@@ -8,9 +8,15 @@ import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -21,7 +27,7 @@ import java.util.concurrent.TimeUnit;
  @since 21.12.2018 (9:23) */
 public class MailIISLogsCleaner extends FileSystemWorker implements Runnable {
 
-    private static final Logger LOGGER = AppComponents.getLogger();
+    private static final Logger LOGGER = AppComponents.getLogger(MailIISLogsCleaner.class.getSimpleName());
 
     private long filesSize = 0;
 

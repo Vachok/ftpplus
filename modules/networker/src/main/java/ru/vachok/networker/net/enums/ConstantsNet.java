@@ -1,7 +1,6 @@
 package ru.vachok.networker.net.enums;
 
 
-import org.slf4j.Logger;
 import org.springframework.ui.Model;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.networker.ConstantsFor;
@@ -106,11 +105,6 @@ public enum ConstantsNet {;
     public static final String VELKOM_PCUSERAUTO_TXT = "velkom_pcuserauto.txt";
 
     public static final String ONLINE_NOW = "OnlineNow";
-
-    /**
-     {@link AppComponents#getLogger()}
-     */
-    public static final Logger LOGGER = AppComponents.getLogger();
 
     /**
      <i>Boiler Plate</i>

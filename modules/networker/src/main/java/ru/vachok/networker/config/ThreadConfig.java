@@ -156,7 +156,6 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
         }
         if (asyncExecutor != null) {
             asyncExecutor.execute(thread::start);
-            messageToUser.info(EXECUTE_AS_THREAD_METHNAME, "thread.toString()", " = " + thread.toString());
         } else {
             thread.start();
             new MessageSwing().errorAlert(EXECUTE_AS_THREAD_METHNAME, "thread.isAlive()", " = " + thread.isAlive());

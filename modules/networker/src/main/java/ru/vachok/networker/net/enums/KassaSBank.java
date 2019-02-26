@@ -1,22 +1,11 @@
 package ru.vachok.networker.net.enums;
 
 
-import org.slf4j.Logger;
-import ru.vachok.networker.componentsrepo.AppComponents;
-
-import java.io.IOException;
-import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.function.Consumer;
-
-
 /**
  Адреса терминалов на кассах ТД.
 
  @since 18.12.2018 (17:56) */
-public enum KassaSBank implements Iterable {
+public enum KassaSBank {
     ;
 
     public static final String T101 = "10.200.200.101";
@@ -60,28 +49,4 @@ public enum KassaSBank implements Iterable {
     public static final String T157 = "10.200.200.157";
 
     public static final String T159 = "10.200.200.159";
-
-    private static final Logger LOGGER = AppComponents.getLogger();
-
-    public static void main(String[] args) {
-    }
-
-    @Override
-    public Iterator iterator() {
-        return null;
-    }
-
-    @Override
-    public void forEach(Consumer action) {
-        List<InetAddress> inetAddresses = new ArrayList<>();
-        Consumer<String> runnable = (x) -> {
-            try {
-                InetAddress inetAddress = InetAddress.getByName(x);
-                byte[] bytes = inetAddress.getAddress();
-                inetAddresses.add(InetAddress.getByAddress(bytes));
-            } catch (IOException e) {
-                AppComponents.getLogger().warn(e.getMessage());
-            }
-        };
-    }
 }

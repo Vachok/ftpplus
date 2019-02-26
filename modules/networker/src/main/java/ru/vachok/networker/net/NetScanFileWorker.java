@@ -25,7 +25,7 @@ import java.util.Objects;
 @Component
 class NetScanFileWorker {
 
-    private static final Logger LOGGER = AppComponents.getLogger();
+    private static final Logger LOGGER = AppComponents.getLogger(NetScanFileWorker.class.getSimpleName());
 
     private static NetScanFileWorker ourInst = new NetScanFileWorker();
 

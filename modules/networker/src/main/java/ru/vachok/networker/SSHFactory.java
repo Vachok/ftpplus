@@ -39,7 +39,7 @@ public class SSHFactory implements Callable<String> {
      */
     private static final File SSH_ERR = new File("ssh_err.txt");
 
-    private static final Logger LOGGER = AppComponents.getLogger();
+    private static final Logger LOGGER = AppComponents.getLogger(SSHFactory.class.getSimpleName());
 
     private static final String SOURCE_CLASS = SSHFactory.class.getSimpleName();
 

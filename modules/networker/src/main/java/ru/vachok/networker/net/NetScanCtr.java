@@ -35,10 +35,7 @@ import java.util.Date;
 import java.util.Deque;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 
 /**
@@ -194,7 +191,7 @@ public class NetScanCtr {
      @return {@link ConstantsNet#ATT_NETSCAN} (netscan.html)
      */
     @GetMapping(STR_NETSCAN)
-    public static String netScan(HttpServletRequest request, HttpServletResponse response, Model model) throws ExecutionException, InterruptedException {
+    public static String netScan(HttpServletRequest request, HttpServletResponse response, Model model) throws ExecutionException, InterruptedException, TimeoutException {
         String classMeth = "NetScanCtr.netScan";
         final long lastSt = Long.parseLong(PROPERTIES.getProperty(ConstantsNet.PR_LASTSCAN, "1548919734742"));
         messageToUser.info(
@@ -231,32 +228,45 @@ public class NetScanCtr {
      @param thisTotpc кол-во ПК для скана. Берется из {@link #PROPERTIES}. Default: {@code 318}.
      @see #checkMapSizeAndDoAction(Model, HttpServletRequest, long)
      */
-    private static void mapSizeBigger(Model model, HttpServletRequest request, long lastSt, int thisTotpc) {
+    private static void mapSizeBigger(Model model, HttpServletRequest request, long lastSt, int thisTotpc) throws ExecutionException, InterruptedException, TimeoutException {
         long timeLeft = TimeUnit.MILLISECONDS.toSeconds(lastSt - System.currentTimeMillis());
         final int pcWas = Integer.parseInt(PROPERTIES.getProperty(ConstantsNet.ONLINEPC, "0"));
         int remainPC = thisTotpc - lastScanMAP.size();
         boolean newPSs = 0 > remainPC;
-        String msg = new StringBuilder()
-            .append(timeLeft).append(" seconds (")
-            .append((float) timeLeft / ConstantsFor.ONE_HOUR_IN_MIN).append(" min) left<br>Delay period is ")
-            .append(DURATION_MIN).toString();
+
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(timeLeft);
+        stringBuilder.append(" seconds (");
+        stringBuilder.append((float) timeLeft / ConstantsFor.ONE_HOUR_IN_MIN);
+        stringBuilder.append(" min) left<br>Delay period is ");
+        stringBuilder.append(DURATION_MIN);
+
+        String msg = stringBuilder.toString();
         LOGGER.warn(msg);
+
+        StringBuilder titleBuilder = new StringBuilder();
+        titleBuilder.append(remainPC);
+        titleBuilder.append("/");
+        titleBuilder.append(thisTotpc);
+        titleBuilder.append(" PCs (");
+        titleBuilder.append(NetScannerSvc.getOnLinePCs());
+        titleBuilder.append("/");
+        titleBuilder.append(pcWas);
+        titleBuilder.append(" at ");
+        titleBuilder.append(LocalDateTime.ofEpochSecond(lastSt / 1000, 0, ZoneOffset.ofHours(3)).toLocalTime().toString());
+
         model
             .addAttribute("left", msg)
             .addAttribute("pc", new TForms().fromArray(lastScanMAP, false))
-            .addAttribute(ConstantsFor.ATT_TITLE, new StringBuilder()
-                .append(remainPC).append("/")
-                .append(thisTotpc).append(" PCs (")
-                .append(NetScannerSvc.getOnLinePCs()).append("/")
-                .append(pcWas).append(" at ")
-                .append(LocalDateTime.ofEpochSecond(lastSt / 1000, 0, ZoneOffset.ofHours(3)).toLocalTime().toString()).toString());
+            .addAttribute(ConstantsFor.ATT_TITLE, titleBuilder.toString());
         if (newPSs) {
             FileSystemWorker.recFile(ConstantsNet.BEANNAME_LASTNETSCAN, new TForms().fromArray(lastScanMAP, false));
             model.addAttribute("newpc", "Добавлены компы! " + Math.abs(remainPC) + " шт.");
-            PROPERTIES.setProperty(ConstantsFor.PR_TOTPC, lastScanMAP.size() + "");
         } else {
             if (3 > remainPC) {
                 PROPERTIES.setProperty(ConstantsFor.PR_TOTPC, lastScanMAP.size() + "");
+                boolean setProps = AppComponents.getOrSetProps(PROPERTIES);
+                messageToUser.info("NetScanCtr.mapSizeBigger", "setProps", " = " + setProps);
             }
         }
         timeCheck(remainPC, lastSt / 1000, request, model);
@@ -276,7 +286,7 @@ public class NetScanCtr {
      @param model         {@link Model}
      @see #mapSizeBigger(Model, HttpServletRequest, long, int)
      */
-    private static void timeCheck(int remainPC, long lastScanEpoch, HttpServletRequest request, Model model) {
+    private static void timeCheck(int remainPC, long lastScanEpoch, HttpServletRequest request, Model model) throws ExecutionException, InterruptedException, TimeoutException {
         final Runnable scanRun = () -> scanIt(request, model, new Date(lastScanEpoch * 1000));
         LocalTime lastScanLocalTime = LocalDateTime.ofEpochSecond(lastScanEpoch, 0, ZoneOffset.ofHours(3)).toLocalTime();
         String classMeth = "NetScanCtr.timeCheck";
@@ -284,8 +294,10 @@ public class NetScanCtr {
 
         if (isSystemTimeBigger) {
             String valStr = "isSystemTimeBigger = " + true;
-            messageToUser.info(Thread.currentThread().getName(), classMeth, valStr);
-            locExecutor.execute(scanRun);
+            messageToUser.info(valStr);
+            Future<?> submitScan = locExecutor.submit(scanRun);
+            submitScan.get(ConstantsFor.DELAY - 1, TimeUnit.MINUTES);
+            messageToUser.info("NetScanCtr.checkMapSizeAndDoAction", "submitScan.isDone()", " = " + submitScan.isDone());
         } else {
             String valStr = "lastScanLocalTime = " + lastScanLocalTime;
             messageToUser.infoNoTitles(Thread.currentThread().getName() + "\n" + classMeth + "\n" + valStr);
@@ -311,19 +323,20 @@ public class NetScanCtr {
      @param lastSt  timestamp из {@link #PROPERTIES}
      @see #netScan(HttpServletRequest, HttpServletResponse, Model)
      */
-    private static void checkMapSizeAndDoAction(Model model, HttpServletRequest request, long lastSt) {
+    private static void checkMapSizeAndDoAction(Model model, HttpServletRequest request, long lastSt) throws ExecutionException, InterruptedException, TimeoutException {
         final Runnable scanRun = () -> scanIt(request, model, new Date(lastSt));
         boolean isMapSizeBigger = lastScanMAP.size() > 0;
         final int thisTotpc = Integer.parseInt(PROPERTIES.getProperty(ConstantsFor.PR_TOTPC, "318"));
         File scanTemp = new File("scan.tmp");
-
         if (scanTemp.isFile() && scanTemp.exists()) {
             mapSizeBigger(model, request, lastSt, thisTotpc);
         } else {
             if (isMapSizeBigger) {
                 mapSizeBigger(model, request, lastSt, thisTotpc);
             } else {
-                locExecutor.execute(scanRun);
+                Future<?> submitScan = locExecutor.submit(scanRun);
+                submitScan.get(ConstantsFor.DELAY - 1, TimeUnit.MINUTES);
+                messageToUser.info("NetScanCtr.checkMapSizeAndDoAction", "submitScan.isDone()", " = " + submitScan.isDone());
             }
         }
     }
@@ -347,7 +360,6 @@ public class NetScanCtr {
      */
     @Async
     private static void scanIt(HttpServletRequest request, Model model, Date lastScanDate) {
-        String propMsg = "NetScanCtr.scanIt. " + lastScanDate;
         if (request != null && request.getQueryString() != null) {
             lastScanMAP.clear();
             Set<String> pcNames = NETSCANNERSVC_INST.getPCNamesPref(request.getQueryString());
@@ -360,8 +372,6 @@ public class NetScanCtr {
                 .addAttribute("pc", new TForms().fromArray(pCsAsync, true));
             AppComponents.lastNetScan().setTimeLastScan(new Date());
         }
-        String msg = propMsg + "\n" + ConstantsFor.STR_INPUT_OUTPUT + STR_REQUEST + request + STR_MODEL + model + "]+ lastScanDate = [" + lastScanDate + "]";
-        LOGGER.info(msg);
     }
 
     @Override

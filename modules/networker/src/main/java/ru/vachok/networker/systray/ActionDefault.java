@@ -2,6 +2,7 @@ package ru.vachok.networker.systray;
 
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
@@ -26,7 +27,7 @@ public class ActionDefault extends AbstractAction {
     /**
      {@link AppComponents#getLogger()}
      */
-    private static final Logger LOGGER = AppComponents.getLogger();
+    private static final Logger LOGGER = LoggerFactory.getLogger(ActionDefault.class.getSimpleName());
 
     private static MessageToUser messageToUser = new MessageLocal();
 

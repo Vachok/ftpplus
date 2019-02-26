@@ -39,7 +39,7 @@ public class RestoreFromArchives extends SimpleFileVisitor<Path> {
     /**
      {@link AppComponents#getLogger()}
      */
-    private static final Logger LOGGER = AppComponents.getLogger();
+    private static final Logger LOGGER = AppComponents.getLogger(RestoreFromArchives.class.getSimpleName());
 
     /**
      Папка первого уровня.
