@@ -31,10 +31,7 @@ import java.net.UnknownHostException;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
-import java.util.Date;
-import java.util.Deque;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.*;
 
 
@@ -262,9 +259,10 @@ public class NetScanCtr {
         if (newPSs) {
             FileSystemWorker.recFile(ConstantsNet.BEANNAME_LASTNETSCAN, new TForms().fromArray(lastScanMAP, false));
             model.addAttribute("newpc", "Добавлены компы! " + Math.abs(remainPC) + " шт.");
+            PROPERTIES.setProperty(ConstantsFor.PR_TOTPC, String.valueOf(lastScanMAP.size()));
         } else {
             if (3 > remainPC) {
-                PROPERTIES.setProperty(ConstantsFor.PR_TOTPC, lastScanMAP.size() + "");
+                PROPERTIES.setProperty(ConstantsFor.PR_TOTPC, String.valueOf(lastScanMAP.size()));
                 boolean setProps = AppComponents.getOrSetProps(PROPERTIES);
                 messageToUser.info("NetScanCtr.mapSizeBigger", "setProps", " = " + setProps);
             }
