@@ -107,8 +107,6 @@ public enum ConstantsNet {;
 
     public static final String ONLINE_NOW = "OnlineNow";
 
-    public static final int N_THREADS = 333;
-
     /**
      {@link AppComponents#getLogger()}
      */

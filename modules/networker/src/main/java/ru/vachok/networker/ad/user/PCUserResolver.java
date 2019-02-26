@@ -1,7 +1,6 @@
 package ru.vachok.networker.ad.user;
 
 
-import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ad.ADSrv;
@@ -77,10 +76,11 @@ public class PCUserResolver extends ADSrv {
      @see ru.vachok.networker.net.ConditionChecker#onLinesCheck(String, String)
      */
     public synchronized void namesToFile(String pcName) {
-        Thread.currentThread().setName(pcName);
-        Thread.currentThread().setPriority(3);
+        AppComponents.threadConfig().thrNameSet("pcfile-");
+
+        File pcNameFile = new File(pcName);
         File[] files;
-        try (OutputStream outputStream = new FileOutputStream(pcName);
+        try (OutputStream outputStream = new FileOutputStream(pcNameFile);
              PrintWriter writer = new PrintWriter(outputStream, true)) {
             String pathAsStr = new StringBuilder().append("\\\\").append(pcName).append("\\c$\\Users\\").toString();
             lastFileUse = getLastTimeUse(pathAsStr).split("Users")[1];
@@ -89,7 +89,6 @@ public class PCUserResolver extends ADSrv {
                 .append(Arrays.toString(files).replace(", ", "\n"))
                 .append("\n\n\n")
                 .append(lastFileUse);
-
         } catch (IOException e) {
             FileSystemWorker.error("PCUserResolver.namesToFile", e);
         } catch (ArrayIndexOutOfBoundsException ignore) {
@@ -98,6 +97,7 @@ public class PCUserResolver extends ADSrv {
         if (lastFileUse != null) {
             recAutoDB(pcName, lastFileUse);
         }
+        pcNameFile.deleteOnExit();
     }
 
     public ADUser searchForUser(String userInput) {
@@ -108,7 +108,7 @@ public class PCUserResolver extends ADSrv {
         stringSet.forEach(x -> {
             String s = fileParser.get(x);
             if (s.contains(userInput)) {
-                new MessageCons().infoNoTitles(s + " " + s.contains(userInput));
+                messageToUser.infoNoTitles(s + " " + s.contains(userInput));
             }
         });
         return adUser;
@@ -176,6 +176,7 @@ public class PCUserResolver extends ADSrv {
      @see #getLastTimeUse(String)
      @since 22.11.2018 (14:46)
      */
+    @SuppressWarnings("ClassHasNoToStringMethod")
     static class WalkerToUserFolder extends SimpleFileVisitor<Path> {
 
         /**

@@ -50,6 +50,11 @@ import static java.time.format.TextStyle.FULL_STANDALONE;
 public final class NetScannerSvc {
 
     /**
+     Компьютеры онлайн
+     */
+    static int onLinePCsNum = 0;
+
+    /**
      NetScannerSvc
      */
     private static final String CLASS_NAME = "NetScannerSvc";
@@ -71,19 +76,9 @@ public final class NetScannerSvc {
      */
     private static final String METHNAME_GET_PCS_ASYNC = "NetScannerSvc.getPCsAsync";
 
-    /**
-     Файл уникальных записей из БД velkom-pcuserauto
-     */
-    private static final String FILENAME_PCAUTODISTXT = "pcautodis.txt";
-
     private static Connection connection;
 
     private static MessageToUser messageToUser = new MessageLocal();
-
-    /**
-     Компьютеры онлайн
-     */
-    static int onLinePCsNum = 0;
 
     /**
      {@link ConstantsNet#getPcNames()}
@@ -150,8 +145,8 @@ public final class NetScannerSvc {
         } else {
             sqlQBuilder.append("select * from velkompc where NamePP like '%").append(thePcLoc).append("%'");
         }
-        try(
-             PreparedStatement preparedStatement = connection.prepareStatement(sqlQBuilder.toString())) {
+        try (
+            PreparedStatement preparedStatement = connection.prepareStatement(sqlQBuilder.toString())) {
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 List<String> timeNow = new ArrayList<>();
                 List<Integer> integersOff = new ArrayList<>();
@@ -208,7 +203,7 @@ public final class NetScannerSvc {
     /**
      @return атрибут модели.
      */
-    @SuppressWarnings ("WeakerAccess")
+    @SuppressWarnings("WeakerAccess")
     public String getThePc() {
         return thePc;
     }
@@ -229,6 +224,15 @@ public final class NetScannerSvc {
         return netScannerSvcInst;
     }
 
+    static {
+        try {
+            connection = new AppComponents().connection(ConstantsNet.DB_NAME);
+        } catch (IOException e) {
+            messageToUser.errorAlert(CLASS_NAME, ConstantsFor.METHNAME_STATIC_INITIALIZER, e.getMessage());
+            FileSystemWorker.error("NetScannerSvc.static initializer", e);
+        }
+    }
+
     /**
      @see AppComponents#lastNetScanMap()
      */
@@ -244,81 +248,82 @@ public final class NetScannerSvc {
      @return строка в html-формате
      @see #getPCNamesPref(String)
      */
-    @SuppressWarnings({"OverlyComplexMethod", "OverlyLongMethod", "resource"})
+    @SuppressWarnings({"OverlyComplexMethod", "OverlyLongMethod"})
     private static String writeDB() throws SQLException {
         List<String> list = new ArrayList<>();
-        PreparedStatement p = connection.prepareStatement("insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow) values (?,?,?,?)");
-        List<String> toSort = new ArrayList<>(pcNamesSet);
-        toSort.sort(null);
-        for (String x : toSort) {
-            String pcSerment = "Я не знаю...";
-            ConstantsNet.LOGGER.info(x);
-            if (x.contains("200.200")) {
-                pcSerment = "Торговый дом";
+        try (PreparedStatement p = connection.prepareStatement("insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow) values (?,?,?,?)")) {
+            List<String> toSort = new ArrayList<>(pcNamesSet);
+            toSort.sort(null);
+            for (String x : toSort) {
+                String pcSerment = "Я не знаю...";
+                ConstantsNet.LOGGER.info(x);
+                if (x.contains("200.200")) {
+                    pcSerment = "Торговый дом";
+                }
+                if (x.contains("200.201")) {
+                    pcSerment = "IP телефоны";
+                }
+                if (x.contains("200.202")) {
+                    pcSerment = "Техслужба";
+                }
+                if (x.contains("200.203")) {
+                    pcSerment = "СКУД";
+                }
+                if (x.contains("200.204")) {
+                    pcSerment = "Упаковка";
+                }
+                if (x.contains("200.205")) {
+                    pcSerment = "МХВ";
+                }
+                if (x.contains("200.206")) {
+                    pcSerment = "Здание склада 5";
+                }
+                if (x.contains("200.207")) {
+                    pcSerment = "Сырокопоть";
+                }
+                if (x.contains("200.208")) {
+                    pcSerment = "Участок убоя";
+                }
+                if (x.contains("200.209")) {
+                    pcSerment = "Да ладно?";
+                }
+                if (x.contains("200.210")) {
+                    pcSerment = "Мастера колб";
+                }
+                if (x.contains("200.212")) {
+                    pcSerment = "Мастера деликатесов";
+                }
+                if (x.contains("200.213")) {
+                    pcSerment = "2й этаж. АДМ.";
+                }
+                if (x.contains("200.214")) {
+                    pcSerment = "WiFiCorp";
+                }
+                if (x.contains("200.215")) {
+                    pcSerment = "WiFiFree";
+                }
+                if (x.contains("200.217")) {
+                    pcSerment = "1й этаж АДМ";
+                }
+                if (x.contains("192.168")) {
+                    pcSerment = "Может быть в разных местах...";
+                }
+                if (x.contains("172.16.200")) {
+                    pcSerment = "Open VPN авторизация - сертификат";
+                }
+                boolean onLine = false;
+                if (x.contains("true")) {
+                    onLine = true;
+                }
+                String x1 = x.split(":")[0];
+                p.setString(1, x1);
+                String x2 = x.split(":")[1];
+                p.setString(2, x2.split("<")[0]);
+                p.setString(3, pcSerment);
+                p.setBoolean(4, onLine);
+                p.executeUpdate();
+                list.add(x1 + " " + x2 + " " + pcSerment + " " + onLine);
             }
-            if (x.contains("200.201")) {
-                pcSerment = "IP телефоны";
-            }
-            if (x.contains("200.202")) {
-                pcSerment = "Техслужба";
-            }
-            if (x.contains("200.203")) {
-                pcSerment = "СКУД";
-            }
-            if (x.contains("200.204")) {
-                pcSerment = "Упаковка";
-            }
-            if (x.contains("200.205")) {
-                pcSerment = "МХВ";
-            }
-            if (x.contains("200.206")) {
-                pcSerment = "Здание склада 5";
-            }
-            if (x.contains("200.207")) {
-                pcSerment = "Сырокопоть";
-            }
-            if (x.contains("200.208")) {
-                pcSerment = "Участок убоя";
-            }
-            if (x.contains("200.209")) {
-                pcSerment = "Да ладно?";
-            }
-            if (x.contains("200.210")) {
-                pcSerment = "Мастера колб";
-            }
-            if (x.contains("200.212")) {
-                pcSerment = "Мастера деликатесов";
-            }
-            if (x.contains("200.213")) {
-                pcSerment = "2й этаж. АДМ.";
-            }
-            if (x.contains("200.214")) {
-                pcSerment = "WiFiCorp";
-            }
-            if (x.contains("200.215")) {
-                pcSerment = "WiFiFree";
-            }
-            if (x.contains("200.217")) {
-                pcSerment = "1й этаж АДМ";
-            }
-            if (x.contains("192.168")) {
-                pcSerment = "Может быть в разных местах...";
-            }
-            if (x.contains("172.16.200")) {
-                pcSerment = "Open VPN авторизация - сертификат";
-            }
-            boolean onLine = false;
-            if (x.contains("true")) {
-                onLine = true;
-            }
-            String x1 = x.split(":")[0];
-            p.setString(1, x1);
-            String x2 = x.split(":")[1];
-            p.setString(2, x2.split("<")[0]);
-            p.setString(3, pcSerment);
-            p.setBoolean(4, onLine);
-            p.executeUpdate();
-            list.add(x1 + " " + x2 + " " + pcSerment + " " + onLine);
         }
         ConstantsNet.setPcNames(pcNamesSet);
         return new TForms().fromArray(list, true);
@@ -351,15 +356,6 @@ public final class NetScannerSvc {
         AppComponents.netScannerSvc().setThePc(thePcWithDBInfo);
         ActDirectoryCTRL.setInputWithInfoFromDB(thePcWithDBInfo);
 
-    }
-
-    static {
-        try{
-            connection = new AppComponents().connection(ConstantsNet.DB_NAME);
-        } catch (IOException e) {
-            messageToUser.errorAlert(CLASS_NAME, ConstantsFor.METHNAME_STATIC_INITIALIZER, e.getMessage());
-            FileSystemWorker.error("NetScannerSvc.static initializer", e);
-        }
     }
 
     /**
@@ -473,10 +469,9 @@ public final class NetScannerSvc {
         AtomicReference<String> msg = new AtomicReference<>("");
         this.startClassTime = System.currentTimeMillis();
         boolean fileCreate = fileCreate(true);
-        try{
+        try {
             new MessageToTray(new ActionCloseMsg(new MessageLocal())).info("NetScannerSvc started scan", ConstantsFor.getUpTime(), " File: " + fileCreate);
-        }
-        catch(NoClassDefFoundError e){
+        } catch (NoClassDefFoundError e) {
             messageToUser.errorAlert(CLASS_NAME, "getPCsAsync", e.getMessage());
         }
         AppComponents.threadConfig().executeAsThread(() -> {
@@ -508,29 +503,28 @@ public final class NetScannerSvc {
      <p>
      {@link List} readFileAsList - читает по-строкам {@link ConstantsNet#VELKOM_PCUSERAUTO_TXT}.
      <p>
-     {@link Stream#distinct()} - запись файла {@link #FILENAME_PCAUTODISTXT}.
+     {@link Stream#distinct()} - запись файла {@link ConstantsNet#FILENAME_PCAUTODISTXT}.
      <p>
      {@link MessageCons#info(java.lang.String, java.lang.String, java.lang.String)} - покажем в консоль. <br>
      Cкопируем на 111.1, if {@link String#contains(java.lang.CharSequence)} "home". {@link ConstantsFor#thisPC()}.
      */
     private void countStat() {
         List<String> readFileAsList = new ArrayList<>();
-        try(InputStream inputStream = new FileInputStream(ConstantsNet.VELKOM_PCUSERAUTO_TXT);
-            InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-            BufferedReader bufferedReader = new BufferedReader(inputStreamReader)){
-            while(inputStreamReader.ready()){
+        try (InputStream inputStream = new FileInputStream(ConstantsNet.VELKOM_PCUSERAUTO_TXT);
+             InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+             BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
+            while (inputStreamReader.ready()) {
                 readFileAsList.add(bufferedReader.readLine().split("\\Q0) \\E")[1]);
             }
-        }
-        catch(IOException e){
+        } catch (IOException e) {
             messageToUser.errorAlert(CLASS_NAME, "countStat", e.getMessage());
         }
-        FileSystemWorker.recFile(FILENAME_PCAUTODISTXT, readFileAsList.parallelStream().distinct());
-        String valStr = FileSystemWorker.readFile(FILENAME_PCAUTODISTXT);
+        FileSystemWorker.recFile(ConstantsNet.FILENAME_PCAUTODISTXT, readFileAsList.parallelStream().distinct());
+        String valStr = FileSystemWorker.readFile(ConstantsNet.FILENAME_PCAUTODISTXT);
         messageToUser.info(ConstantsFor.SOUTV, "NetScannerSvc.countStat", valStr);
-        if(ConstantsFor.thisPC().toLowerCase().contains("home")){
-            String toCopy = "\\\\10.10.111.1\\Torrents-FTP\\" + FILENAME_PCAUTODISTXT;
-            FileSystemWorker.copyOrDelFile(new File(FILENAME_PCAUTODISTXT), toCopy, true);
+        if (ConstantsFor.thisPC().toLowerCase().contains("home")) {
+            String toCopy = "\\\\10.10.111.1\\Torrents-FTP\\" + ConstantsNet.FILENAME_PCAUTODISTXT;
+            FileSystemWorker.copyOrDelFile(new File(ConstantsNet.FILENAME_PCAUTODISTXT), toCopy, true);
         }
     }
 
@@ -662,18 +656,17 @@ public final class NetScannerSvc {
      @see #getPCNamesPref(String)
      */
     private Collection<String> getCycleNames(String namePCPrefix) {
-        if(namePCPrefix==null){
+        if (namePCPrefix == null) {
             namePCPrefix = "pp";
         }
         int inDex = getNamesCount(namePCPrefix);
         String nameCount;
         Collection<String> list = new ArrayList<>();
         int pcNum = 0;
-        for(int i = 1; i < inDex; i++){
-            if(namePCPrefix.equals("no") || namePCPrefix.equals("pp") || namePCPrefix.equals("do")){
+        for (int i = 1; i < inDex; i++) {
+            if (namePCPrefix.equals("no") || namePCPrefix.equals("pp") || namePCPrefix.equals("do")) {
                 nameCount = String.format("%04d", ++pcNum);
-            }
-            else{
+            } else {
                 nameCount = String.format("%03d", ++pcNum);
             }
             list.add(namePCPrefix + nameCount + ConstantsFor.EATMEAT_RU);
@@ -736,7 +729,7 @@ public final class NetScannerSvc {
         sb.append("CLASS_NAME='").append(CLASS_NAME).append('\'');
         sb.append(", LOCAL_PROPS=").append(LOCAL_PROPS.equals(AppComponents.getOrSetProps()));
         sb.append(", METHNAME_GET_PCS_ASYNC='").append(METHNAME_GET_PCS_ASYNC).append('\'');
-        sb.append(", FILENAME_PCAUTODISTXT='").append(FILENAME_PCAUTODISTXT).append('\'');
+        sb.append(", FILENAME_PCAUTODISTXT='").append(ConstantsNet.FILENAME_PCAUTODISTXT).append('\'');
         sb.append(", pcNamesSet=").append(pcNamesSet.size());
         sb.append(", onLinePCsNum=").append(onLinePCsNum);
         sb.append(", unusedNamesTree=").append(unusedNamesTree.size());

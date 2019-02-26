@@ -57,7 +57,7 @@ public class NetListKeeper implements Serializable {
      */
     List<InetAddress> onlinesAddressesList() throws IOException {
         String classMeth = "NetListKeeper.onlinesAddressesList";
-        new MessageCons().info(classMeth, ConstantsFor.STR_RETURNS, "java.util.List<java.net.InetAddress>");
+        new MessageLocal().info(classMeth, ConstantsFor.STR_RETURNS, "java.util.List<java.net.InetAddress>");
         List<InetAddress> onlineAddresses = new ArrayList<>();
         Deque<String> fileAsDeque = NetScanFileWorker.getI().getListOfOnlineDev();
         fileAsDeque.forEach(x -> {
