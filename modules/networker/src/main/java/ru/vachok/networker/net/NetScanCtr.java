@@ -27,8 +27,9 @@ import ru.vachok.networker.services.MessageLocal;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Field;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
@@ -101,14 +102,19 @@ public class NetScanCtr {
      */
     private static Deque<InetAddress> getDeqAddr() {
         Deque<InetAddress> retDeq = new ConcurrentLinkedDeque<>();
+        Field[] fields = OtherKnownDevices.class.getFields();
         try {
-            byte[] inetAddressBytes = InetAddress.getByName(OtherKnownDevices.IP_MOBKUDR).getAddress();
-            retDeq.add(InetAddress.getByName(OtherKnownDevices.NO0002_RDEMINA));
-            retDeq.add(InetAddress.getByAddress(inetAddressBytes));
-            inetAddressBytes = InetAddress.getByName("10.10.111.1").getAddress();
-            retDeq.add(InetAddress.getByAddress(inetAddressBytes));
-        } catch (UnknownHostException e) {
+            for (Field field : fields) {
+                if (field.getName().contains("IP")) {
+                    byte[] inetAddressBytes = InetAddress.getByName(field.get(field).toString()).getAddress();
+                    retDeq.add(InetAddress.getByAddress(inetAddressBytes));
+                } else {
+                    retDeq.add(InetAddress.getByName(field.get(field).toString()));
+                }
+            }
+        } catch (IOException | IllegalAccessException e) {
             messageToUser.errorAlert("NetScanCtr", "getDeqAddr", e.getMessage());
+            FileSystemWorker.error("NetScanCtr.getDeqAddr", e);
         }
         return retDeq;
     }
@@ -125,8 +131,7 @@ public class NetScanCtr {
         model.addAttribute("pingResult", FileSystemWorker.readFile(ConstantsNet.PINGRESULT_LOG));
         model.addAttribute(ConstantsFor.ATT_TITLE, netPingerInst.getTimeToEndStr() + " pinger hash: " + netPingerInst.hashCode());
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
-        model.addAttribute("pingTest", new TForms().fromArray(netPingerInst.pingDev(getDeqAddr()), true) + "<br><b>" +
-            netPingerInst.isReach(OtherKnownDevices.IP_MOBKUDR) + " my mobile...</b>");
+        model.addAttribute("pingTest", new TForms().fromArray(netPingerInst.pingDev(getDeqAddr()), true));
         response.addHeader(ConstantsFor.HEAD_REFRESH, "60");
         return "ping";
     }

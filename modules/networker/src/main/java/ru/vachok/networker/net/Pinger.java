@@ -39,9 +39,9 @@ public interface Pinger {
     default List<String> pingDev(Deque<InetAddress> devicesDeq) {
         MessageLocal messageToUser = new MessageLocal();
         String classMeth = "Pinger.pingDev";
-        messageToUser.errorAlert(classMeth);
-        final Properties properties = AppComponents.getOrSetProps();
+        Properties properties = AppComponents.getOrSetProps();
         long pingSleep = ConstantsFor.TIMEOUT_650;
+
         try {
             pingSleep = Long.parseLong(properties.getProperty(ConstantsNet.PROP_PINGSLEEP));
         } catch (Exception e) {
@@ -49,6 +49,7 @@ public interface Pinger {
         }
         List<String> resList = new ArrayList<>();
         properties.setProperty(ConstantsNet.PROP_PINGSLEEP, pingSleep + "");
+
         while (!devicesDeq.isEmpty()) {
             try {
                 InetAddress inetAddress = devicesDeq.removeFirst();
