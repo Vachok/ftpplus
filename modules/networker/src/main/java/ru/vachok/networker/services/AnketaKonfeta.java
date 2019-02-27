@@ -64,7 +64,7 @@ public class AnketaKonfeta {
     public void sendKonfeta() {
         List<String> emailsList = new ArrayList<>();
         MessageToUser messageToUser = new ESender(emailsList);
-        emailsList.add(ConstantsFor.GMAIL_COM);
+        emailsList.add(ConstantsFor.EADDR_143500GMAILCOM);
         try {
             if (this.userMail.isEmpty()) {
                 emailsList.add("ikudryashov@velokmfood.ru");

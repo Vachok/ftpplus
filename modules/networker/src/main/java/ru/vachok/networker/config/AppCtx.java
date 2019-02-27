@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.util.PriorityQueue;
 import java.util.Queue;
@@ -17,13 +18,8 @@ import java.util.Queue;
 @EnableAutoConfiguration
 public class AppCtx extends AnnotationConfigApplicationContext {
 
-    public AppCtx() {
-
-        this.resetCommonCaches();
-        this.setDisplayName(ConstantsFor.APP_NAME.replace("-", ""));
-        this.setResourceLoader(new ResLoader());
-        this.refresh();
-    }
+    @SuppressWarnings("resource")
+    private static AnnotationConfigApplicationContext configApplicationContext = new AnnotationConfigApplicationContext();
 
     private static final String SOURCE_CLASS = AppCtx.class.getSimpleName();
 
@@ -39,7 +35,12 @@ public class AppCtx extends AnnotationConfigApplicationContext {
         return autowireCapableBeanFactory;
     }
 
-    private static AnnotationConfigApplicationContext configApplicationContext = new AnnotationConfigApplicationContext();
+    public AppCtx() {
+
+        this.resetCommonCaches();
+        this.setDisplayName(ConstantsFor.APPNAME_WITHMINUS.replace("-", ""));
+        this.refresh();
+    }
 
     public static AnnotationConfigApplicationContext scanForBeansAndRefreshContext() {
         configApplicationContext.scan("ru.vachok.networker.componentsrepo");
@@ -55,10 +56,19 @@ public class AppCtx extends AnnotationConfigApplicationContext {
         String msg = new StringBuilder()
             .append("<p><h3><center>Context</center></h3><b><br>Context loaded. Bean names:</b><br>")
             .append(new TForms().fromArray(configApplicationContext.getBeanDefinitionNames(), false))
-            .append("</p>").toString();
+            .append("<p>").toString();
         stringBuilder.append(msg);
-        outQueue.add(msg);
+        outQueue.add(stringBuilder.toString());
         outQueue.add(AppCtx.CLASSPATH_ALL_URL_PREFIX);
         outQueue.add(AppCtx.LIFECYCLE_PROCESSOR_BEAN_NAME);
+        FileSystemWorker.recFile(SOURCE_CLASS + ".qadd", outQueue.stream());
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("AppCtx{");
+        sb.append("outQueue=").append(new TForms().fromArray(outQueue, false));
+        sb.append('}');
+        return sb.toString();
     }
 }

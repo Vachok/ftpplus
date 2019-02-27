@@ -25,7 +25,7 @@ public class MessageToTray implements MessageToUser {
      */
     private TrayIcon trayIcon = SystemTrayHelper.getTrayIcon();
 
-    private String headerMsg = ConstantsFor.APP_NAME.replace('-', ' ');
+    private String headerMsg = ConstantsFor.APPNAME_WITHMINUS.replace('-', ' ');
 
     private String titleMsg = new Date(new TimeChecker().call().getReturnTime()).toString();
 

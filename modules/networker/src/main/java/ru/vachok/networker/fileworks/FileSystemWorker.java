@@ -23,7 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Stream;
 
-import static ru.vachok.networker.ConstantsFor.LOG;
+import static ru.vachok.networker.ConstantsFor.FILEEXT_LOG;
 
 
 /**
@@ -88,8 +88,8 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
             folderToSearch = "\\\\srv-fs.eatmeat.ru\\common_new\\" + folderToSearch;
             Files.walkFileTree(Paths.get(folderToSearch), fileSearcher);
             String oneAddress = "netvisor@velkomfood.ru";
-            if (ConstantsFor.thisPC().toLowerCase().contains("home") || ConstantsFor.thisPC().contains("NO0027")) {
-                oneAddress = ConstantsFor.GMAIL_COM;
+            if (ConstantsFor.thisPC().toLowerCase().contains("home") || ConstantsFor.thisPC().contains("HOSTNAME_NO0027")) {
+                oneAddress = ConstantsFor.EADDR_143500GMAILCOM;
             }
             MessageToUser resSend = new ESender(oneAddress);
             List<String> fileSearcherResList = fileSearcher.getResList();
@@ -245,39 +245,29 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
      <p>
      1. {@link TimeChecker#call()} сверим часы. <br>
      2. {@link TForms#fromArray(java.lang.Exception, boolean)} приведём исключение к {@link String} <br><br>
-     <b>Если есть Suppressed: </b><br>
-     3. {@link TForms#fromArray(java.lang.Throwable, boolean)}
 
      @param classMeth класс метод.
      @param e         исключение
      */
     public static synchronized void error(String classMeth, Exception e) {
-        File f = new File(classMeth + LOG);
+        File f = new File(classMeth + FILEEXT_LOG);
+
         try (OutputStream outputStream = new FileOutputStream(f)) {
             boolean printTo = printTo(outputStream, e);
-            messageToUser.info("FileSystemWorker.error", "printTo", String.valueOf(printTo));
+            messageToUser.info(f.getAbsolutePath(), "print", String.valueOf(printTo));
         } catch (IOException exIO) {
             messageToUser.errorAlert(CLASS_NAME, "error", exIO.getMessage());
         }
     }
 
     private static synchronized boolean printTo(OutputStream outputStream, Exception e) {
-        PrintStream printStream = new PrintStream(outputStream, true);
-        printStream.println(new Date(new TimeChecker().call().getReturnTime()));
-        printStream.println();
-        printStream.println(e + " e");
-        printStream.println(e.getMessage() + " e.getMessage()");
-        printStream.println();
-        printStream.println(new TForms().fromArray(e, false));
-        printStream.println();
-        printStream.println("Suppressed:");
-        printStream.println();
-        if (e.getSuppressed().length > 0) {
-            for (Throwable throwable : e.getSuppressed()) {
-                printStream.println(throwable.getMessage());
-                printStream.println(new TForms().fromArray(throwable, false));
-            }
+        try (PrintStream printStream = new PrintStream(outputStream, true)) {
+            printStream.println(new Date(new TimeChecker().call().getReturnTime()));
+            printStream.println();
+            printStream.println(e.getMessage() + " getMessage;");
+            printStream.println();
+            printStream.println(new TForms().fromArray(e, false));
+            return printStream.checkError();
         }
-        return printStream.checkError();
     }
 }

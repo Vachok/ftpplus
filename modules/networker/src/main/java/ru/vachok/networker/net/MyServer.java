@@ -53,7 +53,7 @@ public class MyServer extends Thread {
     /**
      <b>Сокет для сервера</b>
 
-     @see ConstantsFor#LISTEN_PORT
+     @see ConstantsFor#PR_LPORT
      */
     @SuppressWarnings ("CanBeFinal")
     private static ServerSocket serverSocket = null;
@@ -80,20 +80,20 @@ public class MyServer extends Thread {
         return myServer;
     }
 
-    /**
-     {@link #myServer}
-     */
-    private MyServer() {
-        AppComponents.threadConfig().thrNameSet("tport:" + ConstantsFor.LISTEN_PORT);
-    }
-
     static {
         try{
-            serverSocket = new ServerSocket(ConstantsFor.LISTEN_PORT);
+            serverSocket = new ServerSocket(ConstantsFor.PR_LPORT);
         }
         catch(IOException e){
             LOGGER.error(e.getMessage(), e);
         }
+    }
+
+    /**
+     {@link #myServer}
+     */
+    private MyServer() {
+        AppComponents.threadConfig().thrNameSet("tport:" + ConstantsFor.PR_LPORT);
     }
 
     /**
@@ -111,7 +111,7 @@ public class MyServer extends Thread {
         PrintStream printStream = new PrintStream(socket.getOutputStream());
         InputStreamReader reader = new InputStreamReader(inputStream);
         BufferedReader bufferedReader = new BufferedReader(reader);
-        printStream.println((System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN + " min up | " + ConstantsFor.APP_NAME);
+        printStream.println((System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN + " min up | " + ConstantsFor.APPNAME_WITHMINUS);
         printStream.println(Thread.activeCount() + " active THREADS");
         printStream.println(ConstantsFor.getMemoryInfo());
         printStream.println("Press Enter or enter command:\n");
@@ -130,7 +130,7 @@ public class MyServer extends Thread {
         if(readLine.toLowerCase().contains("exit")){
             FileSystemWorker.delTemp();
             MyServer.socket.close();
-            System.exit(ConstantsFor.USER_EXIT);
+            System.exit(ConstantsFor.CODE_USEREXIT);
         }
         if(readLine.toLowerCase().contains("help")){
             MyServer.ifHelp();
@@ -147,7 +147,7 @@ public class MyServer extends Thread {
         if(readLine.equalsIgnoreCase("shutdown")){
             Runtime.getRuntime().exec(ConstantsFor.COM_SHUTDOWN_P_F);
         }
-        if(readLine.equalsIgnoreCase(ConstantsFor.STR_REBOOT)){
+        if (readLine.equalsIgnoreCase(ConstantsFor.COM_REBOOT)) {
             Runtime.getRuntime().exec("shutdown /r /f");
         }
         else{
@@ -234,7 +234,7 @@ public class MyServer extends Thread {
         PrintWriter printWriter = new PrintWriter(socket.getOutputStream(), true);
         InputStream inputStream = socket.getInputStream();
         System.setOut(new PrintStream(socket.getOutputStream()));
-        printWriter.println(( float ) (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN + " | " + ConstantsFor.APP_NAME);
+        printWriter.println((float) (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN + " | " + ConstantsFor.APPNAME_WITHMINUS);
         printWriter.println("NEW SOCKET: " + socket.toString());
         while(inputStream.available() > 0){
             byte[] bytes = new byte[3];

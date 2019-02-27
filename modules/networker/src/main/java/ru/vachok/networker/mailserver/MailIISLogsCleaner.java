@@ -34,7 +34,7 @@ public class MailIISLogsCleaner extends FileSystemWorker implements Runnable {
     private List<String> toLog = new ArrayList<>();
 
     @Override
-    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
         toLog.add("Current directory: " + dir.toString());
         toLog.add("Files: " + Objects.requireNonNull(dir.toFile().listFiles()).length);
         return FileVisitResult.CONTINUE;
@@ -79,6 +79,6 @@ public class MailIISLogsCleaner extends FileSystemWorker implements Runnable {
             toLog.add(e.getMessage());
             toLog.add(new TForms().fromArray(e, false));
         }
-        FileSystemWorker.recFile(this.getClass().getSimpleName() + ConstantsFor.LOG, toLog);
+        FileSystemWorker.recFile(this.getClass().getSimpleName() + ConstantsFor.FILEEXT_LOG, toLog);
     }
 }

@@ -80,7 +80,7 @@ public class CommonScan2YOlder extends SimpleFileVisitor<Path> implements Callab
     }
 
     /**
-     @return new {@link CommonScan2YOlder}
+     @return new instance
      */
     @Bean
     @Scope (ConstantsFor.SINGLETON)
@@ -108,12 +108,15 @@ public class CommonScan2YOlder extends SimpleFileVisitor<Path> implements Callab
         }
     }
 
-    @Override
-    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-        this.dirsCounter = dirsCounter + 1;
-        String toString = dirsCounter + " dirs";
-        LOGGER.info(toString);
-        return FileVisitResult.CONTINUE;
+    /**
+     Usages: {@link #visitFile(Path, BasicFileAttributes)} <br> Uses: - <br>
+
+     @param file {@link Path} to file
+     @return file contains(".eatmeat.ru"), contains(".log")
+     */
+    private boolean tempFile(Path file) {
+        return file.toString().toLowerCase().contains(ConstantsFor.DOMAIN_EATMEATRU) ||
+            file.toString().toLowerCase().contains(".log");
     }
 
     @Override
@@ -154,24 +157,21 @@ public class CommonScan2YOlder extends SimpleFileVisitor<Path> implements Callab
                 .size() > ConstantsFor.MBYTE * 2;
     }
 
-    /**
-     Usages: {@link #visitFile(Path, BasicFileAttributes)} <br> Uses: - <br>
-
-     @param file {@link Path} to file
-     @return file contains(".eatmeat.ru"), contains(".log")
-     */
-    private boolean tempFile(Path file) {
-        return file.toString().toLowerCase().contains(ConstantsFor.EATMEAT_RU) ||
-            file.toString().toLowerCase().contains(".log");
-    }
-
     @Override
-    public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
+        this.dirsCounter = dirsCounter + 1;
+        String toString = dirsCounter + " dirs";
+        LOGGER.info(toString);
         return FileVisitResult.CONTINUE;
     }
 
     @Override
-    public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+    public FileVisitResult visitFileFailed(Path file, IOException exc) {
+        return FileVisitResult.CONTINUE;
+    }
+
+    @Override
+    public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
         return FileVisitResult.CONTINUE;
     }
 }

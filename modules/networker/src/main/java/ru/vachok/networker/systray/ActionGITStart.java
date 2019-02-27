@@ -32,7 +32,7 @@ class ActionGITStart extends AbstractAction {
     @Override
     public void actionPerformed(ActionEvent eAct) {
         Callable<String> sshStr = () -> new SSHFactory.Builder(ConstantsFor
-            .SRV_GIT, new StringBuilder()
+            .IPADDR_SRVGIT, new StringBuilder()
             .append("sudo git instaweb;")
             .append("sudo cd /usr/home/dpetrov/;")
             .append("sudo git instaweb -p 11111;")

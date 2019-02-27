@@ -33,7 +33,7 @@ public class CalculateCTRL {
     public String getM(Model model, HttpServletRequest request) {
         Visitor visitor = ConstantsFor.getVis(request);
         model.addAttribute(ConstantsFor.ATT_TITLE, "Calculator");
-        model.addAttribute(ConstantsFor.STR_CALCULATOR, simpleCalculator);
+        model.addAttribute(ConstantsFor.BEANNAME_CALCULATOR, simpleCalculator);
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<p>" + visitor.toString());
         if (request != null) {
             model.addAttribute(ConstantsFor.ATT_RESULT, simpleCalculator.getStampFromDate(request.getQueryString()));
@@ -44,7 +44,7 @@ public class CalculateCTRL {
     @PostMapping("/calculate")
     private String timeStamp(@ModelAttribute SimpleCalculator simpleCalculator, Model model, String workPos) {
         model.addAttribute(ConstantsFor.ATT_TITLE, "Calculator-POS");
-        model.addAttribute(ConstantsFor.STR_CALCULATOR, simpleCalculator);
+        model.addAttribute(ConstantsFor.BEANNAME_CALCULATOR, simpleCalculator);
         model.addAttribute(ConstantsFor.ATT_RESULT, simpleCalculator.getStampFromDate(workPos));
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
         return "calculate";

@@ -29,7 +29,7 @@ public class DBMessenger implements MessageToUser {
 
     private void dbSend(String s , String s1 , String s2 ) {
         String sql = "insert into ru_vachok_networker (classname, msgtype, msgvalue) values (?,?,?)";
-        try (Connection c = new AppComponents().connection(ConstantsFor.DB_PREFIX + "webapp");
+        try (Connection c = new AppComponents().connection(ConstantsFor.DBPREFIX + "webapp");
              PreparedStatement p = c.prepareStatement(sql)){
             p.setString(1,s);
             p.setString(2,s1);

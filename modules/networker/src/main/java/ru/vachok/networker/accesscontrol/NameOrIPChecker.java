@@ -37,7 +37,7 @@ class NameOrIPChecker {
 
     private String resolveName(String userIn) throws UnknownHostException {
 
-        InetAddress[] allByName = InetAddress.getAllByName(userIn + ConstantsFor.EATMEAT_RU);
+        InetAddress[] allByName = InetAddress.getAllByName(userIn + ConstantsFor.DOMAIN_EATMEATRU);
         List<InetAddress> inetAddresses = Arrays.asList(allByName);
         return new TForms().fromArray(inetAddresses, true);
     }

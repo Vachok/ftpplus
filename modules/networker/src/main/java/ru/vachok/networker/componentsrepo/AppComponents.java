@@ -81,7 +81,7 @@ public class AppComponents {
     /**
      @return new {@link SimpleCalculator}
      */
-    @Bean(ConstantsFor.STR_CALCULATOR)
+    @Bean(ConstantsFor.BEANNAME_CALCULATOR)
     public SimpleCalculator simpleCalculator() {
         return new SimpleCalculator();
     }

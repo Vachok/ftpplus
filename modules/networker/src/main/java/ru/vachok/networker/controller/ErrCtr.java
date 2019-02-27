@@ -68,7 +68,7 @@ public class ErrCtr implements ErrorController {
             H_2_CENTER_CLOSE.replaceAll("2", "4"));
         model.addAttribute(ConstantsFor.ATT_STATCODE, H_2_CENTER + statCode + H_2_CENTER_CLOSE);
         if (exception != null) {
-            MessageToUser eMail = new ESender(ConstantsFor.GMAIL_COM);
+            MessageToUser eMail = new ESender(ConstantsFor.EADDR_143500GMAILCOM);
             try {
                 eMail.errorAlert(exception.toString(), exception.getMessage(), new TForms().fromArray(exception, false) + "\n\n" + visitor.toString());
                 LOGGER.error(exception.getMessage(), exception);

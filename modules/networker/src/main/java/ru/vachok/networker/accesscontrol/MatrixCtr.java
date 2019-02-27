@@ -88,6 +88,7 @@ public class MatrixCtr {
 
      @param versionInfo {@link AppComponents#versionInfo()}
      */
+    @SuppressWarnings("WeakerAccess")
     @Autowired
     public MatrixCtr(VersionInfo versionInfo) {
         this.versionInfoInst = versionInfo;
@@ -124,23 +125,6 @@ public class MatrixCtr {
     }
 
     /**
-     Перевод времени из long в {@link Date} и обратно.
-     <p>
-     1. {@link SimpleCalculator#getStampFromDate(java.lang.String)} метод перевода.
-     <p>
-
-     @param simpleCalculator {@link SimpleCalculator}
-     @param model            {@link Model}
-     @param workPos          {@link MatrixSRV#getWorkPos()}
-     @return redirect:/calculate
-     */
-    private static String timeStamp(@ModelAttribute SimpleCalculator simpleCalculator, Model model, String workPos) {
-        model.addAttribute(ConstantsFor.STR_CALCULATOR, simpleCalculator);
-        model.addAttribute(ATT_DINNER, simpleCalculator.getStampFromDate(workPos));
-        return "redirect:/calculate";
-    }
-
-    /**
      Получить должность. {@code Post}.
      <p>
      1. {@link MatrixSRV#getWorkPos()}. Получим пользовательскую строку ввода в {@link String} {@code workPos}. <br>
@@ -154,10 +138,10 @@ public class MatrixCtr {
      @param matrixSRV {@link #matrixSRV}
      @param result    {@link BindingResult}
      @param model     {@link Model}
-     @return {@link ConstantsFor#MATRIX_STRING_NAME}.html
+     @return {@link ConstantsFor#BEANNAME_MATRIX}.html
      */
     @PostMapping(GET_MATRIX)
-    public String getWorkPosition(@ModelAttribute(ConstantsFor.MATRIX_STRING_NAME) MatrixSRV matrixSRV, BindingResult result, Model model) {
+    public String getWorkPosition(@ModelAttribute(ConstantsFor.BEANNAME_MATRIX) MatrixSRV matrixSRV, BindingResult result, Model model) {
         this.matrixSRV = matrixSRV;
         String workPos = matrixSRV.getWorkPos();
         if (workPos.toLowerCase().contains("whois:")) {
@@ -168,7 +152,7 @@ public class MatrixCtr {
         } else if (workPos.toLowerCase().contains("calctime:") || workPos.toLowerCase().contains("calctimes:")) {
             timeStamp(new SimpleCalculator(), model, workPos);
         } else return matrixAccess(workPos);
-        return ConstantsFor.MATRIX_STRING_NAME;
+        return ConstantsFor.BEANNAME_MATRIX;
     }
 
     /**
@@ -181,9 +165,9 @@ public class MatrixCtr {
     @GetMapping("/git")
     public String gitOn(Model model, HttpServletRequest request) {
         this.visitorInst = ConstantsFor.getVis(request);
-        SSHFactory gitOner = new SSHFactory.Builder(ConstantsFor.SRV_GIT, "sudo cd /usr/home/ITDept;sudo git instaweb;exit").build();
-        if (request.getQueryString() != null && request.getQueryString().equalsIgnoreCase(ConstantsFor.STR_REBOOT)) {
-            gitOner = new SSHFactory.Builder(ConstantsFor.SRV_GIT, "sudo reboot").build();
+        SSHFactory gitOner = new SSHFactory.Builder(ConstantsFor.IPADDR_SRVGIT, "sudo cd /usr/home/ITDept;sudo git instaweb;exit").build();
+        if (request.getQueryString() != null && request.getQueryString().equalsIgnoreCase(ConstantsFor.COM_REBOOT)) {
+            gitOner = new SSHFactory.Builder(ConstantsFor.IPADDR_SRVGIT, "sudo reboot").build();
         }
         String call = gitOner.call() + "\n" + visitorInst.toString();
         LOGGER.info(call);
@@ -203,13 +187,13 @@ public class MatrixCtr {
      @param request  {@link HttpServletRequest}
      @param response {@link HttpServletResponse}
      @param model    {@link Model}
-     @return {@link ConstantsFor#MATRIX_STRING_NAME}.html
+     @return {@link ConstantsFor#BEANNAME_MATRIX}.html
      @throws IOException обработка {@link HttpServletResponse#sendError(int, java.lang.String)}
      */
     @GetMapping(GET_MATRIX)
     public String showResults(HttpServletRequest request, HttpServletResponse response, Model model) throws IOException {
         this.visitorInst = ConstantsFor.getVis(request);
-        model.addAttribute(ConstantsFor.MATRIX_STRING_NAME, matrixSRV);
+        model.addAttribute(ConstantsFor.BEANNAME_MATRIX, matrixSRV);
         String workPos;
         try {
             workPos = matrixSRV.getWorkPos();
@@ -224,7 +208,25 @@ public class MatrixCtr {
         model.addAttribute("headtitle", matrixSRV.getCountDB() + " позиций   " + TimeUnit.MILLISECONDS.toMinutes(
             System.currentTimeMillis() - ConstantsFor.START_STAMP) + " getUpTime");
         metricMatrixStartLong = System.currentTimeMillis() - metricMatrixStartLong;
-        return ConstantsFor.MATRIX_STRING_NAME;
+        return ConstantsFor.BEANNAME_MATRIX;
+    }
+
+    /**
+     Перевод времени из long в {@link Date} и обратно.
+     <p>
+     1. {@link SimpleCalculator#getStampFromDate(java.lang.String)} метод перевода.
+     <p>
+
+     @param simpleCalculator {@link SimpleCalculator}
+     @param model            {@link Model}
+     @param workPos          {@link MatrixSRV#getWorkPos()}
+     @return redirect:/calculate
+     */
+    @SuppressWarnings("UnusedReturnValue")
+    private static String timeStamp(@ModelAttribute SimpleCalculator simpleCalculator, Model model, String workPos) {
+        model.addAttribute(ConstantsFor.BEANNAME_CALCULATOR, simpleCalculator);
+        model.addAttribute(ATT_DINNER, simpleCalculator.getStampFromDate(workPos));
+        return "redirect:/calculate";
     }
 
     /**
@@ -233,7 +235,7 @@ public class MatrixCtr {
      1. {@link ConstantsFor#getUserPC(javax.servlet.http.HttpServletRequest)}. Для заголовка страницы. <br> 2. {@link Visitor#toString()} отобразим в {@link #LOGGER} <br> 3. {@link
     VersionInfo#getAppVersion()}. Компонент заголовка. 4. {@link VersionInfo} <br> 5. {@link ConstantsFor#isPingOK()}. Если {@code false} - аттрибут модели {@code ping to srv-git.eatmeat.ru is "
     false} <br> 6. {@link PageFooter#getFooterUtext()}, 7. new {@link PageFooter}. Низ страницы. <br> 8-9 {@link ConstantsFor#getUserPC(javax.servlet.http.HttpServletRequest)} если содержит {@link
-    ConstantsFor#NO0027} или {@code 0:0:0:0}, аттрибут {@link ConstantsFor#ATT_VISIT} - 10. {@link VersionInfo#toString()}, иначе - 11. {@link Visitor#getTimeSpend()}.
+    ConstantsFor#HOSTNAME_NO0027} или {@code 0:0:0:0}, аттрибут {@link ConstantsFor#ATT_VISIT} - 10. {@link VersionInfo#toString()}, иначе - 11. {@link Visitor#getTimeSpend()}.
      <p>
 
      @param model   {@link Model}
@@ -249,9 +251,9 @@ public class MatrixCtr {
         String userIP = userPC + ":" + request.getRemotePort() + "<-" + AppComponents.versionInfo().getAppVersion();
         if (!ConstantsFor.isPingOK()) userIP = "ping to srv-git.eatmeat.ru is " + false;
         model.addAttribute("yourip", userIP);
-        model.addAttribute(ConstantsFor.MATRIX_STRING_NAME, new MatrixSRV());
+        model.addAttribute(ConstantsFor.BEANNAME_MATRIX, new MatrixSRV());
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
-        if (ConstantsFor.getUserPC(request).toLowerCase().contains(ConstantsFor.NO0027) ||
+        if (ConstantsFor.getUserPC(request).toLowerCase().contains(ConstantsFor.HOSTNAME_NO0027) ||
             ConstantsFor.getUserPC(request).toLowerCase().contains("0:0:0:0")) {
             model.addAttribute(ConstantsFor.ATT_VISIT, versionInfoInst.toString());
         } else {
@@ -269,7 +271,7 @@ public class MatrixCtr {
 
      @param workPos {@link MatrixSRV#getWorkPos()}
      @param model   {@link Model}
-     @return {@link ConstantsFor#MATRIX_STRING_NAME}
+     @return {@link ConstantsFor#BEANNAME_MATRIX}
      */
     private String calculateDoubles(String workPos, Model model) {
         List<Double> list = new ArrayList<>();
@@ -281,7 +283,7 @@ public class MatrixCtr {
         String pos = v + " Dinner price";
         matrixSRV.setWorkPos(pos);
         model.addAttribute(ATT_DINNER, pos);
-        return ConstantsFor.MATRIX_STRING_NAME;
+        return ConstantsFor.BEANNAME_MATRIX;
     }
 
     /**

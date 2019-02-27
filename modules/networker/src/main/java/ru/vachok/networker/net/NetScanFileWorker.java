@@ -36,12 +36,12 @@ class NetScanFileWorker {
     /**
      {@link DiapazonedScan#scanNew()}
      */
-    private File newLanLastScan = new File(ConstantsFor.AVAILABLE_LAST_TXT);
+    private File newLanLastScan = new File(ConstantsFor.FILENAME_AVAILABLELASTTXT);
 
     /**
      {@link DiapazonedScan#scanOldLan(long)}
      */
-    private File oldLanLastScan = new File(ConstantsFor.OLD_LAN_TXT);
+    private File oldLanLastScan = new File(ConstantsFor.FILENAME_OLDLANTXT);
 
     /**
      @param newLanLastScan {@link #newLanLastScan}
@@ -78,7 +78,7 @@ class NetScanFileWorker {
         try {
             return FileSystemWorker.readFile(newLanLastScan.getAbsolutePath());
         } catch (NullPointerException e) {
-            return FileSystemWorker.readFile(ConstantsFor.AVAILABLE_LAST_TXT) + "<p>";
+            return FileSystemWorker.readFile(ConstantsFor.FILENAME_AVAILABLELASTTXT) + "<p>";
         }
     }
 
@@ -118,7 +118,7 @@ class NetScanFileWorker {
         try {
             return FileSystemWorker.readFile(oldLanLastScan.getAbsolutePath());
         } catch (NullPointerException ignore) {
-            return FileSystemWorker.readFile(ConstantsFor.OLD_LAN_TXT);
+            return FileSystemWorker.readFile(ConstantsFor.FILENAME_OLDLANTXT);
         }
     }
 

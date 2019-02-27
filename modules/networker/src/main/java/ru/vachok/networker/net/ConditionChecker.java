@@ -13,7 +13,10 @@ import ru.vachok.networker.services.MessageLocal;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -113,7 +116,7 @@ class ConditionChecker {
         StringBuilder stringBuilder = new StringBuilder();
         try(
             PreparedStatement p = connection.prepareStatement(sql);
-            PreparedStatement p1 = connection.prepareStatement(sql.replaceAll(ConstantsFor.STR_PCUSER, ConstantsFor.STR_PCUSERAUTO))){
+            PreparedStatement p1 = connection.prepareStatement(sql.replaceAll(ConstantsFor.DBFIELD_PCUSER, ConstantsFor.DBFIELD_PCUSERAUTO))) {
             p.setString(1, pcName);
             p1.setString(1, pcName);
             try(ResultSet resultSet = p.executeQuery();
@@ -170,8 +173,8 @@ class ConditionChecker {
             .append(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(( long ) minLeft))).toString();
         model.addAttribute(ConstantsFor.ATT_TITLE, attributeValue);
         model.addAttribute("pcs", FileSystemWorker
-            .readFile(ConstantsFor.AVAILABLE_LAST_TXT) + "<p>" + FileSystemWorker
-            .readFile(ConstantsFor.OLD_LAN_TXT));
+            .readFile(ConstantsFor.FILENAME_AVAILABLELASTTXT) + "<p>" + FileSystemWorker
+            .readFile(ConstantsFor.FILENAME_OLDLANTXT));
         response.addHeader(ConstantsFor.HEAD_REFRESH, "60");
     }
 

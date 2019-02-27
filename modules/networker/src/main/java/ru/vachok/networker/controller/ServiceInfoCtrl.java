@@ -77,8 +77,8 @@ public class ServiceInfoCtrl {
      @param response {@link HttpServletResponse}
      @return vir.html
      @throws AccessDeniedException если не {@link ConstantsFor#getPcAuth(HttpServletRequest)}
-     @throws ExecutionException    {@link #modModMaker(Model, HttpServletRequest, Visitor)}
-     @throws InterruptedException  {@link #modModMaker(Model, HttpServletRequest, Visitor)}
+     @throws ExecutionException запуск {@link #modModMaker(Model, HttpServletRequest, Visitor)}
+     @throws InterruptedException запуск {@link #modModMaker(Model, HttpServletRequest, Visitor)}
      */
     @GetMapping("/serviceinfo")
     public String infoMapping(Model model, HttpServletRequest request, HttpServletResponse response) throws AccessDeniedException, ExecutionException, InterruptedException {
@@ -232,7 +232,7 @@ public class ServiceInfoCtrl {
     private String pingGit() {
         boolean reachable = false;
         try {
-            InetAddress byName = InetAddress.getByName(ConstantsFor.SRV_GIT_EATMEAT_RU);
+            InetAddress byName = InetAddress.getByName(ConstantsFor.HOSTNAME_SRVGIT_EATMEATRU);
             reachable = byName.isReachable(1000);
         } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);

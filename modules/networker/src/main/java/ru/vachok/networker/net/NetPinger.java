@@ -14,7 +14,10 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.*;
@@ -174,7 +177,7 @@ public class NetPinger implements Runnable, Pinger {
      (уникальный элемент из {@link #resList}).
      <p>
      Записать результат в файл {@link FileSystemWorker#recFile(java.lang.String, java.util.List)}. Файл - {@link ConstantsNet#PINGRESULT_LOG}. <br> Если пингер работал 3 и более минут,
-     отправить отчёт на почту {@link ConstantsFor#GMAIL_COM} ({@link ESender#sendM(java.util.List, java.lang.String, java.lang.String)}) <br>
+     отправить отчёт на почту {@link ConstantsFor#EADDR_143500GMAILCOM} ({@link ESender#sendM(java.util.List, java.lang.String, java.lang.String)}) <br>
 
      @param userIn кол-во минут в мсек, которые пингер работал.
      */
@@ -190,7 +193,7 @@ public class NetPinger implements Runnable, Pinger {
         pingsList.add(((float) TimeUnit.MILLISECONDS.toMinutes(userIn) / ConstantsFor.ONE_HOUR_IN_MIN) + " hours spend");
         if (userIn >= TimeUnit.MINUTES.toMillis(3)) {
             try {
-                ESender.sendM(Collections.singletonList(ConstantsFor.GMAIL_COM), getClass().getSimpleName(), new TForms().fromArray(pingsList, false));
+                ESender.sendM(Collections.singletonList(ConstantsFor.EADDR_143500GMAILCOM), getClass().getSimpleName(), new TForms().fromArray(pingsList, false));
             } catch (Exception e) {
                 FileSystemWorker.error("NetPinger.parseResult", e);
             }

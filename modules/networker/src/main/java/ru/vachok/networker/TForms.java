@@ -11,7 +11,6 @@ import ru.vachok.networker.mailserver.MailRule;
 
 import javax.mail.Address;
 import javax.servlet.http.Cookie;
-import java.io.File;
 import java.net.InetAddress;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -52,7 +51,7 @@ public class TForms {
     private StringBuilder nStringBuilder = new StringBuilder();
 
     public String fromArray(Properties properties) {
-        InitProperties initProperties = new FileProps(ConstantsFor.APP_NAME);
+        InitProperties initProperties = new FileProps(ConstantsFor.APPNAME_WITHMINUS);
         initProperties.setProps(properties);
         nStringBuilder.append(N_STR);
         properties.forEach((x, y) -> {
@@ -73,7 +72,7 @@ public class TForms {
     public String fromArray(Exception e, boolean isHTML) {
         this.brStringBuilder = new StringBuilder();
         this.nStringBuilder = new StringBuilder();
-        nStringBuilder.append(LocalDateTime.now().toString()).append(N_STR).append(e.getMessage()).append(" Exception message.\n");
+
         brStringBuilder.append(LocalDateTime.now().toString()).append(BR_STR).append(e.getMessage()).append(" Exception message.<p>");
 
         for (StackTraceElement stackTraceElement : e.getStackTrace()) {
@@ -85,7 +84,6 @@ public class TForms {
         if (e.getSuppressed().length > 0) {
             parseThrowable(e);
         }
-
         if (isHTML) {
             return brStringBuilder.toString();
         } else {
@@ -118,7 +116,6 @@ public class TForms {
             brStringBuilder.append(stringQueue.poll()).append(BR_STR);
             nStringBuilder.append(stringQueue.poll()).append(N_STR);
         }
-        brStringBuilder.append("</p>");
         if (br) {
             return brStringBuilder.toString();
         } else {
@@ -318,27 +315,6 @@ public class TForms {
         }
     }
 
-    public String fromArray(StackTraceElement[] y, boolean b) {
-        brStringBuilder.append(BR_STR);
-        brStringBuilder.append(y.length)
-            .append(" stack length<br>");
-        nStringBuilder.append(y.length)
-            .append(" stack length\n");
-        for (StackTraceElement st : y) {
-            nStringBuilder
-                .append(st.toString())
-                .append(N_STR);
-            brStringBuilder
-                .append(st.toString())
-                .append(BR_STR);
-        }
-        if (b) {
-            return brStringBuilder.toString();
-        } else {
-            return nStringBuilder.toString();
-        }
-    }
-
     public String fromArray(Object[] objects, boolean b) {
         brStringBuilder.append(P_STR);
         for (Object o : objects) {
@@ -375,15 +351,6 @@ public class TForms {
         }
     }
 
-    public String fromArray(Throwable throwable, boolean b) {
-        StackTraceElement[] throwableStackTrace = throwable.getStackTrace();
-        if (b) {
-            return new TForms().fromArray(throwableStackTrace, true);
-        } else {
-            return new TForms().fromArray(throwableStackTrace, false);
-        }
-    }
-
     public String fromArray(BlockingQueue<Runnable> runnableBlockingQueue, boolean b) {
         this.nStringBuilder = new StringBuilder();
         this.brStringBuilder = new StringBuilder();
@@ -396,25 +363,16 @@ public class TForms {
             nStringBuilder.append(count).append(") ").append(next).append(N_STR);
             brStringBuilder.append(count).append(") ").append(next).append(BR_STR);
         }
-        if(b){
+        if (b) {
             return brStringBuilder.toString();
-        }
-        else{
+        } else {
             return nStringBuilder.toString();
         }
     }
 
-    public static String fromArray(File[] dirFiles) {
-        for (File f : dirFiles) {
-            if (f.getName().contains(".jar")) {
-                return f.getName().replace(".jar", "");
-            } else {
-                return System.getProperties().getProperty("version");
-            }
-        }
-        throw new UnsupportedOperationException("Хуя ты ХЕРург");
-    }
-
+// 27.02.2019 (13:39) Comment out
+/*
+    @Deprecated
     public static String from(Exception e) {
         StringBuilder stringBuilder = new StringBuilder();
 
@@ -436,7 +394,7 @@ public class TForms {
         }
         return stringBuilder.toString();
     }
-
+        @Deprecated
     private static void appendNElement(StringBuilder stringBuilder, StackTraceElement elem) {
         String strNative = "NATIVE***>>>  ";
         if (elem.isNativeMethod()) {
@@ -450,19 +408,69 @@ public class TForms {
             .append(" (").append(elem.getFileName()).append(")").append(N_STR);
     }
 
+    @Deprecated
+    private String fromArray(StackTraceElement[] y, boolean b) {
+        brStringBuilder.append(BR_STR);
+        brStringBuilder.append(y.length)
+            .append(" stack length<br>");
+        nStringBuilder.append(y.length)
+            .append(" stack length\n");
+        for (StackTraceElement st : y) {
+            nStringBuilder
+                .append(st.toString())
+                .append(N_STR);
+            brStringBuilder
+                .append(st.toString())
+                .append(BR_STR);
+        }
+        if (b) {
+            return brStringBuilder.toString();
+        } else {
+            return nStringBuilder.toString();
+        }
+    }
+        @Deprecated
+    public static String fromArray(File[] dirFiles) {
+        for (File f : dirFiles) {
+            if (f.getName().contains(".jar")) {
+                return f.getName().replace(".jar", "");
+            }
+        }
+        throw new UnsupportedOperationException("Хуя ты ХЕРург");
+    }
+*/
+
+    /**
+     Если {@link Exception} содержит getSuppressed.
+     <p>
+     Парсит {@link Throwable}
+
+     @param e {@link Exception}
+     @see TForms#fromArray(java.lang.Exception, boolean)
+     */
+    @SuppressWarnings("MethodWithMultipleLoops")
     private void parseThrowable(Exception e) {
         Throwable[] eSuppressed = e.getSuppressed();
         for (Throwable throwable : eSuppressed) {
             nStringBuilder.append(throwable.getMessage()).append(N_STR);
             brStringBuilder.append(throwable.getMessage()).append(BR_STR);
+
             for (StackTraceElement stackTraceElement : throwable.getStackTrace()) {
                 parseTrace(stackTraceElement);
             }
             nStringBuilder.append(N_STR).append(N_STR);
-            brStringBuilder.append(BR_STR);
+            brStringBuilder.append(P_STR);
         }
     }
 
+    /**
+     Парсинг элемента трэйса
+     <p>
+
+     @param stackTraceElement {@link StackTraceElement} из {@link Exception} или {@link Throwable}
+     @see #parseThrowable(Exception)
+     @see #fromArray(Exception, boolean)
+     */
     private void parseTrace(StackTraceElement stackTraceElement) {
         String fileName;
         try {
@@ -471,21 +479,11 @@ public class TForms {
             fileName = "No fileName!".toUpperCase();
         }
         nStringBuilder
-            .append("At ").append(stackTraceElement.getLineNumber()).append(" line, classname is ")
-            .append(stackTraceElement.getClassName())
-            .append(" file: ")
-            .append(fileName).append(" ; ")
-            .append(stackTraceElement.getMethodName()).append(" name of method.")
-            .append("\nMethod is native: ")
-            .append(stackTraceElement.isNativeMethod()).append("\n");
+            .append(stackTraceElement.getLineNumber()).append(" line, classname is ").append(stackTraceElement.getClassName()).append("(file: ").append(fileName).append(")\n")
+            .append(stackTraceElement.getMethodName()).append(" name of method.").append(" Method is native: ").append(stackTraceElement.isNativeMethod()).append("\n");
         brStringBuilder
-            .append("At ").append(stackTraceElement.getLineNumber()).append(" line, classname is ")
-            .append(stackTraceElement.getClassName())
-            .append(" file: ")
-            .append(fileName).append(" ; ")
-            .append(stackTraceElement.getMethodName()).append(" name of method.")
-            .append("<br>Method is native: ")
-            .append(stackTraceElement.isNativeMethod()).append(BR_STR);
+            .append(stackTraceElement.getLineNumber()).append(" line, classname is ").append(stackTraceElement.getClassName()).append("(file: ").append(fileName).append(")<br>")
+            .append(stackTraceElement.getMethodName()).append(" name of method.").append(" Method is native: ").append(stackTraceElement.isNativeMethod()).append(BR_STR);
     }
 
     @Override

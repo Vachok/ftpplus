@@ -142,7 +142,7 @@ public class PhotoConverterSRV {
 
         Set<String> samAccounts = new HashSet<>();
 
-        try (Connection c = new AppComponents().connection(ConstantsFor.DB_PREFIX + ConstantsFor.STR_VELKOM);
+        try (Connection c = new AppComponents().connection(ConstantsFor.DBPREFIX + ConstantsFor.STR_VELKOM);
              PreparedStatement p = c.prepareStatement("select * from u0466446_velkom.adusers");
              ResultSet r = p.executeQuery()) {
             while (r.next()) {

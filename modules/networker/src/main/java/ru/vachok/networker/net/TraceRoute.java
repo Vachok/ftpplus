@@ -2,9 +2,10 @@ package ru.vachok.networker.net;
 
 
 import ru.vachok.messenger.MessageCons;
+import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.TForms;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.services.MessageLocal;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,6 +18,8 @@ import java.util.concurrent.Callable;
 
  @since 05.02.2019 (13:10) */
 public class TraceRoute implements Callable<String> {
+
+    private static MessageToUser messageToUser = new MessageLocal();
 
     private String traceRt() {
         Thread.currentThread().setName(getClass().getSimpleName());
@@ -38,6 +41,7 @@ public class TraceRoute implements Callable<String> {
         return stringBuilder.toString();
     }
 
+    @SuppressWarnings("resource")
     private String winTrace(InetAddress yaRu) {
         StringBuilder stringBuilder = new StringBuilder();
         try {
@@ -51,14 +55,14 @@ public class TraceRoute implements Callable<String> {
             }
             inputStream.close();
         } catch (IOException e) {
-            new MessageCons().errorAlert("TraceRoute", "winTrace", TForms.from(e));
-            stringBuilder.append(e.getMessage());
+            messageToUser.errorAlert("TraceRoute", "winTrace", e.getMessage());
+            FileSystemWorker.error("TraceRoute.winTrace", e);
         }
         return stringBuilder.toString();
     }
 
     @Override
-    public String call() throws Exception {
+    public String call() {
         throw new UnsupportedOperationException();
     }
 }

@@ -17,6 +17,7 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.services.MessageLocal;
 
 import javax.servlet.http.HttpServletRequest;
@@ -96,6 +97,7 @@ public class PfListsCtr {
      @param pfLists    {@link #pfListsInstAW}
      @param pfListsSrv {@link #pfListsSrvInstAW}
      */
+    @SuppressWarnings("WeakerAccess")
     @Autowired
     public PfListsCtr(PfLists pfLists, PfListsSrv pfListsSrv) {
         this.pfListsInstAW = pfLists;
@@ -126,7 +128,7 @@ public class PfListsCtr {
      @param model    {@link Model}
      @param request  {@link HttpServletRequest}
      @param response {@link HttpServletResponse}
-     @return {@link ConstantsFor#PFLISTS}.html
+     @return {@link ConstantsFor#BEANNAME_PFLISTS}.html
      @throws UnknownHostException Если {@link PfListsCtr#noPing(org.springframework.ui.Model)}
      */
     @GetMapping("/pflists")
@@ -160,7 +162,7 @@ public class PfListsCtr {
         }
         response.addHeader(ConstantsFor.HEAD_REFRESH, refreshRate);
         AppComponents.getOrSetProps(true);
-        return ConstantsFor.PFLISTS;
+        return ConstantsFor.BEANNAME_PFLISTS;
     }
 
     @PostMapping("/runcom")
@@ -204,9 +206,12 @@ public class PfListsCtr {
      squid = {@link PfLists#getStdSquid()} <br>
      nat = {@link PfLists#getPfNat()} <br>
      rules = {@link PfLists#getPfRules()} <br>
-     {@link ConstantsFor#ATT_GITSTATS} = {@code gitstatValue "\n" ConstantsFor.getMemoryInfo()} <br>
      {@link ConstantsFor#ATT_FOOTER} = {@link PageFooter#getFooterUtext()}
      <p>
+     {@code gitstatValue} - отображается в последней секции страницы. Показывает: <br>
+     {@link PfLists#getInetLog()}, {@link Thread#activeCount()}; {@link Properties#getProperty(java.lang.String, java.lang.String)} {@code "thr", "1"};
+     {@link ConstantsFor#getMemoryInfo()}, {@link ThreadConfig#toString()}.
+
      @param model {@link Model}
      */
     private void modSet(Model model) {

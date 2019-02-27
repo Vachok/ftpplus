@@ -22,12 +22,12 @@ import java.util.concurrent.ConcurrentHashMap;
 
 
 /**
- {@link Service} : {@link ConstantsFor#MATRIX_STRING_NAME}
+ {@link Service} : {@link ConstantsFor#BEANNAME_MATRIX}
  <p>
  Сервис-класс для {@link MatrixCtr}.
 
  @since 07.09.2018 (9:45) */
-@Service (ConstantsFor.MATRIX_STRING_NAME)
+@Service(ConstantsFor.BEANNAME_MATRIX)
 public class MatrixSRV {
 
     /**
@@ -49,7 +49,7 @@ public class MatrixSRV {
 
      @see MatrixCtr
      */
-    private String workPos = "";
+    private String workPos = "whois: ";
 
     /**
      Header
@@ -156,7 +156,7 @@ public class MatrixSRV {
     /**
      Качает информацию из БД
      <p>
-     {@link DataConnectTo#getDefaultConnection(java.lang.String)} . База: {@link ConstantsFor#DB_PREFIX} + {@link ConstantsFor#STR_VELKOM}. <br>
+     {@link DataConnectTo#getDefaultConnection(java.lang.String)} . База: {@link ConstantsFor#DBPREFIX} + {@link ConstantsFor#STR_VELKOM}. <br>
      {@link #getInfo(ResultSet, Map)}. Метод разбит на несколько.
      <p>
      <b>{@link SQLException}:</b><br>
@@ -172,7 +172,7 @@ public class MatrixSRV {
     String getWorkPosition(String sql) {
         Map<String, String> doljAndAccess = new ConcurrentHashMap<>();
 
-        try (Connection c = new AppComponents().connection(ConstantsFor.DB_PREFIX + ConstantsFor.STR_VELKOM);
+        try (Connection c = new AppComponents().connection(ConstantsFor.DBPREFIX + ConstantsFor.STR_VELKOM);
              PreparedStatement statement = c.prepareStatement(sql);
              ResultSet r = statement.executeQuery()) {
             while (r.next()) {

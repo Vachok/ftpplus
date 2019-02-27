@@ -125,7 +125,7 @@ public class DiapazonedScan implements Runnable {
         final String classMeth = "DiapazonedScan.scanNew";
         Path p = Paths.get(ROOT_PATH_STR + "\\lan\\200_" + System.currentTimeMillis() / 1000 + ".scan");
 
-        File newLanFile = new File(ConstantsFor.AVAILABLE_LAST_TXT);
+        File newLanFile = new File(ConstantsFor.FILENAME_AVAILABLELASTTXT);
 
         try (OutputStream outputStream = new FileOutputStream(newLanFile);
              PrintWriter printWriter = new PrintWriter(outputStream, true)) {
@@ -202,7 +202,7 @@ public class DiapazonedScan implements Runnable {
      */
     @SuppressWarnings("MagicNumber")
     private void scanOldLan(long stArt) {
-        File oldLANFile = new File(ConstantsFor.OLD_LAN_TXT);
+        File oldLANFile = new File(ConstantsFor.FILENAME_OLDLANTXT);
         Path p = Paths.get(new StringBuilder().append(ROOT_PATH_STR).append("\\lan\\192_").append(System.currentTimeMillis() / 1000).append(".scan").toString());
 
         try (OutputStream outputStream = new FileOutputStream(oldLANFile);
@@ -260,11 +260,11 @@ public class DiapazonedScan implements Runnable {
     public String toString() {
         String fileTimes = "No filetimes";
         try {
-            fileTimes = ConstantsFor.AVAILABLE_LAST_TXT + " " +
-                Paths.get(ConstantsFor.AVAILABLE_LAST_TXT).toFile().lastModified() + "\n" +
-                ConstantsFor.OLD_LAN_TXT +
+            fileTimes = ConstantsFor.FILENAME_AVAILABLELASTTXT + " " +
+                Paths.get(ConstantsFor.FILENAME_AVAILABLELASTTXT).toFile().lastModified() + "\n" +
+                ConstantsFor.FILENAME_OLDLANTXT +
                 " " +
-                Paths.get(ConstantsFor.OLD_LAN_TXT).toFile().lastModified();
+                Paths.get(ConstantsFor.FILENAME_OLDLANTXT).toFile().lastModified();
         } catch (NullPointerException e) {
             LOGGER.info("NO FILES!");
         }

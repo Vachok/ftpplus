@@ -100,7 +100,7 @@ public class PCUserResolver extends ADSrv {
         pcNameFile.deleteOnExit();
     }
 
-    public ADUser searchForUser(String userInput) {
+    public void searchForUser(String userInput) {
         ADUser adUser = new ADUser();
         DataBaseADUsersSRV adUsersSRV = new DataBaseADUsersSRV(adUser);
         Map<String, String> fileParser = adUsersSRV.fileParser(FileSystemWorker.readFileToList("C:\\Users\\ikudryashov\\IdeaProjects\\spring\\modules\\networker\\src\\main\\resources\\static\\texts\\users.txt"));
@@ -111,7 +111,6 @@ public class PCUserResolver extends ADSrv {
                 messageToUser.infoNoTitles(s + " " + s.contains(userInput));
             }
         });
-        return adUser;
     }
 
     /**
@@ -128,7 +127,7 @@ public class PCUserResolver extends ADSrv {
     private synchronized void recAutoDB(String pcName, String lastFileUse) {
         String sql = "insert into pcuser (pcName, userName, lastmod, stamp) values(?,?,?,?)";
         try (Connection connection = new AppComponents().connection(ConstantsNet.DB_NAME)) {
-            try (PreparedStatement preparedStatement = connection.prepareStatement(sql.replaceAll(ConstantsFor.STR_PCUSER, ConstantsFor.STR_PCUSERAUTO))) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql.replaceAll(ConstantsFor.DBFIELD_PCUSER, ConstantsFor.DBFIELD_PCUSERAUTO))) {
                 String[] split = lastFileUse.split(" ");
                 preparedStatement.setString(1, pcName);
                 preparedStatement.setString(2, split[0]);
@@ -137,7 +136,7 @@ public class PCUserResolver extends ADSrv {
                 preparedStatement.executeUpdate();
             } catch (SQLException e) {
                 connection.clearWarnings();
-                messageToUser.errorAlert(ConstantsFor.PC_USER_RESOLVER_CLASS_NAME, "recAutoDB", e.getMessage());
+                messageToUser.errorAlert(ConstantsFor.CLASS_NAME_PCUSERRESOLVER, "recAutoDB", e.getMessage());
                 FileSystemWorker.error(METHNAME_REC_AUTO_DB, e);
             }
         }

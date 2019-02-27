@@ -2,7 +2,7 @@ package ru.vachok.networker.net.enums;
 
 
 import org.springframework.ui.Model;
-import ru.vachok.messenger.MessageCons;
+import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.ADSrv;
@@ -10,6 +10,7 @@ import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetScannerSvc;
 import ru.vachok.networker.net.TraceRoute;
+import ru.vachok.networker.services.MessageLocal;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
@@ -51,9 +52,9 @@ public enum ConstantsNet {;
     public static final int TDPC = 15;
 
     /**
-     {@link ConstantsFor#DB_PREFIX} + velkom
+     {@link ConstantsFor#DBPREFIX} + velkom
      */
-    public static final String DB_NAME = ConstantsFor.U_0466446_VELKOM;
+    public static final String DB_NAME = ConstantsFor.DBDASENAME_U0466446_VELKOM;
 
     public static final int APC = 350;
 
@@ -100,7 +101,7 @@ public enum ConstantsNet {;
     public static final String STR_COMPNAME_USERS_MAP_SIZE = " COMPNAME_USERS_MAP size";
 
     /**
-     Выгрузка из БД {@link ConstantsFor#DB_PREFIX} {@code velkom} - pcuserauto
+     Выгрузка из БД {@link ConstantsFor#DBPREFIX} {@code velkom} - pcuserauto
      */
     public static final String VELKOM_PCUSERAUTO_TXT = "velkom_pcuserauto.txt";
 
@@ -111,12 +112,12 @@ public enum ConstantsNet {;
      */
     public static final String BEANNAME_NETSCANNERSVC = "netScannerSvc";
 
-    private static final Properties LOC_PROPS = AppComponents.getOrSetProps();
-
     /**
      Файл уникальных записей из БД velkom-pcuserauto
      */
     public static final String FILENAME_PCAUTODISTXT = "pcautodis.txt";
+
+    private static final Properties LOC_PROPS = AppComponents.getOrSetProps();
 
     /**
      new {@link HashSet}
@@ -125,6 +126,8 @@ public enum ConstantsNet {;
      @see ru.vachok.networker.net.NetScanCtr#scanIt(HttpServletRequest, Model, Date)
      */
     private static Set<String> pcNames = new HashSet<>(Integer.parseInt(LOC_PROPS.getOrDefault(ConstantsFor.PR_TOTPC, "318").toString()));
+
+    private static MessageToUser messageToUser = new MessageLocal();
 
     public static Set<String> getPcNames() {
         return pcNames;
@@ -141,7 +144,7 @@ public enum ConstantsNet {;
             FileSystemWorker.recFile("trace", s);
             return s;
         } catch (InterruptedException | ExecutionException e) {
-            new MessageCons().errorAlert("ConstantsNet", "getProvider", TForms.from(e));
+            messageToUser.errorAlert("ConstantsNet", "getProvider", new TForms().fromArray(e, false));
             Thread.currentThread().interrupt();
             return e.getMessage();
         }

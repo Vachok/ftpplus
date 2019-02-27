@@ -169,19 +169,20 @@ public class IntoApplication {
                 LOCAL_PROPS.setProperty("lport", stringStringEntry.getValue());
             }
         }
+
         beforeSt(isTray);
         configurableApplicationContext.start();
         afterSt();
     }
 
     private static void trayAdd() {
-        if (ConstantsFor.thisPC().toLowerCase().contains(ConstantsFor.NO0027)) {
+        if (ConstantsFor.thisPC().toLowerCase().contains(ConstantsFor.HOSTNAME_NO0027)) {
             SystemTrayHelper.addTray("icons8-плохие-поросята-32.png");
         } else {
             if (ConstantsFor.thisPC().toLowerCase().contains("home")) {
                 SystemTrayHelper.addTray("icons8-house-26.png");
             } else {
-                SystemTrayHelper.addTray(ConstantsFor.ICON_FILE_NAME);
+                SystemTrayHelper.addTray(ConstantsFor.FILENAME_ICON);
             }
         }
     }
@@ -190,7 +191,7 @@ public class IntoApplication {
      Запуск до старта Spring boot app <br> Usages: {@link #main(String[])}
      <p>
      {@link Logger#warn(java.lang.String)} - день недели. <br>
-     Если {@link ConstantsFor#thisPC()} - {@link ConstantsFor#NO0027} или "home",
+     Если {@link ConstantsFor#thisPC()} - {@link ConstantsFor#HOSTNAME_NO0027} или "home",
      {@link SystemTrayHelper#addTray(java.lang.String)} "icons8-плохие-поросята-32.png".
      Else - {@link SystemTrayHelper#addTray(java.lang.String)} {@link String} null<br>
      {@link SpringApplication#setMainApplicationClass(java.lang.Class)}
@@ -230,7 +231,6 @@ public class IntoApplication {
         executor.submit(mySrv);
         executor.submit(INFO_MSG_RUNNABLE);
         executor.submit(AppInfoOnLoad::getWeekPCStats);
-        AppComponents.getOrSetProps(LOCAL_PROPS);
     }
 
     /**
@@ -243,7 +243,7 @@ public class IntoApplication {
      {@link ConstantsFor#IPS_IN_VELKOM_VLAN} <br>
      {@link InitProperties#setProps(java.util.Properties)} запись {@code props} в <b>application.LOCAL_PROPS</b>
      <p>
-     new {@link DBRegProperties} - {@link ConstantsFor#APP_NAME} + {@code "application"} <br>
+     new {@link DBRegProperties} - {@link ConstantsFor#APPNAME_WITHMINUS} + {@code "application"} <br>
      {@link InitProperties#delProps()}
      {@link InitProperties#setProps(java.util.Properties)} запись в БД.
      <p>

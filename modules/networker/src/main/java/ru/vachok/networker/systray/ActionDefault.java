@@ -1,11 +1,8 @@
 package ru.vachok.networker.systray;
 
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
 
@@ -24,10 +21,12 @@ import java.net.URI;
  @since 25.01.2019 (9:56) */
 public class ActionDefault extends AbstractAction {
 
-    /**
-     {@link AppComponents#getLogger()}
-     */
-    private static final Logger LOGGER = LoggerFactory.getLogger(ActionDefault.class.getSimpleName());
+// --Commented out by Inspection START (27.02.2019 12:42):
+//    /**
+//     {@link AppComponents#getLogger()}
+//     */
+//    private static final Logger LOGGER = LoggerFactory.getLogger(ActionDefault.class.getSimpleName());
+// --Commented out by Inspection STOP (27.02.2019 12:42)
 
     private static MessageToUser messageToUser = new MessageLocal();
 
@@ -38,7 +37,7 @@ public class ActionDefault extends AbstractAction {
     }
 
     ActionDefault() {
-        this.goTo = ConstantsFor.HTTP_LOCALHOST_8880_SLASH;
+        this.goTo = ConstantsFor.HTTP_LOCALHOST8880SLASH;
         if(ConstantsFor.IS_SYSTRAY_AVAIL && SystemTrayHelper.getTrayIcon()!=null){
             SystemTrayHelper.delOldActions();
             messageToUser.info("ActionDefault.ActionDefault",

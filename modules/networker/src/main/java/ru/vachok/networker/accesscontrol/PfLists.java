@@ -8,7 +8,8 @@ import ru.vachok.networker.ConstantsFor;
 
 /**
  @since 10.09.2018 (11:35) */
-@Component(ConstantsFor.PFLISTS)
+@SuppressWarnings("ClassWithTooManyMethods")
+@Component(ConstantsFor.BEANNAME_PFLISTS)
 @Scope(ConstantsFor.SINGLETON)
 public class PfLists {
 

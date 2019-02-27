@@ -57,7 +57,7 @@ public final class NetScannerSvc {
     /**
      NetScannerSvc
      */
-    private static final String CLASS_NAME = "NetScannerSvc";
+    private static final String CLASS_NAME = NetScannerSvc.class.getSimpleName();
 
     /**
      {@link LoggerFactory#getLogger(String)} - {@link #CLASS_NAME}
@@ -101,13 +101,6 @@ public final class NetScannerSvc {
      Время инициализации
      */
     private long startClassTime = System.currentTimeMillis();
-
-    /**
-     Статистика скана.
-     <p>
-     {@link #runAfterAllScan()}
-     */
-    private Runnable runAfterAll = this::runAfterAllScan;
 
     /**
      /netscan POST форма
@@ -494,7 +487,7 @@ public final class NetScannerSvc {
             String elapsedTime = "Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime) + " sec.";
             pcNamesSet.add(elapsedTime);
             LOGGER.warn(msg.get());
-            AppComponents.threadConfig().executeAsThread(runAfterAll);
+            AppComponents.threadConfig().executeAsThread(this::runAfterAllScan);
         });
     }
 
@@ -609,7 +602,7 @@ public final class NetScannerSvc {
     private void runAfterAllScan() {
         float upTime = (float) (TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime)) / ConstantsFor.ONE_HOUR_IN_MIN;
         List<String> toFileList = new ArrayList<>();
-        MessageToUser mailMSG = new ESender(ConstantsFor.GMAIL_COM);
+        MessageToUser mailMSG = new ESender(ConstantsFor.EADDR_143500GMAILCOM);
 
         String compNameUsers = new TForms().fromArray(ConstantsNet.COMPNAME_USERS_MAP, false);
         String psUser = new TForms().fromArrayUsers(ConstantsNet.PC_U_MAP, false);
@@ -669,7 +662,7 @@ public final class NetScannerSvc {
             } else {
                 nameCount = String.format("%03d", ++pcNum);
             }
-            list.add(namePCPrefix + nameCount + ConstantsFor.EATMEAT_RU);
+            list.add(namePCPrefix + nameCount + ConstantsFor.DOMAIN_EATMEATRU);
         }
         messageToUser.info(
             ConstantsFor.STR_INPUT_OUTPUT,
@@ -735,7 +728,6 @@ public final class NetScannerSvc {
         sb.append(", unusedNamesTree=").append(unusedNamesTree.size());
         sb.append(", netScannerSvcInst=").append(netScannerSvcInst.hashCode());
         sb.append(", startClassTime=").append(new Date(startClassTime));
-        sb.append(", runAfterAll=").append(runAfterAll.toString());
         sb.append(", thePc='").append(thePc).append('\'');
         sb.append(", thrName='").append(thrName).append('\'');
         sb.append(", netWorkMap=").append(netWorkMap.size());

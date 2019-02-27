@@ -56,14 +56,14 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> {
         try {
             String users = workPos.split(": ")[1];
             String commonRights = adSrv.checkCommonRightsForUserName(users);
-            model.addAttribute(ConstantsFor.WHOIS_STR, commonRights);
+            model.addAttribute(ConstantsFor.ATT_WHOIS, commonRights);
             model.addAttribute(ConstantsFor.ATT_TITLE, workPos);
             model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
         } catch (ArrayIndexOutOfBoundsException e) {
             new MessageLocal().errorAlert("CommonRightsChecker", "getCommonAccessRights", e.getMessage());
             FileSystemWorker.error("CommonRightsChecker.getCommonAccessRights", e);
         }
-        return ConstantsFor.MATRIX_STRING_NAME;
+        return ConstantsFor.BEANNAME_MATRIX;
     }
 
     @Override
@@ -87,12 +87,12 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> {
     }
 
     @Override
-    public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+    public FileVisitResult visitFileFailed(Path file, IOException exc) {
         return FileVisitResult.CONTINUE;
     }
 
     @Override
-    public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+    public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
         return FileVisitResult.CONTINUE;
     }
 

@@ -141,8 +141,8 @@ public class DataBaseADUsersSRV {
 
     private boolean dbUploader() {
 
-        try (Connection defaultConnection = new AppComponents().connection(ConstantsFor.DB_PREFIX + ConstantsFor.STR_VELKOM);
-             InputStream resourceAsStream = getClass().getResourceAsStream(ConstantsFor.USERS_TXT)) {
+        try (Connection defaultConnection = new AppComponents().connection(ConstantsFor.DBPREFIX + ConstantsFor.STR_VELKOM);
+             InputStream resourceAsStream = getClass().getResourceAsStream(ConstantsFor.FILEPATHSTR_USERSTXT)) {
             InputStreamReader inputStreamReader = new InputStreamReader(resourceAsStream);
             BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
             ConcurrentMap<String, String> paramNameValueMap = fileRead(bufferedReader);

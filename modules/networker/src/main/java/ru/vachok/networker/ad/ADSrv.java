@@ -22,11 +22,11 @@ import ru.vachok.networker.services.MessageLocal;
 
 import java.io.*;
 import java.net.InetAddress;
-import java.sql.*;
-import java.util.Date;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 
 /**
@@ -68,6 +68,7 @@ public class ADSrv implements Runnable {
     /**
      @return {@link #userInputRaw}
      */
+    @SuppressWarnings("unused")
     public String getUserInputRaw() {
         return userInputRaw;
     }
@@ -87,28 +88,29 @@ public class ADSrv implements Runnable {
         return adUser;
     }
 
-    /**
-     {@link ADUser}, как {@link ConcurrentHashMap}
-     <p>
-     {@link ADSrv#userSetter()}.{@link Optional#ifPresent(java.util.function.Consumer)}. <br>
-     Поиск соответсвия {@link #adUser} и {@link #userInputRaw} <br>
-
-     @return new {@link ConcurrentHashMap} key: <b>AD field name</b>, value: <b>x.get...</b>
-     */
-    public ConcurrentMap<String, String> getUserCommonRights() {
-        ConcurrentMap<String, String> retMap = new ConcurrentHashMap<>();
-        //noinspection OverlyLongLambda
-        userSetter().stream().findAny().ifPresent((ADUser x) -> {
-            boolean contains = x.getSamAccountName().toLowerCase().contains(adUser.getInputName().toLowerCase());
-            if (contains) {
-                ADSrv.this.adUser = x;
-                retMap.put("InputName", x.getInputName());
-                retMap.put(PROP_SAMACCOUNTNAME, x.getSamAccountName());
-                retMap.put("Sid", x.getSid());
-            }
-        });
-        return retMap;
-    }
+// --Commented out by Inspection START (27.02.2019 12:43):
+//    /**
+//     {@link ADUser}, как {@link ConcurrentHashMap}
+//     <p>
+//     {@link ADSrv#userSetter()}.{@link Optional#ifPresent(java.util.function.Consumer)}. <br>
+//     Поиск соответсвия {@link #adUser} и {@link #userInputRaw} <br>
+//
+//     @return new {@link ConcurrentHashMap} key: <b>AD field name</b>, value: <b>x.get...</b>
+//     */
+//    public ConcurrentMap<String, String> getUserCommonRights() {
+//        ConcurrentMap<String, String> retMap = new ConcurrentHashMap<>();
+//        userSetter().stream().findAny().ifPresent((ADUser x) -> {
+//            boolean contains = x.getSamAccountName().toLowerCase().contains(adUser.getInputName().toLowerCase());
+//            if (contains) {
+//                ADSrv.this.adUser = x;
+//                retMap.put("InputName", x.getInputName());
+//                retMap.put(PROP_SAMACCOUNTNAME, x.getSamAccountName());
+//                retMap.put("Sid", x.getSid());
+//            }
+//        });
+//        return retMap;
+//    }
+// --Commented out by Inspection STOP (27.02.2019 12:43)
 
     /**
      Thread name = ADSrv
@@ -124,6 +126,126 @@ public class ADSrv implements Runnable {
     }
 
     /**
+     Проверяет по-базе, какие папки есть у юзера.
+
+     @param users Active Dir Username <i>(Example: ikudryashov)</i>
+     @return информация о правах юзера, взятая из БД.
+     */
+    public String checkCommonRightsForUserName(String users) {
+        String owner;
+        List<String> ownerRights = adUser.getOwnerRights();
+        StringBuilder stringBuilder = new StringBuilder();
+        String sql = "select * from common where users like ? LIMIT 0, 300";
+        try (Connection c = new AppComponents().connection(ConstantsFor.DBPREFIX + ConstantsFor.STR_VELKOM)) {
+            try (PreparedStatement preparedStatement = c.prepareStatement(sql)) {
+                preparedStatement.setString(1, "%" + users + "%");
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        owner = "<details><summary><b>" +
+                            resultSet.getString("dir") +
+                            " </b>***Владелец: " +
+                            resultSet.getString("user") +
+                            " Время проверки: " +
+                            resultSet.getString("timerec") +
+                            "</summary><small>" +
+                            resultSet.getString(ConstantsFor.ATT_USERS) +
+                            "</small></details>";
+                        ownerRights.add(owner);
+                    }
+                }
+            }
+            stringBuilder.append("<font color=\"yellow\">")
+                .append(sql.replaceAll("\\Q?\\E", users))
+                .append("</font><br>Пользователь отмечен в правах на папки:<br>");
+            stringBuilder.append(new TForms().fromArray(ownerRights, true));
+            adUser.setOwnerRights(ownerRights);
+            return stringBuilder.toString();
+        } catch (SQLException | IOException e) {
+            return e.getMessage();
+        }
+    }
+
+    protected ADSrv() {
+    }
+
+    public ADSrv(ADUser adUser) {
+        this.userInputRaw = adUser.getInputName();
+        this.adUser = adUser;
+        try {
+            parseFile();
+        } catch (IndexOutOfBoundsException ignored) {
+            //
+        }
+    }
+
+    /**
+     Читает БД на предмет наличия юзера для <b>offline</b> компьютера.<br>
+
+     @param pcName имя ПК
+     @return имя юзера, время записи.
+     @see ADSrv#getDetails(String)
+     */
+    private static synchronized String offNowGetU(CharSequence pcName) {
+        StringBuilder v = new StringBuilder();
+        try (Connection c = new AppComponents().connection(ConstantsFor.DBDASENAME_U0466446_VELKOM)) {
+            try (PreparedStatement p = c.prepareStatement("select * from pcuser");
+                 PreparedStatement pAuto = c.prepareStatement("select * from pcuserauto where pcName in (select pcName from pcuser) order by pcName asc limit 203");
+                 ResultSet resultSet = p.executeQuery();
+                 ResultSet resultSetA = pAuto.executeQuery()) {
+                while (resultSet.next()) {
+                    if (resultSet.getString(ConstantsFor.DBFIELD_PCNAME).toLowerCase().contains(pcName)) {
+                        v
+                            .append("<b>")
+                            .append(resultSet.getString(ConstantsFor.DB_FIELD_USER))
+                            .append("</b> <br>At ")
+                            .append(resultSet.getString(ConstantsNet.DB_FIELD_WHENQUERIED));
+                    }
+                }
+                while (resultSetA.next()) {
+                    if (resultSetA.getString(ConstantsFor.DBFIELD_PCNAME).toLowerCase().contains(pcName)) {
+                        v
+                            .append("<p>")
+                            .append(resultSet.getString(ConstantsFor.DB_FIELD_USER))
+                            .append(" auto QUERY at: ")
+                            .append(resultSet.getString(ConstantsNet.DB_FIELD_WHENQUERIED));
+                    }
+                }
+            }
+        } catch (SQLException | IOException e) {
+            new MessageCons().errorAlert(ConstantsFor.CLASS_NAME_PCUSERRESOLVER, "offNowGetU", e.getMessage());
+            FileSystemWorker.error("PCUserResolver.offNowGetU", e);
+        }
+        return v.toString();
+    }
+
+    /**
+     Запись в БД <b>pcuser</b><br> Запись по-запросу от браузера.
+     <p>
+     pcName - уникальный (таблица не переписывается или не дополняется, при наличиизаписи по-компу)
+     <p>
+     Лог - <b>PCUserResolver.recToDB</b> в папке запуска.
+     <p>
+
+     @param userName имя юзера
+     @param pcName   имя ПК
+     @see ADSrv#getDetails(String)
+     */
+    private static synchronized void recToDB(String userName, String pcName) {
+        String sql = "insert into pcuser (pcName, userName) values(?,?)";
+        String msg = userName + " on pc " + pcName + " is set.";
+        try (Connection connection = new AppComponents().connection(ConstantsNet.DB_NAME);
+             PreparedStatement p = connection.prepareStatement(sql)) {
+            p.setString(1, userName);
+            p.setString(2, pcName);
+            p.executeUpdate();
+            LOGGER.info(msg);
+            ConstantsNet.PC_U_MAP.put(pcName, msg);
+        } catch (SQLException | IOException e) {
+            FileSystemWorker.error("PCUserResolver.recToDB", e);
+        }
+    }
+
+    /**
      Читает /static/texts/users.txt
 
      @return {@link ADUser} как {@link List}
@@ -131,7 +253,7 @@ public class ADSrv implements Runnable {
     List<ADUser> userSetter() {
         List<String> fileAsList = new ArrayList<>();
         List<ADUser> adUserList = new ArrayList<>();
-        try(InputStream usrInputStream = getClass().getResourceAsStream(ConstantsFor.USERS_TXT);
+        try(InputStream usrInputStream = getClass().getResourceAsStream(ConstantsFor.FILEPATHSTR_USERSTXT);
             InputStreamReader inputStreamReader = new InputStreamReader(usrInputStream);
             BufferedReader bufferedReader = new BufferedReader(inputStreamReader)){
             while(bufferedReader.ready()){
@@ -198,106 +320,6 @@ public class ADSrv implements Runnable {
         return adUserList;
     }
 
-    protected ADSrv() {
-    }
-
-    public ADSrv(ADUser adUser) {
-        this.userInputRaw = adUser.getInputName();
-        this.adUser = adUser;
-        try {
-            parseFile();
-        }
-        catch(IndexOutOfBoundsException ignored){
-            //
-        }
-    }
-
-    /**
-     Читает БД на предмет наличия юзера для <b>offline</b> компьютера.<br>
-
-     @param pcName имя ПК
-     @return имя юзера, время записи.
-     @see ADSrv#getDetails(String)
-     */
-    private static synchronized String offNowGetU(CharSequence pcName) {
-        StringBuilder v = new StringBuilder();
-        try (Connection c = new AppComponents().connection(ConstantsFor.U_0466446_VELKOM)) {
-            try (PreparedStatement p = c.prepareStatement("select * from pcuser");
-                 PreparedStatement pAuto = c.prepareStatement("select * from pcuserauto where pcName in (select pcName from pcuser) order by pcName asc limit 203");
-                 ResultSet resultSet = p.executeQuery();
-                 ResultSet resultSetA = pAuto.executeQuery()) {
-                while (resultSet.next()) {
-                    if (resultSet.getString(ConstantsFor.DB_FIELD_PCNAME).toLowerCase().contains(pcName)) {
-                        v
-                            .append("<b>")
-                            .append(resultSet.getString(ConstantsFor.DB_FIELD_USER))
-                            .append("</b> <br>At ")
-                            .append(resultSet.getString(ConstantsNet.DB_FIELD_WHENQUERIED));
-                    }
-                }
-                while (resultSetA.next()) {
-                    if (resultSetA.getString(ConstantsFor.DB_FIELD_PCNAME).toLowerCase().contains(pcName)) {
-                        v
-                            .append("<p>")
-                            .append(resultSet.getString(ConstantsFor.DB_FIELD_USER))
-                            .append(" auto QUERY at: ")
-                            .append(resultSet.getString(ConstantsNet.DB_FIELD_WHENQUERIED));
-                    }
-                }
-            }
-        }
-        catch(SQLException | IOException e){
-            new MessageCons().errorAlert(ConstantsFor.PC_USER_RESOLVER_CLASS_NAME, "offNowGetU", e.getMessage());
-            FileSystemWorker.error("PCUserResolver.offNowGetU", e);
-        }
-        return v.toString();
-    }
-
-    /**
-     Запись в БД <b>pcuser</b><br> Запись по-запросу от браузера.
-     <p>
-     pcName - уникальный (таблица не переписывается или не дополняется, при наличиизаписи по-компу)
-     <p>
-     Лог - <b>PCUserResolver.recToDB</b> в папке запуска.
-     <p>
-
-     @param userName имя юзера
-     @param pcName   имя ПК
-     @see ADSrv#getDetails(String)
-     */
-    private static synchronized void recToDB(String userName, String pcName) {
-        String sql = "insert into pcuser (pcName, userName) values(?,?)";
-        String msg = userName + " on pc " + pcName + " is set.";
-        try (Connection connection = new AppComponents().connection(ConstantsNet.DB_NAME);
-             PreparedStatement p = connection.prepareStatement(sql)) {
-            p.setString(1, userName);
-            p.setString(2, pcName);
-            p.executeUpdate();
-            LOGGER.info(msg);
-            ConstantsNet.PC_U_MAP.put(pcName, msg);
-        }
-        catch(SQLException | IOException e){
-            FileSystemWorker.error("PCUserResolver.recToDB", e);
-        }
-    }
-
-    /**
-     Резолвит онлайн пользователя ПК.
-     <p>
-
-     @param queryString запрос из браузера
-     @return {@link #getUserName(String)} или {@link ADSrv#offNowGetU(CharSequence)}
-     @throws IOException {@link InetAddress}.getByName(queryString + ".eatmeat.ru").isReachable(650))
-     @see ActDirectoryCTRL#queryStringExists(java.lang.String, org.springframework.ui.Model)
-     */
-    String getDetails(String queryString) throws IOException {
-        if (InetAddress.getByName(queryString + ConstantsFor.EATMEAT_RU).isReachable(ConstantsFor.TIMEOUT_650)) {
-            return getUserName(queryString);
-        } else {
-            return offNowGetU(queryString);
-        }
-    }
-
     private void parseFile() {
         List<String> stringList;
         List<ADUser> adUsers = new ArrayList<>();
@@ -362,43 +384,19 @@ public class ADSrv implements Runnable {
     }
 
     /**
-     Проверяет по-базе, какие папки есть у юзера.
+     Резолвит онлайн пользователя ПК.
+     <p>
 
-     @param users Active Dir Username <i>(Example: ikudryashov)</i>
-     @return информация о правах юзера, взятая из БД.
+     @param queryString запрос из браузера
+     @return {@link #getUserName(String)} или {@link ADSrv#offNowGetU(CharSequence)}
+     @throws IOException {@link InetAddress}.getByName(queryString + ".eatmeat.ru").isReachable(650))
+     @see ActDirectoryCTRL#queryStringExists(java.lang.String, org.springframework.ui.Model)
      */
-    public String checkCommonRightsForUserName(String users) {
-        String owner;
-        List<String> ownerRights = adUser.getOwnerRights();
-        StringBuilder stringBuilder = new StringBuilder();
-        String sql = "select * from common where users like ? LIMIT 0, 300";
-        try (Connection c = new AppComponents().connection(ConstantsFor.DB_PREFIX + ConstantsFor.STR_VELKOM)) {
-            try (PreparedStatement preparedStatement = c.prepareStatement(sql)) {
-                preparedStatement.setString(1, "%" + users + "%");
-                try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                    while (resultSet.next()) {
-                        owner = "<details><summary><b>" +
-                            resultSet.getString("dir") +
-                            " </b>***Владелец: " +
-                            resultSet.getString("user") +
-                            " Время проверки: " +
-                            resultSet.getString("timerec") +
-                            "</summary><small>" +
-                            resultSet.getString(ConstantsFor.ATT_USERS) +
-                            "</small></details>";
-                        ownerRights.add(owner);
-                    }
-                }
-            }
-            stringBuilder.append("<font color=\"yellow\">")
-                .append(sql.replaceAll("\\Q?\\E", users))
-                .append("</font><br>Пользователь отмечен в правах на папки:<br>");
-            stringBuilder.append(new TForms().fromArray(ownerRights, true));
-            adUser.setOwnerRights(ownerRights);
-            return stringBuilder.toString();
-        }
-        catch(SQLException | IOException e){
-            return e.getMessage();
+    String getDetails(String queryString) throws IOException {
+        if (InetAddress.getByName(queryString + ConstantsFor.DOMAIN_EATMEATRU).isReachable(ConstantsFor.TIMEOUT_650)) {
+            return getUserName(queryString);
+        } else {
+            return offNowGetU(queryString);
         }
     }
 
@@ -445,7 +443,7 @@ public class ADSrv implements Runnable {
         }
         ConstantsNet.COMPNAME_USERS_MAP.put(timestUserLast, filesAsFile);
         try {
-            recToDB(queryString + ConstantsFor.EATMEAT_RU, timestUserLast.split(" ")[1]);
+            recToDB(queryString + ConstantsFor.DOMAIN_EATMEATRU, timestUserLast.split(" ")[1]);
         } catch (ArrayIndexOutOfBoundsException ignore) {
             //
         }
@@ -471,7 +469,7 @@ public class ADSrv implements Runnable {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("ADSrv{");
-        sb.append("PC_USER_RESOLVER_CLASS_NAME='").append(ConstantsFor.PC_USER_RESOLVER_CLASS_NAME).append('\'');
+        sb.append("CLASS_NAME_PCUSERRESOLVER='").append(ConstantsFor.CLASS_NAME_PCUSERRESOLVER).append('\'');
         sb.append(", adUser=").append(adUser.toString());
         sb.append(", userInputRaw='").append(userInputRaw).append('\'');
         sb.append('}');

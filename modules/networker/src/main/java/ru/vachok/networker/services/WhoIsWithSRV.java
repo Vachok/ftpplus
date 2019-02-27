@@ -62,13 +62,13 @@ public class WhoIsWithSRV {
         WhoIsWithSRV whoIsWithSRV = new WhoIsWithSRV();
         workPos = workPos.split(": ")[1];
         String attributeValue = whoIsWithSRV.whoIs(workPos);
-        model.addAttribute(ConstantsFor.WHOIS_STR, attributeValue);
+        model.addAttribute(ConstantsFor.ATT_WHOIS, attributeValue);
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
-        return ConstantsFor.MATRIX_STRING_NAME;
+        return ConstantsFor.BEANNAME_MATRIX;
     }
 
     private String traceRt(String inetAddr) {
-        SSHFactory.Builder sshFactoryBu = new SSHFactory.Builder(ConstantsFor.SRV_GIT, "traceroute " + inetAddr);
+        SSHFactory.Builder sshFactoryBu = new SSHFactory.Builder(ConstantsFor.IPADDR_SRVGIT, "traceroute " + inetAddr);
         String retStr = sshFactoryBu.build().call();
         try {
             retStr = retStr.split(" = ")[1].replaceAll("(\\s\\d?\\d\\s)", "<br>").trim();

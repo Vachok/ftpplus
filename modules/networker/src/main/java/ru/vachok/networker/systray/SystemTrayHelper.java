@@ -177,7 +177,7 @@ public final class SystemTrayHelper extends AppInfoOnLoad {
      */
     private static boolean isSrvGitOK() {
         try{
-            return InetAddress.getByName(ConstantsFor.SRV_GIT_EATMEAT_RU).isReachable(1000);
+            return InetAddress.getByName(ConstantsFor.HOSTNAME_SRVGIT_EATMEATRU).isReachable(1000);
         }
         catch(IOException e){
             throw new IllegalStateException("***Network Problems Detected***");
