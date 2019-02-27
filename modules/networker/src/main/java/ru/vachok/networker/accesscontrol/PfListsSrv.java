@@ -8,6 +8,7 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.systray.MessageToTray;
 
@@ -87,7 +88,7 @@ public class PfListsSrv {
      @see PfListsCtr
      */
     void makeListRunner() {
-        if (ConstantsFor.thisPC().toLowerCase().contains("rups")) {
+        if(ConstantsNet.IS_RUPS){
             buildFactory();
         } else {
             @NotNull MessageToUser messageToUser;
@@ -171,8 +172,7 @@ public class PfListsSrv {
         PfListsSrv that = (PfListsSrv) o;
 
         if (!pfListsInstAW.equals(that.pfListsInstAW)) return false;
-        if (!commandForNatStr.equals(that.commandForNatStr)) return false;
-        return builderInst.equals(that.builderInst);
+        return commandForNatStr.equals(that.commandForNatStr) && builderInst.equals(that.builderInst);
     }
 
     @Override

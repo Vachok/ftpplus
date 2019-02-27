@@ -14,14 +14,8 @@ import ru.vachok.networker.services.MessageLocal;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
+import java.util.*;
+import java.util.concurrent.*;
 
 /**
  Константы пакета
@@ -29,6 +23,9 @@ import java.util.concurrent.Future;
 
  @since 25.01.2019 (10:30) */
 public enum ConstantsNet {;
+
+    public static final boolean IS_RUPS = ConstantsFor.thisPC().toLowerCase().contains("rups")
+        || ConstantsFor.thisPC().contains("home"); // TODO: 27.02.2019 temp
 
     public static final String STR_CONNECTION = "connection";
 

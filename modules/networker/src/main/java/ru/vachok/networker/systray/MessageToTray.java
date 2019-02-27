@@ -49,6 +49,15 @@ public class MessageToTray implements MessageToUser {
         }
     }
 
+    @Override
+    public void error(String s) {
+        errorAlert(s);
+    }
+
+    @Override
+    public void error(String s, String s1, String s2) {
+        errorAlert(s, s1, s2);
+    }
     private void delActions() {
         if(trayIcon!=null && trayIcon.getActionListeners().length > 0){
             ActionListener[] actionListeners = trayIcon.getActionListeners();

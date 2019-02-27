@@ -79,6 +79,16 @@ public class MessageLocal implements MessageToUser {
     }
 
     @Override
+    public void error(String s) {
+        errorAlert(s);
+    }
+
+    @Override
+    public void error(String s, String s1, String s2) {
+        errorAlert(s, s1, s2);
+    }
+
+    @Override
     public void warning(String s, String s1, String s2) {
         Logger logger = LoggerFactory.getLogger(s);
         String msg = s1 + " : " + s2;

@@ -58,6 +58,15 @@ public class DBMessenger implements MessageToUser {
         infoNoTitles(s);
     }
 
+    @Override
+    public void error(String s) {
+        errorAlert("", "", s);
+    }
+
+    @Override
+    public void error(String s, String s1, String s2) {
+        errorAlert(s, s1, s2);
+    }
 
     @Override
     public void infoTimer( int i , String s ) {

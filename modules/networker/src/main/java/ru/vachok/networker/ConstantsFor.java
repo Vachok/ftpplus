@@ -42,6 +42,23 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public enum ConstantsFor {
     ;
 
+    /**
+     {@link ru.vachok.networker.mailserver.ExCTRL#uplFile(MultipartFile, Model)}, {@link ExSRV#getOFields()},
+     */
+    private static final ConcurrentMap<Integer, MailRule> MAIL_RULES = new ConcurrentHashMap<>();
+
+    private static final int MIN_DELAY = 17;
+
+    /**
+     new {@link Properties}
+     */
+    private static final Properties PROPS = new Properties();
+
+    /**
+     {@link MessageLocal}
+     */
+    private static final MessageToUser messageToUser = new MessageLocal();
+
     public static final String METHNAME_STATIC_INITIALIZER = "static initializer";
 
     public static final String HEAD_REFERER = "referer";
@@ -248,7 +265,7 @@ public enum ConstantsFor {
      */
     public static final String DBPREFIX = "u0466446_";
 
-    public static final boolean IS_SYSTRAY_AVAIL = (SystemTray.isSupported() || SystemTray.getSystemTray() != null);
+    public static final boolean IS_SYSTRAY_AVAIL = (SystemTray.isSupported() || SystemTray.getSystemTray()!=null);
 
     /**
      {@link Model} имя атрибута
@@ -332,7 +349,7 @@ public enum ConstantsFor {
     /**
      Число, для Secure Random
      */
-    public static final long MY_AGE = (long) Year.now().getValue() - 1984;
+    public static final long MY_AGE = ( long ) Year.now().getValue() - 1984;
 
     /**
      Первоначальная задержка шедулера.
@@ -342,7 +359,7 @@ public enum ConstantsFor {
     /**
      Кол-во миллисек. в 1 неделе
      */
-    public static final long ONE_WEEK_MILLIS = TimeUnit.HOURS.toMillis(ONE_DAY_HOURS * (long) 7);
+    public static final long ONE_WEEK_MILLIS = TimeUnit.HOURS.toMillis(ONE_DAY_HOURS * ( long ) 7);
 
     public static final String HTML_CENTER = "</center>";
 
@@ -359,31 +376,19 @@ public enum ConstantsFor {
     public static final int IPS_IN_VELKOM_VLAN = 5610;
 
     /**
-     Имя аттрибута
-     */
-    public static final String ATT_SSHDETAIL = "sshdetail";
-
-    /**
      Все возможные IP из диапазонов {@link DiapazonedScan}
      */
     public static BlockingDeque<String> ALL_DEVICES = new LinkedBlockingDeque<>(IPS_IN_VELKOM_VLAN);
 
     /**
-     {@link ru.vachok.networker.mailserver.ExCTRL#uplFile(MultipartFile, Model)}, {@link ExSRV#getOFields()},
+     Имя аттрибута
      */
-    private static final ConcurrentMap<Integer, MailRule> MAIL_RULES = new ConcurrentHashMap<>();
+    public static final String ATT_SSHDETAIL = "sshdetail";
 
     /**
      {@link #getDelay()}
      */
     public static final long DELAY = getDelay();
-
-    private static final int MIN_DELAY = 17;
-
-    /**
-     new {@link Properties}
-     */
-    private static final Properties PROPS = new Properties();
 
     /**
      Порт для {@link ru.vachok.networker.net.MyServer}
@@ -391,14 +396,9 @@ public enum ConstantsFor {
     public static final int PR_LPORT = Integer.parseInt(PROPS.getOrDefault("lport", "9990").toString());
 
     /**
-     {@link MessageLocal}
-     */
-    private static final MessageToUser messageToUser = new MessageLocal();
-
-    /**
      {@link #getAtomicTime()}
      */
-    @SuppressWarnings("NonFinalFieldInEnum")
+    @SuppressWarnings ("NonFinalFieldInEnum")
     private static long atomicTime;
 
     /**
@@ -414,9 +414,10 @@ public enum ConstantsFor {
      @return 192.168.13.42 online or offline
      */
     public static boolean isPingOK() {
-        try {
+        try{
             return InetAddress.getByName(HOSTNAME_SRVGIT_EATMEATRU).isReachable(500);
-        } catch (IOException e) {
+        }
+        catch(IOException e){
             LoggerFactory.getLogger(ConstantsFor.class.getSimpleName()).error(e.getMessage(), e);
             return false;
         }
@@ -426,13 +427,66 @@ public enum ConstantsFor {
      @return {@link #takePr(boolean)} or {@link #PROPS}
      */
     public static Properties getAppProps() {
-        if (PROPS.size() < 3) {
+        if(PROPS.size() < 3){
             messageToUser.info("PROPS", "return takePr(false)", " = " + PROPS.size());
             return takePr(false);
-        } else {
+        }
+        else{
             messageToUser.info("PROPS", "return PROPS", " = " + PROPS.size());
             return PROPS;
         }
+    }
+
+    /**
+     Тащит {@link #PROPS} из БД или файла
+     <p>
+     {@link ThreadConfig#thrNameSet(java.lang.String)} <br>
+     */
+    static Properties takePr(boolean fromFile) {
+        AppComponents.threadConfig().thrNameSet("gProps");
+
+        InitProperties initProperties = new DBRegProperties(ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName());
+        Properties retPr = new Properties();
+        File prFile = new File(ConstantsFor.class.getSimpleName() + ".properties");
+        StringBuilder stringBuilder = new StringBuilder();
+        String classMeth = "ConstantsFor.takePr";
+
+        if(fromFile || new File("ff").exists()){
+            try(InputStream inputStream = new FileInputStream(prFile)){
+                retPr.load(inputStream);
+                stringBuilder.append("fromFile: ").append(fromFile).append("\n");
+                stringBuilder.append("File \"ff\": ").append(new File("ff").exists()).append("\n");
+            }
+            catch(IOException e){
+                stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false)).append("\n");
+                FileSystemWorker.error(classMeth, e);
+            }
+        }
+        else{
+            retPr = initProperties.getProps();
+
+            try(OutputStream outputStream = new FileOutputStream(prFile)){
+                long millisOf24HRS = TimeUnit.DAYS.toMillis(1);
+
+                if(!prFile.exists() || (System.currentTimeMillis() - millisOf24HRS) > prFile.lastModified()){
+                    retPr.store(outputStream, ConstantsFor.class.getSimpleName() + ".takePr");
+                    stringBuilder.append(prFile.getName()).append(" is exist: ").append(!prFile.exists()).append("\n");
+                    if(prFile.exists()){
+                        stringBuilder.append(prFile.getName()).append("last modified: ").append(new Date(prFile.lastModified())).append("\n");
+                    }
+                }
+            }
+            catch(IOException e){
+                stringBuilder.append(e.getMessage()).append(new TForms().fromArray(e, false)).append("\n");
+                FileSystemWorker.error(classMeth, e);
+            }
+        }
+
+        PROPS.clear();
+        PROPS.putAll(retPr);
+        stringBuilder.append(PROPS.size()).append(" is PROPS size, PROPS equals retPr: ").append(PROPS.equals(retPr));
+        messageToUser.warn(classMeth, "results", " = " + stringBuilder.toString());
+        return retPr;
     }
 
     /**
@@ -440,9 +494,9 @@ public enum ConstantsFor {
      */
     public static String getUpTime() {
         String tUnit = " h";
-        float hrsOn = (float)
+        float hrsOn = ( float )
             (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN / ConstantsFor.ONE_HOUR_IN_MIN;
-        if (hrsOn > 24) {
+        if(hrsOn > 24){
             hrsOn = hrsOn / ConstantsFor.ONE_DAY_HOURS;
             tUnit = " d";
         }
@@ -454,15 +508,17 @@ public enum ConstantsFor {
      */
     public static long getBuildStamp() {
         long retLong = 1L;
-        try {
+        try{
             String hostName = InetAddress.getLocalHost().getHostName();
-            if (hostName.equalsIgnoreCase("home") || hostName.toLowerCase().contains(HOSTNAME_NO0027)) {
+            if(hostName.equalsIgnoreCase("home") || hostName.toLowerCase().contains(HOSTNAME_NO0027)){
                 PROPS.setProperty("build", System.currentTimeMillis() + "");
                 retLong = System.currentTimeMillis();
-            } else {
+            }
+            else{
                 retLong = Long.parseLong(PROPS.getProperty("build", "1"));
             }
-        } catch (UnknownHostException e) {
+        }
+        catch(UnknownHostException e){
             messageToUser.errorAlert("ConstantsFor", "getBuildStamp", e.getMessage());
             FileSystemWorker.error("ConstantsFor.getBuildStamp", e);
         }
@@ -484,9 +540,9 @@ public enum ConstantsFor {
      @return кол-во выделенной, используемой и свободной памяти в МБ
      */
     public static String getMemoryInfo() {
-        String msg = (float) Runtime.getRuntime().totalMemory() / ConstantsFor.MBYTE + " now totalMemory, " +
-            (float) Runtime.getRuntime().freeMemory() / ConstantsFor.MBYTE + " now freeMemory, " +
-            (float) Runtime.getRuntime().maxMemory() / ConstantsFor.MBYTE + " now maxMemory.";
+        String msg = ( float ) Runtime.getRuntime().totalMemory() / ConstantsFor.MBYTE + " now totalMemory, " +
+            ( float ) Runtime.getRuntime().freeMemory() / ConstantsFor.MBYTE + " now freeMemory, " +
+            ( float ) Runtime.getRuntime().maxMemory() / ConstantsFor.MBYTE + " now maxMemory.";
         messageToUser.info(msg);
         return msg;
     }
@@ -495,8 +551,8 @@ public enum ConstantsFor {
      @return {@link #DELAY}
      */
     private static long getDelay() {
-        long delay = new SecureRandom().nextInt((int) MY_AGE);
-        if (delay < MIN_DELAY) {
+        long delay = new SecureRandom().nextInt(( int ) MY_AGE);
+        if(delay < MIN_DELAY){
             delay = MIN_DELAY;
         }
         return delay;
@@ -510,25 +566,26 @@ public enum ConstantsFor {
     public static boolean saveAppProps(Properties propsToSave) {
         Callable<Boolean> sProps = ( Callable ) () -> {
             AppComponents.threadConfig().thrNameSet("sProps");
-        propsToSave.setProperty("thispc", thisPC());
-        final String javaIDsString = ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName();
-        String classMeth = "ConstantsFor.saveAppProps";
-        String methName = "saveAppProps";
-        MysqlDataSource mysqlDataSource = new DBRegProperties(javaIDsString).getRegSourceForProperties();
-        AtomicBoolean retBool = new AtomicBoolean();
-        mysqlDataSource.setLogger("java.util.Logger");
+            propsToSave.setProperty("thispc", thisPC());
+            final String javaIDsString = ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName();
+            String classMeth = "ConstantsFor.saveAppProps";
+            String methName = "saveAppProps";
+            MysqlDataSource mysqlDataSource = new DBRegProperties(javaIDsString).getRegSourceForProperties();
+            AtomicBoolean retBool = new AtomicBoolean();
+            mysqlDataSource.setLogger("java.util.Logger");
 
-        Callable<Boolean> theProphecy = new SaveDBPropsCallable(mysqlDataSource, propsToSave, classMeth, methName);
-        Future<Boolean> booleanFuture = AppComponents.threadConfig().getTaskExecutor().submit(theProphecy);
+            Callable<Boolean> theProphecy = new SaveDBPropsCallable(mysqlDataSource, propsToSave, classMeth, methName);
+            Future<Boolean> booleanFuture = AppComponents.threadConfig().getTaskExecutor().submit(theProphecy);
 
-        try {
-            retBool.set(booleanFuture.get());
-        } catch (InterruptedException | ExecutionException e) {
-            messageToUser.errorAlert(ConstantsFor.class.getSimpleName(), methName, e.getMessage());
-            FileSystemWorker.error(classMeth, e);
-            Thread.currentThread().interrupt();
-            retBool.set(booleanFuture.isDone());
-        }
+            try{
+                retBool.set(booleanFuture.get());
+            }
+            catch(InterruptedException | ExecutionException e){
+                messageToUser.errorAlert(ConstantsFor.class.getSimpleName(), methName, e.getMessage());
+                FileSystemWorker.error(classMeth, e);
+                Thread.currentThread().interrupt();
+                retBool.set(booleanFuture.isDone());
+            }
             return retBool.get();
         };
         Future<Boolean> booleanFuture = AppComponents.threadConfig().getTaskExecutor().submit(sProps);
@@ -550,10 +607,11 @@ public enum ConstantsFor {
      @return имя компьютера, где запущено
      */
     public static String thisPC() {
-        try {
+        try{
             return InetAddress.getLocalHost().getHostName();
-        } catch (UnknownHostException | ExceptionInInitializerError | NullPointerException e) {
-            String retStr = new TForms().fromArray((List<?>) e, false);
+        }
+        catch(UnknownHostException | ExceptionInInitializerError | NullPointerException e){
+            String retStr = new TForms().fromArray(( List<?> ) e, false);
             FileSystemWorker.recFile("this_pc.err", Collections.singletonList(retStr));
             return "pc";
         }
@@ -566,9 +624,10 @@ public enum ConstantsFor {
      @return {@link Visitor}
      */
     public static Visitor getVis(HttpServletRequest request) {
-        try {
+        try{
             return AppComponents.thisVisit(request.getSession().getId());
-        } catch (Exception e) {
+        }
+        catch(Exception e){
             return new AppComponents().visitor(request);
         }
     }
@@ -586,55 +645,6 @@ public enum ConstantsFor {
 
     public static String getUserPC(HttpServletRequest request) {
         return request.getRemoteAddr();
-    }
-
-    /**
-     Тащит {@link #PROPS} из БД или файла
-     <p>
-     {@link ThreadConfig#thrNameSet(java.lang.String)} <br>
-     */
-    static Properties takePr(boolean fromFile) {
-        AppComponents.threadConfig().thrNameSet("gProps");
-
-        InitProperties initProperties = new DBRegProperties(ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName());
-        Properties retPr = new Properties();
-        File prFile = new File(ConstantsFor.class.getSimpleName() + ".properties");
-        StringBuilder stringBuilder = new StringBuilder();
-        String classMeth = "ConstantsFor.takePr";
-
-        if (fromFile || new File("ff").exists()) {
-            try (InputStream inputStream = new FileInputStream(prFile)) {
-                retPr.load(inputStream);
-                stringBuilder.append("fromFile: ").append(fromFile).append("\n");
-                stringBuilder.append("File \"ff\": ").append(new File("ff").exists()).append("\n");
-            } catch (IOException e) {
-                stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false)).append("\n");
-                FileSystemWorker.error(classMeth, e);
-            }
-        } else {
-            retPr = initProperties.getProps();
-
-            try (OutputStream outputStream = new FileOutputStream(prFile)) {
-                long millisOf24HRS = TimeUnit.DAYS.toMillis(1);
-
-                if (!prFile.exists() || (System.currentTimeMillis() - millisOf24HRS) > prFile.lastModified()) {
-                    retPr.store(outputStream, ConstantsFor.class.getSimpleName() + ".takePr");
-                    stringBuilder.append(prFile.getName()).append(" is exist: ").append(!prFile.exists()).append("\n");
-                    if (prFile.exists()) {
-                        stringBuilder.append(prFile.getName()).append("last modified: ").append(new Date(prFile.lastModified())).append("\n");
-                    }
-                }
-            } catch (IOException e) {
-                stringBuilder.append(e.getMessage()).append(new TForms().fromArray(e, false)).append("\n");
-                FileSystemWorker.error(classMeth, e);
-            }
-        }
-
-        PROPS.clear();
-        PROPS.putAll(retPr);
-        stringBuilder.append(PROPS.size()).append(" is PROPS size, PROPS equals retPr: ").append(PROPS.equals(retPr));
-        messageToUser.warn(classMeth, "results", " = " + stringBuilder.toString());
-        return retPr;
     }
 
 }
