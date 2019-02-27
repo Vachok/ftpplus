@@ -31,6 +31,7 @@ import java.util.stream.Stream;
  Список адресов загружается как текстовый файл, который читаем построчно.
 
  @since 08.02.2019 (9:34) */
+@SuppressWarnings("unused")
 @Service("netPinger")
 public class NetPinger implements Runnable, Pinger {
 
@@ -58,7 +59,7 @@ public class NetPinger implements Runnable, Pinger {
      <p>
      Адреса, для пингера из {@link #multipartFile}
      */
-    private List<InetAddress> ipAsList = new ArrayList<>();
+    private final List<InetAddress> ipAsList = new ArrayList<>();
 
     /**
      {@link MessageLocal}. Вывод сообщений
@@ -82,7 +83,7 @@ public class NetPinger implements Runnable, Pinger {
      <p>
      {@link String} - 1 результат.
      */
-    private List<String> resList = new ArrayList<>();
+    private final List<String> resList = new ArrayList<>();
 
     /**
      Время до конца работы.
@@ -135,7 +136,8 @@ public class NetPinger implements Runnable, Pinger {
      */
     private void pingSW() {
         final Properties properties = AppComponents.getOrSetProps();
-        properties.setProperty(ConstantsNet.PROP_PINGSLEEP, pingSleepMsec + "");
+        this.pingSleepMsec = Long.parseLong(properties.getProperty(ConstantsNet.PROP_PINGSLEEP, String.valueOf(pingSleepMsec)));
+
         for (InetAddress inetAddress : ipAsList) {
             try {
                 resList.add(inetAddress.toString() + " is " + inetAddress.isReachable(ConstantsFor.TIMEOUT_650));
@@ -264,23 +266,6 @@ public class NetPinger implements Runnable, Pinger {
         return getMultipartFile() != null ? getMultipartFile().equals(netPinger.getMultipartFile()) : netPinger.getMultipartFile() == null;
     }
 
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("NetPinger{");
-        sb.append("STR_CLASSNAME='").append(STR_CLASSNAME).append('\'');
-        sb.append(", STR_METH_PINGSW='").append(STR_METH_PINGSW).append('\'');
-        sb.append(", pingSleepMsec=").append(pingSleepMsec);
-        sb.append(", ipAsList=").append(ipAsList.size());
-        sb.append(", messageToUser=").append(messageToUser.toString());
-        sb.append(", timeToScanStr='").append(timeToScanStr).append('\'');
-        sb.append(", pingResultStr='").append(pingResultStr).append('\'');
-        sb.append(", resList=").append(resList.size());
-        sb.append(", timeToEndStr='").append(timeToEndStr).append('\'');
-        sb.append(", multipartFile=").append((multipartFile != null));
-        sb.append('}');
-        return sb.toString();
-    }
-
     /**
      @return {@link #timeToEndStr}
      */
@@ -338,4 +323,14 @@ public class NetPinger implements Runnable, Pinger {
         parseResult(userIn);
     }
 
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("NetPinger{");
+        sb.append("pingResultStr='").append(pingResultStr).append('\'');
+        sb.append(", pingSleepMsec=").append(pingSleepMsec);
+        sb.append(", timeToEndStr='").append(timeToEndStr).append('\'');
+        sb.append(", timeToScanStr='").append(timeToScanStr).append('\'');
+        sb.append('}');
+        return sb.toString();
+    }
 }

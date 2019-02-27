@@ -88,7 +88,6 @@ public class MatrixCtr {
 
      @param versionInfo {@link AppComponents#versionInfo()}
      */
-    @SuppressWarnings("WeakerAccess")
     @Autowired
     public MatrixCtr(VersionInfo versionInfo) {
         this.versionInfoInst = versionInfo;
