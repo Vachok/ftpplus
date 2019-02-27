@@ -28,10 +28,8 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.SecureRandom;
 import java.time.Year;
-import java.util.Collections;
-import java.util.Date;
 import java.util.List;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -510,7 +508,8 @@ public enum ConstantsFor {
      @param propsToSave {@link Properties}
      */
     public static boolean saveAppProps(Properties propsToSave) {
-        AppComponents.threadConfig().thrNameSet("sProps");
+        Callable<Boolean> sProps = ( Callable ) () -> {
+            AppComponents.threadConfig().thrNameSet("sProps");
         propsToSave.setProperty("thispc", thisPC());
         final String javaIDsString = ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName();
         String classMeth = "ConstantsFor.saveAppProps";
@@ -530,7 +529,18 @@ public enum ConstantsFor {
             Thread.currentThread().interrupt();
             retBool.set(booleanFuture.isDone());
         }
-        return retBool.get();
+            return retBool.get();
+        };
+        Future<Boolean> booleanFuture = AppComponents.threadConfig().getTaskExecutor().submit(sProps);
+        try{
+            return booleanFuture.get();
+        }
+        catch(InterruptedException | ExecutionException e){
+            messageToUser.errorAlert("ConstantsFor", "saveAppProps", e.getMessage());
+            FileSystemWorker.error("ConstantsFor.saveAppProps", e);
+            Thread.currentThread().interrupt();
+            return false;
+        }
     }
 
     /**

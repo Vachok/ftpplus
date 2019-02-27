@@ -791,3 +791,4 @@ DataConnectTo.properties
 RegRuMysql.err
 ConstantsFor.bak
 modules/networker/src/main/resources/static/config/ru_vachok_networker-ConstantsFor.properties.bak
+AppCtx.qadd
