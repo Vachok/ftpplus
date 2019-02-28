@@ -50,17 +50,31 @@ public class SshActs {
     /**
      SSH-command
      */
-    private static final String SUDO_ECHO = "sudo echo ";
+    static final String SUDO_ECHO = "sudo echo ";
 
     /**
      SSH-command
      */
-    private static final String SUDO_GREP_V = "sudo grep -v '";
+    static final String SUDO_GREP_V = "sudo grep -v '";
 
     /**
      Имя ПК для разрешения
      */
     private String pcName;
+
+    private String userInput;
+
+    public void setPcName(String pcName) {
+        if (pcName.contains(ConstantsNet.DOMAIN_EATMEATRU)) {
+            this.pcName = pcName;
+        } else {
+            this.pcName = new NameOrIPChecker(this.pcName).checkPat(pcName);
+        }
+    }
+
+    public String getUserInput() {
+        return userInput;
+    }
 
     /**
      Уровень доступа к инету
@@ -98,12 +112,8 @@ public class SshActs {
         this.ipAddrOnly = ipAddrOnly;
     }
 
-    public void setPcName(String pcName) {
-        if (pcName.contains(ConstantsNet.DOMAIN_EATMEATRU)) {
-            this.pcName = pcName;
-        } else {
-            this.pcName = new NameOrIPChecker().checkPat(pcName);
-        }
+    public void setUserInput(String userInput) {
+        this.userInput = userInput;
     }
 
     public String gettRoute() {
@@ -249,8 +259,7 @@ public class SshActs {
      */
     private String allowDomainDel() {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder
-            .append(delDomain).append(" del domain raw<br>");
+        stringBuilder.append(delDomain).append(" del domain raw<br>");
         this.delDomain = checkDNameDel();
         Optional<String> delDomainOpt = Optional.of(delDomain);
         delDomainOpt.ifPresent(x -> {
@@ -432,7 +441,6 @@ public class SshActs {
         /**
          {@link SshActs}
          */
-        @Autowired
         private SshActs sshActs;
 
         @Autowired
@@ -495,6 +503,17 @@ public class SshActs {
             model.addAttribute(ConstantsFor.ATT_TITLE, sshActs.getDelDomain() + " удалён");
             model.addAttribute(ConstantsFor.ATT_SSH_ACTS, sshActs);
             model.addAttribute("ok", sshActs.toString() + "<p>" + sshActs.allowDomainDel());
+            model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
+            return "ok";
+        }
+
+        @PostMapping("/tmpfullnet")
+        public String tempFullInetAccess(@ModelAttribute SshActs sshActs, Model model) {
+            this.sshActs = sshActs;
+            TemporaryFullInternet temporaryFullInternet = new TemporaryFullInternet(sshActs.getUserInput());
+            model.addAttribute("sshActs", sshActs);
+            model.addAttribute(ConstantsFor.ATT_TITLE, ConstantsFor.getMemoryInfo());
+            model.addAttribute("ok", temporaryFullInternet.doDidDoes());
             model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
             return "ok";
         }

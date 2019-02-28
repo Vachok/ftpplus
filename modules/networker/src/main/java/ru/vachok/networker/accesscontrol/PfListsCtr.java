@@ -2,8 +2,6 @@ package ru.vachok.networker.accesscontrol;
 
 
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Controller;
@@ -40,11 +38,6 @@ import java.util.concurrent.TimeUnit;
  @since 14.11.2018 (15:11) */
 @Controller
 public class PfListsCtr {
-
-    /**
-     {@link LoggerFactory#getLogger(String)}
-     */
-    private static final Logger LOGGER = LoggerFactory.getLogger(PfListsCtr.class.getSimpleName());
 
     /**
      {@link ThreadLocal} {@link String} - {@code metric}
@@ -97,7 +90,6 @@ public class PfListsCtr {
      @param pfLists    {@link #pfListsInstAW}
      @param pfListsSrv {@link #pfListsSrvInstAW}
      */
-    @SuppressWarnings("WeakerAccess")
     @Autowired
     public PfListsCtr(PfLists pfLists, PfListsSrv pfListsSrv) {
         this.pfListsInstAW = pfLists;
@@ -175,7 +167,6 @@ public class PfListsCtr {
         model.addAttribute(ConstantsFor.ATT_TITLE, pfListsSrv.getCommandForNatStr());
         model.addAttribute("PfListsSrv", pfListsSrv);
         model.addAttribute("ok", pfListsSrv.runCom());
-
         return "ok";
     }
 
