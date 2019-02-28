@@ -33,6 +33,7 @@ public class ActionOnAppStart extends AbstractAction {
         } catch (InterruptedException | ExecutionException ignore) {
             Thread.currentThread().interrupt();
         }
-        new MessageToTray(new ActionCloseMsg(SystemTrayHelper.getTrayIcon())).info(getClass().getSimpleName(), AppInfoOnLoad.iisLogSize(), messageSW);
+        new MessageToTray(new ActionCloseMsg(SystemTrayHelper.getI().getTrayIcon())).info(getClass().getSimpleName(), AppInfoOnLoad.iisLogSize(),
+            messageSW);
     }
 }

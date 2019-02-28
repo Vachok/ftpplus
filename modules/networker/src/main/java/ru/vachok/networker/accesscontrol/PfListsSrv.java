@@ -77,8 +77,6 @@ public class PfListsSrv {
     /**
      Формирует списки <b>pf</b>
      <p>
-     Если {@link ConstantsFor#thisPC()} contains {@code rups} запуск {@link #buildCommands()}. <br>
-
      Else {@link MessageToTray#warn(String, String, String)} {@link String} = {@link ConstantsFor#thisPC()}.
      <p>
      {@link ExceptionInInitializerError} : <br>

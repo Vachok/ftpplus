@@ -30,6 +30,8 @@ public class ActionDefault extends AbstractAction {
 
     private static MessageToUser messageToUser = new MessageLocal();
 
+    private static final SystemTrayHelper SYSTEM_TRAY_HELPER = SystemTrayHelper.getI();
+
     private String goTo;
 
     public ActionDefault(String goTo) {
@@ -38,11 +40,11 @@ public class ActionDefault extends AbstractAction {
 
     ActionDefault() {
         this.goTo = ConstantsFor.HTTP_LOCALHOST8880SLASH;
-        if(ConstantsFor.IS_SYSTRAY_AVAIL && SystemTrayHelper.getTrayIcon()!=null){
-            SystemTrayHelper.delOldActions();
+        if(ConstantsFor.IS_SYSTRAY_AVAIL && SYSTEM_TRAY_HELPER.getTrayIcon()!=null){
+            SYSTEM_TRAY_HELPER.delOldActions();
             messageToUser.info("ActionDefault.ActionDefault",
                 "SystemTrayHelper.getTrayIcon().getActionListeners().length",
-                " = " + SystemTrayHelper.getTrayIcon().getActionListeners().length);
+                " = " + SYSTEM_TRAY_HELPER.getTrayIcon().getActionListeners().length);
         }
     }
     @Override

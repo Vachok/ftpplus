@@ -13,10 +13,7 @@ import ru.vachok.networker.services.MessageLocal;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -156,7 +153,7 @@ class ConditionChecker {
     }
 
     /**
-     Если размер {@link ConstantsFor#ALL_DEVICES} более 0
+     Если размер {@link ConstantsNet#getAllDevices()} более 0
      <p> <br>
      <b>Схема:</b> <br>
      Убедимся в правильности {@link NetScanFileWorker} : <br> 1. {@link DiapazonedScan#getNetScanFileWorkerInst()} <br> 2.

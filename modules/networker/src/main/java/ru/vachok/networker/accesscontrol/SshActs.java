@@ -28,17 +28,19 @@ import java.nio.charset.Charset;
 import java.nio.file.AccessDeniedException;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 
 /**
  SSH-actions class
 
  @since 29.11.2018 (13:01) */
+@SuppressWarnings ("WeakerAccess")
 @Service(ConstantsFor.ATT_SSH_ACTS)
 public class SshActs {
 
     /**
-     {@link AppComponents#getLogger()}
+     {@link AppComponents#getLogger(String)}
      */
     private static final Logger LOGGER = AppComponents.getLogger(SshActs.class.getSimpleName());
 
@@ -433,6 +435,7 @@ public class SshActs {
 
      @since 01.12.2018 (9:58)
      */
+    @SuppressWarnings ("SameReturnValue")
     @Controller
     public class SshActsCTRL {
 
@@ -520,11 +523,7 @@ public class SshActs {
 
         private boolean getAuthentic(String pcReq) {
             return
-                pcReq.contains("10.10.111.") ||
-                    pcReq.contains("10.200.213.85") ||
-                    pcReq.contains("10.200.213.200") ||
-                    pcReq.contains("0:0:0:0") ||
-                    pcReq.contains("10.10.111");
+                Stream.of("10.10.111.", "10.200.213.85", "10.200.213.200", "0:0:0:0", "10.10.111").anyMatch(pcReq::contains);
         }
 
         /**

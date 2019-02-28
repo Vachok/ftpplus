@@ -18,24 +18,18 @@ import ru.vachok.networker.mailserver.MailIISLogsCleaner;
 import ru.vachok.networker.net.*;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.MyCalen;
-import ru.vachok.networker.services.SpeedChecker;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
-import java.nio.file.FileVisitor;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
-import java.time.LocalDate;
 import java.util.*;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -74,12 +68,12 @@ public class AppInfoOnLoad implements Runnable {
     /**
      {@link MessageCons}
      */
-    private static MessageToUser messageToUser = new MessageLocal();
+    private static final MessageToUser messageToUser = new MessageLocal();
 
     /**
      Для записи результата работы класса.
      */
-    private static List<String> miniLogger = new ArrayList<>();
+    private static final List<String> miniLogger = new ArrayList<>();
 
     /**
      Получение размера логов IIS-Exchange.
@@ -90,6 +84,7 @@ public class AppInfoOnLoad implements Runnable {
 
      @return размер папки логов IIS в мегабайтах
      */
+    @SuppressWarnings ("StaticMethodOnlyUsedInOneClass")
     public static String iisLogSize() {
         Path iisLogsDir = Paths.get(APP_PROPS.getProperty("iispath", "\\\\srv-mail3.eatmeat.ru\\c$\\inetpub\\logs\\LogFiles\\W3SVC1\\"));
         long totalSize = 0L;
@@ -99,19 +94,6 @@ public class AppInfoOnLoad implements Runnable {
         String s = totalSize / ConstantsFor.MBYTE + " MB IIS Logs\n";
         miniLogger.add(s);
         return s;
-    }
-
-    /**
-     Статистика по-пользователям за неделю.
-     <p>
-     Запуск new {@link SpeedChecker.ChkMailAndUpdateDB}, через {@link Executors#unconfigurableExecutorService(java.util.concurrent.ExecutorService)}
-     <p>
-     Если {@link LocalDate#getDayOfWeek()} equals {@link DayOfWeek#SUNDAY}, запуск new {@link WeekPCStats}
-     */
-    static void getWeekPCStats() {
-        if (LocalDate.now().getDayOfWeek().equals(DayOfWeek.SUNDAY)) {
-            AppComponents.threadConfig().executeAsThread(new WeekPCStats());
-        }
     }
 
     /**
@@ -139,6 +121,7 @@ public class AppInfoOnLoad implements Runnable {
      */
     private static void starterTelnet() {
         MyServer.setSocket(new Socket());
+        //noinspection resource
         while (!MyServer.getSocket().isClosed()) {
             try {
                 MyServer.reconSock();

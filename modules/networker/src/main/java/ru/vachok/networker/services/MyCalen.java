@@ -6,10 +6,7 @@ import org.slf4j.Logger;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
 
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.*;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
@@ -19,6 +16,7 @@ import java.util.concurrent.TimeUnit;
  Работа с календарём
 
  @since 09.12.2018 (15:26) */
+@SuppressWarnings ("SameParameterValue")
 public abstract class MyCalen {
 
     private static final String DATE_RETURNED = " date returned";
@@ -28,7 +26,7 @@ public abstract class MyCalen {
     }
 
     /**
-     {@link AppComponents#getLogger()}
+     {@link AppComponents#getLogger(String)}
      */
     private static final Logger LOGGER = AppComponents.getLogger(MyCalen.class.getSimpleName());
 
@@ -47,6 +45,7 @@ public abstract class MyCalen {
     /**
      {@link TimeChecker#call()}
      */
+    @SuppressWarnings ("CanBeFinal")
     private static TimeInfo timeInfo = TIME_CHECKER.call();
 
     /**

@@ -14,10 +14,7 @@ import ru.vachok.networker.services.MessageLocal;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
+import java.nio.file.*;
 import java.nio.file.attribute.AclEntry;
 import java.nio.file.attribute.AclFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -29,7 +26,7 @@ import java.util.List;
 public class CommonRightsChecker extends SimpleFileVisitor<Path> {
 
     /**
-     {@link AppComponents#getLogger()}
+     {@link AppComponents#getLogger(String)}
      */
     private static final Logger LOGGER = AppComponents.getLogger(CommonRightsChecker.class.getSimpleName());
 

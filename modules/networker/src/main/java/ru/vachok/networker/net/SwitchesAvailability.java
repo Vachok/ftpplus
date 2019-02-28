@@ -6,10 +6,7 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.services.TimeChecker;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -23,16 +20,17 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class SwitchesAvailability implements Runnable {
 
     /**
-     {@link AppComponents#getLogger()}
+     {@link AppComponents#getLogger(String)}
      */
     private static final Logger LOGGER = AppComponents.getLogger(SwitchesAvailability.class.getSimpleName());
 
     /**
      {@link InetAddress} свчичей.
      */
+    @SuppressWarnings ("CanBeFinal")
     private List<String> swAddr;
 
-    private Set<String> okIP = new HashSet<>();
+    private String okStr = null;
 
     public SwitchesAvailability() {
         List<String> stringList = new ArrayList<>();
@@ -49,9 +47,9 @@ public class SwitchesAvailability implements Runnable {
         return okIP;
     }
 
-    private String okStr;
+    private String badStr = null;
 
-    private String badStr;
+    private final Set<String> okIP = new HashSet<>();
 
     @Override
     public void run() {
@@ -134,24 +132,20 @@ public class SwitchesAvailability implements Runnable {
 
     @Override
     public int hashCode() {
-        int result = swAddr != null ? swAddr.hashCode() : 0;
-        result = 31 * result + getOkIP().hashCode();
-        result = 31 * result + (okStr != null ? okStr.hashCode() : 0);
-        result = 31 * result + (badStr != null ? badStr.hashCode() : 0);
-        return result;
+        return Objects.hash(swAddr, okIP);
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof SwitchesAvailability)) return false;
-
-        SwitchesAvailability that = (SwitchesAvailability) o;
-
-        if (swAddr != null ? !swAddr.equals(that.swAddr) : that.swAddr != null) return false;
-        if (!getOkIP().equals(that.getOkIP())) return false;
-        if (okStr != null ? !okStr.equals(that.okStr) : that.okStr != null) return false;
-        return badStr != null ? badStr.equals(that.badStr) : that.badStr == null;
+        if(this==o){
+            return true;
+        }
+        if(o==null || getClass()!=o.getClass()){
+            return false;
+        }
+        SwitchesAvailability that = ( SwitchesAvailability ) o;
+        return Objects.equals(swAddr, that.swAddr) &&
+            okIP.equals(that.okIP);
     }
 
     @Override

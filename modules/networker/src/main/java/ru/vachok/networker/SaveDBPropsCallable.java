@@ -8,10 +8,7 @@ import ru.vachok.networker.services.MessageLocal;
 
 import java.io.FileOutputStream;
 import java.io.OutputStream;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Savepoint;
+import java.sql.*;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Properties;
@@ -26,7 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  @since 25.02.2019 (10:12) */
 class SaveDBPropsCallable implements Callable<Boolean> {
 
-    private static MessageToUser messageToUser = new MessageLocal();
+    private static final MessageToUser messageToUser = new MessageLocal();
 
     private final MysqlDataSource mysqlDataSource;
 
@@ -50,7 +47,6 @@ class SaveDBPropsCallable implements Callable<Boolean> {
      @param c             {@link Connection}
      @param delPropsPoint {@link Savepoint}
      @throws SQLException делает {@link Connection#rollback(Savepoint)}
-     @see #saveAppProps(Properties)
      */
     private static boolean savePropsDelStatement(Connection c, Savepoint delPropsPoint) throws SQLException {
         final String sql = "delete FROM `ru_vachok_networker` where `javaid` =  'ConstantsFor'";
@@ -73,24 +69,27 @@ class SaveDBPropsCallable implements Callable<Boolean> {
             Savepoint delPropsPoint = c.setSavepoint("delPropsPoint" + LocalTime.now().format(DateTimeFormatter.ISO_TIME));
             boolean retBool = false;
             if (savePropsDelStatement(c, delPropsPoint)) {
-                PreparedStatement preparedStatement = c.prepareStatement(sql);
-                AtomicInteger executeUpdate = new AtomicInteger();
-                propsToSave.forEach((x, y) -> {
-                    try {
-                        preparedStatement.setString(1, x.toString());
-                        preparedStatement.setString(2, y.toString());
-                        preparedStatement.setString(3, "ConstantsFor");
-                        executeUpdate.set(preparedStatement.executeUpdate());
-                    } catch (SQLException e) {
-                        FileSystemWorker.error("ConstantsFor.saveAppProps", e);
+                try(PreparedStatement preparedStatement = c.prepareStatement(sql)){
+                    AtomicInteger executeUpdate = new AtomicInteger();
+                    propsToSave.forEach((x, y) -> {
+                        try{
+                            preparedStatement.setString(1, x.toString());
+                            preparedStatement.setString(2, y.toString());
+                            preparedStatement.setString(3, "ConstantsFor");
+                            executeUpdate.set(preparedStatement.executeUpdate());
+                        }
+                        catch(SQLException e){
+                            FileSystemWorker.error("ConstantsFor.saveAppProps", e);
+                        }
+                    });
+                    if(executeUpdate.get() > 0){
+                        retBool = true;
+                        preparedStatement.close();
                     }
-                });
-                if (executeUpdate.get() > 0) {
-                    retBool = true;
-                    preparedStatement.close();
-                } else {
-                    c.rollback();
-                    preparedStatement.close();
+                    else{
+                        c.rollback();
+                        preparedStatement.close();
+                    }
                 }
                 propsToSave.store(outputStream, classMeth);
             }

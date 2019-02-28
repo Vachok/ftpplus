@@ -26,13 +26,11 @@ import java.io.*;
 import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Date;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -46,6 +44,7 @@ import static java.time.format.TextStyle.FULL_STANDALONE;
  <p>
 
  @since 21.08.2018 (14:40) */
+@SuppressWarnings ({"StaticMethodOnlyUsedInOneClass", "ClassWithMultipleLoggers"})
 @Service(ConstantsNet.BEANNAME_NETSCANNERSVC)
 public final class NetScannerSvc {
 
@@ -76,14 +75,15 @@ public final class NetScannerSvc {
      */
     private static final String METHNAME_GET_PCS_ASYNC = "NetScannerSvc.getPCsAsync";
 
-    private static Connection connection;
-
-    private static MessageToUser messageToUser = new MessageLocal();
+    private static final MessageToUser messageToUser = new MessageLocal();
 
     /**
      {@link ConstantsNet#getPcNames()}
      */
-    private static Set<String> pcNamesSet = ConstantsNet.getPcNames();
+    private static final Set<String> PC_NAMES_SET = ConstantsNet.getPcNames();
+
+    @SuppressWarnings ("CanBeFinal")
+    private static Connection connection = null;
 
     /**
      Неиспользуемые имена ПК
@@ -95,6 +95,7 @@ public final class NetScannerSvc {
     /**
      new {@link NetScannerSvc}
      */
+    @SuppressWarnings ("CanBeFinal")
     private static NetScannerSvc netScannerSvcInst = new NetScannerSvc();
 
     /**
@@ -129,7 +130,8 @@ public final class NetScannerSvc {
 
      @return web-страница с результатом
      */
-    public static String getInfoFromDB() {
+    @SuppressWarnings ("SameReturnValue")
+    public String getInfoFromDB() {
         StringBuilder sqlQBuilder = new StringBuilder();
         String thePcLoc = AppComponents.netScannerSvc().getThePc();
         if (thePcLoc.isEmpty()) {
@@ -190,7 +192,7 @@ public final class NetScannerSvc {
      */
     Set<String> getPcNames() {
         getPCsAsync();
-        return pcNamesSet;
+        return PC_NAMES_SET;
     }
 
     /**
@@ -234,92 +236,39 @@ public final class NetScannerSvc {
     }
 
     /**
-     Запись в таблицу <b>velkompc</b> текущего состояния. <br>
+     Основной скан-метод.
      <p>
-     1 {@link TForms#fromArray(List, boolean)}
+     1. {@link #fileCreate(boolean)}. Убедимся, что файл создан. <br>
+     2. {@link ActionCloseMsg} , 3. {@link MessageToTray}. Создаём взаимодействие с юзером. <br>
+     3. {@link ConstantsFor#getUpTime()} - uptime приложения в 4. {@link MessageToTray#info(java.lang.String, java.lang.String, java.lang.String)}. <br>
+     5. {@link NetScannerSvc#getPCNamesPref(java.lang.String)} - скан сегмента. <br>
 
-     @return строка в html-формате
-     @see #getPCNamesPref(String)
+     @see #getPcNames()
      */
-    @SuppressWarnings({"OverlyComplexMethod", "OverlyLongMethod"})
-    private static String writeDB() throws SQLException {
-        List<String> list = new ArrayList<>();
-        try (PreparedStatement p = connection.prepareStatement("insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow) values (?,?,?,?)")) {
-            List<String> toSort = new ArrayList<>(pcNamesSet);
-            toSort.sort(null);
-            for (String x : toSort) {
-                String pcSerment = "Я не знаю...";
-                LOGGER.info(x);
-                if (x.contains("200.200")) {
-                    pcSerment = "Торговый дом";
-                }
-                if (x.contains("200.201")) {
-                    pcSerment = "IP телефоны";
-                }
-                if (x.contains("200.202")) {
-                    pcSerment = "Техслужба";
-                }
-                if (x.contains("200.203")) {
-                    pcSerment = "СКУД";
-                }
-                if (x.contains("200.204")) {
-                    pcSerment = "Упаковка";
-                }
-                if (x.contains("200.205")) {
-                    pcSerment = "МХВ";
-                }
-                if (x.contains("200.206")) {
-                    pcSerment = "Здание склада 5";
-                }
-                if (x.contains("200.207")) {
-                    pcSerment = "Сырокопоть";
-                }
-                if (x.contains("200.208")) {
-                    pcSerment = "Участок убоя";
-                }
-                if (x.contains("200.209")) {
-                    pcSerment = "Да ладно?";
-                }
-                if (x.contains("200.210")) {
-                    pcSerment = "Мастера колб";
-                }
-                if (x.contains("200.212")) {
-                    pcSerment = "Мастера деликатесов";
-                }
-                if (x.contains("200.213")) {
-                    pcSerment = "2й этаж. АДМ.";
-                }
-                if (x.contains("200.214")) {
-                    pcSerment = "WiFiCorp";
-                }
-                if (x.contains("200.215")) {
-                    pcSerment = "WiFiFree";
-                }
-                if (x.contains("200.217")) {
-                    pcSerment = "1й этаж АДМ";
-                }
-                if (x.contains("192.168")) {
-                    pcSerment = "Может быть в разных местах...";
-                }
-                if (x.contains("172.16.200")) {
-                    pcSerment = "Open VPN авторизация - сертификат";
-                }
-                boolean onLine = false;
-                if (x.contains("true")) {
-                    onLine = true;
-                }
-                String x1 = x.split(":")[0];
-                p.setString(1, x1);
-                String x2 = x.split(":")[1];
-                p.setString(2, x2.split("<")[0]);
-                p.setString(3, pcSerment);
-                p.setBoolean(4, onLine);
-                p.executeUpdate();
-                list.add(x1 + " " + x2 + " " + pcSerment + " " + onLine);
-            }
+    @SuppressWarnings ("OverlyLongLambda")
+    private void getPCsAsync() {
+        AtomicReference<String> msg = new AtomicReference<>("");
+        this.startClassTime = System.currentTimeMillis();
+        boolean fileCreate = fileCreate(true);
+        try{
+            new MessageToTray(new ActionCloseMsg(new MessageLocal())).info("NetScannerSvc started scan", ConstantsFor.getUpTime(), " File: " + fileCreate);
         }
-        ConstantsNet.setPcNames(pcNamesSet);
-        return new TForms().fromArray(list, true);
+        catch(NoClassDefFoundError e){
+            messageToUser.errorAlert(CLASS_NAME, "getPCsAsync", e.getMessage());
+        }
+        AppComponents.threadConfig().executeAsThread(() -> {
+            for(String s : ConstantsNet.getPcPrefixes()){
+                this.thrName = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime) + "-sec";
+                PC_NAMES_SET.clear();
+                PC_NAMES_SET.addAll(getPCNamesPref(s));
+                Thread.currentThread().setName(thrName);
+                msg.set(thrName);
+            }
+            String elapsedTime = "Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime) + " sec.";
+            PC_NAMES_SET.add(elapsedTime);
+            LOGGER.warn(msg.get());
+            AppComponents.threadConfig().executeAsThread(this::runAfterAllScan);
+        });
     }
 
     /**
@@ -352,15 +301,74 @@ public final class NetScannerSvc {
     }
 
     /**
-     Обнуление счётчика онлайн ПК.
+     Статистика по-сканированию.
      <p>
-     Устанавливает {@link #LOCAL_PROPS} {@link ConstantsNet#ONLINEPC} в "". <br> Устававливает {@link NetScannerSvc#onLinePCsNum} = 0.
-
-     @see #runAfterAll
+     {@link TForms#fromArray(java.util.Map, boolean)}. Преобразуем в строку {@link ConstantsNet#COMPNAME_USERS_MAP}. <br>
+     {@link TForms#fromArrayUsers(java.util.concurrent.ConcurrentMap, boolean)} - преобразуем {@link ConstantsNet#PC_U_MAP}. <br>
+     Создадим еще 2 {@link String}, {@code msgTimeSp} - сколько времени прощло после инициализации. {@code valueOfPropLastScan} - когда было последнее
+     сканирование.
+     Инфо из {@link #LOCAL_PROPS}. <br>
+     Все строки + {@link TForms#fromArray(java.util.Properties, boolean)} - {@link #LOCAL_PROPS}, добавим в {@link ArrayList} {@code toFileList}.
+     <p>
+     {@link Properties#setProperty(java.lang.String, java.lang.String)} = {@code valueOfPropLastScan}. <br>
+     {@link AppComponents#getOrSetProps(boolean)} - {@link #LOCAL_PROPS}.
+     <p>
+     {@link MessageToTray#info(java.lang.String, java.lang.String, java.lang.String)}
+     <p>
+     {@link NetScannerSvc#setOnLinePCsToZero()} <br>
+     {@link LastNetScan#setTimeLastScan(java.util.Date)} - сейчас. <br>
+     {@link NetScannerSvc#countStat()}. <br>
+     {@link FileSystemWorker#recFile(java.lang.String, java.lang.String)}
+     ({@link AppComponents#lastNetScanMap()}). <br>
+     {@link ESender#info(java.lang.String, java.lang.String, java.lang.String)}.
+     <p>
+     {@link FileSystemWorker#recFile(java.lang.String, java.util.List)} - {@code toFileList}. <br>
+     {@link FileSystemWorker#recFile(java.lang.String, java.util.stream.Stream)} - {@link #unusedNamesTree}.
+     <p>
+     {@link MessageSwing#infoTimer(int, java.lang.String)}
      */
-    private static void setOnLinePCsToZero() {
-        LOCAL_PROPS.setProperty(ConstantsNet.ONLINEPC, onLinePCsNum + "");
-        NetScannerSvc.onLinePCsNum = 0;
+    @SuppressWarnings ("MagicNumber")
+    private void runAfterAllScan() {
+        float upTime = ( float ) (TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime)) / ConstantsFor.ONE_HOUR_IN_MIN;
+        List<String> toFileList = new ArrayList<>();
+        MessageToUser mailMSG = new ESender(ConstantsFor.EADDR_143500GMAILCOM);
+
+        String compNameUsers = new TForms().fromArray(ConstantsNet.getCompnameUsersMap(), false);
+        String psUser = new TForms().fromArrayUsers(ConstantsNet.getPcUMap(), false);
+        String msgTimeSp =
+            "NetScannerSvc.getPCsAsync method. " + ( float ) (System.currentTimeMillis() - startClassTime) / 1000 + ConstantsFor.STR_SEC_SPEND;
+        String valueOfPropLastScan = System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY) + "";
+
+        LOCAL_PROPS.setProperty(ConstantsNet.PR_LASTSCAN, valueOfPropLastScan);
+
+        toFileList.add(compNameUsers);
+        toFileList.add(psUser);
+        toFileList.add(msgTimeSp);
+        toFileList.add(new TForms().fromArray(LOCAL_PROPS, false));
+        new MessageToTray(new ActionDefault(ConstantsNet.HTTP_LOCALHOST_8880_NETSCAN)).info(
+            "Netscan complete!",
+            "Online: " + onLinePCsNum,
+            upTime + " min uptime.");
+        NetScannerSvc.setOnLinePCsToZero();
+        AppComponents.lastNetScan().setTimeLastScan(new Date());
+        countStat();
+        boolean props = AppComponents.getOrSetProps(LOCAL_PROPS);
+        FileSystemWorker.recFile(ConstantsNet.BEANNAME_LASTNETSCAN, new TForms().fromArray(AppComponents.lastNetScanMap(), false));
+        String bodyMsg = ConstantsFor.getMemoryInfo() + "\n" +
+            " scan.tmp exist = " + fileCreate(false) + "\n" +
+            "Properties is save = " + props + "\n" +
+            new TForms().fromArray(toFileList, false);
+        mailMSG.info(
+            this.getClass().getSimpleName(),
+            "getPCsAsync " + ConstantsFor.getUpTime() + " " + ConstantsFor.thisPC(),
+            bodyMsg);
+        FileSystemWorker.recFile(this.getClass().getSimpleName() + ".getPCsAsync", toFileList);
+        FileSystemWorker.recFile("unused.ips", unusedNamesTree.stream());
+        new MessageSwing(656, 550, 50, 53).infoTimer(50,
+            "Daysec: " +
+                LocalTime.now().toSecondOfDay() + " " +
+                LocalDate.now().getDayOfWeek().getDisplayName(FULL_STANDALONE, Locale.getDefault()) + "\n" +
+                bodyMsg);
     }
 
     /**
@@ -425,14 +433,14 @@ public final class NetScannerSvc {
                     String strToConsole = MessageFormat.format("{0} {1} | {2}", pcName, pcOnline, onOffCounterAndLastUser);
 
                     netWorkMap.put(printStr, true);
-                    pcNamesSet.add(pcName + ":" + byName.getHostAddress() + pcOnline);
+                    PC_NAMES_SET.add(pcName + ":" + byName.getHostAddress() + pcOnline);
                     LOGGER.info(strToConsole);
                 }
             } catch (IOException e) {
                 unusedNamesTree.add(e.getMessage());
             }
         }
-        netWorkMap.put("<h4>" + prefixPcName + "     " + pcNamesSet.size() + "</h4>", true);
+        netWorkMap.put("<h4>" + prefixPcName + "     " + PC_NAMES_SET.size() + "</h4>", true);
         try {
             pcsString = writeDB();
         } catch (SQLException e) {
@@ -440,46 +448,35 @@ public final class NetScannerSvc {
             FileSystemWorker.error("NetScannerSvc.getPCNamesPref", e);
         }
         String elapsedTime = "<b>Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethTime) + " sec.</b> " + LocalTime.now();
-        pcNamesSet.add(elapsedTime);
-        ConstantsNet.setPcNames(pcNamesSet);
+        PC_NAMES_SET.add(elapsedTime);
+        ConstantsNet.setPcNames(PC_NAMES_SET);
 
         LOGGER.info(pcsString);
-        return pcNamesSet;
+        return PC_NAMES_SET;
     }
 
     /**
-     Основной скан-метод.
+     Если ПК не пингуется
      <p>
-     1. {@link #fileCreate(boolean)}. Убедимся, что файл создан. <br>
-     2. {@link ActionCloseMsg} , 3. {@link MessageToTray}. Создаём взаимодействие с юзером. <br>
-     3. {@link ConstantsFor#getUpTime()} - uptime приложения в 4. {@link MessageToTray#info(java.lang.String, java.lang.String, java.lang.String)}. <br>
-     5. {@link NetScannerSvc#getPCNamesPref(java.lang.String)} - скан сегмента. <br>
+     Добавить в {@link #netWorkMap} , {@code online = false}.
+     <p>
+     {@link MoreInfoGetter#getSomeMore(String, boolean)}. Получить более подробную информацию о ПК.
+     <p>
 
-     @see #getPcNames()
+     @param pcName имя ПК
+     @param byName {@link InetAddress}
+     @see #getPCNamesPref(String)
      */
-    @SuppressWarnings("OverlyLongLambda")
-    private void getPCsAsync() {
-        AtomicReference<String> msg = new AtomicReference<>("");
-        this.startClassTime = System.currentTimeMillis();
-        boolean fileCreate = fileCreate(true);
-        try {
-            new MessageToTray(new ActionCloseMsg(new MessageLocal())).info("NetScannerSvc started scan", ConstantsFor.getUpTime(), " File: " + fileCreate);
-        } catch (NoClassDefFoundError e) {
-            messageToUser.errorAlert(CLASS_NAME, "getPCsAsync", e.getMessage());
-        }
-        AppComponents.threadConfig().executeAsThread(() -> {
-            for (String s : ConstantsNet.getPcPrefixes()) {
-                this.thrName = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime) + "-sec";
-                pcNamesSet.clear();
-                pcNamesSet.addAll(getPCNamesPref(s));
-                Thread.currentThread().setName(thrName);
-                msg.set(thrName);
-            }
-            String elapsedTime = "Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime) + " sec.";
-            pcNamesSet.add(elapsedTime);
-            LOGGER.warn(msg.get());
-            AppComponents.threadConfig().executeAsThread(this::runAfterAllScan);
-        });
+    private void pcNameUnreach(String pcName, InetAddress byName) {
+        String someMore = MoreInfoGetter.getSomeMore(pcName, false);
+        String onLines = new StringBuilder()
+            .append("online ")
+            .append(false)
+            .append("<br>").toString();
+        PC_NAMES_SET.add(pcName + ":" + byName.getHostAddress() + " " + onLines);
+        String format = MessageFormat.format("{0} {1} | {2}", pcName, onLines, someMore);
+        netWorkMap.put(pcName + " last name is " + someMore, false);
+        LOGGER.warn(format);
     }
 
     /**
@@ -513,27 +510,92 @@ public final class NetScannerSvc {
     }
 
     /**
-     Если ПК не пингуется
+     Запись в таблицу <b>velkompc</b> текущего состояния. <br>
      <p>
-     Добавить в {@link #netWorkMap} , {@code online = false}.
-     <p>
-     {@link MoreInfoGetter#getSomeMore(String, boolean)}. Получить более подробную информацию о ПК.
-     <p>
+     1 {@link TForms#fromArray(List, boolean)}
 
-     @param pcName имя ПК
-     @param byName {@link InetAddress}
+     @return строка в html-формате
      @see #getPCNamesPref(String)
      */
-    private void pcNameUnreach(String pcName, InetAddress byName) {
-        String someMore = MoreInfoGetter.getSomeMore(pcName, false);
-        String onLines = new StringBuilder()
-            .append("online ")
-            .append(false)
-            .append("<br>").toString();
-        pcNamesSet.add(pcName + ":" + byName.getHostAddress() + " " + onLines);
-        String format = MessageFormat.format("{0} {1} | {2}", pcName, onLines, someMore);
-        netWorkMap.put(pcName + " last name is " + someMore, false);
-        LOGGER.warn(format);
+    @SuppressWarnings ({"OverlyComplexMethod", "OverlyLongMethod"})
+    private String writeDB() throws SQLException {
+        List<String> list = new ArrayList<>();
+        try(PreparedStatement p = connection.prepareStatement("insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow) values (?,?,?,?)")){
+            List<String> toSort = new ArrayList<>(PC_NAMES_SET);
+            toSort.sort(null);
+            for(String x : toSort){
+                String pcSerment = "Я не знаю...";
+                LOGGER.info(x);
+                if(x.contains("200.200")){
+                    pcSerment = "Торговый дом";
+                }
+                if(x.contains("200.201")){
+                    pcSerment = "IP телефоны";
+                }
+                if(x.contains("200.202")){
+                    pcSerment = "Техслужба";
+                }
+                if(x.contains("200.203")){
+                    pcSerment = "СКУД";
+                }
+                if(x.contains("200.204")){
+                    pcSerment = "Упаковка";
+                }
+                if(x.contains("200.205")){
+                    pcSerment = "МХВ";
+                }
+                if(x.contains("200.206")){
+                    pcSerment = "Здание склада 5";
+                }
+                if(x.contains("200.207")){
+                    pcSerment = "Сырокопоть";
+                }
+                if(x.contains("200.208")){
+                    pcSerment = "Участок убоя";
+                }
+                if(x.contains("200.209")){
+                    pcSerment = "Да ладно?";
+                }
+                if(x.contains("200.210")){
+                    pcSerment = "Мастера колб";
+                }
+                if(x.contains("200.212")){
+                    pcSerment = "Мастера деликатесов";
+                }
+                if(x.contains("200.213")){
+                    pcSerment = "2й этаж. АДМ.";
+                }
+                if(x.contains("200.214")){
+                    pcSerment = "WiFiCorp";
+                }
+                if(x.contains("200.215")){
+                    pcSerment = "WiFiFree";
+                }
+                if(x.contains("200.217")){
+                    pcSerment = "1й этаж АДМ";
+                }
+                if(x.contains("192.168")){
+                    pcSerment = "Может быть в разных местах...";
+                }
+                if(x.contains("172.16.200")){
+                    pcSerment = "Open VPN авторизация - сертификат";
+                }
+                boolean onLine = false;
+                if(x.contains("true")){
+                    onLine = true;
+                }
+                String x1 = x.split(":")[0];
+                p.setString(1, x1);
+                String x2 = x.split(":")[1];
+                p.setString(2, x2.split("<")[0]);
+                p.setString(3, pcSerment);
+                p.setBoolean(4, onLine);
+                p.executeUpdate();
+                list.add(x1 + " " + x2 + " " + pcSerment + " " + onLine);
+            }
+        }
+        ConstantsNet.setPcNames(PC_NAMES_SET);
+        return new TForms().fromArray(list, true);
     }
 
     /**
@@ -563,73 +625,15 @@ public final class NetScannerSvc {
     }
 
     /**
-     Статистика по-сканированию.
+     Обнуление счётчика онлайн ПК.
      <p>
-     {@link TForms#fromArray(java.util.Map, boolean)}. Преобразуем в строку {@link ConstantsNet#COMPNAME_USERS_MAP}. <br>
-     {@link TForms#fromArrayUsers(java.util.concurrent.ConcurrentMap, boolean)} - преобразуем {@link ConstantsNet#PC_U_MAP}. <br>
-     Создадим еще 2 {@link String}, {@code msgTimeSp} - сколько времени прощло после инициализации. {@code valueOfPropLastScan} - когда было последнее
-     сканирование.
-     Инфо из {@link #LOCAL_PROPS}. <br>
-     Все строки + {@link TForms#fromArray(java.util.Properties, boolean)} - {@link #LOCAL_PROPS}, добавим в {@link ArrayList} {@code toFileList}.
-     <p>
-     {@link Properties#setProperty(java.lang.String, java.lang.String)} = {@code valueOfPropLastScan}. <br>
-     {@link AppComponents#getOrSetProps(boolean)} - {@link #LOCAL_PROPS}.
-     <p>
-     {@link MessageToTray#info(java.lang.String, java.lang.String, java.lang.String)}
-     <p>
-     {@link NetScannerSvc#setOnLinePCsToZero()} <br>
-     {@link LastNetScan#setTimeLastScan(java.util.Date)} - сейчас. <br>
-     {@link NetScannerSvc#countStat()}. <br>
-     {@link FileSystemWorker#recFile(java.lang.String, java.lang.String)} - {@link ConstantsNet#STR_LASTNETSCAN}.
-     ({@link AppComponents#lastNetScanMap()}). <br>
-     {@link ESender#info(java.lang.String, java.lang.String, java.lang.String)}.
-     <p>
-     {@link FileSystemWorker#recFile(java.lang.String, java.util.List)} - {@code toFileList}. <br>
-     {@link FileSystemWorker#recFile(java.lang.String, java.util.stream.Stream)} - {@link #unusedNamesTree}.
-     <p>
-     {@link MessageSwing#infoTimer(int, java.lang.String)}
+     Устанавливает {@link #LOCAL_PROPS} {@link ConstantsNet#ONLINEPC} в "". <br> Устававливает {@link NetScannerSvc#onLinePCsNum} = 0.
+
+     @see #runAfterAllScan()
      */
-    @SuppressWarnings("MagicNumber")
-    private void runAfterAllScan() {
-        float upTime = (float) (TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime)) / ConstantsFor.ONE_HOUR_IN_MIN;
-        List<String> toFileList = new ArrayList<>();
-        MessageToUser mailMSG = new ESender(ConstantsFor.EADDR_143500GMAILCOM);
-
-        String compNameUsers = new TForms().fromArray(ConstantsNet.getCompnameUsersMap(), false);
-        String psUser = new TForms().fromArrayUsers(ConstantsNet.getPcUMap(), false);
-        String msgTimeSp = "NetScannerSvc.getPCsAsync method. " + (float) (System.currentTimeMillis() - startClassTime) / 1000 + ConstantsFor.STR_SEC_SPEND;
-        String valueOfPropLastScan = System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY) + "";
-
-        LOCAL_PROPS.setProperty(ConstantsNet.PR_LASTSCAN, valueOfPropLastScan);
-
-        toFileList.add(compNameUsers);
-        toFileList.add(psUser);
-        toFileList.add(msgTimeSp);
-        toFileList.add(new TForms().fromArray(LOCAL_PROPS, false));
-        new MessageToTray(new ActionDefault(ConstantsNet.HTTP_LOCALHOST_8880_NETSCAN)).info(
-            "Netscan complete!",
-            "Online: " + onLinePCsNum,
-            upTime + " min uptime.");
-        NetScannerSvc.setOnLinePCsToZero();
-        AppComponents.lastNetScan().setTimeLastScan(new Date());
-        countStat();
-        boolean props = AppComponents.getOrSetProps(LOCAL_PROPS);
-        FileSystemWorker.recFile(ConstantsNet.BEANNAME_LASTNETSCAN, new TForms().fromArray(AppComponents.lastNetScanMap(), false));
-        String bodyMsg = ConstantsFor.getMemoryInfo() + "\n" +
-            " scan.tmp exist = " + fileCreate(false) + "\n" +
-            "Properties is save = " + props + "\n" +
-            new TForms().fromArray(toFileList, false);
-        mailMSG.info(
-            this.getClass().getSimpleName(),
-            "getPCsAsync " + ConstantsFor.getUpTime() + " " + ConstantsFor.thisPC(),
-            bodyMsg);
-        FileSystemWorker.recFile(this.getClass().getSimpleName() + ".getPCsAsync", toFileList);
-        FileSystemWorker.recFile("unused.ips", unusedNamesTree.stream());
-        new MessageSwing(656, 550, 50, 53).infoTimer(50,
-            "Daysec: " +
-                LocalTime.now().toSecondOfDay() + " " +
-                LocalDate.now().getDayOfWeek().getDisplayName(FULL_STANDALONE, Locale.getDefault()) + "\n" +
-                bodyMsg);
+    private static void setOnLinePCsToZero() {
+        LOCAL_PROPS.setProperty(ConstantsNet.ONLINEPC, onLinePCsNum + "");
+        NetScannerSvc.onLinePCsNum = 0;
     }
 
     /**
@@ -688,23 +692,21 @@ public final class NetScannerSvc {
     }
 
     @Override
-    public int hashCode() {
-        int result = (int) (startClassTime ^ (startClassTime >>> 32));
-        result = 31 * result + getThePc().hashCode();
-        result = 31 * result + (netWorkMap != null ? netWorkMap.hashCode() : 0);
-        return result;
+    public boolean equals(Object o) {
+        if(this==o){
+            return true;
+        }
+        if(o==null || getClass()!=o.getClass()){
+            return false;
+        }
+        NetScannerSvc that = ( NetScannerSvc ) o;
+        return startClassTime==that.startClassTime &&
+            Objects.equals(netWorkMap, that.netWorkMap);
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof NetScannerSvc)) return false;
-
-        NetScannerSvc that = (NetScannerSvc) o;
-
-        if (startClassTime != that.startClassTime) return false;
-        if (!getThePc().equals(that.getThePc())) return false;
-        return netWorkMap != null ? netWorkMap.equals(that.netWorkMap) : that.netWorkMap == null;
+    public int hashCode() {
+        return Objects.hash(startClassTime, netWorkMap);
     }
 
     @Override
@@ -714,7 +716,7 @@ public final class NetScannerSvc {
         sb.append(", LOCAL_PROPS=").append(LOCAL_PROPS.equals(AppComponents.getOrSetProps()));
         sb.append(", METHNAME_GET_PCS_ASYNC='").append(METHNAME_GET_PCS_ASYNC).append('\'');
         sb.append(", FILENAME_PCAUTODISTXT='").append(ConstantsNet.FILENAME_PCAUTODISTXT).append('\'');
-        sb.append(", pcNamesSet=").append(pcNamesSet.size());
+        sb.append(", PC_NAMES_SET=").append(PC_NAMES_SET.size());
         sb.append(", onLinePCsNum=").append(onLinePCsNum);
         sb.append(", unusedNamesTree=").append(unusedNamesTree.size());
         sb.append(", netScannerSvcInst=").append(netScannerSvcInst.hashCode());

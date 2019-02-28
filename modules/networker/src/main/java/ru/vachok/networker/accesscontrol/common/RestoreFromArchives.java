@@ -21,10 +21,8 @@ import java.util.concurrent.TimeUnit;
  <p>
 
  @since 05.12.2018 (8:59) */
-@SuppressWarnings ({"SameReturnValue", "RedundantThrows"})
+@SuppressWarnings ({"SameReturnValue", "RedundantThrows", "MethodWithMultipleReturnPoints"})
 public class RestoreFromArchives extends SimpleFileVisitor<Path> {
-
-    /*Fields*/
 
     /**
      Путь к архиву
@@ -37,7 +35,7 @@ public class RestoreFromArchives extends SimpleFileVisitor<Path> {
     private static final Path COMMON_DIR = Paths.get("\\\\srv-fs.eatmeat.ru\\common_new");
 
     /**
-     {@link AppComponents#getLogger()}
+     {@link AppComponents#getLogger(String)}
      */
     private static final Logger LOGGER = AppComponents.getLogger(RestoreFromArchives.class.getSimpleName());
 
@@ -46,9 +44,9 @@ public class RestoreFromArchives extends SimpleFileVisitor<Path> {
      <p>
      Для того, чтобы не перебирать каждый раз всё.
      */
-    private String firstLeverSTR;
+    private String firstLeverSTR = null;
 
-    private String pathToRestoreAsStr;
+    private String pathToRestoreAsStr = null;
 
     /**
      {@link StringBuilder} результата работы.
@@ -121,11 +119,7 @@ public class RestoreFromArchives extends SimpleFileVisitor<Path> {
 
     @Override
     public int hashCode() {
-        int result = firstLeverSTR!=null? firstLeverSTR.hashCode(): 0;
-        result = 31 * result + (resultStr!=null? resultStr.hashCode(): 0);
-        result = 31 * result + pathToRestoreAsStr.hashCode();
-        result = 31 * result + perionDays;
-        return result;
+        return Objects.hash(pathToRestoreAsStr, perionDays);
     }
 
     @Override
@@ -136,19 +130,9 @@ public class RestoreFromArchives extends SimpleFileVisitor<Path> {
         if(o==null || getClass()!=o.getClass()){
             return false;
         }
-
         RestoreFromArchives that = ( RestoreFromArchives ) o;
-
-        if(perionDays!=that.perionDays){
-            return false;
-        }
-        if(firstLeverSTR!=null? !firstLeverSTR.equals(that.firstLeverSTR): that.firstLeverSTR!=null){
-            return false;
-        }
-        if(resultStr!=null? !resultStr.equals(that.resultStr): that.resultStr!=null){
-            return false;
-        }
-        return pathToRestoreAsStr.equals(that.pathToRestoreAsStr);
+        return perionDays==that.perionDays &&
+            Objects.equals(pathToRestoreAsStr, that.pathToRestoreAsStr);
     }
 
     @Override

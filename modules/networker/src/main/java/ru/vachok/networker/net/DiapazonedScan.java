@@ -35,7 +35,7 @@ import java.util.concurrent.TimeUnit;
 public class DiapazonedScan implements Runnable {
 
     /**
-     {@link AppComponents#getLogger()}
+     {@link AppComponents#getLogger(String)}
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(DiapazonedScan.class.getSimpleName());
 
@@ -57,7 +57,7 @@ public class DiapazonedScan implements Runnable {
     private static final int MAX_IN_VLAN_INT = 255;
 
     /**
-     {@link ConstantsFor#ALL_DEVICES}
+     {@link ConstantsNet#getAllDevices()}
      */
     private static final BlockingDeque<String> ALL_DEVICES_LOCAL_DEQUE = ConstantsNet.getAllDevices();
 
@@ -119,7 +119,7 @@ public class DiapazonedScan implements Runnable {
     }
 
     /**
-     Добавляет в {@link ConstantsFor#ALL_DEVICES} адреса <i>10.200.200-217.254</i>
+     Добавляет в {@link ConstantsNet#getAllDevices()} адреса <i>10.200.200-217.254</i>
      */
     private void scanNew() {
         final long stArt = System.currentTimeMillis();
@@ -287,9 +287,6 @@ public class DiapazonedScan implements Runnable {
 
     /**
      Старт
-     <p>
-     1. {@link #readObject(ObjectInputStream)}. Пробуем десериализоваться. 2. {@link FileSystemWorker#error(java.lang.String, java.lang.Exception)} запишем исключение в лог. {@link IOException} или
-     {@link Class} <br>
      */
     @Override
     public void run() {

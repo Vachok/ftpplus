@@ -20,10 +20,12 @@ public class MessageToTray implements MessageToUser {
 
     private ActionListener aListener;
 
+    private static final SystemTrayHelper SYSTEM_TRAY_HELPER = SystemTrayHelper.getI();
+
     /**
      {@link SystemTrayHelper#getTrayIcon()}
      */
-    private TrayIcon trayIcon = SystemTrayHelper.getTrayIcon();
+    private TrayIcon trayIcon = SYSTEM_TRAY_HELPER.getTrayIcon();
 
     private String headerMsg = ConstantsFor.APPNAME_WITHMINUS.replace('-', ' ');
 
@@ -81,7 +83,7 @@ public class MessageToTray implements MessageToUser {
         this.headerMsg = headerMsg;
         this.titleMsg = titleMsg;
         this.bodyMsg = bodyMsg;
-        if(SystemTray.isSupported() && trayIcon.equals(SystemTrayHelper.getTrayIcon())){
+        if(SystemTray.isSupported() && trayIcon.equals(SYSTEM_TRAY_HELPER.getTrayIcon())){
             trayIcon.addActionListener(aListener);
             trayIcon.displayMessage(headerMsg, titleMsg + " " + bodyMsg, TrayIcon.MessageType.ERROR);
         }
@@ -95,7 +97,7 @@ public class MessageToTray implements MessageToUser {
         this.headerMsg = headerMsg;
         this.titleMsg = titleMsg;
         this.bodyMsg = bodyMsg;
-        if(SystemTray.isSupported() && SystemTrayHelper.getTrayIcon()!=null){
+        if(SystemTray.isSupported() && SYSTEM_TRAY_HELPER.getTrayIcon()!=null){
             trayIcon.addActionListener(aListener);
             trayIcon.displayMessage(headerMsg, titleMsg + " " + bodyMsg, TrayIcon.MessageType.INFO);
         }
@@ -169,7 +171,6 @@ public class MessageToTray implements MessageToUser {
         sb.append(", bodyMsg='").append(bodyMsg).append('\'');
         sb.append(", headerMsg='").append(headerMsg).append('\'');
         sb.append(", titleMsg='").append(titleMsg).append('\'');
-        sb.append(", trayIcon=").append(SystemTray.isSupported() && trayIcon.equals(SystemTrayHelper.getTrayIcon()));
         sb.append('}');
         return sb.toString();
     }

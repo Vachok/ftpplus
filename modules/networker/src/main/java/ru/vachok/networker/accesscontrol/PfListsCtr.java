@@ -36,6 +36,7 @@ import java.util.concurrent.TimeUnit;
  <a href="/pflists" target=_blank>Pf Lists</a>
 
  @since 14.11.2018 (15:11) */
+@SuppressWarnings ({"SameReturnValue", "ClassUnconnectedToPackage"})
 @Controller
 public class PfListsCtr {
 
@@ -56,11 +57,13 @@ public class PfListsCtr {
     /**
      {@link PfLists}
      */
+    @SuppressWarnings ("CanBeFinal")
     private PfLists pfListsInstAW;
 
     /**
      {@link ConstantsFor#isPingOK()}
      */
+    @SuppressWarnings ("CanBeFinal")
     private boolean pingGITOk;
 
     /**
@@ -81,7 +84,7 @@ public class PfListsCtr {
     /**
      {@link MessageLocal}
      */
-    private MessageToUser messageToUser = new MessageLocal();
+    private final MessageToUser messageToUser = new MessageLocal();
 
     /**
      Public-консттруктор.
@@ -96,7 +99,7 @@ public class PfListsCtr {
         this.pfListsSrvInstAW = pfListsSrv;
         this.pingGITOk = ConstantsFor.isPingOK();
         ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor();
-        long delaySch = TimeUnit.MINUTES.toSeconds(ConstantsFor.DELAY) + 3600;
+        long delaySch = TimeUnit.MINUTES.toSeconds(ConstantsFor.DELAY) + TimeUnit.HOURS.toSeconds(1);
         scheduledThreadPoolExecutor.schedule(pfListsSrvInstAW::makeListRunner, delaySch, TimeUnit.SECONDS);
         messageToUser.info("PfListsSrv. this::makeListRunner", "delay Scheduler", " = " + delaySch);
         AppComponents.threadConfig().executeAsThread(pfListsSrvInstAW::makeListRunner);
@@ -157,9 +160,8 @@ public class PfListsCtr {
         return ConstantsFor.BEANNAME_PFLISTS;
     }
 
-    @PostMapping("/runcom")
-    @NotNull
-    public String runCommand(@NotNull Model model, @NotNull @ModelAttribute PfListsSrv pfListsSrv) {
+    @PostMapping ("/runcom")
+    public @NotNull String runCommand(@NotNull Model model, @NotNull @ModelAttribute PfListsSrv pfListsSrv) {
         this.pfListsSrvInstAW = pfListsSrv;
         AppComponents.threadConfig().thrNameSet("com.pst");
 
@@ -228,8 +230,8 @@ public class PfListsCtr {
     }
 
     @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("PfListsCtr{");
+    public @NotNull String toString() {
+        final @NotNull StringBuilder sb = new StringBuilder("PfListsCtr{");
         sb.append("ATT_METRIC='").append(ATT_METRIC).append('\'');
         sb.append(", DELAY_LOCAL_INT=").append(DELAY_LOCAL_INT);
         sb.append(", properties=").append(properties.size());

@@ -3,7 +3,6 @@ package ru.vachok.networker.systray;
 
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.AppInfoOnLoad;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.accesscontrol.common.ArchivesAutoCleaner;
 import ru.vachok.networker.componentsrepo.AppComponents;
@@ -24,36 +23,28 @@ import java.net.InetAddress;
  Если трэй доступен.
 
  @since 29.09.2018 (22:33) */
-public final class SystemTrayHelper extends AppInfoOnLoad {
+@SuppressWarnings ("InjectedReferences")
+public final class SystemTrayHelper {
 
     /**
      Путь к папке со значками
      */
+    @SuppressWarnings ("InjectedReferences")
     private static final @NotNull String IMG_FOLDER_NAME = "/static/images/";
-
-    /**
-     {@link AppComponents#getLogger()}
-     */
-    private static final MessageToUser LOGGER = new MessageLocal();
 
     private static final String CLASS_NAME = SystemTrayHelper.class.getSimpleName();
 
-    private static @NotNull TrayIcon trayIcon;
+    private static final SystemTrayHelper SYSTEM_TRAY_HELPER = new SystemTrayHelper();
+
+    private static @NotNull TrayIcon trayIcon = null;
 
     /**
      {@link MessageLocal}
      */
-    private static MessageToUser messageToUser = LOGGER;
+    private static MessageToUser messageToUser = new MessageLocal();
 
-
-
-    static TrayIcon getTrayIcon() throws ExceptionInInitializerError {
-        if(ConstantsFor.IS_SYSTRAY_AVAIL){
-            return trayIcon;
-        }
-        else{
-            throw new IllegalComponentStateException("System tray unavailable");
-        }
+    public static SystemTrayHelper getI() {
+        return SYSTEM_TRAY_HELPER;
     }
 
     /**
@@ -62,14 +53,24 @@ public final class SystemTrayHelper extends AppInfoOnLoad {
     private SystemTrayHelper() {
     }
 
-    public static void addTray(String iconFileName) {
+    TrayIcon getTrayIcon() throws ExceptionInInitializerError {
+        if(ConstantsFor.IS_SYSTRAY_AVAIL){
+            return trayIcon;
+        }
+        else{
+            throw new IllegalComponentStateException("System tray unavailable");
+        }
+    }
+
+    @SuppressWarnings ("StaticMethodOnlyUsedInOneClass")
+    public void addTray(String iconFileName) {
         addTray(iconFileName, true);
     }
 
     /**
      Создаёт System Tray Icon
      */
-    public static void addTray(String imageFileName, boolean isNeedTray) {
+    private void addTray(String imageFileName, boolean isNeedTray) {
         trayIcon = new TrayIcon(
             getImage(imageFileName),
             new StringBuilder()
@@ -149,7 +150,7 @@ public final class SystemTrayHelper extends AppInfoOnLoad {
         return popupMenu;
     }
 
-    private static boolean addTrayToSys(boolean isNeedTray) {
+    private boolean addTrayToSys(boolean isNeedTray) {
         try{
             if(isNeedTray && ConstantsFor.IS_SYSTRAY_AVAIL){
                 SystemTray systemTray = SystemTray.getSystemTray();
@@ -157,7 +158,7 @@ public final class SystemTrayHelper extends AppInfoOnLoad {
                 isNeedTray = systemTray.getTrayIcons().length > 0;
             }
             else{
-                LOGGER.warn("Tray not supported!");
+                messageToUser.warn("Tray not supported!");
                 isNeedTray = false;
             }
         }
@@ -184,7 +185,7 @@ public final class SystemTrayHelper extends AppInfoOnLoad {
         }
     }
 
-    static void delOldActions() {
+    void delOldActions() {
         Thread.currentThread().setName(CLASS_NAME + ".delOldActions");
         ActionListener[] actionListeners;
         if(trayIcon.getActionListeners()!=null){

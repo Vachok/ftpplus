@@ -32,6 +32,6 @@ class ActionSomeInfo extends AbstractAction {
         Date newScan = new Date(DiapazonedScan.getInstance().getStopClassStampLong() + TimeUnit.MINUTES.toMillis(111));
         new Thread(IntoApplication.INFO_MSG_RUNNABLE).start();
         messageToUser.info("ActionSomeInfo.actionPerformed", "newScan = ", newScan.toString());
-        SystemTrayHelper.delOldActions();
+        SystemTrayHelper.getI().delOldActions();
     }
 }

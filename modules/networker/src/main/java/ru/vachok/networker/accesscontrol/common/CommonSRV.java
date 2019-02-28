@@ -7,10 +7,7 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.util.Collections;
@@ -24,7 +21,7 @@ import java.util.Collections;
 public class CommonSRV {
 
     /**
-     {@link AppComponents#getLogger()}
+     {@link AppComponents#getLogger(String)}
      */
     private static final Logger LOGGER = AppComponents.getLogger(CommonSRV.class.getSimpleName());
 

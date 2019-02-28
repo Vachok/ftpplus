@@ -21,9 +21,9 @@ import java.util.concurrent.Callable;
 public class TimeChecker implements Callable<TimeInfo> {
 
     /**
-     {@link AppComponents#getLogger()}
+     {@link AppComponents#getLogger(String)}
      */
-    private static MessageToUser messageToUser = new MessageLocal();
+    private static final MessageToUser messageToUser = new MessageLocal();
 
     @Override
     public TimeInfo call() {

@@ -24,7 +24,7 @@ import javax.servlet.http.HttpServletRequest;
 public class AnketaKonfetaCRTL {
 
     /**
-     {@link AppComponents#getLogger()}
+     {@link AppComponents#getLogger(String)}
      */
     private static final Logger LOGGER = AppComponents.getLogger(AnketaKonfetaCRTL.class.getSimpleName());
 

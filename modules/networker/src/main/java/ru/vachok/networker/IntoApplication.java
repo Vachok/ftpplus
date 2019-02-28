@@ -23,14 +23,17 @@ import ru.vachok.networker.net.MyServer;
 import ru.vachok.networker.net.WeekPCStats;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
+import ru.vachok.networker.services.SpeedChecker;
 import ru.vachok.networker.systray.SystemTrayHelper;
 
 import java.io.File;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.TextStyle;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Executors;
 
 
 /**
@@ -62,16 +65,18 @@ public class IntoApplication {
     private static final Properties LOCAL_PROPS = new Properties();
 
     /**
-     {@link ConfigurableApplicationContext} = null.
-     */
-    private static @NotNull ConfigurableApplicationContext configurableApplicationContext;
-
-    /**
      {@link MessageLocal}
      */
-    private static @NotNull MessageToUser messageToUser = new MessageLocal();
+    private static @NotNull
+    final MessageToUser messageToUser = new MessageLocal();
 
-    private static ThreadPoolTaskExecutor executor = AppComponents.threadConfig().getTaskExecutor();
+    private static final ThreadPoolTaskExecutor EXECUTOR = AppComponents.threadConfig().getTaskExecutor();
+
+    /**
+     {@link ConfigurableApplicationContext} = null.
+     */
+    @SuppressWarnings ("CanBeFinal")
+    private static @NotNull ConfigurableApplicationContext configurableApplicationContext;
 
     public static Runnable getInfoMsgRunnable() {
         return INFO_MSG_RUNNABLE;
@@ -92,7 +97,6 @@ public class IntoApplication {
      Точка входа в Spring Boot Application
      <p>
      {@link FileSystemWorker#delFilePatterns(java.lang.String[])}. Удаление останков от предидущего запуска. <br>
-     {@link IntoApplication#beforeSt()} <br>
      {@link SpringApplication#run(java.lang.Class, java.lang.String...)}. Инициализация {@link #configurableApplicationContext}. <br>
      {@link Logger#warn(java.lang.String)} - new {@link String} {@code msg} = {@link IntoApplication#afterSt()} <br>
      Если есть аргументы - {@link #readArgs(String[])} <br>
@@ -106,12 +110,35 @@ public class IntoApplication {
         LOCAL_PROPS.putAll(AppComponents.getOrSetProps());
         LOCAL_PROPS.setProperty("ff", "false");
         if (args != null && args.length > 0) {
+            //noinspection NullableProblems
             readArgs(args);
         } else {
             beforeSt(true);
             configurableApplicationContext.start();
             afterSt();
         }
+    }
+
+    /**
+     Запуск после старта Spring boot app <br> Usages: {@link #main(String[])}
+     <p>
+     1. {@link AppComponents#threadConfig()}. Управление запуском и трэдами. <br><br>
+     <b>Runnable</b><br>
+     2. {@link IntoApplication#getWeekPCStats()} собирает инфо о скорости в файл. Если воскресенье, запускает {@link WeekPCStats} <br><br>
+     <b>Далее:</b><br>
+     3. {@link AppComponents#threadConfig()} (4. {@link ThreadConfig#getTaskExecutor()}) - запуск <b>Runnable</b> <br>
+     5. {@link ThreadConfig#getTaskExecutor()} - запуск {@link AppInfoOnLoad}. <br><br>
+     <b>{@link Exception}:</b><br>
+     6. {@link TForms#fromArray(java.lang.Exception, boolean)} - искл. в строку. 7. {@link FileSystemWorker#recFile(java.lang.String, java.util.List)} и
+     запишем в файл.
+     */
+    private static void afterSt() {
+        @NotNull Runnable infoAndSched = new AppInfoOnLoad();
+        Runnable mySrv = MyServer.getI();
+        EXECUTOR.submit(infoAndSched);
+        EXECUTOR.submit(mySrv);
+        EXECUTOR.submit(INFO_MSG_RUNNABLE);
+        EXECUTOR.submit(IntoApplication::getWeekPCStats);
     }
 
     /**
@@ -176,15 +203,16 @@ public class IntoApplication {
         afterSt();
     }
 
-    private static void trayAdd() {
-        if (ConstantsFor.thisPC().toLowerCase().contains(ConstantsFor.HOSTNAME_NO0027)) {
-            SystemTrayHelper.addTray("icons8-плохие-поросята-32.png");
-        } else {
-            if (ConstantsFor.thisPC().toLowerCase().contains("home")) {
-                SystemTrayHelper.addTray("icons8-house-26.png");
-            } else {
-                SystemTrayHelper.addTray(ConstantsFor.FILENAME_ICON);
-            }
+    /**
+     Статистика по-пользователям за неделю.
+     <p>
+     Запуск new {@link SpeedChecker.ChkMailAndUpdateDB}, через {@link Executors#unconfigurableExecutorService(java.util.concurrent.ExecutorService)}
+     <p>
+     Если {@link LocalDate#getDayOfWeek()} equals {@link DayOfWeek#SUNDAY}, запуск new {@link WeekPCStats}
+     */
+    private static void getWeekPCStats() {
+        if(LocalDate.now().getDayOfWeek().equals(DayOfWeek.SUNDAY)){
+            AppComponents.threadConfig().executeAsThread(new WeekPCStats());
         }
     }
 
@@ -212,26 +240,19 @@ public class IntoApplication {
         FileSystemWorker.recFile("system", new TForms().fromArray(System.getProperties()));
     }
 
-    /**
-     Запуск после старта Spring boot app <br> Usages: {@link #main(String[])}
-     <p>
-     1. {@link AppComponents#threadConfig()}. Управление запуском и трэдами. <br><br>
-     <b>Runnable</b><br>
-     2. {@link AppInfoOnLoad#getWeekPCStats()} собирает инфо о скорости в файл. Если воскресенье, запускает {@link WeekPCStats} <br><br>
-     <b>Далее:</b><br>
-     3. {@link AppComponents#threadConfig()} (4. {@link ThreadConfig#getTaskExecutor()}) - запуск <b>Runnable</b> <br>
-     5. {@link ThreadConfig#getTaskExecutor()} - запуск {@link AppInfoOnLoad}. <br><br>
-     <b>{@link Exception}:</b><br>
-     6. {@link TForms#fromArray(java.lang.Exception, boolean)} - искл. в строку. 7. {@link FileSystemWorker#recFile(java.lang.String, java.util.List)} и
-     запишем в файл.
-     */
-    private static void afterSt() {
-        @NotNull Runnable infoAndSched = new AppInfoOnLoad();
-        Runnable mySrv = MyServer.getI();
-        executor.submit(infoAndSched);
-        executor.submit(mySrv);
-        executor.submit(INFO_MSG_RUNNABLE);
-        executor.submit(AppInfoOnLoad::getWeekPCStats);
+    private static void trayAdd() {
+        SystemTrayHelper systemTrayHelper = SystemTrayHelper.getI();
+        if(ConstantsFor.thisPC().toLowerCase().contains(ConstantsFor.HOSTNAME_NO0027)){
+            systemTrayHelper.addTray("icons8-плохие-поросята-32.png");
+        }
+        else{
+            if(ConstantsFor.thisPC().toLowerCase().contains("home")){
+                systemTrayHelper.addTray("icons8-house-26.png");
+            }
+            else{
+                systemTrayHelper.addTray(ConstantsFor.FILENAME_ICON);
+            }
+        }
     }
 
     /**
