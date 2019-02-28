@@ -468,21 +468,12 @@ public final class NetScannerSvc {
             messageToUser.errorAlert(CLASS_NAME, "getPCsAsync", e.getMessage());
         }
         AppComponents.threadConfig().executeAsThread(() -> {
-            Thread.currentThread().setName("E-" + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - ConstantsFor.START_STAMP));
-            msg.set(new StringBuilder()
-                .append("Thread id ")
-                .append(Thread.currentThread().getId())
-                .append(" name ")
-                .append(Thread.currentThread().getName())
-                .toString());
-
-            LOGGER.warn(msg.get());
-
-            for (String s : ConstantsNet.PC_PREFIXES) {
+            for (String s : ConstantsNet.getPcPrefixes()) {
                 this.thrName = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime) + "-sec";
                 pcNamesSet.clear();
                 pcNamesSet.addAll(getPCNamesPref(s));
                 Thread.currentThread().setName(thrName);
+                msg.set(thrName);
             }
             String elapsedTime = "Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime) + " sec.";
             pcNamesSet.add(elapsedTime);
@@ -604,8 +595,8 @@ public final class NetScannerSvc {
         List<String> toFileList = new ArrayList<>();
         MessageToUser mailMSG = new ESender(ConstantsFor.EADDR_143500GMAILCOM);
 
-        String compNameUsers = new TForms().fromArray(ConstantsNet.COMPNAME_USERS_MAP, false);
-        String psUser = new TForms().fromArrayUsers(ConstantsNet.PC_U_MAP, false);
+        String compNameUsers = new TForms().fromArray(ConstantsNet.getCompnameUsersMap(), false);
+        String psUser = new TForms().fromArrayUsers(ConstantsNet.getPcUMap(), false);
         String msgTimeSp = "NetScannerSvc.getPCsAsync method. " + (float) (System.currentTimeMillis() - startClassTime) / 1000 + ConstantsFor.STR_SEC_SPEND;
         String valueOfPropLastScan = System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY) + "";
 
@@ -662,7 +653,7 @@ public final class NetScannerSvc {
             } else {
                 nameCount = String.format("%03d", ++pcNum);
             }
-            list.add(namePCPrefix + nameCount + ConstantsFor.DOMAIN_EATMEATRU);
+            list.add(namePCPrefix + nameCount + ConstantsNet.DOMAIN_EATMEATRU);
         }
         messageToUser.info(
             ConstantsFor.STR_INPUT_OUTPUT,

@@ -9,6 +9,7 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.enums.ConstantsNet;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,12 +37,12 @@ class NetScanFileWorker {
     /**
      {@link DiapazonedScan#scanNew()}
      */
-    private File newLanLastScan = new File(ConstantsFor.FILENAME_AVAILABLELASTTXT);
+    private File newLanLastScan = new File(ConstantsNet.FILENAME_AVAILABLELASTTXT);
 
     /**
      {@link DiapazonedScan#scanOldLan(long)}
      */
-    private File oldLanLastScan = new File(ConstantsFor.FILENAME_OLDLANTXT);
+    private File oldLanLastScan = new File(ConstantsNet.FILENAME_OLDLANTXT);
 
     /**
      @param newLanLastScan {@link #newLanLastScan}
@@ -78,7 +79,7 @@ class NetScanFileWorker {
         try {
             return FileSystemWorker.readFile(newLanLastScan.getAbsolutePath());
         } catch (NullPointerException e) {
-            return FileSystemWorker.readFile(ConstantsFor.FILENAME_AVAILABLELASTTXT) + "<p>";
+            return FileSystemWorker.readFile(ConstantsNet.FILENAME_AVAILABLELASTTXT) + "<p>";
         }
     }
 
@@ -118,7 +119,7 @@ class NetScanFileWorker {
         try {
             return FileSystemWorker.readFile(oldLanLastScan.getAbsolutePath());
         } catch (NullPointerException ignore) {
-            return FileSystemWorker.readFile(ConstantsFor.FILENAME_OLDLANTXT);
+            return FileSystemWorker.readFile(ConstantsNet.FILENAME_OLDLANTXT);
         }
     }
 

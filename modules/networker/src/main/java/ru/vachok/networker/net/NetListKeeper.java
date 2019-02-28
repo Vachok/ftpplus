@@ -1,13 +1,10 @@
 package ru.vachok.networker.net;
 
 
-import ru.vachok.messenger.MessageCons;
-import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
 
-import java.io.IOException;
-import java.io.Serializable;
+import java.io.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -25,7 +22,7 @@ public class NetListKeeper implements Serializable {
 
     private static final long serialVersionUID = 42L;
 
-    private static final NetListKeeper NET_LIST_KEEPER = new NetListKeeper();
+    private static NetListKeeper netListKeeper = new NetListKeeper();
 
     /**
      {@link MessageLocal}
@@ -37,7 +34,15 @@ public class NetListKeeper implements Serializable {
     private ConcurrentMap<String, String> offLines = new ConcurrentHashMap<>();
 
     public static NetListKeeper getI() {
-        return NET_LIST_KEEPER;
+        try (InputStream inputStream = new FileInputStream(NetListKeeper.class.getSimpleName() + ".ser");
+             ObjectInputStream objectInputStream = new ObjectInputStream(inputStream)) {
+            Object readObject = objectInputStream.readObject();
+            return (NetListKeeper) readObject;
+        } catch (IOException | ClassNotFoundException e) {
+            LOGGER.errorAlert("NetListKeeper", "getI", e.getMessage());
+            FileSystemWorker.error("NetListKeeper.getI", e);
+            return netListKeeper;
+        }
     }
 
     ConcurrentMap<String, String> getOnLinesResolve() {
@@ -57,7 +62,6 @@ public class NetListKeeper implements Serializable {
      */
     List<InetAddress> onlinesAddressesList() throws IOException {
         String classMeth = "NetListKeeper.onlinesAddressesList";
-        new MessageLocal().info(classMeth, ConstantsFor.STR_RETURNS, "java.util.List<java.net.InetAddress>");
         List<InetAddress> onlineAddresses = new ArrayList<>();
         Deque<String> fileAsDeque = NetScanFileWorker.getI().getListOfOnlineDev();
         fileAsDeque.forEach(x -> {
@@ -65,7 +69,7 @@ public class NetListKeeper implements Serializable {
                 byte[] bytes = InetAddress.getByName(x.split(" ")[1]).getAddress();
                 onlineAddresses.add(InetAddress.getByAddress(bytes));
             } catch (UnknownHostException e) {
-                new MessageCons().errorAlert("NetListKeeper", "onlinesAddressesList", e.getMessage());
+                LOGGER.errorAlert("NetListKeeper", "onlinesAddressesList", e.getMessage());
                 FileSystemWorker.error(classMeth, e);
             }
         });
@@ -94,7 +98,7 @@ public class NetListKeeper implements Serializable {
     public String toString() {
         final StringBuilder sb = new StringBuilder("NetListKeeper{");
         sb.append("serialVersionUID=").append(serialVersionUID);
-        sb.append(", NET_LIST_KEEPER=").append(NET_LIST_KEEPER.hashCode());
+        sb.append(", netListKeeper=").append(netListKeeper.hashCode());
         sb.append(", LOGGER=").append(LOGGER.toString());
         sb.append(", onLinesResolve=").append(onLinesResolve);
         sb.append(", offLines=").append(offLines);

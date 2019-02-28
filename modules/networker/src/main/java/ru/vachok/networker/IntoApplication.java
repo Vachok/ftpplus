@@ -21,6 +21,7 @@ import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.MyServer;
 import ru.vachok.networker.net.WeekPCStats;
+import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.systray.SystemTrayHelper;
 
@@ -101,7 +102,7 @@ public class IntoApplication {
      @see SystemTrayHelper
      */
     public static void main(@Nullable String[] args) {
-        FileSystemWorker.delFilePatterns(ConstantsFor.STRS_VISIT);
+        FileSystemWorker.delFilePatterns(ConstantsFor.getStrsVisit());
         LOCAL_PROPS.putAll(AppComponents.getOrSetProps());
         LOCAL_PROPS.setProperty("ff", "false");
         if (args != null && args.length > 0) {
@@ -240,7 +241,7 @@ public class IntoApplication {
      {@link InitProperties#getProps()}. Получаем {@code props} <br>
      Сэтаем в файл:<br>
      {@code "build.version"} = {@link AppComponents#getOrSetProps()} {@link ConstantsFor#PR_APP_VERSION} и {@link ConstantsFor#PR_QSIZE} =
-     {@link ConstantsFor#IPS_IN_VELKOM_VLAN} <br>
+     {@link ConstantsNet#IPS_IN_VELKOM_VLAN} <br>
      {@link InitProperties#setProps(java.util.Properties)} запись {@code props} в <b>application.LOCAL_PROPS</b>
      <p>
      new {@link DBRegProperties} - {@link ConstantsFor#APPNAME_WITHMINUS} + {@code "application"} <br>
@@ -252,7 +253,7 @@ public class IntoApplication {
     private static void appProperties() {
         Properties props = AppComponents.getOrSetProps();
         props.setProperty("build.version", LOCAL_PROPS.getProperty(ConstantsFor.PR_APP_VERSION));
-        props.setProperty(ConstantsFor.PR_QSIZE, ConstantsFor.IPS_IN_VELKOM_VLAN + "");
+        props.setProperty(ConstantsFor.PR_QSIZE, ConstantsNet.IPS_IN_VELKOM_VLAN + "");
         LOCAL_PROPS.putAll(props);
         AppComponents.getOrSetProps(props);
     }

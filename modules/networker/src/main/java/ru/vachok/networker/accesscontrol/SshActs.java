@@ -15,6 +15,7 @@ import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.WhoIsWithSRV;
 
 import javax.servlet.http.HttpServletRequest;
@@ -98,7 +99,7 @@ public class SshActs {
     }
 
     public void setPcName(String pcName) {
-        if (pcName.contains(ConstantsFor.DOMAIN_EATMEATRU)) {
+        if (pcName.contains(ConstantsNet.DOMAIN_EATMEATRU)) {
             this.pcName = pcName;
         } else {
             this.pcName = new NameOrIPChecker().checkPat(pcName);

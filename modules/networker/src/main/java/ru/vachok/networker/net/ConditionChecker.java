@@ -146,8 +146,8 @@ class ConditionChecker {
 
     static void qerNotNullScanAllDevices(Model model, HttpServletResponse response) {
         StringBuilder stringBuilder = new StringBuilder();
-        if(ConstantsFor.ALL_DEVICES.remainingCapacity()==0){
-            ConstantsFor.ALL_DEVICES.forEach(x -> stringBuilder.append(ConstantsFor.ALL_DEVICES.remove()));
+        if (ConstantsNet.getAllDevices().remainingCapacity() == 0) {
+            ConstantsNet.getAllDevices().forEach(x -> stringBuilder.append(ConstantsNet.getAllDevices().remove()));
             model.addAttribute("pcs", stringBuilder.toString());
         }
         else{
@@ -168,13 +168,13 @@ class ConditionChecker {
      */
     private static void allDevNotNull(Model model, HttpServletResponse response) {
         final float scansInMin = 45.9f;
-        float minLeft = ConstantsFor.ALL_DEVICES.remainingCapacity() / scansInMin;
+        float minLeft = ConstantsNet.getAllDevices().remainingCapacity() / scansInMin;
         String attributeValue = new StringBuilder().append(minLeft).append(" ~minLeft. ")
             .append(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(( long ) minLeft))).toString();
         model.addAttribute(ConstantsFor.ATT_TITLE, attributeValue);
         model.addAttribute("pcs", FileSystemWorker
-            .readFile(ConstantsFor.FILENAME_AVAILABLELASTTXT) + "<p>" + FileSystemWorker
-            .readFile(ConstantsFor.FILENAME_OLDLANTXT));
+            .readFile(ConstantsNet.FILENAME_AVAILABLELASTTXT) + "<p>" + FileSystemWorker
+            .readFile(ConstantsNet.FILENAME_OLDLANTXT));
         response.addHeader(ConstantsFor.HEAD_REFRESH, "60");
     }
 

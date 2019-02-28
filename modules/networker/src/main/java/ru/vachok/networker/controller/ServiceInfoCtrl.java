@@ -250,7 +250,7 @@ public class ServiceInfoCtrl {
     private static String listFilesToReadStr() {
         List<File> readUs = new ArrayList<>();
         for (File f : Objects.requireNonNull(new File(".").listFiles())) {
-            if (f.getName().toLowerCase().contains(ConstantsFor.STRS_VISIT[0])) {
+            if (f.getName().toLowerCase().contains(ConstantsFor.getStrsVisit()[0])) {
                 readUs.add(f);
                 f.deleteOnExit();
             }

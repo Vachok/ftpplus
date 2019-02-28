@@ -8,13 +8,17 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.DiapazonedScan;
 import ru.vachok.networker.net.NetScannerSvc;
 import ru.vachok.networker.net.TraceRoute;
 import ru.vachok.networker.services.MessageLocal;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
-import java.util.*;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.*;
 
 /**
@@ -24,8 +28,7 @@ import java.util.concurrent.*;
  @since 25.01.2019 (10:30) */
 public enum ConstantsNet {;
 
-    public static final boolean IS_RUPS = ConstantsFor.thisPC().toLowerCase().contains("rups")
-        || ConstantsFor.thisPC().contains("home"); // TODO: 27.02.2019 temp
+    public static final boolean IS_RUPS = ConstantsFor.thisPC().toLowerCase().contains("rups");
 
     public static final String STR_CONNECTION = "connection";
 
@@ -35,8 +38,6 @@ public enum ConstantsNet {;
     public static final String ATT_NETSCAN = "netscan";
 
     public static final String PINGRESULT_LOG = "pingresult";
-
-    public static final String RECONNECT_TO_DB = "reconnectToDB";
 
     public static final String BEANNAME_LASTNETSCAN = "lastnetscan";
 
@@ -74,26 +75,9 @@ public enum ConstantsNet {;
     public static final int NOPC = 50;
 
     /**
-     Префиксы имён ПК Велком.
-     */
-    public static final String[] PC_PREFIXES = {"do", "pp", "td", "no", "a"};
-
-    /**
      Название property
      */
     public static final String PR_LASTSCAN = "lastscan";
-
-    /**
-     {@link NetScannerSvc#getPCsAsync()}
-
-     @see ADSrv#getDetails(java.lang.String)
-     */
-    public static final ConcurrentMap<String, File> COMPNAME_USERS_MAP = new ConcurrentHashMap<>();
-
-    /**
-     {@link ADSrv#recToDB(String, String)}
-     */
-    public static final ConcurrentMap<String, String> PC_U_MAP = new ConcurrentHashMap<>();
 
     public static final String STR_COMPNAME_USERS_MAP_SIZE = " COMPNAME_USERS_MAP size";
 
@@ -113,6 +97,31 @@ public enum ConstantsNet {;
      Файл уникальных записей из БД velkom-pcuserauto
      */
     public static final String FILENAME_PCAUTODISTXT = "pcautodis.txt";
+
+    /**
+     Название файла новой подсети 10.200.х.х
+     */
+    public static final String FILENAME_AVAILABLELASTTXT = "available_last.txt";
+
+    /**
+     Название файла старой подсети 192.168.х.х
+     */
+    public static final String FILENAME_OLDLANTXT = "old_lan.txt";
+
+    /**
+     Домен с точкой
+     */
+    public static final String DOMAIN_EATMEATRU = ".eatmeat.ru";
+
+    public static final int IPS_IN_VELKOM_VLAN = 5610;
+
+    public static BlockingDeque<String> allDevices = new LinkedBlockingDeque<>(IPS_IN_VELKOM_VLAN);
+
+    private static final String[] PC_PREFIXES = {"do", "pp", "td", "no", "a"};
+
+    private static final ConcurrentMap<String, File> COMPNAME_USERS_MAP = new ConcurrentHashMap<>();
+
+    private static final ConcurrentMap<String, String> PC_U_MAP = new ConcurrentHashMap<>();
 
     private static final Properties LOC_PROPS = AppComponents.getOrSetProps();
 
@@ -146,4 +155,33 @@ public enum ConstantsNet {;
             return e.getMessage();
         }
     }
-}
+
+    /**
+     Префиксы имён ПК Велком.
+     */
+    public static String[] getPcPrefixes() {
+        return PC_PREFIXES;
+    }
+
+    /**
+     {@link NetScannerSvc#getPCsAsync()}
+
+     @see ADSrv#getDetails(String)
+     */
+    public static ConcurrentMap<String, File> getCompnameUsersMap() {
+        return COMPNAME_USERS_MAP;
+    }
+
+    /**
+     {@link ADSrv#recToDB(String, String)}
+     */
+    public static ConcurrentMap<String, String> getPcUMap() {
+        return PC_U_MAP;
+    }
+
+    /**
+     Все возможные IP из диапазонов {@link DiapazonedScan}
+     */
+    public static BlockingDeque<String> getAllDevices() {
+        return allDevices;
+    }}

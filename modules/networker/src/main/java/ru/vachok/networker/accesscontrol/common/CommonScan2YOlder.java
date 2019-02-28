@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.net.enums.ConstantsNet;
 
 import java.io.*;
 import java.nio.file.*;
@@ -115,7 +116,7 @@ public class CommonScan2YOlder extends SimpleFileVisitor<Path> implements Callab
      @return file contains(".eatmeat.ru"), contains(".log")
      */
     private boolean tempFile(Path file) {
-        return file.toString().toLowerCase().contains(ConstantsFor.DOMAIN_EATMEATRU) ||
+        return file.toString().toLowerCase().contains(ConstantsNet.DOMAIN_EATMEATRU) ||
             file.toString().toLowerCase().contains(".log");
     }
 

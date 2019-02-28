@@ -10,6 +10,7 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.net.enums.SwitchesWiFi;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.TimeChecker;
@@ -58,7 +59,7 @@ public class DiapazonedScan implements Runnable {
     /**
      {@link ConstantsFor#ALL_DEVICES}
      */
-    private static final BlockingDeque<String> ALL_DEVICES_LOCAL_DEQUE = ConstantsFor.ALL_DEVICES;
+    private static final BlockingDeque<String> ALL_DEVICES_LOCAL_DEQUE = ConstantsNet.getAllDevices();
 
     /**
      Singleton inst
@@ -125,7 +126,7 @@ public class DiapazonedScan implements Runnable {
         final String classMeth = "DiapazonedScan.scanNew";
         Path p = Paths.get(ROOT_PATH_STR + "\\lan\\200_" + System.currentTimeMillis() / 1000 + ".scan");
 
-        File newLanFile = new File(ConstantsFor.FILENAME_AVAILABLELASTTXT);
+        File newLanFile = new File(ConstantsNet.FILENAME_AVAILABLELASTTXT);
 
         try (OutputStream outputStream = new FileOutputStream(newLanFile);
              PrintWriter printWriter = new PrintWriter(outputStream, true)) {
@@ -189,7 +190,7 @@ public class DiapazonedScan implements Runnable {
             String valStr = "host = " + hostName + "/" + hostAddress + " is online: " + true;
             LOGGER.info(valStr);
         } else {
-            Thread.currentThread().setName(ALL_DEVICES_LOCAL_DEQUE.size() + " of " + ConstantsFor.IPS_IN_VELKOM_VLAN);
+            Thread.currentThread().setName(ALL_DEVICES_LOCAL_DEQUE.size() + " of " + ConstantsNet.IPS_IN_VELKOM_VLAN);
             ALL_DEVICES_LOCAL_DEQUE.add("<font color=\"red\">" + toString + FONT_BR_STR);
         }
     }
@@ -202,7 +203,7 @@ public class DiapazonedScan implements Runnable {
      */
     @SuppressWarnings("MagicNumber")
     private void scanOldLan(long stArt) {
-        File oldLANFile = new File(ConstantsFor.FILENAME_OLDLANTXT);
+        File oldLANFile = new File(ConstantsNet.FILENAME_OLDLANTXT);
         Path p = Paths.get(new StringBuilder().append(ROOT_PATH_STR).append("\\lan\\192_").append(System.currentTimeMillis() / 1000).append(".scan").toString());
 
         try (OutputStream outputStream = new FileOutputStream(oldLANFile);
@@ -260,11 +261,11 @@ public class DiapazonedScan implements Runnable {
     public String toString() {
         String fileTimes = "No filetimes";
         try {
-            fileTimes = ConstantsFor.FILENAME_AVAILABLELASTTXT + " " +
-                Paths.get(ConstantsFor.FILENAME_AVAILABLELASTTXT).toFile().lastModified() + "\n" +
-                ConstantsFor.FILENAME_OLDLANTXT +
+            fileTimes = ConstantsNet.FILENAME_AVAILABLELASTTXT + " " +
+                Paths.get(ConstantsNet.FILENAME_AVAILABLELASTTXT).toFile().lastModified() + "\n" +
+                ConstantsNet.FILENAME_OLDLANTXT +
                 " " +
-                Paths.get(ConstantsFor.FILENAME_OLDLANTXT).toFile().lastModified();
+                Paths.get(ConstantsNet.FILENAME_OLDLANTXT).toFile().lastModified();
         } catch (NullPointerException e) {
             LOGGER.info("NO FILES!");
         }
@@ -274,7 +275,7 @@ public class DiapazonedScan implements Runnable {
             .append("<a href=\"/showalldev\">ALL_DEVICES ")
             .append(ALL_DEVICES_LOCAL_DEQUE.size())
             .append("/5610 (")
-            .append((float) ALL_DEVICES_LOCAL_DEQUE.size() / (float) (ConstantsFor.IPS_IN_VELKOM_VLAN / 100))
+            .append((float) ALL_DEVICES_LOCAL_DEQUE.size() / (float) (ConstantsNet.IPS_IN_VELKOM_VLAN / 100))
             .append(" %)");
         sb.append("</a>}");
         sb.append(" ROOT_PATH_STR= ").append(ROOT_PATH_STR);

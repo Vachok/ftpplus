@@ -157,25 +157,6 @@ public class PfListsSrv {
     }
 
     @Override
-    public int hashCode() {
-        int result = pfListsInstAW.hashCode();
-        result = 31 * result + commandForNatStr.hashCode();
-        result = 31 * result + builderInst.hashCode();
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        PfListsSrv that = (PfListsSrv) o;
-
-        if (!pfListsInstAW.equals(that.pfListsInstAW)) return false;
-        return commandForNatStr.equals(that.commandForNatStr) && builderInst.equals(that.builderInst);
-    }
-
-    @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("PfListsSrv{");
         sb.append("builderInst=").append(builderInst.hashCode());

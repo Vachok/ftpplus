@@ -19,11 +19,12 @@ import java.io.IOException;
 
  @see SystemTrayHelper
  @since 25.01.2019 (9:59) */
+@SuppressWarnings("ClassHasNoToStringMethod")
 class ActionExit extends AbstractAction {
 
     private String reason;
 
-    private MessageToUser messageToUser = new MessageLocal();
+    private transient MessageToUser messageToUser = new MessageLocal();
 
     ActionExit(String reason) {
         this.reason = reason;

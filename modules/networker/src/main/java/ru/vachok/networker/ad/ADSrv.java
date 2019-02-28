@@ -239,7 +239,7 @@ public class ADSrv implements Runnable {
             p.setString(2, pcName);
             p.executeUpdate();
             LOGGER.info(msg);
-            ConstantsNet.PC_U_MAP.put(pcName, msg);
+            ConstantsNet.getPcUMap().put(pcName, msg);
         } catch (SQLException | IOException e) {
             FileSystemWorker.error("PCUserResolver.recToDB", e);
         }
@@ -393,7 +393,7 @@ public class ADSrv implements Runnable {
      @see ActDirectoryCTRL#queryStringExists(java.lang.String, org.springframework.ui.Model)
      */
     String getDetails(String queryString) throws IOException {
-        if (InetAddress.getByName(queryString + ConstantsFor.DOMAIN_EATMEATRU).isReachable(ConstantsFor.TIMEOUT_650)) {
+        if (InetAddress.getByName(queryString + ConstantsNet.DOMAIN_EATMEATRU).isReachable(ConstantsFor.TIMEOUT_650)) {
             return getUserName(queryString);
         } else {
             return offNowGetU(queryString);
@@ -441,16 +441,16 @@ public class ADSrv implements Runnable {
                 .append(new Date(Long.parseLong(strings[0])))
                 .append("<br>");
         }
-        ConstantsNet.COMPNAME_USERS_MAP.put(timestUserLast, filesAsFile);
+        ConstantsNet.getCompnameUsersMap().put(timestUserLast, filesAsFile);
         try {
-            recToDB(queryString + ConstantsFor.DOMAIN_EATMEATRU, timestUserLast.split(" ")[1]);
+            recToDB(queryString + ConstantsNet.DOMAIN_EATMEATRU, timestUserLast.split(" ")[1]);
         } catch (ArrayIndexOutOfBoundsException ignore) {
             //
         }
         stringBuilder.append("\n\n<p><b>")
             .append(timestUserLast)
             .append("<br>\n")
-            .append(ConstantsNet.COMPNAME_USERS_MAP.size())
+            .append(ConstantsNet.getCompnameUsersMap().size())
             .append(ConstantsNet.STR_COMPNAME_USERS_MAP_SIZE)
             .append("</p></b>");
         return stringBuilder.toString();
