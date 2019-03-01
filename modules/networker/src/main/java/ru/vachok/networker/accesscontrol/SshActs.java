@@ -26,8 +26,12 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.nio.file.AccessDeniedException;
+import java.time.LocalTime;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 
@@ -35,7 +39,7 @@ import java.util.stream.Stream;
  SSH-actions class
 
  @since 29.11.2018 (13:01) */
-@SuppressWarnings ("WeakerAccess")
+@SuppressWarnings({"WeakerAccess", "ClassWithTooManyFields"})
 @Service(ConstantsFor.ATT_SSH_ACTS)
 public class SshActs {
 
@@ -101,6 +105,16 @@ public class SshActs {
      Имя домена для удаления.
      */
     private String delDomain;
+
+    private String numOfHours = String.valueOf(TimeUnit.SECONDS.toHours(LocalTime.parse("17:30").toSecondOfDay() - LocalTime.now().toSecondOfDay()));
+
+    public String getNumOfHours() {
+        return numOfHours;
+    }
+
+    public void setNumOfHours(String numOfHours) {
+        this.numOfHours = numOfHours;
+    }
 
     private boolean squid;
 
@@ -170,12 +184,14 @@ public class SshActs {
         return vipNet;
     }
 
-    String providerTraceStr() {
-        SSHFactory.Builder builder = new SSHFactory.Builder(ConstantsFor.IPADDR_SRVGIT, "traceroute 8.8.8.8;exit");
-        SSHFactory build = builder.build();
-        String call = build.call();
+    String providerTraceStr() throws ArrayIndexOutOfBoundsException {
+        SSHFactory sshFactory = new SSHFactory.Builder(ConstantsFor.IPADDR_SRVGIT, "traceroute 8.8.8.8").build();
+        String call = sshFactory.call();
         this.tRoute = call;
-        return call;
+        sshFactory = new SSHFactory.Builder(ConstantsFor.IPADDR_SRVNAT, "sudo cat /home/kudr/inet.log").build();
+        String[] strings = sshFactory.call().split("\n");
+        List<String> stringList = Arrays.asList(strings);
+        return call + "<br>LOG: " + stringList.get(stringList.size() - 1).split("\\Q Setting gateway0 to\\E")[0];
     }
 
     /**
@@ -470,6 +486,7 @@ public class SshActs {
             Visitor visitor = ConstantsFor.getVis(request);
             sshActs.setAllowDomain("");
             sshActs.setDelDomain("");
+            sshActs.setUserInput("");
             String pcReq = request.getRemoteAddr().toLowerCase();
             LOGGER.warn(pcReq);
             setInet(pcReq);
@@ -513,10 +530,10 @@ public class SshActs {
         @PostMapping("/tmpfullnet")
         public String tempFullInetAccess(@ModelAttribute SshActs sshActs, Model model) {
             this.sshActs = sshActs;
-            TemporaryFullInternet temporaryFullInternet = new TemporaryFullInternet(sshActs.getUserInput());
+            TemporaryFullInternet temporaryFullInternet = new TemporaryFullInternet(sshActs.getUserInput(), sshActs.getNumOfHours());
             model.addAttribute("sshActs", sshActs);
             model.addAttribute(ConstantsFor.ATT_TITLE, ConstantsFor.getMemoryInfo());
-            model.addAttribute("ok", temporaryFullInternet.doDidDoes());
+            model.addAttribute("ok", temporaryFullInternet.doAdd());
             model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
             return "ok";
         }

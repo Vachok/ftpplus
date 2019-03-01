@@ -5,10 +5,13 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 
 import java.awt.*;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -17,45 +20,63 @@ import java.util.concurrent.TimeUnit;
  Разрешить интернет до конца суток
 
  @since 28.02.2019 (11:52) */
-public class TemporaryFullInternet {
+public class TemporaryFullInternet implements Runnable {
 
-    private static final String INIT_PING_EXIT_STR = "sudo /etc/initpf.fw;ping -c 4 10.200.200.1 > /dev/null;exit";
+    private static final String INIT_PING_EXIT_STR = "sudo /etc/initpf.fw;exit";
 
     private static final MessageToUser messageToUser = new MessageLocal();
 
+    private static final String SERVER_TO_CONNECT = ConstantsFor.IPADDR_SRVNAT;
+
     private static final String STR_SSH_COMMAND = "sshCommand";
 
-    @SuppressWarnings ("CanBeFinal")
+    private static final Deque<String> MINI_LOGGER = new ArrayDeque<>();
+
+    @SuppressWarnings("CanBeFinal")
     private String userInput;
 
-    public TemporaryFullInternet(String userInput) {
-        if (userInput == null) {
-            sshChecker();
+    private long delStamp;
+
+    private long initStamp = System.currentTimeMillis();
+
+    public TemporaryFullInternet(String userInput, String numOfHoursStr) {
+        if (userInput == null && numOfHoursStr == null) {
+            this.userInput = "10.200.213.254";
+            this.delStamp = System.currentTimeMillis();
+            MINI_LOGGER.add("TemporaryFullInternet(null, null): " + this.userInput + " " + delStamp + "(" + new Date(delStamp) + ")");
+        } else {
+            this.userInput = userInput;
+            this.delStamp = ConstantsFor.getAtomicTime() + TimeUnit.HOURS.toMillis(Long.parseLong(numOfHoursStr));
+            MINI_LOGGER.add("TemporaryFullInternet: " + userInput + " " + delStamp + "(" + new Date(delStamp) + ")");
         }
-        this.userInput = userInput;
     }
 
-    String doDidDoes() {
+    String doAdd() {
         NameOrIPChecker nameOrIPChecker = new NameOrIPChecker(userInput);
+        SSHFactory tempFileFactory = new SSHFactory.Builder(SERVER_TO_CONNECT, "cat /etc/pf/24hrs").build();
+        String sshCommand;
         String sshIP = String.valueOf(nameOrIPChecker.resolveIP()).split("/")[1];
-        String classMeth = "TemporaryFullInternet.doDidDoes";
-        String sshCommand = new StringBuilder()
-            .append(SshActs.SUDO_ECHO)
-            .append("\"").append(sshIP).append(" #")
-            .append(ConstantsFor.getAtomicTime()).append("\"").append(" >> /etc/pf/24hrs;").append(INIT_PING_EXIT_STR).toString();
-        messageToUser.info(classMeth, STR_SSH_COMMAND, " = " + sshCommand);
-        sshCommand = new SSHFactory.Builder(ConstantsFor.IPADDR_SRVNAT, sshCommand).build().call();
-        AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor().scheduleWithFixedDelay(this::sshChecker, 1, 1, TimeUnit.HOURS);
+        String tempFile = tempFileFactory.call();
+        if (tempFile.contains(sshIP)) {
+            messageToUser.warn(getClass().getSimpleName(), "doAdd", sshIP + " is exist!");
+            sshCommand = new TForms().fromArray(sshChecker(), true);
+        } else {
+            sshCommand = new StringBuilder()
+                .append(SshActs.SUDO_ECHO)
+                .append("\"").append(sshIP).append(" #")
+                .append(delStamp).append("\"").append(" >> /etc/pf/24hrs;").append(INIT_PING_EXIT_STR).toString();
+            SSHFactory sshFactory = new SSHFactory.Builder(SERVER_TO_CONNECT, sshCommand).build();
+            sshCommand = sshFactory.call() + "<p>" + tempFileFactory.call();
+        }
+        MINI_LOGGER.add("doAdd(): " + sshCommand);
+        this.userInput = "10.200.213.254";
+        this.delStamp = System.currentTimeMillis();
         return sshCommand;
     }
 
-    public static void main(String[] args) {
-        new TemporaryFullInternet(null);
-    }
-
-    private void sshChecker() {
-        String tempFile = new SSHFactory.Builder(ConstantsFor.IPADDR_SRVNAT, "cat /etc/pf/24hrs").build().call();
-        Map<String, Long> ipTime = new HashMap<>();
+    private Map<String, Long> sshChecker() {
+        SSHFactory tempFileFact = new SSHFactory.Builder(SERVER_TO_CONNECT, "cat /etc/pf/24hrs").build();
+        String tempFile = tempFileFact.call();
         if (tempFile.isEmpty()) {
             throw new IllegalComponentStateException("File is empty");
         } else {
@@ -63,26 +84,67 @@ public class TemporaryFullInternet {
             List<String> stringList = Arrays.asList(strings);
             stringList.forEach(x -> {
                 try {
-                    ipTime.put(x.split(" #")[0].trim(), Long.valueOf(x.split(" #")[1]));
-                } catch (ArrayIndexOutOfBoundsException ignore) {
-                    //
+                    ConstantsNet.getSshCheckerMap().put(x.split(" #")[0].trim(), Long.valueOf(x.split(" #")[1]));
+                    MINI_LOGGER.add("sshChecker(): ipTime.put(): " + x);
+                } catch (Exception e) {
+                    messageToUser.errorAlert("TemporaryFullInternet", "sshChecker", e.getMessage());
+                    MINI_LOGGER.add("sshChecker(): " + e.getMessage());
+                    FileSystemWorker.error("TemporaryFullInternet.sshChecker", e);
+                    FileSystemWorker.recFile(getClass().getSimpleName() + ".mini", MINI_LOGGER.stream());
                 }
             });
         }
-        messageToUser.info("TemporaryFullInternet.sshChecker", "new TForms().fromArray(ipTime, false)", " = " + new TForms().fromArray(ipTime, false));
-        ipTime.forEach((x, y) -> {
-            if (y + TimeUnit.DAYS.toMillis(1) < ConstantsFor.getAtomicTime()) {
-                doDidDoes(x);
+        ConstantsNet.getSshCheckerMap().forEach((x, y) -> {
+            messageToUser.info(x, "will be deleted at ", LocalDateTime.ofEpochSecond(delStamp / 1000, 0, ZoneOffset.ofHours(3)).toString());
+
+            if (delStamp < ConstantsFor.getAtomicTime()) {
+                messageToUser.warn(getClass().getSimpleName(), x, String.valueOf(doDelete(x)));
+                MINI_LOGGER.add("sshChecker(SSH_CHECKER_MAP.forEach): time is" + true + "\n" + x);
             }
         });
+        return ConstantsNet.getSshCheckerMap();
     }
 
-    private void doDidDoes(String x) {
+    private boolean doDelete(String x) {
         String sshCommand = new StringBuilder()
             .append(SshActs.SUDO_GREP_V).append(x).append("' /etc/pf/24hrs > /etc/pf/24hrs_tmp;")
-            .append("sudo cp /etc/pf/24hrs_tmp /etc/pf/24hrs;").append(INIT_PING_EXIT_STR)
-            .toString();
-        messageToUser.info("TemporaryFullInternet.doDidDoes", STR_SSH_COMMAND, " = " + sshCommand);
+            .append("sudo cp /etc/pf/24hrs_tmp /etc/pf/24hrs;").append(INIT_PING_EXIT_STR).toString();
+        SSHFactory sshFactory = new SSHFactory.Builder(SERVER_TO_CONNECT, sshCommand).build();
+        sshCommand = sshFactory.call();
+        messageToUser.info("TemporaryFullInternet.doDelete", STR_SSH_COMMAND, " = " + sshCommand);
+        Long aLong = ConstantsNet.getSshCheckerMap().remove(x);
+        MINI_LOGGER.add(new Date(aLong).toString() + ", doDelete(): " + sshCommand);
+        return ConstantsNet.getSshCheckerMap().containsKey(x);
     }
 
+    @Override
+    public void run() {
+        String fromArray = new TForms().fromArray(sshChecker(), false);
+        messageToUser.info(getClass().getSimpleName(), userInput, fromArray);
+        MINI_LOGGER.add("run(): " + userInput + " " + fromArray);
+        FileSystemWorker.recFile(getClass().getSimpleName() + ".mini", MINI_LOGGER.stream());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(userInput);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        TemporaryFullInternet that = (TemporaryFullInternet) o;
+        return Objects.equals(userInput, that.userInput);
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("TemporaryFullInternet{");
+        sb.append("delStamp=").append(delStamp);
+        sb.append(", initStamp=").append(initStamp);
+        sb.append(", userInput='").append(userInput).append('\'');
+        sb.append('}');
+        return sb.toString();
+    }
 }

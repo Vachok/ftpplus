@@ -77,8 +77,8 @@ public class ServiceInfoCtrl {
      @param response {@link HttpServletResponse}
      @return vir.html
      @throws AccessDeniedException если не {@link ConstantsFor#getPcAuth(HttpServletRequest)}
-     @throws ExecutionException запуск {@link #modModMaker(Model, HttpServletRequest, Visitor)}
-     @throws InterruptedException запуск {@link #modModMaker(Model, HttpServletRequest, Visitor)}
+     @throws ExecutionException    запуск {@link #modModMaker(Model, HttpServletRequest, Visitor)}
+     @throws InterruptedException  запуск {@link #modModMaker(Model, HttpServletRequest, Visitor)}
      */
     @GetMapping("/serviceinfo")
     public String infoMapping(Model model, HttpServletRequest request, HttpServletResponse response) throws AccessDeniedException, ExecutionException, InterruptedException {
@@ -114,6 +114,65 @@ public class ServiceInfoCtrl {
         return "ok";
     }
 
+    /**
+     Считает время до конца дня.
+     <p>
+
+     @param timeStart - время старта
+     @param amountH   - сколько часов до конца
+     @return время до 17:30 в процентах от 8:30
+     */
+    public static String percToEnd(Date timeStart, long amountH) {
+        StringBuilder stringBuilder = new StringBuilder();
+        LocalDateTime startDayTime = LocalDateTime.ofEpochSecond(timeStart.getTime() / 1000, 0, ZoneOffset.ofHours(3));
+        LocalTime startDay = startDayTime.toLocalTime();
+        LocalTime endDay = startDay.plus(amountH, HOURS);
+        final int secDayEnd = endDay.toSecondOfDay();
+        final int startSec = startDay.toSecondOfDay();
+        final int allDaySec = secDayEnd - startSec;
+        LocalTime localTime = endDay.minusHours(LocalTime.now().getHour());
+        localTime = localTime.minusMinutes(LocalTime.now().getMinute());
+        localTime = localTime.minusSeconds(LocalTime.now().getSecond());
+        boolean workHours = LocalTime.now().isAfter(startDay) && LocalTime.now().isBefore(endDay);
+        if (workHours) {
+            int toEndDaySec = localTime.toSecondOfDay();
+            int diffSec = allDaySec - toEndDaySec;
+            float percDay = ((float) toEndDaySec / (((float) allDaySec) / 100));
+            stringBuilder
+                .append("Работаем ")
+                .append(TimeUnit.SECONDS.toMinutes(diffSec));
+            stringBuilder
+                .append("(мин.). Ещё ")
+                .append(String.format("%.02f", percDay))
+                .append(" % или ");
+        } else {
+            stringBuilder.append("<b> GO HOME! </b><br>");
+        }
+        stringBuilder.append(localTime.toString());
+        return stringBuilder.toString();
+    }
+
+    private static String listFilesToReadStr() {
+        List<File> readUs = new ArrayList<>();
+        for (File f : Objects.requireNonNull(new File(".").listFiles())) {
+            if (f.getName().toLowerCase().contains(ConstantsFor.getStrsVisit()[0])) {
+                readUs.add(f);
+                f.deleteOnExit();
+            }
+        }
+        ConcurrentMap<String, String> stringStringConcurrentMap = FileSystemWorker.readFiles(readUs);
+        List<String> retListStr = new ArrayList<>();
+        stringStringConcurrentMap.forEach((String x, String y) -> {
+            try {
+                retListStr.add(y.split("userId")[0]);
+                retListStr.add("<b>" + x.split("FtpClientPlus")[1] + "</b>");
+            } catch (Exception e) {
+                retListStr.add(e.getMessage());
+            }
+        });
+        return new TForms().fromArray(retListStr, true);
+    }
+
     private void modModMaker(Model model, HttpServletRequest request, Visitor visitor) throws ExecutionException, InterruptedException {
         this.visitor = ConstantsFor.getVis(request);
         Callable<Long> callWhenCome = new SpeedChecker();
@@ -123,6 +182,14 @@ public class ServiceInfoCtrl {
             true);
         String schQueue =
             "SCHED Q: <br>" + new TForms().fromArray(AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor().getQueue(), true);
+        String resValue = new StringBuilder()
+            .append(MyCalen.toStringS()).append("<br><br>").append("<b><i>")
+            .append(AppComponents.versionInfo().toString()).append("</i></b><p>")
+            .append(new TForms().fromArray(ConstantsNet.getSshCheckerMap(), true)).append("<p>")
+            .append(new TForms().fromArray(AppComponents.getOrSetProps(), true)).append("<p>")
+            .append(execQueue).append("<br>").append(schQueue).append("<p><font color=\"grey\">")
+            .append(listFilesToReadStr()).append("</font>")
+            .toString();
 
         if (visitor.getSession().equals(request.getSession())) {
             visitor.setClickCounter(visitor.getClickCounter() + 1);
@@ -146,50 +213,9 @@ public class ServiceInfoCtrl {
             .toString());
         model.addAttribute("request", prepareRequest(request));
         model.addAttribute(ConstantsFor.ATT_VISIT, visitor.toString());
-        model.addAttribute("res", MyCalen.toStringS() + "<br><br>" + "<b><i>" + AppComponents.versionInfo().toString() + "</i></b><p>" +
-            new TForms().fromArray(AppComponents.getOrSetProps(), true) + "<p>" + execQueue + "<br>" + schQueue +
-            "<p><font color=\"grey\">" + listFilesToReadStr() + "</font>");
+        model.addAttribute("res", resValue);
         model.addAttribute("back", request.getHeader(ConstantsFor.ATT_REFERER.toLowerCase()));
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<br>" + getJREVers());
-    }
-
-    /**
-     Считает время до конца дня.
-     <p>
-
-     @param timeStart - время старта
-     @param amountH   - сколько часов до конца
-     @return время до 17:30 в процентах от 8:30
-     */
-    public static String percToEnd(Date timeStart, long amountH) {
-        StringBuilder stringBuilder = new StringBuilder();
-        LocalDateTime startDayTime = LocalDateTime.ofEpochSecond(timeStart.getTime() / 1000, 0, ZoneOffset.ofHours(3));
-        LocalTime startDay = startDayTime.toLocalTime();
-        LocalTime endDay = startDay.plus(amountH, HOURS);
-        final int secDayEnd = endDay.toSecondOfDay();
-        final int startSec = startDay.toSecondOfDay();
-        final int allDaySec = secDayEnd - startSec;
-        LocalTime localTime = endDay.minusHours(LocalTime.now().getHour());
-        localTime = localTime.minusMinutes(LocalTime.now().getMinute());
-        localTime = localTime.minusSeconds(LocalTime.now().getSecond());
-        boolean workHours = LocalTime.now().isAfter(startDay) && LocalTime.now().isBefore(endDay);
-        if(workHours){
-            int toEndDaySec = localTime.toSecondOfDay();
-            int diffSec = allDaySec - toEndDaySec;
-            float percDay = (( float ) toEndDaySec / ((( float ) allDaySec) / 100));
-            stringBuilder
-                .append("Работаем ")
-                .append(TimeUnit.SECONDS.toMinutes(diffSec));
-            stringBuilder
-                .append("(мин.). Ещё ")
-                .append(String.format("%.02f", percDay))
-                .append(" % или ");
-        }
-        else{
-            stringBuilder.append("<b> GO HOME! </b><br>");
-        }
-        stringBuilder.append(localTime.toString());
-        return stringBuilder.toString();
     }
 
     private String prepareRequest(HttpServletRequest request) {
@@ -247,24 +273,12 @@ public class ServiceInfoCtrl {
         }
     }
 
-    private static String listFilesToReadStr() {
-        List<File> readUs = new ArrayList<>();
-        for (File f : Objects.requireNonNull(new File(".").listFiles())) {
-            if (f.getName().toLowerCase().contains(ConstantsFor.getStrsVisit()[0])) {
-                readUs.add(f);
-                f.deleteOnExit();
-            }
-        }
-        ConcurrentMap<String, String> stringStringConcurrentMap = FileSystemWorker.readFiles(readUs);
-        List<String> retListStr = new ArrayList<>();
-        stringStringConcurrentMap.forEach((String x, String y) -> {
-            try {
-                retListStr.add(y.split("userId")[0]);
-                retListStr.add("<b>" + x.split("FtpClientPlus")[1] + "</b>");
-            } catch (Exception e) {
-                retListStr.add(e.getMessage());
-            }
-        });
-        return new TForms().fromArray(retListStr, true);
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("ServiceInfoCtrl{");
+        sb.append("authReq=").append(authReq);
+        sb.append(", visitor=").append(visitor.toString());
+        sb.append('}');
+        return sb.toString();
     }
 }

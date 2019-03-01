@@ -453,6 +453,8 @@ public enum ConstantsFor {
         TimeInfo call = t.call();
         call.computeDetails();
         ConstantsFor.atomicTime = call.getReturnTime();
+        messageToUser
+            .warn(ConstantsFor.class.getSimpleName(), System.currentTimeMillis() + " system time; " + atomicTime + " atom time", "diff: " + (System.currentTimeMillis() - atomicTime));
         return atomicTime;
     }
 

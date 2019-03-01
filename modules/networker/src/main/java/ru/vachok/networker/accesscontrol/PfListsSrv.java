@@ -127,7 +127,7 @@ public class PfListsSrv {
         }
         pfListsInstAW.setuName(build.call());
 
-        build.setCommandSSH("sudo cat /etc/pf/vipnet;exit");
+        build.setCommandSSH("sudo cat /etc/pf/vipnet;sudo cat /etc/pf/24hrs;exit");
         pfListsInstAW.setVipNet(build.call());
 
         build.setCommandSSH("sudo cat /etc/pf/squid;exit");
@@ -145,7 +145,7 @@ public class PfListsSrv {
         build.setCommandSSH("pfctl -s rules;exit");
         pfListsInstAW.setPfRules(build.call());
 
-        build.setCommandSSH("sudo cat /home/kudr/inet.log;traceroute 8.8.8.8;exit");
+        build.setCommandSSH("sudo cat /home/kudr/inet.log;traceroute 8.8.8.8");
         pfListsInstAW.setInetLog(build.call());
 
         pfListsInstAW.setGitStatsUpdatedStampLong(System.currentTimeMillis());

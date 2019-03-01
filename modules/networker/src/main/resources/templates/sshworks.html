@@ -30,7 +30,8 @@
     <p th:utext="${sshdetail}"/>
     <form method="POST" th:action="@{/tmpfullnet}" th:object="${sshActs}"><br>
         Введите имя ПК: <br>
-        <input placeholder="no0027" required th:field="*{userInput}" type="text"/><br>
+        <input placeholder="no0027 или 10.200.213.85" required th:field="*{userInput}" type="text"/><br>
+        <input placeholder="12 часов" required th:field="*{numOfHours}" type="number"/> <br>
         <input type="submit" value="Установить"/><br></form>
     <!--
         <form>

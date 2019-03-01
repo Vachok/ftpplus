@@ -75,7 +75,7 @@ public class MatrixCtr {
     /**
      {@link VersionInfo}
      */
-    private VersionInfo versionInfoInst;
+    private final VersionInfo versionInfoInst;
 
     /**
      {@link System#currentTimeMillis()}. Время инициализации класса.
@@ -88,10 +88,11 @@ public class MatrixCtr {
 
      @param versionInfo {@link AppComponents#versionInfo()}
      */
+    @SuppressWarnings("WeakerAccess")
     @Autowired
     public MatrixCtr(VersionInfo versionInfo) {
         this.versionInfoInst = versionInfo;
-        AppComponents.threadConfig().getTaskScheduler().scheduleAtFixedRate(this::getProv, TimeUnit.MINUTES.toMillis(2));
+        AppComponents.threadConfig().getTaskScheduler().scheduleAtFixedRate(this::getProv, TimeUnit.MINUTES.toMillis(3));
     }
 
     /**
@@ -139,6 +140,7 @@ public class MatrixCtr {
      @param model     {@link Model}
      @return {@link ConstantsFor#BEANNAME_MATRIX}.html
      */
+    @SuppressWarnings("MethodWithMultipleReturnPoints")
     @PostMapping(GET_MATRIX)
     public String getWorkPosition(@ModelAttribute(ConstantsFor.BEANNAME_MATRIX) MatrixSRV matrixSRV, BindingResult result, Model model) {
         this.matrixSRV = matrixSRV;
@@ -148,7 +150,7 @@ public class MatrixCtr {
         } else if (workPos.toLowerCase().contains("calc:")) return calculateDoubles(workPos, model);
         else if (workPos.toLowerCase().contains("common: ")) {
             return CommonRightsChecker.getCommonAccessRights(workPos, model);
-        } else if (workPos.toLowerCase().contains("calctime:") || workPos.toLowerCase().contains("calctimes:")) {
+        } else if (workPos.toLowerCase().contains("calctime:") || workPos.toLowerCase().contains("calctimes:") || workPos.toLowerCase().contains("t:")) {
             timeStamp(new SimpleCalculator(), model, workPos);
         } else return matrixAccess(workPos);
         return ConstantsFor.BEANNAME_MATRIX;
@@ -307,12 +309,15 @@ public class MatrixCtr {
     private void getProv() {
         SshActs sshActs = new AppComponents().sshActs();
         String gettRoute = sshActs.providerTraceStr();
-        if (gettRoute.contains("91.210.85.173")) {
+        String logStr = "LOG: ";
+        if (gettRoute.contains("91.210.85.173") && !gettRoute.contains(logStr)) {
             gettRoute = "<h3>FORTEX</h3>";
+        } else if (gettRoute.contains("176.62.185.129") && !gettRoute.contains(logStr)) {
+            gettRoute = "<h3>ISTRANET</h3>";
+        } else if (gettRoute.contains(logStr)) {
+            gettRoute = gettRoute.split(logStr)[1];
         } else {
-            if (gettRoute.contains("176.62.185.129")) {
-                gettRoute = "<h3>ISTRANET</h3>";
-            }
+            LOGGER.warn(gettRoute);
         }
         this.currentProvider = gettRoute;
     }

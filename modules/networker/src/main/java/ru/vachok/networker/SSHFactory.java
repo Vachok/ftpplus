@@ -5,12 +5,12 @@ import com.jcraft.jsch.*;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
-import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.services.MessageLocal;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -25,6 +25,7 @@ import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 
 /**
@@ -43,7 +44,7 @@ public class SSHFactory implements Callable<String> {
 
     private static final String SOURCE_CLASS = SSHFactory.class.getSimpleName();
 
-    private static MessageToUser messageToUser = new MessageCons();
+    private static final MessageToUser messageToUser = new MessageLocal();
 
     private InitProperties initProperties = new DBRegProperties("general-jsch");
 
@@ -101,20 +102,23 @@ public class SSHFactory implements Callable<String> {
         this.userName = builder.userName;
     }
 
-    private InputStream connect() throws IOException, JSchException {
+    private InputStream connect() throws IOException {
+        AtomicBoolean connected = new AtomicBoolean();
+        try {
         chanRespChannel();
         respChannel.connect();
-        boolean connected = respChannel.isConnected();
-        if (!connected) {
+            connected.set(respChannel.isConnected());
+        } catch (JSchException e) {
+            messageToUser.errorAlert("SSHFactory.connect", "respChannel", " = " + respChannel.isConnected());
+        }
+        if (!connected.get()) {
             messageToUser.out("SSHFactory_67", ("Channel is NULL!" + "\n\n" + "\nSSHFactory.connect, and ID (lineNum) is 67").getBytes());
-            messageToUser.infoNoTitles(MessageFormat.format("{0} id 82. {1}", SOURCE_CLASS, " JSch channel==null"));
+            messageToUser.info(getClass().getSimpleName(), "connect()", MessageFormat.format("{0} id 82. {1}", SOURCE_CLASS, " JSch channel==null"));
             respChannel.disconnect();
         } else {
             ((ChannelExec) Objects.requireNonNull(respChannel)).setErrStream(new FileOutputStream(SSH_ERR));
-
             return respChannel.getInputStream();
         }
-        respChannel.disconnect();
         throw new RejectedExecutionException("ХУЙ FOR YOU!");
     }
 
@@ -134,7 +138,7 @@ public class SSHFactory implements Callable<String> {
         String format = MessageFormat.format("{0} {1} connected {2}|SSHFactory.chanRespChannel line 83",
             session.getServerVersion(), session.getHost(), session.isConnected());
         LOGGER.info(format);
-        respChannel = session.openChannel(sessionType);
+        this.respChannel = session.openChannel(sessionType);
         ((ChannelExec) respChannel).setCommand(commandSSH);
         Objects.requireNonNull(respChannel);
     }
@@ -151,21 +155,32 @@ public class SSHFactory implements Callable<String> {
     }
 
     public String call() {
-        String retString = this.getCommandSSH() + " " + this.pem();
+        String retString = "";
         try (InputStream connect = connect()) {
-            retString = retString + " connect = " + connect().available();
             byte[] bytes = new byte[ConstantsFor.KBYTE * 20];
-            while (connect.available() > 0) {
+            while (respChannel.isConnected()) {
                 int r = connect.read(bytes);
-                messageToUser.infoNoTitles("connect read bytes = " + r);
+                messageToUser.info(getClass().getSimpleName(), "connect read bytes", " = " + r);
             }
-            retString = retString + " <br>\n" + new String(bytes, StandardCharsets.UTF_8);
+            retString = " <br>\n" + new String(bytes, StandardCharsets.UTF_8);
             return retString;
-        } catch (IOException | JSchException e) {
+        } catch (IOException e) {
             messageToUser.errorAlert(SOURCE_CLASS, " Exception id 123", e.getMessage() + "\n" + Arrays.toString(e.getStackTrace()));
             return e.getMessage() + "<br>\n" + retString;
         }
     }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("SSHFactory{");
+        sb.append("commandSSH='").append(commandSSH).append('\'');
+        sb.append(", connectToSrv='").append(connectToSrv).append('\'');
+        sb.append(", sessionType='").append(sessionType).append('\'');
+        sb.append(", userName='").append(userName).append('\'');
+        sb.append('}');
+        return sb.toString();
+    }
+
 
     /**
      Builder.
@@ -174,6 +189,7 @@ public class SSHFactory implements Callable<String> {
 
      @since <a href="https://github.com/Vachok/ftpplus/commit/7bc45ca4f1968a61dfda3b009d7b0e394d573de5" target=_blank>14.11.2018 (15:25)</a>
      */
+    @SuppressWarnings("WeakerAccess")
     @Service("ssh")
     @Scope(ConstantsFor.SINGLETON)
     public static class Builder {

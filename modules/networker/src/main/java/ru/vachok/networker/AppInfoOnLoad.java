@@ -22,13 +22,17 @@ import ru.vachok.networker.services.MyCalen;
 import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
-import java.nio.file.*;
+import java.nio.file.FileVisitor;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -282,18 +286,23 @@ public class AppInfoOnLoad implements Runnable {
         if (!thisPC.toLowerCase().contains("home")) {
             scheduledExecutorService.scheduleWithFixedDelay(AppInfoOnLoad::runCommonScan, ConstantsFor.INIT_DELAY, TimeUnit.DAYS.toSeconds(1),
                 TimeUnit.SECONDS);
+            miniLogger.add("runCommonScan init delay " + ConstantsFor.INIT_DELAY + ", delay " + TimeUnit.DAYS.toSeconds(1) + ". SECONDS");
         }
         scheduledExecutorService.scheduleWithFixedDelay(ScanOnline.getI(), 3, 1, TimeUnit.MINUTES);
         scheduledExecutorService.scheduleWithFixedDelay(DiapazonedScan.getInstance(), 2, THIS_DELAY, TimeUnit.MINUTES);
         scheduledExecutorService.scheduleWithFixedDelay(new NetMonitorPTV(), 0, 10, TimeUnit.SECONDS);
-        scheduledExecutorService.scheduleWithFixedDelay(() -> new TemporaryFullInternet(null), 6, 6, TimeUnit.HOURS);
+        scheduledExecutorService.scheduleWithFixedDelay(new TemporaryFullInternet(null, null), 1, ConstantsFor.DELAY, TimeUnit.MINUTES);
         String msg = new StringBuilder()
             .append(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(THIS_DELAY)))
             .append(DiapazonedScan.getInstance().getClass().getSimpleName())
             .append(" is starts next time.\n")
             .append(methMetr(stArt, classMeth))
             .toString();
-        miniLogger.add(msg + ". Trying start dateSchedulers***");
+        miniLogger.add(msg + ". Trying start dateSchedulers***| Local time: " + LocalTime.now().toString());
+        miniLogger.add(NetMonitorPTV.class.getSimpleName() + " init delay 0, delay 10. SECONDS");
+        miniLogger.add(TemporaryFullInternet.class.getSimpleName() + " init delay 1, delay " + ConstantsFor.DELAY + ". MINUTES");
+        miniLogger.add(DiapazonedScan.getInstance().getClass().getSimpleName() + " init delay 2, delay " + THIS_DELAY + ". MINUTES");
+        miniLogger.add(ScanOnline.getI().getClass().getSimpleName() + " init delay 3, delay 1. MINUTES");
         dateSchedulers(scheduledExecutorService);
     }
 

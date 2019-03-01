@@ -4,19 +4,19 @@ package ru.vachok.networker.net.enums;
 import org.springframework.ui.Model;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.componentsrepo.AppComponents;
-import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.DiapazonedScan;
 import ru.vachok.networker.net.NetScannerSvc;
-import ru.vachok.networker.net.TraceRoute;
 import ru.vachok.networker.services.MessageLocal;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.LinkedBlockingDeque;
 
 /**
  Константы пакета
@@ -114,8 +114,6 @@ public enum ConstantsNet {;
 
     public static final int TIMEOUT240 = 240;
 
-    public static BlockingDeque<String> allDevices = new LinkedBlockingDeque<>(IPS_IN_VELKOM_VLAN);
-
     private static final String[] PC_PREFIXES = {"do", "pp", "td", "no", "a"};
 
     private static final ConcurrentMap<String, File> COMPNAME_USERS_MAP = new ConcurrentHashMap<>();
@@ -123,6 +121,10 @@ public enum ConstantsNet {;
     private static final ConcurrentMap<String, String> PC_U_MAP = new ConcurrentHashMap<>();
 
     private static final Properties LOC_PROPS = AppComponents.getOrSetProps();
+
+    private static final Map<String, Long> SSH_CHECKER_MAP = new HashMap<>();
+
+    private static final BlockingDeque<String> ALL_DEVICES = new LinkedBlockingDeque<>(IPS_IN_VELKOM_VLAN);
 
     /**
      new {@link HashSet}
@@ -142,18 +144,20 @@ public enum ConstantsNet {;
         ConstantsNet.pcNames = pcNames;
     }
 
-    public static String getProvider() {
-        Future<String> submit = AppComponents.threadConfig().getTaskExecutor().submit(new TraceRoute());
-        try {
-            String s = submit.get();
-            FileSystemWorker.recFile("trace", s);
-            return s;
-        } catch (InterruptedException | ExecutionException e) {
-            messageToUser.errorAlert("ConstantsNet", "getProvider", new TForms().fromArray(e, false));
-            Thread.currentThread().interrupt();
-            return e.getMessage();
-        }
-    }
+// --Commented out by Inspection START (01.03.2019 16:38):
+//    public static String getProvider() {
+//        Future<String> submit = AppComponents.threadConfig().getTaskExecutor().submit(new TraceRoute());
+//        try {
+//            String s = submit.get();
+//            FileSystemWorker.recFile("trace", s);
+//            return s;
+//        } catch (InterruptedException | ExecutionException e) {
+//            messageToUser.errorAlert("ConstantsNet", "getProvider", new TForms().fromArray(e, false));
+//            Thread.currentThread().interrupt();
+//            return e.getMessage();
+//        }
+//    }
+// --Commented out by Inspection STOP (01.03.2019 16:38)
 
     /**
      Префиксы имён ПК Велком.
@@ -182,5 +186,9 @@ public enum ConstantsNet {;
      Все возможные IP из диапазонов {@link DiapazonedScan}
      */
     public static BlockingDeque<String> getAllDevices() {
-        return allDevices;
+        return ALL_DEVICES;
+    }
+
+    public static Map<String, Long> getSshCheckerMap() {
+        return SSH_CHECKER_MAP;
     }}

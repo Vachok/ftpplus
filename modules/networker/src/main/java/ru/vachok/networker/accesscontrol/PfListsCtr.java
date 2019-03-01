@@ -136,7 +136,6 @@ public class PfListsCtr {
             AppComponents.threadConfig().executeAsThread(pfListsSrvInstAW::makeListRunner);
             model.addAttribute(ATT_METRIC, refreshRate);
         }
-
         long nextUpd = pfListsInstAW.getGitStatsUpdatedStampLong() + TimeUnit.MINUTES.toMillis(DELAY_LOCAL_INT);
         pfListsInstAW.setTimeStampToNextUpdLong(nextUpd);
         if (nextUpd < System.currentTimeMillis()) {
