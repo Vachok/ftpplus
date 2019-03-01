@@ -37,7 +37,7 @@ public class PfListsSrv {
      @see PfListsCtr#runCommand(org.springframework.ui.Model, ru.vachok.networker.accesscontrol.PfListsSrv)
      @see #runCom()
      */
-    private @NotNull String commandForNatStr = "sudo cat /home/kudr/inet.log;exit";
+    private @NotNull String commandForNatStr = "sudo cat /etc/pf/24hrs;exit";
 
     /**
      new {@link SSHFactory.Builder}.
