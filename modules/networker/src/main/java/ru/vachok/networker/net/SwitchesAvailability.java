@@ -4,6 +4,7 @@ package ru.vachok.networker.net;
 import org.slf4j.Logger;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.TimeChecker;
 
 import java.io.*;
@@ -92,7 +93,7 @@ public class SwitchesAvailability implements Runnable {
         List<String> badIP = new ArrayList<>();
         while (inetAddressQueue.iterator().hasNext()) {
             InetAddress poll = inetAddressQueue.poll();
-            if (poll != null && poll.isReachable(500)) {
+            if(poll!=null && poll.isReachable(ConstantsNet.TIMEOUT240)){
                 okIP.add(poll.toString());
             } else {
                 String ipStr = poll != null ? poll.toString() : null;

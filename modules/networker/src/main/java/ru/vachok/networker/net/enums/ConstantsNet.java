@@ -15,10 +15,7 @@ import ru.vachok.networker.services.MessageLocal;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.*;
 
 /**
@@ -114,6 +111,8 @@ public enum ConstantsNet {;
     public static final String DOMAIN_EATMEATRU = ".eatmeat.ru";
 
     public static final int IPS_IN_VELKOM_VLAN = 5610;
+
+    public static final int TIMEOUT240 = 240;
 
     public static BlockingDeque<String> allDevices = new LinkedBlockingDeque<>(IPS_IN_VELKOM_VLAN);
 
