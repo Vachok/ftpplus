@@ -13,10 +13,7 @@ import ru.vachok.networker.services.MessageLocal;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.util.*;
-import java.util.concurrent.BlockingDeque;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.*;
 
 /**
  Константы пакета
@@ -25,7 +22,7 @@ import java.util.concurrent.LinkedBlockingDeque;
  @since 25.01.2019 (10:30) */
 public enum ConstantsNet {;
 
-    public static final boolean IS_RUPS = ConstantsFor.thisPC().toLowerCase().contains("rups");
+    public static final boolean IS_RUPS = true;
 
     public static final String STR_CONNECTION = "connection";
 

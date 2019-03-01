@@ -12,16 +12,10 @@ import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.services.MessageLocal;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.RejectedExecutionException;
@@ -158,7 +152,7 @@ public class SSHFactory implements Callable<String> {
         String retString = "";
         try (InputStream connect = connect()) {
             byte[] bytes = new byte[ConstantsFor.KBYTE * 20];
-            while (respChannel.isConnected()) {
+            while(connect.available() > 0 || respChannel.isConnected()){
                 int r = connect.read(bytes);
                 messageToUser.info(getClass().getSimpleName(), "connect read bytes", " = " + r);
             }
