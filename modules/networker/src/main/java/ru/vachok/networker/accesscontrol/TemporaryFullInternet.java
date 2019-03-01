@@ -100,6 +100,10 @@ public class TemporaryFullInternet implements Runnable {
             if (delStamp < ConstantsFor.getAtomicTime()) {
                 messageToUser.warn(getClass().getSimpleName(), x, String.valueOf(doDelete(x)));
                 MINI_LOGGER.add("sshChecker(SSH_CHECKER_MAP.forEach): time is" + true + "\n" + x);
+                messageToUser.warn("TemporaryFullInternet.sshChecker", "delStamp", " = " + delStamp);
+                messageToUser.warn("TemporaryFullInternet.sshChecker", "ConstantsFor.getAtomicTime()", " = " + ConstantsFor.getAtomicTime());
+                messageToUser.error("TemporaryFullInternet.sshChecker", "ConstantsFor.getAtomicTime()-delStamp",
+                    " = " + (ConstantsFor.getAtomicTime() - delStamp));
             }
         });
         return ConstantsNet.getSshCheckerMap();

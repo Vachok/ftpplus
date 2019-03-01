@@ -190,7 +190,7 @@ public class DiapazonedScan implements Runnable {
             String valStr = "host = " + hostName + "/" + hostAddress + " is online: " + true;
             LOGGER.info(valStr);
         } else {
-            Thread.currentThread().setName(ALL_DEVICES_LOCAL_DEQUE.size() + " of " + ConstantsNet.IPS_IN_VELKOM_VLAN);
+            AppComponents.threadConfig().thrNameSet(ALL_DEVICES_LOCAL_DEQUE.size() + " of " + ConstantsNet.IPS_IN_VELKOM_VLAN);
             ALL_DEVICES_LOCAL_DEQUE.add("<font color=\"red\">" + toString + FONT_BR_STR);
         }
     }
@@ -290,7 +290,6 @@ public class DiapazonedScan implements Runnable {
      */
     @Override
     public void run() {
-        Thread.currentThread().setName("DiapazonedScan.run");
         scanNew();
     }
 

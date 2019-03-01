@@ -261,7 +261,7 @@ public final class NetScannerSvc {
                 this.thrName = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime) + "-sec";
                 PC_NAMES_SET.clear();
                 PC_NAMES_SET.addAll(getPCNamesPref(s));
-                Thread.currentThread().setName(thrName);
+                AppComponents.threadConfig().thrNameSet("pcGET");
                 msg.set(thrName);
             }
             String elapsedTime = "Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime) + " sec.";

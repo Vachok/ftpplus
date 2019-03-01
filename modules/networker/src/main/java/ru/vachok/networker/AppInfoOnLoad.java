@@ -22,10 +22,7 @@ import ru.vachok.networker.services.MyCalen;
 import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
-import java.nio.file.FileVisitor;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -198,7 +195,7 @@ public class AppInfoOnLoad implements Runnable {
 
         String classMeth = "AppInfoOnLoad.dateSchedulers";
         String exitLast = "No file";
-        Thread.currentThread().setName(classMeth);
+        AppComponents.threadConfig().thrNameSet("dateSch");
         Date nextStartDay = MyCalen.getNextDayofWeek(23, 57, DayOfWeek.SUNDAY);
         StringBuilder stringBuilder = new StringBuilder();
         ThreadPoolTaskScheduler threadPoolTaskScheduler = AppComponents.threadConfig().getTaskScheduler();

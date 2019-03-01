@@ -34,7 +34,7 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> {
      @throws IOException deleteIfExists старые файлы.
      */
     public CommonRightsChecker() throws IOException {
-        Thread.currentThread().setName(getClass().getSimpleName());
+        AppComponents.threadConfig().thrNameSet("com.rgh");
         boolean b1 = Files.deleteIfExists(new File("common.own").toPath());
         boolean b = Files.deleteIfExists(new File("common.rgh").toPath());
         String msg = new StringBuilder()

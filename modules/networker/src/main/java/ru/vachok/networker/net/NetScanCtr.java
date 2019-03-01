@@ -33,10 +33,7 @@ import java.net.InetAddress;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
-import java.util.Date;
-import java.util.Deque;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.*;
 
 
@@ -174,7 +171,7 @@ public class NetScanCtr {
             ConstantsFor.STR_INPUT_PARAMETERS_RETURNS,
             ConstantsFor.JAVA_LANG_STRING_NAME);
 
-        Thread.currentThread().setName(classMeth);
+        AppComponents.threadConfig().thrNameSet("scan");
         ConstantsFor.getVis(request);
         model.addAttribute("serviceinfo", (float) TimeUnit.MILLISECONDS.toSeconds(lastSt - System.currentTimeMillis()) / ConstantsFor.ONE_HOUR_IN_MIN);
         netScannerSvcInstAW.setThePc("");

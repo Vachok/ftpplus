@@ -46,7 +46,7 @@ public class CommonScan2YOlder extends SimpleFileVisitor<Path> implements Callab
         } catch (IOException e) {
             LOGGER.warn(e.getMessage(), e);
         }
-        Thread.currentThread().setName(getClass().getSimpleName());
+        AppComponents.threadConfig().thrNameSet("2YOld");
     }
 
     CommonScan2YOlder(String fileName) {

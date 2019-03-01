@@ -153,7 +153,7 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
             if(upTimer.get() > ConstantsFor.ONE_HOUR_IN_MIN){
                 upTimer.set(upTimer.get() / ConstantsFor.ONE_HOUR_IN_MIN);
             }
-            thread.setName("ASYN-Null-" + upTimer.get());
+            thrNameSet("ASThr");
             messageToUser.errorAlert(getClass().getSimpleName(), "asyncExecutor is " + null, thread.getName());
         }
         if (asyncExecutor != null) {
@@ -196,6 +196,7 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
 
         @Override
         public Executor getAsyncExecutor() {
+            thrNameSet("A-");
             threadPoolTaskExecutor.setAllowCoreThreadTimeOut(true);
             threadPoolTaskExecutor.setThreadPriority(9);
             threadPoolTaskExecutor.setThreadNamePrefix("A-");

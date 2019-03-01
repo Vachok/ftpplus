@@ -186,7 +186,6 @@ public final class SystemTrayHelper {
     }
 
     void delOldActions() {
-        Thread.currentThread().setName(CLASS_NAME + ".delOldActions");
         ActionListener[] actionListeners;
         if(trayIcon.getActionListeners()!=null){
             actionListeners = trayIcon.getActionListeners();
