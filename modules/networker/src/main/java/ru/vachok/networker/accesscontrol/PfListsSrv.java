@@ -37,7 +37,7 @@ public class PfListsSrv {
      @see PfListsCtr#runCommand(org.springframework.ui.Model, ru.vachok.networker.accesscontrol.PfListsSrv)
      @see #runCom()
      */
-    private @NotNull String commandForNatStr = "traceroute 8.8.8.8;exit";
+    private @NotNull String commandForNatStr = "sudo cat /home/kudr/inet.log;exit";
 
     /**
      new {@link SSHFactory.Builder}.
@@ -122,9 +122,6 @@ public class PfListsSrv {
      */
     private void buildFactory() {
         SSHFactory build = builderInst.build();
-        if (!ConstantsFor.isPingOK()) {
-            throw new RejectedExecutionException("NO PING TO GIT");
-        }
         if (!new File("a161.pem").exists()) {
             throw new RejectedExecutionException("NO CERTIFICATE a161.pem...");
         }
@@ -145,10 +142,10 @@ public class PfListsSrv {
         build.setCommandSSH("pfctl -s nat;exit");
         pfListsInstAW.setPfNat(build.call());
 
-        build.setCommandSSH("pfctl -s rules");
+        build.setCommandSSH("pfctl -s rules;exit");
         pfListsInstAW.setPfRules(build.call());
 
-        build.setCommandSSH("sudo cat /home/kudr/inet.log");
+        build.setCommandSSH("sudo cat /home/kudr/inet.log;traceroute 8.8.8.8;exit");
         pfListsInstAW.setInetLog(build.call());
 
         pfListsInstAW.setGitStatsUpdatedStampLong(System.currentTimeMillis());

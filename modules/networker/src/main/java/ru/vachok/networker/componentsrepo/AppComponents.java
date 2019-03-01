@@ -90,7 +90,6 @@ public class AppComponents {
      @return new {@link SshActs}
      */
     @Bean
-    @Scope(ConstantsFor.SINGLETON)
     public SshActs sshActs() {
         return new SshActs();
     }

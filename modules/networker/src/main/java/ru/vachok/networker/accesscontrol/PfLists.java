@@ -1,7 +1,6 @@
 package ru.vachok.networker.accesscontrol;
 
 
-import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import ru.vachok.networker.ConstantsFor;
 
@@ -9,7 +8,6 @@ import ru.vachok.networker.ConstantsFor;
 /**
  @since 10.09.2018 (11:35) */
 @Component(ConstantsFor.BEANNAME_PFLISTS)
-@Scope(ConstantsFor.SINGLETON)
 public class PfLists {
 
     private String vipNet;

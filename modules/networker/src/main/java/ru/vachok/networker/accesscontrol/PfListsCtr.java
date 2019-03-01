@@ -26,7 +26,6 @@ import java.time.LocalTime;
 import java.util.Date;
 import java.util.Properties;
 import java.util.Random;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 
@@ -98,12 +97,6 @@ public class PfListsCtr {
         this.pfListsInstAW = pfLists;
         this.pfListsSrvInstAW = pfListsSrv;
         this.pingGITOk = ConstantsFor.isPingOK();
-        ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor();
-        long delaySch = TimeUnit.MINUTES.toSeconds(ConstantsFor.DELAY) + TimeUnit.HOURS.toSeconds(1);
-        scheduledThreadPoolExecutor.schedule(pfListsSrvInstAW::makeListRunner, delaySch, TimeUnit.SECONDS);
-        messageToUser.info("PfListsSrv. this::makeListRunner", "delay Scheduler", " = " + delaySch);
-        AppComponents.threadConfig().executeAsThread(pfListsSrvInstAW::makeListRunner);
-        messageToUser.info("Executing as THREAD", "pfListsSrvInstAW::makeListRunner", " = " + pfListsSrvInstAW.toString());
     }
 
     /**
