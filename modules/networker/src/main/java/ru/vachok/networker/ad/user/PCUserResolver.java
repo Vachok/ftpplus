@@ -1,7 +1,6 @@
 package ru.vachok.networker.ad.user;
 
 
-import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ad.ADSrv;
@@ -16,7 +15,6 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Savepoint;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -34,6 +32,8 @@ public class PCUserResolver extends ADSrv {
      New instance
      */
     private static final PCUserResolver PC_USER_RESOLVER = new PCUserResolver();
+
+    private static final String METHNAME_REC_AUTO_DB = "PCUserResolver.recAutoDB";
 
     /**
      Последний измененный файл.
@@ -76,10 +76,11 @@ public class PCUserResolver extends ADSrv {
      @see ru.vachok.networker.net.ConditionChecker#onLinesCheck(String, String)
      */
     public synchronized void namesToFile(String pcName) {
-        Thread.currentThread().setName(pcName);
-        Thread.currentThread().setPriority(3);
+        AppComponents.threadConfig().thrNameSet("pcfile-");
+
+        File pcNameFile = new File(pcName);
         File[] files;
-        try (OutputStream outputStream = new FileOutputStream(pcName);
+        try (OutputStream outputStream = new FileOutputStream(pcNameFile);
              PrintWriter writer = new PrintWriter(outputStream, true)) {
             String pathAsStr = new StringBuilder().append("\\\\").append(pcName).append("\\c$\\Users\\").toString();
             lastFileUse = getLastTimeUse(pathAsStr).split("Users")[1];
@@ -88,7 +89,6 @@ public class PCUserResolver extends ADSrv {
                 .append(Arrays.toString(files).replace(", ", "\n"))
                 .append("\n\n\n")
                 .append(lastFileUse);
-
         } catch (IOException e) {
             FileSystemWorker.error("PCUserResolver.namesToFile", e);
         } catch (ArrayIndexOutOfBoundsException ignore) {
@@ -97,9 +97,10 @@ public class PCUserResolver extends ADSrv {
         if (lastFileUse != null) {
             recAutoDB(pcName, lastFileUse);
         }
+        pcNameFile.deleteOnExit();
     }
 
-    public ADUser searchForUser(String userInput) {
+    public void searchForUser(String userInput) {
         ADUser adUser = new ADUser();
         DataBaseADUsersSRV adUsersSRV = new DataBaseADUsersSRV(adUser);
         Map<String, String> fileParser = adUsersSRV.fileParser(FileSystemWorker.readFileToList("C:\\Users\\ikudryashov\\IdeaProjects\\spring\\modules\\networker\\src\\main\\resources\\static\\texts\\users.txt"));
@@ -107,10 +108,9 @@ public class PCUserResolver extends ADSrv {
         stringSet.forEach(x -> {
             String s = fileParser.get(x);
             if (s.contains(userInput)) {
-                new MessageCons().infoNoTitles(s + " " + s.contains(userInput));
+                messageToUser.infoNoTitles(s + " " + s.contains(userInput));
             }
         });
-        return adUser;
     }
 
     /**
@@ -126,10 +126,8 @@ public class PCUserResolver extends ADSrv {
      */
     private synchronized void recAutoDB(String pcName, String lastFileUse) {
         String sql = "insert into pcuser (pcName, userName, lastmod, stamp) values(?,?,?,?)";
-        String classMeth = "PCUserResolver.recAutoDB";
         try (Connection connection = new AppComponents().connection(ConstantsNet.DB_NAME)) {
-            Savepoint savepoint = connection.setSavepoint();
-            try (PreparedStatement preparedStatement = connection.prepareStatement(sql.replaceAll(ConstantsFor.STR_PCUSER, ConstantsFor.STR_PCUSERAUTO))) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql.replaceAll(ConstantsFor.DBFIELD_PCUSER, ConstantsFor.DBFIELD_PCUSERAUTO))) {
                 String[] split = lastFileUse.split(" ");
                 preparedStatement.setString(1, pcName);
                 preparedStatement.setString(2, split[0]);
@@ -138,12 +136,12 @@ public class PCUserResolver extends ADSrv {
                 preparedStatement.executeUpdate();
             } catch (SQLException e) {
                 connection.clearWarnings();
-                connection.releaseSavepoint(savepoint);
-                messageToUser.errorAlert("PCUserResolver", "recAutoDB", e.getMessage());
-                FileSystemWorker.error("PCUserResolver.recAutoDB", e);
+                messageToUser.errorAlert(ConstantsFor.CLASS_NAME_PCUSERRESOLVER, "recAutoDB", e.getMessage());
+                FileSystemWorker.error(METHNAME_REC_AUTO_DB, e);
             }
-        } catch (SQLException | ArrayIndexOutOfBoundsException | NullPointerException e) {
-            FileSystemWorker.error(classMeth, e);
+        }
+        catch(SQLException | ArrayIndexOutOfBoundsException | NullPointerException | IOException e){
+            FileSystemWorker.error(METHNAME_REC_AUTO_DB, e);
         }
     }
 
@@ -177,6 +175,7 @@ public class PCUserResolver extends ADSrv {
      @see #getLastTimeUse(String)
      @since 22.11.2018 (14:46)
      */
+    @SuppressWarnings("ClassHasNoToStringMethod")
     static class WalkerToUserFolder extends SimpleFileVisitor<Path> {
 
         /**

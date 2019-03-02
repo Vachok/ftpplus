@@ -15,6 +15,7 @@ import ru.vachok.networker.systray.MessageToTray;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -97,7 +98,7 @@ public class MoreInfoGetter {
         } catch (ArrayIndexOutOfBoundsException e) {
             retBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false));
         }
-        try (Connection c = new AppComponents().connection(ConstantsFor.DB_PREFIX + ConstantsFor.STR_VELKOM);
+        try (Connection c = new AppComponents().connection(ConstantsFor.DBPREFIX + ConstantsFor.STR_VELKOM);
              PreparedStatement p = c.prepareStatement(sql)) {
             p.setString(1, "%" + userInputRaw + "%");
             try (ResultSet r = p.executeQuery()) {
@@ -106,7 +107,7 @@ public class MoreInfoGetter {
                 stringBuilder.append(headER);
                 List<String> stringList = new ArrayList<>();
                 while (r.next()) {
-                    String pcName = r.getString(ConstantsFor.DB_FIELD_PCNAME);
+                    String pcName = r.getString(ConstantsFor.DBFIELD_PCNAME);
                     stringList.add(pcName);
                     String returnER = "<br><center><a href=\"/ad?" + pcName.split("\\Q.\\E")[0] + "\">" + pcName + "</a> set: " +
                         r.getString(ConstantsNet.DB_FIELD_WHENQUERIED) + ConstantsFor.HTML_CENTER;
@@ -120,13 +121,14 @@ public class MoreInfoGetter {
                 if (r.last()) {
                     MessageToUser messageToUser = new MessageToTray(new ActionCloseMsg(new MessageLocal()));
                     messageToUser.info(
-                        r.getString(ConstantsFor.DB_FIELD_PCNAME),
+                        r.getString(ConstantsFor.DBFIELD_PCNAME),
                         r.getString(ConstantsNet.DB_FIELD_WHENQUERIED),
                         r.getString(ConstantsFor.DB_FIELD_USER));
                 }
                 return stringBuilder.toString();
             }
-        } catch (SQLException e) {
+        }
+        catch(SQLException | IOException e){
             retBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false));
         }
         return retBuilder.toString();

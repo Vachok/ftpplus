@@ -785,4 +785,13 @@ pingresult
 scan.tmp
 ESender.err
 ru_vachok_networker-1804.res
-/DataConnectTo.properties
+AppInfoOnLoad.mini
+ConstantsFor.properties
+DataConnectTo.properties
+RegRuMysql.err
+ConstantsFor.bak
+modules/networker/src/main/resources/static/config/ru_vachok_networker-ConstantsFor.properties.bak
+AppCtx.qadd
+/exportToHTML/
+TemporaryFullInternet.mini
+a161.pe

@@ -8,17 +8,16 @@ import ru.vachok.messenger.MessageFile;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.messenger.email.ESender;
 import ru.vachok.mysqlandprops.RegRuMysql;
+import ru.vachok.networker.accesscontrol.TemporaryFullInternet;
 import ru.vachok.networker.accesscontrol.common.CommonRightsChecker;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.config.ThreadConfig;
-import ru.vachok.networker.errorexceptions.MyNull;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.mailserver.MailIISLogsCleaner;
 import ru.vachok.networker.net.*;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.MyCalen;
-import ru.vachok.networker.services.SpeedChecker;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,9 +29,11 @@ import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
-import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -56,9 +57,9 @@ public class AppInfoOnLoad implements Runnable {
     private static final int THIS_DELAY = 111;
 
     /**
-     {@link AppComponents#getProps()}
+     {@link AppComponents#getOrSetProps()}
      */
-    private static final Properties APP_PROPS = AppComponents.getProps();
+    private static final Properties APP_PROPS = AppComponents.getOrSetProps();
 
     /**
      " uptime."
@@ -68,21 +69,23 @@ public class AppInfoOnLoad implements Runnable {
     /**
      {@link MessageCons}
      */
-    private static MessageToUser messageToUser = new MessageLocal();
+    private static final MessageToUser messageToUser = new MessageLocal();
 
     /**
-     * Для записи результата работы класса.
+     Для записи результата работы класса.
      */
-    private static List<String> miniLogger = new ArrayList<>();
+    private static final List<String> miniLogger = new ArrayList<>();
 
     /**
      Получение размера логов IIS-Exchange.
      <p>
-     Путь до папки из {@link #APP_PROPS} iispath. <br> {@code Path iisLogsDir} = {@link Objects#requireNonNull(java.lang.Object)} - {@link Path#toFile()}.{@link File#listFiles()}. <br> Для каждого
+     Путь до папки из {@link #APP_PROPS} iispath. <br> {@code Path iisLogsDir} = {@link Objects#requireNonNull(java.lang.Object)} -
+     {@link Path#toFile()}.{@link File#listFiles()}. <br> Для каждого
      файла из папки, {@link File#length()}. Складываем {@code totalSize}. <br> {@code totalSize/}{@link ConstantsFor#MBYTE}.
 
      @return размер папки логов IIS в мегабайтах
      */
+    @SuppressWarnings ("StaticMethodOnlyUsedInOneClass")
     public static String iisLogSize() {
         Path iisLogsDir = Paths.get(APP_PROPS.getProperty("iispath", "\\\\srv-mail3.eatmeat.ru\\c$\\inetpub\\logs\\LogFiles\\W3SVC1\\"));
         long totalSize = 0L;
@@ -95,40 +98,51 @@ public class AppInfoOnLoad implements Runnable {
     }
 
     /**
-     Статистика по-пользователям за неделю.
-     <p>
-     Запуск new {@link SpeedChecker.ChkMailAndUpdateDB}, через {@link Executors#unconfigurableExecutorService(java.util.concurrent.ExecutorService)}
-     <p>
-     Если {@link LocalDate#getDayOfWeek()} equals {@link DayOfWeek#SUNDAY}, запуск new {@link WeekPCStats}
+     Очистка pcuserauto
      */
-    static void getWeekPCStats() {
-        if (LocalDate.now().getDayOfWeek().equals(DayOfWeek.SUNDAY)) {
-            ExecutorService serviceW = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor());
-            serviceW.submit(new WeekPCStats());
+    private static void trunkTableUsers() {
+        MessageToUser eSender = new ESender(ConstantsFor.EADDR_143500GMAILCOM);
+        try (Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.DBDASENAME_U0466446_VELKOM);
+             PreparedStatement preparedStatement = c.prepareStatement("TRUNCATE TABLE pcuserauto")) {
+            preparedStatement.executeUpdate();
+            eSender.infoNoTitles("TRUNCATE true\n" + ConstantsFor.getUpTime() + STR_UPTIME);
+        } catch (SQLException e) {
+            eSender.infoNoTitles("TRUNCATE false\n" + ConstantsFor.getUpTime() + STR_UPTIME);
         }
     }
 
     /**
-     Запускает сканнер прав Common
+     Reconnect Socket, пока он открыт
+     <p>
+     1. {@link MyServer#setSocket(java.net.Socket)}. Создаём новый {@link Socket}. <br>
+     2. {@link MyServer#getSocket()} - пока он не {@code isClosed}, 3. {@link MyServer#reconSock()} реконнект. <br><br>
+     {@link IOException}, {@link InterruptedException}, {@link NullPointerException} : <br>
+     4. {@link TForms#fromArray(Exception, boolean)} - преобразуем исключение в строку. <br>
+     5. {@link AppComponents#threadConfig()} , 6 {@link ThreadConfig#getTaskExecutor()} перезапуск {@link MyServer#getI()}
      */
-    private static void commonRightsMetrics(long startMeth) {
-        long mSecRun = System.currentTimeMillis() - new Date(startMeth).getTime();
-        String metricOfCommonScan = new StringBuilder()
-            .append(TimeUnit.MILLISECONDS.toMinutes(mSecRun))
-            .append(" minutes to run ")
-            .append(CommonRightsChecker.class.getSimpleName())
-            .toString();
-
-        new MessageFile().info("AppInfoOnLoad.runCommonScanMetrics", "metricOfCommonScan", " = " + metricOfCommonScan);
+    private static void starterTelnet() {
+        MyServer.setSocket(new Socket());
+        //noinspection resource
+        while (!MyServer.getSocket().isClosed()) {
+            try {
+                MyServer.reconSock();
+            } catch (IOException | InterruptedException | NullPointerException e1) {
+                messageToUser.info("AppInfoOnLoad.starterTelnet", "e1.getMessage()", e1.getMessage());
+                FileSystemWorker.error("SystemTrayHelper.starterTelnet", e1);
+                Thread.currentThread().interrupt();
+            }
+        }
     }
 
     /**
      Сборщик прав \\srv-fs.eatmeat.ru\common_new
      <p>
-     {@link Files#walkFileTree(java.nio.file.Path, java.nio.file.FileVisitor)}, где {@link Path} = \\srv-fs.eatmeat.ru\common_new и {@link FileVisitor} = new {@link CommonRightsChecker}.
+     {@link Files#walkFileTree(java.nio.file.Path, java.nio.file.FileVisitor)}, где {@link Path} = \\srv-fs.eatmeat.ru\common_new и {@link FileVisitor}
+     = new {@link CommonRightsChecker}.
      <p>
      <b>{@link IOException}:</b><br>
-     {@link MessageToUser#errorAlert(java.lang.String, java.lang.String, java.lang.String)}, {@link FileSystemWorker#error(java.lang.String, java.lang.Exception)}
+     {@link MessageToUser#errorAlert(java.lang.String, java.lang.String, java.lang.String)},
+     {@link FileSystemWorker#error(java.lang.String, java.lang.Exception)}
      */
     private static void runCommonScan() {
         final long stMeth = System.currentTimeMillis();
@@ -166,22 +180,22 @@ public class AppInfoOnLoad implements Runnable {
      <p>
      1. {@link MyCalen#getNextDayofWeek(int, int, java.time.DayOfWeek)}. Получим {@link Date}, след. воскресенье 23:57.<br>
      {@link ThreadPoolTaskScheduler}, запланируем new {@link WeekPCStats} и new {@link MailIISLogsCleaner} на это время и на это время -1 час.<br><br>
-     2. {@link FileSystemWorker#readFileToList(java.lang.String)}. Прочитаем exit.last, если он существует. {@link TForms#fromArray(java.util.List, boolean)} <br><br>
+     2. {@link FileSystemWorker#readFileToList(java.lang.String)}. Прочитаем exit.last, если он существует.
+     {@link TForms#fromArray(java.util.List, boolean)} <br><br>
      3. {@link #checkDay(ScheduledExecutorService)} метрика. <br>
      4. {@link #checkDay(java.util.concurrent.ScheduledExecutorService)}. Выведем сообщение, когда и что ствртует.
      <p>
 
      @param scheduledExecutorService {@link ScheduledExecutorService}.
-     @throws MyNull искл.
      */
     @SuppressWarnings("MagicNumber")
-    private static void dateSchedulers(ScheduledExecutorService scheduledExecutorService) throws MyNull {
+    private static void dateSchedulers(ScheduledExecutorService scheduledExecutorService) {
         long stArt = System.currentTimeMillis();
         long delay = TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY_HOURS * 7);
 
         String classMeth = "AppInfoOnLoad.dateSchedulers";
         String exitLast = "No file";
-        Thread.currentThread().setName(classMeth);
+        AppComponents.threadConfig().thrNameSet("dateSch");
         Date nextStartDay = MyCalen.getNextDayofWeek(23, 57, DayOfWeek.SUNDAY);
         StringBuilder stringBuilder = new StringBuilder();
         ThreadPoolTaskScheduler threadPoolTaskScheduler = AppComponents.threadConfig().getTaskScheduler();
@@ -222,40 +236,25 @@ public class AppInfoOnLoad implements Runnable {
     }
 
     /**
-     Очистка pcuserauto
+     Запускает сканнер прав Common
      */
-    private static void trunkTableUsers() {
-        MessageToUser eSender = new ESender(ConstantsFor.GMAIL_COM);
-        try (Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.U_0466446_VELKOM);
-             PreparedStatement preparedStatement = c.prepareStatement("TRUNCATE TABLE pcuserauto")) {
-            preparedStatement.executeUpdate();
-            eSender.infoNoTitles("TRUNCATE true\n" + ConstantsFor.getUpTime() + STR_UPTIME);
-        } catch (SQLException e) {
-            eSender.infoNoTitles("TRUNCATE false\n" + ConstantsFor.getUpTime() + STR_UPTIME);
-        }
+    private static void commonRightsMetrics(long startMeth) {
+        long mSecRun = System.currentTimeMillis() - new Date(startMeth).getTime();
+        String metricOfCommonScan = new StringBuilder()
+            .append(TimeUnit.MILLISECONDS.toMinutes(mSecRun))
+            .append(" minutes to run ")
+            .append(CommonRightsChecker.class.getSimpleName())
+            .toString();
+
+        new MessageFile().info("AppInfoOnLoad.runCommonScanMetrics", "metricOfCommonScan", " = " + metricOfCommonScan);
     }
 
     /**
-     Reconnect Socket, пока он открыт
-     <p>
-     1. {@link MyServer#setSocket(java.net.Socket)}. Создаём новый {@link Socket}. <br>
-     2. {@link MyServer#getSocket()} - пока он не {@code isClosed}, 3. {@link MyServer#reconSock()} реконнект. <br><br>
-     {@link IOException}, {@link InterruptedException}, {@link NullPointerException} : <br>
-     4. {@link TForms#fromArray(Exception, boolean)} - преобразуем исключение в строку. <br>
-     5. {@link AppComponents#threadConfig()} , 6 {@link ThreadConfig#getTaskExecutor()} перезапуск {@link MyServer#getI()}
+     {@link AppComponents#temporaryFullInternet()}
+
+     @see TemporaryFullInternet
      */
-    private void starterTelnet() {
-        MyServer.setSocket(new Socket());
-        while (!MyServer.getSocket().isClosed()) {
-            try {
-                MyServer.reconSock();
-            } catch (IOException | InterruptedException | NullPointerException e1) {
-                messageToUser.info("AppInfoOnLoad.starterTelnet", "e1.getMessage()", e1.getMessage());
-                FileSystemWorker.error("SystemTrayHelper.starterTelnet", e1);
-                Thread.currentThread().interrupt();
-            }
-        }
-    }
+    private TemporaryFullInternet temporaryFullInternet = new AppComponents().temporaryFullInternet();
 
     /**
      Немного инфомации о приложении.
@@ -280,7 +279,6 @@ public class AppInfoOnLoad implements Runnable {
      Usages: {@link #infoForU(ApplicationContext)} <br>
      Uses: 1.1 {@link #dateSchedulers(ScheduledExecutorService)}, 1.2 {@link ConstantsFor#thisPC()}, 1.3 {@link ConstantsFor#thisPC()}.
      */
-    @SuppressWarnings("MagicNumber")
     private void schedStarter() {
         String classMeth = "AppInfoOnLoad.schedStarter";
         miniLogger.add("***" + classMeth);
@@ -290,24 +288,26 @@ public class AppInfoOnLoad implements Runnable {
         miniLogger.add(thisPC);
 
         if (!thisPC.toLowerCase().contains("home")) {
-            scheduledExecutorService.scheduleWithFixedDelay(AppInfoOnLoad::runCommonScan, ConstantsFor.INIT_DELAY, TimeUnit.DAYS.toSeconds(1), TimeUnit.SECONDS);
+            scheduledExecutorService.scheduleWithFixedDelay(AppInfoOnLoad::runCommonScan, ConstantsFor.INIT_DELAY, TimeUnit.DAYS.toSeconds(1),
+                TimeUnit.SECONDS);
+            miniLogger.add("runCommonScan init delay " + ConstantsFor.INIT_DELAY + ", delay " + TimeUnit.DAYS.toSeconds(1) + ". SECONDS");
         }
         scheduledExecutorService.scheduleWithFixedDelay(ScanOnline.getI(), 3, 1, TimeUnit.MINUTES);
         scheduledExecutorService.scheduleWithFixedDelay(DiapazonedScan.getInstance(), 2, THIS_DELAY, TimeUnit.MINUTES);
         scheduledExecutorService.scheduleWithFixedDelay(new NetMonitorPTV(), 0, 10, TimeUnit.SECONDS);
+        scheduledExecutorService.scheduleWithFixedDelay(temporaryFullInternet, 1, ConstantsFor.DELAY, TimeUnit.MINUTES);
         String msg = new StringBuilder()
             .append(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(THIS_DELAY)))
             .append(DiapazonedScan.getInstance().getClass().getSimpleName())
             .append(" is starts next time.\n")
             .append(methMetr(stArt, classMeth))
             .toString();
-        miniLogger.add(msg + ". Trying start dateSchedulers***");
-        try {
-            dateSchedulers(scheduledExecutorService);
-        } catch (MyNull e) {
-            miniLogger.add(e.getMessage() + " start is FAILED!");
-            FileSystemWorker.recFile(getClass().getSimpleName() + ".mini", miniLogger.stream());
-        }
+        miniLogger.add(msg + ". Trying start dateSchedulers***| Local time: " + LocalTime.now().toString());
+        miniLogger.add(NetMonitorPTV.class.getSimpleName() + " init delay 0, delay 10. SECONDS");
+        miniLogger.add(TemporaryFullInternet.class.getSimpleName() + " init delay 1, delay " + ConstantsFor.DELAY + ". MINUTES");
+        miniLogger.add(DiapazonedScan.getInstance().getClass().getSimpleName() + " init delay 2, delay " + THIS_DELAY + ". MINUTES");
+        miniLogger.add(ScanOnline.getI().getClass().getSimpleName() + " init delay 3, delay 1. MINUTES");
+        dateSchedulers(scheduledExecutorService);
     }
 
     /**
@@ -318,6 +318,15 @@ public class AppInfoOnLoad implements Runnable {
     @Override
     public void run() {
         infoForU(AppCtx.scanForBeansAndRefreshContext());
-        new Thread(this::starterTelnet).start();
+        AppComponents.threadConfig().executeAsThread(AppInfoOnLoad::starterTelnet);
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("AppInfoOnLoad{");
+        sb.append("miniLogger=").append(new TForms().fromArray(miniLogger, false));
+        sb.append('}');
+        FileSystemWorker.recFile(getClass().getSimpleName() + ".mini", miniLogger.stream());
+        return sb.toString();
     }
 }

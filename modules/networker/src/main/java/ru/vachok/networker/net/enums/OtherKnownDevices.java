@@ -8,17 +8,22 @@ package ru.vachok.networker.net.enums;
 
  @since 14.02.2019 (23:29) */
 public enum OtherKnownDevices {
-
-    PTV1,
-    PTV2,
     ;
 
     /**
      Мой мобильный
      */
-    public static final String MOB_KUDR = "10.200.214.80";
+    public static final String IP_MOBKUDR = "10.200.214.80";
 
-    public static final OtherKnownDevices[] DEVICES = OtherKnownDevices.values();
+    public static final String NO0002_RDEMINA = "no0002.eatmeat.ru";
+
+    public static final String IP_DDOIPHONE = "10.200.214.97";
+
+    public static final String IP_DDOIPHONE_1 = "10.200.214.71";
+
+    public static final String IP_RDEMINAIPHONE = "10.200.214.92";
+
+    public static final String IP_RDEMINAIPHONE_1 = "10.200.214.56";
 
     public static final String PTV1_EATMEAT_RU = "ptv1.eatmeat.ru";
 

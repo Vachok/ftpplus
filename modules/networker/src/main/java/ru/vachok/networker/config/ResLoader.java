@@ -19,7 +19,7 @@ public class ResLoader extends DefaultResourceLoader {
     private ResoCache resoCache = ResoCache.getResoCache();
 
     public boolean loadNew() {
-        String path = getClass().getResource(ConstantsFor.USERS_TXT).getPath();
+        String path = getClass().getResource(ConstantsFor.FILEPATHSTR_USERSTXT).getPath();
         Path pathRes;
         try{
             pathRes = Paths.get(path).toRealPath();

@@ -64,14 +64,14 @@ public class AnketaKonfeta {
     public void sendKonfeta() {
         List<String> emailsList = new ArrayList<>();
         MessageToUser messageToUser = new ESender(emailsList);
-        emailsList.add(ConstantsFor.GMAIL_COM);
+        emailsList.add(ConstantsFor.EADDR_143500GMAILCOM);
         try {
             if (this.userMail.isEmpty()) {
                 emailsList.add("ikudryashov@velokmfood.ru");
             } else {
                 emailsList.add(userMail);
             }
-            AppComponents.getLogger().info(toString());
+            AppComponents.getLogger(AnketaKonfeta.class.getSimpleName()).info(toString());
         } catch (NullPointerException e) {
             messageToUser.errorAlert(this.getClass().getSimpleName(), "sendKonfeta", e.getMessage() + " in 64 ");
         }

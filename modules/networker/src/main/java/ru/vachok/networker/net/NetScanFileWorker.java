@@ -5,9 +5,11 @@ import org.slf4j.Logger;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import ru.vachok.messenger.MessageCons;
+import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.enums.ConstantsNet;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,28 +26,30 @@ import java.util.Objects;
 @Component
 class NetScanFileWorker {
 
-    private static final Logger LOGGER = AppComponents.getLogger();
+    private static final Logger LOGGER = AppComponents.getLogger(NetScanFileWorker.class.getSimpleName());
 
     private static NetScanFileWorker ourInst = new NetScanFileWorker();
+
+    private static MessageToUser messageToUser = new MessageCons();
 
     private long lastStamp = System.currentTimeMillis();
 
     /**
      {@link DiapazonedScan#scanNew()}
      */
-    private File newLanLastScan = new File(ConstantsFor.AVAILABLE_LAST_TXT);
+    private File newLanLastScan = new File(ConstantsNet.FILENAME_AVAILABLELASTTXT);
 
     /**
      {@link DiapazonedScan#scanOldLan(long)}
      */
-    private File oldLanLastScan = new File(ConstantsFor.OLD_LAN_TXT);
+    private File oldLanLastScan = new File(ConstantsNet.FILENAME_OLDLANTXT);
 
     /**
      @param newLanLastScan {@link #newLanLastScan}
      */
     void setNewLanLastScan(File newLanLastScan) {
         this.newLanLastScan = newLanLastScan;
-        new MessageCons().infoNoTitles("newLanLastScan = [" + this.newLanLastScan.getAbsolutePath() + "]");
+        messageToUser.infoNoTitles("newLanLastScan = [" + this.newLanLastScan.getAbsolutePath() + "]");
     }
 
     /**
@@ -53,7 +57,7 @@ class NetScanFileWorker {
      */
     void setOldLanLastScan(File oldLanLastScan) {
         this.oldLanLastScan = oldLanLastScan;
-        new MessageCons().infoNoTitles("oldLanLastScan = [" + this.oldLanLastScan.getAbsolutePath() + "]");
+        messageToUser.infoNoTitles("oldLanLastScan = [" + this.oldLanLastScan.getAbsolutePath() + "]");
     }
 
     public long getLastStamp() {
@@ -75,7 +79,7 @@ class NetScanFileWorker {
         try {
             return FileSystemWorker.readFile(newLanLastScan.getAbsolutePath());
         } catch (NullPointerException e) {
-            return FileSystemWorker.readFile(ConstantsFor.AVAILABLE_LAST_TXT) + "<p>";
+            return FileSystemWorker.readFile(ConstantsNet.FILENAME_AVAILABLELASTTXT) + "<p>";
         }
     }
 
@@ -104,7 +108,7 @@ class NetScanFileWorker {
             boolean oldLanLastScanNewFile = oldLanLastScan.createNewFile();
             msg = oldLanLastScanNewFile + " " + msg;
         }
-        new MessageCons().info(msg + " " + retDeque.size(), "positions] [Returns:", "java.util.Deque<java.lang.String>");
+        messageToUser.info(msg + " " + retDeque.size(), "positions] [Returns:", "java.util.Deque<java.lang.String>");
         return retDeque;
     }
 
@@ -115,12 +119,11 @@ class NetScanFileWorker {
         try {
             return FileSystemWorker.readFile(oldLanLastScan.getAbsolutePath());
         } catch (NullPointerException ignore) {
-            return FileSystemWorker.readFile(ConstantsFor.OLD_LAN_TXT);
+            return FileSystemWorker.readFile(ConstantsNet.FILENAME_OLDLANTXT);
         }
     }
 
     private NetScanFileWorker() {
-        new MessageCons().infoNoTitles("NetScanFileWorker.NetScanFileWorker");
     }
 
     @Override

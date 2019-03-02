@@ -1,7 +1,6 @@
 package ru.vachok.networker.systray;
 
 
-import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.services.MessageLocal;
@@ -21,12 +20,14 @@ public class MessageToTray implements MessageToUser {
 
     private ActionListener aListener;
 
+    private static final SystemTrayHelper SYSTEM_TRAY_HELPER = SystemTrayHelper.getI();
+
     /**
      {@link SystemTrayHelper#getTrayIcon()}
      */
-    private TrayIcon trayIcon = SystemTrayHelper.getTrayIcon();
+    private TrayIcon trayIcon = SYSTEM_TRAY_HELPER.getTrayIcon();
 
-    private String headerMsg = ConstantsFor.APP_NAME.replace('-', ' ');
+    private String headerMsg = ConstantsFor.APPNAME_WITHMINUS.replace('-', ' ');
 
     private String titleMsg = new Date(new TimeChecker().call().getReturnTime()).toString();
 
@@ -38,12 +39,27 @@ public class MessageToTray implements MessageToUser {
         if (!ConstantsFor.IS_SYSTRAY_AVAIL) {
             throw new IllegalStateException("***System Tray not Available!***");
         }
-        else{
+    }
+
+    public MessageToTray(ActionListener aListener) throws HeadlessException, IllegalStateException {
+        if(ConstantsFor.IS_SYSTRAY_AVAIL){
             delActions();
-            this.aListener = new ActionDefault();
+            this.aListener = aListener;
+        }
+        else{
+            throw new IllegalStateException("***System Tray not Available!***");
         }
     }
 
+    @Override
+    public void error(String s) {
+        errorAlert(s);
+    }
+
+    @Override
+    public void error(String s, String s1, String s2) {
+        errorAlert(s, s1, s2);
+    }
     private void delActions() {
         if(trayIcon!=null && trayIcon.getActionListeners().length > 0){
             ActionListener[] actionListeners = trayIcon.getActionListeners();
@@ -53,17 +69,7 @@ public class MessageToTray implements MessageToUser {
             }
         }
         else{
-            new MessageCons().info(getClass().getSimpleName(), "delActions", "actionListeners.length is 0");
-        }
-    }
-
-    public MessageToTray(ActionListener aListener) throws HeadlessException, IllegalStateException {
-        if (ConstantsFor.IS_SYSTRAY_AVAIL) {
-            delActions();
-            this.aListener = aListener;
-        }
-        else{
-            throw new IllegalStateException();
+            messageToUser.info(getClass().getSimpleName(), "delActions", "actionListeners.length is 0");
         }
     }
 
@@ -77,12 +83,12 @@ public class MessageToTray implements MessageToUser {
         this.headerMsg = headerMsg;
         this.titleMsg = titleMsg;
         this.bodyMsg = bodyMsg;
-        if(SystemTray.isSupported() && trayIcon.equals(SystemTrayHelper.getTrayIcon())){
+        if(SystemTray.isSupported() && trayIcon.equals(SYSTEM_TRAY_HELPER.getTrayIcon())){
             trayIcon.addActionListener(aListener);
             trayIcon.displayMessage(headerMsg, titleMsg + " " + bodyMsg, TrayIcon.MessageType.ERROR);
         }
         else{
-            new MessageCons().errorAlert(headerMsg, titleMsg, bodyMsg);
+            messageToUser.errorAlert(headerMsg, titleMsg, bodyMsg);
         }
     }
 
@@ -91,12 +97,12 @@ public class MessageToTray implements MessageToUser {
         this.headerMsg = headerMsg;
         this.titleMsg = titleMsg;
         this.bodyMsg = bodyMsg;
-        if(SystemTray.isSupported() && SystemTrayHelper.getTrayIcon()!=null){
+        if(SystemTray.isSupported() && SYSTEM_TRAY_HELPER.getTrayIcon()!=null){
             trayIcon.addActionListener(aListener);
             trayIcon.displayMessage(headerMsg, titleMsg + " " + bodyMsg, TrayIcon.MessageType.INFO);
         }
         else{
-            new MessageCons().info(headerMsg, titleMsg, bodyMsg);
+            messageToUser.info(headerMsg, titleMsg, bodyMsg);
         }
     }
 
@@ -108,13 +114,48 @@ public class MessageToTray implements MessageToUser {
             trayIcon.addActionListener(aListener);
         }
         else{
-            new MessageCons().info(headerMsg, titleMsg, bodyMsg);
+            messageToUser.info(headerMsg, titleMsg, bodyMsg);
         }
+    }
+
+    @Override
+    public void info(String s) {
+        infoNoTitles(s);
     }
 
     @Override
     public void infoTimer(int i, String s) {
         throw new UnsupportedOperationException("Not impl to " + getClass().getSimpleName());
+    }
+
+    @Override
+    public void warn(String s, String s1, String s2) {
+        this.headerMsg = s;
+        this.titleMsg = s1;
+        this.bodyMsg = s2;
+        if(ConstantsFor.IS_SYSTRAY_AVAIL && trayIcon!=null){
+            trayIcon.addActionListener(aListener);
+            trayIcon.displayMessage(headerMsg, titleMsg + " " + bodyMsg, TrayIcon.MessageType.WARNING);
+        }
+        else{
+            messageToUser.errorAlert(headerMsg, titleMsg, bodyMsg);
+        }
+    }
+
+    @Override
+    public void warn(String s) {
+        this.bodyMsg = s;
+        warn(headerMsg, titleMsg, s);
+    }
+
+    @Override
+    public void warning(String s, String s1, String s2) {
+        warn(s, s1, s2);
+    }
+
+    @Override
+    public void warning(String s) {
+        warn(s);
     }
 
     @Override
@@ -130,7 +171,6 @@ public class MessageToTray implements MessageToUser {
         sb.append(", bodyMsg='").append(bodyMsg).append('\'');
         sb.append(", headerMsg='").append(headerMsg).append('\'');
         sb.append(", titleMsg='").append(titleMsg).append('\'');
-        sb.append(", trayIcon=").append(SystemTray.isSupported() && trayIcon.equals(SystemTrayHelper.getTrayIcon()));
         sb.append('}');
         return sb.toString();
     }

@@ -16,6 +16,7 @@ import java.util.concurrent.TimeUnit;
  Работа с календарём
 
  @since 09.12.2018 (15:26) */
+@SuppressWarnings ("SameParameterValue")
 public abstract class MyCalen {
 
     private static final String DATE_RETURNED = " date returned";
@@ -25,9 +26,9 @@ public abstract class MyCalen {
     }
 
     /**
-     {@link AppComponents#getLogger()}
+     {@link AppComponents#getLogger(String)}
      */
-    private static final Logger LOGGER = AppComponents.getLogger();
+    private static final Logger LOGGER = AppComponents.getLogger(MyCalen.class.getSimpleName());
 
     /**
      {@link TimeChecker}
@@ -44,6 +45,7 @@ public abstract class MyCalen {
     /**
      {@link TimeChecker#call()}
      */
+    @SuppressWarnings ("CanBeFinal")
     private static TimeInfo timeInfo = TIME_CHECKER.call();
 
     /**

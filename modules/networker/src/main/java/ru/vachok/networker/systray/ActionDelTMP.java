@@ -2,10 +2,10 @@ package ru.vachok.networker.systray;
 
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.accesscontrol.common.ArchivesAutoCleaner;
-import ru.vachok.networker.componentsrepo.AppComponents;
 
 import javax.swing.*;
 import java.awt.*;
@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
  @since 25.01.2019 (9:26) */
 class ActionDelTMP extends AbstractAction {
 
-    private static final Logger LOGGER = AppComponents.getLogger();
+    private static final Logger LOGGER = LoggerFactory.getLogger(ActionDelTMP.class.getSimpleName());
 
     private final ThreadPoolTaskExecutor executor;
 

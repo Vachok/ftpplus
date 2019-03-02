@@ -14,10 +14,7 @@ import ru.vachok.networker.services.MessageLocal;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
+import java.nio.file.*;
 import java.nio.file.attribute.AclEntry;
 import java.nio.file.attribute.AclFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -29,15 +26,15 @@ import java.util.List;
 public class CommonRightsChecker extends SimpleFileVisitor<Path> {
 
     /**
-     {@link AppComponents#getLogger()}
+     {@link AppComponents#getLogger(String)}
      */
-    private static final Logger LOGGER = AppComponents.getLogger();
+    private static final Logger LOGGER = AppComponents.getLogger(CommonRightsChecker.class.getSimpleName());
 
     /**
      @throws IOException deleteIfExists старые файлы.
      */
     public CommonRightsChecker() throws IOException {
-        Thread.currentThread().setName(getClass().getSimpleName());
+        AppComponents.threadConfig().thrNameSet("com.rgh");
         boolean b1 = Files.deleteIfExists(new File("common.own").toPath());
         boolean b = Files.deleteIfExists(new File("common.rgh").toPath());
         String msg = new StringBuilder()
@@ -56,14 +53,14 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> {
         try {
             String users = workPos.split(": ")[1];
             String commonRights = adSrv.checkCommonRightsForUserName(users);
-            model.addAttribute(ConstantsFor.WHOIS_STR, commonRights);
+            model.addAttribute(ConstantsFor.ATT_WHOIS, commonRights);
             model.addAttribute(ConstantsFor.ATT_TITLE, workPos);
             model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
         } catch (ArrayIndexOutOfBoundsException e) {
             new MessageLocal().errorAlert("CommonRightsChecker", "getCommonAccessRights", e.getMessage());
             FileSystemWorker.error("CommonRightsChecker.getCommonAccessRights", e);
         }
-        return ConstantsFor.MATRIX_STRING_NAME;
+        return ConstantsFor.BEANNAME_MATRIX;
     }
 
     @Override
@@ -87,12 +84,12 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> {
     }
 
     @Override
-    public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+    public FileVisitResult visitFileFailed(Path file, IOException exc) {
         return FileVisitResult.CONTINUE;
     }
 
     @Override
-    public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+    public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
         return FileVisitResult.CONTINUE;
     }
 

@@ -19,6 +19,7 @@ import javax.mail.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.event.ActionEvent;
+import java.io.IOException;
 import java.sql.*;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -57,9 +58,9 @@ public class SpeedChecker implements Callable<Long>, Runnable {
     /**
      Time as long
      <p>
-     Время из Базы. Берется из {@link AppComponents#getProps()} - {@link #PR_LASTWORKSTART}.
+     Время из Базы. Берется из {@link AppComponents#getOrSetProps()} - {@link #PR_LASTWORKSTART}.
      */
-    private Long rtLong = Long.valueOf(AppComponents.getProps().getProperty(PR_LASTWORKSTART, "2"));
+    private Long rtLong = Long.valueOf(AppComponents.getOrSetProps().getProperty(PR_LASTWORKSTART, "2"));
 
     /**
      Метрика метода.
@@ -90,29 +91,28 @@ public class SpeedChecker implements Callable<Long>, Runnable {
      */
     private void setRtLong() {
         String classMeth = "SpeedChecker.chkForLast";
-        String sql = ConstantsFor.SELECT_FROM_SPEED;
-        Properties properties = AppComponents.getProps();
-        Thread.currentThread().setName(classMeth);
+        String sql = ConstantsFor.DBQUERY_SELECTFROMSPEED;
+        Properties properties = AppComponents.getOrSetProps();
         final long stArt = System.currentTimeMillis();
         new ChkMailAndUpdateDB().run();
 
-        try (Connection connection = new AppComponents().connection(ConstantsFor.DB_PREFIX + "liferpg");
+        try (Connection connection = new AppComponents().connection(ConstantsFor.DBPREFIX + "liferpg");
              PreparedStatement p = connection.prepareStatement(sql);
              ResultSet r = p.executeQuery()) {
             while (r.next()) {
                 if (r.last()) {
-                    double timeSpend = r.getDouble(ConstantsFor.TIME_SPEND);
-                    long timeStamp = r.getTimestamp(ConstantsFor.COL_SQL_NAME_TIMESTAMP).getTime();
+                    double timeSpend = r.getDouble(ConstantsFor.DBFIELD_TIMESPEND);
+                    long timeStamp = r.getTimestamp(ConstantsFor.DBFIELD_TIMESTAMP).getTime();
                     String msg = timeSpend + " time spend;\n" + timeStamp;
                     this.rtLong = timeStamp + TimeUnit.SECONDS.toMillis(90);
                     properties.setProperty(PR_LASTWORKSTART, rtLong + "");
                     LOGGER.info(msg);
                 }
             }
-        } catch (SQLException e) {
+        }
+        catch(SQLException | IOException e){
             FileSystemWorker.error(classMeth, e);
         }
-        AppComponents.getProps(true);
         methMetr(stArt);
     }
 
@@ -128,7 +128,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
      Запуск.
      <p>
      Если прошло 20 часов, с момента {@link #rtLong} или не {@link #isWeekEnd}, запуск {@link #setRtLong()}.
-     Иначе {@link #rtLong} = {@link AppComponents#getProps()} {@link #PR_LASTWORKSTART}.
+     Иначе {@link #rtLong} = {@link AppComponents#getOrSetProps()} {@link #PR_LASTWORKSTART}.
      */
     @Override
     public void run() {
@@ -137,7 +137,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
         if (is20HRSSpend || !isWeekEnd) {
             AppComponents.threadConfig().executeAsThread(this::setRtLong);
         } else {
-            this.rtLong = Long.valueOf(AppComponents.getProps().getProperty(PR_LASTWORKSTART));
+            this.rtLong = Long.valueOf(AppComponents.getOrSetProps().getProperty(PR_LASTWORKSTART));
         }
     }
 
@@ -175,7 +175,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
             StringBuilder stringBuilder = new StringBuilder();
             String sql = "select * from speed where WeekDay = ?";
 
-            try (Connection c = new AppComponents().connection(ConstantsFor.U_0466446_LIFERPG);
+            try (Connection c = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_LIFERPG);
                  PreparedStatement p = c.prepareStatement(sql)) {
                 p.setInt(1, (LocalDate.now().getDayOfWeek().getValue() + 1));
                 try (ResultSet r = p.executeQuery()) {
@@ -199,7 +199,8 @@ public class SpeedChecker implements Callable<Long>, Runnable {
                     stringBuilder.append("AV speed at this day: ").append(avSpeed).append("\n");
                     stringBuilder.append("AV time: ").append(avTime);
                 }
-            } catch (SQLException e) {
+            }
+            catch(SQLException | IOException e){
                 new MessageLocal().errorAlert(CLASS_NAME, "todayInfo", e.getMessage());
                 FileSystemWorker.error("ChkMailAndUpdateDB.todayInfo", e);
             }
@@ -230,32 +231,33 @@ public class SpeedChecker implements Callable<Long>, Runnable {
         /**
          Проверяет базу данных.
          <p>
-         DB name - {@link ConstantsFor#U_0466446_LIFERPG} speed.
+         DB name - {@link ConstantsFor#DBBASENAME_U0466446_LIFERPG} speed.
          <p>
          <b>{@link SQLException}:</b> <br>
          {@link TForms#fromArray(java.lang.Exception, boolean)} запишем исключение в файл. <br><br>
          <b>Далее:</b><br>
          {@link #todayInfo()} вывод через {@link #LOGGER} <br>
 
-         @return {@link Map}. {@link ConstantsFor#COL_SQL_NAME_TIMESTAMP} - значения.
+         @return {@link Map}. {@link ConstantsFor#DBFIELD_TIMESTAMP} - значения.
          @see #chechMail()
          */
         private Map<String, String> checkDB() {
             Map<String, String> retMap = new HashMap<>();
-            String sql = ConstantsFor.SELECT_FROM_SPEED;
-            try (Connection defConnection = new AppComponents().connection(ConstantsFor.U_0466446_LIFERPG);
+            String sql = ConstantsFor.DBQUERY_SELECTFROMSPEED;
+            try (Connection defConnection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_LIFERPG);
                  PreparedStatement p = defConnection.prepareStatement(sql);
                  ResultSet r = p.executeQuery()) {
                 while (r.next()) {
                     String valueS = r.getInt("Road") +
                         " road, " +
                         r.getString("Speed") +
-                        " speed, " + r.getString(ConstantsFor.TIME_SPEND) + " time in min, " +
+                        " speed, " + r.getString(ConstantsFor.DBFIELD_TIMESPEND) + " time in min, " +
                         DayOfWeek.of(r.getInt("WeekDay") - 1);
-                    retMap.put(r.getTimestamp(ConstantsFor.COL_SQL_NAME_TIMESTAMP).toString(), valueS);
+                    retMap.put(r.getTimestamp(ConstantsFor.DBFIELD_TIMESTAMP).toString(), valueS);
                 }
                 retMap.put(LocalDateTime.now().toString(), "okok");
-            } catch (SQLException e) {
+            }
+            catch(SQLException | IOException e){
                 retMap.put(e.getMessage(), new TForms().fromArray(e, false));
             }
             return retMap;
@@ -264,7 +266,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
         /**
          Парсинг сообщений от бота.
          <p>
-         {@link ESender} ({@link ConstantsFor#GMAIL_COM}). <br>
+         {@link ESender} ({@link ConstantsFor#EADDR_143500GMAILCOM}). <br>
          Если тема сообщения содержит {@code speed:}, берётся дата отправки {@link Message#getSentDate()}.
          <p>
          Если {@link #writeDB(String, int, long)}, удалим сообщение {@link #delMessage(Message)}.
@@ -276,7 +278,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
          @see #chechMail()
          */
         private void parseMsg(Message m, String chDB) {
-            MessageToUser eSender = new ESender(ConstantsFor.GMAIL_COM);
+            MessageToUser eSender = new ESender(ConstantsFor.EADDR_143500GMAILCOM);
             try {
                 String subjMail = m.getSubject();
                 if (subjMail.toLowerCase().contains("speed:")) {
@@ -294,7 +296,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
                     eSender.info(ChkMailAndUpdateDB.class.getSimpleName() + " " + ConstantsFor.thisPC(), true + " sending to base",
                         todayInfoStr + "\n" + chDB);
                 } else {
-                    new MessageToTray(new ActionDefault(ConstantsFor.HTTP_LOCALHOST_8880_SLASH)).infoNoTitles("No new messages");
+                    new MessageToTray(new ActionDefault(ConstantsFor.HTTP_LOCALHOST8880SLASH)).infoNoTitles("No new messages");
                 }
             } catch (MessagingException e) {
                 eSender.errorAlert(
@@ -334,7 +336,8 @@ public class SpeedChecker implements Callable<Long>, Runnable {
                 p.executeUpdate();
                 new MessageToTray().info("DB updated", "Today is " + DayOfWeek.of(dayOfWeek), " Time spend " + timeSpend);
                 return true;
-            } catch (SQLException e) {
+            }
+            catch(SQLException | IOException e){
                 new MessageCons().errorAlert(CLASS_NAME, "writeDB", e.getMessage());
                 FileSystemWorker.error("ChkMailAndUpdateDB.writeDB", e);
                 return false;

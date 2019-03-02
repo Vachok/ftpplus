@@ -21,16 +21,19 @@ import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.MyServer;
 import ru.vachok.networker.net.WeekPCStats;
+import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
+import ru.vachok.networker.services.SpeedChecker;
 import ru.vachok.networker.systray.SystemTrayHelper;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Paths;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.TextStyle;
-import java.util.Locale;
-import java.util.Properties;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Executors;
 
 
 /**
@@ -44,38 +47,40 @@ import java.util.Properties;
 @EnableScheduling
 public class IntoApplication {
 
+    public static final Runnable INFO_MSG_RUNNABLE = () -> {
+        final ThreadPoolTaskExecutor taskExecutor = AppComponents.threadConfig().getTaskExecutor();
+        final ThreadPoolTaskScheduler taskScheduler = AppComponents.threadConfig().getTaskScheduler();
+        new MessageSwing(550, 270, 37, 26).infoTimer((int) ConstantsFor.DELAY, "\n\n\n" + taskExecutor.getThreadPoolExecutor().toString() +
+            "\n\n" + taskScheduler.getScheduledThreadPoolExecutor().toString());
+    };
+
     /**
      new {@link SpringApplication}
      */
     private static final @NotNull SpringApplication SPRING_APPLICATION = new SpringApplication();
 
     /**
-     {@link AppComponents#getProps(boolean)}
+     {@link AppComponents#getOrSetProps(boolean)}
      */
-    private static final Properties LOCAL_PROPS = AppComponents.getProps();
-
-    public static Runnable infoMsgRunnable = () -> {
-        final ThreadPoolTaskExecutor taskExecutor = AppComponents.threadConfig().getTaskExecutor();
-        final ThreadPoolTaskScheduler taskScheduler = AppComponents.threadConfig().getTaskScheduler();
-        new MessageSwing().infoTimer((int) ConstantsFor.DELAY, "ThreadPoolTaskExecutor\n" + taskExecutor.getThreadPoolExecutor().toString() +
-            "\nThreadPoolTaskScheduler " + taskScheduler.getScheduledThreadPoolExecutor().toString());
-    };
-
-    public static Runnable getInfoMsgRunnable() {
-        return infoMsgRunnable;
-    }
-
-    /**
-     {@link ConfigurableApplicationContext} = null.
-     */
-    private static @NotNull ConfigurableApplicationContext configurableApplicationContext;
+    private static final Properties LOCAL_PROPS = new Properties();
 
     /**
      {@link MessageLocal}
      */
-    private static @NotNull MessageToUser messageToUser = new MessageLocal();
+    private static @NotNull
+    final MessageToUser messageToUser = new MessageLocal();
 
-    private static ThreadPoolTaskExecutor executor = AppComponents.threadConfig().getTaskExecutor();
+    private static final ThreadPoolTaskExecutor EXECUTOR = AppComponents.threadConfig().getTaskExecutor();
+
+    /**
+     {@link ConfigurableApplicationContext} = null.
+     */
+    @SuppressWarnings ("CanBeFinal")
+    private static @NotNull ConfigurableApplicationContext configurableApplicationContext;
+
+    public static Runnable getInfoMsgRunnable() {
+        return INFO_MSG_RUNNABLE;
+    }
 
     /**
      @return {@link #configurableApplicationContext}
@@ -92,7 +97,6 @@ public class IntoApplication {
      Точка входа в Spring Boot Application
      <p>
      {@link FileSystemWorker#delFilePatterns(java.lang.String[])}. Удаление останков от предидущего запуска. <br>
-     {@link IntoApplication#beforeSt()} <br>
      {@link SpringApplication#run(java.lang.Class, java.lang.String...)}. Инициализация {@link #configurableApplicationContext}. <br>
      {@link Logger#warn(java.lang.String)} - new {@link String} {@code msg} = {@link IntoApplication#afterSt()} <br>
      Если есть аргументы - {@link #readArgs(String[])} <br>
@@ -102,13 +106,39 @@ public class IntoApplication {
      @see SystemTrayHelper
      */
     public static void main(@Nullable String[] args) {
-        FileSystemWorker.delFilePatterns(ConstantsFor.STRS_VISIT);
-        beforeSt();
+        FileSystemWorker.delFilePatterns(ConstantsFor.getStrsVisit());
+        LOCAL_PROPS.putAll(AppComponents.getOrSetProps());
+        LOCAL_PROPS.setProperty("ff", "false");
         if (args != null && args.length > 0) {
+            //noinspection NullableProblems
             readArgs(args);
+        } else {
+            beforeSt(true);
+            configurableApplicationContext.start();
+            afterSt();
         }
-        configurableApplicationContext.start();
-        afterSt();
+    }
+
+    /**
+     Запуск после старта Spring boot app <br> Usages: {@link #main(String[])}
+     <p>
+     1. {@link AppComponents#threadConfig()}. Управление запуском и трэдами. <br><br>
+     <b>Runnable</b><br>
+     2. {@link IntoApplication#getWeekPCStats()} собирает инфо о скорости в файл. Если воскресенье, запускает {@link WeekPCStats} <br><br>
+     <b>Далее:</b><br>
+     3. {@link AppComponents#threadConfig()} (4. {@link ThreadConfig#getTaskExecutor()}) - запуск <b>Runnable</b> <br>
+     5. {@link ThreadConfig#getTaskExecutor()} - запуск {@link AppInfoOnLoad}. <br><br>
+     <b>{@link Exception}:</b><br>
+     6. {@link TForms#fromArray(java.lang.Exception, boolean)} - искл. в строку. 7. {@link FileSystemWorker#recFile(java.lang.String, java.util.List)} и
+     запишем в файл.
+     */
+    private static void afterSt() {
+        @NotNull Runnable infoAndSched = new AppInfoOnLoad();
+        Runnable mySrv = MyServer.getI();
+        EXECUTOR.submit(infoAndSched);
+        EXECUTOR.submit(mySrv);
+        EXECUTOR.submit(INFO_MSG_RUNNABLE);
+        EXECUTOR.submit(IntoApplication::getWeekPCStats);
     }
 
     /**
@@ -121,16 +151,68 @@ public class IntoApplication {
 
      @param args аргументы запуска.
      */
-    private static void readArgs(@NotNull String[] args) {
+    private static void readArgs(@NotNull String... args) {
+        boolean isTray = true;
         ExitApp exitApp = new ExitApp(IntoApplication.class.getSimpleName());
-        for (@NotNull String arg : args) {
-            messageToUser.info("IntoApplication.readArgs", "arg", arg);
-            if (arg.contains(ConstantsFor.PR_TOTPC)) {
-                LOCAL_PROPS.setProperty(ConstantsFor.PR_TOTPC, arg.replaceAll(ConstantsFor.PR_TOTPC, ""));
+        List<@NotNull String> argsList = Arrays.asList(args);
+        ConcurrentMap<String, String> argsMap = new ConcurrentHashMap<>();
+
+        for (int i = 0; i < argsList.size(); i++) {
+            String key = argsList.get(i);
+            String value = "true";
+            try {
+                value = argsList.get(i + 1);
+            } catch (ArrayIndexOutOfBoundsException ignore) {
+                //
             }
-            if (arg.equalsIgnoreCase("off")) {
+            if (!value.contains("-")) {
+                argsMap.put(key, value);
+            } else {
+                if (!key.contains("-")) {
+                    argsMap.put("", "");
+                } else {
+                    argsMap.put(key, "true");
+                }
+            }
+        }
+
+        for (Map.Entry<String, String> stringStringEntry : argsMap.entrySet()) {
+            if (stringStringEntry.getKey().contains(ConstantsFor.PR_TOTPC)) {
+                LOCAL_PROPS.setProperty(ConstantsFor.PR_TOTPC, stringStringEntry.getValue());
+            }
+            if (stringStringEntry.getKey().equalsIgnoreCase("off")) {
                 AppComponents.threadConfig().executeAsThread(exitApp);
             }
+            if (stringStringEntry.getKey().contains("notray")) {
+                messageToUser.info("IntoApplication.readArgs", "key", " = " + stringStringEntry.getKey());
+                isTray = false;
+            }
+            if (stringStringEntry.getKey().contains("ff")) {
+                Map<Object, Object> objectMap = Collections.unmodifiableMap(ConstantsFor.takePr(true));
+                LOCAL_PROPS.clear();
+                LOCAL_PROPS.putAll(objectMap);
+                FileSystemWorker.copyOrDelFile(new File("ConstantsFor.properties"), ".\\ConstantsFor.bak", false);
+            }
+            if (stringStringEntry.getKey().contains("lport")) {
+                LOCAL_PROPS.setProperty("lport", stringStringEntry.getValue());
+            }
+        }
+
+        beforeSt(isTray);
+        configurableApplicationContext.start();
+        afterSt();
+    }
+
+    /**
+     Статистика по-пользователям за неделю.
+     <p>
+     Запуск new {@link SpeedChecker.ChkMailAndUpdateDB}, через {@link Executors#unconfigurableExecutorService(java.util.concurrent.ExecutorService)}
+     <p>
+     Если {@link LocalDate#getDayOfWeek()} equals {@link DayOfWeek#SUNDAY}, запуск new {@link WeekPCStats}
+     */
+    private static void getWeekPCStats() {
+        if(LocalDate.now().getDayOfWeek().equals(DayOfWeek.SUNDAY)){
+            AppComponents.threadConfig().executeAsThread(new WeekPCStats());
         }
     }
 
@@ -138,57 +220,39 @@ public class IntoApplication {
      Запуск до старта Spring boot app <br> Usages: {@link #main(String[])}
      <p>
      {@link Logger#warn(java.lang.String)} - день недели. <br>
-     Если {@link ConstantsFor#thisPC()} - {@link ConstantsFor#NO0027} или "home",
+     Если {@link ConstantsFor#thisPC()} - {@link ConstantsFor#HOSTNAME_NO0027} или "home",
      {@link SystemTrayHelper#addTray(java.lang.String)} "icons8-плохие-поросята-32.png".
      Else - {@link SystemTrayHelper#addTray(java.lang.String)} {@link String} null<br>
      {@link SpringApplication#setMainApplicationClass(java.lang.Class)}
      */
-    private static void beforeSt() {
+    private static void beforeSt(boolean isTrayNeed) {
+        if (isTrayNeed) {
+            trayAdd();
+        }
         @NotNull StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(LocalDate.now().getDayOfWeek().getValue());
         stringBuilder.append(" - day of week\n");
         stringBuilder.append(LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault()));
         messageToUser.info("IntoApplication.beforeSt", "stringBuilder", stringBuilder.toString());
-        if (ConstantsFor.thisPC().toLowerCase().contains(ConstantsFor.NO0027) || ConstantsFor.thisPC().toLowerCase().contains("home")) {
-            SystemTrayHelper.addTray("icons8-плохие-поросята-32.png");
-        } else {
-            SystemTrayHelper.addTray(ConstantsFor.ICON_FILE_NAME);
-        }
         SPRING_APPLICATION.setMainApplicationClass(IntoApplication.class);
         SPRING_APPLICATION.setApplicationContextClass(AppCtx.class);
         System.setProperty("encoding", "UTF8");
         FileSystemWorker.recFile("system", new TForms().fromArray(System.getProperties()));
     }
 
-    /**
-     Запуск после старта Spring boot app <br> Usages: {@link #main(String[])}
-     <p>
-     1. {@link AppComponents#threadConfig()}. Управление запуском и трэдами. <br><br>
-     <b>Runnable</b><br>
-     2. {@link AppInfoOnLoad#getWeekPCStats()} собирает инфо о скорости в файл. Если воскресенье, запускает {@link WeekPCStats} <br><br>
-     <b>Далее:</b><br>
-     3. {@link AppComponents#threadConfig()} (4. {@link ThreadConfig#getTaskExecutor()}) - запуск <b>Runnable</b> <br>
-     5. {@link ThreadConfig#getTaskExecutor()} - запуск {@link AppInfoOnLoad}. <br><br>
-     <b>{@link Exception}:</b><br>
-     6. {@link TForms#fromArray(java.lang.Exception, boolean)} - искл. в строку. 7. {@link FileSystemWorker#recFile(java.lang.String, java.util.List)} и
-     запишем в файл.
-     */
-    private static void afterSt() {
-        @NotNull Runnable infoAndSched = new AppInfoOnLoad();
-        Runnable mySrv = MyServer.getI();
-
-        executor.submit(() -> {
-            try {
-                appProperties();
-            } catch (IOException e) {
-                messageToUser.errorAlert("IntoApplication", "afterSt", e.getMessage());
-                FileSystemWorker.error("IntoApplication.afterSt", e);
+    private static void trayAdd() {
+        SystemTrayHelper systemTrayHelper = SystemTrayHelper.getI();
+        if(ConstantsFor.thisPC().toLowerCase().contains(ConstantsFor.HOSTNAME_NO0027)){
+            systemTrayHelper.addTray("icons8-плохие-поросята-32.png");
+        }
+        else{
+            if(ConstantsFor.thisPC().toLowerCase().contains("home")){
+                systemTrayHelper.addTray("icons8-house-26.png");
             }
-        });
-        executor.submit(infoAndSched);
-        executor.submit(mySrv);
-
-        new Thread(infoMsgRunnable).start();
+            else{
+                systemTrayHelper.addTray(ConstantsFor.FILENAME_ICON);
+            }
+        }
     }
 
     /**
@@ -197,30 +261,22 @@ public class IntoApplication {
      new {@link FileProps} ({@link File#getCanonicalPath()} - ""+{@code "\\modules\\networker\\src\\main\\resources\\application"}) <br>
      {@link InitProperties#getProps()}. Получаем {@code props} <br>
      Сэтаем в файл:<br>
-     {@code "build.version"} = {@link AppComponents#getProps()} {@link ConstantsFor#PR_APP_VERSION} и {@link ConstantsFor#PR_QSIZE} = {@link ConstantsFor#IPS_IN_VELKOM_VLAN} <br>
+     {@code "build.version"} = {@link AppComponents#getOrSetProps()} {@link ConstantsFor#PR_APP_VERSION} и {@link ConstantsFor#PR_QSIZE} =
+     {@link ConstantsNet#IPS_IN_VELKOM_VLAN} <br>
      {@link InitProperties#setProps(java.util.Properties)} запись {@code props} в <b>application.LOCAL_PROPS</b>
      <p>
-     new {@link DBRegProperties} - {@link ConstantsFor#APP_NAME} + {@code "application"} <br>
+     new {@link DBRegProperties} - {@link ConstantsFor#APPNAME_WITHMINUS} + {@code "application"} <br>
      {@link InitProperties#delProps()}
      {@link InitProperties#setProps(java.util.Properties)} запись в БД.
      <p>
-     {@link AppComponents#getProps()} putAll - {@code props}
+     {@link AppComponents#getOrSetProps()} putAll - {@code props}
      */
-    private static void appProperties() throws IOException {
-        @Nullable String rootPathStr = Paths.get("").toFile().getCanonicalPath().toLowerCase();
-        @NotNull InitProperties initProperties = new FileProps(rootPathStr + "\\modules\\networker\\src\\main\\resources\\application");
-        Properties props = initProperties.getProps();
-        
+    private static void appProperties() {
+        Properties props = AppComponents.getOrSetProps();
         props.setProperty("build.version", LOCAL_PROPS.getProperty(ConstantsFor.PR_APP_VERSION));
-        props.setProperty(ConstantsFor.PR_QSIZE, ConstantsFor.IPS_IN_VELKOM_VLAN + "");
-
-        initProperties.setProps(props);
-        initProperties = new DBRegProperties(ConstantsFor.APP_NAME + "application");
-        initProperties.delProps();
-        initProperties.setProps(props);
-
+        props.setProperty(ConstantsFor.PR_QSIZE, ConstantsNet.IPS_IN_VELKOM_VLAN + "");
         LOCAL_PROPS.putAll(props);
-        messageToUser.info("IntoApplication.appProperties", "new TForms().fromArray(LOCAL_PROPS, false)", new TForms().fromArray(LOCAL_PROPS, false));
+        AppComponents.getOrSetProps(props);
     }
 
     @Override

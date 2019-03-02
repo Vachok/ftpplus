@@ -1,13 +1,12 @@
 package ru.vachok.networker.net;
 
 
-import org.slf4j.Logger;
-import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
+import ru.vachok.networker.systray.MessageToTray;
 
 import java.io.*;
 import java.sql.Connection;
@@ -27,14 +26,11 @@ import java.util.List;
 public class WeekPCStats implements Runnable {
 
     /**
-     {@link AppComponents#getLogger()}
-     */
-    private static final Logger LOGGER = AppComponents.getLogger();
-
-    /**
      Лист только с именами ПК
      */
     private static final List<String> PC_NAMES_IN_TABLE = new ArrayList<>();
+
+    private static MessageToUser messageToUser = new MessageToTray();
 
     /**
      {@link #getFromDB()}
@@ -42,13 +38,12 @@ public class WeekPCStats implements Runnable {
     @Override
     public void run() {
         Thread.currentThread().setName("WeekPCStats.run");
-        LOGGER.warn("WeekPCStats.run");
         final long stArt = System.currentTimeMillis();
         getFromDB();
         String tSpend = ConstantsFor.STR_SEC_SPEND;
         String msgTimeSp = MessageFormat
             .format("WeekPCStats.run method. {0}{1}", ( float ) (System.currentTimeMillis() - stArt) / 1000, tSpend);
-        LOGGER.info(msgTimeSp);
+        messageToUser.info(msgTimeSp);
     }
 
     /**
@@ -59,11 +54,10 @@ public class WeekPCStats implements Runnable {
      Usages: {@link #run()}
      */
     private void getFromDB() {
-        MessageToUser messageToUser = new MessageSwing();
         final long stArt = System.currentTimeMillis();
         String sql = "select * from pcuserauto";
         File file = new File(ConstantsNet.VELKOM_PCUSERAUTO_TXT);
-        try (Connection c = new AppComponents().connection(ConstantsFor.DB_PREFIX + ConstantsFor.STR_VELKOM);
+        try (Connection c = new AppComponents().connection(ConstantsFor.DBDASENAME_U0466446_VELKOM);
              PreparedStatement p = c.prepareStatement(sql);
              ResultSet r = p.executeQuery();
              OutputStream outputStream = new FileOutputStream(file);
@@ -86,7 +80,7 @@ public class WeekPCStats implements Runnable {
                 .append(file.getAbsolutePath())
                 .append(" ")
                 .append(( float ) file.length() / ConstantsFor.KBYTE).toString();
-            LOGGER.warn(msgTimeSp);
+            messageToUser.warn(msgTimeSp);
         }
         catch(SQLException | IOException e){
             messageToUser.infoNoTitles(e.getMessage());

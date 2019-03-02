@@ -9,6 +9,7 @@ import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.DBMessenger;
+import ru.vachok.networker.services.MessageLocal;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -34,9 +35,9 @@ public class MyServer extends Thread {
     private static final String SOURCE_CLASS = MyServer.class.getSimpleName();
 
     /**
-     {@link AppComponents#getLogger()}
+     {@link AppComponents#getLogger(String)}
      */
-    private static final Logger LOGGER = AppComponents.getLogger();
+    private static final Logger LOGGER = AppComponents.getLogger(MyServer.class.getSimpleName());
 
     /**
      <b>Single Instance</b>
@@ -46,14 +47,14 @@ public class MyServer extends Thread {
     /**
      {@link DBMessenger}
      */
-    private static final MessageToUser messageToUser = new DBMessenger();
+    private static final MessageToUser messageToUser = new MessageLocal();
 
     /**
      <b>Сокет для сервера</b>
 
-     @see ConstantsFor#LISTEN_PORT
+     @see ConstantsFor#PR_LPORT
      */
-    @SuppressWarnings("CanBeFinal")
+    @SuppressWarnings ("CanBeFinal")
     private static ServerSocket serverSocket = null;
 
     /**
@@ -79,9 +80,10 @@ public class MyServer extends Thread {
     }
 
     static {
-        try {
-            serverSocket = new ServerSocket(ConstantsFor.LISTEN_PORT);
-        } catch (IOException e) {
+        try{
+            serverSocket = new ServerSocket(ConstantsFor.PR_LPORT);
+        }
+        catch(IOException e){
             LOGGER.error(e.getMessage(), e);
         }
     }
@@ -90,7 +92,7 @@ public class MyServer extends Thread {
      {@link #myServer}
      */
     private MyServer() {
-        Thread.currentThread().setName("MyServer.MyServer");
+        AppComponents.threadConfig().thrNameSet("tport:" + ConstantsFor.PR_LPORT);
     }
 
     /**
@@ -108,7 +110,7 @@ public class MyServer extends Thread {
         PrintStream printStream = new PrintStream(socket.getOutputStream());
         InputStreamReader reader = new InputStreamReader(inputStream);
         BufferedReader bufferedReader = new BufferedReader(reader);
-        printStream.println((System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN + " min up | " + ConstantsFor.APP_NAME);
+        printStream.println((System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN + " min up | " + ConstantsFor.APPNAME_WITHMINUS);
         printStream.println(Thread.activeCount() + " active THREADS");
         printStream.println(ConstantsFor.getMemoryInfo());
         printStream.println("Press Enter or enter command:\n");
@@ -127,7 +129,7 @@ public class MyServer extends Thread {
         if(readLine.toLowerCase().contains("exit")){
             FileSystemWorker.delTemp();
             MyServer.socket.close();
-            System.exit(ConstantsFor.USER_EXIT);
+            System.exit(ConstantsFor.CODE_USEREXIT);
         }
         if(readLine.toLowerCase().contains("help")){
             MyServer.ifHelp();
@@ -144,7 +146,7 @@ public class MyServer extends Thread {
         if(readLine.equalsIgnoreCase("shutdown")){
             Runtime.getRuntime().exec(ConstantsFor.COM_SHUTDOWN_P_F);
         }
-        if(readLine.equalsIgnoreCase(ConstantsFor.STR_REBOOT)){
+        if (readLine.equalsIgnoreCase(ConstantsFor.COM_REBOOT)) {
             Runtime.getRuntime().exec("shutdown /r /f");
         }
         else{
@@ -206,11 +208,12 @@ public class MyServer extends Thread {
     private static void ifNetScan() throws IOException {
         PrintWriter printWriter = new PrintWriter(socket.getOutputStream(), true);
         NetScannerSvc i = AppComponents.netScannerSvc();
-        try {
+        try{
             String thePc = i.getThePc();
             printToSocket();
             printWriter.println(thePc);
-        } catch (Exception e) {
+        }
+        catch(Exception e){
             System.setOut(err);
             messageToUser.errorAlert(SOURCE_CLASS, e.getMessage(), new TForms().fromArray(e, false));
             socket.close();
@@ -230,19 +233,34 @@ public class MyServer extends Thread {
         PrintWriter printWriter = new PrintWriter(socket.getOutputStream(), true);
         InputStream inputStream = socket.getInputStream();
         System.setOut(new PrintStream(socket.getOutputStream()));
-        printWriter.println((float) (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN + " | " + ConstantsFor.APP_NAME);
+        printWriter.println((float) (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN + " | " + ConstantsFor.APPNAME_WITHMINUS);
         printWriter.println("NEW SOCKET: " + socket.toString());
-        while (inputStream.available() > 0) {
+        while(inputStream.available() > 0){
             byte[] bytes = new byte[3];
             int read = inputStream.read(bytes);
-            if (!Arrays.toString(bytes).contains("-1, -8, 3")) {
+            if(!Arrays.toString(bytes).contains("-1, -8, 3")){
                 printWriter.print(out);
-            } else {
+            }
+            else{
                 printWriter.println(read);
                 System.setOut(err);
                 socket.close();
                 setSocket(new Socket());
             }
+        }
+    }
+
+    /**
+     {@link #runSocket()}
+     */
+    @Override
+    public void run() {
+        try{
+            runSocket();
+        }
+        catch(IOException e){
+            messageToUser.errorAlert("MyServer", "run", e.getMessage());
+            FileSystemWorker.error("MyServer.run", e);
         }
     }
 
@@ -254,16 +272,16 @@ public class MyServer extends Thread {
      @throws IOException {@link ServerSocket} accept() , .getReuseAddress()
      */
     private static void runSocket() throws IOException {
-        while (true) {
+        while(true){
             socket = serverSocket.accept();
             accepSoc(socket);
-            if (socket.isClosed()) {
+            if(socket.isClosed()){
                 System.setOut(err);
                 String msg = serverSocket.getReuseAddress() + " getReuseAddress";
-                LOGGER.warn(msg);
+                messageToUser.warn(msg);
                 break;
             }
-            if (!socket.isConnected()) {
+            if(!socket.isConnected()){
                 System.setOut(err);
             }
         }
@@ -279,32 +297,21 @@ public class MyServer extends Thread {
     private static void accepSoc(Socket socket) {
         StringBuilder f = new StringBuilder();
 
-        try (Scanner scanner = new Scanner(System.in);
-             PrintWriter printWriter = new PrintWriter(socket.getOutputStream(), true)) {
+        try(Scanner scanner = new Scanner(System.in);
+            PrintWriter printWriter = new PrintWriter(socket.getOutputStream(), true)){
             System.setOut(new PrintStream(socket.getOutputStream()));
             f.append("\n\n")
                 .append(( float ) (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / 60).append(" APP RUNNING \n");
             printWriter.println(f.toString());
-            if (scanner.hasNext()) {
-                while (socket.isConnected()) {
+            if(scanner.hasNext()){
+                while(socket.isConnected()){
                     printWriter.print(out);
                 }
             }
-        } catch (IOException e) {
+        }
+        catch(IOException e){
             messageToUser.errorAlert("MyServer", "accepSoc", e.getMessage());
             FileSystemWorker.error("MyServer.accepSoc", e);
-        }
-    }
-
-    /**
-     {@link #runSocket()}
-     */
-    @Override
-    public void run() {
-        try {
-            runSocket();
-        } catch (IOException e) {
-            LOGGER.error(e.getMessage(), e);
         }
     }
 

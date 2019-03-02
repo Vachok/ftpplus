@@ -1,6 +1,7 @@
 package ru.vachok.networker.componentsrepo;
 
 
+import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
@@ -8,22 +9,27 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Scope;
+import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.SshActs;
+import ru.vachok.networker.accesscontrol.TemporaryFullInternet;
 import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.config.ThreadConfig;
+import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetPinger;
 import ru.vachok.networker.net.NetScannerSvc;
+import ru.vachok.networker.net.enums.ConstantsNet;
+import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.SimpleCalculator;
+import ru.vachok.networker.systray.MessageToTray;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.File;
+import java.io.*;
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentMap;
 
@@ -42,18 +48,80 @@ public class AppComponents {
      */
     private static final String STR_VISITOR = "visitor";
 
+    @Bean
+    public TemporaryFullInternet temporaryFullInternet() {
+        TemporaryFullInternet temporaryFullInternet = new TemporaryFullInternet();
+        messageToUser.info("AppComponents.temporaryFullInternet", "temporaryFullInternet.hashCode()", " = " + temporaryFullInternet.hashCode());
+        return temporaryFullInternet;
+    }
+
+    private static MessageToUser messageToUser = new MessageLocal();
+
+    @Bean
+    @Scope(ConstantsFor.SINGLETON)
+    public static Properties getOrSetProps() {
+        return getOrSetProps(false);
+    }
+
+    @Bean
+    public static Logger getLogger(String className) {
+        return LoggerFactory.getLogger(className);
+    }
+
+    @Bean
+    public Connection connection(String dbName) throws IOException {
+        OutputStream outputStream = new FileOutputStream("AppComponents.connection.log");
+        PrintWriter printWriter = new PrintWriter(outputStream, true);
+        try {
+            MysqlDataSource dataSource = new RegRuMysql().getDataSourceSchema(dbName);
+            dataSource.setAutoReconnect(true);
+            dataSource.setLogWriter(printWriter);
+            return dataSource.getConnection();
+        } catch (Exception e) {
+            messageToUser.errorAlert("AppComponents", ConstantsNet.STR_CONNECTION, e.getMessage());
+            FileSystemWorker.error("AppComponents.connection", e);
+            printWriter.close();
+            outputStream.close();
+            return new RegRuMysql().getDefaultConnection(dbName);
+        }
+    }
+
     /**
-     @return {@link LoggerFactory}
+     @return new {@link SimpleCalculator}
+     */
+    @Bean(ConstantsFor.BEANNAME_CALCULATOR)
+    public SimpleCalculator simpleCalculator() {
+        return new SimpleCalculator();
+    }
+
+    /**
+     @return new {@link SshActs}
      */
     @Bean
-    public static Logger getLogger() {
-        return LoggerFactory.getLogger(ConstantsFor.APP_NAME);
+    public SshActs sshActs() {
+        return new SshActs();
+    }
+
+    @Bean(STR_VISITOR)
+    public Visitor visitor(HttpServletRequest request) {
+        return new Visitor(request);
     }
 
     @Bean
     @Scope(ConstantsFor.SINGLETON)
-    public static Properties getProps() {
-        return getProps(false);
+    public static Properties getOrSetProps(boolean saveThis) {
+        messageToUser = new MessageToTray();
+        Properties properties = ConstantsFor.getAppProps();
+        if (saveThis) {
+            boolean isSaved = ConstantsFor.saveAppProps(properties);
+            if (isSaved) {
+                messageToUser.info("AppComponents.getOrSetProps ", " isSaved", " = " + true);
+            } else {
+                messageToUser.warn("AppComponents.getOrSetProps ", " isSaved", " = " + false);
+            }
+        }
+        messageToUser = new MessageLocal();
+        return properties;
     }
 
     @Bean
@@ -73,6 +141,7 @@ public class AppComponents {
     public static NetScannerSvc netScannerSvc() {
         return NetScannerSvc.getInst();
     }
+
     /**
      @return {@link #lastNetScan()}.getNetWork
      */
@@ -86,6 +155,7 @@ public class AppComponents {
      @return {@link LastNetScan#getLastNetScan()}
      */
     @Bean
+    @Scope(ConstantsFor.SINGLETON)
     public static LastNetScan lastNetScan() {
         return LastNetScan.getLastNetScan();
     }
@@ -98,7 +168,7 @@ public class AppComponents {
     public static VersionInfo versionInfo() {
         VersionInfo versionInfo = new VersionInfo();
         boolean isBUGged = false;
-        if(new File("bugged").exists()){
+        if (new File("bugged").exists()) {
             isBUGged = true;
         }
         versionInfo.setBUGged(isBUGged);
@@ -117,18 +187,12 @@ public class AppComponents {
         return new ADSrv(adUser, adComputer);
     }
 
-    @Bean
-    @Scope(ConstantsFor.SINGLETON)
-    public static Properties getProps(boolean saveThis) {
-        Properties properties = ConstantsFor.getAppProps();
-        if (saveThis) {
-            ConstantsFor.saveAppProps(properties);
-        }
-        return properties;
-    }
-
     public static Visitor thisVisit(String sessionID) throws NullPointerException, NoSuchBeanDefinitionException {
         return (Visitor) configurableApplicationContext().getBean(sessionID);
+    }
+
+    public static boolean getOrSetProps(Properties localProps) {
+        return ConstantsFor.saveAppProps(localProps);
     }
 
     @Bean
@@ -137,39 +201,11 @@ public class AppComponents {
         return getConfigurableApplicationContext();
     }
 
-    @Bean
-    public Connection connection(String dbName) throws SQLException {
-        Connection connection = new RegRuMysql().getDefaultConnection(dbName);
-        return connection;
-    }
-
-    /**
-     @return new {@link SimpleCalculator}
-     */
-    @Bean(ConstantsFor.STR_CALCULATOR)
-    public SimpleCalculator simpleCalculator() {
-        return new SimpleCalculator();
-    }
-
-    /**
-     @return new {@link SshActs}
-     */
-    @Bean
-    @Scope(ConstantsFor.SINGLETON)
-    public SshActs sshActs() {
-        return new SshActs();
-    }
-
-    @Bean(STR_VISITOR)
-    public Visitor visitor(HttpServletRequest request) {
-        return new Visitor(request);
-    }
-
     @Override
     public String toString() {
         ConfigurableApplicationContext context = getConfigurableApplicationContext();
         final StringBuilder sb = new StringBuilder("AppComponents{");
-        sb.append("Beans=").append(new TForms().fromArray(context.getBeanDefinitionNames(), false)).append("\n");
+        sb.append("Beans=").append(new TForms().fromArray(context.getBeanDefinitionNames(), true)).append("\n");
         sb.append(context);
         sb.append('}');
         return sb.toString();

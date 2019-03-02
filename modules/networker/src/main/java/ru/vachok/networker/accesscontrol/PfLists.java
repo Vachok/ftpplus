@@ -1,15 +1,13 @@
 package ru.vachok.networker.accesscontrol;
 
 
-import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import ru.vachok.networker.ConstantsFor;
 
 
 /**
  @since 10.09.2018 (11:35) */
-@Component(ConstantsFor.PFLISTS)
-@Scope(ConstantsFor.SINGLETON)
+@Component(ConstantsFor.BEANNAME_PFLISTS)
 public class PfLists {
 
     private String vipNet;
@@ -23,6 +21,16 @@ public class PfLists {
     private String pfRules;
 
     private String pfNat;
+
+    private String inetLog;
+
+    public String getInetLog() {
+        return inetLog;
+    }
+
+    public void setInetLog(String inetLog) {
+        this.inetLog = inetLog;
+    }
 
     private long gitStatsUpdatedStampLong;
 
@@ -103,10 +111,47 @@ public class PfLists {
     }
 
     @Override
+    public int hashCode() {
+        int result = getVipNet()!=null? getVipNet().hashCode(): 0;
+        result = 31 * result + (getStdSquid()!=null? getStdSquid().hashCode(): 0);
+        result = 31 * result + (getLimitSquid()!=null? getLimitSquid().hashCode(): 0);
+        result = 31 * result + (getFullSquid()!=null? getFullSquid().hashCode(): 0);
+        result = 31 * result + ( int ) (getTimeStampToNextUpdLong() ^ (getTimeStampToNextUpdLong() >>> 32));
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if(this==o){
+            return true;
+        }
+        if(o==null || getClass()!=o.getClass()){
+            return false;
+        }
+
+        PfLists pfLists = ( PfLists ) o;
+
+        if(getTimeStampToNextUpdLong()!=pfLists.getTimeStampToNextUpdLong()){
+            return false;
+        }
+        if(getVipNet()!=null? !getVipNet().equals(pfLists.getVipNet()): pfLists.getVipNet()!=null){
+            return false;
+        }
+        if(getStdSquid()!=null? !getStdSquid().equals(pfLists.getStdSquid()): pfLists.getStdSquid()!=null){
+            return false;
+        }
+        if(getLimitSquid()!=null? !getLimitSquid().equals(pfLists.getLimitSquid()): pfLists.getLimitSquid()!=null){
+            return false;
+        }
+        return getFullSquid() != null ? getFullSquid().equals(pfLists.getFullSquid()) : pfLists.getFullSquid() == null;
+    }
+
+    @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("PfLists{");
         sb.append("fullSquid='").append(fullSquid).append('\'');
         sb.append(", gitStatsUpdatedStampLong=").append(gitStatsUpdatedStampLong);
+        sb.append(", inetLog='").append(inetLog).append('\'');
         sb.append(", limitSquid='").append(limitSquid).append('\'');
         sb.append(", pfNat='").append(pfNat).append('\'');
         sb.append(", pfRules='").append(pfRules).append('\'');

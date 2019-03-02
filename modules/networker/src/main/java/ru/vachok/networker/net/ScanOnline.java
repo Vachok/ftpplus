@@ -8,6 +8,7 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.systray.MessageToTray;
 
@@ -50,6 +51,7 @@ public class ScanOnline implements Runnable {
     }
 
     private void offlineNotEmptyActions() {
+        AppComponents.threadConfig().thrNameSet("scOffNE");
         SwitchesAvailability switchesAvailability = new SwitchesAvailability();
         switchesAvailability.run();
         Set<String> availabilityOkIP = switchesAvailability.getOkIP();
@@ -63,7 +65,7 @@ public class ScanOnline implements Runnable {
             pingAddr(inetAddress);
         }
         messageToUser.info(getClass().getSimpleName(), ConstantsFor.getUpTime(), onList.size() +
-            " online. Scanned: " + ConstantsFor.ALL_DEVICES.size() + "/" + ConstantsFor.IPS_IN_VELKOM_VLAN);
+            " online. Scanned: " + ConstantsNet.getAllDevices().size() + "/" + ConstantsNet.IPS_IN_VELKOM_VLAN);
         new MessageLocal().warning(NET_LIST_KEEPER.getOffLines().size() + " off; " + NET_LIST_KEEPER.getOnLinesResolve().size() + " on");
     }
 

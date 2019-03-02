@@ -17,7 +17,7 @@ public class SimpleCalculator {
 
     private String query;
 
-    private static final Properties PROPS = AppComponents.getProps();
+    private static final Properties PROPS = AppComponents.getOrSetProps();
 
     public String getQuery() {
         return query;
@@ -34,14 +34,15 @@ public class SimpleCalculator {
         boolean setTo = query.toLowerCase().contains("s");
         if(setTo){
             query = query.replaceFirst("calctimes: ", "");
-        }
-        else{
+        } else if (query.contains("calc")) {
             query = query.replaceFirst("calctime: ", "");
+        } else {
+            query = query.replaceFirst("t:", "");
         }
         Calendar.Builder builder = new Calendar.Builder();
         try{
             String[] stringsDate = query.split("-");
-            builder = parseInput(stringsDate, builder);
+            parseInput(stringsDate, builder);
             if(setTo){
                 setToDB(builder.build().getTimeInMillis());
             }
@@ -87,4 +88,11 @@ public class SimpleCalculator {
         return resultDouble;
     }
 
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("SimpleCalculator{");
+        sb.append("query='").append(query).append('\'');
+        sb.append('}');
+        return sb.toString();
+    }
 }

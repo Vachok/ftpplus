@@ -7,6 +7,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.enums.ConstantsNet;
 
 import java.io.*;
 import java.time.LocalDateTime;
@@ -90,8 +91,13 @@ public class ExitApp implements Runnable {
 
     public void reloadCTX() {
         ThreadConfig threadConfig = AppComponents.threadConfig();
-        getConfigurableApplicationContext().close();
-        threadConfig.killAll();
+        threadConfig.getTaskScheduler().getScheduledThreadPoolExecutor().shutdown();
+        threadConfig.getTaskExecutor().getThreadPoolExecutor().shutdown();
+        List<Runnable> runnableList = threadConfig.getTaskScheduler().getScheduledThreadPoolExecutor().shutdownNow();
+        runnableList.clear();
+        runnableList = threadConfig.getTaskExecutor().getThreadPoolExecutor().shutdownNow();
+        runnableList.clear();
+        getConfigurableApplicationContext().refresh();
     }
 
     /**
@@ -102,9 +108,9 @@ public class ExitApp implements Runnable {
     @SuppressWarnings({"HardCodedStringLiteral", "FeatureEnvy"})
     private void copyAvail() {
         File appLog = new File("g:\\My_Proj\\FtpClientPlus\\modules\\networker\\app.log");
-        FileSystemWorker.copyOrDelFile(new File(ConstantsFor.AVAILABLE_LAST_TXT), new StringBuilder().append(".\\lan\\vlans200").append(System.currentTimeMillis() / 1000).append(".txt").toString(),
+        FileSystemWorker.copyOrDelFile(new File(ConstantsNet.FILENAME_AVAILABLELASTTXT), new StringBuilder().append(".\\lan\\vlans200").append(System.currentTimeMillis() / 1000).append(".txt").toString(),
             true);
-        FileSystemWorker.copyOrDelFile(new File(ConstantsFor.OLD_LAN_TXT), new StringBuilder().append(".\\lan\\old_lan_").append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
+        FileSystemWorker.copyOrDelFile(new File(ConstantsNet.FILENAME_OLDLANTXT), new StringBuilder().append(".\\lan\\old_lan_").append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
         FileSystemWorker.copyOrDelFile(new File("ping.tv"), ".\\lan\\tv_" + System.currentTimeMillis() / 1000 + ".ping", true);
         if (appLog.exists() && appLog.canRead()) {
             FileSystemWorker.copyOrDelFile(appLog, "\\\\10.10.111.1\\Torrents-FTP\\app.log", false);
@@ -156,7 +162,6 @@ public class ExitApp implements Runnable {
         stringList.add("exit at " + LocalDateTime.now().toString() + ConstantsFor.getUpTime());
         FileSystemWorker.recFile("exit.last", stringList);
         FileSystemWorker.delTemp();
-
         getConfigurableApplicationContext().close();
 
         AppComponents.threadConfig().killAll();
@@ -170,9 +175,8 @@ public class ExitApp implements Runnable {
     @Override
     public void run() {
         Thread.currentThread().setName(ExitApp.EXIT_APP_RUN);
-        LOGGER.warn(reasonExit);
         stringList.add(reasonExit);
-        AppComponents.getProps(true);
+        AppComponents.getOrSetProps(true);
         copyAvail();
     }
 }

@@ -34,7 +34,7 @@ public class ResoCache implements org.springframework.core.io.Resource {
 
     private List<ResoCache> resources = new ArrayList<>();
 
-    private String fileName = ConstantsFor.APP_NAME + new SecureRandom().nextInt(Year.now().getValue()) + ".res";
+    private String fileName = ConstantsFor.APPNAME_WITHMINUS + new SecureRandom().nextInt(Year.now().getValue()) + ".res";
 
     private File file = new File(fileName);
 

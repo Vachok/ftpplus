@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.net.enums.ConstantsNet;
 
 import java.io.*;
 import java.nio.file.*;
@@ -23,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class CommonScan2YOlder extends SimpleFileVisitor<Path> implements Callable<String> {
 
-    private static final Logger LOGGER = AppComponents.getLogger();
+    private static final Logger LOGGER = AppComponents.getLogger(CommonScan2YOlder.class.getSimpleName());
 
     private PrintWriter printWriter;
 
@@ -45,7 +46,7 @@ public class CommonScan2YOlder extends SimpleFileVisitor<Path> implements Callab
         } catch (IOException e) {
             LOGGER.warn(e.getMessage(), e);
         }
-        Thread.currentThread().setName(getClass().getSimpleName());
+        AppComponents.threadConfig().thrNameSet("2YOld");
     }
 
     CommonScan2YOlder(String fileName) {
@@ -80,7 +81,7 @@ public class CommonScan2YOlder extends SimpleFileVisitor<Path> implements Callab
     }
 
     /**
-     @return new {@link CommonScan2YOlder}
+     @return new instance
      */
     @Bean
     @Scope (ConstantsFor.SINGLETON)
@@ -108,12 +109,15 @@ public class CommonScan2YOlder extends SimpleFileVisitor<Path> implements Callab
         }
     }
 
-    @Override
-    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-        this.dirsCounter = dirsCounter + 1;
-        String toString = dirsCounter + " dirs";
-        LOGGER.info(toString);
-        return FileVisitResult.CONTINUE;
+    /**
+     Usages: {@link #visitFile(Path, BasicFileAttributes)} <br> Uses: - <br>
+
+     @param file {@link Path} to file
+     @return file contains(".eatmeat.ru"), contains(".log")
+     */
+    private boolean tempFile(Path file) {
+        return file.toString().toLowerCase().contains(ConstantsNet.DOMAIN_EATMEATRU) ||
+            file.toString().toLowerCase().contains(".log");
     }
 
     @Override
@@ -154,24 +158,21 @@ public class CommonScan2YOlder extends SimpleFileVisitor<Path> implements Callab
                 .size() > ConstantsFor.MBYTE * 2;
     }
 
-    /**
-     Usages: {@link #visitFile(Path, BasicFileAttributes)} <br> Uses: - <br>
-
-     @param file {@link Path} to file
-     @return file contains(".eatmeat.ru"), contains(".log")
-     */
-    private boolean tempFile(Path file) {
-        return file.toString().toLowerCase().contains(ConstantsFor.EATMEAT_RU) ||
-            file.toString().toLowerCase().contains(".log");
-    }
-
     @Override
-    public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
+        this.dirsCounter = dirsCounter + 1;
+        String toString = dirsCounter + " dirs";
+        LOGGER.info(toString);
         return FileVisitResult.CONTINUE;
     }
 
     @Override
-    public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+    public FileVisitResult visitFileFailed(Path file, IOException exc) {
+        return FileVisitResult.CONTINUE;
+    }
+
+    @Override
+    public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
         return FileVisitResult.CONTINUE;
     }
 }

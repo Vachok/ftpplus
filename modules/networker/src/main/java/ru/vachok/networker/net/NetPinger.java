@@ -9,6 +9,7 @@ import ru.vachok.messenger.email.ESender;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
@@ -30,6 +31,7 @@ import java.util.stream.Stream;
  Список адресов загружается как текстовый файл, который читаем построчно.
 
  @since 08.02.2019 (9:34) */
+@SuppressWarnings("unused")
 @Service("netPinger")
 public class NetPinger implements Runnable, Pinger {
 
@@ -46,18 +48,18 @@ public class NetPinger implements Runnable, Pinger {
     /**
      Таймаут метода {@link #pingSW()}.
      <p>
-     Берётся из {@link AppComponents#getProps()}. В <b>миллисекундах</b>. По-умолчанию 20 мсек.
+     Берётся из {@link AppComponents#getOrSetProps()}. В <b>миллисекундах</b>. По-умолчанию 20 мсек.
 
      @see ConstantsNet#PROP_PINGSLEEP
      */
-    private long pingSleepMsec = Long.parseLong(AppComponents.getProps().getProperty(ConstantsNet.PROP_PINGSLEEP, "20"));
+    private long pingSleepMsec = Long.parseLong(AppComponents.getOrSetProps().getProperty(ConstantsNet.PROP_PINGSLEEP, "20"));
 
     /**
      Лист {@link InetAddress}.
      <p>
      Адреса, для пингера из {@link #multipartFile}
      */
-    private List<InetAddress> ipAsList = new ArrayList<>();
+    private final List<InetAddress> ipAsList = new ArrayList<>();
 
     /**
      {@link MessageLocal}. Вывод сообщений
@@ -81,7 +83,7 @@ public class NetPinger implements Runnable, Pinger {
      <p>
      {@link String} - 1 результат.
      */
-    private List<String> resList = new ArrayList<>();
+    private final List<String> resList = new ArrayList<>();
 
     /**
      Время до конца работы.
@@ -133,8 +135,9 @@ public class NetPinger implements Runnable, Pinger {
      {@link InetAddress#isReachable(int)}) добавляется в {@link #resList}.
      */
     private void pingSW() {
-        final Properties properties = AppComponents.getProps();
-        properties.setProperty(ConstantsNet.PROP_PINGSLEEP, pingSleepMsec + "");
+        final Properties properties = AppComponents.getOrSetProps();
+        this.pingSleepMsec = Long.parseLong(properties.getProperty(ConstantsNet.PROP_PINGSLEEP, String.valueOf(pingSleepMsec)));
+
         for (InetAddress inetAddress : ipAsList) {
             try {
                 resList.add(inetAddress.toString() + " is " + inetAddress.isReachable(ConstantsFor.TIMEOUT_650));
@@ -176,7 +179,7 @@ public class NetPinger implements Runnable, Pinger {
      (уникальный элемент из {@link #resList}).
      <p>
      Записать результат в файл {@link FileSystemWorker#recFile(java.lang.String, java.util.List)}. Файл - {@link ConstantsNet#PINGRESULT_LOG}. <br> Если пингер работал 3 и более минут,
-     отправить отчёт на почту {@link ConstantsFor#GMAIL_COM} ({@link ESender#sendM(java.util.List, java.lang.String, java.lang.String)}) <br>
+     отправить отчёт на почту {@link ConstantsFor#EADDR_143500GMAILCOM} ({@link ESender#sendM(java.util.List, java.lang.String, java.lang.String)}) <br>
 
      @param userIn кол-во минут в мсек, которые пингер работал.
      */
@@ -192,7 +195,7 @@ public class NetPinger implements Runnable, Pinger {
         pingsList.add(((float) TimeUnit.MILLISECONDS.toMinutes(userIn) / ConstantsFor.ONE_HOUR_IN_MIN) + " hours spend");
         if (userIn >= TimeUnit.MINUTES.toMillis(3)) {
             try {
-                ESender.sendM(Collections.singletonList(ConstantsFor.GMAIL_COM), getClass().getSimpleName(), new TForms().fromArray(pingsList, false));
+                ESender.sendM(Collections.singletonList(ConstantsFor.EADDR_143500GMAILCOM), getClass().getSimpleName(), new TForms().fromArray(pingsList, false));
             } catch (Exception e) {
                 FileSystemWorker.error("NetPinger.parseResult", e);
             }
@@ -263,23 +266,6 @@ public class NetPinger implements Runnable, Pinger {
         return getMultipartFile() != null ? getMultipartFile().equals(netPinger.getMultipartFile()) : netPinger.getMultipartFile() == null;
     }
 
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("NetPinger{");
-        sb.append("STR_CLASSNAME='").append(STR_CLASSNAME).append('\'');
-        sb.append(", STR_METH_PINGSW='").append(STR_METH_PINGSW).append('\'');
-        sb.append(", pingSleepMsec=").append(pingSleepMsec);
-        sb.append(", ipAsList=").append(ipAsList.size());
-        sb.append(", messageToUser=").append(messageToUser.toString());
-        sb.append(", timeToScanStr='").append(timeToScanStr).append('\'');
-        sb.append(", pingResultStr='").append(pingResultStr).append('\'');
-        sb.append(", resList=").append(resList.size());
-        sb.append(", timeToEndStr='").append(timeToEndStr).append('\'');
-        sb.append(", multipartFile=").append((multipartFile != null));
-        sb.append('}');
-        return sb.toString();
-    }
-
     /**
      @return {@link #timeToEndStr}
      */
@@ -310,7 +296,8 @@ public class NetPinger implements Runnable, Pinger {
      Старт.
      <p>
      Если {@link #multipartFile} не null, 1. {@link #parseFile()}. <br> 2. {@link #getTimeToScanStr()}. Парсинг строки в {@link Long}. <br> 3. Пока {@link System#currentTimeMillis()} меньше
-     чем время старта ({@code final long startSt}), запускать {@link #pingSW()}. Устанавливаем {@link Thread#setName(java.lang.String)} - {@link ConstantsFor#getUpTime()}.<br> 4. {@link
+     чем время старта ({@code final long startSt}), запускать {@link #pingSW()}. Устанавливаем {@link ThreadConfig#thrNameSet(String)} -
+     {@link ConstantsFor#getUpTime()}.<br> 4. {@link
     TForms#fromArray(java.util.List, boolean)}. Устанавливаем {@link #pingResultStr}, после сканирования. <br> 5. {@link #parseResult(long)}. Парсим результат пингера.
      <p>
      {@link #messageToUser}, выводит после каждого запуска {@link #pingSW()}, {@link MessageToUser#infoNoTitles(java.lang.String)}, остаток времени на пинг в минутах. <br> {@link
@@ -326,7 +313,7 @@ public class NetPinger implements Runnable, Pinger {
         long totalMillis = startSt + userIn;
         while (System.currentTimeMillis() < totalMillis) {
             pingSW();
-            Thread.currentThread().setName(ConstantsFor.getUpTime());
+            AppComponents.threadConfig().thrNameSet("NPing");
             this.timeToEndStr = getClass().getSimpleName() + " left " + (float) TimeUnit.MILLISECONDS
                 .toSeconds(totalMillis - System.currentTimeMillis()) / ConstantsFor.ONE_HOUR_IN_MIN;
             messageToUser.infoNoTitles(timeToEndStr);
@@ -336,4 +323,14 @@ public class NetPinger implements Runnable, Pinger {
         parseResult(userIn);
     }
 
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("NetPinger{");
+        sb.append("pingResultStr='").append(pingResultStr).append('\'');
+        sb.append(", pingSleepMsec=").append(pingSleepMsec);
+        sb.append(", timeToEndStr='").append(timeToEndStr).append('\'');
+        sb.append(", timeToScanStr='").append(timeToScanStr).append('\'');
+        sb.append('}');
+        return sb.toString();
+    }
 }

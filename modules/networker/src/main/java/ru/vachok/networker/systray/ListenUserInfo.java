@@ -21,14 +21,16 @@ public class ListenUserInfo implements ActionListener {
 
     private final String finalAdSrvDetails;
 
+    private static final SystemTrayHelper SYSTEM_TRAY_HELPER = SystemTrayHelper.getI();
+
     public ListenUserInfo(String queryString, String attributeValue, String finalAdSrvDetails) {
         this.queryString = queryString;
         this.attributeValue = attributeValue;
         this.finalAdSrvDetails = finalAdSrvDetails;
-        ActionListener[] actionListeners = SystemTrayHelper.getTrayIcon().getActionListeners();
+        ActionListener[] actionListeners = SYSTEM_TRAY_HELPER.getTrayIcon().getActionListeners();
         if(actionListeners.length > 0){
             for(ActionListener actionListener : actionListeners){
-                SystemTrayHelper.getTrayIcon().removeActionListener(actionListener);
+                SYSTEM_TRAY_HELPER.getTrayIcon().removeActionListener(actionListener);
             }
         }
     }

@@ -31,9 +31,9 @@ public class VersionInfo {
     private static final String DOC_URL = "<a href=\"/doc/index.html\">DOC</a>";
 
     /**
-     {@link AppComponents#getProps()}
+     {@link AppComponents#getOrSetProps()}
      */
-    private static final Properties PROPERTIES = AppComponents.getProps();
+    private static final Properties PROPERTIES = AppComponents.getOrSetProps();
 
     private static final String PR_BUILD_TIME = "buildTime";
 
@@ -115,7 +115,7 @@ public class VersionInfo {
         this.appBuild = thisPCNameStr + "." + LocalDate.now().getDayOfWeek().getValue();
         PROPERTIES.setProperty(PR_APP_BUILD, appBuild);
         if(thisPCNameStr.equalsIgnoreCase("home") ||
-            thisPCNameStr.toLowerCase().contains(ConstantsFor.NO0027)){
+            thisPCNameStr.toLowerCase().contains(ConstantsFor.HOSTNAME_NO0027)) {
             this.buildTime = new Date(ConstantsFor.START_STAMP).toString();
             PROPERTIES.setProperty(PR_BUILD_TIME, buildTime);
         }
@@ -124,7 +124,7 @@ public class VersionInfo {
         }
         catch(NullPointerException e){
             setAppVersion("Unknown ver");
-            FileSystemWorker.recFile(getClass().getSimpleName() + ConstantsFor.LOG, Collections.singletonList(new TForms().fromArray(e, false)));
+            FileSystemWorker.recFile(getClass().getSimpleName() + ConstantsFor.FILEEXT_LOG, Collections.singletonList(new TForms().fromArray(e, false)));
         }
         String msg = this.toString();
         LOGGER.info(msg);

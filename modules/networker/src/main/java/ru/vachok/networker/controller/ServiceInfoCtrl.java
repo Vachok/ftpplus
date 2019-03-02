@@ -6,14 +6,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.ExitApp;
-import ru.vachok.networker.TForms;
+import ru.vachok.networker.*;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.DiapazonedScan;
+import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MyCalen;
 import ru.vachok.networker.services.SpeedChecker;
 
@@ -23,13 +22,14 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.file.AccessDeniedException;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.time.ZoneOffset;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Stream;
+
+import static java.time.temporal.ChronoUnit.HOURS;
 
 
 /**
@@ -53,7 +53,7 @@ public class ServiceInfoCtrl {
 
     private float getLast() {
         return TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() -
-            Long.parseLong(AppComponents.getProps().getProperty("lasts", 1544816520000L + ""))) / 60f / 24f;
+            Long.parseLong(AppComponents.getOrSetProps().getProperty("lasts", 1544816520000L + ""))) / 60f / 24f;
     }
 
     private String getJREVers() {
@@ -72,8 +72,8 @@ public class ServiceInfoCtrl {
      @param response {@link HttpServletResponse}
      @return vir.html
      @throws AccessDeniedException если не {@link ConstantsFor#getPcAuth(HttpServletRequest)}
-     @throws ExecutionException    {@link #modModMaker(Model, HttpServletRequest, Visitor)}
-     @throws InterruptedException  {@link #modModMaker(Model, HttpServletRequest, Visitor)}
+     @throws ExecutionException    запуск {@link #modModMaker(Model, HttpServletRequest, Visitor)}
+     @throws InterruptedException  запуск {@link #modModMaker(Model, HttpServletRequest, Visitor)}
      */
     @GetMapping("/serviceinfo")
     public String infoMapping(Model model, HttpServletRequest request, HttpServletResponse response) throws AccessDeniedException, ExecutionException, InterruptedException {
@@ -109,16 +109,89 @@ public class ServiceInfoCtrl {
         return "ok";
     }
 
+    /**
+     Считает время до конца дня.
+     <p>
+
+     @param timeStart - время старта
+     @param amountH   - сколько часов до конца
+     @return время до 17:30 в процентах от 8:30
+     */
+    public static String percToEnd(Date timeStart, long amountH) {
+        StringBuilder stringBuilder = new StringBuilder();
+        LocalDateTime startDayTime = LocalDateTime.ofEpochSecond(timeStart.getTime() / 1000, 0, ZoneOffset.ofHours(3));
+        LocalTime startDay = startDayTime.toLocalTime();
+        LocalTime endDay = startDay.plus(amountH, HOURS);
+        final int secDayEnd = endDay.toSecondOfDay();
+        final int startSec = startDay.toSecondOfDay();
+        final int allDaySec = secDayEnd - startSec;
+        LocalTime localTime = endDay.minusHours(LocalTime.now().getHour());
+        localTime = localTime.minusMinutes(LocalTime.now().getMinute());
+        localTime = localTime.minusSeconds(LocalTime.now().getSecond());
+        boolean workHours = LocalTime.now().isAfter(startDay) && LocalTime.now().isBefore(endDay);
+        if (workHours) {
+            int toEndDaySec = localTime.toSecondOfDay();
+            int diffSec = allDaySec - toEndDaySec;
+            float percDay = ((float) toEndDaySec / (((float) allDaySec) / 100));
+            stringBuilder
+                .append("Работаем ")
+                .append(TimeUnit.SECONDS.toMinutes(diffSec));
+            stringBuilder
+                .append("(мин.). Ещё ")
+                .append(String.format("%.02f", percDay))
+                .append(" % или ");
+        } else {
+            stringBuilder.append("<b> GO HOME! </b><br>");
+        }
+        stringBuilder.append(localTime.toString());
+        return stringBuilder.toString();
+    }
+
+    private static String listFilesToReadStr() {
+        List<File> readUs = new ArrayList<>();
+        for (File f : Objects.requireNonNull(new File(".").listFiles())) {
+            if (f.getName().toLowerCase().contains(ConstantsFor.getStrsVisit()[0])) {
+                readUs.add(f);
+                f.deleteOnExit();
+            }
+        }
+        ConcurrentMap<String, String> stringStringConcurrentMap = FileSystemWorker.readFiles(readUs);
+        List<String> retListStr = new ArrayList<>();
+        stringStringConcurrentMap.forEach((String x, String y) -> {
+            try {
+                retListStr.add(y.split("userId")[0]);
+                retListStr.add("<b>" + x.split("FtpClientPlus")[1] + "</b>");
+            } catch (Exception e) {
+                retListStr.add(e.getMessage());
+            }
+        });
+        return new TForms().fromArray(retListStr, true);
+    }
+
     private void modModMaker(Model model, HttpServletRequest request, Visitor visitor) throws ExecutionException, InterruptedException {
         this.visitor = ConstantsFor.getVis(request);
         Callable<Long> callWhenCome = new SpeedChecker();
         Future<Long> whenCome = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(callWhenCome);
         Date comeD = new Date(whenCome.get());
+        String execQueue = "EXEC Q: <br>" + new TForms().fromArray(AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().getQueue(),
+            true);
+        String schQueue =
+            "SCHED Q: <br>" + new TForms().fromArray(AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor().getQueue(), true);
+        String resValue = new StringBuilder()
+            .append(MyCalen.toStringS()).append("<br><br>")
+            .append("<b><i>").append(AppComponents.versionInfo().toString()).append("</i></b><p>")
+            .append(new TForms().fromArray(ConstantsNet.getSshCheckerMap(), true)).append("<p>")
+            .append(new AppInfoOnLoad().toString()).append(" ").append(AppInfoOnLoad.class.getSimpleName()).append("<p>")
+            .append(new AppComponents().temporaryFullInternet().toString()).append(" new AppComponents().temporaryFullInternet().toString()<p>")
+            .append(new TForms().fromArray(AppComponents.getOrSetProps(), true)).append("<p>")
+            .append("<p><font color=\"grey\">").append(listFilesToReadStr()).append("</font>")
+            .toString();
+
         if (visitor.getSession().equals(request.getSession())) {
             visitor.setClickCounter(visitor.getClickCounter() + 1);
         }
         model.addAttribute(ConstantsFor.ATT_TITLE, getLast() + " (" + getLast() * ConstantsFor.ONE_DAY_HOURS + ")");
-        model.addAttribute("mail", ConstantsFor.percToEnd(comeD, 9));
+        model.addAttribute("mail", percToEnd(comeD, 9));
         model.addAttribute("ping", pingGit());
         model.addAttribute("urls", new StringBuilder()
             .append("Запущено - ")
@@ -136,8 +209,7 @@ public class ServiceInfoCtrl {
             .toString());
         model.addAttribute("request", prepareRequest(request));
         model.addAttribute(ConstantsFor.ATT_VISIT, visitor.toString());
-        model.addAttribute("res", MyCalen.toStringS() + "<br><br>" + "<b><i>" + AppComponents.versionInfo().toString() + "</i></b>" +
-            "<p><font color=\"grey\">" + listFilesToReadStr() + "</font>");
+        model.addAttribute("res", resValue);
         model.addAttribute("back", request.getHeader(ConstantsFor.ATT_REFERER.toLowerCase()));
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<br>" + getJREVers());
     }
@@ -151,7 +223,7 @@ public class ServiceInfoCtrl {
             .append("<b>").append(request.getHeader("host")).append(bBr);
         stringBuilder
             .append("CONNECTION: ")
-            .append("<b>").append(request.getHeader("connection")).append(bBr);
+            .append("<b>").append(request.getHeader(ConstantsNet.STR_CONNECTION)).append(bBr);
         stringBuilder
             .append("upgrade-insecure-requests: ".toUpperCase())
             .append("<b>").append(request.getHeader("upgrade-insecure-requests")).append(bBr);
@@ -163,7 +235,7 @@ public class ServiceInfoCtrl {
             .append("<b>").append(request.getHeader("accept")).append(bBr);
         stringBuilder
             .append("referer: ".toUpperCase())
-            .append("<b>").append(request.getHeader("referer")).append(bBr);
+            .append("<b>").append(request.getHeader(ConstantsFor.HEAD_REFERER)).append(bBr);
         stringBuilder
             .append("accept-encoding: ".toUpperCase())
             .append("<b>").append(request.getHeader("accept-encoding")).append(bBr);
@@ -182,7 +254,7 @@ public class ServiceInfoCtrl {
     private String pingGit() {
         boolean reachable = false;
         try {
-            InetAddress byName = InetAddress.getByName(ConstantsFor.SRV_GIT_EATMEAT_RU);
+            InetAddress byName = InetAddress.getByName(ConstantsFor.HOSTNAME_SRVGIT_EATMEATRU);
             reachable = byName.isReachable(1000);
         } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
@@ -197,24 +269,12 @@ public class ServiceInfoCtrl {
         }
     }
 
-    private String listFilesToReadStr() {
-        List<File> readUs = new ArrayList<>();
-        for (File f : Objects.requireNonNull(new File(".").listFiles())) {
-            if (f.getName().toLowerCase().contains(ConstantsFor.STRS_VISIT[0])) {
-                readUs.add(f);
-            }
-        }
-        ConcurrentMap<String, String> stringStringConcurrentMap = FileSystemWorker.readFiles(readUs);
-        List<String> retListStr = new ArrayList<>();
-        //noinspection OverlyLongLambda
-        stringStringConcurrentMap.forEach((String x, String y) -> {
-            try {
-                retListStr.add(y.split("userId")[0]);
-                retListStr.add("<b>" + x.split("FtpClientPlus")[1] + "</b>");
-            } catch (Exception e) {
-                retListStr.add(e.getMessage());
-            }
-        });
-        return new TForms().fromArray(retListStr, true);
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("ServiceInfoCtrl{");
+        sb.append("authReq=").append(authReq);
+        sb.append(", visitor=").append(visitor.toString());
+        sb.append('}');
+        return sb.toString();
     }
 }

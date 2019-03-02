@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
  @since 15.11.2018 (14:09) */
 public class ArchivesAutoCleaner extends SimpleFileVisitor<Path> implements Runnable {
 
-    private static final Logger LOGGER = AppComponents.getLogger();
+    private static final Logger LOGGER = AppComponents.getLogger(ArchivesAutoCleaner.class.getSimpleName());
 
     /**
      Первоначальная папка

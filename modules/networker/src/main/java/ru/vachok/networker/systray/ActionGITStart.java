@@ -23,16 +23,18 @@ class ActionGITStart extends AbstractAction {
 
     private static MessageToUser messageToUser = new MessageSwing();
 
+    private static final SystemTrayHelper SYSTEM_TRAY_HELPER = SystemTrayHelper.getI();
+
     ActionGITStart() {
-        if(ConstantsFor.IS_SYSTRAY_AVAIL && SystemTrayHelper.getTrayIcon()!=null){
-            SystemTrayHelper.delOldActions();
+        if(ConstantsFor.IS_SYSTRAY_AVAIL && SYSTEM_TRAY_HELPER.getTrayIcon()!=null){
+            SYSTEM_TRAY_HELPER.delOldActions();
         }
     }
 
     @Override
     public void actionPerformed(ActionEvent eAct) {
         Callable<String> sshStr = () -> new SSHFactory.Builder(ConstantsFor
-            .SRV_GIT, new StringBuilder()
+            .IPADDR_SRVGIT, new StringBuilder()
             .append("sudo git instaweb;")
             .append("sudo cd /usr/home/dpetrov/;")
             .append("sudo git instaweb -p 11111;")
