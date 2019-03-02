@@ -125,7 +125,6 @@ public class PfListsSrv {
         if (!new File("a161.pem").exists()) {
             throw new RejectedExecutionException("NO CERTIFICATE a161.pem...");
         }
-        pfListsInstAW.setuName(build.call());
 
         build.setCommandSSH("sudo cat /etc/pf/vipnet;sudo cat /etc/pf/24hrs;exit");
         pfListsInstAW.setVipNet(build.call());

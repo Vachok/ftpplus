@@ -8,6 +8,7 @@ import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
 
 import java.io.*;
@@ -17,7 +18,6 @@ import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 
 /**
@@ -79,14 +79,6 @@ public class SSHFactory implements Callable<String> {
         this.commandSSH = commandSSH;
     }
 
-    private String getConnectToSrv() {
-        return connectToSrv;
-    }
-
-    public void setConnectToSrv(String connectToSrv) {
-        this.connectToSrv = connectToSrv;
-    }
-
     private SSHFactory(Builder builder) {
         this.connectToSrv = builder.connectToSrv;
         this.commandSSH = builder.commandSSH;
@@ -94,45 +86,97 @@ public class SSHFactory implements Callable<String> {
         this.userName = builder.userName;
     }
 
-    private InputStream connect() throws IOException {
-        AtomicBoolean connected = new AtomicBoolean();
-        try {
+    public String call() {
+        StringBuilder stringBuilder = new StringBuilder();
+        try(InputStream connect = connect()){
+            messageToUser.info(connect().available() + "", " bytes, ssh-channel is ", respChannel.isConnected() + "");
+            byte[] bytes = new byte[ConstantsFor.KBYTE * 20];
+            while(connect.available() > 0){
+                int r = connect.read(bytes);
+                messageToUser.info(getClass().getSimpleName(), "connect read bytes", " = " + r);
+            }
+            stringBuilder.append(" <br>\n" + new String(bytes, StandardCharsets.UTF_8));
+        }
+        catch(IOException | JSchException e){
+            messageToUser.errorAlert(SOURCE_CLASS, " Exception id 123", e.getMessage() + "\n" + Arrays.toString(e.getStackTrace()));
+        }
+        return stringBuilder.toString();
+    }
+
+    private InputStream connect() throws IOException, JSchException {
+        boolean isConnected = false;
         chanRespChannel();
         respChannel.connect();
-            connected.set(respChannel.isConnected());
-        } catch (JSchException e) {
-            messageToUser.errorAlert("SSHFactory.connect", "respChannel", " = " + respChannel.isConnected());
-        }
-        if (!connected.get()) {
+        isConnected = respChannel.isConnected();
+        if(!isConnected){
             messageToUser.out("SSHFactory_67", ("Channel is NULL!" + "\n\n" + "\nSSHFactory.connect, and ID (lineNum) is 67").getBytes());
             messageToUser.info(getClass().getSimpleName(), "connect()", MessageFormat.format("{0} id 82. {1}", SOURCE_CLASS, " JSch channel==null"));
             respChannel.disconnect();
-        } else {
-            ((ChannelExec) Objects.requireNonNull(respChannel)).setErrStream(new FileOutputStream(SSH_ERR));
+        }
+        else{
+            (( ChannelExec ) Objects.requireNonNull(respChannel)).setErrStream(new FileOutputStream(SSH_ERR));
             return respChannel.getInputStream();
         }
+        respChannel.disconnect();
         throw new RejectedExecutionException("ХУЙ FOR YOU!");
     }
 
-    private void chanRespChannel() throws JSchException {
+    private void chanRespChannel() {
         JSch jSch = new JSch();
-        Session session = jSch.getSession(userName, getConnectToSrv());
+        Session session = null;
+        try{
+            session = jSch.getSession(userName, getConnectToSrv());
+        }
+        catch(JSchException e){
+            messageToUser.errorAlert("SSHFactory", "chanRespChannel", e.getMessage());
+            FileSystemWorker.error("SSHFactory.chanRespChannel", e);
+        }
         Properties properties = new Properties();
-        try {
+        try{
             properties = initProperties.getProps();
-        } catch (Exception e) {
+        }
+        catch(Exception e){
             sshException(e);
         }
-        jSch.addIdentity(pem());
+
+        try{
+            jSch.addIdentity(pem());
+        }
+        catch(JSchException e){
+            messageToUser.errorAlert("SSHFactory", "chanRespChannel", e.getMessage());
+            FileSystemWorker.error("SSHFactory.chanRespChannel", e);
+        }
+
         session.setConfig(properties);
-        session.connect(ConstantsFor.TIMEOUT_650);
+
+        try{
+            session.connect(ConstantsFor.TIMEOUT_650);
+        }
+        catch(JSchException e){
+            messageToUser.errorAlert("SSHFactory", "chanRespChannel", e.getMessage());
+            FileSystemWorker.error("SSHFactory.chanRespChannel", e);
+        }
+
         Objects.requireNonNull(session).setInputStream(System.in);
-        String format = MessageFormat.format("{0} {1} connected {2}|SSHFactory.chanRespChannel line 83",
-            session.getServerVersion(), session.getHost(), session.isConnected());
-        LOGGER.info(format);
-        this.respChannel = session.openChannel(sessionType);
-        ((ChannelExec) respChannel).setCommand(commandSSH);
+
+        try{
+            this.respChannel = session.openChannel(sessionType);
+        }
+        catch(JSchException e){
+            messageToUser.errorAlert("SSHFactory", "chanRespChannel", e.getMessage());
+            FileSystemWorker.error("SSHFactory.chanRespChannel", e);
+        }
+
+        (( ChannelExec ) respChannel).setCommand(commandSSH);
         Objects.requireNonNull(respChannel);
+    }
+
+    private String getConnectToSrv() {
+        return connectToSrv;
+    }
+
+    public void setConnectToSrv(String connectToSrv) {
+        this.connectToSrv = connectToSrv;
     }
 
     private Properties sshException(Exception e) {
@@ -146,22 +190,6 @@ public class SSHFactory implements Callable<String> {
         return pemFile.getAbsolutePath();
     }
 
-    public String call() {
-        String retString = "";
-        try (InputStream connect = connect()) {
-            byte[] bytes = new byte[ConstantsFor.KBYTE * 20];
-            while(connect.available() > 0 || respChannel.isConnected()){
-                int r = connect.read(bytes);
-                messageToUser.info(getClass().getSimpleName(), "connect read bytes", " = " + r);
-            }
-            retString = " <br>\n" + new String(bytes, StandardCharsets.UTF_8);
-            return retString;
-        } catch (IOException e) {
-            messageToUser.errorAlert(SOURCE_CLASS, " Exception id 123", e.getMessage() + "\n" + Arrays.toString(e.getStackTrace()));
-            return e.getMessage() + "<br>\n" + retString;
-        }
-    }
-
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("SSHFactory{");
@@ -173,7 +201,7 @@ public class SSHFactory implements Callable<String> {
         return sb.toString();
     }
 
-
+    /*END FOR CLASS*/
     /**
      Builder.
      <p>
@@ -181,7 +209,7 @@ public class SSHFactory implements Callable<String> {
 
      @since <a href="https://github.com/Vachok/ftpplus/commit/7bc45ca4f1968a61dfda3b009d7b0e394d573de5" target=_blank>14.11.2018 (15:25)</a>
      */
-    @SuppressWarnings("WeakerAccess")
+    @SuppressWarnings ("WeakerAccess")
     public static class Builder {
 
         private String userName = "ITDept";
@@ -193,6 +221,90 @@ public class SSHFactory implements Callable<String> {
         private String connectToSrv;
 
         private String commandSSH;
+
+        public Builder(String connectToSrv, String commandSSH) {
+            this.commandSSH = commandSSH;
+            this.connectToSrv = connectToSrv;
+        }
+
+        protected Builder() {
+
+        }
+
+        /**
+         Build ssh factory.
+
+         @return the ssh factory
+         */
+        public synchronized SSHFactory build() {
+            return new SSHFactory(this);
+        }
+
+        public Map<String, Boolean> call() {
+            Map<String, Boolean> myHashMap = new ConcurrentHashMap<>();
+            String b = new SSHFactory(this).call();
+            myHashMap.put(getCommandSSH(), b.equalsIgnoreCase("true"));
+            return myHashMap;
+        }
+
+        /**
+         Gets command ssh.
+
+         @return the command ssh
+         */
+        public String getCommandSSH() {
+            return commandSSH;
+        }
+
+        /**
+         Sets command ssh.
+
+         @param commandSSH the command ssh
+         @return the command ssh
+         */
+        public Builder setCommandSSH(String commandSSH) {
+            this.commandSSH = commandSSH;
+            return this;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = getUserName().hashCode();
+            result = 31 * result + (getPass()!=null? getPass().hashCode(): 0);
+            result = 31 * result + getSessionType().hashCode();
+            result = 31 * result + (getConnectToSrv()!=null? getConnectToSrv().hashCode(): 0);
+            result = 31 * result + (getCommandSSH()!=null? getCommandSSH().hashCode(): 0);
+            return result;
+        }
+
+        /**
+         Gets user name.
+
+         @return the user name
+         */
+        public String getUserName() {
+            return userName;
+        }
+
+        /**
+         Sets user name.
+
+         @param userName the user name
+         @return the user name
+         */
+        public Builder setUserName(String userName) {
+            this.userName = userName;
+            return this;
+        }
+
+        /**
+         Gets pass.
+
+         @return the pass
+         */
+        public String getPass() {
+            return pass;
+        }
 
         /**
          Gets session type.
@@ -235,35 +347,6 @@ public class SSHFactory implements Callable<String> {
         }
 
         /**
-         Gets user name.
-
-         @return the user name
-         */
-        public String getUserName() {
-            return userName;
-        }
-
-        /**
-         Sets user name.
-
-         @param userName the user name
-         @return the user name
-         */
-        public Builder setUserName(String userName) {
-            this.userName = userName;
-            return this;
-        }
-
-        /**
-         Gets pass.
-
-         @return the pass
-         */
-        public String getPass() {
-            return pass;
-        }
-
-        /**
          Sets pass.
 
          @param pass the pass
@@ -274,73 +357,30 @@ public class SSHFactory implements Callable<String> {
             return this;
         }
 
-        /**
-         Gets command ssh.
-
-         @return the command ssh
-         */
-        public String getCommandSSH() {
-            return commandSSH;
-        }
-
-        /**
-         Sets command ssh.
-
-         @param commandSSH the command ssh
-         @return the command ssh
-         */
-        public Builder setCommandSSH(String commandSSH) {
-            this.commandSSH = commandSSH;
-            return this;
-        }
-
-        public Builder(String connectToSrv, String commandSSH) {
-            this.commandSSH = commandSSH;
-            this.connectToSrv = connectToSrv;
-        }
-
-        protected Builder() {
-
-        }
-
-        public Map<String, Boolean> call() {
-            Map<String, Boolean> myHashMap = new ConcurrentHashMap<>();
-            String b = new SSHFactory(this).call();
-            myHashMap.put(getCommandSSH(), b.equalsIgnoreCase("true"));
-            return myHashMap;
-        }
-
-        /**
-         Build ssh factory.
-
-         @return the ssh factory
-         */
-        public synchronized SSHFactory build() {
-            return new SSHFactory(this);
-        }
-
-        @Override
-        public int hashCode() {
-            int result = getUserName().hashCode();
-            result = 31 * result + (getPass() != null ? getPass().hashCode() : 0);
-            result = 31 * result + getSessionType().hashCode();
-            result = 31 * result + (getConnectToSrv() != null ? getConnectToSrv().hashCode() : 0);
-            result = 31 * result + (getCommandSSH() != null ? getCommandSSH().hashCode() : 0);
-            return result;
-        }
-
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof Builder)) return false;
+            if(this==o){
+                return true;
+            }
+            if(!(o instanceof Builder)){
+                return false;
+            }
 
-            Builder builder = (Builder) o;
+            Builder builder = ( Builder ) o;
 
-            if (!getUserName().equals(builder.getUserName())) return false;
-            if (getPass() != null ? !getPass().equals(builder.getPass()) : builder.getPass() != null) return false;
-            if (!getSessionType().equals(builder.getSessionType())) return false;
-            if (getConnectToSrv() != null ? !getConnectToSrv().equals(builder.getConnectToSrv()) : builder.getConnectToSrv() != null) return false;
-            return getCommandSSH() != null ? getCommandSSH().equals(builder.getCommandSSH()) : builder.getCommandSSH() == null;
+            if(!getUserName().equals(builder.getUserName())){
+                return false;
+            }
+            if(getPass()!=null? !getPass().equals(builder.getPass()): builder.getPass()!=null){
+                return false;
+            }
+            if(!getSessionType().equals(builder.getSessionType())){
+                return false;
+            }
+            if(getConnectToSrv()!=null? !getConnectToSrv().equals(builder.getConnectToSrv()): builder.getConnectToSrv()!=null){
+                return false;
+            }
+            return getCommandSSH()!=null? getCommandSSH().equals(builder.getCommandSSH()): builder.getCommandSSH()==null;
         }
 
         @Override
