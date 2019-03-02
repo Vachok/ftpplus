@@ -296,6 +296,7 @@ public class AppInfoOnLoad implements Runnable {
         scheduledExecutorService.scheduleWithFixedDelay(DiapazonedScan.getInstance(), 2, THIS_DELAY, TimeUnit.MINUTES);
         scheduledExecutorService.scheduleWithFixedDelay(new NetMonitorPTV(), 0, 10, TimeUnit.SECONDS);
         scheduledExecutorService.scheduleWithFixedDelay(temporaryFullInternet, 1, ConstantsFor.DELAY, TimeUnit.MINUTES);
+        scheduledExecutorService.scheduleWithFixedDelay(IntoApplication.getInfoMsgRunnable(), 0, 1, TimeUnit.HOURS);
         String msg = new StringBuilder()
             .append(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(THIS_DELAY)))
             .append(DiapazonedScan.getInstance().getClass().getSimpleName())

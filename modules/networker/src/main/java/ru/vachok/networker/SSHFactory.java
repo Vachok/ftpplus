@@ -3,8 +3,6 @@ package ru.vachok.networker;
 
 import com.jcraft.jsch.*;
 import org.slf4j.Logger;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
@@ -184,8 +182,6 @@ public class SSHFactory implements Callable<String> {
      @since <a href="https://github.com/Vachok/ftpplus/commit/7bc45ca4f1968a61dfda3b009d7b0e394d573de5" target=_blank>14.11.2018 (15:25)</a>
      */
     @SuppressWarnings("WeakerAccess")
-    @Service("ssh")
-    @Scope(ConstantsFor.SINGLETON)
     public static class Builder {
 
         private String userName = "ITDept";

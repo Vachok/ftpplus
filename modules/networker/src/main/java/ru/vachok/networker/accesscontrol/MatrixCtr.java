@@ -89,8 +89,8 @@ public class MatrixCtr {
     @Autowired
     public MatrixCtr(VersionInfo versionInfo) {
         this.versionInfoInst = versionInfo;
-        AppComponents.threadConfig().getTaskScheduler().scheduleAtFixedRate(this::getProv,
-            TimeUnit.MINUTES.toMillis(Long.parseLong(AppComponents.getOrSetProps().getProperty("trace"))));
+        AppComponents.threadConfig().getTaskScheduler()
+            .scheduleAtFixedRate(this::getProv, TimeUnit.MINUTES.toMillis(Long.parseLong(AppComponents.getOrSetProps().getProperty("trace"))));
     }
 
     /**
@@ -307,17 +307,20 @@ public class MatrixCtr {
     private void getProv() {
         SshActs sshActs = new AppComponents().sshActs();
         String gettRoute = sshActs.providerTraceStr();
+        StringBuilder stringBuilder = new StringBuilder();
         String logStr = "LOG: ";
-        if (gettRoute.contains("91.210.85.173") && !gettRoute.contains(logStr)) {
-            gettRoute = "<h3>FORTEX</h3>";
-        } else if (gettRoute.contains("176.62.185.129") && !gettRoute.contains(logStr)) {
-            gettRoute = "<h3>ISTRANET</h3>";
-        } else if (gettRoute.contains(logStr)) {
-            gettRoute = gettRoute.split(logStr)[1];
-        } else {
-            LOGGER.warn(gettRoute);
+        if(gettRoute.contains("91.210.85.")){
+            stringBuilder.append("<h3>FORTEX</h3>");
         }
-        this.currentProvider = gettRoute;
+        else
+            if(gettRoute.contains("176.62.185.")){
+                stringBuilder.append("<h3>ISTRANET</h3>");
+        } else if (gettRoute.contains(logStr)) {
+                stringBuilder.append("<br><font color=\"gray\">").append(gettRoute.split(logStr)[1]).append("</font>");
+        } else {
+                LOGGER.warn(stringBuilder.toString());
+        }
+        this.currentProvider = stringBuilder.toString();
     }
 
     @Override

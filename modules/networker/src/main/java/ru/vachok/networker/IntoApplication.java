@@ -9,7 +9,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
@@ -24,6 +23,8 @@ import ru.vachok.networker.net.WeekPCStats;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.SpeedChecker;
+import ru.vachok.networker.systray.ActionDefault;
+import ru.vachok.networker.systray.MessageToTray;
 import ru.vachok.networker.systray.SystemTrayHelper;
 
 import java.io.File;
@@ -31,9 +32,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.TextStyle;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 
 
 /**
@@ -48,10 +47,14 @@ import java.util.concurrent.Executors;
 public class IntoApplication {
 
     public static final Runnable INFO_MSG_RUNNABLE = () -> {
-        final ThreadPoolTaskExecutor taskExecutor = AppComponents.threadConfig().getTaskExecutor();
-        final ThreadPoolTaskScheduler taskScheduler = AppComponents.threadConfig().getTaskScheduler();
-        new MessageSwing(550, 270, 37, 26).infoTimer((int) ConstantsFor.DELAY, "\n\n\n" + taskExecutor.getThreadPoolExecutor().toString() +
-            "\n\n" + taskScheduler.getScheduledThreadPoolExecutor().toString());
+        File todoFile = new File("G:\\My_Proj\\FtpClientPlus\\modules\\networker\\TODO");
+
+        if(todoFile.exists() && todoFile.lastModified() < ConstantsFor.getAtomicTime() + TimeUnit.DAYS.toMillis(1)){
+            new MessageToTray(new ActionDefault("https://github.com/Vachok/ftpplus/issues")).warn(FileSystemWorker.readFile(todoFile.getAbsolutePath()));
+        }
+        else{
+            new MessageSwing().infoTimer(20, todoFile + " is false");
+        }
     };
 
     /**

@@ -2,6 +2,7 @@ package ru.vachok.networker.accesscontrol;
 
 
 import org.springframework.stereotype.Service;
+import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
@@ -148,21 +149,22 @@ public class TemporaryFullInternet implements Runnable {
     }
 
     @Override
+    public void run() {
+        String fromArray = new TForms().fromArray(sshChecker(), false);
+        messageToUser.info(getClass().getSimpleName(), userInput, fromArray);
+        MINI_LOGGER.add("run(): " + userInput + " " + fromArray);
+        FileSystemWorker.recFile(getClass().getSimpleName() + ".mini", MINI_LOGGER.stream());
+        new MessageSwing().infoTimer(30, toString());
+    }
+
+    @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("TemporaryFullInternet{");
         sb.append("delStamp=").append(delStamp);
         sb.append(", initStamp=").append(initStamp);
         sb.append(", userInput='").append(userInput).append('\'');
         sb.append('}');
-        sb.append("<p>").append(new TForms().fromArray(MINI_LOGGER, true));
+        sb.append("<p>\n").append(new TForms().fromArray(MINI_LOGGER, true));
         return sb.toString();
-    }
-
-    @Override
-    public void run() {
-        String fromArray = new TForms().fromArray(sshChecker(), false);
-        messageToUser.info(getClass().getSimpleName(), userInput, fromArray);
-        MINI_LOGGER.add("run(): " + userInput + " " + fromArray);
-        FileSystemWorker.recFile(getClass().getSimpleName() + ".mini", MINI_LOGGER.stream());
     }
 }

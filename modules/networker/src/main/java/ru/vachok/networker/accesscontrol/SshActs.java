@@ -27,7 +27,8 @@ import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.nio.file.AccessDeniedException;
 import java.time.LocalTime;
-import java.util.*;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
@@ -186,9 +187,7 @@ public class SshActs {
         String call = sshFactory.call();
         this.tRoute = call;
         sshFactory = new SSHFactory.Builder(ConstantsFor.IPADDR_SRVNAT, "sudo cat /home/kudr/inet.log").build();
-        String[] strings = sshFactory.call().split("\n");
-        List<String> stringList = Arrays.asList(strings);
-        return call + "<br>LOG: " + stringList.get(stringList.size() - 1).split("\\Q Setting gateway0 to\\E")[0];
+        return call + "<br>LOG: " + sshFactory.call();
     }
 
     /**
