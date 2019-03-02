@@ -14,6 +14,7 @@ import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.SshActs;
+import ru.vachok.networker.accesscontrol.TemporaryFullInternet;
 import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.ad.user.ADUser;
@@ -46,6 +47,13 @@ public class AppComponents {
      <i>Boiler Plate</i>
      */
     private static final String STR_VISITOR = "visitor";
+
+    @Bean
+    public TemporaryFullInternet temporaryFullInternet() {
+        TemporaryFullInternet temporaryFullInternet = new TemporaryFullInternet();
+        messageToUser.info("AppComponents.temporaryFullInternet", "temporaryFullInternet.hashCode()", " = " + temporaryFullInternet.hashCode());
+        return temporaryFullInternet;
+    }
 
     private static MessageToUser messageToUser = new MessageLocal();
 
@@ -197,7 +205,7 @@ public class AppComponents {
     public String toString() {
         ConfigurableApplicationContext context = getConfigurableApplicationContext();
         final StringBuilder sb = new StringBuilder("AppComponents{");
-        sb.append("Beans=").append(new TForms().fromArray(context.getBeanDefinitionNames(), false)).append("\n");
+        sb.append("Beans=").append(new TForms().fromArray(context.getBeanDefinitionNames(), true)).append("\n");
         sb.append(context);
         sb.append('}');
         return sb.toString();

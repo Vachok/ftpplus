@@ -250,6 +250,13 @@ public class AppInfoOnLoad implements Runnable {
     }
 
     /**
+     {@link AppComponents#temporaryFullInternet()}
+
+     @see TemporaryFullInternet
+     */
+    private TemporaryFullInternet temporaryFullInternet = new AppComponents().temporaryFullInternet();
+
+    /**
      Немного инфомации о приложении.
 
      @param appCtx {@link ApplicationContext}
@@ -288,7 +295,8 @@ public class AppInfoOnLoad implements Runnable {
         scheduledExecutorService.scheduleWithFixedDelay(ScanOnline.getI(), 3, 1, TimeUnit.MINUTES);
         scheduledExecutorService.scheduleWithFixedDelay(DiapazonedScan.getInstance(), 2, THIS_DELAY, TimeUnit.MINUTES);
         scheduledExecutorService.scheduleWithFixedDelay(new NetMonitorPTV(), 0, 10, TimeUnit.SECONDS);
-        scheduledExecutorService.scheduleWithFixedDelay(new TemporaryFullInternet(null, null), 1, ConstantsFor.DELAY, TimeUnit.MINUTES);
+        long testDelay = getTestDelay();
+        scheduledExecutorService.scheduleWithFixedDelay(temporaryFullInternet, 1, testDelay, TimeUnit.MINUTES);
         String msg = new StringBuilder()
             .append(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(THIS_DELAY)))
             .append(DiapazonedScan.getInstance().getClass().getSimpleName())
@@ -297,10 +305,19 @@ public class AppInfoOnLoad implements Runnable {
             .toString();
         miniLogger.add(msg + ". Trying start dateSchedulers***| Local time: " + LocalTime.now().toString());
         miniLogger.add(NetMonitorPTV.class.getSimpleName() + " init delay 0, delay 10. SECONDS");
-        miniLogger.add(TemporaryFullInternet.class.getSimpleName() + " init delay 1, delay " + ConstantsFor.DELAY + ". MINUTES");
+        miniLogger.add(TemporaryFullInternet.class.getSimpleName() + " init delay 1, delay " + testDelay + ". MINUTES");
         miniLogger.add(DiapazonedScan.getInstance().getClass().getSimpleName() + " init delay 2, delay " + THIS_DELAY + ". MINUTES");
         miniLogger.add(ScanOnline.getI().getClass().getSimpleName() + " init delay 3, delay 1. MINUTES");
         dateSchedulers(scheduledExecutorService);
+    }
+
+    private long getTestDelay() {
+        if(ConstantsFor.thisPC().toLowerCase().contains("home")){
+            return 1;
+        }
+        else{
+            return ConstantsFor.DELAY;
+        }
     }
 
     /**
@@ -319,6 +336,7 @@ public class AppInfoOnLoad implements Runnable {
         final StringBuilder sb = new StringBuilder("AppInfoOnLoad{");
         sb.append("miniLogger=").append(new TForms().fromArray(miniLogger, false));
         sb.append('}');
+        FileSystemWorker.recFile(getClass().getSimpleName() + ".mini", miniLogger.stream());
         return sb.toString();
     }
 }

@@ -6,9 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.ExitApp;
-import ru.vachok.networker.TForms;
+import ru.vachok.networker.*;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
@@ -27,10 +25,7 @@ import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Stream;
 
@@ -183,12 +178,13 @@ public class ServiceInfoCtrl {
         String schQueue =
             "SCHED Q: <br>" + new TForms().fromArray(AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor().getQueue(), true);
         String resValue = new StringBuilder()
-            .append(MyCalen.toStringS()).append("<br><br>").append("<b><i>")
-            .append(AppComponents.versionInfo().toString()).append("</i></b><p>")
+            .append(MyCalen.toStringS()).append("<br><br>")
+            .append("<b><i>").append(AppComponents.versionInfo().toString()).append("</i></b><p>")
             .append(new TForms().fromArray(ConstantsNet.getSshCheckerMap(), true)).append("<p>")
+            .append(new AppInfoOnLoad().toString()).append(" ").append(AppInfoOnLoad.class.getSimpleName()).append("<p>")
+            .append(new AppComponents().temporaryFullInternet().toString()).append(" new AppComponents().temporaryFullInternet().toString()<p>")
             .append(new TForms().fromArray(AppComponents.getOrSetProps(), true)).append("<p>")
-            .append(execQueue).append("<br>").append(schQueue).append("<p><font color=\"grey\">")
-            .append(listFilesToReadStr()).append("</font>")
+            .append("<p><font color=\"grey\">").append(listFilesToReadStr()).append("</font>")
             .toString();
 
         if (visitor.getSession().equals(request.getSession())) {
