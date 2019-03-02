@@ -27,6 +27,7 @@ public class TimeChecker implements Callable<TimeInfo> {
 
     @Override
     public TimeInfo call() {
+        AppComponents.threadConfig().thrNameSet("ntp");
         return ntpCheck();
     }
 

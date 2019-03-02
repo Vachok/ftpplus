@@ -108,6 +108,7 @@ public class DiapazonedScan implements Runnable {
      @throws IllegalAccessException swF.get(swF).toString()
      */
     public static List<String> pingSwitch() throws IllegalAccessException {
+        AppComponents.threadConfig().thrNameSet("DiaPSW");
         Field[] swFields = SwitchesWiFi.class.getFields();
         List<String> swList = new ArrayList<>();
         for (Field swF : swFields) {
@@ -118,60 +119,8 @@ public class DiapazonedScan implements Runnable {
         return swList;
     }
 
-    /**
-     Добавляет в {@link ConstantsNet#getAllDevices()} адреса <i>10.200.200-217.254</i>
-     */
-    private void scanNew() {
-        final long stArt = System.currentTimeMillis();
-        final String classMeth = "DiapazonedScan.scanNew";
-        Path p = Paths.get(ROOT_PATH_STR + "\\lan\\200_" + System.currentTimeMillis() / 1000 + ".scan");
-
-        File newLanFile = new File(ConstantsNet.FILENAME_AVAILABLELASTTXT);
-
-        try (OutputStream outputStream = new FileOutputStream(newLanFile);
-             PrintWriter printWriter = new PrintWriter(outputStream, true)) {
-            writeToFileByConditions(printWriter, stArt);
-        } catch (IOException e) {
-            FileSystemWorker.error(classMeth, e);
-        }
-        boolean isFileCopied = FileSystemWorker.copyOrDelFile(newLanFile, p.toAbsolutePath().toString(), false);
-        NET_SCAN_FILE_WORKER_INST.setNewLanLastScan(p.toFile());
-
-        messageToUser.info(classMeth, "p.toAbsolutePath().toString()", p.toAbsolutePath().toString());
-        messageToUser.info(classMeth, "isFileCopied", String.valueOf(isFileCopied));
-
-        scanOldLan(stArt);
-    }
-
-    /**
-     Сканер локальной сети
-
-     @param printWriter Запись в лог
-     @param fromVlan    начало с 3 октета IP
-     @param toVlan      конец с 3 октета IP
-     @param stArt       таймер
-     @param whatVlan    первый 2 октета, с точкоё в конце.
-     @throws IOException запись в файл
-     */
-    @SuppressWarnings("MethodWithMultipleLoops")
-    private void scanLan(PrintWriter printWriter, int fromVlan, int toVlan, long stArt, String whatVlan) throws IOException {
-        String msg1 = "DiapazonedScan.scanLan " + whatVlan;
-        LOGGER.warn(msg1);
-        for (int i = fromVlan; i < toVlan; i++) {
-            StringBuilder msgBuild = new StringBuilder();
-            for (int j = 0; j < MAX_IN_VLAN_INT; j++) {
-                ipScan(whatVlan, i, j, printWriter);
-            }
-            msgBuild
-                .append(i).append(" was i. Total time: ")
-                .append(TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - stArt))
-                .append("min\n").append(ALL_DEVICES_LOCAL_DEQUE.size()).append(" ALL_DEVICES.size()");
-            String msg = msgBuild.toString();
-            LOGGER.warn(msg);
-        }
-    }
-
     private void ipScan(String whatVlan, int i, int j, PrintWriter printWriter) throws IOException {
+        AppComponents.threadConfig().thrNameSet("DIAip");
         int t = 100;
         byte[] aBytes = InetAddress.getByName(whatVlan + i + "." + j).getAddress();
         InetAddress byAddress = InetAddress.getByAddress(aBytes);
@@ -196,6 +145,60 @@ public class DiapazonedScan implements Runnable {
     }
 
     /**
+     Сканер локальной сети
+
+     @param printWriter Запись в лог
+     @param fromVlan    начало с 3 октета IP
+     @param toVlan      конец с 3 октета IP
+     @param stArt       таймер
+     @param whatVlan    первый 2 октета, с точкоё в конце.
+     @throws IOException запись в файл
+     */
+    @SuppressWarnings ("MethodWithMultipleLoops")
+    private void scanLan(PrintWriter printWriter, int fromVlan, int toVlan, long stArt, String whatVlan) throws IOException {
+        AppComponents.threadConfig().thrNameSet("DIAlan");
+        for(int i = fromVlan; i < toVlan; i++){
+            StringBuilder msgBuild = new StringBuilder();
+            for(int j = 0; j < MAX_IN_VLAN_INT; j++){
+                ipScan(whatVlan, i, j, printWriter);
+            }
+            msgBuild
+                .append(i).append(" was i. Total time: ")
+                .append(TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - stArt))
+                .append("min\n").append(ALL_DEVICES_LOCAL_DEQUE.size()).append(" ALL_DEVICES.size()");
+            String msg = msgBuild.toString();
+            LOGGER.warn(msg);
+        }
+    }
+
+    /**
+     Добавляет в {@link ConstantsNet#getAllDevices()} адреса <i>10.200.200-217.254</i>
+     */
+    private void scanNew() {
+        AppComponents.threadConfig().thrNameSet("DIAnew");
+        final long stArt = System.currentTimeMillis();
+        final String classMeth = "DiapazonedScan.scanNew";
+        Path p = Paths.get(ROOT_PATH_STR + "\\lan\\200_" + System.currentTimeMillis() / 1000 + ".scan");
+
+        File newLanFile = new File(ConstantsNet.FILENAME_AVAILABLELASTTXT);
+
+        try(OutputStream outputStream = new FileOutputStream(newLanFile);
+            PrintWriter printWriter = new PrintWriter(outputStream, true)){
+            writeToFileByConditions(printWriter, stArt);
+        }
+        catch(IOException e){
+            FileSystemWorker.error(classMeth, e);
+        }
+        boolean isFileCopied = FileSystemWorker.copyOrDelFile(newLanFile, p.toAbsolutePath().toString(), false);
+        NET_SCAN_FILE_WORKER_INST.setNewLanLastScan(p.toFile());
+
+        messageToUser.info(classMeth, "p.toAbsolutePath().toString()", p.toAbsolutePath().toString());
+        messageToUser.info(classMeth, "isFileCopied", String.valueOf(isFileCopied));
+
+        scanOldLan(stArt);
+    }
+
+    /**
      192.168.11-14.254
 
      @param stArt таймер начала общего скана
@@ -203,6 +206,7 @@ public class DiapazonedScan implements Runnable {
      */
     @SuppressWarnings("MagicNumber")
     private void scanOldLan(long stArt) {
+        AppComponents.threadConfig().thrNameSet("DIAold");
         File oldLANFile = new File(ConstantsNet.FILENAME_OLDLANTXT);
         Path p = Paths.get(new StringBuilder().append(ROOT_PATH_STR).append("\\lan\\192_").append(System.currentTimeMillis() / 1000).append(".scan").toString());
 
@@ -221,7 +225,7 @@ public class DiapazonedScan implements Runnable {
     }
 
     private void writeToFileByConditions(PrintWriter printWriter, long stArt) throws IOException {
-        LOGGER.warn("DiapazonedScan.writeToFileByConditions");
+        AppComponents.threadConfig().thrNameSet("DIAfile");
         new MessageCons().info("printWriter = [" + printWriter.checkError() + "], stArt = [" + stArt + "]", ConstantsFor.STR_RETURNS, "void");
 
         if (ALL_DEVICES_LOCAL_DEQUE.remainingCapacity() == 0) {

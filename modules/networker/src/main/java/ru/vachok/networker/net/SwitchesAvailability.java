@@ -34,6 +34,7 @@ public class SwitchesAvailability implements Runnable {
     private String okStr = null;
 
     public SwitchesAvailability() {
+        AppComponents.threadConfig().thrNameSet("SWINIT");
         List<String> stringList = new ArrayList<>();
         try {
             stringList = DiapazonedScan.pingSwitch();
@@ -54,6 +55,7 @@ public class SwitchesAvailability implements Runnable {
 
     @Override
     public void run() {
+        AppComponents.threadConfig().thrNameSet("swAv");
         try {
             makeAddrQ();
         } catch (IOException e) {
@@ -70,6 +72,7 @@ public class SwitchesAvailability implements Runnable {
      @throws IOException если хост unknown.
      */
     private void makeAddrQ() throws IOException {
+        AppComponents.threadConfig().thrNameSet("makeQu");
         Queue<InetAddress> inetAddressesQ = new ConcurrentLinkedQueue<>();
         for (String s : swAddr) {
             byte[] addressBytes = InetAddress.getByName(s).getAddress();
@@ -90,6 +93,7 @@ public class SwitchesAvailability implements Runnable {
      @param inetAddressQueue преобразованный лист строк в ИП. {@link #makeAddrQ()}
      */
     private void testAddresses(Queue<InetAddress> inetAddressQueue) throws IOException {
+        AppComponents.threadConfig().thrNameSet("badIP");
         List<String> badIP = new ArrayList<>();
         while (inetAddressQueue.iterator().hasNext()) {
             InetAddress poll = inetAddressQueue.poll();
@@ -115,7 +119,7 @@ public class SwitchesAvailability implements Runnable {
      @param badIP лист офлайн адресов
      */
     private void writeToFile(String okIP, String badIP) {
-        LOGGER.warn("SwitchesAvailability.writeToFile");
+        AppComponents.threadConfig().thrNameSet("SW.file");
         File file = new File("sw.list.log");
         try (OutputStream outputStream = new FileOutputStream(file)) {
             String toWrite = new StringBuilder()

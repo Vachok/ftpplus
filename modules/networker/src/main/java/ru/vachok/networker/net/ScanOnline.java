@@ -51,6 +51,7 @@ public class ScanOnline implements Runnable {
     }
 
     private void offlineNotEmptyActions() {
+        AppComponents.threadConfig().thrNameSet("scOffNE");
         SwitchesAvailability switchesAvailability = new SwitchesAvailability();
         switchesAvailability.run();
         Set<String> availabilityOkIP = switchesAvailability.getOkIP();
