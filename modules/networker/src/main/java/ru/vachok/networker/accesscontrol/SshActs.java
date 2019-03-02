@@ -27,10 +27,7 @@ import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.nio.file.AccessDeniedException;
 import java.time.LocalTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
@@ -540,7 +537,7 @@ public class SshActs {
 
         private boolean getAuthentic(String pcReq) {
             return
-                Stream.of("10.10.111.", "10.200.213.85", "10.200.213.200", "0:0:0:0", "10.10.111").anyMatch(pcReq::contains);
+                Stream.of("10.10.111.", "10.200.213.85", "10.200.213.200", "0:0:0:0", "172.16.200.").anyMatch(pcReq::contains);
         }
 
         /**
