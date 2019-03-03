@@ -19,6 +19,8 @@ import ru.vachok.networker.mailserver.ExSRV;
 import ru.vachok.networker.mailserver.MailRule;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.TimeChecker;
+import ru.vachok.networker.systray.ActionDefault;
+import ru.vachok.networker.systray.MessageToTray;
 
 import javax.servlet.http.HttpServletRequest;
 import java.awt.*;
@@ -368,6 +370,18 @@ public enum ConstantsFor {
      {@link MessageLocal}
      */
     private static final MessageToUser messageToUser = new MessageLocal();
+
+    public static final Runnable INFO_MSG_RUNNABLE = () -> {
+
+        File todoFile = new File("G:\\My_Proj\\FtpClientPlus\\modules\\networker\\TODO");
+        if(todoFile.exists()){
+            String readFileStr = todoFile.getAbsolutePath();
+            new MessageToTray(new ActionDefault("https://github.com/Vachok/ftpplus/issues")).warn(readFileStr);
+        }
+        else{
+            messageToUser.info(todoFile + " is false");
+        }
+    };
 
     /**
      {@link #getAtomicTime()}
