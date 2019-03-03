@@ -9,7 +9,9 @@ import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
+import sun.jvm.hotspot.utilities.UnsupportedPlatformException;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -89,6 +91,10 @@ public class SSHFactory implements Callable<String> {
         this.userName = builder.userName;
         this.classCaller = builder.classCaller;
         this.builderToStr = builder.toString();
+
+        if(!ConstantsNet.IS_RUPS){
+            throw new UnsupportedPlatformException("You can not run this from " + ConstantsFor.thisPC() + " Sorry, man!");
+        }
     }
 
     private void chanRespChannel() {
@@ -250,8 +256,13 @@ public class SSHFactory implements Callable<String> {
 
          @return the ssh factory
          */
-        public synchronized SSHFactory build() {
-            return new SSHFactory(this);
+        public synchronized SSHFactory build() throws UnsupportedPlatformException {
+            try{
+                return new SSHFactory(this);
+            }
+            catch(UnsupportedPlatformException e){
+                throw new UnsupportedPlatformException(e.getMessage());
+            }
         }
 /*Cpmment out 03.03.2019 (13:29)
         public Map<String, Boolean> call() {

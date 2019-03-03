@@ -472,10 +472,6 @@ public enum ConstantsFor {
      */
     private static long getDelay() {
         long delay = new SecureRandom().nextInt((int) MY_AGE);
-        if(thisPC().toLowerCase().contains("home")){
-            delay = 4;
-        }
-        else
             if(delay < MIN_DELAY){
                 delay = MIN_DELAY;
             }

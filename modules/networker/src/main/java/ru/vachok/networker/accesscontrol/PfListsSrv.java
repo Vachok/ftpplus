@@ -43,7 +43,7 @@ public class PfListsSrv {
      new {@link SSHFactory.Builder}.
      */
     @SuppressWarnings("CanBeFinal")
-    private @NotNull SSHFactory.Builder builderInst = new SSHFactory.Builder(ConstantsFor.IPADDR_SRVNAT, commandForNatStr, getClass().getSimpleName());
+    private @NotNull SSHFactory.Builder builderInst;
 
     /**
      {@link #commandForNatStr}
@@ -99,6 +99,10 @@ public class PfListsSrv {
         }
     }
 
+    String runCom() {
+        return new SSHFactory.Builder(ConstantsFor.IPADDR_SRVNAT, commandForNatStr, getClass().getSimpleName()).build().call();
+    }
+
     /**
      <b>Заполнение форм списка PF</b>
      <p>
@@ -117,6 +121,7 @@ public class PfListsSrv {
      */
     private void buildFactory() {
         AppComponents.threadConfig().thrNameSet("pfmake");
+        this.builderInst = new SSHFactory.Builder(ConstantsFor.IPADDR_SRVNAT, commandForNatStr, getClass().getSimpleName());
         SSHFactory build = builderInst.build();
         if (!new File("a161.pem").exists()) {
             throw new RejectedExecutionException("NO CERTIFICATE a161.pem...");
@@ -140,23 +145,17 @@ public class PfListsSrv {
         build.setCommandSSH("pfctl -s rules;exit");
         pfListsInstAW.setPfRules(build.call());
 
-        build.setCommandSSH("sudo cat /home/kudr/inet.log;traceroute 8.8.8.8");
+        build.setCommandSSH("sudo cat /home/kudr/inet.log;exit");
         pfListsInstAW.setInetLog(build.call());
 
         pfListsInstAW.setGitStatsUpdatedStampLong(System.currentTimeMillis());
     }
 
-    String runCom() {
-        SSHFactory.Builder builder = new SSHFactory.Builder(ConstantsFor.IPADDR_SRVNAT, commandForNatStr, getClass().getSimpleName());
-        return builder.build().call();
-    }
-
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("PfListsSrv{");
-        sb.append("builderInst=").append(builderInst.hashCode());
-        sb.append(", commandForNatStr='").append(commandForNatStr).append('\'');
-        sb.append(", pfListsInstAW=").append(pfListsInstAW.hashCode());
+        sb.append("commandForNatStr='").append(commandForNatStr).append('\'');
+        sb.append(", pfListsInstAW=").append(pfListsInstAW.toString());
         sb.append('}');
         return sb.toString();
     }

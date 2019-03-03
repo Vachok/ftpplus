@@ -57,10 +57,9 @@ public class TemporaryFullInternet implements Runnable {
 
     String doAdd() {
         NameOrIPChecker nameOrIPChecker = new NameOrIPChecker(userInput);
-        SSHFactory tempFileFactory = new SSHFactory.Builder(SERVER_TO_CONNECT, "cat /etc/pf/24hrs", getClass().getSimpleName()).build();
+        String tempFile = new SSHFactory.Builder(SERVER_TO_CONNECT, "cat /etc/pf/24hrs;exit", getClass().getSimpleName()).build().call();
         String sshCommand = "ls";
         String sshIP = String.valueOf(nameOrIPChecker.resolveIP()).split("/")[1];
-        String tempFile = tempFileFactory.call();
         if(tempFile.contains(sshIP)){
             sshCommand = getClass().getSimpleName() + " doAdd " + sshIP + " is exist!<br>" + new TForms().fromArray(sshChecker(), true);
         }

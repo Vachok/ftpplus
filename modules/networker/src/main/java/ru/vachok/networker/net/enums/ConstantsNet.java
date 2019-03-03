@@ -22,7 +22,7 @@ import java.util.concurrent.*;
  @since 25.01.2019 (10:30) */
 public enum ConstantsNet {;
 
-    public static final boolean IS_RUPS = true;// ConstantsFor.thisPC().toLowerCase().contains("rups");
+    public static final boolean IS_RUPS = ConstantsFor.thisPC().toLowerCase().contains("rups");
 
     public static final String STR_CONNECTION = "connection";
 

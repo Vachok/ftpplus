@@ -113,6 +113,18 @@ public class SshActs {
         this.ipAddrOnly = ipAddrOnly;
     }
 
+    public void setNumOfHours(String numOfHours) {
+        this.numOfHours = numOfHours;
+    }
+
+    public void setUserInput(String userInput) {
+        this.userInput = userInput;
+    }
+
+    public String getNumOfHours() {
+        return numOfHours;
+    }
+
     public void setPcName(String pcName) {
         if(pcName.contains(ConstantsNet.DOMAIN_EATMEATRU)){
             this.pcName = pcName;
@@ -120,18 +132,6 @@ public class SshActs {
         else{
             this.pcName = new NameOrIPChecker(this.pcName).checkPat(pcName);
         }
-    }
-
-    public void setUserInput(String userInput) {
-        this.userInput = userInput;
-    }
-
-    public String getUserInput() {
-        return userInput;
-    }
-
-    public String getNumOfHours() {
-        return numOfHours;
     }
 
     public String getDelDomain() {
@@ -154,8 +154,8 @@ public class SshActs {
         return pcName;
     }
 
-    public void setNumOfHours(String numOfHours) {
-        this.numOfHours = numOfHours;
+    public String getUserInput() {
+        return userInput;
     }
 
     public String getInet() {
@@ -228,7 +228,13 @@ public class SshActs {
         return stringBuilder.toString();
     }
 
+    /**
+     Лог переключений инета.
+
+     @return {@code "sudo cat /home/kudr/inet.log"} or {@link InterruptedException}, {@link ExecutionException}, {@link TimeoutException}
+     */
     private String getInetLog() {
+        AppComponents.threadConfig().thrNameSet("iLog");
         SSHFactory sshFactory = new SSHFactory.Builder(ConstantsFor.IPADDR_SRVNAT, "sudo cat /home/kudr/inet.log", getClass().getSimpleName()).build();
         Future<String> submit = AppComponents.threadConfig().getTaskExecutor().submit(sshFactory);
         try{
@@ -353,7 +359,8 @@ public class SshActs {
         delDomainOpt.ifPresent(x -> {
             String sshCom = new StringBuilder()
                 .append(SSH_SUDO_GREP_V).append(x).append("' /etc/pf/allowdomain > /etc/pf/allowdomain_tmp;")
-                .append(SSH_SUDO_GREP_V).append(Objects.requireNonNull(resolveIp(x))).append(" #").append(x).append("' /etc/pf/allowip > /etc/pf/allowip_tmp;")
+                .append(SSH_SUDO_GREP_V).append(Objects.requireNonNull(resolveIp(x))).append(" #").append(x).append("' /etc/pf/allowip > " +
+                    "/etc/pf/allowip_tmp;")
 
                 .append("sudo cp /etc/pf/allowdomain_tmp /etc/pf/allowdomain;")
                 .append("sudo cp /etc/pf/allowip_tmp /etc/pf/allowip;")
