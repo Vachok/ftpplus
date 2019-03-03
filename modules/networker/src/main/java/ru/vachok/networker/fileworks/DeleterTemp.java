@@ -2,17 +2,13 @@ package ru.vachok.networker.fileworks;
 
 
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.componentsrepo.AppComponents;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.FileSystemException;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 
@@ -20,6 +16,7 @@ import java.util.concurrent.TimeUnit;
  Удаление временных файлов.
 
  @since 19.12.2018 (11:05) */
+@SuppressWarnings ("ClassWithoutLogger")
 class DeleterTemp extends FileSystemWorker implements Runnable {
 
     /**
@@ -49,6 +46,7 @@ class DeleterTemp extends FileSystemWorker implements Runnable {
             LOGGER.error(e.getMessage(), e);
         }
         getList();
+        run();
     }
 
 
@@ -72,7 +70,29 @@ class DeleterTemp extends FileSystemWorker implements Runnable {
 
     @Override
     public void run() {
-        LOGGER.info("DeleterTemp.run");
+        AppComponents.threadConfig().thrNameSet("delTmp");
+        try{
+            AppComponents.threadConfig().executeAsThread(this::oldSSHLogDel);
+        }
+        catch(RuntimeException e){
+            LOGGER.error(e.getMessage());
+        }
+    }
+
+    private void oldSSHLogDel() {
+        File sshFolder = new File(".\\ssh\\");
+        List<File> files = Arrays.asList(sshFolder.listFiles());
+        files.forEach(x -> {
+            if(x.lastModified() < System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1)){
+                try{
+                    Files.deleteIfExists(x.toPath());
+                }
+                catch(IOException e){
+                    LOGGER.error("DeleterTemp.run: {}", e.getMessage());
+                }
+            }
+        });
+
     }
 
     @Override
