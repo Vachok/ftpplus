@@ -69,16 +69,15 @@ public class TemporaryFullInternet implements Runnable {
                 .append(SshActs.SUDO_ECHO)
                 .append("\"").append(sshIP).append(" #")
                 .append(delStamp).append("\"").append(" >> /etc/pf/24hrs;").append(INIT_PING_EXIT_STR).toString();
-            SSHFactory sshFactory = new SSHFactory.Builder(SERVER_TO_CONNECT, sshCommand, getClass().getSimpleName()).build();
-            sshCommand = sshFactory.call() + "<p>" + tempFile;
+            sshCommand = new SSHFactory.Builder(SERVER_TO_CONNECT, sshCommand, getClass().getSimpleName()).build().call() + "<p>" + tempFile;
         }
         MINI_LOGGER.add("doAdd(): " + sshCommand);
         return sshCommand;
     }
 
     private Map<String, Long> sshChecker() {
-        SSHFactory tempFileFact = new SSHFactory.Builder(SERVER_TO_CONNECT, "cat /etc/pf/24hrs", getClass().getSimpleName()).build();
-        String tempFile = tempFileFact.call();
+        String tempFile = new SSHFactory.Builder(SERVER_TO_CONNECT, "cat /etc/pf/24hrs;exit", getClass().getSimpleName()).build().call();
+
         if(tempFile.isEmpty()){
             throw new IllegalComponentStateException("File is empty");
         }
@@ -154,9 +153,12 @@ public class TemporaryFullInternet implements Runnable {
         String classMeth = "TemporaryFullInternet.run";
         File miniLog = new File(getClass().getSimpleName() + ".mini");
         try{
-            fromArray = new TForms().fromArray(mapFuture.get(), false);
+            Map<String, Long> stringLongMap = mapFuture.get(ConstantsFor.DELAY, TimeUnit.SECONDS);
+            fromArray = new TForms().fromArray(stringLongMap, false);
+            MINI_LOGGER.add("mapFuture.isDone() = " + mapFuture.isDone());
+            MINI_LOGGER.add("mapFuture.isCancelled() = " + mapFuture.isCancelled());
         }
-        catch(InterruptedException | ExecutionException e){
+        catch(InterruptedException | ExecutionException | TimeoutException e){
             messageToUser.errorAlert("TemporaryFullInternet", "run", e.getMessage());
             FileSystemWorker.error(classMeth, e);
             Thread.currentThread().interrupt();

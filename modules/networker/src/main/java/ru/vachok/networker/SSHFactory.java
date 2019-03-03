@@ -91,7 +91,7 @@ public class SSHFactory implements Callable<String> {
         this.builderToStr = builder.toString();
     }
 
-    public synchronized String call() {
+    public String call() {
         StringBuilder stringBuilder = new StringBuilder();
         byte[] bytes = new byte[ConstantsFor.KBYTE * 20];
         try(InputStream connect = connect()){
@@ -113,7 +113,7 @@ public class SSHFactory implements Callable<String> {
         return stringBuilder.toString();
     }
 
-    private synchronized InputStream connect() throws IOException, JSchException {
+    private InputStream connect() throws IOException, JSchException {
         boolean isConnected = false;
         chanRespChannel();
         respChannel.connect();
@@ -144,7 +144,7 @@ public class SSHFactory implements Callable<String> {
         return sb.toString();
     }
 
-    private synchronized void chanRespChannel() {
+    private void chanRespChannel() {
         JSch jSch = new JSch();
         Session session = null;
         try{
@@ -208,7 +208,7 @@ public class SSHFactory implements Callable<String> {
         return initProperties.getProps();
     }
 
-    private synchronized String pem() {
+    private String pem() {
         File pemFile = new File("a161.pem");
         return pemFile.getAbsolutePath();
     }
@@ -346,7 +346,7 @@ public class SSHFactory implements Callable<String> {
 
          @return the ssh factory
          */
-        public synchronized SSHFactory build() {
+        public SSHFactory build() {
             return new SSHFactory(this);
         }
 
