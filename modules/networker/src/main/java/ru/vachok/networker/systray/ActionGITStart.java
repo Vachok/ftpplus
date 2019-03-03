@@ -41,7 +41,7 @@ class ActionGITStart extends AbstractAction {
             .append("sudo cd /usr/home/kudr/;")
             .append("sudo git instaweb -p 9999;")
             .append("exit;")
-            .toString()).build().call();
+            .toString(), getClass().getSimpleName()).build().call();
         Future<String> submit = AppComponents.threadConfig().getTaskExecutor().submit(sshStr);
         try {
             int timeOut30 = 30;

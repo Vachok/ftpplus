@@ -1,6 +1,7 @@
 package ru.vachok.networker.componentsrepo;
 
 
+import com.jcraft.jsch.JSch;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -95,6 +96,9 @@ public class AppComponents {
     }
 
     /**
+     SSH-actions.
+     <p>
+     Через библиотеку {@link JSch}
      @return new {@link SshActs}
      */
     @Bean

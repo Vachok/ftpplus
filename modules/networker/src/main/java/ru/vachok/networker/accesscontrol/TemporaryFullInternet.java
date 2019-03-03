@@ -2,11 +2,11 @@ package ru.vachok.networker.accesscontrol;
 
 
 import org.springframework.stereotype.Service;
-import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 
 /**
@@ -47,7 +47,6 @@ public class TemporaryFullInternet implements Runnable {
         this.userInput = userInput;
         this.delStamp = ConstantsFor.getAtomicTime() + TimeUnit.HOURS.toMillis(Long.parseLong(numOfHoursStr));
         MINI_LOGGER.add("TemporaryFullInternet: " + userInput + " " + delStamp + "(" + new Date(delStamp) + ")");
-
     }
 
     public TemporaryFullInternet() {
@@ -58,28 +57,27 @@ public class TemporaryFullInternet implements Runnable {
 
     String doAdd() {
         NameOrIPChecker nameOrIPChecker = new NameOrIPChecker(userInput);
-        SSHFactory tempFileFactory = new SSHFactory.Builder(SERVER_TO_CONNECT, "cat /etc/pf/24hrs").build();
-        String sshCommand;
+        SSHFactory tempFileFactory = new SSHFactory.Builder(SERVER_TO_CONNECT, "cat /etc/pf/24hrs", getClass().getSimpleName()).build();
+        String sshCommand = "ls";
         String sshIP = String.valueOf(nameOrIPChecker.resolveIP()).split("/")[1];
         String tempFile = tempFileFactory.call();
         if(tempFile.contains(sshIP)){
-            messageToUser.warn(getClass().getSimpleName(), "doAdd", sshIP + " is exist!");
-            sshCommand = new TForms().fromArray(sshChecker(), true);
+            sshCommand = getClass().getSimpleName() + " doAdd " + sshIP + " is exist!<br>" + new TForms().fromArray(sshChecker(), true);
         }
         else{
             sshCommand = new StringBuilder()
                 .append(SshActs.SUDO_ECHO)
                 .append("\"").append(sshIP).append(" #")
                 .append(delStamp).append("\"").append(" >> /etc/pf/24hrs;").append(INIT_PING_EXIT_STR).toString();
-            SSHFactory sshFactory = new SSHFactory.Builder(SERVER_TO_CONNECT, sshCommand).build();
-            sshCommand = sshFactory.call() + "<p>" + tempFileFactory.call();
+            SSHFactory sshFactory = new SSHFactory.Builder(SERVER_TO_CONNECT, sshCommand, getClass().getSimpleName()).build();
+            sshCommand = sshFactory.call() + "<p>" + tempFile;
         }
         MINI_LOGGER.add("doAdd(): " + sshCommand);
         return sshCommand;
     }
 
     private Map<String, Long> sshChecker() {
-        SSHFactory tempFileFact = new SSHFactory.Builder(SERVER_TO_CONNECT, "cat /etc/pf/24hrs").build();
+        SSHFactory tempFileFact = new SSHFactory.Builder(SERVER_TO_CONNECT, "cat /etc/pf/24hrs", getClass().getSimpleName()).build();
         String tempFile = tempFileFact.call();
         if(tempFile.isEmpty()){
             throw new IllegalComponentStateException("File is empty");
@@ -121,9 +119,9 @@ public class TemporaryFullInternet implements Runnable {
 
     private boolean doDelete(String x) {
         String sshCommand = new StringBuilder()
-            .append(SshActs.SUDO_GREP_V).append(x).append("' /etc/pf/24hrs > /etc/pf/24hrs_tmp;")
+            .append(SshActs.SSH_SUDO_GREP_V).append(x).append("' /etc/pf/24hrs > /etc/pf/24hrs_tmp;")
             .append("sudo cp /etc/pf/24hrs_tmp /etc/pf/24hrs;").append(INIT_PING_EXIT_STR).toString();
-        SSHFactory sshFactory = new SSHFactory.Builder(SERVER_TO_CONNECT, sshCommand).build();
+        SSHFactory sshFactory = new SSHFactory.Builder(SERVER_TO_CONNECT, sshCommand, getClass().getSimpleName()).build();
         sshCommand = sshFactory.call();
         messageToUser.info("TemporaryFullInternet.doDelete", STR_SSH_COMMAND, " = " + sshCommand);
         Long aLong = ConstantsNet.getSshCheckerMap().remove(x);
@@ -150,11 +148,21 @@ public class TemporaryFullInternet implements Runnable {
 
     @Override
     public void run() {
-        String fromArray = new TForms().fromArray(sshChecker(), false);
+        Callable<Map<String, Long>> sshCheckerMAP = this::sshChecker;
+        Future<Map<String, Long>> mapFuture = AppComponents.threadConfig().getTaskExecutor().submit(sshCheckerMAP);
+        String fromArray = null;
+        try{
+            fromArray = new TForms().fromArray(mapFuture.get(), false);
+        }
+        catch(InterruptedException | ExecutionException e){
+            messageToUser.errorAlert("TemporaryFullInternet", "run", e.getMessage());
+            FileSystemWorker.error("TemporaryFullInternet.run", e);
+            Thread.currentThread().interrupt();
+        }
         messageToUser.info(getClass().getSimpleName(), userInput, fromArray);
         MINI_LOGGER.add("run(): " + userInput + " " + fromArray);
+        MINI_LOGGER.add(new Date().toString());
         FileSystemWorker.recFile(getClass().getSimpleName() + ".mini", MINI_LOGGER.stream());
-        new MessageSwing().infoTimer(30, toString());
     }
 
     @Override

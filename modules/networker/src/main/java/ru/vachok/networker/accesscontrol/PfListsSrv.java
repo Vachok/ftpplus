@@ -43,7 +43,7 @@ public class PfListsSrv {
      new {@link SSHFactory.Builder}.
      */
     @SuppressWarnings("CanBeFinal")
-    private @NotNull SSHFactory.Builder builderInst = new SSHFactory.Builder(ConstantsFor.IPADDR_SRVNAT, commandForNatStr);
+    private @NotNull SSHFactory.Builder builderInst = new SSHFactory.Builder(ConstantsFor.IPADDR_SRVNAT, commandForNatStr, getClass().getSimpleName());
 
     /**
      {@link #commandForNatStr}
@@ -87,7 +87,7 @@ public class PfListsSrv {
      */
     void makeListRunner() {
         if(ConstantsNet.IS_RUPS){
-            buildFactory();
+            AppComponents.threadConfig().executeAsThread(() -> buildFactory());
         } else {
             @NotNull MessageToUser messageToUser;
             try {
@@ -97,11 +97,6 @@ public class PfListsSrv {
             }
             messageToUser.warn(this.getClass().getSimpleName(), "NOT RUNNING ON RUPS!", ConstantsFor.thisPC() + " buildCommands " + false);
         }
-    }
-
-    String runCom() {
-        SSHFactory.Builder builder = new SSHFactory.Builder(ConstantsFor.IPADDR_SRVNAT, commandForNatStr);
-        return builder.build().call();
     }
 
     /**
@@ -121,6 +116,7 @@ public class PfListsSrv {
      <i>/home/kudr/inet.log</i>
      */
     private void buildFactory() {
+        AppComponents.threadConfig().thrNameSet("pfmake");
         SSHFactory build = builderInst.build();
         if (!new File("a161.pem").exists()) {
             throw new RejectedExecutionException("NO CERTIFICATE a161.pem...");
@@ -148,6 +144,11 @@ public class PfListsSrv {
         pfListsInstAW.setInetLog(build.call());
 
         pfListsInstAW.setGitStatsUpdatedStampLong(System.currentTimeMillis());
+    }
+
+    String runCom() {
+        SSHFactory.Builder builder = new SSHFactory.Builder(ConstantsFor.IPADDR_SRVNAT, commandForNatStr, getClass().getSimpleName());
+        return builder.build().call();
     }
 
     @Override

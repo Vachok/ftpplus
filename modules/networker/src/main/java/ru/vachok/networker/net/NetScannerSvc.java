@@ -99,6 +99,13 @@ public final class NetScannerSvc {
     private static NetScannerSvc netScannerSvcInst = new NetScannerSvc();
 
     /**
+     Доступность пк. online|offline сколько раз.
+
+     @see NetScannerSvc#getInfoFromDB()
+     */
+    public static String inputWithInfoFromDB = null;
+
+    /**
      Время инициализации
      */
     private long startClassTime = System.currentTimeMillis();
@@ -122,6 +129,35 @@ public final class NetScannerSvc {
      {@link AppComponents#lastNetScan()}
      */
     private Map<String, Boolean> netWorkMap;
+
+    /**
+     Сортирует по-алфавиту.
+     <p>
+     {@link NetScannerSvc#getThePc()} <br>
+     {@link LastNetScan#getTimeLastScan()} <br>
+     {@link NetScannerSvc#setThePc(java.lang.String)} <br>
+     {@link NetScannerSvc#setInputWithInfoFromDB(String)}
+
+     @param timeNow {@link ArrayList}, показываемый на странице.
+     */
+    private static void sortList(List<String> timeNow) {
+        Collections.sort(timeNow);
+
+        String str = timeNow.get(timeNow.size() - 1);
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(AppComponents.netScannerSvc().getThePc());
+        stringBuilder.append("Last online: ");
+        stringBuilder.append(str);
+        stringBuilder.append(" (");
+        stringBuilder.append(")<br>Actual on: ");
+        stringBuilder.append(AppComponents.lastNetScan().getTimeLastScan());
+        stringBuilder.append("</center></font>");
+
+        String thePcWithDBInfo = stringBuilder.toString();
+        AppComponents.netScannerSvc().setThePc(thePcWithDBInfo);
+        setInputWithInfoFromDB(thePcWithDBInfo);
+
+    }
 
     /**
      Выполняет запрос в БД по-пользовательскому вводу
@@ -272,32 +308,10 @@ public final class NetScannerSvc {
     }
 
     /**
-     Сортирует по-алфавиту.
-     <p>
-     {@link NetScannerSvc#getThePc()} <br>
-     {@link LastNetScan#getTimeLastScan()} <br>
-     {@link NetScannerSvc#setThePc(java.lang.String)} <br>
-     {@link ActDirectoryCTRL#setInputWithInfoFromDB(java.lang.String)}
-
-     @param timeNow {@link ArrayList}, показываемый на странице.
+     @param inputWithInfoFromDB {@link NetScannerSvc#getInfoFromDB()}
      */
-    private static void sortList(List<String> timeNow) {
-        Collections.sort(timeNow);
-
-        String str = timeNow.get(timeNow.size() - 1);
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(AppComponents.netScannerSvc().getThePc());
-        stringBuilder.append("Last online: ");
-        stringBuilder.append(str);
-        stringBuilder.append(" (");
-        stringBuilder.append(")<br>Actual on: ");
-        stringBuilder.append(AppComponents.lastNetScan().getTimeLastScan());
-        stringBuilder.append("</center></font>");
-
-        String thePcWithDBInfo = stringBuilder.toString();
-        AppComponents.netScannerSvc().setThePc(thePcWithDBInfo);
-        ActDirectoryCTRL.setInputWithInfoFromDB(thePcWithDBInfo);
-
+    public static void setInputWithInfoFromDB(String inputWithInfoFromDB) {
+        NetScannerSvc.inputWithInfoFromDB = inputWithInfoFromDB;
     }
 
     /**

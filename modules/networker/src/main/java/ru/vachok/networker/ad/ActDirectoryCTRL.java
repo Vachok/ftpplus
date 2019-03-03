@@ -39,7 +39,8 @@ public class ActDirectoryCTRL {
      Небольшое описание, для показа на сайте.
      */
     private static final String ALERT_AD_FOTO =
-        "<p>Для корректной работы, вам нужно положить фото юзеров <a href=\"file://srv-mail3.eatmeat.ru/c$/newmailboxes/fotoraw/\" target=\"_blank\">\\\\srv-mail3.eatmeat" +
+        "<p>Для корректной работы, вам нужно положить фото юзеров <a href=\"file://srv-mail3.eatmeat.ru/c$/newmailboxes/fotoraw/\" " +
+            "target=\"_blank\">\\\\srv-mail3.eatmeat" +
             ".ru\\c$\\newmailboxes\\fotoraw\\</a>\n";
 
     /**
@@ -50,23 +51,16 @@ public class ActDirectoryCTRL {
     private static final String ATT_DETAILS = "details";
 
     /**
-     Доступность пк. online|offline сколько раз.
-
-     @see NetScannerSvc#getInfoFromDB()
-     */
-    private static String inputWithInfoFromDB = null;
-
-    /**
      {@link ADSrv}
      */
     private ADSrv adSrv;
 
     private Visitor visitor;
-
-    /**
+    /*Comment out 03.03.2019 (11:08)
+     *//**
      {@link SshActs}
-     */
-    private SshActs sshActs;
+     *//*
+    private SshActs sshActs;*/
 
     /**
      Заголовок страницы.
@@ -79,13 +73,6 @@ public class ActDirectoryCTRL {
     private PhotoConverterSRV photoConverterSRV;
 
     /**
-     @param inputWithInfoFromDB {@link NetScannerSvc#getInfoFromDB()}
-     */
-    public static void setInputWithInfoFromDB(String inputWithInfoFromDB) {
-        ActDirectoryCTRL.inputWithInfoFromDB = inputWithInfoFromDB;
-    }
-
-    /**
      @param adSrv             {@link AppComponents#adSrv()}
      @param photoConverterSRV {@link PhotoConverterSRV}
      @param sshActs           {@link SshActs}
@@ -94,30 +81,82 @@ public class ActDirectoryCTRL {
     public ActDirectoryCTRL(ADSrv adSrv, PhotoConverterSRV photoConverterSRV, SshActs sshActs) {
         this.photoConverterSRV = photoConverterSRV;
         this.adSrv = adSrv;
+/*Comment out 03.03.2019 (11:08)
         this.sshActs = sshActs;
+*/
         Thread.currentThread().setName(getClass().getSimpleName());
     }
 
     /**
+     /ad control.
+     <p>
+     Записываем визит - {@link ConstantsFor#getVis(javax.servlet.http.HttpServletRequest)}. <br>
+     Берём {@link List} {@link ADUser} - {@link ADSrv#userSetter()}
+     <p>
+     Если {@link HttpServletRequest#getQueryString()} присутствует - возвращаем
+     {@link ActDirectoryCTRL#queryStringExists(java.lang.String, org.springframework.ui.Model)} ({@code return "aditem"})
+     <p>
+     Else сетаем {@link Model} : <br>
+     Берём {@link ADComputer} - {@link ADSrv#getAdComputer()} <br>
+     Добавляем аттрибуты модели: <br>
+     {@link ConstantsFor#ATT_FOOTER} = {@link PageFooter#getFooterUtext()} + {@link Visitor#toString()} <br>
+     {@code "pcs"} = {@link TForms#adPCMap(java.util.List, boolean)} <br>
+     {@link ConstantsFor#ATT_USERS} = {@link TForms#fromADUsersList(java.util.List, boolean)}
+     <p>
+     {@code return "ad"}
+
      @param request {@link HttpServletRequest}
      @param model   {@link Model}
-     @return ad.html
+     @return ad.html или aditem.html
      */
-    @GetMapping("/ad")
+    @GetMapping ("/ad")
     public String adUsersComps(HttpServletRequest request, Model model) {
         this.visitor = ConstantsFor.getVis(request);
         List<ADUser> adUsers = adSrv.userSetter();
-        if (request.getQueryString() != null) {
+        if(request.getQueryString()!=null){
             return queryStringExists(request.getQueryString(), model);
-        } else {
+        }
+        else{
             ADComputer adComputer = adSrv.getAdComputer();
             model.addAttribute(ConstantsFor.ATT_PHOTO_CONVERTER, photoConverterSRV);
-            model.addAttribute(ConstantsFor.ATT_SSH_ACTS, sshActs);
+/*Comment out 03.03.2019 (11:08)
+            model.addAttribute(ConstantsFor.ATT_SSH_ACTS, sshActs);*/
             model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<p>" + visitor.toString());
             model.addAttribute("pcs", new TForms().adPCMap(adComputer.getAdComputers(), true));
             model.addAttribute(ConstantsFor.ATT_USERS, new TForms().fromADUsersList(adUsers, true));
         }
         return "ad";
+    }
+
+    /**
+     AdItem
+     <br> 3. {@link ADSrv#getDetails(String)} <br> 4. {@link
+    PageFooter#getFooterUtext()}
+
+     @param queryString {@link HttpServletRequest#getQueryString()}
+     @param model       {@link Model}
+     @return aditem.html
+     */
+    private String queryStringExists(String queryString, Model model) {
+        NetScannerSvc netScannerSvc = AppComponents.netScannerSvc();
+        netScannerSvc.setThePc(queryString);
+        String attributeValue = netScannerSvc.getInfoFromDB();
+        model.addAttribute(ConstantsFor.ATT_TITLE, queryString + " " + attributeValue);
+        model.addAttribute(ConstantsFor.ATT_USERS, NetScannerSvc.inputWithInfoFromDB);
+        try{
+            String adSrvDetails = adSrv.getDetails(queryString);
+            model.addAttribute(ATT_DETAILS, adSrvDetails);
+            adSrvDetails = adSrvDetails.replaceAll("</br>", "\n").replaceAll("<p>", "\n\n").replaceAll("<p><b>", "\n\n");
+            long l = new Calendar.Builder().setTimeOfDay(0, 0, 0).build().getTimeInMillis();
+            String finalAdSrvDetails = adSrvDetails;
+            new MessageToTray(new ListenUserInfo(queryString, attributeValue, finalAdSrvDetails)).info(queryString, attributeValue,
+                ServiceInfoCtrl.percToEnd(new Date(l), 24));
+        }
+        catch(Exception e){
+            model.addAttribute(ATT_DETAILS, e.getMessage());
+        }
+        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
+        return "aditem";
     }
 
     /**
@@ -130,61 +169,34 @@ public class ActDirectoryCTRL {
      <b>{@link NullPointerException}:</b><br>
      7. {@link FileSystemWorker#error(java.lang.String, java.lang.Exception)} пишем в файл.
      <p>
+
      @param photoConverterSRV {@link PhotoConverterSRV}
      @param model             {@link Model}
-     @param request {@link HttpServletRequest}.
+     @param request           {@link HttpServletRequest}.
      @return adphoto.html
      */
-    @GetMapping("/adphoto")
+    @GetMapping ("/adphoto")
     public String adFoto(@ModelAttribute PhotoConverterSRV photoConverterSRV, Model model, HttpServletRequest request) {
         this.visitor = ConstantsFor.getVis(request);
 
         this.photoConverterSRV = photoConverterSRV;
-        try {
+        try{
             model.addAttribute("photoConverterSRV", photoConverterSRV);
-            model.addAttribute(ConstantsFor.ATT_SSH_ACTS, sshActs);
-            if (!ConstantsFor.isPingOK()) {
+/*Comment out 03.03.2019 (11:08)
+            model.addAttribute(ConstantsFor.ATT_SSH_ACTS, sshActs);*/
+            if(!ConstantsFor.isPingOK()){
                 titleStr = "ping srv-git.eatmeat.ru is " + false;
             }
             model.addAttribute(ConstantsFor.ATT_TITLE, titleStr);
             model.addAttribute("content", photoConverterSRV.psCommands());
             model.addAttribute("alert", ALERT_AD_FOTO);
             model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<br>" + visitor.toString());
-        } catch (NullPointerException e) {
+        }
+        catch(NullPointerException e){
             new MessageCons().errorAlert("ActDirectoryCTRL", "adFoto", e.getMessage());
             FileSystemWorker.error("ActDirectoryCTRL.adFoto", e);
         }
         return "adphoto";
-    }
-
-    /**
-     <b>AdItem</b>
-     Используемые методы и константы: <br> 1. {@link NetScannerSvc#setThePc(String)} <br> 2. {@link #inputWithInfoFromDB} <br> 3. {@link ADSrv#getDetails(String)} <br> 4. {@link
-    PageFooter#getFooterUtext()}
-
-     @param queryString {@link HttpServletRequest#getQueryString()}
-     @param model       {@link Model}
-     @return aditem.html
-     */
-    private String queryStringExists(String queryString, Model model) {
-        NetScannerSvc netScannerSvc = AppComponents.netScannerSvc();
-        netScannerSvc.setThePc(queryString);
-        String attributeValue = netScannerSvc.getInfoFromDB();
-        model.addAttribute(ConstantsFor.ATT_TITLE, queryString + " " + attributeValue);
-        model.addAttribute(ConstantsFor.ATT_USERS, inputWithInfoFromDB);
-        try {
-            String adSrvDetails = adSrv.getDetails(queryString);
-            model.addAttribute(ATT_DETAILS, adSrvDetails);
-            adSrvDetails = adSrvDetails.replaceAll("</br>", "\n").replaceAll("<p>", "\n\n").replaceAll("<p><b>", "\n\n");
-            long l = new Calendar.Builder().setTimeOfDay(0, 0, 0).build().getTimeInMillis();
-            String finalAdSrvDetails = adSrvDetails;
-            new MessageToTray(new ListenUserInfo(queryString, attributeValue, finalAdSrvDetails)).info(queryString, attributeValue,
-                ServiceInfoCtrl.percToEnd(new Date(l), 24));
-        } catch (Exception e) {
-            model.addAttribute(ATT_DETAILS, e.getMessage());
-        }
-        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
-        return "aditem";
     }
 
 }

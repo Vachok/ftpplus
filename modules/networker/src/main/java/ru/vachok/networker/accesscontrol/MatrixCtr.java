@@ -57,6 +57,23 @@ public class MatrixCtr {
      */
     private static final String ATT_DINNER = "dinner";
 
+    /**
+     Конструктор autowired
+     <p>
+     () = {@link #setCurrentProvider()}
+
+     @param versionInfo {@link AppComponents#versionInfo()}
+     */
+    @SuppressWarnings("WeakerAccess")
+    @Autowired
+    public MatrixCtr(VersionInfo versionInfo) {
+        this.versionInfoInst = versionInfo;
+        AppComponents.threadConfig().getTaskScheduler()
+            .scheduleAtFixedRate(
+                () -> setCurrentProvider(),
+                TimeUnit.MINUTES.toMillis(Long.parseLong(AppComponents.getOrSetProps().getProperty("trace", String.valueOf(ConstantsFor.DELAY)))));
+    }
+
     private String currentProvider = "Unknown yet";
 
     /**
@@ -80,17 +97,15 @@ public class MatrixCtr {
     private long metricMatrixStartLong = System.currentTimeMillis();
 
     /**
-     Конструктор autowired
+     Трэйсроуте до 8.8.8.8
      <p>
+     С целью определения шлюза по-умолчанию, и соотв. провайдера.
 
-     @param versionInfo {@link AppComponents#versionInfo()}
+     @see AppComponents#sshActs()
      */
-    @SuppressWarnings("WeakerAccess")
-    @Autowired
-    public MatrixCtr(VersionInfo versionInfo) {
-        this.versionInfoInst = versionInfo;
-        AppComponents.threadConfig().getTaskScheduler()
-            .scheduleAtFixedRate(this::getProv, TimeUnit.MINUTES.toMillis(Long.parseLong(AppComponents.getOrSetProps().getProperty("trace"))));
+    public void setCurrentProvider() {
+        SshActs sshActs = new AppComponents().sshActs();
+        this.currentProvider = sshActs.providerTraceStr();
     }
 
     /**
@@ -164,9 +179,10 @@ public class MatrixCtr {
     @GetMapping("/git")
     public String gitOn(Model model, HttpServletRequest request) {
         this.visitorInst = ConstantsFor.getVis(request);
-        SSHFactory gitOner = new SSHFactory.Builder(ConstantsFor.IPADDR_SRVGIT, "sudo cd /usr/home/ITDept;sudo git instaweb;exit").build();
+        SSHFactory gitOner = new SSHFactory.Builder(ConstantsFor.IPADDR_SRVGIT, "sudo cd /usr/home/ITDept;sudo git instaweb;exit",
+            getClass().getSimpleName()).build();
         if (request.getQueryString() != null && request.getQueryString().equalsIgnoreCase(ConstantsFor.COM_REBOOT)) {
-            gitOner = new SSHFactory.Builder(ConstantsFor.IPADDR_SRVGIT, "sudo reboot").build();
+            gitOner = new SSHFactory.Builder(ConstantsFor.IPADDR_SRVGIT, "sudo reboot", getClass().getSimpleName()).build();
         }
         String call = gitOner.call() + "\n" + visitorInst.toString();
         LOGGER.info(call);
@@ -302,25 +318,6 @@ public class MatrixCtr {
         this.matrixSRV.setWorkPos(workPosition);
         LOGGER.info(workPosition);
         return REDIRECT_MATRIX;
-    }
-
-    private void getProv() {
-        SshActs sshActs = new AppComponents().sshActs();
-        String gettRoute = sshActs.providerTraceStr();
-        StringBuilder stringBuilder = new StringBuilder();
-        String logStr = "LOG: ";
-        if(gettRoute.contains("91.210.85.")){
-            stringBuilder.append("<h3>FORTEX</h3>");
-        }
-        else
-            if(gettRoute.contains("176.62.185.")){
-                stringBuilder.append("<h3>ISTRANET</h3>");
-        } else if (gettRoute.contains(logStr)) {
-                stringBuilder.append("<br><font color=\"gray\">").append(gettRoute.split(logStr)[1]).append("</font>");
-        } else {
-                LOGGER.warn(stringBuilder.toString());
-        }
-        this.currentProvider = stringBuilder.toString();
     }
 
     @Override
