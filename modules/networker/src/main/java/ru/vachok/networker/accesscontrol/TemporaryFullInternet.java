@@ -12,6 +12,7 @@ import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 
 import java.awt.*;
+import java.io.File;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
@@ -151,6 +152,7 @@ public class TemporaryFullInternet implements Runnable {
         Future<Map<String, Long>> mapFuture = AppComponents.threadConfig().getTaskExecutor().submit(sshCheckerMAP);
         String fromArray = null;
         String classMeth = "TemporaryFullInternet.run";
+        File miniLog = new File(getClass().getSimpleName() + ".mini");
         try{
             fromArray = new TForms().fromArray(mapFuture.get(), false);
         }
@@ -163,8 +165,10 @@ public class TemporaryFullInternet implements Runnable {
         MINI_LOGGER.add("run(): " + userInput + " " + fromArray);
         Date nextStart = new Date(ConstantsFor.getAtomicTime() + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY));
         MINI_LOGGER.add(nextStart.toString());
-        boolean isRecFile = FileSystemWorker.recFile(getClass().getSimpleName() + ".mini", MINI_LOGGER.stream());
+        boolean isRecFile = FileSystemWorker.recFile(miniLog.getName(), MINI_LOGGER.stream());
+        boolean isCopyFile = FileSystemWorker.copyOrDelFile(miniLog, ".\\ssh\\" + miniLog.getName(), true);
         messageToUser.info(classMeth, "isRecFile", " = " + isRecFile);
+        messageToUser.info("TemporaryFullInternet.run", "isCopyFile", " = " + isCopyFile);
         messageToUser.info(classMeth, "nextStart", " = " + nextStart);
     }
 
