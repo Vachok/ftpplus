@@ -72,7 +72,8 @@ public class SshActs {
      */
     private String inet = null;
 
-    private String numOfHours = String.valueOf(TimeUnit.SECONDS.toHours(LocalTime.parse("17:30").toSecondOfDay() - LocalTime.now().toSecondOfDay()));
+    private String numOfHours =
+        String.valueOf(Math.abs(TimeUnit.SECONDS.toHours(LocalTime.parse("17:30").toSecondOfDay() - LocalTime.now().toSecondOfDay())));
 
     /**
      Разрешить адрес
@@ -223,7 +224,7 @@ public class SshActs {
         String logStr = "LOG: ";
         callForRoute = callForRoute + "<br>LOG: " + getInetLog();
         if(callForRoute.contains(logStr)){
-            stringBuilder.append("<br><font color=\"gray\">").append(callForRoute.split(logStr)[1]).append("</font>");
+            stringBuilder.append("<br><font color=\"gray\">").append(callForRoute.split(logStr)[1].replaceAll(";", "<br>")).append("</font>");
         }
         return stringBuilder.toString();
     }
@@ -254,6 +255,7 @@ public class SshActs {
      */
     @SuppressWarnings ("DuplicateStringLiteralInspection")
     private String allowDomainAdd() {
+        AppComponents.threadConfig().thrNameSet("aDom");
         this.allowDomain = checkDName();
         Objects.requireNonNull(allowDomain, "allowdomain string is null");
         String commandSSH = new StringBuilder()
@@ -352,6 +354,7 @@ public class SshActs {
      */
     @SuppressWarnings ("DuplicateStringLiteralInspection")
     private String allowDomainDel() {
+        AppComponents.threadConfig().thrNameSet("dDom");
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(delDomain).append(" del domain raw<br>");
         this.delDomain = checkDNameDel();
@@ -381,6 +384,7 @@ public class SshActs {
      @return имя домена, для удаления.
      */
     private String checkDNameDel() {
+        AppComponents.threadConfig().thrNameSet("chkDom");
         this.delDomain = delDomain.replace("http://", ".");
         if(delDomain.contains(STR_HTTPS)){
             this.delDomain = delDomain.replace(STR_HTTPS, ".");
@@ -647,6 +651,7 @@ public class SshActs {
             model.addAttribute(ConstantsFor.ATT_TITLE, ConstantsFor.getMemoryInfo());
             model.addAttribute("ok", temporaryFullInternet.doAdd());
             model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
+            sshActs.setNumOfHours(String.valueOf(Math.abs(TimeUnit.SECONDS.toHours(LocalTime.parse("18:30").toSecondOfDay() - LocalTime.now().toSecondOfDay()))));
             return "ok";
         }
     }
