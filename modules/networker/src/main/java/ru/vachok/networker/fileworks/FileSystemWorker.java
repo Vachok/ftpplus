@@ -44,15 +44,17 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
      */
     private static MessageToUser messageToUser = new MessageLocal();
 
-    public static synchronized void recFile(String fileName, Stream<String> toFileRec) {
+    public static synchronized boolean recFile(String fileName, Stream<String> toFileRec) {
         try (OutputStream outputStream = new FileOutputStream(fileName);
              PrintStream printStream = new PrintStream(outputStream, true)) {
             printStream.println(new Date(ConstantsFor.getAtomicTime()));
             printStream.print(" recording Stream<String>");
             printStream.println();
             toFileRec.forEach(printStream::println);
+            return true;
         } catch (IOException e) {
             messageToUser.errorAlert("FileSystemWorker", "recFile", e.getMessage());
+            return false;
         }
     }
 

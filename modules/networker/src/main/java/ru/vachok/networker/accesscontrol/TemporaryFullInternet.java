@@ -150,18 +150,22 @@ public class TemporaryFullInternet implements Runnable {
         Callable<Map<String, Long>> sshCheckerMAP = this::sshChecker;
         Future<Map<String, Long>> mapFuture = AppComponents.threadConfig().getTaskExecutor().submit(sshCheckerMAP);
         String fromArray = null;
+        String classMeth = "TemporaryFullInternet.run";
         try{
             fromArray = new TForms().fromArray(mapFuture.get(), false);
         }
         catch(InterruptedException | ExecutionException e){
             messageToUser.errorAlert("TemporaryFullInternet", "run", e.getMessage());
-            FileSystemWorker.error("TemporaryFullInternet.run", e);
+            FileSystemWorker.error(classMeth, e);
             Thread.currentThread().interrupt();
         }
         messageToUser.info(getClass().getSimpleName(), userInput, fromArray);
         MINI_LOGGER.add("run(): " + userInput + " " + fromArray);
-        MINI_LOGGER.add(new Date().toString());
-        FileSystemWorker.recFile(getClass().getSimpleName() + ".mini", MINI_LOGGER.stream());
+        Date nextStart = new Date(ConstantsFor.getAtomicTime() + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY));
+        MINI_LOGGER.add(nextStart.toString());
+        boolean isRecFile = FileSystemWorker.recFile(getClass().getSimpleName() + ".mini", MINI_LOGGER.stream());
+        messageToUser.info(classMeth, "isRecFile", " = " + isRecFile);
+        messageToUser.info(classMeth, "nextStart", " = " + nextStart);
     }
 
     @Override
