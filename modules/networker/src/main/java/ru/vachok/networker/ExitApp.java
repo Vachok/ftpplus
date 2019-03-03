@@ -13,7 +13,7 @@ import java.io.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 import static ru.vachok.networker.IntoApplication.getConfigurableApplicationContext;
 
@@ -22,7 +22,7 @@ import static ru.vachok.networker.IntoApplication.getConfigurableApplicationCont
  Действия, при выходе
 
  @since 21.12.2018 (12:15) */
-@SuppressWarnings("StringBufferReplaceableByString")
+@SuppressWarnings ("StringBufferReplaceableByString")
 public class ExitApp implements Runnable {
 
     /**
@@ -101,20 +101,34 @@ public class ExitApp implements Runnable {
     }
 
     /**
+     {@link #copyAvail()}
+     */
+    @Override
+    public void run() {
+        Thread.currentThread().setName(ExitApp.EXIT_APP_RUN);
+        stringList.add(reasonExit);
+        AppComponents.getOrSetProps(true);
+        copyAvail();
+    }
+
+    /**
      Копирует логи
 
      @see FileSystemWorker
      */
-    @SuppressWarnings({"HardCodedStringLiteral", "FeatureEnvy"})
+    @SuppressWarnings ({"HardCodedStringLiteral", "FeatureEnvy"})
     private void copyAvail() {
         File appLog = new File("g:\\My_Proj\\FtpClientPlus\\modules\\networker\\app.log");
-        FileSystemWorker.copyOrDelFile(new File(ConstantsNet.FILENAME_AVAILABLELASTTXT), new StringBuilder().append(".\\lan\\vlans200").append(System.currentTimeMillis() / 1000).append(".txt").toString(),
+        FileSystemWorker.copyOrDelFile(new File(ConstantsNet.FILENAME_AVAILABLELASTTXT),
+            new StringBuilder().append(".\\lan\\vlans200").append(System.currentTimeMillis() / 1000).append(".txt").toString(),
             true);
-        FileSystemWorker.copyOrDelFile(new File(ConstantsNet.FILENAME_OLDLANTXT), new StringBuilder().append(".\\lan\\old_lan_").append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
+        FileSystemWorker.copyOrDelFile(new File(ConstantsNet.FILENAME_OLDLANTXT),
+            new StringBuilder().append(".\\lan\\old_lan_").append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
         FileSystemWorker.copyOrDelFile(new File("ping.tv"), ".\\lan\\tv_" + System.currentTimeMillis() / 1000 + ".ping", true);
-        if (appLog.exists() && appLog.canRead()) {
+        if(appLog.exists() && appLog.canRead()){
             FileSystemWorker.copyOrDelFile(appLog, "\\\\10.10.111.1\\Torrents-FTP\\app.log", false);
-        } else {
+        }
+        else{
             stringList.add("No app.log");
             LOGGER.info("No app.log");
         }
@@ -135,17 +149,26 @@ public class ExitApp implements Runnable {
      Запуск {@link #exitAppDO()}
      */
     private void writeObj() {
-        if (toWriteObj != null) {
+        if(toWriteObj!=null){
             stringList.add(toWriteObj.toString());
-            try (ObjectOutput objectOutput = new ObjectOutputStream(out)) {
+            try(ObjectOutput objectOutput = new ObjectOutputStream(out)){
                 objectOutput.writeObject(toWriteObj);
-            } catch (IOException e) {
+            }
+            catch(IOException e){
                 FileSystemWorker.error("ExitApp.writeObj", e);
             }
-        } else {
+        }
+        else{
             stringList.add("No object");
         }
-        exitAppDO();
+        Runnable exitDo = () -> exitAppDO();
+        Future<?> submit = Executors.unconfigurableExecutorService(Executors.newSingleThreadScheduledExecutor()).submit(exitDo);
+        try{
+            submit.get(30, TimeUnit.SECONDS);
+        }
+        catch(InterruptedException | ExecutionException | TimeoutException e){
+            System.exit(666);
+        }
     }
 
     /**
@@ -163,20 +186,7 @@ public class ExitApp implements Runnable {
         FileSystemWorker.recFile("exit.last", stringList);
         FileSystemWorker.delTemp();
         getConfigurableApplicationContext().close();
-
         AppComponents.threadConfig().killAll();
-
         System.exit(Math.toIntExact(toMinutes));
-    }
-
-    /**
-     {@link #copyAvail()}
-     */
-    @Override
-    public void run() {
-        Thread.currentThread().setName(ExitApp.EXIT_APP_RUN);
-        stringList.add(reasonExit);
-        AppComponents.getOrSetProps(true);
-        copyAvail();
     }
 }

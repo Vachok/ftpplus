@@ -70,8 +70,7 @@ public class IntoApplication {
     /**
      {@link MessageLocal}
      */
-    private static @NotNull
-    final MessageToUser messageToUser = new MessageLocal();
+    private static final MessageToUser messageToUser = new MessageLocal();
 
     private static final ThreadPoolTaskExecutor EXECUTOR = AppComponents.threadConfig().getTaskExecutor();
 
@@ -156,7 +155,7 @@ public class IntoApplication {
      */
     private static void readArgs(@NotNull String... args) {
         boolean isTray = true;
-        ExitApp exitApp = new ExitApp(IntoApplication.class.getSimpleName());
+        Runnable exitApp = new ExitApp(IntoApplication.class.getSimpleName());
         List<@NotNull String> argsList = Arrays.asList(args);
         ConcurrentMap<String, String> argsMap = new ConcurrentHashMap<>();
 
