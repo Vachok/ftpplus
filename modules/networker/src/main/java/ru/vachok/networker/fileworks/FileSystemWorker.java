@@ -15,10 +15,8 @@ import ru.vachok.networker.systray.SystemTrayHelper;
 
 import java.io.*;
 import java.nio.file.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.time.LocalTime;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Stream;
@@ -250,7 +248,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
      @param e         исключение
      */
     public static synchronized void error(String classMeth, Exception e) {
-        File f = new File(classMeth + FILEEXT_LOG);
+        File f = new File(classMeth + "_" + LocalTime.now().toSecondOfDay() + FILEEXT_LOG);
 
         try (OutputStream outputStream = new FileOutputStream(f)) {
             boolean printTo = printTo(outputStream, e);
@@ -258,6 +256,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         } catch (IOException exIO) {
             messageToUser.errorAlert(CLASS_NAME, "error", exIO.getMessage());
         }
+        copyOrDelFile(f, ".\\err\\" + f.getName(), true);
     }
 
     private static synchronized boolean printTo(OutputStream outputStream, Exception e) {
