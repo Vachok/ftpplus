@@ -22,7 +22,10 @@ import ru.vachok.networker.services.MyCalen;
 import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
-import java.nio.file.*;
+import java.nio.file.FileVisitor;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -122,7 +125,6 @@ public class AppInfoOnLoad implements Runnable {
      */
     private static void starterTelnet() {
         MyServer.setSocket(new Socket());
-        //noinspection resource
         while (!MyServer.getSocket().isClosed()) {
             try {
                 MyServer.reconSock();
@@ -318,7 +320,7 @@ public class AppInfoOnLoad implements Runnable {
     @Override
     public void run() {
         infoForU(AppCtx.scanForBeansAndRefreshContext());
-        AppComponents.threadConfig().executeAsThread(ConstantsFor.INFO_MSG_RUNNABLE);
+        ConstantsFor.INFO_MSG_RUNNABLE.run();
         AppComponents.threadConfig().executeAsThread(AppInfoOnLoad::starterTelnet);
     }
 

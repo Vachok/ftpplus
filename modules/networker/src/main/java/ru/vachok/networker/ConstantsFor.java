@@ -366,7 +366,7 @@ public enum ConstantsFor {
     /**
      Порт для {@link ru.vachok.networker.net.MyServer}
      */
-    public static final int PR_LPORT = Integer.parseInt(PROPS.getOrDefault("lport", "9990").toString());
+    public static final int PR_LPORT = Integer.parseInt(PROPS.getProperty("lport", "9990"));
 
     /**
      {@link MessageLocal}
@@ -375,13 +375,13 @@ public enum ConstantsFor {
 
     public static final Runnable INFO_MSG_RUNNABLE = () -> {
 
-        File todoFile = new File("G:\\My_Proj\\FtpClientPlus\\modules\\networker\\TODO");
-        if(todoFile.exists()){
-            String readFileStr = todoFile.getAbsolutePath();
-            new MessageToTray(new ActionDefault("https://github.com/Vachok/ftpplus/issues")).warn(readFileStr);
+        File todoFileHome = new File("G:\\My_Proj\\FtpClientPlus\\modules\\networker\\TODO");
+        File todoFileWork = new File("C:\\Users\\ikudryashov\\IdeaProjects\\spring\\modules\\networker\\TODO");
+        if (todoFileHome.exists() || todoFileWork.exists()) {
+            new MessageToTray(new ActionDefault("https://github.com/Vachok/ftpplus/issues")).warn("CHECK TODO!");
         }
         else{
-            messageToUser.info(todoFile + " is false");
+            messageToUser.info(todoFileHome + " is false");
         }
     };
 
