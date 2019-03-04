@@ -71,6 +71,8 @@ public class DiapazonedScan implements Runnable {
 
     private long stopClassStampLong = System.currentTimeMillis();
 
+    private long stArt;
+
     public long getStopClassStampLong() {
         return stopClassStampLong;
     }
@@ -181,6 +183,7 @@ public class DiapazonedScan implements Runnable {
         final long stArt = System.currentTimeMillis();
         final String classMeth = "DiapazonedScan.scanNew";
         Path p = Paths.get(ROOT_PATH_STR + "\\lan\\200_" + System.currentTimeMillis() / 1000 + ".scan");
+        this.stArt = stArt;
 
         File newLanFile = new File(ConstantsNet.FILENAME_AVAILABLELASTTXT);
 
@@ -209,6 +212,7 @@ public class DiapazonedScan implements Runnable {
      */
     @SuppressWarnings ("MagicNumber")
     private void scanOldLan(long stArt) {
+        this.stArt = stArt;
         AppComponents.threadConfig().thrNameSet("DIAold");
         File oldLANFile = new File(ConstantsNet.FILENAME_OLDLANTXT);
         Path p =
@@ -316,8 +320,10 @@ public class DiapazonedScan implements Runnable {
         catch(NullPointerException e){
             messageToUser.info("NO FILES!");
         }
-        LOGGER.info("DiapazonedScan.toString");
-        final StringBuilder sb = new StringBuilder("DiapazonedScan{ ");
+        final StringBuilder sb = new StringBuilder("DiapazonedScan. Start at ")
+            .append(new Date(stArt)).append("( ").append(TimeUnit.MILLISECONDS.toMinutes(ConstantsFor.getAtomicTime() - stArt)).append(" min) ")
+            .append("{ ");
+
         sb
             .append("<a href=\"/showalldev\">ALL_DEVICES ")
             .append(ALL_DEVICES_LOCAL_DEQUE.size())

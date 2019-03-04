@@ -164,7 +164,7 @@ class ConditionChecker {
      @param response {@link HttpServletResponse}
      */
     private static void allDevNotNull(Model model, HttpServletResponse response) {
-        final float scansInMin = 45.9f;
+        final float scansInMin = 63.9f;
         float minLeft = ConstantsNet.getAllDevices().remainingCapacity() / scansInMin;
         String attributeValue = new StringBuilder().append(minLeft).append(" ~minLeft. ")
             .append(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(( long ) minLeft))).toString();
@@ -173,7 +173,7 @@ class ConditionChecker {
             .readFile(ConstantsNet.FILENAME_AVAILABLELASTTXT) + "<p>" + FileSystemWorker
             .readFile(ConstantsNet.FILENAME_OLDLANTXT) + "<p>" + FileSystemWorker
             .readFile(ConstantsNet.FILENAME_SERVTXT));
-        response.addHeader(ConstantsFor.HEAD_REFRESH, "60");
+        response.addHeader(ConstantsFor.HEAD_REFRESH, "45");
     }
 
     @Override
