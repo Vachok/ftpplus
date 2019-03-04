@@ -279,8 +279,7 @@ public class NetScanCtr {
         } else {
             if (3 > remainPC) {
                 PROPERTIES.setProperty(ConstantsFor.PR_TOTPC, String.valueOf(lastScanMAP.size()));
-                boolean setProps = AppComponents.getOrSetProps(PROPERTIES);
-                messageToUser.info("NetScanCtr.mapSizeBigger", "setProps", " = " + setProps);
+                messageToUser.info("NetScanCtr.mapSizeBigger", "setProps", " = " + PROPERTIES.size());
             }
         }
         timeCheck(remainPC, lastSt / 1000, request, model);

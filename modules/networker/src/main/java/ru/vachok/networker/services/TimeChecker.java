@@ -44,7 +44,6 @@ public class TimeChecker implements Callable<TimeInfo> {
             ntpudpClientTime = ntpudpClient.getTime(InetAddress.getByName("rups00.eatmeat.ru"));
         } catch (IOException e) {
             messageToUser.errorAlert("TimeChecker", "ntpCheck", e.getMessage());
-            FileSystemWorker.error("TimeChecker.ntpCheck", e);
         }
         Objects.requireNonNull(ntpudpClientTime).computeDetails();
         ntpudpClient.close();

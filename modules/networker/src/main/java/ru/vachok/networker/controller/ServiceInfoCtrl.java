@@ -6,16 +6,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import ru.vachok.networker.AppInfoOnLoad;
-import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.ExitApp;
-import ru.vachok.networker.TForms;
+import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.*;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.DiapazonedScan;
 import ru.vachok.networker.net.enums.ConstantsNet;
+import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.MyCalen;
 import ru.vachok.networker.services.SpeedChecker;
 
@@ -28,10 +27,7 @@ import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Stream;
 
@@ -52,15 +48,14 @@ public class ServiceInfoCtrl {
 
     private boolean authReq = false;
 
+    private static final Properties LOC_PR = AppComponents.getOrSetProps();
+
     /**
      {@link Visitor}
      */
     private Visitor visitor = null;
 
-    private float getLast() {
-        return TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() -
-            Long.parseLong(AppComponents.getOrSetProps().getProperty("lasts", 1544816520000L + ""))) / 60f / 24f;
-    }
+    private MessageToUser messageToUser = new MessageLocal();
 
     private void modModMaker(Model model, HttpServletRequest request, Visitor visitor) throws ExecutionException, InterruptedException {
         this.visitor = ConstantsFor.getVis(request);
@@ -72,7 +67,7 @@ public class ServiceInfoCtrl {
             .append("<b><i>").append(AppComponents.versionInfo().toString()).append("</i></b><p>")
             .append(ConstantsNet.getSshMapStr()).append("<p>")
             .append(new AppInfoOnLoad().toString()).append(" ").append(AppInfoOnLoad.class.getSimpleName()).append("<p>")
-            .append(new TForms().fromArray(AppComponents.getOrSetProps(), true)).append("<p>")
+            .append(new TForms().fromArray(LOC_PR, true)).append("<p>")
             .append("<p><font color=\"grey\">").append(listFilesToReadStr()).append("</font>")
             .toString();
         model.addAttribute(ConstantsFor.ATT_TITLE, getLast() + " (" + getLast() * ConstantsFor.ONE_DAY_HOURS + ")");
@@ -97,6 +92,11 @@ public class ServiceInfoCtrl {
         model.addAttribute("res", resValue);
         model.addAttribute("back", request.getHeader(ConstantsFor.ATT_REFERER.toLowerCase()));
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<br>" + getJREVers());
+    }
+
+    private float getLast() {
+        return TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() -
+            Long.parseLong(LOC_PR.getProperty("lasts", 1544816520000L + ""))) / 60f / 24f;
     }
 
     private String getJREVers() {
@@ -262,7 +262,7 @@ public class ServiceInfoCtrl {
             reachable = byName.isReachable(1000);
         }
         catch(IOException e){
-            LOGGER.error(e.getMessage(), e);
+            messageToUser.errorAlert("ServiceInfoCtrl", "pingGit", e.getMessage());
         }
         String s = "</b> srv-git.eatmeat.ru.</font> Checked at: <i>";
         String s2 = "</i><br>";

@@ -44,6 +44,8 @@ class NetScanFileWorker {
      */
     private File oldLanLastScan = new File(ConstantsNet.FILENAME_OLDLANTXT);
 
+    private File srvFile;
+
     /**
      @param newLanLastScan {@link #newLanLastScan}
      */
@@ -124,6 +126,11 @@ class NetScanFileWorker {
     }
 
     private NetScanFileWorker() {
+    }
+
+    public void setSrvScan(File srvFile) {
+        this.srvFile = srvFile;
+        messageToUser.info("NetScanFileWorker.setSrvScan", "srvFile", " = " + srvFile.getAbsolutePath());
     }
 
     @Override

@@ -148,7 +148,6 @@ public class PfListsCtr {
             model.addAttribute(ATT_METRIC, msg + " min");
         }
         response.addHeader(ConstantsFor.HEAD_REFRESH, refreshRate);
-        AppComponents.getOrSetProps(true);
         return ConstantsFor.BEANNAME_PFLISTS;
     }
 

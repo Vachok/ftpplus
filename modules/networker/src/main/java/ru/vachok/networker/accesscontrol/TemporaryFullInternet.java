@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 
 /**
@@ -135,7 +135,18 @@ public class TemporaryFullInternet implements Runnable {
                 messageToUser.info(classMeth, "y", " = " + y + " (" + new Date(y) + ")");
             }
         }
-        AppComponents.threadConfig().executeAsThread(() -> ConstantsNet.setSSHMapStr(new TForms().sshCheckerMapWintDates(sshCheckerMap, true)));
+        Future<?> future =
+            AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor()
+                .submit(() -> ConstantsNet.setSSHMapStr(new TForms().sshCheckerMapWintDates(sshCheckerMap, true)));
+        try{
+            future.get(25, TimeUnit.SECONDS);
+        }
+        catch(InterruptedException | TimeoutException | ExecutionException e){
+            messageToUser.errorAlert("TemporaryFullInternet", "sshChecker", e.getMessage());
+            FileSystemWorker.error("TemporaryFullInternet.sshChecker", e);
+        }
+        messageToUser.warn("TemporaryFullInternet.sshChecker", "future.isDone()", " = " + future.isDone());
+        messageToUser.warn("TemporaryFullInternet.sshChecker", "future.isDone()", " = " + future.isCancelled());
         return sshCheckerMap;
     }
 

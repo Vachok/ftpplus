@@ -107,7 +107,7 @@ public enum ConstantsNet {;
      */
     public static final String DOMAIN_EATMEATRU = ".eatmeat.ru";
 
-    public static final int IPS_IN_VELKOM_VLAN = 5610;
+    public static final int IPS_IN_VELKOM_VLAN = 12555;
 
     public static final int TIMEOUT240 = 240;
 
@@ -122,6 +122,8 @@ public enum ConstantsNet {;
     private static final Map<String, Long> SSH_CHECKER_MAP = new HashMap<>();
 
     private static final BlockingDeque<String> ALL_DEVICES = new LinkedBlockingDeque<>(IPS_IN_VELKOM_VLAN);
+
+    public static final String FILENAME_SERVTXT = "srv.txt";
 
     /**
      new {@link HashSet}
@@ -188,7 +190,7 @@ public enum ConstantsNet {;
         return ALL_DEVICES;
     }
 
-    public static synchronized void setSSHMapStr(String sshMapStr) {
+    public static void setSSHMapStr(String sshMapStr) {
         ConstantsNet.sshMapStr = sshMapStr;
     }
 

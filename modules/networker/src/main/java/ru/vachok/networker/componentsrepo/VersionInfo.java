@@ -121,6 +121,7 @@ public class VersionInfo {
         }
         try{
             PROPERTIES.setProperty(ConstantsFor.PR_APP_VERSION, getAppVersion());
+            AppComponents.getOrSetProps(PROPERTIES);
         }
         catch(NullPointerException e){
             setAppVersion("Unknown ver");

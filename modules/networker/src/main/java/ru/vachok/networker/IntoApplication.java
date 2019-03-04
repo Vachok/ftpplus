@@ -262,7 +262,6 @@ public class IntoApplication {
         props.setProperty("build.version", LOCAL_PROPS.getProperty(ConstantsFor.PR_APP_VERSION));
         props.setProperty(ConstantsFor.PR_QSIZE, ConstantsNet.IPS_IN_VELKOM_VLAN + "");
         LOCAL_PROPS.putAll(props);
-        AppComponents.getOrSetProps(props);
     }
 
     @Override
