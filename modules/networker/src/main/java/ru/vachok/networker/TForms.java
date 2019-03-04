@@ -371,7 +371,7 @@ public class TForms {
         }
     }
 
-    public String sshCheckerMapWintDates(Map<String, Long> sshCheckerMap, boolean isHTML) {
+    public synchronized String sshCheckerMapWintDates(Map<String, Long> sshCheckerMap, boolean isHTML) {
         this.brStringBuilder = new StringBuilder();
         this.nStringBuilder = new StringBuilder();
         sshCheckerMap.forEach((x, y) -> {
