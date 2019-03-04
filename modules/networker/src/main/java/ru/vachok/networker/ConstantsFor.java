@@ -29,10 +29,8 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.SecureRandom;
 import java.time.Year;
-import java.util.Collections;
-import java.util.Date;
 import java.util.List;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -490,8 +488,10 @@ public enum ConstantsFor {
         if (delay < MIN_DELAY) {
             delay = MIN_DELAY;
             return delay;
-        } else if (ConstantsFor.thisPC().toLowerCase().contains("no")) {
-            return 1;
+        }
+        else
+            if(ConstantsFor.thisPC().toLowerCase().contains("no") || ConstantsFor.thisPC().toLowerCase().contains("home")){
+                return 3;
         } else {
             return delay;
         }
