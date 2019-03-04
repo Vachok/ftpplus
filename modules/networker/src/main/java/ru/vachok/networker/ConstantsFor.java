@@ -6,6 +6,7 @@ import org.apache.commons.net.ntp.TimeInfo;
 import org.slf4j.LoggerFactory;
 import org.springframework.ui.Model;
 import org.springframework.web.multipart.MultipartFile;
+import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.InitProperties;
@@ -20,7 +21,6 @@ import ru.vachok.networker.mailserver.MailRule;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.TimeChecker;
 import ru.vachok.networker.systray.ActionDefault;
-import ru.vachok.networker.systray.MessageToTray;
 
 import javax.servlet.http.HttpServletRequest;
 import java.awt.*;
@@ -372,14 +372,13 @@ public enum ConstantsFor {
     public static final int PR_LPORT = Integer.parseInt(PROPS.getProperty("lport", "9990"));
 
     public static final Runnable INFO_MSG_RUNNABLE = () -> {
-
         File todoFileHome = new File("G:\\My_Proj\\FtpClientPlus\\modules\\networker\\TODO");
         File todoFileWork = new File("C:\\Users\\ikudryashov\\IdeaProjects\\spring\\modules\\networker\\TODO");
         if(todoFileHome.exists() || todoFileWork.exists()){
-            new MessageToTray(new ActionDefault("https://github.com/Vachok/ftpplus/issues")).warn("CHECK TODO!");
+            new MessageSwing(new ActionDefault("https://github.com/Vachok/ftpplus/issues")).info("CHECK TODO!");
         }
         else{
-            messageToUser.info(todoFileHome + " is false");
+            messageToUser.info("ConstantsFor.INFO_MSG_RUNNABLE", "thisPC()", " = " + thisPC());
         }
     };
 

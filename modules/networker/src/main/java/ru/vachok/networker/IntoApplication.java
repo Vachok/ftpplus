@@ -123,7 +123,6 @@ public class IntoApplication {
         Runnable mySrv = MyServer.getI();
         EXECUTOR.submit(infoAndSched);
         EXECUTOR.submit(mySrv);
-        EXECUTOR.submit(ConstantsFor.INFO_MSG_RUNNABLE);
         EXECUTOR.submit(IntoApplication::getWeekPCStats);
     }
 
