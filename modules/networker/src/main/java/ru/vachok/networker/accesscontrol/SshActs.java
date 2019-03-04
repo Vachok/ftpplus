@@ -30,7 +30,10 @@ import java.nio.file.AccessDeniedException;
 import java.time.LocalTime;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Stream;
 
 
@@ -38,9 +41,19 @@ import java.util.stream.Stream;
  SSH-actions class
 
  @since 29.11.2018 (13:01) */
-@SuppressWarnings ({"WeakerAccess", "ClassWithTooManyFields"})
-@Service (ConstantsFor.ATT_SSH_ACTS)
+@SuppressWarnings({"WeakerAccess", "ClassWithTooManyFields"})
+@Service(ConstantsFor.ATT_SSH_ACTS)
 public class SshActs {
+
+    /**
+     SSH-command
+     */
+    static final String SUDO_ECHO = "sudo echo ";
+
+    /**
+     SSH-command
+     */
+    static final String SSH_SUDO_GREP_V = "sudo grep -v '";
 
     /**
      {@link AppComponents#getLogger(String)}
@@ -59,6 +72,8 @@ public class SshActs {
     private static final String SSH_PING5_200_1 = "ping -c 5 10.200.200.1;";
 
     private static final String SSH_INITPF = "sudo /etc/initpf.fw;";
+
+    private static final String DEFAULT_SERVER_TO_SSH = whatSrvNeed();
 
     /**
      Имя ПК для разрешения
@@ -100,39 +115,16 @@ public class SshActs {
 
     private boolean vipNet = false;
 
-    /**
-     SSH-command
-     */
-    static final String SUDO_ECHO = "sudo echo ";
-
-    /**
-     SSH-command
-     */
-    static final String SSH_SUDO_GREP_V = "sudo grep -v '";
-
     public void setIpAddrOnly(String ipAddrOnly) {
         this.ipAddrOnly = ipAddrOnly;
-    }
-
-    public void setNumOfHours(String numOfHours) {
-        this.numOfHours = numOfHours;
-    }
-
-    public void setUserInput(String userInput) {
-        this.userInput = userInput;
     }
 
     public String getNumOfHours() {
         return numOfHours;
     }
 
-    public void setPcName(String pcName) {
-        if(pcName.contains(ConstantsNet.DOMAIN_EATMEATRU)){
-            this.pcName = pcName;
-        }
-        else{
-            this.pcName = new NameOrIPChecker(this.pcName).checkPat(pcName);
-        }
+    public void setNumOfHours(String numOfHours) {
+        this.numOfHours = numOfHours;
     }
 
     public String getDelDomain() {
@@ -155,8 +147,20 @@ public class SshActs {
         return pcName;
     }
 
+    public void setPcName(String pcName) {
+        if (pcName.contains(ConstantsNet.DOMAIN_EATMEATRU)) {
+            this.pcName = pcName;
+        } else {
+            this.pcName = new NameOrIPChecker(this.pcName).checkPat(pcName);
+        }
+    }
+
     public String getUserInput() {
         return userInput;
+    }
+
+    public void setUserInput(String userInput) {
+        this.userInput = userInput;
     }
 
     public String getInet() {
@@ -184,6 +188,32 @@ public class SshActs {
     }
 
     /**
+     Лог переключений инета.
+
+     @return {@code "sudo cat /home/kudr/inet.log"} or {@link InterruptedException}, {@link ExecutionException}, {@link TimeoutException}
+     */
+    private String getInetLog() {
+        AppComponents.threadConfig().thrNameSet("iLog");
+        SSHFactory sshFactory = new SSHFactory.Builder(ConstantsFor.IPADDR_SRVNAT, "sudo cat /home/kudr/inet.log", getClass().getSimpleName()).build();
+        Future<String> submit = AppComponents.threadConfig().getTaskExecutor().submit(sshFactory);
+        try {
+            return submit.get(10, TimeUnit.SECONDS);
+        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+            LOGGER.error("SshActs .getInetLog: {}", e.getMessage());
+            FileSystemWorker.error("SshActs.getInetLog", e);
+            return e.getMessage();
+        }
+    }
+
+    private static String whatSrvNeed() {
+        if (ConstantsFor.thisPC().toLowerCase().contains("rups")) {
+            return ConstantsFor.IPADDR_SRVNAT;
+        } else {
+            return ConstantsFor.IPADDR_SRVGIT;
+        }
+    }
+
+    /**
      Traceroute
      <p>
      Соберём {@link SSHFactory} - {@link SSHFactory.Builder#build()} ({@link ConstantsFor#IPADDR_SRVGIT}, "traceroute ya.ru;exit") <br>
@@ -204,18 +234,16 @@ public class SshActs {
         SSHFactory sshFactory = new SSHFactory.Builder(ConstantsFor.IPADDR_SRVGIT, "traceroute ya.ru;exit", getClass().getSimpleName()).build();
         String callForRoute = null;
         Future<String> submitTrace = AppComponents.threadConfig().getTaskExecutor().submit(sshFactory);
-        try{
+        try {
             callForRoute = submitTrace.get(30, TimeUnit.SECONDS);
-            if(callForRoute.contains("91.210.85.")){
+            if (callForRoute.contains("91.210.85.")) {
                 stringBuilder.append("<h3>FORTEX</h3>");
-            }
-            else{
-                if(callForRoute.contains("176.62.185.129")){
+            } else {
+                if (callForRoute.contains("176.62.185.129")) {
                     stringBuilder.append("<h3>ISTRANET</h3>");
                 }
             }
-        }
-        catch(InterruptedException | ExecutionException | TimeoutException e){
+        } catch (InterruptedException | ExecutionException | TimeoutException e) {
             LOGGER.error("SshActs  providerTraceStr: {}", e.getMessage());
             FileSystemWorker.error("SshActs.providerTraceStr", e);
             stringBuilder.append(e.getMessage());
@@ -223,29 +251,10 @@ public class SshActs {
         }
         String logStr = "LOG: ";
         callForRoute = callForRoute + "<br>LOG: " + getInetLog();
-        if(callForRoute.contains(logStr)){
+        if (callForRoute.contains(logStr)) {
             stringBuilder.append("<br><font color=\"gray\">").append(callForRoute.split(logStr)[1].replaceAll(";", "<br>")).append("</font>");
         }
         return stringBuilder.toString();
-    }
-
-    /**
-     Лог переключений инета.
-
-     @return {@code "sudo cat /home/kudr/inet.log"} or {@link InterruptedException}, {@link ExecutionException}, {@link TimeoutException}
-     */
-    private String getInetLog() {
-        AppComponents.threadConfig().thrNameSet("iLog");
-        SSHFactory sshFactory = new SSHFactory.Builder(ConstantsFor.IPADDR_SRVNAT, "sudo cat /home/kudr/inet.log", getClass().getSimpleName()).build();
-        Future<String> submit = AppComponents.threadConfig().getTaskExecutor().submit(sshFactory);
-        try{
-            return submit.get(10, TimeUnit.SECONDS);
-        }
-        catch(InterruptedException | ExecutionException | TimeoutException e){
-            LOGGER.error("SshActs .getInetLog: {}", e.getMessage());
-            FileSystemWorker.error("SshActs.getInetLog", e);
-            return e.getMessage();
-        }
     }
 
     /**
@@ -253,7 +262,7 @@ public class SshActs {
 
      @return результат выполненния
      */
-    @SuppressWarnings ("DuplicateStringLiteralInspection")
+    @SuppressWarnings("DuplicateStringLiteralInspection")
     private String allowDomainAdd() {
         AppComponents.threadConfig().thrNameSet("aDom");
         this.allowDomain = checkDName();
@@ -276,7 +285,7 @@ public class SshActs {
             .append(SSH_SQUID_RECONFIGURE)
 
             .append("exit;").toString();
-        String call = "<b>" + new SSHFactory.Builder(ConstantsFor.IPADDR_SRVNAT, commandSSH, getClass().getSimpleName()).build().call() + "</b>";
+        String call = "<b>" + new SSHFactory.Builder(DEFAULT_SERVER_TO_SSH, commandSSH, getClass().getSimpleName()).build().call() + "</b>";
         call = call + "<font color=\"gray\"><br><br>" + new WhoIsWithSRV().whoIs(resolveIp(allowDomain)) + "</font>";
         writeToLog(new String((call + "\n\n" + toString()).getBytes(), Charset.defaultCharset()));
         return call;
@@ -290,22 +299,20 @@ public class SshActs {
      */
     private String checkDName() {
         this.allowDomain = allowDomain.replace("http://", ".");
-        if(allowDomain.contains("https")){
+        if (allowDomain.contains("https")) {
             this.allowDomain = allowDomain.replace(STR_HTTPS, ".");
         }
         char[] chars = allowDomain.toCharArray();
-        try{
+        try {
             Character lastChar = chars[chars.length - 1];
-            if(lastChar.equals('/')){
+            if (lastChar.equals('/')) {
                 chars[chars.length - 1] = ' ';
                 this.allowDomain = new String(chars).trim();
-            }
-            else{
+            } else {
                 this.allowDomain = new String(allowDomain.getBytes(), Charset.defaultCharset());
             }
             return allowDomain;
-        }
-        catch(ArrayIndexOutOfBoundsException e){
+        } catch (ArrayIndexOutOfBoundsException e) {
             return e.getMessage();
         }
     }
@@ -319,10 +326,9 @@ public class SshActs {
      */
     private String resolveIp(String s) {
         InetAddress inetAddress = null;
-        try{
+        try {
             inetAddress = InetAddress.getByName(s.replaceFirst("\\Q.\\E", ""));
-        }
-        catch(UnknownHostException e){
+        } catch (UnknownHostException e) {
             String msg = "SshActs" + ".resolveIp\n" + e.getMessage();
             LOGGER.error(msg);
             FileSystemWorker.error("SshActs.resolveIp", e);
@@ -338,10 +344,9 @@ public class SshActs {
      @param s лог, для записи
      */
     private void writeToLog(String s) {
-        try(OutputStream outputStream = new FileOutputStream(this.getClass().getSimpleName() + ".log")){
+        try (OutputStream outputStream = new FileOutputStream(this.getClass().getSimpleName() + ".log")) {
             outputStream.write(s.getBytes());
-        }
-        catch(IOException e){
+        } catch (IOException e) {
             LOGGER.error("writeToLog : {}\n{}", e.getMessage(), new TForms().fromArray(e, false));
             FileSystemWorker.error("SshActs.writeToLog", e);
         }
@@ -352,7 +357,7 @@ public class SshActs {
 
      @return результат выполнения
      */
-    @SuppressWarnings ("DuplicateStringLiteralInspection")
+    @SuppressWarnings("DuplicateStringLiteralInspection")
     private String allowDomainDel() {
         AppComponents.threadConfig().thrNameSet("dDom");
         StringBuilder stringBuilder = new StringBuilder();
@@ -373,7 +378,7 @@ public class SshActs {
                 .append(SSH_SQUID_RECONFIGURE)
 
                 .append("exit;").toString();
-            String resStr = new SSHFactory.Builder(ConstantsFor.IPADDR_SRVNAT, sshCom, getClass().getSimpleName()).build().call();
+            String resStr = new SSHFactory.Builder(DEFAULT_SERVER_TO_SSH, sshCom, getClass().getSimpleName()).build().call();
             stringBuilder.append(resStr);
         });
         writeToLog(stringBuilder.toString());
@@ -386,29 +391,27 @@ public class SshActs {
     private String checkDNameDel() {
         AppComponents.threadConfig().thrNameSet("chkDom");
         this.delDomain = delDomain.replace("http://", ".");
-        if(delDomain.contains(STR_HTTPS)){
+        if (delDomain.contains(STR_HTTPS)) {
             this.delDomain = delDomain.replace(STR_HTTPS, ".");
         }
         char[] chars = delDomain.toCharArray();
-        try{
+        try {
             Character lastChar = chars[chars.length - 1];
-            if(lastChar.equals('/')){
+            if (lastChar.equals('/')) {
                 chars[chars.length - 1] = ' ';
                 this.delDomain = new String(chars).trim();
-            }
-            else{
+            } else {
                 this.delDomain = new String(delDomain.getBytes(), Charset.defaultCharset());
             }
             return delDomain;
-        }
-        catch(ArrayIndexOutOfBoundsException e){
+        } catch (ArrayIndexOutOfBoundsException e) {
             return e.getMessage();
         }
     }
 
-    @SuppressWarnings ("MethodWithMultipleReturnPoints")
+    @SuppressWarnings("MethodWithMultipleReturnPoints")
     private String execByWhatListSwitcher(int whatList, boolean iDel) {
-        if(iDel){
+        if (iDel) {
             return new StringBuilder()
                 .append(SSH_SUDO_GREP_V)
                 .append(Objects.requireNonNull(pcName))
@@ -422,11 +425,10 @@ public class SshActs {
                 .append(Objects.requireNonNull(ipAddrOnly))
                 .append("' /etc/pf/tempfull > /etc/pf/tempfull_tmp;sudo cp /etc/pf/tempfull_tmp /etc/pf/tempfull;sudo squid -k reconfigure;sudo " +
                     "/etc/initpf.fw").toString();
-        }
-        else{
+        } else {
             this.comment = Objects.requireNonNull(ipAddrOnly) + comment;
             String echoSudo = SUDO_ECHO;
-            switch(whatList){
+            switch (whatList) {
                 case 1:
                     return echoSudo + "\"" + comment + "\"" + " >> /etc/pf/vipnet;sudo /etc/initpf.fw;";
                 case 2:
@@ -486,13 +488,13 @@ public class SshActs {
 
     @Override
     public boolean equals(Object o) {
-        if(this==o){
+        if (this == o) {
             return true;
         }
-        if(o==null || getClass()!=o.getClass()){
+        if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        SshActs sshActs = ( SshActs ) o;
+        SshActs sshActs = (SshActs) o;
 
         return Objects.equals(pcName, sshActs.pcName) &&
             Objects.equals(ipAddrOnly, sshActs.ipAddrOnly) &&
@@ -520,7 +522,7 @@ public class SshActs {
 
      @since 01.12.2018 (9:58)
      */
-    @SuppressWarnings ("SameReturnValue")
+    @SuppressWarnings("SameReturnValue")
     @Controller
     public class SshActsCTRL {
 
@@ -536,27 +538,21 @@ public class SshActs {
             this.sshActs = sshActs;
         }
 
-        @PostMapping (URL_SSHACTS)
+        @PostMapping(URL_SSHACTS)
         public String sshActsPOST(@ModelAttribute SshActs sshActs, Model model, HttpServletRequest request) throws AccessDeniedException {
             String pcReq = request.getRemoteAddr().toLowerCase();
-            if(getAuthentic(pcReq)){
+            if (getAuthentic(pcReq)) {
                 this.sshActs = sshActs;
                 model.addAttribute("head", new PageFooter().getHeaderUtext());
                 model.addAttribute(ConstantsFor.ATT_SSH_ACTS, sshActs);
                 model.addAttribute(ConstantsFor.ATT_SSHDETAIL, sshActs.getPcName());
                 return PAGE_NAME;
-            }
-            else{
+            } else {
                 throw new AccessDeniedException("NOT Allowed!");
             }
         }
 
-        private boolean getAuthentic(String pcReq) {
-            return
-                Stream.of("10.10.111.", "10.200.213.85", "10.200.213.200", "0:0:0:0", "172.16.200.").anyMatch(pcReq::contains);
-        }
-
-        @GetMapping (URL_SSHACTS)
+        @GetMapping(URL_SSHACTS)
         public String sshActsGET(Model model, HttpServletRequest request) throws AccessDeniedException {
             Visitor visitor = ConstantsFor.getVis(request);
             sshActs.setAllowDomain("");
@@ -565,11 +561,11 @@ public class SshActs {
             String pcReq = request.getRemoteAddr().toLowerCase();
             LOGGER.warn(pcReq);
             setInet(pcReq);
-            if(getAuthentic(pcReq)){
+            if (getAuthentic(pcReq)) {
                 model.addAttribute(ConstantsFor.ATT_TITLE, visitor.getTimeSpend());
                 model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
                 model.addAttribute(ConstantsFor.ATT_SSH_ACTS, sshActs);
-                if(request.getQueryString()!=null){
+                if (request.getQueryString() != null) {
                     parseReq(request.getQueryString());
                     model.addAttribute(ConstantsFor.ATT_TITLE, sshActs.getPcName());
                     sshActs.setPcName(sshActs.getPcName());
@@ -577,10 +573,46 @@ public class SshActs {
                 }
                 model.addAttribute(ConstantsFor.ATT_SSHDETAIL, sshActs.toString());
                 return PAGE_NAME;
-            }
-            else{
+            } else {
                 throw new AccessDeniedException("NOT Allowed! ");
             }
+        }
+
+        @PostMapping("/allowdomain")
+        public String allowPOST(@ModelAttribute SshActs sshActs, Model model) {
+            this.sshActs = sshActs;
+            model.addAttribute(ConstantsFor.ATT_TITLE, sshActs.getAllowDomain() + " добавлен");
+            model.addAttribute(ConstantsFor.ATT_SSH_ACTS, sshActs);
+            model.addAttribute("ok", sshActs.toString() + "<p>" + sshActs.allowDomainAdd());
+            model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
+            return "ok";
+        }
+
+        @PostMapping("/deldomain")
+        public String delDomPOST(@ModelAttribute SshActs sshActs, Model model) {
+            this.sshActs = sshActs;
+            model.addAttribute(ConstantsFor.ATT_TITLE, sshActs.getDelDomain() + " удалён");
+            model.addAttribute(ConstantsFor.ATT_SSH_ACTS, sshActs);
+            model.addAttribute("ok", sshActs.toString() + "<p>" + sshActs.allowDomainDel());
+            model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
+            return "ok";
+        }
+
+        @PostMapping("/tmpfullnet")
+        public String tempFullInetAccess(@ModelAttribute SshActs sshActs, Model model) {
+            this.sshActs = sshActs;
+            TemporaryFullInternet temporaryFullInternet = new TemporaryFullInternet(sshActs.getUserInput(), sshActs.getNumOfHours());
+            model.addAttribute(ConstantsFor.ATT_SSH_ACTS, sshActs);
+            model.addAttribute(ConstantsFor.ATT_TITLE, ConstantsFor.getMemoryInfo());
+            model.addAttribute("ok", temporaryFullInternet.doAdd());
+            model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
+            sshActs.setNumOfHours(String.valueOf(Math.abs(TimeUnit.SECONDS.toHours(LocalTime.parse("18:30").toSecondOfDay() - LocalTime.now().toSecondOfDay()))));
+            return "ok";
+        }
+
+        private boolean getAuthentic(String pcReq) {
+            return
+                Stream.of("10.10.111.", "10.200.213.85", "10.200.213.200", "0:0:0:0", "172.16.200.").anyMatch(pcReq::contains);
         }
 
         /**
@@ -592,23 +624,22 @@ public class SshActs {
          */
         private void parseReq(String queryString) {
             String qStr = " ";
-            try{
+            try {
                 sshActs.setPcName(queryString.split("&")[0].replaceAll("pcName=", ""));
                 qStr = queryString.split("&")[1];
-            }
-            catch(ArrayIndexOutOfBoundsException e){
+            } catch (ArrayIndexOutOfBoundsException e) {
                 setAllFalse();
             }
-            if(qStr.equalsIgnoreCase("inet=std")){
+            if (qStr.equalsIgnoreCase("inet=std")) {
                 setSquid();
             }
-            if(qStr.equalsIgnoreCase("inet=limit")){
+            if (qStr.equalsIgnoreCase("inet=limit")) {
                 setSquidLimited();
             }
-            if(qStr.equalsIgnoreCase("inet=full")){
+            if (qStr.equalsIgnoreCase("inet=full")) {
                 setTempFull();
             }
-            if(qStr.equalsIgnoreCase("inet=nat")){
+            if (qStr.equalsIgnoreCase("inet=nat")) {
                 setVipNet();
             }
             String msg = toString();
@@ -621,38 +652,6 @@ public class SshActs {
             sb.append("sshActs=").append(sshActs.hashCode());
             sb.append('}');
             return sb.toString();
-        }
-
-        @PostMapping ("/allowdomain")
-        public String allowPOST(@ModelAttribute SshActs sshActs, Model model) {
-            this.sshActs = sshActs;
-            model.addAttribute(ConstantsFor.ATT_TITLE, sshActs.getAllowDomain() + " добавлен");
-            model.addAttribute(ConstantsFor.ATT_SSH_ACTS, sshActs);
-            model.addAttribute("ok", sshActs.toString() + "<p>" + sshActs.allowDomainAdd());
-            model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
-            return "ok";
-        }
-
-        @PostMapping ("/deldomain")
-        public String delDomPOST(@ModelAttribute SshActs sshActs, Model model) {
-            this.sshActs = sshActs;
-            model.addAttribute(ConstantsFor.ATT_TITLE, sshActs.getDelDomain() + " удалён");
-            model.addAttribute(ConstantsFor.ATT_SSH_ACTS, sshActs);
-            model.addAttribute("ok", sshActs.toString() + "<p>" + sshActs.allowDomainDel());
-            model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
-            return "ok";
-        }
-
-        @PostMapping ("/tmpfullnet")
-        public String tempFullInetAccess(@ModelAttribute SshActs sshActs, Model model) {
-            this.sshActs = sshActs;
-            TemporaryFullInternet temporaryFullInternet = new TemporaryFullInternet(sshActs.getUserInput(), sshActs.getNumOfHours());
-            model.addAttribute(ConstantsFor.ATT_SSH_ACTS, sshActs);
-            model.addAttribute(ConstantsFor.ATT_TITLE, ConstantsFor.getMemoryInfo());
-            model.addAttribute("ok", temporaryFullInternet.doAdd());
-            model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
-            sshActs.setNumOfHours(String.valueOf(Math.abs(TimeUnit.SECONDS.toHours(LocalTime.parse("18:30").toSecondOfDay() - LocalTime.now().toSecondOfDay()))));
-            return "ok";
         }
     }
 }

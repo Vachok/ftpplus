@@ -23,6 +23,8 @@ import java.util.concurrent.RejectedExecutionException;
 @Service
 public class PfListsSrv {
 
+    private static final String DEFAULT_CONNECT_SRV = whatSrv();
+
     /**
      {@link PfLists}
      */
@@ -74,6 +76,14 @@ public class PfListsSrv {
         AppComponents.threadConfig().thrNameSet("pfsrv");
     }
 
+    private static String whatSrv() {
+        if (ConstantsFor.thisPC().toLowerCase().contains("rups")) {
+            return ConstantsFor.IPADDR_SRVNAT;
+        } else {
+            return ConstantsFor.IPADDR_SRVGIT;
+        }
+    }
+
     /**
      Формирует списки <b>pf</b>
      <p>
@@ -86,8 +96,8 @@ public class PfListsSrv {
      @see PfListsCtr
      */
     void makeListRunner() {
-        if(ConstantsNet.IS_RUPS){
-            AppComponents.threadConfig().executeAsThread(() -> buildFactory());
+        if (ConstantsNet.IS_RUPS) {
+            AppComponents.threadConfig().executeAsThread(this::buildFactory);
         } else {
             @NotNull MessageToUser messageToUser;
             try {
@@ -100,7 +110,7 @@ public class PfListsSrv {
     }
 
     String runCom() {
-        return new SSHFactory.Builder(ConstantsFor.IPADDR_SRVNAT, commandForNatStr, getClass().getSimpleName()).build().call();
+        return new SSHFactory.Builder(DEFAULT_CONNECT_SRV, commandForNatStr, getClass().getSimpleName()).build().call();
     }
 
     /**
@@ -121,7 +131,7 @@ public class PfListsSrv {
      */
     private void buildFactory() {
         AppComponents.threadConfig().thrNameSet("pfmake");
-        this.builderInst = new SSHFactory.Builder(ConstantsFor.IPADDR_SRVNAT, commandForNatStr, getClass().getSimpleName());
+        this.builderInst = new SSHFactory.Builder(DEFAULT_CONNECT_SRV, commandForNatStr, getClass().getSimpleName());
         SSHFactory build = builderInst.build();
         if (!new File("a161.pem").exists()) {
             throw new RejectedExecutionException("NO CERTIFICATE a161.pem...");
