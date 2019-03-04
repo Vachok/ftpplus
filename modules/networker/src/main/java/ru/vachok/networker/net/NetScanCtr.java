@@ -213,7 +213,7 @@ public class NetScanCtr {
     @GetMapping("/showalldev")
     public static String allDevices(Model model, HttpServletRequest request, HttpServletResponse response) {
         LOGGER.warn("NetScanCtr.allDevices");
-        model.addAttribute(ConstantsFor.ATT_TITLE, "DiapazonedScan.scanAll");
+        model.addAttribute(ConstantsFor.ATT_TITLE, ConstantsNet.getAllDevices().remainingCapacity() + " ip remain");
         model.addAttribute("pcs", ScanOnline.getI().toString());
         if (request.getQueryString() != null) {
             ConditionChecker.qerNotNullScanAllDevices(model, response);

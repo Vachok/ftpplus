@@ -171,7 +171,8 @@ class ConditionChecker {
         model.addAttribute(ConstantsFor.ATT_TITLE, attributeValue);
         model.addAttribute("pcs", FileSystemWorker
             .readFile(ConstantsNet.FILENAME_AVAILABLELASTTXT) + "<p>" + FileSystemWorker
-            .readFile(ConstantsNet.FILENAME_OLDLANTXT));
+            .readFile(ConstantsNet.FILENAME_OLDLANTXT) + "<p>" + FileSystemWorker
+            .readFile(ConstantsNet.FILENAME_SERVTXT));
         response.addHeader(ConstantsFor.HEAD_REFRESH, "60");
     }
 
