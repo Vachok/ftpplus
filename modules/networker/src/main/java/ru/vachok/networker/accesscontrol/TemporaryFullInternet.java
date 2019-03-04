@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -36,6 +36,8 @@ public class TemporaryFullInternet implements Runnable {
     private static final String STR_SSH_COMMAND = "sshCommand";
 
     private static final Deque<String> MINI_LOGGER = new ArrayDeque<>();
+
+    private static final SSHFactory SSH_FACTORY = new SSHFactory.Builder(SERVER_TO_CONNECT, "ls", TemporaryFullInternet.class.getSimpleName()).build();
 
     @SuppressWarnings("CanBeFinal")
     private String userInput;
@@ -65,27 +67,39 @@ public class TemporaryFullInternet implements Runnable {
     }
 
     String doAdd() {
+        AppComponents.threadConfig().thrNameSet("addSSH");
+        SSH_FACTORY.setCommandSSH("cat /etc/pf/24hrs;exit");
         NameOrIPChecker nameOrIPChecker = new NameOrIPChecker(userInput);
-        String tempFile = new SSHFactory.Builder(SERVER_TO_CONNECT, "cat /etc/pf/24hrs;exit", getClass().getSimpleName()).build().call();
-        String sshCommand;
+        final String tempFile = SSH_FACTORY.call();
+        StringBuilder retBuilder = new StringBuilder();
         String sshIP = String.valueOf(nameOrIPChecker.resolveIP()).split("/")[1];
+
         if (tempFile.contains(sshIP)) {
-            sshCommand = getClass().getSimpleName() + " doAdd " + sshIP + " is exist!<br>" + new TForms().fromArray(sshChecker(), true);
+            retBuilder
+                .append(getClass().getSimpleName())
+                .append(" doAdd ")
+                .append(sshIP)
+                .append(" is exist!<br>")
+                .append(new TForms().fromArray(ConstantsNet.getSshCheckerMap(), true));
         } else {
-            sshCommand = new StringBuilder()
+            String sshCommand = new StringBuilder()
                 .append(SshActs.SUDO_ECHO)
                 .append("\"").append(sshIP).append(" #")
                 .append(delStamp).append("\"").append(" >> /etc/pf/24hrs;").append(INIT_PING_EXIT_STR).toString();
-            sshCommand = new SSHFactory.Builder(SERVER_TO_CONNECT, sshCommand, getClass().getSimpleName()).build().call() + "<p>" + tempFile;
+            SSH_FACTORY.setCommandSSH(sshCommand);
+            retBuilder.append(SSH_FACTORY.call().replaceAll("\n", "<br>"));
         }
-        MINI_LOGGER.add("doAdd(): " + sshCommand);
-        return sshCommand;
+        MINI_LOGGER.add("doAdd(): " + retBuilder.toString());
+        return retBuilder.toString();
     }
 
     private Map<String, Long> sshChecker() {
-        String tempFile = new SSHFactory.Builder(SERVER_TO_CONNECT, "cat /etc/pf/24hrs;exit", getClass().getSimpleName()).build().call();
+        AppComponents.threadConfig().thrNameSet("chkSSH");
+        SSH_FACTORY.setCommandSSH("cat /etc/pf/24hrs;exit");
+        final String tempFile = SSH_FACTORY.call();
         String classMeth = "TemporaryFullInternet.sshChecker";
 
+        final Map<String, Long> sshCheckerMap = ConstantsNet.getSshCheckerMap();
         if (tempFile.isEmpty()) {
             throw new IllegalComponentStateException("File is empty");
         } else {
@@ -93,8 +107,8 @@ public class TemporaryFullInternet implements Runnable {
             List<String> stringList = Arrays.asList(strings);
             stringList.forEach(x -> {
                 try {
-                    ConstantsNet.getSshCheckerMap().put(x.split(" #")[0].trim(), Long.valueOf(x.split(" #")[1]));
-                    MINI_LOGGER.add("sshChecker(): ipTime.put(): " + x);
+                    Long ifAbsent = sshCheckerMap.putIfAbsent(x.split(" #")[0].trim(), Long.valueOf(x.split(" #")[1]));
+                    MINI_LOGGER.add("Added to map = " + x + " " + ifAbsent);
                 } catch (Exception e) {
                     messageToUser.errorAlert("TemporaryFullInternet", "sshChecker", e.getMessage());
                     MINI_LOGGER.add("sshChecker(): " + e.getMessage());
@@ -103,35 +117,36 @@ public class TemporaryFullInternet implements Runnable {
                 }
             });
         }
-        for (Map.Entry<String, Long> entry : ConstantsNet.getSshCheckerMap().entrySet()) {
+
+        for (Map.Entry<String, Long> entry : sshCheckerMap.entrySet()) {
             String x = entry.getKey();
             Long y = entry.getValue();
             String willBeDel = x + " will be deleted at " + LocalDateTime.ofEpochSecond(delStamp / 1000, 0, ZoneOffset.ofHours(3)).toString();
-            this.delStamp = y;
-
-            messageToUser.info(willBeDel);
             MINI_LOGGER.add(willBeDel);
+            this.delStamp = y;
             if (delStamp < ConstantsFor.getAtomicTime()) {
-                messageToUser.warn(getClass().getSimpleName(), x, String.valueOf(doDelete(x)));
-                MINI_LOGGER.add("sshChecker(SSH_CHECKER_MAP.forEach): time is" + true + "\n" + x);
-                messageToUser.warn(classMeth, "delStamp", " = " + delStamp);
-                messageToUser.warn(classMeth, "ConstantsFor.getAtomicTime()", " = " + ConstantsFor.getAtomicTime());
-                messageToUser.error(classMeth, "ConstantsFor.getAtomicTime()-delStamp",
-                    " = " + (ConstantsFor.getAtomicTime() - delStamp));
+                boolean isDelete = doDelete(x);
+                MINI_LOGGER.add("sshChecker(SSH_CHECKER_MAP.forEach): time is" + true + "\n" + x + " is delete = " + isDelete);
+                MINI_LOGGER.add("delStamp = " + delStamp);
+                MINI_LOGGER.add("ConstantsFor.getAtomicTime() = " + ConstantsFor.getAtomicTime());
+                MINI_LOGGER.add("ConstantsFor.getAtomicTime()-delStamp = " + (ConstantsFor.getAtomicTime() - delStamp));
             } else {
                 messageToUser.info(classMeth, "x", " = " + x);
-                messageToUser.info(classMeth, "y", " = " + y);
+                messageToUser.info(classMeth, "y", " = " + y + " (" + new Date(y) + ")");
             }
         }
-        return ConstantsNet.getSshCheckerMap();
+        AppComponents.threadConfig().executeAsThread(() -> ConstantsNet.setSSHMapStr(new TForms().sshCheckerMapWintDates(sshCheckerMap, true)));
+        return sshCheckerMap;
     }
 
     private boolean doDelete(String x) {
-        String sshCommand = new StringBuilder()
+        AppComponents.threadConfig().thrNameSet("delSSH");
+
+        String sshC = new StringBuilder()
             .append(SshActs.SSH_SUDO_GREP_V).append(x).append("' /etc/pf/24hrs > /etc/pf/24hrs_tmp;")
             .append("sudo cp /etc/pf/24hrs_tmp /etc/pf/24hrs;").append(INIT_PING_EXIT_STR).toString();
-        SSHFactory sshFactory = new SSHFactory.Builder(SERVER_TO_CONNECT, sshCommand, getClass().getSimpleName()).build();
-        sshCommand = sshFactory.call();
+        SSH_FACTORY.setCommandSSH(sshC);
+        String sshCommand = SSH_FACTORY.call();
         messageToUser.info("TemporaryFullInternet.doDelete", STR_SSH_COMMAND, " = " + sshCommand);
         Long aLong = ConstantsNet.getSshCheckerMap().remove(x);
         MINI_LOGGER.add(new Date(aLong).toString() + ", doDelete(): " + sshCommand);
@@ -168,21 +183,12 @@ public class TemporaryFullInternet implements Runnable {
 
     @Override
     public void run() {
-        Callable<Map<String, Long>> sshCheckerMAP = this::sshChecker;
-        Future<Map<String, Long>> mapFuture = AppComponents.threadConfig().getTaskExecutor().submit(sshCheckerMAP);
-        String fromArray = null;
+        AppComponents.threadConfig().executeAsThread(this::sshChecker);
+        Map<String, Long> stringLongMap = ConstantsNet.getSshCheckerMap();
         String classMeth = "TemporaryFullInternet.run";
         File miniLog = new File(getClass().getSimpleName() + ".mini");
-        try {
-            Map<String, Long> stringLongMap = mapFuture.get(ConstantsFor.DELAY, TimeUnit.SECONDS);
-            fromArray = new TForms().fromArray(stringLongMap, false);
-            MINI_LOGGER.add("mapFuture.isDone() = " + mapFuture.isDone());
-            MINI_LOGGER.add("mapFuture.isCancelled() = " + mapFuture.isCancelled());
-        } catch (InterruptedException | ExecutionException | TimeoutException e) {
-            messageToUser.errorAlert("TemporaryFullInternet", "run", e.getMessage());
-            FileSystemWorker.error(classMeth, e);
-            Thread.currentThread().interrupt();
-        }
+        String fromArray = new TForms().fromArray(stringLongMap, false);
+
         messageToUser.info(getClass().getSimpleName(), userInput, fromArray);
         MINI_LOGGER.add("run(): " + userInput + " " + fromArray);
         Date nextStart = new Date(ConstantsFor.getAtomicTime() + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY));

@@ -379,8 +379,7 @@ public enum ConstantsFor {
         File todoFileWork = new File("C:\\Users\\ikudryashov\\IdeaProjects\\spring\\modules\\networker\\TODO");
         if (todoFileHome.exists() || todoFileWork.exists()) {
             new MessageToTray(new ActionDefault("https://github.com/Vachok/ftpplus/issues")).warn("CHECK TODO!");
-        }
-        else{
+        } else {
             messageToUser.info(todoFileHome + " is false");
         }
     };
@@ -488,10 +487,14 @@ public enum ConstantsFor {
      */
     private static long getDelay() {
         long delay = new SecureRandom().nextInt((int) MY_AGE);
-            if(delay < MIN_DELAY){
-                delay = MIN_DELAY;
-            }
-        return delay;
+        if (delay < MIN_DELAY) {
+            delay = MIN_DELAY;
+            return delay;
+        } else if (ConstantsFor.thisPC().toLowerCase().contains("no")) {
+            return 1;
+        } else {
+            return delay;
+        }
     }
 
     /**

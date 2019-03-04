@@ -13,7 +13,10 @@ import ru.vachok.networker.services.MessageLocal;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.LinkedBlockingDeque;
 
 /**
  Константы пакета
@@ -133,6 +136,8 @@ public enum ConstantsNet {;
 
     private static MessageToUser messageToUser = new MessageLocal();
 
+    private static String sshMapStr = "SSH Map is empty";
+
     public static Set<String> getPcNames() {
         return pcNames;
     }
@@ -186,6 +191,14 @@ public enum ConstantsNet {;
         return ALL_DEVICES;
     }
 
+    public static void setSSHMapStr(String sshMapStr) {
+        ConstantsNet.sshMapStr = sshMapStr;
+    }
+
     public static Map<String, Long> getSshCheckerMap() {
         return SSH_CHECKER_MAP;
+    }
+
+    public static String getSshMapStr() {
+        return sshMapStr;
     }}

@@ -12,6 +12,7 @@ import ru.vachok.networker.mailserver.MailRule;
 import javax.mail.Address;
 import javax.servlet.http.Cookie;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
@@ -368,6 +369,24 @@ public class TForms {
         } else {
             return nStringBuilder.toString();
         }
+    }
+
+    public String sshCheckerMapWintDates(Map<String, Long> sshCheckerMap, boolean isHTML) {
+        this.brStringBuilder = new StringBuilder();
+        this.nStringBuilder = new StringBuilder();
+        sshCheckerMap.forEach((x, y) -> {
+            try {
+                byte[] address = InetAddress.getByName(x).getAddress();
+                x = InetAddress.getByAddress(address).getHostName();
+            } catch (UnknownHostException e) {
+                x = x + " no name";
+            }
+            brStringBuilder.append("<b>").append(x).append("</b><font color=\"gray\"> ").append(y).append("</font> (").append(new Date(y)).append(")<br>");
+            nStringBuilder.append(x).append(" ").append(y).append(" (").append(new Date(y)).append(")\n");
+        });
+        if (isHTML) return brStringBuilder.toString();
+        else return nStringBuilder.toString();
+
     }
 
 // 27.02.2019 (13:39) Comment out

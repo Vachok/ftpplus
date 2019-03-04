@@ -102,8 +102,11 @@ public class AppComponents {
      @return new {@link SshActs}
      */
     @Bean
+    @Scope(ConstantsFor.SINGLETON)
     public SshActs sshActs() {
-        return new SshActs();
+        SshActs sshActs = new SshActs();
+        messageToUser.info("AppComponents.sshActs", " sshActs.hashCode()", " = " + sshActs.hashCode());
+        return sshActs;
     }
 
     @Bean(STR_VISITOR)
