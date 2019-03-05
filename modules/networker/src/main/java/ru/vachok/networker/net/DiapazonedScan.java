@@ -219,25 +219,24 @@ public class DiapazonedScan implements Runnable {
 
         AppComponents.threadConfig().executeAsThread(this::scanServers);
 
+        String classMeth = getClass().getSimpleName() + ".scanOldLan";
         try (OutputStream outputStream = new FileOutputStream(oldLANFile);
              PrintWriter printWriter = new PrintWriter(outputStream, true)) {
             scanLan(printWriter, 11, 15, stArt, "192.168.");
         } catch (IOException e) {
-            LOGGER.error(e.getMessage());
+            messageToUser.errorAlert("DiapazonedScan", "scanOldLan", e.getMessage());
+            FileSystemWorker.error(classMeth, e);
         }
         boolean isFileCopied = FileSystemWorker.copyOrDelFile(oldLANFile, p.toAbsolutePath().toString(), false);
         NET_SCAN_FILE_WORKER_INST.setOldLanLastScan(p.toFile());
-
-        messageToUser.info("DiapazonedScan.scanOldLan", "p.toAbsolutePath()", p.toAbsolutePath().toString());
-        messageToUser.info("DiapazonedScan.scanOldLan", STR_ISFILECOPIED, String.valueOf(isFileCopied));
+        messageToUser.info(classMeth, "p.toAbsolutePath()", p.toAbsolutePath().toString());
+        messageToUser.info(classMeth, STR_ISFILECOPIED, String.valueOf(isFileCopied));
 
 
     }
 
     private void writeToFileByConditions(PrintWriter printWriter, long stArt) throws IOException {
         AppComponents.threadConfig().thrNameSet("DIAfile");
-
-        messageToUser.info("printWriter = [" + printWriter.checkError() + "], stArt = [" + stArt + "]", ConstantsFor.STR_RETURNS, "void");
 
         if (ALL_DEVICES_LOCAL_DEQUE.remainingCapacity() == 0) {
             messageToUser.infoNoTitles(new TForms().fromArray(ALL_DEVICES_LOCAL_DEQUE, false));

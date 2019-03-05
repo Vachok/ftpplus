@@ -94,7 +94,7 @@ class NetScanFileWorker {
      @see NetListKeeper#onlinesAddressesList()
      */
     Deque<String> getListOfOnlineDev() throws IOException {
-        LOGGER.warn("NetScanFileWorker.getListOfOnlineDev");
+        AppComponents.threadConfig().thrNameSet("ONDEQ");
         Deque<String> retDeque = new ArrayDeque<>();
         String msg = newLanLastScan.getAbsolutePath() + oldLanLastScan.getAbsolutePath() + " is created by " + getClass().getSimpleName();
 

@@ -13,7 +13,10 @@ import ru.vachok.networker.services.MessageLocal;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -154,11 +157,16 @@ class ConditionChecker {
 
     /**
      Если размер {@link ConstantsNet#getAllDevices()} более 0
-     <p> <br>
-     <b>Схема:</b> <br>
-     Убедимся в правильности {@link NetScanFileWorker} : <br> 1. {@link DiapazonedScan#getNetScanFileWorkerInst()} <br> 2.
-     {@link NetScanFileWorker#equals(java.lang.Object)} <br><br> Если всё верно: 3.
-     {@link ScanOnline#getI()} + {@link ScanOnline#toString()}
+     <p>
+     {@code scansInMin} - кол-во сканирований в минуту для рассчёта времени. {@code minLeft} - примерное кол-во оставшихся минут.
+     {@code attributeValue} - то, что видим на страничке.
+     <p>
+     <b>{@link Model#addAttribute(Object)}:</b> <br>
+     {@link ConstantsFor#ATT_TITLE} = {@code attributeValue} <br>
+     {@code pcs} = {@link ConstantsNet#FILENAME_AVAILABLELASTTXT} + {@link ConstantsNet#FILENAME_OLDLANTXT} + {@link ConstantsNet#FILENAME_SERVTXT}
+     <p>
+     <b>{@link HttpServletResponse#addHeader(String, String)}:</b><br>
+     {@link ConstantsFor#HEAD_REFRESH} = 45
 
      @param model    {@link Model}
      @param response {@link HttpServletResponse}
@@ -166,7 +174,8 @@ class ConditionChecker {
     private static void allDevNotNull(Model model, HttpServletResponse response) {
         final float scansInMin = 63.9f;
         float minLeft = ConstantsNet.getAllDevices().remainingCapacity() / scansInMin;
-        String attributeValue = new StringBuilder().append(minLeft).append(" ~minLeft. ")
+        String attributeValue = new StringBuilder()
+            .append(minLeft).append(" ~minLeft. ")
             .append(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(( long ) minLeft))).toString();
         model.addAttribute(ConstantsFor.ATT_TITLE, attributeValue);
         model.addAttribute("pcs", FileSystemWorker

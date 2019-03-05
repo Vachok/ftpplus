@@ -242,7 +242,7 @@ public class NetPinger implements Runnable, Pinger {
         } catch (UnknownHostException e) {
             messageToUser.errorAlert(STR_CLASSNAME, "ipIsIP", e.getMessage());
             FileSystemWorker.error("NetPinger.ipIsIP", e);
-            throw new IllegalStateException();
+            return InetAddress.getLoopbackAddress();
         }
     }
 

@@ -7,7 +7,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.*;
+import ru.vachok.networker.AppInfoOnLoad;
+import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.ExitApp;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
@@ -123,7 +126,7 @@ public class ServiceInfoCtrl {
     @GetMapping ("/serviceinfo")
     public String infoMapping(Model model, HttpServletRequest request, HttpServletResponse response) throws AccessDeniedException, ExecutionException,
         InterruptedException {
-        Thread.currentThread().setName("ServiceInfoCtrl.infoMapping");
+        AppComponents.threadConfig().thrNameSet("sINFO");
         this.visitor = new AppComponents().visitor(request);
         AppComponents.threadConfig().executeAsThread(new SpeedChecker());
         this.authReq =

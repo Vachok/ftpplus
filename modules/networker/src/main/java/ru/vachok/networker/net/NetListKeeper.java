@@ -1,6 +1,7 @@
 package ru.vachok.networker.net;
 
 
+import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
 
@@ -61,6 +62,8 @@ public class NetListKeeper implements Serializable {
      @throws IOException файловая система
      */
     List<InetAddress> onlinesAddressesList() throws IOException {
+        AppComponents.threadConfig().thrNameSet("LsIP");
+
         String classMeth = "NetListKeeper.onlinesAddressesList";
         List<InetAddress> onlineAddresses = new ArrayList<>();
         Deque<String> fileAsDeque = NetScanFileWorker.getI().getListOfOnlineDev();

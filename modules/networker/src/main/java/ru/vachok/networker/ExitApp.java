@@ -13,7 +13,7 @@ import java.io.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.TimeUnit;
 
 import static ru.vachok.networker.IntoApplication.getConfigurableApplicationContext;
 
@@ -119,12 +119,12 @@ public class ExitApp implements Runnable {
     @SuppressWarnings ({"HardCodedStringLiteral", "FeatureEnvy"})
     private void copyAvail() {
         File appLog = new File("g:\\My_Proj\\FtpClientPlus\\modules\\networker\\app.log");
+
         FileSystemWorker.copyOrDelFile(new File(ConstantsNet.FILENAME_AVAILABLELASTTXT),
             new StringBuilder().append(".\\lan\\vlans200_").append(System.currentTimeMillis() / 1000).append(".txt").toString(),
             true);
         FileSystemWorker.copyOrDelFile(new File(ConstantsNet.FILENAME_OLDLANTXT),
             new StringBuilder().append(".\\lan\\old_lan_").append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
-
         FileSystemWorker.copyOrDelFile(new File(ConstantsNet.FILENAME_SERVTXT),
             new StringBuilder().append(".\\lan\\srv_").append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
         FileSystemWorker.copyOrDelFile(new File("ping.tv"), ".\\lan\\tv_" + System.currentTimeMillis() / 1000 + ".ping", true);
@@ -164,14 +164,7 @@ public class ExitApp implements Runnable {
         else{
             stringList.add("No object");
         }
-        Runnable exitDo = () -> exitAppDO();
-        Future<?> submit = Executors.unconfigurableExecutorService(Executors.newSingleThreadScheduledExecutor()).submit(exitDo);
-        try{
-            submit.get(30, TimeUnit.SECONDS);
-        }
-        catch(InterruptedException | ExecutionException | TimeoutException e){
-            System.exit(666);
-        }
+        exitAppDO();
     }
 
     /**
