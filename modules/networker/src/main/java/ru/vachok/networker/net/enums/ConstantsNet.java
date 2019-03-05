@@ -107,7 +107,7 @@ public enum ConstantsNet {;
      */
     public static final String DOMAIN_EATMEATRU = ".eatmeat.ru";
 
-    public static final int IPS_IN_VELKOM_VLAN = 12555;
+    public static final int IPS_IN_VELKOM_VLAN = 13005;
 
     public static final int TIMEOUT240 = 240;
 

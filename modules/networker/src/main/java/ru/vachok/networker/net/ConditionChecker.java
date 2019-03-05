@@ -13,10 +13,7 @@ import ru.vachok.networker.services.MessageLocal;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -172,7 +169,7 @@ class ConditionChecker {
      @param response {@link HttpServletResponse}
      */
     private static void allDevNotNull(Model model, HttpServletResponse response) {
-        final float scansInMin = 63.9f;
+        final float scansInMin = 116.25f;
         float minLeft = ConstantsNet.getAllDevices().remainingCapacity() / scansInMin;
         String attributeValue = new StringBuilder()
             .append(minLeft).append(" ~minLeft. ")

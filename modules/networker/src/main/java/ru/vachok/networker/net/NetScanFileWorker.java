@@ -96,7 +96,8 @@ class NetScanFileWorker {
     Deque<String> getListOfOnlineDev() throws IOException {
         AppComponents.threadConfig().thrNameSet("ONDEQ");
         Deque<String> retDeque = new ArrayDeque<>();
-        String msg = newLanLastScan.getAbsolutePath() + oldLanLastScan.getAbsolutePath() + " is created by " + getClass().getSimpleName();
+        String msg =
+            newLanLastScan.getAbsolutePath() + ";\n" + oldLanLastScan.getAbsolutePath() + ";\n" + srvFile.getAbsolutePath() + ";\nCreated by " + getClass().getSimpleName();
 
         if (newLanLastScan.exists() && newLanLastScan.canRead()) {
             retDeque.addAll(FileSystemWorker.readFileToList(newLanLastScan.getAbsolutePath()));

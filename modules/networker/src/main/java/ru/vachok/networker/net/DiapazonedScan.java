@@ -12,7 +12,6 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.net.enums.SwitchesWiFi;
 import ru.vachok.networker.services.MessageLocal;
-import ru.vachok.networker.services.TimeChecker;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -21,10 +20,7 @@ import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.TimeUnit;
 
@@ -184,10 +180,11 @@ public class DiapazonedScan implements Runnable {
     private void scanNew() {
         AppComponents.threadConfig().thrNameSet("DIAnew");
         this.stArt = ConstantsFor.getAtomicTime();
-        final String classMeth = "DiapazonedScan.scanNew";
+
+        String classMeth = "DiapazonedScan.scanNew";
+        File newLanFile = new File(ConstantsNet.FILENAME_AVAILABLELASTTXT);
         Path p = Paths.get(ROOT_PATH_STR + "\\lan\\200_" + System.currentTimeMillis() / 1000 + ".scan");
 
-        File newLanFile = new File(ConstantsNet.FILENAME_AVAILABLELASTTXT);
         AppComponents.threadConfig().executeAsThread(this::scanOldLan);
 
         try (OutputStream outputStream = new FileOutputStream(newLanFile);
@@ -199,9 +196,9 @@ public class DiapazonedScan implements Runnable {
         }
         boolean isFileCopied = FileSystemWorker.copyOrDelFile(newLanFile, p.toAbsolutePath().toString(), false);
         NET_SCAN_FILE_WORKER_INST.setNewLanLastScan(p.toFile());
-
         messageToUser.info(classMeth, "p.toAbsolutePath().toString()", p.toAbsolutePath().toString());
         messageToUser.info(classMeth, STR_ISFILECOPIED, String.valueOf(isFileCopied));
+        this.stopClassStampLong = System.currentTimeMillis();
     }
 
     /**
@@ -213,13 +210,13 @@ public class DiapazonedScan implements Runnable {
     @SuppressWarnings("MagicNumber")
     private void scanOldLan() {
         AppComponents.threadConfig().thrNameSet("DIAold");
+
+        String classMeth = getClass().getSimpleName() + ".scanOldLan";
         File oldLANFile = new File(ConstantsNet.FILENAME_OLDLANTXT);
-        Path p =
-            Paths.get(new StringBuilder().append(ROOT_PATH_STR).append("\\lan\\192_").append(System.currentTimeMillis() / 1000).append(".scan").toString());
+        Path p = Paths.get(ROOT_PATH_STR + "\\lan\\192_" + System.currentTimeMillis() / 1000 + ".scan");
 
         AppComponents.threadConfig().executeAsThread(this::scanServers);
 
-        String classMeth = getClass().getSimpleName() + ".scanOldLan";
         try (OutputStream outputStream = new FileOutputStream(oldLANFile);
              PrintWriter printWriter = new PrintWriter(outputStream, true)) {
             scanLan(printWriter, 11, 15, stArt, "192.168.");
@@ -231,8 +228,7 @@ public class DiapazonedScan implements Runnable {
         NET_SCAN_FILE_WORKER_INST.setOldLanLastScan(p.toFile());
         messageToUser.info(classMeth, "p.toAbsolutePath()", p.toAbsolutePath().toString());
         messageToUser.info(classMeth, STR_ISFILECOPIED, String.valueOf(isFileCopied));
-
-
+        this.stopClassStampLong = System.currentTimeMillis();
     }
 
     private void writeToFileByConditions(PrintWriter printWriter, long stArt) throws IOException {
@@ -253,10 +249,10 @@ public class DiapazonedScan implements Runnable {
      */
     private void scanServers() {
         AppComponents.threadConfig().thrNameSet("DIAsrv");
+
         String classMeth = "DiapazonedScan.scanServers";
         File srvFile = new File(ConstantsNet.FILENAME_SERVTXT);
-        Path path =
-            Paths.get(new StringBuilder().append(ROOT_PATH_STR).append("\\lan\\srv_").append(System.currentTimeMillis() / 1000).append("scan").toString());
+        Path path = Paths.get(ROOT_PATH_STR + "\\lan\\srv_" + System.currentTimeMillis() / 1000 + ".scan");
 
         try (OutputStream outputStream = new FileOutputStream(srvFile);
              PrintWriter printWriter = new PrintWriter(outputStream, true)) {
@@ -267,10 +263,9 @@ public class DiapazonedScan implements Runnable {
         }
         boolean isFileCopied = FileSystemWorker.copyOrDelFile(srvFile, path.toAbsolutePath().toString(), false);
         NET_SCAN_FILE_WORKER_INST.setSrvScan(path.toFile());
-        this.stopClassStampLong = new TimeChecker().call().getReturnTime();
-
         messageToUser.info(classMeth, "p.toAbsolutePath()", path.toAbsolutePath().toString());
         messageToUser.info(classMeth, STR_ISFILECOPIED, String.valueOf(isFileCopied));
+        this.stopClassStampLong = System.currentTimeMillis();
     }
 
     /**
