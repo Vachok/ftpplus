@@ -44,7 +44,7 @@ class NetScanFileWorker {
      */
     private File oldLanLastScan = new File(ConstantsNet.FILENAME_OLDLANTXT);
 
-    private File srvFile;
+    private File srvFile = new File(ConstantsNet.FILENAME_SERVTXT);
 
     /**
      @param newLanLastScan {@link #newLanLastScan}
@@ -106,9 +106,17 @@ class NetScanFileWorker {
         }
         if (oldLanLastScan.exists() && oldLanLastScan.canRead()) {
             retDeque.addAll(FileSystemWorker.readFileToList(oldLanLastScan.getAbsolutePath()));
-        } else {
+        }
+        else{
             boolean oldLanLastScanNewFile = oldLanLastScan.createNewFile();
             msg = oldLanLastScanNewFile + " " + msg;
+        }
+        if(srvFile.exists() && srvFile.canRead()){
+            retDeque.addAll(FileSystemWorker.readFileToList(srvFile.getAbsolutePath()));
+        }
+        else{
+            boolean srvScanFile = srvFile.createNewFile();
+            msg = srvScanFile + " " + msg;
         }
         messageToUser.info(msg + " " + retDeque.size(), "positions] [Returns:", "java.util.Deque<java.lang.String>");
         return retDeque;
