@@ -3,7 +3,6 @@ package ru.vachok.networker.systray;
 
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
 
 import javax.swing.*;
@@ -21,13 +20,9 @@ import java.net.URI;
  @since 25.01.2019 (9:56) */
 public class ActionDefault extends AbstractAction {
 
-// --Commented out by Inspection START (27.02.2019 12:42):
-//    /**
-//     {@link AppComponents#getLogger()}
-//     */
-//    private static final Logger LOGGER = LoggerFactory.getLogger(ActionDefault.class.getSimpleName());
-// --Commented out by Inspection STOP (27.02.2019 12:42)
-
+    /**
+     {@link MessageLocal}
+     */
     private static MessageToUser messageToUser = new MessageLocal();
 
     private static final SystemTrayHelper SYSTEM_TRAY_HELPER = SystemTrayHelper.getI();
@@ -51,12 +46,12 @@ public class ActionDefault extends AbstractAction {
     public void actionPerformed(ActionEvent e) {
         try{
             Desktop.getDesktop().browse(URI.create(goTo));
-
         }
         catch(IOException e1){
             messageToUser.errorAlert("ActionDefault", ConstantsFor.METHNAME_ACTIONPERFORMED, e1.getMessage());
-            FileSystemWorker.error("ActionDefault.actionPerformed", e1);
         }
+        Thread.currentThread().checkAccess();
+        Thread.currentThread().interrupt();
     }
 
     @Override

@@ -5,6 +5,7 @@ import ru.vachok.messenger.MessageFile;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.componentsrepo.VersionInfo;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.OtherKnownDevices;
 import ru.vachok.networker.net.enums.SwitchesWiFi;
@@ -26,6 +27,8 @@ import java.util.Objects;
 public class NetMonitorPTV implements Runnable {
 
     private static final String CLASS_NAME = NetMonitorPTV.class.getSimpleName();
+
+    private VersionInfo versionInfo = AppComponents.versionInfo();
 
     private OutputStream outputStream = null;
 
@@ -90,6 +93,7 @@ public class NetMonitorPTV implements Runnable {
 
     private void checkSize() throws FileNotFoundException {
         File pingTv = new File(FILENAME_PINGTV);
+        versionInfo.setPingTVStartStamp(ConstantsFor.getAtomicTime());
         printWriter.print(pingResultLast + " " + LocalDateTime.now());
         printWriter.println();
         if (pingTv.length() > ConstantsFor.MBYTE) {

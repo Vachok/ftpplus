@@ -375,7 +375,7 @@ public enum ConstantsFor {
         File todoFileHome = new File("G:\\My_Proj\\FtpClientPlus\\modules\\networker\\TODO");
         File todoFileWork = new File("C:\\Users\\ikudryashov\\IdeaProjects\\spring\\modules\\networker\\TODO");
         if(todoFileHome.exists() || todoFileWork.exists()){
-            new MessageSwing(new ActionDefault("https://github.com/Vachok/ftpplus/issues")).info("CHECK TODO!");
+            new MessageSwing(new ActionDefault("https://github.com/Vachok/ftpplus/issues")).warn("CHECK TODO!");
         }
         else{
             messageToUser.info("ConstantsFor.INFO_MSG_RUNNABLE", "thisPC()", " = " + thisPC());

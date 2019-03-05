@@ -56,6 +56,16 @@ public class VersionInfo {
      */
     private String buildTime = null;
 
+    private long pingTVStartStamp = ConstantsFor.START_STAMP;
+
+    public long getPingTVStartStamp() {
+        return pingTVStartStamp;
+    }
+
+    public void setPingTVStartStamp(long pingTVStartStamp) {
+        this.pingTVStartStamp = pingTVStartStamp;
+    }
+
     /**
      {@link ConstantsFor#thisPC()}
      */
@@ -202,13 +212,9 @@ public class VersionInfo {
         final StringBuilder sb = new StringBuilder("VersionInfo{");
         sb.append("appBuild='").append(appBuild).append('\'');
         sb.append(", appVersion='").append(appVersion).append('\'');
-        sb.append(", BUGged=").append(isBUGged());
         sb.append(", buildTime='").append(buildTime).append('\'');
-        sb.append(", DOC_URL='").append(DOC_URL).append('\'');
-        sb.append(", <b>***isBUGged=").append(isBUGged).append("***</b>");
-        sb.append(", PR_APP_BUILD='").append(PR_APP_BUILD).append('\'');
-        sb.append(", PR_BUILD_TIME='").append(PR_BUILD_TIME).append('\'');
-        sb.append(", PROPERTIES=").append(PROPERTIES.size());
+        sb.append(", isBUGged=").append(isBUGged);
+        sb.append(", pingTVStartStamp=").append(pingTVStartStamp);
         sb.append(", thisPCNameStr='").append(thisPCNameStr).append('\'');
         sb.append('}');
         return sb.toString();
