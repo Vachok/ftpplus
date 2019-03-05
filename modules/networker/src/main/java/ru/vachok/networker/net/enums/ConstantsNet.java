@@ -135,7 +135,7 @@ public enum ConstantsNet {;
 
     private static MessageToUser messageToUser = new MessageLocal();
 
-    private static String sshMapStr = "SSH Map is empty";
+    private static String sshMapStr = "SSH Temp list is empty";
 
     public static Set<String> getPcNames() {
         return pcNames;

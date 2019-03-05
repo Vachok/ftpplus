@@ -384,9 +384,12 @@ public class TForms {
             brStringBuilder.append("<b>").append(x).append("</b><font color=\"gray\"> ").append(y).append("</font> (").append(new Date(y)).append(")<br>");
             nStringBuilder.append(x).append(" ").append(y).append(" (").append(new Date(y)).append(")\n");
         });
-        if (isHTML) return brStringBuilder.toString();
-        else return nStringBuilder.toString();
-
+        if(isHTML){
+            return brStringBuilder.toString();
+        }
+        else{
+            return nStringBuilder.toString();
+        }
     }
 
 // 27.02.2019 (13:39) Comment out

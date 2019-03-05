@@ -64,8 +64,8 @@ public class ServiceInfoCtrl {
         Date comeD = new Date(whenCome.get());
         String resValue = new StringBuilder()
             .append(MyCalen.toStringS()).append("<br><br>")
-            .append("<b><i>").append(AppComponents.versionInfo().toString()).append("</i></b><p>")
-            .append(ConstantsNet.getSshMapStr()).append("<p>")
+            .append("<b><i>").append(AppComponents.versionInfo().toString()).append("</i></b><p><font color=\"orange\">")
+            .append(ConstantsNet.getSshMapStr()).append("</font><p>")
             .append(new AppInfoOnLoad().toString()).append(" ").append(AppInfoOnLoad.class.getSimpleName()).append("<p>")
             .append(new TForms().fromArray(LOC_PR, true)).append("<p>")
             .append("<p><font color=\"grey\">").append(listFilesToReadStr()).append("</font>")
@@ -77,8 +77,10 @@ public class ServiceInfoCtrl {
             .append("Запущено - ")
             .append(new Date(ConstantsFor.START_STAMP)).append(ConstantsFor.getUpTime())
             .append(" (<i>rnd delay is ")
-            .append(ConstantsFor.DELAY)
-            .append("</i>)<br>Точное время: ")
+            .append(ConstantsFor.DELAY).append(" : ")
+            .append(String.format("%.02f",
+                ( float ) (ConstantsFor.getAtomicTime() - ConstantsFor.START_STAMP) / TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY))).append(" delays)")
+            .append("</i><br>Точное время: ")
             .append(ConstantsFor.getAtomicTime())
             .append(".<br> Состояние памяти (МБ): <font color=\"#82caff\">")
             .append(ConstantsFor.getMemoryInfo())
