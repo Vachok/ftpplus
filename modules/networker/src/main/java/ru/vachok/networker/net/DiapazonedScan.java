@@ -176,16 +176,24 @@ public class DiapazonedScan implements Runnable {
     }
 
     /**
+     Старт
+     */
+    @Override
+    public void run() {
+        AppComponents.threadConfig().executeAsThread(this::scanNew);
+    }
+
+    /**
      Добавляет в {@link ConstantsNet#getAllDevices()} адреса <i>10.200.200-217.254</i>
      */
     private void scanNew() {
         AppComponents.threadConfig().thrNameSet("DIAnew");
-        final long stArt = System.currentTimeMillis();
+        this.stArt = ConstantsFor.getAtomicTime();
         final String classMeth = "DiapazonedScan.scanNew";
         Path p = Paths.get(ROOT_PATH_STR + "\\lan\\200_" + System.currentTimeMillis() / 1000 + ".scan");
-        this.stArt = stArt;
 
         File newLanFile = new File(ConstantsNet.FILENAME_AVAILABLELASTTXT);
+        AppComponents.threadConfig().executeAsThread(this::scanOldLan);
 
         try(OutputStream outputStream = new FileOutputStream(newLanFile);
             PrintWriter printWriter = new PrintWriter(outputStream, true)){
@@ -200,8 +208,6 @@ public class DiapazonedScan implements Runnable {
 
         messageToUser.info(classMeth, "p.toAbsolutePath().toString()", p.toAbsolutePath().toString());
         messageToUser.info(classMeth, "isFileCopied", String.valueOf(isFileCopied));
-
-        scanOldLan(stArt);
     }
 
     /**
@@ -211,12 +217,13 @@ public class DiapazonedScan implements Runnable {
      @see #scanNew()
      */
     @SuppressWarnings ("MagicNumber")
-    private void scanOldLan(long stArt) {
-        this.stArt = stArt;
+    private void scanOldLan() {
         AppComponents.threadConfig().thrNameSet("DIAold");
         File oldLANFile = new File(ConstantsNet.FILENAME_OLDLANTXT);
         Path p =
             Paths.get(new StringBuilder().append(ROOT_PATH_STR).append("\\lan\\192_").append(System.currentTimeMillis() / 1000).append(".scan").toString());
+
+        AppComponents.threadConfig().executeAsThread(this::scanServers);
 
         try(OutputStream outputStream = new FileOutputStream(oldLANFile);
             PrintWriter printWriter = new PrintWriter(outputStream, true)){
@@ -231,33 +238,7 @@ public class DiapazonedScan implements Runnable {
         messageToUser.info("DiapazonedScan.scanOldLan", "p.toAbsolutePath()", p.toAbsolutePath().toString());
         messageToUser.info("DiapazonedScan.scanOldLan", "isFileCopied", String.valueOf(isFileCopied));
 
-        scanServers(stArt);
-    }
 
-    /**
-     Скан подсетей 10.10.xx.xxx
-     */
-    private void scanServers(long stArt) {
-        AppComponents.threadConfig().thrNameSet("DIAsrv");
-        String classMeth = "DiapazonedScan.scanServers";
-        File srvFile = new File(ConstantsNet.FILENAME_SERVTXT);
-        Path path =
-            Paths.get(new StringBuilder().append(ROOT_PATH_STR).append("\\lan\\srv_").append(System.currentTimeMillis() / 1000).append("scan").toString());
-
-        try(OutputStream outputStream = new FileOutputStream(srvFile);
-            PrintWriter printWriter = new PrintWriter(outputStream, true)){
-            scanLan(printWriter, 11, 40, stArt, "10.10.");
-        }
-        catch(IOException e){
-            messageToUser.errorAlert(getClass().getSimpleName(), "scanServers", e.getMessage());
-            FileSystemWorker.error(classMeth, e);
-        }
-        boolean isFileCopied = FileSystemWorker.copyOrDelFile(srvFile, path.toAbsolutePath().toString(), false);
-        NET_SCAN_FILE_WORKER_INST.setSrvScan(path.toFile());
-        this.stopClassStampLong = new TimeChecker().call().getReturnTime();
-
-        messageToUser.info(classMeth, "p.toAbsolutePath()", path.toAbsolutePath().toString());
-        messageToUser.info(classMeth, "isFileCopied", String.valueOf(isFileCopied));
     }
 
     private void writeToFileByConditions(PrintWriter printWriter, long stArt) throws IOException {
@@ -339,11 +320,29 @@ public class DiapazonedScan implements Runnable {
     }
 
     /**
-     Старт
+     Скан подсетей 10.10.xx.xxx
      */
-    @Override
-    public void run() {
-        scanNew();
+    private void scanServers() {
+        AppComponents.threadConfig().thrNameSet("DIAsrv");
+        String classMeth = "DiapazonedScan.scanServers";
+        File srvFile = new File(ConstantsNet.FILENAME_SERVTXT);
+        Path path =
+            Paths.get(new StringBuilder().append(ROOT_PATH_STR).append("\\lan\\srv_").append(System.currentTimeMillis() / 1000).append("scan").toString());
+
+        try(OutputStream outputStream = new FileOutputStream(srvFile);
+            PrintWriter printWriter = new PrintWriter(outputStream, true)){
+            scanLan(printWriter, 11, 40, stArt, "10.10.");
+        }
+        catch(IOException e){
+            messageToUser.errorAlert(getClass().getSimpleName(), "scanServers", e.getMessage());
+            FileSystemWorker.error(classMeth, e);
+        }
+        boolean isFileCopied = FileSystemWorker.copyOrDelFile(srvFile, path.toAbsolutePath().toString(), false);
+        NET_SCAN_FILE_WORKER_INST.setSrvScan(path.toFile());
+        this.stopClassStampLong = new TimeChecker().call().getReturnTime();
+
+        messageToUser.info(classMeth, "p.toAbsolutePath()", path.toAbsolutePath().toString());
+        messageToUser.info(classMeth, "isFileCopied", String.valueOf(isFileCopied));
     }
 
 }
