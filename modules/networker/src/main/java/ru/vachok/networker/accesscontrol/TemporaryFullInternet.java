@@ -17,7 +17,10 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 
 /**
@@ -137,7 +140,7 @@ public class TemporaryFullInternet implements Runnable {
         }
         Future<?> future =
             AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor()
-                .submit(() -> ConstantsNet.setSSHMapStr(new TForms().sshCheckerMapWintDates(sshCheckerMap, true)));
+                .submit(() -> ConstantsNet.setSSHMapStr(new TForms().sshCheckerMapWithDates(sshCheckerMap, true)));
         try{
             future.get(25, TimeUnit.SECONDS);
         }

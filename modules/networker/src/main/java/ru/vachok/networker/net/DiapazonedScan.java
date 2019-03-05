@@ -4,7 +4,6 @@ package ru.vachok.networker.net;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ui.Model;
-import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
@@ -25,6 +24,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.TimeUnit;
 
@@ -69,6 +69,8 @@ public class DiapazonedScan implements Runnable {
 
     private static final MessageToUser messageToUser = new MessageLocal();
 
+    private static final String STR_ISFILECOPIED = "isFileCopied";
+
     private long stopClassStampLong = System.currentTimeMillis();
 
     private long stArt;
@@ -88,12 +90,14 @@ public class DiapazonedScan implements Runnable {
         return OUR_INSTANCE;
     }
 
-    /**
-     @return {@link #NET_SCAN_FILE_WORKER_INST}
-     */
-    static NetScanFileWorker getNetScanFileWorkerInst() {
-        return NET_SCAN_FILE_WORKER_INST;
-    }
+// --Commented out by Inspection START (05.03.2019 9:05):
+//    /**
+//     @return {@link #NET_SCAN_FILE_WORKER_INST}
+//     */
+//    static NetScanFileWorker getNetScanFileWorkerInst() {
+//        return NET_SCAN_FILE_WORKER_INST;
+//    }
+// --Commented out by Inspection STOP (05.03.2019 9:05)
 
     /**
      Приватный конструктор
@@ -114,10 +118,10 @@ public class DiapazonedScan implements Runnable {
         AppComponents.threadConfig().thrNameSet("DiaPSW");
         Field[] swFields = SwitchesWiFi.class.getFields();
         List<String> swList = new ArrayList<>();
-        for(Field swF : swFields){
+        for (Field swF : swFields) {
             String ipAddrStr = swF.get(swF).toString();
             swList.add(ipAddrStr);
-            new MessageCons().infoNoTitles(ipAddrStr);
+            messageToUser.info(ipAddrStr);
         }
         return swList;
     }
@@ -128,10 +132,10 @@ public class DiapazonedScan implements Runnable {
         byte[] aBytes = InetAddress.getByName(whatVlan + i + "." + j).getAddress();
         InetAddress byAddress = InetAddress.getByAddress(aBytes);
         String toString = byAddress.toString();
-        if(ConstantsFor.thisPC().equalsIgnoreCase("HOME")){
+        if (ConstantsFor.thisPC().equalsIgnoreCase("HOME")) {
             t = 250;
         }
-        if(byAddress.isReachable(t)){
+        if (byAddress.isReachable(t)) {
             AppComponents.threadConfig().thrNameSet("Dia");
             String hostName = byAddress.getHostName();
             String hostAddress = byAddress.getHostAddress();
@@ -141,8 +145,7 @@ public class DiapazonedScan implements Runnable {
 
             String valStr = "host = " + hostName + "/" + hostAddress + " is online: " + true;
             LOGGER.info(valStr);
-        }
-        else{
+        } else {
             AppComponents.threadConfig().thrNameSet(ALL_DEVICES_LOCAL_DEQUE.size() + " of " + ConstantsNet.IPS_IN_VELKOM_VLAN);
             ALL_DEVICES_LOCAL_DEQUE.add("<font color=\"red\">" + toString + FONT_BR_STR);
         }
@@ -158,12 +161,12 @@ public class DiapazonedScan implements Runnable {
      @param whatVlan    первый 2 октета, с точкоё в конце.
      @throws IOException запись в файл
      */
-    @SuppressWarnings ("MethodWithMultipleLoops")
+    @SuppressWarnings({"MethodWithMultipleLoops", "ObjectAllocationInLoop"})
     private void scanLan(PrintWriter printWriter, int fromVlan, int toVlan, long stArt, String whatVlan) throws IOException {
         AppComponents.threadConfig().thrNameSet("DIAlan");
-        for(int i = fromVlan; i < toVlan; i++){
+        for (int i = fromVlan; i < toVlan; i++) {
             StringBuilder msgBuild = new StringBuilder();
-            for(int j = 0; j < MAX_IN_VLAN_INT; j++){
+            for (int j = 0; j < MAX_IN_VLAN_INT; j++) {
                 ipScan(whatVlan, i, j, printWriter);
             }
             msgBuild
@@ -173,14 +176,6 @@ public class DiapazonedScan implements Runnable {
             String msg = msgBuild.toString();
             messageToUser.warn(msg);
         }
-    }
-
-    /**
-     Старт
-     */
-    @Override
-    public void run() {
-        AppComponents.threadConfig().executeAsThread(this::scanNew);
     }
 
     /**
@@ -195,11 +190,10 @@ public class DiapazonedScan implements Runnable {
         File newLanFile = new File(ConstantsNet.FILENAME_AVAILABLELASTTXT);
         AppComponents.threadConfig().executeAsThread(this::scanOldLan);
 
-        try(OutputStream outputStream = new FileOutputStream(newLanFile);
-            PrintWriter printWriter = new PrintWriter(outputStream, true)){
+        try (OutputStream outputStream = new FileOutputStream(newLanFile);
+             PrintWriter printWriter = new PrintWriter(outputStream, true)) {
             writeToFileByConditions(printWriter, stArt);
-        }
-        catch(IOException e){
+        } catch (IOException e) {
             messageToUser.errorAlert(getClass().getSimpleName(), "scanNew", e.getMessage());
             FileSystemWorker.error("DiapazonedScan.scanNew", e);
         }
@@ -207,7 +201,7 @@ public class DiapazonedScan implements Runnable {
         NET_SCAN_FILE_WORKER_INST.setNewLanLastScan(p.toFile());
 
         messageToUser.info(classMeth, "p.toAbsolutePath().toString()", p.toAbsolutePath().toString());
-        messageToUser.info(classMeth, "isFileCopied", String.valueOf(isFileCopied));
+        messageToUser.info(classMeth, STR_ISFILECOPIED, String.valueOf(isFileCopied));
     }
 
     /**
@@ -216,7 +210,7 @@ public class DiapazonedScan implements Runnable {
      @param stArt таймер начала общего скана
      @see #scanNew()
      */
-    @SuppressWarnings ("MagicNumber")
+    @SuppressWarnings("MagicNumber")
     private void scanOldLan() {
         AppComponents.threadConfig().thrNameSet("DIAold");
         File oldLANFile = new File(ConstantsNet.FILENAME_OLDLANTXT);
@@ -225,18 +219,17 @@ public class DiapazonedScan implements Runnable {
 
         AppComponents.threadConfig().executeAsThread(this::scanServers);
 
-        try(OutputStream outputStream = new FileOutputStream(oldLANFile);
-            PrintWriter printWriter = new PrintWriter(outputStream, true)){
+        try (OutputStream outputStream = new FileOutputStream(oldLANFile);
+             PrintWriter printWriter = new PrintWriter(outputStream, true)) {
             scanLan(printWriter, 11, 15, stArt, "192.168.");
-        }
-        catch(IOException e){
+        } catch (IOException e) {
             LOGGER.error(e.getMessage());
         }
         boolean isFileCopied = FileSystemWorker.copyOrDelFile(oldLANFile, p.toAbsolutePath().toString(), false);
         NET_SCAN_FILE_WORKER_INST.setOldLanLastScan(p.toFile());
 
         messageToUser.info("DiapazonedScan.scanOldLan", "p.toAbsolutePath()", p.toAbsolutePath().toString());
-        messageToUser.info("DiapazonedScan.scanOldLan", "isFileCopied", String.valueOf(isFileCopied));
+        messageToUser.info("DiapazonedScan.scanOldLan", STR_ISFILECOPIED, String.valueOf(isFileCopied));
 
 
     }
@@ -246,77 +239,14 @@ public class DiapazonedScan implements Runnable {
 
         messageToUser.info("printWriter = [" + printWriter.checkError() + "], stArt = [" + stArt + "]", ConstantsFor.STR_RETURNS, "void");
 
-        if(ALL_DEVICES_LOCAL_DEQUE.remainingCapacity()==0){
+        if (ALL_DEVICES_LOCAL_DEQUE.remainingCapacity() == 0) {
             messageToUser.infoNoTitles(new TForms().fromArray(ALL_DEVICES_LOCAL_DEQUE, false));
             ALL_DEVICES_LOCAL_DEQUE.clear();
-            messageToUser.error("scanLan(printWriter, 200, 218, stArt, \"10.200.\"); for what?");
-        }
-        else{
+            scanLan(printWriter, 200, 218, stArt, "10.200.");
+        } else {
             scanLan(printWriter, 200, 218, stArt, "10.200.");
         }
         NetScanFileWorker.getI().setLastStamp(System.currentTimeMillis());
-    }
-
-    @Override
-    public int hashCode() {
-        int result = messageToUser.hashCode();
-        result = 31 * result + ( int ) (stopClassStampLong ^ (stopClassStampLong >>> 32));
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if(this==o){
-            return true;
-        }
-        if(o==null || getClass()!=o.getClass()){
-            return false;
-        }
-
-        DiapazonedScan that = ( DiapazonedScan ) o;
-
-        if(stopClassStampLong!=that.stopClassStampLong){
-            return false;
-        }
-        return messageToUser.equals(that.messageToUser);
-    }
-
-    /**
-     @return /showalldev = {@link NetScanCtr#allDevices(Model, HttpServletRequest, HttpServletResponse)}
-     */
-    @SuppressWarnings ("StringConcatenation")
-    @Override
-    public String toString() {
-        String fileTimes = "No filetimes";
-        try{
-            fileTimes = ConstantsNet.FILENAME_AVAILABLELASTTXT + " " +
-                new Date(Paths.get(ConstantsNet.FILENAME_AVAILABLELASTTXT).toFile().lastModified()) + "\n" +
-                ConstantsNet.FILENAME_OLDLANTXT +
-                " " +
-                new Date(Paths.get(ConstantsNet.FILENAME_OLDLANTXT).toFile().lastModified()) + "\n" +
-                ConstantsNet.FILENAME_SERVTXT +
-                " " +
-                new Date(Paths.get(ConstantsNet.FILENAME_SERVTXT).toFile().lastModified()) + "";
-        }
-        catch(NullPointerException e){
-            messageToUser.info("NO FILES!");
-        }
-        final StringBuilder sb = new StringBuilder("DiapazonedScan. Start at ")
-            .append(new Date(stArt)).append("( ").append(TimeUnit.MILLISECONDS.toMinutes(ConstantsFor.getAtomicTime() - stArt)).append(" min) ")
-            .append("{ ");
-
-        sb
-            .append("<a href=\"/showalldev\">ALL_DEVICES ")
-            .append(ALL_DEVICES_LOCAL_DEQUE.size())
-            .append("/").append(ConstantsNet.IPS_IN_VELKOM_VLAN).append("(")
-            .append(( float ) ALL_DEVICES_LOCAL_DEQUE.size() / ( float ) (ConstantsNet.IPS_IN_VELKOM_VLAN / 100))
-            .append(" %)");
-        sb.append("</a>}");
-        sb.append(" ROOT_PATH_STR= ").append(ROOT_PATH_STR);
-        sb.append(" fileTimes= ").append(fileTimes);
-        sb.append("<br>NetScanFileWorker hash= ").append(NET_SCAN_FILE_WORKER_INST.hashCode());
-
-        return sb.toString();
     }
 
     /**
@@ -329,11 +259,10 @@ public class DiapazonedScan implements Runnable {
         Path path =
             Paths.get(new StringBuilder().append(ROOT_PATH_STR).append("\\lan\\srv_").append(System.currentTimeMillis() / 1000).append("scan").toString());
 
-        try(OutputStream outputStream = new FileOutputStream(srvFile);
-            PrintWriter printWriter = new PrintWriter(outputStream, true)){
+        try (OutputStream outputStream = new FileOutputStream(srvFile);
+             PrintWriter printWriter = new PrintWriter(outputStream, true)) {
             scanLan(printWriter, 11, 40, stArt, "10.10.");
-        }
-        catch(IOException e){
+        } catch (IOException e) {
             messageToUser.errorAlert(getClass().getSimpleName(), "scanServers", e.getMessage());
             FileSystemWorker.error(classMeth, e);
         }
@@ -342,7 +271,66 @@ public class DiapazonedScan implements Runnable {
         this.stopClassStampLong = new TimeChecker().call().getReturnTime();
 
         messageToUser.info(classMeth, "p.toAbsolutePath()", path.toAbsolutePath().toString());
-        messageToUser.info(classMeth, "isFileCopied", String.valueOf(isFileCopied));
+        messageToUser.info(classMeth, STR_ISFILECOPIED, String.valueOf(isFileCopied));
+    }
+
+    /**
+     Старт
+     */
+    @Override
+    public void run() {
+        AppComponents.threadConfig().executeAsThread(this::scanNew);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(stopClassStampLong, stArt);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        DiapazonedScan that = (DiapazonedScan) o;
+        return stopClassStampLong == that.stopClassStampLong &&
+            stArt == that.stArt;
+    }
+
+    /**
+     @return /showalldev = {@link NetScanCtr#allDevices(Model, HttpServletRequest, HttpServletResponse)}
+     */
+    @SuppressWarnings("StringConcatenation")
+    @Override
+    public String toString() {
+        String fileTimes = "No filetimes";
+        try {
+            fileTimes = ConstantsNet.FILENAME_AVAILABLELASTTXT + " " +
+                new Date(Paths.get(ConstantsNet.FILENAME_AVAILABLELASTTXT).toFile().lastModified()) + "\n" +
+                ConstantsNet.FILENAME_OLDLANTXT +
+                " " +
+                new Date(Paths.get(ConstantsNet.FILENAME_OLDLANTXT).toFile().lastModified()) + "\n" +
+                ConstantsNet.FILENAME_SERVTXT +
+                " " +
+                new Date(Paths.get(ConstantsNet.FILENAME_SERVTXT).toFile().lastModified()) + "";
+        } catch (NullPointerException e) {
+            messageToUser.info("NO FILES!");
+        }
+        final StringBuilder sb = new StringBuilder("DiapazonedScan. Start at ")
+            .append(new Date(stArt)).append("( ").append(TimeUnit.MILLISECONDS.toMinutes(ConstantsFor.getAtomicTime() - stArt)).append(" min) ")
+            .append("{ ");
+
+        sb
+            .append("<a href=\"/showalldev\">ALL_DEVICES ")
+            .append(ALL_DEVICES_LOCAL_DEQUE.size())
+            .append("/").append(ConstantsNet.IPS_IN_VELKOM_VLAN).append("(")
+            .append((float) ALL_DEVICES_LOCAL_DEQUE.size() / (float) (ConstantsNet.IPS_IN_VELKOM_VLAN / 100))
+            .append(" %)");
+        sb.append("</a>}");
+        sb.append(" ROOT_PATH_STR= ").append(ROOT_PATH_STR);
+        sb.append(" fileTimes= ").append(fileTimes);
+        sb.append("<br>NetScanFileWorker hash= ").append(NET_SCAN_FILE_WORKER_INST.hashCode());
+
+        return sb.toString();
     }
 
 }

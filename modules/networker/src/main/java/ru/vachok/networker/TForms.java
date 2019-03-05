@@ -25,7 +25,7 @@ import java.util.concurrent.ConcurrentMap;
  Делает похожие действия, но сразу так, как нужно для {@link ru.vachok.networker.IntoApplication}
 
  @since 06.09.2018 (9:33) */
-@SuppressWarnings("ClassWithTooManyMethods")
+@SuppressWarnings({"ClassWithTooManyMethods", "unused"})
 public class TForms {
 
     /**
@@ -371,7 +371,7 @@ public class TForms {
         }
     }
 
-    public String sshCheckerMapWintDates(Map<String, Long> sshCheckerMap, boolean isHTML) {
+    public String sshCheckerMapWithDates(Map<String, Long> sshCheckerMap, boolean isHTML) {
         this.brStringBuilder = new StringBuilder();
         this.nStringBuilder = new StringBuilder();
         sshCheckerMap.forEach((x, y) -> {
@@ -391,76 +391,6 @@ public class TForms {
             return nStringBuilder.toString();
         }
     }
-
-// 27.02.2019 (13:39) Comment out
-/*
-    @Deprecated
-    public static String from(Exception e) {
-        StringBuilder stringBuilder = new StringBuilder();
-
-        stringBuilder
-            .append(new Date()).append(N_STR)
-            .append("Exception message: ").append(e.getMessage()).append(N_STR)
-            .append("Trace: \n");
-        for (StackTraceElement elem : e.getStackTrace()) {
-            appendNElement(stringBuilder, elem);
-        }
-        if (e.getSuppressed() != null) {
-            for (Throwable throwable : e.getSuppressed()) {
-                for (StackTraceElement element : throwable.getStackTrace()) {
-                    appendNElement(stringBuilder, element);
-                }
-            }
-        } else {
-            stringBuilder.append("Suppressed is null");
-        }
-        return stringBuilder.toString();
-    }
-        @Deprecated
-    private static void appendNElement(StringBuilder stringBuilder, StackTraceElement elem) {
-        String strNative = "NATIVE***>>>  ";
-        if (elem.isNativeMethod()) {
-            stringBuilder.append(strNative);
-        }
-        stringBuilder
-            .append("Line ")
-            .append(elem.getLineNumber())
-            .append(" in ")
-            .append(elem.getClassName()).append(".").append(elem.getMethodName())
-            .append(" (").append(elem.getFileName()).append(")").append(N_STR);
-    }
-
-    @Deprecated
-    private String fromArray(StackTraceElement[] y, boolean b) {
-        brStringBuilder.append(BR_STR);
-        brStringBuilder.append(y.length)
-            .append(" stack length<br>");
-        nStringBuilder.append(y.length)
-            .append(" stack length\n");
-        for (StackTraceElement st : y) {
-            nStringBuilder
-                .append(st.toString())
-                .append(N_STR);
-            brStringBuilder
-                .append(st.toString())
-                .append(BR_STR);
-        }
-        if (b) {
-            return brStringBuilder.toString();
-        } else {
-            return nStringBuilder.toString();
-        }
-    }
-        @Deprecated
-    public static String fromArray(File[] dirFiles) {
-        for (File f : dirFiles) {
-            if (f.getName().contains(".jar")) {
-                return f.getName().replace(".jar", "");
-            }
-        }
-        throw new UnsupportedOperationException("Хуя ты ХЕРург");
-    }
-*/
 
     /**
      Если {@link Exception} содержит getSuppressed.
