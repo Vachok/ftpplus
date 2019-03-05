@@ -13,7 +13,10 @@ import ru.vachok.networker.services.MessageLocal;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.LinkedBlockingDeque;
 
 /**
  Константы пакета
@@ -107,7 +110,9 @@ public enum ConstantsNet {;
      */
     public static final String DOMAIN_EATMEATRU = ".eatmeat.ru";
 
-    public static final int IPS_IN_VELKOM_VLAN = 13005;
+    public static final int MAX_IN_ONE_VLAN = 255;
+
+    public static final int IPS_IN_VELKOM_VLAN = 63 * MAX_IN_ONE_VLAN;
 
     public static final int TIMEOUT240 = 240;
 
@@ -131,7 +136,7 @@ public enum ConstantsNet {;
      @see ru.vachok.networker.net.NetScannerSvc#getPCNamesPref(String)
      @see ru.vachok.networker.net.NetScanCtr#scanIt(HttpServletRequest, Model, Date)
      */
-    private static Set<String> pcNames = new HashSet<>(Integer.parseInt(LOC_PROPS.getOrDefault(ConstantsFor.PR_TOTPC, "318").toString()));
+    private static Set<String> pcNames = new HashSet<>(Integer.parseInt(LOC_PROPS.getOrDefault(ConstantsFor.PR_TOTPC, "242").toString()));
 
     private static MessageToUser messageToUser = new MessageLocal();
 

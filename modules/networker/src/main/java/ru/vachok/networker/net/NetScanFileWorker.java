@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
@@ -15,13 +16,15 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.List;
 import java.util.Objects;
 
 
 /**
- Файловые работы.
-
- @since 25.12.2018 (10:43) */
+ * Файловые работы.
+ *
+ * @since 25.12.2018 (10:43)
+ */
 @Scope(ConstantsFor.SINGLETON)
 @Component
 class NetScanFileWorker {
@@ -35,31 +38,22 @@ class NetScanFileWorker {
     private long lastStamp = System.currentTimeMillis();
 
     /**
-     {@link DiapazonedScan#scanNew()}
+     * {@link DiapazonedScan#scanNew()}
      */
     private File newLanLastScan = new File(ConstantsNet.FILENAME_AVAILABLELASTTXT);
 
     /**
-     {@link DiapazonedScan#scanOldLan(long)}
+     * {@link DiapazonedScan#scanOldLan(long)}
      */
     private File oldLanLastScan = new File(ConstantsNet.FILENAME_OLDLANTXT);
 
-    private File srvFile = new File(ConstantsNet.FILENAME_SERVTXT);
+    private List<File> srvFiles;
 
-    /**
-     @param newLanLastScan {@link #newLanLastScan}
-     */
-    void setNewLanLastScan(File newLanLastScan) {
-        this.newLanLastScan = newLanLastScan;
-        messageToUser.infoNoTitles("newLanLastScan = [" + this.newLanLastScan.getAbsolutePath() + "]");
+    private NetScanFileWorker() {
     }
 
-    /**
-     @param oldLanLastScan {@link #oldLanLastScan}
-     */
-    void setOldLanLastScan(File oldLanLastScan) {
-        this.oldLanLastScan = oldLanLastScan;
-        messageToUser.infoNoTitles("oldLanLastScan = [" + this.oldLanLastScan.getAbsolutePath() + "]");
+    public void setSrvFiles(List<File> srvFiles) {
+        this.srvFiles = srvFiles;
     }
 
     public long getLastStamp() {
@@ -75,7 +69,23 @@ class NetScanFileWorker {
     }
 
     /**
-     @return {@link #newLanLastScan}, как строчка
+     * @param newLanLastScan {@link #newLanLastScan}
+     */
+    void setNewLanLastScan(File newLanLastScan) {
+        this.newLanLastScan = newLanLastScan;
+        messageToUser.infoNoTitles("newLanLastScan = [" + this.newLanLastScan.getAbsolutePath() + "]");
+    }
+
+    /**
+     * @param oldLanLastScan {@link #oldLanLastScan}
+     */
+    void setOldLanLastScan(File oldLanLastScan) {
+        this.oldLanLastScan = oldLanLastScan;
+        messageToUser.infoNoTitles("oldLanLastScan = [" + this.oldLanLastScan.getAbsolutePath() + "]");
+    }
+
+    /**
+     * @return {@link #newLanLastScan}, как строчка
      */
     String getNewLanLastScanAsStr() {
         try {
@@ -86,18 +96,20 @@ class NetScanFileWorker {
     }
 
     /**
-     Читает построчно
-     <p>
-
-     @return {@link Deque} строк - содержимое {@link #oldLanLastScan} и {@link #newLanLastScan}
-     @throws IOException files
-     @see NetListKeeper#onlinesAddressesList()
+     * Читает построчно
+     * <p>
+     *
+     * @return {@link Deque} строк - содержимое {@link #oldLanLastScan} и {@link #newLanLastScan}
+     * @throws IOException files
+     * @see NetListKeeper#onlinesAddressesList()
      */
     Deque<String> getListOfOnlineDev() throws IOException {
         AppComponents.threadConfig().thrNameSet("ONDEQ");
         Deque<String> retDeque = new ArrayDeque<>();
-        String msg =
-            newLanLastScan.getAbsolutePath() + ";\n" + oldLanLastScan.getAbsolutePath() + ";\n" + srvFile.getAbsolutePath() + ";\nCreated by " + getClass().getSimpleName();
+        String msg = newLanLastScan.getAbsolutePath() +
+            ";\n" + oldLanLastScan.getAbsolutePath() +
+            ";\n" + new TForms().fromArray(srvFiles, false) +
+            ";\nCreated by " + getClass().getSimpleName();
 
         if (newLanLastScan.exists() && newLanLastScan.canRead()) {
             retDeque.addAll(FileSystemWorker.readFileToList(newLanLastScan.getAbsolutePath()));
@@ -107,24 +119,31 @@ class NetScanFileWorker {
         }
         if (oldLanLastScan.exists() && oldLanLastScan.canRead()) {
             retDeque.addAll(FileSystemWorker.readFileToList(oldLanLastScan.getAbsolutePath()));
-        }
-        else{
+        } else {
             boolean oldLanLastScanNewFile = oldLanLastScan.createNewFile();
             msg = oldLanLastScanNewFile + " " + msg;
         }
-        if(srvFile.exists() && srvFile.canRead()){
-            retDeque.addAll(FileSystemWorker.readFileToList(srvFile.getAbsolutePath()));
-        }
-        else{
-            boolean srvScanFile = srvFile.createNewFile();
-            msg = srvScanFile + " " + msg;
-        }
+        srvFiles.forEach(srvFileX -> {
+            if (srvFileX.exists() && srvFileX.canRead()) {
+                retDeque.addAll(FileSystemWorker.readFileToList(srvFileX.getAbsolutePath()));
+                messageToUser.info("NetScanFileWorker.getListOfOnlineDev", "retDeque.size()", " = " + retDeque.size());
+            } else {
+                boolean srvScanFile = false;
+                try {
+                    srvScanFile = srvFileX.createNewFile();
+                } catch (IOException e) {
+                    messageToUser.errorAlert("NetScanFileWorker", "getListOfOnlineDev", e.getMessage());
+                    FileSystemWorker.error("NetScanFileWorker.getListOfOnlineDev", e);
+                }
+                messageToUser.info(srvFileX.getAbsolutePath(), " is new file? ", " = " + srvScanFile);
+            }
+        });
         messageToUser.info(msg + " " + retDeque.size(), "positions] [Returns:", "java.util.Deque<java.lang.String>");
         return retDeque;
     }
 
     /**
-     @return {@link #oldLanLastScan}, как строчка
+     * @return {@link #oldLanLastScan}, как строчка
      */
     String getOldLanLastScanAsStr() {
         try {
@@ -132,14 +151,6 @@ class NetScanFileWorker {
         } catch (NullPointerException ignore) {
             return FileSystemWorker.readFile(ConstantsNet.FILENAME_OLDLANTXT);
         }
-    }
-
-    private NetScanFileWorker() {
-    }
-
-    public void setSrvScan(File srvFile) {
-        this.srvFile = srvFile;
-        messageToUser.info("NetScanFileWorker.setSrvScan", "srvFile", " = " + srvFile.getAbsolutePath());
     }
 
     @Override
