@@ -99,6 +99,7 @@ public class AppComponents {
      SSH-actions.
      <p>
      Через библиотеку {@link JSch}
+
      @return new {@link SshActs}
      */
     @Bean

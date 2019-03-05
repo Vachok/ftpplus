@@ -131,14 +131,9 @@ public final class NetScannerSvc {
     private Map<String, Boolean> netWorkMap;
 
     /**
-     Сортирует по-алфавиту.
-     <p>
-     {@link NetScannerSvc#getThePc()} <br>
-     {@link LastNetScan#getTimeLastScan()} <br>
-     {@link NetScannerSvc#setThePc(java.lang.String)} <br>
-     {@link NetScannerSvc#setInputWithInfoFromDB(String)}
+     Доступность пк. online|offline сколько раз.
 
-     @param timeNow {@link ArrayList}, показываемый на странице.
+     @see NetScannerSvc#getInfoFromDB()
      */
     private static void sortList(List<String> timeNow) {
         Collections.sort(timeNow);

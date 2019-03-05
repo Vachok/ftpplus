@@ -257,9 +257,12 @@ public class DiapazonedScan implements Runnable {
         try (OutputStream outputStream = new FileOutputStream(srvFile);
              PrintWriter printWriter = new PrintWriter(outputStream, true)) {
             scanLan(printWriter, 11, 40, stArt, "10.10.");
-        } catch (IOException e) {
+        }
+        catch(IOException | IllegalStateException e){
             messageToUser.errorAlert(getClass().getSimpleName(), "scanServers", e.getMessage());
             FileSystemWorker.error(classMeth, e);
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
         }
         boolean isFileCopied = FileSystemWorker.copyOrDelFile(srvFile, path.toAbsolutePath().toString(), false);
         NET_SCAN_FILE_WORKER_INST.setSrvScan(path.toFile());
