@@ -360,6 +360,8 @@ public class DiapazonedScan implements Runnable {
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
             messageToUser.errorAlert(getClass().getSimpleName(), "run", e.getMessage());
             FileSystemWorker.error("DiapazonedScan.run", e);
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
         }
     }
     

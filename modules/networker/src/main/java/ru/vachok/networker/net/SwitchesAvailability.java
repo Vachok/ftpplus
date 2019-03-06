@@ -41,9 +41,8 @@ public class SwitchesAvailability implements Runnable {
         List<String> stringList = new ArrayList<>();
         try {
             stringList = DiapazonedScan.pingSwitch();
-        } catch (IllegalAccessException e) {
-            messageToUser.errorAlert("SwitchesAvailability", "SwitchesAvailability", e.getMessage());
-            FileSystemWorker.error("SwitchesAvailability.SwitchesAvailability", e);
+        } catch (IllegalAccessException ignore) {
+            //
         }
         Collections.sort(stringList);
         this.swAddr = Collections.unmodifiableList(stringList);
