@@ -1,13 +1,13 @@
 package ru.vachok.networker;
 
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.context.ConfigurableApplicationContext;
+import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
+import ru.vachok.networker.services.MessageLocal;
 
 import java.io.*;
 import java.time.LocalDateTime;
@@ -20,58 +20,59 @@ import static ru.vachok.networker.IntoApplication.getConfigurableApplicationCont
 
 /**
  Действия, при выходе
-
+ 
  @since 21.12.2018 (12:15) */
-@SuppressWarnings ("StringBufferReplaceableByString")
+@SuppressWarnings("StringBufferReplaceableByString")
 public class ExitApp implements Runnable {
-
-    /**
-     {@link LoggerFactory#getLogger(java.lang.String)}
-     <p>
-     Logger name = {@link Class#getSimpleName()}
-     */
-    private static final Logger LOGGER = LoggerFactory.getLogger(ExitApp.class.getSimpleName());
-
+    
+    
     /**
      Thread name
      <p>
      "ExitApp.run"
      */
     private static final String EXIT_APP_RUN = "ExitApp.run";
-
+    
     /**
      new {@link ArrayList}, записываемый в "exit.last"
-
+     
      @see #exitAppDO()
      */
     private List<String> stringList = new ArrayList<>();
-
+    
     /**
      Причина выхода
      */
     private String reasonExit;
-
+    
+    /**
+     Имя файлв для {@link ObjectOutput}
+     */
+    private String fileName;
+    
     /**
      Объект для записи, {@link Externalizable}
      */
     private Object toWriteObj;
-
+    
     /**
      Для записи {@link #toWriteObj}
-
+     
      @see #writeObj()
      */
     private FileOutputStream out;
-
+    
     /**
      Uptime в минутах. Как статус {@link System#exit(int)}
      */
     private long toMinutes = TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - ConstantsFor.START_STAMP);
-
+    
+    private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
+    
     /**
      Сохранение состояния объектов.
      <p>
-
+     
      @param reasonExit  причина выхода
      @param toWriteObj, {@link Object}  для сохранения на диск
      @param out         если требуется сохранить состояние
@@ -81,14 +82,19 @@ public class ExitApp implements Runnable {
         this.toWriteObj = toWriteObj;
         this.out = out;
     }
-
+    
+    public ExitApp(String fileName, Object toWriteObj) {
+        this.fileName = fileName;
+        this.toWriteObj = toWriteObj;
+    }
+    
     /**
      @param reasonExit {@link #reasonExit}
      */
     public ExitApp(String reasonExit) {
         this.reasonExit = reasonExit;
     }
-
+    
     public void reloadCTX() {
         ThreadConfig threadConfig = AppComponents.threadConfig();
         threadConfig.getTaskScheduler().getScheduledThreadPoolExecutor().shutdown();
@@ -99,27 +105,29 @@ public class ExitApp implements Runnable {
         runnableList.clear();
         getConfigurableApplicationContext().refresh();
     }
-
-    /**
-     {@link #copyAvail()}
-     */
-    @Override
-    public void run() {
-        Thread.currentThread().setName(ExitApp.EXIT_APP_RUN);
-        stringList.add(reasonExit);
-        AppComponents.getOrSetProps(true);
-        copyAvail();
+    
+    public boolean writeOwnObject() {
+        try (OutputStream fileOutputStream = new FileOutputStream(fileName);
+             ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream)) {
+            objectOutputStream.writeObject(toWriteObj);
+            messageToUser.info("ExitApp.writeOwnObject", fileName, " = " + new File(fileName).length() / ConstantsFor.KBYTE);
+            return true;
+        } catch (IOException e) {
+            messageToUser.errorAlert("ExitApp", "writeOwnObject", e.getMessage());
+            FileSystemWorker.error("ExitApp.writeOwnObject", e);
+            return false;
+        }
     }
-
+    
     /**
      Копирует логи
-
+     
      @see FileSystemWorker
      */
-    @SuppressWarnings ({"HardCodedStringLiteral", "FeatureEnvy"})
+    @SuppressWarnings({"HardCodedStringLiteral", "FeatureEnvy"})
     private void copyAvail() {
         File appLog = new File("g:\\My_Proj\\FtpClientPlus\\modules\\networker\\app.log");
-
+        
         FileSystemWorker.copyOrDelFile(new File(ConstantsNet.FILENAME_AVAILABLELASTTXT),
             new StringBuilder().append(".\\lan\\vlans200_").append(System.currentTimeMillis() / 1000).append(".txt").toString(),
             true);
@@ -128,16 +136,15 @@ public class ExitApp implements Runnable {
         FileSystemWorker.copyOrDelFile(new File(ConstantsNet.FILENAME_SERVTXT),
             new StringBuilder().append(".\\lan\\srv_").append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
         FileSystemWorker.copyOrDelFile(new File("ping.tv"), ".\\lan\\tv_" + System.currentTimeMillis() / 1000 + ".ping", true);
-        if(appLog.exists() && appLog.canRead()){
+        if (appLog.exists() && appLog.canRead()) {
             FileSystemWorker.copyOrDelFile(appLog, "\\\\10.10.111.1\\Torrents-FTP\\app.log", false);
-        }
-        else{
+        } else {
             stringList.add("No app.log");
-            LOGGER.info("No app.log");
+            messageToUser.info("No app.log");
         }
         writeObj();
     }
-
+    
     /**
      Запись {@link Externalizable}
      <p>
@@ -152,21 +159,19 @@ public class ExitApp implements Runnable {
      Запуск {@link #exitAppDO()}
      */
     private void writeObj() {
-        if(toWriteObj!=null){
+        if (toWriteObj != null) {
             stringList.add(toWriteObj.toString());
-            try(ObjectOutput objectOutput = new ObjectOutputStream(out)){
+            try (ObjectOutput objectOutput = new ObjectOutputStream(out)) {
                 objectOutput.writeObject(toWriteObj);
-            }
-            catch(IOException e){
+            } catch (IOException e) {
                 FileSystemWorker.error("ExitApp.writeObj", e);
             }
-        }
-        else{
+        } else {
             stringList.add("No object");
         }
         exitAppDO();
     }
-
+    
     /**
      Метод выхода
      <p>
@@ -184,5 +189,16 @@ public class ExitApp implements Runnable {
         getConfigurableApplicationContext().close();
         AppComponents.threadConfig().killAll();
         System.exit(Math.toIntExact(toMinutes));
+    }
+    
+    /**
+     {@link #copyAvail()}
+     */
+    @Override
+    public void run() {
+        Thread.currentThread().setName(ExitApp.EXIT_APP_RUN);
+        stringList.add(reasonExit);
+        AppComponents.getOrSetProps(true);
+        copyAvail();
     }
 }

@@ -39,27 +39,126 @@ import static java.time.temporal.ChronoUnit.HOURS;
 
 /**
  Вывод различной сопутствующей информации
-
+ 
  @since 21.09.2018 (11:33) */
 @Controller
 public class ServiceInfoCtrl {
-
+    
+    
     /**
      {@link LoggerFactory#getLogger(Class)}
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(ServiceInfoCtrl.class.getSimpleName());
-
-    private boolean authReq = false;
-
+    
     private static final Properties LOC_PR = AppComponents.getOrSetProps();
-
+    
+    private boolean authReq = false;
+    
     /**
      {@link Visitor}
      */
     private Visitor visitor = null;
-
+    
     private MessageToUser messageToUser = new MessageLocal();
-
+    
+    /**
+     GetMapping /serviceinfo
+     <p>
+     Записываем {@link Visitor}. <br>
+     Выполним как трэд - new {@link SpeedChecker}. <br>
+     Если ПК авторизован - вернуть {@code vir.html}, иначе - throw new {@link AccessDeniedException}
+     
+     @param model    {@link Model}
+     @param request  {@link HttpServletRequest}
+     @param response {@link HttpServletResponse}
+     @return vir.html
+     @throws AccessDeniedException если не {@link ConstantsFor#getPcAuth(HttpServletRequest)}
+     @throws ExecutionException    запуск {@link #modModMaker(Model, HttpServletRequest, Visitor)}
+     @throws InterruptedException  запуск {@link #modModMaker(Model, HttpServletRequest, Visitor)}
+     */
+    @GetMapping("/serviceinfo")
+    public String infoMapping(Model model, HttpServletRequest request, HttpServletResponse response) throws AccessDeniedException, ExecutionException,
+        InterruptedException {
+        AppComponents.threadConfig().thrNameSet("sINFO");
+        this.visitor = new AppComponents().visitor(request);
+        AppComponents.threadConfig().executeAsThread(new SpeedChecker());
+        this.authReq =
+            Stream.of("0:0:0:0", "10.10.111", "10.200.213.85", "172.16.20", "10.200.214.80").anyMatch(sP -> request.getRemoteAddr().contains(sP));
+        if (authReq) {
+            modModMaker(model, request, visitor);
+            response.addHeader(ConstantsFor.HEAD_REFRESH, "90");
+            return "vir";
+        } else {
+            throw new AccessDeniedException("Sorry. Denied");
+        }
+    }
+    
+    @GetMapping("/pcoff")
+    public void offPC(Model model) throws IOException {
+        if (authReq) {
+            Runtime.getRuntime().exec(ConstantsFor.COM_SHUTDOWN_P_F);
+        } else {
+            throw new AccessDeniedException("Denied for " + visitor.toString());
+        }
+    }
+    
+    @GetMapping("/stop")
+    public String closeApp(HttpServletRequest request) throws AccessDeniedException {
+        if (authReq) {
+            try {
+                Future<?> submit = AppComponents.threadConfig().getTaskExecutor()
+                    .submit(new ExitApp("alldev.map", ConstantsNet.getAllDevices()));
+                submit.get(ConstantsFor.DELAY, TimeUnit.SECONDS);
+            } catch (InterruptedException | ExecutionException | TimeoutException e) {
+                messageToUser.errorAlert("ServiceInfoCtrl", "closeApp", e.getMessage());
+                FileSystemWorker.error("ServiceInfoCtrl.closeApp", e);
+                Thread.currentThread().checkAccess();
+                Thread.currentThread().interrupt();
+            }
+        } else {
+            throw new AccessDeniedException("DENY for " + request.getRemoteAddr());
+        }
+        return "ok";
+    }
+    
+    /**
+     Считает время до конца дня.
+     <p>
+     
+     @param timeStart - время старта
+     @param amountH   - сколько часов до конца
+     @return время до 17:30 в процентах от 8:30
+     */
+    public static String percToEnd(Date timeStart, long amountH) {
+        StringBuilder stringBuilder = new StringBuilder();
+        LocalDateTime startDayTime = LocalDateTime.ofEpochSecond(timeStart.getTime() / 1000, 0, ZoneOffset.ofHours(3));
+        LocalTime startDay = startDayTime.toLocalTime();
+        LocalTime endDay = startDay.plus(amountH, HOURS);
+        final int secDayEnd = endDay.toSecondOfDay();
+        final int startSec = startDay.toSecondOfDay();
+        final int allDaySec = secDayEnd - startSec;
+        LocalTime localTime = endDay.minusHours(LocalTime.now().getHour());
+        localTime = localTime.minusMinutes(LocalTime.now().getMinute());
+        localTime = localTime.minusSeconds(LocalTime.now().getSecond());
+        boolean workHours = LocalTime.now().isAfter(startDay) && LocalTime.now().isBefore(endDay);
+        if (workHours) {
+            int toEndDaySec = localTime.toSecondOfDay();
+            int diffSec = allDaySec - toEndDaySec;
+            float percDay = ((float) toEndDaySec / (((float) allDaySec) / 100));
+            stringBuilder
+                .append("Работаем ")
+                .append(TimeUnit.SECONDS.toMinutes(diffSec));
+            stringBuilder
+                .append("(мин.). Ещё ")
+                .append(String.format("%.02f", percDay))
+                .append(" % или ");
+        } else {
+            stringBuilder.append("<b> GO HOME! </b><br>");
+        }
+        stringBuilder.append(localTime.toString());
+        return stringBuilder.toString();
+    }
+    
     private void modModMaker(Model model, HttpServletRequest request, Visitor visitor) throws ExecutionException, InterruptedException {
         this.visitor = ConstantsFor.getVis(request);
         Callable<Long> callWhenCome = new SpeedChecker();
@@ -73,9 +172,9 @@ public class ServiceInfoCtrl {
             .append(new TForms().fromArray(LOC_PR, true)).append("<p>")
             .append("<p><font color=\"grey\">").append(listFilesToReadStr()).append("</font>")
             .toString();
-    
+        
         model.addAttribute(ConstantsFor.ATT_TITLE, getLast() + " (" + getLast() * ConstantsFor.ONE_DAY_HOURS + ")");
-    
+        
         model.addAttribute("mail", percToEnd(comeD, 9));
         model.addAttribute("ping", pingGit());
         model.addAttribute("urls", new StringBuilder()
@@ -98,70 +197,16 @@ public class ServiceInfoCtrl {
         model.addAttribute("back", request.getHeader(ConstantsFor.ATT_REFERER.toLowerCase()));
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<br>" + getJREVers());
     }
-
+    
     private float getLast() {
         return TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() -
             Long.parseLong(LOC_PR.getProperty("lasts", 1544816520000L + ""))) / 60f / 24f;
     }
-
+    
     private String getJREVers() {
         return System.getProperty("java.version");
     }
-
-    /**
-     GetMapping /serviceinfo
-     <p>
-     Записываем {@link Visitor}. <br>
-     Выполним как трэд - new {@link SpeedChecker}. <br>
-     Если ПК авторизован - вернуть {@code vir.html}, иначе - throw new {@link AccessDeniedException}
-
-     @param model    {@link Model}
-     @param request  {@link HttpServletRequest}
-     @param response {@link HttpServletResponse}
-     @return vir.html
-     @throws AccessDeniedException если не {@link ConstantsFor#getPcAuth(HttpServletRequest)}
-     @throws ExecutionException    запуск {@link #modModMaker(Model, HttpServletRequest, Visitor)}
-     @throws InterruptedException  запуск {@link #modModMaker(Model, HttpServletRequest, Visitor)}
-     */
-    @GetMapping ("/serviceinfo")
-    public String infoMapping(Model model, HttpServletRequest request, HttpServletResponse response) throws AccessDeniedException, ExecutionException,
-        InterruptedException {
-        AppComponents.threadConfig().thrNameSet("sINFO");
-        this.visitor = new AppComponents().visitor(request);
-        AppComponents.threadConfig().executeAsThread(new SpeedChecker());
-        this.authReq =
-            Stream.of("0:0:0:0", "10.10.111", "10.200.213.85", "172.16.20", "10.200.214.80").anyMatch(sP -> request.getRemoteAddr().contains(sP));
-        if(authReq){
-            modModMaker(model, request, visitor);
-            response.addHeader(ConstantsFor.HEAD_REFRESH, "90");
-            return "vir";
-        }
-        else{
-            throw new AccessDeniedException("Sorry. Denied");
-        }
-    }
-
-    @GetMapping ("/pcoff")
-    public void offPC(Model model) throws IOException {
-        if(authReq){
-            Runtime.getRuntime().exec(ConstantsFor.COM_SHUTDOWN_P_F);
-        }
-        else{
-            throw new AccessDeniedException("Denied for " + visitor.toString());
-        }
-    }
-
-    @GetMapping ("/stop")
-    public String closeApp() throws AccessDeniedException {
-        if(authReq){
-            AppComponents.threadConfig().executeAsThread(new ExitApp(ConstantsFor.getUpTime() + " " + ConstantsFor.getMemoryInfo()));
-        }
-        else{
-            throw new AccessDeniedException("DENY!");
-        }
-        return "ok";
-    }
-
+    
     private String prepareRequest(HttpServletRequest request) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("<center><h3>Заголовки</h3></center>");
@@ -193,55 +238,16 @@ public class ServiceInfoCtrl {
         stringBuilder
             .append("cookie: ".toUpperCase())
             .append("<b>").append(request.getHeader("cookie")).append(bBr);
-
+        
         stringBuilder.append("<center><h3>Атрибуты</h3></center>");
         stringBuilder.append(new TForms().fromEnum(request.getAttributeNames(), true));
         return stringBuilder.toString();
     }
-
-    /**
-     Считает время до конца дня.
-     <p>
-
-     @param timeStart - время старта
-     @param amountH   - сколько часов до конца
-     @return время до 17:30 в процентах от 8:30
-     */
-    public static String percToEnd(Date timeStart, long amountH) {
-        StringBuilder stringBuilder = new StringBuilder();
-        LocalDateTime startDayTime = LocalDateTime.ofEpochSecond(timeStart.getTime() / 1000, 0, ZoneOffset.ofHours(3));
-        LocalTime startDay = startDayTime.toLocalTime();
-        LocalTime endDay = startDay.plus(amountH, HOURS);
-        final int secDayEnd = endDay.toSecondOfDay();
-        final int startSec = startDay.toSecondOfDay();
-        final int allDaySec = secDayEnd - startSec;
-        LocalTime localTime = endDay.minusHours(LocalTime.now().getHour());
-        localTime = localTime.minusMinutes(LocalTime.now().getMinute());
-        localTime = localTime.minusSeconds(LocalTime.now().getSecond());
-        boolean workHours = LocalTime.now().isAfter(startDay) && LocalTime.now().isBefore(endDay);
-        if(workHours){
-            int toEndDaySec = localTime.toSecondOfDay();
-            int diffSec = allDaySec - toEndDaySec;
-            float percDay = (( float ) toEndDaySec / ((( float ) allDaySec) / 100));
-            stringBuilder
-                .append("Работаем ")
-                .append(TimeUnit.SECONDS.toMinutes(diffSec));
-            stringBuilder
-                .append("(мин.). Ещё ")
-                .append(String.format("%.02f", percDay))
-                .append(" % или ");
-        }
-        else{
-            stringBuilder.append("<b> GO HOME! </b><br>");
-        }
-        stringBuilder.append(localTime.toString());
-        return stringBuilder.toString();
-    }
-
+    
     private static String listFilesToReadStr() {
         List<File> readUs = new ArrayList<>();
-        for(File f : Objects.requireNonNull(new File(".").listFiles())){
-            if(f.getName().toLowerCase().contains(ConstantsFor.getStrsVisit()[0])){
+        for (File f : Objects.requireNonNull(new File(".").listFiles())) {
+            if (f.getName().toLowerCase().contains(ConstantsFor.getStrsVisit()[0])) {
                 readUs.add(f);
                 f.deleteOnExit();
             }
@@ -249,37 +255,34 @@ public class ServiceInfoCtrl {
         ConcurrentMap<String, String> stringStringConcurrentMap = FileSystemWorker.readFiles(readUs);
         List<String> retListStr = new ArrayList<>();
         stringStringConcurrentMap.forEach((String x, String y) -> {
-            try{
+            try {
                 retListStr.add(y.split("userId")[0]);
                 retListStr.add("<b>" + x.split("FtpClientPlus")[1] + "</b>");
-            }
-            catch(Exception e){
+            } catch (Exception e) {
                 retListStr.add(e.getMessage());
             }
         });
         return new TForms().fromArray(retListStr, true);
     }
-
+    
     private String pingGit() {
         boolean reachable = false;
-        try{
+        try {
             InetAddress byName = InetAddress.getByName(ConstantsFor.HOSTNAME_SRVGIT_EATMEATRU);
             reachable = byName.isReachable(200);
-        }
-        catch(IOException e){
+        } catch (IOException e) {
             messageToUser.errorAlert("ServiceInfoCtrl", "pingGit", e.getMessage());
         }
         String s = "</b> srv-git.eatmeat.ru.</font> Checked at: <i>";
         String s2 = "</i><br>";
         String s1 = "<b><font color=\"#77ff72\">" + true + s + LocalTime.now() + s2;
-        if(reachable){
+        if (reachable) {
             return s1;
-        }
-        else{
+        } else {
             return "<b><font color=\"#ff2121\">" + true + s + LocalTime.now() + s2;
         }
     }
-
+    
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("ServiceInfoCtrl{");
