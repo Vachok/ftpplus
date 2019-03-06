@@ -15,7 +15,10 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.systray.ActionDefault;
 import ru.vachok.networker.systray.MessageToTray;
 
-import javax.mail.*;
+import javax.mail.Flags;
+import javax.mail.Folder;
+import javax.mail.Message;
+import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.event.ActionEvent;
@@ -29,7 +32,8 @@ import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
-import static java.time.DayOfWeek.*;
+import static java.time.DayOfWeek.SATURDAY;
+import static java.time.DayOfWeek.SUNDAY;
 
 
 /**
@@ -368,7 +372,12 @@ public class SpeedChecker implements Callable<Long>, Runnable {
          */
         @Override
         public void run() {
-            String msg = chechMail();
+            String msg = "NO MSG";
+            try {
+                msg = chechMail();
+            } catch (IllegalStateException e) {
+                msg = e.getMessage();
+            }
             msg = msg + "\n" + new Date(rtLong);
             LOGGER.info(msg);
         }
