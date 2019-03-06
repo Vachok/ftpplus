@@ -6,6 +6,7 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.DiapazonedScan;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 
@@ -133,8 +134,14 @@ public class ExitApp implements Runnable {
             true);
         FileSystemWorker.copyOrDelFile(new File(ConstantsNet.FILENAME_OLDLANTXT),
             new StringBuilder().append(".\\lan\\old_lan_").append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
-        FileSystemWorker.copyOrDelFile(new File(ConstantsNet.FILENAME_SERVTXT),
-            new StringBuilder().append(".\\lan\\srv_").append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
+        List<File> srvFiles = DiapazonedScan.getInstance().getSrvFiles();
+        srvFiles.forEach(file -> {
+            FileSystemWorker.copyOrDelFile(file,
+                new StringBuilder()
+                    .append(".\\lan\\")
+                    .append(file.getName().replaceAll(ConstantsNet.FILENAME_SERVTXT, ""))
+                    .append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
+        });
         FileSystemWorker.copyOrDelFile(new File("ping.tv"), ".\\lan\\tv_" + System.currentTimeMillis() / 1000 + ".ping", true);
         if (appLog.exists() && appLog.canRead()) {
             FileSystemWorker.copyOrDelFile(appLog, "\\\\10.10.111.1\\Torrents-FTP\\app.log", false);
@@ -160,7 +167,7 @@ public class ExitApp implements Runnable {
      */
     private void writeObj() {
         if (toWriteObj != null) {
-            stringList.add(toWriteObj.toString());
+            stringList.add(toWriteObj.toString().getBytes().length / ConstantsFor.KBYTE + " kbytes of object written");
             try (ObjectOutput objectOutput = new ObjectOutputStream(out)) {
                 objectOutput.writeObject(toWriteObj);
             } catch (IOException e) {
@@ -184,7 +191,7 @@ public class ExitApp implements Runnable {
      */
     private void exitAppDO() {
         stringList.add("exit at " + LocalDateTime.now().toString() + ConstantsFor.getUpTime());
-        FileSystemWorker.writeFile("exit.last", stringList);
+        FileSystemWorker.writeFile("exit.last", stringList.stream());
         FileSystemWorker.delTemp();
         getConfigurableApplicationContext().close();
         AppComponents.threadConfig().killAll();
@@ -196,7 +203,7 @@ public class ExitApp implements Runnable {
      */
     @Override
     public void run() {
-        Thread.currentThread().setName(ExitApp.EXIT_APP_RUN);
+        AppComponents.threadConfig().thrNameSet("exit");
         stringList.add(reasonExit);
         AppComponents.getOrSetProps(true);
         copyAvail();

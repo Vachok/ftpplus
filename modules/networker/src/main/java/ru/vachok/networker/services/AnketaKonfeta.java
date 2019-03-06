@@ -3,13 +3,7 @@ package ru.vachok.networker.services;
 
 import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.messenger.email.ESender;
-import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.componentsrepo.AppComponents;
-
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import ru.vachok.networker.ExitApp;
 
 /**
  @since 17.01.2019 (9:52) */
@@ -23,7 +17,9 @@ public class AnketaKonfeta {
     private String q2Ans;
 
     private String additionalString;
-
+    
+    private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
+    
     public String getQ2Ans() {
         return q2Ans;
     }
@@ -58,26 +54,10 @@ public class AnketaKonfeta {
 
     public void sendKonfeta(String addStr) {
         setAdditionalString(addStr);
-        new Thread(this::sendKonfeta).start();
+        final boolean writeKonfeta = new ExitApp("anketa.konfeta", this).writeOwnObject();
+        messageToUser.info("AnketaKonfeta.sendKonfeta", "writeKonfeta", " = " + writeKonfeta);
     }
-
-    public void sendKonfeta() {
-        List<String> emailsList = new ArrayList<>();
-        MessageToUser messageToUser = new ESender(emailsList);
-        emailsList.add(ConstantsFor.EADDR_143500GMAILCOM);
-        try {
-            if (this.userMail.isEmpty()) {
-                emailsList.add("ikudryashov@velokmfood.ru");
-            } else {
-                emailsList.add(userMail);
-            }
-            AppComponents.getLogger(AnketaKonfeta.class.getSimpleName()).info(toString());
-        } catch (NullPointerException e) {
-            messageToUser.errorAlert(this.getClass().getSimpleName(), "sendKonfeta", e.getMessage() + " in 64 ");
-        }
-        messageToUser.info(getClass().getSimpleName(), new Date().toString(), toString());
-    }
-
+    
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("AnketaKonfeta{");

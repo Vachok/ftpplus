@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ui.Model;
 import ru.vachok.messenger.MessageCons;
+import ru.vachok.messenger.MessageFile;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.messenger.email.ESender;
 import ru.vachok.mysqlandprops.EMailAndDB.MailMessages;
@@ -162,7 +163,9 @@ public class SpeedChecker implements Callable<Long>, Runnable {
          {@link MailMessages}
          */
         private MailMessages mailMessages = new MailMessages();
-
+    
+        private MessageToUser messageToUser = new MessageFile();
+    
         /**
          Получение информации о текущем дне недели.
          <p>
@@ -282,7 +285,6 @@ public class SpeedChecker implements Callable<Long>, Runnable {
          @see #chechMail()
          */
         private void parseMsg(Message m, String chDB) {
-            MessageToUser eSender = new ESender(ConstantsFor.EADDR_143500GMAILCOM);
             try {
                 String subjMail = m.getSubject();
                 if (subjMail.toLowerCase().contains("speed:")) {
@@ -297,13 +299,13 @@ public class SpeedChecker implements Callable<Long>, Runnable {
                         delMessage(m);
                     }
                     String todayInfoStr = todayInfo();
-                    eSender.info(ChkMailAndUpdateDB.class.getSimpleName() + " " + ConstantsFor.thisPC(), true + " sending to base",
+                    messageToUser.info(ChkMailAndUpdateDB.class.getSimpleName() + " " + ConstantsFor.thisPC(), true + " sending to base",
                         todayInfoStr + "\n" + chDB);
                 } else {
                     new MessageToTray(new ActionDefault(ConstantsFor.HTTP_LOCALHOST8880SLASH)).infoNoTitles("No new messages");
                 }
             } catch (MessagingException e) {
-                eSender.errorAlert(
+                messageToUser.errorAlert(
                     this.getClass().getSimpleName(),
                     LocalDateTime.now() + " " + e.getMessage(),
                     new TForms().fromArray(e, false));

@@ -6,7 +6,6 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageFile;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.messenger.email.ESender;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.accesscontrol.TemporaryFullInternet;
 import ru.vachok.networker.accesscontrol.common.CommonRightsChecker;
@@ -104,13 +103,12 @@ public class AppInfoOnLoad implements Runnable {
      Очистка pcuserauto
      */
     private static void trunkTableUsers() {
-        MessageToUser eSender = new ESender(ConstantsFor.EADDR_143500GMAILCOM);
         try (Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.DBDASENAME_U0466446_VELKOM);
              PreparedStatement preparedStatement = c.prepareStatement("TRUNCATE TABLE pcuserauto")) {
             preparedStatement.executeUpdate();
-            eSender.infoNoTitles("TRUNCATE true\n" + ConstantsFor.getUpTime() + STR_UPTIME);
+            miniLogger.add("TRUNCATE true\n" + ConstantsFor.getUpTime() + STR_UPTIME);
         } catch (SQLException e) {
-            eSender.infoNoTitles("TRUNCATE false\n" + ConstantsFor.getUpTime() + STR_UPTIME);
+            miniLogger.add("TRUNCATE false\n" + ConstantsFor.getUpTime() + STR_UPTIME);
         }
     }
 
@@ -217,7 +215,7 @@ public class AppInfoOnLoad implements Runnable {
         exitLast = exitLast + "\n" + checkDay(scheduledExecutorService) + "\n" + stringBuilder.toString();
         miniLogger.add(exitLast);
     
-        FileSystemWorker.writeFile(CLASS_NAME + ".mini", miniLogger);
+        FileSystemWorker.writeFile(CLASS_NAME + ".mini", miniLogger.stream());
     }
 
     /**

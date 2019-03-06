@@ -185,21 +185,15 @@ public class NetPinger implements Runnable, Pinger {
      */
     private void parseResult(long userIn) {
         List<String> pingsList = new ArrayList<>();
+    
         pingsList.add("Pinger is start at " + new Date(System.currentTimeMillis() - userIn));
         resList.stream().distinct().forEach(x -> {
             int frequency = Collections.frequency(resList, x);
             pingsList.add(frequency + " times " + x + "\n");
         });
-        FileSystemWorker.writeFile(ConstantsNet.PINGRESULT_LOG, pingsList);
+        FileSystemWorker.writeFile(ConstantsNet.PINGRESULT_LOG, pingsList.stream());
         messageToUser = new MessageFile();
         pingsList.add(((float) TimeUnit.MILLISECONDS.toMinutes(userIn) / ConstantsFor.ONE_HOUR_IN_MIN) + " hours spend");
-        if (userIn >= TimeUnit.MINUTES.toMillis(3)) {
-            try {
-                ESender.sendM(Collections.singletonList(ConstantsFor.EADDR_143500GMAILCOM), getClass().getSimpleName(), new TForms().fromArray(pingsList, false));
-            } catch (Exception e) {
-                FileSystemWorker.error("NetPinger.parseResult", e);
-            }
-        }
     }
 
     /**

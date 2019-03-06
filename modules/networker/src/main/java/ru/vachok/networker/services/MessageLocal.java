@@ -27,11 +27,11 @@ public class MessageLocal implements MessageToUser {
     
     }
     
-    public void warning(String bodyMsg) {
-        Logger logger = LoggerFactory.getLogger(headerMsg);
-        this.bodyMsg = bodyMsg;
-        String join = String.join(" ", headerMsg, titleMsg, bodyMsg);
-        logger.warn(join);
+    @Override
+    public void warning(String headerMsg, String titleMsg, String bodyMsg) {
+        final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(headerMsg);
+        String msg = titleMsg + " : " + bodyMsg;
+        logger.warning(msg);
     }
     
     @Override
@@ -95,12 +95,12 @@ public class MessageLocal implements MessageToUser {
         this.bodyMsg = bodyMsg;
         warning(this.bodyMsg);
     }
-
-    @Override
-    public void warning(String headerMsg, String titleMsg, String bodyMsg) {
+    
+    public void warning(String bodyMsg) {
         Logger logger = LoggerFactory.getLogger(headerMsg);
-        String msg = titleMsg + " : " + bodyMsg;
-        logger.warn(msg);
+        this.bodyMsg = bodyMsg;
+        logger.warn(headerMsg);
+        logger.warn(titleMsg + " : " + bodyMsg);
     }
 
     @Override

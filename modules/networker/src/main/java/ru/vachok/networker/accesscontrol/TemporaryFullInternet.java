@@ -114,9 +114,6 @@ public class TemporaryFullInternet implements Runnable {
                     MINI_LOGGER.add("Added to map = " + x + " " + ifAbsent);
                 } catch (Exception e) {
                     messageToUser.errorAlert("TemporaryFullInternet", "sshChecker", e.getMessage());
-                    MINI_LOGGER.add("sshChecker(): " + e.getMessage());
-                    FileSystemWorker.error(classMeth, e);
-                    FileSystemWorker.writeFile(getClass().getSimpleName() + ".mini", MINI_LOGGER.stream());
                 }
             });
         }

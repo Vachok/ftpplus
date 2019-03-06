@@ -345,7 +345,6 @@ public final class NetScannerSvc {
     private void runAfterAllScan() {
         float upTime = ( float ) (TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime)) / ConstantsFor.ONE_HOUR_IN_MIN;
         List<String> toFileList = new ArrayList<>();
-        MessageToUser mailMSG = new ESender(ConstantsFor.EADDR_143500GMAILCOM);
 
         String compNameUsers = new TForms().fromArray(ConstantsNet.getCompnameUsersMap(), false);
         String psUser = new TForms().fromArrayUsers(ConstantsNet.getPcUMap(), false);
@@ -372,10 +371,7 @@ public final class NetScannerSvc {
             " scan.tmp exist = " + fileCreate(false) + "\n" +
             "Properties is save = " + props + "\n" +
             new TForms().fromArray(toFileList, false);
-        mailMSG.info(
-            this.getClass().getSimpleName(),
-            "getPCsAsync " + ConstantsFor.getUpTime() + " " + ConstantsFor.thisPC(),
-            bodyMsg);
+    
         FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".getPCsAsync", toFileList);
         FileSystemWorker.writeFile("unused.ips", unusedNamesTree.stream());
         new MessageSwing(656, 550, 50, 53).infoTimer(50,

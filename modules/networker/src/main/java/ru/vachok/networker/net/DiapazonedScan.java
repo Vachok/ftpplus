@@ -75,6 +75,10 @@ public class DiapazonedScan implements Runnable {
     
     private long stArt;
     
+    public List<File> getSrvFiles() {
+        return srvFiles;
+    }
+    
     private List<File> srvFiles = new ArrayList<>();
     
     /**

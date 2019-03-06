@@ -3,7 +3,6 @@ package ru.vachok.networker.fileworks;
 
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.messenger.email.ESender;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.common.CommonScan2YOlder;
@@ -84,15 +83,10 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
             String folderToSearch = folderPath[1];
             folderToSearch = "\\\\srv-fs.eatmeat.ru\\common_new\\" + folderToSearch;
             Files.walkFileTree(Paths.get(folderToSearch), fileSearcher);
-            String oneAddress = "netvisor@velkomfood.ru";
-            if (ConstantsFor.thisPC().toLowerCase().contains("home") || ConstantsFor.thisPC().contains("HOSTNAME_NO0027")) {
-                oneAddress = ConstantsFor.EADDR_143500GMAILCOM;
-            }
-            MessageToUser resSend = new ESender(oneAddress);
             List<String> fileSearcherResList = fileSearcher.getResList();
             String resTo = new TForms().fromArray(fileSearcherResList, true);
             if (fileSearcherResList.size() > 0) {
-                resSend.info(FileSearcher.class.getSimpleName(), "SEARCHER RESULTS " + new Date().getTime(), fileSearcher.toString());
+                FileSystemWorker.writeFile("search.last", fileSearcherResList.stream());
             }
             return resTo;
         } catch (Exception e) {

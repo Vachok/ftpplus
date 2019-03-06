@@ -20,7 +20,10 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 
 /**
@@ -68,12 +71,13 @@ class ConditionChecker {
         List<Integer> offLine = new ArrayList<>();
         StringBuilder stringBuilder = new StringBuilder();
         String classMeth = "ConditionChecker.onLinesCheck";
-
-        try (
-            PreparedStatement statement = connection.prepareStatement(sql)) {
+    
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
             Runnable r = () -> pcUserResolver.namesToFile(pcName);
-            AppComponents.threadConfig().executeAsThread(r);
+            Future<?> submit = AppComponents.threadConfig().getTaskExecutor().submit(r);
+            submit.get(ConstantsFor.DELAY * 2, TimeUnit.SECONDS);
             statement.setString(1, pcName);
+            stringBuilder.append(submit.isDone()).append(" names resolved");
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
                     ADComputer adComputer = new ADComputer();
@@ -91,7 +95,7 @@ class ConditionChecker {
             messageToUser.errorAlert(CLASS_NAME, "onLinesCheck", e.getMessage());
             FileSystemWorker.error(classMeth, e);
             stringBuilder.append(e.getMessage());
-        } catch (NullPointerException e) {
+        } catch (NullPointerException | InterruptedException | ExecutionException | TimeoutException e) {
             stringBuilder.append(e.getMessage());
         }
         return stringBuilder
