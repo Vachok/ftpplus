@@ -56,6 +56,7 @@ public class AnketaKonfetaCRTL {
     public String postAnketa(@ModelAttribute AnketaKonfeta anketaKonfeta, Model model, HttpServletRequest request) {
         Visitor visitor = ConstantsFor.getVis(request);
         this.anketaKonfeta = anketaKonfeta;
+        anketaKonfeta.setUserIp(request.getRemoteAddr());
         model.addAttribute("anketaKonfeta", anketaKonfeta);
         model.addAttribute("ok", "СПАСИБО!");
         LOGGER.warn(request.getQueryString());

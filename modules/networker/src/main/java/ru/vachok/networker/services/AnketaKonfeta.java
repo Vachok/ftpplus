@@ -11,7 +11,13 @@ import ru.vachok.networker.ExitApp;
 public class AnketaKonfeta {
 
     private String userMail;
-
+    
+    private String userIp;
+    
+    public void setUserIp(String userIp) {
+        this.userIp = userIp;
+    }
+    
     private String q1Ans;
 
     private String q2Ans;
@@ -54,8 +60,17 @@ public class AnketaKonfeta {
 
     public void sendKonfeta(String addStr) {
         setAdditionalString(addStr);
-        final boolean writeKonfeta = new ExitApp("anketa.konfeta", this).writeOwnObject();
-        messageToUser.info("AnketaKonfeta.sendKonfeta", "writeKonfeta", " = " + writeKonfeta);
+        boolean writeKonfeta = new ExitApp("anketa.", this).writeOwnObject();
+        final String classMeth = "AnketaKonfeta.sendKonfeta";
+        messageToUser.info(classMeth, "writeKonfeta", " = " + writeKonfeta);
+        messageToUser.info(classMeth, "toString()", " = " + toString());
+    }
+    
+    public void setAll() {
+        setQ1Ans("");
+        setUserMail("");
+        setAdditionalString("");
+        setQ2Ans("");
     }
     
     @Override
@@ -64,15 +79,9 @@ public class AnketaKonfeta {
         sb.append("additionalString='").append(additionalString).append('\'');
         sb.append(", q1Ans='").append(q1Ans).append('\'');
         sb.append(", q2Ans='").append(q2Ans).append('\'');
+        sb.append(", userIp='").append(userIp).append('\'');
         sb.append(", userMail='").append(userMail).append('\'');
         sb.append('}');
         return sb.toString();
-    }
-
-    public void setAll() {
-        setQ1Ans("");
-        setUserMail("");
-        setAdditionalString("");
-        setQ2Ans("");
     }
 }
