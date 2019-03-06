@@ -201,7 +201,7 @@ public class SSHFactory implements Callable<String> {
         recList.add(toString());
         recList.add(builderToStr);
         File file = new File(classCaller + "_" + System.currentTimeMillis() + ".ssh");
-        FileSystemWorker.recFile(file.getName(), recList.stream());
+        FileSystemWorker.writeFile(file.getName(), recList.stream());
         FileSystemWorker.copyOrDelFile(file, ".\\ssh\\" + file.getName(), true);
         return stringBuilder.toString();
     }

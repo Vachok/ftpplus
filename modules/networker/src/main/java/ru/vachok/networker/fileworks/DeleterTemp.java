@@ -1,14 +1,23 @@
 package ru.vachok.networker.fileworks;
 
 
+import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.services.MessageLocal;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.*;
+import java.nio.file.FileSystemException;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 
@@ -16,8 +25,11 @@ import java.util.concurrent.TimeUnit;
  Удаление временных файлов.
 
  @since 19.12.2018 (11:05) */
-@SuppressWarnings ("ClassWithoutLogger")
+@SuppressWarnings("ClassWithoutmessageToUser")
 class DeleterTemp extends FileSystemWorker implements Runnable {
+    
+    
+    private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
 
     /**
      Запись лога в файл {@code DeleterTemp.class.getSimpleName() + "_log.txt"}.
@@ -43,7 +55,7 @@ class DeleterTemp extends FileSystemWorker implements Runnable {
             printWriter = new PrintWriter(outputStream, true);
         }
         catch(IOException e){
-            LOGGER.error(e.getMessage(), e);
+            messageToUser.error(new TForms().fromArray(e, false));
         }
         getList();
         run();
@@ -63,22 +75,11 @@ class DeleterTemp extends FileSystemWorker implements Runnable {
                 }
             }
             catch(IOException e){
-                LOGGER.warn(e.getMessage(), e);
+                messageToUser.warn(new TForms().fromArray(e, false));
             }
         }
     }
-
-    @Override
-    public void run() {
-        AppComponents.threadConfig().thrNameSet("delTmp");
-        try{
-            AppComponents.threadConfig().executeAsThread(this::oldSSHLogDel);
-        }
-        catch(RuntimeException e){
-            LOGGER.error(e.getMessage());
-        }
-    }
-
+    
     private void oldSSHLogDel() {
         File sshFolder = new File(".\\ssh\\");
         List<File> files = Arrays.asList(sshFolder.listFiles());
@@ -86,13 +87,22 @@ class DeleterTemp extends FileSystemWorker implements Runnable {
             if(x.lastModified() < System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1)){
                 try{
                     Files.deleteIfExists(x.toPath());
-                }
-                catch(IOException e){
-                    LOGGER.error("DeleterTemp.run: {}", e.getMessage());
+                } catch(IOException e){
+                    messageToUser.error(e.getMessage());
                 }
             }
         });
-
+        
+    }
+    
+    @Override
+    public void run() {
+        AppComponents.threadConfig().thrNameSet("delTmp");
+        try {
+            AppComponents.threadConfig().executeAsThread(this::oldSSHLogDel);
+        } catch (RuntimeException e) {
+            messageToUser.error(e.getMessage());
+        }
     }
 
     @Override
@@ -121,7 +131,7 @@ class DeleterTemp extends FileSystemWorker implements Runnable {
                 file.toFile().deleteOnExit();
                 return FileVisitResult.CONTINUE;
             }
-            LOGGER.warn(fileAbs);
+            messageToUser.warn(fileAbs);
         }
 
         return FileVisitResult.CONTINUE;

@@ -99,13 +99,8 @@ public final class NetScannerSvc {
      */
     @SuppressWarnings ("CanBeFinal")
     private static NetScannerSvc netScannerSvcInst = new NetScannerSvc();
-
-    /**
-     Доступность пк. online|offline сколько раз.
-
-     @see NetScannerSvc#getInfoFromDB()
-     */
-    public static String inputWithInfoFromDB = null;
+    
+    private static String inputWithInfoFromDB = null;
 
     /**
      Время инициализации
@@ -131,7 +126,16 @@ public final class NetScannerSvc {
      {@link AppComponents#lastNetScan()}
      */
     private Map<String, Boolean> netWorkMap;
-
+    
+    /**
+     Доступность пк. online|offline сколько раз.
+     
+     @see NetScannerSvc#getInfoFromDB()
+     */
+    public static String getInputWithInfoFromDB() {
+        return inputWithInfoFromDB;
+    }
+    
     /**
      @param timeNow колонка из БД {@code velkompc} TimeNow (время записи)
      @see NetScannerSvc#getInfoFromDB()
@@ -328,12 +332,12 @@ public final class NetScannerSvc {
      {@link NetScannerSvc#setOnLinePCsToZero()} <br>
      {@link LastNetScan#setTimeLastScan(java.util.Date)} - сейчас. <br>
      {@link NetScannerSvc#countStat()}. <br>
-     {@link FileSystemWorker#recFile(java.lang.String, java.lang.String)}
+     {@link FileSystemWorker#writeFile(java.lang.String, java.lang.String)}
      ({@link AppComponents#lastNetScanMap()}). <br>
      {@link ESender#info(java.lang.String, java.lang.String, java.lang.String)}.
      <p>
-     {@link FileSystemWorker#recFile(java.lang.String, java.util.List)} - {@code toFileList}. <br>
-     {@link FileSystemWorker#recFile(java.lang.String, java.util.stream.Stream)} - {@link #unusedNamesTree}.
+     {@link FileSystemWorker#writeFile(java.lang.String, java.util.List)} - {@code toFileList}. <br>
+     {@link FileSystemWorker#writeFile(java.lang.String, java.util.stream.Stream)} - {@link #unusedNamesTree}.
      <p>
      {@link MessageSwing#infoTimer(int, java.lang.String)}
      */
@@ -363,7 +367,7 @@ public final class NetScannerSvc {
         AppComponents.lastNetScan().setTimeLastScan(new Date());
         countStat();
         boolean props = AppComponents.getOrSetProps(LOCAL_PROPS);
-        FileSystemWorker.recFile(ConstantsNet.BEANNAME_LASTNETSCAN, new TForms().fromArray(AppComponents.lastNetScanMap(), false));
+        FileSystemWorker.writeFile(ConstantsNet.BEANNAME_LASTNETSCAN, new TForms().fromArray(AppComponents.lastNetScanMap(), false));
         String bodyMsg = ConstantsFor.getMemoryInfo() + "\n" +
             " scan.tmp exist = " + fileCreate(false) + "\n" +
             "Properties is save = " + props + "\n" +
@@ -372,8 +376,8 @@ public final class NetScannerSvc {
             this.getClass().getSimpleName(),
             "getPCsAsync " + ConstantsFor.getUpTime() + " " + ConstantsFor.thisPC(),
             bodyMsg);
-        FileSystemWorker.recFile(this.getClass().getSimpleName() + ".getPCsAsync", toFileList);
-        FileSystemWorker.recFile("unused.ips", unusedNamesTree.stream());
+        FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".getPCsAsync", toFileList);
+        FileSystemWorker.writeFile("unused.ips", unusedNamesTree.stream());
         new MessageSwing(656, 550, 50, 53).infoTimer(50,
             "Daysec: " +
                 LocalTime.now().toSecondOfDay() + " " +
@@ -510,7 +514,7 @@ public final class NetScannerSvc {
         } catch (IOException e) {
             messageToUser.errorAlert(CLASS_NAME, "countStat", e.getMessage());
         }
-        FileSystemWorker.recFile(ConstantsNet.FILENAME_PCAUTODISTXT, readFileAsList.parallelStream().distinct());
+        FileSystemWorker.writeFile(ConstantsNet.FILENAME_PCAUTODISTXT, readFileAsList.parallelStream().distinct());
         String valStr = FileSystemWorker.readFile(ConstantsNet.FILENAME_PCAUTODISTXT);
         messageToUser.info(ConstantsFor.SOUTV, "NetScannerSvc.countStat", valStr);
         if (ConstantsFor.thisPC().toLowerCase().contains("home")) {

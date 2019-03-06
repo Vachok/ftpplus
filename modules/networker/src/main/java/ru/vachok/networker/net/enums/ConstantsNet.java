@@ -155,7 +155,7 @@ public enum ConstantsNet {;
 //        Future<String> submit = AppComponents.threadConfig().getTaskExecutor().submit(new TraceRoute());
 //        try {
 //            String s = submit.get();
-//            FileSystemWorker.recFile("trace", s);
+//            FileSystemWorker.writeFile("trace", s);
 //            return s;
 //        } catch (InterruptedException | ExecutionException e) {
 //            messageToUser.errorAlert("ConstantsNet", "getProvider", new TForms().fromArray(e, false));

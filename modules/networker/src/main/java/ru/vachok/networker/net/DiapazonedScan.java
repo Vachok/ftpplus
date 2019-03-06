@@ -20,6 +20,7 @@ import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -256,8 +257,9 @@ public class DiapazonedScan implements Runnable {
         AppComponents.threadConfig().executeAsThread(srv41);
     
         srvFiles.forEach(x -> {
-            Path path = Paths.get(ROOT_PATH_STR + "\\lan\\" + x.getName().replace(ConstantsNet.FILENAME_SERVTXT, "") + "_" + System.currentTimeMillis() / 1000 + ".scan");
-            boolean isFileCopied = FileSystemWorker.copyOrDelFile(x, path.toAbsolutePath().toString(), false);
+            String pathWName = ".\\lan\\" + x.getName().replace(".txt", "_" + LocalTime.now().toSecondOfDay() + ".scan");
+    
+            boolean isFileCopied = FileSystemWorker.copyOrDelFile(x, pathWName, false);
             messageToUser.info(classMeth, x.getAbsolutePath(), "Copy = " + isFileCopied);
             this.stopClassStampLong = System.currentTimeMillis();
         });
@@ -296,12 +298,13 @@ public class DiapazonedScan implements Runnable {
     }
     
     /**
-     @return /showalldev = {@link NetScanCtr#allDevices(Model, HttpServletRequest, HttpServletResponse)}
+     Чтобы случайно не уничтожить Overriden {@link #toString()}
+     <p>
+     @return информация о состоянии файлов
      */
-    @SuppressWarnings("StringConcatenation")
-    @Override
-    public String toString() {
+    private String theInfoToString() {
         StringBuilder fileTimes = new StringBuilder();
+        messageToUser.warn("DiapazonedScan.theInfoToString", "ROOT_PATH_STR", " = " + ROOT_PATH_STR);
         try {
             String atStr = " at: ";
             fileTimes.append(
@@ -329,6 +332,15 @@ public class DiapazonedScan implements Runnable {
         sb.append(" ROOT_PATH_STR= ").append(ROOT_PATH_STR);
         sb.append("<br>fileTimes=<br> ").append(fileTimes.toString());
         return sb.toString();
+    }
+    
+    /**
+     @return /showalldev = {@link NetScanCtr#allDevices(Model, HttpServletRequest, HttpServletResponse)}
+     */
+    @SuppressWarnings("StringConcatenation")
+    @Override
+    public String toString() {
+        return theInfoToString();
     }
     
     /**

@@ -4,13 +4,13 @@ package ru.vachok.networker.net;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
+import ru.vachok.networker.services.MessageLocal;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,8 +32,8 @@ class NetScanFileWorker {
     private static final Logger LOGGER = AppComponents.getLogger(NetScanFileWorker.class.getSimpleName());
 
     private static NetScanFileWorker ourInst = new NetScanFileWorker();
-
-    private static MessageToUser messageToUser = new MessageCons();
+    
+    private static MessageToUser messageToUser = new MessageLocal();
 
     private long lastStamp = System.currentTimeMillis();
 
@@ -105,20 +105,25 @@ class NetScanFileWorker {
      */
     Deque<String> getListOfOnlineDev() throws IOException {
         AppComponents.threadConfig().thrNameSet("ONDEQ");
+    
+        String classMeth = "NetScanFileWorker.getListOfOnlineDev";
+        String titleMsg = "retDeque.size()";
         Deque<String> retDeque = new ArrayDeque<>();
         String msg = newLanLastScan.getAbsolutePath() +
             ";\n" + oldLanLastScan.getAbsolutePath() +
             ";\n" + new TForms().fromArray(srvFiles, false) +
             ";\nCreated by " + getClass().getSimpleName();
-
+    
         if (newLanLastScan.exists() && newLanLastScan.canRead()) {
             retDeque.addAll(FileSystemWorker.readFileToList(newLanLastScan.getAbsolutePath()));
+            messageToUser.info(classMeth, titleMsg, " = " + retDeque.size());
         } else {
             boolean newFile = newLanLastScan.createNewFile();
             msg = newFile + " " + msg;
         }
         if (oldLanLastScan.exists() && oldLanLastScan.canRead()) {
             retDeque.addAll(FileSystemWorker.readFileToList(oldLanLastScan.getAbsolutePath()));
+            messageToUser.info(classMeth, titleMsg, " = " + retDeque.size());
         } else {
             boolean oldLanLastScanNewFile = oldLanLastScan.createNewFile();
             msg = oldLanLastScanNewFile + " " + msg;
@@ -126,14 +131,14 @@ class NetScanFileWorker {
         srvFiles.forEach(srvFileX -> {
             if (srvFileX.exists() && srvFileX.canRead()) {
                 retDeque.addAll(FileSystemWorker.readFileToList(srvFileX.getAbsolutePath()));
-                messageToUser.info("NetScanFileWorker.getListOfOnlineDev", "retDeque.size()", " = " + retDeque.size());
+                messageToUser.info(classMeth, titleMsg, " = " + retDeque.size());
             } else {
                 boolean srvScanFile = false;
                 try {
                     srvScanFile = srvFileX.createNewFile();
                 } catch (IOException e) {
                     messageToUser.errorAlert("NetScanFileWorker", "getListOfOnlineDev", e.getMessage());
-                    FileSystemWorker.error("NetScanFileWorker.getListOfOnlineDev", e);
+                    FileSystemWorker.error(classMeth, e);
                 }
                 messageToUser.info(srvFileX.getAbsolutePath(), " is new file? ", " = " + srvScanFile);
             }

@@ -171,7 +171,7 @@ public class ExitApp implements Runnable {
      Метод выхода
      <p>
      Добавление в {@link #stringList}: {@code "exit at " + LocalDateTime.now().toString() + ConstantsFor.getUpTime()} <br>
-     {@link FileSystemWorker#recFile(java.lang.String, java.util.List)}. {@link List} = {@link #stringList} <br>
+     {@link FileSystemWorker#writeFile(java.lang.String, java.util.List)}. {@link List} = {@link #stringList} <br>
      {@link FileSystemWorker#delTemp()}. Удаление мусора <br>
      {@link ConfigurableApplicationContext#close()}. Остановка контекста. <br>
      {@link ThreadConfig#killAll()} закрытие {@link java.util.concurrent.ExecutorService} и {@link java.util.concurrent.ScheduledExecutorService} <br>
@@ -179,7 +179,7 @@ public class ExitApp implements Runnable {
      */
     private void exitAppDO() {
         stringList.add("exit at " + LocalDateTime.now().toString() + ConstantsFor.getUpTime());
-        FileSystemWorker.recFile("exit.last", stringList);
+        FileSystemWorker.writeFile("exit.last", stringList);
         FileSystemWorker.delTemp();
         getConfigurableApplicationContext().close();
         AppComponents.threadConfig().killAll();

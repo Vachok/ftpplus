@@ -1,7 +1,9 @@
 package ru.vachok.networker.fileworks;
 
 
+import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.services.MessageLocal;
 
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
@@ -18,6 +20,9 @@ import java.util.List;
  @see FileSystemWorker
  @since 19.12.2018 (20:15) */
 public class FileSearcher extends FileSystemWorker {
+    
+    
+    private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
 
     /**
      * Паттерн для поиска
@@ -37,8 +42,6 @@ public class FileSearcher extends FileSystemWorker {
     List<String> getResList() {
         return resList;
     }
-
-    /*Instances*/
 
     /**
      @param patternToSearch что искать
@@ -88,7 +91,7 @@ public class FileSearcher extends FileSystemWorker {
     public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
         if (dir.toFile().isDirectory()) {
             String msg = dir.toString() + " просмотрено";
-            LOGGER.info(msg);
+            messageToUser.info(msg);
         }
         return FileVisitResult.CONTINUE;
     }

@@ -79,6 +79,6 @@ public class MailIISLogsCleaner extends FileSystemWorker implements Runnable {
             toLog.add(e.getMessage());
             toLog.add(new TForms().fromArray(e, false));
         }
-        FileSystemWorker.recFile(this.getClass().getSimpleName() + ConstantsFor.FILEEXT_LOG, toLog);
+        FileSystemWorker.writeFile(this.getClass().getSimpleName() + ConstantsFor.FILEEXT_LOG, toLog);
     }
 }

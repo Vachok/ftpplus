@@ -14,26 +14,34 @@ import ru.vachok.networker.ConstantsFor;
 public class MessageLocal implements MessageToUser {
 
     private String bodyMsg = "NO BODY";
-
-    private String titleMsg = "";
-
-    private String headerMsg = getClass().getSimpleName() + ":" + ConstantsFor.getUpTime();
-
+    
+    private String titleMsg = ConstantsFor.getUpTime();
+    
+    private String headerMsg = "Header from " + getClass().getSimpleName() + ":" + ConstantsFor.thisPC();
+    
+    public MessageLocal(String className) {
+        this.headerMsg = className;
+    }
+    
+    public MessageLocal() {
+    
+    }
+    
     public void warning(String bodyMsg) {
         Logger logger = LoggerFactory.getLogger(headerMsg);
         this.bodyMsg = bodyMsg;
         String join = String.join(" ", headerMsg, titleMsg, bodyMsg);
         logger.warn(join);
     }
-
-    public void warn(String s) {
-        this.bodyMsg = s;
-        warning(bodyMsg);
+    
+    @Override
+    public void info(String bodyMsg) {
+        infoNoTitles(this.bodyMsg);
     }
 
     @Override
-    public void warn(String s, String s1, String s2) {
-        warning(s, s1, s2);
+    public void infoTimer(int timeSec, String bodyMsg) {
+        throw new UnsupportedOperationException(headerMsg);
     }
 
     public void errorAlert(String s) {
@@ -69,34 +77,34 @@ public class MessageLocal implements MessageToUser {
     }
 
     @Override
-    public void info(String s) {
-        infoNoTitles(bodyMsg);
+    public void error(String bodyMsg) {
+        errorAlert(bodyMsg);
     }
 
     @Override
-    public void infoTimer(int i, String s) {
-        throw new UnsupportedOperationException(headerMsg);
+    public void error(String headerMsg, String titmeMsg, String bodyMsg) {
+        errorAlert(headerMsg, titmeMsg, bodyMsg);
     }
 
     @Override
-    public void error(String s) {
-        errorAlert(s);
+    public void warn(String headerMsg, String titleMsg, String bodyMsg) {
+        warning(headerMsg, titleMsg, titleMsg);
+    }
+    
+    public void warn(String bodyMsg) {
+        this.bodyMsg = bodyMsg;
+        warning(this.bodyMsg);
     }
 
     @Override
-    public void error(String s, String s1, String s2) {
-        errorAlert(s, s1, s2);
-    }
-
-    @Override
-    public void warning(String s, String s1, String s2) {
-        Logger logger = LoggerFactory.getLogger(s);
-        String msg = s1 + " : " + s2;
+    public void warning(String headerMsg, String titleMsg, String bodyMsg) {
+        Logger logger = LoggerFactory.getLogger(headerMsg);
+        String msg = titleMsg + " : " + bodyMsg;
         logger.warn(msg);
     }
 
     @Override
-    public String confirm(String s, String s1, String s2) {
+    public String confirm(String headerMsg, String titleMsg, String bodyMsg) {
         throw new UnsupportedOperationException(headerMsg);
     }
 

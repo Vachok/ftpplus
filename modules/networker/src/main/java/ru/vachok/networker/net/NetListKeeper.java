@@ -5,7 +5,7 @@ import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
 
-import java.io.*;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -19,33 +19,23 @@ import java.util.concurrent.ConcurrentMap;
  <p>
 
  @since 30.01.2019 (17:02) */
-public class NetListKeeper implements Serializable {
-
-    private static final long serialVersionUID = 42L;
+public class NetListKeeper {
 
     private static NetListKeeper netListKeeper = new NetListKeeper();
 
     /**
      {@link MessageLocal}
      */
-    private static final MessageLocal LOGGER = new MessageLocal();
+    private static final MessageLocal LOGGER = new MessageLocal(NetListKeeper.class.getSimpleName());
 
     private ConcurrentMap<String, String> onLinesResolve = new ConcurrentHashMap<>();
 
     private ConcurrentMap<String, String> offLines = new ConcurrentHashMap<>();
 
     public static NetListKeeper getI() {
-        try (InputStream inputStream = new FileInputStream(NetListKeeper.class.getSimpleName() + ".ser");
-             ObjectInputStream objectInputStream = new ObjectInputStream(inputStream)) {
-            Object readObject = objectInputStream.readObject();
-            return (NetListKeeper) readObject;
-        } catch (IOException | ClassNotFoundException e) {
-            LOGGER.errorAlert("NetListKeeper", "getI", e.getMessage());
-            FileSystemWorker.error("NetListKeeper.getI", e);
-            return netListKeeper;
-        }
+        return netListKeeper;
     }
-
+    
     ConcurrentMap<String, String> getOnLinesResolve() {
         return this.onLinesResolve;
     }
@@ -100,9 +90,6 @@ public class NetListKeeper implements Serializable {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("NetListKeeper{");
-        sb.append("serialVersionUID=").append(serialVersionUID);
-        sb.append(", netListKeeper=").append(netListKeeper.hashCode());
-        sb.append(", LOGGER=").append(LOGGER.toString());
         sb.append(", onLinesResolve=").append(onLinesResolve);
         sb.append(", offLines=").append(offLines);
         sb.append('}');

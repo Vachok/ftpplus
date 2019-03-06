@@ -74,10 +74,13 @@ public class AppComponents {
     public Connection connection(String dbName) throws IOException {
         OutputStream outputStream = new FileOutputStream("AppComponents.connection.log");
         PrintWriter printWriter = new PrintWriter(outputStream, true);
+    
         try {
             MysqlDataSource dataSource = new RegRuMysql().getDataSourceSchema(dbName);
+            File dsVarFile = new File("datasrc." + dataSource.hashCode());
             dataSource.setAutoReconnect(true);
             dataSource.setRelaxAutoCommit(true);
+            dataSource.setInteractiveClient(true);
             return dataSource.getConnection();
         } catch (SQLException e) {
             messageToUser.errorAlert("AppComponents", ConstantsNet.STR_CONNECTION, e.getMessage());

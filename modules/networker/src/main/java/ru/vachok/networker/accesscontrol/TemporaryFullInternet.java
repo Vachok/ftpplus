@@ -116,7 +116,7 @@ public class TemporaryFullInternet implements Runnable {
                     messageToUser.errorAlert("TemporaryFullInternet", "sshChecker", e.getMessage());
                     MINI_LOGGER.add("sshChecker(): " + e.getMessage());
                     FileSystemWorker.error(classMeth, e);
-                    FileSystemWorker.recFile(getClass().getSimpleName() + ".mini", MINI_LOGGER.stream());
+                    FileSystemWorker.writeFile(getClass().getSimpleName() + ".mini", MINI_LOGGER.stream());
                 }
             });
         }
@@ -207,7 +207,7 @@ public class TemporaryFullInternet implements Runnable {
         MINI_LOGGER.add("run(): " + userInput + " " + fromArray);
         Date nextStart = new Date(ConstantsFor.getAtomicTime() + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY));
         MINI_LOGGER.add(nextStart.toString());
-        boolean isRecFile = FileSystemWorker.recFile(miniLog.getName(), MINI_LOGGER.stream());
+        boolean isRecFile = FileSystemWorker.writeFile(miniLog.getName(), MINI_LOGGER.stream());
         boolean isCopyFile = FileSystemWorker.copyOrDelFile(miniLog, ".\\ssh\\" + miniLog.getName(), true);
         messageToUser.info(classMeth, "isRecFile", " = " + isRecFile);
         messageToUser.info("TemporaryFullInternet.run", "isCopyFile", " = " + isCopyFile);

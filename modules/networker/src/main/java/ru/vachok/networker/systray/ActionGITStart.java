@@ -48,7 +48,7 @@ class ActionGITStart extends AbstractAction {
             messageToUser.infoTimer(( int ) ConstantsFor.DELAY, getClass().getSimpleName() + "\nFuture<String> submit = " + submit.get(timeOut30,
                 TimeUnit.SECONDS));
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
-            FileSystemWorker.recFile(getClass().getSimpleName(), (e.getMessage() + "\n" + new TForms().fromArray(e, false)));
+            FileSystemWorker.writeFile(getClass().getSimpleName(), (e.getMessage() + "\n" + new TForms().fromArray(e, false)));
             Thread.currentThread().interrupt();
         }
     }

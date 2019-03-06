@@ -172,7 +172,7 @@ public class VersionInfo {
             AppComponents.getOrSetProps(PROPERTIES);
         } catch (NullPointerException e) {
             setAppVersion("Unknown ver");
-            FileSystemWorker.recFile(getClass().getSimpleName() + ConstantsFor.FILEEXT_LOG, Collections.singletonList(new TForms().fromArray(e, false)));
+            FileSystemWorker.writeFile(getClass().getSimpleName() + ConstantsFor.FILEEXT_LOG, Collections.singletonList(new TForms().fromArray(e, false)));
         }
         String msg = this.toString();
         LOGGER.info(msg);

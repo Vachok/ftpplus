@@ -178,7 +178,7 @@ public class NetPinger implements Runnable, Pinger {
      {@link Collections#frequency(java.util.Collection, java.lang.Object)} ({@code int frequency}) <br> Добавим в new {@link ArrayList}, результат - {@code int frequency} times {@code x}
      (уникальный элемент из {@link #resList}).
      <p>
-     Записать результат в файл {@link FileSystemWorker#recFile(java.lang.String, java.util.List)}. Файл - {@link ConstantsNet#PINGRESULT_LOG}. <br> Если пингер работал 3 и более минут,
+     Записать результат в файл {@link FileSystemWorker#writeFile(java.lang.String, java.util.List)}. Файл - {@link ConstantsNet#PINGRESULT_LOG}. <br> Если пингер работал 3 и более минут,
      отправить отчёт на почту {@link ConstantsFor#EADDR_143500GMAILCOM} ({@link ESender#sendM(java.util.List, java.lang.String, java.lang.String)}) <br>
 
      @param userIn кол-во минут в мсек, которые пингер работал.
@@ -190,7 +190,7 @@ public class NetPinger implements Runnable, Pinger {
             int frequency = Collections.frequency(resList, x);
             pingsList.add(frequency + " times " + x + "\n");
         });
-        FileSystemWorker.recFile(ConstantsNet.PINGRESULT_LOG, pingsList);
+        FileSystemWorker.writeFile(ConstantsNet.PINGRESULT_LOG, pingsList);
         messageToUser = new MessageFile();
         pingsList.add(((float) TimeUnit.MILLISECONDS.toMinutes(userIn) / ConstantsFor.ONE_HOUR_IN_MIN) + " hours spend");
         if (userIn >= TimeUnit.MINUTES.toMillis(3)) {

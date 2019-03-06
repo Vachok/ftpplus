@@ -61,7 +61,7 @@ public class AppCtx extends AnnotationConfigApplicationContext {
         outQueue.add(stringBuilder.toString());
         outQueue.add(AppCtx.CLASSPATH_ALL_URL_PREFIX);
         outQueue.add(AppCtx.LIFECYCLE_PROCESSOR_BEAN_NAME);
-        FileSystemWorker.recFile(SOURCE_CLASS + ".qadd", outQueue.stream());
+        FileSystemWorker.writeFile(SOURCE_CLASS + ".qadd", outQueue.stream());
     }
 
     @Override

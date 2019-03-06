@@ -216,8 +216,8 @@ public class AppInfoOnLoad implements Runnable {
         stringBuilder.append("\n").append(methMetr(stArt, classMeth));
         exitLast = exitLast + "\n" + checkDay(scheduledExecutorService) + "\n" + stringBuilder.toString();
         miniLogger.add(exitLast);
-
-        FileSystemWorker.recFile(CLASS_NAME + ".mini", miniLogger);
+    
+        FileSystemWorker.writeFile(CLASS_NAME + ".mini", miniLogger);
     }
 
     /**
@@ -296,7 +296,7 @@ public class AppInfoOnLoad implements Runnable {
                 TimeUnit.SECONDS);
             miniLogger.add("runCommonScan init delay " + ConstantsFor.INIT_DELAY + ", delay " + TimeUnit.DAYS.toSeconds(1) + ". SECONDS");
         }
-        scheduledExecutorService.scheduleWithFixedDelay(ScanOnline.getI(), 3, 1, TimeUnit.MINUTES);
+        scheduledExecutorService.scheduleWithFixedDelay(new ScanOnline(), 3, 1, TimeUnit.MINUTES);
         scheduledExecutorService.scheduleWithFixedDelay(DiapazonedScan.getInstance(), 2, THIS_DELAY, TimeUnit.MINUTES);
         scheduledExecutorService.scheduleWithFixedDelay(new NetMonitorPTV(), 0, 10, TimeUnit.SECONDS);
         scheduledExecutorService.scheduleWithFixedDelay(temporaryFullInternet, 1, ConstantsFor.DELAY, TimeUnit.MINUTES);
@@ -311,7 +311,7 @@ public class AppInfoOnLoad implements Runnable {
         miniLogger.add(NetMonitorPTV.class.getSimpleName() + " init delay 0, delay 10. SECONDS");
         miniLogger.add(TemporaryFullInternet.class.getSimpleName() + " init delay 1, delay " + ConstantsFor.DELAY + ". MINUTES");
         miniLogger.add(DiapazonedScan.getInstance().getClass().getSimpleName() + " init delay 2, delay " + THIS_DELAY + ". MINUTES");
-        miniLogger.add(ScanOnline.getI().getClass().getSimpleName() + " init delay 3, delay 1. MINUTES");
+        miniLogger.add(new ScanOnline().getClass().getSimpleName() + " init delay 3, delay 1. MINUTES");
         miniLogger.add(AppComponents.class.getSimpleName() + ".getOrSetProps(true) 4, ConstantsFor.DELAY, TimeUnit.MINUTES");
         dateSchedulers(scheduledExecutorService);
     }
@@ -333,7 +333,7 @@ public class AppInfoOnLoad implements Runnable {
         final StringBuilder sb = new StringBuilder("AppInfoOnLoad{");
         sb.append("miniLogger=").append(new TForms().fromArray(miniLogger, false));
         sb.append('}');
-        FileSystemWorker.recFile(getClass().getSimpleName() + ".mini", miniLogger.stream());
+        FileSystemWorker.writeFile(getClass().getSimpleName() + ".mini", miniLogger.stream());
         return sb.toString();
     }
 }

@@ -15,6 +15,7 @@ import ru.vachok.networker.systray.MessageToTray;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -41,7 +42,7 @@ public class MoreInfoGetter {
      @see ru.vachok.networker.accesscontrol.MatrixCtr#getFirst(HttpServletRequest, Model, HttpServletResponse)
      */
     public static String getTVNetInfo() {
-        List<String> readFileToList = FileSystemWorker.readFileToList("ping.tv");
+        List<String> readFileToList = FileSystemWorker.readFileToList(new File("ping.tv").getAbsolutePath());
         List<String> onList = new ArrayList<>();
         List<String> offList = new ArrayList<>();
         readFileToList.stream().flatMap((String x) -> Arrays.stream(x.split(", "))).forEach((String s) -> {

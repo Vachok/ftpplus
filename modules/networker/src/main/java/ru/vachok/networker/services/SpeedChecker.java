@@ -216,7 +216,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
          Сверяет почту и базу.
          <p>
          1. {@link #checkDB()} преобразуем в строку. 2. {@link TForms#fromArray(java.util.Map, boolean)}. <br>
-         3. {@link FileSystemWorker#recFile(java.lang.String, java.util.List)} запишем в файл. <br>
+         3. {@link FileSystemWorker#writeFile(java.lang.String, java.util.List)} запишем в файл. <br>
          4. {@link #parseMsg(javax.mail.Message, java.lang.String)} сверка наличия.
 
          @return строку из {@link #checkDB()} .
@@ -225,7 +225,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
         private String chechMail() {
             Message[] messagesBot = mailMessages.call();
             String chDB = new TForms().fromArray(checkDB(), false);
-            FileSystemWorker.recFile(this.getClass().getSimpleName() + ".chechMail", Collections.singletonList(chDB));
+            FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".chechMail", Collections.singletonList(chDB));
             for (Message m : messagesBot) {
                 parseMsg(m, chDB);
             }

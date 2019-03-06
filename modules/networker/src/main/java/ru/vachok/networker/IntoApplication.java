@@ -115,7 +115,7 @@ public class IntoApplication {
      3. {@link AppComponents#threadConfig()} (4. {@link ThreadConfig#getTaskExecutor()}) - запуск <b>Runnable</b> <br>
      5. {@link ThreadConfig#getTaskExecutor()} - запуск {@link AppInfoOnLoad}. <br><br>
      <b>{@link Exception}:</b><br>
-     6. {@link TForms#fromArray(java.lang.Exception, boolean)} - искл. в строку. 7. {@link FileSystemWorker#recFile(java.lang.String, java.util.List)} и
+     6. {@link TForms#fromArray(java.lang.Exception, boolean)} - искл. в строку. 7. {@link FileSystemWorker#writeFile(java.lang.String, java.util.List)} и
      запишем в файл.
      */
     private static void afterSt() {
@@ -224,7 +224,7 @@ public class IntoApplication {
         SPRING_APPLICATION.setMainApplicationClass(IntoApplication.class);
         SPRING_APPLICATION.setApplicationContextClass(AppCtx.class);
         System.setProperty("encoding", "UTF8");
-        FileSystemWorker.recFile("system", new TForms().fromArray(System.getProperties()));
+        FileSystemWorker.writeFile("system", new TForms().fromArray(System.getProperties()));
     }
 
     private static void trayAdd() {

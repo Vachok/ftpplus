@@ -73,6 +73,7 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
             "ThreadConfig.getTaskExecutor",
             "prestartCoreThread",
             " = " + prestartCoreThread + new TForms().fromArray(poolExecutor, false));
+        messageToUser.info("ThreadConfig.getTaskExecutor", "ScheduledThreadPoolExecutor", " = " + TASK_SCHEDULER.getScheduledThreadPoolExecutor().toString());
         return TASK_EXECUTOR;
     }
 
@@ -83,11 +84,11 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
     public ThreadPoolTaskScheduler getTaskScheduler() {
         ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = TASK_SCHEDULER.getScheduledThreadPoolExecutor();
         scheduledThreadPoolExecutor.setCorePoolSize(10);
-        TASK_SCHEDULER.setThreadNamePrefix("TS-");
-        TASK_SCHEDULER.setThreadPriority(2);
+        TASK_SCHEDULER.setThreadNamePrefix("TS");
+        TASK_SCHEDULER.setThreadPriority(4);
         TASK_SCHEDULER.setWaitForTasksToCompleteOnShutdown(false);
         TASK_SCHEDULER.setDaemon(true);
-        TASK_SCHEDULER.setRejectedExecutionHandler(new TasksReRunner());
+        TASK_SCHEDULER.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardOldestPolicy());
         return TASK_SCHEDULER;
     }
 

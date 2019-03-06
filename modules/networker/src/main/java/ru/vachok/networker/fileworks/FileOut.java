@@ -1,6 +1,10 @@
 package ru.vachok.networker.fileworks;
 
 
+import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.TForms;
+import ru.vachok.networker.services.MessageLocal;
+
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -17,6 +21,8 @@ import java.nio.file.StandardOpenOption;
 public class FileOut extends FileSystemWorker implements Runnable {
 
     private String fileToWrite;
+    
+    private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
 
     private boolean createNewFile;
 
@@ -29,7 +35,7 @@ public class FileOut extends FileSystemWorker implements Runnable {
         try {
             Files.deleteIfExists(Paths.get(fileToWrite));
         } catch (IOException e) {
-            LOGGER.error(e.getMessage(), e);
+            messageToUser.warn(new TForms().fromArray(e, false));
         }
     }
 
@@ -55,7 +61,7 @@ public class FileOut extends FileSystemWorker implements Runnable {
              BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream)) {
             bufferedOutputStream.write(bytesToWrite, 0, bytesToWrite.length);
         } catch (IOException e) {
-            LOGGER.error(e.getMessage(), e);
+            messageToUser.warn(new TForms().fromArray(e, false));
         }
     }
 }
