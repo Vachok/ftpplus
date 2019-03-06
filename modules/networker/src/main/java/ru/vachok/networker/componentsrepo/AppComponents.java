@@ -31,6 +31,7 @@ import ru.vachok.networker.systray.MessageToTray;
 import javax.servlet.http.HttpServletRequest;
 import java.io.*;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentMap;
 
@@ -76,9 +77,9 @@ public class AppComponents {
         try {
             MysqlDataSource dataSource = new RegRuMysql().getDataSourceSchema(dbName);
             dataSource.setAutoReconnect(true);
-            dataSource.setLogWriter(printWriter);
+            dataSource.setRelaxAutoCommit(true);
             return dataSource.getConnection();
-        } catch (Exception e) {
+        } catch (SQLException e) {
             messageToUser.errorAlert("AppComponents", ConstantsNet.STR_CONNECTION, e.getMessage());
             FileSystemWorker.error("AppComponents.connection", e);
             printWriter.close();

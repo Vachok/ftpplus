@@ -19,94 +19,132 @@ import java.util.Properties;
  @since 24.09.2018 (9:44) */
 @Component("versioninfo")
 public class VersionInfo {
-
+    
+    
     /**
      {@link LoggerFactory#getLogger(String)}
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(VersionInfo.class.getSimpleName());
-
+    
     /**
      Ссылка на /doc/index.html
      */
     private static final String DOC_URL = "<a href=\"/doc/index.html\">DOC</a>";
-
+    
     /**
      {@link AppComponents#getOrSetProps()}
      */
     private static final Properties PROPERTIES = AppComponents.getOrSetProps();
-
+    
     private static final String PR_BUILD_TIME = "buildTime";
-
+    
     private static final String PR_APP_BUILD = "appBuild";
-
-    private boolean isBUGged;
-
-    /**
-     Версия
-     */
-    private String appVersion = null;
-
-    /**
-     * Билд
-     */
-    private String appBuild = null;
-
-    /**
-     * Время сборки
-     */
-    private String buildTime = null;
-
-    private long pingTVStartStamp = ConstantsFor.START_STAMP;
-
-    public long getPingTVStartStamp() {
-        return pingTVStartStamp;
-    }
-
-    public void setPingTVStartStamp(long pingTVStartStamp) {
-        this.pingTVStartStamp = pingTVStartStamp;
-    }
-
+    
     /**
      {@link ConstantsFor#thisPC()}
      */
     private final String thisPCNameStr = ConstantsFor.thisPC();
-
+    
+    private boolean isBUGged;
+    
+    /**
+     Версия
+     */
+    private String appVersion = null;
+    
+    /**
+     Билд
+     */
+    private String appBuild = null;
+    
+    /**
+     Время сборки
+     */
+    private String buildTime = null;
+    
+    private long pingTVStartStamp = ConstantsFor.START_STAMP;
+    
+    /**
+     Конструктор по-умолчанию.
+     <p>
+     Если имя ПК содержит "home" или "no0" {@link #setParams()} , иначе {@link #getParams()}
+     */
+    public VersionInfo() {
+        if (new File("bugged").exists()) {
+            this.isBUGged = true;
+        }
+        if (thisPCNameStr.toLowerCase().contains("home") || thisPCNameStr.toLowerCase().contains("no0")) {
+            AppComponents.threadConfig().executeAsThread(() -> setParams());
+        }
+        
+        getParams();
+        
+    }
+    
+    public long getPingTVStartStamp() {
+        return pingTVStartStamp;
+    }
+    
+    public void setPingTVStartStamp(long pingTVStartStamp) {
+        this.pingTVStartStamp = pingTVStartStamp;
+    }
+    
     public boolean isBUGged() {
         return isBUGged;
     }
-
+    
     public void setBUGged(boolean BUGged) {
         isBUGged = BUGged;
     }
-
+    
+    /**
+     @return {@link #appBuild}
+     */
+    public String getAppBuild() {
+        return appBuild;
+    }
+    
     /**
      Usages: {@link #getParams()} <br> Uses: - <br>
-
+     
      @param appBuild build (Random num)
      */
     private void setAppBuild(String appBuild) {
         this.appBuild = appBuild;
     }
-
+    
     /**
-     Конструктор по-умолчанию.
-     <p>
-     * Если имя ПК содержит "home" или "no0" {@link #setParams()} , иначе {@link #getParams()}
+     @return {@link #appVersion}
      */
-    public VersionInfo() {
-        if(new File("bugged").exists()){
-            this.isBUGged = true;
-        }
-        if(thisPCNameStr.toLowerCase().contains("home") || thisPCNameStr.toLowerCase().contains("no0")){
-            setParams();
-        }
-        else{
-            getParams();
-        }
+    public String getAppVersion() {
+        return appVersion;
     }
-
+    
     /**
-
+     @param appVersion {@link #setterVersionFromFiles(File)}
+     */
+    private void setAppVersion(String appVersion) {
+        this.appVersion = appVersion;
+    }
+    
+    /**
+     @return {@link #buildTime}
+     */
+    public String getBuildTime() {
+        return buildTime;
+    }
+    
+    /**
+     Usages: {@link #getParams()} <br> Uses: - <br>
+     
+     @param buildTime build timestamp
+     */
+    private void setBuildTime(String buildTime) {
+        this.buildTime = buildTime;
+    }
+    
+    /**
+     *
      */
     void setParams() {
         File file = new File("G:\\My_Proj\\FtpClientPlus\\modules\\networker\\build.gradle");
@@ -124,54 +162,25 @@ public class VersionInfo {
         }
         this.appBuild = thisPCNameStr + "." + LocalDate.now().getDayOfWeek().getValue();
         PROPERTIES.setProperty(PR_APP_BUILD, appBuild);
-        if(thisPCNameStr.equalsIgnoreCase("home") ||
+        if (thisPCNameStr.equalsIgnoreCase("home") ||
             thisPCNameStr.toLowerCase().contains(ConstantsFor.HOSTNAME_NO0027)) {
             this.buildTime = new Date(ConstantsFor.START_STAMP).toString();
             PROPERTIES.setProperty(PR_BUILD_TIME, buildTime);
         }
-        try{
+        try {
             PROPERTIES.setProperty(ConstantsFor.PR_APP_VERSION, getAppVersion());
             AppComponents.getOrSetProps(PROPERTIES);
-        }
-        catch(NullPointerException e){
+        } catch (NullPointerException e) {
             setAppVersion("Unknown ver");
             FileSystemWorker.recFile(getClass().getSimpleName() + ConstantsFor.FILEEXT_LOG, Collections.singletonList(new TForms().fromArray(e, false)));
         }
         String msg = this.toString();
         LOGGER.info(msg);
     }
-
-    /**
-     @return {@link #appBuild}
-     */
-    public String getAppBuild() {
-        return appBuild;
-    }
-
-    /**
-     @return {@link #appVersion}
-     */
-    public String getAppVersion() {
-        return appVersion;
-    }
-
-    /**
-     @param appVersion {@link #setterVersionFromFiles(File)}
-     */
-    private void setAppVersion(String appVersion) {
-        this.appVersion = appVersion;
-    }
-
-    /**
-     @return {@link #buildTime}
-     */
-    public String getBuildTime() {
-        return buildTime;
-    }
-
+    
     /**
      Usages: {@link #setParams()} <br> Uses: - <br>
-
+     
      @param file gradle.build
      */
     private void setterVersionFromFiles(File file) {
@@ -179,7 +188,7 @@ public class VersionInfo {
              InputStreamReader reader = new InputStreamReader(inputStream);
              BufferedReader bufferedReader = new BufferedReader(reader)) {
             bufferedReader.lines().forEach(x -> {
-                if(x.contains("version = '8.")){
+                if (x.contains("version = '8.")) {
                     setAppVersion(x.split("'")[1]);
                 }
             });
@@ -188,7 +197,7 @@ public class VersionInfo {
         }
         setBuildTime(System.currentTimeMillis() + "");
     }
-
+    
     /**
      Загружает из {@link #PROPERTIES} информацию о версии и билде
      */
@@ -197,16 +206,7 @@ public class VersionInfo {
         setBuildTime(PROPERTIES.getOrDefault(PR_BUILD_TIME, System.currentTimeMillis()).toString());
         setAppVersion(PROPERTIES.getOrDefault(ConstantsFor.PR_APP_VERSION, "no database").toString());
     }
-
-    /**
-     Usages: {@link #getParams()} <br> Uses: - <br>
-
-     @param buildTime build timestamp
-     */
-    private void setBuildTime(String buildTime) {
-        this.buildTime = buildTime;
-    }
-
+    
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("VersionInfo{");

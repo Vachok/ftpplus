@@ -375,7 +375,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
             String msg = "NO MSG";
             try {
                 msg = chechMail();
-            } catch (IllegalStateException e) {
+            } catch (IllegalStateException | NullPointerException e) {
                 msg = e.getMessage();
             }
             msg = msg + "\n" + new Date(rtLong);

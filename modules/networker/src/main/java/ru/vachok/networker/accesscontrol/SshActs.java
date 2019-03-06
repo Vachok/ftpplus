@@ -231,7 +231,7 @@ public class SshActs {
      */
     String providerTraceStr() throws ArrayIndexOutOfBoundsException {
         StringBuilder stringBuilder = new StringBuilder();
-        SSHFactory sshFactory = new SSHFactory.Builder(ConstantsFor.IPADDR_SRVGIT, "traceroute ya.ru;exit", getClass().getSimpleName()).build();
+        SSHFactory sshFactory = new SSHFactory.Builder(DEFAULT_SERVER_TO_SSH, "traceroute ya.ru;exit", getClass().getSimpleName()).build();
         String callForRoute = null;
         Future<String> submitTrace = AppComponents.threadConfig().getTaskExecutor().submit(sshFactory);
         try {
@@ -314,20 +314,6 @@ public class SshActs {
         this.allowDomain = allowDomain;
         return allowDomain;
     }
-/*Comment out 06.03.2019 (9:14)
-        char[] chars = allowDomain.toCharArray();
-        try {
-            Character lastChar = chars[chars.length - 1];
-            if (lastChar.equals('/')) {
-                chars[chars.length - 1] = ' ';
-                this.allowDomain = new String(chars).trim();
-            } else {
-                this.allowDomain = new String(allowDomain.getBytes(), Charset.defaultCharset());
-            }
-            return allowDomain;
-        } catch (ArrayIndexOutOfBoundsException e) {
-*/
-
 
     /**
      Резолвит ip-адрес

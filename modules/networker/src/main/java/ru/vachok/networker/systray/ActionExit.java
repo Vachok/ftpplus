@@ -2,7 +2,6 @@ package ru.vachok.networker.systray;
 
 
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ExitApp;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.net.NetListKeeper;
@@ -12,6 +11,11 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
 
 /**
  Action Exit App
@@ -34,9 +38,12 @@ class ActionExit extends AbstractAction {
     public void actionPerformed(ActionEvent e) {
         messageToUser.infoNoTitles(getClass().getSimpleName() + ".actionPerformed");
         try (FileOutputStream fileOutputStream = new FileOutputStream(NetListKeeper.class.getSimpleName() + ".ser")) {
-            AppComponents.threadConfig().executeAsThread(new ExitApp(reason, fileOutputStream, NetListKeeper.class));
-        } catch (IOException ex) {
-            messageToUser.errorAlert("ActionExit", ConstantsFor.METHNAME_ACTIONPERFORMED, ex.getMessage());
+            Future<?> submit = AppComponents.threadConfig().getTaskExecutor().submit(new ExitApp(reason, fileOutputStream, NetListKeeper.class));
+            submit.get(30, TimeUnit.SECONDS);
+        } catch (IOException | InterruptedException | ExecutionException | TimeoutException ex) {
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+            System.exit(666);
         }
     }
 }

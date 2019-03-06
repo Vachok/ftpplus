@@ -574,7 +574,7 @@ public enum ConstantsFor {
         MysqlDataSource mysqlDataSource = new DBRegProperties(javaIDsString).getRegSourceForProperties();
         AtomicBoolean retBool = new AtomicBoolean();
         mysqlDataSource.setLogger("java.util.Logger");
-        
+        mysqlDataSource.setRelaxAutoCommit(true);
         Callable<Boolean> theProphecy = new SaveDBPropsCallable(mysqlDataSource, propsToSave, classMeth, methName);
         Future<Boolean> booleanFuture = AppComponents.threadConfig().getTaskExecutor().submit(theProphecy);
 

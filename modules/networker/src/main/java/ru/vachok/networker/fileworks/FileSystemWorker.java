@@ -16,7 +16,10 @@ import ru.vachok.networker.systray.SystemTrayHelper;
 import java.io.*;
 import java.nio.file.*;
 import java.time.LocalTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Stream;
@@ -220,7 +223,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     }
 
     public static List<String> readFileToList(String absolutePath) {
-        LOGGER.warn(CLASS_METH);
+        LOGGER.info(CLASS_METH);
         List<String> retList = new ArrayList<>();
         try (InputStream inputStream = new FileInputStream(absolutePath);
              InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
