@@ -52,12 +52,12 @@ public class ServiceInfoCtrl {
     
     private static final Properties LOC_PR = AppComponents.getOrSetProps();
     
-    private boolean authReq = false;
+    private boolean authReq;
     
     /**
      {@link Visitor}
      */
-    private Visitor visitor = null;
+    private Visitor visitor;
     
     private MessageToUser messageToUser = new MessageLocal();
     
@@ -67,14 +67,15 @@ public class ServiceInfoCtrl {
      Записываем {@link Visitor}. <br>
      Выполним как трэд - new {@link SpeedChecker}. <br>
      Если ПК авторизован - вернуть {@code vir.html}, иначе - throw new {@link AccessDeniedException}
-     
-     @param model    {@link Model}
-     @param request  {@link HttpServletRequest}
+ 
+     @param model {@link Model}
+     @param request {@link HttpServletRequest}
      @param response {@link HttpServletResponse}
      @return vir.html
+ 
      @throws AccessDeniedException если не {@link ConstantsFor#getPcAuth(HttpServletRequest)}
-     @throws ExecutionException    запуск {@link #modModMaker(Model, HttpServletRequest, Visitor)}
-     @throws InterruptedException  запуск {@link #modModMaker(Model, HttpServletRequest, Visitor)}
+     @throws ExecutionException запуск {@link #modModMaker(Model, HttpServletRequest, Visitor)}
+     @throws InterruptedException запуск {@link #modModMaker(Model, HttpServletRequest, Visitor)}
      */
     @GetMapping("/serviceinfo")
     public String infoMapping(Model model, HttpServletRequest request, HttpServletResponse response) throws AccessDeniedException, ExecutionException,
@@ -83,7 +84,7 @@ public class ServiceInfoCtrl {
         this.visitor = new AppComponents().visitor(request);
         AppComponents.threadConfig().executeAsThread(new SpeedChecker());
         this.authReq =
-            Stream.of("0:0:0:0", "10.10.111", "10.200.213.85", "172.16.20", "10.200.214.80").anyMatch(sP -> request.getRemoteAddr().contains(sP));
+            Stream.of("0:0:0:0", "10.10.111", "10.200.213.85", "172.16.20", "10.200.214.80").anyMatch(sP->request.getRemoteAddr().contains(sP));
         if (authReq) {
             modModMaker(model, request, visitor);
             response.addHeader(ConstantsFor.HEAD_REFRESH, "90");
@@ -98,7 +99,7 @@ public class ServiceInfoCtrl {
         if (authReq) {
             Runtime.getRuntime().exec(ConstantsFor.COM_SHUTDOWN_P_F);
         } else {
-            throw new AccessDeniedException("Denied for " + visitor.toString());
+            throw new AccessDeniedException("Denied for " + visitor);
         }
     }
     
@@ -107,8 +108,9 @@ public class ServiceInfoCtrl {
         if (authReq) {
             try {
                 Future<?> submit = AppComponents.threadConfig().getTaskExecutor()
-                    .submit(new ExitApp("alldev.map", ConstantsNet.getAllDevices()));
+                    .submit(new ExitApp(getClass().getSimpleName()));
                 submit.get(ConstantsFor.DELAY, TimeUnit.SECONDS);
+                messageToUser.info("ServiceInfoCtrl.closeApp", "submit", " = " + submit.isDone());
             } catch (InterruptedException | ExecutionException | TimeoutException e) {
                 messageToUser.errorAlert("ServiceInfoCtrl", "closeApp", e.getMessage());
                 FileSystemWorker.error("ServiceInfoCtrl.closeApp", e);
@@ -126,7 +128,7 @@ public class ServiceInfoCtrl {
      <p>
      
      @param timeStart - время старта
-     @param amountH   - сколько часов до конца
+     @param amountH - сколько часов до конца
      @return время до 17:30 в процентах от 8:30
      */
     public static String percToEnd(Date timeStart, long amountH) {
@@ -155,7 +157,7 @@ public class ServiceInfoCtrl {
         } else {
             stringBuilder.append("<b> GO HOME! </b><br>");
         }
-        stringBuilder.append(localTime.toString());
+        stringBuilder.append(localTime);
         return stringBuilder.toString();
     }
     
@@ -166,9 +168,9 @@ public class ServiceInfoCtrl {
         Date comeD = new Date(whenCome.get());
         String resValue = new StringBuilder()
             .append(MyCalen.toStringS()).append("<br><br>")
-            .append("<b><i>").append(AppComponents.versionInfo().toString()).append("</i></b><p><font color=\"orange\">")
+            .append("<b><i>").append(AppComponents.versionInfo()).append("</i></b><p><font color=\"orange\">")
             .append(ConstantsNet.getSshMapStr()).append("</font><p>")
-            .append(new AppInfoOnLoad().toString()).append(" ").append(AppInfoOnLoad.class.getSimpleName()).append("<p>")
+            .append(new AppInfoOnLoad()).append(" ").append(AppInfoOnLoad.class.getSimpleName()).append("<p>")
             .append(new TForms().fromArray(LOC_PR, true)).append("<p>")
             .append("<p><font color=\"grey\">").append(listFilesToReadStr()).append("</font>")
             .toString();
@@ -187,9 +189,9 @@ public class ServiceInfoCtrl {
             .append(".<br> Состояние памяти (МБ): <font color=\"#82caff\">")
             .append(ConstantsFor.getMemoryInfo())
             .append("</font><br>")
-            .append(DiapazonedScan.getInstance().toString())
+            .append(DiapazonedScan.getInstance())
             .append("<br>")
-            .append(AppComponents.threadConfig().toString())
+            .append(AppComponents.threadConfig())
             .toString());
         model.addAttribute("request", prepareRequest(request));
         model.addAttribute(ConstantsFor.ATT_VISIT, visitor.toString());
@@ -254,7 +256,7 @@ public class ServiceInfoCtrl {
         }
         ConcurrentMap<String, String> stringStringConcurrentMap = FileSystemWorker.readFiles(readUs);
         List<String> retListStr = new ArrayList<>();
-        stringStringConcurrentMap.forEach((String x, String y) -> {
+        stringStringConcurrentMap.forEach((String x, String y)->{
             try {
                 retListStr.add(y.split("userId")[0]);
                 retListStr.add("<b>" + x.split("FtpClientPlus")[1] + "</b>");
@@ -287,7 +289,7 @@ public class ServiceInfoCtrl {
     public String toString() {
         final StringBuilder sb = new StringBuilder("ServiceInfoCtrl{");
         sb.append("authReq=").append(authReq);
-        sb.append(", visitor=").append(visitor.toString());
+        sb.append(", visitor=").append(visitor);
         sb.append('}');
         return sb.toString();
     }

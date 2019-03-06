@@ -21,10 +21,7 @@ import java.net.InetAddress;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.*;
 
 
@@ -32,6 +29,7 @@ import java.util.concurrent.*;
  Скан диапазона адресов
  
  @since 19.12.2018 (11:35) */
+@SuppressWarnings({"ClassWithMultipleLoggers", "MagicNumber"})
 public class DiapazonedScan implements Runnable {
     
     
@@ -46,14 +44,14 @@ public class DiapazonedScan implements Runnable {
     private static final NetScanFileWorker NET_SCAN_FILE_WORKER_INST = NetScanFileWorker.getI();
     
     /**
-     Повторения.
-     */
-    private static final String FONT_BR_STR = "</font><br>";
-    
-    /**
      Корень директории.
      */
     private static final String ROOT_PATH_STR = Paths.get(".").toAbsolutePath().toString();
+    
+    /**
+     Повторения.
+     */
+    private static final String FONT_BR_STR = "</font><br>";
     
     private static final int MAX_IN_VLAN_INT = 255;
     
@@ -75,11 +73,7 @@ public class DiapazonedScan implements Runnable {
     
     private long stArt;
     
-    public List<File> getSrvFiles() {
-        return srvFiles;
-    }
-    
-    private List<File> srvFiles = new ArrayList<>();
+    private final List<File> srvFiles = new ArrayList<>();
     
     /**
      Приватный конструктор
@@ -87,8 +81,12 @@ public class DiapazonedScan implements Runnable {
     private DiapazonedScan() {
     }
     
+    public List<File> getSrvFiles() {
+        return Collections.unmodifiableList(this.srvFiles);
+    }
+    
     public long getStopClassStampLong() {
-        return stopClassStampLong;
+        return this.stopClassStampLong;
     }
     
     // --Commented out by Inspection START (05.03.2019 9:05):
@@ -115,6 +113,7 @@ public class DiapazonedScan implements Runnable {
      Свичи начала сегментов. Вкл. в оптическое ядро.
      
      @return лист важного оборудования
+ 
      @throws IllegalAccessException swF.get(swF).toString()
      */
     public static List<String> pingSwitch() throws IllegalAccessException {
@@ -156,22 +155,22 @@ public class DiapazonedScan implements Runnable {
      Сканер локальной сети
      
      @param printWriter Запись в лог
-     @param fromVlan    начало с 3 октета IP
-     @param toVlan      конец с 3 октета IP
-     @param stArt       таймер
-     @param whatVlan    первый 2 октета, с точкоё в конце.
+     @param fromVlan начало с 3 октета IP
+     @param toVlan конец с 3 октета IP
+     @param start таймер
+     @param whatVlan первый 2 октета, с точкоё в конце.
      @throws IOException запись в файл
      */
     @SuppressWarnings({"MethodWithMultipleLoops", "ObjectAllocationInLoop"})
-    private void scanLan(PrintWriter printWriter, int fromVlan, int toVlan, long stArt, String whatVlan) throws IOException {
+    private void scanLan(PrintWriter printWriter, int fromVlan, int toVlan, long start, String whatVlan) throws IOException {
         for (int i = fromVlan; i < toVlan; i++) {
             StringBuilder msgBuild = new StringBuilder();
             for (int j = 0; j < MAX_IN_VLAN_INT; j++) {
-                ipScan(whatVlan, i, j, printWriter);
+                this.ipScan(whatVlan, i, j, printWriter);
             }
             msgBuild
                 .append(i).append(" was i. Total time: ")
-                .append(TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - stArt))
+                .append(TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - start))
                 .append("min\n").append(ALL_DEVICES_LOCAL_DEQUE.size()).append(" ALL_DEVICES.size()");
             String msg = msgBuild.toString();
             messageToUser.warn(msg);
@@ -192,9 +191,9 @@ public class DiapazonedScan implements Runnable {
     
         try (OutputStream outputStream = new FileOutputStream(newLanFile);
              PrintWriter printWriter = new PrintWriter(outputStream, true)) {
-            writeToFileByConditions(printWriter, stArt);
+            this.writeToFileByConditions(printWriter, this.stArt);
         } catch (IOException e) {
-            messageToUser.errorAlert(getClass().getSimpleName(), "scanNew", e.getMessage());
+            messageToUser.errorAlert(this.getClass().getSimpleName(), "scanNew", e.getMessage());
             FileSystemWorker.error("DiapazonedScan.scanNew", e);
         }
         boolean isFileCopied = FileSystemWorker.copyOrDelFile(newLanFile, p.toAbsolutePath().toString(), false);
@@ -211,7 +210,7 @@ public class DiapazonedScan implements Runnable {
      */
     @SuppressWarnings("MagicNumber")
     private void scanOldLan() {
-        String classMeth = getClass().getSimpleName() + ".scanOldLan";
+        String classMeth = this.getClass().getSimpleName() + ".scanOldLan";
         File oldLANFile = new File(ConstantsNet.FILENAME_OLDLANTXT);
         Path p = Paths.get(ROOT_PATH_STR + "\\lan\\192_" + System.currentTimeMillis() / 1000 + ".scan");
     
@@ -219,9 +218,9 @@ public class DiapazonedScan implements Runnable {
     
         try (OutputStream outputStream = new FileOutputStream(oldLANFile);
              PrintWriter printWriter = new PrintWriter(outputStream, true)) {
-            scanLan(printWriter, 11, 20, stArt, "192.168.");
+            this.scanLan(printWriter, 11, 20, this.stArt, "192.168.");
         } catch (IOException e) {
-            messageToUser.errorAlert("DiapazonedScan", "scanOldLan", e.getMessage());
+            messageToUser.errorAlert(getClass().getSimpleName(), "scanOldLan", e.getMessage());
             FileSystemWorker.error(classMeth, e);
         }
         boolean isFileCopied = FileSystemWorker.copyOrDelFile(oldLANFile, p.toAbsolutePath().toString(), false);
@@ -240,90 +239,76 @@ public class DiapazonedScan implements Runnable {
         File srvFile;
     
         srvFile = new File("11v_" + ConstantsNet.FILENAME_SERVTXT);
-        srvFiles.add(srvFile);
-        Thread srv11 = new Vlans1010ToScan(srvFile, 11, 20);
+        this.srvFiles.add(srvFile);
+        Runnable srv11 = new Vlans1010ToScan(srvFile, 11, 20);
     
         srvFile = new File("21v_" + ConstantsNet.FILENAME_SERVTXT);
-        srvFiles.add(srvFile);
-        Thread srv19 = new Vlans1010ToScan(srvFile, 21, 30);
+        this.srvFiles.add(srvFile);
+        Runnable srv19 = new Vlans1010ToScan(srvFile, 21, 30);
     
         srvFile = new File("31v_" + ConstantsNet.FILENAME_SERVTXT);
-        srvFiles.add(srvFile);
-        Thread srv27 = new Vlans1010ToScan(srvFile, 31, 40);
+        this.srvFiles.add(srvFile);
+        Runnable srv27 = new Vlans1010ToScan(srvFile, 31, 40);
     
         srvFile = new File("41v_" + ConstantsNet.FILENAME_SERVTXT);
-        srvFiles.add(srvFile);
-        Thread srv41 = new Vlans1010ToScan(srvFile, 41, 42);
+        this.srvFiles.add(srvFile);
+        Runnable srv41 = new Vlans1010ToScan(srvFile, 41, 42);
     
         AppComponents.threadConfig().executeAsThread(srv11);
         AppComponents.threadConfig().executeAsThread(srv19);
         AppComponents.threadConfig().executeAsThread(srv27);
         AppComponents.threadConfig().executeAsThread(srv41);
     
-        srvFiles.forEach(x -> {
+        this.srvFiles.forEach(x->{
             String pathWName = ".\\lan\\" + x.getName().replace(".txt", "_" + LocalTime.now().toSecondOfDay() + ".scan");
-    
+        
             boolean isFileCopied = FileSystemWorker.copyOrDelFile(x, pathWName, false);
             messageToUser.info(classMeth, x.getAbsolutePath(), "Copy = " + isFileCopied);
             this.stopClassStampLong = System.currentTimeMillis();
         });
     
-        NET_SCAN_FILE_WORKER_INST.setSrvFiles(srvFiles);
-        messageToUser.info("DiapazonedScan.scanServers", "new TForms().fromArray(srvFiles, false)", " = " + new TForms().fromArray(srvFiles, false));
+        NET_SCAN_FILE_WORKER_INST.setSrvFiles(this.srvFiles);
+        messageToUser.info("DiapazonedScan.scanServers", "new TForms().fromArray(srvFiles, false)", " = " + new TForms().fromArray(this.srvFiles, false));
     }
     
-    private void writeToFileByConditions(PrintWriter printWriter, long stArt) throws IOException {
+    private void writeToFileByConditions(PrintWriter printWriter, long start) throws IOException {
         if (ALL_DEVICES_LOCAL_DEQUE.remainingCapacity() == 0) {
             messageToUser.infoNoTitles(new TForms().fromArray(ALL_DEVICES_LOCAL_DEQUE, false));
             ALL_DEVICES_LOCAL_DEQUE.clear();
-            scanLan(printWriter, 200, 218, stArt, "10.200.");
+            this.scanLan(printWriter, 200, 218, start, "10.200.");
         } else {
-            scanLan(printWriter, 200, 220, stArt, "10.200.");
+            this.scanLan(printWriter, 200, 220, start, "10.200.");
         }
         NetScanFileWorker.getI().setLastStamp(System.currentTimeMillis());
-    }
-    
-    @Override
-    public int hashCode() {
-        return Objects.hash(stopClassStampLong, stArt);
-    }
-    
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        DiapazonedScan that = (DiapazonedScan) o;
-        return stopClassStampLong == that.stopClassStampLong &&
-            stArt == that.stArt;
     }
     
     /**
      Чтобы случайно не уничтожить Overriden {@link #toString()}
      <p>
+ 
      @return информация о состоянии файлов
      */
     private String theInfoToString() {
         StringBuilder fileTimes = new StringBuilder();
         messageToUser.warn("DiapazonedScan.theInfoToString", "ROOT_PATH_STR", " = " + ROOT_PATH_STR);
         try {
-            String atStr = " at: ";
-            fileTimes.append(
-                ConstantsNet.FILENAME_AVAILABLELASTTXT + atStr +
-                    new Date(Paths.get(ConstantsNet.FILENAME_AVAILABLELASTTXT).toFile().lastModified()) + "<br>\n" +
-                    ConstantsNet.FILENAME_OLDLANTXT + atStr +
-                    new Date(Paths.get(ConstantsNet.FILENAME_OLDLANTXT).toFile().lastModified()) + "<br>\n");
-            srvFiles.forEach(x -> fileTimes.append(
-                x.getName() + atStr +
-                    new Date(x.lastModified()) + "<br>"));
+            String atStr = " size in kb: ";
+    
+            fileTimes
+                .append(ConstantsNet.FILENAME_AVAILABLELASTTXT)
+                .append(atStr)
+                .append(Paths.get(ConstantsNet.FILENAME_AVAILABLELASTTXT).toFile().length() / ConstantsFor.KBYTE)
+                .append("<br>\n").append(ConstantsNet.FILENAME_OLDLANTXT)
+                .append(atStr)
+                .append(Paths.get(ConstantsNet.FILENAME_OLDLANTXT).toFile().length() / ConstantsFor.KBYTE)
+                .append("<br>\n");
+    
+            this.srvFiles.forEach(x->fileTimes.append(x.getName()).append(atStr).append(x.length() / ConstantsFor.KBYTE).append("<br>"));
         } catch (NullPointerException e) {
             messageToUser.info("NO FILES!");
         }
         final StringBuilder sb = new StringBuilder("DiapazonedScan. Start at ")
-            .append(new Date(stArt)).append("( ").append(TimeUnit.MILLISECONDS.toMinutes(ConstantsFor.getAtomicTime() - stArt)).append(" min) ")
+            .append(new Date(this.stArt)).append("( ").append(TimeUnit.MILLISECONDS.toMinutes(ConstantsFor.getAtomicTime() - this.stArt)).append(" min) ")
             .append("{ ");
     
         sb
@@ -334,8 +319,26 @@ public class DiapazonedScan implements Runnable {
             .append(" %)");
         sb.append("</a>}");
         sb.append(" ROOT_PATH_STR= ").append(ROOT_PATH_STR);
-        sb.append("<br>fileTimes=<br> ").append(fileTimes.toString());
+        sb.append("<br>fileTimes=<br> ").append(fileTimes);
         return sb.toString();
+    }
+    
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.stopClassStampLong, this.stArt);
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || this.getClass() != o.getClass()) {
+            return false;
+        }
+        DiapazonedScan that = (DiapazonedScan) o;
+        return this.stopClassStampLong == that.stopClassStampLong &&
+            this.stArt == that.stArt;
     }
     
     /**
@@ -344,7 +347,7 @@ public class DiapazonedScan implements Runnable {
     @SuppressWarnings("StringConcatenation")
     @Override
     public String toString() {
-        return theInfoToString();
+        return this.theInfoToString();
     }
     
     /**
@@ -354,12 +357,13 @@ public class DiapazonedScan implements Runnable {
     public void run() {
         Future<?> future = AppComponents.threadConfig().getTaskExecutor().submit(this::scanNew);
         long timeOut = ((9 * ConstantsNet.MAX_IN_ONE_VLAN) / 116) + ConstantsFor.DELAY;
-        messageToUser.warn("DiapazonedScan.run", "timeOut", " = " + timeOut);
+        final String classMeth = "DiapazonedScan.run";
+        messageToUser.warn(classMeth, "timeOut", " = " + timeOut);
         try {
             future.get(timeOut, TimeUnit.MINUTES);
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
-            messageToUser.errorAlert(getClass().getSimpleName(), "run", e.getMessage());
-            FileSystemWorker.error("DiapazonedScan.run", e);
+            messageToUser.errorAlert(this.getClass().getSimpleName(), "run", e.getMessage());
+            FileSystemWorker.error(classMeth, e);
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
         }
@@ -370,16 +374,16 @@ public class DiapazonedScan implements Runnable {
      
      @since 06.03.2019 (2:46)
      */
-    private class Vlans1010ToScan extends Thread {
-        
-        
+    private class Vlans1010ToScan implements Runnable {
+    
+    
         private final File srvFile;
         
         private int toVlan;
         
         private int fromVlan;
-        
-        public Vlans1010ToScan(File srvFile, int fromVlan, int toVlan) {
+    
+        Vlans1010ToScan(File srvFile, int fromVlan, int toVlan) {
             this.srvFile = srvFile;
             this.fromVlan = fromVlan;
             this.toVlan = toVlan;
@@ -387,12 +391,12 @@ public class DiapazonedScan implements Runnable {
         
         @Override
         public void run() {
-            try (OutputStream outputStream = new FileOutputStream(srvFile);
+            try (OutputStream outputStream = new FileOutputStream(this.srvFile);
                  PrintWriter printWriter = new PrintWriter(outputStream, true)) {
-                scanLan(printWriter, fromVlan, toVlan, stArt, "10.10.");
+                DiapazonedScan.this.scanLan(printWriter, this.fromVlan, this.toVlan, DiapazonedScan.this.stArt, "10.10.");
             } catch (IOException e) {
-                messageToUser.errorAlert("DiapazonedScan", "scanServers", e.getMessage());
-                FileSystemWorker.error("DiapazonedScan.scanServers", e);
+                messageToUser.errorAlert(getClass().getSimpleName(), "scanServers", e.getMessage());
+                FileSystemWorker.error("run", e);
             }
         }
     }
