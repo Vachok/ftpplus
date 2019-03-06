@@ -26,11 +26,13 @@ import java.io.*;
 import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.Date;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -131,8 +133,7 @@ public final class NetScannerSvc {
     private Map<String, Boolean> netWorkMap;
 
     /**
-     Доступность пк. online|offline сколько раз.
-
+     @param timeNow колонка из БД {@code velkompc} TimeNow (время записи)
      @see NetScannerSvc#getInfoFromDB()
      */
     private static void sortList(List<String> timeNow) {
@@ -525,6 +526,7 @@ public final class NetScannerSvc {
 
      @return строка в html-формате
      @see #getPCNamesPref(String)
+     @throws SQLException {@code insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow) values (?,?,?,?)}
      */
     @SuppressWarnings ({"OverlyComplexMethod", "OverlyLongMethod"})
     private String writeDB() throws SQLException {

@@ -38,7 +38,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  Константы, используемые в приложении
  <p>
-
+ 
  @since 12.08.2018 (16:26) */
 public enum ConstantsFor {
     ;
@@ -127,12 +127,12 @@ public enum ConstantsFor {
 
     /**
      <i>Boiler Plate</i>
-
+     
      @see ru.vachok.networker.accesscontrol.MatrixCtr
      @see ru.vachok.networker.net.MyServer
      */
     public static final String COM_REBOOT = "reboot";
-
+    
     /**
      Комманда cmd
      */
@@ -209,7 +209,7 @@ public enum ConstantsFor {
      HTTP-header
      */
     public static final String HEAD_REFRESH = "Refresh";
-
+    
     /**
      Название аттрибута модели.
      */
@@ -289,7 +289,7 @@ public enum ConstantsFor {
      Кол-во минут в часе
      */
     public static final float ONE_HOUR_IN_MIN = 60f;
-
+    
     /**
      Кол-во байт в килобайте
      */
@@ -387,17 +387,17 @@ public enum ConstantsFor {
      */
     @SuppressWarnings ("NonFinalFieldInEnum")
     private static long atomicTime;
-
+    
     /**
      @return {@link #MAIL_RULES}
      */
     public static ConcurrentMap<Integer, MailRule> getMailRules() {
         return MAIL_RULES;
     }
-
+    
     /**
      Доступность srv-git.eatmeat.ru.
-
+     
      @return 192.168.13.42 online or offline
      */
     public static boolean isPingOK() {
@@ -409,7 +409,7 @@ public enum ConstantsFor {
             return false;
         }
     }
-
+    
     /**
      @return {@link #takePr(boolean)} or {@link #PROPS}
      */
@@ -489,7 +489,7 @@ public enum ConstantsFor {
         }
         return "(" + String.format("%.03f", hrsOn) + tUnit + " up)";
     }
-
+    
     /**
      @return время билда
      */
@@ -511,7 +511,7 @@ public enum ConstantsFor {
         }
         return retLong;
     }
-
+    
     /**
      @return точное время как {@code long}
      */
@@ -525,7 +525,7 @@ public enum ConstantsFor {
                 "diff: " + (System.currentTimeMillis() - atomicTime));
         return atomicTime;
     }
-
+    
     /**
      @return кол-во выделенной, используемой и свободной памяти в МБ
      */
@@ -536,34 +536,18 @@ public enum ConstantsFor {
         messageToUser.info(msg);
         return msg;
     }
-
+    
     /**
-     <i>Boiler Plate</i>
+     @return имена-паттерны временных файлов, которые надо удалить при запуске.
      */
     public static String[] getStrsVisit() {
         return STRS_VISIT;
     }
-
-    /**
-     @return {@link #DELAY}
-     */
-    private static long getDelay() {
-        long delay = new SecureRandom().nextInt(( int ) MY_AGE);
-        if(delay < MIN_DELAY){
-            delay = MIN_DELAY;
-        }
-        if(ConstantsFor.thisPC().toLowerCase().contains("no") || ConstantsFor.thisPC().toLowerCase().contains("home")){
-            return 3;
-        }
-        else{
-            return delay;
-        }
-    }
-
+    
     /**
      Этот ПК
      <p>
-
+     
      @return имя компьютера, где запущено
      */
     public static String thisPC() {
@@ -576,23 +560,24 @@ public enum ConstantsFor {
             return "pc";
         }
     }
-
+    
     /**
      Сохраняет {@link Properties} в БД {@link #APPNAME_WITHMINUS} с ID {@code ConstantsFor}
-
+     
      @param propsToSave {@link Properties}
+     @return сохранено или нет
      */
     public static boolean saveAppProps(Properties propsToSave) {
         AppComponents.threadConfig().thrNameSet("sProps");
         propsToSave.setProperty("thispc", thisPC());
-
+        
         final String javaIDsString = APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName();
         String classMeth = "ConstantsFor.saveAppProps";
         String methName = "saveAppProps";
         MysqlDataSource mysqlDataSource = new DBRegProperties(javaIDsString).getRegSourceForProperties();
         AtomicBoolean retBool = new AtomicBoolean();
         mysqlDataSource.setLogger("java.util.Logger");
-
+        
         Callable<Boolean> theProphecy = new SaveDBPropsCallable(mysqlDataSource, propsToSave, classMeth, methName);
         Future<Boolean> booleanFuture = AppComponents.threadConfig().getTaskExecutor().submit(theProphecy);
 
@@ -607,10 +592,10 @@ public enum ConstantsFor {
         }
         return retBool.get();
     }
-
+    
     /**
      Парсинг и проверка уникальности для new {@link Visitor}
-
+     
      @param request {@link HttpServletRequest}
      @return {@link Visitor}
      */
@@ -622,7 +607,7 @@ public enum ConstantsFor {
             return new AppComponents().visitor(request);
         }
     }
-
+    
     /**
      @param request для получения IP
      @return boolean авторизован или нет
@@ -633,7 +618,7 @@ public enum ConstantsFor {
             request.getRemoteAddr().contains("10.10.111") ||
             request.getRemoteAddr().contains("172.16.200");
     }
-
+    
     public static String getUserPC(HttpServletRequest request) {
         return request.getRemoteAddr();
     }

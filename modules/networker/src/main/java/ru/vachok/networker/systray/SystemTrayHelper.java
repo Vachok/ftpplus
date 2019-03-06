@@ -4,7 +4,6 @@ package ru.vachok.networker.systray;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.accesscontrol.common.ArchivesAutoCleaner;
 import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
@@ -69,6 +68,9 @@ public final class SystemTrayHelper {
 
     /**
      Создаёт System Tray Icon
+ 
+     @param imageFileName имя файла-картинки
+     @param isNeedTray если трэй не нужен.
      */
     private void addTray(String imageFileName, boolean isNeedTray) {
         trayIcon = new TrayIcon(
@@ -103,7 +105,7 @@ public final class SystemTrayHelper {
     /**
      Добавление компонентов в меню
      <p>
-     1.5 {@link ArchivesAutoCleaner}
+     @return {@link PopupMenu}
      */
     @SuppressWarnings ("OverlyLongMethod")
     private static PopupMenu getMenu() {

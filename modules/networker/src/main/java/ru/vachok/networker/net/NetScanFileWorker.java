@@ -43,7 +43,7 @@ class NetScanFileWorker {
     private File newLanLastScan = new File(ConstantsNet.FILENAME_AVAILABLELASTTXT);
 
     /**
-     * {@link DiapazonedScan#scanOldLan(long)}
+     * {@link ConstantsNet#FILENAME_OLDLANTXT}}
      */
     private File oldLanLastScan = new File(ConstantsNet.FILENAME_OLDLANTXT);
 

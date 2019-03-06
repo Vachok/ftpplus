@@ -48,7 +48,7 @@ public class PfListsSrv {
     private @NotNull SSHFactory.Builder builderInst;
 
     /**
-     {@link #commandForNatStr}
+     @return {@link #commandForNatStr}
      */
     @SuppressWarnings("WeakerAccess")
     public @NotNull String getCommandForNatStr() {
@@ -91,7 +91,6 @@ public class PfListsSrv {
      <p>
      {@link ExceptionInInitializerError} : <br>
      {@link MessageLocal#warn(String, String, String)}
-     <p>
 
      @see PfListsCtr
      */

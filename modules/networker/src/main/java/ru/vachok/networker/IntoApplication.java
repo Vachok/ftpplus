@@ -209,6 +209,8 @@ public class IntoApplication {
      {@link SystemTrayHelper#addTray(java.lang.String)} "icons8-плохие-поросята-32.png".
      Else - {@link SystemTrayHelper#addTray(java.lang.String)} {@link String} null<br>
      {@link SpringApplication#setMainApplicationClass(java.lang.Class)}
+ 
+     @param isTrayNeed нужен трэй или нет.
      */
     private static void beforeSt(boolean isTrayNeed) {
         if (isTrayNeed) {

@@ -73,7 +73,9 @@ public class ServiceInfoCtrl {
             .append(new TForms().fromArray(LOC_PR, true)).append("<p>")
             .append("<p><font color=\"grey\">").append(listFilesToReadStr()).append("</font>")
             .toString();
+    
         model.addAttribute(ConstantsFor.ATT_TITLE, getLast() + " (" + getLast() * ConstantsFor.ONE_DAY_HOURS + ")");
+    
         model.addAttribute("mail", percToEnd(comeD, 9));
         model.addAttribute("ping", pingGit());
         model.addAttribute("urls", new StringBuilder()
@@ -82,9 +84,7 @@ public class ServiceInfoCtrl {
             .append(" (<i>rnd delay is ")
             .append(ConstantsFor.DELAY).append(" : ")
             .append(String.format("%.02f",
-                ( float ) (ConstantsFor.getAtomicTime() - ConstantsFor.START_STAMP) / TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY))).append(" delays)")
-            .append("</i><br>Точное время: ")
-            .append(ConstantsFor.getAtomicTime())
+                (float) (ConstantsFor.getAtomicTime() - ConstantsFor.START_STAMP) / TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY))).append(" delays)</i>")
             .append(".<br> Состояние памяти (МБ): <font color=\"#82caff\">")
             .append(ConstantsFor.getMemoryInfo())
             .append("</font><br>")
@@ -264,7 +264,7 @@ public class ServiceInfoCtrl {
         boolean reachable = false;
         try{
             InetAddress byName = InetAddress.getByName(ConstantsFor.HOSTNAME_SRVGIT_EATMEATRU);
-            reachable = byName.isReachable(1000);
+            reachable = byName.isReachable(200);
         }
         catch(IOException e){
             messageToUser.errorAlert("ServiceInfoCtrl", "pingGit", e.getMessage());

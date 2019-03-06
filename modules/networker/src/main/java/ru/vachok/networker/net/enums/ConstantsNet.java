@@ -167,6 +167,7 @@ public enum ConstantsNet {;
 
     /**
      Префиксы имён ПК Велком.
+     @return {@link #PC_PREFIXES}
      */
     public static String[] getPcPrefixes() {
         return PC_PREFIXES;
@@ -174,8 +175,8 @@ public enum ConstantsNet {;
 
     /**
      {@link NetScannerSvc#getPCsAsync()}
-
-     @see ADSrv#getDetails(String)
+ 
+     @return {@link #COMPNAME_USERS_MAP}
      */
     public static ConcurrentMap<String, File> getCompnameUsersMap() {
         return COMPNAME_USERS_MAP;
@@ -183,6 +184,7 @@ public enum ConstantsNet {;
 
     /**
      {@link ADSrv#recToDB(String, String)}
+     @return {@link #PC_U_MAP}
      */
     public static ConcurrentMap<String, String> getPcUMap() {
         return PC_U_MAP;
@@ -190,6 +192,8 @@ public enum ConstantsNet {;
 
     /**
      Все возможные IP из диапазонов {@link DiapazonedScan}
+ 
+     @return {@link #ALL_DEVICES}
      */
     public static BlockingDeque<String> getAllDevices() {
         return ALL_DEVICES;

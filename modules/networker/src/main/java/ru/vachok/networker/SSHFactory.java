@@ -2,12 +2,10 @@ package ru.vachok.networker;
 
 
 import com.jcraft.jsch.*;
-import org.slf4j.Logger;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
-import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
 
@@ -15,9 +13,13 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.ConnectException;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.RejectedExecutionException;
 
@@ -27,14 +29,13 @@ import java.util.concurrent.RejectedExecutionException;
  <p>
  Фабрика, для ssh-комманд.
  */
+@SuppressWarnings("unused")
 public class SSHFactory implements Callable<String> {
 
     /**
      Файл с ошибкой.
      */
     private static final File SSH_ERR = new File("ssh_err.txt");
-
-    private static final Logger LOGGER = AppComponents.getLogger(SSHFactory.class.getSimpleName());
 
     private static final String SOURCE_CLASS = SSHFactory.class.getSimpleName();
 
@@ -111,8 +112,8 @@ public class SSHFactory implements Callable<String> {
         respChannel.disconnect();
         throw new RejectedExecutionException("ХУЙ FOR YOU!");
     }
-
-    private void chanRespChannel() {
+    
+    private void chanRespChannel() throws ConnectException {
         JSch jSch = new JSch();
         Session session = null;
         String classMeth = "SSHFactory.chanRespChannel";
@@ -136,14 +137,13 @@ public class SSHFactory implements Callable<String> {
         catch(JSchException e){
             FileSystemWorker.error(classMeth, e);
         }
-
         session.setConfig(properties);
-
         try{
             session.connect(ConstantsFor.TIMEOUT_650);
         }
         catch(JSchException e){
             FileSystemWorker.error(classMeth, e);
+            throw new ConnectException("No connection to: " + session.getHost() + ":" + session.getPort());
         }
 
         Objects.requireNonNull(session).setInputStream(System.in);
@@ -164,11 +164,23 @@ public class SSHFactory implements Callable<String> {
         sb.append("classCaller='").append(classCaller).append('\'');
         sb.append(", commandSSH='").append(commandSSH).append('\'');
         sb.append(", connectToSrv='").append(connectToSrv).append('\'');
-        sb.append(", respChannel connected=").append(respChannel.isConnected());
         sb.append(", sessionType='").append(sessionType).append('\'');
         sb.append(", userName='").append(userName).append('\'');
         sb.append('}');
         return sb.toString();
+    }
+    
+    private void sshException(Exception e) {
+        initProperties = new FileProps(SOURCE_CLASS);
+        initProperties.getProps();
+    }
+    
+    private String getConnectToSrv() {
+        return connectToSrv;
+    }
+    
+    public void setConnectToSrv(String connectToSrv) {
+        this.connectToSrv = connectToSrv;
     }
 
     public String call() {
@@ -180,7 +192,8 @@ public class SSHFactory implements Callable<String> {
             messageToUser.warn("SSHFactory.call", "readBytes", " = " + readBytes);
             stringBuilder.append(new String(bytes, StandardCharsets.UTF_8));
         } catch (IOException | JSchException e) {
-            messageToUser.errorAlert(SOURCE_CLASS, " Exception id 123", e.getMessage() + "\n" + Arrays.toString(e.getStackTrace()));
+            messageToUser.errorAlert(getClass().getSimpleName(), "call", e.getMessage());
+            FileSystemWorker.error("SSHFactory.call", e);
         }
         messageToUser.warn(getClass().getSimpleName(), "CALL FROM CLASS: ", classCaller);
         List<String> recList = new ArrayList<>();
@@ -193,27 +206,15 @@ public class SSHFactory implements Callable<String> {
         return stringBuilder.toString();
     }
 
-    private String getConnectToSrv() {
-        return connectToSrv;
-    }
-
-    public void setConnectToSrv(String connectToSrv) {
-        this.connectToSrv = connectToSrv;
-    }
-
-    private Properties sshException(Exception e) {
-        LOGGER.error(e.getMessage(), e);
-        initProperties = new FileProps(SOURCE_CLASS);
-        return initProperties.getProps();
-    }
-
     private String pem() {
         File pemFile = new File("a161.pem");
         return pemFile.getAbsolutePath();
     }
 
     /*END FOR CLASS*/
-
+    
+    
+    
     /**
      Builder.
      <p>
@@ -221,7 +222,7 @@ public class SSHFactory implements Callable<String> {
 
      @since <a href="https://github.com/Vachok/ftpplus/commit/7bc45ca4f1968a61dfda3b009d7b0e394d573de5" target=_blank>14.11.2018 (15:25)</a>
      */
-    @SuppressWarnings ("WeakerAccess")
+    @SuppressWarnings({"WeakerAccess", "unused"})
     public static class Builder {
 
         private String userName = "ITDept";

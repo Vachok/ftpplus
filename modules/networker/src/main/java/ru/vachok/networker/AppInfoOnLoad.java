@@ -22,7 +22,10 @@ import ru.vachok.networker.services.MyCalen;
 import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
-import java.nio.file.*;
+import java.nio.file.FileVisitor;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -236,6 +239,8 @@ public class AppInfoOnLoad implements Runnable {
 
     /**
      Запускает сканнер прав Common
+ 
+     @param startMeth время старта
      */
     private static void commonRightsMetrics(long startMeth) {
         long mSecRun = System.currentTimeMillis() - new Date(startMeth).getTime();

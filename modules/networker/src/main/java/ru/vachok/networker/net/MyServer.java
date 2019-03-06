@@ -19,7 +19,8 @@ import java.util.Arrays;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
-import static java.lang.System.*;
+import static java.lang.System.err;
+import static java.lang.System.out;
 
 
 /**
@@ -48,14 +49,8 @@ public class MyServer extends Thread {
      {@link DBMessenger}
      */
     private static final MessageToUser messageToUser = new MessageLocal();
-
-    /**
-     <b>Сокет для сервера</b>
-
-     @see ConstantsFor#PR_LPORT
-     */
-    @SuppressWarnings ("CanBeFinal")
-    private static ServerSocket serverSocket = null;
+    
+    private static final int LPORT = Integer.parseInt(ConstantsFor.getAppProps().getProperty("LPORT", "9990"));
 
     /**
      <b>Сокет для клиента</b>
@@ -63,7 +58,7 @@ public class MyServer extends Thread {
      {@link #getSocket()} , {@link #setSocket(Socket)}
      */
     private static Socket socket = null;
-
+    
     public static Socket getSocket() {
         return socket;
     }
@@ -78,21 +73,27 @@ public class MyServer extends Thread {
     public static MyServer getI() {
         return myServer;
     }
-
-    static {
-        try{
-            serverSocket = new ServerSocket(ConstantsFor.PR_LPORT);
-        }
-        catch(IOException e){
-            LOGGER.error(e.getMessage(), e);
-        }
-    }
-
+    
+    /**
+     Сокет для сервера
+     */
+    @SuppressWarnings("CanBeFinal")
+    private static ServerSocket serverSocket = null;
+    
     /**
      {@link #myServer}
      */
     private MyServer() {
-        AppComponents.threadConfig().thrNameSet("tport:" + ConstantsFor.PR_LPORT);
+        AppComponents.threadConfig().thrNameSet("tport:" + LPORT);
+    }
+
+    static {
+        try{
+            serverSocket = new ServerSocket(LPORT);
+        }
+        catch(IOException e){
+            LOGGER.error(e.getMessage(), e);
+        }
     }
 
     /**

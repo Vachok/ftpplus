@@ -214,8 +214,6 @@ public class VersionInfo {
         sb.append(", appVersion='").append(appVersion).append('\'');
         sb.append(", buildTime='").append(buildTime).append('\'');
         sb.append(", isBUGged=").append(isBUGged);
-        sb.append(", pingTVStartStamp=").append(pingTVStartStamp);
-        sb.append(", thisPCNameStr='").append(thisPCNameStr).append('\'');
         sb.append('}');
         return sb.toString();
     }

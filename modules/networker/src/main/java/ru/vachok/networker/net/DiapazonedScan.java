@@ -201,7 +201,6 @@ public class DiapazonedScan implements Runnable {
     /**
      192.168.11-14.254
 
-     @param stArt таймер начала общего скана
      @see #scanNew()
      */
     @SuppressWarnings("MagicNumber")

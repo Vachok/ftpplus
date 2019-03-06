@@ -33,7 +33,10 @@ import java.net.InetAddress;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
-import java.util.*;
+import java.util.Date;
+import java.util.Deque;
+import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.*;
 
 
@@ -161,6 +164,9 @@ public class NetScanCtr {
      @param response {@link HttpServletResponse} добавить {@link ConstantsFor#HEAD_REFRESH} 30 сек
      @param model    {@link Model}
      @return {@link ConstantsNet#ATT_NETSCAN} (netscan.html)
+     @throws ExecutionException {@link NetScanCtr#checkMapSizeAndDoAction(org.springframework.ui.Model, javax.servlet.http.HttpServletRequest, long)}
+     @throws InterruptedException {@link NetScanCtr#checkMapSizeAndDoAction(org.springframework.ui.Model, javax.servlet.http.HttpServletRequest, long)}
+     @throws TimeoutException {@link NetScanCtr#checkMapSizeAndDoAction(org.springframework.ui.Model, javax.servlet.http.HttpServletRequest, long)}
      */
     @GetMapping(STR_NETSCAN)
     public String netScan(HttpServletRequest request, HttpServletResponse response, Model model) throws ExecutionException, InterruptedException, TimeoutException {
@@ -238,7 +244,11 @@ public class NetScanCtr {
      @param model     {@link Model}
      @param request   {@link HttpServletRequest}
      @param lastSt    время последнего скана. Берется из {@link #PROPERTIES}. Default: {@code 1548919734742}.
-     @param thisTotpc кол-во ПК для скана. Берется из {@link #PROPERTIES}. Default: {@code 318}.
+     @param thisTotpc кол-во ПК для скана. Берется из {@link #PROPERTIES}. Default: {@code 243}.
+     @throws ExecutionException {@link NetScanCtr#checkMapSizeAndDoAction(org.springframework.ui.Model, javax.servlet.http.HttpServletRequest, long)}
+     @throws InterruptedException {@link NetScanCtr#checkMapSizeAndDoAction(org.springframework.ui.Model, javax.servlet.http.HttpServletRequest, long)}
+     @throws TimeoutException {@link NetScanCtr#checkMapSizeAndDoAction(org.springframework.ui.Model, javax.servlet.http.HttpServletRequest, long)}
+ 
      @see #checkMapSizeAndDoAction(Model, HttpServletRequest, long)
      */
     private void mapSizeBigger(Model model, HttpServletRequest request, long lastSt, int thisTotpc) throws ExecutionException, InterruptedException, TimeoutException {
@@ -298,6 +308,10 @@ public class NetScanCtr {
      @param request       {@link HttpServletRequest}
      @param model         {@link Model}
      @see #mapSizeBigger(Model, HttpServletRequest, long, int)
+     @throws ExecutionException {@link NetScanCtr#checkMapSizeAndDoAction(org.springframework.ui.Model, javax.servlet.http.HttpServletRequest, long)}
+     @throws InterruptedException {@link NetScanCtr#checkMapSizeAndDoAction(org.springframework.ui.Model, javax.servlet.http.HttpServletRequest, long)}
+     @throws TimeoutException {@link NetScanCtr#checkMapSizeAndDoAction(org.springframework.ui.Model, javax.servlet.http.HttpServletRequest, long)}
+ 
      */
     private void timeCheck(int remainPC, long lastScanEpoch, HttpServletRequest request, Model model) throws ExecutionException, InterruptedException, TimeoutException {
         final Runnable scanRun = () -> scanIt(request, model, new Date(lastScanEpoch * 1000));
@@ -335,11 +349,15 @@ public class NetScanCtr {
      @param request {@link HttpServletRequest}
      @param lastSt  timestamp из {@link #PROPERTIES}
      @see #netScan(HttpServletRequest, HttpServletResponse, Model)
+     @throws ExecutionException {@link NetScanCtr#mapSizeBigger(org.springframework.ui.Model, javax.servlet.http.HttpServletRequest, long, int)}
+     @throws InterruptedException {@link NetScanCtr#mapSizeBigger(Model, HttpServletRequest, long, int)}
+     @throws TimeoutException {@link NetScanCtr#mapSizeBigger(Model, HttpServletRequest, long, int)}
+ 
      */
     private void checkMapSizeAndDoAction(Model model, HttpServletRequest request, long lastSt) throws ExecutionException, InterruptedException, TimeoutException {
         final Runnable scanRun = () -> scanIt(request, model, new Date(lastSt));
         boolean isMapSizeBigger = lastScanMAP.size() > 0;
-        final int thisTotpc = Integer.parseInt(PROPERTIES.getProperty(ConstantsFor.PR_TOTPC, "318"));
+        final int thisTotpc = Integer.parseInt(PROPERTIES.getProperty(ConstantsFor.PR_TOTPC, "243"));
         File scanTemp = new File("scan.tmp");
         if (scanTemp.isFile() && scanTemp.exists()) {
             mapSizeBigger(model, request, lastSt, thisTotpc);

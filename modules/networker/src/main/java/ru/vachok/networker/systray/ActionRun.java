@@ -24,6 +24,7 @@ public class ActionRun extends AbstractAction {
 
     /**
      Creates an {@code Action}.
+     @param commandToRun команда, для {@link Runtime#exec(java.lang.String)}
      */
     public ActionRun(String commandToRun) {
         this.commandToRun = commandToRun;

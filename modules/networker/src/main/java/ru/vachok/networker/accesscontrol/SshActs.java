@@ -252,7 +252,13 @@ public class SshActs {
         String logStr = "LOG: ";
         callForRoute = callForRoute + "<br>LOG: " + getInetLog();
         if (callForRoute.contains(logStr)) {
-            stringBuilder.append("<br><font color=\"gray\">").append(callForRoute.split(logStr)[1].replaceAll(";", "<br>")).append("</font>");
+            try {
+                stringBuilder.append("<br><font color=\"gray\">").append(callForRoute.split(logStr)[1].replaceAll(";", "<br>")).append("</font>");
+            } catch (ArrayIndexOutOfBoundsException e) {
+                stringBuilder.append("SshActs." + "providerTraceStr : " + e.getMessage());
+                FileSystemWorker.error("SshActs.providerTraceStr", e);
+            }
+    
         }
         return stringBuilder.toString();
     }
@@ -302,6 +308,13 @@ public class SshActs {
         if (allowDomain.contains("https")) {
             this.allowDomain = allowDomain.replace(STR_HTTPS, ".");
         }
+        if (allowDomain.contains("/")) {
+            allowDomain = allowDomain.split("/")[0];
+        }
+        this.allowDomain = allowDomain;
+        return allowDomain;
+    }
+/*Comment out 06.03.2019 (9:14)
         char[] chars = allowDomain.toCharArray();
         try {
             Character lastChar = chars[chars.length - 1];
@@ -313,9 +326,8 @@ public class SshActs {
             }
             return allowDomain;
         } catch (ArrayIndexOutOfBoundsException e) {
-            return e.getMessage();
-        }
-    }
+*/
+
 
     /**
      Резолвит ip-адрес
