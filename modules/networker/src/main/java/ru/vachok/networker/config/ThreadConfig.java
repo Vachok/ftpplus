@@ -73,7 +73,7 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
             "ThreadConfig.getTaskExecutor",
             "prestartCoreThread",
             " = " + prestartCoreThread + new TForms().fromArray(poolExecutor, false));
-        messageToUser.info("ThreadConfig.getTaskExecutor", "ScheduledThreadPoolExecutor", " = " + TASK_SCHEDULER.getScheduledThreadPoolExecutor().toString());
+        messageToUser.info("ThreadConfig.getTaskExecutor", "ScheduledThreadPoolExecutor", " = " + TASK_SCHEDULER.getScheduledThreadPoolExecutor());
         return TASK_EXECUTOR;
     }
 
@@ -83,7 +83,7 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
 
     public ThreadPoolTaskScheduler getTaskScheduler() {
         ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = TASK_SCHEDULER.getScheduledThreadPoolExecutor();
-        scheduledThreadPoolExecutor.setCorePoolSize(10);
+        scheduledThreadPoolExecutor.setCorePoolSize(15);
         TASK_SCHEDULER.setThreadNamePrefix("TS");
         TASK_SCHEDULER.setThreadPriority(4);
         TASK_SCHEDULER.setWaitForTasksToCompleteOnShutdown(false);
@@ -111,11 +111,11 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
         TASK_SCHEDULER.shutdown();
         final StringBuilder builder = new StringBuilder();
         for (Runnable runnable : TASK_SCHEDULER.getScheduledThreadPoolExecutor().shutdownNow()) {
-            builder.append(runnable.toString()).append("\n");
+            builder.append(runnable).append("\n");
         }
         TASK_EXECUTOR.shutdown();
         for (Runnable runnable : TASK_EXECUTOR.getThreadPoolExecutor().shutdownNow()) {
-            builder.append(runnable.toString()).append("\n");
+            builder.append(runnable).append("\n");
         }
         messageToUser.warn(builder.toString());
     }
@@ -125,11 +125,11 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
         String delaysCount = String.format("%.01f", (localUptimer / ConstantsFor.DELAY));
 
         String upStr = String.format("%.01f", localUptimer);
-        upStr = upStr + "m";
+        upStr += "m";
         if(localUptimer > ConstantsFor.ONE_HOUR_IN_MIN){
             localUptimer /= ConstantsFor.ONE_HOUR_IN_MIN;
             upStr = String.format("%.02f", localUptimer);
-            upStr = upStr + "h";
+            upStr += "h";
         }
         String thrName = className + ";" + upStr + ";" + delaysCount;
         Thread.currentThread().setName(thrName);
@@ -173,8 +173,8 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
         sb.append(", THREAD_CONFIG_INST=").append(THREAD_CONFIG_INST.hashCode());
         sb.append(", upTimer=").append(upTimer.get());
         sb.append("\n");
-        sb.append(", <br><font color=\"#fcf594\">TASK_SCHEDULER=").append(TASK_SCHEDULER.getScheduledThreadPoolExecutor().toString());
-        sb.append(", <br>TASK_EXECUTOR=").append(TASK_EXECUTOR.getThreadPoolExecutor().toString());
+        sb.append(", <br><font color=\"#fcf594\">TASK_SCHEDULER=").append(TASK_SCHEDULER.getScheduledThreadPoolExecutor());
+        sb.append(", <br>TASK_EXECUTOR=").append(TASK_EXECUTOR.getThreadPoolExecutor());
         sb.append("</font>}");
         return sb.toString();
     }
@@ -209,7 +209,7 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
         @Override
         public String toString() {
             final StringBuilder sb = new StringBuilder("ASExec{");
-            sb.append("threadPoolTaskExecutor=").append(threadPoolTaskExecutor.getThreadPoolExecutor().toString());
+            sb.append("threadPoolTaskExecutor=").append(threadPoolTaskExecutor.getThreadPoolExecutor());
             sb.append('}');
             return sb.toString();
         }
@@ -234,7 +234,7 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
                 messageToUser.info(getClass().getSimpleName(), "resultOfExecution", String.valueOf(true));
             } else {
                 messageToUser = new MessageSwing();
-                messageToUser.infoTimer((int) ConstantsFor.DELAY, getClass().getSimpleName() + " resultOfExecution " + reTask.toString() + " " + false);
+                messageToUser.infoTimer((int) ConstantsFor.DELAY, getClass().getSimpleName() + " resultOfExecution " + reTask + " " + false);
             }
         }
 
@@ -243,7 +243,7 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
             this.reTask = rejectedTask;
             messageToUser.info(CLASS_REJECTEDEXEC_METH, "rejectedTask", " = " + rejectedTask);
             try {
-                ExecutorServiceAdapter serviceAdapter = new ExecutorServiceAdapter((TaskExecutor) executor);
+                ExecutorService serviceAdapter = new ExecutorServiceAdapter((TaskExecutor) executor);
                 Future<?> submit = serviceAdapter.submit(reTask);
                 submit.get(ConstantsFor.DELAY, TimeUnit.SECONDS);
                 resultOfExecution(submit.isDone());
@@ -275,7 +275,7 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
         public String toString() {
             final StringBuilder sb = new StringBuilder("TasksReRunner{");
             sb.append("CLASS_REJECTEDEXEC_METH='").append(CLASS_REJECTEDEXEC_METH).append('\'');
-            sb.append(", reTask=").append(reTask.toString());
+            sb.append(", reTask=").append(reTask);
             sb.append('}');
             return sb.toString();
         }
@@ -286,7 +286,7 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
         @Override
         public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
             BlockingQueue<Runnable> queue = executor.getQueue();
-            queue.forEach(x -> queue.remove(x));
+            queue.forEach(queue::remove);
             executeAsThread(r);
         }
     }
