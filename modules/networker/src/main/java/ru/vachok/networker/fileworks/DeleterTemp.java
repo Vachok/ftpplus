@@ -2,9 +2,9 @@ package ru.vachok.networker.fileworks;
 
 
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.services.MessageLocal;
 
 import java.io.*;
@@ -39,11 +39,11 @@ class DeleterTemp extends FileSystemWorker implements Runnable {
     /**
      Счётчик файлов
      */
-    private int filesCounter = 0;
+    private int filesCounter;
 
     private List<String> fromFile = new ArrayList<>();
-
-    private String patToDel = null;
+    
+    private String patToDel;
 
     DeleterTemp(String patToDel) {
         this.patToDel = patToDel;
@@ -110,7 +110,7 @@ class DeleterTemp extends FileSystemWorker implements Runnable {
         Thread.currentThread().setName("DeleterTemp.visitFile");
         this.filesCounter = filesCounter + 1;
         String fileAbs = new StringBuilder()
-            .append(file.toAbsolutePath().toString())
+            .append(file.toAbsolutePath())
             .append(ConstantsFor.STR_DELETED).toString();
         if(more2MBOld(attrs)){
             Files.setAttribute(file, ConstantsFor.DOS_ARCHIVE, true);
@@ -121,7 +121,7 @@ class DeleterTemp extends FileSystemWorker implements Runnable {
                 .append(",")
                 .append(new Date(attrs.lastAccessTime().toMillis()))
                 .append(",")
-                .append(Files.readAttributes(file, "dos:*")).toString());
+                .append(Files.readAttributes(file, "dos:*")));
         }
         if(tempFile(file.toAbsolutePath())){
             try{

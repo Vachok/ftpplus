@@ -9,9 +9,9 @@ import ru.vachok.messenger.MessageFile;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.messenger.email.ESender;
 import ru.vachok.mysqlandprops.EMailAndDB.MailMessages;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.systray.ActionDefault;
 import ru.vachok.networker.systray.MessageToTray;
@@ -99,7 +99,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
         String sql = ConstantsFor.DBQUERY_SELECTFROMSPEED;
         Properties properties = AppComponents.getOrSetProps();
         final long stArt = System.currentTimeMillis();
-        new ChkMailAndUpdateDB().run();
+        new SpeedChecker.ChkMailAndUpdateDB().run();
 
         try (Connection connection = new AppComponents().connection(ConstantsFor.DBPREFIX + "liferpg");
              PreparedStatement p = connection.prepareStatement(sql);
@@ -299,7 +299,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
                         delMessage(m);
                     }
                     String todayInfoStr = todayInfo();
-                    messageToUser.info(ChkMailAndUpdateDB.class.getSimpleName() + " " + ConstantsFor.thisPC(), true + " sending to base",
+                    messageToUser.info(SpeedChecker.ChkMailAndUpdateDB.class.getSimpleName() + " " + ConstantsFor.thisPC(), true + " sending to base",
                         todayInfoStr + "\n" + chDB);
                 } else {
                     new MessageToTray(new ActionDefault(ConstantsFor.HTTP_LOCALHOST8880SLASH)).infoNoTitles("No new messages");

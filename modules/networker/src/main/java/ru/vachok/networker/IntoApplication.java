@@ -13,7 +13,6 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
-import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -268,9 +267,9 @@ public class IntoApplication {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("IntoApplication{");
-        sb.append("SPRING_APPLICATION=").append(SPRING_APPLICATION.toString());
+        sb.append("SPRING_APPLICATION=").append(SPRING_APPLICATION);
         sb.append(", LOCAL_PROPS=").append(LOCAL_PROPS.size());
-        sb.append(", messageToUser=").append(messageToUser.toString());
+        sb.append(", messageToUser=").append(messageToUser);
         sb.append(", configurableApplicationContext=").append(configurableApplicationContext.getApplicationName());
         sb.append('}');
         return sb.toString();

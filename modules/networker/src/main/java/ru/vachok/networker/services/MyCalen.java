@@ -3,10 +3,13 @@ package ru.vachok.networker.services;
 
 import org.apache.commons.net.ntp.TimeInfo;
 import org.slf4j.Logger;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.componentsrepo.AppComponents;
 
-import java.time.*;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
@@ -99,7 +102,7 @@ public abstract class MyCalen {
                 .append(" sec spend\n")
                 .append(rDiff)
                 .append(" System.currentTimeMillis()-timeInfo.getReturnTime()\n")
-                .append(retDate.toString())
+                .append(retDate)
                 .append(DATE_RETURNED).toString();
             LOGGER.info(msgTimeSp);
             return retDate;
@@ -135,7 +138,7 @@ public abstract class MyCalen {
             timeInfo.computeDetails();
 
             String msgTimeSp = new StringBuilder()
-                .append(retDate.toString())
+                .append(retDate)
                 .append(" ")
                 .append(toSat)
                 .append("\nTimeChecker information: ")
@@ -143,7 +146,7 @@ public abstract class MyCalen {
                 .append("\nMyCalen.getNextSat method. ")
                 .append(( float ) (System.currentTimeMillis() - stArt) / 1000)
                 .append(" sec spend\n")
-                .append(retDate.toString())
+                .append(retDate)
                 .append(DATE_RETURNED).toString();
             LOGGER.info(msgTimeSp);
             return retDate;
@@ -160,7 +163,7 @@ public abstract class MyCalen {
         localDateTime = localDateTime.plusMonths(1);
         String msg = new StringBuilder()
             .append(" and ret date is: ")
-            .append(localDateTime.toString())
+            .append(localDateTime)
             .append("\n").toString();
         LOGGER.info(msg);
         return localDateTime;

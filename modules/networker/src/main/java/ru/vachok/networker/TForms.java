@@ -73,8 +73,8 @@ public class TForms {
     public String fromArray(Exception e, boolean isHTML) {
         this.brStringBuilder = new StringBuilder();
         this.nStringBuilder = new StringBuilder();
-
-        brStringBuilder.append(LocalDateTime.now().toString()).append(BR_STR).append(e.getMessage()).append(" Exception message.<p>");
+    
+        brStringBuilder.append(LocalDateTime.now()).append(BR_STR).append(e.getMessage()).append(" Exception message.<p>");
 
         for (StackTraceElement stackTraceElement : e.getStackTrace()) {
             parseTrace(stackTraceElement);
@@ -143,7 +143,7 @@ public class TForms {
         nStringBuilder.append(N_STR);
         for (ADUser ad : adUsers) {
             nStringBuilder
-                .append(ad.toString())
+                .append(ad)
                 .append(N_STR);
         }
         nStringBuilder.append(N_STR);
@@ -159,10 +159,10 @@ public class TForms {
         nStringBuilder.append(N_STR);
         for (ADComputer ad : adComputers) {
             brStringBuilder
-                .append(ad.toString())
+                .append(ad)
                 .append(BR_STR);
             nStringBuilder
-                .append(ad.toString())
+                .append(ad)
                 .append("\n\n");
         }
         brStringBuilder.append("</p>");
@@ -177,10 +177,10 @@ public class TForms {
     public String fromArray(Address[] mailAddress, boolean br) {
         for (Address address : mailAddress) {
             brStringBuilder
-                .append(address.toString())
+                .append(address)
                 .append("br");
             nStringBuilder
-                .append(address.toString())
+                .append(address)
                 .append(N_STR);
         }
         if (br) {
@@ -195,10 +195,10 @@ public class TForms {
         nStringBuilder.append(N_STR);
         for (Object o : cacheSet) {
             brStringBuilder
-                .append(o.toString())
+                .append(o)
                 .append(BR_STR);
             nStringBuilder
-                .append(o.toString())
+                .append(o)
                 .append(N_STR);
         }
         if (br) {
@@ -215,13 +215,13 @@ public class TForms {
                 .append(x)
                 .append(" MAP ID  RULE:")
                 .append(N_STR)
-                .append(y.toString());
+                .append(y);
             brStringBuilder
                 .append("<p><h4>")
                 .append(x)
                 .append(" MAP ID  RULE:</h4>")
                 .append(BR_STR)
-                .append(y.toString())
+                .append(y)
                 .append("</p>");
         });
         if (br) {
@@ -286,10 +286,10 @@ public class TForms {
         brStringBuilder.append(BR_STR);
         for (InetAddress inetAddress : allByName) {
             brStringBuilder
-                .append(inetAddress.toString())
+                .append(inetAddress)
                 .append(BR_STR);
             nStringBuilder
-                .append(inetAddress.toString())
+                .append(inetAddress)
                 .append(N_STR);
         }
         if (b) {
@@ -303,10 +303,10 @@ public class TForms {
         brStringBuilder.append(BR_STR);
         rndList.forEach(x -> {
             brStringBuilder
-                .append(x.toString())
+                .append(x)
                 .append(BR_STR);
             nStringBuilder
-                .append(x.toString())
+                .append(x)
                 .append(N_STR);
         });
         if (b) {
@@ -320,10 +320,10 @@ public class TForms {
         brStringBuilder.append(P_STR);
         for (Object o : objects) {
             brStringBuilder
-                .append(o.toString())
+                .append(o)
                 .append(BR_STR);
             nStringBuilder
-                .append(o.toString())
+                .append(o)
                 .append(N_STR);
         }
         if (b) {
@@ -339,11 +339,11 @@ public class TForms {
             String str = "Property: ";
             String str1 = STR_VALUE;
             brStringBuilder
-                .append(str).append(x.toString())
-                .append(str1).append(y.toString()).append(BR_STR);
+                .append(str).append(x)
+                .append(str1).append(y).append(BR_STR);
             nStringBuilder
-                .append(str).append(x.toString())
-                .append(str1).append(y.toString()).append(N_STR);
+                .append(str).append(x)
+                .append(str1).append(y).append(N_STR);
         });
         if (b) {
             return brStringBuilder.toString();
@@ -448,8 +448,8 @@ public class TForms {
         sb.append(", P_STR='").append(P_STR).append('\'');
         sb.append(", STR_DISASTER='").append(STR_DISASTER).append('\'');
         sb.append(", STR_METHFILE='").append(STR_METHFILE).append('\'');
-        sb.append(", brStringBuilder=").append(brStringBuilder.toString());
-        sb.append(", nStringBuilder=").append(nStringBuilder.toString());
+        sb.append(", brStringBuilder=").append(brStringBuilder);
+        sb.append(", nStringBuilder=").append(nStringBuilder);
         sb.append('}');
         return sb.toString();
     }

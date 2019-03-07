@@ -4,6 +4,7 @@ package ru.vachok.networker.componentsrepo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -50,17 +51,17 @@ public class VersionInfo {
     /**
      Версия
      */
-    private String appVersion = null;
+    private String appVersion;
     
     /**
      Билд
      */
-    private String appBuild = null;
+    private String appBuild;
     
     /**
      Время сборки
      */
-    private String buildTime = null;
+    private String buildTime;
     
     private long pingTVStartStamp = ConstantsFor.START_STAMP;
     

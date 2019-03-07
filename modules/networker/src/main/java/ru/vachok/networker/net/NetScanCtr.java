@@ -13,9 +13,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.config.ThreadConfig;
@@ -45,6 +45,7 @@ import java.util.concurrent.*;
  <p>
  
  @since 30.08.2018 (12:55) */
+@SuppressWarnings({"ClassWithMultipleLoggers", "SameReturnValue", "DuplicateStringLiteralInspection", "ClassUnconnectedToPackage"})
 @Controller
 public class NetScanCtr {
     
@@ -80,6 +81,8 @@ public class NetScanCtr {
     
     private static final String ATT_NETPINGER = "netPinger";
     
+    private static final String ATT_PCS = "pcs";
+    
     private static ThreadPoolTaskExecutor locExecutor = AppComponents.threadConfig().getTaskExecutor();
     
     /**
@@ -87,7 +90,7 @@ public class NetScanCtr {
      */
     private static ConcurrentMap<String, Boolean> lastScanMAP = AppComponents.lastNetScanMap();
     
-    private static MessageToUser messageToUser = new MessageLocal(NetScanCtr.class.getSimpleName());
+    private static final MessageToUser messageToUser = new MessageLocal(NetScanCtr.class.getSimpleName());
     
     /**
      {@link AppComponents#netScannerSvc()}
@@ -96,6 +99,7 @@ public class NetScanCtr {
     
     private NetPinger netPingerInst;
     
+    @SuppressWarnings("WeakerAccess")
     @Autowired
     public NetScanCtr(NetScannerSvc netScannerSvc, NetPinger netPingerInst) {
         this.netScannerSvcInstAW = netScannerSvc;
@@ -141,12 +145,9 @@ public class NetScanCtr {
      @param response {@link HttpServletResponse} добавить {@link ConstantsFor#HEAD_REFRESH} 30 сек
      @param model    {@link Model}
      @return {@link ConstantsNet#ATT_NETSCAN} (netscan.html)
-     @throws ExecutionException   {@link NetScanCtr#checkMapSizeAndDoAction(org.springframework.ui.Model, javax.servlet.http.HttpServletRequest, long)}
-     @throws InterruptedException {@link NetScanCtr#checkMapSizeAndDoAction(org.springframework.ui.Model, javax.servlet.http.HttpServletRequest, long)}
-     @throws TimeoutException     {@link NetScanCtr#checkMapSizeAndDoAction(org.springframework.ui.Model, javax.servlet.http.HttpServletRequest, long)}
      */
     @GetMapping(STR_NETSCAN)
-    public String netScan(HttpServletRequest request, HttpServletResponse response, Model model) throws ExecutionException, InterruptedException, TimeoutException {
+    public String netScan(HttpServletRequest request, HttpServletResponse response, Model model) {
         String classMeth = "NetScanCtr.netScan";
         final long lastSt = Long.parseLong(PROPERTIES.getProperty(ConstantsNet.PR_LASTSCAN, "1548919734742"));
         messageToUser.info(
@@ -164,7 +165,17 @@ public class NetScanCtr {
         model.addAttribute(ATT_THEPC, netScannerSvcInstAW.getThePc());
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<br>First Scan: 2018-05-05");
         response.addHeader(ConstantsFor.HEAD_REFRESH, "30");
-        checkMapSizeAndDoAction(model, request, lastSt);
+        try {
+            checkMapSizeAndDoAction(model, request, lastSt);
+        } catch (InterruptedException e) {
+            model.addAttribute(ATT_PCS, e.getMessage());
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+        } catch (ExecutionException e) {
+            model.addAttribute(ATT_PCS, new TForms().fromArray(e, true));
+        } catch (TimeoutException e) {
+            model.addAttribute(ATT_PCS, "TIMEOUT!<p>" + e.getMessage());
+        }
         return ConstantsNet.ATT_NETSCAN;
     }
     
@@ -197,7 +208,7 @@ public class NetScanCtr {
     public static String allDevices(Model model, HttpServletRequest request, HttpServletResponse response) {
         model.addAttribute(ConstantsFor.ATT_TITLE, ConstantsNet.getAllDevices().remainingCapacity() + " ip remain");
         try {
-            model.addAttribute("pcs", new ScanOnline().toString());
+            model.addAttribute(ATT_PCS, new ScanOnline().toString());
         } catch (NoClassDefFoundError e) {
             messageToUser.errorAlert("NetScanCtr", e.getMessage(), e.toString());
             messageToUser.error(e.toString());
@@ -280,7 +291,7 @@ public class NetScanCtr {
         titleBuilder.append("/");
         titleBuilder.append(pcWas);
         titleBuilder.append(" at ");
-        titleBuilder.append(LocalDateTime.ofEpochSecond(lastSt / 1000, 0, ZoneOffset.ofHours(3)).toLocalTime().toString());
+        titleBuilder.append(LocalDateTime.ofEpochSecond(lastSt / 1000, 0, ZoneOffset.ofHours(3)).toLocalTime());
     
         model
             .addAttribute("left", msg)

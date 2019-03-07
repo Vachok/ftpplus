@@ -3,11 +3,14 @@ package ru.vachok.networker.accesscontrol.common;
 
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.util.Collections;
@@ -110,7 +113,7 @@ public class CommonSRV {
             .append(followInt)
             .append(" кол-во вложений папок для просмотра\n");
         try {
-            String msg = followInt + " number of followed links" + "\n" + toString();
+            String msg = followInt + " number of followed links" + "\n" + this;
             LOGGER.warn(msg);
             Thread.sleep(1000);
             Files.walkFileTree(restoreFromArchives.getArchiveDir(), Collections.singleton(FileVisitOption.FOLLOW_LINKS), followInt + 1, restoreFromArchives);
@@ -119,7 +122,7 @@ public class CommonSRV {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
-        stringBuilder.append(restoreFromArchives.toString());
+        stringBuilder.append(restoreFromArchives);
         writeResult(stringBuilder.toString());
         return restoreFromArchives.toString();
     }

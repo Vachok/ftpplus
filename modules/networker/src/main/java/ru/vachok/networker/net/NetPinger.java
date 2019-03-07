@@ -6,9 +6,9 @@ import org.springframework.web.multipart.MultipartFile;
 import ru.vachok.messenger.MessageFile;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.messenger.email.ESender;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
@@ -95,7 +95,7 @@ public class NetPinger implements Runnable, Pinger {
 
      @see NetScanCtr#pingPost(org.springframework.ui.Model, javax.servlet.http.HttpServletRequest, ru.vachok.networker.net.NetPinger, javax.servlet.http.HttpServletResponse)
      */
-    private MultipartFile multipartFile = null;
+    private MultipartFile multipartFile;
 
     /**
      @return {@link #timeToScanStr}
@@ -140,11 +140,10 @@ public class NetPinger implements Runnable, Pinger {
 
         for (InetAddress inetAddress : ipAsList) {
             try {
-                resList.add(inetAddress.toString() + " is " + inetAddress.isReachable(ConstantsFor.TIMEOUT_650));
+                resList.add(inetAddress + " is " + inetAddress.isReachable(ConstantsFor.TIMEOUT_650));
                 Thread.sleep(pingSleepMsec);
             } catch (IOException | InterruptedException e) {
-                messageToUser.errorAlert(STR_CLASSNAME, "pingSW", e.getMessage());
-                FileSystemWorker.error(STR_METH_PINGSW, e);
+                Thread.currentThread().checkAccess();
                 Thread.currentThread().interrupt();
             }
         }

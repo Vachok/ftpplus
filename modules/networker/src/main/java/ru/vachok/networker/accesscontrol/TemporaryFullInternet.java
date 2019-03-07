@@ -3,10 +3,10 @@ package ru.vachok.networker.accesscontrol;
 
 import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
@@ -92,7 +92,7 @@ public class TemporaryFullInternet implements Runnable {
             SSH_FACTORY.setCommandSSH(sshCommand);
             retBuilder.append(SSH_FACTORY.call().replaceAll("\n", "<br>"));
         }
-        MINI_LOGGER.add("doAdd(): " + retBuilder.toString());
+        MINI_LOGGER.add("doAdd(): " + retBuilder);
         return retBuilder.toString();
     }
 
@@ -121,7 +121,7 @@ public class TemporaryFullInternet implements Runnable {
         for (Map.Entry<String, Long> entry : sshCheckerMap.entrySet()) {
             String x = entry.getKey();
             Long y = entry.getValue();
-            String willBeDel = x + " will be deleted at " + LocalDateTime.ofEpochSecond(delStamp / 1000, 0, ZoneOffset.ofHours(3)).toString();
+            String willBeDel = x + " will be deleted at " + LocalDateTime.ofEpochSecond(delStamp / 1000, 0, ZoneOffset.ofHours(3));
             MINI_LOGGER.add(willBeDel);
             this.delStamp = y;
             if (delStamp < ConstantsFor.getAtomicTime()) {
@@ -160,7 +160,7 @@ public class TemporaryFullInternet implements Runnable {
         String sshCommand = SSH_FACTORY.call();
         messageToUser.info("TemporaryFullInternet.doDelete", STR_SSH_COMMAND, " = " + sshCommand);
         Long aLong = ConstantsNet.getSshCheckerMap().remove(x);
-        MINI_LOGGER.add(new Date(aLong).toString() + ", doDelete(): " + sshCommand);
+        MINI_LOGGER.add(new Date(aLong) + ", doDelete(): " + sshCommand);
         return ConstantsNet.getSshCheckerMap().containsKey(x);
     }
 

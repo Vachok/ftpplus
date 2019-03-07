@@ -5,6 +5,7 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -15,7 +16,7 @@ import java.util.Properties;
 
 
 /**
- Проверяет {@link ru.vachok.networker.componentsrepo.AppComponents#getOrSetProps()}
+ Проверяет {@link AppComponents#getOrSetProps()}
  <p>
 
  @since 19.02.2019 (1:08) */

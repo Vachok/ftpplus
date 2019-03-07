@@ -9,10 +9,10 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -78,14 +78,14 @@ public class SshActs {
     /**
      Имя ПК для разрешения
      */
-    private String pcName = null;
-
-    private String userInput = null;
+    private String pcName;
+    
+    private String userInput;
 
     /**
      Уровень доступа к инету
      */
-    private String inet = null;
+    private String inet;
 
     private String numOfHours =
         String.valueOf(Math.abs(TimeUnit.SECONDS.toHours((long) LocalTime.parse("18:30").toSecondOfDay() - LocalTime.now().toSecondOfDay())));
@@ -93,27 +93,27 @@ public class SshActs {
     /**
      Разрешить адрес
      */
-    private String allowDomain = null;
-
-    private String ipAddrOnly = null;
+    private String allowDomain;
+    
+    private String ipAddrOnly;
 
     /**
      Комментарий
      */
-    private String comment = null;
+    private String comment;
 
     /**
      Имя домена для удаления.
      */
-    private String delDomain = null;
-
-    private boolean squid = false;
-
-    private boolean squidLimited = false;
-
-    private boolean tempFull = false;
-
-    private boolean vipNet = false;
+    private String delDomain;
+    
+    private boolean squid;
+    
+    private boolean squidLimited;
+    
+    private boolean tempFull;
+    
+    private boolean vipNet;
 
     public void setIpAddrOnly(String ipAddrOnly) {
         this.ipAddrOnly = ipAddrOnly;
@@ -293,7 +293,7 @@ public class SshActs {
             .append("exit;").toString();
         String call = "<b>" + new SSHFactory.Builder(DEFAULT_SERVER_TO_SSH, commandSSH, getClass().getSimpleName()).build().call() + "</b>";
         call = call + "<font color=\"gray\"><br><br>" + new WhoIsWithSRV().whoIs(resolveIp(allowDomain)) + "</font>";
-        writeToLog(new String((call + "\n\n" + toString()).getBytes(), Charset.defaultCharset()));
+        writeToLog(new String((call + "\n\n" + this).getBytes(), Charset.defaultCharset()));
         return call;
     }
 
@@ -579,7 +579,7 @@ public class SshActs {
         public String allowPOST(@ModelAttribute SshActs sshActs, Model model) {
             model.addAttribute(ConstantsFor.ATT_TITLE, sshActs.getAllowDomain() + " добавлен");
             model.addAttribute(ConstantsFor.ATT_SSH_ACTS, sshActs);
-            model.addAttribute("ok", sshActs.toString() + "<p>" + sshActs.allowDomainAdd());
+            model.addAttribute("ok", sshActs + "<p>" + sshActs.allowDomainAdd());
             model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
             return "ok";
         }
@@ -588,7 +588,7 @@ public class SshActs {
         public String delDomPOST(@ModelAttribute SshActs sshActs, Model model) {
             model.addAttribute(ConstantsFor.ATT_TITLE, sshActs.getDelDomain() + " удалён");
             model.addAttribute(ConstantsFor.ATT_SSH_ACTS, sshActs);
-            model.addAttribute("ok", sshActs.toString() + "<p>" + sshActs.allowDomainDel());
+            model.addAttribute("ok", sshActs + "<p>" + sshActs.allowDomainDel());
             model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
             return "ok";
         }
@@ -611,7 +611,7 @@ public class SshActs {
         /**
          Парсинг запроса HTTP
          <p>
-         Usages: {@link SshActsCTRL#sshActsGET(Model, HttpServletRequest)} Uses: {@link #toString()}
+         Usages: {@link SshActs.SshActsCTRL#sshActsGET(Model, HttpServletRequest)} Uses: {@link #toString()}
 
          @param queryString {@link HttpServletRequest#getQueryString()}
          */

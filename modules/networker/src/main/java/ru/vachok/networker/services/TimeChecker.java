@@ -4,7 +4,7 @@ package ru.vachok.networker.services;
 import org.apache.commons.net.ntp.NTPUDPClient;
 import org.apache.commons.net.ntp.TimeInfo;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.io.IOException;

@@ -60,19 +60,21 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
      */
     public ThreadPoolTaskExecutor getTaskExecutor() {
         boolean prestartCoreThread = TASK_EXECUTOR.getThreadPoolExecutor().prestartCoreThread();
-        TASK_EXECUTOR.getThreadPoolExecutor().setCorePoolSize(40);
+        TASK_EXECUTOR.getThreadPoolExecutor().setCorePoolSize(100);
         TASK_EXECUTOR.setQueueCapacity(700);
         TASK_EXECUTOR.setWaitForTasksToCompleteOnShutdown(true);
         TASK_EXECUTOR.setAwaitTerminationSeconds(8);
         TASK_EXECUTOR.setThreadPriority(6);
         TASK_EXECUTOR.setThreadNamePrefix("TE-");
-        TASK_EXECUTOR.setRejectedExecutionHandler(new TasksReRunner());
+        TASK_EXECUTOR.setRejectedExecutionHandler(new ThreadConfig.TasksReRunner());
 
         BlockingQueue<Runnable> poolExecutor = TASK_EXECUTOR.getThreadPoolExecutor().getQueue();
+        final String bodyMsg = " = " + prestartCoreThread + new TForms().fromArray(poolExecutor, false);
+        FileSystemWorker.writeFile("getTaskExecutor.txt", bodyMsg);
         messageToUser.info(
             "ThreadConfig.getTaskExecutor",
             "prestartCoreThread",
-            " = " + prestartCoreThread + new TForms().fromArray(poolExecutor, false));
+            bodyMsg);
         messageToUser.info("ThreadConfig.getTaskExecutor", "ScheduledThreadPoolExecutor", " = " + TASK_SCHEDULER.getScheduledThreadPoolExecutor());
         return TASK_EXECUTOR;
     }
@@ -85,9 +87,10 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
         ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = TASK_SCHEDULER.getScheduledThreadPoolExecutor();
         scheduledThreadPoolExecutor.setCorePoolSize(15);
         TASK_SCHEDULER.setThreadNamePrefix("TS");
-        TASK_SCHEDULER.setThreadPriority(4);
+        TASK_SCHEDULER.setThreadPriority(2);
         TASK_SCHEDULER.setWaitForTasksToCompleteOnShutdown(false);
         TASK_SCHEDULER.setDaemon(true);
+        TASK_SCHEDULER.prefersShortLivedTasks();
         TASK_SCHEDULER.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardOldestPolicy());
         return TASK_SCHEDULER;
     }
@@ -193,7 +196,7 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
         ASExec(ThreadPoolTaskExecutor threadPoolTaskExecutor) {
             threadPoolTaskExecutor.getThreadPoolExecutor().purge();
             this.threadPoolTaskExecutor = threadPoolTaskExecutor;
-            threadPoolTaskExecutor.setRejectedExecutionHandler(new TasksReRunner());
+            threadPoolTaskExecutor.setRejectedExecutionHandler(new ThreadConfig.TasksReRunner());
         }
 
         @Override
@@ -202,7 +205,7 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
             threadPoolTaskExecutor.setAllowCoreThreadTimeOut(true);
             threadPoolTaskExecutor.setThreadPriority(9);
             threadPoolTaskExecutor.setThreadNamePrefix("A-");
-            threadPoolTaskExecutor.setRejectedExecutionHandler(new TasksReRunner());
+            threadPoolTaskExecutor.setRejectedExecutionHandler(new ThreadConfig.TasksReRunner());
             return threadPoolTaskExecutor;
         }
 
@@ -231,17 +234,17 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
 
         private void resultOfExecution(boolean submitDone) {
             if (submitDone) {
-                messageToUser.info(getClass().getSimpleName(), "resultOfExecution", String.valueOf(true));
+                messageToUser.info(getClass().getSimpleName(), "resultOfExecution", reTask + " : " + String.valueOf(true));
             } else {
                 messageToUser = new MessageSwing();
-                messageToUser.infoTimer((int) ConstantsFor.DELAY, getClass().getSimpleName() + " resultOfExecution " + reTask + " " + false);
+                messageToUser.infoTimer((int) ConstantsFor.DELAY, getClass().getSimpleName() + " resultOfExecution " + reTask + " : " + false);
             }
         }
 
         @Override
         public void rejectedExecution(Runnable rejectedTask, ThreadPoolExecutor executor) {
             this.reTask = rejectedTask;
-            messageToUser.info(CLASS_REJECTEDEXEC_METH, "rejectedTask", " = " + rejectedTask);
+            messageToUser.error(CLASS_REJECTEDEXEC_METH, "rejectedTask", " = " + rejectedTask);
             try {
                 ExecutorService serviceAdapter = new ExecutorServiceAdapter((TaskExecutor) executor);
                 Future<?> submit = serviceAdapter.submit(reTask);
@@ -265,8 +268,8 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
         public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
-
-            TasksReRunner that = (TasksReRunner) o;
+    
+            ThreadConfig.TasksReRunner that = (ThreadConfig.TasksReRunner) o;
 
             return messageToUser.equals(that.messageToUser) && (reTask!=null? reTask.equals(that.reTask): that.reTask==null);
         }

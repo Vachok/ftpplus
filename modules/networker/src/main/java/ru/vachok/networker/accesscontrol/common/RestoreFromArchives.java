@@ -2,7 +2,7 @@ package ru.vachok.networker.accesscontrol.common;
 
 
 import org.slf4j.Logger;
-import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.AppComponents;
 
 import java.io.File;
 import java.io.IOException;
@@ -44,9 +44,9 @@ public class RestoreFromArchives extends SimpleFileVisitor<Path> {
      <p>
      Для того, чтобы не перебирать каждый раз всё.
      */
-    private String firstLeverSTR = null;
-
-    private String pathToRestoreAsStr = null;
+    private String firstLeverSTR;
+    
+    private String pathToRestoreAsStr;
 
     /**
      {@link StringBuilder} результата работы.
@@ -182,30 +182,6 @@ public class RestoreFromArchives extends SimpleFileVisitor<Path> {
         }
     }
 
-    @Override
-    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-        String filePathStr = COMMON_DIR.toString() + pathToRestoreAsStr;
-        if(attrs.isRegularFile() && filePathStr.contains(".")){
-            return fileChecker(filePathStr, file, attrs.lastModifiedTime());
-        }
-        return FileVisitResult.CONTINUE;
-    }
-
-    @Override
-    public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
-        resultStr
-            .append(exc.getMessage())
-            .append(" err");
-        return FileVisitResult.SKIP_SIBLINGS;
-    }
-
-    @Override
-    public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-        String msg = dir.toString() + " is visit";
-        LOGGER.info(msg);
-        return FileVisitResult.CONTINUE;
-    }
-
     /**
      Проверка имени.
      Usages: {@link #visitFile(Path, BasicFileAttributes)}
@@ -228,7 +204,7 @@ public class RestoreFromArchives extends SimpleFileVisitor<Path> {
                 .append("<br>")
                 .append(file.toFile().getName())
                 .append("<br>");
-            String msg = "Файл из архива - <font color=\"orange\">" + file.toString();
+            String msg = "Файл из архива - <font color=\"orange\">" + file;
             LOGGER.info(msg);
             resultStr.append(msg)
                 .append("</font> <font color=\"red\"> размер в байтах: ")
@@ -241,32 +217,19 @@ public class RestoreFromArchives extends SimpleFileVisitor<Path> {
         }
         return FileVisitResult.CONTINUE;
     }
-
-    /**
-     Копирование из архива.
-     <p>
-     Usages: {@link #fileChecker(String, Path, FileTime)}
-
-     @param s путь до файла в архиве
-     @throws IOException {@link Files#createDirectories(Path, FileAttribute[])}, {@link Files#copy(Path, OutputStream)}
-     */
-    private void copyFile(String s) throws IOException {
-        String target = s.replace("\\\\192.168.14.10\\IT-Backup\\Srv-Fs\\Archives\\",
-            "\\\\srv-fs.eatmeat.ru\\common_new\\");
-        File tFile = new File(target);
-        String tFPath = tFile.getAbsolutePath().replace(tFile.getName(), "");
-        Files.createDirectories(Paths.get(tFPath));
-        Files.copy(Paths.get(s), tFile.toPath());
+    
+    @Override
+    public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
         resultStr
-            .append("Cкопирован сюда: <font color=\"green\">")
-            .append(target)
-            .append("</font><br>");
+            .append(exc.getMessage())
+            .append(" err");
+        return FileVisitResult.SKIP_SIBLINGS;
     }
 
     private FileVisitResult directoryMatch(String pathInArch) throws IOException {
-        String commonNeed = COMMON_DIR.toString() + pathInArch;
+        String commonNeed = COMMON_DIR + pathInArch;
         Path restInCommon = Paths.get(commonNeed);
-        commonNeed = ARCHIVE_DIR.toString() + "\\" + pathInArch;
+        commonNeed = ARCHIVE_DIR + "\\" + pathInArch;
         Path restInArch = Paths.get(commonNeed);
         File[] files = restInArch.toFile().listFiles();
         if(restInCommon.toFile().isDirectory()){
@@ -331,5 +294,42 @@ public class RestoreFromArchives extends SimpleFileVisitor<Path> {
             }
         }
         return FileVisitResult.TERMINATE;
+    }
+    
+    @Override
+    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+        String filePathStr = COMMON_DIR + pathToRestoreAsStr;
+        if (attrs.isRegularFile() && filePathStr.contains(".")) {
+            return fileChecker(filePathStr, file, attrs.lastModifiedTime());
+        }
+        return FileVisitResult.CONTINUE;
+    }
+    
+    /**
+     Копирование из архива.
+     <p>
+     Usages: {@link #fileChecker(String, Path, FileTime)}
+     
+     @param s путь до файла в архиве
+     @throws IOException {@link Files#createDirectories(Path, FileAttribute[])}, {@link Files#copy(Path, OutputStream)}
+     */
+    private void copyFile(String s) throws IOException {
+        String target = s.replace("\\\\192.168.14.10\\IT-Backup\\Srv-Fs\\Archives\\",
+            "\\\\srv-fs.eatmeat.ru\\common_new\\");
+        File tFile = new File(target);
+        String tFPath = tFile.getAbsolutePath().replace(tFile.getName(), "");
+        Files.createDirectories(Paths.get(tFPath));
+        Files.copy(Paths.get(s), tFile.toPath());
+        resultStr
+            .append("Cкопирован сюда: <font color=\"green\">")
+            .append(target)
+            .append("</font><br>");
+    }
+    
+    @Override
+    public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+        String msg = dir + " is visit";
+        LOGGER.info(msg);
+        return FileVisitResult.CONTINUE;
     }
 }

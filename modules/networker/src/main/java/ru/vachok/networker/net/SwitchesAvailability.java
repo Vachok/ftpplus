@@ -2,8 +2,8 @@ package ru.vachok.networker.net;
 
 
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
@@ -31,8 +31,8 @@ public class SwitchesAvailability implements Runnable {
      */
     @SuppressWarnings ("CanBeFinal")
     private List<String> swAddr;
-
-    private String okStr = null;
+    
+    private String okStr;
     
     private MessageToUser messageToUser = new MessageLocal();
     
@@ -51,8 +51,8 @@ public class SwitchesAvailability implements Runnable {
     Set<String> getOkIP() {
         return okIP;
     }
-
-    private String badStr = null;
+    
+    private String badStr;
 
     private final Set<String> okIP = new HashSet<>();
 
@@ -76,7 +76,6 @@ public class SwitchesAvailability implements Runnable {
             } else {
                 String ipStr = poll != null ? poll.toString() : null;
                 badIP.add(ipStr);
-                messageToUser.warn(getClass().getSimpleName(), "testAddresses", ipStr);
             }
         }
         this.okStr = new TForms().fromArray(okIP, false).replaceAll("/", "");
@@ -116,7 +115,7 @@ public class SwitchesAvailability implements Runnable {
         File file = new File("sw.list.log");
         try (OutputStream outputStream = new FileOutputStream(file)) {
             String toWrite = new StringBuilder()
-                .append(new TimeChecker().call().getMessage().toString())
+                .append(new TimeChecker().call().getMessage())
                 .append("\n\n")
                 .append("Online SwitchesWiFi: \n")
                 .append(okIP)

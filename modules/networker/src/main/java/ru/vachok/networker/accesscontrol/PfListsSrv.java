@@ -5,9 +5,9 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
-import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.systray.MessageToTray;
@@ -167,7 +167,7 @@ public class PfListsSrv {
     public String toString() {
         final StringBuilder sb = new StringBuilder("PfListsSrv{");
         sb.append("commandForNatStr='").append(commandForNatStr).append('\'');
-        sb.append(", pfListsInstAW=").append(pfListsInstAW.toString());
+        sb.append(", pfListsInstAW=").append(pfListsInstAW);
         sb.append('}');
         return sb.toString();
     }

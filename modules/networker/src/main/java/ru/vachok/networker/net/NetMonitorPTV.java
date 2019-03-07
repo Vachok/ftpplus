@@ -3,8 +3,8 @@ package ru.vachok.networker.net;
 
 import ru.vachok.messenger.MessageFile;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.VersionInfo;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.OtherKnownDevices;
@@ -29,10 +29,10 @@ public class NetMonitorPTV implements Runnable {
     private static final String CLASS_NAME = NetMonitorPTV.class.getSimpleName();
 
     private VersionInfo versionInfo = AppComponents.versionInfo();
-
-    private OutputStream outputStream = null;
-
-    private PrintWriter printWriter = null;
+    
+    private OutputStream outputStream;
+    
+    private PrintWriter printWriter;
 
     private MessageToUser messageToUser = new MessageLocal();
 

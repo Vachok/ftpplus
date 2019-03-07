@@ -9,11 +9,11 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.ad.user.PCUserResolver;
-import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetScanCtr;
 import ru.vachok.networker.net.NetScannerSvc;
@@ -46,17 +46,17 @@ public class ADSrv implements Runnable {
     /**
      {@link ADUser}
      */
-    private ADUser adUser = null;
+    private ADUser adUser;
 
     /**
      Строка из формы на сайте.
      */
-    private String userInputRaw = null;
+    private String userInputRaw;
 
     /**
      {@link ADComputer}
      */
-    private ADComputer adComputer = null;
+    private ADComputer adComputer;
 
     /**
      @return {@link #adComputer}
@@ -470,7 +470,7 @@ public class ADSrv implements Runnable {
     public String toString() {
         final StringBuilder sb = new StringBuilder("ADSrv{");
         sb.append("CLASS_NAME_PCUSERRESOLVER='").append(ConstantsFor.CLASS_NAME_PCUSERRESOLVER).append('\'');
-        sb.append(", adUser=").append(adUser.toString());
+        sb.append(", adUser=").append(adUser);
         sb.append(", userInputRaw='").append(userInputRaw).append('\'');
         sb.append('}');
         return sb.toString();

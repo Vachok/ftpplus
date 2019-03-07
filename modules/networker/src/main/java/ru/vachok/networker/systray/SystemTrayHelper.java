@@ -3,8 +3,8 @@ package ru.vachok.networker.systray;
 
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.Putty;
@@ -34,8 +34,8 @@ public final class SystemTrayHelper {
     private static final String CLASS_NAME = SystemTrayHelper.class.getSimpleName();
 
     private static final SystemTrayHelper SYSTEM_TRAY_HELPER = new SystemTrayHelper();
-
-    private static @NotNull TrayIcon trayIcon = null;
+    
+    private static @NotNull TrayIcon trayIcon;
 
     /**
      {@link MessageLocal}
@@ -203,7 +203,7 @@ public final class SystemTrayHelper {
         sb.append("IMG_FOLDER_NAME='").append(IMG_FOLDER_NAME).append('\'');
         sb.append(", CLASS_NAME='").append(CLASS_NAME).append('\'');
         sb.append(", trayIcon=").append(trayIcon.hashCode());
-        sb.append(", messageToUser=").append(messageToUser.toString());
+        sb.append(", messageToUser=").append(messageToUser);
         sb.append('}');
         return sb.toString();
     }

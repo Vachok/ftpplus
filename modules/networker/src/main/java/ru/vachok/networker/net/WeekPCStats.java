@@ -2,8 +2,8 @@ package ru.vachok.networker.net;
 
 
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.systray.MessageToTray;
@@ -70,7 +70,7 @@ public class WeekPCStats implements Runnable {
                     .append(") ")
                     .append(r.getString(2))
                     .append(" ")
-                    .append(r.getString(3)).toString());
+                    .append(r.getString(3)));
                 PC_NAMES_IN_TABLE.add(r.getString(2) + " " + r.getString(3));
             }
             String msgTimeSp = new StringBuilder()

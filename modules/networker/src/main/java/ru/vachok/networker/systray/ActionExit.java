@@ -2,8 +2,8 @@ package ru.vachok.networker.systray;
 
 
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ExitApp;
-import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 

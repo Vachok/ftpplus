@@ -3,10 +3,10 @@ package ru.vachok.networker.net;
 
 import org.springframework.ui.Model;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.user.PCUserResolver;
-import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
@@ -20,10 +20,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 
 /**
@@ -72,12 +69,11 @@ class ConditionChecker {
         StringBuilder stringBuilder = new StringBuilder();
         String classMeth = "ConditionChecker.onLinesCheck";
     
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (
+            PreparedStatement statement = connection.prepareStatement(sql)) {
             Runnable r = () -> pcUserResolver.namesToFile(pcName);
-            Future<?> submit = AppComponents.threadConfig().getTaskExecutor().submit(r);
-            submit.get(ConstantsFor.DELAY * 2, TimeUnit.SECONDS);
+            AppComponents.threadConfig().executeAsThread(r);
             statement.setString(1, pcName);
-            stringBuilder.append(submit.isDone()).append(" names resolved");
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
                     ADComputer adComputer = new ADComputer();
@@ -95,7 +91,7 @@ class ConditionChecker {
             messageToUser.errorAlert(CLASS_NAME, "onLinesCheck", e.getMessage());
             FileSystemWorker.error(classMeth, e);
             stringBuilder.append(e.getMessage());
-        } catch (NullPointerException | InterruptedException | ExecutionException | TimeoutException e) {
+        } catch (NullPointerException e) {
             stringBuilder.append(e.getMessage());
         }
         return stringBuilder
@@ -143,7 +139,7 @@ class ConditionChecker {
             FileSystemWorker.error("ConditionChecker.offLinesCheckUser", e);
             stringBuilder.append(e.getMessage());
         }
-        return "<font color=\"orange\">EXCEPTION in SQL dropped. <br>" + stringBuilder.toString() + "</font>";
+        return "<font color=\"orange\">EXCEPTION in SQL dropped. <br>" + stringBuilder + "</font>";
     }
 
     static void qerNotNullScanAllDevices(Model model, HttpServletResponse response) {

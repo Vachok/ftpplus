@@ -20,8 +20,7 @@ import java.util.concurrent.ConcurrentMap;
 /**
  @since 22.09.2018 (13:36) */
 @Component(ConstantsNet.BEANNAME_LASTNETSCAN)
-public
-class LastNetScan implements Serializable {
+public class LastNetScan implements Serializable {
 
     private static final long serialVersionUID = 1984L;
 
@@ -51,10 +50,10 @@ class LastNetScan implements Serializable {
      */
     public void setTimeLastScan(Date timeLastScan) {
         this.timeLastScan = timeLastScan;
-        new MessageCons().infoNoTitles("LastNetScan.setTimeLastScan\n" + timeLastScan.toString());
+        new MessageCons().infoNoTitles("LastNetScan.setTimeLastScan\n" + timeLastScan);
     }
-
-    ConcurrentMap<String, Boolean> getNetWork() {
+    
+    public ConcurrentMap<String, Boolean> getNetWork() {
         return netWork;
     }
 

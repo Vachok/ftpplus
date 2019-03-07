@@ -5,8 +5,8 @@ import org.slf4j.Logger;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.net.enums.ConstantsNet;
 
 import java.io.*;
@@ -33,10 +33,10 @@ public class CommonScan2YOlder extends SimpleFileVisitor<Path> implements Callab
     private String date;
 
     private String startPath;
-
-    private long dirsCounter = 0L;
-
-    private long filesCounter = 0L;
+    
+    private long dirsCounter;
+    
+    private long filesCounter;
 
     private StringBuilder msgBuilder = new StringBuilder();
 
@@ -123,7 +123,7 @@ public class CommonScan2YOlder extends SimpleFileVisitor<Path> implements Callab
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
         this.filesCounter = filesCounter + 1;
-        String fileAbs = file.toAbsolutePath().toString() + ConstantsFor.STR_DELETED;
+        String fileAbs = file.toAbsolutePath() + ConstantsFor.STR_DELETED;
         if (more2MBOld(attrs)) {
             Files.setAttribute(file, ConstantsFor.DOS_ARCHIVE, true);
             printWriter.println(file.toAbsolutePath()

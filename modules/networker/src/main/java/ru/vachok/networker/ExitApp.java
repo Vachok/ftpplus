@@ -3,7 +3,6 @@ package ru.vachok.networker;
 
 import org.springframework.context.ConfigurableApplicationContext;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.DiapazonedScan;
@@ -190,7 +189,7 @@ public class ExitApp implements Runnable {
      {@link System#exit(int)} int = <i>uptime</i> в минутах.
      */
     private void exitAppDO() {
-        stringList.add("exit at " + LocalDateTime.now().toString() + ConstantsFor.getUpTime());
+        stringList.add("exit at " + LocalDateTime.now() + ConstantsFor.getUpTime());
         FileSystemWorker.writeFile("exit.last", stringList.stream());
         FileSystemWorker.delTemp();
         getConfigurableApplicationContext().close();
