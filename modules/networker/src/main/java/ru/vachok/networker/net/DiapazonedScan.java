@@ -292,18 +292,18 @@ public class DiapazonedScan implements Runnable {
         StringBuilder fileTimes = new StringBuilder();
         messageToUser.warn("DiapazonedScan.theInfoToString", "ROOT_PATH_STR", " = " + ROOT_PATH_STR);
         try {
-            String atStr = " size in kb: ";
+            String atStr = " size in bytes: ";
     
             fileTimes
                 .append(ConstantsNet.FILENAME_AVAILABLELASTTXT)
                 .append(atStr)
-                .append(Paths.get(ConstantsNet.FILENAME_AVAILABLELASTTXT).toFile().length() / ConstantsFor.KBYTE)
+                .append(Paths.get(ConstantsNet.FILENAME_AVAILABLELASTTXT).toFile().length())
                 .append("<br>\n").append(ConstantsNet.FILENAME_OLDLANTXT)
                 .append(atStr)
-                .append(Paths.get(ConstantsNet.FILENAME_OLDLANTXT).toFile().length() / ConstantsFor.KBYTE)
+                .append(Paths.get(ConstantsNet.FILENAME_OLDLANTXT).toFile().length())
                 .append("<br>\n");
     
-            this.srvFiles.forEach(x->fileTimes.append(x.getName()).append(atStr).append(x.length() / ConstantsFor.KBYTE).append("<br>"));
+            this.srvFiles.forEach(x->fileTimes.append(x.getName()).append(atStr).append(x.length()).append("<br>"));
         } catch (NullPointerException e) {
             messageToUser.info("NO FILES!");
         }
