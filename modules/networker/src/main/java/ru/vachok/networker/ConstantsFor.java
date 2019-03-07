@@ -384,6 +384,8 @@ public enum ConstantsFor {
      */
     private static final MessageToUser messageToUser = new MessageLocal();
     
+    static final String STR_FINISH = " is finish";
+    
     /**
      @return {@link #MAIL_RULES}
      */

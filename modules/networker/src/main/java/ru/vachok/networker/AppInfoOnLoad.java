@@ -41,37 +41,38 @@ import java.util.concurrent.TimeUnit;
  Информация и шедулеры.
  <p>
  Перемещено из {@link IntoApplication}.
-
+ 
  @since 19.12.2018 (9:40) */
 public class AppInfoOnLoad implements Runnable {
-
+    
+    
     /**
      {@link Class#getSimpleName()}
      */
     private static final String CLASS_NAME = AppInfoOnLoad.class.getSimpleName();
-
+    
     /**
      Задержка выполнения для этого класса
-
+     
      @see #schedStarter()
      */
     private static final int THIS_DELAY = 111;
-
+    
     /**
      {@link AppComponents#getOrSetProps()}
      */
     private static final Properties APP_PROPS = AppComponents.getOrSetProps();
-
+    
     /**
      " uptime."
      */
     private static final String STR_UPTIME = " uptime.";
-
+    
     /**
      {@link MessageCons}
      */
     private static final MessageToUser messageToUser = new MessageLocal();
-
+    
     /**
      Для записи результата работы класса.
      */
@@ -85,6 +86,27 @@ public class AppInfoOnLoad implements Runnable {
     private final TemporaryFullInternet temporaryFullInternet = new AppComponents().temporaryFullInternet();
     
     /**
+     Получение размера логов IIS-Exchange.
+     <p>
+     Путь до папки из {@link #APP_PROPS} iispath. <br> {@code Path iisLogsDir} = {@link Objects#requireNonNull(java.lang.Object)} -
+     {@link Path#toFile()}.{@link File#listFiles()}. <br> Для каждого
+     файла из папки, {@link File#length()}. Складываем {@code totalSize}. <br> {@code totalSize/}{@link ConstantsFor#MBYTE}.
+ 
+     @return размер папки логов IIS в мегабайтах
+     */
+    @SuppressWarnings("StaticMethodOnlyUsedInOneClass")
+    public static String iisLogSize() {
+        Path iisLogsDir = Paths.get(APP_PROPS.getProperty("iispath", "\\\\srv-mail3.eatmeat.ru\\c$\\inetpub\\logs\\LogFiles\\W3SVC1\\"));
+        long totalSize = 0L;
+        for (File x : Objects.requireNonNull(iisLogsDir.toFile().listFiles())) {
+            totalSize += x.length();
+        }
+        String s = totalSize / ConstantsFor.MBYTE + " MB IIS Logs\n";
+        miniLogger.add(s);
+        return s;
+    }
+    
+    /**
      Очистка pcuserauto
      */
     private static void trunkTableUsers() {
@@ -96,28 +118,7 @@ public class AppInfoOnLoad implements Runnable {
             miniLogger.add("TRUNCATE false\n" + ConstantsFor.getUpTime() + STR_UPTIME);
         }
     }
-
-    /**
-     Получение размера логов IIS-Exchange.
-     <p>
-     Путь до папки из {@link #APP_PROPS} iispath. <br> {@code Path iisLogsDir} = {@link Objects#requireNonNull(java.lang.Object)} -
-     {@link Path#toFile()}.{@link File#listFiles()}. <br> Для каждого
-     файла из папки, {@link File#length()}. Складываем {@code totalSize}. <br> {@code totalSize/}{@link ConstantsFor#MBYTE}.
-
-     @return размер папки логов IIS в мегабайтах
-     */
-    @SuppressWarnings ("StaticMethodOnlyUsedInOneClass")
-    public static String iisLogSize() {
-        Path iisLogsDir = Paths.get(APP_PROPS.getProperty("iispath", "\\\\srv-mail3.eatmeat.ru\\c$\\inetpub\\logs\\LogFiles\\W3SVC1\\"));
-        long totalSize = 0L;
-        for (File x : Objects.requireNonNull(iisLogsDir.toFile().listFiles())) {
-            totalSize += x.length();
-        }
-        String s = totalSize / ConstantsFor.MBYTE + " MB IIS Logs\n";
-        miniLogger.add(s);
-        return s;
-    }
-
+    
     /**
      Сборщик прав \\srv-fs.eatmeat.ru\common_new
      <p>
@@ -139,13 +140,13 @@ public class AppInfoOnLoad implements Runnable {
         }
         commonRightsMetrics(stMeth);
     }
-
+    
     /**
      Метрика метода
      <p>
      Считает время выполнения.
-
-     @param stArt    таймстэмп начала работы
+     
+     @param stArt таймстэмп начала работы
      @param methName имя метода
      @return float {@link System#currentTimeMillis()} - таймстэмп из параметра, делённый на 1000.
      */
@@ -225,42 +226,42 @@ public class AppInfoOnLoad implements Runnable {
      3. {@link #checkDay(ScheduledExecutorService)} метрика. <br>
      4. {@link #checkDay(java.util.concurrent.ScheduledExecutorService)}. Выведем сообщение, когда и что ствртует.
      <p>
-
+ 
      @param scheduledExecutorService {@link ScheduledExecutorService}.
      */
     @SuppressWarnings("MagicNumber")
     private static void dateSchedulers(ScheduledExecutorService scheduledExecutorService) {
         long stArt = System.currentTimeMillis();
         long delay = TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY_HOURS * 7);
-
+    
         String classMeth = "AppInfoOnLoad.dateSchedulers";
         String exitLast = "No file";
         AppComponents.threadConfig().thrNameSet("dateSch");
         Date nextStartDay = MyCalen.getNextDayofWeek(23, 57, DayOfWeek.SUNDAY);
         StringBuilder stringBuilder = new StringBuilder();
         ThreadPoolTaskScheduler threadPoolTaskScheduler = AppComponents.threadConfig().getTaskScheduler();
-
+    
         threadPoolTaskScheduler.scheduleWithFixedDelay(new WeekPCStats(), nextStartDay, delay);
         stringBuilder.append(nextStartDay).append(" WeekPCStats() start\n");
         nextStartDay = new Date(nextStartDay.getTime() - TimeUnit.HOURS.toMillis(1));
-
+    
         threadPoolTaskScheduler.scheduleWithFixedDelay(new MailIISLogsCleaner(), nextStartDay, delay);
         stringBuilder.append(nextStartDay).append(" MailIISLogsCleaner() start\n");
     
         if (new File("exit.last").exists()) {
             exitLast = new TForms().fromArray(FileSystemWorker.readFileToList("exit.last"), false);
         }
-
+    
         stringBuilder.append("\n").append(methMetr(stArt, classMeth));
         exitLast = exitLast + "\n" + checkDay(scheduledExecutorService) + "\n" + stringBuilder;
         miniLogger.add(exitLast);
-    
+        messageToUser.info(AppInfoOnLoad.class.getSimpleName() + ConstantsFor.STR_FINISH);
         FileSystemWorker.writeFile(CLASS_NAME + ".mini", miniLogger.stream());
     }
-
+    
     /**
      Немного инфомации о приложении.
-
+     
      @param appCtx {@link ApplicationContext}
      */
     @SuppressWarnings("DuplicateStringLiteralInspection")
@@ -271,11 +272,11 @@ public class AppInfoOnLoad implements Runnable {
         stringBuilder.append(appCtx.getDisplayName());
         stringBuilder.append(" app display name\n");
         stringBuilder.append(ConstantsFor.getBuildStamp());
-        AppInfoOnLoad.messageToUser.info("AppInfoOnLoad.infoForU", "stringBuilder", " = " + stringBuilder);
+        AppInfoOnLoad.messageToUser.info("AppInfoOnLoad.infoForU", ConstantsFor.STR_FINISH, " = " + stringBuilder);
         AppInfoOnLoad.miniLogger.add("infoForU ends. now schedStarter(). Result: " + stringBuilder);
         schedStarter();
     }
-
+    
     /**
      Запуск заданий по-расписанию
      <p>
@@ -299,7 +300,7 @@ public class AppInfoOnLoad implements Runnable {
         scheduledExecutorService.scheduleWithFixedDelay(temporaryFullInternet, 1, ConstantsFor.DELAY, TimeUnit.MINUTES);
         scheduledExecutorService.scheduleWithFixedDelay(DiapazonedScan.getInstance(), 2, AppInfoOnLoad.THIS_DELAY, TimeUnit.MINUTES);
         scheduledExecutorService.scheduleWithFixedDelay(new ScanOnline(), 3, 1, TimeUnit.MINUTES);
-        scheduledExecutorService.scheduleWithFixedDelay(() -> AppComponents.getOrSetProps(true), 4, ConstantsFor.DELAY, TimeUnit.MINUTES);
+        scheduledExecutorService.scheduleWithFixedDelay(()->AppComponents.getOrSetProps(true), 4, ConstantsFor.DELAY, TimeUnit.MINUTES);
         String msg = new StringBuilder()
             .append(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(AppInfoOnLoad.THIS_DELAY)))
             .append(DiapazonedScan.getInstance().getClass().getSimpleName())
@@ -313,6 +314,7 @@ public class AppInfoOnLoad implements Runnable {
         AppInfoOnLoad.miniLogger.add(DiapazonedScan.getInstance().getClass().getSimpleName() + " init delay 2, delay " + AppInfoOnLoad.THIS_DELAY + minutesStr);
         AppInfoOnLoad.miniLogger.add(ScanOnline.class.getSimpleName() + " init delay 3, delay 1. MINUTES");
         AppInfoOnLoad.miniLogger.add(AppComponents.class.getSimpleName() + ".getOrSetProps(true) 4, ConstantsFor.DELAY, TimeUnit.MINUTES");
+        messageToUser.info(AppInfoOnLoad.class.getSimpleName() + ".schedStarter()" + ConstantsFor.STR_FINISH);
         AppInfoOnLoad.dateSchedulers(scheduledExecutorService);
     }
     
@@ -327,7 +329,7 @@ public class AppInfoOnLoad implements Runnable {
         ConstantsFor.INFO_MSG_RUNNABLE.run();
         AppComponents.threadConfig().executeAsThread(AppInfoOnLoad::starterTelnet);
     }
-
+    
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("AppInfoOnLoad{");
