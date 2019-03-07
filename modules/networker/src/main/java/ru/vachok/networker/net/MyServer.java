@@ -112,7 +112,8 @@ public class MyServer extends Thread {
         InputStreamReader reader = new InputStreamReader(inputStream);
         BufferedReader bufferedReader = new BufferedReader(reader);
         printStream.println((System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN + " min up | " + ConstantsFor.APPNAME_WITHMINUS);
-        printStream.println(Thread.activeCount() + " active THREADS");
+        printStream.println(AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor());
+        printStream.println(AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor());
         printStream.println(ConstantsFor.getMemoryInfo());
         printStream.println("Press Enter or enter command:\n");
         String readLine = bufferedReader.readLine();

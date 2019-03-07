@@ -40,7 +40,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
      */
     private static MessageToUser messageToUser = new MessageLocal(FileSystemWorker.class.getSimpleName());
     
-    public static synchronized boolean writeFile(String fileName, Stream<String> toFileRec) {
+    public static boolean writeFile(String fileName, Stream<String> toFileRec) {
         try (OutputStream outputStream = new FileOutputStream(fileName);
              PrintStream printStream = new PrintStream(outputStream, true)) {
             printStream.println(new Date(ConstantsFor.getAtomicTime()));
@@ -61,7 +61,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
      {@link ru.vachok.networker.net.MyServer#reconSock()}. <br>
      Uses: {@link CommonScan2YOlder} <br>
      */
-    public static synchronized void delTemp() {
+    public static void delTemp() {
         try {
             Files.walkFileTree(Paths.get("."), new DeleterTemp());
         } catch (IOException e) {
@@ -86,7 +86,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
             List<String> fileSearcherResList = fileSearcher.getResList();
             String resTo = new TForms().fromArray(fileSearcherResList, true);
             if (fileSearcherResList.size() > 0) {
-                FileSystemWorker.writeFile("search.last", fileSearcherResList.stream());
+                writeFile("search.last", fileSearcherResList.stream());
             }
             return resTo;
         } catch (Exception e) {
@@ -102,7 +102,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
      @param needDel                удалить или нет исходник
      @return удача/нет
      */
-    public static synchronized boolean copyOrDelFile(File origFile, String pathToCopyWithFileName, boolean needDel) {
+    public static boolean copyOrDelFile(File origFile, String pathToCopyWithFileName, boolean needDel) {
         File toCpFile = new File(pathToCopyWithFileName);
         try {
             Path targetPath = toCpFile.toPath();
@@ -112,7 +112,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
             if (needDel) {
                 Files.deleteIfExists(origFile.toPath());
             }
-            String msg = directories + " getParent directory. " + copy.toString() + " " + toCpFile.exists();
+            String msg = directories + " getParent directory. " + copy + " " + toCpFile.exists();
             messageToUser.info(msg);
         } catch (IOException | NullPointerException e) {
             messageToUser.error(FileSystemWorker.class.getSimpleName(), e.getMessage(), new TForms().fromArray(e, false));
@@ -200,10 +200,10 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
      @param fileName  имя файла
      @param toFileRec {@link List} строчек на запись.
      */
-    public static synchronized void writeFile(String fileName, List<String> toFileRec) {
+    public static void writeFile(String fileName, List<String> toFileRec) {
         try (OutputStream outputStream = new FileOutputStream(fileName);
              PrintWriter printWriter = new PrintWriter(outputStream, true)) {
-            printWriter.println(new Date(ConstantsFor.getAtomicTime()).toString());
+            printWriter.println(new Date(ConstantsFor.getAtomicTime()));
             toFileRec.forEach(printWriter::println);
         } catch (IOException e) {
             messageToUser.error(FileSystemWorker.class.getSimpleName(), e.getMessage(), new TForms().fromArray(e, false));
@@ -238,7 +238,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
      @param classMeth класс метод.
      @param e         исключение
      */
-    public static synchronized void error(String classMeth, Exception e) {
+    public static void error(String classMeth, Exception e) {
         File f = new File(classMeth + "_" + LocalTime.now().toSecondOfDay() + FILEEXT_LOG);
     
         try (OutputStream outputStream = new FileOutputStream(f)) {
@@ -250,7 +250,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         copyOrDelFile(f, ".\\err\\" + f.getName(), true);
     }
     
-    private static synchronized boolean printTo(OutputStream outputStream, Exception e) {
+    private static boolean printTo(OutputStream outputStream, Exception e) {
         try (PrintStream printStream = new PrintStream(outputStream, true)) {
             printStream.println(new Date(new TimeChecker().call().getReturnTime()));
             printStream.println();

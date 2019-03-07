@@ -85,8 +85,8 @@ public class SSHFactory implements Callable<String> {
     public void setCommandSSH(String commandSSH) {
         this.commandSSH = commandSSH;
     }
-
-    private SSHFactory(Builder builder) {
+    
+    private SSHFactory(SSHFactory.Builder builder) {
         this.connectToSrv = builder.connectToSrv;
         this.commandSSH = builder.commandSSH;
         this.sessionType = builder.sessionType;
@@ -201,7 +201,7 @@ public class SSHFactory implements Callable<String> {
         recList.add(toString());
         recList.add(builderToStr);
         File file = new File(classCaller + "_" + System.currentTimeMillis() + ".ssh");
-        FileSystemWorker.writeFile(file.getName(), recList.stream());
+        FileSystemWorker.writeFile(file.getName(), recList);
         FileSystemWorker.copyOrDelFile(file, ".\\ssh\\" + file.getName(), true);
         return stringBuilder.toString();
     }
@@ -281,7 +281,7 @@ public class SSHFactory implements Callable<String> {
          @param userName the user name
          @return the user name
          */
-        public Builder setUserName(String userName) {
+        public SSHFactory.Builder setUserName(String userName) {
             this.userName = userName;
             return this;
         }
@@ -310,7 +310,7 @@ public class SSHFactory implements Callable<String> {
          @param sessionType the session type
          @return the session type
          */
-        public Builder setSessionType(String sessionType) {
+        public SSHFactory.Builder setSessionType(String sessionType) {
             this.sessionType = sessionType;
             return this;
         }
@@ -330,7 +330,7 @@ public class SSHFactory implements Callable<String> {
          @param commandSSH the command ssh
          @return the command ssh
          */
-        public Builder setCommandSSH(String commandSSH) {
+        public SSHFactory.Builder setCommandSSH(String commandSSH) {
             this.commandSSH = commandSSH;
             return this;
         }
@@ -350,7 +350,7 @@ public class SSHFactory implements Callable<String> {
          @param connectToSrv the connect to srv
          @return the connect to srv
          */
-        public Builder setConnectToSrv(String connectToSrv) {
+        public SSHFactory.Builder setConnectToSrv(String connectToSrv) {
             this.connectToSrv = connectToSrv;
             return this;
         }
@@ -361,7 +361,7 @@ public class SSHFactory implements Callable<String> {
          @param pass the pass
          @return the pass
          */
-        public Builder setPass(String pass) {
+        public SSHFactory.Builder setPass(String pass) {
             this.pass = pass;
             return this;
         }
@@ -371,11 +371,11 @@ public class SSHFactory implements Callable<String> {
             if(this==o){
                 return true;
             }
-            if(!(o instanceof Builder)){
+            if (!(o instanceof SSHFactory.Builder)) {
                 return false;
             }
-
-            Builder builder = ( Builder ) o;
+    
+            SSHFactory.Builder builder = (SSHFactory.Builder) o;
 
             if(!getUserName().equals(builder.getUserName())){
                 return false;

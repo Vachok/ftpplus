@@ -128,21 +128,22 @@ class NetScanFileWorker {
             boolean oldLanLastScanNewFile = oldLanLastScan.createNewFile();
             msg = oldLanLastScanNewFile + " " + msg;
         }
-        srvFiles.forEach(srvFileX -> {
-            if (srvFileX.exists() && srvFileX.canRead()) {
-                retDeque.addAll(FileSystemWorker.readFileToList(srvFileX.getAbsolutePath()));
-                messageToUser.info(classMeth, titleMsg, " = " + retDeque.size());
-            } else {
-                boolean srvScanFile = false;
-                try {
-                    srvScanFile = srvFileX.createNewFile();
-                } catch (IOException e) {
-                    messageToUser.errorAlert("NetScanFileWorker", "getListOfOnlineDev", e.getMessage());
-                    FileSystemWorker.error(classMeth, e);
+        if (srvFiles != null) {
+            srvFiles.stream().forEach(srvFileX->{
+                if (srvFileX.exists() && srvFileX.canRead()) {
+                    retDeque.addAll(FileSystemWorker.readFileToList(srvFileX.getAbsolutePath()));
+                    messageToUser.info(classMeth, titleMsg, " = " + retDeque.size());
+                } else {
+                    boolean srvScanFile = false;
+                    try {
+                        srvScanFile = srvFileX.createNewFile();
+                    } catch (IOException e) {
+                        messageToUser.errorAlert("NetScanFileWorker", "getListOfOnlineDev", e.getMessage());
+                    }
+                    messageToUser.info(srvFileX.getAbsolutePath(), " is new file? ", new StringBuilder().append(" = ").append(srvScanFile).toString());
                 }
-                messageToUser.info(srvFileX.getAbsolutePath(), " is new file? ", " = " + srvScanFile);
-            }
-        });
+            });
+        }
         messageToUser.info(msg + " " + retDeque.size(), "positions] [Returns:", "java.util.Deque<java.lang.String>");
         return retDeque;
     }

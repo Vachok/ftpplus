@@ -335,7 +335,6 @@ public class AppInfoOnLoad implements Runnable {
         final StringBuilder sb = new StringBuilder("AppInfoOnLoad{");
         sb.append("miniLogger=").append(new TForms().fromArray(AppInfoOnLoad.miniLogger, false));
         sb.append('}');
-        FileSystemWorker.writeFile(getClass().getSimpleName() + ".mini", AppInfoOnLoad.miniLogger.stream());
         return sb.toString();
     }
 }

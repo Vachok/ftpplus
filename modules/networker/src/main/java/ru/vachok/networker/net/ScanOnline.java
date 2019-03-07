@@ -16,7 +16,7 @@ import java.time.LocalTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.*;
 
 
 /**
@@ -46,8 +46,14 @@ public class ScanOnline implements Runnable {
     private void offlineNotEmptyActions() {
         AppComponents.threadConfig().thrNameSet("scOffNE");
         SwitchesAvailability switchesAvailability = new SwitchesAvailability();
-        switchesAvailability.run();
-        
+        final Future<?> submit = AppComponents.threadConfig().getTaskExecutor().submit(switchesAvailability);
+        try {
+            submit.get(ConstantsFor.DELAY * 2, TimeUnit.SECONDS);
+        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+        }
+    
         Set<String> availabilityOkIP = switchesAvailability.getOkIP();
         availabilityOkIP.forEach(x -> {
             onLinesResolve.put(x, LocalDateTime.now().toString());
@@ -55,7 +61,6 @@ public class ScanOnline implements Runnable {
     }
     
     private void runPing(List<InetAddress> onList) {
-        AppComponents.threadConfig().executeAsThread(() -> NET_LIST_KEEPER.readMap());
         String clMt = "ScanOnline.runPing. IPs to ping: " + onList.size();
         messageToUser.infoNoTitles(clMt);
         for (InetAddress inetAddress : onList) {

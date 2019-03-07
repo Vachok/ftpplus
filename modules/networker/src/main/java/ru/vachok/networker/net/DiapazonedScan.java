@@ -51,7 +51,7 @@ public class DiapazonedScan implements Runnable {
     /**
      Повторения.
      */
-    private static final String FONT_BR_STR = "</font><br>";
+    private static final String FONT_BR_STR = "</font><br>\n";
     
     private static final int MAX_IN_VLAN_INT = 255;
     
@@ -73,7 +73,7 @@ public class DiapazonedScan implements Runnable {
     
     private long stArt;
     
-    private final List<File> srvFiles = new ArrayList<>();
+    private List<File> srvFiles = new ArrayList<>();
     
     /**
      Приватный конструктор
@@ -258,15 +258,6 @@ public class DiapazonedScan implements Runnable {
         AppComponents.threadConfig().executeAsThread(srv19);
         AppComponents.threadConfig().executeAsThread(srv27);
         AppComponents.threadConfig().executeAsThread(srv41);
-    
-        this.srvFiles.forEach(x->{
-            String pathWName = ".\\lan\\" + x.getName().replace(".txt", "_" + LocalTime.now().toSecondOfDay() + ".scan");
-        
-            boolean isFileCopied = FileSystemWorker.copyOrDelFile(x, pathWName, false);
-            messageToUser.info(classMeth, x.getAbsolutePath(), "Copy = " + isFileCopied);
-            this.stopClassStampLong = System.currentTimeMillis();
-        });
-    
         NET_SCAN_FILE_WORKER_INST.setSrvFiles(this.srvFiles);
         messageToUser.info("DiapazonedScan.scanServers", "new TForms().fromArray(srvFiles, false)", " = " + new TForms().fromArray(this.srvFiles, false));
     }
@@ -303,7 +294,7 @@ public class DiapazonedScan implements Runnable {
                 .append(Paths.get(ConstantsNet.FILENAME_OLDLANTXT).toFile().length())
                 .append("<br>\n");
     
-            this.srvFiles.forEach(x->fileTimes.append(x.getName()).append(atStr).append(x.length()).append("<br>"));
+            this.srvFiles.stream().forEach(x->fileTimes.append(x.getName()).append(atStr).append(x.length()).append("<br>\n"));
         } catch (NullPointerException e) {
             messageToUser.info("NO FILES!");
         }
@@ -319,7 +310,7 @@ public class DiapazonedScan implements Runnable {
             .append(" %)");
         sb.append("</a>}");
         sb.append(" ROOT_PATH_STR= ").append(ROOT_PATH_STR);
-        sb.append("<br>fileTimes=<br> ").append(fileTimes);
+        sb.append("<br><b>\nfileTimes= </b><br>").append(fileTimes);
         return sb.toString();
     }
     
@@ -377,7 +368,7 @@ public class DiapazonedScan implements Runnable {
     private class Vlans1010ToScan implements Runnable {
     
     
-        private final File srvFile;
+        private File srvFile;
         
         private int toVlan;
         
@@ -388,12 +379,24 @@ public class DiapazonedScan implements Runnable {
             this.fromVlan = fromVlan;
             this.toVlan = toVlan;
         }
-        
+    
+        private void cpFile() {
+            final String classMeth = "Vlans1010ToScan.cpFile";
+            String pathWName = ".\\lan\\" + srvFile.getName().replace(".txt", "_" + LocalTime.now().toSecondOfDay() + ".scan");
+            boolean isFileCopied = FileSystemWorker.copyOrDelFile(srvFile, pathWName, false);
+            messageToUser.info(classMeth, srvFile.getAbsolutePath(), "Copy = " + isFileCopied);
+            stopClassStampLong = System.currentTimeMillis();
+        }
+    
         @Override
         public void run() {
+            AppComponents.threadConfig().thrNameSet("vlans:" + fromVlan + "-" + toVlan);
+            final String classMeth = "Vlans1010ToScan.run";
+            messageToUser.info(classMeth, "srvFile+\":\"+fromVlan+\"-\"+toVlan", " = " + srvFile + ":" + fromVlan + "-" + toVlan);
             try (OutputStream outputStream = new FileOutputStream(this.srvFile);
                  PrintWriter printWriter = new PrintWriter(outputStream, true)) {
                 DiapazonedScan.this.scanLan(printWriter, this.fromVlan, this.toVlan, DiapazonedScan.this.stArt, "10.10.");
+                cpFile();
             } catch (IOException e) {
                 messageToUser.errorAlert(getClass().getSimpleName(), "scanServers", e.getMessage());
                 FileSystemWorker.error("run", e);

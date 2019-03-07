@@ -8,6 +8,7 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.DiapazonedScan;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
+import ru.vachok.networker.systray.MessageToTray;
 
 import java.io.*;
 import java.time.LocalDateTime;
@@ -72,10 +73,10 @@ public class ExitApp implements Runnable {
     /**
      Сохранение состояния объектов.
      <p>
-     
-     @param reasonExit  причина выхода
+ 
+     @param reasonExit причина выхода
      @param toWriteObj, {@link Object}  для сохранения на диск
-     @param out         если требуется сохранить состояние
+     @param out если требуется сохранить состояние
      */
     public ExitApp(String reasonExit, FileOutputStream out, Object toWriteObj) {
         this.reasonExit = reasonExit;
@@ -134,7 +135,7 @@ public class ExitApp implements Runnable {
         FileSystemWorker.copyOrDelFile(new File(ConstantsNet.FILENAME_OLDLANTXT),
             new StringBuilder().append(".\\lan\\old_lan_").append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
         List<File> srvFiles = DiapazonedScan.getInstance().getSrvFiles();
-        srvFiles.forEach(file -> {
+        srvFiles.stream().forEach(file->{
             FileSystemWorker.copyOrDelFile(file,
                 new StringBuilder()
                     .append(".\\lan\\")
@@ -197,12 +198,28 @@ public class ExitApp implements Runnable {
         System.exit(Math.toIntExact(toMinutes));
     }
     
+    private void readCommit(File file) {
+        if (file != null || file.length() > 10) {
+            final String readFile = file.getAbsolutePath();
+            new MessageToTray().info("ExitApp.readCommit", "commit", " = " + readFile);
+        } else {
+            messageToUser.info("ExitApp.readCommit", "null", " = " + file.getName());
+        }
+    }
+    
     /**
      {@link #copyAvail()}
      */
     @Override
     public void run() {
         AppComponents.threadConfig().thrNameSet("exit");
+        File commitFile = new File("G:\\My_Proj\\FtpClientPlus\\modules\\networker\\src\\main\\resources\\commit.msg");
+        if (!commitFile.exists()) {
+            commitFile = new File("C:\\Users\\ikudryashov\\IdeaProjects\\spring\\modules\\networker\\commit.msg");
+        } else {
+            messageToUser.info("NO FILES COMMIT");
+        }
+        readCommit(commitFile);
         stringList.add(reasonExit);
         AppComponents.getOrSetProps(true);
         copyAvail();

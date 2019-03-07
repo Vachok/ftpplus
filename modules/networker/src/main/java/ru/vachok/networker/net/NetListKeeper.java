@@ -13,10 +13,7 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
@@ -58,8 +55,8 @@ public class NetListKeeper {
     void readMap() {
         try (InputStream inputStream = new FileInputStream("on.map");
              ObjectInputStream objectInputStream = new ObjectInputStream(inputStream)) {
-            ConcurrentMap<String, String> stringStringConcurrentMap = (ConcurrentMap<String, String>) objectInputStream.readObject();
-            onLinesResolve.putAll(stringStringConcurrentMap);
+            Map<String, String> fromFileMap = (ConcurrentMap<String, String>) objectInputStream.readObject();
+            onLinesResolve.putAll(fromFileMap);
         } catch (IOException | ClassNotFoundException e) {
             messageToUser.errorAlert("NetListKeeper", "readMap", e.getMessage());
             FileSystemWorker.error("NetListKeeper.readMap", e);

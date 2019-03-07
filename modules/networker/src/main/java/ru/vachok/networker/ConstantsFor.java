@@ -524,8 +524,8 @@ public enum ConstantsFor {
         Future<Boolean> booleanFuture = AppComponents.threadConfig().getTaskExecutor().submit(theProphecy);
     
         try {
-            retBool.set(booleanFuture.get());
-        } catch (InterruptedException | ExecutionException e) {
+            retBool.set(booleanFuture.get(DELAY, TimeUnit.SECONDS));
+        } catch (InterruptedException | ExecutionException | TimeoutException e) {
             messageToUser.errorAlert(ConstantsFor.class.getSimpleName(), methName, e.getMessage());
             FileSystemWorker.error(classMeth, e);
             Thread.currentThread().interrupt();
@@ -623,7 +623,7 @@ public enum ConstantsFor {
             delay = MIN_DELAY;
         }
         if (thisPC().toLowerCase().contains("no") || thisPC().toLowerCase().contains("home")) {
-            return 6;
+            return MIN_DELAY;
         } else {
             return delay;
         }
