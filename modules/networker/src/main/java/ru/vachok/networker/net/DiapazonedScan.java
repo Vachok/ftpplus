@@ -252,7 +252,7 @@ public class DiapazonedScan implements Runnable {
     
         srvFile = new File("41v_" + ConstantsNet.FILENAME_SERVTXT);
         this.srvFiles.add(srvFile);
-        Runnable srv41 = new Vlans1010ToScan(srvFile, 41, 42);
+        Runnable srv41 = new Vlans1010ToScan(srvFile, 41, 50);
     
         AppComponents.threadConfig().executeAsThread(srv11);
         AppComponents.threadConfig().executeAsThread(srv19);
