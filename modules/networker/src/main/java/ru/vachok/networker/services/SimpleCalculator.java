@@ -33,9 +33,9 @@ public class SimpleCalculator {
     private String getStampFromDate() {
         boolean setTo = query.toLowerCase().contains("s");
         if(setTo){
-            query = query.replaceFirst("calctimes: ", "");
+            query = query.replaceFirst("calctimes:", "");
         } else if (query.contains("calc")) {
-            query = query.replaceFirst("calctime: ", "");
+            query = query.replaceFirst("calctime:", "");
         } else {
             query = query.replaceFirst("t:", "");
         }
@@ -48,7 +48,7 @@ public class SimpleCalculator {
             }
         }
         catch(ArrayIndexOutOfBoundsException | NumberFormatException e){
-            return String.valueOf(new Date(Long.parseLong(query)));
+            return String.valueOf(new Date(Long.parseLong(query.trim())));
         }
         return String.valueOf(builder.build().getTimeInMillis());
     }

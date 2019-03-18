@@ -83,7 +83,7 @@ class SaveDBPropsCallable implements Callable<Boolean> {
                             executeUpdate.set(preparedStatement.executeUpdate());
                         }
                         catch(SQLException e){
-                            FileSystemWorker.error("ConstantsFor.saveAppProps", e);
+                            messageToUser.warn(getClass().getSimpleName(), e.getSQLState() + " " + e.getMessage(), new TForms().fromArray(e, false));
                         }
                     });
                     if(executeUpdate.get() > 0){
