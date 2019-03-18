@@ -7,6 +7,7 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -32,11 +33,11 @@ class SaveDBPropsCallable implements Callable<Boolean> {
     
     private final MysqlDataSource mysqlDataSource;
     
-    private static File pFile = new File("ConstantsFor.properties");
-    
     private final String classMeth;
     
     private final String methName;
+    
+    private static File pFile = new File("ConstantsFor.properties");
     
     /**
      {@link Properties} для сохданения.
@@ -62,7 +63,7 @@ class SaveDBPropsCallable implements Callable<Boolean> {
      
      @throws SQLException делает {@link Connection#rollback(Savepoint)}
      */
-    private boolean savePropsDelStatement(Connection c, Savepoint delPropsPoint) throws SQLException {
+    private boolean savePropsDelStatement(Connection c, Savepoint delPropsPoint) throws SQLException, IOException {
         String sql = "delete FROM `ru_vachok_networker` where `javaid` =  'ConstantsFor'";
         if (pFile.exists() && pFile.canWrite()) {
             try (OutputStream outputStream = new FileOutputStream(ConstantsFor.class.getSimpleName() + ".properties")) {
@@ -72,6 +73,8 @@ class SaveDBPropsCallable implements Callable<Boolean> {
             }
             messageToUser.warn("NO DB SAVE! " + pFile.getName() + " can write is " + pFile.canWrite());
             retBool.set(false);
+        } else if (!pFile.exists()) {
+            Files.createFile(pFile.toPath());
         } else {
             try (PreparedStatement preparedStatement = c.prepareStatement(sql);
                  InputStream inputStream = new FileInputStream(pFile)) {
@@ -118,7 +121,7 @@ class SaveDBPropsCallable implements Callable<Boolean> {
                     }
                 }
             }
-        } catch (SQLException e) {
+        } catch (SQLException | IOException e) {
             messageToUser.errorAlert(ConstantsFor.class.getSimpleName(), methName, e.getMessage());
             FileSystemWorker.error(classMeth, e);
             retBool.set(false);

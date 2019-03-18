@@ -365,6 +365,8 @@ public enum ConstantsFor {
         }
     };
     
+    static final String STR_FINISH = " is finish";
+    
     /**
      new {@link Properties}
      */
@@ -383,8 +385,6 @@ public enum ConstantsFor {
      {@link MessageLocal}
      */
     private static final MessageToUser messageToUser = new MessageLocal();
-    
-    static final String STR_FINISH = " is finish";
     
     /**
      @return {@link #MAIL_RULES}
@@ -512,7 +512,6 @@ public enum ConstantsFor {
     public static boolean saveAppProps(Properties propsToSave) {
         AppComponents.threadConfig().thrNameSet("sProps");
         propsToSave.setProperty("thispc", thisPC());
-        
         final String javaIDsString = APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName();
         String classMeth = "ConstantsFor.saveAppProps";
         String methName = "saveAppProps";
@@ -523,7 +522,6 @@ public enum ConstantsFor {
         mysqlDataSource.setRelaxAutoCommit(true);
         Callable<Boolean> theProphecy = new SaveDBPropsCallable(mysqlDataSource, propsToSave, classMeth, methName);
         Future<Boolean> booleanFuture = AppComponents.threadConfig().getTaskExecutor().submit(theProphecy);
-    
         try {
             retBool.set(booleanFuture.get(DELAY, TimeUnit.SECONDS));
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
