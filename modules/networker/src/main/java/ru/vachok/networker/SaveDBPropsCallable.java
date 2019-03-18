@@ -65,7 +65,10 @@ class SaveDBPropsCallable implements Callable<Boolean> {
      */
     private boolean savePropsDelStatement(Connection c, Savepoint delPropsPoint) throws SQLException, IOException {
         String sql = "delete FROM `ru_vachok_networker` where `javaid` =  'ConstantsFor'";
-        if (pFile.exists() && pFile.canWrite()) {
+        if (!pFile.exists()) {
+            Files.createFile(pFile.toPath());
+        }
+        if (pFile.canWrite()) {
             try (OutputStream outputStream = new FileOutputStream(ConstantsFor.class.getSimpleName() + ".properties")) {
                 propsToSave.store(outputStream, classMeth);
             } catch (IOException e) {
@@ -73,9 +76,7 @@ class SaveDBPropsCallable implements Callable<Boolean> {
             }
             messageToUser.warn("NO DB SAVE! " + pFile.getName() + " can write is " + pFile.canWrite());
             retBool.set(false);
-        } else if (!pFile.exists()) {
-            Files.createFile(pFile.toPath());
-        } else {
+        } else if (!pFile.canWrite()) {
             try (PreparedStatement preparedStatement = c.prepareStatement(sql);
                  InputStream inputStream = new FileInputStream(pFile)) {
                 propsToSave.load(inputStream);
@@ -87,6 +88,8 @@ class SaveDBPropsCallable implements Callable<Boolean> {
                 c.rollback(delPropsPoint);
                 retBool.set(false);
             }
+        } else {
+            retBool.set(false);
         }
         return retBool.get();
     }
