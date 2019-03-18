@@ -517,6 +517,7 @@ public enum ConstantsFor {
         String classMeth = "ConstantsFor.saveAppProps";
         String methName = "saveAppProps";
         MysqlDataSource mysqlDataSource = new DBRegProperties(javaIDsString).getRegSourceForProperties();
+        mysqlDataSource.setRelaxAutoCommit(true);
         AtomicBoolean retBool = new AtomicBoolean();
         mysqlDataSource.setLogger("java.util.Logger");
         mysqlDataSource.setRelaxAutoCommit(true);

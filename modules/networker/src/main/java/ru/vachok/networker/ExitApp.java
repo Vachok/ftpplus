@@ -8,8 +8,6 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.DiapazonedScan;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
-import ru.vachok.networker.systray.ActionDefault;
-import ru.vachok.networker.systray.MessageToTray;
 
 import java.awt.*;
 import java.io.*;
@@ -209,7 +207,7 @@ public class ExitApp implements Runnable {
     private void readCommit(File file) {
         if (file != null || file.length() > 10) {
             final String readFile = file.getAbsolutePath();
-            new MessageToTray(new ActionDefault(GO_TO)).info("ExitApp.readCommit", "commit", " = " + readFile);
+            messageToUser.info("ExitApp.readCommit", "commit", " = " + readFile);
         } else {
             messageToUser.info("ExitApp.readCommit", "null", " = " + file.getName());
         }
