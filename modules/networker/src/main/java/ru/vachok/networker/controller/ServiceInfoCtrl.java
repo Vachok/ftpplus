@@ -168,6 +168,7 @@ public class ServiceInfoCtrl {
             .append(ConstantsNet.getSshMapStr()).append("</font><p>")
             .append(new AppInfoOnLoad()).append(" ").append(AppInfoOnLoad.class.getSimpleName()).append("<p>")
             .append(new TForms().fromArray(LOC_PR, true)).append("<p>")
+            .append(FileSystemWorker.readFile("exit.last")).append("<p>")
             .append("<p><font color=\"grey\">").append(listFilesToReadStr()).append("</font>")
             .toString();
         

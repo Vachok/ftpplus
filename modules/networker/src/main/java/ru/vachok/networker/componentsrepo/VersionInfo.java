@@ -8,6 +8,7 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.services.TimeChecker;
 
 import java.io.*;
 import java.time.LocalDate;
@@ -80,7 +81,7 @@ public class VersionInfo {
         }
         appBuild = PROPERTIES.getProperty(PR_APP_BUILD);
         appVersion = PROPERTIES.getProperty(ConstantsFor.PR_APP_VERSION);
-        buildTime = PROPERTIES.getProperty(PR_BUILD_TIME);
+        buildTime = PROPERTIES.getProperty(PR_BUILD_TIME, String.valueOf(new TimeChecker().call().getReturnTime()));
     }
     
     public long getPingTVStartStamp() {
@@ -143,12 +144,10 @@ public class VersionInfo {
         }
         try {
             PROPERTIES.setProperty(ConstantsFor.PR_APP_VERSION, getAppVersion());
-            AppComponents.getOrSetProps(PROPERTIES);
         } catch (NullPointerException e) {
             FileSystemWorker.writeFile(getClass().getSimpleName() + ConstantsFor.FILEEXT_LOG, Collections.singletonList(new TForms().fromArray(e, false)));
         }
-        String msg = this.toString();
-        LOGGER.info(msg);
+        AppComponents.getOrSetProps(PROPERTIES);
     }
     
     /**

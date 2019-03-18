@@ -89,7 +89,7 @@ class SaveDBPropsCallable implements Callable<Boolean> {
                 retBool.set(false);
             }
         } else {
-            retBool.set(false);
+            messageToUser.info("SaveDBPropsCallable.savePropsDelStatement", "propsToSave.size()", " = " + propsToSave.size());
         }
         return retBool.get();
     }

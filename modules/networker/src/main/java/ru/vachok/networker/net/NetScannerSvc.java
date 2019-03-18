@@ -453,11 +453,6 @@ public class NetScannerSvc {
         countStat();
         boolean props = AppComponents.getOrSetProps(LOCAL_PROPS);
         FileSystemWorker.writeFile(ConstantsNet.BEANNAME_LASTNETSCAN, new TForms().fromArray(AppComponents.lastNetScanMap(), false));
-        String bodyMsg = ConstantsFor.getMemoryInfo() + "\n" +
-            " scan.tmp exist = " + fileCreate(false) + "\n" +
-            "Properties is save = " + props + "\n" +
-            new TForms().fromArray(toFileList, false);
-        
         FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".getPCsAsync", toFileList);
         FileSystemWorker.writeFile("unused.ips", unusedNamesTree.stream());
         final boolean ownObject = new ExitApp("alldev.map", ConstantsNet.getAllDevices()).writeOwnObject();
@@ -466,6 +461,10 @@ public class NetScannerSvc {
         if (file.exists()) {
             lenFile = (int) (file.length() / ConstantsFor.KBYTE);
         }
+        String bodyMsg = ConstantsFor.getMemoryInfo() + "\n" +
+            " scan.tmp exist = " + fileCreate(false) + "\n" +
+            "Properties is save = " + props + "\n" +
+            new TForms().fromArray(toFileList, false);
         new MessageSwing(656, 550, 50, 53).infoTimer(50,
             "Daysec: " +
                 LocalTime.now().toSecondOfDay() + " " +

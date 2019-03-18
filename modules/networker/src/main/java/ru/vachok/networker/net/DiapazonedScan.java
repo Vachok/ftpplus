@@ -236,6 +236,7 @@ public class DiapazonedScan implements Runnable {
      */
     private void scanServers() {
         String classMeth = "DiapazonedScan.scanServers";
+        this.srvFiles.clear();
         File srvFile;
     
         srvFile = new File("11v_" + ConstantsNet.FILENAME_SERVTXT);
@@ -268,7 +269,7 @@ public class DiapazonedScan implements Runnable {
             ALL_DEVICES_LOCAL_DEQUE.clear();
             this.scanLan(printWriter, 200, 218, start, "10.200.");
         } else {
-            this.scanLan(printWriter, 200, 220, start, "10.200.");
+            this.scanLan(printWriter, 200, 218, start, "10.200.");
         }
         NetScanFileWorker.getI().setLastStamp(System.currentTimeMillis());
     }

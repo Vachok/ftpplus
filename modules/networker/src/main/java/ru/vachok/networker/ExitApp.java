@@ -14,7 +14,9 @@ import java.io.*;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.TimeUnit;
 
 import static ru.vachok.networker.IntoApplication.getConfigurableApplicationContext;
@@ -45,7 +47,7 @@ public class ExitApp implements Runnable {
      
      @see #exitAppDO()
      */
-    private List<String> stringList = new ArrayList<>();
+    private Collection<String> miniLoggerLast = new ArrayList<>();
     
     /**
      Причина выхода
@@ -152,7 +154,7 @@ public class ExitApp implements Runnable {
         if (appLog.exists() && appLog.canRead()) {
             FileSystemWorker.copyOrDelFile(appLog, "\\\\10.10.111.1\\Torrents-FTP\\app.log", false);
         } else {
-            stringList.add("No app.log");
+            miniLoggerLast.add("No app.log");
             messageToUser.info("No app.log");
         }
         writeObj();
@@ -167,20 +169,20 @@ public class ExitApp implements Runnable {
      <b>{@link IOException}:</b><br>
      {@link FileSystemWorker#error(java.lang.String, java.lang.Exception)}
      <p>
-     Или {@link #stringList} add {@code "No object"}.
+     Или {@link #miniLoggerLast} add {@code "No object"}.
      <p>
      Запуск {@link #exitAppDO()}
      */
     private void writeObj() {
         if (toWriteObj != null) {
-            stringList.add(toWriteObj.toString().getBytes().length / ConstantsFor.KBYTE + " kbytes of object written");
+            miniLoggerLast.add(toWriteObj.toString().getBytes().length / ConstantsFor.KBYTE + " kbytes of object written");
             try (ObjectOutput objectOutput = new ObjectOutputStream(out)) {
                 objectOutput.writeObject(toWriteObj);
             } catch (IOException e) {
                 FileSystemWorker.error("ExitApp.writeObj", e);
             }
         } else {
-            stringList.add("No object");
+            miniLoggerLast.add("No object");
         }
         exitAppDO();
     }
@@ -188,16 +190,18 @@ public class ExitApp implements Runnable {
     /**
      Метод выхода
      <p>
-     Добавление в {@link #stringList}: {@code "exit at " + LocalDateTime.now().toString() + ConstantsFor.getUpTime()} <br>
-     {@link FileSystemWorker#writeFile(java.lang.String, java.util.List)}. {@link List} = {@link #stringList} <br>
+     Добавление в {@link #miniLoggerLast}: {@code "exit at " + LocalDateTime.now().toString() + ConstantsFor.getUpTime()} <br>
+     {@link FileSystemWorker#writeFile(java.lang.String, java.util.List)}. {@link List} = {@link #miniLoggerLast} <br>
      {@link FileSystemWorker#delTemp()}. Удаление мусора <br>
      {@link ConfigurableApplicationContext#close()}. Остановка контекста. <br>
      {@link ThreadConfig#killAll()} закрытие {@link java.util.concurrent.ExecutorService} и {@link java.util.concurrent.ScheduledExecutorService} <br>
      {@link System#exit(int)} int = <i>uptime</i> в минутах.
      */
     private void exitAppDO() {
-        stringList.add("exit at " + LocalDateTime.now() + ConstantsFor.getUpTime());
-        FileSystemWorker.writeFile("exit.last", stringList.stream());
+        final BlockingDeque<String> devices = ConstantsNet.getAllDevices();
+        miniLoggerLast.add("AllDevices " + "size/remainingCapacity" + " = " + devices.size() + "/" + devices.remainingCapacity());
+        miniLoggerLast.add("exit at " + LocalDateTime.now() + ConstantsFor.getUpTime());
+        FileSystemWorker.writeFile("exit.last", miniLoggerLast.stream());
         FileSystemWorker.delTemp();
         getConfigurableApplicationContext().close();
         AppComponents.threadConfig().killAll();
@@ -233,7 +237,7 @@ public class ExitApp implements Runnable {
         } else {
             messageToUser.info("NO FILES COMMIT");
         }
-        stringList.add(reasonExit);
+        miniLoggerLast.add(reasonExit);
         AppComponents.getOrSetProps(true);
         copyAvail();
     }
