@@ -11,8 +11,9 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.io.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Collections;
-import java.util.Date;
 import java.util.Properties;
 
 
@@ -46,22 +47,22 @@ public class VersionInfo {
      */
     private final String thisPCNameStr = ConstantsFor.thisPC();
     
-    private boolean isBUGged;
-    
     /**
      Версия
      */
-    private String appVersion;
+    private final String appVersion;
     
     /**
      Билд
      */
-    private String appBuild;
+    private final String appBuild;
     
     /**
      Время сборки
      */
-    private String buildTime;
+    private final String buildTime;
+    
+    private boolean isBUGged;
     
     private long pingTVStartStamp = ConstantsFor.START_STAMP;
     
@@ -75,11 +76,11 @@ public class VersionInfo {
             this.isBUGged = true;
         }
         if (thisPCNameStr.toLowerCase().contains("home") || thisPCNameStr.toLowerCase().contains("no0")) {
-            AppComponents.threadConfig().executeAsThread(() -> setParams());
+            AppComponents.threadConfig().executeAsThread(this::setParams);
         }
-        
-        getParams();
-        
+        appBuild = PROPERTIES.getProperty(PR_APP_BUILD);
+        appVersion = PROPERTIES.getProperty(ConstantsFor.PR_APP_VERSION);
+        buildTime = PROPERTIES.getProperty(PR_BUILD_TIME);
     }
     
     public long getPingTVStartStamp() {
@@ -106,15 +107,6 @@ public class VersionInfo {
     }
     
     /**
-     Usages: {@link #getParams()} <br> Uses: - <br>
-     
-     @param appBuild build (Random num)
-     */
-    private void setAppBuild(String appBuild) {
-        this.appBuild = appBuild;
-    }
-    
-    /**
      @return {@link #appVersion}
      */
     public String getAppVersion() {
@@ -122,26 +114,10 @@ public class VersionInfo {
     }
     
     /**
-     @param appVersion {@link #setterVersionFromFiles(File)}
-     */
-    private void setAppVersion(String appVersion) {
-        this.appVersion = appVersion;
-    }
-    
-    /**
      @return {@link #buildTime}
      */
     public String getBuildTime() {
         return buildTime;
-    }
-    
-    /**
-     Usages: {@link #getParams()} <br> Uses: - <br>
-     
-     @param buildTime build timestamp
-     */
-    private void setBuildTime(String buildTime) {
-        this.buildTime = buildTime;
     }
     
     /**
@@ -156,23 +132,19 @@ public class VersionInfo {
             if (file.exists()) {
                 setterVersionFromFiles(file);
             } else {
-                getParams();
                 String msg = toString();
                 LOGGER.warn(msg);
             }
         }
-        this.appBuild = thisPCNameStr + "." + LocalDate.now().getDayOfWeek().getValue();
-        PROPERTIES.setProperty(PR_APP_BUILD, appBuild);
+        PROPERTIES.setProperty(PR_APP_BUILD, thisPCNameStr + "." + LocalDate.now().getDayOfWeek().getValue());
         if (thisPCNameStr.equalsIgnoreCase("home") ||
             thisPCNameStr.toLowerCase().contains(ConstantsFor.HOSTNAME_NO0027)) {
-            this.buildTime = new Date(ConstantsFor.START_STAMP).toString();
-            PROPERTIES.setProperty(PR_BUILD_TIME, buildTime);
+            PROPERTIES.setProperty(PR_BUILD_TIME, String.valueOf(System.currentTimeMillis()));
         }
         try {
             PROPERTIES.setProperty(ConstantsFor.PR_APP_VERSION, getAppVersion());
             AppComponents.getOrSetProps(PROPERTIES);
         } catch (NullPointerException e) {
-            setAppVersion("Unknown ver");
             FileSystemWorker.writeFile(getClass().getSimpleName() + ConstantsFor.FILEEXT_LOG, Collections.singletonList(new TForms().fromArray(e, false)));
         }
         String msg = this.toString();
@@ -188,24 +160,14 @@ public class VersionInfo {
         try (InputStream inputStream = new FileInputStream(file);
              InputStreamReader reader = new InputStreamReader(inputStream);
              BufferedReader bufferedReader = new BufferedReader(reader)) {
-            bufferedReader.lines().forEach(x -> {
+            bufferedReader.lines().forEach(x->{
                 if (x.contains("version = '8.")) {
-                    setAppVersion(x.split("'")[1]);
+                    PROPERTIES.setProperty(ConstantsFor.PR_APP_VERSION, x.split("'")[1]);
                 }
             });
         } catch (IOException e) {
             LOGGER.error(e.getMessage(), e);
         }
-        setBuildTime(System.currentTimeMillis() + "");
-    }
-    
-    /**
-     Загружает из {@link #PROPERTIES} информацию о версии и билде
-     */
-    private void getParams() {
-        setAppBuild(PROPERTIES.getOrDefault(PR_APP_BUILD, "no database").toString());
-        setBuildTime(PROPERTIES.getOrDefault(PR_BUILD_TIME, System.currentTimeMillis()).toString());
-        setAppVersion(PROPERTIES.getOrDefault(ConstantsFor.PR_APP_VERSION, "no database").toString());
     }
     
     @Override
@@ -213,7 +175,7 @@ public class VersionInfo {
         final StringBuilder sb = new StringBuilder("VersionInfo{");
         sb.append("appBuild='").append(appBuild).append('\'');
         sb.append(", appVersion='").append(appVersion).append('\'');
-        sb.append(", buildTime='").append(buildTime).append('\'');
+        sb.append(", buildTime='").append(LocalDateTime.ofEpochSecond(Long.parseLong(buildTime) / 1000, 0, ZoneOffset.ofHours(3))).append('\'');
         sb.append(", isBUGged=").append(isBUGged);
         sb.append('}');
         return sb.toString();

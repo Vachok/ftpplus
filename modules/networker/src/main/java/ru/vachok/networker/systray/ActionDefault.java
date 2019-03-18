@@ -23,7 +23,7 @@ public class ActionDefault extends AbstractAction {
     /**
      {@link MessageLocal}
      */
-    private static MessageToUser messageToUser = new MessageLocal();
+    private static MessageToUser messageToUser = new MessageLocal(ActionDefault.class.getSimpleName());
 
     private static final SystemTrayHelper SYSTEM_TRAY_HELPER = SystemTrayHelper.getI();
 
@@ -37,18 +37,14 @@ public class ActionDefault extends AbstractAction {
         this.goTo = ConstantsFor.HTTP_LOCALHOST8880SLASH;
         if(ConstantsFor.IS_SYSTRAY_AVAIL && SYSTEM_TRAY_HELPER.getTrayIcon()!=null){
             SYSTEM_TRAY_HELPER.delOldActions();
-            messageToUser.info("ActionDefault.ActionDefault",
-                "SystemTrayHelper.getTrayIcon().getActionListeners().length",
-                " = " + SYSTEM_TRAY_HELPER.getTrayIcon().getActionListeners().length);
         }
     }
     @Override
     public void actionPerformed(ActionEvent e) {
         try{
             Desktop.getDesktop().browse(URI.create(goTo));
-        }
-        catch(IOException e1){
-            messageToUser.errorAlert("ActionDefault", ConstantsFor.METHNAME_ACTIONPERFORMED, e1.getMessage());
+        } catch (IOException | IllegalArgumentException e1) {
+            messageToUser.errorAlert("ActionDefault", "actionPerformed", e1.getMessage());
         }
         Thread.currentThread().checkAccess();
         Thread.currentThread().interrupt();

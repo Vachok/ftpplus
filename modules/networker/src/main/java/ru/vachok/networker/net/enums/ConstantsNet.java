@@ -115,8 +115,12 @@ public enum ConstantsNet {;
     public static final int IPS_IN_VELKOM_VLAN = 63 * MAX_IN_ONE_VLAN;
 
     public static final int TIMEOUT240 = 240;
-
-    private static final String[] PC_PREFIXES = {"do", "pp", "td", "no", "a"};
+    
+    public static final int DOTDPC = 50;
+    
+    public static final int NOTDPC = 50;
+    
+    private static final String[] PC_PREFIXES = {"do", "pp", "td", "no", "a", "dotd", "notd"};
 
     private static final ConcurrentMap<String, File> COMPNAME_USERS_MAP = new ConcurrentHashMap<>();
 

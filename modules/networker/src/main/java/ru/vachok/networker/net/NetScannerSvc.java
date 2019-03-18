@@ -534,7 +534,7 @@ public class NetScannerSvc {
      
      @return строка в html-формате
  
-     @throws SQLException {@code insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow) values (?,?,?,?)}
+     @throws SQLException insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow) values (?,?,?,?)
      @see #getPCNamesPref(String)
      */
     @SuppressWarnings({"OverlyComplexMethod", "OverlyLongMethod"})
@@ -674,7 +674,7 @@ public class NetScannerSvc {
         Collection<String> list = new ArrayList<>();
         int pcNum = 0;
         for (int i = 1; i < inDex; i++) {
-            if (namePCPrefix.equals("no") || namePCPrefix.equals("pp") || namePCPrefix.equals("do")) {
+            if (namePCPrefix.equals("no") || namePCPrefix.equals("pp") || namePCPrefix.equals("do") || namePCPrefix.equals("notd") || namePCPrefix.equals("dotd")) {
                 nameCount = String.format("%04d", ++pcNum);
             } else {
                 nameCount = String.format("%03d", ++pcNum);
@@ -710,6 +710,12 @@ public class NetScannerSvc {
         }
         if (qer.equals("td")) {
             inDex = ConstantsNet.TDPC;
+        }
+        if (qer.equals("dotd")) {
+            inDex = ConstantsNet.DOTDPC;
+        }
+        if (qer.equals("notd")) {
+            inDex = ConstantsNet.NOTDPC;
         }
         return inDex;
     }

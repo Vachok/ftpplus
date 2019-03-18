@@ -8,9 +8,12 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.DiapazonedScan;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
+import ru.vachok.networker.systray.ActionDefault;
 import ru.vachok.networker.systray.MessageToTray;
 
+import java.awt.*;
 import java.io.*;
+import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +36,11 @@ public class ExitApp implements Runnable {
      "ExitApp.run"
      */
     private static final String EXIT_APP_RUN = "ExitApp.run";
+    
+    /**
+     {@link ConstantsFor.HTTP_LOCALHOST8880SLASH} {@code "pages/commit.html"}.
+     */
+    private static final String GO_TO = ConstantsFor.HTTP_LOCALHOST8880SLASH + "pages/commit.html";
     
     /**
      new {@link ArrayList}, записываемый в "exit.last"
@@ -201,7 +209,7 @@ public class ExitApp implements Runnable {
     private void readCommit(File file) {
         if (file != null || file.length() > 10) {
             final String readFile = file.getAbsolutePath();
-            new MessageToTray().info("ExitApp.readCommit", "commit", " = " + readFile);
+            new MessageToTray(new ActionDefault(GO_TO)).info("ExitApp.readCommit", "commit", " = " + readFile);
         } else {
             messageToUser.info("ExitApp.readCommit", "null", " = " + file.getName());
         }
@@ -213,13 +221,20 @@ public class ExitApp implements Runnable {
     @Override
     public void run() {
         AppComponents.threadConfig().thrNameSet("exit");
-        File commitFile = new File("G:\\My_Proj\\FtpClientPlus\\modules\\networker\\src\\main\\resources\\commit.msg");
+        File commitFile = new File("G:\\My_Proj\\FtpClientPlus\\modules\\networker\\src\\main\\resources\\static\\pages\\commit.html");
         if (!commitFile.exists()) {
-            commitFile = new File("C:\\Users\\ikudryashov\\IdeaProjects\\spring\\modules\\networker\\commit.msg");
+            commitFile = new File("C:\\Users\\ikudryashov\\IdeaProjects\\spring\\modules\\networker\\src\\main\\resources\\static\\pages\\commit.html");
+        }
+        if (commitFile.exists() && commitFile.canRead()) {
+            try {
+                Desktop.getDesktop().browse(URI.create(GO_TO));
+            } catch (IOException e) {
+                messageToUser.errorAlert("ExitApp", "run", e.getMessage());
+            }
+            readCommit(commitFile);
         } else {
             messageToUser.info("NO FILES COMMIT");
         }
-        readCommit(commitFile);
         stringList.add(reasonExit);
         AppComponents.getOrSetProps(true);
         copyAvail();
