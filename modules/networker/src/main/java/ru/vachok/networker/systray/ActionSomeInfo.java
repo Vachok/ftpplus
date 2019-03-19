@@ -3,7 +3,7 @@ package ru.vachok.networker.systray;
 
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.IntoApplication;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.net.DiapazonedScan;
 import ru.vachok.networker.services.MessageLocal;
 
@@ -30,7 +30,7 @@ class ActionSomeInfo extends AbstractAction {
     @Override
     public void actionPerformed(ActionEvent e) {
         Date newScan = new Date(DiapazonedScan.getInstance().getStopClassStampLong() + TimeUnit.MINUTES.toMillis(111));
-        new Thread(IntoApplication.INFO_MSG_RUNNABLE).start();
+        new Thread(ConstantsFor.INFO_MSG_RUNNABLE).start();
         messageToUser.info("ActionSomeInfo.actionPerformed", "newScan = ", newScan.toString());
         SystemTrayHelper.getI().delOldActions();
     }

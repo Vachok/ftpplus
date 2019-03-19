@@ -1,8 +1,8 @@
 package ru.vachok.networker.net;
 
 
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
@@ -56,9 +56,9 @@ public interface Pinger {
                 boolean reachable = inetAddress.isReachable(ConstantsFor.TIMEOUT_650);
                 String msg;
                 if (reachable) {
-                    msg = "<font color=\"#00ff69\">" + inetAddress.toString() + " is " + true + "</font>";
+                    msg = "<font color=\"#00ff69\">" + inetAddress + " is " + true + "</font>";
                 } else {
-                    msg = "<font color=\"red\">" + inetAddress.toString() + " is " + false + "</font>";
+                    msg = "<font color=\"red\">" + inetAddress + " is " + false + "</font>";
                 }
                 resList.add(msg);
                 Thread.sleep(pingSleep);

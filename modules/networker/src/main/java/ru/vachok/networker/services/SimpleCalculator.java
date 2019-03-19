@@ -2,7 +2,7 @@ package ru.vachok.networker.services;
 
 
 import org.springframework.stereotype.Service;
-import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.AppComponents;
 
 import java.util.Calendar;
 import java.util.Date;

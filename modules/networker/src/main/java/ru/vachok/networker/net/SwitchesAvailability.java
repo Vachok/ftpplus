@@ -1,13 +1,18 @@
 package ru.vachok.networker.net;
 
 
-import org.slf4j.Logger;
+import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
+import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.TimeChecker;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -19,27 +24,25 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
  @since 04.12.2018 (9:23) */
 public class SwitchesAvailability implements Runnable {
-
-    /**
-     {@link AppComponents#getLogger(String)}
-     */
-    private static final Logger LOGGER = AppComponents.getLogger(SwitchesAvailability.class.getSimpleName());
-
+    
+    
     /**
      {@link InetAddress} свчичей.
      */
     @SuppressWarnings ("CanBeFinal")
     private List<String> swAddr;
-
-    private String okStr = null;
-
+    
+    private String okStr;
+    
+    private MessageToUser messageToUser = new MessageLocal();
+    
     public SwitchesAvailability() {
-        AppComponents.threadConfig().thrNameSet("SWINIT");
+        AppComponents.threadConfig().thrNameSet("SWin");
         List<String> stringList = new ArrayList<>();
         try {
             stringList = DiapazonedScan.pingSwitch();
-        } catch (IllegalAccessException e) {
-            LOGGER.error(getClass().getSimpleName(), e.getMessage(), e);
+        } catch (IllegalAccessException ignore) {
+            //
         }
         Collections.sort(stringList);
         this.swAddr = Collections.unmodifiableList(stringList);
@@ -48,39 +51,10 @@ public class SwitchesAvailability implements Runnable {
     Set<String> getOkIP() {
         return okIP;
     }
-
-    private String badStr = null;
+    
+    private String badStr;
 
     private final Set<String> okIP = new HashSet<>();
-
-    @Override
-    public void run() {
-        AppComponents.threadConfig().thrNameSet("swAv");
-        try {
-            makeAddrQ();
-        } catch (IOException e) {
-            LOGGER.error(getClass().getSimpleName(), e.getMessage(), e);
-        }
-    }
-
-    /**
-     Преобразователь строк в адреса.
-     <p>
-     1. {@link SwitchesAvailability#testAddresses(java.util.Queue)} - тестируем онлайность.
-     <p>
-
-     @throws IOException если хост unknown.
-     */
-    private void makeAddrQ() throws IOException {
-        AppComponents.threadConfig().thrNameSet("makeQu");
-        Queue<InetAddress> inetAddressesQ = new ConcurrentLinkedQueue<>();
-        for (String s : swAddr) {
-            byte[] addressBytes = InetAddress.getByName(s).getAddress();
-            InetAddress byAddress = InetAddress.getByAddress(addressBytes);
-            inetAddressesQ.add(byAddress);
-        }
-        testAddresses(inetAddressesQ);
-    }
 
     /**
      Проверяет пинги
@@ -102,12 +76,30 @@ public class SwitchesAvailability implements Runnable {
             } else {
                 String ipStr = poll != null ? poll.toString() : null;
                 badIP.add(ipStr);
-                LOGGER.error(ipStr);
             }
         }
         this.okStr = new TForms().fromArray(okIP, false).replaceAll("/", "");
         this.badStr = new TForms().fromArray(badIP, false).replaceAll("/", "");
         writeToFile(okStr, badStr);
+    }
+    
+    /**
+     Преобразователь строк в адреса.
+     <p>
+     1. {@link SwitchesAvailability#testAddresses(java.util.Queue)} - тестируем онлайность.
+     <p>
+     
+     @throws IOException если хост unknown.
+     */
+    private void makeAddrQ() throws IOException {
+        AppComponents.threadConfig().thrNameSet("makeQu");
+        Queue<InetAddress> inetAddressesQ = new ConcurrentLinkedQueue<>();
+        for (String s : swAddr) {
+            byte[] addressBytes = InetAddress.getByName(s).getAddress();
+            InetAddress byAddress = InetAddress.getByAddress(addressBytes);
+            inetAddressesQ.add(byAddress);
+        }
+        testAddresses(inetAddressesQ);
     }
 
     /**
@@ -123,7 +115,7 @@ public class SwitchesAvailability implements Runnable {
         File file = new File("sw.list.log");
         try (OutputStream outputStream = new FileOutputStream(file)) {
             String toWrite = new StringBuilder()
-                .append(new TimeChecker().call().getMessage().toString())
+                .append(new TimeChecker().call().getMessage())
                 .append("\n\n")
                 .append("Online SwitchesWiFi: \n")
                 .append(okIP)
@@ -131,7 +123,19 @@ public class SwitchesAvailability implements Runnable {
                 .append(badIP).toString();
             outputStream.write(new String(toWrite.getBytes(), StandardCharsets.UTF_8).getBytes());
         } catch (IOException e) {
-            LOGGER.warn(e.getMessage(), e);
+            messageToUser.errorAlert("SwitchesAvailability", "writeToFile", e.getMessage());
+            FileSystemWorker.error("SwitchesAvailability.writeToFile", e);
+        }
+    }
+    
+    @Override
+    public void run() {
+        AppComponents.threadConfig().thrNameSet("swAv");
+        try {
+            makeAddrQ();
+        } catch (IOException e) {
+            messageToUser.errorAlert("SwitchesAvailability", "run", e.getMessage());
+            FileSystemWorker.error("SwitchesAvailability.run", e);
         }
     }
 

@@ -8,8 +8,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.services.AnketaKonfeta;
 
@@ -56,6 +56,7 @@ public class AnketaKonfetaCRTL {
     public String postAnketa(@ModelAttribute AnketaKonfeta anketaKonfeta, Model model, HttpServletRequest request) {
         Visitor visitor = ConstantsFor.getVis(request);
         this.anketaKonfeta = anketaKonfeta;
+        anketaKonfeta.setUserIp(request.getRemoteAddr());
         model.addAttribute("anketaKonfeta", anketaKonfeta);
         model.addAttribute("ok", "СПАСИБО!");
         LOGGER.warn(request.getQueryString());

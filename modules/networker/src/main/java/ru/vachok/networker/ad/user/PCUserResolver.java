@@ -2,9 +2,9 @@ package ru.vachok.networker.ad.user;
 
 
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ad.ADSrv;
-import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
@@ -40,7 +40,7 @@ public class PCUserResolver extends ADSrv {
 
      @see #getLastTimeUse(String)
      */
-    private String lastFileUse = null;
+    private String lastFileUse;
 
     /**
      @return {@link #PC_USER_RESOLVER}
@@ -148,16 +148,16 @@ public class PCUserResolver extends ADSrv {
     /**
      Ищет в подпапках папки Users, файлы.
      <p>
-     Работа в new {@link WalkerToUserFolder}. <br> В {@link Files#walkFileTree(java.nio.file.Path, java.util.Set, int, java.nio.file.FileVisitor)}, отправляем параметры: <br> 1. Путь<br>
-     2. {@link FileVisitOption#FOLLOW_LINKS} <br> 3. Макс. глубина 2 <br> 4. {@link WalkerToUserFolder}
+     Работа в new {@link PCUserResolver.WalkerToUserFolder}. <br> В {@link Files#walkFileTree(java.nio.file.Path, java.util.Set, int, java.nio.file.FileVisitor)}, отправляем параметры: <br> 1. Путь<br>
+     2. {@link FileVisitOption#FOLLOW_LINKS} <br> 3. Макс. глубина 2 <br> 4. {@link PCUserResolver.WalkerToUserFolder}
      <p>
-     Сортируем {@link WalkerToUserFolder#getTimePath()} по Timestamp. От меньшего к большему.
+     Сортируем {@link PCUserResolver.WalkerToUserFolder#getTimePath()} по Timestamp. От меньшего к большему.
 
      @param pathAsStr путь, который нужно пролистать.
-     @return {@link WalkerToUserFolder#getTimePath()} последняя запись из списка.
+     @return {@link PCUserResolver.WalkerToUserFolder#getTimePath()} последняя запись из списка.
      */
     private synchronized String getLastTimeUse(String pathAsStr) {
-        WalkerToUserFolder walkerToUserFolder = new WalkerToUserFolder();
+        PCUserResolver.WalkerToUserFolder walkerToUserFolder = new PCUserResolver.WalkerToUserFolder();
         try {
             Files.walkFileTree(Paths.get(pathAsStr), Collections.singleton(FOLLOW_LINKS), 2, walkerToUserFolder);
             List<String> timePath = walkerToUserFolder.getTimePath();

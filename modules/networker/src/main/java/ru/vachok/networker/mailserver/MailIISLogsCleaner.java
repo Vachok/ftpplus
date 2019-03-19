@@ -2,9 +2,9 @@ package ru.vachok.networker.mailserver;
 
 
 import org.slf4j.Logger;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.io.IOException;
@@ -28,14 +28,14 @@ import java.util.concurrent.TimeUnit;
 public class MailIISLogsCleaner extends FileSystemWorker implements Runnable {
 
     private static final Logger LOGGER = AppComponents.getLogger(MailIISLogsCleaner.class.getSimpleName());
-
-    private long filesSize = 0;
+    
+    private long filesSize;
 
     private List<String> toLog = new ArrayList<>();
 
     @Override
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
-        toLog.add("Current directory: " + dir.toString());
+        toLog.add("Current directory: " + dir);
         toLog.add("Files: " + Objects.requireNonNull(dir.toFile().listFiles()).length);
         return FileVisitResult.CONTINUE;
     }
@@ -79,6 +79,6 @@ public class MailIISLogsCleaner extends FileSystemWorker implements Runnable {
             toLog.add(e.getMessage());
             toLog.add(new TForms().fromArray(e, false));
         }
-        FileSystemWorker.recFile(this.getClass().getSimpleName() + ConstantsFor.FILEEXT_LOG, toLog);
+        FileSystemWorker.writeFile(this.getClass().getSimpleName() + ConstantsFor.FILEEXT_LOG, toLog);
     }
 }

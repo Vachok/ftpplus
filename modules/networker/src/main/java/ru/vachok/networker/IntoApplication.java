@@ -9,13 +9,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
-import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
-import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -47,13 +44,6 @@ import java.util.concurrent.Executors;
 @EnableScheduling
 public class IntoApplication {
 
-    public static final Runnable INFO_MSG_RUNNABLE = () -> {
-        final ThreadPoolTaskExecutor taskExecutor = AppComponents.threadConfig().getTaskExecutor();
-        final ThreadPoolTaskScheduler taskScheduler = AppComponents.threadConfig().getTaskScheduler();
-        new MessageSwing(550, 270, 37, 26).infoTimer((int) ConstantsFor.DELAY, "\n\n\n" + taskExecutor.getThreadPoolExecutor().toString() +
-            "\n\n" + taskScheduler.getScheduledThreadPoolExecutor().toString());
-    };
-
     /**
      new {@link SpringApplication}
      */
@@ -67,8 +57,7 @@ public class IntoApplication {
     /**
      {@link MessageLocal}
      */
-    private static @NotNull
-    final MessageToUser messageToUser = new MessageLocal();
+    private static final MessageToUser messageToUser = new MessageLocal();
 
     private static final ThreadPoolTaskExecutor EXECUTOR = AppComponents.threadConfig().getTaskExecutor();
 
@@ -77,10 +66,6 @@ public class IntoApplication {
      */
     @SuppressWarnings ("CanBeFinal")
     private static @NotNull ConfigurableApplicationContext configurableApplicationContext;
-
-    public static Runnable getInfoMsgRunnable() {
-        return INFO_MSG_RUNNABLE;
-    }
 
     /**
      @return {@link #configurableApplicationContext}
@@ -129,7 +114,7 @@ public class IntoApplication {
      3. {@link AppComponents#threadConfig()} (4. {@link ThreadConfig#getTaskExecutor()}) - запуск <b>Runnable</b> <br>
      5. {@link ThreadConfig#getTaskExecutor()} - запуск {@link AppInfoOnLoad}. <br><br>
      <b>{@link Exception}:</b><br>
-     6. {@link TForms#fromArray(java.lang.Exception, boolean)} - искл. в строку. 7. {@link FileSystemWorker#recFile(java.lang.String, java.util.List)} и
+     6. {@link TForms#fromArray(java.lang.Exception, boolean)} - искл. в строку. 7. {@link FileSystemWorker#writeFile(java.lang.String, java.util.List)} и
      запишем в файл.
      */
     private static void afterSt() {
@@ -137,7 +122,6 @@ public class IntoApplication {
         Runnable mySrv = MyServer.getI();
         EXECUTOR.submit(infoAndSched);
         EXECUTOR.submit(mySrv);
-        EXECUTOR.submit(INFO_MSG_RUNNABLE);
         EXECUTOR.submit(IntoApplication::getWeekPCStats);
     }
 
@@ -153,7 +137,7 @@ public class IntoApplication {
      */
     private static void readArgs(@NotNull String... args) {
         boolean isTray = true;
-        ExitApp exitApp = new ExitApp(IntoApplication.class.getSimpleName());
+        Runnable exitApp = new ExitApp(IntoApplication.class.getSimpleName());
         List<@NotNull String> argsList = Arrays.asList(args);
         ConcurrentMap<String, String> argsMap = new ConcurrentHashMap<>();
 
@@ -224,6 +208,8 @@ public class IntoApplication {
      {@link SystemTrayHelper#addTray(java.lang.String)} "icons8-плохие-поросята-32.png".
      Else - {@link SystemTrayHelper#addTray(java.lang.String)} {@link String} null<br>
      {@link SpringApplication#setMainApplicationClass(java.lang.Class)}
+ 
+     @param isTrayNeed нужен трэй или нет.
      */
     private static void beforeSt(boolean isTrayNeed) {
         if (isTrayNeed) {
@@ -237,7 +223,7 @@ public class IntoApplication {
         SPRING_APPLICATION.setMainApplicationClass(IntoApplication.class);
         SPRING_APPLICATION.setApplicationContextClass(AppCtx.class);
         System.setProperty("encoding", "UTF8");
-        FileSystemWorker.recFile("system", new TForms().fromArray(System.getProperties()));
+        FileSystemWorker.writeFile("system", new TForms().fromArray(System.getProperties()));
     }
 
     private static void trayAdd() {
@@ -276,15 +262,14 @@ public class IntoApplication {
         props.setProperty("build.version", LOCAL_PROPS.getProperty(ConstantsFor.PR_APP_VERSION));
         props.setProperty(ConstantsFor.PR_QSIZE, ConstantsNet.IPS_IN_VELKOM_VLAN + "");
         LOCAL_PROPS.putAll(props);
-        AppComponents.getOrSetProps(props);
     }
 
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("IntoApplication{");
-        sb.append("SPRING_APPLICATION=").append(SPRING_APPLICATION.toString());
+        sb.append("SPRING_APPLICATION=").append(SPRING_APPLICATION);
         sb.append(", LOCAL_PROPS=").append(LOCAL_PROPS.size());
-        sb.append(", messageToUser=").append(messageToUser.toString());
+        sb.append(", messageToUser=").append(messageToUser);
         sb.append(", configurableApplicationContext=").append(configurableApplicationContext.getApplicationName());
         sb.append('}');
         return sb.toString();

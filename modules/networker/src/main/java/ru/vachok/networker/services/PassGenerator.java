@@ -2,7 +2,7 @@ package ru.vachok.networker.services;
 
 
 import org.slf4j.Logger;
-import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.AppComponents;
 
 import java.security.SecureRandom;
 

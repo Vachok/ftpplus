@@ -1,0 +1,3074 @@
+Index: modules/networker/src/main/java/ru/vachok/networker/ad/ActDirectoryCTRL.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- modules/networker/src/main/java/ru/vachok/networker/ad/ActDirectoryCTRL.java	(date 1551792923847)
++++ modules/networker/src/main/java/ru/vachok/networker/ad/ActDirectoryCTRL.java	(date 1551792923847)
+@@ -1,8 +1,6 @@
+ package ru.vachok.networker.ad;
+ 
+ 
+-import org.slf4j.Logger;
+-import org.slf4j.LoggerFactory;
+ import org.springframework.beans.factory.annotation.Autowired;
+ import org.springframework.stereotype.Controller;
+ import org.springframework.ui.Model;
+@@ -43,11 +41,6 @@
+             "target=\"_blank\">\\\\srv-mail3.eatmeat" +
+             ".ru\\c$\\newmailboxes\\fotoraw\\</a>\n";
+ 
+-    /**
+-     {@link LoggerFactory}
+-     */
+-    private static final Logger LOGGER = LoggerFactory.getLogger(ActDirectoryCTRL.class.getSimpleName());
+-
+     private static final String ATT_DETAILS = "details";
+ 
+     /**
+@@ -57,7 +50,7 @@
+ 
+     private Visitor visitor;
+     /*Comment out 03.03.2019 (11:08)
+-     *//**
++    /**
+      {@link SshActs}
+      *//*
+     private SshActs sshActs;*/
+@@ -142,7 +135,7 @@
+         netScannerSvc.setThePc(queryString);
+         String attributeValue = netScannerSvc.getInfoFromDB();
+         model.addAttribute(ConstantsFor.ATT_TITLE, queryString + " " + attributeValue);
+-        model.addAttribute(ConstantsFor.ATT_USERS, NetScannerSvc.inputWithInfoFromDB);
++        model.addAttribute(ConstantsFor.ATT_USERS, NetScannerSvc.getInputWithInfoFromDB());
+         try{
+             String adSrvDetails = adSrv.getDetails(queryString);
+             model.addAttribute(ATT_DETAILS, adSrvDetails);
+Index: modules/networker/src/main/java/ru/vachok/networker/net/MyServer.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- modules/networker/src/main/java/ru/vachok/networker/net/MyServer.java	(date 1551792923864)
++++ modules/networker/src/main/java/ru/vachok/networker/net/MyServer.java	(date 1551792923864)
+@@ -1,7 +1,6 @@
+ package ru.vachok.networker.net;
+ 
+ 
+-import org.slf4j.Logger;
+ import ru.vachok.messenger.MessageToUser;
+ import ru.vachok.networker.ConstantsFor;
+ import ru.vachok.networker.TForms;
+@@ -19,14 +18,15 @@
+ import java.util.Scanner;
+ import java.util.concurrent.TimeUnit;
+ 
+-import static java.lang.System.*;
++import static java.lang.System.err;
++import static java.lang.System.out;
+ 
+ 
+ /**
+  Телнет-сервер получения информации и ввода команд приложения.
+ 
+  @since 03.11.2018 (23:51) */
+-@SuppressWarnings ({"resource", "IOResourceOpenedButNotSafelyClosed"})
++@SuppressWarnings({"resource", "IOResourceOpenedButNotSafelyClosed"})
+ public class MyServer extends Thread {
+ 
+     /**
+@@ -34,11 +34,6 @@
+      */
+     private static final String SOURCE_CLASS = MyServer.class.getSimpleName();
+ 
+-    /**
+-     {@link AppComponents#getLogger(String)}
+-     */
+-    private static final Logger LOGGER = AppComponents.getLogger(MyServer.class.getSimpleName());
+-
+     /**
+      <b>Single Instance</b>
+      */
+@@ -54,7 +49,7 @@
+ 
+      @see ConstantsFor#PR_LPORT
+      */
+-    @SuppressWarnings ("CanBeFinal")
++    @SuppressWarnings("CanBeFinal")
+     private static ServerSocket serverSocket = null;
+ 
+     /**
+@@ -80,11 +75,11 @@
+     }
+ 
+     static {
+-        try{
+-            serverSocket = new ServerSocket(ConstantsFor.PR_LPORT);
+-        }
+-        catch(IOException e){
+-            LOGGER.error(e.getMessage(), e);
++        try {
++            serverSocket = new ServerSocket(Integer.parseInt(AppComponents.getOrSetProps().getProperty("lport", "9990")));
++        } catch (IOException e) {
++            messageToUser.errorAlert(MyServer.class.getSimpleName(), "static initializer", e.getMessage());
++            FileSystemWorker.error("MyServer.static initializer", e);
+         }
+     }
+ 
+@@ -92,7 +87,7 @@
+      {@link #myServer}
+      */
+     private MyServer() {
+-        AppComponents.threadConfig().thrNameSet("tport:" + ConstantsFor.PR_LPORT);
++        AppComponents.threadConfig().thrNameSet("tNet");
+     }
+ 
+     /**
+@@ -103,7 +98,7 @@
+      @throws IOException          {@link InputStream} ; {@link Socket} ; {@link #printToSocket()}
+      @throws InterruptedException help и thread
+      */
+-    public static void reconSock() throws IOException, InterruptedException, NullPointerException {
++    public static void reconSock() throws IOException, InterruptedException {
+         Socket socket = serverSocket.accept();
+         setSocket(socket);
+         InputStream inputStream = socket.getInputStream();
+@@ -126,30 +121,29 @@
+      @throws InterruptedException sleeping threads
+      */
+     private static void makeDeal(String readLine) throws IOException, InterruptedException {
+-        if(readLine.toLowerCase().contains("exit")){
++        if (readLine.toLowerCase().contains("exit")) {
+             FileSystemWorker.delTemp();
+             MyServer.socket.close();
+             System.exit(ConstantsFor.CODE_USEREXIT);
+         }
+-        if(readLine.toLowerCase().contains("help")){
++        if (readLine.toLowerCase().contains("help")) {
+             MyServer.ifHelp();
+         }
+-        if(readLine.toLowerCase().contains("con")){
++        if (readLine.toLowerCase().contains("con")) {
+             MyServer.ifCon();
+         }
+-        if(readLine.toLowerCase().contains("thread")){
++        if (readLine.toLowerCase().contains("thread")) {
+             MyServer.ifThread();
+         }
+-        if(readLine.toLowerCase().contains(ConstantsNet.ATT_NETSCAN)){
++        if (readLine.toLowerCase().contains(ConstantsNet.ATT_NETSCAN)) {
+             MyServer.ifNetScan();
+         }
+-        if(readLine.equalsIgnoreCase("shutdown")){
++        if (readLine.equalsIgnoreCase("shutdown")) {
+             Runtime.getRuntime().exec(ConstantsFor.COM_SHUTDOWN_P_F);
+         }
+         if (readLine.equalsIgnoreCase(ConstantsFor.COM_REBOOT)) {
+             Runtime.getRuntime().exec("shutdown /r /f");
+-        }
+-        else{
++        } else {
+             MyServer.printToSocket();
+         }
+     }
+@@ -187,7 +181,7 @@
+      */
+     private static void ifThread() throws IOException, InterruptedException {
+         PrintWriter printWriter = new PrintWriter(socket.getOutputStream(), true);
+-        long millis = TimeUnit.SECONDS.toMillis(new SecureRandom().nextInt(( int ) ConstantsFor.MY_AGE));
++        long millis = TimeUnit.SECONDS.toMillis(new SecureRandom().nextInt((int) ConstantsFor.MY_AGE));
+         printWriter.println(Thread.currentThread().getState() + " current thread state");
+         printWriter.println(Thread.currentThread().getName() + " name");
+         printWriter.println(Thread.currentThread().getPriority() + " prio");
+@@ -208,12 +202,11 @@
+     private static void ifNetScan() throws IOException {
+         PrintWriter printWriter = new PrintWriter(socket.getOutputStream(), true);
+         NetScannerSvc i = AppComponents.netScannerSvc();
+-        try{
++        try {
+             String thePc = i.getThePc();
+             printToSocket();
+             printWriter.println(thePc);
+-        }
+-        catch(Exception e){
++        } catch (Exception e) {
+             System.setOut(err);
+             messageToUser.errorAlert(SOURCE_CLASS, e.getMessage(), new TForms().fromArray(e, false));
+             socket.close();
+@@ -229,19 +222,19 @@
+ 
+      @throws IOException {@link InputStream} из {@link Socket}
+      */
++    @SuppressWarnings("ObjectAllocationInLoop")
+     private static void printToSocket() throws IOException {
+         PrintWriter printWriter = new PrintWriter(socket.getOutputStream(), true);
+         InputStream inputStream = socket.getInputStream();
+         System.setOut(new PrintStream(socket.getOutputStream()));
+         printWriter.println((float) (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN + " | " + ConstantsFor.APPNAME_WITHMINUS);
+         printWriter.println("NEW SOCKET: " + socket.toString());
+-        while(inputStream.available() > 0){
++        while (inputStream.available() > 0) {
+             byte[] bytes = new byte[3];
+             int read = inputStream.read(bytes);
+-            if(!Arrays.toString(bytes).contains("-1, -8, 3")){
++            if (!Arrays.toString(bytes).contains("-1, -8, 3")) {
+                 printWriter.print(out);
+-            }
+-            else{
++            } else {
+                 printWriter.println(read);
+                 System.setOut(err);
+                 socket.close();
+@@ -250,20 +243,6 @@
+         }
+     }
+ 
+-    /**
+-     {@link #runSocket()}
+-     */
+-    @Override
+-    public void run() {
+-        try{
+-            runSocket();
+-        }
+-        catch(IOException e){
+-            messageToUser.errorAlert("MyServer", "run", e.getMessage());
+-            FileSystemWorker.error("MyServer.run", e);
+-        }
+-    }
+-
+     /**
+      <b>Создаёт {@link ServerSocket}</b>
+      <p>
+@@ -272,16 +251,16 @@
+      @throws IOException {@link ServerSocket} accept() , .getReuseAddress()
+      */
+     private static void runSocket() throws IOException {
+-        while(true){
++        while (true) {
+             socket = serverSocket.accept();
+-            accepSoc(socket);
+-            if(socket.isClosed()){
++            acceptSoc(socket);
++            if (socket.isClosed()) {
+                 System.setOut(err);
+                 String msg = serverSocket.getReuseAddress() + " getReuseAddress";
+                 messageToUser.warn(msg);
+                 break;
+             }
+-            if(!socket.isConnected()){
++            if (!socket.isConnected()) {
+                 System.setOut(err);
+             }
+         }
+@@ -294,24 +273,36 @@
+ 
+      @param socket {@link Socket} для подключившегося клиента
+      */
+-    private static void accepSoc(Socket socket) {
++    private static void acceptSoc(Socket socket) {
+         StringBuilder f = new StringBuilder();
+ 
+-        try(Scanner scanner = new Scanner(System.in);
+-            PrintWriter printWriter = new PrintWriter(socket.getOutputStream(), true)){
++        try (Scanner scanner = new Scanner(System.in);
++             PrintWriter printWriter = new PrintWriter(socket.getOutputStream(), true)) {
+             System.setOut(new PrintStream(socket.getOutputStream()));
+             f.append("\n\n")
+-                .append(( float ) (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / 60).append(" APP RUNNING \n");
++                .append((float) (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / 60).append(" APP RUNNING \n");
+             printWriter.println(f.toString());
+-            if(scanner.hasNext()){
+-                while(socket.isConnected()){
++            if (scanner.hasNext()) {
++                while (socket.isConnected()) {
+                     printWriter.print(out);
+                 }
+             }
++        } catch (IOException e) {
++            messageToUser.errorAlert("MyServer", "acceptSoc", e.getMessage());
++            FileSystemWorker.error("MyServer.acceptSoc", e);
+         }
+-        catch(IOException e){
+-            messageToUser.errorAlert("MyServer", "accepSoc", e.getMessage());
+-            FileSystemWorker.error("MyServer.accepSoc", e);
++    }
++
++    /**
++     {@link #runSocket()}
++     */
++    @Override
++    public void run() {
++        try {
++            runSocket();
++        } catch (IOException e) {
++            messageToUser.errorAlert("MyServer", "run", e.getMessage());
++            FileSystemWorker.error("MyServer.run", e);
+         }
+     }
+ 
+Index: modules/networker/src/main/java/ru/vachok/networker/net/NetPinger.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- modules/networker/src/main/java/ru/vachok/networker/net/NetPinger.java	(date 1551792923870)
++++ modules/networker/src/main/java/ru/vachok/networker/net/NetPinger.java	(date 1551792923870)
+@@ -242,7 +242,7 @@
+         } catch (UnknownHostException e) {
+             messageToUser.errorAlert(STR_CLASSNAME, "ipIsIP", e.getMessage());
+             FileSystemWorker.error("NetPinger.ipIsIP", e);
+-            throw new IllegalStateException();
++            return InetAddress.getLoopbackAddress();
+         }
+     }
+ 
+Index: modules/networker/src/main/java/ru/vachok/networker/net/NetListKeeper.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- modules/networker/src/main/java/ru/vachok/networker/net/NetListKeeper.java	(date 1551792923867)
++++ modules/networker/src/main/java/ru/vachok/networker/net/NetListKeeper.java	(date 1551792923867)
+@@ -1,6 +1,7 @@
+ package ru.vachok.networker.net;
+ 
+ 
++import ru.vachok.networker.componentsrepo.AppComponents;
+ import ru.vachok.networker.fileworks.FileSystemWorker;
+ import ru.vachok.networker.services.MessageLocal;
+ 
+@@ -61,6 +62,8 @@
+      @throws IOException файловая система
+      */
+     List<InetAddress> onlinesAddressesList() throws IOException {
++        AppComponents.threadConfig().thrNameSet("LsIP");
++
+         String classMeth = "NetListKeeper.onlinesAddressesList";
+         List<InetAddress> onlineAddresses = new ArrayList<>();
+         Deque<String> fileAsDeque = NetScanFileWorker.getI().getListOfOnlineDev();
+Index: modules/networker/src/main/java/ru/vachok/networker/net/NetScannerSvc.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- modules/networker/src/main/java/ru/vachok/networker/net/NetScannerSvc.java	(date 1551792923875)
++++ modules/networker/src/main/java/ru/vachok/networker/net/NetScannerSvc.java	(date 1551792923875)
+@@ -26,11 +26,13 @@
+ import java.net.InetAddress;
+ import java.nio.file.Files;
+ import java.nio.file.Paths;
+-import java.sql.*;
++import java.sql.Connection;
++import java.sql.PreparedStatement;
++import java.sql.ResultSet;
++import java.sql.SQLException;
+ import java.text.MessageFormat;
+ import java.time.LocalDate;
+ import java.time.LocalTime;
+-import java.util.Date;
+ import java.util.*;
+ import java.util.concurrent.TimeUnit;
+ import java.util.concurrent.atomic.AtomicReference;
+@@ -44,7 +46,7 @@
+  <p>
+ 
+  @since 21.08.2018 (14:40) */
+-@SuppressWarnings ({"StaticMethodOnlyUsedInOneClass", "ClassWithMultipleLoggers"})
++@SuppressWarnings({"StaticMethodOnlyUsedInOneClass", "ClassWithMultipleLoggers", "ObjectAllocationInLoop"})
+ @Service(ConstantsNet.BEANNAME_NETSCANNERSVC)
+ public final class NetScannerSvc {
+ 
+@@ -82,28 +84,24 @@
+      */
+     private static final Set<String> PC_NAMES_SET = ConstantsNet.getPcNames();
+ 
+-    @SuppressWarnings ("CanBeFinal")
+-    private static Connection connection = null;
+-
+     /**
+      Неиспользуемые имена ПК
+ 
+      @see #getPCNamesPref(String)
+      */
+-    private static Collection<String> unusedNamesTree = new TreeSet<>();
++    private static final Collection<String> UNUSED_NAMES_TREE
++        = new TreeSet<>();
++
++    @SuppressWarnings("CanBeFinal")
++    private static Connection connection = null;
+ 
+     /**
+      new {@link NetScannerSvc}
+      */
+-    @SuppressWarnings ("CanBeFinal")
++    @SuppressWarnings("CanBeFinal")
+     private static NetScannerSvc netScannerSvcInst = new NetScannerSvc();
+ 
+-    /**
+-     Доступность пк. online|offline сколько раз.
+-
+-     @see NetScannerSvc#getInfoFromDB()
+-     */
+-    public static String inputWithInfoFromDB = null;
++    private static String inputWithInfoFromDB = null;
+ 
+     /**
+      Время инициализации
+@@ -131,32 +129,19 @@
+     private Map<String, Boolean> netWorkMap;
+ 
+     /**
+-     Сортирует по-алфавиту.
+-     <p>
+-     {@link NetScannerSvc#getThePc()} <br>
+-     {@link LastNetScan#getTimeLastScan()} <br>
+-     {@link NetScannerSvc#setThePc(java.lang.String)} <br>
+-     {@link NetScannerSvc#setInputWithInfoFromDB(String)}
++     Доступность пк. online|offline сколько раз.
+ 
+-     @param timeNow {@link ArrayList}, показываемый на странице.
++     @see NetScannerSvc#getInfoFromDB()
+      */
+-    private static void sortList(List<String> timeNow) {
+-        Collections.sort(timeNow);
+-
+-        String str = timeNow.get(timeNow.size() - 1);
+-        StringBuilder stringBuilder = new StringBuilder();
+-        stringBuilder.append(AppComponents.netScannerSvc().getThePc());
+-        stringBuilder.append("Last online: ");
+-        stringBuilder.append(str);
+-        stringBuilder.append(" (");
+-        stringBuilder.append(")<br>Actual on: ");
+-        stringBuilder.append(AppComponents.lastNetScan().getTimeLastScan());
+-        stringBuilder.append("</center></font>");
++    public static String getInputWithInfoFromDB() {
++        return inputWithInfoFromDB;
++    }
+ 
+-        String thePcWithDBInfo = stringBuilder.toString();
+-        AppComponents.netScannerSvc().setThePc(thePcWithDBInfo);
+-        setInputWithInfoFromDB(thePcWithDBInfo);
+-
++    /**
++     @param inputWithInfoFromDB {@link NetScannerSvc#getInfoFromDB()}
++     */
++    private static void setInputWithInfoFromDB(String inputWithInfoFromDB) {
++        NetScannerSvc.inputWithInfoFromDB = inputWithInfoFromDB;
+     }
+ 
+     /**
+@@ -166,7 +151,7 @@
+ 
+      @return web-страница с результатом
+      */
+-    @SuppressWarnings ("SameReturnValue")
++    @SuppressWarnings("SameReturnValue")
+     public String getInfoFromDB() {
+         StringBuilder sqlQBuilder = new StringBuilder();
+         String thePcLoc = AppComponents.netScannerSvc().getThePc();
+@@ -188,7 +173,7 @@
+                     } else {
+                         integersOff.add(onlineNow);
+                     }
+-                    StringBuilder stringBuilder = new StringBuilder();
++                    @SuppressWarnings("ObjectAllocationInLoop") StringBuilder stringBuilder = new StringBuilder();
+                     String namePP = "<center><h2>" + resultSet.getString("NamePP") +
+                         " information.<br></h2>" +
+                         "<font color = \"silver\">OnLines = " +
+@@ -211,30 +196,9 @@
+         return "ok";
+     }
+ 
+-    /**
+-     @return {@link #onLinePCsNum}
+-     */
+-    static int getOnLinePCs() {
+-        return onLinePCsNum;
+-    }
+-
+-    /**
+-     Выполняет {@link #getPCsAsync()}.
+-     <p>
+-
+-     @return {@link ConstantsNet#getPcNames()}
+-     @see #getPCNamesPref(String)
+-     @see NetScanCtr#scanIt(HttpServletRequest, Model, Date)
+-     */
+-    Set<String> getPcNames() {
+-        getPCsAsync();
+-        return PC_NAMES_SET;
+-    }
+-
+     /**
+      @return атрибут модели.
+      */
+-    @SuppressWarnings("WeakerAccess")
+     public String getThePc() {
+         return thePc;
+     }
+@@ -255,6 +219,26 @@
+         return netScannerSvcInst;
+     }
+ 
++    /**
++     @return {@link #onLinePCsNum}
++     */
++    static int getOnLinePCs() {
++        return onLinePCsNum;
++    }
++
++    /**
++     Выполняет {@link #getPCsAsync()}.
++     <p>
++
++     @return {@link ConstantsNet#getPcNames()}
++     @see #getPCNamesPref(String)
++     @see NetScanCtr#scanIt(HttpServletRequest, Model, Date)
++     */
++    Set<String> getPcNames() {
++        getPCsAsync();
++        return PC_NAMES_SET;
++    }
++
+     static {
+         try {
+             connection = new AppComponents().connection(ConstantsNet.DB_NAME);
+@@ -271,6 +255,131 @@
+         this.netWorkMap = AppComponents.lastNetScanMap();
+     }
+ 
++    /**
++     Сортирует по-алфавиту.
++     <p>
++     {@link NetScannerSvc#getThePc()} <br>
++     {@link LastNetScan#getTimeLastScan()} <br>
++     {@link NetScannerSvc#setThePc(java.lang.String)} <br>
++     {@link NetScannerSvc#setInputWithInfoFromDB(String)}
++
++     @param timeNow {@link ArrayList}, показываемый на странице.
++     */
++    private static void sortList(List<String> timeNow) {
++        Collections.sort(timeNow);
++
++        String str = timeNow.get(timeNow.size() - 1);
++        StringBuilder stringBuilder = new StringBuilder();
++        stringBuilder.append(AppComponents.netScannerSvc().getThePc());
++        stringBuilder.append("Last online: ");
++        stringBuilder.append(str);
++        stringBuilder.append(" (");
++        stringBuilder.append(")<br>Actual on: ");
++        stringBuilder.append(AppComponents.lastNetScan().getTimeLastScan());
++        stringBuilder.append("</center></font>");
++
++        String thePcWithDBInfo = stringBuilder.toString();
++        AppComponents.netScannerSvc().setThePc(thePcWithDBInfo);
++        setInputWithInfoFromDB(thePcWithDBInfo);
++    }
++
++    /**
++     Обнуление счётчика онлайн ПК.
++     <p>
++     Устанавливает {@link #LOCAL_PROPS} {@link ConstantsNet#ONLINEPC} в "". <br> Устававливает {@link NetScannerSvc#onLinePCsNum} = 0.
++
++     @see #runAfterAllScan()
++     */
++    private static void setOnLinePCsToZero() {
++        LOCAL_PROPS.setProperty(ConstantsNet.ONLINEPC, onLinePCsNum + "");
++        NetScannerSvc.onLinePCsNum = 0;
++    }
++
++    /**
++     Сканирование с определённым префиксом.
++     <p>
++     1. {@link #getCycleNames(String)} создаёт имена, для конкретного префикса. <br>
++     <i>ПК офлайн:</i> <br>
++     2. {@link #pcNameUnreached(String, InetAddress)}. Если комп не пингуется. Добавить в {@link #netWorkMap}. <br>
++     <i>ПК он-лайн:</i> <br>
++     3. {@link MoreInfoGetter#getSomeMore(String, boolean)}. Когда копм онлайн. Получает последний известный username. 4.
++     {@link MoreInfoGetter#getSomeMore(String, boolean)} получает статистику
++     (сколько online, сколько offline) <br> Создаётся ссылка {@code a href=\"/ad?"<b>имя</b>/a}. Добавляет в {@link #netWorkMap} put форматированную строку
++     {@code printStr, true} <br> Выводит в консоль
++     через {@link #LOGGER} строку {@code printStr}. <br> Добавляет в {@link ConstantsNet#getPcNames()}, имя, ip и {@code online true}. <br> При
++     возникновении {@link IOException}, например если имя ПК не
++     существует, добавляет {@code getMessage} в {@link #UNUSED_NAMES_TREE}
++     <p>
++     <i>По завершении цикла:</i> <br>
++     {@link #netWorkMap} put префикс, кол-во 5. {@link #writeDB()}. записывает в базу.
++     <p>
++
++     @param prefixPcName префикс имени ПК. {@link ConstantsNet#PC_PREFIXES}
++     @return состояние запрошенного сегмента
++     @see NetScanCtr#scanIt(HttpServletRequest, Model, Date)
++     @see #getPCsAsync()
++     */
++    @SuppressWarnings({"OverlyLongMethod", "ObjectAllocationInLoop"})
++    Set<String> getPCNamesPref(String prefixPcName) {
++        final long startMethTime = System.currentTimeMillis();
++        boolean reachable;
++        InetAddress byName;
++        Thread.currentThread().setPriority(8);
++        String pcsString = null;
++        for (String pcName : getCycleNames(prefixPcName)) {
++            try {
++                byName = InetAddress.getByName(pcName);
++                reachable = byName.isReachable(ConstantsFor.TIMEOUT_650);
++                if (!reachable) {
++                    pcNameUnreached(pcName, byName);
++                } else {
++                    StringBuilder build = new StringBuilder();
++                    build.append("<i><font color=\"yellow\">last name is ");
++                    build.append(MoreInfoGetter.getSomeMore(pcName, false));
++                    build.append("</i></font> ");
++                    build.append(MoreInfoGetter.getSomeMore(pcName, true));
++                    String onOffCounterAndLastUser = build.toString();
++
++                    StringBuilder stringBuilder = new StringBuilder();
++                    stringBuilder.append(" online ");
++                    stringBuilder.append(true);
++                    stringBuilder.append("<br>");
++                    StringBuilder builder = new StringBuilder();
++                    builder.append("<br><b><a href=\"/ad?");
++                    builder.append(pcName.split(".eatm")[0]);
++                    builder.append("\" >");
++                    builder.append(pcName);
++                    builder.append("</b></a>     ");
++                    builder.append(onOffCounterAndLastUser);
++                    builder.append(". ");
++
++                    String printStr = builder.toString();
++                    String pcOnline = stringBuilder.toString();
++                    String strToConsole = MessageFormat.format("{0} {1} | {2}", pcName, pcOnline, onOffCounterAndLastUser);
++
++                    netWorkMap.put(printStr, true);
++                    PC_NAMES_SET.add(pcName + ":" + byName.getHostAddress() + pcOnline);
++                    LOGGER.info(strToConsole);
++                }
++            } catch (IOException e) {
++                UNUSED_NAMES_TREE.add(e.getMessage());
++            }
++        }
++        netWorkMap.put("<h4>" + prefixPcName + "     " + PC_NAMES_SET.size() + "</h4>", true);
++        try {
++            pcsString = writeDB();
++        } catch (SQLException e) {
++            messageToUser.errorAlert(CLASS_NAME, "getPCNamesPref", e.getMessage());
++            FileSystemWorker.error("NetScannerSvc.getPCNamesPref", e);
++        }
++        String elapsedTime = "<b>Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethTime) + " sec.</b> " + LocalTime.now();
++        PC_NAMES_SET.add(elapsedTime);
++        ConstantsNet.setPcNames(PC_NAMES_SET);
++
++        LOGGER.info(pcsString);
++        return PC_NAMES_SET;
++    }
++
+     /**
+      Основной скан-метод.
+      <p>
+@@ -281,19 +390,18 @@
+ 
+      @see #getPcNames()
+      */
+-    @SuppressWarnings ("OverlyLongLambda")
++    @SuppressWarnings("OverlyLongLambda")
+     private void getPCsAsync() {
+         AtomicReference<String> msg = new AtomicReference<>("");
+         this.startClassTime = System.currentTimeMillis();
+         boolean fileCreate = fileCreate(true);
+-        try{
++        try {
+             new MessageToTray(new ActionCloseMsg(new MessageLocal())).info("NetScannerSvc started scan", ConstantsFor.getUpTime(), " File: " + fileCreate);
+-        }
+-        catch(NoClassDefFoundError e){
++        } catch (NoClassDefFoundError e) {
+             messageToUser.errorAlert(CLASS_NAME, "getPCsAsync", e.getMessage());
+         }
+         AppComponents.threadConfig().executeAsThread(() -> {
+-            for(String s : ConstantsNet.getPcPrefixes()){
++            for (String s : ConstantsNet.getPcPrefixes()) {
+                 this.thrName = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime) + "-sec";
+                 PC_NAMES_SET.clear();
+                 PC_NAMES_SET.addAll(getPCNamesPref(s));
+@@ -307,13 +415,6 @@
+         });
+     }
+ 
+-    /**
+-     @param inputWithInfoFromDB {@link NetScannerSvc#getInfoFromDB()}
+-     */
+-    public static void setInputWithInfoFromDB(String inputWithInfoFromDB) {
+-        NetScannerSvc.inputWithInfoFromDB = inputWithInfoFromDB;
+-    }
+-
+     /**
+      Статистика по-сканированию.
+      <p>
+@@ -337,20 +438,20 @@
+      {@link ESender#info(java.lang.String, java.lang.String, java.lang.String)}.
+      <p>
+      {@link FileSystemWorker#recFile(java.lang.String, java.util.List)} - {@code toFileList}. <br>
+-     {@link FileSystemWorker#recFile(java.lang.String, java.util.stream.Stream)} - {@link #unusedNamesTree}.
++     {@link FileSystemWorker#recFile(java.lang.String, java.util.stream.Stream)} - {@link #UNUSED_NAMES_TREE}.
+      <p>
+      {@link MessageSwing#infoTimer(int, java.lang.String)}
+      */
+-    @SuppressWarnings ("MagicNumber")
++    @SuppressWarnings("MagicNumber")
+     private void runAfterAllScan() {
+-        float upTime = ( float ) (TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime)) / ConstantsFor.ONE_HOUR_IN_MIN;
++        float upTime = (float) (TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime)) / ConstantsFor.ONE_HOUR_IN_MIN;
+         List<String> toFileList = new ArrayList<>();
+         MessageToUser mailMSG = new ESender(ConstantsFor.EADDR_143500GMAILCOM);
+ 
+         String compNameUsers = new TForms().fromArray(ConstantsNet.getCompnameUsersMap(), false);
+         String psUser = new TForms().fromArrayUsers(ConstantsNet.getPcUMap(), false);
+         String msgTimeSp =
+-            "NetScannerSvc.getPCsAsync method. " + ( float ) (System.currentTimeMillis() - startClassTime) / 1000 + ConstantsFor.STR_SEC_SPEND;
++            "NetScannerSvc.getPCsAsync method. " + (float) (System.currentTimeMillis() - startClassTime) / 1000 + ConstantsFor.STR_SEC_SPEND;
+         String valueOfPropLastScan = System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY) + "";
+ 
+         LOCAL_PROPS.setProperty(ConstantsNet.PR_LASTSCAN, valueOfPropLastScan);
+@@ -377,7 +478,7 @@
+             "getPCsAsync " + ConstantsFor.getUpTime() + " " + ConstantsFor.thisPC(),
+             bodyMsg);
+         FileSystemWorker.recFile(this.getClass().getSimpleName() + ".getPCsAsync", toFileList);
+-        FileSystemWorker.recFile("unused.ips", unusedNamesTree.stream());
++        FileSystemWorker.recFile("unused.ips", UNUSED_NAMES_TREE.stream());
+         new MessageSwing(656, 550, 50, 53).infoTimer(50,
+             "Daysec: " +
+                 LocalTime.now().toSecondOfDay() + " " +
+@@ -385,90 +486,6 @@
+                 bodyMsg);
+     }
+ 
+-    /**
+-     Сканирование с определённым префиксом.
+-     <p>
+-     1. {@link #getCycleNames(String)} создаёт имена, для конкретного префикса. <br>
+-     <i>ПК офлайн:</i> <br>
+-     2. {@link #pcNameUnreach(String, InetAddress)}. Если комп не пингуется. Добавить в {@link #netWorkMap}. <br>
+-     <i>ПК он-лайн:</i> <br>
+-     3. {@link MoreInfoGetter#getSomeMore(String, boolean)}. Когда копм онлайн. Получает последний известный username. 4.
+-     {@link MoreInfoGetter#getSomeMore(String, boolean)} получает статистику
+-     (сколько online, сколько offline) <br> Создаётся ссылка {@code a href=\"/ad?"<b>имя</b>/a}. Добавляет в {@link #netWorkMap} put форматированную строку
+-     {@code printStr, true} <br> Выводит в консоль
+-     через {@link #LOGGER} строку {@code printStr}. <br> Добавляет в {@link ConstantsNet#getPcNames()}, имя, ip и {@code online true}. <br> При
+-     возникновении {@link IOException}, например если имя ПК не
+-     существует, добавляет {@code getMessage} в {@link #unusedNamesTree}
+-     <p>
+-     <i>По завершении цикла:</i> <br>
+-     {@link #netWorkMap} put префикс, кол-во 5. {@link #writeDB()}. записывает в базу.
+-     <p>
+-
+-     @param prefixPcName префикс имени ПК. {@link ConstantsNet#PC_PREFIXES}
+-     @return состояние запрошенного сегмента
+-     @see NetScanCtr#scanIt(HttpServletRequest, Model, Date)
+-     @see #getPCsAsync()
+-     */
+-    Set<String> getPCNamesPref(String prefixPcName) {
+-        final long startMethTime = System.currentTimeMillis();
+-        boolean reachable;
+-        InetAddress byName;
+-        Thread.currentThread().setPriority(8);
+-        String pcsString = null;
+-        for (String pcName : getCycleNames(prefixPcName)) {
+-            try {
+-                byName = InetAddress.getByName(pcName);
+-                reachable = byName.isReachable(ConstantsFor.TIMEOUT_650);
+-                if (!reachable) {
+-                    pcNameUnreach(pcName, byName);
+-                } else {
+-                    StringBuilder bild = new StringBuilder();
+-                    bild.append("<i><font color=\"yellow\">last name is ");
+-                    bild.append(MoreInfoGetter.getSomeMore(pcName, false));
+-                    bild.append("</i></font> ");
+-                    bild.append(MoreInfoGetter.getSomeMore(pcName, true));
+-                    String onOffCounterAndLastUser = bild.toString();
+-
+-                    StringBuilder stringBuilder = new StringBuilder();
+-                    stringBuilder.append(" online ");
+-                    stringBuilder.append(true);
+-                    stringBuilder.append("<br>");
+-                    StringBuilder builder = new StringBuilder();
+-                    builder.append("<br><b><a href=\"/ad?");
+-                    builder.append(pcName.split(".eatm")[0]);
+-                    builder.append("\" >");
+-                    builder.append(pcName);
+-                    builder.append("</b></a>     ");
+-                    builder.append(onOffCounterAndLastUser);
+-                    builder.append(". ");
+-
+-                    String printStr = builder.toString();
+-                    String pcOnline = stringBuilder.toString();
+-                    String strToConsole = MessageFormat.format("{0} {1} | {2}", pcName, pcOnline, onOffCounterAndLastUser);
+-
+-                    netWorkMap.put(printStr, true);
+-                    PC_NAMES_SET.add(pcName + ":" + byName.getHostAddress() + pcOnline);
+-                    LOGGER.info(strToConsole);
+-                }
+-            } catch (IOException e) {
+-                unusedNamesTree.add(e.getMessage());
+-            }
+-        }
+-        netWorkMap.put("<h4>" + prefixPcName + "     " + PC_NAMES_SET.size() + "</h4>", true);
+-        try {
+-            pcsString = writeDB();
+-        } catch (SQLException e) {
+-            messageToUser.errorAlert(CLASS_NAME, "getPCNamesPref", e.getMessage());
+-            FileSystemWorker.error("NetScannerSvc.getPCNamesPref", e);
+-        }
+-        String elapsedTime = "<b>Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethTime) + " sec.</b> " + LocalTime.now();
+-        PC_NAMES_SET.add(elapsedTime);
+-        ConstantsNet.setPcNames(PC_NAMES_SET);
+-
+-        LOGGER.info(pcsString);
+-        return PC_NAMES_SET;
+-    }
+-
+     /**
+      Если ПК не пингуется
+      <p>
+@@ -481,7 +498,7 @@
+      @param byName {@link InetAddress}
+      @see #getPCNamesPref(String)
+      */
+-    private void pcNameUnreach(String pcName, InetAddress byName) {
++    private void pcNameUnreached(String pcName, InetAddress byName) {
+         String someMore = MoreInfoGetter.getSomeMore(pcName, false);
+         String onLines = new StringBuilder()
+             .append("online ")
+@@ -501,7 +518,7 @@
+      {@link Stream#distinct()} - запись файла {@link ConstantsNet#FILENAME_PCAUTODISTXT}.
+      <p>
+      {@link MessageCons#info(java.lang.String, java.lang.String, java.lang.String)} - покажем в консоль. <br>
+-     Cкопируем на 111.1, if {@link String#contains(java.lang.CharSequence)} "home". {@link ConstantsFor#thisPC()}.
++     Copy на 111.1, if {@link String#contains(java.lang.CharSequence)} "home". {@link ConstantsFor#thisPC()}.
+      */
+     private void countStat() {
+         List<String> readFileAsList = new ArrayList<>();
+@@ -529,73 +546,74 @@
+      1 {@link TForms#fromArray(List, boolean)}
+ 
+      @return строка в html-формате
++     @throws SQLException при записи в БД
+      @see #getPCNamesPref(String)
+      */
+-    @SuppressWarnings ({"OverlyComplexMethod", "OverlyLongMethod"})
++    @SuppressWarnings({"OverlyComplexMethod", "OverlyLongMethod"})
+     private String writeDB() throws SQLException {
+         List<String> list = new ArrayList<>();
+-        try(PreparedStatement p = connection.prepareStatement("insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow) values (?,?,?,?)")){
++        try (PreparedStatement p = connection.prepareStatement("insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow) values (?,?,?,?)")) {
+             List<String> toSort = new ArrayList<>(PC_NAMES_SET);
+             toSort.sort(null);
+-            for(String x : toSort){
++            for (String x : toSort) {
+                 String pcSerment = "Я не знаю...";
+                 LOGGER.info(x);
+-                if(x.contains("200.200")){
++                if (x.contains("200.200")) {
+                     pcSerment = "Торговый дом";
+                 }
+-                if(x.contains("200.201")){
++                if (x.contains("200.201")) {
+                     pcSerment = "IP телефоны";
+                 }
+-                if(x.contains("200.202")){
++                if (x.contains("200.202")) {
+                     pcSerment = "Техслужба";
+                 }
+-                if(x.contains("200.203")){
++                if (x.contains("200.203")) {
+                     pcSerment = "СКУД";
+                 }
+-                if(x.contains("200.204")){
++                if (x.contains("200.204")) {
+                     pcSerment = "Упаковка";
+                 }
+-                if(x.contains("200.205")){
++                if (x.contains("200.205")) {
+                     pcSerment = "МХВ";
+                 }
+-                if(x.contains("200.206")){
++                if (x.contains("200.206")) {
+                     pcSerment = "Здание склада 5";
+                 }
+-                if(x.contains("200.207")){
++                if (x.contains("200.207")) {
+                     pcSerment = "Сырокопоть";
+                 }
+-                if(x.contains("200.208")){
++                if (x.contains("200.208")) {
+                     pcSerment = "Участок убоя";
+                 }
+-                if(x.contains("200.209")){
++                if (x.contains("200.209")) {
+                     pcSerment = "Да ладно?";
+                 }
+-                if(x.contains("200.210")){
++                if (x.contains("200.210")) {
+                     pcSerment = "Мастера колб";
+                 }
+-                if(x.contains("200.212")){
++                if (x.contains("200.212")) {
+                     pcSerment = "Мастера деликатесов";
+                 }
+-                if(x.contains("200.213")){
++                if (x.contains("200.213")) {
+                     pcSerment = "2й этаж. АДМ.";
+                 }
+-                if(x.contains("200.214")){
++                if (x.contains("200.214")) {
+                     pcSerment = "WiFiCorp";
+                 }
+-                if(x.contains("200.215")){
++                if (x.contains("200.215")) {
+                     pcSerment = "WiFiFree";
+                 }
+-                if(x.contains("200.217")){
++                if (x.contains("200.217")) {
+                     pcSerment = "1й этаж АДМ";
+                 }
+-                if(x.contains("192.168")){
++                if (x.contains("192.168")) {
+                     pcSerment = "Может быть в разных местах...";
+                 }
+-                if(x.contains("172.16.200")){
++                if (x.contains("172.16.200")) {
+                     pcSerment = "Open VPN авторизация - сертификат";
+                 }
+                 boolean onLine = false;
+-                if(x.contains("true")){
++                if (x.contains("true")) {
+                     onLine = true;
+                 }
+                 String x1 = x.split(":")[0];
+@@ -638,18 +656,6 @@
+         return exists;
+     }
+ 
+-    /**
+-     Обнуление счётчика онлайн ПК.
+-     <p>
+-     Устанавливает {@link #LOCAL_PROPS} {@link ConstantsNet#ONLINEPC} в "". <br> Устававливает {@link NetScannerSvc#onLinePCsNum} = 0.
+-
+-     @see #runAfterAllScan()
+-     */
+-    private static void setOnLinePCsToZero() {
+-        LOCAL_PROPS.setProperty(ConstantsNet.ONLINEPC, onLinePCsNum + "");
+-        NetScannerSvc.onLinePCsNum = 0;
+-    }
+-
+     /**
+      1. {@link #getNamesCount(String)}
+ 
+@@ -705,24 +711,24 @@
+         return inDex;
+     }
+ 
++    @Override
++    public int hashCode() {
++        return Objects.hash(startClassTime, netWorkMap);
++    }
++
+     @Override
+     public boolean equals(Object o) {
+-        if(this==o){
++        if (this == o) {
+             return true;
+         }
+-        if(o==null || getClass()!=o.getClass()){
++        if (o == null || getClass() != o.getClass()) {
+             return false;
+         }
+-        NetScannerSvc that = ( NetScannerSvc ) o;
+-        return startClassTime==that.startClassTime &&
++        NetScannerSvc that = (NetScannerSvc) o;
++        return startClassTime == that.startClassTime &&
+             Objects.equals(netWorkMap, that.netWorkMap);
+     }
+ 
+-    @Override
+-    public int hashCode() {
+-        return Objects.hash(startClassTime, netWorkMap);
+-    }
+-
+     @Override
+     public String toString() {
+         final StringBuilder sb = new StringBuilder("NetScannerSvc{");
+@@ -732,7 +738,7 @@
+         sb.append(", FILENAME_PCAUTODISTXT='").append(ConstantsNet.FILENAME_PCAUTODISTXT).append('\'');
+         sb.append(", PC_NAMES_SET=").append(PC_NAMES_SET.size());
+         sb.append(", onLinePCsNum=").append(onLinePCsNum);
+-        sb.append(", unusedNamesTree=").append(unusedNamesTree.size());
++        sb.append(", UNUSED_NAMES_TREE=").append(UNUSED_NAMES_TREE.size());
+         sb.append(", netScannerSvcInst=").append(netScannerSvcInst.hashCode());
+         sb.append(", startClassTime=").append(new Date(startClassTime));
+         sb.append(", thePc='").append(thePc).append('\'');
+Index: modules/networker/src/main/java/ru/vachok/networker/net/DiapazonedScan.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- modules/networker/src/main/java/ru/vachok/networker/net/DiapazonedScan.java	(date 1551793304004)
++++ modules/networker/src/main/java/ru/vachok/networker/net/DiapazonedScan.java	(date 1551793304004)
+@@ -1,8 +1,6 @@
+ package ru.vachok.networker.net;
+ 
+ 
+-import org.slf4j.Logger;
+-import org.slf4j.LoggerFactory;
+ import org.springframework.ui.Model;
+ import ru.vachok.messenger.MessageToUser;
+ import ru.vachok.networker.ConstantsFor;
+@@ -35,11 +33,6 @@
+  @since 19.12.2018 (11:35) */
+ public class DiapazonedScan implements Runnable {
+ 
+-    /**
+-     {@link AppComponents#getLogger(String)}
+-     */
+-    private static final Logger LOGGER = LoggerFactory.getLogger(DiapazonedScan.class.getSimpleName());
+-
+     /**
+      {@link NetScanFileWorker#getI()}
+      */
+@@ -86,7 +79,6 @@
+      */
+     public static DiapazonedScan getInstance() {
+         messageToUser.warn("DiapazonedScan.getInstance");
+-        messageToUser.info(ConstantsFor.STR_INPUT_OUTPUT, "", "ru.vachok.networker.net.DiapazonedScan");
+         return OUR_INSTANCE;
+     }
+ 
+@@ -103,7 +95,7 @@
+      Приватный конструктор
+      */
+     private DiapazonedScan() {
+-        LOGGER.warn("DiapazonedScan.DiapazonedScan");
++        AppComponents.threadConfig().thrNameSet("DIA");
+     }
+ 
+     /**
+@@ -140,11 +132,10 @@
+             String hostName = byAddress.getHostName();
+             String hostAddress = byAddress.getHostAddress();
+             printWriter.println(hostName + " " + hostAddress);
+-            NetScanFileWorker.getI().setLastStamp(System.currentTimeMillis());
+             ALL_DEVICES_LOCAL_DEQUE.add("<font color=\"green\">" + toString + FONT_BR_STR);
+ 
+             String valStr = "host = " + hostName + "/" + hostAddress + " is online: " + true;
+-            LOGGER.info(valStr);
++            messageToUser.info(valStr);
+         } else {
+             AppComponents.threadConfig().thrNameSet(ALL_DEVICES_LOCAL_DEQUE.size() + " of " + ConstantsNet.IPS_IN_VELKOM_VLAN);
+             ALL_DEVICES_LOCAL_DEQUE.add("<font color=\"red\">" + toString + FONT_BR_STR);
+@@ -205,15 +196,16 @@
+     }
+ 
+     /**
+-     192.168.11-14.254
++     Сканер 192.168.11-14.254
+ 
+-     @param stArt таймер начала общего скана
+      @see #scanNew()
+      */
+     @SuppressWarnings("MagicNumber")
+     private void scanOldLan() {
+         AppComponents.threadConfig().thrNameSet("DIAold");
++
+         File oldLANFile = new File(ConstantsNet.FILENAME_OLDLANTXT);
++        String classMeth = "DiapazonedScan.scanOldLan";
+         Path p =
+             Paths.get(new StringBuilder().append(ROOT_PATH_STR).append("\\lan\\192_").append(System.currentTimeMillis() / 1000).append(".scan").toString());
+ 
+@@ -223,13 +215,13 @@
+              PrintWriter printWriter = new PrintWriter(outputStream, true)) {
+             scanLan(printWriter, 11, 15, stArt, "192.168.");
+         } catch (IOException e) {
+-            LOGGER.error(e.getMessage());
++            messageToUser.errorAlert("DiapazonedScan", "scanOldLan", e.getMessage());
++            FileSystemWorker.error(classMeth, e);
+         }
+         boolean isFileCopied = FileSystemWorker.copyOrDelFile(oldLANFile, p.toAbsolutePath().toString(), false);
+         NET_SCAN_FILE_WORKER_INST.setOldLanLastScan(p.toFile());
+-
+-        messageToUser.info("DiapazonedScan.scanOldLan", "p.toAbsolutePath()", p.toAbsolutePath().toString());
+-        messageToUser.info("DiapazonedScan.scanOldLan", STR_ISFILECOPIED, String.valueOf(isFileCopied));
++        messageToUser.info(classMeth, "p.toAbsolutePath()", p.toAbsolutePath().toString());
++        messageToUser.info(classMeth, STR_ISFILECOPIED, String.valueOf(isFileCopied));
+ 
+ 
+     }
+@@ -237,8 +229,6 @@
+     private void writeToFileByConditions(PrintWriter printWriter, long stArt) throws IOException {
+         AppComponents.threadConfig().thrNameSet("DIAfile");
+ 
+-        messageToUser.info("printWriter = [" + printWriter.checkError() + "], stArt = [" + stArt + "]", ConstantsFor.STR_RETURNS, "void");
+-
+         if (ALL_DEVICES_LOCAL_DEQUE.remainingCapacity() == 0) {
+             messageToUser.infoNoTitles(new TForms().fromArray(ALL_DEVICES_LOCAL_DEQUE, false));
+             ALL_DEVICES_LOCAL_DEQUE.clear();
+@@ -246,7 +236,6 @@
+         } else {
+             scanLan(printWriter, 200, 218, stArt, "10.200.");
+         }
+-        NetScanFileWorker.getI().setLastStamp(System.currentTimeMillis());
+     }
+ 
+     /**
+Index: modules/networker/src/main/java/ru/vachok/networker/net/ConditionChecker.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- modules/networker/src/main/java/ru/vachok/networker/net/ConditionChecker.java	(date 1551792923859)
++++ modules/networker/src/main/java/ru/vachok/networker/net/ConditionChecker.java	(date 1551792923859)
+@@ -13,7 +13,10 @@
+ 
+ import javax.servlet.http.HttpServletResponse;
+ import java.io.IOException;
+-import java.sql.*;
++import java.sql.Connection;
++import java.sql.PreparedStatement;
++import java.sql.ResultSet;
++import java.sql.SQLException;
+ import java.util.ArrayList;
+ import java.util.Date;
+ import java.util.List;
+@@ -31,10 +34,11 @@
+ 
+     private static final String CLASS_NAME = ConditionChecker.class.getSimpleName();
+ 
++    private static final MessageToUser messageToUser = new MessageLocal();
++
++    @SuppressWarnings("CanBeFinal")
+     private static Connection connection;
+ 
+-    private static MessageToUser messageToUser = new MessageLocal();
+-
+     private ConditionChecker() {
+         messageToUser.infoNoTitles("ConditionChecker.ConditionChecker");
+     }
+@@ -72,7 +76,7 @@
+             statement.setString(1, pcName);
+             try(ResultSet resultSet = statement.executeQuery()){
+                 while(resultSet.next()){
+-                    ADComputer adComputer = new ADComputer();
++                    @SuppressWarnings("ObjectAllocationInLoop") ADComputer adComputer = new ADComputer();
+                     int onlineNow = resultSet.getInt(ConstantsNet.ONLINE_NOW);
+                     if(onlineNow==1){
+                         onLine.add(onlineNow);
+@@ -154,11 +158,16 @@
+ 
+     /**
+      Если размер {@link ConstantsNet#getAllDevices()} более 0
+-     <p> <br>
+-     <b>Схема:</b> <br>
+-     Убедимся в правильности {@link NetScanFileWorker} : <br> 1. {@link DiapazonedScan#getNetScanFileWorkerInst()} <br> 2.
+-     {@link NetScanFileWorker#equals(java.lang.Object)} <br><br> Если всё верно: 3.
+-     {@link ScanOnline#getI()} + {@link ScanOnline#toString()}
++     <p>
++     {@code scansInMin} - кол-во сканирований в минуту для рассчёта времени. {@code minLeft} - примерное кол-во оставшихся минут.
++     {@code attributeValue} - то, что видим на страничке.
++     <p>
++     <b>{@link Model#addAttribute(Object)}:</b> <br>
++     {@link ConstantsFor#ATT_TITLE} = {@code attributeValue} <br>
++     {@code pcs} = {@link ConstantsNet#FILENAME_AVAILABLELASTTXT} + {@link ConstantsNet#FILENAME_OLDLANTXT} + {@link ConstantsNet#FILENAME_SERVTXT}
++     <p>
++     <b>{@link HttpServletResponse#addHeader(String, String)}:</b><br>
++     {@link ConstantsFor#HEAD_REFRESH} = 45
+ 
+      @param model    {@link Model}
+      @param response {@link HttpServletResponse}
+@@ -166,7 +175,8 @@
+     private static void allDevNotNull(Model model, HttpServletResponse response) {
+         final float scansInMin = 63.9f;
+         float minLeft = ConstantsNet.getAllDevices().remainingCapacity() / scansInMin;
+-        String attributeValue = new StringBuilder().append(minLeft).append(" ~minLeft. ")
++        String attributeValue = new StringBuilder()
++            .append(minLeft).append(" ~minLeft. ")
+             .append(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(( long ) minLeft))).toString();
+         model.addAttribute(ConstantsFor.ATT_TITLE, attributeValue);
+         model.addAttribute("pcs", FileSystemWorker
+Index: modules/networker/src/main/java/ru/vachok/networker/net/NetScanFileWorker.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- modules/networker/src/main/java/ru/vachok/networker/net/NetScanFileWorker.java	(date 1551792923872)
++++ modules/networker/src/main/java/ru/vachok/networker/net/NetScanFileWorker.java	(date 1551792923872)
+@@ -1,15 +1,14 @@
+ package ru.vachok.networker.net;
+ 
+ 
+-import org.slf4j.Logger;
+ import org.springframework.context.annotation.Scope;
+ import org.springframework.stereotype.Component;
+-import ru.vachok.messenger.MessageCons;
+ import ru.vachok.messenger.MessageToUser;
+ import ru.vachok.networker.ConstantsFor;
+ import ru.vachok.networker.componentsrepo.AppComponents;
+ import ru.vachok.networker.fileworks.FileSystemWorker;
+ import ru.vachok.networker.net.enums.ConstantsNet;
++import ru.vachok.networker.services.MessageLocal;
+ 
+ import java.io.File;
+ import java.io.IOException;
+@@ -26,11 +25,9 @@
+ @Component
+ class NetScanFileWorker {
+ 
+-    private static final Logger LOGGER = AppComponents.getLogger(NetScanFileWorker.class.getSimpleName());
++    private static final NetScanFileWorker OUR_INST = new NetScanFileWorker();
+ 
+-    private static NetScanFileWorker ourInst = new NetScanFileWorker();
+-
+-    private static MessageToUser messageToUser = new MessageCons();
++    private static final MessageToUser messageToUser = new MessageLocal();
+ 
+     private long lastStamp = System.currentTimeMillis();
+ 
+@@ -40,11 +37,15 @@
+     private File newLanLastScan = new File(ConstantsNet.FILENAME_AVAILABLELASTTXT);
+ 
+     /**
+-     {@link DiapazonedScan#scanOldLan(long)}
++     new {@link File} ({@link ConstantsNet#FILENAME_OLDLANTXT})
+      */
+     private File oldLanLastScan = new File(ConstantsNet.FILENAME_OLDLANTXT);
+ 
+-    private File srvFile;
++    private File srvFile = new File(ConstantsNet.FILENAME_SERVTXT);
++
++    void setSrvScan(File srvFile) {
++        messageToUser.info("NetScanFileWorker.setSrvScan", "srvFile", " = " + srvFile.getAbsolutePath());
++    }
+ 
+     /**
+      @param newLanLastScan {@link #newLanLastScan}
+@@ -71,12 +72,13 @@
+     }
+ 
+     public static NetScanFileWorker getI() {
+-        return ourInst;
++        return OUR_INST;
+     }
+ 
+     /**
+      @return {@link #newLanLastScan}, как строчка
+      */
++    @SuppressWarnings("unused")
+     String getNewLanLastScanAsStr() {
+         try {
+             return FileSystemWorker.readFile(newLanLastScan.getAbsolutePath());
+@@ -94,7 +96,7 @@
+      @see NetListKeeper#onlinesAddressesList()
+      */
+     Deque<String> getListOfOnlineDev() throws IOException {
+-        LOGGER.warn("NetScanFileWorker.getListOfOnlineDev");
++        AppComponents.threadConfig().thrNameSet("ONDEQ");
+         Deque<String> retDeque = new ArrayDeque<>();
+         String msg = newLanLastScan.getAbsolutePath() + oldLanLastScan.getAbsolutePath() + " is created by " + getClass().getSimpleName();
+ 
+@@ -110,6 +112,12 @@
+             boolean oldLanLastScanNewFile = oldLanLastScan.createNewFile();
+             msg = oldLanLastScanNewFile + " " + msg;
+         }
++        if (srvFile.exists() && srvFile.canRead()) {
++            retDeque.addAll(FileSystemWorker.readFileToList(srvFile.getAbsolutePath()));
++        } else {
++            boolean srvFileScanNewFile = oldLanLastScan.createNewFile();
++            msg = srvFileScanNewFile + " " + msg;
++        }
+         messageToUser.info(msg + " " + retDeque.size(), "positions] [Returns:", "java.util.Deque<java.lang.String>");
+         return retDeque;
+     }
+@@ -117,6 +125,7 @@
+     /**
+      @return {@link #oldLanLastScan}, как строчка
+      */
++    @SuppressWarnings("unused")
+     String getOldLanLastScanAsStr() {
+         try {
+             return FileSystemWorker.readFile(oldLanLastScan.getAbsolutePath());
+@@ -128,11 +137,6 @@
+     private NetScanFileWorker() {
+     }
+ 
+-    public void setSrvScan(File srvFile) {
+-        this.srvFile = srvFile;
+-        messageToUser.info("NetScanFileWorker.setSrvScan", "srvFile", " = " + srvFile.getAbsolutePath());
+-    }
+-
+     @Override
+     public int hashCode() {
+         return Objects.hash(newLanLastScan, oldLanLastScan);
+@@ -157,7 +161,7 @@
+         sb.append("lastStamp=").append(lastStamp);
+         sb.append(", newLanLastScan=").append(newLanLastScan.getAbsolutePath());
+         sb.append(", oldLanLastScan=").append(oldLanLastScan.getAbsolutePath());
+-        sb.append(", ourInst=").append(ourInst.hashCode());
++        sb.append(", OUR_INST=").append(OUR_INST.hashCode());
+         sb.append('}');
+         return sb.toString();
+     }
+Index: modules/networker/src/main/java/ru/vachok/networker/config/ThreadConfig.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- modules/networker/src/main/java/ru/vachok/networker/config/ThreadConfig.java	(date 1551792923854)
++++ modules/networker/src/main/java/ru/vachok/networker/config/ThreadConfig.java	(date 1551792923854)
+@@ -43,11 +43,6 @@
+      */
+     private static final ThreadConfig THREAD_CONFIG_INST = new ThreadConfig();
+ 
+-    /**
+-     Название метода
+-     */
+-    private static final String EXECUTE_AS_THREAD_METHNAME = "ThreadConfig.executeAsThread";
+-
+     private static final ThreadLocal<Float> upTimer = ThreadLocal.withInitial(() -> (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN);
+ 
+     /**
+@@ -60,7 +55,7 @@
+      */
+     public ThreadPoolTaskExecutor getTaskExecutor() {
+         boolean prestartCoreThread = TASK_EXECUTOR.getThreadPoolExecutor().prestartCoreThread();
+-        TASK_EXECUTOR.getThreadPoolExecutor().setCorePoolSize(3);
++        TASK_EXECUTOR.getThreadPoolExecutor().setCorePoolSize(30);
+         TASK_EXECUTOR.setQueueCapacity(700);
+         TASK_EXECUTOR.setWaitForTasksToCompleteOnShutdown(true);
+         TASK_EXECUTOR.setAwaitTerminationSeconds(8);
+@@ -81,8 +76,6 @@
+     }
+ 
+     public ThreadPoolTaskScheduler getTaskScheduler() {
+-        ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = TASK_SCHEDULER.getScheduledThreadPoolExecutor();
+-        scheduledThreadPoolExecutor.setCorePoolSize(10);
+         TASK_SCHEDULER.setThreadNamePrefix("TS-");
+         TASK_SCHEDULER.setThreadPriority(2);
+         TASK_SCHEDULER.setWaitForTasksToCompleteOnShutdown(false);
+@@ -120,7 +113,7 @@
+     }
+ 
+     public void thrNameSet(String className) {
+-        float localUptimer = (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN;
++        float localUptimer = (float)(System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000f / ConstantsFor.ONE_HOUR_IN_MIN;
+         String delaysCount = String.format("%.01f", (localUptimer / ConstantsFor.DELAY));
+ 
+         String upStr = String.format("%.01f", localUptimer);
+@@ -142,13 +135,13 @@
+ 
+      @param r {@link Runnable}
+      */
+-    public void executeAsThread(Runnable r) {
++    public boolean executeAsThread(Runnable r) {
+         CustomizableThreadCreator customizableThreadCreator = new CustomizableThreadCreator("AsThread: ");
+         customizableThreadCreator.setThreadPriority(9);
+         Thread thread = customizableThreadCreator.createThread(r);
+         Executor asyncExecutor = null;
+-        if (new ASExec(TASK_EXECUTOR).getAsyncExecutor() != null) {
+-            asyncExecutor = new ASExec(TASK_EXECUTOR).getAsyncExecutor();
++        if (new ASExec().getAsyncExecutor() != null) {
++            asyncExecutor = new ASExec().getAsyncExecutor();
+ 
+         } else {
+             if(upTimer.get() > ConstantsFor.ONE_HOUR_IN_MIN){
+@@ -158,11 +151,12 @@
+             messageToUser.errorAlert(getClass().getSimpleName(), "asyncExecutor is " + null, thread.getName());
+         }
+         if (asyncExecutor != null) {
+-            asyncExecutor.execute(thread::start);
++            asyncExecutor.execute(r);
++            return true;
+         } else {
+             thread.start();
+-            new MessageSwing().errorAlert(EXECUTE_AS_THREAD_METHNAME, "thread.isAlive()", " = " + thread.isAlive());
+             new TaskDestroyer().rejectedExecution(r, TASK_EXECUTOR.getThreadPoolExecutor());
++            return false;
+         }
+     }
+ 
+@@ -189,10 +183,10 @@
+ 
+         private ThreadPoolTaskExecutor threadPoolTaskExecutor;
+ 
+-        ASExec(ThreadPoolTaskExecutor threadPoolTaskExecutor) {
+-            threadPoolTaskExecutor.getThreadPoolExecutor().purge();
+-            this.threadPoolTaskExecutor = threadPoolTaskExecutor;
+-            threadPoolTaskExecutor.setRejectedExecutionHandler(new TasksReRunner());
++        ASExec() {
++            ThreadConfig.TASK_EXECUTOR.getThreadPoolExecutor().purge();
++            this.threadPoolTaskExecutor = ThreadConfig.TASK_EXECUTOR;
++            ThreadConfig.TASK_EXECUTOR.setRejectedExecutionHandler(new TasksReRunner());
+         }
+ 
+         @Override
+@@ -285,7 +279,7 @@
+         @Override
+         public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
+             BlockingQueue<Runnable> queue = executor.getQueue();
+-            queue.forEach(x -> queue.remove(x));
++            queue.forEach(queue::remove);
+             executeAsThread(r);
+         }
+     }
+Index: modules/networker/src/main/java/ru/vachok/networker/systray/ActionExit.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- modules/networker/src/main/java/ru/vachok/networker/systray/ActionExit.java	(date 1551792923881)
++++ modules/networker/src/main/java/ru/vachok/networker/systray/ActionExit.java	(date 1551792923881)
+@@ -2,7 +2,6 @@
+ 
+ 
+ import ru.vachok.messenger.MessageToUser;
+-import ru.vachok.networker.ConstantsFor;
+ import ru.vachok.networker.ExitApp;
+ import ru.vachok.networker.componentsrepo.AppComponents;
+ import ru.vachok.networker.net.NetListKeeper;
+@@ -12,6 +11,10 @@
+ import java.awt.event.ActionEvent;
+ import java.io.FileOutputStream;
+ import java.io.IOException;
++import java.util.concurrent.ExecutionException;
++import java.util.concurrent.Future;
++import java.util.concurrent.TimeUnit;
++import java.util.concurrent.TimeoutException;
+ 
+ /**
+  Action Exit App
+@@ -34,9 +37,12 @@
+     public void actionPerformed(ActionEvent e) {
+         messageToUser.infoNoTitles(getClass().getSimpleName() + ".actionPerformed");
+         try (FileOutputStream fileOutputStream = new FileOutputStream(NetListKeeper.class.getSimpleName() + ".ser")) {
+-            AppComponents.threadConfig().executeAsThread(new ExitApp(reason, fileOutputStream, NetListKeeper.class));
+-        } catch (IOException ex) {
+-            messageToUser.errorAlert("ActionExit", ConstantsFor.METHNAME_ACTIONPERFORMED, ex.getMessage());
++            Future<?> future = AppComponents.threadConfig().getTaskExecutor().submit(new ExitApp(reason, fileOutputStream, NetListKeeper.class));
++            future.get(30, TimeUnit.SECONDS);
++        } catch (IOException | InterruptedException | ExecutionException | TimeoutException ex) {
++            messageToUser.errorAlert("ActionExit", "actionPerformed", ex.getMessage());
++            System.exit(666);
++            Thread.currentThread().interrupt();
+         }
+     }
+ }
+Index: modules/networker/src/main/java/ru/vachok/networker/services/WhoIsWithSRV.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- modules/networker/src/main/java/ru/vachok/networker/services/WhoIsWithSRV.java	(date 1551792923879)
++++ modules/networker/src/main/java/ru/vachok/networker/services/WhoIsWithSRV.java	(date 1551792923879)
+@@ -8,11 +8,16 @@
+ import ru.vachok.networker.ConstantsFor;
+ import ru.vachok.networker.SSHFactory;
+ import ru.vachok.networker.TForms;
++import ru.vachok.networker.componentsrepo.AppComponents;
+ import ru.vachok.networker.componentsrepo.PageFooter;
+ 
+ import java.io.IOException;
+ import java.net.InetAddress;
+ import java.util.Locale;
++import java.util.concurrent.ExecutionException;
++import java.util.concurrent.Future;
++import java.util.concurrent.TimeUnit;
++import java.util.concurrent.TimeoutException;
+ 
+ 
+ @Service
+@@ -68,11 +73,14 @@
+     }
+ 
+     private String traceRt(String inetAddr) {
+-        SSHFactory.Builder sshFactoryBu = new SSHFactory.Builder(ConstantsFor.IPADDR_SRVGIT, "traceroute " + inetAddr, getClass().getSimpleName());
+-        String retStr = sshFactoryBu.build().call();
++        SSHFactory sshFactory = new SSHFactory.Builder(ConstantsFor.IPADDR_SRVGIT, "traceroute " + inetAddr, getClass().getSimpleName()).build();
++        Future<String> stringFuture = AppComponents.threadConfig().getTaskExecutor().submit(sshFactory);
++        String retStr;
+         try {
++            retStr = stringFuture.get(10, TimeUnit.SECONDS);
+             retStr = retStr.split(" = ")[1].replaceAll("(\\s\\d?\\d\\s)", "<br>").trim();
+-        } catch (ArrayIndexOutOfBoundsException e) {
++        } catch (ArrayIndexOutOfBoundsException | InterruptedException | ExecutionException | TimeoutException e) {
++            Thread.currentThread().interrupt();
+             return e.getMessage();
+         }
+ 
+Index: modules/networker/src/main/java/ru/vachok/networker/controller/ServiceInfoCtrl.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- modules/networker/src/main/java/ru/vachok/networker/controller/ServiceInfoCtrl.java	(date 1551792923856)
++++ modules/networker/src/main/java/ru/vachok/networker/controller/ServiceInfoCtrl.java	(date 1551792923856)
+@@ -1,13 +1,14 @@
+ package ru.vachok.networker.controller;
+ 
+ 
+-import org.slf4j.Logger;
+-import org.slf4j.LoggerFactory;
+ import org.springframework.stereotype.Controller;
+ import org.springframework.ui.Model;
+ import org.springframework.web.bind.annotation.GetMapping;
+ import ru.vachok.messenger.MessageToUser;
+-import ru.vachok.networker.*;
++import ru.vachok.networker.AppInfoOnLoad;
++import ru.vachok.networker.ConstantsFor;
++import ru.vachok.networker.ExitApp;
++import ru.vachok.networker.TForms;
+ import ru.vachok.networker.componentsrepo.AppComponents;
+ import ru.vachok.networker.componentsrepo.PageFooter;
+ import ru.vachok.networker.componentsrepo.Visitor;
+@@ -41,15 +42,10 @@
+ @Controller
+ public class ServiceInfoCtrl {
+ 
+-    /**
+-     {@link LoggerFactory#getLogger(Class)}
+-     */
+-    private static final Logger LOGGER = LoggerFactory.getLogger(ServiceInfoCtrl.class.getSimpleName());
+-
+-    private boolean authReq = false;
+-
+     private static final Properties LOC_PR = AppComponents.getOrSetProps();
+ 
++    private boolean authReq = false;
++
+     /**
+      {@link Visitor}
+      */
+@@ -57,45 +53,6 @@
+ 
+     private MessageToUser messageToUser = new MessageLocal();
+ 
+-    private void modModMaker(Model model, HttpServletRequest request, Visitor visitor) throws ExecutionException, InterruptedException {
+-        this.visitor = ConstantsFor.getVis(request);
+-        Callable<Long> callWhenCome = new SpeedChecker();
+-        Future<Long> whenCome = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(callWhenCome);
+-        Date comeD = new Date(whenCome.get());
+-        String resValue = new StringBuilder()
+-            .append(MyCalen.toStringS()).append("<br><br>")
+-            .append("<b><i>").append(AppComponents.versionInfo().toString()).append("</i></b><p><font color=\"orange\">")
+-            .append(ConstantsNet.getSshMapStr()).append("</font><p>")
+-            .append(new AppInfoOnLoad().toString()).append(" ").append(AppInfoOnLoad.class.getSimpleName()).append("<p>")
+-            .append(new TForms().fromArray(LOC_PR, true)).append("<p>")
+-            .append("<p><font color=\"grey\">").append(listFilesToReadStr()).append("</font>")
+-            .toString();
+-        model.addAttribute(ConstantsFor.ATT_TITLE, getLast() + " (" + getLast() * ConstantsFor.ONE_DAY_HOURS + ")");
+-        model.addAttribute("mail", percToEnd(comeD, 9));
+-        model.addAttribute("ping", pingGit());
+-        model.addAttribute("urls", new StringBuilder()
+-            .append("Запущено - ")
+-            .append(new Date(ConstantsFor.START_STAMP)).append(ConstantsFor.getUpTime())
+-            .append(" (<i>rnd delay is ")
+-            .append(ConstantsFor.DELAY).append(" : ")
+-            .append(String.format("%.02f",
+-                ( float ) (ConstantsFor.getAtomicTime() - ConstantsFor.START_STAMP) / TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY))).append(" delays)")
+-            .append("</i><br>Точное время: ")
+-            .append(ConstantsFor.getAtomicTime())
+-            .append(".<br> Состояние памяти (МБ): <font color=\"#82caff\">")
+-            .append(ConstantsFor.getMemoryInfo())
+-            .append("</font><br>")
+-            .append(DiapazonedScan.getInstance().toString())
+-            .append("<br>")
+-            .append(AppComponents.threadConfig().toString())
+-            .toString());
+-        model.addAttribute("request", prepareRequest(request));
+-        model.addAttribute(ConstantsFor.ATT_VISIT, visitor.toString());
+-        model.addAttribute("res", resValue);
+-        model.addAttribute("back", request.getHeader(ConstantsFor.ATT_REFERER.toLowerCase()));
+-        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<br>" + getJREVers());
+-    }
+-
+     private float getLast() {
+         return TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() -
+             Long.parseLong(LOC_PR.getProperty("lasts", 1544816520000L + ""))) / 60f / 24f;
+@@ -120,82 +77,48 @@
+      @throws ExecutionException    запуск {@link #modModMaker(Model, HttpServletRequest, Visitor)}
+      @throws InterruptedException  запуск {@link #modModMaker(Model, HttpServletRequest, Visitor)}
+      */
+-    @GetMapping ("/serviceinfo")
+-    public String infoMapping(Model model, HttpServletRequest request, HttpServletResponse response) throws AccessDeniedException, ExecutionException,
+-        InterruptedException {
+-        Thread.currentThread().setName("ServiceInfoCtrl.infoMapping");
++    @GetMapping("/serviceinfo")
++    public String infoMapping(Model model, HttpServletRequest request, HttpServletResponse response) throws AccessDeniedException, ExecutionException, InterruptedException {
++        AppComponents.threadConfig().thrNameSet("sINFO");
+         this.visitor = new AppComponents().visitor(request);
+         AppComponents.threadConfig().executeAsThread(new SpeedChecker());
+         this.authReq =
+             Stream.of("0:0:0:0", "10.10.111", "10.200.213.85", "172.16.20", "10.200.214.80").anyMatch(sP -> request.getRemoteAddr().contains(sP));
+-        if(authReq){
++        if (authReq) {
+             modModMaker(model, request, visitor);
+             response.addHeader(ConstantsFor.HEAD_REFRESH, "90");
+             return "vir";
+-        }
+-        else{
++        } else {
+             throw new AccessDeniedException("Sorry. Denied");
+         }
+     }
+ 
+-    @GetMapping ("/pcoff")
++    @GetMapping("/pcoff")
+     public void offPC(Model model) throws IOException {
+-        if(authReq){
++        if (authReq) {
+             Runtime.getRuntime().exec(ConstantsFor.COM_SHUTDOWN_P_F);
+-        }
+-        else{
++        } else {
+             throw new AccessDeniedException("Denied for " + visitor.toString());
+         }
+     }
+ 
+-    @GetMapping ("/stop")
++    @GetMapping("/stop")
+     public String closeApp() throws AccessDeniedException {
+-        if(authReq){
+-            AppComponents.threadConfig().executeAsThread(new ExitApp(ConstantsFor.getUpTime() + " " + ConstantsFor.getMemoryInfo()));
+-        }
+-        else{
++        if (authReq) {
++            Future<?> future = AppComponents.threadConfig().getTaskExecutor().submit(new ExitApp(ConstantsFor.getUpTime() + " " + ConstantsFor.getMemoryInfo()));
++            try {
++                future.get(30, TimeUnit.SECONDS);
++            } catch (InterruptedException | TimeoutException | ExecutionException e) {
++                messageToUser.info("ServiceInfoCtrl.closeApp", "e.getMessage()", " = " + e.getMessage());
++                Thread.currentThread().interrupt();
++                System.exit(666);
++            }
++        } else {
+             throw new AccessDeniedException("DENY!");
+         }
+         return "ok";
+     }
+ 
+-    private String prepareRequest(HttpServletRequest request) {
+-        StringBuilder stringBuilder = new StringBuilder();
+-        stringBuilder.append("<center><h3>Заголовки</h3></center>");
+-        String bBr = "</b><br>";
+-        stringBuilder
+-            .append("HOST: ")
+-            .append("<b>").append(request.getHeader("host")).append(bBr);
+-        stringBuilder
+-            .append("CONNECTION: ")
+-            .append("<b>").append(request.getHeader(ConstantsNet.STR_CONNECTION)).append(bBr);
+-        stringBuilder
+-            .append("upgrade-insecure-requests: ".toUpperCase())
+-            .append("<b>").append(request.getHeader("upgrade-insecure-requests")).append(bBr);
+-        stringBuilder
+-            .append("user-agent: ".toUpperCase())
+-            .append("<b>").append(request.getHeader("user-agent")).append(bBr);
+-        stringBuilder
+-            .append("ACCEPT: ")
+-            .append("<b>").append(request.getHeader("accept")).append(bBr);
+-        stringBuilder
+-            .append("referer: ".toUpperCase())
+-            .append("<b>").append(request.getHeader(ConstantsFor.HEAD_REFERER)).append(bBr);
+-        stringBuilder
+-            .append("accept-encoding: ".toUpperCase())
+-            .append("<b>").append(request.getHeader("accept-encoding")).append(bBr);
+-        stringBuilder
+-            .append("accept-language: ".toUpperCase())
+-            .append("<b>").append(request.getHeader("accept-language")).append(bBr);
+-        stringBuilder
+-            .append("cookie: ".toUpperCase())
+-            .append("<b>").append(request.getHeader("cookie")).append(bBr);
+-
+-        stringBuilder.append("<center><h3>Атрибуты</h3></center>");
+-        stringBuilder.append(new TForms().fromEnum(request.getAttributeNames(), true));
+-        return stringBuilder.toString();
+-    }
+-
+     /**
+      Считает время до конца дня.
+      <p>
+@@ -216,10 +139,10 @@
+         localTime = localTime.minusMinutes(LocalTime.now().getMinute());
+         localTime = localTime.minusSeconds(LocalTime.now().getSecond());
+         boolean workHours = LocalTime.now().isAfter(startDay) && LocalTime.now().isBefore(endDay);
+-        if(workHours){
++        if (workHours) {
+             int toEndDaySec = localTime.toSecondOfDay();
+             int diffSec = allDaySec - toEndDaySec;
+-            float percDay = (( float ) toEndDaySec / ((( float ) allDaySec) / 100));
++            float percDay = ((float) toEndDaySec / (((float) allDaySec) / 100));
+             stringBuilder
+                 .append("Работаем ")
+                 .append(TimeUnit.SECONDS.toMinutes(diffSec));
+@@ -227,8 +150,7 @@
+                 .append("(мин.). Ещё ")
+                 .append(String.format("%.02f", percDay))
+                 .append(" % или ");
+-        }
+-        else{
++        } else {
+             stringBuilder.append("<b> GO HOME! </b><br>");
+         }
+         stringBuilder.append(localTime.toString());
+@@ -237,8 +159,8 @@
+ 
+     private static String listFilesToReadStr() {
+         List<File> readUs = new ArrayList<>();
+-        for(File f : Objects.requireNonNull(new File(".").listFiles())){
+-            if(f.getName().toLowerCase().contains(ConstantsFor.getStrsVisit()[0])){
++        for (File f : Objects.requireNonNull(new File(".").listFiles())) {
++            if (f.getName().toLowerCase().contains(ConstantsFor.getStrsVisit()[0])) {
+                 readUs.add(f);
+                 f.deleteOnExit();
+             }
+@@ -246,33 +168,107 @@
+         ConcurrentMap<String, String> stringStringConcurrentMap = FileSystemWorker.readFiles(readUs);
+         List<String> retListStr = new ArrayList<>();
+         stringStringConcurrentMap.forEach((String x, String y) -> {
+-            try{
++            try {
+                 retListStr.add(y.split("userId")[0]);
+                 retListStr.add("<b>" + x.split("FtpClientPlus")[1] + "</b>");
+-            }
+-            catch(Exception e){
++            } catch (Exception e) {
+                 retListStr.add(e.getMessage());
+             }
+         });
+         return new TForms().fromArray(retListStr, true);
+     }
+ 
++    private void modModMaker(Model model, HttpServletRequest request, Visitor visitor) throws ExecutionException, InterruptedException {
++        this.visitor = ConstantsFor.getVis(request);
++
++        Callable<Long> callWhenCome = new SpeedChecker();
++        Future<Long> whenCome = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(callWhenCome);
++        Date comeD = new Date(whenCome.get());
++        String resValue = new StringBuilder()
++            .append(MyCalen.toStringS()).append("<br><br>")
++            .append("<b><i>").append(AppComponents.versionInfo().toString()).append("</i></b><p><font color=\"orange\">")
++            .append(ConstantsNet.getSshMapStr()).append("</font><p>")
++            .append(new AppInfoOnLoad().toString()).append(" ").append(AppInfoOnLoad.class.getSimpleName()).append("<p>")
++            .append(new TForms().fromArray(LOC_PR, true)).append("<p>")
++            .append("<p><font color=\"grey\">").append(listFilesToReadStr()).append("</font>")
++            .toString();
++        model.addAttribute(ConstantsFor.ATT_TITLE, getLast() + " (" + getLast() * ConstantsFor.ONE_DAY_HOURS + ")");
++        model.addAttribute("mail", percToEnd(comeD, 9));
++        model.addAttribute("ping", pingGit());
++        model.addAttribute("urls", new StringBuilder()
++            .append("Запущено - ")
++            .append(new Date(ConstantsFor.START_STAMP)).append(ConstantsFor.getUpTime())
++            .append(" (<i>rnd delay is ")
++            .append(ConstantsFor.DELAY).append(" : ")
++            .append(String.format("%.02f",
++                (float) (ConstantsFor.getAtomicTime() - ConstantsFor.START_STAMP) / TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY))).append(" delays)")
++            .append("</i><br>Точное время: ")
++            .append(ConstantsFor.getAtomicTime())
++            .append(".<br> Состояние памяти (МБ): <font color=\"#82caff\">")
++            .append(ConstantsFor.getMemoryInfo())
++            .append("</font><br>")
++            .append(DiapazonedScan.getInstance().toString())
++            .append("<br>")
++            .append(AppComponents.threadConfig().toString())
++            .toString());
++        model.addAttribute("request", prepareRequest(request));
++        model.addAttribute(ConstantsFor.ATT_VISIT, visitor.toString());
++        model.addAttribute("res", resValue);
++        model.addAttribute("back", request.getHeader(ConstantsFor.ATT_REFERER.toLowerCase()));
++        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<br>" + getJREVers());
++    }
++
++    private String prepareRequest(HttpServletRequest request) {
++        StringBuilder stringBuilder = new StringBuilder();
++        stringBuilder.append("<center><h3>Заголовки</h3></center>");
++        String bBr = "</b><br>";
++        stringBuilder
++            .append("HOST: ")
++            .append("<b>").append(request.getHeader("host")).append(bBr);
++        stringBuilder
++            .append("CONNECTION: ")
++            .append("<b>").append(request.getHeader(ConstantsNet.STR_CONNECTION)).append(bBr);
++        stringBuilder
++            .append("upgrade-insecure-requests: ".toUpperCase())
++            .append("<b>").append(request.getHeader("upgrade-insecure-requests")).append(bBr);
++        stringBuilder
++            .append("user-agent: ".toUpperCase())
++            .append("<b>").append(request.getHeader("user-agent")).append(bBr);
++        stringBuilder
++            .append("ACCEPT: ")
++            .append("<b>").append(request.getHeader("accept")).append(bBr);
++        stringBuilder
++            .append("referer: ".toUpperCase())
++            .append("<b>").append(request.getHeader(ConstantsFor.HEAD_REFERER)).append(bBr);
++        stringBuilder
++            .append("accept-encoding: ".toUpperCase())
++            .append("<b>").append(request.getHeader("accept-encoding")).append(bBr);
++        stringBuilder
++            .append("accept-language: ".toUpperCase())
++            .append("<b>").append(request.getHeader("accept-language")).append(bBr);
++        stringBuilder
++            .append("cookie: ".toUpperCase())
++            .append("<b>").append(request.getHeader("cookie")).append(bBr);
++
++        stringBuilder.append("<center><h3>Атрибуты</h3></center>");
++        stringBuilder.append(new TForms().fromEnum(request.getAttributeNames(), true));
++        return stringBuilder.toString();
++    }
++
+     private String pingGit() {
+         boolean reachable = false;
+-        try{
++        try {
+             InetAddress byName = InetAddress.getByName(ConstantsFor.HOSTNAME_SRVGIT_EATMEATRU);
+             reachable = byName.isReachable(1000);
+-        }
+-        catch(IOException e){
++        } catch (IOException e) {
+             messageToUser.errorAlert("ServiceInfoCtrl", "pingGit", e.getMessage());
+         }
+         String s = "</b> srv-git.eatmeat.ru.</font> Checked at: <i>";
+         String s2 = "</i><br>";
+         String s1 = "<b><font color=\"#77ff72\">" + true + s + LocalTime.now() + s2;
+-        if(reachable){
++        if (reachable) {
+             return s1;
+-        }
+-        else{
++        } else {
+             return "<b><font color=\"#ff2121\">" + true + s + LocalTime.now() + s2;
+         }
+     }
+Index: modules/networker/src/main/java/ru/vachok/networker/ExitApp.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- modules/networker/src/main/java/ru/vachok/networker/ExitApp.java	(date 1551792923840)
++++ modules/networker/src/main/java/ru/vachok/networker/ExitApp.java	(date 1551792923840)
+@@ -13,7 +13,7 @@
+ import java.time.LocalDateTime;
+ import java.util.ArrayList;
+ import java.util.List;
+-import java.util.concurrent.*;
++import java.util.concurrent.TimeUnit;
+ 
+ import static ru.vachok.networker.IntoApplication.getConfigurableApplicationContext;
+ 
+@@ -119,12 +119,12 @@
+     @SuppressWarnings ({"HardCodedStringLiteral", "FeatureEnvy"})
+     private void copyAvail() {
+         File appLog = new File("g:\\My_Proj\\FtpClientPlus\\modules\\networker\\app.log");
++
+         FileSystemWorker.copyOrDelFile(new File(ConstantsNet.FILENAME_AVAILABLELASTTXT),
+             new StringBuilder().append(".\\lan\\vlans200_").append(System.currentTimeMillis() / 1000).append(".txt").toString(),
+             true);
+         FileSystemWorker.copyOrDelFile(new File(ConstantsNet.FILENAME_OLDLANTXT),
+             new StringBuilder().append(".\\lan\\old_lan_").append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
+-
+         FileSystemWorker.copyOrDelFile(new File(ConstantsNet.FILENAME_SERVTXT),
+             new StringBuilder().append(".\\lan\\srv_").append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
+         FileSystemWorker.copyOrDelFile(new File("ping.tv"), ".\\lan\\tv_" + System.currentTimeMillis() / 1000 + ".ping", true);
+@@ -164,14 +164,7 @@
+         else{
+             stringList.add("No object");
+         }
+-        Runnable exitDo = () -> exitAppDO();
+-        Future<?> submit = Executors.unconfigurableExecutorService(Executors.newSingleThreadScheduledExecutor()).submit(exitDo);
+-        try{
+-            submit.get(30, TimeUnit.SECONDS);
+-        }
+-        catch(InterruptedException | ExecutionException | TimeoutException e){
+-            System.exit(666);
+-        }
++        exitAppDO();
+     }
+ 
+     /**
+Index: modules/networker/src/main/java/ru/vachok/networker/accesscontrol/MatrixCtr.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- modules/networker/src/main/java/ru/vachok/networker/accesscontrol/MatrixCtr.java	(date 1551792923845)
++++ modules/networker/src/main/java/ru/vachok/networker/accesscontrol/MatrixCtr.java	(date 1551792923845)
+@@ -13,7 +13,10 @@
+ import ru.vachok.networker.ConstantsFor;
+ import ru.vachok.networker.SSHFactory;
+ import ru.vachok.networker.accesscontrol.common.CommonRightsChecker;
+-import ru.vachok.networker.componentsrepo.*;
++import ru.vachok.networker.componentsrepo.AppComponents;
++import ru.vachok.networker.componentsrepo.PageFooter;
++import ru.vachok.networker.componentsrepo.VersionInfo;
++import ru.vachok.networker.componentsrepo.Visitor;
+ import ru.vachok.networker.net.DiapazonedScan;
+ import ru.vachok.networker.net.MoreInfoGetter;
+ import ru.vachok.networker.services.SimpleCalculator;
+@@ -103,7 +106,7 @@
+ 
+      @see AppComponents#sshActs()
+      */
+-    public void setCurrentProvider() {
++    private void setCurrentProvider() {
+         SshActs sshActs = new AppComponents().sshActs();
+         this.currentProvider = sshActs.providerTraceStr();
+     }
+@@ -184,9 +187,10 @@
+             getClass().getSimpleName()).build();
+         if (request.getQueryString() != null && request.getQueryString().equalsIgnoreCase(ConstantsFor.COM_REBOOT)) {
+             gitOner = new SSHFactory.Builder(ConstantsFor.IPADDR_SRVGIT, "sudo reboot", getClass().getSimpleName()).build();
+-        }
+-        String call = gitOner.call() + "\n" + visitorInst.toString();
+-        LOGGER.info(call);
++            String call = gitOner.call() + "\n" + visitorInst.toString();
++            call = "MatrixCtr.gitOn():" + " call" + " = " + call;
++            LOGGER.info(call);
++        }
+         metricMatrixStartLong = System.currentTimeMillis() - metricMatrixStartLong;
+         return "redirect:http://srv-git.eatmeat.ru:1234";
+     }
+Index: modules/networker/src/main/java/ru/vachok/networker/componentsrepo/VersionInfo.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- modules/networker/src/main/java/ru/vachok/networker/componentsrepo/VersionInfo.java	(date 1551792923851)
++++ modules/networker/src/main/java/ru/vachok/networker/componentsrepo/VersionInfo.java	(date 1551792923851)
+@@ -25,10 +25,12 @@
+      */
+     private static final Logger LOGGER = LoggerFactory.getLogger(VersionInfo.class.getSimpleName());
+ 
+-    /**
+-     Ссылка на /doc/index.html
+-     */
+-    private static final String DOC_URL = "<a href=\"/doc/index.html\">DOC</a>";
++// --Commented out by Inspection START (05.03.2019 12:31):
++//    /**
++//     Ссылка на /doc/index.html
++//     */
++//    private static final String DOC_URL = "<a href=\"/doc/index.html\">DOC</a>";
++// --Commented out by Inspection STOP (05.03.2019 12:31)
+ 
+     /**
+      {@link AppComponents#getOrSetProps()}
+@@ -39,7 +41,7 @@
+ 
+     private static final String PR_APP_BUILD = "appBuild";
+ 
+-    private boolean isBUGged;
++    private boolean isBUGed;
+ 
+     /**
+      Версия
+@@ -71,12 +73,14 @@
+      */
+     private final String thisPCNameStr = ConstantsFor.thisPC();
+ 
+-    public boolean isBUGged() {
+-        return isBUGged;
+-    }
++// --Commented out by Inspection START (05.03.2019 12:32):
++//    public boolean isBUGed() {
++//        return isBUGed;
++//    }
++// --Commented out by Inspection STOP (05.03.2019 12:32)
+ 
+-    public void setBUGged(boolean BUGged) {
+-        isBUGged = BUGged;
++    public void setBUGed(boolean isBUGed) {
++        this.isBUGed = isBUGed;
+     }
+ 
+     /**
+@@ -95,7 +99,7 @@
+      */
+     public VersionInfo() {
+         if(new File("bugged").exists()){
+-            this.isBUGged = true;
++            this.isBUGed = true;
+         }
+         if(thisPCNameStr.toLowerCase().contains("home") || thisPCNameStr.toLowerCase().contains("no0")){
+             setParams();
+@@ -108,7 +112,7 @@
+     /**
+ 
+      */
+-    void setParams() {
++    private void setParams() {
+         File file = new File("G:\\My_Proj\\FtpClientPlus\\modules\\networker\\build.gradle");
+         if (file.exists()) {
+             setterVersionFromFiles(file);
+@@ -131,7 +135,6 @@
+         }
+         try{
+             PROPERTIES.setProperty(ConstantsFor.PR_APP_VERSION, getAppVersion());
+-            AppComponents.getOrSetProps(PROPERTIES);
+         }
+         catch(NullPointerException e){
+             setAppVersion("Unknown ver");
+@@ -213,7 +216,7 @@
+         sb.append("appBuild='").append(appBuild).append('\'');
+         sb.append(", appVersion='").append(appVersion).append('\'');
+         sb.append(", buildTime='").append(buildTime).append('\'');
+-        sb.append(", isBUGged=").append(isBUGged);
++        sb.append(", isBUGed=").append(isBUGed);
+         sb.append(", pingTVStartStamp=").append(pingTVStartStamp);
+         sb.append(", thisPCNameStr='").append(thisPCNameStr).append('\'');
+         sb.append('}');
+Index: modules/networker/src/main/java/ru/vachok/networker/componentsrepo/AppComponents.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- modules/networker/src/main/java/ru/vachok/networker/componentsrepo/AppComponents.java	(date 1551792923849)
++++ modules/networker/src/main/java/ru/vachok/networker/componentsrepo/AppComponents.java	(date 1551792923849)
+@@ -21,7 +21,6 @@
+ import ru.vachok.networker.ad.user.ADUser;
+ import ru.vachok.networker.config.ThreadConfig;
+ import ru.vachok.networker.fileworks.FileSystemWorker;
+-import ru.vachok.networker.net.NetPinger;
+ import ru.vachok.networker.net.NetScannerSvc;
+ import ru.vachok.networker.net.enums.ConstantsNet;
+ import ru.vachok.networker.services.MessageLocal;
+@@ -49,13 +48,6 @@
+      */
+     private static final String STR_VISITOR = "visitor";
+ 
+-    @Bean
+-    public TemporaryFullInternet temporaryFullInternet() {
+-        TemporaryFullInternet temporaryFullInternet = new TemporaryFullInternet();
+-        messageToUser.info("AppComponents.temporaryFullInternet", "temporaryFullInternet.hashCode()", " = " + temporaryFullInternet.hashCode());
+-        return temporaryFullInternet;
+-    }
+-
+     private static MessageToUser messageToUser = new MessageLocal();
+ 
+     @Bean
+@@ -65,25 +57,31 @@
+     }
+ 
+     @Bean
+-    public static Logger getLogger(String className) {
+-        return LoggerFactory.getLogger(className);
++    public TemporaryFullInternet temporaryFullInternet() {
++        TemporaryFullInternet temporaryFullInternet = new TemporaryFullInternet();
++        messageToUser.info("AppComponents.temporaryFullInternet", "temporaryFullInternet.hashCode()", " = " + temporaryFullInternet.hashCode());
++        return temporaryFullInternet;
+     }
+ 
+     @Bean
+     public Connection connection(String dbName) throws IOException {
+-        OutputStream outputStream = new FileOutputStream("AppComponents.connection.log");
+-        PrintWriter printWriter = new PrintWriter(outputStream, true);
+-        try {
+-            MysqlDataSource dataSource = new RegRuMysql().getDataSourceSchema(dbName);
+-            dataSource.setAutoReconnect(true);
+-            dataSource.setLogWriter(printWriter);
+-            return dataSource.getConnection();
+-        } catch (Exception e) {
+-            messageToUser.errorAlert("AppComponents", ConstantsNet.STR_CONNECTION, e.getMessage());
+-            FileSystemWorker.error("AppComponents.connection", e);
+-            printWriter.close();
+-            outputStream.close();
+-            return new RegRuMysql().getDefaultConnection(dbName);
++        MysqlDataSource dataSource = new RegRuMysql().getDataSourceSchema(dbName);
++
++        try (OutputStream outputStream = new FileOutputStream("AppComponents.connection.log");
++             PrintWriter printWriter = new PrintWriter(outputStream, true)) {
++            try {
++                dataSource.setLogger(Logger.class.getName());
++                dataSource.setAutoReconnect(true);
++                dataSource.setLogWriter(printWriter);
++                dataSource.getRollbackOnPooledClose();
++                dataSource.setDumpQueriesOnException(true);
++                dataSource.setMaintainTimeStats(true);
++                return dataSource.getConnection();
++            } catch (Exception e) {
++                messageToUser.errorAlert("AppComponents", ConstantsNet.STR_CONNECTION, e.getMessage());
++                FileSystemWorker.error("AppComponents.connection", e);
++                return new RegRuMysql().getDefaultConnection(dbName);
++            }
+         }
+     }
+ 
+@@ -99,10 +97,10 @@
+      SSH-actions.
+      <p>
+      Через библиотеку {@link JSch}
++
+      @return new {@link SshActs}
+      */
+     @Bean
+-    @Scope(ConstantsFor.SINGLETON)
+     public SshActs sshActs() {
+         SshActs sshActs = new SshActs();
+         messageToUser.info("AppComponents.sshActs", " sshActs.hashCode()", " = " + sshActs.hashCode());
+@@ -114,11 +112,17 @@
+         return new Visitor(request);
+     }
+ 
++    @Bean
++    public static Logger getLogger(String className) {
++        return LoggerFactory.getLogger(className);
++    }
++
+     @Bean
+     @Scope(ConstantsFor.SINGLETON)
+     public static Properties getOrSetProps(boolean saveThis) {
+         messageToUser = new MessageToTray();
+         Properties properties = ConstantsFor.getAppProps();
++
+         if (saveThis) {
+             boolean isSaved = ConstantsFor.saveAppProps(properties);
+             if (isSaved) {
+@@ -131,11 +135,13 @@
+         return properties;
+     }
+ 
+-    @Bean
+-    @Scope(ConstantsFor.SINGLETON)
+-    public static NetPinger netPinger() {
+-        return new NetPinger();
+-    }
++// --Commented out by Inspection START (05.03.2019 12:38):
++//    @Bean
++//    @Scope(ConstantsFor.SINGLETON)
++//    public static NetPinger netPinger() {
++//        return new NetPinger();
++//    }
++// --Commented out by Inspection STOP (05.03.2019 12:38)
+ 
+     @Bean
+     @Scope(ConstantsFor.SINGLETON)
+@@ -178,7 +184,7 @@
+         if (new File("bugged").exists()) {
+             isBUGged = true;
+         }
+-        versionInfo.setBUGged(isBUGged);
++        versionInfo.setBUGed(isBUGged);
+         return versionInfo;
+     }
+ 
+Index: modules/networker/src/main/java/ru/vachok/networker/SSHFactory.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- modules/networker/src/main/java/ru/vachok/networker/SSHFactory.java	(date 1551792923842)
++++ modules/networker/src/main/java/ru/vachok/networker/SSHFactory.java	(date 1551792923842)
+@@ -2,12 +2,10 @@
+ 
+ 
+ import com.jcraft.jsch.*;
+-import org.slf4j.Logger;
+ import ru.vachok.messenger.MessageToUser;
+ import ru.vachok.mysqlandprops.props.DBRegProperties;
+ import ru.vachok.mysqlandprops.props.FileProps;
+ import ru.vachok.mysqlandprops.props.InitProperties;
+-import ru.vachok.networker.componentsrepo.AppComponents;
+ import ru.vachok.networker.fileworks.FileSystemWorker;
+ import ru.vachok.networker.services.MessageLocal;
+ 
+@@ -15,9 +13,13 @@
+ import java.io.FileOutputStream;
+ import java.io.IOException;
+ import java.io.InputStream;
++import java.net.ConnectException;
+ import java.nio.charset.StandardCharsets;
+ import java.text.MessageFormat;
+-import java.util.*;
++import java.util.ArrayList;
++import java.util.List;
++import java.util.Objects;
++import java.util.Properties;
+ import java.util.concurrent.Callable;
+ import java.util.concurrent.RejectedExecutionException;
+ 
+@@ -27,6 +29,7 @@
+  <p>
+  Фабрика, для ssh-комманд.
+  */
++@SuppressWarnings("unused")
+ public class SSHFactory implements Callable<String> {
+ 
+     /**
+@@ -34,8 +37,6 @@
+      */
+     private static final File SSH_ERR = new File("ssh_err.txt");
+ 
+-    private static final Logger LOGGER = AppComponents.getLogger(SSHFactory.class.getSimpleName());
+-
+     private static final String SOURCE_CLASS = SSHFactory.class.getSimpleName();
+ 
+     private static final MessageToUser messageToUser = new MessageLocal();
+@@ -112,7 +113,7 @@
+         throw new RejectedExecutionException("ХУЙ FOR YOU!");
+     }
+ 
+-    private void chanRespChannel() {
++    private void chanRespChannel() throws ConnectException {
+         JSch jSch = new JSch();
+         Session session = null;
+         String classMeth = "SSHFactory.chanRespChannel";
+@@ -137,6 +138,7 @@
+             FileSystemWorker.error(classMeth, e);
+         }
+ 
++        assert session != null;
+         session.setConfig(properties);
+ 
+         try{
+@@ -144,6 +146,7 @@
+         }
+         catch(JSchException e){
+             FileSystemWorker.error(classMeth, e);
++            throw new ConnectException("No connection to: " + session.getHost() + ":" + session.getPort());
+         }
+ 
+         Objects.requireNonNull(session).setInputStream(System.in);
+@@ -180,7 +183,8 @@
+             messageToUser.warn("SSHFactory.call", "readBytes", " = " + readBytes);
+             stringBuilder.append(new String(bytes, StandardCharsets.UTF_8));
+         } catch (IOException | JSchException e) {
+-            messageToUser.errorAlert(SOURCE_CLASS, " Exception id 123", e.getMessage() + "\n" + Arrays.toString(e.getStackTrace()));
++            messageToUser.errorAlert(getClass().getSimpleName(), "call", e.getMessage());
++            FileSystemWorker.error("SSHFactory.call", e);
+         }
+         messageToUser.warn(getClass().getSimpleName(), "CALL FROM CLASS: ", classCaller);
+         List<String> recList = new ArrayList<>();
+@@ -201,10 +205,9 @@
+         this.connectToSrv = connectToSrv;
+     }
+ 
+-    private Properties sshException(Exception e) {
+-        LOGGER.error(e.getMessage(), e);
++    private void sshException(Exception e) {
+         initProperties = new FileProps(SOURCE_CLASS);
+-        return initProperties.getProps();
++        initProperties.getProps();
+     }
+ 
+     private String pem() {
+@@ -221,7 +224,7 @@
+ 
+      @since <a href="https://github.com/Vachok/ftpplus/commit/7bc45ca4f1968a61dfda3b009d7b0e394d573de5" target=_blank>14.11.2018 (15:25)</a>
+      */
+-    @SuppressWarnings ("WeakerAccess")
++    @SuppressWarnings({"WeakerAccess", "unused"})
+     public static class Builder {
+ 
+         private String userName = "ITDept";
+Index: modules/networker/src/main/java/ru/vachok/networker/ConstantsFor.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- modules/networker/src/main/java/ru/vachok/networker/ConstantsFor.java	(date 1551792923838)
++++ modules/networker/src/main/java/ru/vachok/networker/ConstantsFor.java	(date 1551792923838)
+@@ -29,8 +29,10 @@
+ import java.net.UnknownHostException;
+ import java.security.SecureRandom;
+ import java.time.Year;
++import java.util.Collections;
++import java.util.Date;
+ import java.util.List;
+-import java.util.*;
++import java.util.Properties;
+ import java.util.concurrent.*;
+ import java.util.concurrent.atomic.AtomicBoolean;
+ 
+@@ -43,88 +45,103 @@
+ public enum ConstantsFor {
+     ;
+ 
+-    private static final String[] STRS_VISIT = {"visit_", ".tmp"};
+-
+-    /**
+-     {@link ru.vachok.networker.mailserver.ExCTRL#uplFile(MultipartFile, Model)}, {@link ExSRV#getOFields()},
+-     */
+-    private static final ConcurrentMap<Integer, MailRule> MAIL_RULES = new ConcurrentHashMap<>();
+-
+-    private static final int MIN_DELAY = 17;
+-
+-    /**
+-     new {@link Properties}
+-     */
+-    private static final Properties PROPS = new Properties();
+-
+     /**
+-     {@link MessageLocal}
++     Имя для БД с настройками
+      */
+-    private static final MessageToUser messageToUser = new MessageLocal();
+-
+-    public static final String METHNAME_STATIC_INITIALIZER = "static initializer";
+-
+-    public static final String HEAD_REFERER = "referer";
+-
+-    public static final String METHNAME_ACTIONPERFORMED = "actionPerformed";
+-
+-    public static final String FILE_RU_VACHOK_NETWORKER_CONSTANTS_FOR = "ru_vachok_networker-ConstantsFor";
+-
+-    public static final String TOSTRING_SAMACCOUNTNAME = ", samAccountName='";
+-
+-    public static final String TOSTRING_CLASS_NAME = ", CLASS_NAME='";
++    public static final String APPNAME_WITHMINUS = "ru_vachok_networker-";
+ 
+     public static final String ATT_ADUSER = "aduser";
+ 
+-    public static final String TOSTRING_MESSAGE_TO_USER = ", messageToUser=";
+-
+-    public static final String STR_RETURNS = "returns:";
+-
+-    public static final String STR_INPUT_PARAMETERS_RETURNS = "input parameters] [Returns:";
+-
+-    public static final String SOUTV = "SOUTV";
+-
+-    public static final String JAVA_LANG_STRING_NAME = "java.lang.String";
+-
+-    public static final String HTTP_LOCALHOST8880SLASH = "http://localhost:8880/";
+-
+-    public static final String FILEPATHSTR_USERSTXT = "/static/texts/users.txt";
+-
+-    public static final String STR_VELKOM = "velkom";
+-
+-    public static final String AT_NAME_RULESET = "ruleset";
++    /**
++     Название аттрибута модели.
++     */
++    public static final String ATT_COMMON = "common";
+ 
+     public static final String ATT_EXSRV = "exsrv";
+ 
+-    public static final String DBFIELD_PCNAME = "pcName";
+-
+-    public static final String DBFIELD_TIMESPEND = "TimeSpend";
+-
+-    public static final String DBFIELD_TIMESTAMP = "TimeStamp";
+-
+-    public static final String DBBASENAME_U0466446_LIFERPG = "u0466446_liferpg";
+-
+-    public static final String DBQUERY_SELECTFROMSPEED = "select * from speed";
+-
+-    public static final String DBFIELD_PCUSERAUTO = "pcuserauto";
+-
+-    public static final String DBFIELD_PCUSER = "pcuser";
+-
+     /**
+      <i>Boiler Plate</i>
+      */
+-    public static final String PR_PFSCAN = "pfscan";
++    public static final String ATT_E_MESSAGE = "eMessage";
++
++    /**
++     {@link Model} имя атрибута
++     */
++    public static final String ATT_FOOTER = "footer";
+ 
+     /**
+      <i>Boiler Plate</i>
+      */
+     public static final String ATT_GITSTATS = "gitstats";
+ 
++    /**
++     Название аттрибута модели.
++     */
++    public static final String ATT_PHOTO_CONVERTER = "photoConverter";
++
++    /**
++     Название аттрибута модели.
++     */
++    public static final String ATT_REFERER = "ATT_REFERER";
++
++    /**
++     Название аттрибута модели.
++     */
++    public static final String ATT_RESULT = "result";
++
++    /**
++     Имя аттрибута
++     */
++    public static final String ATT_SSHDETAIL = "sshdetail";
++
++    /**
++     Название аттрибута модели.
++     */
++    public static final String ATT_SSH_ACTS = "sshActs";
++
++    /**
++     <i>Boiler Plate</i>
++     */
++    public static final String ATT_STATCODE = "statcode";
++
++    /**
++     {@link Model} имя атрибута
++     */
++    public static final String ATT_TITLE = "title";
++
++    /**
++     {@link Model} имя атрибута
++     */
++    public static final String ATT_USERS = "users";
++
++    /**
++     Название аттрибута модели.
++     */
++    public static final String ATT_VISIT = "visit";
++
++    public static final String ATT_WHOIS = "whois";
++
++    public static final String AT_NAME_RULESET = "ruleset";
++
++    /**
++     <i>Boiler Plate</i>
++     */
++    public static final String BEANNAME_CALCULATOR = "simpleCalculator";
++
++    public static final String BEANNAME_MATRIX = "matrix";
++
+     /**
+      <i>Boiler Plate</i>
+      */
+     public static final String BEANNAME_PFLISTS = "pflists";
+ 
++    public static final String CLASS_NAME_PCUSERRESOLVER = PCUserResolver.class.getSimpleName();
++
++    /**
++     {@link ServiceInfoCtrl#closeApp()}
++     */
++    public static final int CODE_USEREXIT = 222;
++
+     /**
+      <i>Boiler Plate</i>
+ 
+@@ -138,147 +155,83 @@
+      */
+     public static final String COM_SHUTDOWN_P_F = "shutdown /p /f";
+ 
+-    /**
+-     <i>Boiler Plate</i>
+-     */
+-    public static final String ATT_E_MESSAGE = "eMessage";
+-
+-    /**
+-     <i>Boiler Plate</i>
+-     */
+-    public static final String ATT_STATCODE = "statcode";
+-
+-    public static final boolean IS_SYSTRAY_AVAIL = (SystemTray.isSupported() || SystemTray.getSystemTray()!=null);
+-
+-    /**
+-     <i>Boiler Plate</i>
+-     */
+-    public static final String BEANNAME_CALCULATOR = "simpleCalculator";
+-
+-    /**
+-     Диапазон для бинов
+-     */
+-    public static final String SINGLETON = "singleton";
++    public static final String DBBASENAME_U0466446_LIFERPG = "u0466446_liferpg";
+ 
+     /**
+      Название БД в reg.ru
+      */
+     public static final String DBDASENAME_U0466446_VELKOM = "u0466446_velkom";
+ 
+-    /**
+-     Название property
+-     */
+-    public static final String PR_APP_VERSION = "appVersion";
++    public static final String DBFIELD_PCNAME = "pcName";
+ 
+-    /**
+-     Название property
+-     */
+-    public static final String PR_QSIZE = "qsize";
++    public static final String DBFIELD_PCUSER = "pcuser";
+ 
+-    /**
+-     Название аттрибута модели.
+-     */
+-    public static final String ATT_RESULT = "result";
++    public static final String DBFIELD_PCUSERAUTO = "pcuserauto";
+ 
+-    /**
+-     Название аттрибута модели.
+-     */
+-    public static final String ATT_COMMON = "common";
++    public static final String DBFIELD_TIMESPEND = "TimeSpend";
+ 
+-    /**
+-     Название аттрибута модели.
+-     */
+-    public static final String ATT_PHOTO_CONVERTER = "photoConverter";
++    public static final String DBFIELD_TIMESTAMP = "TimeStamp";
+ 
+     /**
+-     Название аттрибута модели.
++     Префикс имени от reg.ru
+      */
+-    public static final String ATT_SSH_ACTS = "sshActs";
++    public static final String DBPREFIX = "u0466446_";
++
++    public static final String DBQUERY_SELECTFROMSPEED = "select * from speed";
++
++    public static final String DB_FIELD_USER = "userName";
+ 
+     /**
+-     Название property
++     {@code Files.setAttribute}
+      */
+-    public static final String PR_TOTPC = "totpc";
++    public static final String DOS_ARCHIVE = "dos:archive";
+ 
+     /**
+      Личный e-mail
+      */
+     public static final String EADDR_143500GMAILCOM = "143500@gmail.com";
+ 
++    public static final String FILEEXT_LOG = ".log";
++
++    public static final String FILENAME_ICON = "icons8-сетевой-менеджер-30.png";
++
++    public static final String FILEPATHSTR_USERSTXT = "/static/texts/users.txt";
++
++    public static final String FILE_RU_VACHOK_NETWORKER_CONSTANTS_FOR = "ru_vachok_networker-ConstantsFor";
++
++    /**
++     Кол-во байт в гигабайте
++     */
++    public static final long GBYTE = 1073741824;
++
++    public static final String HEAD_REFERER = "referer";
++
+     /**
+      HTTP-header
+      */
+     public static final String HEAD_REFRESH = "Refresh";
+ 
+-    /**
+-     Название аттрибута модели.
+-     */
+-    public static final String ATT_VISIT = "visit";
+-
+-    /**
+-     Название аттрибута модели.
+-     */
+-    public static final String ATT_REFERER = "ATT_REFERER";
+-
+-    /**
+-     Адрес локального git
+-     */
+-    public static final String HOSTNAME_SRVGIT_EATMEATRU = "srv-git.eatmeat.ru";
+-
+-    /**
+-     {@code Files.setAttribute}
+-     */
+-    public static final String DOS_ARCHIVE = "dos:archive";
+-
+     /**
+      Имя ПК no0027
+      */
+     public static final String HOSTNAME_NO0027 = "no0027";
+ 
+     /**
+-     Строка из Live Template soutm
+-     */
+-    public static final String STR_SEC_SPEND = " sec spend";
+-
+-    /**
+-     <b>1 мегабайт в байтах</b>
++     Адрес локального git
+      */
+-    public static final int MBYTE = 1048576;
++    public static final String HOSTNAME_SRVGIT_EATMEATRU = "srv-git.eatmeat.ru";
+ 
+-    /**
+-     {@link Model} имя атрибута
+-     */
+-    public static final String ATT_FOOTER = "footer";
++    public static final String HTML_CENTER = "</center>";
+ 
+-    /**
+-     Префикс имени от reg.ru
+-     */
+-    public static final String DBPREFIX = "u0466446_";
++    public static final String HTTP_LOCALHOST8880SLASH = "http://localhost:8880/";
+ 
+-    /**
+-     Число, для Secure Random
+-     */
+-    public static final long MY_AGE = ( long ) Year.now().getValue() - 1984;
+-
+-    /**
+-     {@link Model} имя атрибута
+-     */
+-    public static final String ATT_USERS = "users";
+-
+-    /**
+-     {@link Model} имя атрибута
+-     */
+-    public static final String ATT_TITLE = "title";
+-
+-    /**
+-     {@link ServiceInfoCtrl#closeApp()}
+-     */
+-    public static final int CODE_USEREXIT = 222;
+-
+-    /**
+-     IP srv-nat.eatmeat.ru
+-     */
+-    public static final String IPADDR_SRVNAT = "192.168.13.30";
++    public static final Runnable INFO_MSG_RUNNABLE = () -> {
++        File todoFileHome = new File("G:\\My_Proj\\FtpClientPlus\\modules\\networker\\TODO");
++        File todoFileWork = new File("C:\\Users\\ikudryashov\\IdeaProjects\\spring\\modules\\networker\\TODO");
++        if (todoFileHome.exists() || todoFileWork.exists()) {
++            new MessageSwing(new ActionDefault("https://github.com/Vachok/ftpplus/issues")).warn("CHECK TODO!");
++        }
++    };
+ 
+     /**
+      IP stv-git.eatmeat.ru
+@@ -286,9 +239,13 @@
+     public static final String IPADDR_SRVGIT = "192.168.13.42";
+ 
+     /**
+-     Кол-во минут в часе
++     IP srv-nat.eatmeat.ru
+      */
+-    public static final float ONE_HOUR_IN_MIN = 60f;
++    public static final String IPADDR_SRVNAT = "192.168.13.30";
++
++    public static final boolean IS_SYSTRAY_AVAIL = (SystemTray.isSupported() || SystemTray.getSystemTray() != null);
++
++    public static final String JAVA_LANG_STRING_NAME = "java.lang.String";
+ 
+     /**
+      Кол-во байт в килобайте
+@@ -296,19 +253,28 @@
+     public static final int KBYTE = 1024;
+ 
+     /**
+-     Timestamp запуска.
++     <b>1 мегабайт в байтах</b>
+      */
+-    public static final long START_STAMP = System.currentTimeMillis();
++    public static final int MBYTE = 1048576;
++
++    public static final String METHNAME_ACTIONPERFORMED = "actionPerformed";
++
++    public static final String METHNAME_STATIC_INITIALIZER = "static initializer";
+ 
+     /**
+-     MSEC таймаут
++     Число, для Secure Random
+      */
+-    public static final int TIMEOUT_650 = 650;
++    public static final long MY_AGE = (long) Year.now().getValue() - 1984;
+ 
+     /**
+-     Имя для БД с настройками
++     Первоначальная задержка шедулера.
+      */
+-    public static final String APPNAME_WITHMINUS = "ru_vachok_networker-";
++    public static final long INIT_DELAY = MY_AGE;
++
++    /**
++     {@link #getDelay()}
++     */
++    public static final long DELAY = getDelay();
+ 
+     /**
+      Кол-во часов в сутках
+@@ -316,76 +282,104 @@
+     public static final int ONE_DAY_HOURS = 24;
+ 
+     /**
+-     Кол-во байт в гигабайте
++     Кол-во минут в часе
+      */
+-    public static final long GBYTE = 1073741824;
++    public static final float ONE_HOUR_IN_MIN = 60f;
+ 
+-    public static final String DB_FIELD_USER = "userName";
++    /**
++     Кол-во миллисек. в 1 неделе
++     */
++    public static final long ONE_WEEK_MILLIS = TimeUnit.HOURS.toMillis(ONE_DAY_HOURS * (long) 7);
+ 
+     /**
+      Кол-во дней в году
+      */
+     public static final int ONE_YEAR = 365;
+ 
++    /**
++     Название property
++     */
++    public static final String PR_APP_VERSION = "appVersion";
++
++    /**
++     <i>Boiler Plate</i>
++     */
++    public static final String PR_PFSCAN = "pfscan";
++
++    /**
++     Название property
++     */
++    public static final String PR_QSIZE = "qsize";
++
++    /**
++     Название property
++     */
++    public static final String PR_TOTPC = "totpc";
++
++    /**
++     Диапазон для бинов
++     */
++    public static final String SINGLETON = "singleton";
++
++    public static final String SOUTV = "SOUTV";
++
++    /**
++     Timestamp запуска.
++     */
++    public static final long START_STAMP = System.currentTimeMillis();
++
+     /**
+      Повторения в классах
+      */
+     public static final String STR_DELETED = " STR_DELETED";
+ 
+-    public static final String FILEEXT_LOG = ".log";
+-
+-    /**
+-     Кол-во миллисек. в 1 неделе
+-     */
+-    public static final long ONE_WEEK_MILLIS = TimeUnit.HOURS.toMillis(ONE_DAY_HOURS * ( long ) 7);
+-
+-    /**
+-     Первоначальная задержка шедулера.
+-     */
+-    public static final long INIT_DELAY = MY_AGE;
+-
+-    /**
+-     Имя аттрибута
+-     */
+-    public static final String ATT_SSHDETAIL = "sshdetail";
+-
+-    public static final String HTML_CENTER = "</center>";
+-
+     public static final String STR_INPUT_OUTPUT = "input/output\n";
+ 
+-    public static final String BEANNAME_MATRIX = "matrix";
++    public static final String STR_INPUT_PARAMETERS_RETURNS = "input parameters] [Returns:";
++
++    // --Commented out by Inspection (05.03.2019 12:38):public static final String STR_RETURNS = "returns:";
++
++    /**
++     Строка из Live Template soutm
++     */
++    public static final String STR_SEC_SPEND = " sec spend";
++
++    public static final String STR_VELKOM = "velkom";
++
++    /**
++     MSEC таймаут
++     */
++    public static final int TIMEOUT_650 = 650;
++
++    public static final String TOSTRING_CLASS_NAME = ", CLASS_NAME='";
+ 
+-    public static final String ATT_WHOIS = "whois";
++    public static final String TOSTRING_MESSAGE_TO_USER = ", messageToUser=";
+ 
+-    public static final String FILENAME_ICON = "icons8-сетевой-менеджер-30.png";
++    public static final String TOSTRING_SAMACCOUNTNAME = ", samAccountName='";
+ 
+-    public static final String CLASS_NAME_PCUSERRESOLVER = PCUserResolver.class.getSimpleName();
++    private static final String[] STRS_VISIT = {"visit_", ".tmp"};
+ 
+     /**
+-     {@link #getDelay()}
++     {@link ru.vachok.networker.mailserver.ExCTRL#uplFile(MultipartFile, Model)}, {@link ExSRV#getOFields()},
+      */
+-    public static final long DELAY = getDelay();
++    private static final ConcurrentMap<Integer, MailRule> MAIL_RULES = new ConcurrentHashMap<>();
++
++    private static final int MIN_DELAY = 17;
+ 
+     /**
+-     Порт для {@link ru.vachok.networker.net.MyServer}
++     new {@link Properties}
+      */
+-    public static final int PR_LPORT = Integer.parseInt(PROPS.getProperty("lport", "9990"));
++    private static final Properties PROPS = new Properties();
+ 
+-    public static final Runnable INFO_MSG_RUNNABLE = () -> {
+-        File todoFileHome = new File("G:\\My_Proj\\FtpClientPlus\\modules\\networker\\TODO");
+-        File todoFileWork = new File("C:\\Users\\ikudryashov\\IdeaProjects\\spring\\modules\\networker\\TODO");
+-        if(todoFileHome.exists() || todoFileWork.exists()){
+-            new MessageSwing(new ActionDefault("https://github.com/Vachok/ftpplus/issues")).warn("CHECK TODO!");
+-        }
+-        else{
+-            messageToUser.info("ConstantsFor.INFO_MSG_RUNNABLE", "thisPC()", " = " + thisPC());
+-        }
+-    };
++    /**
++     {@link MessageLocal}
++     */
++    private static final MessageToUser messageToUser = new MessageLocal();
+ 
+     /**
+      {@link #getAtomicTime()}
+      */
+-    @SuppressWarnings ("NonFinalFieldInEnum")
++    @SuppressWarnings("NonFinalFieldInEnum")
+     private static long atomicTime;
+ 
+     /**
+@@ -401,10 +395,9 @@
+      @return 192.168.13.42 online or offline
+      */
+     public static boolean isPingOK() {
+-        try{
++        try {
+             return InetAddress.getByName(HOSTNAME_SRVGIT_EATMEATRU).isReachable(500);
+-        }
+-        catch(IOException e){
++        } catch (IOException e) {
+             LoggerFactory.getLogger(ConstantsFor.class.getSimpleName()).error(e.getMessage(), e);
+             return false;
+         }
+@@ -414,76 +407,23 @@
+      @return {@link #takePr(boolean)} or {@link #PROPS}
+      */
+     public static Properties getAppProps() {
+-        if(PROPS.size() < 3){
++        if (PROPS.size() < 3) {
+             messageToUser.info("PROPS", "return takePr(false)", " = " + PROPS.size());
+             return takePr(false);
+-        }
+-        else{
++        } else {
+             messageToUser.info("PROPS", "return PROPS", " = " + PROPS.size());
+             return PROPS;
+         }
+     }
+ 
+-    /**
+-     Тащит {@link #PROPS} из БД или файла
+-     <p>
+-     {@link ThreadConfig#thrNameSet(java.lang.String)} <br>
+-     */
+-    static Properties takePr(boolean fromFile) {
+-        AppComponents.threadConfig().thrNameSet("gProps");
+-
+-        InitProperties initProperties = new DBRegProperties(ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName());
+-        Properties retPr = new Properties();
+-        File prFile = new File(ConstantsFor.class.getSimpleName() + ".properties");
+-        StringBuilder stringBuilder = new StringBuilder();
+-        String classMeth = "ConstantsFor.takePr";
+-
+-        if(fromFile || new File("ff").exists()){
+-            try(InputStream inputStream = new FileInputStream(prFile)){
+-                retPr.load(inputStream);
+-                stringBuilder.append("fromFile: ").append(fromFile).append("\n");
+-                stringBuilder.append("File \"ff\": ").append(new File("ff").exists()).append("\n");
+-            }
+-            catch(IOException e){
+-                stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false)).append("\n");
+-                FileSystemWorker.error(classMeth, e);
+-            }
+-        }
+-        else{
+-            retPr = initProperties.getProps();
+-
+-            try(OutputStream outputStream = new FileOutputStream(prFile)){
+-                long millisOf24HRS = TimeUnit.DAYS.toMillis(1);
+-
+-                if(!prFile.exists() || (System.currentTimeMillis() - millisOf24HRS) > prFile.lastModified()){
+-                    retPr.store(outputStream, ConstantsFor.class.getSimpleName() + ".takePr");
+-                    stringBuilder.append(prFile.getName()).append(" is exist: ").append(!prFile.exists()).append("\n");
+-                    if(prFile.exists()){
+-                        stringBuilder.append(prFile.getName()).append("last modified: ").append(new Date(prFile.lastModified())).append("\n");
+-                    }
+-                }
+-            }
+-            catch(IOException e){
+-                stringBuilder.append(e.getMessage()).append(new TForms().fromArray(e, false)).append("\n");
+-                FileSystemWorker.error(classMeth, e);
+-            }
+-        }
+-
+-        PROPS.clear();
+-        PROPS.putAll(retPr);
+-        stringBuilder.append(PROPS.size()).append(" is PROPS size, PROPS equals retPr: ").append(PROPS.equals(retPr));
+-        messageToUser.warn(classMeth, "results", " = " + stringBuilder.toString());
+-        return retPr;
+-    }
+-
+     /**
+      @return Время работы в часах.
+      */
+     public static String getUpTime() {
+         String tUnit = " h";
+-        float hrsOn = ( float )
++        float hrsOn = (float)
+             (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN / ConstantsFor.ONE_HOUR_IN_MIN;
+-        if(hrsOn > 24){
++        if (hrsOn > 24) {
+             hrsOn = hrsOn / ConstantsFor.ONE_DAY_HOURS;
+             tUnit = " d";
+         }
+@@ -495,17 +435,15 @@
+      */
+     public static long getBuildStamp() {
+         long retLong = 1L;
+-        try{
++        try {
+             String hostName = InetAddress.getLocalHost().getHostName();
+-            if(hostName.equalsIgnoreCase("home") || hostName.toLowerCase().contains(HOSTNAME_NO0027)){
++            if (hostName.equalsIgnoreCase("home") || hostName.toLowerCase().contains(HOSTNAME_NO0027)) {
+                 PROPS.setProperty("build", System.currentTimeMillis() + "");
+                 retLong = System.currentTimeMillis();
+-            }
+-            else{
++            } else {
+                 retLong = Long.parseLong(PROPS.getProperty("build", "1"));
+             }
+-        }
+-        catch(UnknownHostException e){
++        } catch (UnknownHostException e) {
+             messageToUser.errorAlert("ConstantsFor", "getBuildStamp", e.getMessage());
+             FileSystemWorker.error("ConstantsFor.getBuildStamp", e);
+         }
+@@ -530,9 +468,9 @@
+      @return кол-во выделенной, используемой и свободной памяти в МБ
+      */
+     public static String getMemoryInfo() {
+-        String msg = ( float ) Runtime.getRuntime().totalMemory() / ConstantsFor.MBYTE + " now totalMemory, " +
+-            ( float ) Runtime.getRuntime().freeMemory() / ConstantsFor.MBYTE + " now freeMemory, " +
+-            ( float ) Runtime.getRuntime().maxMemory() / ConstantsFor.MBYTE + " now maxMemory.";
++        String msg = (float) Runtime.getRuntime().totalMemory() / ConstantsFor.MBYTE + " now totalMemory, " +
++            (float) Runtime.getRuntime().freeMemory() / ConstantsFor.MBYTE + " now freeMemory, " +
++            (float) Runtime.getRuntime().maxMemory() / ConstantsFor.MBYTE + " now maxMemory.";
+         messageToUser.info(msg);
+         return msg;
+     }
+@@ -548,14 +486,13 @@
+      @return {@link #DELAY}
+      */
+     private static long getDelay() {
+-        long delay = new SecureRandom().nextInt(( int ) MY_AGE);
+-        if(delay < MIN_DELAY){
++        long delay = new SecureRandom().nextInt((int) MY_AGE);
++        if (delay < MIN_DELAY) {
+             delay = MIN_DELAY;
+         }
+-        if(ConstantsFor.thisPC().toLowerCase().contains("no") || ConstantsFor.thisPC().toLowerCase().contains("home")){
++        if (ConstantsFor.thisPC().toLowerCase().contains("no") || ConstantsFor.thisPC().toLowerCase().contains("home")) {
+             return 3;
+-        }
+-        else{
++        } else {
+             return delay;
+         }
+     }
+@@ -567,11 +504,10 @@
+      @return имя компьютера, где запущено
+      */
+     public static String thisPC() {
+-        try{
++        try {
+             return InetAddress.getLocalHost().getHostName();
+-        }
+-        catch(UnknownHostException | ExceptionInInitializerError | NullPointerException e){
+-            String retStr = new TForms().fromArray(( List<?> ) e, false);
++        } catch (UnknownHostException | ExceptionInInitializerError | NullPointerException e) {
++            String retStr = new TForms().fromArray((List<?>) e, false);
+             FileSystemWorker.recFile("this_pc.err", Collections.singletonList(retStr));
+             return "pc";
+         }
+@@ -596,10 +532,9 @@
+         Callable<Boolean> theProphecy = new SaveDBPropsCallable(mysqlDataSource, propsToSave, classMeth, methName);
+         Future<Boolean> booleanFuture = AppComponents.threadConfig().getTaskExecutor().submit(theProphecy);
+ 
+-        try{
++        try {
+             retBool.set(booleanFuture.get());
+-        }
+-        catch(InterruptedException | ExecutionException e){
++        } catch (InterruptedException | ExecutionException e) {
+             messageToUser.errorAlert(ConstantsFor.class.getSimpleName(), methName, e.getMessage());
+             FileSystemWorker.error(classMeth, e);
+             Thread.currentThread().interrupt();
+@@ -615,10 +550,9 @@
+      @return {@link Visitor}
+      */
+     public static Visitor getVis(HttpServletRequest request) {
+-        try{
++        try {
+             return AppComponents.thisVisit(request.getSession().getId());
+-        }
+-        catch(Exception e){
++        } catch (Exception e) {
+             return new AppComponents().visitor(request);
+         }
+     }
+@@ -638,4 +572,53 @@
+         return request.getRemoteAddr();
+     }
+ 
++    /**
++     Тащит {@link #PROPS} из БД или файла
++     <p>
++     {@link ThreadConfig#thrNameSet(java.lang.String)} <br>
++     */
++    static Properties takePr(boolean fromFile) {
++        AppComponents.threadConfig().thrNameSet("gProps");
++
++        InitProperties initProperties = new DBRegProperties(ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName());
++        Properties retPr = new Properties();
++        File prFile = new File(ConstantsFor.class.getSimpleName() + ".properties");
++        StringBuilder stringBuilder = new StringBuilder();
++        String classMeth = "ConstantsFor.takePr";
++
++        if (fromFile || new File("ff").exists()) {
++            try (InputStream inputStream = new FileInputStream(prFile)) {
++                retPr.load(inputStream);
++                stringBuilder.append("fromFile: ").append(fromFile).append("\n");
++                stringBuilder.append("File \"ff\": ").append(new File("ff").exists()).append("\n");
++            } catch (IOException e) {
++                stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false)).append("\n");
++                FileSystemWorker.error(classMeth, e);
++            }
++        } else {
++            retPr = initProperties.getProps();
++
++            try (OutputStream outputStream = new FileOutputStream(prFile)) {
++                long millisOf24HRS = TimeUnit.DAYS.toMillis(1);
++
++                if (!prFile.exists() || (System.currentTimeMillis() - millisOf24HRS) > prFile.lastModified()) {
++                    retPr.store(outputStream, ConstantsFor.class.getSimpleName() + ".takePr");
++                    stringBuilder.append(prFile.getName()).append(" is exist: ").append(!prFile.exists()).append("\n");
++                    if (prFile.exists()) {
++                        stringBuilder.append(prFile.getName()).append("last modified: ").append(new Date(prFile.lastModified())).append("\n");
++                    }
++                }
++            } catch (IOException e) {
++                stringBuilder.append(e.getMessage()).append(new TForms().fromArray(e, false)).append("\n");
++                FileSystemWorker.error(classMeth, e);
++            }
++        }
++
++        PROPS.clear();
++        PROPS.putAll(retPr);
++        stringBuilder.append(PROPS.size()).append(" is PROPS size, PROPS equals retPr: ").append(PROPS.equals(retPr));
++        messageToUser.warn(classMeth, "results", " = " + stringBuilder.toString());
++        return retPr;
++    }
++
+ }

@@ -3,9 +3,9 @@ package ru.vachok.networker.net;
 
 import org.slf4j.Logger;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.DBMessenger;
@@ -19,7 +19,8 @@ import java.util.Arrays;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
-import static java.lang.System.*;
+import static java.lang.System.err;
+import static java.lang.System.out;
 
 
 /**
@@ -48,22 +49,16 @@ public class MyServer extends Thread {
      {@link DBMessenger}
      */
     private static final MessageToUser messageToUser = new MessageLocal();
-
-    /**
-     <b>Сокет для сервера</b>
-
-     @see ConstantsFor#PR_LPORT
-     */
-    @SuppressWarnings ("CanBeFinal")
-    private static ServerSocket serverSocket = null;
+    
+    private static final int LPORT = Integer.parseInt(ConstantsFor.getAppProps().getProperty("LPORT", "9990"));
 
     /**
      <b>Сокет для клиента</b>
      <p>
      {@link #getSocket()} , {@link #setSocket(Socket)}
      */
-    private static Socket socket = null;
-
+    private static Socket socket;
+    
     public static Socket getSocket() {
         return socket;
     }
@@ -78,21 +73,27 @@ public class MyServer extends Thread {
     public static MyServer getI() {
         return myServer;
     }
-
-    static {
-        try{
-            serverSocket = new ServerSocket(ConstantsFor.PR_LPORT);
-        }
-        catch(IOException e){
-            LOGGER.error(e.getMessage(), e);
-        }
-    }
-
+    
+    /**
+     Сокет для сервера
+     */
+    @SuppressWarnings("CanBeFinal")
+    private static ServerSocket serverSocket;
+    
     /**
      {@link #myServer}
      */
     private MyServer() {
-        AppComponents.threadConfig().thrNameSet("tport:" + ConstantsFor.PR_LPORT);
+        AppComponents.threadConfig().thrNameSet("tport:" + LPORT);
+    }
+
+    static {
+        try{
+            serverSocket = new ServerSocket(LPORT);
+        }
+        catch(IOException e){
+            LOGGER.error(e.getMessage(), e);
+        }
     }
 
     /**
@@ -111,7 +112,8 @@ public class MyServer extends Thread {
         InputStreamReader reader = new InputStreamReader(inputStream);
         BufferedReader bufferedReader = new BufferedReader(reader);
         printStream.println((System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN + " min up | " + ConstantsFor.APPNAME_WITHMINUS);
-        printStream.println(Thread.activeCount() + " active THREADS");
+        printStream.println(AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor());
+        printStream.println(AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor());
         printStream.println(ConstantsFor.getMemoryInfo());
         printStream.println("Press Enter or enter command:\n");
         String readLine = bufferedReader.readLine();
@@ -128,20 +130,20 @@ public class MyServer extends Thread {
     private static void makeDeal(String readLine) throws IOException, InterruptedException {
         if(readLine.toLowerCase().contains("exit")){
             FileSystemWorker.delTemp();
-            MyServer.socket.close();
+            socket.close();
             System.exit(ConstantsFor.CODE_USEREXIT);
         }
         if(readLine.toLowerCase().contains("help")){
-            MyServer.ifHelp();
+            ifHelp();
         }
         if(readLine.toLowerCase().contains("con")){
-            MyServer.ifCon();
+            ifCon();
         }
         if(readLine.toLowerCase().contains("thread")){
-            MyServer.ifThread();
+            ifThread();
         }
         if(readLine.toLowerCase().contains(ConstantsNet.ATT_NETSCAN)){
-            MyServer.ifNetScan();
+            ifNetScan();
         }
         if(readLine.equalsIgnoreCase("shutdown")){
             Runtime.getRuntime().exec(ConstantsFor.COM_SHUTDOWN_P_F);
@@ -150,7 +152,7 @@ public class MyServer extends Thread {
             Runtime.getRuntime().exec("shutdown /r /f");
         }
         else{
-            MyServer.printToSocket();
+            printToSocket();
         }
     }
 
@@ -193,7 +195,7 @@ public class MyServer extends Thread {
         printWriter.println(Thread.currentThread().getPriority() + " prio");
         printWriter.println(Thread.currentThread().getThreadGroup().activeCount() + " getThreadGroup().activeCount()");
         printWriter.println(Thread.currentThread().getThreadGroup().activeGroupCount() + " getThreadGroup().activeGroupCount()");
-        printWriter.println(Thread.currentThread().getThreadGroup().toString() + " getThreadGroup().toString()");
+        printWriter.println(Thread.currentThread().getThreadGroup() + " getThreadGroup().toString()");
         printWriter.println();
         printWriter.println(millis / 1000 + " sec to start console read");
         Thread.sleep(millis);
@@ -234,7 +236,7 @@ public class MyServer extends Thread {
         InputStream inputStream = socket.getInputStream();
         System.setOut(new PrintStream(socket.getOutputStream()));
         printWriter.println((float) (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN + " | " + ConstantsFor.APPNAME_WITHMINUS);
-        printWriter.println("NEW SOCKET: " + socket.toString());
+        printWriter.println("NEW SOCKET: " + socket);
         while(inputStream.available() > 0){
             byte[] bytes = new byte[3];
             int read = inputStream.read(bytes);
@@ -302,7 +304,7 @@ public class MyServer extends Thread {
             System.setOut(new PrintStream(socket.getOutputStream()));
             f.append("\n\n")
                 .append(( float ) (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / 60).append(" APP RUNNING \n");
-            printWriter.println(f.toString());
+            printWriter.println(f);
             if(scanner.hasNext()){
                 while(socket.isConnected()){
                     printWriter.print(out);

@@ -2,8 +2,8 @@ package ru.vachok.networker.accesscontrol.common;
 
 
 import org.slf4j.Logger;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.systray.SystemTrayHelper;
 
 import java.io.*;
@@ -42,7 +42,7 @@ public class ArchivesAutoCleaner extends SimpleFileVisitor<Path> implements Runn
     @Override
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
         String msg = new StringBuilder().append("Cleaning the directory: ")
-            .append(dir.toString()).append("\n")
+            .append(dir).append("\n")
             .append(attrs.lastModifiedTime()).append(" is last modified time.")
             .append(Objects.requireNonNull(dir.toFile().listFiles()).length)
             .append(" files in.").toString();
@@ -67,8 +67,8 @@ public class ArchivesAutoCleaner extends SimpleFileVisitor<Path> implements Runn
             Path toCPPath = Paths.get(copiedFilePathStr);
             Path copyPath = Files.copy(file, toCPPath);
             Files.delete(file);
-
-            String msg = file.toString() + " is copied!\n" + copyPath.toAbsolutePath();
+    
+            String msg = file + " is copied!\n" + copyPath.toAbsolutePath();
             printWriter.println(msg);
             return FileVisitResult.CONTINUE;
         } else return FileVisitResult.CONTINUE;
@@ -87,7 +87,7 @@ public class ArchivesAutoCleaner extends SimpleFileVisitor<Path> implements Runn
         try {
             if (dir.toFile().isDirectory() && dir.getNameCount() == 0) {
                 Files.delete(dir);
-                String msg = dir.toString() + " deleted!";
+                String msg = dir + " deleted!";
                 LOGGER.warn(msg);
             }
             return FileVisitResult.CONTINUE;

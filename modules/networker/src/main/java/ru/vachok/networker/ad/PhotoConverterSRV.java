@@ -3,8 +3,8 @@ package ru.vachok.networker.ad;
 
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import javax.imageio.ImageIO;

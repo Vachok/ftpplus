@@ -10,10 +10,13 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.accesscontrol.common.CommonRightsChecker;
-import ru.vachok.networker.componentsrepo.*;
+import ru.vachok.networker.componentsrepo.PageFooter;
+import ru.vachok.networker.componentsrepo.VersionInfo;
+import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.net.DiapazonedScan;
 import ru.vachok.networker.net.MoreInfoGetter;
 import ru.vachok.networker.services.SimpleCalculator;
@@ -57,6 +60,23 @@ public class MatrixCtr {
      */
     private static final String ATT_DINNER = "dinner";
 
+    /**
+     Конструктор autowired
+     <p>
+     () = {@link #setCurrentProvider()}
+
+     @param versionInfo {@link AppComponents#versionInfo()}
+     */
+    @SuppressWarnings("WeakerAccess")
+    @Autowired
+    public MatrixCtr(VersionInfo versionInfo) {
+        this.versionInfoInst = versionInfo;
+        AppComponents.threadConfig().getTaskScheduler()
+            .scheduleAtFixedRate(
+                this::setCurrentProvider,
+                TimeUnit.MINUTES.toMillis(Long.parseLong(AppComponents.getOrSetProps().getProperty("trace", String.valueOf(ConstantsFor.DELAY)))));
+    }
+
     private String currentProvider = "Unknown yet";
 
     /**
@@ -80,17 +100,15 @@ public class MatrixCtr {
     private long metricMatrixStartLong = System.currentTimeMillis();
 
     /**
-     Конструктор autowired
+     Трэйсроуте до 8.8.8.8
      <p>
+     С целью определения шлюза по-умолчанию, и соотв. провайдера.
 
-     @param versionInfo {@link AppComponents#versionInfo()}
+     @see AppComponents#sshActs()
      */
-    @SuppressWarnings("WeakerAccess")
-    @Autowired
-    public MatrixCtr(VersionInfo versionInfo) {
-        this.versionInfoInst = versionInfo;
-        AppComponents.threadConfig().getTaskScheduler().scheduleAtFixedRate(this::getProv,
-            TimeUnit.MINUTES.toMillis(Long.parseLong(AppComponents.getOrSetProps().getProperty("trace"))));
+    public void setCurrentProvider() {
+        SshActs sshActs = new AppComponents().sshActs();
+        this.currentProvider = sshActs.providerTraceStr();
     }
 
     /**
@@ -117,7 +135,8 @@ public class MatrixCtr {
     public String getFirst(final HttpServletRequest request, Model model, HttpServletResponse response) {
         this.visitorInst = ConstantsFor.getVis(request);
         qIsNull(model, request);
-        model.addAttribute("devscan", "Since " + new Date(ConstantsFor.START_STAMP) + MoreInfoGetter.getTVNetInfo() + "<br>" + currentProvider);
+        model.addAttribute("devscan",
+            "Since " + new Date(versionInfoInst.getPingTVStartStamp()) + MoreInfoGetter.getTVNetInfo() + "<br>" + currentProvider);
         response.addHeader(ConstantsFor.HEAD_REFRESH, "120");
         return "starting";
     }
@@ -164,11 +183,12 @@ public class MatrixCtr {
     @GetMapping("/git")
     public String gitOn(Model model, HttpServletRequest request) {
         this.visitorInst = ConstantsFor.getVis(request);
-        SSHFactory gitOner = new SSHFactory.Builder(ConstantsFor.IPADDR_SRVGIT, "sudo cd /usr/home/ITDept;sudo git instaweb;exit").build();
+        SSHFactory gitOner = new SSHFactory.Builder(ConstantsFor.IPADDR_SRVGIT, "sudo cd /usr/home/ITDept;sudo git instaweb;exit",
+            getClass().getSimpleName()).build();
         if (request.getQueryString() != null && request.getQueryString().equalsIgnoreCase(ConstantsFor.COM_REBOOT)) {
-            gitOner = new SSHFactory.Builder(ConstantsFor.IPADDR_SRVGIT, "sudo reboot").build();
+            gitOner = new SSHFactory.Builder(ConstantsFor.IPADDR_SRVGIT, "sudo reboot", getClass().getSimpleName()).build();
         }
-        String call = gitOner.call() + "\n" + visitorInst.toString();
+        String call = gitOner.call() + "\n" + visitorInst;
         LOGGER.info(call);
         metricMatrixStartLong = System.currentTimeMillis() - metricMatrixStartLong;
         return "redirect:http://srv-git.eatmeat.ru:1234";
@@ -203,13 +223,17 @@ public class MatrixCtr {
                 this.getClass().getName() + "<br>");
         }
         model.addAttribute("workPos", workPos);
-        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<p>" + visitorInst.toString());
+        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<p>" + visitorInst);
         model.addAttribute("headtitle", matrixSRV.getCountDB() + " позиций   " + TimeUnit.MILLISECONDS.toMinutes(
             System.currentTimeMillis() - ConstantsFor.START_STAMP) + " getUpTime");
         metricMatrixStartLong = System.currentTimeMillis() - metricMatrixStartLong;
         return ConstantsFor.BEANNAME_MATRIX;
     }
-
+    
+    public static String getUserPC(HttpServletRequest request) {
+        return request.getRemoteAddr();
+    }
+    
     /**
      Перевод времени из long в {@link Date} и обратно.
      <p>
@@ -231,9 +255,9 @@ public class MatrixCtr {
     /**
      Query string отсутствует в реквесте.
      <p>
-     1. {@link ConstantsFor#getUserPC(javax.servlet.http.HttpServletRequest)}. Для заголовка страницы. <br> 2. {@link Visitor#toString()} отобразим в {@link #LOGGER} <br> 3. {@link
+     1. {@link MatrixCtr#getUserPC(HttpServletRequest)}. Для заголовка страницы. <br> 2. {@link Visitor#toString()} отобразим в {@link #LOGGER} <br> 3. {@link
     VersionInfo#getAppVersion()}. Компонент заголовка. 4. {@link VersionInfo} <br> 5. {@link ConstantsFor#isPingOK()}. Если {@code false} - аттрибут модели {@code ping to srv-git.eatmeat.ru is "
-    false} <br> 6. {@link PageFooter#getFooterUtext()}, 7. new {@link PageFooter}. Низ страницы. <br> 8-9 {@link ConstantsFor#getUserPC(javax.servlet.http.HttpServletRequest)} если содержит {@link
+    false} <br> 6. {@link PageFooter#getFooterUtext()}, 7. new {@link PageFooter}. Низ страницы. <br> 8-9 {@link MatrixCtr#getUserPC(HttpServletRequest)} если содержит {@link
     ConstantsFor#HOSTNAME_NO0027} или {@code 0:0:0:0}, аттрибут {@link ConstantsFor#ATT_VISIT} - 10. {@link VersionInfo#toString()}, иначе - 11. {@link Visitor#getTimeSpend()}.
      <p>
 
@@ -241,19 +265,14 @@ public class MatrixCtr {
      @param request {@link HttpServletRequest}
      */
     private void qIsNull(Model model, HttpServletRequest request) {
-        String userPC = ConstantsFor.getUserPC(request);
-        try {
-            LOGGER.warn(visitorInst.toString());
-        } catch (Exception ignore) {
-            //
-        }
+        String userPC = getUserPC(request);
         String userIP = userPC + ":" + request.getRemotePort() + "<-" + AppComponents.versionInfo().getAppVersion();
         if (!ConstantsFor.isPingOK()) userIP = "ping to srv-git.eatmeat.ru is " + false;
         model.addAttribute("yourip", userIP);
         model.addAttribute(ConstantsFor.BEANNAME_MATRIX, new MatrixSRV());
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
-        if (ConstantsFor.getUserPC(request).toLowerCase().contains(ConstantsFor.HOSTNAME_NO0027) ||
-            ConstantsFor.getUserPC(request).toLowerCase().contains("0:0:0:0")) {
+        if (getUserPC(request).toLowerCase().contains(ConstantsFor.HOSTNAME_NO0027) ||
+            getUserPC(request).toLowerCase().contains("0:0:0:0")) {
             model.addAttribute(ConstantsFor.ATT_VISIT, versionInfoInst.toString());
         } else {
             model.addAttribute(ConstantsFor.ATT_VISIT, visitorInst.getTimeSpend() + " timestamp");
@@ -302,22 +321,6 @@ public class MatrixCtr {
         this.matrixSRV.setWorkPos(workPosition);
         LOGGER.info(workPosition);
         return REDIRECT_MATRIX;
-    }
-
-    private void getProv() {
-        SshActs sshActs = new AppComponents().sshActs();
-        String gettRoute = sshActs.providerTraceStr();
-        String logStr = "LOG: ";
-        if (gettRoute.contains("91.210.85.173") && !gettRoute.contains(logStr)) {
-            gettRoute = "<h3>FORTEX</h3>";
-        } else if (gettRoute.contains("176.62.185.129") && !gettRoute.contains(logStr)) {
-            gettRoute = "<h3>ISTRANET</h3>";
-        } else if (gettRoute.contains(logStr)) {
-            gettRoute = gettRoute.split(logStr)[1];
-        } else {
-            LOGGER.warn(gettRoute);
-        }
-        this.currentProvider = gettRoute;
     }
 
     @Override

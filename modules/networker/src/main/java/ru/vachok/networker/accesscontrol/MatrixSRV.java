@@ -6,9 +6,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import ru.vachok.mysqlandprops.DataConnectTo;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.ResoCache;
 import ru.vachok.networker.config.ResLoader;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -58,7 +58,7 @@ public class MatrixSRV {
 
      {@link MatrixCtr#showResults(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, org.springframework.ui.Model)}
      */
-    private int countDB = 0;
+    private int countDB;
 
     /**
      @return {@link #countDB}
@@ -109,9 +109,9 @@ public class MatrixSRV {
         StringBuilder stringBuilder = new StringBuilder();
 
         resourceCache.forEach((x, y) -> stringBuilder
-            .append(x.toString())
+            .append(x)
             .append("<br>")
-            .append(y.toString()));
+            .append(y));
 
         return stringBuilder.toString();
     }

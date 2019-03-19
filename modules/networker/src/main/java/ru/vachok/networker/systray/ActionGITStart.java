@@ -3,10 +3,10 @@ package ru.vachok.networker.systray;
 
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import javax.swing.*;
@@ -41,14 +41,14 @@ class ActionGITStart extends AbstractAction {
             .append("sudo cd /usr/home/kudr/;")
             .append("sudo git instaweb -p 9999;")
             .append("exit;")
-            .toString()).build().call();
+            .toString(), getClass().getSimpleName()).build().call();
         Future<String> submit = AppComponents.threadConfig().getTaskExecutor().submit(sshStr);
         try {
             int timeOut30 = 30;
             messageToUser.infoTimer(( int ) ConstantsFor.DELAY, getClass().getSimpleName() + "\nFuture<String> submit = " + submit.get(timeOut30,
                 TimeUnit.SECONDS));
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
-            FileSystemWorker.recFile(getClass().getSimpleName(), (e.getMessage() + "\n" + new TForms().fromArray(e, false)));
+            FileSystemWorker.writeFile(getClass().getSimpleName(), (e.getMessage() + "\n" + new TForms().fromArray(e, false)));
             Thread.currentThread().interrupt();
         }
     }

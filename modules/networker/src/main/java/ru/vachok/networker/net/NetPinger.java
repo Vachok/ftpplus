@@ -6,9 +6,9 @@ import org.springframework.web.multipart.MultipartFile;
 import ru.vachok.messenger.MessageFile;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.messenger.email.ESender;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
@@ -95,7 +95,7 @@ public class NetPinger implements Runnable, Pinger {
 
      @see NetScanCtr#pingPost(org.springframework.ui.Model, javax.servlet.http.HttpServletRequest, ru.vachok.networker.net.NetPinger, javax.servlet.http.HttpServletResponse)
      */
-    private MultipartFile multipartFile = null;
+    private MultipartFile multipartFile;
 
     /**
      @return {@link #timeToScanStr}
@@ -140,11 +140,10 @@ public class NetPinger implements Runnable, Pinger {
 
         for (InetAddress inetAddress : ipAsList) {
             try {
-                resList.add(inetAddress.toString() + " is " + inetAddress.isReachable(ConstantsFor.TIMEOUT_650));
+                resList.add(inetAddress + " is " + inetAddress.isReachable(ConstantsFor.TIMEOUT_650));
                 Thread.sleep(pingSleepMsec);
             } catch (IOException | InterruptedException e) {
-                messageToUser.errorAlert(STR_CLASSNAME, "pingSW", e.getMessage());
-                FileSystemWorker.error(STR_METH_PINGSW, e);
+                Thread.currentThread().checkAccess();
                 Thread.currentThread().interrupt();
             }
         }
@@ -178,28 +177,22 @@ public class NetPinger implements Runnable, Pinger {
      {@link Collections#frequency(java.util.Collection, java.lang.Object)} ({@code int frequency}) <br> Добавим в new {@link ArrayList}, результат - {@code int frequency} times {@code x}
      (уникальный элемент из {@link #resList}).
      <p>
-     Записать результат в файл {@link FileSystemWorker#recFile(java.lang.String, java.util.List)}. Файл - {@link ConstantsNet#PINGRESULT_LOG}. <br> Если пингер работал 3 и более минут,
+     Записать результат в файл {@link FileSystemWorker#writeFile(java.lang.String, java.util.List)}. Файл - {@link ConstantsNet#PINGRESULT_LOG}. <br> Если пингер работал 3 и более минут,
      отправить отчёт на почту {@link ConstantsFor#EADDR_143500GMAILCOM} ({@link ESender#sendM(java.util.List, java.lang.String, java.lang.String)}) <br>
 
      @param userIn кол-во минут в мсек, которые пингер работал.
      */
     private void parseResult(long userIn) {
         List<String> pingsList = new ArrayList<>();
+    
         pingsList.add("Pinger is start at " + new Date(System.currentTimeMillis() - userIn));
         resList.stream().distinct().forEach(x -> {
             int frequency = Collections.frequency(resList, x);
             pingsList.add(frequency + " times " + x + "\n");
         });
-        FileSystemWorker.recFile(ConstantsNet.PINGRESULT_LOG, pingsList);
+        FileSystemWorker.writeFile(ConstantsNet.PINGRESULT_LOG, pingsList.stream());
         messageToUser = new MessageFile();
         pingsList.add(((float) TimeUnit.MILLISECONDS.toMinutes(userIn) / ConstantsFor.ONE_HOUR_IN_MIN) + " hours spend");
-        if (userIn >= TimeUnit.MINUTES.toMillis(3)) {
-            try {
-                ESender.sendM(Collections.singletonList(ConstantsFor.EADDR_143500GMAILCOM), getClass().getSimpleName(), new TForms().fromArray(pingsList, false));
-            } catch (Exception e) {
-                FileSystemWorker.error("NetPinger.parseResult", e);
-            }
-        }
     }
 
     /**
@@ -242,7 +235,7 @@ public class NetPinger implements Runnable, Pinger {
         } catch (UnknownHostException e) {
             messageToUser.errorAlert(STR_CLASSNAME, "ipIsIP", e.getMessage());
             FileSystemWorker.error("NetPinger.ipIsIP", e);
-            throw new IllegalStateException();
+            return InetAddress.getLoopbackAddress();
         }
     }
 

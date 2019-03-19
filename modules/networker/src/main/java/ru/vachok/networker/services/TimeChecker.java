@@ -4,7 +4,7 @@ package ru.vachok.networker.services;
 import org.apache.commons.net.ntp.NTPUDPClient;
 import org.apache.commons.net.ntp.TimeInfo;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.io.IOException;
@@ -44,7 +44,6 @@ public class TimeChecker implements Callable<TimeInfo> {
             ntpudpClientTime = ntpudpClient.getTime(InetAddress.getByName("rups00.eatmeat.ru"));
         } catch (IOException e) {
             messageToUser.errorAlert("TimeChecker", "ntpCheck", e.getMessage());
-            FileSystemWorker.error("TimeChecker.ntpCheck", e);
         }
         Objects.requireNonNull(ntpudpClientTime).computeDetails();
         ntpudpClient.close();

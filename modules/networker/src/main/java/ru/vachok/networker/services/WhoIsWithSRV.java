@@ -68,7 +68,7 @@ public class WhoIsWithSRV {
     }
 
     private String traceRt(String inetAddr) {
-        SSHFactory.Builder sshFactoryBu = new SSHFactory.Builder(ConstantsFor.IPADDR_SRVGIT, "traceroute " + inetAddr);
+        SSHFactory.Builder sshFactoryBu = new SSHFactory.Builder(ConstantsFor.IPADDR_SRVGIT, "traceroute " + inetAddr, getClass().getSimpleName());
         String retStr = sshFactoryBu.build().call();
         try {
             retStr = retStr.split(" = ")[1].replaceAll("(\\s\\d?\\d\\s)", "<br>").trim();

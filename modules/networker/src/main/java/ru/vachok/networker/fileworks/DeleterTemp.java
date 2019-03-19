@@ -1,7 +1,11 @@
 package ru.vachok.networker.fileworks;
 
 
+import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
+import ru.vachok.networker.services.MessageLocal;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -11,6 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -20,7 +25,11 @@ import java.util.concurrent.TimeUnit;
  Удаление временных файлов.
 
  @since 19.12.2018 (11:05) */
+@SuppressWarnings("ClassWithoutmessageToUser")
 class DeleterTemp extends FileSystemWorker implements Runnable {
+    
+    
+    private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
 
     /**
      Запись лога в файл {@code DeleterTemp.class.getSimpleName() + "_log.txt"}.
@@ -30,11 +39,11 @@ class DeleterTemp extends FileSystemWorker implements Runnable {
     /**
      Счётчик файлов
      */
-    private int filesCounter = 0;
+    private int filesCounter;
 
     private List<String> fromFile = new ArrayList<>();
-
-    private String patToDel = null;
+    
+    private String patToDel;
 
     DeleterTemp(String patToDel) {
         this.patToDel = patToDel;
@@ -46,9 +55,10 @@ class DeleterTemp extends FileSystemWorker implements Runnable {
             printWriter = new PrintWriter(outputStream, true);
         }
         catch(IOException e){
-            LOGGER.error(e.getMessage(), e);
+            messageToUser.error(new TForms().fromArray(e, false));
         }
         getList();
+        run();
     }
 
 
@@ -65,14 +75,34 @@ class DeleterTemp extends FileSystemWorker implements Runnable {
                 }
             }
             catch(IOException e){
-                LOGGER.warn(e.getMessage(), e);
+                messageToUser.warn(new TForms().fromArray(e, false));
             }
         }
     }
-
+    
+    private void oldSSHLogDel() {
+        File sshFolder = new File(".\\ssh\\");
+        List<File> files = Arrays.asList(sshFolder.listFiles());
+        files.forEach(x -> {
+            if(x.lastModified() < System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1)){
+                try{
+                    Files.deleteIfExists(x.toPath());
+                } catch(IOException e){
+                    messageToUser.error(e.getMessage());
+                }
+            }
+        });
+        
+    }
+    
     @Override
     public void run() {
-        LOGGER.info("DeleterTemp.run");
+        AppComponents.threadConfig().thrNameSet("delTmp");
+        try {
+            AppComponents.threadConfig().executeAsThread(this::oldSSHLogDel);
+        } catch (RuntimeException e) {
+            messageToUser.error(e.getMessage());
+        }
     }
 
     @Override
@@ -80,7 +110,7 @@ class DeleterTemp extends FileSystemWorker implements Runnable {
         Thread.currentThread().setName("DeleterTemp.visitFile");
         this.filesCounter = filesCounter + 1;
         String fileAbs = new StringBuilder()
-            .append(file.toAbsolutePath().toString())
+            .append(file.toAbsolutePath())
             .append(ConstantsFor.STR_DELETED).toString();
         if(more2MBOld(attrs)){
             Files.setAttribute(file, ConstantsFor.DOS_ARCHIVE, true);
@@ -91,7 +121,7 @@ class DeleterTemp extends FileSystemWorker implements Runnable {
                 .append(",")
                 .append(new Date(attrs.lastAccessTime().toMillis()))
                 .append(",")
-                .append(Files.readAttributes(file, "dos:*")).toString());
+                .append(Files.readAttributes(file, "dos:*")));
         }
         if(tempFile(file.toAbsolutePath())){
             try{
@@ -101,7 +131,7 @@ class DeleterTemp extends FileSystemWorker implements Runnable {
                 file.toFile().deleteOnExit();
                 return FileVisitResult.CONTINUE;
             }
-            LOGGER.warn(fileAbs);
+            messageToUser.warn(fileAbs);
         }
 
         return FileVisitResult.CONTINUE;

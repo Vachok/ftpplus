@@ -7,8 +7,6 @@ import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import ru.vachok.messenger.MessageToUser;
-import ru.vachok.messenger.email.ESender;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.PageFooter;
@@ -68,9 +66,7 @@ public class ErrCtr implements ErrorController {
             H_2_CENTER_CLOSE.replaceAll("2", "4"));
         model.addAttribute(ConstantsFor.ATT_STATCODE, H_2_CENTER + statCode + H_2_CENTER_CLOSE);
         if (exception != null) {
-            MessageToUser eMail = new ESender(ConstantsFor.EADDR_143500GMAILCOM);
             try {
-                eMail.errorAlert(exception.toString(), exception.getMessage(), new TForms().fromArray(exception, false) + "\n\n" + visitor.toString());
                 LOGGER.error(exception.getMessage(), exception);
             } catch (Exception e) {
                 LOGGER.error(e.getMessage(), e);

@@ -1,8 +1,8 @@
 package ru.vachok.networker.systray;
 
 
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.AppInfoOnLoad;
-import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.services.SpeedChecker;
 
 import javax.swing.*;

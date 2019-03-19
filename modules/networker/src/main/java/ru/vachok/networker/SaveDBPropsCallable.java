@@ -8,7 +8,10 @@ import ru.vachok.networker.services.MessageLocal;
 
 import java.io.FileOutputStream;
 import java.io.OutputStream;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Savepoint;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Properties;
@@ -46,6 +49,7 @@ class SaveDBPropsCallable implements Callable<Boolean> {
 
      @param c             {@link Connection}
      @param delPropsPoint {@link Savepoint}
+     @return выполнение {@link PreparedStatement}
      @throws SQLException делает {@link Connection#rollback(Savepoint)}
      */
     private static boolean savePropsDelStatement(Connection c, Savepoint delPropsPoint) throws SQLException {

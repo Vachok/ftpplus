@@ -5,17 +5,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ui.Model;
 import ru.vachok.messenger.MessageCons;
+import ru.vachok.messenger.MessageFile;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.messenger.email.ESender;
 import ru.vachok.mysqlandprops.EMailAndDB.MailMessages;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.systray.ActionDefault;
 import ru.vachok.networker.systray.MessageToTray;
 
-import javax.mail.*;
+import javax.mail.Flags;
+import javax.mail.Folder;
+import javax.mail.Message;
+import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.event.ActionEvent;
@@ -29,7 +33,8 @@ import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
-import static java.time.DayOfWeek.*;
+import static java.time.DayOfWeek.SATURDAY;
+import static java.time.DayOfWeek.SUNDAY;
 
 
 /**
@@ -94,7 +99,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
         String sql = ConstantsFor.DBQUERY_SELECTFROMSPEED;
         Properties properties = AppComponents.getOrSetProps();
         final long stArt = System.currentTimeMillis();
-        new ChkMailAndUpdateDB().run();
+        new SpeedChecker.ChkMailAndUpdateDB().run();
 
         try (Connection connection = new AppComponents().connection(ConstantsFor.DBPREFIX + "liferpg");
              PreparedStatement p = connection.prepareStatement(sql);
@@ -158,7 +163,9 @@ public class SpeedChecker implements Callable<Long>, Runnable {
          {@link MailMessages}
          */
         private MailMessages mailMessages = new MailMessages();
-
+    
+        private MessageToUser messageToUser = new MessageFile();
+    
         /**
          Получение информации о текущем дне недели.
          <p>
@@ -212,7 +219,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
          Сверяет почту и базу.
          <p>
          1. {@link #checkDB()} преобразуем в строку. 2. {@link TForms#fromArray(java.util.Map, boolean)}. <br>
-         3. {@link FileSystemWorker#recFile(java.lang.String, java.util.List)} запишем в файл. <br>
+         3. {@link FileSystemWorker#writeFile(java.lang.String, java.util.List)} запишем в файл. <br>
          4. {@link #parseMsg(javax.mail.Message, java.lang.String)} сверка наличия.
 
          @return строку из {@link #checkDB()} .
@@ -221,7 +228,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
         private String chechMail() {
             Message[] messagesBot = mailMessages.call();
             String chDB = new TForms().fromArray(checkDB(), false);
-            FileSystemWorker.recFile(this.getClass().getSimpleName() + ".chechMail", Collections.singletonList(chDB));
+            FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".chechMail", Collections.singletonList(chDB));
             for (Message m : messagesBot) {
                 parseMsg(m, chDB);
             }
@@ -278,7 +285,6 @@ public class SpeedChecker implements Callable<Long>, Runnable {
          @see #chechMail()
          */
         private void parseMsg(Message m, String chDB) {
-            MessageToUser eSender = new ESender(ConstantsFor.EADDR_143500GMAILCOM);
             try {
                 String subjMail = m.getSubject();
                 if (subjMail.toLowerCase().contains("speed:")) {
@@ -293,13 +299,13 @@ public class SpeedChecker implements Callable<Long>, Runnable {
                         delMessage(m);
                     }
                     String todayInfoStr = todayInfo();
-                    eSender.info(ChkMailAndUpdateDB.class.getSimpleName() + " " + ConstantsFor.thisPC(), true + " sending to base",
+                    messageToUser.info(SpeedChecker.ChkMailAndUpdateDB.class.getSimpleName() + " " + ConstantsFor.thisPC(), true + " sending to base",
                         todayInfoStr + "\n" + chDB);
                 } else {
                     new MessageToTray(new ActionDefault(ConstantsFor.HTTP_LOCALHOST8880SLASH)).infoNoTitles("No new messages");
                 }
             } catch (MessagingException e) {
-                eSender.errorAlert(
+                messageToUser.errorAlert(
                     this.getClass().getSimpleName(),
                     LocalDateTime.now() + " " + e.getMessage(),
                     new TForms().fromArray(e, false));
@@ -368,7 +374,12 @@ public class SpeedChecker implements Callable<Long>, Runnable {
          */
         @Override
         public void run() {
-            String msg = chechMail();
+            String msg = "NO MSG";
+            try {
+                msg = chechMail();
+            } catch (IllegalStateException | NullPointerException e) {
+                msg = e.getMessage();
+            }
             msg = msg + "\n" + new Date(rtLong);
             LOGGER.info(msg);
         }

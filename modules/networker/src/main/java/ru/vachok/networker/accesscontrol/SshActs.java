@@ -9,9 +9,10 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
-import ru.vachok.networker.componentsrepo.AppComponents;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -27,8 +28,12 @@ import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.nio.file.AccessDeniedException;
 import java.time.LocalTime;
-import java.util.*;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Stream;
 
 
@@ -41,6 +46,16 @@ import java.util.stream.Stream;
 public class SshActs {
 
     /**
+     SSH-command
+     */
+    static final String SUDO_ECHO = "sudo echo ";
+
+    /**
+     SSH-command
+     */
+    static final String SSH_SUDO_GREP_V = "sudo grep -v '";
+
+    /**
      {@link AppComponents#getLogger(String)}
      */
     private static final Logger LOGGER = AppComponents.getLogger(SshActs.class.getSimpleName());
@@ -50,45 +65,36 @@ public class SshActs {
      */
     private static final String PAGE_NAME = "sshworks";
 
-    /**
-     SSH-command
-     */
-    static final String SUDO_ECHO = "sudo echo ";
+    private static final String STR_HTTPS = "https://";
 
-    /**
-     SSH-command
-     */
-    static final String SUDO_GREP_V = "sudo grep -v '";
+    private static final String SSH_SQUID_RECONFIGURE = "sudo squid -k reconfigure;";
+
+    private static final String SSH_PING5_200_1 = "ping -c 5 10.200.200.1;";
+
+    private static final String SSH_INITPF = "sudo /etc/initpf.fw;";
+
+    private static final String DEFAULT_SERVER_TO_SSH = whatSrvNeed();
 
     /**
      Имя ПК для разрешения
      */
     private String pcName;
-
+    
     private String userInput;
-
-    public void setPcName(String pcName) {
-        if (pcName.contains(ConstantsNet.DOMAIN_EATMEATRU)) {
-            this.pcName = pcName;
-        } else {
-            this.pcName = new NameOrIPChecker(this.pcName).checkPat(pcName);
-        }
-    }
-
-    public String getUserInput() {
-        return userInput;
-    }
 
     /**
      Уровень доступа к инету
      */
     private String inet;
 
+    private String numOfHours =
+        String.valueOf(Math.abs(TimeUnit.SECONDS.toHours((long) LocalTime.parse("18:30").toSecondOfDay() - LocalTime.now().toSecondOfDay())));
+
     /**
      Разрешить адрес
      */
     private String allowDomain;
-
+    
     private String ipAddrOnly;
 
     /**
@@ -96,14 +102,22 @@ public class SshActs {
      */
     private String comment;
 
-    private String tRoute;
-
     /**
      Имя домена для удаления.
      */
     private String delDomain;
+    
+    private boolean squid;
+    
+    private boolean squidLimited;
+    
+    private boolean tempFull;
+    
+    private boolean vipNet;
 
-    private String numOfHours = String.valueOf(TimeUnit.SECONDS.toHours(LocalTime.parse("17:30").toSecondOfDay() - LocalTime.now().toSecondOfDay()));
+    public void setIpAddrOnly(String ipAddrOnly) {
+        this.ipAddrOnly = ipAddrOnly;
+    }
 
     public String getNumOfHours() {
         return numOfHours;
@@ -111,26 +125,6 @@ public class SshActs {
 
     public void setNumOfHours(String numOfHours) {
         this.numOfHours = numOfHours;
-    }
-
-    private boolean squid;
-
-    private boolean squidLimited;
-
-    private boolean tempFull;
-
-    private boolean vipNet;
-
-    public void setIpAddrOnly(String ipAddrOnly) {
-        this.ipAddrOnly = ipAddrOnly;
-    }
-
-    public void setUserInput(String userInput) {
-        this.userInput = userInput;
-    }
-
-    public String gettRoute() {
-        return tRoute;
     }
 
     public String getDelDomain() {
@@ -153,8 +147,20 @@ public class SshActs {
         return pcName;
     }
 
-    public void settRoute(String tRoute) {
-        this.tRoute = tRoute;
+    public void setPcName(String pcName) {
+        if (pcName.contains(ConstantsNet.DOMAIN_EATMEATRU)) {
+            this.pcName = pcName;
+        } else {
+            this.pcName = new NameOrIPChecker(this.pcName).checkPat(pcName);
+        }
+    }
+
+    public String getUserInput() {
+        return userInput;
+    }
+
+    public void setUserInput(String userInput) {
+        this.userInput = userInput;
     }
 
     public String getInet() {
@@ -181,14 +187,80 @@ public class SshActs {
         return vipNet;
     }
 
+    /**
+     Лог переключений инета.
+
+     @return {@code "sudo cat /home/kudr/inet.log"} or {@link InterruptedException}, {@link ExecutionException}, {@link TimeoutException}
+     */
+    private String getInetLog() {
+        AppComponents.threadConfig().thrNameSet("iLog");
+        SSHFactory sshFactory = new SSHFactory.Builder(ConstantsFor.IPADDR_SRVNAT, "sudo cat /home/kudr/inet.log", getClass().getSimpleName()).build();
+        Future<String> submit = AppComponents.threadConfig().getTaskExecutor().submit(sshFactory);
+        try {
+            return submit.get(10, TimeUnit.SECONDS);
+        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+            LOGGER.error("SshActs .getInetLog: {}", e.getMessage());
+            FileSystemWorker.error("SshActs.getInetLog", e);
+            return e.getMessage();
+        }
+    }
+
+    private static String whatSrvNeed() {
+        if (ConstantsFor.thisPC().toLowerCase().contains("rups")) {
+            return ConstantsFor.IPADDR_SRVNAT;
+        } else {
+            return ConstantsFor.IPADDR_SRVGIT;
+        }
+    }
+
+    /**
+     Traceroute
+     <p>
+     Соберём {@link SSHFactory} - {@link SSHFactory.Builder#build()} ({@link ConstantsFor#IPADDR_SRVGIT}, "traceroute ya.ru;exit") <br>
+     Вызовем в строку {@code callForRoute} - {@link SSHFactory#call()}
+     <p>
+     Переопределим {@link SSHFactory} - {@link SSHFactory.Builder#build()} ({@link ConstantsFor#IPADDR_SRVNAT}, "sudo cat /home/kudr/inet.log") <br>
+     Переобределим {@code callForRoute} - {@code callForRoute} + {@code "LOG: "} + {@link SSHFactory#call()}
+     <p>
+     Если {@code callForRoute.contains("91.210.85.")} : добавим в {@link StringBuilder} - {@code "FORTEX"} <br>
+     Else if {@code callForRoute.contains("176.62.185.129")} : добавим {@code "ISTRANET"} <br>
+     Если {@code callForRoute.contains("LOG: ")} добавим {@link String#split(java.lang.String)}[1] по {@code "LOG: "}
+
+     @return {@link StringBuilder#toString()} собравший инфо из строки с сервера.
+     @throws ArrayIndexOutOfBoundsException при разборе строки
+     */
     String providerTraceStr() throws ArrayIndexOutOfBoundsException {
-        SSHFactory sshFactory = new SSHFactory.Builder(ConstantsFor.IPADDR_SRVGIT, "traceroute 8.8.8.8").build();
-        String call = sshFactory.call();
-        this.tRoute = call;
-        sshFactory = new SSHFactory.Builder(ConstantsFor.IPADDR_SRVNAT, "sudo cat /home/kudr/inet.log").build();
-        String[] strings = sshFactory.call().split("\n");
-        List<String> stringList = Arrays.asList(strings);
-        return call + "<br>LOG: " + stringList.get(stringList.size() - 1).split("\\Q Setting gateway0 to\\E")[0];
+        StringBuilder stringBuilder = new StringBuilder();
+        SSHFactory sshFactory = new SSHFactory.Builder(DEFAULT_SERVER_TO_SSH, "traceroute ya.ru;exit", getClass().getSimpleName()).build();
+        String callForRoute = null;
+        Future<String> submitTrace = AppComponents.threadConfig().getTaskExecutor().submit(sshFactory);
+        try {
+            callForRoute = submitTrace.get(30, TimeUnit.SECONDS);
+            if (callForRoute.contains("91.210.85.")) {
+                stringBuilder.append("<h3>FORTEX</h3>");
+            } else {
+                if (callForRoute.contains("176.62.185.129")) {
+                    stringBuilder.append("<h3>ISTRANET</h3>");
+                }
+            }
+        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+            LOGGER.error("SshActs  providerTraceStr: {}", e.getMessage());
+            FileSystemWorker.error("SshActs.providerTraceStr", e);
+            stringBuilder.append(e.getMessage());
+            Thread.currentThread().interrupt();
+        }
+        String logStr = "LOG: ";
+        callForRoute = callForRoute + "<br>LOG: " + getInetLog();
+        if (callForRoute.contains(logStr)) {
+            try {
+                stringBuilder.append("<br><font color=\"gray\">").append(callForRoute.split(logStr)[1].replaceAll(";", "<br>")).append("</font>");
+            } catch (ArrayIndexOutOfBoundsException e) {
+                stringBuilder.append("SshActs." + "providerTraceStr : " + e.getMessage());
+                FileSystemWorker.error("SshActs.providerTraceStr", e);
+            }
+    
+        }
+        return stringBuilder.toString();
     }
 
     /**
@@ -196,12 +268,15 @@ public class SshActs {
 
      @return результат выполненния
      */
+    @SuppressWarnings("DuplicateStringLiteralInspection")
     private String allowDomainAdd() {
+        AppComponents.threadConfig().thrNameSet("aDom");
         this.allowDomain = checkDName();
         Objects.requireNonNull(allowDomain, "allowdomain string is null");
         String commandSSH = new StringBuilder()
-            .append(SUDO_GREP_V).append(Objects.requireNonNull(allowDomain)).append("' /etc/pf/allowdomain > /etc/pf/allowdomain_tmp;")
-            .append(SUDO_GREP_V).append(Objects.requireNonNull(resolveIp(allowDomain))).append(" #").append(allowDomain).append("' /etc/pf/allowip > " +
+            .append(SSH_SUDO_GREP_V).append(Objects.requireNonNull(allowDomain)).append("' /etc/pf/allowdomain > /etc/pf/allowdomain_tmp;")
+            .append(SSH_SUDO_GREP_V).append(Objects.requireNonNull(resolveIp(allowDomain))).append(" #").append(allowDomain).append("' /etc/pf/allowip >" +
+                " " +
                 "/etc/pf/allowip_tmp;")
 
             .append("sudo cp /etc/pf/allowdomain_tmp /etc/pf/allowdomain;")
@@ -211,14 +286,14 @@ public class SshActs {
                 "/etc/pf/allowdomain;")
             .append(SUDO_ECHO).append("\"").append(resolveIp(allowDomain)).append(" #").append(allowDomain).append("\"").append(" >> /etc/pf/allowip;")
 
-            .append("sudo /etc/initpf.fw;")
-            .append("ping -c 5 10.200.200.1;")
-            .append("sudo squid -k reconfigure;")
+            .append(SSH_INITPF)
+            .append(SSH_PING5_200_1)
+            .append(SSH_SQUID_RECONFIGURE)
 
             .append("exit;").toString();
-        String call = "<b>" + new SSHFactory.Builder(ConstantsFor.IPADDR_SRVNAT, commandSSH).build().call() + "</b>";
+        String call = "<b>" + new SSHFactory.Builder(DEFAULT_SERVER_TO_SSH, commandSSH, getClass().getSimpleName()).build().call() + "</b>";
         call = call + "<font color=\"gray\"><br><br>" + new WhoIsWithSRV().whoIs(resolveIp(allowDomain)) + "</font>";
-        writeToLog(new String((call + "\n\n" + toString()).getBytes(), Charset.defaultCharset()));
+        writeToLog(new String((call + "\n\n" + this).getBytes(), Charset.defaultCharset()));
         return call;
     }
 
@@ -231,21 +306,13 @@ public class SshActs {
     private String checkDName() {
         this.allowDomain = allowDomain.replace("http://", ".");
         if (allowDomain.contains("https")) {
-            this.allowDomain = allowDomain.replace("https://", ".");
+            this.allowDomain = allowDomain.replace(STR_HTTPS, ".");
         }
-        char[] chars = allowDomain.toCharArray();
-        try {
-            Character lastChar = chars[chars.length - 1];
-            if (lastChar.equals('/')) {
-                chars[chars.length - 1] = ' ';
-                this.allowDomain = new String(chars).trim();
-            } else {
-                this.allowDomain = new String(allowDomain.getBytes(), Charset.defaultCharset());
-            }
-            return allowDomain;
-        } catch (ArrayIndexOutOfBoundsException e) {
-            return e.getMessage();
+        if (allowDomain.contains("/")) {
+            allowDomain = allowDomain.split("/")[0];
         }
+        this.allowDomain = allowDomain;
+        return allowDomain;
     }
 
     /**
@@ -268,36 +335,6 @@ public class SshActs {
     }
 
     /**
-     Удаление домена из разрешенных
-
-     @return результат выполнения
-     */
-    private String allowDomainDel() {
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(delDomain).append(" del domain raw<br>");
-        this.delDomain = checkDNameDel();
-        Optional<String> delDomainOpt = Optional.of(delDomain);
-        delDomainOpt.ifPresent(x -> {
-            String sshCom = new StringBuilder()
-                .append(SUDO_GREP_V).append(x).append("' /etc/pf/allowdomain > /etc/pf/allowdomain_tmp;")
-                .append(SUDO_GREP_V).append(Objects.requireNonNull(resolveIp(x))).append(" #").append(x).append("' /etc/pf/allowip > /etc/pf/allowip_tmp;")
-
-                .append("sudo cp /etc/pf/allowdomain_tmp /etc/pf/allowdomain;")
-                .append("sudo cp /etc/pf/allowip_tmp /etc/pf/allowip;")
-
-                .append("sudo /etc/initpf.fw;")
-                .append("ping -c 5 10.200.200.1;")
-                .append("sudo squid -k reconfigure;")
-
-                .append("exit;").toString();
-            String resStr = new SSHFactory.Builder(ConstantsFor.IPADDR_SRVNAT, sshCom).build().call();
-            stringBuilder.append(resStr);
-        });
-        writeToLog(stringBuilder.toString());
-        return stringBuilder.toString();
-    }
-
-    /**
      Запись результата в лог
      <p>
      {@code this.getClass().getSimpleName() + ".log"}
@@ -308,19 +345,52 @@ public class SshActs {
         try (OutputStream outputStream = new FileOutputStream(this.getClass().getSimpleName() + ".log")) {
             outputStream.write(s.getBytes());
         } catch (IOException e) {
-            String msg = "SshActs" + ".writeToLog\n" + e.getMessage();
-            LOGGER.error(msg);
+            LOGGER.error("writeToLog : {}\n{}", e.getMessage(), new TForms().fromArray(e, false));
             FileSystemWorker.error("SshActs.writeToLog", e);
         }
+    }
+
+    /**
+     Удаление домена из разрешенных
+
+     @return результат выполнения
+     */
+    @SuppressWarnings("DuplicateStringLiteralInspection")
+    private String allowDomainDel() {
+        AppComponents.threadConfig().thrNameSet("dDom");
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(delDomain).append(" del domain raw<br>");
+        this.delDomain = checkDNameDel();
+        Optional<String> delDomainOpt = Optional.of(delDomain);
+        delDomainOpt.ifPresent(x -> {
+            String sshCom = new StringBuilder()
+                .append(SSH_SUDO_GREP_V).append(x).append("' /etc/pf/allowdomain > /etc/pf/allowdomain_tmp;")
+                .append(SSH_SUDO_GREP_V).append(Objects.requireNonNull(resolveIp(x))).append(" #").append(x).append("' /etc/pf/allowip > " +
+                    "/etc/pf/allowip_tmp;")
+
+                .append("sudo cp /etc/pf/allowdomain_tmp /etc/pf/allowdomain;")
+                .append("sudo cp /etc/pf/allowip_tmp /etc/pf/allowip;")
+
+                .append(SSH_INITPF)
+                .append(SSH_PING5_200_1)
+                .append(SSH_SQUID_RECONFIGURE)
+
+                .append("exit;").toString();
+            String resStr = new SSHFactory.Builder(DEFAULT_SERVER_TO_SSH, sshCom, getClass().getSimpleName()).build().call();
+            stringBuilder.append(resStr);
+        });
+        writeToLog(stringBuilder.toString());
+        return stringBuilder.toString();
     }
 
     /**
      @return имя домена, для удаления.
      */
     private String checkDNameDel() {
+        AppComponents.threadConfig().thrNameSet("chkDom");
         this.delDomain = delDomain.replace("http://", ".");
-        if (delDomain.contains("https")) {
-            this.delDomain = delDomain.replace("https://", ".");
+        if (delDomain.contains(STR_HTTPS)) {
+            this.delDomain = delDomain.replace(STR_HTTPS, ".");
         }
         char[] chars = delDomain.toCharArray();
         try {
@@ -337,10 +407,11 @@ public class SshActs {
         }
     }
 
+    @SuppressWarnings("MethodWithMultipleReturnPoints")
     private String execByWhatListSwitcher(int whatList, boolean iDel) {
         if (iDel) {
             return new StringBuilder()
-                .append(SUDO_GREP_V)
+                .append(SSH_SUDO_GREP_V)
                 .append(Objects.requireNonNull(pcName))
                 .append("' /etc/pf/vipnet > /etc/pf/vipnet_tmp;sudo grep -v '")
                 .append(Objects.requireNonNull(ipAddrOnly))
@@ -415,8 +486,12 @@ public class SshActs {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         SshActs sshActs = (SshActs) o;
 
         return Objects.equals(pcName, sshActs.pcName) &&
@@ -433,12 +508,9 @@ public class SshActs {
         sb.append(", delDomain='").append(delDomain).append('\'');
         sb.append(", inet='").append(inet).append('\'');
         sb.append(", ipAddrOnly='").append(ipAddrOnly).append('\'');
+        sb.append(", numOfHours='").append(numOfHours).append('\'');
         sb.append(", pcName='").append(pcName).append('\'');
-        sb.append(", squid=").append(squid);
-        sb.append(", squidLimited=").append(squidLimited);
-        sb.append(", tempFull=").append(tempFull);
-        sb.append(", tRoute='").append(tRoute).append('\'');
-        sb.append(", vipNet=").append(vipNet);
+        sb.append(", userInput='").append(userInput).append('\'');
         sb.append('}');
         return sb.toString();
     }
@@ -448,7 +520,7 @@ public class SshActs {
 
      @since 01.12.2018 (9:58)
      */
-    @SuppressWarnings ("SameReturnValue")
+    @SuppressWarnings("SameReturnValue")
     @Controller
     public class SshActsCTRL {
 
@@ -457,7 +529,7 @@ public class SshActs {
         /**
          {@link SshActs}
          */
-        private SshActs sshActs;
+        private final SshActs sshActs;
 
         @Autowired
         public SshActsCTRL(SshActs sshActs) {
@@ -468,7 +540,6 @@ public class SshActs {
         public String sshActsPOST(@ModelAttribute SshActs sshActs, Model model, HttpServletRequest request) throws AccessDeniedException {
             String pcReq = request.getRemoteAddr().toLowerCase();
             if (getAuthentic(pcReq)) {
-                this.sshActs = sshActs;
                 model.addAttribute("head", new PageFooter().getHeaderUtext());
                 model.addAttribute(ConstantsFor.ATT_SSH_ACTS, sshActs);
                 model.addAttribute(ConstantsFor.ATT_SSHDETAIL, sshActs.getPcName());
@@ -481,11 +552,11 @@ public class SshActs {
         @GetMapping(URL_SSHACTS)
         public String sshActsGET(Model model, HttpServletRequest request) throws AccessDeniedException {
             Visitor visitor = ConstantsFor.getVis(request);
+            String pcReq = request.getRemoteAddr().toLowerCase();
+
             sshActs.setAllowDomain("");
             sshActs.setDelDomain("");
             sshActs.setUserInput("");
-            String pcReq = request.getRemoteAddr().toLowerCase();
-            LOGGER.warn(pcReq);
             setInet(pcReq);
             if (getAuthentic(pcReq)) {
                 model.addAttribute(ConstantsFor.ATT_TITLE, visitor.getTimeSpend());
@@ -506,32 +577,29 @@ public class SshActs {
 
         @PostMapping("/allowdomain")
         public String allowPOST(@ModelAttribute SshActs sshActs, Model model) {
-            this.sshActs = sshActs;
             model.addAttribute(ConstantsFor.ATT_TITLE, sshActs.getAllowDomain() + " добавлен");
             model.addAttribute(ConstantsFor.ATT_SSH_ACTS, sshActs);
-            model.addAttribute("ok", sshActs.toString() + "<p>" + sshActs.allowDomainAdd());
+            model.addAttribute("ok", sshActs + "<p>" + sshActs.allowDomainAdd());
             model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
             return "ok";
         }
 
         @PostMapping("/deldomain")
         public String delDomPOST(@ModelAttribute SshActs sshActs, Model model) {
-            this.sshActs = sshActs;
             model.addAttribute(ConstantsFor.ATT_TITLE, sshActs.getDelDomain() + " удалён");
             model.addAttribute(ConstantsFor.ATT_SSH_ACTS, sshActs);
-            model.addAttribute("ok", sshActs.toString() + "<p>" + sshActs.allowDomainDel());
+            model.addAttribute("ok", sshActs + "<p>" + sshActs.allowDomainDel());
             model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
             return "ok";
         }
 
         @PostMapping("/tmpfullnet")
         public String tempFullInetAccess(@ModelAttribute SshActs sshActs, Model model) {
-            this.sshActs = sshActs;
-            TemporaryFullInternet temporaryFullInternet = new TemporaryFullInternet(sshActs.getUserInput(), sshActs.getNumOfHours());
-            model.addAttribute("sshActs", sshActs);
+            model.addAttribute(ConstantsFor.ATT_SSH_ACTS, sshActs);
             model.addAttribute(ConstantsFor.ATT_TITLE, ConstantsFor.getMemoryInfo());
-            model.addAttribute("ok", temporaryFullInternet.doAdd());
+            model.addAttribute("ok", new TemporaryFullInternet(sshActs.getUserInput(), sshActs.getNumOfHours()).doAdd());
             model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
+            sshActs.setNumOfHours(String.valueOf(Math.abs(TimeUnit.SECONDS.toHours(LocalTime.parse("18:30").toSecondOfDay() - LocalTime.now().toSecondOfDay()))));
             return "ok";
         }
 
@@ -543,7 +611,7 @@ public class SshActs {
         /**
          Парсинг запроса HTTP
          <p>
-         Usages: {@link SshActsCTRL#sshActsGET(Model, HttpServletRequest)} Uses: {@link #toString()}
+         Usages: {@link SshActs.SshActsCTRL#sshActsGET(Model, HttpServletRequest)} Uses: {@link #toString()}
 
          @param queryString {@link HttpServletRequest#getQueryString()}
          */

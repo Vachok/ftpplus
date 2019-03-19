@@ -10,9 +10,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.AppComponents;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.config.ThreadConfig;
@@ -148,7 +148,6 @@ public class PfListsCtr {
             model.addAttribute(ATT_METRIC, msg + " min");
         }
         response.addHeader(ConstantsFor.HEAD_REFRESH, refreshRate);
-        AppComponents.getOrSetProps(true);
         return ConstantsFor.BEANNAME_PFLISTS;
     }
 
@@ -207,7 +206,7 @@ public class PfListsCtr {
                 " thr, active\nChange: " +
                 (Thread.activeCount() - Long.parseLong(properties.getProperty("thr", "1"))) + "\n" +
                 ConstantsFor.getMemoryInfo() + "\n" +
-                AppComponents.threadConfig().toString();
+                AppComponents.threadConfig();
 
         model.addAttribute("PfListsSrv", pfListsSrvInstAW);
         model.addAttribute(ATT_METRIC, metricValue);
@@ -232,7 +231,7 @@ public class PfListsCtr {
         sb.append(", delayRefInt=").append(delayRefInt);
         sb.append(", pfListsSrvInstAW=").append(pfListsSrvInstAW.hashCode());
         sb.append(", timeOutLong=").append(timeOutLong);
-        sb.append(", messageToUser=").append(messageToUser.toString());
+        sb.append(", messageToUser=").append(messageToUser);
         sb.append('}');
         return sb.toString();
     }
