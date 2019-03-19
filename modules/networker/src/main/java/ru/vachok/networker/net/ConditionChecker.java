@@ -169,7 +169,7 @@ class ConditionChecker {
      @param response {@link HttpServletResponse}
      */
     private static void allDevNotNull(Model model, HttpServletResponse response) {
-        final float scansInMin = 395.92f;
+        final float scansInMin = Float.parseFloat(AppComponents.getOrSetProps().getProperty("scansInMin", "90"));
         float minLeft = ConstantsNet.getAllDevices().remainingCapacity() / scansInMin;
         String attributeValue = new StringBuilder()
             .append(minLeft).append(" ~minLeft. ")

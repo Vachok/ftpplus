@@ -3,6 +3,7 @@ package ru.vachok.networker.accesscontrol;
 
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
@@ -10,10 +11,10 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
-import ru.vachok.networker.systray.MessageToTray;
 
 import java.io.File;
-import java.util.concurrent.*;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -96,6 +97,26 @@ public class PfListsSrv {
     }
     
     /**
+     Формирует списки <b>pf</b>
+     <p>
+     
+     @see PfListsCtr
+     */
+    void makeListRunner() {
+        AppComponents.threadConfig().thrNameSet("mkLst");
+        ThreadPoolTaskScheduler schedulerTasks = AppComponents.threadConfig().getTaskScheduler();
+        Runnable bFact = this::buildFactory;
+        try {
+            schedulerTasks.getScheduledThreadPoolExecutor().remove(bFact);
+        }
+        catch (Exception e) {
+            FileSystemWorker.error("PfListsSrv.makeListRunner", e);
+        }
+        schedulerTasks.scheduleAtFixedRate(bFact, TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY));
+        
+    }
+    
+    /**
      <b>Заполнение форм списка PF</b>
      <p>
      Тащит информацию с сервера pf. Заполняет поля {@link PfListsSrv#pfListsInstAW}
@@ -112,7 +133,8 @@ public class PfListsSrv {
      <i>/home/kudr/inet.log</i>
      */
     private void buildFactory() {
-        AppComponents.threadConfig().thrNameSet("pfmake");
+        AppComponents.threadConfig().thrNameSet("bFact");
+    
         SSHFactory.@NotNull Builder builderInst = new SSHFactory.Builder(DEFAULT_CONNECT_SRV, commandForNatStr, getClass().getSimpleName());
         SSHFactory build = builderInst.build();
         if (!new File("a161.pem").exists()) {
@@ -141,31 +163,5 @@ public class PfListsSrv {
         pfListsInstAW.setInetLog(build.call());
     
         pfListsInstAW.setGitStatsUpdatedStampLong(System.currentTimeMillis());
-    }
-    
-    /**
-     Формирует списки <b>pf</b>
-     <p>
-     Else {@link MessageToTray#warn(String, String, String)} {@link String} = {@link ConstantsFor#thisPC()}.
-     <p>
-     {@link ExceptionInInitializerError} : <br>
-     {@link MessageLocal#warn(String, String, String)}
-     
-     @see PfListsCtr
-     */
-    void makeListRunner() {
-        Future<?> future = AppComponents.threadConfig().getTaskExecutor().submit(this::buildFactory);
-        String classMeth = "PfListsSrv.makeListRunner";
-        try {
-            future.get(ConstantsFor.DELAY, TimeUnit.SECONDS);
-        }
-        catch (InterruptedException | ExecutionException | TimeoutException e) {
-            messageToUser.errorAlert(PfListsSrv.class.getSimpleName(), "makeListRunner", e.getMessage());
-            FileSystemWorker.error(classMeth, e);
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().interrupt();
-        }
-        messageToUser.info(classMeth, "DEFAULT_CONNECT_SRV", " = " + DEFAULT_CONNECT_SRV);
-        messageToUser.info(classMeth, "future.isDone?", " = " + future.isDone());
     }
 }

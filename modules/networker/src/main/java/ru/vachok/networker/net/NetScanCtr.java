@@ -211,9 +211,9 @@ public class NetScanCtr {
         model.addAttribute(ConstantsFor.ATT_TITLE, ConstantsNet.getAllDevices().remainingCapacity() + " ip remain");
         try {
             model.addAttribute(ATT_PCS, scanOnline.toString());
-        } catch (NoClassDefFoundError e) {
-            messageToUser.errorAlert("NetScanCtr", e.getMessage(), e.toString());
-            messageToUser.error(e.toString());
+        }
+        catch (Exception e) {
+            FileSystemWorker.error("NetScanCtr.allDevices", e);
         }
         if (request.getQueryString() != null) {
             ConditionChecker.qerNotNullScanAllDevices(model, response);
