@@ -5,6 +5,7 @@ import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
+import ru.vachok.networker.services.TimeChecker;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -16,6 +17,7 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Properties;
 import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -67,29 +69,35 @@ class SaveDBPropsCallable implements Callable<Boolean> {
         String sql = "delete FROM `ru_vachok_networker` where `javaid` =  'ConstantsFor'";
         if (!pFile.exists()) {
             Files.createFile(pFile.toPath());
+            pFile.setLastModified(ConstantsFor.DELAY);
         }
-        if (pFile.canWrite()) {
+        if (pFile.lastModified() < new TimeChecker().call().getReturnTime() + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY / 3) && pFile.canWrite()) {
             try (OutputStream outputStream = new FileOutputStream(ConstantsFor.class.getSimpleName() + ".properties")) {
                 propsToSave.store(outputStream, classMeth);
             } catch (IOException e) {
                 messageToUser.errorAlert("SaveDBPropsCallable", "savePropsDelStatement", e.getMessage());
             }
-            messageToUser.warn("NO DB SAVE! " + pFile.getName() + " can write is " + pFile.canWrite());
+            messageToUser.warn("NO DB SAVE! " + pFile.getName() + " can write is " + true + ". Modified: " +
+                (new TimeChecker().call().getReturnTime() - pFile.lastModified()) + " msec ago.");
             retBool.set(false);
-        } else if (!pFile.canWrite()) {
-            try (PreparedStatement preparedStatement = c.prepareStatement(sql);
-                 InputStream inputStream = new FileInputStream(pFile)) {
-                propsToSave.load(inputStream);
-                int update = preparedStatement.executeUpdate();
-                messageToUser.info("ConstantsFor.savePropsDelStatement", "update", " = " + update);
-                if (update > 0) retBool.set(true);
-            } catch (SQLException | IOException e) {
-                messageToUser.errorAlert("ConstantsFor", "savePropsDelStatement", e.getMessage());
-                c.rollback(delPropsPoint);
-                retBool.set(false);
-            }
         } else {
-            messageToUser.info("SaveDBPropsCallable.savePropsDelStatement", "propsToSave.size()", " = " + propsToSave.size());
+            boolean lastMod = pFile.lastModified() > System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY * 5);
+            if (lastMod || (pFile.lastModified() > System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY * 2)) && !pFile.canWrite()) {
+                try (PreparedStatement preparedStatement = c.prepareStatement(sql);
+                     InputStream inputStream = new FileInputStream(pFile)) {
+                    propsToSave.load(inputStream);
+                    int update = preparedStatement.executeUpdate();
+                    messageToUser.info("ConstantsFor.savePropsDelStatement", "update", " = " + update);
+                    messageToUser.info("SaveDBPropsCallable.savePropsDelStatement", "Modified: ", TimeUnit.MILLISECONDS.toMinutes(new TimeChecker().call().getReturnTime() - pFile.lastModified()) + " min ago");
+                    if (update > 0) retBool.set(true);
+                } catch (SQLException | IOException e) {
+                    messageToUser.errorAlert("ConstantsFor", "savePropsDelStatement", e.getMessage());
+                    c.rollback(delPropsPoint);
+                    retBool.set(false);
+                }
+            } else {
+                retBool.set(call());
+            }
         }
         return retBool.get();
     }

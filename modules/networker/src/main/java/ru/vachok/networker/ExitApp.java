@@ -15,6 +15,7 @@ import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.TimeUnit;
@@ -199,7 +200,9 @@ public class ExitApp implements Runnable {
      */
     private void exitAppDO() {
         final BlockingDeque<String> devices = ConstantsNet.getAllDevices();
-        miniLoggerLast.add("AllDevices " + "size/remainingCapacity" + " = " + devices.size() + "/" + devices.remainingCapacity());
+        miniLoggerLast.add("AllDevices " + "iterator next" + " = " + devices.iterator().next());
+        miniLoggerLast.add("AllDevices " + "Last" + " = " + devices.getLast());
+        miniLoggerLast.add("AllDevices " + "size/remainingCapacity/total" + " = " + devices.size() + "/" + devices.remainingCapacity() + "/" + ConstantsNet.IPS_IN_VELKOM_VLAN);
         miniLoggerLast.add("exit at " + LocalDateTime.now() + ConstantsFor.getUpTime());
         FileSystemWorker.writeFile("exit.last", miniLoggerLast.stream());
         FileSystemWorker.delTemp();
@@ -209,6 +212,7 @@ public class ExitApp implements Runnable {
     }
     
     private void readCommit(File file) {
+        messageToUser.info("ExitApp.readCommit", file.getAbsolutePath() + " Modified:", " " + new Date(file.lastModified()));
         if (file != null || file.length() > 10) {
             final String readFile = file.getAbsolutePath();
             messageToUser.info("ExitApp.readCommit", "commit", " = " + readFile);

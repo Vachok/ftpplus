@@ -451,6 +451,7 @@ public class NetScannerSvc {
         setOnLinePCsToZero();
         AppComponents.lastNetScan().setTimeLastScan(new Date());
         countStat();
+        new File(ConstantsFor.class.getSimpleName() + ".properties").setLastModified(ConstantsFor.DELAY);
         boolean props = AppComponents.getOrSetProps(LOCAL_PROPS);
         FileSystemWorker.writeFile(ConstantsNet.BEANNAME_LASTNETSCAN, new TForms().fromArray(AppComponents.lastNetScanMap(), false));
         FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".getPCsAsync", toFileList);

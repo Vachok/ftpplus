@@ -42,12 +42,6 @@ public class PfListsSrv {
      */
     private @NotNull String commandForNatStr = "sudo cat /etc/pf/24hrs;exit";
     
-    /**
-     new {@link SSHFactory.Builder}.
-     */
-    @SuppressWarnings("CanBeFinal")
-    private @NotNull SSHFactory.Builder builderInst;
-    
     private MessageToUser messageToUser = new MessageLocal();
     
     /**
@@ -92,7 +86,12 @@ public class PfListsSrv {
     void makeListRunner() {
         Future<?> future = AppComponents.threadConfig().getTaskExecutor().submit(this::buildFactory);
         try {
-            future.get(ConstantsFor.DELAY, TimeUnit.SECONDS);
+            Object o = future.get(ConstantsFor.DELAY, TimeUnit.SECONDS);
+            if (!o.equals(null)) {
+                messageToUser.info("PfListsSrv.makeListRunner", "o", " = " + o);
+            } else {
+                messageToUser.info("PfListsSrv.makeListRunner", "o+\" is ok )\"", " = " + o + " is ok )");
+            }
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
             messageToUser.errorAlert("PfListsSrv", "makeListRunner", e.getMessage());
             FileSystemWorker.error("PfListsSrv.makeListRunner", e);
@@ -133,7 +132,7 @@ public class PfListsSrv {
      */
     private void buildFactory() {
         AppComponents.threadConfig().thrNameSet("pfmake");
-        this.builderInst = new SSHFactory.Builder(DEFAULT_CONNECT_SRV, commandForNatStr, getClass().getSimpleName());
+        SSHFactory.@NotNull Builder builderInst = new SSHFactory.Builder(DEFAULT_CONNECT_SRV, commandForNatStr, getClass().getSimpleName());
         SSHFactory build = builderInst.build();
         if (!new File("a161.pem").exists()) {
             throw new RejectedExecutionException("NO CERTIFICATE a161.pem...");

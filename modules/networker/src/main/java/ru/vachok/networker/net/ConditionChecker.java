@@ -18,27 +18,31 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 
 /**
- * Проверки из классов.
- * <p>
- * Пинги, и тп
- *
- * @since 31.01.2019 (0:20)
- */
+ Проверки из классов.
+ <p>
+ Пинги, и тп
+ 
+ @since 31.01.2019 (0:20) */
 @SuppressWarnings("StaticMethodOnlyUsedInOneClass")
 class ConditionChecker {
-
+    
+    
     private static final String CLASS_NAME = ConditionChecker.class.getSimpleName();
-
+    
     private static Connection connection;
-
+    
     private static MessageToUser messageToUser = new MessageLocal();
-
+    
+    private ConditionChecker() {
+        AppComponents.threadConfig().thrNameSet("CondC");
+    }
+    
     static {
         try {
             connection = new AppComponents().connection(ConstantsNet.DB_NAME);
@@ -47,32 +51,28 @@ class ConditionChecker {
             FileSystemWorker.error("ConditionChecker.static initializer", e);
         }
     }
-
-    private ConditionChecker() {
-        messageToUser.infoNoTitles("ConditionChecker.ConditionChecker");
-    }
-
+    
     /**
-     * Проверяет имя пользователя когда ПК онлайн
-     * <p>
-     *
-     * @param sql    запрос
-     * @param pcName имя ПК
-     * @return кол-во проверок и сколько был вкл/выкл
-     * @see MoreInfoGetter#getSomeMore(String, boolean)
+     Проверяет имя пользователя когда ПК онлайн
+     <p>
+     
+     @param sql запрос
+     @param pcName имя ПК
+     @return кол-во проверок и сколько был вкл/выкл
+     
+     @see MoreInfoGetter#getSomeMore(String, boolean)
      */
     static String onLinesCheck(String sql, String pcName) {
         AppComponents.threadConfig().thrNameSet("onChk");
         PCUserResolver pcUserResolver = PCUserResolver.getPcUserResolver();
-        List<Integer> onLine = new ArrayList<>();
-        List<Integer> offLine = new ArrayList<>();
+        Collection<Integer> onLine = new ArrayList<>();
+        Collection<Integer> offLine = new ArrayList<>();
         StringBuilder stringBuilder = new StringBuilder();
         String classMeth = "ConditionChecker.onLinesCheck";
-    
         try (
             PreparedStatement statement = connection.prepareStatement(sql)) {
-            Runnable r = () -> pcUserResolver.namesToFile(pcName);
-            AppComponents.threadConfig().executeAsThread(r);
+            Runnable rPCResolver = ()->pcUserResolver.namesToFile(pcName);
+            AppComponents.threadConfig().executeAsThread(rPCResolver);
             statement.setString(1, pcName);
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
@@ -100,18 +100,18 @@ class ConditionChecker {
             .append(onLine.size())
             .append(" online times.").toString();
     }
-
+    
     /**
-     * <b>Проверяет есть ли в БД имя пользователя</b>
-     *
-     * @param sql    запрос
-     * @param pcName имя ПК
-     * @return имя юзера, если есть.
+     <b>Проверяет есть ли в БД имя пользователя</b>
+     
+     @param sql запрос
+     @param pcName имя ПК
+     @return имя юзера, если есть.
      */
     @SuppressWarnings("MethodWithMultipleLoops")
     static String offLinesCheckUser(String sql, String pcName) {
         AppComponents.threadConfig().thrNameSet("offChk");
-
+    
         StringBuilder stringBuilder = new StringBuilder();
         try (
             PreparedStatement p = connection.prepareStatement(sql);
@@ -141,7 +141,7 @@ class ConditionChecker {
         }
         return "<font color=\"orange\">EXCEPTION in SQL dropped. <br>" + stringBuilder + "</font>";
     }
-
+    
     static void qerNotNullScanAllDevices(Model model, HttpServletResponse response) {
         StringBuilder stringBuilder = new StringBuilder();
         if (ConstantsNet.getAllDevices().remainingCapacity() == 0) {
@@ -151,40 +151,40 @@ class ConditionChecker {
             allDevNotNull(model, response);
         }
     }
-
+    
     /**
-     * Если размер {@link ConstantsNet#getAllDevices()} более 0
-     * <p>
-     * {@code scansInMin} - кол-во сканирований в минуту для рассчёта времени. {@code minLeft} - примерное кол-во оставшихся минут.
-     * {@code attributeValue} - то, что видим на страничке.
-     * <p>
-     * <b>{@link Model#addAttribute(Object)}:</b> <br>
-     * {@link ConstantsFor#ATT_TITLE} = {@code attributeValue} <br>
-     * {@code pcs} = {@link ConstantsNet#FILENAME_AVAILABLELASTTXT} + {@link ConstantsNet#FILENAME_OLDLANTXT} + {@link ConstantsNet#FILENAME_SERVTXT}
-     * <p>
-     * <b>{@link HttpServletResponse#addHeader(String, String)}:</b><br>
-     * {@link ConstantsFor#HEAD_REFRESH} = 45
-     *
-     * @param model    {@link Model}
-     * @param response {@link HttpServletResponse}
+     Если размер {@link ConstantsNet#getAllDevices()} более 0
+     <p>
+     {@code scansInMin} - кол-во сканирований в минуту для рассчёта времени. {@code minLeft} - примерное кол-во оставшихся минут.
+     {@code attributeValue} - то, что видим на страничке.
+     <p>
+     <b>{@link Model#addAttribute(Object)}:</b> <br>
+     {@link ConstantsFor#ATT_TITLE} = {@code attributeValue} <br>
+     {@code pcs} = {@link ConstantsNet#FILENAME_AVAILABLELASTTXT} + {@link ConstantsNet#FILENAME_OLDLANTXT} + {@link ConstantsNet#FILENAME_SERVTXT}
+     <p>
+     <b>{@link HttpServletResponse#addHeader(String, String)}:</b><br>
+     {@link ConstantsFor#HEAD_REFRESH} = 45
+     
+     @param model {@link Model}
+     @param response {@link HttpServletResponse}
      */
     private static void allDevNotNull(Model model, HttpServletResponse response) {
-        final float scansInMin = 116.25f;
+        final float scansInMin = 395.92f;
         float minLeft = ConstantsNet.getAllDevices().remainingCapacity() / scansInMin;
         String attributeValue = new StringBuilder()
             .append(minLeft).append(" ~minLeft. ")
             .append(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis((long) minLeft))).toString();
         model.addAttribute(ConstantsFor.ATT_TITLE, attributeValue);
         model.addAttribute("pcs",
-            FileSystemWorker.readFile(ConstantsNet.FILENAME_AVAILABLELASTTXT) + "<p>" +
-                FileSystemWorker.readFile(ConstantsNet.FILENAME_OLDLANTXT) + "<p>" +
-                FileSystemWorker.readFile("11v_srv.txt") + "<p>" +
-                FileSystemWorker.readFile("21v_srv.txt") + "<p>" +
-                FileSystemWorker.readFile("31v_srv.txt") + "<p>" +
-                FileSystemWorker.readFile("41v_srv.txt") + "<p>");
+            FileSystemWorker.readFile(ConstantsNet.FILENAME_AVAILABLELASTTXT).replace(", ", "<br>") + "<p>" +
+                FileSystemWorker.readFile(ConstantsNet.FILENAME_OLDLANTXT).replace(", ", "<br>") + "<p>" +
+                FileSystemWorker.readFile(ConstantsNet.FILENAME_SERVTXT_11SRVTXT).replace(", ", "<br>") + "<p>" +
+                FileSystemWorker.readFile(ConstantsNet.FILENAME_SERVTXT_21SRVTXT).replace(", ", "<br>") + "<p>" +
+                FileSystemWorker.readFile(ConstantsNet.FILENAME_SERVTXT_31SRVTXT).replace(", ", "<br>") + "<p>" +
+                FileSystemWorker.readFile(ConstantsNet.FILENAME_SERVTXT_41SRVTXT).replace(", ", "<br>") + "<p>");
         response.addHeader(ConstantsFor.HEAD_REFRESH, "45");
     }
-
+    
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("ConditionChecker{");
