@@ -113,7 +113,7 @@ public class NameOrIPChecker {
             }
             else{
                 if(mName.matches()){
-                    userIn = userIn + ConstantsNet.DOMAIN_EATMEATRU;
+                    userIn += ConstantsNet.DOMAIN_EATMEATRU;
                     inetAddress = InetAddress.getByName(userIn);
                 }
                 else{

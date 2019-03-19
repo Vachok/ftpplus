@@ -72,7 +72,7 @@ class ConditionChecker {
         try (
             PreparedStatement statement = connection.prepareStatement(sql)) {
             Runnable rPCResolver = ()->pcUserResolver.namesToFile(pcName);
-            AppComponents.threadConfig().executeAsThread(rPCResolver);
+            AppComponents.threadConfig().execByThreadConfig(rPCResolver);
             statement.setString(1, pcName);
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
@@ -160,7 +160,7 @@ class ConditionChecker {
      <p>
      <b>{@link Model#addAttribute(Object)}:</b> <br>
      {@link ConstantsFor#ATT_TITLE} = {@code attributeValue} <br>
-     {@code pcs} = {@link ConstantsNet#FILENAME_AVAILABLELASTTXT} + {@link ConstantsNet#FILENAME_OLDLANTXT} + {@link ConstantsNet#FILENAME_SERVTXT}
+     {@code pcs} = {@link ConstantsNet#FILENAME_AVAILABLELAST200210TXT} + {@link ConstantsNet#FILENAME_OLDLANTXT} + {@link ConstantsNet#FILENAME_SERVTXT}
      <p>
      <b>{@link HttpServletResponse#addHeader(String, String)}:</b><br>
      {@link ConstantsFor#HEAD_REFRESH} = 45
@@ -175,8 +175,7 @@ class ConditionChecker {
             .append(minLeft).append(" ~minLeft. ")
             .append(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis((long) minLeft))).toString();
         model.addAttribute(ConstantsFor.ATT_TITLE, attributeValue);
-        model.addAttribute("pcs",
-            FileSystemWorker.readFile(ConstantsNet.FILENAME_AVAILABLELASTTXT).replace(", ", "<br>") + "<p>" +
+        model.addAttribute("pcs", FileSystemWorker.readFile(ConstantsNet.FILENAME_AVAILABLELAST200210TXT).replace(", ", "<br>") + "<p>" + FileSystemWorker.readFile(ConstantsNet.FILENAME_AVAILABLELAST210220TXT).replace(", ", "<br>") + "<p>" +
                 FileSystemWorker.readFile(ConstantsNet.FILENAME_OLDLANTXT).replace(", ", "<br>") + "<p>" +
                 FileSystemWorker.readFile(ConstantsNet.FILENAME_SERVTXT_11SRVTXT).replace(", ", "<br>") + "<p>" +
                 FileSystemWorker.readFile(ConstantsNet.FILENAME_SERVTXT_21SRVTXT).replace(", ", "<br>") + "<p>" +

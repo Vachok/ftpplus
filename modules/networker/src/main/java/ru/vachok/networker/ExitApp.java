@@ -12,6 +12,8 @@ import ru.vachok.networker.services.MessageLocal;
 import java.awt.*;
 import java.io.*;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,16 +32,8 @@ import static ru.vachok.networker.IntoApplication.getConfigurableApplicationCont
 @SuppressWarnings("StringBufferReplaceableByString")
 public class ExitApp implements Runnable {
     
-    
     /**
-     Thread name
-     <p>
-     "ExitApp.run"
-     */
-    private static final String EXIT_APP_RUN = "ExitApp.run";
-    
-    /**
-     {@link ConstantsFor.HTTP_LOCALHOST8880SLASH} {@code "pages/commit.html"}.
+     {@link ConstantsFor#HTTP_LOCALHOST8880SLASH} {@code "pages/commit.html"}.
      */
     private static final String GO_TO = ConstantsFor.HTTP_LOCALHOST8880SLASH + "pages/commit.html";
     
@@ -137,24 +131,41 @@ public class ExitApp implements Runnable {
     @SuppressWarnings({"HardCodedStringLiteral", "FeatureEnvy"})
     private void copyAvail() {
         File appLog = new File("g:\\My_Proj\\FtpClientPlus\\modules\\networker\\app.log");
-        
-        FileSystemWorker.copyOrDelFile(new File(ConstantsNet.FILENAME_AVAILABLELASTTXT),
-            new StringBuilder().append(".\\lan\\vlans200_").append(System.currentTimeMillis() / 1000).append(".txt").toString(),
-            true);
-        FileSystemWorker.copyOrDelFile(new File(ConstantsNet.FILENAME_OLDLANTXT),
-            new StringBuilder().append(".\\lan\\old_lan_").append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
+        File scan200 = new File(ConstantsNet.FILENAME_AVAILABLELAST200210TXT);
+        File scan210 = new File(ConstantsNet.FILENAME_AVAILABLELAST210220TXT);
+        File oldLanFile = new File(ConstantsNet.FILENAME_OLDLANTXT);
+        File filePingTv = new File("ping.tv");
+    
+        if (!scan200.exists() || !scan210.exists() || !oldLanFile.exists() || !filePingTv.exists()) {
+            try {
+                Path isFile200 = Files.createFile(scan200.toPath());
+                Path isFile210 = Files.createFile(scan210.toPath());
+                Path oldLanPath = Files.createFile(oldLanFile.toPath());
+                Path pingTvPath = Files.createFile(filePingTv.toPath());
+                messageToUser.info("ExitApp.copyAvail", "isFile210", " = " + isFile210 + "\nisFile200 = " + isFile200 + "\noldLanPath = " + oldLanPath + "\npingTvPath= " + pingTvPath);
+            }
+            catch (IOException e) {
+                FileSystemWorker.error("ExitApp.copyAvail", e);
+            }
+        }
+    
+        FileSystemWorker.copyOrDelFile(scan200, new StringBuilder().append("\\lan\\vlans200_").append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
+        FileSystemWorker.copyOrDelFile(scan210, new StringBuilder().append(".\\lan\\vlans210_").append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
+        FileSystemWorker.copyOrDelFile(oldLanFile, new StringBuilder().append(".\\lan\\old_lan_").append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
+        FileSystemWorker.copyOrDelFile(filePingTv, ".\\lan\\tv_" + System.currentTimeMillis() / 1000 + ".ping", true);
+    
         List<File> srvFiles = DiapazonedScan.getInstance().getSrvFiles();
-        srvFiles.stream().forEach(file->{
+        srvFiles.forEach(file->{
             FileSystemWorker.copyOrDelFile(file,
                 new StringBuilder()
                     .append(".\\lan\\")
                     .append(file.getName().replaceAll(ConstantsNet.FILENAME_SERVTXT, ""))
                     .append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
         });
-        FileSystemWorker.copyOrDelFile(new File("ping.tv"), ".\\lan\\tv_" + System.currentTimeMillis() / 1000 + ".ping", true);
         if (appLog.exists() && appLog.canRead()) {
             FileSystemWorker.copyOrDelFile(appLog, "\\\\10.10.111.1\\Torrents-FTP\\app.log", false);
-        } else {
+        }
+        else {
             miniLoggerLast.add("No app.log");
             messageToUser.info("No app.log");
         }

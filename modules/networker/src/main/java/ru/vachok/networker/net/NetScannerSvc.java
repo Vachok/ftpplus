@@ -385,7 +385,7 @@ public class NetScannerSvc {
         } catch (NoClassDefFoundError e) {
             messageToUser.errorAlert(CLASS_NAME, "getPCsAsync", e.getMessage());
         }
-        AppComponents.threadConfig().executeAsThread(()->{
+        AppComponents.threadConfig().execByThreadConfig(()->{
             for (String s : ConstantsNet.getPcPrefixes()) {
                 this.thrName = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime) + "-sec";
                 PC_NAMES_SET.clear();
@@ -396,7 +396,7 @@ public class NetScannerSvc {
             String elapsedTime = "Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime) + " sec.";
             PC_NAMES_SET.add(elapsedTime);
             LOGGER.warn(msg.get());
-            AppComponents.threadConfig().executeAsThread(this::runAfterAllScan);
+            AppComponents.threadConfig().execByThreadConfig(this::runAfterAllScan);
         });
     }
     

@@ -95,11 +95,15 @@ public enum ConstantsNet { ;
      Файл уникальных записей из БД velkom-pcuserauto
      */
     public static final String FILENAME_PCAUTODISTXT = "pcautodis.txt";
-    
+
+//public
     /**
      Название файла новой подсети 10.200.х.х
      */
-    public static final String FILENAME_AVAILABLELASTTXT = "available_last.txt";
+    public static final String FILENAME_AVAILABLELAST200210TXT = "available_last_200210.txt";
+    
+    public static final String FILENAME_AVAILABLELAST210220TXT = "available_last_210220.txt";
+//
     
     /**
      Название файла старой подсети 192.168.х.х

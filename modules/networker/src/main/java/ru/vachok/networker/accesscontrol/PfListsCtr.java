@@ -133,13 +133,13 @@ public class PfListsCtr {
             modSet(model);
         }
         if (request.getQueryString() != null) {
-            AppComponents.threadConfig().executeAsThread(pfListsSrvInstAW::makeListRunner);
+            AppComponents.threadConfig().execByThreadConfig(pfListsSrvInstAW::makeListRunner);
             model.addAttribute(ATT_METRIC, refreshRate);
         }
         long nextUpd = pfListsInstAW.getGitStatsUpdatedStampLong() + TimeUnit.MINUTES.toMillis(DELAY_LOCAL_INT);
         pfListsInstAW.setTimeStampToNextUpdLong(nextUpd);
         if (nextUpd < System.currentTimeMillis()) {
-            AppComponents.threadConfig().executeAsThread(pfListsSrvInstAW::makeListRunner);
+            AppComponents.threadConfig().execByThreadConfig(pfListsSrvInstAW::makeListRunner);
             model.addAttribute(ATT_METRIC, "Запущено обновление");
             model.addAttribute(ConstantsFor.ATT_GITSTATS, toString());
         } else {

@@ -75,13 +75,13 @@ public class CommonSRV {
     }
 
     String searchByPat() {
-
         StringBuilder stringBuilder = new StringBuilder();
         try {
             String[] toSearch = searchPat.split("\\Q:\\E");
             String searchInCommon = FileSystemWorker.searchInCommon(toSearch);
             stringBuilder.append(searchInCommon);
         } catch (Exception e) {
+            FileSystemWorker.error("CommonSRV.searchByPat", e);
             stringBuilder.append(e.getMessage());
         }
         return stringBuilder.toString();

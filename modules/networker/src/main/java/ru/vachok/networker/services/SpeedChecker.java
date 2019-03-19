@@ -140,7 +140,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
         long l = rtLong + TimeUnit.HOURS.toMillis(20);
         boolean is20HRSSpend = System.currentTimeMillis() > l;
         if (is20HRSSpend || !isWeekEnd) {
-            AppComponents.threadConfig().executeAsThread(this::setRtLong);
+            AppComponents.threadConfig().execByThreadConfig(this::setRtLong);
         } else {
             this.rtLong = Long.valueOf(AppComponents.getOrSetProps().getProperty(PR_LASTWORKSTART));
         }

@@ -194,7 +194,7 @@ public class TemporaryFullInternet implements Runnable {
 
     @Override
     public void run() {
-        AppComponents.threadConfig().executeAsThread(this::sshChecker);
+        AppComponents.threadConfig().execByThreadConfig(this::sshChecker);
         Map<String, Long> stringLongMap = ConstantsNet.getSshCheckerMap();
         String classMeth = "TemporaryFullInternet.run";
         File miniLog = new File(getClass().getSimpleName() + ".mini");

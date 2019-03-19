@@ -68,6 +68,19 @@ public class ScanOnline implements Runnable {
         }
     }
     
+    @Override
+    public void run() {
+        AppComponents.threadConfig().execByThreadConfig(this::offlineNotEmptyActions);
+        try {
+            List<InetAddress> onList = NET_LIST_KEEPER.onlinesAddressesList();
+            runPing(onList);
+        }
+        catch (IOException e) {
+            messageToUser.errorAlert("ScanOnline", "run", e.getMessage());
+            FileSystemWorker.error("ScanOnline.run", e);
+        }
+    }
+    
     /**
      Пингует конкрктный {@link InetAddress}
      <p>
@@ -75,7 +88,7 @@ public class ScanOnline implements Runnable {
      <p>
      <b>Схема:</b> <br>
      1. {@link NetListKeeper#getOffLines()}. Если нет пинга, добавляет {@code inetAddress.toString, LocalTime.now.toString} и запускает: <br> 2. {@link
-    ThreadConfig#executeAsThread(java.lang.Runnable)}. {@link #offlineNotEmptyActions()} <br>
+    ThreadConfig#execByThreadConfig(java.lang.Runnable)}. {@link #offlineNotEmptyActions()} <br>
      <p>
      
      @param inetAddress {@link InetAddress}. 3. {@link FileSystemWorker#error(java.lang.String, java.lang.Exception)}
@@ -99,18 +112,6 @@ public class ScanOnline implements Runnable {
             FileSystemWorker.error("ScanOnline.pingAddr", e);
         }
     
-    }
-    
-    @Override
-    public void run() {
-        AppComponents.threadConfig().executeAsThread(this::offlineNotEmptyActions);
-        try {
-            List<InetAddress> onList = NET_LIST_KEEPER.onlinesAddressesList();
-            runPing(onList);
-        } catch (IOException e) {
-            messageToUser.errorAlert("ScanOnline", "run", e.getMessage());
-            FileSystemWorker.error("ScanOnline.run", e);
-        }
     }
     
     @Override

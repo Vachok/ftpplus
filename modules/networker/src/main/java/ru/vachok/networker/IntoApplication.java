@@ -165,7 +165,7 @@ public class IntoApplication {
                 LOCAL_PROPS.setProperty(ConstantsFor.PR_TOTPC, stringStringEntry.getValue());
             }
             if (stringStringEntry.getKey().equalsIgnoreCase("off")) {
-                AppComponents.threadConfig().executeAsThread(exitApp);
+                AppComponents.threadConfig().execByThreadConfig(exitApp);
             }
             if (stringStringEntry.getKey().contains("notray")) {
                 messageToUser.info("IntoApplication.readArgs", "key", " = " + stringStringEntry.getKey());
@@ -196,7 +196,7 @@ public class IntoApplication {
      */
     private static void getWeekPCStats() {
         if(LocalDate.now().getDayOfWeek().equals(DayOfWeek.SUNDAY)){
-            AppComponents.threadConfig().executeAsThread(new WeekPCStats());
+            AppComponents.threadConfig().execByThreadConfig(new WeekPCStats());
         }
     }
 

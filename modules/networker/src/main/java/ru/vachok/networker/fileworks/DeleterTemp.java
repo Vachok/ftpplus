@@ -99,7 +99,7 @@ class DeleterTemp extends FileSystemWorker implements Runnable {
     public void run() {
         AppComponents.threadConfig().thrNameSet("delTmp");
         try {
-            AppComponents.threadConfig().executeAsThread(this::oldSSHLogDel);
+            AppComponents.threadConfig().execByThreadConfig(this::oldSSHLogDel);
         } catch (RuntimeException e) {
             messageToUser.error(e.getMessage());
         }

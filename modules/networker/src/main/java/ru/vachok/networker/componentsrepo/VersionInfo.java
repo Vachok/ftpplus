@@ -77,7 +77,7 @@ public class VersionInfo {
             this.isBUGged = true;
         }
         if (thisPCNameStr.toLowerCase().contains("home") || thisPCNameStr.toLowerCase().contains("no0")) {
-            AppComponents.threadConfig().executeAsThread(this::setParams);
+            AppComponents.threadConfig().execByThreadConfig(this::setParams);
         }
         appBuild = PROPERTIES.getProperty(PR_APP_BUILD);
         appVersion = PROPERTIES.getProperty(ConstantsFor.PR_APP_VERSION);

@@ -78,7 +78,7 @@ public class ServiceInfoCtrl {
         InterruptedException {
         AppComponents.threadConfig().thrNameSet("sINFO");
         this.visitor = new AppComponents().visitor(request);
-        AppComponents.threadConfig().executeAsThread(new SpeedChecker());
+        AppComponents.threadConfig().execByThreadConfig(new SpeedChecker());
         this.authReq =
             Stream.of("0:0:0:0", "10.10.111", "10.200.213.85", "172.16.20", "10.200.214.80").anyMatch(sP->request.getRemoteAddr().contains(sP));
         if (authReq) {

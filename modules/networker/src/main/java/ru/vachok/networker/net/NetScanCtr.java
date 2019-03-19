@@ -83,14 +83,14 @@ public class NetScanCtr {
     
     private static final String ATT_PCS = "pcs";
     
+    private static final MessageToUser messageToUser = new MessageLocal(NetScanCtr.class.getSimpleName());
+    
     private static ThreadPoolTaskExecutor locExecutor = AppComponents.threadConfig().getTaskExecutor();
     
     /**
      {@link AppComponents#lastNetScanMap()}
      */
     private static ConcurrentMap<String, Boolean> lastScanMAP = AppComponents.lastNetScanMap();
-    
-    private static final MessageToUser messageToUser = new MessageLocal(NetScanCtr.class.getSimpleName());
     
     /**
      {@link AppComponents#netScannerSvc()}
@@ -113,6 +113,7 @@ public class NetScanCtr {
         model.addAttribute(ConstantsFor.ATT_TITLE, netPingerInst.getTimeToEndStr() + " pinger hash: " + netPingerInst.hashCode());
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
         model.addAttribute("pingTest", new TForms().fromArray(netPingerInst.pingDev(getDeqAddr()), true));
+        //noinspection MagicNumber
         response.addHeader(ConstantsFor.HEAD_REFRESH, String.valueOf(ConstantsFor.DELAY * 1.8f));
         messageToUser.info("NetScanCtr.pingAddr", "HEAD_REFRESH", " = " + response.getHeader(ConstantsFor.HEAD_REFRESH));
         return "ping";
@@ -224,6 +225,39 @@ public class NetScanCtr {
         return "ok";
     }
     
+    @Override
+    public int hashCode() {
+        return netPingerInst.hashCode();
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof NetScanCtr)) return false;
+        
+        NetScanCtr that = (NetScanCtr) o;
+        
+        return netPingerInst.equals(that.netPingerInst);
+    }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("NetScanCtr{");
+        sb.append("ATT_NETSCAN='").append(ConstantsNet.ATT_NETSCAN).append('\'');
+        sb.append(", PROPERTIES=").append(PROPERTIES.size());
+        sb.append(", DURATION_MIN=").append(DURATION_MIN);
+        sb.append(", STR_NETSCAN='").append(STR_NETSCAN).append('\'');
+        sb.append(", ATT_THEPC='").append(ATT_THEPC).append('\'');
+        sb.append(", NETSCANNERSVC_INST=").append(netScannerSvcInstAW.hashCode());
+        sb.append(", STR_REQUEST='").append(STR_REQUEST).append('\'');
+        sb.append(", STR_MODEL='").append(STR_MODEL).append('\'');
+        sb.append(", ATT_NETPINGER='").append(ATT_NETPINGER).append('\'');
+        sb.append(", lastScanMAP=").append(lastScanMAP.size());
+        sb.append(", netPingerInst=").append(netPingerInst.hashCode());
+        sb.append('}');
+        return sb.toString();
+    }
+    
     /**
      ИП-адреса, которые проверяются в момент входа на <a href="http://rups00.eatmeat.ru:8880/ping" target=_blank>http://rups00.eatmeat.ru:8880/ping</a>
      
@@ -262,9 +296,9 @@ public class NetScanCtr {
      @param request   {@link HttpServletRequest}
      @param lastSt    время последнего скана. Берется из {@link #PROPERTIES}. Default: {@code 1548919734742}.
      @param thisTotpc кол-во ПК для скана. Берется из {@link #PROPERTIES}. Default: {@code 243}.
-     @throws ExecutionException   {@link NetScanCtr#checkMapSizeAndDoAction(org.springframework.ui.Model, javax.servlet.http.HttpServletRequest, long)}
-     @throws InterruptedException {@link NetScanCtr#checkMapSizeAndDoAction(org.springframework.ui.Model, javax.servlet.http.HttpServletRequest, long)}
-     @throws TimeoutException     {@link NetScanCtr#checkMapSizeAndDoAction(org.springframework.ui.Model, javax.servlet.http.HttpServletRequest, long)}
+     @throws ExecutionException    timeCheck
+     @throws InterruptedException timeCheck
+     @throws TimeoutException     timeCheck
      @see #checkMapSizeAndDoAction(Model, HttpServletRequest, long)
      */
     private void mapSizeBigger(Model model, HttpServletRequest request, long lastSt, int thisTotpc) throws ExecutionException, InterruptedException, TimeoutException {
@@ -323,9 +357,9 @@ public class NetScanCtr {
      @param lastScanEpoch последнее сканирование Timestamp как <b>EPOCH Seconds</b>
      @param request       {@link HttpServletRequest}
      @param model         {@link Model}
-     @throws ExecutionException   {@link NetScanCtr#checkMapSizeAndDoAction(org.springframework.ui.Model, javax.servlet.http.HttpServletRequest, long)}
-     @throws InterruptedException {@link NetScanCtr#checkMapSizeAndDoAction(org.springframework.ui.Model, javax.servlet.http.HttpServletRequest, long)}
-     @throws TimeoutException     {@link NetScanCtr#checkMapSizeAndDoAction(org.springframework.ui.Model, javax.servlet.http.HttpServletRequest, long)}
+     @throws ExecutionException   submitScan
+     @throws InterruptedException submitScan
+     @throws TimeoutException     submitScan
      @see #mapSizeBigger(Model, HttpServletRequest, long, int)
      */
     private void timeCheck(int remainPC, long lastScanEpoch, HttpServletRequest request, Model model) throws ExecutionException, InterruptedException, TimeoutException {
@@ -363,9 +397,9 @@ public class NetScanCtr {
      @param model   {@link Model}
      @param request {@link HttpServletRequest}
      @param lastSt  timestamp из {@link #PROPERTIES}
-     @throws ExecutionException   {@link NetScanCtr#mapSizeBigger(org.springframework.ui.Model, javax.servlet.http.HttpServletRequest, long, int)}
-     @throws InterruptedException {@link NetScanCtr#mapSizeBigger(Model, HttpServletRequest, long, int)}
-     @throws TimeoutException     {@link NetScanCtr#mapSizeBigger(Model, HttpServletRequest, long, int)}
+     @throws ExecutionException   mapSizeBigger, submitScan
+     @throws InterruptedException mapSizeBigger, submitScan
+     @throws TimeoutException     mapSizeBigger, submitScan
      @see #netScan(HttpServletRequest, HttpServletResponse, Model)
      */
     private void checkMapSizeAndDoAction(Model model, HttpServletRequest request, long lastSt) throws ExecutionException, InterruptedException, TimeoutException {
@@ -417,39 +451,6 @@ public class NetScanCtr {
                 .addAttribute("pc", new TForms().fromArray(pCsAsync, true));
             AppComponents.lastNetScan().setTimeLastScan(new Date());
         }
-    }
-    
-    @Override
-    public int hashCode() {
-        return netPingerInst.hashCode();
-    }
-    
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof NetScanCtr)) return false;
-        
-        NetScanCtr that = (NetScanCtr) o;
-        
-        return netPingerInst.equals(that.netPingerInst);
-    }
-    
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("NetScanCtr{");
-        sb.append("ATT_NETSCAN='").append(ConstantsNet.ATT_NETSCAN).append('\'');
-        sb.append(", PROPERTIES=").append(PROPERTIES.size());
-        sb.append(", DURATION_MIN=").append(DURATION_MIN);
-        sb.append(", STR_NETSCAN='").append(STR_NETSCAN).append('\'');
-        sb.append(", ATT_THEPC='").append(ATT_THEPC).append('\'');
-        sb.append(", NETSCANNERSVC_INST=").append(netScannerSvcInstAW.hashCode());
-        sb.append(", STR_REQUEST='").append(STR_REQUEST).append('\'');
-        sb.append(", STR_MODEL='").append(STR_MODEL).append('\'');
-        sb.append(", ATT_NETPINGER='").append(ATT_NETPINGER).append('\'');
-        sb.append(", lastScanMAP=").append(lastScanMAP.size());
-        sb.append(", netPingerInst=").append(netPingerInst.hashCode());
-        sb.append('}');
-        return sb.toString();
     }
     
 }

@@ -33,8 +33,6 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     
     private static final String CLASS_NAME = FileSystemWorker.class.getSimpleName();
     
-    private static final String CLASS_METH = "FileSystemWorker.readFileToList";
-    
     /**
      {@link MessageLocal}
      */
@@ -57,7 +55,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     /**
      Удаление временных файлов.
      <p>
-     Usages: {@link SystemTrayHelper#addTray(String)}, {@link ru.vachok.networker.controller.ServiceInfoCtrl#closeApp()},
+     Usages: {@link SystemTrayHelper#addTray(String)}, ,
      {@link ru.vachok.networker.net.MyServer#reconSock()}. <br>
      Uses: {@link CommonScan2YOlder} <br>
      */
@@ -86,10 +84,11 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
             List<String> fileSearcherResList = fileSearcher.getResList();
             String resTo = new TForms().fromArray(fileSearcherResList, true);
             if (fileSearcherResList.size() > 0) {
-                writeFile("search.last", fileSearcherResList.stream());
+                writeFile("search." + LocalTime.now().toSecondOfDay(), fileSearcherResList.stream());
             }
             return resTo;
         } catch (Exception e) {
+            error("searchInCommon", e);
             return e.getMessage();
         }
     }
@@ -110,7 +109,8 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
             toCpFile = targetPath.toFile();
             Path copy = Files.copy(origFile.toPath(), targetPath, StandardCopyOption.REPLACE_EXISTING);
             if (needDel) {
-                Files.deleteIfExists(origFile.toPath());
+                boolean isDel = Files.deleteIfExists(origFile.toPath());
+                if (!isDel) origFile.deleteOnExit();
             }
             String msg = directories + " getParent directory. " + copy + " " + toCpFile.exists();
             messageToUser.info(msg);

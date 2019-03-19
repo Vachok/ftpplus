@@ -73,33 +73,14 @@ public class PfListsSrv {
         this.commandForNatStr = commandForNatStr;
     }
     
-    /**
-     Формирует списки <b>pf</b>
-     <p>
-     Else {@link MessageToTray#warn(String, String, String)} {@link String} = {@link ConstantsFor#thisPC()}.
-     <p>
-     {@link ExceptionInInitializerError} : <br>
-     {@link MessageLocal#warn(String, String, String)}
-     
-     @see PfListsCtr
-     */
-    void makeListRunner() {
-        Future<?> future = AppComponents.threadConfig().getTaskExecutor().submit(this::buildFactory);
-        try {
-            Object o = future.get(ConstantsFor.DELAY, TimeUnit.SECONDS);
-            if (!o.equals(null)) {
-                messageToUser.info("PfListsSrv.makeListRunner", "o", " = " + o);
-            } else {
-                messageToUser.info("PfListsSrv.makeListRunner", "o+\" is ok )\"", " = " + o + " is ok )");
-            }
-        } catch (InterruptedException | ExecutionException | TimeoutException e) {
-            messageToUser.errorAlert("PfListsSrv", "makeListRunner", e.getMessage());
-            FileSystemWorker.error("PfListsSrv.makeListRunner", e);
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().interrupt();
-        }
-        messageToUser.info("PfListsSrv.makeListRunner", "DEFAULT_CONNECT_SRV", " = " + DEFAULT_CONNECT_SRV);
-        messageToUser.info("PfListsSrv.makeListRunner", "future.isDone()", " = " + future.isDone());
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("PfListsSrv{");
+        sb.append("commandForNatStr='").append(commandForNatStr).append('\'');
+        //noinspection DuplicateStringLiteralInspection
+        sb.append(", pfListsInstAW=").append(pfListsInstAW);
+        sb.append('}');
+        return sb.toString();
     }
     
     String runCom() {
@@ -162,12 +143,29 @@ public class PfListsSrv {
         pfListsInstAW.setGitStatsUpdatedStampLong(System.currentTimeMillis());
     }
     
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("PfListsSrv{");
-        sb.append("commandForNatStr='").append(commandForNatStr).append('\'');
-        sb.append(", pfListsInstAW=").append(pfListsInstAW);
-        sb.append('}');
-        return sb.toString();
+    /**
+     Формирует списки <b>pf</b>
+     <p>
+     Else {@link MessageToTray#warn(String, String, String)} {@link String} = {@link ConstantsFor#thisPC()}.
+     <p>
+     {@link ExceptionInInitializerError} : <br>
+     {@link MessageLocal#warn(String, String, String)}
+     
+     @see PfListsCtr
+     */
+    void makeListRunner() {
+        Future<?> future = AppComponents.threadConfig().getTaskExecutor().submit(this::buildFactory);
+        String classMeth = "PfListsSrv.makeListRunner";
+        try {
+            future.get(ConstantsFor.DELAY, TimeUnit.SECONDS);
+        }
+        catch (InterruptedException | ExecutionException | TimeoutException e) {
+            messageToUser.errorAlert(PfListsSrv.class.getSimpleName(), "makeListRunner", e.getMessage());
+            FileSystemWorker.error(classMeth, e);
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+        }
+        messageToUser.info(classMeth, "DEFAULT_CONNECT_SRV", " = " + DEFAULT_CONNECT_SRV);
+        messageToUser.info(classMeth, "future.isDone?", " = " + future.isDone());
     }
 }

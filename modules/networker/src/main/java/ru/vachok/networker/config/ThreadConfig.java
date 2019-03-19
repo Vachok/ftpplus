@@ -17,6 +17,7 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
 
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 
 /**
@@ -147,14 +148,14 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
      
      @param r {@link Runnable}
      */
-    public void executeAsThread(Runnable r) {
+    public boolean execByThreadConfig(Runnable r) {
+        AtomicBoolean retBool = new AtomicBoolean(false);
         CustomizableThreadCreator customizableThreadCreator = new CustomizableThreadCreator("AsThread: ");
         customizableThreadCreator.setThreadPriority(9);
         Thread thread = customizableThreadCreator.createThread(r);
         Executor asyncExecutor = null;
         if (new ASExec(TASK_EXECUTOR).getAsyncExecutor() != null) {
             asyncExecutor = new ASExec(TASK_EXECUTOR).getAsyncExecutor();
-    
         } else {
             if (upTimer.get() > ConstantsFor.ONE_HOUR_IN_MIN) {
                 upTimer.set(upTimer.get() / ConstantsFor.ONE_HOUR_IN_MIN);
@@ -164,11 +165,14 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
         }
         if (asyncExecutor != null) {
             asyncExecutor.execute(thread::start);
+            retBool.set(true);
         } else {
             thread.start();
+            retBool.set(false);
             new MessageSwing().errorAlert(EXECUTE_AS_THREAD_METHNAME, "thread.isAlive()", " = " + thread.isAlive());
             new TaskDestroyer().rejectedExecution(r, TASK_EXECUTOR.getThreadPoolExecutor());
         }
+        return retBool.get();
     }
     
     @Override
@@ -237,7 +241,7 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
         
         private void resultOfExecution(boolean submitDone) {
             if (submitDone) {
-                messageToUser.info(getClass().getSimpleName(), "resultOfExecution", reTask + " : " + String.valueOf(true));
+                messageToUser.info(getClass().getSimpleName(), "resultOfExecution", reTask + " : " + true);
             } else {
                 messageToUser = new MessageSwing();
                 messageToUser.infoTimer((int) ConstantsFor.DELAY, getClass().getSimpleName() + " resultOfExecution " + reTask + " : " + false);
