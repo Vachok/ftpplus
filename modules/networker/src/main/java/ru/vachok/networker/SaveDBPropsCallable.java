@@ -107,8 +107,6 @@ class SaveDBPropsCallable implements Callable<Boolean> {
      
      @param c {@link Connection}
      @return выполнение {@link PreparedStatement}
-     
-     @throws SQLException делает {@link Connection#rollback(Savepoint)}
      */
     private boolean savePropsDelStatement(Connection c) {
         

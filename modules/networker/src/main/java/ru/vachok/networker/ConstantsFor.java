@@ -258,11 +258,13 @@ public enum ConstantsFor {
      {@link Model} имя атрибута
      */
     public static final String ATT_TITLE = "title";
-    
+
+//public
     /**
-     {@link ServiceInfoCtrl#closeApp()}
+     {@link ServiceInfoCtrl#closeApp(HttpServletRequest)}
      */
     public static final int CODE_USEREXIT = 222;
+//
     
     /**
      IP srv-nat.eatmeat.ru

@@ -106,7 +106,7 @@ class NetScanFileWorker {
     }
 
     /**
-     * @return {@link #newLanLastScan}, как строчка
+     * @return {@link #newLanLastScan200} и {@link #newLanLastScan210}, как строчка
      */
     String getNewLanLastScanAsStr() {
         try {
@@ -120,7 +120,7 @@ class NetScanFileWorker {
      * Читает построчно
      * <p>
      *
-     * @return {@link Deque} строк - содержимое {@link #oldLanLastScan} и {@link #newLanLastScan}
+     * @return {@link Deque} строк - содержимое {@link #oldLanLastScan} и {@link #newLanLastScan200} + {@link #newLanLastScan210}
      * @throws IOException files
      * @see NetListKeeper#onlinesAddressesList()
      */

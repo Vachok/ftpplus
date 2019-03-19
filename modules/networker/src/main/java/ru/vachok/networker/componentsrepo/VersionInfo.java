@@ -70,7 +70,7 @@ public class VersionInfo {
     /**
      Конструктор по-умолчанию.
      <p>
-     Если имя ПК содержит "home" или "no0" {@link #setParams()} , иначе {@link #getParams()}
+     Если имя ПК содержит "home" или "no0" {@link #setParams()}
      */
     public VersionInfo() {
         if (new File("bugged").exists()) {
