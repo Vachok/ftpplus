@@ -33,10 +33,7 @@ import java.net.InetAddress;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
-import java.util.Date;
-import java.util.Deque;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.*;
 
 
@@ -92,6 +89,8 @@ public class NetScanCtr {
      */
     private static ConcurrentMap<String, Boolean> lastScanMAP = AppComponents.lastNetScanMap();
     
+    private ScanOnline scanOnline;
+    
     /**
      {@link AppComponents#netScannerSvc()}
      */
@@ -101,9 +100,10 @@ public class NetScanCtr {
     
     @SuppressWarnings("WeakerAccess")
     @Autowired
-    public NetScanCtr(NetScannerSvc netScannerSvc, NetPinger netPingerInst) {
+    public NetScanCtr(NetScannerSvc netScannerSvc, NetPinger netPingerInst, ScanOnline scanOnline) {
         this.netScannerSvcInstAW = netScannerSvc;
         this.netPingerInst = netPingerInst;
+        this.scanOnline = scanOnline;
     }
     
     @GetMapping("/ping")
@@ -207,10 +207,10 @@ public class NetScanCtr {
     }
     
     @GetMapping("/showalldev")
-    public static String allDevices(Model model, HttpServletRequest request, HttpServletResponse response) {
+    public String allDevices(Model model, HttpServletRequest request, HttpServletResponse response) {
         model.addAttribute(ConstantsFor.ATT_TITLE, ConstantsNet.getAllDevices().remainingCapacity() + " ip remain");
         try {
-            model.addAttribute(ATT_PCS, new ScanOnline().toString());
+            model.addAttribute(ATT_PCS, scanOnline.toString());
         } catch (NoClassDefFoundError e) {
             messageToUser.errorAlert("NetScanCtr", e.getMessage(), e.toString());
             messageToUser.error(e.toString());
@@ -226,18 +226,16 @@ public class NetScanCtr {
     }
     
     @Override
-    public int hashCode() {
-        return netPingerInst.hashCode();
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        NetScanCtr ctr = (NetScanCtr) o;
+        return Objects.equals(scanOnline, ctr.scanOnline) && Objects.equals(netScannerSvcInstAW, ctr.netScannerSvcInstAW) && Objects.equals(netPingerInst, ctr.netPingerInst);
     }
     
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof NetScanCtr)) return false;
-        
-        NetScanCtr that = (NetScanCtr) o;
-        
-        return netPingerInst.equals(that.netPingerInst);
+    public int hashCode() {
+        return Objects.hash(scanOnline, netScannerSvcInstAW, netPingerInst);
     }
     
     @Override

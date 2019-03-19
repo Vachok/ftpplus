@@ -175,8 +175,7 @@ class ConditionChecker {
             .append(minLeft).append(" ~minLeft. ")
             .append(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis((long) minLeft))).toString();
         model.addAttribute(ConstantsFor.ATT_TITLE, attributeValue);
-        model.addAttribute("pcs", FileSystemWorker.readFile(ConstantsNet.FILENAME_AVAILABLELAST200210TXT).replace(", ", "<br>") + "<p>" + FileSystemWorker.readFile(ConstantsNet.FILENAME_AVAILABLELAST210220TXT).replace(", ", "<br>") + "<p>" +
-                FileSystemWorker.readFile(ConstantsNet.FILENAME_OLDLANTXT).replace(", ", "<br>") + "<p>" +
+        model.addAttribute("pcs", FileSystemWorker.readFile(ConstantsNet.FILENAME_AVAILABLELAST200210TXT).replace(", ", "<br>") + "<p>" + FileSystemWorker.readFile(ConstantsNet.FILENAME_AVAILABLELAST210220TXT).replace(", ", "<br>") + "<p>" + FileSystemWorker.readFile(ConstantsNet.FILENAME_OLDLANTXT0).replace(", ", "<br>") + "<p>" + FileSystemWorker.readFile(ConstantsNet.FILENAME_OLDLANTXT1).replace(", ", "<br>") + "<p>" +
                 FileSystemWorker.readFile(ConstantsNet.FILENAME_SERVTXT_11SRVTXT).replace(", ", "<br>") + "<p>" +
                 FileSystemWorker.readFile(ConstantsNet.FILENAME_SERVTXT_21SRVTXT).replace(", ", "<br>") + "<p>" +
                 FileSystemWorker.readFile(ConstantsNet.FILENAME_SERVTXT_31SRVTXT).replace(", ", "<br>") + "<p>" +

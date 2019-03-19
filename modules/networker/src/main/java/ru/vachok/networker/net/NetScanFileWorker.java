@@ -40,14 +40,13 @@ class NetScanFileWorker {
     private File newLanLastScan200 = new File(ConstantsNet.FILENAME_AVAILABLELAST200210TXT);
     
     private File newLanLastScan210 = new File(ConstantsNet.FILENAME_AVAILABLELAST210220TXT);
-
-    /**
-     * {@link ConstantsNet#FILENAME_OLDLANTXT}}
-     */
-    private File oldLanLastScan = new File(ConstantsNet.FILENAME_OLDLANTXT);
     
     private List<File> srvFiles = new ArrayList<>(4);
-
+    
+    private File oldLanLastScan0 = new File(ConstantsNet.FILENAME_OLDLANTXT0);
+    
+    private File oldLanLastScan1 = new File(ConstantsNet.FILENAME_OLDLANTXT1);
+    
     private NetScanFileWorker() {
     }
 
@@ -78,17 +77,19 @@ class NetScanFileWorker {
         sb.append("lastStamp=").append(lastStamp);
         sb.append(", newLanLastScan=").append(newLanLastScan200.getAbsolutePath());
         sb.append(", newLanLastScan=").append(newLanLastScan210.getAbsolutePath());
-        sb.append(", oldLanLastScan=").append(oldLanLastScan.getAbsolutePath());
+        sb.append(", oldLanLastScan=").append(oldLanLastScan0.getAbsolutePath());
+        sb.append(", oldLanLastScan=").append(oldLanLastScan1.getAbsolutePath());
         sb.append('}');
         return sb.toString();
     }
     
     /**
-     @param oldLanLastScan {@link #oldLanLastScan}
+     @param oldLanLastScan0 {@link #oldLanLastScan0}
+     @param oldLanLastScan1 {@link #oldLanLastScan1}
      */
-    void setOldLanLastScan(File oldLanLastScan) {
-        this.oldLanLastScan = oldLanLastScan;
-        messageToUser.infoNoTitles("oldLanLastScan = [" + this.oldLanLastScan.getAbsolutePath() + "]");
+    void setOldLanLastScan(File oldLanLastScan0, File oldLanLastScan1) {
+        this.oldLanLastScan0 = oldLanLastScan0;
+        this.oldLanLastScan1 = oldLanLastScan1;
     }
 
     /**
@@ -101,8 +102,6 @@ class NetScanFileWorker {
     void setNewLanLastScan(File newLanLastScan200, File newLanLastScan210) {
         this.newLanLastScan200 = newLanLastScan200;
         this.newLanLastScan210 = newLanLastScan210;
-        messageToUser.infoNoTitles("newLanLastScan = [" + this.newLanLastScan200.getAbsolutePath() + "]");
-        messageToUser.infoNoTitles("newLanLastScan = [" + this.newLanLastScan210.getAbsolutePath() + "]");
     }
 
     /**
@@ -130,7 +129,7 @@ class NetScanFileWorker {
         String classMeth = "NetScanFileWorker.getListOfOnlineDev";
         String titleMsg = "retDeque.size()";
         Deque<String> retDeque = new ArrayDeque<>();
-        String msg = newLanLastScan200.getAbsolutePath() + ";\n" + newLanLastScan210.getAbsolutePath() + ";\n" + oldLanLastScan.getAbsolutePath() +
+        String msg = newLanLastScan200.getAbsolutePath() + ";\n" + newLanLastScan210.getAbsolutePath() + ";\n" + oldLanLastScan0.getAbsolutePath() + ", " + oldLanLastScan1.getAbsolutePath() +
             ";\n" + new TForms().fromArray(srvFiles, false) +
             ";\nCreated by " + getClass().getSimpleName();
     
@@ -145,13 +144,15 @@ class NetScanFileWorker {
             msg = newFile + " " + msg;
             msg = newFile1 + " " + msg;
         }
-        if (oldLanLastScan.exists() && oldLanLastScan.canRead()) {
-            retDeque.addAll(FileSystemWorker.readFileToList(oldLanLastScan.getAbsolutePath()));
-            messageToUser.info(classMeth, titleMsg, " = " + retDeque.size());
+        if (oldLanLastScan0.exists() && oldLanLastScan1.exists()) {
+            retDeque.addAll(FileSystemWorker.readFileToList(oldLanLastScan0.getAbsolutePath()));
+            retDeque.addAll(FileSystemWorker.readFileToList(oldLanLastScan1.getAbsolutePath()));
         }
         else {
-            boolean oldLanLastScanNewFile = oldLanLastScan.createNewFile();
-            msg = oldLanLastScanNewFile + " " + msg;
+            boolean oldLanLastScanNewFile0 = oldLanLastScan0.createNewFile();
+            boolean oldLanLastScanNewFile1 = oldLanLastScan1.createNewFile();
+            msg = oldLanLastScanNewFile0 + " " + msg;
+            msg = oldLanLastScanNewFile1 + " " + msg;
         }
         if (srvFiles.size() == 4) {
             srvFiles.forEach(srvFileX->fileWrk(srvFileX, titleMsg, retDeque));
@@ -167,10 +168,10 @@ class NetScanFileWorker {
      */
     String getOldLanLastScanAsStr() {
         try {
-            return FileSystemWorker.readFile(oldLanLastScan.getAbsolutePath());
+            return FileSystemWorker.readFile(oldLanLastScan0.getAbsolutePath()) + "\n<br>" + FileSystemWorker.readFile(oldLanLastScan1.getAbsolutePath());
         }
         catch (NullPointerException ignore) {
-            return FileSystemWorker.readFile(ConstantsNet.FILENAME_OLDLANTXT);
+            return FileSystemWorker.readFile(ConstantsNet.FILENAME_OLDLANTXT0) + "\n<br>" + FileSystemWorker.readFile(ConstantsNet.FILENAME_OLDLANTXT1);
         }
     }
     

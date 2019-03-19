@@ -103,12 +103,13 @@ public enum ConstantsNet { ;
     public static final String FILENAME_AVAILABLELAST200210TXT = "available_last_200210.txt";
     
     public static final String FILENAME_AVAILABLELAST210220TXT = "available_last_210220.txt";
-//
-    
     /**
      Название файла старой подсети 192.168.х.х
      */
-    public static final String FILENAME_OLDLANTXT = "old_lan.txt";
+    public static final String FILENAME_OLDLANTXT0 = "old_lan0.txt";
+    
+    public static final String FILENAME_OLDLANTXT1 = "old_lan1.txt";
+//
     
     /**
      Домен с точкой

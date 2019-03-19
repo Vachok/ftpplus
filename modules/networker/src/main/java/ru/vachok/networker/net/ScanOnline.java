@@ -1,6 +1,7 @@
 package ru.vachok.networker.net;
 
 
+import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
@@ -25,6 +26,7 @@ import java.util.concurrent.*;
  
  @see DiapazonedScan
  @since 26.01.2019 (11:18) */
+@Service
 public class ScanOnline implements Runnable {
     
     
@@ -42,6 +44,28 @@ public class ScanOnline implements Runnable {
      {@link MessageLocal}
      */
     private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
+    
+    @Override
+    public void run() {
+        AppComponents.threadConfig().execByThreadConfig(this::offlineNotEmptyActions);
+        try {
+            List<InetAddress> onList = NET_LIST_KEEPER.onlinesAddressesList();
+            runPing(onList);
+        }
+        catch (IOException e) {
+            messageToUser.errorAlert("ScanOnline", "run", e.getMessage());
+            FileSystemWorker.error("ScanOnline.run", e);
+        }
+    }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("<b>Since ").append("<i>").append(new Date(NetScanFileWorker.getI().getLastStamp())).append("</i>").append(MoreInfoGetter.getTVNetInfo()).append("</b><br><br>");
+        sb.append("Offline pc is <font color=\"red\"><b>").append(NET_LIST_KEEPER.getOffLines().size()).append(":</b></font><br>");
+        sb.append("Online  pc is<font color=\"#00ff69\"> <b>").append(onLinesResolve.size()).append(":</b><br>").append(new TForms().fromArray(onLinesResolve, true)).append("</font><br>");
+        return sb.toString();
+    }
     
     private void offlineNotEmptyActions() {
         AppComponents.threadConfig().thrNameSet("scOffNE");
@@ -65,19 +89,6 @@ public class ScanOnline implements Runnable {
         messageToUser.infoNoTitles(clMt);
         for (InetAddress inetAddress : onList) {
             pingAddr(inetAddress);
-        }
-    }
-    
-    @Override
-    public void run() {
-        AppComponents.threadConfig().execByThreadConfig(this::offlineNotEmptyActions);
-        try {
-            List<InetAddress> onList = NET_LIST_KEEPER.onlinesAddressesList();
-            runPing(onList);
-        }
-        catch (IOException e) {
-            messageToUser.errorAlert("ScanOnline", "run", e.getMessage());
-            FileSystemWorker.error("ScanOnline.run", e);
         }
     }
     
@@ -112,14 +123,5 @@ public class ScanOnline implements Runnable {
             FileSystemWorker.error("ScanOnline.pingAddr", e);
         }
     
-    }
-    
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder();
-        sb.append("<b>Since ").append(new Date(ConstantsFor.START_STAMP)).append(MoreInfoGetter.getTVNetInfo()).append("</b><br>");
-        sb.append("Offline pc is <font color=\"red\">").append(new TForms().fromArray(NET_LIST_KEEPER.getOffLines(), true)).append("</font>");
-        sb.append("Online  pc is<font color=\"#00ff69\"> ").append(new TForms().fromArray(onLinesResolve, true)).append("</font>");
-        return sb.toString();
     }
 }

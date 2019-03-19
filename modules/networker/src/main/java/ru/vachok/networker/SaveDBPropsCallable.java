@@ -59,6 +59,9 @@ class SaveDBPropsCallable implements Callable<Boolean> {
     @Override
     public Boolean call() {
         final String sql = "insert into ru_vachok_networker (property, valueofproperty, javaid) values (?,?,?)";
+    
+        pFile.setLastModified(ConstantsFor.DELAY);
+        
         try (Connection c = mysqlDataSource.getConnection(); OutputStream outputStream = new FileOutputStream(mysqlDataSource.getResourceId() + "_dssrc.properties")) {
             mysqlDataSource.setRelaxAutoCommit(true);
             Properties properties = mysqlDataSource.exposeAsProperties(new Properties());
@@ -123,7 +126,7 @@ class SaveDBPropsCallable implements Callable<Boolean> {
         String methNameSave = "savePropsDelStatement";
     
         final String sql = "delete FROM `ru_vachok_networker` where `javaid` =  'ConstantsFor'";
-        boolean lastModAndCanWrite = pFile.lastModified() < new TimeChecker().call().getReturnTime() + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY / 3) && pFile.canWrite();
+        boolean lastModAndCanWrite = pFile.lastModified() < new TimeChecker().call().getReturnTime() - TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY / 3) && pFile.canWrite();
     
         if (lastModAndCanWrite) {
             @SuppressWarnings("DuplicateStringLiteralInspection") String pointProps = ".properties";

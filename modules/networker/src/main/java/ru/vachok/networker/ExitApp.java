@@ -133,16 +133,18 @@ public class ExitApp implements Runnable {
         File appLog = new File("g:\\My_Proj\\FtpClientPlus\\modules\\networker\\app.log");
         File scan200 = new File(ConstantsNet.FILENAME_AVAILABLELAST200210TXT);
         File scan210 = new File(ConstantsNet.FILENAME_AVAILABLELAST210220TXT);
-        File oldLanFile = new File(ConstantsNet.FILENAME_OLDLANTXT);
+        File oldLanFile0 = new File(ConstantsNet.FILENAME_OLDLANTXT0);
+        File oldLanFile1 = new File(ConstantsNet.FILENAME_OLDLANTXT1);
         File filePingTv = new File("ping.tv");
     
-        if (!scan200.exists() || !scan210.exists() || !oldLanFile.exists() || !filePingTv.exists()) {
+        if (!scan200.exists() || !scan210.exists() || !oldLanFile0.exists() || !oldLanFile1.exists() || !filePingTv.exists()) {
             try {
                 Path isFile200 = Files.createFile(scan200.toPath());
                 Path isFile210 = Files.createFile(scan210.toPath());
-                Path oldLanPath = Files.createFile(oldLanFile.toPath());
+                Path oldLanPath0 = Files.createFile(oldLanFile0.toPath());
+                Path oldLanPath1 = Files.createFile(oldLanFile1.toPath());
                 Path pingTvPath = Files.createFile(filePingTv.toPath());
-                messageToUser.info("ExitApp.copyAvail", "isFile210", " = " + isFile210 + "\nisFile200 = " + isFile200 + "\noldLanPath = " + oldLanPath + "\npingTvPath= " + pingTvPath);
+                messageToUser.info("ExitApp.copyAvail", "isFile210", " = " + isFile210 + "\nisFile200 = " + isFile200 + "\noldLanPath0 = " + oldLanPath0 + "\noldLanPath1 = " + oldLanFile1 + "\npingTvPath= " + pingTvPath);
             }
             catch (IOException e) {
                 FileSystemWorker.error("ExitApp.copyAvail", e);
@@ -151,7 +153,8 @@ public class ExitApp implements Runnable {
     
         FileSystemWorker.copyOrDelFile(scan200, new StringBuilder().append("\\lan\\vlans200_").append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
         FileSystemWorker.copyOrDelFile(scan210, new StringBuilder().append(".\\lan\\vlans210_").append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
-        FileSystemWorker.copyOrDelFile(oldLanFile, new StringBuilder().append(".\\lan\\old_lan_").append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
+        FileSystemWorker.copyOrDelFile(oldLanFile0, new StringBuilder().append(".\\lan\\0old_lan_").append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
+        FileSystemWorker.copyOrDelFile(oldLanFile1, new StringBuilder().append(".\\lan\\1old_lan_").append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
         FileSystemWorker.copyOrDelFile(filePingTv, ".\\lan\\tv_" + System.currentTimeMillis() / 1000 + ".ping", true);
     
         List<File> srvFiles = DiapazonedScan.getInstance().getSrvFiles();
