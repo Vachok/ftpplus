@@ -104,15 +104,16 @@ public class PfListsSrv {
      */
     void makeListRunner() {
         AppComponents.threadConfig().thrNameSet("mkLst");
-        ThreadPoolTaskScheduler schedulerTasks = AppComponents.threadConfig().getTaskScheduler();
+        
         Runnable bFact = this::buildFactory;
-        try {
-            schedulerTasks.getScheduledThreadPoolExecutor().remove(bFact);
-        }
-        catch (Exception e) {
-            FileSystemWorker.error("PfListsSrv.makeListRunner", e);
-        }
-        schedulerTasks.scheduleAtFixedRate(bFact, TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY));
+        AppComponents.threadConfig()
+        
+
+        
+        
+        
+
+
         
     }
     
