@@ -1,4 +1,4 @@
 # ftpplus
 DOC
-v0.19.03
-from 11-jan-2019 19:38
+v8.0.1912
+http://networker.vachok.ru/
