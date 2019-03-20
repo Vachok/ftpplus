@@ -1,20 +1,27 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
+/*
+ * Copyright (c) 2019.
+ */
+
+/*
+ * Copyright (c) 2019.
+ */
+
 package ru.vachok.networker.accesscontrol;
 
 
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
-import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
 
 import java.io.File;
 import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -41,7 +48,7 @@ public class PfListsSrv {
      @see PfListsCtr#runCommand(org.springframework.ui.Model, ru.vachok.networker.accesscontrol.PfListsSrv)
      @see #runCom()
      */
-    private @NotNull String commandForNatStr = "sudo cat /etc/pf/24hrs;exit";
+    private @NotNull String commandForNatStr = "sudo cat /etc/pf/allowdomain;exit";
     
     private MessageToUser messageToUser = new MessageLocal();
     
@@ -98,7 +105,6 @@ public class PfListsSrv {
     
     /**
      Формирует списки <b>pf</b>
-     <p>
      
      @see PfListsCtr
      */
@@ -106,15 +112,8 @@ public class PfListsSrv {
         AppComponents.threadConfig().thrNameSet("mkLst");
         
         Runnable bFact = this::buildFactory;
-        AppComponents.threadConfig()
-        
-
-        
-        
-        
-
-
-        
+        boolean isBFactRunning = AppComponents.threadConfig().execByThreadConfig(bFact);
+        messageToUser.info("PfListsSrv.makeListRunner", "isBFactRunning", " = " + isBFactRunning);
     }
     
     /**
@@ -135,34 +134,34 @@ public class PfListsSrv {
      */
     private void buildFactory() {
         AppComponents.threadConfig().thrNameSet("bFact");
-    
+        
         SSHFactory.@NotNull Builder builderInst = new SSHFactory.Builder(DEFAULT_CONNECT_SRV, commandForNatStr, getClass().getSimpleName());
         SSHFactory build = builderInst.build();
         if (!new File("a161.pem").exists()) {
             throw new RejectedExecutionException("NO CERTIFICATE a161.pem...");
         }
-    
+        
         build.setCommandSSH("sudo cat /etc/pf/vipnet;sudo cat /etc/pf/24hrs;exit");
         pfListsInstAW.setVipNet(build.call());
-    
+        
         build.setCommandSSH("sudo cat /etc/pf/squid;exit");
         pfListsInstAW.setStdSquid(build.call());
-    
+        
         build.setCommandSSH("sudo cat /etc/pf/tempfull;exit");
         pfListsInstAW.setFullSquid(build.call());
-    
+        
         build.setCommandSSH("sudo cat /etc/pf/squidlimited;exit");
         pfListsInstAW.setLimitSquid(build.call());
-    
+        
         build.setCommandSSH("pfctl -s nat;exit");
         pfListsInstAW.setPfNat(build.call());
-    
+        
         build.setCommandSSH("pfctl -s rules;exit");
         pfListsInstAW.setPfRules(build.call());
-    
+        
         build.setCommandSSH("sudo cat /home/kudr/inet.log;exit");
         pfListsInstAW.setInetLog(build.call());
-    
+        
         pfListsInstAW.setGitStatsUpdatedStampLong(System.currentTimeMillis());
     }
 }

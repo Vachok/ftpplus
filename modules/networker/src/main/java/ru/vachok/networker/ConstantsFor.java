@@ -1,3 +1,13 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
+/*
+ * Copyright (c) 2019.
+ */
+
+/*
+ * Copyright (c) 2019.
+ */
+
 package ru.vachok.networker;
 
 
@@ -260,10 +270,13 @@ public enum ConstantsFor {
     public static final String ATT_TITLE = "title";
 
 //public
+    
     /**
      {@link ServiceInfoCtrl#closeApp(HttpServletRequest)}
      */
     public static final int CODE_USEREXIT = 222;
+    
+    public static final String ATT_HEAD = "head";
 //
     
     /**

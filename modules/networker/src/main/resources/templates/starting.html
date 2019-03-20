@@ -1,3 +1,13 @@
+<!-- Copyright (c) all rights. http://networker.vachok.ru 2019. -->
+
+<!--
+  ~ Copyright (c) 2019.
+  -->
+
+<!--
+  ~ Copyright (c) 2019.
+  -->
+
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/html">
 <head>
@@ -6,13 +16,14 @@
     <link rel="stylesheet" type="text/css" media="all" href="css/main.css" th:href="@{css/main.css}"/>
 </head>
 <body>
+<center><p th:utext="${head}"/></center>
 <center>
     <form method="POST" th:action="@{/matrix}" th:object="${matrix}">
-    Введите запрос:
-    <input type="text" th:field="*{workPos}"/>
-    <br>
-    <input type="submit" value="Запрос"/>
-    <br>
+        Введите запрос:
+        <input type="text" th:field="*{workPos}"/>
+        <br>
+        <input type="submit" value="Запрос"/>
+        <br>
     </form>
 </center>
 <p>

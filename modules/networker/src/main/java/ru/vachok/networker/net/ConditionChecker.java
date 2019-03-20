@@ -1,3 +1,13 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
+/*
+ * Copyright (c) 2019.
+ */
+
+/*
+ * Copyright (c) 2019.
+ */
+
 package ru.vachok.networker.net;
 
 
@@ -51,6 +61,7 @@ class ConditionChecker {
             FileSystemWorker.error("ConditionChecker.static initializer", e);
         }
     }
+    
     
     /**
      Проверяет имя пользователя когда ПК онлайн
@@ -111,7 +122,7 @@ class ConditionChecker {
     @SuppressWarnings("MethodWithMultipleLoops")
     static String offLinesCheckUser(String sql, String pcName) {
         AppComponents.threadConfig().thrNameSet("offChk");
-    
+        
         StringBuilder stringBuilder = new StringBuilder();
         try (
             PreparedStatement p = connection.prepareStatement(sql);
@@ -160,7 +171,7 @@ class ConditionChecker {
      <p>
      <b>{@link Model#addAttribute(Object)}:</b> <br>
      {@link ConstantsFor#ATT_TITLE} = {@code attributeValue} <br>
-     {@code pcs} = {@link ConstantsNet#FILENAME_AVAILABLELAST200210TXT} + {@link ConstantsNet#FILENAME_OLDLANTXT} + {@link ConstantsNet#FILENAME_SERVTXT}
+     {@code pcs} = {@link ConstantsNet#FILENAME_AVAILABLELAST200210TXT} + {@link ConstantsNet#FILENAME_OLDLANTXT0} и {@link ConstantsNet#FILENAME_OLDLANTXT1} + {@link ConstantsNet#FILENAME_SERVTXT}
      <p>
      <b>{@link HttpServletResponse#addHeader(String, String)}:</b><br>
      {@link ConstantsFor#HEAD_REFRESH} = 45
@@ -176,10 +187,10 @@ class ConditionChecker {
             .append(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis((long) minLeft))).toString();
         model.addAttribute(ConstantsFor.ATT_TITLE, attributeValue);
         model.addAttribute("pcs", FileSystemWorker.readFile(ConstantsNet.FILENAME_AVAILABLELAST200210TXT).replace(", ", "<br>") + "<p>" + FileSystemWorker.readFile(ConstantsNet.FILENAME_AVAILABLELAST210220TXT).replace(", ", "<br>") + "<p>" + FileSystemWorker.readFile(ConstantsNet.FILENAME_OLDLANTXT0).replace(", ", "<br>") + "<p>" + FileSystemWorker.readFile(ConstantsNet.FILENAME_OLDLANTXT1).replace(", ", "<br>") + "<p>" +
-                FileSystemWorker.readFile(ConstantsNet.FILENAME_SERVTXT_11SRVTXT).replace(", ", "<br>") + "<p>" +
-                FileSystemWorker.readFile(ConstantsNet.FILENAME_SERVTXT_21SRVTXT).replace(", ", "<br>") + "<p>" +
-                FileSystemWorker.readFile(ConstantsNet.FILENAME_SERVTXT_31SRVTXT).replace(", ", "<br>") + "<p>" +
-                FileSystemWorker.readFile(ConstantsNet.FILENAME_SERVTXT_41SRVTXT).replace(", ", "<br>") + "<p>");
+            FileSystemWorker.readFile(ConstantsNet.FILENAME_SERVTXT_11SRVTXT).replace(", ", "<br>") + "<p>" +
+            FileSystemWorker.readFile(ConstantsNet.FILENAME_SERVTXT_21SRVTXT).replace(", ", "<br>") + "<p>" +
+            FileSystemWorker.readFile(ConstantsNet.FILENAME_SERVTXT_31SRVTXT).replace(", ", "<br>") + "<p>" +
+            FileSystemWorker.readFile(ConstantsNet.FILENAME_SERVTXT_41SRVTXT).replace(", ", "<br>") + "<p>");
         response.addHeader(ConstantsFor.HEAD_REFRESH, "45");
     }
     

@@ -1,3 +1,13 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
+/*
+ * Copyright (c) 2019.
+ */
+
+/*
+ * Copyright (c) 2019.
+ */
+
 package ru.vachok.networker.ad;
 
 
@@ -30,11 +40,12 @@ import java.util.List;
 
 /**
  Управление Active Directory
-
+ 
  @since 02.10.2018 (23:06) */
 @Controller
 public class ActDirectoryCTRL {
-
+    
+    
     /**
      Небольшое описание, для показа на сайте.
      */
@@ -42,36 +53,31 @@ public class ActDirectoryCTRL {
         "<p>Для корректной работы, вам нужно положить фото юзеров <a href=\"file://srv-mail3.eatmeat.ru/c$/newmailboxes/fotoraw/\" " +
             "target=\"_blank\">\\\\srv-mail3.eatmeat" +
             ".ru\\c$\\newmailboxes\\fotoraw\\</a>\n";
-
+    
     /**
      {@link LoggerFactory}
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(ActDirectoryCTRL.class.getSimpleName());
-
+    
     private static final String ATT_DETAILS = "details";
-
+    
     /**
      {@link ADSrv}
      */
     private ADSrv adSrv;
-
+    
     private Visitor visitor;
-    /*Comment out 03.03.2019 (11:08)
-     *//**
-     {@link SshActs}
-     *//*
-    private SshActs sshActs;*/
-
+    
     /**
      Заголовок страницы.
      */
     private String titleStr = "PowerShell. Применить на SRV-MAIL3";
-
+    
     /**
      {@link PhotoConverterSRV}
      */
     private PhotoConverterSRV photoConverterSRV;
-
+    
     /**
      @param adSrv             {@link AppComponents#adSrv()}
      @param photoConverterSRV {@link PhotoConverterSRV}
@@ -86,7 +92,7 @@ public class ActDirectoryCTRL {
 */
         Thread.currentThread().setName(getClass().getSimpleName());
     }
-
+    
     /**
      /ad control.
      <p>
@@ -104,7 +110,7 @@ public class ActDirectoryCTRL {
      {@link ConstantsFor#ATT_USERS} = {@link TForms#fromADUsersList(java.util.List, boolean)}
      <p>
      {@code return "ad"}
-
+     
      @param request {@link HttpServletRequest}
      @param model   {@link Model}
      @return ad.html или aditem.html
@@ -127,12 +133,12 @@ public class ActDirectoryCTRL {
         }
         return "ad";
     }
-
+    
     /**
      AdItem
      <br> 3. {@link ADSrv#getDetails(String)} <br> 4. {@link
     PageFooter#getFooterUtext()}
-
+     
      @param queryString {@link HttpServletRequest#getQueryString()}
      @param model       {@link Model}
      @return aditem.html
@@ -142,7 +148,7 @@ public class ActDirectoryCTRL {
         netScannerSvc.setThePc(queryString);
         String attributeValue = netScannerSvc.getInfoFromDB();
         model.addAttribute(ConstantsFor.ATT_TITLE, queryString + " " + attributeValue);
-        model.addAttribute(ConstantsFor.ATT_USERS, NetScannerSvc.getInputWithInfoFromDB());
+        model.addAttribute(ConstantsFor.ATT_USERS, netScannerSvc.getInputWithInfoFromDB());
         try{
             String adSrvDetails = adSrv.getDetails(queryString);
             model.addAttribute(ATT_DETAILS, adSrvDetails);
@@ -158,7 +164,7 @@ public class ActDirectoryCTRL {
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
         return "aditem";
     }
-
+    
     /**
      Get adphoto.html
      <p>
@@ -169,7 +175,7 @@ public class ActDirectoryCTRL {
      <b>{@link NullPointerException}:</b><br>
      7. {@link FileSystemWorker#error(java.lang.String, java.lang.Exception)} пишем в файл.
      <p>
-
+     
      @param photoConverterSRV {@link PhotoConverterSRV}
      @param model             {@link Model}
      @param request           {@link HttpServletRequest}.
@@ -178,7 +184,7 @@ public class ActDirectoryCTRL {
     @GetMapping ("/adphoto")
     public String adFoto(@ModelAttribute PhotoConverterSRV photoConverterSRV, Model model, HttpServletRequest request) {
         this.visitor = ConstantsFor.getVis(request);
-
+        
         this.photoConverterSRV = photoConverterSRV;
         try{
             model.addAttribute("photoConverterSRV", photoConverterSRV);
@@ -198,5 +204,5 @@ public class ActDirectoryCTRL {
         }
         return "adphoto";
     }
-
+    
 }

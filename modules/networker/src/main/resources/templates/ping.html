@@ -1,3 +1,13 @@
+<!-- Copyright (c) all rights. http://networker.vachok.ru 2019. -->
+
+<!--
+  ~ Copyright (c) 2019.
+  -->
+
+<!--
+  ~ Copyright (c) 2019.
+  -->
+
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
@@ -6,6 +16,7 @@
     <link href="css/main.css" media="all" rel="stylesheet" th:href="@{css/main.css}" type="text/css"/>
 </head>
 <body>
+<center><p th:utext="${head}"/></center>
 <center>
     <p>
     <form enctype="multipart/form-data" method="POST" th:action="@{/ping}" th:object="${netPinger}">
