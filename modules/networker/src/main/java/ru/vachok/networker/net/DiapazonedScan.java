@@ -69,11 +69,7 @@ public class DiapazonedScan implements Runnable {
     private static final DiapazonedScan OUR_INSTANCE = new DiapazonedScan();
     
     private static final MessageToUser messageToUser = new MessageLocal(DiapazonedScan.class.getSimpleName());
-    
-    private static final String STR_IS_FILE_COPIED = "isFileCopied";
-    
-    private static final String METH_SCAN_SERVERS = "scanServers";
-    
+
     private final long stArt = ConstantsFor.getAtomicTime();
     
     private long stopClassStampLong = NetScanFileWorker.getI().getLastStamp();
