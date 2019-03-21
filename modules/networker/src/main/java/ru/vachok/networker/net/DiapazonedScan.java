@@ -311,10 +311,12 @@ public class DiapazonedScan implements Runnable {
      */
     private void scanServers() {
         @SuppressWarnings("DuplicateStringLiteralInspection") String classMeth = "DiapazonedScan.scanServers";
+        @SuppressWarnings("DuplicateStringLiteralInspection") final String methName = "scanServers";
+        
         Collections.sort(srvFiles);
         String vlanIs = "10.10.";
         Collection<Runnable> runList = new ArrayBlockingQueue<>(4);
-        @SuppressWarnings("DuplicateStringLiteralInspection") final String methName = "scanServers";
+    
         Runnable srv11 = ()->{
             try {
                 OutputStream outputStream = new FileOutputStream(srvFiles.get(0));
