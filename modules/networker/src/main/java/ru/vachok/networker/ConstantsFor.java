@@ -498,7 +498,7 @@ public enum ConstantsFor {
     /**
      @return имена-паттерны временных файлов, которые надо удалить при запуске.
      */
-    public static String[] getStrsVisit() {
+    public static String[] getStringsVisit() {
         return STRS_VISIT;
     }
     

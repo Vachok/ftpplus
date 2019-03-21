@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker;
 
 
@@ -91,7 +93,7 @@ public class IntoApplication {
      @see SystemTrayHelper
      */
     public static void main(@Nullable String[] args) {
-        FileSystemWorker.delFilePatterns(ConstantsFor.getStrsVisit());
+        FileSystemWorker.delFilePatterns(ConstantsFor.getStringsVisit());
         LOCAL_PROPS.putAll(AppComponents.getOrSetProps());
         LOCAL_PROPS.setProperty("ff", "false");
         if (args != null && args.length > 0) {

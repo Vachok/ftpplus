@@ -144,9 +144,13 @@ public class DiapazonedScan implements Runnable {
     
     /**
      Старт
+ 
+     1 {@link NetScanFileWorker#setLastStamp(long)} установка текущего временного штампа. <p>
+     1.1 Если {@link #srvFiles} == 4:<br>
      */
     @Override
     public void run() {
+        //TODO : 21.03.2019 анализ выполнения
         NetScanFileWorker.getI().setLastStamp(System.currentTimeMillis());
         if (addSrvFiles()) {
             Future<?> future = AppComponents.threadConfig().getTaskExecutor().submit(this::scanNew);
@@ -185,6 +189,7 @@ public class DiapazonedScan implements Runnable {
             timeOutMSec = (int) (ConstantsFor.DELAY * 3);
             NetScanFileWorker.getI().setLastStamp(System.currentTimeMillis());
         }
+        final String strOnlineIs = "Online is ";
         if (byAddress.isReachable(timeOutMSec)) {
             String hostName = byAddress.getHostName();
             String hostAddress = byAddress.getHostAddress();
@@ -193,15 +198,15 @@ public class DiapazonedScan implements Runnable {
             NetScanFileWorker.getI().setLastStamp(System.currentTimeMillis());
             
             ALL_DEVICES_LOCAL_DEQUE.add("<font color=\"green\">" + byIPStr + FONT_BR_STR);
-            
-            messageToUser.info("Online is " + true, "ON putIPAddrName", " = " + putIPAddrName);
+    
+            messageToUser.info(strOnlineIs + true, "ON putIPAddrName", " = " + putIPAddrName);
             messageToUser.info("stStMap", ".putIfAbsent", " = " + ifAbsStr);
         } else {
             String putIPAddrName = NetListKeeper.getI().getOffLines().put(byAddress.getHostAddress(), byAddress.getHostName());
             ALL_DEVICES_LOCAL_DEQUE.add("<font color=\"red\">" + byIPStr + FONT_BR_STR);
             NetScanFileWorker.getI().setLastStamp(System.currentTimeMillis());
-            
-            messageToUser.info("Online is " + false, "OFF byIPStr", " = " + byIPStr);
+    
+            messageToUser.info(strOnlineIs + false, "OFF byIPStr", " = " + byIPStr);
         }
     }
     
@@ -280,7 +285,7 @@ public class DiapazonedScan implements Runnable {
                     execScan(outputStream, oldLANFile0, 11, 15, "192.168.");
                 }
                 catch (IOException e) {
-                    FileSystemWorker.error("DiapazonedScan.scanOldLan", e);
+                    FileSystemWorker.error(classMeth, e);
                 }
             });
             AppComponents.threadConfig().execByThreadConfig(()->{
@@ -288,7 +293,7 @@ public class DiapazonedScan implements Runnable {
                     execScan(outputStream1, oldLANFile1, 15, 21, "192.168.");
                 }
                 catch (IOException e) {
-                    FileSystemWorker.error("DiapazonedScan.scanOldLan", e);
+                    FileSystemWorker.error(classMeth, e);
                 }
             });
         } catch (IOException e) {
@@ -305,18 +310,19 @@ public class DiapazonedScan implements Runnable {
      Скан подсетей 10.10.xx.xxx
      */
     private void scanServers() {
-        String classMeth = "DiapazonedScan.scanServers";
+        @SuppressWarnings("DuplicateStringLiteralInspection") String classMeth = "DiapazonedScan.scanServers";
         Collections.sort(srvFiles);
         String vlanIs = "10.10.";
         Collection<Runnable> runList = new ArrayBlockingQueue<>(4);
+        @SuppressWarnings("DuplicateStringLiteralInspection") final String methName = "scanServers";
         Runnable srv11 = ()->{
             try {
                 OutputStream outputStream = new FileOutputStream(srvFiles.get(0));
                 execScan(outputStream, srvFiles.get(0), 11, 21, vlanIs);
             }
             catch (IOException e) {
-                messageToUser.errorAlert("DiapazonedScan", "scanServers", e.getMessage());
-                FileSystemWorker.error("DiapazonedScan.scanServers", e);
+                messageToUser.errorAlert(getClass().getSimpleName(), methName, e.getMessage());
+                FileSystemWorker.error(getClass().getSimpleName() + ".scanServers", e);
             }
         };
         Runnable srv19 = ()->{
@@ -325,8 +331,8 @@ public class DiapazonedScan implements Runnable {
                 execScan(outputStream, srvFiles.get(1), 21, 31, vlanIs);
             }
             catch (IOException e) {
-                messageToUser.errorAlert("DiapazonedScan", "scanServers", e.getMessage());
-                FileSystemWorker.error("DiapazonedScan.scanServers", e);
+                messageToUser.errorAlert(getClass().getSimpleName(), methName, e.getMessage());
+                FileSystemWorker.error(classMeth, e);
             }
         };
         Runnable srv27 = ()->{
@@ -335,8 +341,8 @@ public class DiapazonedScan implements Runnable {
                 execScan(outputStream, srvFiles.get(2), 31, 41, vlanIs);
             }
             catch (IOException e) {
-                messageToUser.errorAlert("DiapazonedScan", "scanServers", e.getMessage());
-                FileSystemWorker.error("DiapazonedScan.scanServers", e);
+                messageToUser.errorAlert(getClass().getSimpleName(), methName, e.getMessage());
+                FileSystemWorker.error(classMeth, e);
             }
         };
         Runnable srv41 = ()->{
@@ -345,8 +351,8 @@ public class DiapazonedScan implements Runnable {
                 execScan(outputStream, srvFiles.get(3), 41, 51, vlanIs);
             }
             catch (IOException e) {
-                messageToUser.errorAlert("DiapazonedScan", "scanServers", e.getMessage());
-                FileSystemWorker.error("DiapazonedScan.scanServers", e);
+                messageToUser.errorAlert(getClass().getSimpleName(), methName, e.getMessage());
+                FileSystemWorker.error(classMeth, e);
             }
         };
         runList.add(srv11);
@@ -374,22 +380,24 @@ public class DiapazonedScan implements Runnable {
         final String vlanIs = "10.200.";
         
         NET_SCAN_FILE_WORKER_INST.setNewLanLastScan(newLanFile200, newLanFile210);
-        
+    
+        final String classMeth = "DiapazonedScan.writeToFileByConditions";
         if (ALL_DEVICES_LOCAL_DEQUE.remainingCapacity() == 0) {
             ALL_DEVICES_LOCAL_DEQUE.clear();
-            messageToUser.info("DiapazonedScan.writeToFileByConditions", "toString is", " = " + this);
+            messageToUser.info(classMeth, "toString is", " = " + this);
         }
         try {
             OutputStream outputStream210 = new FileOutputStream(ConstantsNet.FILENAME_AVAILABLELAST200210TXT);
             OutputStream outputStream220 = new FileOutputStream(ConstantsNet.FILENAME_AVAILABLELAST210220TXT);
-            
+    
+            final String methName = "writeToFileByConditions";
             AppComponents.threadConfig().execByThreadConfig(()->{
                 try {
                     execScan(outputStream210, newLanFile200, 200, 210, vlanIs);
                 }
                 catch (IOException e) {
-                    messageToUser.errorAlert("DiapazonedScan", "writeToFileByConditions", e.getMessage());
-                    FileSystemWorker.error("DiapazonedScan.writeToFileByConditions", e);
+                    messageToUser.errorAlert(getClass().getSimpleName(), methName, e.getMessage());
+                    FileSystemWorker.error(classMeth, e);
                 }
             });
             AppComponents.threadConfig().execByThreadConfig(()->{
@@ -397,26 +405,26 @@ public class DiapazonedScan implements Runnable {
                     execScan(outputStream220, newLanFile210, 210, 218, vlanIs);
                 }
                 catch (IOException e) {
-                    messageToUser.errorAlert("DiapazonedScan", "writeToFileByConditions", e.getMessage());
-                    FileSystemWorker.error("DiapazonedScan.writeToFileByConditions", e);
+                    messageToUser.errorAlert(getClass().getSimpleName(), methName, e.getMessage());
+                    FileSystemWorker.error(classMeth, e);
                 }
             });
         }
         catch (IOException e) {
-            FileSystemWorker.error("DiapazonedScan.writeToFileByConditions", e);
+            FileSystemWorker.error(classMeth, e);
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
         }
     }
     
-    private boolean execScan(OutputStream outputStream, File lanFileToWrite, int from, int to, String whatVlan) throws IOException {
+    private void execScan(OutputStream outputStream, File lanFileToWrite, int from, int to, String whatVlan) throws IOException {
         PrintWriter printWriter = new PrintWriter(outputStream, true);
         scanLan(from, to, whatVlan, printWriter);
         Path p210 = Paths.get(".\\lan\\" + lanFileToWrite.getName().replace(".txt", "_") + System.currentTimeMillis() / 1000 + ".scan");
         NetScanFileWorker.getI().setLastStamp(System.currentTimeMillis());
         outputStream.close();
-        return FileSystemWorker.copyOrDelFile(lanFileToWrite, p210.toAbsolutePath().toString(), false);
-        
+        FileSystemWorker.copyOrDelFile(lanFileToWrite, p210.toAbsolutePath().toString(), false);
+    
     }
     
     /**
