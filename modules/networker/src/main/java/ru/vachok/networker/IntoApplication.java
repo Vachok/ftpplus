@@ -206,7 +206,7 @@ public class IntoApplication {
      Запуск до старта Spring boot app <br> Usages: {@link #main(String[])}
      <p>
      {@link Logger#warn(java.lang.String)} - день недели. <br>
-     Если {@link ConstantsFor#thisPC()} - {@link ConstantsFor#HOSTNAME_NO0027} или "home",
+     Если {@link ConstantsFor#thisPC()} - {@link ConstantsFor#HOSTNAME_DO213} или "home",
      {@link SystemTrayHelper#addTray(java.lang.String)} "icons8-плохие-поросята-32.png".
      Else - {@link SystemTrayHelper#addTray(java.lang.String)} {@link String} null<br>
      {@link SpringApplication#setMainApplicationClass(java.lang.Class)}
@@ -229,8 +229,7 @@ public class IntoApplication {
     }
 
     private static void trayAdd() {
-        SystemTrayHelper systemTrayHelper = SystemTrayHelper.getI();
-        if(ConstantsFor.thisPC().toLowerCase().contains(ConstantsFor.HOSTNAME_NO0027)){
+        SystemTrayHelper systemTrayHelper = SystemTrayHelper.getI(); if (ConstantsFor.thisPC().toLowerCase().contains(ConstantsFor.HOSTNAME_DO213)) {
             systemTrayHelper.addTray("icons8-плохие-поросята-32.png");
         }
         else{

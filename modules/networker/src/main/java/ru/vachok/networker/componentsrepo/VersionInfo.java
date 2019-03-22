@@ -19,6 +19,7 @@ import java.util.Properties;
 
 
 /**
+ 
  @since 24.09.2018 (9:44) */
 @Component("versioninfo")
 public class VersionInfo {
@@ -138,8 +139,7 @@ public class VersionInfo {
             }
         }
         PROPERTIES.setProperty(PR_APP_BUILD, thisPCNameStr + "." + LocalDate.now().getDayOfWeek().getValue());
-        if (thisPCNameStr.equalsIgnoreCase("home") ||
-            thisPCNameStr.toLowerCase().contains(ConstantsFor.HOSTNAME_NO0027)) {
+        if (thisPCNameStr.equalsIgnoreCase("home") || thisPCNameStr.toLowerCase().contains(ConstantsFor.HOSTNAME_DO213)) {
             PROPERTIES.setProperty(PR_BUILD_TIME, String.valueOf(System.currentTimeMillis()));
         }
         try {

@@ -267,7 +267,7 @@ public class ServiceInfoCtrl {
     private String pingGit() {
         boolean reachable = false;
         try {
-            InetAddress byName = InetAddress.getByName(ConstantsFor.HOSTNAME_SRVGIT_EATMEATRU);
+            InetAddress byName = InetAddress.getByName(ConstantsFor.HOSTNAME_SRVGITEATMEATRU);
             reachable = byName.isReachable(200);
         } catch (IOException e) {
             messageToUser.errorAlert("ServiceInfoCtrl", "pingGit", e.getMessage());

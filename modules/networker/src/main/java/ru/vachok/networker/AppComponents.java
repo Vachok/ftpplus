@@ -11,6 +11,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Scope;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
+import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.networker.accesscontrol.SshActs;
 import ru.vachok.networker.accesscontrol.TemporaryFullInternet;
 import ru.vachok.networker.ad.ADComputer;
@@ -34,7 +35,8 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
-import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static ru.vachok.networker.IntoApplication.getConfigurableApplicationContext;
 
@@ -122,7 +124,7 @@ public class AppComponents {
     public static Properties getOrSetProps(boolean saveThis) {
         Properties properties = ConstantsFor.getAppProps();
         if (saveThis) {
-            boolean isSaved = ConstantsFor.saveAppProps(properties);
+            boolean isSaved = saveAppProps(properties);
             messageToUser.info("AppComponents. Saving properties", " properties.size()", " = " + properties.size());
             final String classMeth = "AppComponents.getOrSetProps ";
             final String isSavedStr = " isSaved";
@@ -200,7 +202,28 @@ public class AppComponents {
     }
     
     public static boolean getOrSetProps(Properties localProps) {
-        return ConstantsFor.saveAppProps(localProps);
+        return saveAppProps(localProps);
+    }
+    
+    /**
+     Сохраняет {@link Properties} в БД {@link #APPNAME_WITHMINUS} с ID {@code ConstantsFor}
+     
+     @param propsToSave {@link Properties}
+     @return сохранено или нет
+     */
+    private static boolean saveAppProps(Properties propsToSave) {
+        threadConfig().thrNameSet("sProps"); propsToSave.setProperty("thispc", ConstantsFor.thisPC());
+        final String javaIDsString = ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName(); String classMeth = "ConstantsFor.saveAppProps"; String methName = "saveAppProps";
+        MysqlDataSource mysqlDataSource = new DBRegProperties(javaIDsString).getRegSourceForProperties(); mysqlDataSource.setRelaxAutoCommit(true);
+        AtomicBoolean retBool = new AtomicBoolean(); mysqlDataSource.setLogger("java.util.Logger"); mysqlDataSource.setRelaxAutoCommit(true);
+        Callable<Boolean> theProphecy = new SaveDBPropsCallable(mysqlDataSource, propsToSave, classMeth, methName);
+        Future<Boolean> booleanFuture = threadConfig().getTaskExecutor().submit(theProphecy); try {
+            retBool.set(booleanFuture.get(ConstantsFor.DELAY, TimeUnit.SECONDS));
+        }
+        catch (InterruptedException | ExecutionException | TimeoutException e) {
+            messageToUser.errorAlert(ConstantsFor.class.getSimpleName(), methName, e.getMessage()); FileSystemWorker.error(classMeth, e); Thread.currentThread().interrupt();
+            retBool.set(booleanFuture.isDone());
+        } return retBool.get();
     }
     
     @Override

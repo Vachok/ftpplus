@@ -150,7 +150,6 @@ public class DiapazonedScan implements Runnable {
      */
     @Override
     public void run() {
-        //TODO : 21.03.2019 анализ выполнения
         NetScanFileWorker.getI().setLastStamp(System.currentTimeMillis());
         if (addSrvFiles()) {
             Future<?> future = AppComponents.threadConfig().getTaskExecutor().submit(this::scanNew);
@@ -178,18 +177,17 @@ public class DiapazonedScan implements Runnable {
     }
     
     private void oneIpScan(String whatVlan, int i, int j, ConcurrentMap<String, String> stStMap, PrintWriter printStream) throws IOException {
-        AppComponents.threadConfig().thrNameSet(String.valueOf(ALL_DEVICES_LOCAL_DEQUE.remainingCapacity()));
+        AppComponents.threadConfig().thrNameSet(String.valueOf(ALL_DEVICES_LOCAL_DEQUE.remainingCapacity())); String classMeth = "DiapazonedScan.oneIpScan"; String strOnlineIs = "Online is ";
         
         int timeOutMSec = (int) ConstantsFor.DELAY;
         byte[] aBytes = InetAddress.getByName(whatVlan + i + "." + j).getAddress();
         InetAddress byAddress = InetAddress.getByAddress(aBytes);
         String byIPStr = byAddress.toString();
-        String classMeth = "DiapazonedScan.oneIpScan";
+    
         if (ConstantsFor.thisPC().equalsIgnoreCase("HOME")) {
             timeOutMSec = (int) (ConstantsFor.DELAY * 3);
             NetScanFileWorker.getI().setLastStamp(System.currentTimeMillis());
         }
-        final String strOnlineIs = "Online is ";
         if (byAddress.isReachable(timeOutMSec)) {
             String hostName = byAddress.getHostName();
             String hostAddress = byAddress.getHostAddress();
@@ -201,7 +199,8 @@ public class DiapazonedScan implements Runnable {
     
             messageToUser.info(strOnlineIs + true, "ON putIPAddrName", " = " + putIPAddrName);
             messageToUser.info("stStMap", ".putIfAbsent", " = " + ifAbsStr);
-        } else {
+        }
+        else {
             String putIPAddrName = NetListKeeper.getI().getOffLines().put(byAddress.getHostAddress(), byAddress.getHostName());
             ALL_DEVICES_LOCAL_DEQUE.add("<font color=\"red\">" + byIPStr + FONT_BR_STR);
             NetScanFileWorker.getI().setLastStamp(System.currentTimeMillis());
@@ -212,10 +211,10 @@ public class DiapazonedScan implements Runnable {
     
     /**
      Сканер локальной сети@param stStMap Запись в лог@param fromVlan начало с 3 октета IP
+ 
      @param toVlan конец с 3 октета IP
      @param whatVlan первый 2 октета, с точкоё в конце.
      @param printWriter {@link PrintWriter}
-     
      */
     @SuppressWarnings({"MethodWithMultipleLoops", "ObjectAllocationInLoop"})
     private void scanLan(int fromVlan, int toVlan, String whatVlan, PrintWriter printWriter) {

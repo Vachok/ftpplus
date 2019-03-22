@@ -11,7 +11,6 @@
 package ru.vachok.networker;
 
 
-import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.apache.commons.net.ntp.TimeInfo;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
@@ -47,8 +46,9 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
 
 import static ru.vachok.networker.IntoApplication.getConfigurableApplicationContext;
 
@@ -202,7 +202,7 @@ public enum ConstantsFor {
     /**
      Личный e-mail
      */
-    public static final String EADDR_143500GMAILCOM = "143500@gmail.com";
+    public static final String MAILADDR_143500GMAILCOM = "143500@gmail.com";
     
     /**
      HTTP-header
@@ -222,7 +222,7 @@ public enum ConstantsFor {
     /**
      Адрес локального git
      */
-    public static final String HOSTNAME_SRVGIT_EATMEATRU = "srv-git.eatmeat.ru";
+    public static final String HOSTNAME_SRVGITEATMEATRU = "srv-git.eatmeat.ru";
     
     /**
      {@code Files.setAttribute}
@@ -230,9 +230,9 @@ public enum ConstantsFor {
     public static final String DOS_ARCHIVE = "dos:archive";
     
     /**
-     Имя ПК no0027
+     Имя ПК HOME
      */
-    public static final String HOSTNAME_NO0027 = "no0027";
+    public static final String HOSTNAME_HOME = "HOME";
     
     /**
      Строка из Live Template soutm
@@ -263,13 +263,11 @@ public enum ConstantsFor {
      {@link Model} имя атрибута
      */
     public static final String ATT_USERS = "users";
-    
+
     /**
      {@link Model} имя атрибута
      */
     public static final String ATT_TITLE = "title";
-
-//public
     
     /**
      {@link ServiceInfoCtrl#closeApp(HttpServletRequest)}
@@ -277,8 +275,9 @@ public enum ConstantsFor {
     public static final int CODE_USEREXIT = 222;
     
     public static final String ATT_HEAD = "head";
-//
     
+    public static final String HOSTNAME_DO213 = "do0213";
+
     /**
      IP srv-nat.eatmeat.ru
      */
@@ -415,7 +414,7 @@ public enum ConstantsFor {
      */
     public static boolean isPingOK() {
         try {
-            return InetAddress.getByName(HOSTNAME_SRVGIT_EATMEATRU).isReachable(500);
+            return InetAddress.getByName(HOSTNAME_SRVGITEATMEATRU).isReachable(500);
         } catch (IOException e) {
             LoggerFactory.getLogger(ConstantsFor.class.getSimpleName()).error(e.getMessage(), e);
             return false;
@@ -459,8 +458,7 @@ public enum ConstantsFor {
     public static long getBuildStamp() {
         long retLong = 1L;
         try {
-            String hostName = InetAddress.getLocalHost().getHostName();
-            if (hostName.equalsIgnoreCase("home") || hostName.toLowerCase().contains(HOSTNAME_NO0027)) {
+            String hostName = InetAddress.getLocalHost().getHostName(); if (hostName.equalsIgnoreCase(HOSTNAME_DO213) || hostName.toLowerCase().contains(HOSTNAME_HOME)) {
                 PROPS.setProperty("build", System.currentTimeMillis() + "");
                 retLong = System.currentTimeMillis();
             } else {
@@ -516,36 +514,6 @@ public enum ConstantsFor {
             FileSystemWorker.writeFile("this_pc.err", Collections.singletonList(retStr));
             return "pc";
         }
-    }
-    
-    /**
-     Сохраняет {@link Properties} в БД {@link #APPNAME_WITHMINUS} с ID {@code ConstantsFor}
-     
-     @param propsToSave {@link Properties}
-     @return сохранено или нет
-     */
-    public static boolean saveAppProps(Properties propsToSave) {
-        AppComponents.threadConfig().thrNameSet("sProps");
-        propsToSave.setProperty("thispc", thisPC());
-        final String javaIDsString = APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName();
-        String classMeth = "ConstantsFor.saveAppProps";
-        String methName = "saveAppProps";
-        MysqlDataSource mysqlDataSource = new DBRegProperties(javaIDsString).getRegSourceForProperties();
-        mysqlDataSource.setRelaxAutoCommit(true);
-        AtomicBoolean retBool = new AtomicBoolean();
-        mysqlDataSource.setLogger("java.util.Logger");
-        mysqlDataSource.setRelaxAutoCommit(true);
-        Callable<Boolean> theProphecy = new SaveDBPropsCallable(mysqlDataSource, propsToSave, classMeth, methName);
-        Future<Boolean> booleanFuture = AppComponents.threadConfig().getTaskExecutor().submit(theProphecy);
-        try {
-            retBool.set(booleanFuture.get(DELAY, TimeUnit.SECONDS));
-        } catch (InterruptedException | ExecutionException | TimeoutException e) {
-            messageToUser.errorAlert(ConstantsFor.class.getSimpleName(), methName, e.getMessage());
-            FileSystemWorker.error(classMeth, e);
-            Thread.currentThread().interrupt();
-            retBool.set(booleanFuture.isDone());
-        }
-        return retBool.get();
     }
     
     /**
@@ -629,14 +597,14 @@ public enum ConstantsFor {
     }
     
     /**
+     Рассчитывает {@link #DELAY}, на всё время запуска приложения.
      @return {@link #DELAY}
      */
     private static long getDelay() {
         long delay = new SecureRandom().nextInt((int) MY_AGE);
         if (delay < MIN_DELAY) {
             delay = MIN_DELAY;
-        }
-        if (thisPC().toLowerCase().contains("no") || thisPC().toLowerCase().contains("home")) {
+        } if (thisPC().toLowerCase().contains(HOSTNAME_DO213) || thisPC().toLowerCase().contains(HOSTNAME_HOME)) {
             return MIN_DELAY;
         } else {
             return delay;

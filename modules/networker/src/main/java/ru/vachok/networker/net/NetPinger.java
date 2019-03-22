@@ -178,7 +178,7 @@ public class NetPinger implements Runnable, Pinger {
      (уникальный элемент из {@link #resList}).
      <p>
      Записать результат в файл {@link FileSystemWorker#writeFile(java.lang.String, java.util.List)}. Файл - {@link ConstantsNet#PINGRESULT_LOG}. <br> Если пингер работал 3 и более минут,
-     отправить отчёт на почту {@link ConstantsFor#EADDR_143500GMAILCOM} ({@link ESender#sendM(java.util.List, java.lang.String, java.lang.String)}) <br>
+     отправить отчёт на почту {@link ConstantsFor#MAILADDR_143500GMAILCOM} ({@link ESender#sendM(java.util.List, java.lang.String, java.lang.String)}) <br>
 
      @param userIn кол-во минут в мсек, которые пингер работал.
      */

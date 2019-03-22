@@ -148,6 +148,8 @@ public enum ConstantsNet { ;
     
     private static final BlockingDeque<String> ALL_DEVICES = new LinkedBlockingDeque<>(IPS_IN_VELKOM_VLAN);
     
+    public static final String HOSTNAMEPATT_HOME = "home";
+    
     /**
      new {@link HashSet}
      

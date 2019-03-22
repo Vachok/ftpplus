@@ -6,6 +6,7 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.Putty;
 
@@ -22,15 +23,14 @@ import java.net.InetAddress;
  Если трэй доступен.
 
  @since 29.09.2018 (22:33) */
-@SuppressWarnings ("InjectedReferences")
-public final class SystemTrayHelper {
+@SuppressWarnings ("InjectedReferences") public class SystemTrayHelper {
 
     /**
      Путь к папке со значками
      */
     @SuppressWarnings ("InjectedReferences")
     private static final @NotNull String IMG_FOLDER_NAME = "/static/images/";
-
+    
     private static final String CLASS_NAME = SystemTrayHelper.class.getSimpleName();
 
     private static final SystemTrayHelper SYSTEM_TRAY_HELPER = new SystemTrayHelper();
@@ -128,8 +128,8 @@ public final class SystemTrayHelper {
         toConsole.setLabel("Console Back");
         toConsole.addActionListener((ActionEvent e) -> System.setOut(System.err));
         popupMenu.add(toConsole);
-
-        if(ConstantsFor.thisPC().toLowerCase().contains("home")){
+    
+        if (ConstantsFor.thisPC().toLowerCase().contains(ConstantsNet.HOSTNAMEPATT_HOME)) {
             MenuItem reloadContext = new MenuItem();
             reloadContext.addActionListener(new ActionTests());
             reloadContext.setLabel("Run tests");
@@ -180,7 +180,7 @@ public final class SystemTrayHelper {
      */
     private static boolean isSrvGitOK() {
         try{
-            return InetAddress.getByName(ConstantsFor.HOSTNAME_SRVGIT_EATMEATRU).isReachable(1000);
+            return InetAddress.getByName(ConstantsFor.HOSTNAME_SRVGITEATMEATRU).isReachable(1000);
         }
         catch(IOException e){
             throw new IllegalStateException("***Network Problems Detected***");

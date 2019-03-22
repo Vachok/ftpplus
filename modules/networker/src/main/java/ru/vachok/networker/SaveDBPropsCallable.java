@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  Сохранение {@link Properties} в базу
  <p>
  
- @see ConstantsFor#saveAppProps(Properties)
+ @see AppComponents#saveAppProps(Properties)
  @since 25.02.2019 (10:12) */
 class SaveDBPropsCallable implements Callable<Boolean> {
     

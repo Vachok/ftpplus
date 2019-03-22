@@ -273,7 +273,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
         /**
          Парсинг сообщений от бота.
          <p>
-         {@link ESender} ({@link ConstantsFor#EADDR_143500GMAILCOM}). <br>
+         {@link ESender} ({@link ConstantsFor#MAILADDR_143500GMAILCOM}). <br>
          Если тема сообщения содержит {@code speed:}, берётся дата отправки {@link Message#getSentDate()}.
          <p>
          Если {@link #writeDB(String, int, long)}, удалим сообщение {@link #delMessage(Message)}.

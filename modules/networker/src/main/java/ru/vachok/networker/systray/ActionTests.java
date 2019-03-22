@@ -11,10 +11,9 @@ import java.awt.event.ActionListener;
 
 /**
  Класс запуска тестов
- <p>
 
  @since 28.01.2019 (1:21) */
-public class ActionTests implements ActionListener {
+@SuppressWarnings("ClassWithoutLogger") public class ActionTests implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
