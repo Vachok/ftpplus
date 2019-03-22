@@ -816,3 +816,5 @@ modules/networker/src/main/resources/static/cover/
 modules/networker/src/main/resources/static/pages/commit.html
 old_lan1.txt
 old_lan0.txt
+/modules/networker/src/main/resources/static/pages/last.commit
+!/.idea/scopes/
