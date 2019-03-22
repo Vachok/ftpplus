@@ -5,6 +5,7 @@ import com.jcraft.jsch.JSch;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.aop.target.AbstractBeanFactoryBasedTargetSource;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -30,6 +31,7 @@ import ru.vachok.networker.services.SimpleCalculator;
 import ru.vachok.networker.systray.MessageToTray;
 
 import javax.servlet.http.HttpServletRequest;
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
@@ -43,40 +45,40 @@ import static ru.vachok.networker.IntoApplication.getConfigurableApplicationCont
 
 /**
  Компоненты. Бины
- 
+
  @since 02.05.2018 (22:14) */
 @ComponentScan
 public class AppComponents {
-    
-    
+
+
     /**
      <i>Boiler Plate</i>
      */
     private static final String STR_VISITOR = "visitor";
-    
+
     private static MessageToUser messageToUser = new MessageLocal();
-    
+
     @Bean
     public TemporaryFullInternet temporaryFullInternet() {
         TemporaryFullInternet temporaryFullInternet = new TemporaryFullInternet();
         messageToUser.info("AppComponents.temporaryFullInternet", "temporaryFullInternet.hashCode()", " = " + temporaryFullInternet.hashCode());
         return temporaryFullInternet;
     }
-    
+
     @Bean
     @Scope(ConstantsFor.SINGLETON)
     public static Properties getOrSetProps() {
         return getOrSetProps(false);
     }
-    
+
     @Bean
     public static Logger getLogger(String className) {
         return LoggerFactory.getLogger(className);
     }
-    
+
     @Bean
     public Connection connection(String dbName) throws IOException {
-        
+
         try {
             MysqlDataSource dataSource = new RegRuMysql().getDataSourceSchema(dbName);
             File dsVarFile = new File("datasrc." + dataSource.hashCode());
@@ -90,7 +92,7 @@ public class AppComponents {
             return new RegRuMysql().getDefaultConnection(dbName);
         }
     }
-    
+
     /**
      @return new {@link SimpleCalculator}
      */
@@ -98,12 +100,12 @@ public class AppComponents {
     public SimpleCalculator simpleCalculator() {
         return new SimpleCalculator();
     }
-    
+
     /**
      SSH-actions.
      <p>
      Через библиотеку {@link JSch}
-     
+
      @return new {@link SshActs}
      */
     @Bean
@@ -113,12 +115,12 @@ public class AppComponents {
         messageToUser.info("AppComponents.sshActs", " sshActs.hashCode()", " = " + sshActs.hashCode());
         return sshActs;
     }
-    
+
     @Bean(STR_VISITOR)
     public Visitor visitor(HttpServletRequest request) {
         return new Visitor(request);
     }
-    
+
     @Bean
     @Scope(ConstantsFor.SINGLETON)
     public static Properties getOrSetProps(boolean saveThis) {
@@ -136,25 +138,25 @@ public class AppComponents {
         }
         return properties;
     }
-    
+
     @Bean
     @Scope(ConstantsFor.SINGLETON)
     public static NetPinger netPinger() {
         return new NetPinger();
     }
-    
+
     @Bean
     @Scope(ConstantsFor.SINGLETON)
     public static ThreadConfig threadConfig() {
         return ThreadConfig.getI();
     }
-    
+
     @Bean
     @Scope(ConstantsFor.SINGLETON)
     public static NetScannerSvc netScannerSvc() {
         return NetScannerSvc.getInst();
     }
-    
+
     /**
      @return {@link #lastNetScan()}.getNetWork
      */
@@ -163,7 +165,7 @@ public class AppComponents {
     public static ConcurrentMap<String, Boolean> lastNetScanMap() {
         return lastNetScan().getNetWork();
     }
-    
+
     /**
      @return {@link LastNetScan#getLastNetScan()}
      */
@@ -172,7 +174,7 @@ public class AppComponents {
     public static LastNetScan lastNetScan() {
         return LastNetScan.getLastNetScan();
     }
-    
+
     /**
      @return new {@link VersionInfo}
      */
@@ -188,10 +190,10 @@ public class AppComponents {
         versionInfo.setBUGged(isBUGged);
         return versionInfo;
     }
-    
+
     /**
      new {@link ADComputer} + new {@link ADUser}
-     
+
      @return new {@link ADSrv}
      */
     @Bean
@@ -200,14 +202,18 @@ public class AppComponents {
         ADComputer adComputer = new ADComputer();
         return new ADSrv(adUser, adComputer);
     }
-    
+
     public static boolean getOrSetProps(Properties localProps) {
         return saveAppProps(localProps);
     }
-    
+
+    public static AbstractBeanFactoryBasedTargetSource configurableApplicationContext() {
+        throw new IllegalComponentStateException("Moved to");
+    }
+
     /**
      Сохраняет {@link Properties} в БД {@link #APPNAME_WITHMINUS} с ID {@code ConstantsFor}
-     
+
      @param propsToSave {@link Properties}
      @return сохранено или нет
      */
@@ -225,7 +231,7 @@ public class AppComponents {
             retBool.set(booleanFuture.isDone());
         } return retBool.get();
     }
-    
+
     @Override
     public String toString() {
         ConfigurableApplicationContext context = getConfigurableApplicationContext();
