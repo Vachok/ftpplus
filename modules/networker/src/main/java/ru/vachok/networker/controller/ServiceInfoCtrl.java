@@ -1,8 +1,6 @@
 package ru.vachok.networker.controller;
 
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -40,12 +38,6 @@ import static java.time.temporal.ChronoUnit.HOURS;
 @Controller
 public class ServiceInfoCtrl {
     
-    
-    /**
-     {@link LoggerFactory#getLogger(Class)}
-     */
-    private static final Logger LOGGER = LoggerFactory.getLogger(ServiceInfoCtrl.class.getSimpleName());
-    
     private static final Properties LOC_PR = AppComponents.getOrSetProps();
     
     private boolean authReq;
@@ -55,7 +47,7 @@ public class ServiceInfoCtrl {
      */
     private Visitor visitor;
     
-    private MessageToUser messageToUser = new MessageLocal();
+    private static final MessageToUser messageToUser = new MessageLocal();
     
     /**
      GetMapping /serviceinfo
@@ -74,13 +66,12 @@ public class ServiceInfoCtrl {
      @throws InterruptedException запуск {@link #modModMaker(Model, HttpServletRequest, Visitor)}
      */
     @GetMapping("/serviceinfo")
-    public String infoMapping(Model model, HttpServletRequest request, HttpServletResponse response) throws AccessDeniedException, ExecutionException,
-        InterruptedException {
+    public String infoMapping(Model model, HttpServletRequest request, HttpServletResponse response) throws AccessDeniedException, ExecutionException, InterruptedException {
         AppComponents.threadConfig().thrNameSet("sINFO");
-        this.visitor = new AppComponents().visitor(request);
+    
+        visitor = new AppComponents().visitor(request);
         AppComponents.threadConfig().execByThreadConfig(new SpeedChecker());
-        this.authReq =
-            Stream.of("0:0:0:0", "10.10.111", "10.200.213.85", "172.16.20", "10.200.214.80").anyMatch(sP->request.getRemoteAddr().contains(sP));
+        this.authReq = Stream.of("0:0:0:0", "10.10.111", "10.200.213.85", "172.16.20", "10.200.214.80").anyMatch(sP->request.getRemoteAddr().contains(sP));
         if (authReq) {
             modModMaker(model, request, visitor);
             response.addHeader(ConstantsFor.HEAD_REFRESH, "90");
