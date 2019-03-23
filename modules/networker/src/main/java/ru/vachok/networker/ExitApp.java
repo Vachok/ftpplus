@@ -20,63 +20,69 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static ru.vachok.networker.IntoApplication.getConfigurableApplicationContext;
 
 
 /**
  Действия, при выходе
- 
+
  @since 21.12.2018 (12:15) */
 @SuppressWarnings("StringBufferReplaceableByString")
 public class ExitApp implements Runnable {
-    
+
     /**
      {@link ConstantsFor#HTTP_LOCALHOST8880SLASH} {@code "pages/commit.html"}.
      */
     private static final String GO_TO = ConstantsFor.HTTP_LOCALHOST8880SLASH + "pages/commit.html";
-    
+
+    private static final String classMeth = "ExitApp.readCommit";
+
+    private static final String RELOAD_CTX = ".reloadCTX";
+
+    private static MessageToUser messageToUser = new MessageLocal(ExitApp.class.getSimpleName());
+
     /**
      new {@link ArrayList}, записываемый в "exit.last"
-     
+
      @see #exitAppDO()
      */
-    private Collection<String> miniLoggerLast = new ArrayList<>();
-    
+    private static Collection<String> miniLoggerLast = new ArrayList<>();
+
     /**
      Причина выхода
      */
-    private String reasonExit;
-    
+    private String reasonExit = "Give me a reason to hold on to what we've got ... ";
+
     /**
      Имя файлв для {@link ObjectOutput}
      */
-    private String fileName;
-    
+    private String fileName = ExitApp.class.getSimpleName();
+
     /**
      Объект для записи, {@link Externalizable}
      */
-    private Object toWriteObj;
-    
+    private Object toWriteObj = this;
+
     /**
      Для записи {@link #toWriteObj}
-     
+
      @see #writeObj()
      */
-    private FileOutputStream out;
-    
+    private OutputStream out = null;
+
     /**
      Uptime в минутах. Как статус {@link System#exit(int)}
      */
     private long toMinutes = TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - ConstantsFor.START_STAMP);
-    
-    private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
-    
+
     /**
      Сохранение состояния объектов.
      <p>
- 
+
      @param reasonExit причина выхода
      @param toWriteObj, {@link Object}  для сохранения на диск
      @param out если требуется сохранить состояние
@@ -86,46 +92,70 @@ public class ExitApp implements Runnable {
         this.toWriteObj = toWriteObj;
         this.out = out;
     }
-    
+
+
     public ExitApp(String fileName, Object toWriteObj) {
         this.fileName = fileName;
         this.toWriteObj = toWriteObj;
     }
-    
+
+
     /**
      @param reasonExit {@link #reasonExit}
      */
     public ExitApp(String reasonExit) {
         this.reasonExit = reasonExit;
     }
-    
-    public void reloadCTX() {
-        ThreadConfig threadConfig = AppComponents.threadConfig();
-        threadConfig.getTaskScheduler().getScheduledThreadPoolExecutor().shutdown();
-        threadConfig.getTaskExecutor().getThreadPoolExecutor().shutdown();
-        List<Runnable> runnableList = threadConfig.getTaskScheduler().getScheduledThreadPoolExecutor().shutdownNow();
-        runnableList.clear();
-        runnableList = threadConfig.getTaskExecutor().getThreadPoolExecutor().shutdownNow();
-        runnableList.clear();
-        getConfigurableApplicationContext().refresh();
-    }
-    
+
+
     public boolean writeOwnObject() {
-        try (OutputStream fileOutputStream = new FileOutputStream(fileName);
-             ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream)) {
+        try (OutputStream fileOutputStream = new FileOutputStream(fileName); ObjectOutput objectOutputStream = new ObjectOutputStream(fileOutputStream)) {
             objectOutputStream.writeObject(toWriteObj);
             messageToUser.info("ExitApp.writeOwnObject", fileName, " = " + new File(fileName).length() / ConstantsFor.KBYTE);
             return true;
         } catch (IOException e) {
-            messageToUser.errorAlert("ExitApp", "writeOwnObject", e.getMessage());
+            messageToUser.errorAlert(getClass().getSimpleName() , "writeOwnObject" , e.getMessage());
             FileSystemWorker.error("ExitApp.writeOwnObject", e);
             return false;
         }
     }
-    
+
+
+    public static void reloadCTX() {
+        ThreadConfig threadConfig = AppComponents.threadConfig();
+        threadConfig.thrNameSet("RelCTX");
+
+        threadConfig.killAll();
+
+        List<Runnable> runnableList = threadConfig.getTaskScheduler().getScheduledThreadPoolExecutor().shutdownNow();
+        LinkedBlockingDeque<Runnable> deqRun = new LinkedBlockingDeque<>();
+        AtomicBoolean addToDeq = new AtomicBoolean(deqRun.addAll(runnableList));
+        try {
+            if (addToDeq.get()) {
+                for (Runnable x : deqRun) {
+                    Runnable remME = (deqRun).remove();
+
+                    miniLoggerLast.add(remME.toString());
+                    messageToUser.info(ExitApp.class.getSimpleName() + RELOAD_CTX , "remME" , " = " + remME + "\n" + "LinkedBlockingDeque with runnables aize = " + deqRun.size());
+                }
+                addToDeq.set(deqRun.addAll(threadConfig.getTaskExecutor().getThreadPoolExecutor().shutdownNow()));
+                if (addToDeq.get()) {
+                    ConfigurableApplicationContext context = getConfigurableApplicationContext();
+                    context.stop();
+
+                    messageToUser.info(ExitApp.class.getSimpleName() + RELOAD_CTX , "ConstantsFor.class.hashCode()" , " = " + ConstantsFor.class.hashCode());
+                }
+            }
+        } catch (Exception e) {
+            messageToUser.errorAlert(ExitApp.class.getSimpleName() , "reloadCTX" , e.getMessage());
+            FileSystemWorker.error(ExitApp.class.getSimpleName() + RELOAD_CTX , e);
+        }
+    }
+
+
     /**
      Копирует логи
-     
+
      @see FileSystemWorker
      */
     @SuppressWarnings({"HardCodedStringLiteral", "FeatureEnvy"})
@@ -136,7 +166,7 @@ public class ExitApp implements Runnable {
         File oldLanFile0 = new File(ConstantsNet.FILENAME_OLDLANTXT0);
         File oldLanFile1 = new File(ConstantsNet.FILENAME_OLDLANTXT1);
         File filePingTv = new File("ping.tv");
-    
+
         if (!scan200.exists() || !scan210.exists() || !oldLanFile0.exists() || !oldLanFile1.exists() || !filePingTv.exists()) {
             try {
                 Path isFile200 = Files.createFile(scan200.toPath());
@@ -150,13 +180,13 @@ public class ExitApp implements Runnable {
                 FileSystemWorker.error("ExitApp.copyAvail", e);
             }
         }
-    
+
         FileSystemWorker.copyOrDelFile(scan200, new StringBuilder().append("\\lan\\vlans200_").append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
         FileSystemWorker.copyOrDelFile(scan210, new StringBuilder().append(".\\lan\\vlans210_").append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
         FileSystemWorker.copyOrDelFile(oldLanFile0, new StringBuilder().append(".\\lan\\0old_lan_").append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
         FileSystemWorker.copyOrDelFile(oldLanFile1, new StringBuilder().append(".\\lan\\1old_lan_").append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
         FileSystemWorker.copyOrDelFile(filePingTv, ".\\lan\\tv_" + System.currentTimeMillis() / 1000 + ".ping", true);
-    
+
         List<File> srvFiles = DiapazonedScan.getInstance().getSrvFiles();
         srvFiles.forEach(file->{
             FileSystemWorker.copyOrDelFile(file,
@@ -174,7 +204,8 @@ public class ExitApp implements Runnable {
         }
         writeObj();
     }
-    
+
+
     /**
      Запись {@link Externalizable}
      <p>
@@ -201,7 +232,8 @@ public class ExitApp implements Runnable {
         }
         exitAppDO();
     }
-    
+
+
     /**
      Метод выхода
      <p>
@@ -214,9 +246,9 @@ public class ExitApp implements Runnable {
      */
     private void exitAppDO() {
         final BlockingDeque<String> devices = ConstantsNet.getAllDevices();
-        miniLoggerLast.add("AllDevices " + "iterator next" + " = " + devices.iterator().next());
-        miniLoggerLast.add("AllDevices " + "Last" + " = " + devices.getLast());
-        miniLoggerLast.add("AllDevices " + "size/remainingCapacity/total" + " = " + devices.size() + "/" + devices.remainingCapacity() + "/" + ConstantsNet.IPS_IN_VELKOM_VLAN);
+        miniLoggerLast.add("Devices " + "iterator next: " + " = " + devices.iterator().next());
+        miniLoggerLast.add("Last" + " = " + devices.getLast());
+        miniLoggerLast.add("BlockingDeque " + "size/remainingCapacity/total" + " = " + devices.size() + "/" + devices.remainingCapacity() + "/" + ConstantsNet.IPS_IN_VELKOM_VLAN);
         miniLoggerLast.add("exit at " + LocalDateTime.now() + ConstantsFor.getUpTime());
         FileSystemWorker.writeFile("exit.last", miniLoggerLast.stream());
         FileSystemWorker.delTemp();
@@ -224,17 +256,15 @@ public class ExitApp implements Runnable {
         AppComponents.threadConfig().killAll();
         System.exit(Math.toIntExact(toMinutes));
     }
-    
+
+
     private void readCommit(File file) {
-        messageToUser.info("ExitApp.readCommit", file.getAbsolutePath() + " Modified:", " " + new Date(file.lastModified()));
-        if (file != null || file.length() > 10) {
-            final String readFile = file.getAbsolutePath();
-            messageToUser.info("ExitApp.readCommit", "commit", " = " + readFile);
-        } else {
-            messageToUser.info("ExitApp.readCommit", "null", " = " + file.getName());
-        }
+        messageToUser.info(classMeth , file.getAbsolutePath() + " Modified:" , " " + new Date(file.lastModified()));
+        String readFile = file.getAbsolutePath();
+        messageToUser.info(classMeth , "commit" , " = " + readFile);
     }
-    
+
+
     /**
      {@link #copyAvail()}
      */

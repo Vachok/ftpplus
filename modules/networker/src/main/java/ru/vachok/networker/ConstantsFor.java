@@ -370,6 +370,7 @@ public enum ConstantsFor {
             new MessageCons().info("ConstantsFor.INFO_MSG_RUNNABLE", "thisPC()", " = " + thisPC());
         }
     };
+    public static final String PR_AND_ATT_NEWPC = "newpc";
 
     static final String STR_FINISH = " is finish";
 
@@ -391,6 +392,9 @@ public enum ConstantsFor {
      {@link MessageLocal}
      */
     private static final MessageToUser messageToUser = new MessageLocal();
+    public static final int EXIT_STATUSBAD = 666;
+    public static final int INT_ANSWER = 42;
+
 
     /**
      @return {@link #MAIL_RULES}
@@ -470,8 +474,7 @@ public enum ConstantsFor {
         TimeChecker t = new TimeChecker();
         TimeInfo call = t.call();
         call.computeDetails();
-        long atomicTime = call.getReturnTime();
-        return atomicTime;
+        return call.getReturnTime();
     }
 
     /**

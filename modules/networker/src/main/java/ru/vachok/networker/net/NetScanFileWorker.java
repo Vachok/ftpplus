@@ -1,13 +1,4 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
-
-/*
- * Copyright (c) 2019.
- */
-
-/*
- * Copyright (c) 2019.
- */
-
 package ru.vachok.networker.net;
 
 
@@ -39,32 +30,34 @@ import java.util.concurrent.ConcurrentMap;
 @Scope(ConstantsFor.SINGLETON)
 @Component
 class NetScanFileWorker {
-    
-    
+
+
     private static NetScanFileWorker ourInst = new NetScanFileWorker();
-    
+
     private static MessageToUser messageToUser = new MessageLocal();
-    
+
     private long lastStamp = System.currentTimeMillis();
-    
+
     /**
      * {@link DiapazonedScan#scanNew()}
      */
     private File newLanLastScan200 = new File(ConstantsNet.FILENAME_AVAILABLELAST200210TXT);
-    
+
     private File newLanLastScan210 = new File(ConstantsNet.FILENAME_AVAILABLELAST210220TXT);
-    
+
     private List<File> srvFiles = new ArrayList<>(4);
-    
+
     private ConcurrentMap<File, Long> filesScan = new ConcurrentHashMap<>();
-    
+
     private File oldLanLastScan0 = new File(ConstantsNet.FILENAME_OLDLANTXT0);
-    
+
     private File oldLanLastScan1 = new File(ConstantsNet.FILENAME_OLDLANTXT1);
-    
+
+
     private NetScanFileWorker() {
     }
-    
+
+
     public void setSrvFiles(List<File> srvFiles) {
         messageToUser.info("NetScanFileWorker.setSrvFiles", "srvFiles.size()", " = " + srvFiles.size());
         if (srvFiles.size() < 5) {
@@ -73,11 +66,13 @@ class NetScanFileWorker {
             this.srvFiles = new ArrayList<>();
         }
     }
-    
+
+
     public long getLastStamp() {
         return lastStamp;
     }
-    
+
+
     public ConcurrentMap<File, Long> getFilesScan() {
         filesScan.put(newLanLastScan200, newLanLastScan200.length());
         filesScan.put(newLanLastScan210, newLanLastScan210.length());
@@ -86,15 +81,18 @@ class NetScanFileWorker {
         srvFiles.forEach(file->filesScan.put(file, file.length()));
         return filesScan;
     }
-    
+
+
     void setLastStamp(long lastStamp) {
         this.lastStamp = lastStamp;
     }
-    
+
+
     public static NetScanFileWorker getI() {
         return ourInst;
     }
-    
+
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("NetScanFileWorker{");
@@ -106,7 +104,8 @@ class NetScanFileWorker {
         sb.append('}');
         return sb.toString();
     }
-    
+
+
     /**
      @param oldLanLastScan0 {@link #oldLanLastScan0}
      @param oldLanLastScan1 {@link #oldLanLastScan1}
@@ -115,7 +114,8 @@ class NetScanFileWorker {
         this.oldLanLastScan0 = oldLanLastScan0;
         this.oldLanLastScan1 = oldLanLastScan1;
     }
-    
+
+
     /**
      Сетает NEW LAN SCAN
      <p>
@@ -127,7 +127,8 @@ class NetScanFileWorker {
         this.newLanLastScan200 = newLanLastScan200;
         this.newLanLastScan210 = newLanLastScan210;
     }
-    
+
+
     /**
      * @return {@link #newLanLastScan200} и {@link #newLanLastScan210}, как строчка
      */
@@ -138,7 +139,8 @@ class NetScanFileWorker {
             return FileSystemWorker.readFile(ConstantsNet.FILENAME_AVAILABLELAST200210TXT) + "<p>" + FileSystemWorker.readFile(ConstantsNet.FILENAME_AVAILABLELAST210220TXT);
         }
     }
-    
+
+
     /**
      * Читает построчно
      * <p>
@@ -149,14 +151,14 @@ class NetScanFileWorker {
      */
     Deque<String> getListOfOnlineDev() throws IOException {
         AppComponents.threadConfig().thrNameSet("ON_Dq");
-        
+
         String classMeth = "NetScanFileWorker.getListOfOnlineDev";
         String titleMsg = "retDeque.size()";
         Deque<String> retDeque = new ArrayDeque<>();
         String msg = newLanLastScan200.getAbsolutePath() + ";\n" + newLanLastScan210.getAbsolutePath() + ";\n" + oldLanLastScan0.getAbsolutePath() + ", " + oldLanLastScan1.getAbsolutePath() +
             ";\n" + new TForms().fromArray(srvFiles, false) +
             ";\nCreated by " + getClass().getSimpleName();
-        
+
         if (newLanLastScan200.exists() && newLanLastScan210.exists()) {
             retDeque.addAll(FileSystemWorker.readFileToList(newLanLastScan200.getAbsolutePath()));
             retDeque.addAll(FileSystemWorker.readFileToList(newLanLastScan210.getAbsolutePath()));
@@ -186,7 +188,8 @@ class NetScanFileWorker {
         }
         return retDeque;
     }
-    
+
+
     /**
      @return {@link #oldLanLastScan0} и {@link #oldLanLastScan1}, как строчка
      */
@@ -198,10 +201,11 @@ class NetScanFileWorker {
             return FileSystemWorker.readFile(ConstantsNet.FILENAME_OLDLANTXT0) + "\n<br>" + FileSystemWorker.readFile(ConstantsNet.FILENAME_OLDLANTXT1);
         }
     }
-    
+
+
     private void fileWrk(File srvFileX, String titleMsg, Deque<String> retDeque) {
         String classMeth = "NetScanFileWorker.fileWrk";
-        
+
         if (srvFileX.exists() && srvFileX.canRead()) {
             retDeque.addAll(FileSystemWorker.readFileToList(srvFileX.getAbsolutePath()));
             messageToUser.info(classMeth, titleMsg, " = " + retDeque.size());

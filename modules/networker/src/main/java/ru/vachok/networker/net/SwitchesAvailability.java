@@ -24,18 +24,19 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
  @since 04.12.2018 (9:23) */
 public class SwitchesAvailability implements Runnable {
-    
-    
+
+
+    private static final String CLASS_SWITCHESAVAILABILITY = "SwitchesAvailability";
     /**
      {@link InetAddress} свчичей.
      */
     @SuppressWarnings ("CanBeFinal")
     private List<String> swAddr;
-    
-    private String okStr;
-    
+
+    private String okStr = null;
+
     private MessageToUser messageToUser = new MessageLocal();
-    
+
     public SwitchesAvailability() {
         AppComponents.threadConfig().thrNameSet("SWin");
         List<String> stringList = new ArrayList<>();
@@ -51,10 +52,24 @@ public class SwitchesAvailability implements Runnable {
     Set<String> getOkIP() {
         return okIP;
     }
-    
-    private String badStr;
+
+
+    private String badStr = null;
 
     private final Set<String> okIP = new HashSet<>();
+
+
+    @Override
+    public void run() {
+        AppComponents.threadConfig().thrNameSet("swAv");
+        try {
+            makeAddrQ();
+        } catch (IOException e) {
+            messageToUser.errorAlert(CLASS_SWITCHESAVAILABILITY , "run" , e.getMessage());
+            FileSystemWorker.error("SwitchesAvailability.run" , e);
+        }
+    }
+
 
     /**
      Проверяет пинги
@@ -78,17 +93,18 @@ public class SwitchesAvailability implements Runnable {
                 badIP.add(ipStr);
             }
         }
-        this.okStr = new TForms().fromArray(okIP, false).replaceAll("/", "");
-        this.badStr = new TForms().fromArray(badIP, false).replaceAll("/", "");
+        okStr = new TForms().fromArray(okIP , false).replaceAll("/" , "");
+        badStr = new TForms().fromArray(badIP , false).replaceAll("/" , "");
         writeToFile(okStr, badStr);
     }
-    
+
+
     /**
      Преобразователь строк в адреса.
      <p>
      1. {@link SwitchesAvailability#testAddresses(java.util.Queue)} - тестируем онлайность.
      <p>
-     
+
      @throws IOException если хост unknown.
      */
     private void makeAddrQ() throws IOException {
@@ -101,6 +117,7 @@ public class SwitchesAvailability implements Runnable {
         }
         testAddresses(inetAddressesQ);
     }
+
 
     /**
      Запись в файл информации
@@ -123,19 +140,8 @@ public class SwitchesAvailability implements Runnable {
                 .append(badIP).toString();
             outputStream.write(new String(toWrite.getBytes(), StandardCharsets.UTF_8).getBytes());
         } catch (IOException e) {
-            messageToUser.errorAlert("SwitchesAvailability", "writeToFile", e.getMessage());
+            messageToUser.errorAlert(CLASS_SWITCHESAVAILABILITY , "writeToFile" , e.getMessage());
             FileSystemWorker.error("SwitchesAvailability.writeToFile", e);
-        }
-    }
-    
-    @Override
-    public void run() {
-        AppComponents.threadConfig().thrNameSet("swAv");
-        try {
-            makeAddrQ();
-        } catch (IOException e) {
-            messageToUser.errorAlert("SwitchesAvailability", "run", e.getMessage());
-            FileSystemWorker.error("SwitchesAvailability.run", e);
         }
     }
 

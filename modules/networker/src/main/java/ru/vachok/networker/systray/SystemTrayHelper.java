@@ -30,11 +30,11 @@ import java.net.InetAddress;
      */
     @SuppressWarnings ("InjectedReferences")
     private static final @NotNull String IMG_FOLDER_NAME = "/static/images/";
-    
+
     private static final String CLASS_NAME = SystemTrayHelper.class.getSimpleName();
 
     private static final SystemTrayHelper SYSTEM_TRAY_HELPER = new SystemTrayHelper();
-    
+
     private static @NotNull TrayIcon trayIcon;
 
     /**
@@ -66,26 +66,15 @@ import java.net.InetAddress;
         addTray(iconFileName, true);
     }
 
-    /**
-     Создаёт System Tray Icon
- 
-     @param imageFileName имя файла-картинки
-     @param isNeedTray если трэй не нужен.
-     */
-    private void addTray(String imageFileName, boolean isNeedTray) {
-        trayIcon = new TrayIcon(
-            getImage(imageFileName),
-            new StringBuilder()
-                .append(AppComponents.versionInfo().getAppBuild()).append(" v. ")
-                .append(AppComponents.versionInfo().getAppVersion()).append(" ")
-                .append(AppComponents.versionInfo().getBuildTime()).toString(),
-            getMenu());
-        trayIcon.setImage(getImage(imageFileName));
-        trayIcon.setImageAutoSize(true);
-        trayIcon.addActionListener(new ActionDefault());
 
-        boolean isTrayAdded = addTrayToSys(isNeedTray);
-        messageToUser.info("SystemTrayHelper.addTray", "isTrayAdded", String.valueOf(isTrayAdded));
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("SystemTrayHelper{");
+        sb.append("IMG_FOLDER_NAME='").append(IMG_FOLDER_NAME).append('\'');
+        sb.append(ConstantsFor.TOSTRING_CLASS_NAME).append(CLASS_NAME).append('\'');
+        sb.append(", trayIcon=").append(trayIcon.hashCode());
+        sb.append('}');
+        return sb.toString();
     }
 
     private static Image getImage(String iconFileName) {
@@ -101,6 +90,7 @@ import java.net.InetAddress;
         }
         throw new IllegalArgumentException();
     }
+
 
     /**
      Добавление компонентов в меню
@@ -128,7 +118,7 @@ import java.net.InetAddress;
         toConsole.setLabel("Console Back");
         toConsole.addActionListener((ActionEvent e) -> System.setOut(System.err));
         popupMenu.add(toConsole);
-    
+
         if (ConstantsFor.thisPC().toLowerCase().contains(ConstantsNet.HOSTNAMEPATT_HOME)) {
             MenuItem reloadContext = new MenuItem();
             reloadContext.addActionListener(new ActionTests());
@@ -197,14 +187,20 @@ import java.net.InetAddress;
         }
     }
 
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("SystemTrayHelper{");
-        sb.append("IMG_FOLDER_NAME='").append(IMG_FOLDER_NAME).append('\'');
-        sb.append(", CLASS_NAME='").append(CLASS_NAME).append('\'');
-        sb.append(", trayIcon=").append(trayIcon.hashCode());
-        sb.append(", messageToUser=").append(messageToUser);
-        sb.append('}');
-        return sb.toString();
+
+    /**
+     * Создаёт System Tray Icon
+     *
+     * @param imageFileName имя файла-картинки
+     * @param isNeedTray    если трэй не нужен.
+     */
+    private void addTray( String imageFileName , boolean isNeedTray ) {
+        trayIcon = new TrayIcon(getImage(imageFileName) , new StringBuilder().append(AppComponents.versionInfo().getAppBuild()).append(" v. ").append(AppComponents.versionInfo().getAppVersion()).append(" ").append(AppComponents.versionInfo().getBuildTime()).toString() , getMenu());
+        trayIcon.setImage(getImage(imageFileName));
+        trayIcon.setImageAutoSize(true);
+        trayIcon.addActionListener(new ActionDefault());
+
+        boolean isTrayAdded = addTrayToSys(isNeedTray);
+        messageToUser.info("SystemTrayHelper.addTray" , "isTrayAdded" , String.valueOf(isTrayAdded));
     }
 }

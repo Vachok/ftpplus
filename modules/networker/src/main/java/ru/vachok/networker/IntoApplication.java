@@ -76,6 +76,18 @@ public class IntoApplication {
         return configurableApplicationContext;
     }
 
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("IntoApplication{");
+        sb.append("SPRING_APPLICATION=").append(SPRING_APPLICATION);
+        sb.append(", LOCAL_PROPS=").append(LOCAL_PROPS.size());
+        sb.append(ConstantsFor.TOSTRING_MESSAGE_TO_USER).append(messageToUser);
+        sb.append(", configurableApplicationContext=").append(configurableApplicationContext.getApplicationName());
+        sb.append('}');
+        return sb.toString();
+    }
+
     static {
         configurableApplicationContext = SpringApplication.run(IntoApplication.class);
     }
@@ -202,30 +214,9 @@ public class IntoApplication {
         }
     }
 
-    /**
-     Запуск до старта Spring boot app <br> Usages: {@link #main(String[])}
-     <p>
-     {@link Logger#warn(java.lang.String)} - день недели. <br>
-     Если {@link ConstantsFor#thisPC()} - {@link ConstantsFor#HOSTNAME_DO213} или "home",
-     {@link SystemTrayHelper#addTray(java.lang.String)} "icons8-плохие-поросята-32.png".
-     Else - {@link SystemTrayHelper#addTray(java.lang.String)} {@link String} null<br>
-     {@link SpringApplication#setMainApplicationClass(java.lang.Class)}
- 
-     @param isTrayNeed нужен трэй или нет.
-     */
-    private static void beforeSt(boolean isTrayNeed) {
-        if (isTrayNeed) {
-            trayAdd();
-        }
-        @NotNull StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(LocalDate.now().getDayOfWeek().getValue());
-        stringBuilder.append(" - day of week\n");
-        stringBuilder.append(LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault()));
-        messageToUser.info("IntoApplication.beforeSt", "stringBuilder", stringBuilder.toString());
-        SPRING_APPLICATION.setMainApplicationClass(IntoApplication.class);
-        SPRING_APPLICATION.setApplicationContextClass(AppCtx.class);
-        System.setProperty("encoding", "UTF8");
-        FileSystemWorker.writeFile("system", new TForms().fromArray(System.getProperties()));
+
+    public static void setConfigurableApplicationContext( ConfigurableApplicationContext configurableApplicationContext ) {
+        IntoApplication.configurableApplicationContext = configurableApplicationContext;
     }
 
     private static void trayAdd() {
@@ -265,14 +256,30 @@ public class IntoApplication {
         LOCAL_PROPS.putAll(props);
     }
 
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("IntoApplication{");
-        sb.append("SPRING_APPLICATION=").append(SPRING_APPLICATION);
-        sb.append(", LOCAL_PROPS=").append(LOCAL_PROPS.size());
-        sb.append(", messageToUser=").append(messageToUser);
-        sb.append(", configurableApplicationContext=").append(configurableApplicationContext.getApplicationName());
-        sb.append('}');
-        return sb.toString();
+
+    /**
+     * Запуск до старта Spring boot app <br> Usages: {@link #main(String[])}
+     * <p>
+     * {@link Logger#warn(java.lang.String)} - день недели. <br>
+     * Если {@link ConstantsFor#thisPC()} - {@link ConstantsFor#HOSTNAME_DO213} или "home",
+     * {@link SystemTrayHelper#addTray(java.lang.String)} "icons8-плохие-поросята-32.png".
+     * Else - {@link SystemTrayHelper#addTray(java.lang.String)} {@link String} null<br>
+     * {@link SpringApplication#setMainApplicationClass(java.lang.Class)}
+     *
+     * @param isTrayNeed нужен трэй или нет.
+     */
+    private static void beforeSt( boolean isTrayNeed ) {
+        if (isTrayNeed) {
+            trayAdd();
+        }
+        @NotNull StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(LocalDate.now().getDayOfWeek().getValue());
+        stringBuilder.append(" - day of week\n");
+        stringBuilder.append(LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL , Locale.getDefault()));
+        messageToUser.info("IntoApplication.beforeSt" , "stringBuilder" , stringBuilder.toString());
+        SPRING_APPLICATION.setMainApplicationClass(IntoApplication.class);
+        SPRING_APPLICATION.setApplicationContextClass(AppCtx.class);
+        System.setProperty("encoding" , "UTF8");
+        FileSystemWorker.writeFile("system" , new TForms().fromArray(System.getProperties()));
     }
 }

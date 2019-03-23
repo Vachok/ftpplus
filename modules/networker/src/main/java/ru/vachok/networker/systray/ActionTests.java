@@ -3,7 +3,8 @@
 package ru.vachok.networker.systray;
 
 
-import ru.vachok.networker.net.DiapazonedScan;
+
+import ru.vachok.networker.ExitApp;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -17,6 +18,6 @@ import java.awt.event.ActionListener;
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        DiapazonedScan.getInstance().run();
+        ExitApp.reloadCTX();
     }
 }

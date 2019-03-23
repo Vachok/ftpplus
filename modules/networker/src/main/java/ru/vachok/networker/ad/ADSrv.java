@@ -33,9 +33,9 @@ import java.util.*;
 public class ADSrv implements Runnable {
 
     private static final String PROP_SAMACCOUNTNAME = "SamAccountName";
-    
+
     private static final MessageToUser messageToUser = new MessageLocal(ADSrv.class.getSimpleName());
-    
+
     /**
      {@link ADUser}
      */
@@ -50,10 +50,10 @@ public class ADSrv implements Runnable {
      {@link ADComputer}
      */
     private ADComputer adComputer;
-    
+
     /**
      Thread name = ADSrv
-     
+
      @param adUser {@link ADUser}
      @param adComputer {@link ADComputer}
      */
@@ -63,7 +63,7 @@ public class ADSrv implements Runnable {
         this.adComputer = adComputer;
         Thread.currentThread().setName(getClass().getSimpleName());
     }
-    
+
     public ADSrv(ADUser adUser) {
         this.userInputRaw = adUser.getInputName();
         this.adUser = adUser;
@@ -74,10 +74,12 @@ public class ADSrv implements Runnable {
             //
         }
     }
-    
+
+
     protected ADSrv() {
     }
-    
+
+
     /**
      @return {@link #adComputer}
      */
@@ -116,7 +118,8 @@ public class ADSrv implements Runnable {
     public String getUserInputRaw() {
         return userInputRaw;
     }
-    
+
+
     /**
      @param userInputRaw пользовательский ввод в строку
      @see NetScanCtr#pcNameForInfo(NetScannerSvc, BindingResult, Model)
@@ -124,14 +127,16 @@ public class ADSrv implements Runnable {
     public void setUserInputRaw(String userInputRaw) {
         this.userInputRaw = userInputRaw;
     }
-    
+
+
     /**
      @return {@link #adUser}
      */
     public ADUser getAdUser() {
         return adUser;
     }
-    
+
+
     /**
      Проверяет по-базе, какие папки есть у юзера.
 
@@ -181,7 +186,8 @@ public class ADSrv implements Runnable {
         sb.append('}');
         return sb.toString();
     }
-    
+
+
     /**
      Запуск.
      */
@@ -189,7 +195,8 @@ public class ADSrv implements Runnable {
     public void run() {
         new MessageCons().errorAlert("ADSrv.run");
     }
-    
+
+
     /**
      Читает /static/texts/users.txt
 
@@ -265,31 +272,14 @@ public class ADSrv implements Runnable {
         psComm();
         return adUserList;
     }
-    
-    /**
-     Резолвит онлайн пользователя ПК.
-     <p>
- 
-     @param queryString запрос из браузера
-     @return {@link #getUserName(String)} или {@link ADSrv#offNowGetU(CharSequence)}
-     @throws IOException {@link InetAddress}.getByName(queryString + ".eatmeat.ru").isReachable(650))
-     @see ActDirectoryCTRL#queryStringExists(java.lang.String, org.springframework.ui.Model)
-     */
-    String getDetails(String queryString) throws IOException {
-        if (InetAddress.getByName(queryString + ConstantsNet.DOMAIN_EATMEATRU).isReachable(ConstantsFor.TIMEOUT_650)) {
-            return getUserName(queryString);
-        }
-        else {
-            return offNowGetU(queryString);
-        }
-    }
-    
+
+
     /**
      Читает БД на предмет наличия юзера для <b>offline</b> компьютера.<br>
-     
+
      @param pcName имя ПК
      @return имя юзера, время записи.
-     
+
      @see ADSrv#getDetails(String)
      */
     private static String offNowGetU(CharSequence pcName) {
@@ -314,7 +304,8 @@ public class ADSrv implements Runnable {
         }
         return v.toString();
     }
-    
+
+
     /**
      Запись в БД <b>pcuser</b><br> Запись по-запросу от браузера.
      <p>
@@ -322,7 +313,7 @@ public class ADSrv implements Runnable {
      <p>
      Лог - <b>PCUserResolver.recToDB</b> в папке запуска.
      <p>
-     
+
      @param userName имя юзера
      @param pcName имя ПК
      @see ADSrv#getDetails(String)
@@ -344,9 +335,27 @@ public class ADSrv implements Runnable {
             messageToUser.errorAlert(ADSrv.class.getSimpleName(), "recToDB", e.getMessage());
             FileSystemWorker.error("ADSrv.recToDB", e);
         }
-        
     }
-    
+
+
+    /**
+     * Резолвит онлайн пользователя ПК.
+     * <p>
+     *
+     * @param queryString запрос из браузера
+     * @return {@link #getUserName(String)} или {@link ADSrv#offNowGetU(CharSequence)}
+     *
+     * @throws IOException {@link InetAddress}.getByName(queryString + ".eatmeat.ru").isReachable(650))
+     * @see ActDirectoryCTRL#queryStringExists(java.lang.String , org.springframework.ui.Model)
+     */
+    String getDetails( String queryString ) throws IOException {
+        if (InetAddress.getByName(queryString + ConstantsNet.DOMAIN_EATMEATRU).isReachable(ConstantsFor.TIMEOUT_650)) {
+            return getUserName(queryString);
+        } else {
+            return offNowGetU(queryString);
+        }
+    }
+
     private void parseFile() {
         List<String> stringList;
         List<ADUser> adUsers = new ArrayList<>();
@@ -372,7 +381,7 @@ public class ADSrv implements Runnable {
             messageToUser.infoNoTitles(adUser1.toString());
         }
     }
-    
+
     @SuppressWarnings("DuplicateStringLiteralInspection")
     private ADUser setUserFromInput(List<String> uList) {
         ADUser adU = new ADUser();
@@ -424,6 +433,7 @@ public class ADSrv implements Runnable {
         return retList;
     }
 
+
     /**
      Информация о пользователе ПК.
      <p>
@@ -452,15 +462,14 @@ public class ADSrv implements Runnable {
                 .append(new Date(Long.parseLong(strings[0])))
                 .append("<br>");
         }
-        ConstantsNet.getCompnameUsersMap().put(timesUserLast, filesAsFile);
+        ConstantsNet.getPCnameUsersMap().put(timesUserLast, filesAsFile);
         try {
             recToDB(queryString + ConstantsNet.DOMAIN_EATMEATRU, timesUserLast.split(" ")[1]);
         }
         catch (ArrayIndexOutOfBoundsException ignore) {
             //
         }
-        stringBuilder.append("\n\n<p><b>")
-            .append(timesUserLast).append("<br>\n").append(ConstantsNet.getCompnameUsersMap().size())
+        stringBuilder.append("\n\n<p><b>").append(timesUserLast).append("<br>\n").append(ConstantsNet.getPCnameUsersMap().size())
             .append(ConstantsNet.STR_COMPNAME_USERS_MAP_SIZE)
             .append("</p></b>");
         return stringBuilder.toString();

@@ -73,9 +73,14 @@ public class TemporaryFullInternet implements Runnable {
         AppComponents.threadConfig().thrNameSet("addSSH");
         SSH_FACTORY.setCommandSSH("cat /etc/pf/24hrs;exit");
         NameOrIPChecker nameOrIPChecker = new NameOrIPChecker(userInput);
-        final String tempFile = SSH_FACTORY.call();
+        String tempFile = SSH_FACTORY.call();
         StringBuilder retBuilder = new StringBuilder();
-        String sshIP = String.valueOf(nameOrIPChecker.resolveIP()).split("/")[1];
+        String sshIP;
+        try {
+            sshIP = String.valueOf(nameOrIPChecker.resolveIP()).split("/")[1];
+        } catch (ArrayIndexOutOfBoundsException e) {
+            sshIP = e.getMessage();
+        }
 
         if (tempFile.contains(sshIP)) {
             retBuilder
