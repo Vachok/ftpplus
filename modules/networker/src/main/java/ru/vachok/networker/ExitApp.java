@@ -1,11 +1,12 @@
 package ru.vachok.networker;
 
 
+
 import org.springframework.context.ConfigurableApplicationContext;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.DiapazonedScan;
+import ru.vachok.networker.net.NetScanFileWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 
@@ -20,6 +21,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -43,6 +45,7 @@ public class ExitApp implements Runnable {
     private static final String classMeth = "ExitApp.readCommit";
 
     private static final String RELOAD_CTX = ".reloadCTX";
+    private static final String METH_COPY = "ExitApp.copyAvail";
 
     private static MessageToUser messageToUser = new MessageLocal(ExitApp.class.getSimpleName());
 
@@ -162,7 +165,7 @@ public class ExitApp implements Runnable {
     @SuppressWarnings({"HardCodedStringLiteral", "FeatureEnvy"})
     private void copyAvail() {
         File appLog = new File("g:\\My_Proj\\FtpClientPlus\\modules\\networker\\app.log");
-        File scan200 = new File(ConstantsNet.FILENAME_AVAILABLELAST200210TXT);
+        File scan200 = new File(ConstantsNet.FILENAME_AVAILABLELAST_200210_TXT);
         File scan210 = new File(ConstantsNet.FILENAME_AVAILABLELAST210220TXT);
         File oldLanFile0 = new File(ConstantsNet.FILENAME_OLDLANTXT0);
         File oldLanFile1 = new File(ConstantsNet.FILENAME_OLDLANTXT1);
@@ -175,10 +178,10 @@ public class ExitApp implements Runnable {
                 Path oldLanPath0 = Files.createFile(oldLanFile0.toPath());
                 Path oldLanPath1 = Files.createFile(oldLanFile1.toPath());
                 Path pingTvPath = Files.createFile(filePingTv.toPath());
-                messageToUser.info("ExitApp.copyAvail", "isFile210", " = " + isFile210 + "\nisFile200 = " + isFile200 + "\noldLanPath0 = " + oldLanPath0 + "\noldLanPath1 = " + oldLanFile1 + "\npingTvPath= " + pingTvPath);
+                messageToUser.info(METH_COPY , "isFile210" , " = " + isFile210 + "\nisFile200 = " + isFile200 + "\noldLanPath0 = " + oldLanPath0 + "\noldLanPath1 = " + oldLanFile1 + "\npingTvPath= " + pingTvPath);
             }
             catch (IOException e) {
-                FileSystemWorker.error("ExitApp.copyAvail", e);
+                FileSystemWorker.error(METH_COPY , e);
             }
         }
 
@@ -186,9 +189,8 @@ public class ExitApp implements Runnable {
         FileSystemWorker.copyOrDelFile(scan210, new StringBuilder().append(".\\lan\\vlans210_").append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
         FileSystemWorker.copyOrDelFile(oldLanFile0, new StringBuilder().append(".\\lan\\0old_lan_").append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
         FileSystemWorker.copyOrDelFile(oldLanFile1, new StringBuilder().append(".\\lan\\1old_lan_").append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
-
-        List<File> srvFiles = DiapazonedScan.getInstance().getSrvFiles();
-        srvFiles.forEach(file -> FileSystemWorker.copyOrDelFile(file , new StringBuilder().append(".\\lan\\").append(file.getName().replaceAll(ConstantsNet.FILENAME_SERVTXT , "")).append(System.currentTimeMillis() / 1000).append(".txt").toString() , true));
+        ConcurrentMap<String, File> srvFiles = NetScanFileWorker.getI().getFilesScan();
+        srvFiles.forEach(( id , file ) -> FileSystemWorker.copyOrDelFile(file , new StringBuilder().append(".\\lan\\").append(file.getName().replaceAll(ConstantsNet.FILENAME_SERVTXT , "")).append(System.currentTimeMillis() / 1000).append(".txt").toString() , true));
         if (appLog.exists() && appLog.canRead()) {
             FileSystemWorker.copyOrDelFile(appLog, "\\\\10.10.111.1\\Torrents-FTP\\app.log", false);
         }

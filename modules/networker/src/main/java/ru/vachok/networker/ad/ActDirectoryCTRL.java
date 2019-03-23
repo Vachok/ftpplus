@@ -152,8 +152,6 @@ public class ActDirectoryCTRL {
         this.photoConverterSRV = photoConverterSRV;
         try{
             model.addAttribute("photoConverterSRV", photoConverterSRV);
-/*Comment out 03.03.2019 (11:08)
-            model.addAttribute(ConstantsFor.ATT_SSH_ACTS, sshActs);*/
             if(!ConstantsFor.isPingOK()){
                 titleStr = "ping srv-git.eatmeat.ru is " + false;
             }

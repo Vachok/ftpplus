@@ -101,7 +101,7 @@ public enum ConstantsNet { ;
     /**
      Название файла новой подсети 10.200.х.х
      */
-    public static final String FILENAME_AVAILABLELAST200210TXT = "available_last_200210.txt";
+    public static final String FILENAME_AVAILABLELAST_200210_TXT = "available_last_200210.txt";
 
     public static final String FILENAME_AVAILABLELAST210220TXT = "available_last_210220.txt";
     /**
