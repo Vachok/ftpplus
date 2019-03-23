@@ -143,8 +143,8 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
     public void thrNameSet(String className) {
         float localUptimer = (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN;
         String delaysCount = String.format("%.01f", (localUptimer / ConstantsFor.DELAY));
-
         String upStr = String.format("%.01f", localUptimer);
+
         upStr += "m";
         if (localUptimer > ConstantsFor.ONE_HOUR_IN_MIN) {
             localUptimer /= ConstantsFor.ONE_HOUR_IN_MIN;

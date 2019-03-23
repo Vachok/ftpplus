@@ -1,13 +1,5 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-/*
- * Copyright (c) 2019.
- */
-
-/*
- * Copyright (c) 2019.
- */
-
 package ru.vachok.networker.accesscontrol;
 
 
@@ -21,6 +13,7 @@ import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.services.MessageLocal;
 
 import java.io.File;
+import java.util.Objects;
 import java.util.concurrent.RejectedExecutionException;
 
 
@@ -38,7 +31,7 @@ public class PfListsSrv {
      {@link PfLists}
      */
     @SuppressWarnings("CanBeFinal")
-    private @NotNull PfLists pfListsInstAW;
+    private final @NotNull PfLists pfListsInstAW;
 
     private static MessageToUser messageToUser = new MessageLocal(PfListsSrv.class.getSimpleName());
     /**
@@ -116,57 +109,58 @@ public class PfListsSrv {
      */
     void makeListRunner() {
         AppComponents.threadConfig().thrNameSet("mkLst");
-
-        AppComponents.threadConfig().execByThreadConfig(this::buildFactory);
+        buildFactory();
     }
 
 
     /**
-     <b>Заполнение форм списка PF</b>
-     <p>
-     Тащит информацию с сервера pf. Заполняет поля {@link PfListsSrv#pfListsInstAW}
-     <p>
-     Списки : <br>
-     <i>vipnet</i> <br>
-     <i>squid</i> <br>
-     <i>tempfull</i> <br>
-     <i>squidlimited</i> <br>
-     <p>
-     Также отдаёт информацию напрямую от firewall <br>
-     <i>NAT current</i> <br>
-     <i>rules current</i> <br>
-     <i>/home/kudr/inet.log</i>
+     * <b>Заполнение форм списка PF</b>
+     * <p>
+     * Тащит информацию с сервера pf. Заполняет поля {@link PfListsSrv#pfListsInstAW}
+     * <p>
+     * Списки : <br>
+     * <i>vipnet</i> <br>
+     * <i>squid</i> <br>
+     * <i>tempfull</i> <br>
+     * <i>squidlimited</i> <br>
+     * <p>
+     * Также отдаёт информацию напрямую от firewall <br>
+     * <i>NAT current</i> <br>
+     * <i>rules current</i> <br>
+     * <i>/home/kudr/inet.log</i>
      */
     private void buildFactory() {
-        AppComponents.threadConfig().thrNameSet("bFact");
+        synchronized (Objects.requireNonNull(pfListsInstAW)) {
+            AppComponents.threadConfig().thrNameSet("bFact");
 
-        SSHFactory.@NotNull Builder builderInst = new SSHFactory.Builder(DEFAULT_CONNECT_SRV, commandForNatStr, getClass().getSimpleName());
-        SSHFactory build = builderInst.build();
-        if (!new File("a161.pem").exists()) {
-            throw new RejectedExecutionException("NO CERTIFICATE a161.pem...");
+            SSHFactory.@NotNull Builder builderInst = new SSHFactory.Builder(DEFAULT_CONNECT_SRV, commandForNatStr, getClass().getSimpleName());
+            SSHFactory build = builderInst.build();
+            if (!new File("a161.pem").exists()) {
+                throw new RejectedExecutionException("NO CERTIFICATE a161.pem...");
+            }
+
+            build.setCommandSSH("sudo cat /etc/pf/vipnet;sudo cat /etc/pf/24hrs;exit");
+            pfListsInstAW.setVipNet(build.call());
+
+            build.setCommandSSH("sudo cat /etc/pf/squid;exit");
+            pfListsInstAW.setStdSquid(build.call());
+
+            build.setCommandSSH("sudo cat /etc/pf/tempfull;exit");
+            pfListsInstAW.setFullSquid(build.call());
+
+            build.setCommandSSH("sudo cat /etc/pf/squidlimited;exit");
+            pfListsInstAW.setLimitSquid(build.call());
+
+            build.setCommandSSH("pfctl -s nat;exit");
+            pfListsInstAW.setPfNat(build.call());
+
+            build.setCommandSSH("pfctl -s rules;exit");
+            pfListsInstAW.setPfRules(build.call());
+
+            build.setCommandSSH("sudo cat /home/kudr/inet.log;exit");
+            pfListsInstAW.setInetLog(build.call());
+
+            pfListsInstAW.setGitStatsUpdatedStampLong(System.currentTimeMillis());
         }
-
-        build.setCommandSSH("sudo cat /etc/pf/vipnet;sudo cat /etc/pf/24hrs;exit");
-        pfListsInstAW.setVipNet(build.call());
-
-        build.setCommandSSH("sudo cat /etc/pf/squid;exit");
-        pfListsInstAW.setStdSquid(build.call());
-
-        build.setCommandSSH("sudo cat /etc/pf/tempfull;exit");
-        pfListsInstAW.setFullSquid(build.call());
-
-        build.setCommandSSH("sudo cat /etc/pf/squidlimited;exit");
-        pfListsInstAW.setLimitSquid(build.call());
-
-        build.setCommandSSH("pfctl -s nat;exit");
-        pfListsInstAW.setPfNat(build.call());
-
-        build.setCommandSSH("pfctl -s rules;exit");
-        pfListsInstAW.setPfRules(build.call());
-
-        build.setCommandSSH("sudo cat /home/kudr/inet.log;exit");
-        pfListsInstAW.setInetLog(build.call());
-
-        pfListsInstAW.setGitStatsUpdatedStampLong(System.currentTimeMillis());
     }
 }

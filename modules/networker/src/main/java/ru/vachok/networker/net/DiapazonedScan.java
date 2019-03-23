@@ -36,7 +36,7 @@ public class DiapazonedScan implements Runnable {
     /**
      {@link NetScanFileWorker#getI()}
      */
-    private static final NetScanFileWorker NET_SCAN_FILE_WORKER_INST = NetScanFileWorker.getI(); // TODO: 23.03.2019 fin? static? 
+    private static final NetScanFileWorker NET_SCAN_FILE_WORKER_INST = NetScanFileWorker.getI(); // TODO: 23.03.2019 fin? static?
 
     /**
      Корень директории.
@@ -72,8 +72,7 @@ public class DiapazonedScan implements Runnable {
      Приватный конструктор
      */
     private DiapazonedScan() {
-        AppComponents.threadConfig().thrNameSet("DiaI");
-
+        AppComponents.threadConfig().thrNameSet("DScanF:" + srvFiles.size());
     }
 
 
@@ -106,6 +105,9 @@ public class DiapazonedScan implements Runnable {
      * @return single.
      */
     public static DiapazonedScan getInstance() {
+        messageToUser.info(DiapazonedScan.OUR_INSTANCE.getClass().getSimpleName(), " is initializing, and trying to " +
+                "addFiles in ",
+            String.valueOf(OUR_INSTANCE.addFiles()));
         return OUR_INSTANCE;
     }
 
@@ -186,7 +188,6 @@ public class DiapazonedScan implements Runnable {
         srvFiles.putIfAbsent("old1" , new File(ConstantsNet.FILENAME_OLDLANTXT1));
         return srvFiles.size();
     }
-
 
     /**
      Сканер локальной сети@param stStMap Запись в лог@param fromVlan начало с 3 октета IP
