@@ -1,7 +1,7 @@
 package ru.vachok.networker.services;
 
 
-import org.slf4j.Logger;
+
 import org.slf4j.LoggerFactory;
 import org.springframework.ui.Model;
 import ru.vachok.messenger.MessageCons;
@@ -48,7 +48,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
     /**
      Логер. {@link LoggerFactory}
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(SpeedChecker.class.getSimpleName());
+    private static final MessageToUser LOGGER = new MessageLocal(SpeedChecker.class.getSimpleName());
 
     /**
      Property name: lastworkstart
@@ -163,9 +163,10 @@ public class SpeedChecker implements Callable<Long>, Runnable {
          {@link MailMessages}
          */
         private MailMessages mailMessages = new MailMessages();
-    
+
         private MessageToUser messageToUser = new MessageFile();
-    
+
+
         /**
          Получение информации о текущем дне недели.
          <p>
@@ -208,10 +209,10 @@ public class SpeedChecker implements Callable<Long>, Runnable {
                 }
             }
             catch(SQLException | IOException e){
-                new MessageLocal().errorAlert(CLASS_NAME, "todayInfo", e.getMessage());
+                LOGGER.errorAlert(CLASS_NAME , "todayInfo" , e.getMessage());
                 FileSystemWorker.error("ChkMailAndUpdateDB.todayInfo", e);
             }
-            new MessageLocal().infoNoTitles(stringBuilder.toString());
+            LOGGER.infoNoTitles(stringBuilder.toString());
             return stringBuilder.toString();
         }
 

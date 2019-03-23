@@ -33,54 +33,54 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  Конфигуратор для {@link ThreadPoolTaskExecutor}
  <p>
- 
+
  @since 11.09.2018 (11:41) */
 @SuppressWarnings("MagicNumber")
 @EnableAsync
 @Service("taskExecutor")
 public class ThreadConfig extends ThreadPoolTaskExecutor {
-    
-    
+
+
     /**
      {@link ThreadPoolTaskScheduler}
      */
     private static final ThreadPoolTaskScheduler TASK_SCHEDULER;
-    
+
     /**
      {@link ThreadPoolTaskExecutor}
      */
     private static final ThreadPoolTaskExecutor TASK_EXECUTOR;
-    
+
     /**
      Instance
      */
     private static final ThreadConfig THREAD_CONFIG_INST = new ThreadConfig();
-    
+
     /**
      Название метода
      */
     private static final String EXECUTE_AS_THREAD_METH_NAME = "ThreadConfig.executeAsThread";
-    
+
     private static final ThreadLocal<Float> upTimer = ThreadLocal.withInitial(()->(System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN);
-    
+
     /**
      {@link MessageLocal}
      */
-    private static MessageToUser messageToUser = new MessageLocal();
-    
+    private static MessageToUser messageToUser = new MessageLocal(ThreadConfig.class.getSimpleName());
+
     private ThreadConfig() {
         thrNameSet("tc_" + hashCode());
     }
-    
+
+
     static {
         TASK_SCHEDULER = new ThreadPoolTaskScheduler();
         TASK_SCHEDULER.initialize();
-        
+
         TASK_EXECUTOR = new ThreadPoolTaskExecutor();
         TASK_EXECUTOR.initialize();
     }
-    
-    
+
     /**
      @return {@link #TASK_EXECUTOR}
      */
@@ -93,7 +93,7 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
         TASK_EXECUTOR.setThreadPriority(4);
         TASK_EXECUTOR.setThreadNamePrefix("EX");
         TASK_EXECUTOR.setRejectedExecutionHandler(new TaskDestroyer());
-        
+
         BlockingQueue<Runnable> poolExecutor = TASK_EXECUTOR.getThreadPoolExecutor().getQueue();
         StringBuilder bodyMsgB = new StringBuilder();
         bodyMsgB.append("BlockingQueue<Runnable> poolExecutor:\n");
@@ -102,11 +102,13 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
         FileSystemWorker.writeFile("getTaskExecutor.txt", bodyMsgB.toString());
         return TASK_EXECUTOR;
     }
-    
+
+
     public static ThreadConfig getI() {
         return THREAD_CONFIG_INST;
     }
-    
+
+
     public ThreadPoolTaskScheduler getTaskScheduler() {
         ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = TASK_SCHEDULER.getScheduledThreadPoolExecutor();
         scheduledThreadPoolExecutor.setCorePoolSize(20);
@@ -119,7 +121,8 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
         TASK_SCHEDULER.setRejectedExecutionHandler(new TasksReRunner());
         return TASK_SCHEDULER;
     }
-    
+
+
     /**
      Killer
      */
@@ -135,11 +138,12 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
         }
         messageToUser.warn(builder.toString());
     }
-    
+
+
     public void thrNameSet(String className) {
         float localUptimer = (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN;
         String delaysCount = String.format("%.01f", (localUptimer / ConstantsFor.DELAY));
-        
+
         String upStr = String.format("%.01f", localUptimer);
         upStr += "m";
         if (localUptimer > ConstantsFor.ONE_HOUR_IN_MIN) {
@@ -150,13 +154,14 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
         String thrName = className + ";" + upStr + ";" + delaysCount;
         Thread.currentThread().setName(thrName);
     }
-    
+
+
     /**
      Запуск {@link Runnable}, как {@link Thread}@param r {@link Runnable}
      <p>
      1. {@link ThreadConfig#getTaskExecutor()} - управление запуском.
      <p>
-     
+
      @param r {@link Runnable}
      */
     public boolean execByThreadConfig(Runnable r) {
@@ -185,7 +190,8 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
         }
         return retBool.get();
     }
-    
+
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("ThreadConfig{");
@@ -197,25 +203,28 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
         sb.append("</font>}");
         return sb.toString();
     }
-    
+
+
     /**
      Асинхронный {@link ThreadPoolTaskExecutor}
      <p>
-     
+
      @see AsyncConfigurerSupport
      @since <a href="https://github.com/Vachok/ftpplus/commit/f40030246ec6f28cc9c484b9c56a3879da1162af" target=_blank>21.02.2019 (22:49)</a>
      */
     private class ASExec extends AsyncConfigurerSupport {
-        
-        
+
+
         private ThreadPoolTaskExecutor threadPoolTaskExecutor;
-        
+
+
         ASExec() {
             ThreadConfig.TASK_EXECUTOR.getThreadPoolExecutor().purge();
             this.threadPoolTaskExecutor = ThreadConfig.TASK_EXECUTOR;
             ThreadConfig.TASK_EXECUTOR.setRejectedExecutionHandler(new TaskDestroyer());
         }
-        
+
+
         @Override
         public Executor getAsyncExecutor() {
             thrNameSet("ASE");
@@ -225,7 +234,8 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
             threadPoolTaskExecutor.setRejectedExecutionHandler(new TaskDestroyer());
             return threadPoolTaskExecutor;
         }
-        
+
+
         @Override
         public String toString() {
             final StringBuilder sb = new StringBuilder("ASExec{");
@@ -234,23 +244,24 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
             return sb.toString();
         }
     }
-    
-    
-    
+
+
+
     /**
      Повторная попытка для задания.
-     
+
      @since 22.02.2019 (13:22)
      */
     private class TasksReRunner implements RejectedExecutionHandler {
-        
-        
+
+
         private static final String CLASS_REJECTED_EXEC_METH = "TasksReRunner.rejectedExecution";
-        
+
         private MessageToUser messageToUser = new MessageSwing(this.getClass().getSimpleName());
-        
+
         private Runnable reTask;
-        
+
+
         @Override
         public void rejectedExecution(Runnable rejectedTask, ThreadPoolExecutor executor) {
             this.reTask = rejectedTask;
@@ -265,9 +276,9 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
                 FileSystemWorker.error(CLASS_REJECTED_EXEC_METH, e);
                 Thread.currentThread().interrupt();
             }
-            
         }
-        
+
+
         @Override
         public String toString() {
             final StringBuilder sb = new StringBuilder("TasksReRunner{");
@@ -276,7 +287,8 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
             sb.append('}');
             return sb.toString();
         }
-        
+
+
         private void resultOfExecution(boolean submitDone) {
             if (submitDone) {
                 messageToUser.info(getClass().getSimpleName(), "resultOfExecution", reTask + " : " + true);
@@ -287,12 +299,12 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
             }
         }
     }
-    
-    
-    
+
+
+
     private class TaskDestroyer implements RejectedExecutionHandler {
-        
-        
+
+
         @Override
         public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
             BlockingQueue<Runnable> queue = executor.getQueue();

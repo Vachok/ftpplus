@@ -26,7 +26,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class SwitchesAvailability implements Runnable {
 
 
-    private static final String CLASS_SWITCHESAVAILABILITY = "SwitchesAvailability";
+    private static final String CLASS_SWITCHESAVAILABILITY = SwitchesAvailability.class.getSimpleName();
     /**
      {@link InetAddress} свчичей.
      */
@@ -35,7 +35,7 @@ public class SwitchesAvailability implements Runnable {
 
     private String okStr = null;
 
-    private MessageToUser messageToUser = new MessageLocal();
+    private MessageToUser messageToUser = new MessageLocal(CLASS_SWITCHESAVAILABILITY);
 
     public SwitchesAvailability() {
         AppComponents.threadConfig().thrNameSet("SWin");

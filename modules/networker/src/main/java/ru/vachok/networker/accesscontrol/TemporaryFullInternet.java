@@ -1,6 +1,7 @@
 package ru.vachok.networker.accesscontrol;
 
 
+
 import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
@@ -16,6 +17,7 @@ import java.io.File;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Queue;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -32,15 +34,16 @@ public class TemporaryFullInternet implements Runnable {
 
     private static final String INIT_PING_EXIT_STR = "sudo /etc/initpf.fw;exit";
 
-    private static final MessageToUser messageToUser = new MessageLocal();
+    private static final MessageToUser messageToUser = new MessageLocal(TemporaryFullInternet.class.getSimpleName());
 
     private static final String SERVER_TO_CONNECT = whatServerNow();
 
     private static final String STR_SSH_COMMAND = "sshCommand";
 
-    private static final Deque<String> MINI_LOGGER = new ArrayDeque<>();
+    private static final Queue<String> MINI_LOGGER = new ArrayDeque<>();
 
     private static final SSHFactory SSH_FACTORY = new SSHFactory.Builder(SERVER_TO_CONNECT, "ls", TemporaryFullInternet.class.getSimpleName()).build();
+    private static final String TEMPORARY_FULL_INTERNET_RUN = "TemporaryFullInternet.run";
 
     @SuppressWarnings("CanBeFinal")
     private String userInput;
@@ -101,7 +104,72 @@ public class TemporaryFullInternet implements Runnable {
         return retBuilder.toString();
     }
 
-    private Map<String, Long> sshChecker() {
+
+    @Override
+    public void run() {
+        AppComponents.threadConfig().execByThreadConfig(this::sshChecker);
+        Map<String, Long> stringLongMap = ConstantsNet.getSshCheckerMap();
+        String classMeth = TEMPORARY_FULL_INTERNET_RUN;
+        File miniLog = new File(getClass().getSimpleName() + ".mini");
+        String fromArray = new TForms().fromArray(stringLongMap , false);
+
+        messageToUser.info(getClass().getSimpleName() , userInput , fromArray);
+        MINI_LOGGER.add("run(): " + userInput + " " + fromArray);
+        Date nextStart = new Date(ConstantsFor.getAtomicTime() + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY));
+        MINI_LOGGER.add(nextStart.toString());
+        boolean isRecFile = FileSystemWorker.writeFile(miniLog.getName() , MINI_LOGGER.stream());
+        boolean isCopyFile = FileSystemWorker.copyOrDelFile(miniLog , ".\\ssh\\" + miniLog.getName() , true);
+        messageToUser.info(classMeth , "isRecFile" , " = " + isRecFile);
+        messageToUser.info(TEMPORARY_FULL_INTERNET_RUN , "isCopyFile" , " = " + isCopyFile);
+        messageToUser.info(classMeth , "nextStart" , " = " + nextStart);
+    }
+
+
+    private boolean doDelete( String x ) {
+        AppComponents.threadConfig().thrNameSet("delSSH");
+
+        String sshC = new StringBuilder().append(SshActs.SSH_SUDO_GREP_V).append(x).append("' /etc/pf/24hrs > /etc/pf/24hrs_tmp;").append("sudo cp /etc/pf/24hrs_tmp /etc/pf/24hrs;").append(INIT_PING_EXIT_STR).toString();
+        SSH_FACTORY.setCommandSSH(sshC);
+        String sshCommand = SSH_FACTORY.call();
+        messageToUser.info("TemporaryFullInternet.doDelete" , STR_SSH_COMMAND , " = " + sshCommand);
+        Long aLong = ConstantsNet.getSshCheckerMap().remove(x);
+        MINI_LOGGER.add(new Date(aLong) + ", doDelete(): " + sshCommand);
+        return ConstantsNet.getSshCheckerMap().containsKey(x);
+    }
+
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(userInput);
+    }
+
+
+    @Override
+    public boolean equals( Object o ) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        TemporaryFullInternet that = (TemporaryFullInternet) o;
+        return Objects.equals(userInput , that.userInput);
+    }
+
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("TemporaryFullInternet{");
+        sb.append("delStamp=").append(delStamp);
+        sb.append(", initStamp=").append(initStamp);
+        sb.append(", userInput='").append(userInput).append('\'');
+        sb.append('}');
+        sb.append("<p>\n").append(new TForms().fromArray(MINI_LOGGER , true));
+        return sb.toString();
+    }
+
+
+    private void sshChecker() {
         AppComponents.threadConfig().thrNameSet("chkSSH");
         SSH_FACTORY.setCommandSSH("cat /etc/pf/24hrs;exit");
         final String tempFile = SSH_FACTORY.call();
@@ -152,67 +220,5 @@ public class TemporaryFullInternet implements Runnable {
         }
         messageToUser.warn("TemporaryFullInternet.sshChecker", "future.isDone()", " = " + future.isDone());
         messageToUser.warn("TemporaryFullInternet.sshChecker", "future.isDone()", " = " + future.isCancelled());
-        return sshCheckerMap;
-    }
-
-    private boolean doDelete(String x) {
-        AppComponents.threadConfig().thrNameSet("delSSH");
-
-        String sshC = new StringBuilder()
-            .append(SshActs.SSH_SUDO_GREP_V).append(x).append("' /etc/pf/24hrs > /etc/pf/24hrs_tmp;")
-            .append("sudo cp /etc/pf/24hrs_tmp /etc/pf/24hrs;").append(INIT_PING_EXIT_STR).toString();
-        SSH_FACTORY.setCommandSSH(sshC);
-        String sshCommand = SSH_FACTORY.call();
-        messageToUser.info("TemporaryFullInternet.doDelete", STR_SSH_COMMAND, " = " + sshCommand);
-        Long aLong = ConstantsNet.getSshCheckerMap().remove(x);
-        MINI_LOGGER.add(new Date(aLong) + ", doDelete(): " + sshCommand);
-        return ConstantsNet.getSshCheckerMap().containsKey(x);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(userInput);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        TemporaryFullInternet that = (TemporaryFullInternet) o;
-        return Objects.equals(userInput, that.userInput);
-    }
-
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("TemporaryFullInternet{");
-        sb.append("delStamp=").append(delStamp);
-        sb.append(", initStamp=").append(initStamp);
-        sb.append(", userInput='").append(userInput).append('\'');
-        sb.append('}');
-        sb.append("<p>\n").append(new TForms().fromArray(MINI_LOGGER, true));
-        return sb.toString();
-    }
-
-    @Override
-    public void run() {
-        AppComponents.threadConfig().execByThreadConfig(this::sshChecker);
-        Map<String, Long> stringLongMap = ConstantsNet.getSshCheckerMap();
-        String classMeth = "TemporaryFullInternet.run";
-        File miniLog = new File(getClass().getSimpleName() + ".mini");
-        String fromArray = new TForms().fromArray(stringLongMap, false);
-
-        messageToUser.info(getClass().getSimpleName(), userInput, fromArray);
-        MINI_LOGGER.add("run(): " + userInput + " " + fromArray);
-        Date nextStart = new Date(ConstantsFor.getAtomicTime() + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY));
-        MINI_LOGGER.add(nextStart.toString());
-        boolean isRecFile = FileSystemWorker.writeFile(miniLog.getName(), MINI_LOGGER.stream());
-        boolean isCopyFile = FileSystemWorker.copyOrDelFile(miniLog, ".\\ssh\\" + miniLog.getName(), true);
-        messageToUser.info(classMeth, "isRecFile", " = " + isRecFile);
-        messageToUser.info("TemporaryFullInternet.run", "isCopyFile", " = " + isCopyFile);
-        messageToUser.info(classMeth, "nextStart", " = " + nextStart);
     }
 }

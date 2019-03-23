@@ -34,7 +34,7 @@ class NetScanFileWorker {
 
     private static NetScanFileWorker ourInst = new NetScanFileWorker();
 
-    private static MessageToUser messageToUser = new MessageLocal();
+    private static MessageToUser messageToUser = new MessageLocal(NetScanFileWorker.class.getSimpleName());
 
     private long lastStamp = System.currentTimeMillis();
 

@@ -21,7 +21,7 @@ public class ActionRun extends AbstractAction {
 
     private String commandToRun;
 
-    private MessageToUser messageToUser = new MessageLocal();
+    private MessageToUser messageToUser = new MessageLocal(ActionRun.class.getSimpleName());
 
     /**
      Creates an {@code Action}.

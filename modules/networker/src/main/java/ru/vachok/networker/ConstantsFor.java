@@ -388,12 +388,14 @@ public enum ConstantsFor {
 
     private static final int MIN_DELAY = 17;
 
-    /**
-     {@link MessageLocal}
-     */
-    private static final MessageToUser messageToUser = new MessageLocal();
+    public static final String FILENAME_PTV = "ping.tv";
     public static final int EXIT_STATUSBAD = 666;
     public static final int INT_ANSWER = 42;
+    public static final String FILENAME_ALLDEVMAP = "alldev.map";
+    /**
+     * {@link MessageLocal}
+     */
+    private static final MessageToUser messageToUser = new MessageLocal(ConstantsFor.class.getSimpleName());
 
 
     /**

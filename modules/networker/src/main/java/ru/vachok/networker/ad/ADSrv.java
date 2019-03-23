@@ -427,7 +427,7 @@ public class ADSrv implements Runnable {
              BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
             bufferedReader.lines().forEach(retList::add);
         } catch (IOException e) {
-            new MessageLocal().errorAlert(ADSrv.class.getSimpleName(), "adUsrFromFile", e.getMessage());
+            messageToUser.errorAlert(ADSrv.class.getSimpleName() , "adUsrFromFile" , e.getMessage());
             FileSystemWorker.error("ADSrv.adUsrFromFile", e);
         }
         return retList;

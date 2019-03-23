@@ -23,7 +23,7 @@ public class TimeChecker implements Callable<TimeInfo> {
     /**
      {@link AppComponents#getLogger(String)}
      */
-    private static final MessageToUser messageToUser = new MessageLocal();
+    private static final MessageToUser messageToUser = new MessageLocal(TimeChecker.class.getSimpleName());
 
     @Override
     public TimeInfo call() {

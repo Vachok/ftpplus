@@ -56,7 +56,7 @@ public class AppComponents {
      */
     private static final String STR_VISITOR = "visitor";
 
-    private static MessageToUser messageToUser = new MessageLocal();
+    private static MessageToUser messageToUser = new MessageLocal(AppComponents.class.getSimpleName());
 
     @Bean
     public TemporaryFullInternet temporaryFullInternet() {

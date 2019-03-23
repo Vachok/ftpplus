@@ -23,6 +23,7 @@ import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Stream;
 
 import static ru.vachok.networker.IntoApplication.getConfigurableApplicationContext;
 
@@ -165,9 +166,9 @@ public class ExitApp implements Runnable {
         File scan210 = new File(ConstantsNet.FILENAME_AVAILABLELAST210220TXT);
         File oldLanFile0 = new File(ConstantsNet.FILENAME_OLDLANTXT0);
         File oldLanFile1 = new File(ConstantsNet.FILENAME_OLDLANTXT1);
-        File filePingTv = new File("ping.tv");
+        File filePingTv = new File(ConstantsFor.FILENAME_PTV);
 
-        if (!scan200.exists() || !scan210.exists() || !oldLanFile0.exists() || !oldLanFile1.exists() || !filePingTv.exists()) {
+        if (Stream.of(scan200 , scan210 , oldLanFile0 , oldLanFile1 , filePingTv).anyMatch(file1 -> !file1.exists())) {
             try {
                 Path isFile200 = Files.createFile(scan200.toPath());
                 Path isFile210 = Files.createFile(scan210.toPath());
@@ -185,16 +186,9 @@ public class ExitApp implements Runnable {
         FileSystemWorker.copyOrDelFile(scan210, new StringBuilder().append(".\\lan\\vlans210_").append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
         FileSystemWorker.copyOrDelFile(oldLanFile0, new StringBuilder().append(".\\lan\\0old_lan_").append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
         FileSystemWorker.copyOrDelFile(oldLanFile1, new StringBuilder().append(".\\lan\\1old_lan_").append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
-        FileSystemWorker.copyOrDelFile(filePingTv, ".\\lan\\tv_" + System.currentTimeMillis() / 1000 + ".ping", true);
 
         List<File> srvFiles = DiapazonedScan.getInstance().getSrvFiles();
-        srvFiles.forEach(file->{
-            FileSystemWorker.copyOrDelFile(file,
-                new StringBuilder()
-                    .append(".\\lan\\")
-                    .append(file.getName().replaceAll(ConstantsNet.FILENAME_SERVTXT, ""))
-                    .append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
-        });
+        srvFiles.forEach(file -> FileSystemWorker.copyOrDelFile(file , new StringBuilder().append(".\\lan\\").append(file.getName().replaceAll(ConstantsNet.FILENAME_SERVTXT , "")).append(System.currentTimeMillis() / 1000).append(".txt").toString() , true));
         if (appLog.exists() && appLog.canRead()) {
             FileSystemWorker.copyOrDelFile(appLog, "\\\\10.10.111.1\\Torrents-FTP\\app.log", false);
         }

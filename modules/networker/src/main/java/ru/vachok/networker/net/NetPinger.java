@@ -64,7 +64,7 @@ public class NetPinger implements Runnable, Pinger {
     /**
      {@link MessageLocal}. Вывод сообщений
      */
-    private MessageToUser messageToUser = new MessageLocal();
+    private MessageToUser messageToUser = new MessageLocal(NetPinger.class.getSimpleName());
 
     /**
      Ввод минут из браузера. По-умолчанию 3.
@@ -184,7 +184,7 @@ public class NetPinger implements Runnable, Pinger {
      */
     private void parseResult(long userIn) {
         List<String> pingsList = new ArrayList<>();
-    
+
         pingsList.add("Pinger is start at " + new Date(System.currentTimeMillis() - userIn));
         resList.stream().distinct().forEach(x -> {
             int frequency = Collections.frequency(resList, x);

@@ -1,12 +1,4 @@
-// Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-/*
- * Copyright (c) 2019.
- */
-
-/*
- * Copyright (c) 2019.
- */
 
 package ru.vachok.networker.services;
 
@@ -27,10 +19,10 @@ import java.util.Locale;
 
 @Service
 public class WhoIsWithSRV {
-    
-    
-    private MessageToUser messageToUser = new MessageLocal();
-    
+
+
+    private MessageToUser messageToUser = new MessageLocal(WhoIsWithSRV.class.getSimpleName());
+
     public String whoIs(String inetAddr) {
         StringBuilder geoLocation = new StringBuilder();
         Locale locale = Locale.getDefault();
@@ -41,7 +33,7 @@ public class WhoIsWithSRV {
         geoLocation.append(country).append("</p>");
         geoLocation.append("<p>");
         geoLocation.append("<h3>").append(inetAddr).append("</h3><br>").append("<p>");
-        
+
         try {
             geoLocation.append(whoIsQuery(inetAddr));
             String replacedStr = geoLocation.toString().replace("% The objects are in RPSL format.\n" +
@@ -63,12 +55,13 @@ public class WhoIsWithSRV {
         } catch (IOException | ArrayIndexOutOfBoundsException | NullPointerException e) {
             geoLocation.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false));
         }
-        
+
         messageToUser.info(WhoIsWithSRV.class.getSimpleName(), ".whoIs", geoLocation.toString());
-        
+
         return geoLocation.toString();
     }
-    
+
+
     public static String whoisStat(String workPos, Model model) {
         WhoIsWithSRV whoIsWithSRV = new WhoIsWithSRV();
         workPos = workPos.split(": ")[1];
@@ -78,7 +71,8 @@ public class WhoIsWithSRV {
         model.addAttribute("toHead", new PageFooter().getHeaderUtext());
         return ConstantsFor.BEANNAME_MATRIX;
     }
-    
+
+
     private String traceRt(String inetAddr) {
         SSHFactory.Builder sshFactoryBu = new SSHFactory.Builder(ConstantsFor.IPADDR_SRVGIT, "traceroute " + inetAddr, getClass().getSimpleName());
         String retStr = sshFactoryBu.build().call();
@@ -87,10 +81,11 @@ public class WhoIsWithSRV {
         } catch (ArrayIndexOutOfBoundsException e) {
             return e.getMessage();
         }
-        
+
         return retStr;
     }
-    
+
+
     private String whoIsQuery(String inetAddr) throws IOException {
         WhoisClient whoisClient = new WhoisClient();
         StringBuilder whoIsQBuilder = new StringBuilder();

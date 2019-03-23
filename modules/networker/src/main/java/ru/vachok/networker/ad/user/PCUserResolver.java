@@ -37,12 +37,7 @@ public class PCUserResolver extends ADSrv {
 
     private static final String METHNAME_REC_AUTO_DB = "PCUserResolver.recAutoDB";
 
-    /**
-     Последний измененный файл.
-
-     @see #getLastTimeUse(String)
-     */
-    private String lastFileUse;
+    private final MessageToUser messageToUser = new MessageLocal(PCUserResolver.class.getSimpleName());
 
     /**
      @return {@link #PC_USER_RESOLVER}
@@ -50,8 +45,14 @@ public class PCUserResolver extends ADSrv {
     public static PCUserResolver getPcUserResolver() {
         return PC_USER_RESOLVER;
     }
-    
-    private final MessageToUser messageToUser = new MessageLocal();
+
+
+    /**
+     * Последний измененный файл.
+     *
+     * @see #getLastTimeUse(String)
+     */
+    private String lastFileUse = "null";
 
     /**
      Default-конструктор
@@ -114,7 +115,8 @@ public class PCUserResolver extends ADSrv {
             }
         });
     }
-    
+
+
     /**
      Записывает инфо о пльзователе в <b>pcuserauto</b>
      <p>
@@ -122,12 +124,12 @@ public class PCUserResolver extends ADSrv {
      <p>
      <b>{@link SQLException}, {@link ArrayIndexOutOfBoundsException}, {@link NullPointerException}: </b>
      1. {@link FileSystemWorker#error(java.lang.String, java.lang.Exception)} <br>
-     
+
      @param pcName имя ПК
      @param lastFileUse строка - имя последнего измененного файла в папке пользователя.
      */
     private void recAutoDB(String pcName, String lastFileUse) {
-        
+
         String sql = "insert into pcuser (pcName, userName, lastmod, stamp) values(?,?,?,?)";
         try (Connection connection = new AppComponents().connection(ConstantsNet.DB_NAME)) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql.replaceAll(ConstantsFor.DBFIELD_PCUSER, ConstantsFor.DBFIELD_PCUSERAUTO))) {
@@ -147,7 +149,7 @@ public class PCUserResolver extends ADSrv {
         catch (SQLException | ArrayIndexOutOfBoundsException | NullPointerException | IOException e) {
             FileSystemWorker.error(METHNAME_REC_AUTO_DB, e);
         }
-        
+
     }
 
     /**

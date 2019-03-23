@@ -28,7 +28,7 @@ class ActionExit extends AbstractAction {
 
     private String reason;
 
-    private transient MessageToUser messageToUser = new MessageLocal();
+    private transient MessageToUser messageToUser = new MessageLocal(ActionExit.class.getSimpleName());
 
 
     ActionExit(String reason) {
@@ -39,7 +39,7 @@ class ActionExit extends AbstractAction {
     @Override
     public void actionPerformed(ActionEvent e) {
         messageToUser.infoNoTitles(getClass().getSimpleName() + ".actionPerformed");
-        try (FileOutputStream fileOutputStream = new FileOutputStream("alldev.map")) {
+        try (FileOutputStream fileOutputStream = new FileOutputStream(ConstantsFor.FILENAME_ALLDEVMAP)) {
             Future<?> submit = AppComponents.threadConfig().getTaskExecutor().submit(new ExitApp(reason, fileOutputStream, ConstantsNet.getAllDevices()));
             submit.get(ConstantsFor.DELAY , TimeUnit.SECONDS);
         } catch (Exception ex) {

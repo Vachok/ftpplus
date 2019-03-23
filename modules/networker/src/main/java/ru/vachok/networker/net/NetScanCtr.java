@@ -187,7 +187,7 @@ public class NetScanCtr {
         String npEq = "Netpinger equals is " + netPinger.equals(this.netPingerInst);
         model.addAttribute(ConstantsFor.ATT_TITLE , npEq);
         model.addAttribute("ok" , FileSystemWorker.readFile(ConstantsNet.PINGRESULT_LOG));
-        new MessageLocal().infoNoTitles("npEq = " + npEq);
+        messageToUser.infoNoTitles("npEq = " + npEq);
         response.addHeader(ConstantsFor.HEAD_REFRESH , PROPERTIES.getProperty(ConstantsNet.PROP_PINGSLEEP , "60"));
         return "ok";
     }
@@ -253,7 +253,7 @@ public class NetScanCtr {
                     stringBuilder.append(frequency).append(") ").append(x).append("<br>");
                 }
                 if (r.last()) {
-                    MessageToUser messageToUser = new MessageToTray(new ActionCloseMsg(new MessageLocal()));
+                    MessageToUser messageToUser = new MessageToTray(new ActionCloseMsg(new MessageLocal(NetScanCtr.class.getSimpleName())));
                     messageToUser.info(r.getString(ConstantsFor.DBFIELD_PCNAME) , r.getString(ConstantsNet.DB_FIELD_WHENQUERIED) , r.getString(ConstantsFor.DB_FIELD_USER));
                 }
                 return stringBuilder.toString();

@@ -159,7 +159,7 @@ public enum ConstantsNet { ;
      */
     private static Set<String> pcNames = new HashSet<>(Integer.parseInt(LOC_PROPS.getOrDefault(ConstantsFor.PR_TOTPC , "42").toString()));
 
-    private static MessageToUser messageToUser = new MessageLocal();
+    private static MessageToUser messageToUser = new MessageLocal(ConstantsNet.class.getSimpleName());
 
     private static String sshMapStr = "SSH Temp list is empty";
 

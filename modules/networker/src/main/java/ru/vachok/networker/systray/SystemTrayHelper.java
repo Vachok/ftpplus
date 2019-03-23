@@ -40,7 +40,7 @@ import java.net.InetAddress;
     /**
      {@link MessageLocal}
      */
-    private static MessageToUser messageToUser = new MessageLocal();
+    private static MessageToUser messageToUser = new MessageLocal(SystemTrayHelper.class.getSimpleName());
 
     public static SystemTrayHelper getI() {
         return SYSTEM_TRAY_HELPER;

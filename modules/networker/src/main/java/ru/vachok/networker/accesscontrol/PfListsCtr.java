@@ -87,7 +87,7 @@ public class PfListsCtr {
     /**
      {@link MessageLocal}
      */
-    private final MessageToUser messageToUser = new MessageLocal();
+    private final MessageToUser messageToUser = new MessageLocal(PfListsCtr.class.getSimpleName());
 
 
     /**

@@ -25,7 +25,7 @@ public class UserRightsOnCommon extends SimpleFileVisitor<Path> {
 
     private ADUser adUser;
 
-    private MessageToUser messageToUser = new MessageLocal();
+    private MessageToUser messageToUser = new MessageLocal(UserRightsOnCommon.class.getSimpleName());
 
     @Autowired
     public UserRightsOnCommon(ADUser adUser) {

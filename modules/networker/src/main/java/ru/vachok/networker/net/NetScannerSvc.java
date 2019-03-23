@@ -320,7 +320,7 @@ public class NetScannerSvc {
         this.startClassTime = System.currentTimeMillis();
         boolean fileCreate = fileCreate(true);
         try {
-            new MessageToTray(new ActionCloseMsg(new MessageLocal())).info("NetScannerSvc started scan", ConstantsFor.getUpTime(), " File: " + fileCreate);
+            new MessageToTray(new ActionCloseMsg(new MessageLocal(CLASS_NAME))).info("NetScannerSvc started scan" , ConstantsFor.getUpTime() , " File: " + fileCreate);
         }
         catch (NoClassDefFoundError e) {
             LOGGER.errorAlert(CLASS_NAME , "getPCsAsync" , e.getMessage());
@@ -487,9 +487,9 @@ public class NetScannerSvc {
         FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".getPCsAsync", toFileList);
         FileSystemWorker.writeFile("unused.ips", unusedNamesTree.stream());
 
-        boolean ownObject = new ExitApp("alldev.map" , ConstantsNet.getAllDevices()).writeOwnObject();
+        boolean ownObject = new ExitApp(ConstantsFor.FILENAME_ALLDEVMAP , ConstantsNet.getAllDevices()).writeOwnObject();
         int lenFile;
-        File file = new File("alldev.map");
+        File file = new File(ConstantsFor.FILENAME_ALLDEVMAP);
         if (file.exists()) {
             lenFile = (int) (file.length() / ConstantsFor.KBYTE);
         }

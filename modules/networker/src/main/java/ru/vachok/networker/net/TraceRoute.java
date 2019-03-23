@@ -19,7 +19,7 @@ import java.util.concurrent.Callable;
  @since 05.02.2019 (13:10) */
 public class TraceRoute implements Callable<String> {
 
-    private static MessageToUser messageToUser = new MessageLocal();
+    private static MessageToUser messageToUser = new MessageLocal(TraceRoute.class.getSimpleName());
 
     private String traceRt() {
         Thread.currentThread().setName(getClass().getSimpleName());

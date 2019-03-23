@@ -14,26 +14,30 @@ import ru.vachok.networker.ConstantsFor;
 public class MessageLocal implements MessageToUser {
 
     private String bodyMsg = "NO BODY";
-    
+
     private String titleMsg = ConstantsFor.getUpTime();
-    
+
     private String headerMsg = "Header from " + getClass().getSimpleName() + ":" + ConstantsFor.thisPC();
-    
+
+
     public MessageLocal(String className) {
         this.headerMsg = className;
     }
-    
-    public MessageLocal() {
-    
+
+
+    private MessageLocal() {
+
     }
-    
+
+
     @Override
     public void warning(String headerMsg, String titleMsg, String bodyMsg) {
         final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(headerMsg);
         String msg = titleMsg + " : " + bodyMsg;
         logger.warning(msg);
     }
-    
+
+
     @Override
     public void info(String bodyMsg) {
         infoNoTitles(this.bodyMsg);
@@ -90,12 +94,14 @@ public class MessageLocal implements MessageToUser {
     public void warn(String headerMsg, String titleMsg, String bodyMsg) {
         warning(headerMsg, titleMsg, titleMsg);
     }
-    
+
+
     public void warn(String bodyMsg) {
         this.bodyMsg = bodyMsg;
         warning(this.bodyMsg);
     }
-    
+
+
     public void warning(String bodyMsg) {
         Logger logger = LoggerFactory.getLogger(headerMsg);
         this.bodyMsg = bodyMsg;
