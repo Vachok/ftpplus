@@ -34,14 +34,13 @@ class SaveDBPropsCallable implements Callable<Boolean> {
     @SuppressWarnings("DuplicateStringLiteralInspection")
     private static final String pathToPropsName = "ConstantsFor.properties";
 
+    private static File pFile = new File(pathToPropsName);
+
     private final MysqlDataSource mysqlDataSource;
 
     private final String classMeth;
 
     private final String methName;
-
-    private static File pFile = new File(pathToPropsName);
-
     /**
      {@link Properties} для сохданения.
      */

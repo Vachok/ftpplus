@@ -101,15 +101,15 @@ public enum ConstantsNet { ;
     /**
      Название файла новой подсети 10.200.х.х
      */
-    public static final String FILENAME_AVAILABLELAST_200210_TXT = "lan_200210.txt";
+    public static final String FILENAME_NEWLAN210 = "lan_200210.txt";
 
-    public static final String FILENAME_AVAILABLELAST210220TXT = "lan_210220.txt";
+    public static final String FILENAME_NEWLAN200210 = "lan_210220.txt";
     /**
      Название файла старой подсети 192.168.х.х
      */
-    public static final String FILENAME_OLDLANTXT0 = "lan_old_0.txt";
+    public static final String FILENAME_OLDLANTXT0 = "lan_old0.txt";
 
-    public static final String FILENAME_OLDLANTXT1 = "lan_old_1.txt";
+    public static final String FILENAME_OLDLANTXT1 = "lan_old1.txt";
 //
 
     /**
@@ -129,13 +129,13 @@ public enum ConstantsNet { ;
 
     public static final String FILENAME_SERVTXT = "srv.txt";
 
-    public static final String FILENAME_SERVTXT_11SRVTXT = "11v_" + FILENAME_SERVTXT;
+    public static final String FILENAME_SERVTXT_11SRVTXT = "lan_11v" + FILENAME_SERVTXT;
 
-    public static final String FILENAME_SERVTXT_21SRVTXT = "lan_21v_" + FILENAME_SERVTXT;
+    public static final String FILENAME_SERVTXT_21SRVTXT = "lan_21v" + FILENAME_SERVTXT;
 
-    public static final String FILENAME_SERVTXT_31SRVTXT = "lan_31v_" + FILENAME_SERVTXT;
+    public static final String FILENAME_SERVTXT_31SRVTXT = "lan_31v" + FILENAME_SERVTXT;
 
-    public static final String FILENAME_SERVTXT_41SRVTXT = "lan_41v_" + FILENAME_SERVTXT;
+    public static final String FILENAME_SERVTXT_41SRVTXT = "lan_41v" + FILENAME_SERVTXT;
 
     private static final String[] PC_PREFIXES = {"do", "pp", "td", "no", "a", "dotd", "notd"};
 

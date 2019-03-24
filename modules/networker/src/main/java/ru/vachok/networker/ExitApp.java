@@ -164,8 +164,8 @@ public class ExitApp implements Runnable {
     @SuppressWarnings({"HardCodedStringLiteral", "FeatureEnvy"})
     private void copyAvail() {
         File appLog = new File("g:\\My_Proj\\FtpClientPlus\\modules\\networker\\app.log");
-        File scan200 = new File(ConstantsNet.FILENAME_AVAILABLELAST_200210_TXT);
-        File scan210 = new File(ConstantsNet.FILENAME_AVAILABLELAST210220TXT);
+        File scan200 = new File(ConstantsNet.FILENAME_NEWLAN210);
+        File scan210 = new File(ConstantsNet.FILENAME_NEWLAN200210);
         File oldLanFile0 = new File(ConstantsNet.FILENAME_OLDLANTXT0);
         File oldLanFile1 = new File(ConstantsNet.FILENAME_OLDLANTXT1);
         File filePingTv = new File(ConstantsFor.FILENAME_PTV);

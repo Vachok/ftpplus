@@ -169,7 +169,7 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
         CustomizableThreadCreator customizableThreadCreator = new CustomizableThreadCreator("AsThread: ");
         customizableThreadCreator.setThreadPriority(9);
         Thread thread = customizableThreadCreator.createThread(r);
-        Executor asyncExecutor = null;
+        Executor asyncExecutor = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor());
         if (new ASExec().getAsyncExecutor() != null) {
             asyncExecutor = new ASExec().getAsyncExecutor();
         } else {
@@ -246,7 +246,6 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
     }
 
 
-
     /**
      Повторная попытка для задания.
 
@@ -299,7 +298,6 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
             }
         }
     }
-
 
 
     private class TaskDestroyer implements RejectedExecutionHandler {

@@ -212,7 +212,7 @@ public class AppComponents {
     }
 
     /**
-     Сохраняет {@link Properties} в БД {@link #APPNAME_WITHMINUS} с ID {@code ConstantsFor}
+     Сохраняет {@link Properties} в БД с ID {@code ConstantsFor}
 
      @param propsToSave {@link Properties}
      @return сохранено или нет
