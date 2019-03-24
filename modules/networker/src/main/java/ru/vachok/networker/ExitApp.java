@@ -111,20 +111,6 @@ public class ExitApp implements Runnable {
         this.reasonExit = reasonExit;
     }
 
-
-    public boolean writeOwnObject() {
-        try (OutputStream fileOutputStream = new FileOutputStream(fileName); ObjectOutput objectOutputStream = new ObjectOutputStream(fileOutputStream)) {
-            objectOutputStream.writeObject(toWriteObj);
-            messageToUser.info("ExitApp.writeOwnObject", fileName, " = " + new File(fileName).length() / ConstantsFor.KBYTE);
-            return true;
-        } catch (IOException e) {
-            messageToUser.errorAlert(getClass().getSimpleName() , "writeOwnObject" , e.getMessage());
-            FileSystemWorker.error("ExitApp.writeOwnObject", e);
-            return false;
-        }
-    }
-
-
     public static void reloadCTX() {
         ThreadConfig threadConfig = AppComponents.threadConfig();
         threadConfig.thrNameSet("RelCTX");
@@ -156,6 +142,19 @@ public class ExitApp implements Runnable {
         }
     }
 
+    public boolean writeOwnObject() {
+        try (OutputStream fileOutputStream = new FileOutputStream(fileName);
+             ObjectOutput objectOutputStream = new ObjectOutputStream(fileOutputStream)
+        ) {
+            objectOutputStream.writeObject(toWriteObj);
+            messageToUser.info(getClass().getSimpleName() + ".writeOwnObject: ", fileName, " = " + new File(fileName).length() / ConstantsFor.KBYTE);
+            return true;
+        } catch (IOException e) {
+            messageToUser.errorAlert(getClass().getSimpleName(), "writeOwnObject", e.getMessage());
+            FileSystemWorker.error("ExitApp.writeOwnObject", e);
+            return false;
+        }
+    }
 
     /**
      Копирует логи

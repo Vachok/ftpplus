@@ -3,11 +3,12 @@
 package ru.vachok.networker.net;
 
 
-
 import org.springframework.ui.Model;
+import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.ExitApp;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
@@ -16,10 +17,12 @@ import ru.vachok.networker.services.MessageLocal;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.net.InetAddress;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.*;
@@ -32,11 +35,120 @@ import java.util.concurrent.*;
 @SuppressWarnings({"ClassWithMultipleLoggers", "MagicNumber", "resource", "IOResourceOpenedButNotSafelyClosed"})
 public class DiapazonedScan implements Runnable {
 
-
     /**
-     {@link NetScanFileWorker#getI()}
+     Да запуска скана из {@link DiapazonedScan}
+
+     @since 24.03.2019 (16:01)
      */
-    private static final NetScanFileWorker NET_SCAN_FILE_WORKER_INST = NetScanFileWorker.getI(); // TODO: 23.03.2019 fin? static?
+    class ExecScan implements Runnable, Callable<Boolean> {
+
+        private int from;
+        private int to;
+        private String whatVlan;
+        private File vlanFile;
+
+        public ExecScan(int from , int to , String whatVlan , File vlanFile) {
+            this.from = from;
+            this.to = to;
+            this.whatVlan = whatVlan;
+            this.vlanFile = vlanFile;
+        }
+
+        @Override
+        public Boolean call() {
+            final boolean isScanned = execScan();
+            messageToUser.warn(getClass().getSimpleName() + ".call" , "isScanned" , " = " + isScanned);
+            return isScanned;
+        }
+
+        @Override public void run() {
+            String bodyMsg = " = " + call();
+            messageToUser.info(getClass().getSimpleName() + ".run" , "call()" , bodyMsg);
+        }
+
+        @Override public String toString() {
+            final StringBuilder sb = new StringBuilder("ExecScan{");
+            sb.append("from=").append(from);
+            sb.append(", to=").append(to);
+            sb.append(", vlanFile=").append(vlanFile);
+            sb.append(", whatVlan='").append(whatVlan).append('\'');
+            sb.append('}');
+            return sb.toString();
+        }
+
+        private boolean execScan() {
+            @SuppressWarnings("DuplicateStringLiteralInspection") String methName = ".execScan";
+            try {
+                ConcurrentMap<String, String> stringStringConcurrentMap = scanLanSegment(to , from , whatVlan);
+                NetScanFileWorker.getI().setLastStamp(System.currentTimeMillis());
+                return true;
+            }
+            catch (Exception e) {
+                messageToUser.errorAlert(getClass().getSimpleName() , ".execScan" , e.getMessage());
+                FileSystemWorker.error(getClass().getSimpleName() + methName , e);
+                return false;
+            }
+        }
+
+        private String oneIpScanAndPrintToFile() throws IOException {
+            AppComponents.threadConfig().thrNameSet(String
+                .valueOf(ALL_DEVICES_LOCAL_DEQUE.remainingCapacity()));
+            String classMeth = "DiapazonedScan.oneIpScanAndPrintToFile";
+            int timeOutMSec = (int) ConstantsFor.DELAY;
+            if (ConstantsFor.thisPC().equalsIgnoreCase("HOME")) {
+                timeOutMSec = (int) (ConstantsFor.DELAY * 3);
+                NetScanFileWorker.getI().setLastStamp(System.currentTimeMillis());
+            }
+            byte[] aBytes = InetAddress.getByName(whatVlan + from + "." + to).getAddress();
+            StringBuilder stringBuffer = new StringBuilder();
+            InetAddress byAddress = InetAddress.getByAddress(aBytes);
+            String hostName = byAddress.getHostName();
+            String hostAddress = byAddress.getHostAddress();
+
+            if (byAddress.isReachable(timeOutMSec)) {
+                String putIPAddrName = NetListKeeper.getI().getOnLinesResolve().put(hostAddress , hostName);
+                stringBuffer.append(hostAddress).append(" ").append(hostName);
+                ALL_DEVICES_LOCAL_DEQUE.add("<font color=\"green\">" + hostName + FONT_BR_STR);
+            } else {
+                NetListKeeper.getI().getOffLines().put(byAddress.getHostAddress() , hostName);
+                ALL_DEVICES_LOCAL_DEQUE.add("<font color=\"red\">" + hostName + FONT_BR_STR);
+                NetScanFileWorker.getI().setLastStamp(System.currentTimeMillis());
+                stringBuffer.append(hostAddress).append(" ").append(hostName);
+            }
+            return stringBuffer.toString();
+        }
+
+        /**
+         Сканер локальной сети@param stStMap Запись в лог@param fromVlan начало с 3 октета IP@param toVlan   конец с 3 октета IP
+
+         @param whatVlan первый 2 октета, с точкоё в конце.
+         */
+        private ConcurrentMap<String, String> scanLanSegment(int fromVlan , int toVlan , String whatVlan) {
+            @SuppressWarnings("DuplicateStringLiteralInspection") String methName = ".scanLanSegment";
+            ConcurrentMap<String, String> stStMap = new ConcurrentHashMap<>(MAX_IN_VLAN_INT);
+            for (int i = fromVlan; i < toVlan; i++) {
+                StringBuilder msgBuild = new StringBuilder();
+                for (int j = 0; j < MAX_IN_VLAN_INT; j++) {
+                    try {
+                        String theScannedIPHost = oneIpScanAndPrintToFile();
+                        stStMap.putIfAbsent(theScannedIPHost.split(" ")[0] , theScannedIPHost.split(" ")[1]);
+                    }
+                    catch (IOException e) {
+                        FileSystemWorker.error("DiapazonedScan.scanLanSegment" , e);
+                    }
+                    catch (ArrayIndexOutOfBoundsException e) {
+                        messageToUser.errorAlert(getClass().getSimpleName() , ".scanLanSegment" , e.getMessage());
+                        FileSystemWorker.error(getClass().getSimpleName() + ".scanLanSegment" , e);
+                    }
+                }
+            }
+            return stStMap;
+        }
+    }
+
+
+
+    private final long stArt;
 
     /**
      Корень директории.
@@ -55,14 +167,15 @@ public class DiapazonedScan implements Runnable {
      */
     private static final BlockingDeque<String> ALL_DEVICES_LOCAL_DEQUE = ConstantsNet.getAllDevices();
 
+    private static final MessageToUser messageToUser = new MessageLocal(DiapazonedScan.class.getSimpleName());
+    /**
+     {@link NetScanFileWorker#getI()}
+     */
+    private static final NetScanFileWorker NET_SCAN_FILE_WORKER_INST = NetScanFileWorker.getI();
     /**
      Singleton inst
      */
     private static DiapazonedScan OUR_INSTANCE = new DiapazonedScan();
-
-    private static final MessageToUser messageToUser = new MessageLocal(DiapazonedScan.class.getSimpleName());
-
-    private final long stArt = ConstantsFor.getAtomicTime();
 
     private long stopClassStampLong = NetScanFileWorker.getI().getLastStamp();
 
@@ -73,8 +186,8 @@ public class DiapazonedScan implements Runnable {
      */
     private DiapazonedScan() {
         AppComponents.threadConfig().thrNameSet("DScanF:" + srvFiles.size());
+        stArt = System.currentTimeMillis();
     }
-
 
     public Map<String, File> getSrvFiles() throws NullPointerException {
         return NetScanFileWorker.srvFiles;
@@ -86,33 +199,17 @@ public class DiapazonedScan implements Runnable {
 
     @Override
     public void run() {
-        NetScanFileWorker.getI().setLastStamp(System.currentTimeMillis());
         String classMeth = "DiapazonedScan.run";
-        int stringFileMap = addFiles();
+        int stringFileMap = srvFiles.size();
+
+        if (srvFiles.size() > 0) { copyToArch(); } else stringFileMap = addFiles();
+
         AppComponents.threadConfig().thrNameSet(String.valueOf(stringFileMap));
-        if (NetScanFileWorker.srvFiles.size() <= 0) {
-            throw new RejectedExecutionException("No Files in " + DiapazonedScan.class.getSimpleName() + " srvFiles");
-        } else {
-            AppComponents.threadConfig().execByThreadConfig(this::theNewLan);
-            AppComponents.threadConfig().execByThreadConfig(this::scanServers);
-            AppComponents.threadConfig().execByThreadConfig(this::scanOldLan);
-        }
+        startDo(stringFileMap);
     }
 
     /**
-     * SINGLETON
-     *
-     * @return single.
-     */
-    public static DiapazonedScan getInstance() {
-        messageToUser.info(DiapazonedScan.OUR_INSTANCE.getClass().getSimpleName(), " is initializing, and trying to " +
-                "addFiles in ",
-            String.valueOf(OUR_INSTANCE.addFiles()));
-        return OUR_INSTANCE;
-    }
-
-    /**
-     * @return /showalldev = {@link NetScanCtr#allDevices(Model , HttpServletRequest , HttpServletResponse)}
+     @return /showalldev = {@link NetScanCtr#allDevices(Model , HttpServletRequest , HttpServletResponse)}
      */
     @SuppressWarnings("StringConcatenation")
     @Override
@@ -121,13 +218,25 @@ public class DiapazonedScan implements Runnable {
     }
 
     /**
-     * Пингует в 200х VLANах девайсы с 10.200.x.250 по 10.200.x.254
-     * <p>
-     * Свичи начала сегментов. Вкл. в оптическое ядро.
-     *
-     * @return лист важного оборудования
-     *
-     * @throws IllegalAccessException swF.get(swF).toString()
+     SINGLETON
+
+     @return single.
+     */
+    public static DiapazonedScan getInstance() {
+        messageToUser.info(DiapazonedScan.OUR_INSTANCE.getClass().getSimpleName() , " is initializing, and trying to " +
+                "addFiles in " ,
+            String.valueOf(OUR_INSTANCE.addFiles()));
+        return OUR_INSTANCE;
+    }
+
+    /**
+     Пингует в 200х VLANах девайсы с 10.200.x.250 по 10.200.x.254
+     <p>
+     Свичи начала сегментов. Вкл. в оптическое ядро.
+
+     @return лист важного оборудования
+
+     @throws IllegalAccessException swF.get(swF).toString()
      */
     public static List<String> pingSwitch() throws IllegalAccessException {
         Field[] swFields = SwitchesWiFi.class.getFields();
@@ -140,39 +249,13 @@ public class DiapazonedScan implements Runnable {
         return swList;
     }
 
-    private void oneIpScan(String whatVlan, int i, int j, ConcurrentMap<String, String> stStMap, PrintWriter printStream) throws IOException {
-        AppComponents.threadConfig().thrNameSet(String.valueOf(ALL_DEVICES_LOCAL_DEQUE.remainingCapacity())); String classMeth = "DiapazonedScan.oneIpScan"; String strOnlineIs = "Online is ";
-
-        int timeOutMSec = (int) ConstantsFor.DELAY;
-        byte[] aBytes = InetAddress.getByName(whatVlan + i + "." + j).getAddress();
-        InetAddress byAddress = InetAddress.getByAddress(aBytes);
-        String byIPStr = byAddress.toString();
-
-        if (ConstantsFor.thisPC().equalsIgnoreCase("HOME")) {
-            timeOutMSec = (int) (ConstantsFor.DELAY * 3);
-            NetScanFileWorker.getI().setLastStamp(System.currentTimeMillis());
-        }
-        if (byAddress.isReachable(timeOutMSec)) {
-            String hostName = byAddress.getHostName();
-            String hostAddress = byAddress.getHostAddress();
-            String ifAbsStr = stStMap.putIfAbsent(hostAddress, " " + hostName);
-            String putIPAddrName = NetListKeeper.getI().getOnLinesResolve().put(hostAddress, hostName);
-            NetScanFileWorker.getI().setLastStamp(System.currentTimeMillis());
-
-            ALL_DEVICES_LOCAL_DEQUE.add("<font color=\"green\">" + byIPStr + FONT_BR_STR);
-
-            messageToUser.info(strOnlineIs + true, "ON putIPAddrName", " = " + putIPAddrName);
-            messageToUser.info("stStMap", ".putIfAbsent", " = " + ifAbsStr);
-        }
-        else {
-            String putIPAddrName = NetListKeeper.getI().getOffLines().put(byAddress.getHostAddress(), byAddress.getHostName());
-            ALL_DEVICES_LOCAL_DEQUE.add("<font color=\"red\">" + byIPStr + FONT_BR_STR);
-            NetScanFileWorker.getI().setLastStamp(System.currentTimeMillis());
-
-            messageToUser.info(strOnlineIs + false, "OFF byIPStr" , " = " + byIPStr);
+    private void copyToArch() {
+        int archID = new Random().nextInt(1000);
+        Collection<File> fileList = srvFiles.values();
+        for (File f : fileList) {
+            FileSystemWorker.copyOrDelFile(f , ".\\lan\\" + f.getName().replace(".txt" , "") + archID + ".scan" , true);
         }
     }
-
 
     private int addFiles() {
 
@@ -190,75 +273,25 @@ public class DiapazonedScan implements Runnable {
     }
 
     /**
-     Сканер локальной сети@param stStMap Запись в лог@param fromVlan начало с 3 октета IP
-
-     @param toVlan конец с 3 октета IP
-     @param whatVlan первый 2 октета, с точкоё в конце.
-     @param printWriter {@link PrintWriter}
-     */
-    @SuppressWarnings({"MethodWithMultipleLoops", "ObjectAllocationInLoop"})
-    private void scanLan(int fromVlan, int toVlan, String whatVlan, PrintWriter printWriter) {
-        for (int i = fromVlan; i < toVlan; i++) {
-            StringBuilder msgBuild = new StringBuilder();
-            ConcurrentMap<String, String> stStMap = new ConcurrentHashMap<>(MAX_IN_VLAN_INT);
-            for (int j = 0; j < MAX_IN_VLAN_INT; j++) {
-                try {
-                    oneIpScan(whatVlan, i, j, stStMap, printWriter);
-                    if (stStMap.size() > 0) {
-                        printWriter.println(new TForms().fromArray(stStMap, false));
-                        msgBuild.append("\n").append(printWriter.hashCode()).append(" printStream.hashCode");
-                        msgBuild.append("\n").append(new TForms().fromArray(NET_SCAN_FILE_WORKER_INST.getFilesScan(), false));
-                        String msg = msgBuild.toString();
-                        messageToUser.warn(msg);
-                    }
-                    NetScanFileWorker.getI().setLastStamp(System.currentTimeMillis());
-                } catch (IOException e) {
-                    FileSystemWorker.error("DiapazonedScan.scanLan", e);
-                }
-            }
-        }
-    }
-
-
-    /**
      192.168.11-14.254
      */
     @SuppressWarnings("MagicNumber")
     private void scanOldLan() {
         String classMeth = this.getClass().getSimpleName() + ".scanOldLan";
-        File oldLANFile0 = NetScanFileWorker.srvFiles.get("old0");
-        File oldLANFile1 = NetScanFileWorker.srvFiles.get("old1");
-        Path p0 = Paths.get(ROOT_PATH_STR + "\\lan\\0_192_" + System.currentTimeMillis() / 1000 + ".scan");
-        Path p1 = Paths.get(ROOT_PATH_STR + "\\lan\\1_192_" + System.currentTimeMillis() / 1000 + ".scan");
+        File vlanFile0 = new File(ConstantsNet.FILENAME_OLDLANTXT0);
+        File vlanFile1 = new File(ConstantsNet.FILENAME_OLDLANTXT1);
 
-        try {
-            OutputStream outputStream = new FileOutputStream(oldLANFile0);
-            OutputStream outputStream1 = new FileOutputStream(oldLANFile1);
-            AppComponents.threadConfig().execByThreadConfig(()->{
-                try {
-                    execScan(outputStream, oldLANFile0, 11, 15, "192.168.");
-                }
-                catch (IOException e) {
-                    FileSystemWorker.error(classMeth, e);
-                }
-            });
-            AppComponents.threadConfig().execByThreadConfig(()->{
-                try {
-                    execScan(outputStream1, oldLANFile1, 15, 21, "192.168.");
-                }
-                catch (IOException e) {
-                    FileSystemWorker.error(classMeth, e);
-                }
-            });
-        } catch (IOException e) {
-            messageToUser.errorAlert(getClass().getSimpleName(), "scanOldLan", e.getMessage());
-            FileSystemWorker.error(classMeth, e);
-        }
-        boolean isFileCopied0 = FileSystemWorker.copyOrDelFile(oldLANFile0, p0.toAbsolutePath().toString(), false);
-        boolean isFileCopied1 = FileSystemWorker.copyOrDelFile(oldLANFile1, p1.toAbsolutePath().toString(), false);
+        if (vlanFile0.exists()) FileSystemWorker.copyOrDelFile(vlanFile0 , ".\\" + (System.currentTimeMillis() / 1000) + "_192.168.11-15.scan" , true);
+        if (vlanFile1.exists()) FileSystemWorker.copyOrDelFile(vlanFile1 , ".\\" + (System.currentTimeMillis() / 1000) + "_192.168.16-20.scan" , true);
+
+        Runnable execScanOld0 = new ExecScan(11 , 16 , "192.168." , vlanFile0);
+        Runnable execScanOld1 = new ExecScan(16 , 21 , "192.168." , vlanFile1);
+
+        AppComponents.threadConfig().execByThreadConfig(execScanOld0);
+        AppComponents.threadConfig().execByThreadConfig(execScanOld1);
+
         NetScanFileWorker.getI().setLastStamp(System.currentTimeMillis());
     }
-
 
     private void execRunServersScanRunnables( Runnable runnableScan ) {
         AppComponents.threadConfig().execByThreadConfig(runnableScan);
@@ -266,122 +299,31 @@ public class DiapazonedScan implements Runnable {
         NetScanFileWorker.getI().setLastStamp(System.currentTimeMillis());
     }
 
-
     /**
      Скан подсетей 10.10.xx.xxx
      */
     private void scanServers() {
         @SuppressWarnings("DuplicateStringLiteralInspection") String classMeth = "DiapazonedScan.scanServers";
         @SuppressWarnings("DuplicateStringLiteralInspection") final String methName = "scanServers";
-
-
         String vlanIs = "10.10.";
-        Collection<Runnable> runList = new ArrayBlockingQueue<>(4);
-
-        Runnable srv11 = ()->{
-            try {
-                File file = NetScanFileWorker.srvFiles.get("11");
-                OutputStream outputStream = new FileOutputStream(file);
-                execScan(outputStream , NetScanFileWorker.srvFiles.get("11") , 11 , 21 , vlanIs);
-            }
-            catch (IOException e) {
-                messageToUser.errorAlert(getClass().getSimpleName(), methName, e.getMessage());
-                FileSystemWorker.error(getClass().getSimpleName() + ".scanServers", e);
-            }
-        };
-        Runnable srv19 = ()->{
-            try {
-                File file = NetScanFileWorker.srvFiles.get("21");
-                OutputStream outputStream = new FileOutputStream(file);
-                execScan(outputStream , NetScanFileWorker.srvFiles.get("21") , 21 , 31 , vlanIs);
-            }
-            catch (IOException e) {
-                messageToUser.errorAlert(getClass().getSimpleName(), methName, e.getMessage());
-                FileSystemWorker.error(getClass().getSimpleName() + ".scanServers" , e);
-            }
-        };
-        Runnable srv27 = ()->{
-            try {
-                File file = NetScanFileWorker.srvFiles.get("31");
-                OutputStream outputStream = new FileOutputStream(file);
-                execScan(outputStream , NetScanFileWorker.srvFiles.get("31") , 31 , 41 , vlanIs);
-            }
-            catch (IOException e) {
-                messageToUser.errorAlert(getClass().getSimpleName(), methName, e.getMessage());
-                FileSystemWorker.error(getClass().getSimpleName() + ".scanServers" , e);
-            }
-        };
-        Runnable srv41 = ()->{
-            try {
-                File file = NetScanFileWorker.srvFiles.get("31");
-                OutputStream outputStream = new FileOutputStream(file);
-                execScan(outputStream , NetScanFileWorker.srvFiles.get("31") , 41 , 51 , vlanIs);
-            }
-            catch (IOException e) {
-                messageToUser.errorAlert(getClass().getSimpleName(), methName, e.getMessage());
-                FileSystemWorker.error(getClass().getSimpleName() + ".scanServers" , e);
-            }
-        };
-        runList.add(srv11);
-        runList.add(srv19);
-        runList.add(srv27);
-        runList.add(srv41);
-
-        runList.iterator().forEachRemaining(this::execRunServersScanRunnables);
-
-
         messageToUser.warn(classMeth , "srvFiles" , " = " + new TForms().fromArray(NetScanFileWorker.srvFiles , false));
     }
-
 
     @SuppressWarnings({"resource", "IOResourceOpenedButNotSafelyClosed"})
     private void theNewLan() {
         String vlanIs = "10.200.";
         String classMeth = "DiapazonedScan.theNewLan";
+        final String methName = ".theNewLan";
 
-        if (ALL_DEVICES_LOCAL_DEQUE.remainingCapacity() == 0) {
-            ALL_DEVICES_LOCAL_DEQUE.clear();
-            messageToUser.info(classMeth, "toString is", " = " + this);
-        }
-        try (OutputStream outputStream200 = new FileOutputStream(NetScanFileWorker.srvFiles.get("200")); OutputStream outputStream210 = new FileOutputStream(NetScanFileWorker.srvFiles.get("210"))) {
-            String methName = "theNewLan";
-            AppComponents.threadConfig().execByThreadConfig(()->{
-                try {
-                    execScan(outputStream200 , NetScanFileWorker.srvFiles.get("200") , 200 , 210 , vlanIs);
-                }
-                catch (IOException e) {
-                    messageToUser.errorAlert(getClass().getSimpleName(), methName, e.getMessage());
-                    FileSystemWorker.error(classMeth, e);
-                }
-            });
-            AppComponents.threadConfig().execByThreadConfig(()->{
-                try {
-                    execScan(outputStream210 , NetScanFileWorker.srvFiles.get("210") , 210 , 218 , vlanIs);
-                }
-                catch (IOException e) {
-                    messageToUser.errorAlert(getClass().getSimpleName(), methName, e.getMessage());
-                    FileSystemWorker.error(classMeth, e);
-                }
-            });
-        }
-        catch (IOException e) {
-            FileSystemWorker.error(classMeth, e);
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().interrupt();
+        try (OutputStream outputStream200 = new FileOutputStream(NetScanFileWorker.srvFiles.get("200"));
+             OutputStream outputStream210 = new FileOutputStream(NetScanFileWorker.srvFiles.get("210"))
+        ) {
+            throw new IllegalStateException("Closed for 5 min");
+        } catch (IOException e) {
+            messageToUser.errorAlert(getClass().getSimpleName(), "theNewLan", e.getMessage());
+            FileSystemWorker.error(getClass().getSimpleName() + methName, e);
         }
     }
-
-
-    private void execScan(OutputStream outputStream, File lanFileToWrite, int from, int to, String whatVlan) throws IOException {
-        PrintWriter printWriter = new PrintWriter(outputStream, true);
-        scanLan(from, to, whatVlan, printWriter);
-        Path p210 = Paths.get(".\\lan\\" + lanFileToWrite.getName().replace(".txt", "_") + System.currentTimeMillis() / 1000 + ".scan");
-        NetScanFileWorker.getI().setLastStamp(System.currentTimeMillis());
-        outputStream.close();
-        FileSystemWorker.copyOrDelFile(lanFileToWrite, p210.toAbsolutePath().toString(), false);
-
-    }
-
 
     /**
      Чтобы случайно не уничтожить Overridden {@link #toString()}
@@ -420,5 +362,20 @@ public class DiapazonedScan implements Runnable {
         sb.append(" ROOT_PATH_STR= ").append(ROOT_PATH_STR);
         sb.append("<br><b>\nfileTimes= </b><br>").append(fileTimes);
         return sb.toString();
+    }
+
+    private void startDo(int stringFileMap) {
+        if (ALL_DEVICES_LOCAL_DEQUE.remainingCapacity() == 0) {
+            boolean isWritten = new ExitApp("alldev." + (System.currentTimeMillis() / 1000) + ".map" , ALL_DEVICES_LOCAL_DEQUE).writeOwnObject();
+            if (isWritten) {
+                ALL_DEVICES_LOCAL_DEQUE.clear();
+            } else {
+                new MessageSwing(getInstance().getClass().getSimpleName()).warn("ALL_DEVICES_LOCAL_DEQUE is not written by " + getInstance().hashCode() + ".startDo");
+            }
+        }
+
+        AppComponents.threadConfig().getTaskExecutor().submit(this::theNewLan);
+        AppComponents.threadConfig().getTaskExecutor().submit(this::scanServers);
+        AppComponents.threadConfig().getTaskExecutor().submit(this::scanOldLan);
     }
 }
