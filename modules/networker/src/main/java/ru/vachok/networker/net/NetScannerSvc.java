@@ -451,13 +451,9 @@ public class NetScannerSvc {
         setOnLinePCsToZero();
         AppComponents.lastNetScan().setTimeLastScan(new Date());
         countStat();
+        new File(ConstantsFor.class.getSimpleName() + ".properties").setLastModified(ConstantsFor.DELAY);
         boolean props = AppComponents.getOrSetProps(LOCAL_PROPS);
         FileSystemWorker.writeFile(ConstantsNet.BEANNAME_LASTNETSCAN, new TForms().fromArray(AppComponents.lastNetScanMap(), false));
-        String bodyMsg = ConstantsFor.getMemoryInfo() + "\n" +
-            " scan.tmp exist = " + fileCreate(false) + "\n" +
-            "Properties is save = " + props + "\n" +
-            new TForms().fromArray(toFileList, false);
-        
         FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".getPCsAsync", toFileList);
         FileSystemWorker.writeFile("unused.ips", unusedNamesTree.stream());
         final boolean ownObject = new ExitApp("alldev.map", ConstantsNet.getAllDevices()).writeOwnObject();
@@ -466,6 +462,10 @@ public class NetScannerSvc {
         if (file.exists()) {
             lenFile = (int) (file.length() / ConstantsFor.KBYTE);
         }
+        String bodyMsg = ConstantsFor.getMemoryInfo() + "\n" +
+            " scan.tmp exist = " + fileCreate(false) + "\n" +
+            "Properties is save = " + props + "\n" +
+            new TForms().fromArray(toFileList, false);
         new MessageSwing(656, 550, 50, 53).infoTimer(50,
             "Daysec: " +
                 LocalTime.now().toSecondOfDay() + " " +
@@ -534,7 +534,7 @@ public class NetScannerSvc {
      
      @return строка в html-формате
  
-     @throws SQLException {@code insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow) values (?,?,?,?)}
+     @throws SQLException insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow) values (?,?,?,?)
      @see #getPCNamesPref(String)
      */
     @SuppressWarnings({"OverlyComplexMethod", "OverlyLongMethod"})
@@ -674,7 +674,7 @@ public class NetScannerSvc {
         Collection<String> list = new ArrayList<>();
         int pcNum = 0;
         for (int i = 1; i < inDex; i++) {
-            if (namePCPrefix.equals("no") || namePCPrefix.equals("pp") || namePCPrefix.equals("do")) {
+            if (namePCPrefix.equals("no") || namePCPrefix.equals("pp") || namePCPrefix.equals("do") || namePCPrefix.equals("notd") || namePCPrefix.equals("dotd")) {
                 nameCount = String.format("%04d", ++pcNum);
             } else {
                 nameCount = String.format("%03d", ++pcNum);
@@ -710,6 +710,12 @@ public class NetScannerSvc {
         }
         if (qer.equals("td")) {
             inDex = ConstantsNet.TDPC;
+        }
+        if (qer.equals("dotd")) {
+            inDex = ConstantsNet.DOTDPC;
+        }
+        if (qer.equals("notd")) {
+            inDex = ConstantsNet.NOTDPC;
         }
         return inDex;
     }

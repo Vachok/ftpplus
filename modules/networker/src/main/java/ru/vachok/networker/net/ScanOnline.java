@@ -34,7 +34,7 @@ public class ScanOnline implements Runnable {
     private static final NetListKeeper NET_LIST_KEEPER = NetListKeeper.getI();
     
     /**
-     * {@link NetListKeeper#getOnLinesResolve()}
+     {@link NetListKeeper#getOnLinesResolve()}
      */
     private ConcurrentMap<String, String> onLinesResolve = NET_LIST_KEEPER.getOnLinesResolve();
     
@@ -55,7 +55,7 @@ public class ScanOnline implements Runnable {
         }
     
         Set<String> availabilityOkIP = switchesAvailability.getOkIP();
-        availabilityOkIP.forEach(x -> {
+        availabilityOkIP.forEach(x->{
             onLinesResolve.put(x, LocalDateTime.now().toString());
         });
     }
@@ -88,7 +88,7 @@ public class ScanOnline implements Runnable {
                 NET_LIST_KEEPER.getOffLines().put(inetAddress.toString(), LocalTime.now().toString());
                 if (onLinesResolve.containsKey(inetAddress.toString())) {
                     NET_LIST_KEEPER.getOffLines().remove(inetAddress.toString());
-        
+    
                 }
             } else {
                 onLinesResolve.putIfAbsent(inetAddress.toString(), LocalTime.now().toString());

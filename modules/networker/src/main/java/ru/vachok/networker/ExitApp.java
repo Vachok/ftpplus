@@ -8,12 +8,16 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.DiapazonedScan;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
-import ru.vachok.networker.systray.MessageToTray;
 
+import java.awt.*;
 import java.io.*;
+import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
 import java.util.List;
+import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.TimeUnit;
 
 import static ru.vachok.networker.IntoApplication.getConfigurableApplicationContext;
@@ -35,11 +39,16 @@ public class ExitApp implements Runnable {
     private static final String EXIT_APP_RUN = "ExitApp.run";
     
     /**
+     {@link ConstantsFor.HTTP_LOCALHOST8880SLASH} {@code "pages/commit.html"}.
+     */
+    private static final String GO_TO = ConstantsFor.HTTP_LOCALHOST8880SLASH + "pages/commit.html";
+    
+    /**
      new {@link ArrayList}, записываемый в "exit.last"
      
      @see #exitAppDO()
      */
-    private List<String> stringList = new ArrayList<>();
+    private Collection<String> miniLoggerLast = new ArrayList<>();
     
     /**
      Причина выхода
@@ -146,7 +155,7 @@ public class ExitApp implements Runnable {
         if (appLog.exists() && appLog.canRead()) {
             FileSystemWorker.copyOrDelFile(appLog, "\\\\10.10.111.1\\Torrents-FTP\\app.log", false);
         } else {
-            stringList.add("No app.log");
+            miniLoggerLast.add("No app.log");
             messageToUser.info("No app.log");
         }
         writeObj();
@@ -161,20 +170,20 @@ public class ExitApp implements Runnable {
      <b>{@link IOException}:</b><br>
      {@link FileSystemWorker#error(java.lang.String, java.lang.Exception)}
      <p>
-     Или {@link #stringList} add {@code "No object"}.
+     Или {@link #miniLoggerLast} add {@code "No object"}.
      <p>
      Запуск {@link #exitAppDO()}
      */
     private void writeObj() {
         if (toWriteObj != null) {
-            stringList.add(toWriteObj.toString().getBytes().length / ConstantsFor.KBYTE + " kbytes of object written");
+            miniLoggerLast.add(toWriteObj.toString().getBytes().length / ConstantsFor.KBYTE + " kbytes of object written");
             try (ObjectOutput objectOutput = new ObjectOutputStream(out)) {
                 objectOutput.writeObject(toWriteObj);
             } catch (IOException e) {
                 FileSystemWorker.error("ExitApp.writeObj", e);
             }
         } else {
-            stringList.add("No object");
+            miniLoggerLast.add("No object");
         }
         exitAppDO();
     }
@@ -182,16 +191,20 @@ public class ExitApp implements Runnable {
     /**
      Метод выхода
      <p>
-     Добавление в {@link #stringList}: {@code "exit at " + LocalDateTime.now().toString() + ConstantsFor.getUpTime()} <br>
-     {@link FileSystemWorker#writeFile(java.lang.String, java.util.List)}. {@link List} = {@link #stringList} <br>
+     Добавление в {@link #miniLoggerLast}: {@code "exit at " + LocalDateTime.now().toString() + ConstantsFor.getUpTime()} <br>
+     {@link FileSystemWorker#writeFile(java.lang.String, java.util.List)}. {@link List} = {@link #miniLoggerLast} <br>
      {@link FileSystemWorker#delTemp()}. Удаление мусора <br>
      {@link ConfigurableApplicationContext#close()}. Остановка контекста. <br>
      {@link ThreadConfig#killAll()} закрытие {@link java.util.concurrent.ExecutorService} и {@link java.util.concurrent.ScheduledExecutorService} <br>
      {@link System#exit(int)} int = <i>uptime</i> в минутах.
      */
     private void exitAppDO() {
-        stringList.add("exit at " + LocalDateTime.now() + ConstantsFor.getUpTime());
-        FileSystemWorker.writeFile("exit.last", stringList.stream());
+        final BlockingDeque<String> devices = ConstantsNet.getAllDevices();
+        miniLoggerLast.add("AllDevices " + "iterator next" + " = " + devices.iterator().next());
+        miniLoggerLast.add("AllDevices " + "Last" + " = " + devices.getLast());
+        miniLoggerLast.add("AllDevices " + "size/remainingCapacity/total" + " = " + devices.size() + "/" + devices.remainingCapacity() + "/" + ConstantsNet.IPS_IN_VELKOM_VLAN);
+        miniLoggerLast.add("exit at " + LocalDateTime.now() + ConstantsFor.getUpTime());
+        FileSystemWorker.writeFile("exit.last", miniLoggerLast.stream());
         FileSystemWorker.delTemp();
         getConfigurableApplicationContext().close();
         AppComponents.threadConfig().killAll();
@@ -199,9 +212,10 @@ public class ExitApp implements Runnable {
     }
     
     private void readCommit(File file) {
+        messageToUser.info("ExitApp.readCommit", file.getAbsolutePath() + " Modified:", " " + new Date(file.lastModified()));
         if (file != null || file.length() > 10) {
             final String readFile = file.getAbsolutePath();
-            new MessageToTray().info("ExitApp.readCommit", "commit", " = " + readFile);
+            messageToUser.info("ExitApp.readCommit", "commit", " = " + readFile);
         } else {
             messageToUser.info("ExitApp.readCommit", "null", " = " + file.getName());
         }
@@ -213,14 +227,21 @@ public class ExitApp implements Runnable {
     @Override
     public void run() {
         AppComponents.threadConfig().thrNameSet("exit");
-        File commitFile = new File("G:\\My_Proj\\FtpClientPlus\\modules\\networker\\src\\main\\resources\\commit.msg");
+        File commitFile = new File("G:\\My_Proj\\FtpClientPlus\\modules\\networker\\src\\main\\resources\\static\\pages\\commit.html");
         if (!commitFile.exists()) {
-            commitFile = new File("C:\\Users\\ikudryashov\\IdeaProjects\\spring\\modules\\networker\\commit.msg");
+            commitFile = new File("C:\\Users\\ikudryashov\\IdeaProjects\\spring\\modules\\networker\\src\\main\\resources\\static\\pages\\commit.html");
+        }
+        if (commitFile.exists() && commitFile.canRead()) {
+            try {
+                Desktop.getDesktop().browse(URI.create(GO_TO));
+            } catch (IOException e) {
+                messageToUser.errorAlert("ExitApp", "run", e.getMessage());
+            }
+            readCommit(commitFile);
         } else {
             messageToUser.info("NO FILES COMMIT");
         }
-        readCommit(commitFile);
-        stringList.add(reasonExit);
+        miniLoggerLast.add(reasonExit);
         AppComponents.getOrSetProps(true);
         copyAvail();
     }

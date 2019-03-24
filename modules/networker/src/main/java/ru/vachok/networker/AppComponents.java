@@ -26,6 +26,7 @@ import ru.vachok.networker.net.NetScannerSvc;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.SimpleCalculator;
+import ru.vachok.networker.systray.MessageToTray;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
@@ -128,7 +129,7 @@ public class AppComponents {
             if (isSaved) {
                 messageToUser.info(classMeth, isSavedStr, " = " + true);
             } else {
-                messageToUser.error(classMeth, isSavedStr, " = " + false);
+                new MessageToTray().error(classMeth, isSavedStr, " = " + false);
             }
         }
         return properties;

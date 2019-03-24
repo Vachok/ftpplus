@@ -14,10 +14,7 @@ import ru.vachok.networker.services.MessageLocal;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 
 /**
@@ -53,7 +50,11 @@ class NetScanFileWorker {
     }
 
     public void setSrvFiles(List<File> srvFiles) {
-        this.srvFiles = srvFiles;
+        if (srvFiles.size() < 5) {
+            this.srvFiles = srvFiles;
+        } else {
+            this.srvFiles = new ArrayList<>();
+        }
     }
 
     public long getLastStamp() {
