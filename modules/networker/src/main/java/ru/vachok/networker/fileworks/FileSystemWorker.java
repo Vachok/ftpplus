@@ -251,7 +251,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
      @param classMeth класс метод.
      @param e         исключение
      */
-    public static void error(String classMeth, Exception e) {
+    public static String error(String classMeth, Exception e) {
         File f = new File(classMeth + "_" + LocalTime.now().toSecondOfDay() + FILEEXT_LOG);
 
         try (OutputStream outputStream = new FileOutputStream(f)) {
@@ -260,7 +260,8 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         } catch (IOException exIO) {
             messageToUser.errorAlert(CLASS_NAME, "error", exIO.getMessage());
         }
-        copyOrDelFile(f, ".\\err\\" + f.getName(), true);
+        boolean isCp = copyOrDelFile(f, ".\\err\\" + f.getName(), true);
+        return f.getAbsolutePath()+" "+isCp;
     }
 
 

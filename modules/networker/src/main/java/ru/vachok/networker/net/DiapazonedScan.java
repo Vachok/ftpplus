@@ -4,7 +4,6 @@ package ru.vachok.networker.net;
 
 
 import org.springframework.ui.Model;
-import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
@@ -156,7 +155,7 @@ public class DiapazonedScan implements Runnable {
             if (isWritten) {
                 ALL_DEVICES_LOCAL_DEQUE.clear();
             } else {
-                new MessageSwing(getInstance().getClass().getSimpleName()).warn("ALL_DEVICES_LOCAL_DEQUE is not written by " + getInstance().hashCode() + ".startDo");
+                messageToUser.warn(DiapazonedScan.class.getSimpleName(),"warn(", "ALL_DEVICES_LOCAL_DEQUE is not written by " + getInstance().toString() + ".startDo");
             }
         }
 
@@ -323,18 +322,18 @@ public class DiapazonedScan implements Runnable {
         private ConcurrentMap<String, String> scanLanSegment(int fromVlan, int toVlan, String whatVlan, PrintStream printStream) {
             @SuppressWarnings("DuplicateStringLiteralInspection") String methName = ".scanLanSegment";
             ConcurrentMap<String, String> stStMap = new ConcurrentHashMap<>(MAX_IN_VLAN_INT);
-
+            String theScannedIPHost="No scan yet";
             for (int i = fromVlan; i < toVlan; i++) {
                 StringBuilder msgBuild = new StringBuilder();
                 for (int j = 0; j < MAX_IN_VLAN_INT; j++) {
                     try {
-                        String theScannedIPHost = oneIpScanAndPrintToFile(printStream);
-                        stStMap.putIfAbsent(theScannedIPHost.split(" ")[0], theScannedIPHost.split(" ")[1]);
+                        theScannedIPHost = oneIpScanAndPrintToFile(printStream);
+                        stStMap.put(theScannedIPHost.split(" ")[0], theScannedIPHost.split(" ")[1]);
                     } catch (IOException e) {
-                        FileSystemWorker.error("DiapazonedScan.scanLanSegment", e);
+                        String errorWrite = FileSystemWorker.error("DiapazonedScan.scanLanSegment", e);
+                        stStMap.put(e.getMessage(), errorWrite);
                     } catch (ArrayIndexOutOfBoundsException e) {
-                        messageToUser.errorAlert(getClass().getSimpleName(), ".scanLanSegment", e.getMessage());
-                        FileSystemWorker.error(getClass().getSimpleName() + ".scanLanSegment", e);
+                        stStMap.put(theScannedIPHost, e.getMessage());
                     }
                 }
             }
