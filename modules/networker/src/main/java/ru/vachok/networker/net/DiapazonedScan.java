@@ -84,7 +84,7 @@ public class DiapazonedScan implements Runnable {
     public long getStopClassStampLong() {
         return stopClassStampLong;
     }
-    
+
     @Override
     public void run() {
         String classMeth = "DiapazonedScan.run";
@@ -142,11 +142,11 @@ public class DiapazonedScan implements Runnable {
         String vlanIs = "10.200.";
         String classMeth = "DiapazonedScan.theNewLan";
         String methName = ".theNewLan";
-    
+
         Runnable execScan200210 = new DiapazonedScan.ExecScan(200, 210, "10.200.", new File(FILENAME_NEWLAN200210));
         AppComponents.threadConfig().execByThreadConfig(execScan200210);
-    
-        Runnable execScan210220 = new DiapazonedScan.ExecScan(200, 218, "10.200.", new File(FILENAME_NEWLAN200210));
+
+        Runnable execScan210220 = new DiapazonedScan.ExecScan(200, 218, "10.200.", new File(FILENAME_NEWLAN210));
         AppComponents.threadConfig().execByThreadConfig(execScan210220);
     }
 
@@ -171,7 +171,7 @@ public class DiapazonedScan implements Runnable {
     @SuppressWarnings("MagicNumber")
     private void scanOldLan() {
         String classMeth = this.getClass().getSimpleName() + ".scanOldLan";
-    
+
         Runnable execScanOld0 = new DiapazonedScan.ExecScan(11, 16, "192.168.", new File(FILENAME_OLDLANTXT0));
         Runnable execScanOld1 = new DiapazonedScan.ExecScan(16, 21, "192.168.", new File(FILENAME_OLDLANTXT1));
 
@@ -205,7 +205,7 @@ public class DiapazonedScan implements Runnable {
         messageToUser.warn("DiapazonedScan.theInfoToString", "ROOT_PATH_STR", " = " + ROOT_PATH_STR);
         try {
             String atStr = " size in bytes: ";
-    
+
             fileTimes.append(FILENAME_NEWLAN210).append(FILENAME_NEWLAN200210).append(atStr); fileTimes.append(Paths.get(FILENAME_NEWLAN210).toFile().length());
             fileTimes.append(Paths.get(FILENAME_NEWLAN200210).toFile().length()).append("<br>\n"); fileTimes.append(FILENAME_OLDLANTXT0).append(", ");
             fileTimes.append(FILENAME_OLDLANTXT1).append(atStr); fileTimes.append(Paths.get(FILENAME_OLDLANTXT0).toFile().length()).append("<br>\n");
@@ -244,7 +244,7 @@ public class DiapazonedScan implements Runnable {
         private String whatVlan;
 
         private File vlanFile;
-    
+
         private final MessageToUser messageToUser = new MessageLocal(DiapazonedScan.ExecScan.class.getSimpleName());
 
         public ExecScan(int from, int to, String whatVlan, File vlanFile) {
@@ -323,7 +323,7 @@ public class DiapazonedScan implements Runnable {
         private ConcurrentMap<String, String> scanLanSegment(int fromVlan, int toVlan, String whatVlan, PrintStream printStream) {
             @SuppressWarnings("DuplicateStringLiteralInspection") String methName = ".scanLanSegment";
             ConcurrentMap<String, String> stStMap = new ConcurrentHashMap<>(MAX_IN_VLAN_INT);
-    
+
             for (int i = fromVlan; i < toVlan; i++) {
                 StringBuilder msgBuild = new StringBuilder();
                 for (int j = 0; j < MAX_IN_VLAN_INT; j++) {
