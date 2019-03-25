@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
  @since 25.01.2019 (9:33) */
 class ActionSomeInfo extends AbstractAction {
 
-    private transient MessageToUser messageToUser = new MessageLocal();
+    private transient MessageToUser messageToUser = new MessageLocal(ActionSomeInfo.class.getSimpleName());
 
     ActionSomeInfo() {
         new MessageCons().errorAlert("ActionSomeInfo.ActionSomeInfo");

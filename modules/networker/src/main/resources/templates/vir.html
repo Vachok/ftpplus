@@ -1,3 +1,13 @@
+<!-- Copyright (c) all rights. http://networker.vachok.ru 2019. -->
+
+<!--
+  ~ Copyright (c) 2019.
+  -->
+
+<!--
+  ~ Copyright (c) 2019.
+  -->
+
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
@@ -6,12 +16,15 @@
     <link rel="stylesheet" type="text/css" media="all" href="css/main.css" th:href="@{css/main.css}"/>
 </head>
 <body>
+<center><p th:utext="${head}"/></center>
 <h1>
     <center><a href="/"><font color="#b7fff5">Main Page</font></a>, <a href="/ping">Pinger Test</a>, <a href="/user">USER test</a> <a href="/thr/cover/index.html">Cover</a></center>
 </h1>
 <center><b><font color="#f7fc6c"><p th:utext="${mail}"/></font></b></center>
 <p th:utext="${urls}"/>
-<a href="http://srv-git.eatmeat.ru:9999"><font color=""><p th:utext="${ping}"></p></font></a>
+<center>
+    <h3><a href="http://networker.vachok.ru"><font color=""><p th:utext="${ping}"></p></font></a></h3>
+</center>
 <p th:utext="${visit}"/>
 <p th:utext="${res}"/>
 <p th:utext="${request}"/>

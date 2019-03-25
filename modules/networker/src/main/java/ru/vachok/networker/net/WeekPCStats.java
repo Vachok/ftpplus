@@ -30,7 +30,7 @@ public class WeekPCStats implements Runnable {
      */
     private static final List<String> PC_NAMES_IN_TABLE = new ArrayList<>();
 
-    private static MessageToUser messageToUser = new MessageToTray();
+    private static MessageToUser messageToUser = new MessageToTray(WeekPCStats.class.getSimpleName());
 
     /**
      {@link #getFromDB()}

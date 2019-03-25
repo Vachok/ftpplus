@@ -20,8 +20,8 @@ import java.util.concurrent.*;
  @see ru.vachok.networker.IntoApplication
  @since 25.01.2019 (13:30) */
 class ActionReloadCTX extends AbstractAction {
-    
-    
+
+
     /**
      {@link MessageLocal}
      */
@@ -32,11 +32,11 @@ class ActionReloadCTX extends AbstractAction {
     @Override
     public void actionPerformed(ActionEvent e) {
         ExitApp exitApp = new ExitApp(getClass().getSimpleName());
-        Future<?> submit = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(() -> exitApp.reloadCTX());
+        Future<?> submit = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(() -> ExitApp.reloadCTX());
         try {
             submit.get(ConstantsFor.DELAY, TimeUnit.SECONDS);
         } catch (InterruptedException | ExecutionException | TimeoutException e1) {
-            messageToUser.errorAlert("ActionReloadCTX", "actionPerformed", e1.getMessage());
+            messageToUser.errorAlert("ActionReloadCTX" , ConstantsFor.METHNAME_ACTIONPERFORMED , e1.getMessage());
             FileSystemWorker.error("ActionReloadCTX.actionPerformed", e1);
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();

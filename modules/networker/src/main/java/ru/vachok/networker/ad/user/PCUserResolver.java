@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.ad.user;
 
 
@@ -35,12 +37,7 @@ public class PCUserResolver extends ADSrv {
 
     private static final String METHNAME_REC_AUTO_DB = "PCUserResolver.recAutoDB";
 
-    /**
-     Последний измененный файл.
-
-     @see #getLastTimeUse(String)
-     */
-    private String lastFileUse;
+    private final MessageToUser messageToUser = new MessageLocal(PCUserResolver.class.getSimpleName());
 
     /**
      @return {@link #PC_USER_RESOLVER}
@@ -49,7 +46,13 @@ public class PCUserResolver extends ADSrv {
         return PC_USER_RESOLVER;
     }
 
-    private MessageToUser messageToUser = new MessageLocal();
+
+    /**
+     * Последний измененный файл.
+     *
+     * @see #getLastTimeUse(String)
+     */
+    private String lastFileUse = "null";
 
     /**
      Default-конструктор
@@ -75,7 +78,7 @@ public class PCUserResolver extends ADSrv {
      @param pcName имя компьютера
      @see ru.vachok.networker.net.ConditionChecker#onLinesCheck(String, String)
      */
-    public synchronized void namesToFile(String pcName) {
+    public void namesToFile(String pcName) {
         AppComponents.threadConfig().thrNameSet("pcfile-");
 
         File pcNameFile = new File(pcName);
@@ -113,6 +116,7 @@ public class PCUserResolver extends ADSrv {
         });
     }
 
+
     /**
      Записывает инфо о пльзователе в <b>pcuserauto</b>
      <p>
@@ -121,28 +125,31 @@ public class PCUserResolver extends ADSrv {
      <b>{@link SQLException}, {@link ArrayIndexOutOfBoundsException}, {@link NullPointerException}: </b>
      1. {@link FileSystemWorker#error(java.lang.String, java.lang.Exception)} <br>
 
-     @param pcName      имя ПК
+     @param pcName имя ПК
      @param lastFileUse строка - имя последнего измененного файла в папке пользователя.
      */
-    private synchronized void recAutoDB(String pcName, String lastFileUse) {
+    private void recAutoDB(String pcName, String lastFileUse) {
+
         String sql = "insert into pcuser (pcName, userName, lastmod, stamp) values(?,?,?,?)";
         try (Connection connection = new AppComponents().connection(ConstantsNet.DB_NAME)) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql.replaceAll(ConstantsFor.DBFIELD_PCUSER, ConstantsFor.DBFIELD_PCUSERAUTO))) {
                 String[] split = lastFileUse.split(" ");
                 preparedStatement.setString(1, pcName);
                 preparedStatement.setString(2, split[0]);
-                preparedStatement.setString(3, IntStream.of(2, 3, 4).mapToObj(i -> split[i]).collect(Collectors.joining()));
+                preparedStatement.setString(3, IntStream.of(2, 3, 4).mapToObj(i->split[i]).collect(Collectors.joining()));
                 preparedStatement.setString(4, split[7]);
                 preparedStatement.executeUpdate();
-            } catch (SQLException e) {
+            }
+            catch (SQLException e) {
                 connection.clearWarnings();
                 messageToUser.errorAlert(ConstantsFor.CLASS_NAME_PCUSERRESOLVER, "recAutoDB", e.getMessage());
                 FileSystemWorker.error(METHNAME_REC_AUTO_DB, e);
             }
         }
-        catch(SQLException | ArrayIndexOutOfBoundsException | NullPointerException | IOException e){
+        catch (SQLException | ArrayIndexOutOfBoundsException | NullPointerException | IOException e) {
             FileSystemWorker.error(METHNAME_REC_AUTO_DB, e);
         }
+
     }
 
     /**
@@ -156,7 +163,7 @@ public class PCUserResolver extends ADSrv {
      @param pathAsStr путь, который нужно пролистать.
      @return {@link PCUserResolver.WalkerToUserFolder#getTimePath()} последняя запись из списка.
      */
-    private synchronized String getLastTimeUse(String pathAsStr) {
+    private String getLastTimeUse(String pathAsStr) {
         PCUserResolver.WalkerToUserFolder walkerToUserFolder = new PCUserResolver.WalkerToUserFolder();
         try {
             Files.walkFileTree(Paths.get(pathAsStr), Collections.singleton(FOLLOW_LINKS), 2, walkerToUserFolder);

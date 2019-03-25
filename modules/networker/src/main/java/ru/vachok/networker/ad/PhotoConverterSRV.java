@@ -3,9 +3,11 @@ package ru.vachok.networker.ad;
 
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
+import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.services.MessageLocal;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -16,7 +18,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
 import java.util.*;
 import java.util.function.BiConsumer;
 
@@ -25,14 +26,13 @@ import java.util.function.BiConsumer;
  <h1>Создаёт команды для MS Power Shell, чтобы добавить фото пользователей</h1>
 
  @since 21.08.2018 (15:57) */
-@SuppressWarnings("unused")
 @Service (ConstantsFor.ATT_PHOTO_CONVERTER)
 public class PhotoConverterSRV {
 
     /**
      {@link Logger}
      */
-    private static final Logger LOGGER = AppComponents.getLogger(PhotoConverterSRV.class.getSimpleName());
+    private static final MessageToUser messageToUser = new MessageLocal(PhotoConverterSRV.class.getSimpleName());
 
     private final Properties properties = AppComponents.getOrSetProps();
 
@@ -45,8 +45,8 @@ public class PhotoConverterSRV {
      Файл-фото
      */
     private File adFotoFile;
-
-    private final List<String> psCommands = new ArrayList<>();
+    
+    private final Collection<String> psCommands = new ArrayList<>();
 
     /**
      <b>Преобразование в JPG</b>
@@ -65,17 +65,14 @@ public class PhotoConverterSRV {
             BufferedImage bufferedImage = new BufferedImage(y.getWidth(), y.getHeight(), BufferedImage.TYPE_INT_RGB);
             bufferedImage.createGraphics().drawImage(y, 0, 0, Color.WHITE, null);
             ImageIO.write(bufferedImage, fName, outFile);
-            String msg = outFile.getAbsolutePath() + " written";
-            LOGGER.info(msg);
+            String msg = outFile.getAbsolutePath() + " written"; messageToUser.info(msg);
             msg = "Import-RecipientDataProperty -Identity " +
                 x + " -Picture -FileData ([Byte[]] $(Get-Content -Path “C:\\newmailboxes\\foto\\" +
                 outFile.getName() +
-                "\" -Encoding Byte -ReadCount 0))";
-            LOGGER.warn(msg);
+                "\" -Encoding Byte -ReadCount 0))"; messageToUser.warn(msg);
             psCommands.add(msg);
         } catch (Exception e) {
-            FileSystemWorker.error("PhotoConverterSRV.imageBiConsumer", e);
-            psCommands.add(e.getMessage());
+            messageToUser.errorAlert(getClass().getSimpleName(), "", e.getMessage()); FileSystemWorker.error(getClass().getSimpleName() + ".", e);
         }
     };
 
@@ -107,8 +104,8 @@ public class PhotoConverterSRV {
         try {
             convertFoto();
         } catch (IOException | NullPointerException e) {
+            messageToUser.errorAlert(getClass().getSimpleName(), "psCommands", e.getMessage());
             FileSystemWorker.error("PhotoConverterSRV.psCommands", e);
-            LOGGER.error(e.getMessage());
         }
         StringBuilder stringBuilder = new StringBuilder();
         for (String s : psCommands) {

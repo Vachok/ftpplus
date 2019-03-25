@@ -29,12 +29,14 @@ public class NetMonitorPTV implements Runnable {
     private static final String CLASS_NAME = NetMonitorPTV.class.getSimpleName();
 
     private VersionInfo versionInfo = AppComponents.versionInfo();
-    
+
     private OutputStream outputStream;
-    
+
     private PrintWriter printWriter;
 
-    private MessageToUser messageToUser = new MessageLocal();
+    private final String simpleName = NetMonitorPTV.class.getSimpleName();
+
+    private MessageToUser messageToUser = new MessageLocal(simpleName);
 
     private String pingResultLast = "No pings yet.";
 
@@ -114,7 +116,7 @@ public class NetMonitorPTV implements Runnable {
         } else {
             messageToUser = new MessageFile();
             messageToUser.info(classMeth, "printWriter.checkError()", String.valueOf(printWriter.checkError()));
-            messageToUser = new MessageLocal();
+            messageToUser = new MessageLocal(simpleName);
         }
     }
 

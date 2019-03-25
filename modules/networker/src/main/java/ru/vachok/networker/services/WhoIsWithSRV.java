@@ -1,3 +1,5 @@
+
+
 package ru.vachok.networker.services;
 
 
@@ -18,7 +20,8 @@ import java.util.Locale;
 @Service
 public class WhoIsWithSRV {
 
-    private MessageToUser messageToUser = new MessageLocal();
+
+    private MessageToUser messageToUser = new MessageLocal(WhoIsWithSRV.class.getSimpleName());
 
     public String whoIs(String inetAddr) {
         StringBuilder geoLocation = new StringBuilder();
@@ -58,14 +61,17 @@ public class WhoIsWithSRV {
         return geoLocation.toString();
     }
 
+
     public static String whoisStat(String workPos, Model model) {
         WhoIsWithSRV whoIsWithSRV = new WhoIsWithSRV();
         workPos = workPos.split(": ")[1];
         String attributeValue = whoIsWithSRV.whoIs(workPos);
         model.addAttribute(ConstantsFor.ATT_WHOIS, attributeValue);
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
+        model.addAttribute("toHead", new PageFooter().getHeaderUtext());
         return ConstantsFor.BEANNAME_MATRIX;
     }
+
 
     private String traceRt(String inetAddr) {
         SSHFactory.Builder sshFactoryBu = new SSHFactory.Builder(ConstantsFor.IPADDR_SRVGIT, "traceroute " + inetAddr, getClass().getSimpleName());
@@ -78,6 +84,7 @@ public class WhoIsWithSRV {
 
         return retStr;
     }
+
 
     private String whoIsQuery(String inetAddr) throws IOException {
         WhoisClient whoisClient = new WhoisClient();

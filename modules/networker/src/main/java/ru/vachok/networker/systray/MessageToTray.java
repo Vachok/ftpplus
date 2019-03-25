@@ -33,7 +33,7 @@ public class MessageToTray implements MessageToUser {
 
     private String bodyMsg = "No body";
 
-    private MessageToUser messageToUser = new MessageLocal();
+    private MessageToUser messageToUser = new MessageLocal(MessageToTray.class.getSimpleName());
 
     public MessageToTray() throws NullPointerException, IllegalStateException {
         if (!ConstantsFor.IS_SYSTRAY_AVAIL) {
@@ -50,6 +50,12 @@ public class MessageToTray implements MessageToUser {
             throw new IllegalStateException("***System Tray not Available!***");
         }
     }
+
+
+    public MessageToTray( String simpleName ) {
+        this.headerMsg = simpleName;
+    }
+
 
     @Override
     public void error(String s) {

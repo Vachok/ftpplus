@@ -2,6 +2,7 @@ package ru.vachok.networker.systray;
 
 
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
 
@@ -20,7 +21,7 @@ public class ActionRun extends AbstractAction {
 
     private String commandToRun;
 
-    private MessageToUser messageToUser = new MessageLocal();
+    private MessageToUser messageToUser = new MessageLocal(ActionRun.class.getSimpleName());
 
     /**
      Creates an {@code Action}.
@@ -39,7 +40,7 @@ public class ActionRun extends AbstractAction {
             Runtime.getRuntime().exec(commandToRun);
         }
         catch(IOException e1){
-            messageToUser.errorAlert("ActionRun", "actionPerformed", e1.getMessage());
+            messageToUser.errorAlert("ActionRun" , ConstantsFor.METHNAME_ACTIONPERFORMED , e1.getMessage());
             FileSystemWorker.error("ActionRun.actionPerformed", e1);
         }
     }

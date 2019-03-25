@@ -19,6 +19,7 @@ import java.util.Properties;
 
 
 /**
+ 
  @since 24.09.2018 (9:44) */
 @Component("versioninfo")
 public class VersionInfo {
@@ -70,14 +71,14 @@ public class VersionInfo {
     /**
      Конструктор по-умолчанию.
      <p>
-     Если имя ПК содержит "home" или "no0" {@link #setParams()} , иначе {@link #getParams()}
+     Если имя ПК содержит "home" или "no0" {@link #setParams()}
      */
     public VersionInfo() {
         if (new File("bugged").exists()) {
             this.isBUGged = true;
         }
         if (thisPCNameStr.toLowerCase().contains("home") || thisPCNameStr.toLowerCase().contains("no0")) {
-            AppComponents.threadConfig().executeAsThread(this::setParams);
+            AppComponents.threadConfig().execByThreadConfig(this::setParams);
         }
         appBuild = PROPERTIES.getProperty(PR_APP_BUILD);
         appVersion = PROPERTIES.getProperty(ConstantsFor.PR_APP_VERSION);
@@ -138,8 +139,7 @@ public class VersionInfo {
             }
         }
         PROPERTIES.setProperty(PR_APP_BUILD, thisPCNameStr + "." + LocalDate.now().getDayOfWeek().getValue());
-        if (thisPCNameStr.equalsIgnoreCase("home") ||
-            thisPCNameStr.toLowerCase().contains(ConstantsFor.HOSTNAME_NO0027)) {
+        if (thisPCNameStr.equalsIgnoreCase("home") || thisPCNameStr.toLowerCase().contains(ConstantsFor.HOSTNAME_DO213)) {
             PROPERTIES.setProperty(PR_BUILD_TIME, String.valueOf(System.currentTimeMillis()));
         }
         try {

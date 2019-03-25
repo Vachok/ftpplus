@@ -64,7 +64,7 @@ public class NetPinger implements Runnable, Pinger {
     /**
      {@link MessageLocal}. Вывод сообщений
      */
-    private MessageToUser messageToUser = new MessageLocal();
+    private MessageToUser messageToUser = new MessageLocal(NetPinger.class.getSimpleName());
 
     /**
      Ввод минут из браузера. По-умолчанию 3.
@@ -178,13 +178,13 @@ public class NetPinger implements Runnable, Pinger {
      (уникальный элемент из {@link #resList}).
      <p>
      Записать результат в файл {@link FileSystemWorker#writeFile(java.lang.String, java.util.List)}. Файл - {@link ConstantsNet#PINGRESULT_LOG}. <br> Если пингер работал 3 и более минут,
-     отправить отчёт на почту {@link ConstantsFor#EADDR_143500GMAILCOM} ({@link ESender#sendM(java.util.List, java.lang.String, java.lang.String)}) <br>
+     отправить отчёт на почту {@link ConstantsFor#MAILADDR_143500GMAILCOM} ({@link ESender#sendM(java.util.List, java.lang.String, java.lang.String)}) <br>
 
      @param userIn кол-во минут в мсек, которые пингер работал.
      */
     private void parseResult(long userIn) {
         List<String> pingsList = new ArrayList<>();
-    
+
         pingsList.add("Pinger is start at " + new Date(System.currentTimeMillis() - userIn));
         resList.stream().distinct().forEach(x -> {
             int frequency = Collections.frequency(resList, x);

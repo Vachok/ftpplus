@@ -1,9 +1,11 @@
 package ru.vachok.networker.net;
 
 
+import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ExitApp;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
 
@@ -30,7 +32,7 @@ public class NetListKeeper {
     /**
      {@link MessageLocal}
      */
-    private static final MessageLocal messageToUser = new MessageLocal(NetListKeeper.class.getSimpleName());
+    private static final MessageToUser messageToUser = new MessageLocal(NetListKeeper.class.getSimpleName());
     
     private static NetListKeeper netListKeeper = new NetListKeeper();
     
@@ -58,7 +60,6 @@ public class NetListKeeper {
             Map<String, String> fromFileMap = (ConcurrentMap<String, String>) objectInputStream.readObject();
             onLinesResolve.putAll(fromFileMap);
         } catch (IOException | ClassNotFoundException e) {
-            messageToUser.errorAlert("NetListKeeper", "readMap", e.getMessage());
             FileSystemWorker.error("NetListKeeper.readMap", e);
         }
     }
@@ -106,15 +107,6 @@ public class NetListKeeper {
         return getOnLinesResolve().equals(that.getOnLinesResolve()) && getOffLines().equals(that.getOffLines());
     }
     
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("NetListKeeper{");
-        sb.append(", onLinesResolve=").append(onLinesResolve.size());
-        sb.append(", offLines=").append(offLines.size());
-        sb.append('}');
-        return sb.toString();
-    }
-    
     private class ChkOnlinesSizeChange implements Runnable {
         
         
@@ -144,5 +136,15 @@ public class NetListKeeper {
                 messageToUser.info(classMeth, "currentSize", " = " + currentSize);
             }
         }
+    }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("NetListKeeper{");
+        sb.append("offLines=").append(new TForms().fromArray(offLines, true));
+        sb.append("<br><br>");
+        sb.append(", onLinesResolve=").append(new TForms().fromArray(onLinesResolve, false));
+        sb.append('}');
+        return sb.toString();
     }
 }

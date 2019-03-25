@@ -44,7 +44,7 @@ public class ActionDefault extends AbstractAction {
         try{
             Desktop.getDesktop().browse(URI.create(goTo));
         } catch (IOException | IllegalArgumentException e1) {
-            messageToUser.errorAlert("ActionDefault", "actionPerformed", e1.getMessage());
+            messageToUser.errorAlert("ActionDefault" , ConstantsFor.METHNAME_ACTIONPERFORMED , e1.getMessage());
         }
         Thread.currentThread().checkAccess();
         Thread.currentThread().interrupt();

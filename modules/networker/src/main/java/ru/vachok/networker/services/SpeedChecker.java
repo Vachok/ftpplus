@@ -1,7 +1,7 @@
 package ru.vachok.networker.services;
 
 
-import org.slf4j.Logger;
+
 import org.slf4j.LoggerFactory;
 import org.springframework.ui.Model;
 import ru.vachok.messenger.MessageCons;
@@ -48,7 +48,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
     /**
      Логер. {@link LoggerFactory}
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(SpeedChecker.class.getSimpleName());
+    private static final MessageToUser LOGGER = new MessageLocal(SpeedChecker.class.getSimpleName());
 
     /**
      Property name: lastworkstart
@@ -140,7 +140,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
         long l = rtLong + TimeUnit.HOURS.toMillis(20);
         boolean is20HRSSpend = System.currentTimeMillis() > l;
         if (is20HRSSpend || !isWeekEnd) {
-            AppComponents.threadConfig().executeAsThread(this::setRtLong);
+            AppComponents.threadConfig().execByThreadConfig(this::setRtLong);
         } else {
             this.rtLong = Long.valueOf(AppComponents.getOrSetProps().getProperty(PR_LASTWORKSTART));
         }
@@ -163,9 +163,10 @@ public class SpeedChecker implements Callable<Long>, Runnable {
          {@link MailMessages}
          */
         private MailMessages mailMessages = new MailMessages();
-    
+
         private MessageToUser messageToUser = new MessageFile();
-    
+
+
         /**
          Получение информации о текущем дне недели.
          <p>
@@ -208,10 +209,10 @@ public class SpeedChecker implements Callable<Long>, Runnable {
                 }
             }
             catch(SQLException | IOException e){
-                new MessageLocal().errorAlert(CLASS_NAME, "todayInfo", e.getMessage());
+                LOGGER.errorAlert(CLASS_NAME , "todayInfo" , e.getMessage());
                 FileSystemWorker.error("ChkMailAndUpdateDB.todayInfo", e);
             }
-            new MessageLocal().infoNoTitles(stringBuilder.toString());
+            LOGGER.infoNoTitles(stringBuilder.toString());
             return stringBuilder.toString();
         }
 
@@ -273,7 +274,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
         /**
          Парсинг сообщений от бота.
          <p>
-         {@link ESender} ({@link ConstantsFor#EADDR_143500GMAILCOM}). <br>
+         {@link ESender} ({@link ConstantsFor#MAILADDR_143500GMAILCOM}). <br>
          Если тема сообщения содержит {@code speed:}, берётся дата отправки {@link Message#getSentDate()}.
          <p>
          Если {@link #writeDB(String, int, long)}, удалим сообщение {@link #delMessage(Message)}.

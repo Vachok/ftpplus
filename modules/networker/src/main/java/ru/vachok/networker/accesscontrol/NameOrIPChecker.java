@@ -1,6 +1,7 @@
 package ru.vachok.networker.accesscontrol;
 
 
+
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
@@ -39,7 +40,7 @@ public class NameOrIPChecker {
     /**
      * {@link MessageLocal}
      */
-    private final MessageToUser messageToUser = new MessageLocal();
+    private final MessageToUser messageToUser = new MessageLocal(NameOrIPChecker.class.getSimpleName());
 
     /**
      Default Constructor
@@ -103,7 +104,7 @@ public class NameOrIPChecker {
      @throws UnknownFormatConversionException если не удалось опознать строку-ввод.
      */
     InetAddress resolveIP() throws UnknownFormatConversionException {
-        InetAddress inetAddress = null;
+        InetAddress inetAddress;
         Matcher mName = PATTERN_NAME.matcher(userIn);
         Matcher mIP = PATTERN_IP.matcher(userIn);
         try{
@@ -113,7 +114,7 @@ public class NameOrIPChecker {
             }
             else{
                 if(mName.matches()){
-                    userIn = userIn + ConstantsNet.DOMAIN_EATMEATRU;
+                    userIn += ConstantsNet.DOMAIN_EATMEATRU;
                     inetAddress = InetAddress.getByName(userIn);
                 }
                 else{
@@ -124,6 +125,7 @@ public class NameOrIPChecker {
         catch(UnknownHostException e){
             messageToUser.errorAlert("NameOrIPChecker", "resolveIP", e.getMessage());
             FileSystemWorker.error("NameOrIPChecker.resolveIP", e);
+            throw new IllegalArgumentException(userIn + " if shit!");
         }
         return inetAddress;
     }
