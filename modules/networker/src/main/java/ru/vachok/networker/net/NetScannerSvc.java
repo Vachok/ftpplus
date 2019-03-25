@@ -32,7 +32,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.MessageFormat;
 import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -57,7 +56,7 @@ public class NetScannerSvc {
     /**
      {@link MessageLocal}
      */
-    private static final MessageToUser LOGGER = new MessageLocal(NetScannerSvc.CLASS_NAME);
+    private static final MessageToUser LOGGER = new MessageLocal(CLASS_NAME);
 
     /**
      {@link AppComponents#getOrSetProps()}
@@ -79,7 +78,7 @@ public class NetScannerSvc {
     /**
      Компьютеры онлайн
      */
-    static int onLinePCsNum = 0;
+    static int onLinePCsNum;
 
     @SuppressWarnings({"CanBeFinal" , "StaticVariableMayNotBeInitialized"})
     private static Connection connection;
@@ -96,8 +95,8 @@ public class NetScannerSvc {
      */
     @SuppressWarnings("CanBeFinal")
     private static NetScannerSvc netScannerSvcInst = new NetScannerSvc();
-
-    private static String inputWithInfoFromDB = null;
+    
+    private static String inputWithInfoFromDB;
 
     /**
      Время инициализации
@@ -398,11 +397,9 @@ public class NetScannerSvc {
 
                     String printStr = builder.toString();
                     String pcOnline = stringBuilder.toString();
-                    String strToConsole = MessageFormat.format("{0} {1} | {2}", pcName, pcOnline, onOffCounterAndLastUser);
 
                     netWorkMap.put(printStr, true);
-                    PC_NAMES_SET.add(pcName + ":" + byName.getHostAddress() + pcOnline);
-                    LOGGER.info(strToConsole);
+                    PC_NAMES_SET.add(pcName + ":" + byName.getHostAddress() + pcOnline); LOGGER.info(pcName, pcOnline, onOffCounterAndLastUser);
                 }
             } catch (IOException e) {
                 unusedNamesTree.add(e.getMessage());
@@ -418,7 +415,6 @@ public class NetScannerSvc {
         String elapsedTime = "<b>Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethTime) + " sec.</b> " + LocalTime.now();
         PC_NAMES_SET.add(elapsedTime);
         ConstantsNet.setPcNames(PC_NAMES_SET);
-
         LOGGER.info(pcsString);
         return PC_NAMES_SET;
     }
@@ -496,7 +492,7 @@ public class NetScannerSvc {
         }
         String bodyMsg = new StringBuilder().append(ConstantsFor.getMemoryInfo()).append("\n").append(" scan.tmp exist = ").append(fileCreate(false)).append("\n")
             .append("Properties is save = ").append(props).append("\n").append(file.getName()).append("size = ").append(lenFile).append(new TForms().fromArray(toFileList, false)).toString();
-        new MessageSwing(656, 550, 50, 53).infoTimer(50, this.toString() + "\n\n" + "AppProps to DB is: " + AppComponents.saveAppPropsForce());
+        new MessageSwing(656, 550, 50, 53).infoTimer(50, this + "\n\n" + "AppProps to DB is: " + AppComponents.saveAppPropsForce());
     }
 
 
@@ -519,9 +515,7 @@ public class NetScannerSvc {
             .append(false)
             .append("<br>").toString();
         PC_NAMES_SET.add(pcName + ":" + byName.getHostAddress() + " " + onLines);
-        String format = MessageFormat.format("{0} {1} | {2}", pcName, onLines, someMore);
-        netWorkMap.put(pcName + " last name is " + someMore, false);
-        LOGGER.warn(format);
+        netWorkMap.put(pcName + " last name is " + someMore, false); LOGGER.warn(pcName, onLines, someMore);
     }
 
 

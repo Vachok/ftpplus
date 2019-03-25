@@ -26,14 +26,13 @@ public class NetScanFileWorker {
 
 
     static final ConcurrentMap<String, File> srvFiles = new ConcurrentHashMap<>();
-
-    private static NetScanFileWorker ourInst = new NetScanFileWorker(srvFiles);
+    
+    private static final NetScanFileWorker ourInst = new NetScanFileWorker(srvFiles);
 
     private static MessageToUser messageToUser = new MessageLocal(NetScanFileWorker.class.getSimpleName());
 
     private long lastStamp = System.currentTimeMillis();
-
-
+    
     public NetScanFileWorker( ConcurrentMap<String, File> mapFiles ) {
     }
 

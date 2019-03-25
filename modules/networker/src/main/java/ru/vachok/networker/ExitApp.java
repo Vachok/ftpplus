@@ -44,6 +44,7 @@ public class ExitApp implements Runnable {
     private static final String classMeth = "ExitApp.readCommit";
 
     private static final String RELOAD_CTX = ".reloadCTX";
+    
     private static final String METH_COPY = "ExitApp.copyAvail";
 
     private static MessageToUser messageToUser = new MessageLocal(ExitApp.class.getSimpleName());
@@ -75,7 +76,7 @@ public class ExitApp implements Runnable {
 
      @see #writeObj()
      */
-    private OutputStream out = null;
+    private OutputStream out;
 
     /**
      Uptime в минутах. Как статус {@link System#exit(int)}
@@ -95,14 +96,12 @@ public class ExitApp implements Runnable {
         this.toWriteObj = toWriteObj;
         this.out = out;
     }
-
-
+    
     public ExitApp(String fileName, Object toWriteObj) {
         this.fileName = fileName;
         this.toWriteObj = toWriteObj;
     }
-
-
+    
     /**
      @param reasonExit {@link #reasonExit}
      */
@@ -199,7 +198,6 @@ public class ExitApp implements Runnable {
         writeObj();
     }
 
-
     /**
      Запись {@link Externalizable}
      <p>
@@ -227,7 +225,6 @@ public class ExitApp implements Runnable {
         exitAppDO();
     }
 
-
     /**
      Метод выхода
      <p>
@@ -251,14 +248,12 @@ public class ExitApp implements Runnable {
         System.exit(Math.toIntExact(toMinutes));
     }
 
-
     private void readCommit(File file) {
         messageToUser.info(classMeth , file.getAbsolutePath() + " Modified:" , " " + new Date(file.lastModified()));
         String readFile = file.getAbsolutePath();
         messageToUser.info(classMeth , "commit" , " = " + readFile);
     }
-
-
+    
     /**
      {@link #copyAvail()}
      */
