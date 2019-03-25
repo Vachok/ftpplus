@@ -1,7 +1,6 @@
 package ru.vachok.networker;
 
 
-
 import org.springframework.context.ConfigurableApplicationContext;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.config.ThreadConfig;
@@ -240,7 +239,7 @@ public class ExitApp implements Runnable {
      {@link System#exit(int)} int = <i>uptime</i> в минутах.
      */
     private void exitAppDO() {
-        final BlockingDeque<String> devices = ConstantsNet.getAllDevices();
+        BlockingDeque<String> devices = ConstantsNet.getAllDevices();
         miniLoggerLast.add("Devices " + "iterator next: " + " = " + devices.iterator().next());
         miniLoggerLast.add("Last" + " = " + devices.getLast());
         miniLoggerLast.add("BlockingDeque " + "size/remainingCapacity/total" + " = " + devices.size() + "/" + devices.remainingCapacity() + "/" + ConstantsNet.IPS_IN_VELKOM_VLAN);

@@ -461,9 +461,7 @@ public class NetScannerSvc {
         String msgTimeSp =
             "NetScannerSvc.getPCsAsync method. " + (float) (System.currentTimeMillis() - startClassTime) / 1000 + ConstantsFor.STR_SEC_SPEND;
         String valueOfPropLastScan = System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY) + "";
-
         LOCAL_PROPS.setProperty(ConstantsNet.PR_LASTSCAN, valueOfPropLastScan);
-
         toFileList.add(compNameUsers);
         toFileList.add(psUser);
         toFileList.add(msgTimeSp);
@@ -479,7 +477,7 @@ public class NetScannerSvc {
 
         countStat();
 
-        boolean isLastModSet = new File(ConstantsFor.class.getSimpleName() + ".properties").setLastModified(ConstantsFor.DELAY);
+        boolean isLastModSet = new File(ConstantsFor.class.getSimpleName() + ConstantsFor.FILEEXT_PROPERTIES).setLastModified(ConstantsFor.DELAY);
         boolean props = AppComponents.getOrSetProps(LOCAL_PROPS);
         LOGGER.info("NetScannerSvc.runAfterAllScan" , "isLastModSet" , " = " + isLastModSet);
 
@@ -498,7 +496,7 @@ public class NetScannerSvc {
         }
         String bodyMsg = new StringBuilder().append(ConstantsFor.getMemoryInfo()).append("\n").append(" scan.tmp exist = ").append(fileCreate(false)).append("\n")
             .append("Properties is save = ").append(props).append("\n").append(file.getName()).append("size = ").append(lenFile).append(new TForms().fromArray(toFileList, false)).toString();
-        new MessageSwing(656, 550, 50, 53).infoTimer(50, this.toString());
+        new MessageSwing(656, 550, 50, 53).infoTimer(50, this.toString() + "\n\n" + "AppProps to DB is: " + AppComponents.saveAppPropsForce());
     }
 
 
@@ -662,27 +660,6 @@ public class NetScannerSvc {
         }
         return inDex;
     }
-
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        NetScannerSvc that = (NetScannerSvc) o;
-        return startClassTime == that.startClassTime &&
-            Objects.equals(netWorkMap, that.netWorkMap);
-    }
-
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(startClassTime, netWorkMap);
-    }
-
 
     /**
      Запись в таблицу <b>velkompc</b> текущего состояния. <br>

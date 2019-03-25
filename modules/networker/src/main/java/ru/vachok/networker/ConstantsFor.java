@@ -397,6 +397,8 @@ public enum ConstantsFor {
      */
     private static final MessageToUser messageToUser = new MessageLocal(ConstantsFor.class.getSimpleName());
 
+    public static final String FILEEXT_PROPERTIES = ".properties";
+
 
     /**
      @return {@link #MAIL_RULES}
@@ -554,7 +556,7 @@ public enum ConstantsFor {
 
         InitProperties initProperties = new DBRegProperties(APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName());
         Properties retPr = new Properties();
-        File prFile = new File(ConstantsFor.class.getSimpleName() + ".properties");
+        File prFile = new File(ConstantsFor.class.getSimpleName() + FILEEXT_PROPERTIES);
         StringBuilder stringBuilder = new StringBuilder();
         String classMeth = "ConstantsFor.takePr";
 

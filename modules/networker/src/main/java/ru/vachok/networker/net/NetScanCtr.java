@@ -497,6 +497,9 @@ public class NetScanCtr {
      */
     @Async
     private void scanIt(HttpServletRequest request, Model model, Date lastScanDate) {
+        AppComponents.getOrSetProps().setProperty(ConstantsFor.PR_TOTPC, String.valueOf(lastScanMAP.size()));
+        boolean savedPr = AppComponents.saveAppPropsForce();
+        messageToUser.warn(savedPr + " APP PR IN DB!");
         if (request != null && request.getQueryString() != null) {
             lastScanMAP.clear();
             Set<String> pcNames = netScannerSvcInstAW.getPCNamesPref(request.getQueryString());
