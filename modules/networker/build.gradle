@@ -22,7 +22,7 @@ plugins {
 
 group = 'ru.vachok.networker'
 //noinspection SpellCheckingInspection
-version = '8.0.1913-scanfilebug'
+version = '8.0.1913'
 sourceCompatibility = 1.8
 
 repositories {
