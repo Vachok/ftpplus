@@ -36,8 +36,6 @@ import static ru.vachok.networker.net.enums.ConstantsNet.*;
 @SuppressWarnings({"ClassWithMultipleLoggers", "MagicNumber", "resource", "IOResourceOpenedButNotSafelyClosed"})
 public class DiapazonedScan implements Runnable {
 
-    private final long stArt;
-
     /**
      Корень директории.
      */
@@ -49,6 +47,10 @@ public class DiapazonedScan implements Runnable {
     private static final String FONT_BR_STR = "</font><br>\n";
 
     private static final int MAX_IN_VLAN_INT = 255;
+
+    private final ExecScan[] runnablesScans = {new DiapazonedScan.ExecScan(10, 20, "10.10.", new File(FILENAME_SERVTXT_11SRVTXT)),
+        new DiapazonedScan.ExecScan(21, 31, "10.10.", new File(FILENAME_SERVTXT_21SRVTXT)), new DiapazonedScan.ExecScan(31, 41, "10.10.", new File(FILENAME_SERVTXT_31SRVTXT)),
+        new DiapazonedScan.ExecScan(41, 51, "10.10.", new File(FILENAME_SERVTXT_41SRVTXT))};
 
     /**
      {@link ConstantsNet#getAllDevices()}
@@ -74,7 +76,6 @@ public class DiapazonedScan implements Runnable {
      */
     private DiapazonedScan() {
         AppComponents.threadConfig().thrNameSet("DScanF:" + srvFiles.size());
-        stArt = System.currentTimeMillis();
     }
 
     public Map<String, File> getSrvFiles() throws NullPointerException {
@@ -188,9 +189,8 @@ public class DiapazonedScan implements Runnable {
         @SuppressWarnings("DuplicateStringLiteralInspection") String classMeth = "DiapazonedScan.scanServers";
         @SuppressWarnings("DuplicateStringLiteralInspection") String methName = "scanServers";
         String vlanIs = "10.10.";
-        Runnable[] runnablesScan = {new DiapazonedScan.ExecScan(10, 20, vlanIs, new File(FILENAME_SERVTXT_11SRVTXT)), new DiapazonedScan.ExecScan(21, 31, vlanIs, new File(FILENAME_SERVTXT_21SRVTXT)), new DiapazonedScan.ExecScan(31, 41, vlanIs, new File(FILENAME_SERVTXT_31SRVTXT)), new DiapazonedScan.ExecScan(41, 51, vlanIs, new File(FILENAME_SERVTXT_41SRVTXT))
-        };
-        for (Runnable r : runnablesScan) {
+
+        for (ExecScan r : runnablesScans) {
             AppComponents.threadConfig().execByThreadConfig(r);
         }
     }
@@ -202,22 +202,20 @@ public class DiapazonedScan implements Runnable {
      */
     private String theInfoToString() {
         StringBuilder fileTimes = new StringBuilder();
-        messageToUser.warn("DiapazonedScan.theInfoToString", "ROOT_PATH_STR", " = " + ROOT_PATH_STR);
+        messageToUser.warn("DiapazonedScan.theInfoToString", "ROOT_PATH_STR", " = " + ROOT_PATH_STR); List<Long> timeSpend = new ArrayList<>(); for (ExecScan e : runnablesScans) {
+            timeSpend.add(e.getSpend());
+        }
         try {
             String atStr = " size in bytes: ";
-
             fileTimes.append(FILENAME_NEWLAN210).append(FILENAME_NEWLAN200210).append(atStr); fileTimes.append(Paths.get(FILENAME_NEWLAN210).toFile().length());
             fileTimes.append(Paths.get(FILENAME_NEWLAN200210).toFile().length()).append("<br>\n"); fileTimes.append(FILENAME_OLDLANTXT0).append(", ");
             fileTimes.append(FILENAME_OLDLANTXT1).append(atStr); fileTimes.append(Paths.get(FILENAME_OLDLANTXT0).toFile().length()).append("<br>\n");
             fileTimes.append(Paths.get(FILENAME_OLDLANTXT1).toFile().length()).append("<br>\n");
-
             NetScanFileWorker.srvFiles.forEach(( k , v ) -> fileTimes.append(k).append(" is ").append(v.getName()).append(atStr).append(v.length()).append("<br>\n"));
         } catch (NullPointerException e) {
             messageToUser.info("NO FILES!");
-        }
-        final StringBuilder sb = new StringBuilder("DiapazonedScan. Start at ")
-            .append(new Date(stArt)).append("( ").append(TimeUnit.MILLISECONDS.toMinutes(ConstantsFor.getAtomicTime() - stArt)).append(" min) ")
-            .append("{ ");
+        } final StringBuilder sb = new StringBuilder("DiapazonedScan. Start at "); sb.append(new Date(TimeUnit.MINUTES.toMillis(3) + (ConstantsFor.getBuildStamp()))); sb.append("( ");
+        sb.append(TimeUnit.MILLISECONDS.toMinutes(Collections.max(timeSpend))); sb.append(" min) "); sb.append("{ ");
 
         sb
             .append("<a href=\"/showalldev\">ALL_DEVICES ")
@@ -237,6 +235,12 @@ public class DiapazonedScan implements Runnable {
     class ExecScan implements Runnable {
 
         private static final String PAT_IS_ONLINE = " is online";
+
+        private final long stArt;
+
+        private long getSpend() {
+            return System.currentTimeMillis() - stArt;
+        }
 
         private int from;
 
@@ -260,7 +264,7 @@ public class DiapazonedScan implements Runnable {
             } catch (IOException e) {
                 messageToUser.errorAlert(getClass().getSimpleName(), ".ExecScan", e.getMessage());
             }
-            this.printStream = new PrintStream(Objects.requireNonNull(outputStream), true);
+            this.printStream = new PrintStream(Objects.requireNonNull(outputStream), true); stArt = System.currentTimeMillis();
         }
 
         @Override
@@ -271,16 +275,6 @@ public class DiapazonedScan implements Runnable {
             } else {
                 messageToUser.error(getClass().getSimpleName(), String.valueOf(ALL_DEVICES_LOCAL_DEQUE.remainingCapacity()), " ALL_DEVICES_LOCAL_DEQUE remainingCapacity!");
             }
-        }
-
-        @Override
-        public String toString() {
-            final StringBuilder sb = new StringBuilder("ExecScan{");
-            sb.append("from=").append(from);
-            sb.append(", to=").append(to);
-            sb.append(", whatVlan='").append(whatVlan).append('\'');
-            sb.append('}');
-            return sb.toString();
         }
 
         private boolean execScan() {
@@ -336,7 +330,9 @@ public class DiapazonedScan implements Runnable {
             }
             String retStr = stringBuffer.toString(); if (retStr.contains(PAT_IS_ONLINE)) {
                 printStream.println(hostAddress + " " + hostName); messageToUser.info("print: ", vlanFile.getName(), " = " + vlanFile.length() + " bytes");
-            } else { messageToUser.info("no print", hostAddress, hostName); }
+            } else {
+                messageToUser.info("no print", hostAddress, hostName);
+            } long msSpend = System.currentTimeMillis() - stArt;
             return retStr;
         }
 
@@ -364,6 +360,16 @@ public class DiapazonedScan implements Runnable {
                 }
             }
             return stStMap;
+        }
+
+        @Override public String toString() {
+            final StringBuilder sb = new StringBuilder("ExecScan{"); sb
+                .append("from=")
+                .append(from); sb
+                .append(", stArt=")
+                .append(new Date(stArt)); sb
+                .append(", to=")
+                .append(to); sb.append('}'); return sb.toString();
         }
     }
 }
