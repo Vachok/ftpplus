@@ -19,6 +19,7 @@ import java.io.*;
 import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.nio.file.Paths;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.ConcurrentHashMap;
@@ -145,7 +146,7 @@ public class DiapazonedScan implements Runnable {
         Runnable execScan200210 = new DiapazonedScan.ExecScan(200, 210, "10.200.", new File(FILENAME_NEWLAN200210));
         AppComponents.threadConfig().execByThreadConfig(execScan200210);
 
-        Runnable execScan210220 = new DiapazonedScan.ExecScan(200, 218, "10.200.", new File(FILENAME_NEWLAN210));
+        Runnable execScan210220 = new DiapazonedScan.ExecScan(210, 218, "10.200.", new File(FILENAME_NEWLAN210));
         AppComponents.threadConfig().execByThreadConfig(execScan210220);
     }
 
@@ -228,7 +229,6 @@ public class DiapazonedScan implements Runnable {
         return sb.toString();
     }
 
-
     /**
      * Да запуска скана из {@link DiapazonedScan}
      *
@@ -236,11 +236,15 @@ public class DiapazonedScan implements Runnable {
      */
     class ExecScan implements Runnable {
 
+        private static final String PAT_IS_ONLINE = " is online";
+
         private int from;
 
         private int to;
 
         private String whatVlan;
+
+        private PrintStream printStream;
 
         private File vlanFile;
 
@@ -250,17 +254,23 @@ public class DiapazonedScan implements Runnable {
             this.from = from;
             this.to = to;
             this.whatVlan = whatVlan; this.vlanFile = vlanFile;
+            OutputStream outputStream = null;
+            try {
+                outputStream = new FileOutputStream(vlanFile);
+            } catch (IOException e) {
+                messageToUser.errorAlert(getClass().getSimpleName(), ".ExecScan", e.getMessage());
+            }
+            this.printStream = new PrintStream(Objects.requireNonNull(outputStream), true);
         }
 
         @Override
         public void run() {
-            try {
-                OutputStream outputStream = new FileOutputStream(vlanFile);
-                PrintStream printStream = new PrintStream(outputStream, true); boolean isExecute = execScan(printStream);
+            boolean isExecute = execScan();
+            if (isExecute) {
+                messageToUser.info(getClass().getSimpleName() + ".run", "ALL_DEVICES_LOCAL_DEQUE.size()", " = " + ALL_DEVICES_LOCAL_DEQUE.size());
+            } else {
+                messageToUser.error(getClass().getSimpleName(), String.valueOf(ALL_DEVICES_LOCAL_DEQUE.remainingCapacity()), " ALL_DEVICES_LOCAL_DEQUE remainingCapacity!");
             }
-            catch (FileNotFoundException e) {
-                FileSystemWorker.error(getClass().getSimpleName() + ".run", e);
-            } ;
         }
 
         @Override
@@ -273,11 +283,22 @@ public class DiapazonedScan implements Runnable {
             return sb.toString();
         }
 
-        private boolean execScan(PrintStream printStream) {
+        private boolean execScan() {
             @SuppressWarnings("DuplicateStringLiteralInspection") String methName = ".execScan";
             try {
                 ConcurrentMap<String, String> stringStringConcurrentMap = scanLanSegment(from, to, whatVlan, printStream);
                 NetScanFileWorker.getI().setLastStamp(System.currentTimeMillis());
+                if (vlanFile.length() > 10) {
+                    FileSystemWorker.copyOrDelFile(vlanFile, vlanFile
+                        .getName()
+                        .replace("lan_", ".\\lan\\" + "." + LocalTime
+                            .now()
+                            .toSecondOfDay()), true);
+                } else {
+                    new ExitApp(NET_SCAN_FILE_WORKER_INST
+                        .getClass()
+                        .getSimpleName() + ".cla", NET_SCAN_FILE_WORKER_INST).writeOwnObject();
+                }
                 return true;
             } catch (Exception e) {
                 messageToUser.errorAlert(getClass().getSimpleName(), methName, e.getMessage());
@@ -286,32 +307,37 @@ public class DiapazonedScan implements Runnable {
             }
         }
 
-        private String oneIpScanAndPrintToFile(PrintStream printStream) throws IOException {
+        private String oneIpScanAndPrintToFile(int iThree, int jFour) throws IOException {
             AppComponents.threadConfig().thrNameSet(String.valueOf(ALL_DEVICES_LOCAL_DEQUE.remainingCapacity()));
+
             String classMeth = "DiapazonedScan.oneIpScanAndPrintToFile";
             int timeOutMSec = (int) ConstantsFor.DELAY;
             if (ConstantsFor.thisPC().equalsIgnoreCase("HOME")) {
-                timeOutMSec = (int) (ConstantsFor.DELAY * 3);
+                timeOutMSec = (int) (ConstantsFor.DELAY * 2);
                 NetScanFileWorker.getI().setLastStamp(System.currentTimeMillis());
             }
-            byte[] aBytes = InetAddress.getByName(whatVlan + from + "." + to).getAddress();
+            byte[] aBytes = InetAddress.getByName(whatVlan + iThree + "." + jFour).getAddress();
+
             StringBuilder stringBuffer = new StringBuilder();
             InetAddress byAddress = InetAddress.getByAddress(aBytes);
             String hostName = byAddress.getHostName();
             String hostAddress = byAddress.getHostAddress();
             if (byAddress.isReachable(timeOutMSec)) {
-                NetListKeeper.getI().getOnLinesResolve().put(hostAddress, hostName);
-                NetScanFileWorker.getI().setLastStamp(System.currentTimeMillis());
-                ALL_DEVICES_LOCAL_DEQUE.add("<font color=\"green\">" + hostName + FONT_BR_STR);
-
-                stringBuffer.append(hostAddress).append(" ").append(hostName);
-                printStream.println(hostAddress + " " + hostName);
+                NetListKeeper.getI().getOnLinesResolve().put(hostAddress, hostName); NetScanFileWorker
+                    .getI()
+                    .setLastStamp(System.currentTimeMillis()); ALL_DEVICES_LOCAL_DEQUE.add("<font color=\"green\">" + hostName + FONT_BR_STR);
+                stringBuffer.append(hostAddress).append(" ").append(hostName).append(PAT_IS_ONLINE);
             } else {
-                NetListKeeper.getI().getOffLines().put(byAddress.getHostAddress(), hostName);
-                ALL_DEVICES_LOCAL_DEQUE.add("<font color=\"red\">" + hostName + FONT_BR_STR);
+                NetListKeeper
+                    .getI()
+                    .getOffLines()
+                    .put(byAddress.getHostAddress(), hostName); ALL_DEVICES_LOCAL_DEQUE.add("<font color=\"red\">" + hostName + FONT_BR_STR);
                 stringBuffer.append(hostAddress).append(" ").append(hostName);
             }
-            return stringBuffer.toString();
+            String retStr = stringBuffer.toString(); if (retStr.contains(PAT_IS_ONLINE)) {
+                printStream.println(hostAddress + " " + hostName); messageToUser.info("print: ", vlanFile.getName(), " = " + vlanFile.length() + " bytes");
+            } else { messageToUser.info("no print", hostAddress, hostName); }
+            return retStr;
         }
 
         /**
@@ -327,7 +353,7 @@ public class DiapazonedScan implements Runnable {
                 StringBuilder msgBuild = new StringBuilder();
                 for (int j = 0; j < MAX_IN_VLAN_INT; j++) {
                     try {
-                        theScannedIPHost = oneIpScanAndPrintToFile(printStream);
+                        theScannedIPHost = oneIpScanAndPrintToFile(i, j);
                         stStMap.put(theScannedIPHost.split(" ")[0], theScannedIPHost.split(" ")[1]);
                     } catch (IOException e) {
                         String errorWrite = FileSystemWorker.error("DiapazonedScan.scanLanSegment", e);
