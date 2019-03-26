@@ -372,6 +372,10 @@ public enum ConstantsFor {
 
     static final String STR_FINISH = " is finish";
 
+    public static final long LAST_S = Long.parseLong(AppComponents
+                                                         .getOrSetProps()
+                                                         .getProperty("lasts", 1544816520000L + ""));
+
     private static final String[] STRINGS_TODELONSTART = {"visit_", ".tmp"};
 
     /**

@@ -31,7 +31,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
  @see AppComponents#saveAppProps(Properties)
  @since 25.02.2019 (10:12) */
-class DBPropsCallable implements Callable<Boolean> {
+@SuppressWarnings("DuplicateStringLiteralInspection") public class DBPropsCallable implements Callable<Properties> {
 
 
     private static final MessageToUser messageToUser = new MessageLocal(DBPropsCallable.class.getSimpleName());
@@ -43,15 +43,12 @@ class DBPropsCallable implements Callable<Boolean> {
 
     private static File pFile = new File(pathToPropsName);
 
-    private final MysqlDataSource mysqlDataSource;
+    private MysqlDataSource mysqlDataSource = null;
 
-    private final String classMeth;
-
-    private final String methName;
     /**
      {@link Properties} для сохданения.
      */
-    private Properties propsToSave;
+    private Properties propsToSave = new Properties();
 
     /**
      * Запишем .mini
@@ -63,19 +60,19 @@ class DBPropsCallable implements Callable<Boolean> {
     private AtomicBoolean retBool = new AtomicBoolean(false);
 
 
-    DBPropsCallable(MysqlDataSource mysqlDataSource, Properties propsToSave, String classMeth, String methName) {
+    DBPropsCallable(MysqlDataSource mysqlDataSource, Properties propsToSave) {
         this.mysqlDataSource = mysqlDataSource;
-        this.classMeth = classMeth;
-        this.methName = methName;
         this.propsToSave = propsToSave;
     }
 
-    DBPropsCallable(MysqlDataSource mysqlDataSource, Properties propsToSave, String classMeth, String methName, boolean isForced) {
+    DBPropsCallable(MysqlDataSource mysqlDataSource, Properties propsToSave, boolean isForced) {
         this.mysqlDataSource = mysqlDataSource;
-        this.classMeth = classMeth;
-        this.methName = methName;
         this.propsToSave = propsToSave;
         this.isForced = isForced;
+    }
+
+    public DBPropsCallable() {
+
     }
 
     /**
@@ -120,21 +117,21 @@ class DBPropsCallable implements Callable<Boolean> {
         return retPr;
     }
 
-    @Override
-    public Boolean call() {
+    @Override public Properties call() {
         miniLogger.add("1. Starting " + getClass().getSimpleName() + " at: " + new Date(System.currentTimeMillis()));
         if (!pFile.exists()) {
             try {
                 Path fileCreate = Files.createFile(pFile.toPath());
-                miniLogger.add(fileCreate.toString());
+                miniLogger.add(fileCreate.toString()); PROPS.putAll(takePr());
             } catch (IOException e) {
                 FileSystemWorker.error("DBPropsCallable.savePropsDelStatement", e);
             }
-        }
-        return upProps();
+        } return PROPS;
     }
 
-    private boolean upProps() {
+    @SuppressWarnings("DuplicateStringLiteralInspection") public boolean upProps() {
+        String methName = ".upProps";
+
         String sql = "insert into ru_vachok_networker (property, valueofproperty, javaid) values (?,?,?)";
         miniLogger.add("2. " + sql);
         try (Connection c = mysqlDataSource.getConnection()) {
@@ -155,8 +152,7 @@ class DBPropsCallable implements Callable<Boolean> {
                 retBool.set(executeUpdate.get() > 0);
             }
         } catch (SQLException e) {
-            messageToUser.errorAlert(ConstantsFor.class.getSimpleName(), methName, e.getMessage());
-            FileSystemWorker.error(classMeth, e);
+            messageToUser.errorAlert(ConstantsFor.class.getSimpleName(), methName, e.getMessage()); FileSystemWorker.error(getClass().getSimpleName(), e);
             retBool.set(false);
         }
         FileSystemWorker.writeFile(getClass().getSimpleName() + ".mini", miniLogger.stream());
@@ -207,15 +203,14 @@ class DBPropsCallable implements Callable<Boolean> {
         String pointProps = ConstantsFor.FILEEXT_PROPERTIES; File toSavePrLoc = new File(ConstantsFor.class.getSimpleName() + pointProps);
 
         try (OutputStream outputStream = new FileOutputStream(toSavePrLoc);) {
-            propsToSave.store(outputStream, classMeth); miniLogger.add("File: " + toSavePrLoc.getName() + " modified: " + new Date(toSavePrLoc.lastModified()));
+            propsToSave.store(outputStream, getClass().getSimpleName() + ".writeToFile");
+            miniLogger.add("File: " + toSavePrLoc.getName() + " modified: " + new Date(toSavePrLoc.lastModified()));
         } catch (IOException e) {
             FileSystemWorker.error(getClass().getSimpleName() + ".writeToFile", e);
         } retBool.set(false); messageToUser.warn("NO DB SAVE! " + pFile.getName() + " can write is " + true + ". Modified: " + (new TimeChecker().call().getReturnTime() - pFile.lastModified()) + " MSec ago.");
     }
 
     @Override public String toString() {
-        final StringBuilder sb = new StringBuilder("DBPropsCallable{"); sb
-            .append("propsToSave=")
-            .append(propsToSave); sb.append('}'); return sb.toString();
+        String prAsStr = new TForms().fromArray(PROPS, true); prAsStr = prAsStr + "\n<br>"; return prAsStr;
     }
 }

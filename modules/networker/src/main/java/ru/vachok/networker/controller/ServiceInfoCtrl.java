@@ -25,7 +25,10 @@ import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.*;
 import java.util.stream.Stream;
 
@@ -39,15 +42,14 @@ import static java.time.temporal.ChronoUnit.HOURS;
 @Controller
 public class ServiceInfoCtrl {
 
-    private static final Properties LOC_PR = AppComponents.getOrSetProps();
     private static final String SERVICE_INFO_CTRL_CLOSE_APP = "ServiceInfoCtrl.closeApp";
 
-    private boolean authReq;
+    private boolean authReq = false;
 
     /**
      {@link Visitor}
      */
-    private Visitor visitor;
+    private Visitor visitor = null;
 
     private static final MessageToUser messageToUser = new MessageLocal(ServiceInfoCtrl.class.getSimpleName());
 
@@ -159,7 +161,8 @@ public class ServiceInfoCtrl {
             .append("<b><i>").append(AppComponents.versionInfo()).append("</i></b><p><font color=\"orange\">")
             .append(ConstantsNet.getSshMapStr()).append("</font><p>")
             .append(new AppInfoOnLoad()).append(" ").append(AppInfoOnLoad.class.getSimpleName()).append("<p>")
-            .append(new TForms().fromArray(LOC_PR, true)).append("<p>")
+            .append(new TForms().fromArray(AppComponents.getOrSetProps()))
+            .append("<p>")
             .append(FileSystemWorker.readFile("exit.last")).append("<p>")
             .append("<p><font color=\"grey\">").append(listFilesToReadStr()).append("</font>")
             .toString();
@@ -191,8 +194,7 @@ public class ServiceInfoCtrl {
 
 
     private float getLast() {
-        return TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() -
-            Long.parseLong(LOC_PR.getProperty("lasts", 1544816520000L + ""))) / 60f / 24f;
+        return (System.currentTimeMillis() - ConstantsFor.LAST_S) / (ConstantsFor.ONE_HOUR_IN_MIN / ConstantsFor.ONE_DAY_HOURS);
     }
 
 

@@ -28,7 +28,6 @@ import ru.vachok.networker.net.NetScannerSvc;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.SimpleCalculator;
-import ru.vachok.networker.systray.MessageToTray;
 
 import javax.servlet.http.HttpServletRequest;
 import java.awt.*;
@@ -37,8 +36,10 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 import static ru.vachok.networker.IntoApplication.getConfigurableApplicationContext;
 
@@ -160,15 +161,7 @@ public class AppComponents {
     }
 
     @Bean @Scope(ConstantsFor.SINGLETON) public static Properties getOrSetProps(boolean saveThis) {
-        Properties properties = new Properties(); String classMeth = "AppComponents.getOrSetProps "; String isSavedStr = " isSaved";
-
-        if (saveThis) {
-            boolean isSaved = saveAppProps(properties); messageToUser.info("AppComponents. Saving properties", " properties.size()", " = " + properties.size()); if (isSaved) {
-                messageToUser.info(classMeth, isSavedStr, " = " + true);
-            } else {
-                new MessageToTray().error(classMeth, isSavedStr, " = " + false);
-            }
-        } return properties;
+        return getAppProps();
     }
 
     /**
@@ -203,36 +196,26 @@ public class AppComponents {
         throw new IllegalComponentStateException("Moved to");
     }
 
-    /**
-     Сохраняет {@link Properties} в БД с ID {@code ConstantsFor}
+    public static Properties getAppProps() {
+        threadConfig().thrNameSet("sProps");
 
-     @param propsToSave {@link Properties}
-     @return сохранено или нет
-     */
-    private static boolean saveAppProps(Properties propsToSave) {
-        threadConfig().thrNameSet("sProps"); propsToSave.setProperty("thispc", ConstantsFor.thisPC());
-        String classMeth = "ConstantsFor.saveAppProps";
-        String methName = "saveAppProps"; MysqlDataSource mysqlDataSource = new DBRegProperties(DB_JAVA_ID).getRegSourceForProperties(); mysqlDataSource.setRelaxAutoCommit(true);
-        AtomicBoolean retBool = new AtomicBoolean();
-        mysqlDataSource.setLogger("java.util.Logger");
-        mysqlDataSource.setRelaxAutoCommit(true);
+        MysqlDataSource mysqlDataSource = new DBRegProperties(DB_JAVA_ID).getRegSourceForProperties(); mysqlDataSource.setRelaxAutoCommit(true);
+        mysqlDataSource.setLogger("java.util.Logger"); Callable<Properties> theProphecy = new DBPropsCallable(mysqlDataSource, new Properties()); Future<Properties> propertiesFuture =
+            threadConfig()
+                .getTaskExecutor()
+                .submit(theProphecy);
 
-        Callable<Boolean> theProphecy = new DBPropsCallable(mysqlDataSource, propsToSave, classMeth, methName);
-        Future<Boolean> booleanFuture = threadConfig().getTaskExecutor().submit(theProphecy); try {
-            retBool.set(booleanFuture.get(ConstantsFor.DELAY, TimeUnit.SECONDS));
-        }
-        catch (InterruptedException | ExecutionException | TimeoutException e) {
-            messageToUser.errorAlert(ConstantsFor.class.getSimpleName(), methName, e.getMessage()); FileSystemWorker.error(classMeth, e); Thread.currentThread().interrupt();
-            retBool.set(booleanFuture.isDone());
-        } return retBool.get();
+        try {
+            return propertiesFuture.get();
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+        } return null;
     }
 
     public static boolean saveAppPropsForce() {
         Properties toSave = getOrSetProps();
 
-        DBPropsCallable saveDBPropsCallable = new DBPropsCallable(new DBRegProperties(DB_JAVA_ID).getRegSourceForProperties(),
-                toSave, ConstantsFor.class.getSimpleName(), "forced", true);
-        return saveDBPropsCallable.call();
+        DBPropsCallable saveDBPropsCallable = new DBPropsCallable(new DBRegProperties(DB_JAVA_ID).getRegSourceForProperties(), toSave, true); return saveDBPropsCallable.upProps();
     }
 
     @Override
