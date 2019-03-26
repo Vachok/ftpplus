@@ -43,6 +43,7 @@ public class TemporaryFullInternet implements Runnable {
     private static final Queue<String> MINI_LOGGER = new ArrayDeque<>();
 
     private static final SSHFactory SSH_FACTORY = new SSHFactory.Builder(SERVER_TO_CONNECT, "ls", TemporaryFullInternet.class.getSimpleName()).build();
+    
     private static final String TEMPORARY_FULL_INTERNET_RUN = "TemporaryFullInternet.run";
 
     @SuppressWarnings("CanBeFinal")
@@ -171,8 +172,7 @@ public class TemporaryFullInternet implements Runnable {
 
     private void sshChecker() {
         AppComponents.threadConfig().thrNameSet("chkSSH");
-        SSH_FACTORY.setCommandSSH("cat /etc/pf/24hrs;exit");
-        final String tempFile = SSH_FACTORY.call();
+        SSH_FACTORY.setCommandSSH("cat /etc/pf/24hrs;exit"); String tempFile = SSH_FACTORY.call();
         String classMeth = "TemporaryFullInternet.sshChecker";
 
         final Map<String, Long> sshCheckerMap = ConstantsNet.getSshCheckerMap();

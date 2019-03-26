@@ -187,6 +187,7 @@ public class SSHFactory implements Callable<String> {
         stringBuilder.append(new Date()).append(".\n<br> SSH server is : \n<br>").append(connectToSrv).append(" executing: ").append(commandSSH).append("\n<br>end");
         
         byte[] bytes = new byte[ConstantsFor.KBYTE * 20];
+    
         try (InputStream connect = connect()) {
             messageToUser.info(connect().available() + "", " bytes, ssh-channel is ", respChannel.isConnected() + "");
             int readBytes = connect.read(bytes, 0, connect.available());

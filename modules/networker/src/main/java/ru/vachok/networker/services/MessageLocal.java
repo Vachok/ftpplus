@@ -26,7 +26,6 @@ public class MessageLocal implements MessageToUser {
 
 
     private MessageLocal() {
-
     }
 
 
@@ -58,8 +57,7 @@ public class MessageLocal implements MessageToUser {
         Logger logger = LoggerFactory.getLogger(headerMsg);
         this.headerMsg = headerMsg;
         this.titleMsg = titleMsg;
-        this.bodyMsg = bodyMsg;
-        String logRec = String.join("! ", headerMsg, titleMsg, bodyMsg);
+        this.bodyMsg = bodyMsg; String logRec = String.join(", ", headerMsg, titleMsg, bodyMsg);
         logger.error(logRec);
     }
 
@@ -92,7 +90,7 @@ public class MessageLocal implements MessageToUser {
 
     @Override
     public void warn(String headerMsg, String titleMsg, String bodyMsg) {
-        warning(headerMsg, titleMsg, titleMsg);
+        warning(headerMsg, titleMsg, bodyMsg);
     }
 
 
@@ -103,10 +101,7 @@ public class MessageLocal implements MessageToUser {
 
 
     public void warning(String bodyMsg) {
-        Logger logger = LoggerFactory.getLogger(headerMsg);
-        this.bodyMsg = bodyMsg;
-        logger.warn(headerMsg);
-        logger.warn(titleMsg + " : " + bodyMsg);
+        this.bodyMsg = bodyMsg; LoggerFactory.getLogger(headerMsg).warn(bodyMsg);
     }
 
     @Override
