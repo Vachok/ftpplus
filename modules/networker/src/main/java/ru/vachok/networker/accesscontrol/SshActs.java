@@ -291,7 +291,7 @@ public class SshActs {
             .append(SSH_SQUID_RECONFIGURE)
 
             .append("exit;").toString();
-        String call = "<b>" + new SSHFactory.Builder(DEFAULT_SERVER_TO_SSH, commandSSH, getClass().getSimpleName()).build().call() + "</b>";
+        String call = "<b>" + new SSHFactory.Builder(DEFAULT_SERVER_TO_SSH, commandSSH, getClass().getSimpleName()).build().call().split("\n<br>end")[1] + "</b>";
         call = call + "<font color=\"gray\"><br><br>" + new WhoIsWithSRV().whoIs(resolveIp(allowDomain)) + "</font>";
         writeToLog(new String((call + "\n\n" + this).getBytes(), Charset.defaultCharset()));
         return call;
