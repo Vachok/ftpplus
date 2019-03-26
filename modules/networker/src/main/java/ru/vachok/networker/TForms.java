@@ -25,7 +25,7 @@ import java.util.concurrent.ConcurrentMap;
  Делает похожие действия, но сразу так, как нужно для {@link ru.vachok.networker.IntoApplication}
 
  @since 06.09.2018 (9:33) */
-@SuppressWarnings({"ClassWithTooManyMethods", "unused"})
+@SuppressWarnings("ALL")
 public class TForms {
 
     /**
@@ -73,7 +73,7 @@ public class TForms {
     public String fromArray(Exception e, boolean isHTML) {
         this.brStringBuilder = new StringBuilder();
         this.nStringBuilder = new StringBuilder();
-    
+
         brStringBuilder.append(LocalDateTime.now()).append(BR_STR).append(e.getMessage()).append(" Exception message.<p>");
 
         for (StackTraceElement stackTraceElement : e.getStackTrace()) {
@@ -403,10 +403,11 @@ public class TForms {
     @SuppressWarnings("MethodWithMultipleLoops")
     private void parseThrowable(Exception e) {
         Throwable[] eSuppressed = e.getSuppressed();
+        nStringBuilder.append("Suppressed.length = ").append(eSuppressed.length).append(N_STR);
+        nStringBuilder.append("Suppressed.length = ").append(eSuppressed.length).append(BR_STR);
         for (Throwable throwable : eSuppressed) {
-            nStringBuilder.append(throwable.getMessage()).append(N_STR);
-            brStringBuilder.append(throwable.getMessage()).append(BR_STR);
-
+            nStringBuilder.append(throwable.toString()).append(N_STR);
+            brStringBuilder.append(throwable.toString()).append(BR_STR);
             for (StackTraceElement stackTraceElement : throwable.getStackTrace()) {
                 parseTrace(stackTraceElement);
             }
@@ -424,18 +425,10 @@ public class TForms {
      @see #fromArray(Exception, boolean)
      */
     private void parseTrace(StackTraceElement stackTraceElement) {
-        String fileName;
-        try {
-            fileName = stackTraceElement.getFileName();
-        } catch (Exception ignore) {
-            fileName = "No fileName!".toUpperCase();
-        }
-        nStringBuilder
-            .append(stackTraceElement.getLineNumber()).append(" line, classname is ").append(stackTraceElement.getClassName()).append("(file: ").append(fileName).append(")\n")
-            .append(stackTraceElement.getMethodName()).append(" name of method.").append(" Method is native: ").append(stackTraceElement.isNativeMethod()).append("\n");
-        brStringBuilder
-            .append(stackTraceElement.getLineNumber()).append(" line, classname is ").append(stackTraceElement.getClassName()).append("(file: ").append(fileName).append(")<br>")
-            .append(stackTraceElement.getMethodName()).append(" name of method.").append(" Method is native: ").append(stackTraceElement.isNativeMethod()).append(BR_STR);
+        nStringBuilder.append(stackTraceElement.getFileName()).append(": ");
+        nStringBuilder.append(stackTraceElement.toString()).append(N_STR);
+        brStringBuilder.append(stackTraceElement.getFileName()).append(": ");
+        brStringBuilder.append(stackTraceElement.toString()).append(BR_STR);
     }
 
     @Override

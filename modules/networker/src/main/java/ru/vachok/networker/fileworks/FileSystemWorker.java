@@ -269,7 +269,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         try (PrintStream printStream = new PrintStream(outputStream, true)) {
             printStream.println(new Date(new TimeChecker().call().getReturnTime()));
             printStream.println();
-            printStream.println(e.getMessage() + " getMessage;");
+            printStream.println(e.getMessage());
             printStream.println();
             printStream.println(new TForms().fromArray(e, false));
             return printStream.checkError();

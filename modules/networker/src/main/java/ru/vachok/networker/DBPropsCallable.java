@@ -29,7 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  Сохранение {@link Properties} в базу
  <p>
 
- @see AppComponents#saveAppProps(Properties)
+ @see AppComponents#saveAppPropsForce()
  @since 25.02.2019 (10:12) */
 @SuppressWarnings("DuplicateStringLiteralInspection") public class DBPropsCallable implements Callable<Properties> {
 
@@ -106,8 +106,11 @@ import java.util.concurrent.atomic.AtomicInteger;
                 .append(e.getMessage())
                 .append("\n")
                 .append(new TForms().fromArray(e, false))
-                .append("\n"); FileSystemWorker.error(classMeth, e);
-        } PROPS.clear(); PROPS.putAll(retPr); stringBuilder
+                .append("\n");
+        }
+        PROPS.clear();
+        PROPS.putAll(retPr);
+        stringBuilder
             .append(PROPS.size())
             .append(" is PROPS size, PROPS equals retPr: ")
             .append(PROPS.equals(retPr));
