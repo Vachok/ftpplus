@@ -16,10 +16,7 @@ import java.io.InputStream;
 import java.net.ConnectException;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.RejectedExecutionException;
 
@@ -185,6 +182,10 @@ public class SSHFactory implements Callable<String> {
 
     public String call() {
         StringBuilder stringBuilder = new StringBuilder();
+        File file = new File(classCaller + "_" + System.currentTimeMillis() + ".ssh");
+        
+        stringBuilder.append(new Date()).append(".\n<br> SSH server is : \n<br>").append(connectToSrv).append(" executing: ").append(commandSSH).append("\n<br>end");
+        
         byte[] bytes = new byte[ConstantsFor.KBYTE * 20];
         try (InputStream connect = connect()) {
             messageToUser.info(connect().available() + "", " bytes, ssh-channel is ", respChannel.isConnected() + "");
@@ -197,10 +198,10 @@ public class SSHFactory implements Callable<String> {
         }
         messageToUser.warn(getClass().getSimpleName(), "CALL FROM CLASS: ", classCaller);
         List<String> recList = new ArrayList<>();
+        
         recList.add(stringBuilder.toString());
         recList.add(toString());
         recList.add(builderToStr);
-        File file = new File(classCaller + "_" + System.currentTimeMillis() + ".ssh");
         FileSystemWorker.writeFile(file.getName(), recList);
         FileSystemWorker.copyOrDelFile(file, ".\\ssh\\" + file.getName(), true);
         return stringBuilder.toString();
@@ -210,9 +211,6 @@ public class SSHFactory implements Callable<String> {
         File pemFile = new File("a161.pem");
         return pemFile.getAbsolutePath();
     }
-
-    /*END FOR CLASS*/
-    
     
     
     /**

@@ -3,7 +3,6 @@ package ru.vachok.networker.net;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import ru.vachok.messenger.MessageFile;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.messenger.email.ESender;
 import ru.vachok.networker.AppComponents;
@@ -135,14 +134,14 @@ public class NetPinger implements Runnable, Pinger {
      {@link InetAddress#isReachable(int)}) добавляется в {@link #resList}.
      */
     private void pingSW() {
-        final Properties properties = AppComponents.getOrSetProps();
+        Properties properties = AppComponents.getOrSetProps();
         this.pingSleepMsec = Long.parseLong(properties.getProperty(ConstantsNet.PROP_PINGSLEEP, String.valueOf(pingSleepMsec)));
-
         for (InetAddress inetAddress : ipAsList) {
             try {
                 resList.add(inetAddress + " is " + inetAddress.isReachable(ConstantsFor.TIMEOUT_650));
                 Thread.sleep(pingSleepMsec);
             } catch (IOException | InterruptedException e) {
+                FileSystemWorker.error(getClass().getSimpleName() + ".pingSW", e);
                 Thread.currentThread().checkAccess();
                 Thread.currentThread().interrupt();
             }
@@ -183,16 +182,14 @@ public class NetPinger implements Runnable, Pinger {
      @param userIn кол-во минут в мсек, которые пингер работал.
      */
     private void parseResult(long userIn) {
-        List<String> pingsList = new ArrayList<>();
-
+        Collection<String> pingsList = new ArrayList<>();
         pingsList.add("Pinger is start at " + new Date(System.currentTimeMillis() - userIn));
         resList.stream().distinct().forEach(x -> {
             int frequency = Collections.frequency(resList, x);
             pingsList.add(frequency + " times " + x + "\n");
         });
-        FileSystemWorker.writeFile(ConstantsNet.PINGRESULT_LOG, pingsList.stream());
-        messageToUser = new MessageFile();
         pingsList.add(((float) TimeUnit.MILLISECONDS.toMinutes(userIn) / ConstantsFor.ONE_HOUR_IN_MIN) + " hours spend");
+        FileSystemWorker.writeFile(ConstantsNet.PINGRESULT_LOG, pingsList.stream());
     }
 
     /**
@@ -206,13 +203,11 @@ public class NetPinger implements Runnable, Pinger {
      @see #parseFile()
      */
     private void parseAddr(String readLine) {
-        InetAddress byName;
         try {
-            byName = InetAddress.getByName(readLine);
-        } catch (UnknownHostException e) {
-            byName = ipIsIP(readLine);
+            ipAsList.add(InetAddress.getByName(readLine));
+        } catch (UnknownHostException|RuntimeException e) {
+            ipAsList.add(ipIsIP(readLine));
         }
-        ipAsList.add(byName);
     }
 
     /**
@@ -228,37 +223,31 @@ public class NetPinger implements Runnable, Pinger {
      @param readLine строка из {@link #multipartFile}
      @return {@link InetAddress#getByAddress(byte[])}
      */
-    private InetAddress ipIsIP(String readLine) {
+    private InetAddress ipIsIP(String readLine)  {
+        InetAddress resolvedAddress = InetAddress.getLoopbackAddress();
         try {
-            byte[] address = InetAddress.getByName(readLine).getAddress();
-            return InetAddress.getByAddress(address);
-        } catch (UnknownHostException e) {
-            messageToUser.errorAlert(STR_CLASSNAME, "ipIsIP", e.getMessage());
-            FileSystemWorker.error("NetPinger.ipIsIP", e);
-            return InetAddress.getLoopbackAddress();
+            byte[] addressBytes = InetAddress.getByName(readLine).getAddress();
+            resolvedAddress=InetAddress.getByAddress(addressBytes);
         }
+        catch (UnknownHostException e) {
+            messageToUser.errorAlert(getClass().getSimpleName(), ".ipIsIP", e.getMessage());
+            FileSystemWorker.error(getClass().getSimpleName() + ".ipIsIP", e);
+        }
+        return resolvedAddress;
     }
-
-    @Override
-    public int hashCode() {
-        int result = getTimeToScanStr().hashCode();
-        result = 31 * result + getTimeToEndStr().hashCode();
-        result = 31 * result + (getMultipartFile() != null ? getMultipartFile().hashCode() : 0);
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object o) {
+    
+    @Override public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof NetPinger)) return false;
-
-        NetPinger netPinger = (NetPinger) o;
-
-        if (!getTimeToScanStr().equals(netPinger.getTimeToScanStr())) return false;
-        if (!getTimeToEndStr().equals(netPinger.getTimeToEndStr())) return false;
-        return getMultipartFile() != null ? getMultipartFile().equals(netPinger.getMultipartFile()) : netPinger.getMultipartFile() == null;
+        if (o == null || getClass() != o.getClass()) return false;
+        NetPinger pinger = (NetPinger) o;
+        return pingSleepMsec == pinger.pingSleepMsec && Objects.equals(timeToScanStr, pinger.timeToScanStr) && Objects.equals(timeToEndStr, pinger.timeToEndStr) && Objects
+            .equals(multipartFile, pinger.multipartFile);
     }
-
+    
+    @Override public int hashCode() {
+        return Objects.hash(pingSleepMsec, timeToScanStr, timeToEndStr, multipartFile);
+    }
+    
     /**
      @return {@link #timeToEndStr}
      */
@@ -306,7 +295,6 @@ public class NetPinger implements Runnable, Pinger {
         long totalMillis = startSt + userIn;
         while (System.currentTimeMillis() < totalMillis) {
             pingSW();
-            AppComponents.threadConfig().thrNameSet("NPing");
             this.timeToEndStr = getClass().getSimpleName() + " left " + (float) TimeUnit.MILLISECONDS
                 .toSeconds(totalMillis - System.currentTimeMillis()) / ConstantsFor.ONE_HOUR_IN_MIN;
             messageToUser.infoNoTitles(timeToEndStr);
