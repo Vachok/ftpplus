@@ -190,8 +190,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
                     List<Double> speedList = new ArrayList<>();
                     List<Float> timeList = new ArrayList<>();
                     while (r.next()) {
-                        speedList.add(r.getDouble("Speed"));
-                        timeList.add(r.getFloat("TimeSpend"));
+                        speedList.add(r.getDouble("Speed")); timeList.add(r.getFloat(ConstantsFor.DBFIELD_TIMESPEND));
                     }
                     double avSpeed = 0.0;
                     for (Double aDouble : speedList) {
@@ -333,7 +332,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
             }
             Timestamp timestamp = new Timestamp(timeSt);
             String sql = "insert into speed (Speed, Road, WeekDay, TimeSpend, TimeStamp) values (?,?,?,?,?)";
-            try (Connection c = new AppComponents().connection("u0466446_liferpg");
+            try (Connection c = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_LIFERPG);
                  PreparedStatement p = c.prepareStatement(sql)) {
                 p.setDouble(1, speedFromStr);
                 p.setInt(2, roadFromStr);

@@ -12,15 +12,11 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.mysqlandprops.props.DBRegProperties;
-import ru.vachok.mysqlandprops.props.FileProps;
-import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.MyServer;
 import ru.vachok.networker.net.WeekPCStats;
-import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.SpeedChecker;
 import ru.vachok.networker.systray.SystemTrayHelper;
@@ -107,6 +103,7 @@ public class IntoApplication {
     public static void main(@Nullable String[] args) {
         FileSystemWorker.delFilePatterns(ConstantsFor.getStringsVisit());
         LOCAL_PROPS.putAll(AppComponents.getOrSetProps());
+
         LOCAL_PROPS.setProperty("ff", "false");
         if (args != null && args.length > 0) {
             //noinspection NullableProblems
@@ -115,7 +112,7 @@ public class IntoApplication {
             beforeSt(true);
             configurableApplicationContext.start();
             afterSt();
-        }
+        } AppComponents.getOrSetProps(true);
     }
 
     /**
@@ -186,7 +183,7 @@ public class IntoApplication {
                 isTray = false;
             }
             if (stringStringEntry.getKey().contains("ff")) {
-                Map<Object, Object> objectMap = Collections.unmodifiableMap(ConstantsFor.takePr(true));
+                Map<Object, Object> objectMap = Collections.unmodifiableMap(DBPropsCallable.takePr());
                 LOCAL_PROPS.clear();
                 LOCAL_PROPS.putAll(objectMap);
                 FileSystemWorker.copyOrDelFile(new File("ConstantsFor.properties"), ".\\ConstantsFor.bak", false);
@@ -232,30 +229,6 @@ public class IntoApplication {
             }
         }
     }
-
-    /**
-     application.LOCAL_PROPS
-     <p>
-     new {@link FileProps} ({@link File#getCanonicalPath()} - ""+{@code "\\modules\\networker\\src\\main\\resources\\application"}) <br>
-     {@link InitProperties#getProps()}. Получаем {@code props} <br>
-     Сэтаем в файл:<br>
-     {@code "build.version"} = {@link AppComponents#getOrSetProps()} {@link ConstantsFor#PR_APP_VERSION} и {@link ConstantsFor#PR_QSIZE} =
-     {@link ConstantsNet#IPS_IN_VELKOM_VLAN} <br>
-     {@link InitProperties#setProps(java.util.Properties)} запись {@code props} в <b>application.LOCAL_PROPS</b>
-     <p>
-     new {@link DBRegProperties} - {@link ConstantsFor#APPNAME_WITHMINUS} + {@code "application"} <br>
-     {@link InitProperties#delProps()}
-     {@link InitProperties#setProps(java.util.Properties)} запись в БД.
-     <p>
-     {@link AppComponents#getOrSetProps()} putAll - {@code props}
-     */
-    private static void appProperties() {
-        Properties props = AppComponents.getOrSetProps();
-        props.setProperty("build.version", LOCAL_PROPS.getProperty(ConstantsFor.PR_APP_VERSION));
-        props.setProperty(ConstantsFor.PR_QSIZE, ConstantsNet.IPS_IN_VELKOM_VLAN + "");
-        LOCAL_PROPS.putAll(props);
-    }
-
 
     /**
      * Запуск до старта Spring boot app <br> Usages: {@link #main(String[])}

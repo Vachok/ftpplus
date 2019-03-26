@@ -97,7 +97,6 @@ public enum ConstantsNet { ;
      */
     public static final String FILENAME_PCAUTODISTXT = "pcautodis.txt";
 
-//public
     /**
      Название файла новой подсети 10.200.х.х
      */
@@ -110,7 +109,6 @@ public enum ConstantsNet { ;
     public static final String FILENAME_OLDLANTXT0 = "lan_old0.txt";
 
     public static final String FILENAME_OLDLANTXT1 = "lan_old1.txt";
-//
 
     /**
      Домен с точкой
@@ -119,7 +117,9 @@ public enum ConstantsNet { ;
 
     public static final int MAX_IN_ONE_VLAN = 255;
 
-    public static final int IPS_IN_VELKOM_VLAN = 70 * MAX_IN_ONE_VLAN;
+    public static final int IPS_IN_VELKOM_VLAN = Integer.parseInt(AppComponents
+        .getOrSetProps()
+        .getProperty("vlanNum", "68")) * MAX_IN_ONE_VLAN;
 
     public static final int TIMEOUT240 = 240;
 

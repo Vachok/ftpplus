@@ -7,6 +7,7 @@ package ru.vachok.networker.net;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
 import ru.vachok.messenger.MessageCons;
+import ru.vachok.messenger.MessageFile;
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.messenger.email.ESender;
@@ -78,7 +79,9 @@ public class NetScannerSvc {
     /**
      Компьютеры онлайн
      */
-    static int onLinePCsNum;
+    static int onLinePCsNum = Integer.parseInt(AppComponents
+        .getOrSetProps()
+        .getProperty(ConstantsNet.ONLINEPC, "50"));
 
     @SuppressWarnings({"CanBeFinal" , "StaticVariableMayNotBeInitialized"})
     private static Connection connection;
@@ -95,8 +98,8 @@ public class NetScannerSvc {
      */
     @SuppressWarnings("CanBeFinal")
     private static NetScannerSvc netScannerSvcInst = new NetScannerSvc();
-    
-    private static String inputWithInfoFromDB;
+
+    private static String inputWithInfoFromDB = "";
 
     /**
      Время инициализации
@@ -122,6 +125,8 @@ public class NetScannerSvc {
      {@link AppComponents#lastNetScan()}
      */
     private Map<String, Boolean> netWorkMap;
+
+    private MessageToUser messageToUser = new MessageFile();
 
     /**
      @see AppComponents#lastNetScanMap()
@@ -470,12 +475,10 @@ public class NetScannerSvc {
         setOnLinePCsToZero();
 
         AppComponents.lastNetScan().setTimeLastScan(new Date());
-
         countStat();
 
         boolean isLastModSet = new File(ConstantsFor.class.getSimpleName() + ConstantsFor.FILEEXT_PROPERTIES).setLastModified(ConstantsFor.DELAY);
-        boolean props = AppComponents.getOrSetProps(LOCAL_PROPS);
-        LOGGER.info("NetScannerSvc.runAfterAllScan" , "isLastModSet" , " = " + isLastModSet);
+        boolean isForceSaved = AppComponents.saveAppPropsForce(); messageToUser.info(getClass().getSimpleName() + ".runAfterAllScan", "isForceSaved", " = " + isForceSaved);
 
         FileSystemWorker.writeFile(ConstantsNet.BEANNAME_LASTNETSCAN, new TForms().fromArray(AppComponents.lastNetScanMap(), false));
         FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".getPCsAsync", toFileList);
@@ -491,7 +494,14 @@ public class NetScannerSvc {
             lenFile = -1;
         }
         String bodyMsg = new StringBuilder().append(ConstantsFor.getMemoryInfo()).append("\n").append(" scan.tmp exist = ").append(fileCreate(false)).append("\n")
-            .append("Properties is save = ").append(props).append("\n").append(file.getName()).append("size = ").append(lenFile).append(new TForms().fromArray(toFileList, false)).toString();
+            .append("Properties is save = ")
+            .append(AppComponents.getOrSetProps())
+            .append("\n")
+            .append(file.getName())
+            .append("size = ")
+            .append(lenFile)
+            .append(new TForms().fromArray(toFileList, false))
+            .toString();
         new MessageSwing(656, 550, 50, 53).infoTimer(50, this + "\n\n" + "AppProps to DB is: " + AppComponents.saveAppPropsForce());
     }
 

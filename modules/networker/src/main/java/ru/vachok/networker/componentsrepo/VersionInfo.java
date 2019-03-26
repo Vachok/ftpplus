@@ -19,55 +19,55 @@ import java.util.Properties;
 
 
 /**
- 
+
  @since 24.09.2018 (9:44) */
 @Component("versioninfo")
 public class VersionInfo {
-    
-    
+
+
     /**
      {@link LoggerFactory#getLogger(String)}
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(VersionInfo.class.getSimpleName());
-    
+
     /**
      Ссылка на /doc/index.html
      */
     private static final String DOC_URL = "<a href=\"/doc/index.html\">DOC</a>";
-    
+
     /**
      {@link AppComponents#getOrSetProps()}
      */
     private static final Properties PROPERTIES = AppComponents.getOrSetProps();
-    
+
     private static final String PR_BUILD_TIME = "buildTime";
-    
+
     private static final String PR_APP_BUILD = "appBuild";
-    
+
     /**
      {@link ConstantsFor#thisPC()}
      */
     private final String thisPCNameStr = ConstantsFor.thisPC();
-    
+
     /**
      Версия
      */
     private final String appVersion;
-    
+
     /**
      Билд
      */
     private final String appBuild;
-    
+
     /**
      Время сборки
      */
     private final String buildTime;
-    
+
     private boolean isBUGged;
-    
+
     private long pingTVStartStamp = ConstantsFor.START_STAMP;
-    
+
     /**
      Конструктор по-умолчанию.
      <p>
@@ -84,44 +84,44 @@ public class VersionInfo {
         appVersion = PROPERTIES.getProperty(ConstantsFor.PR_APP_VERSION);
         buildTime = PROPERTIES.getProperty(PR_BUILD_TIME, String.valueOf(new TimeChecker().call().getReturnTime()));
     }
-    
+
     public long getPingTVStartStamp() {
         return pingTVStartStamp;
     }
-    
+
     public void setPingTVStartStamp(long pingTVStartStamp) {
         this.pingTVStartStamp = pingTVStartStamp;
     }
-    
+
     public boolean isBUGged() {
         return isBUGged;
     }
-    
+
     public void setBUGged(boolean BUGged) {
         isBUGged = BUGged;
     }
-    
+
     /**
      @return {@link #appBuild}
      */
     public String getAppBuild() {
         return appBuild;
     }
-    
+
     /**
      @return {@link #appVersion}
      */
     public String getAppVersion() {
         return appVersion;
     }
-    
+
     /**
      @return {@link #buildTime}
      */
     public String getBuildTime() {
         return buildTime;
     }
-    
+
     /**
      *
      */
@@ -147,12 +147,11 @@ public class VersionInfo {
         } catch (NullPointerException e) {
             FileSystemWorker.writeFile(getClass().getSimpleName() + ConstantsFor.FILEEXT_LOG, Collections.singletonList(new TForms().fromArray(e, false)));
         }
-        AppComponents.getOrSetProps(PROPERTIES);
     }
-    
+
     /**
      Usages: {@link #setParams()} <br> Uses: - <br>
-     
+
      @param file gradle.build
      */
     private void setterVersionFromFiles(File file) {
@@ -168,7 +167,7 @@ public class VersionInfo {
             LOGGER.error(e.getMessage(), e);
         }
     }
-    
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("VersionInfo{");

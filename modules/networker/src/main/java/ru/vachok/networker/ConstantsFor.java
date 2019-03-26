@@ -14,11 +14,8 @@ import org.springframework.web.multipart.MultipartFile;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.mysqlandprops.props.DBRegProperties;
-import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.ad.user.PCUserResolver;
 import ru.vachok.networker.componentsrepo.Visitor;
-import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.controller.ServiceInfoCtrl;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.mailserver.ExSRV;
@@ -29,13 +26,13 @@ import ru.vachok.networker.systray.ActionDefault;
 
 import javax.servlet.http.HttpServletRequest;
 import java.awt.*;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.SecureRandom;
 import java.time.Year;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
@@ -224,7 +221,7 @@ public enum ConstantsFor {
     /**
      Имя ПК HOME
      */
-    public static final String HOSTNAME_HOME = "HOME";
+    public static final String HOSTNAME_HOME = "home";
 
     /**
      Строка из Live Template soutm
@@ -370,14 +367,10 @@ public enum ConstantsFor {
             new MessageCons().info("ConstantsFor.INFO_MSG_RUNNABLE", "thisPC()", " = " + thisPC());
         }
     };
+
     public static final String PR_AND_ATT_NEWPC = "newpc";
 
     static final String STR_FINISH = " is finish";
-
-    /**
-     new {@link Properties}
-     */
-    private static final Properties PROPS = new Properties();
 
     private static final String[] STRINGS_TODELONSTART = {"visit_", ".tmp"};
 
@@ -398,6 +391,10 @@ public enum ConstantsFor {
     private static final MessageToUser messageToUser = new MessageLocal(ConstantsFor.class.getSimpleName());
 
     public static final String FILEEXT_PROPERTIES = ".properties";
+
+    private static final String PR_BUILD = "build";
+
+    private static final Properties PROPS = AppComponents.getOrSetProps();
 
 
     /**
@@ -426,19 +423,6 @@ public enum ConstantsFor {
     }
 
     /**
-     @return {@link #takePr(boolean)} or {@link #PROPS}
-     */
-    public static Properties getAppProps() {
-        if (PROPS.size() < 3) {
-            messageToUser.info("PROPS", "return takePr(false)", " = " + PROPS.size());
-            return takePr(false);
-        } else {
-            messageToUser.info("PROPS", "return PROPS", " = " + PROPS.size());
-            return PROPS;
-        }
-    }
-
-    /**
      @return Время работы в часах.
      */
     public static String getUpTime() {
@@ -459,10 +443,10 @@ public enum ConstantsFor {
         long retLong = 1L;
         try {
             String hostName = InetAddress.getLocalHost().getHostName(); if (hostName.equalsIgnoreCase(HOSTNAME_DO213) || hostName.toLowerCase().contains(HOSTNAME_HOME)) {
-                PROPS.setProperty("build", System.currentTimeMillis() + "");
+                PROPS.setProperty(PR_BUILD, System.currentTimeMillis() + "");
                 retLong = System.currentTimeMillis();
             } else {
-                retLong = Long.parseLong(PROPS.getProperty("build", "1"));
+                retLong = Long.parseLong(PROPS.getProperty(PR_BUILD, "1"));
             }
         } catch (UnknownHostException e) {
             messageToUser.errorAlert("ConstantsFor", "getBuildStamp", e.getMessage());
@@ -544,55 +528,6 @@ public enum ConstantsFor {
     @Scope(SINGLETON)
     static ConfigurableApplicationContext configurableApplicationContext() {
         return getConfigurableApplicationContext();
-    }
-
-    /**
-     Тащит {@link #PROPS} из БД или файла
-     <p>
-     {@link ThreadConfig#thrNameSet(java.lang.String)} <br>
-     */
-    static Properties takePr(boolean fromFile) {
-        AppComponents.threadConfig().thrNameSet("gProps");
-
-        InitProperties initProperties = new DBRegProperties(APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName());
-        Properties retPr = new Properties();
-        File prFile = new File(ConstantsFor.class.getSimpleName() + FILEEXT_PROPERTIES);
-        StringBuilder stringBuilder = new StringBuilder();
-        String classMeth = "ConstantsFor.takePr";
-
-        if (fromFile || new File("ff").exists()) {
-            try (InputStream inputStream = new FileInputStream(prFile)) {
-                retPr.load(inputStream);
-                stringBuilder.append("fromFile: ").append(fromFile).append("\n");
-                stringBuilder.append("File \"ff\": ").append(new File("ff").exists()).append("\n");
-            } catch (IOException e) {
-                stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false)).append("\n");
-                FileSystemWorker.error(classMeth, e);
-            }
-        } else {
-            retPr = initProperties.getProps();
-
-            try (OutputStream outputStream = new FileOutputStream(prFile)) {
-                long millisOf24HRS = TimeUnit.DAYS.toMillis(1);
-
-                if (!prFile.exists() || (System.currentTimeMillis() - millisOf24HRS) > prFile.lastModified()) {
-                    retPr.store(outputStream, ConstantsFor.class.getSimpleName() + ".takePr");
-                    stringBuilder.append(prFile.getName()).append(" is exist: ").append(!prFile.exists()).append("\n");
-                    if (prFile.exists()) {
-                        stringBuilder.append(prFile.getName()).append("last modified: ").append(new Date(prFile.lastModified())).append("\n");
-                    }
-                }
-            } catch (IOException e) {
-                stringBuilder.append(e.getMessage()).append(new TForms().fromArray(e, false)).append("\n");
-                FileSystemWorker.error(classMeth, e);
-            }
-        }
-
-        PROPS.clear();
-        PROPS.putAll(retPr);
-        stringBuilder.append(PROPS.size()).append(" is PROPS size, PROPS equals retPr: ").append(PROPS.equals(retPr));
-        messageToUser.warn(classMeth, "results", " = " + stringBuilder);
-        return retPr;
     }
 
     /**

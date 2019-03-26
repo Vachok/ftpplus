@@ -121,23 +121,7 @@ public class AppComponents {
         return new Visitor(request);
     }
 
-    @Bean
-    @Scope(ConstantsFor.SINGLETON)
-    public static Properties getOrSetProps(boolean saveThis) {
-        Properties properties = ConstantsFor.getAppProps();
-        if (saveThis) {
-            boolean isSaved = saveAppProps(properties);
-            messageToUser.info("AppComponents. Saving properties", " properties.size()", " = " + properties.size());
-            final String classMeth = "AppComponents.getOrSetProps ";
-            final String isSavedStr = " isSaved";
-            if (isSaved) {
-                messageToUser.info(classMeth, isSavedStr, " = " + true);
-            } else {
-                new MessageToTray().error(classMeth, isSavedStr, " = " + false);
-            }
-        }
-        return properties;
-    }
+    private static final String DB_JAVA_ID = ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName();
 
     @Bean
     @Scope(ConstantsFor.SINGLETON)
@@ -175,8 +159,17 @@ public class AppComponents {
         return LastNetScan.getLastNetScan();
     }
 
-    private static final String javaIDsString = ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName();
+    @Bean @Scope(ConstantsFor.SINGLETON) public static Properties getOrSetProps(boolean saveThis) {
+        Properties properties = new Properties(); String classMeth = "AppComponents.getOrSetProps "; String isSavedStr = " isSaved";
 
+        if (saveThis) {
+            boolean isSaved = saveAppProps(properties); messageToUser.info("AppComponents. Saving properties", " properties.size()", " = " + properties.size()); if (isSaved) {
+                messageToUser.info(classMeth, isSavedStr, " = " + true);
+            } else {
+                new MessageToTray().error(classMeth, isSavedStr, " = " + false);
+            }
+        } return properties;
+    }
 
     /**
      @return new {@link VersionInfo}
@@ -206,10 +199,6 @@ public class AppComponents {
         return new ADSrv(adUser, adComputer);
     }
 
-    public static boolean getOrSetProps(Properties localProps) {
-        return saveAppProps(localProps);
-    }
-
     public static AbstractBeanFactoryBasedTargetSource configurableApplicationContext() {
         throw new IllegalComponentStateException("Moved to");
     }
@@ -223,13 +212,12 @@ public class AppComponents {
     private static boolean saveAppProps(Properties propsToSave) {
         threadConfig().thrNameSet("sProps"); propsToSave.setProperty("thispc", ConstantsFor.thisPC());
         String classMeth = "ConstantsFor.saveAppProps";
-        String methName = "saveAppProps";
-        MysqlDataSource mysqlDataSource = new DBRegProperties(javaIDsString).getRegSourceForProperties(); mysqlDataSource.setRelaxAutoCommit(true);
+        String methName = "saveAppProps"; MysqlDataSource mysqlDataSource = new DBRegProperties(DB_JAVA_ID).getRegSourceForProperties(); mysqlDataSource.setRelaxAutoCommit(true);
         AtomicBoolean retBool = new AtomicBoolean();
         mysqlDataSource.setLogger("java.util.Logger");
         mysqlDataSource.setRelaxAutoCommit(true);
 
-        Callable<Boolean> theProphecy = new SaveDBPropsCallable(mysqlDataSource, propsToSave, classMeth, methName);
+        Callable<Boolean> theProphecy = new DBPropsCallable(mysqlDataSource, propsToSave, classMeth, methName);
         Future<Boolean> booleanFuture = threadConfig().getTaskExecutor().submit(theProphecy); try {
             retBool.set(booleanFuture.get(ConstantsFor.DELAY, TimeUnit.SECONDS));
         }
@@ -240,12 +228,13 @@ public class AppComponents {
     }
 
     public static boolean saveAppPropsForce() {
-        final Properties toSave = ConstantsFor.getAppProps();
-        SaveDBPropsCallable saveDBPropsCallable =
-            new SaveDBPropsCallable(new DBRegProperties(javaIDsString).getRegSourceForProperties(),
+        Properties toSave = getOrSetProps();
+
+        DBPropsCallable saveDBPropsCallable = new DBPropsCallable(new DBRegProperties(DB_JAVA_ID).getRegSourceForProperties(),
                 toSave, ConstantsFor.class.getSimpleName(), "forced", true);
         return saveDBPropsCallable.call();
     }
+
     @Override
     public String toString() {
         ConfigurableApplicationContext context = getConfigurableApplicationContext();

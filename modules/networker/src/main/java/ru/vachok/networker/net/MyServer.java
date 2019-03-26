@@ -50,14 +50,16 @@ public class MyServer extends Thread {
      */
     private static final MessageToUser messageToUser = new MessageLocal(MyServer.class.getSimpleName());
 
-    private static final int LPORT = Integer.parseInt(ConstantsFor.getAppProps().getProperty("LPORT", "9990"));
+    private static final int LPORT = Integer.parseInt(AppComponents
+        .getOrSetProps()
+        .getProperty("LPORT", "9990"));
 
     /**
      <b>Сокет для клиента</b>
      <p>
      {@link #getSocket()} , {@link #setSocket(Socket)}
      */
-    private static Socket socket;
+    private static Socket socket = null;
 
     public static Socket getSocket() {
         return socket;
