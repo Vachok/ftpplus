@@ -13,7 +13,6 @@ import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.services.MessageLocal;
 
 import java.io.File;
-import java.util.Objects;
 import java.util.concurrent.RejectedExecutionException;
 
 
@@ -130,7 +129,7 @@ public class PfListsSrv {
      * <i>/home/kudr/inet.log</i>
      */
     private void buildFactory() {
-        synchronized (Objects.requireNonNull(pfListsInstAW)) {
+         
             AppComponents.threadConfig().thrNameSet("bFact");
 
             SSHFactory.@NotNull Builder builderInst = new SSHFactory.Builder(DEFAULT_CONNECT_SRV, commandForNatStr, getClass().getSimpleName());
@@ -161,6 +160,6 @@ public class PfListsSrv {
             pfListsInstAW.setInetLog(build.call());
 
             pfListsInstAW.setGitStatsUpdatedStampLong(System.currentTimeMillis());
-        }
+        
     }
 }
