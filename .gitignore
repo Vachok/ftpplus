@@ -828,3 +828,5 @@ SaveDBPropsCallable.mini
 lan_210220.txt
 lan_old0.txt
 lan_old1.txt
+NetScannerSvc.runAfterAllScan
+src/main/resources/static/pages/console.txt
