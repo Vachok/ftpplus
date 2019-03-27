@@ -35,7 +35,7 @@ public class SSHFactory implements Callable<String> {
     private static final File SSH_ERR = new File("ssh_err.txt");
 
     private static final String SOURCE_CLASS = SSHFactory.class.getSimpleName();
-    
+
     private static final MessageToUser messageToUser = new MessageLocal(SSHFactory.class.getSimpleName());
 
     private InitProperties initProperties = new DBRegProperties("general-jsch");
@@ -82,7 +82,7 @@ public class SSHFactory implements Callable<String> {
     public void setCommandSSH(String commandSSH) {
         this.commandSSH = commandSSH;
     }
-    
+
     private SSHFactory(SSHFactory.Builder builder) {
         this.connectToSrv = builder.connectToSrv;
         this.commandSSH = builder.commandSSH;
@@ -109,7 +109,7 @@ public class SSHFactory implements Callable<String> {
         respChannel.disconnect();
         throw new RejectedExecutionException("ХУЙ FOR YOU!");
     }
-    
+
     private void chanRespChannel() throws ConnectException {
         JSch jSch = new JSch();
         Session session = null;
@@ -166,16 +166,16 @@ public class SSHFactory implements Callable<String> {
         sb.append('}');
         return sb.toString();
     }
-    
+
     private void sshException(Exception e) {
         initProperties = new FileProps(SOURCE_CLASS);
         initProperties.getProps();
     }
-    
+
     private String getConnectToSrv() {
         return connectToSrv;
     }
-    
+
     public void setConnectToSrv(String connectToSrv) {
         this.connectToSrv = connectToSrv;
     }
@@ -183,11 +183,11 @@ public class SSHFactory implements Callable<String> {
     public String call() {
         StringBuilder stringBuilder = new StringBuilder();
         File file = new File(classCaller + "_" + System.currentTimeMillis() + ".ssh");
-        
+
         stringBuilder.append(new Date()).append(".\n<br> SSH server is : \n<br>").append(connectToSrv).append(" executing: ").append(commandSSH).append("\n<br>end");
-        
+
         byte[] bytes = new byte[ConstantsFor.KBYTE * 20];
-    
+
         try (InputStream connect = connect()) {
             messageToUser.info(connect().available() + "", " bytes, ssh-channel is ", respChannel.isConnected() + "");
             int readBytes = connect.read(bytes, 0, connect.available());
@@ -199,7 +199,7 @@ public class SSHFactory implements Callable<String> {
         }
         messageToUser.warn(getClass().getSimpleName(), "CALL FROM CLASS: ", classCaller);
         List<String> recList = new ArrayList<>();
-        
+
         recList.add(stringBuilder.toString());
         recList.add(toString());
         recList.add(builderToStr);
@@ -212,8 +212,8 @@ public class SSHFactory implements Callable<String> {
         File pemFile = new File("a161.pem");
         return pemFile.getAbsolutePath();
     }
-    
-    
+
+
     /**
      Builder.
      <p>
@@ -236,10 +236,13 @@ public class SSHFactory implements Callable<String> {
 
         private String commandSSH;
 
+        private SSHFactory sshFactory;
+
         public Builder(String connectToSrv, String commandSSH, String classCaller) {
             this.commandSSH = commandSSH;
             this.connectToSrv = connectToSrv;
             this.classCaller = classCaller;
+            this.sshFactory = new SSHFactory(this);
         }
 
         protected Builder() {
@@ -340,7 +343,7 @@ public class SSHFactory implements Callable<String> {
          @return the ssh factory
          */
         public SSHFactory build() {
-            return new SSHFactory(this);
+            return sshFactory;
         }
 
         /**
@@ -363,44 +366,6 @@ public class SSHFactory implements Callable<String> {
         public SSHFactory.Builder setPass(String pass) {
             this.pass = pass;
             return this;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if(this==o){
-                return true;
-            }
-            if (!(o instanceof SSHFactory.Builder)) {
-                return false;
-            }
-    
-            SSHFactory.Builder builder = (SSHFactory.Builder) o;
-
-            if(!getUserName().equals(builder.getUserName())){
-                return false;
-            }
-            if(getPass()!=null? !getPass().equals(builder.getPass()): builder.getPass()!=null){
-                return false;
-            }
-            if(!getSessionType().equals(builder.getSessionType())){
-                return false;
-            }
-            if(getConnectToSrv()!=null? !getConnectToSrv().equals(builder.getConnectToSrv()): builder.getConnectToSrv()!=null){
-                return false;
-            }
-            return getCommandSSH()!=null? getCommandSSH().equals(builder.getCommandSSH()): builder.getCommandSSH()==null;
-        }
-
-        @Override
-        public String toString() {
-            final StringBuilder sb = new StringBuilder("Builder{");
-            sb.append("userName='").append(userName).append('\'');
-            sb.append(", pass='").append(pass).append('\'');
-            sb.append(", sessionType='").append(sessionType).append('\'');
-            sb.append(", connectToSrv='").append(connectToSrv).append('\'');
-            sb.append(", commandSSH='").append(commandSSH).append('\'');
-            sb.append('}');
-            return sb.toString();
         }
 
     }

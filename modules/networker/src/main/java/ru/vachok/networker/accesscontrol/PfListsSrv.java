@@ -3,6 +3,7 @@
 package ru.vachok.networker.accesscontrol;
 
 
+
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -10,10 +11,11 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
+import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
 
 import java.io.File;
-import java.util.concurrent.RejectedExecutionException;
+import java.io.FileNotFoundException;
 
 
 /**
@@ -108,7 +110,11 @@ public class PfListsSrv {
      */
     void makeListRunner() {
         AppComponents.threadConfig().thrNameSet("mkLst");
-        buildFactory();
+        try {
+            buildFactory();
+        } catch (FileNotFoundException e) {
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".makeListRunner" , e));
+        }
     }
 
 
@@ -128,14 +134,14 @@ public class PfListsSrv {
      * <i>rules current</i> <br>
      * <i>/home/kudr/inet.log</i>
      */
-    private void buildFactory() {
-         
+    private void buildFactory() throws FileNotFoundException {
+
             AppComponents.threadConfig().thrNameSet("bFact");
 
             SSHFactory.@NotNull Builder builderInst = new SSHFactory.Builder(DEFAULT_CONNECT_SRV, commandForNatStr, getClass().getSimpleName());
             SSHFactory build = builderInst.build();
             if (!new File("a161.pem").exists()) {
-                throw new RejectedExecutionException("NO CERTIFICATE a161.pem...");
+                throw new FileNotFoundException("NO CERTIFICATE a161.pem...");
             }
 
             build.setCommandSSH("sudo cat /etc/pf/vipnet;sudo cat /etc/pf/24hrs;exit");
@@ -160,6 +166,5 @@ public class PfListsSrv {
             pfListsInstAW.setInetLog(build.call());
 
             pfListsInstAW.setGitStatsUpdatedStampLong(System.currentTimeMillis());
-        
     }
 }

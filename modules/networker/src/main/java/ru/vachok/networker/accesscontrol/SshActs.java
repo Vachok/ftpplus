@@ -79,7 +79,7 @@ public class SshActs {
      Имя ПК для разрешения
      */
     private String pcName;
-    
+
     private String userInput;
 
     /**
@@ -94,7 +94,7 @@ public class SshActs {
      Разрешить адрес
      */
     private String allowDomain;
-    
+
     private String ipAddrOnly;
 
     /**
@@ -106,13 +106,13 @@ public class SshActs {
      Имя домена для удаления.
      */
     private String delDomain;
-    
+
     private boolean squid;
-    
+
     private boolean squidLimited;
-    
+
     private boolean tempFull;
-    
+
     private boolean vipNet;
 
     public void setIpAddrOnly(String ipAddrOnly) {
@@ -235,7 +235,7 @@ public class SshActs {
         String callForRoute = null;
         Future<String> submitTrace = AppComponents.threadConfig().getTaskExecutor().submit(sshFactory);
         try {
-            callForRoute = submitTrace.get(30, TimeUnit.SECONDS);
+            callForRoute = submitTrace.get((long) (ConstantsFor.ONE_HOUR_IN_MIN / 2) , TimeUnit.SECONDS);
             if (callForRoute.contains("91.210.85.")) {
                 stringBuilder.append("<h3>FORTEX</h3>");
             } else {
@@ -244,9 +244,7 @@ public class SshActs {
                 }
             }
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
-            LOGGER.error("SshActs  providerTraceStr: {}", e.getMessage());
-            FileSystemWorker.error("SshActs.providerTraceStr", e);
-            stringBuilder.append(e.getMessage());
+            stringBuilder.append(FileSystemWorker.error("SshActs.providerTraceStr" , e));
             Thread.currentThread().interrupt();
         }
         String logStr = "LOG: ";
@@ -255,10 +253,8 @@ public class SshActs {
             try {
                 stringBuilder.append("<br><font color=\"gray\">").append(callForRoute.split(logStr)[1].replaceAll(";", "<br>")).append("</font>");
             } catch (ArrayIndexOutOfBoundsException e) {
-                stringBuilder.append("SshActs." + "providerTraceStr : " + e.getMessage());
-                FileSystemWorker.error("SshActs.providerTraceStr", e);
+                stringBuilder.append(FileSystemWorker.error("SshActs.providerTraceStr" , e));
             }
-    
         }
         return stringBuilder.toString();
     }

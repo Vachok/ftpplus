@@ -72,18 +72,6 @@ public class IntoApplication {
         return configurableApplicationContext;
     }
 
-
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("IntoApplication{");
-        sb.append("SPRING_APPLICATION=").append(SPRING_APPLICATION);
-        sb.append(", LOCAL_PROPS=").append(LOCAL_PROPS.size());
-        sb.append(ConstantsFor.TOSTRING_MESSAGE_TO_USER).append(messageToUser);
-        sb.append(", configurableApplicationContext=").append(configurableApplicationContext.getApplicationName());
-        sb.append('}');
-        return sb.toString();
-    }
-
     static {
         configurableApplicationContext = SpringApplication.run(IntoApplication.class);
     }
