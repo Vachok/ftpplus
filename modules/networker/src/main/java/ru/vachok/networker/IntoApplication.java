@@ -21,7 +21,6 @@ import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.SpeedChecker;
 import ru.vachok.networker.systray.SystemTrayHelper;
 
-import java.io.File;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.TextStyle;
@@ -47,9 +46,6 @@ public class IntoApplication {
      */
     private static final @NotNull SpringApplication SPRING_APPLICATION = new SpringApplication();
 
-    /**
-     {@link AppComponents#getOrSetProps(boolean)}
-     */
     private static final Properties LOCAL_PROPS = new Properties();
 
     /**
@@ -60,27 +56,10 @@ public class IntoApplication {
     private static final ThreadPoolTaskExecutor EXECUTOR = AppComponents.threadConfig().getTaskExecutor();
 
     /**
-     {@link ConfigurableApplicationContext} = null.
-     */
-    @SuppressWarnings ("CanBeFinal")
-    private static @NotNull ConfigurableApplicationContext configurableApplicationContext;
-
-    /**
-     @return {@link #configurableApplicationContext}
-     */
-    public static @NotNull ConfigurableApplicationContext getConfigurableApplicationContext() {
-        return configurableApplicationContext;
-    }
-
-    static {
-        configurableApplicationContext = SpringApplication.run(IntoApplication.class);
-    }
-
-    /**
      Точка входа в Spring Boot Application
      <p>
      {@link FileSystemWorker#delFilePatterns(java.lang.String[])}. Удаление останков от предидущего запуска. <br>
-     {@link SpringApplication#run(java.lang.Class, java.lang.String...)}. Инициализация {@link #configurableApplicationContext}. <br>
+     {@link SpringApplication#run(java.lang.Class , java.lang.String...)}. Инициализация
      {@link Logger#warn(java.lang.String)} - new {@link String} {@code msg} = {@link IntoApplication#afterSt()} <br>
      Если есть аргументы - {@link #readArgs(String[])} <br>
      {@link Logger#info(java.lang.String)} - время работы метода.
@@ -91,16 +70,15 @@ public class IntoApplication {
     public static void main(@Nullable String[] args) {
         FileSystemWorker.delFilePatterns(ConstantsFor.getStringsVisit());
         LOCAL_PROPS.putAll(AppComponents.getOrSetProps());
-
         LOCAL_PROPS.setProperty("ff", "false");
         if (args != null && args.length > 0) {
             //noinspection NullableProblems
             readArgs(args);
         } else {
             beforeSt(true);
-            configurableApplicationContext.start();
+            SpringApplication.run(IntoApplication.class).start();
             afterSt();
-        } AppComponents.getOrSetProps(true);
+        }
     }
 
     /**
@@ -158,7 +136,6 @@ public class IntoApplication {
                 }
             }
         }
-
         for (Map.Entry<String, String> stringStringEntry : argsMap.entrySet()) {
             if (stringStringEntry.getKey().contains(ConstantsFor.PR_TOTPC)) {
                 LOCAL_PROPS.setProperty(ConstantsFor.PR_TOTPC, stringStringEntry.getValue());
@@ -171,16 +148,15 @@ public class IntoApplication {
                 isTray = false;
             }
             if (stringStringEntry.getKey().contains("ff")) {
-                Map<Object, Object> objectMap = Collections.unmodifiableMap(DBPropsCallable.takePr());
+                Map<Object, Object> objectMap = Collections.unmodifiableMap(AppComponents.getOrSetProps());
                 LOCAL_PROPS.clear();
                 LOCAL_PROPS.putAll(objectMap);
-                FileSystemWorker.copyOrDelFile(new File("ConstantsFor.properties"), ".\\ConstantsFor.bak", false);
             }
             if (stringStringEntry.getKey().contains("lport")) {
                 LOCAL_PROPS.setProperty("lport", stringStringEntry.getValue());
             }
         }
-
+        AppComponents.getOrSetProps(LOCAL_PROPS);
         beforeSt(isTray);
         configurableApplicationContext.start();
         afterSt();

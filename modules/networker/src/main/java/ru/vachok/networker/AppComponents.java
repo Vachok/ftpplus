@@ -1,12 +1,12 @@
 package ru.vachok.networker;
 
 
+
 import com.jcraft.jsch.JSch;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.target.AbstractBeanFactoryBasedTargetSource;
-import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Scope;
@@ -41,8 +41,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-import static ru.vachok.networker.IntoApplication.getConfigurableApplicationContext;
-
 
 /**
  Компоненты. Бины
@@ -59,17 +57,13 @@ public class AppComponents {
 
     private static MessageToUser messageToUser = new MessageLocal(AppComponents.class.getSimpleName());
 
+    private static final Properties APP_PR = new Properties();
+
     @Bean
     public TemporaryFullInternet temporaryFullInternet() {
         TemporaryFullInternet temporaryFullInternet = new TemporaryFullInternet();
         messageToUser.info("AppComponents.temporaryFullInternet", "temporaryFullInternet.hashCode()", " = " + temporaryFullInternet.hashCode());
         return temporaryFullInternet;
-    }
-
-    @Bean
-    @Scope(ConstantsFor.SINGLETON)
-    public static Properties getOrSetProps() {
-        return getOrSetProps(false);
     }
 
     @Bean
@@ -160,8 +154,12 @@ public class AppComponents {
         return LastNetScan.getLastNetScan();
     }
 
-    @Bean @Scope(ConstantsFor.SINGLETON) public static Properties getOrSetProps(boolean saveThis) {
-        return getAppProps();
+
+    @Bean @Scope(ConstantsFor.SINGLETON) public static Properties getOrSetProps( Properties propsToSave ) {
+        propsToSave.forEach(( x , y ) -> {
+            if (!APP_PR.contains(y)) APP_PR.setProperty(x.toString() , y.toString());
+        });
+        return APP_PR;
     }
 
     /**
@@ -196,35 +194,48 @@ public class AppComponents {
         throw new IllegalComponentStateException("Moved to");
     }
 
-    public static Properties getAppProps() {
-        threadConfig().thrNameSet("sProps");
 
-        MysqlDataSource mysqlDataSource = new DBRegProperties(DB_JAVA_ID).getRegSourceForProperties(); mysqlDataSource.setRelaxAutoCommit(true);
-        mysqlDataSource.setLogger("java.util.Logger"); Callable<Properties> theProphecy = new DBPropsCallable(mysqlDataSource, new Properties()); Future<Properties> propertiesFuture =
-            threadConfig()
-                .getTaskExecutor()
-                .submit(theProphecy);
-
-        try {
-            return propertiesFuture.get();
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-        } return null;
+    public static boolean getOrSetProps( boolean b ) {
+        return saveAppPropsForce();
     }
 
+
     public static boolean saveAppPropsForce() {
-        Properties toSave = getOrSetProps();
-        DBPropsCallable saveDBPropsCallable = new DBPropsCallable(new DBRegProperties(DB_JAVA_ID).getRegSourceForProperties() , toSave , true);
+        DBPropsCallable saveDBPropsCallable = new DBPropsCallable(new DBRegProperties(DB_JAVA_ID).getRegSourceForProperties() , APP_PR , true);
         return saveDBPropsCallable.upProps();
     }
 
+
+    public static Properties getOrSetProps() {
+        if (APP_PR.size() > 3) { return APP_PR; } else return getAppProps();
+    }
+
+
     @Override
     public String toString() {
-        ConfigurableApplicationContext context = getConfigurableApplicationContext();
         final StringBuilder sb = new StringBuilder("AppComponents{");
-        sb.append("Beans=").append(new TForms().fromArray(context.getBeanDefinitionNames(), true)).append("\n");
-        sb.append(context);
+        sb.append("Beans=").append(new TForms().fromArray(context.getBeanDefinitionNames() , true)).append("\n");
         sb.append('}');
         return sb.toString();
+    }
+
+
+    private static Properties getAppProps() {
+        threadConfig().thrNameSet("sProps");
+        if (APP_PR.size() > 3) return APP_PR;
+
+        MysqlDataSource mysqlDataSource = new DBRegProperties(DB_JAVA_ID).getRegSourceForProperties();
+        mysqlDataSource.setRelaxAutoCommit(true);
+        mysqlDataSource.setLogger("java.util.Logger");
+        Callable<Properties> theProphecy = new DBPropsCallable(mysqlDataSource , APP_PR);
+        Future<Properties> propertiesFuture = threadConfig().getTaskExecutor().submit(theProphecy);
+        try {
+            APP_PR.putAll(propertiesFuture.get());
+        } catch (InterruptedException | ExecutionException e) {
+            APP_PR.setProperty("err" , new TForms().fromArray(e , false));
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+        }
+        return APP_PR;
     }
 }
