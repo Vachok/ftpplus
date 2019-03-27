@@ -8,7 +8,6 @@ import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
-import ru.vachok.networker.services.TimeChecker;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -22,7 +21,6 @@ import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 
 /**
@@ -75,10 +73,61 @@ import java.util.concurrent.atomic.AtomicInteger;
 
     }
 
+    @Override public Properties call() {
+        miniLogger.add("1. Starting " + getClass().getSimpleName() + " at: " + new Date(System.currentTimeMillis()));
+        if (!pFile.exists()) {
+            try {
+                Path fileCreate = Files.createFile(pFile.toPath());
+                miniLogger.add(fileCreate.toString());
+                PROPS.putAll(takePr());
+            } catch (IOException e) {
+                FileSystemWorker.error("DBPropsCallable.savePropsDelStatement", e);
+            }
+        } return PROPS;
+    }
+
+
+    @SuppressWarnings("DuplicateStringLiteralInspection") public boolean upProps() {
+        String methName = ".upProps";
+        String sql = "insert into ru_vachok_networker (property, valueofproperty, javaid) values (?,?,?)";
+
+        miniLogger.add("2. " + sql);
+        FileSystemWorker.writeFile(getClass().getSimpleName() + ".mini" , miniLogger.stream());
+        try (Connection c = mysqlDataSource.getConnection()) {
+            try (PreparedStatement preparedStatement = c.prepareStatement(sql)) {
+                for (Map.Entry<Object, Object> entry : propsToSave.entrySet()) {
+                    Object x = entry.getKey();
+                    Object y = entry.getValue();
+                    try {
+                        preparedStatement.setString(1, x.toString());
+                        preparedStatement.setString(2, y.toString());
+                        preparedStatement.setString(3, ConstantsFor.class.getSimpleName());
+                        int executeUpdateInt = preparedStatement.executeUpdate();
+                        return executeUpdateInt > 0;
+                    } catch (SQLException e) {
+                        String error = FileSystemWorker.error(getClass().getSimpleName() + ".upProps" , e);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            messageToUser.errorAlert(ConstantsFor.class.getSimpleName() , methName , e.getMessage());
+            FileSystemWorker.error(getClass().getSimpleName() , e);
+        }
+        return false;
+    }
+
+
+    @Override public String toString() {
+        String prAsStr = new TForms().fromArray(PROPS , true);
+        prAsStr = prAsStr + "\n<br>";
+        return prAsStr;
+    }
+
+
     /**
-     * Тащит {@link #PROPS} из БД или файла
-     * <p>
-     * {@link ThreadConfig#thrNameSet(String)} <br>
+     Тащит {@link #PROPS} из БД или файла
+     <p>
+     {@link ThreadConfig#thrNameSet(String)} <br>
      */
     static Properties takePr() {
         AppComponents
@@ -87,80 +136,23 @@ import java.util.concurrent.atomic.AtomicInteger;
 
         InitProperties initProperties = new DBRegProperties(ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName());
 
-        Properties retPr = new Properties(); File prFile = new File(ConstantsFor.class.getSimpleName() + ConstantsFor.FILEEXT_PROPERTIES); StringBuilder stringBuilder = new StringBuilder();
+        Properties retPr = new Properties();
+        File prFile = new File(ConstantsFor.class.getSimpleName() + ConstantsFor.FILEEXT_PROPERTIES);
+        StringBuilder stringBuilder = new StringBuilder();
         String classMeth = "ConstantsFor.takePr";
 
-        try (InputStream inputStream = new FileInputStream(prFile)) {
-            retPr.load(inputStream);
-
-            stringBuilder
-                .append("fromFile: ")
-                .append(true)
-                .append("\n"); stringBuilder
-                .append("File \"ff\": ")
-                .append(new File("ff").exists())
-                .append("\n");
-
-        } catch (IOException e) {
-            stringBuilder
-                .append(e.getMessage())
-                .append("\n")
-                .append(new TForms().fromArray(e, false))
-                .append("\n");
-        }
         PROPS.clear();
-        PROPS.putAll(retPr);
+        PROPS.putAll(initProperties.getProps());
         stringBuilder
             .append(PROPS.size())
             .append(" is PROPS size, PROPS equals retPr: ")
             .append(PROPS.equals(retPr));
 
-        messageToUser.warn(classMeth, "results", " = " + stringBuilder);
+        messageToUser.warn(classMeth , "results" , " = " + stringBuilder);
 
         return retPr;
     }
 
-    @Override public Properties call() {
-        miniLogger.add("1. Starting " + getClass().getSimpleName() + " at: " + new Date(System.currentTimeMillis()));
-        if (!pFile.exists()) {
-            try {
-                Path fileCreate = Files.createFile(pFile.toPath());
-                miniLogger.add(fileCreate.toString()); PROPS.putAll(takePr());
-            } catch (IOException e) {
-                FileSystemWorker.error("DBPropsCallable.savePropsDelStatement", e);
-            }
-        } return PROPS;
-    }
-
-    @SuppressWarnings("DuplicateStringLiteralInspection") public boolean upProps() {
-        String methName = ".upProps";
-
-        String sql = "insert into ru_vachok_networker (property, valueofproperty, javaid) values (?,?,?)";
-        miniLogger.add("2. " + sql);
-        try (Connection c = mysqlDataSource.getConnection()) {
-            try (PreparedStatement preparedStatement = c.prepareStatement(sql)) {
-                AtomicInteger executeUpdate = new AtomicInteger();
-                for (Map.Entry<Object, Object> entry : propsToSave.entrySet()) {
-                    Object x = entry.getKey();
-                    Object y = entry.getValue();
-                    try {
-                        preparedStatement.setString(1, x.toString());
-                        preparedStatement.setString(2, y.toString());
-                        preparedStatement.setString(3, ConstantsFor.class.getSimpleName());
-                        executeUpdate.set(preparedStatement.executeUpdate());
-                    } catch (SQLException e) {
-                        FileSystemWorker.error(getClass().getSimpleName() + ".upProps", e);
-                    }
-                }
-                retBool.set(executeUpdate.get() > 0);
-            }
-        } catch (SQLException e) {
-            messageToUser.errorAlert(ConstantsFor.class.getSimpleName(), methName, e.getMessage()); FileSystemWorker.error(getClass().getSimpleName(), e);
-            retBool.set(false);
-        }
-        FileSystemWorker.writeFile(getClass().getSimpleName() + ".mini", miniLogger.stream());
-        return retBool.get();
-    }
 
     /**
      Выполнение удаления {@link Properties} из БД
@@ -168,7 +160,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
      @param c {@link Connection}
      */
-    private void savePropsDelStatement(Connection c) {
+    private void savePropsDelStatement( Connection c) {
         String classPoint = "DBPropsCallable.";
         String methNameSave = "savePropsDelStatement";
 
@@ -179,9 +171,10 @@ import java.util.concurrent.atomic.AtomicInteger;
             retBool.set(false);
         } else if (!isForced) {
             delFromDataBase(c);
-            retBool.set(true);
-        } else retBool.set(false);
+            retBool.set(upProps());
+        } else { retBool.set(upProps()); }
     }
+
 
     private void delFromDataBase(Connection c) {
         String sql = "delete FROM `ru_vachok_networker` where `javaid` =  'ConstantsFor'";
@@ -189,17 +182,19 @@ import java.util.concurrent.atomic.AtomicInteger;
         try (PreparedStatement preparedStatement = c.prepareStatement(sql);
              InputStream inputStream = new FileInputStream(pFile)
         ) {
-            propsToSave.load(inputStream);
-            int update = preparedStatement.executeUpdate();
-            miniLogger.add("ConstantsFor.savePropsDelStatement " + "update " + " = " + update);
-            if (update > 0) {
-                retBool.set(true);
-            }
+            int pDeleted = preparedStatement.executeUpdate();
+            PROPS.load(inputStream);
+            miniLogger.add("ConstantsFor.savePropsDelStatement " + "pDeleted " + " = " + pDeleted);
+            miniLogger.add(new TForms().fromArray(PROPS , false));
+            Files.deleteIfExists(pFile.toPath());
+            retBool.set(upProps());
         } catch (IOException | SQLException e) {
             retBool.set(false);
             miniLogger.add(e.getMessage());
+            FileSystemWorker.writeFile(getClass().getSimpleName() + ".mini" , miniLogger.stream());
         }
     }
+
 
     private void writeToFile() {
         miniLogger.add("Now: " + LocalDateTime.now() + " file: " + LocalDateTime.ofEpochSecond(pFile.lastModified() / 1000, 0, ZoneOffset.ofHours(3))); miniLogger.add("lastModAndCanWrite");
@@ -210,10 +205,6 @@ import java.util.concurrent.atomic.AtomicInteger;
             miniLogger.add("File: " + toSavePrLoc.getName() + " modified: " + new Date(toSavePrLoc.lastModified()));
         } catch (IOException e) {
             FileSystemWorker.error(getClass().getSimpleName() + ".writeToFile", e);
-        } retBool.set(false); messageToUser.warn("NO DB SAVE! " + pFile.getName() + " can write is " + true + ". Modified: " + (new TimeChecker().call().getReturnTime() - pFile.lastModified()) + " MSec ago.");
-    }
-
-    @Override public String toString() {
-        String prAsStr = new TForms().fromArray(PROPS, true); prAsStr = prAsStr + "\n<br>"; return prAsStr;
+        }
     }
 }

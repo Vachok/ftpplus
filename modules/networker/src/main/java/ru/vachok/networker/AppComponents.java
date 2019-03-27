@@ -214,8 +214,8 @@ public class AppComponents {
 
     public static boolean saveAppPropsForce() {
         Properties toSave = getOrSetProps();
-
-        DBPropsCallable saveDBPropsCallable = new DBPropsCallable(new DBRegProperties(DB_JAVA_ID).getRegSourceForProperties(), toSave, true); return saveDBPropsCallable.upProps();
+        DBPropsCallable saveDBPropsCallable = new DBPropsCallable(new DBRegProperties(DB_JAVA_ID).getRegSourceForProperties() , toSave , true);
+        return saveDBPropsCallable.upProps();
     }
 
     @Override
