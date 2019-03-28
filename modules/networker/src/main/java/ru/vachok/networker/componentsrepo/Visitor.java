@@ -37,8 +37,8 @@ public class Visitor {
         .append(" сек. идёт сессия.")
         .append("\n")
         .toString();
-    
-    private int clickCounter;
+
+    private int clickCounter = 0;
 
     private String visitPlace;
 
@@ -48,7 +48,6 @@ public class Visitor {
     private String remAddr;
 
     private HttpSession session;
-    
     private HttpServletRequest request;
 
 
