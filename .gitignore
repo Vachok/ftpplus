@@ -830,3 +830,7 @@ lan_old0.txt
 lan_old1.txt
 NetScannerSvc.runAfterAllScan
 src/main/resources/static/pages/console.txt
+src/main/resources/static/extFiles/
+/modules/networker/1.xml
+modules/networker/1.xml
+modules/networker/src/main/resources/static/pages/console.txt

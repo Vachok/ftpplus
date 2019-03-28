@@ -114,14 +114,11 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
             toCpFile = targetPath.toFile();
             Path copy = Files.copy(origFile.toPath(), targetPath, StandardCopyOption.REPLACE_EXISTING);
             if (needDel && !Files.deleteIfExists(origFile.toPath())) {
-
                 origFile.deleteOnExit();
-
             }
             String msg = directories + " getParent directory. " + copy + " " + toCpFile.exists();
             messageToUser.info(msg);
         } catch (IOException | NullPointerException e) {
-            messageToUser.error(FileSystemWorker.class.getSimpleName(), e.getMessage(), new TForms().fromArray(e, false));
             if (toCpFile.exists()) {
                 toCpFile.deleteOnExit();
                 messageToUser.warn(toCpFile.getName(), "will be delete On Exit", " = " + e.getMessage());
@@ -261,15 +258,14 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
             messageToUser.errorAlert(CLASS_NAME, "error", exIO.getMessage());
         }
         boolean isCp = copyOrDelFile(f, ".\\err\\" + f.getName(), true);
-        return f.getAbsolutePath()+" "+isCp;
+        return classMeth + " threw Exception: " + e.getMessage() + ": <p>\n\n" + new TForms().fromArray(e, true);
     }
-
-
+    
     private static boolean printTo(OutputStream outputStream, Exception e) {
         try (PrintStream printStream = new PrintStream(outputStream, true)) {
             printStream.println(new Date(new TimeChecker().call().getReturnTime()));
             printStream.println();
-            printStream.println(e.getMessage() + " getMessage;");
+            printStream.println(e.getMessage());
             printStream.println();
             printStream.println(new TForms().fromArray(e, false));
             return printStream.checkError();

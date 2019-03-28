@@ -12,21 +12,14 @@ import ru.vachok.networker.services.MessageLocal;
 import java.awt.*;
 import java.io.*;
 import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Stream;
-
-import static ru.vachok.networker.IntoApplication.getConfigurableApplicationContext;
 
 
 /**
@@ -128,9 +121,8 @@ public class ExitApp implements Runnable {
                 }
                 addToDeq.set(deqRun.addAll(threadConfig.getTaskExecutor().getThreadPoolExecutor().shutdownNow()));
                 if (addToDeq.get()) {
-                    ConfigurableApplicationContext context = getConfigurableApplicationContext();
+                    ConfigurableApplicationContext context = new IntoApplication().getConfigurableApplicationContext();
                     context.stop();
-
                     messageToUser.info(ExitApp.class.getSimpleName() + RELOAD_CTX , "ConstantsFor.class.hashCode()" , " = " + ConstantsFor.class.hashCode());
                 }
             }
@@ -139,7 +131,7 @@ public class ExitApp implements Runnable {
             FileSystemWorker.error(ExitApp.class.getSimpleName() + RELOAD_CTX , e);
         }
     }
-
+    
     public boolean writeOwnObject() {
         try (OutputStream fileOutputStream = new FileOutputStream(fileName);
              ObjectOutput objectOutputStream = new ObjectOutputStream(fileOutputStream)
@@ -155,47 +147,29 @@ public class ExitApp implements Runnable {
     }
 
     /**
-     Копирует логи
-
-     @see FileSystemWorker
+     {@link #copyAvail()}
      */
-    @SuppressWarnings({"HardCodedStringLiteral", "FeatureEnvy"})
-    private void copyAvail() {
-        File appLog = new File("g:\\My_Proj\\FtpClientPlus\\modules\\networker\\app.log");
-        File scan200 = new File(ConstantsNet.FILENAME_NEWLAN210);
-        File scan210 = new File(ConstantsNet.FILENAME_NEWLAN200210);
-        File oldLanFile0 = new File(ConstantsNet.FILENAME_OLDLANTXT0);
-        File oldLanFile1 = new File(ConstantsNet.FILENAME_OLDLANTXT1);
-        File filePingTv = new File(ConstantsFor.FILENAME_PTV);
-
-        if (Stream.of(scan200 , scan210 , oldLanFile0 , oldLanFile1 , filePingTv).anyMatch(file1 -> !file1.exists())) {
+    @Override
+    public void run() {
+        AppComponents.threadConfig().thrNameSet("exit");
+        File commitFile = new File("G:\\My_Proj\\FtpClientPlus\\modules\\networker\\src\\main\\resources\\static\\pages\\commit.html");
+        if (!commitFile.exists()) {
+            commitFile = new File("C:\\Users\\ikudryashov\\IdeaProjects\\spring\\modules\\networker\\src\\main\\resources\\static\\pages\\commit.html");
+        }
+        if (commitFile.exists() && commitFile.canRead()) {
             try {
-                Path isFile200 = Files.createFile(scan200.toPath());
-                Path isFile210 = Files.createFile(scan210.toPath());
-                Path oldLanPath0 = Files.createFile(oldLanFile0.toPath());
-                Path oldLanPath1 = Files.createFile(oldLanFile1.toPath());
-                Path pingTvPath = Files.createFile(filePingTv.toPath());
-                messageToUser.info(METH_COPY , "isFile210" , " = " + isFile210 + "\nisFile200 = " + isFile200 + "\noldLanPath0 = " + oldLanPath0 + "\noldLanPath1 = " + oldLanFile1 + "\npingTvPath= " + pingTvPath);
+                Desktop.getDesktop().browse(URI.create(GO_TO));
             }
             catch (IOException e) {
-                FileSystemWorker.error(METH_COPY , e);
+                messageToUser.errorAlert("ExitApp", "run", e.getMessage());
             }
-        }
-
-        FileSystemWorker.copyOrDelFile(scan200, new StringBuilder().append("\\lan\\vlans200_").append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
-        FileSystemWorker.copyOrDelFile(scan210, new StringBuilder().append(".\\lan\\vlans210_").append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
-        FileSystemWorker.copyOrDelFile(oldLanFile0, new StringBuilder().append(".\\lan\\0old_lan_").append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
-        FileSystemWorker.copyOrDelFile(oldLanFile1, new StringBuilder().append(".\\lan\\1old_lan_").append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
-        ConcurrentMap<String, File> srvFiles = NetScanFileWorker.getI().getFilesScan();
-        srvFiles.forEach(( id , file ) -> FileSystemWorker.copyOrDelFile(file , new StringBuilder().append(".\\lan\\").append(file.getName().replaceAll(ConstantsNet.FILENAME_SERVTXT , "")).append(System.currentTimeMillis() / 1000).append(".txt").toString() , true));
-        if (appLog.exists() && appLog.canRead()) {
-            FileSystemWorker.copyOrDelFile(appLog, "\\\\10.10.111.1\\Torrents-FTP\\app.log", false);
+            readCommit(commitFile);
         }
         else {
-            miniLoggerLast.add("No app.log");
-            messageToUser.info("No app.log");
+            messageToUser.info("NO FILES COMMIT");
         }
-        writeObj();
+        miniLoggerLast.add(reasonExit);
+        copyAvail();
     }
 
     /**
@@ -237,13 +211,15 @@ public class ExitApp implements Runnable {
      */
     private void exitAppDO() {
         BlockingDeque<String> devices = ConstantsNet.getAllDevices();
+        Properties properties = AppComponents.getOrSetProps();
         miniLoggerLast.add("Devices " + "iterator next: " + " = " + devices.iterator().next());
         miniLoggerLast.add("Last" + " = " + devices.getLast());
         miniLoggerLast.add("BlockingDeque " + "size/remainingCapacity/total" + " = " + devices.size() + "/" + devices.remainingCapacity() + "/" + ConstantsNet.IPS_IN_VELKOM_VLAN);
         miniLoggerLast.add("exit at " + LocalDateTime.now() + ConstantsFor.getUpTime());
+        miniLoggerLast.add("Properties in DATABASE : " + new AppComponents().updateProps(properties));
+        miniLoggerLast.add("\n" + new TForms().fromArray(properties, false));
         FileSystemWorker.writeFile("exit.last", miniLoggerLast.stream());
         FileSystemWorker.delTemp();
-        getConfigurableApplicationContext().close();
         AppComponents.threadConfig().killAll();
         System.exit(Math.toIntExact(toMinutes));
     }
@@ -255,27 +231,37 @@ public class ExitApp implements Runnable {
     }
     
     /**
-     {@link #copyAvail()}
+     Копирует логи
+ 
+     @see FileSystemWorker
      */
-    @Override
-    public void run() {
-        AppComponents.threadConfig().thrNameSet("exit");
-        File commitFile = new File("G:\\My_Proj\\FtpClientPlus\\modules\\networker\\src\\main\\resources\\static\\pages\\commit.html");
-        if (!commitFile.exists()) {
-            commitFile = new File("C:\\Users\\ikudryashov\\IdeaProjects\\spring\\modules\\networker\\src\\main\\resources\\static\\pages\\commit.html");
+    @SuppressWarnings({"HardCodedStringLiteral", "FeatureEnvy"})
+    private void copyAvail() {
+        File appLog = new File("g:\\My_Proj\\FtpClientPlus\\modules\\networker\\app.log");
+        File scan200 = new File(ConstantsNet.FILENAME_NEWLAN210);
+        File scan210 = new File(ConstantsNet.FILENAME_NEWLAN200210);
+        File oldLanFile0 = new File(ConstantsNet.FILENAME_OLDLANTXT0);
+        File oldLanFile1 = new File(ConstantsNet.FILENAME_OLDLANTXT1);
+        File filePingTv = new File(ConstantsFor.FILENAME_PTV);
+    
+        FileSystemWorker.copyOrDelFile(scan200, new StringBuilder().append("\\lan\\vlans200_").append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
+        FileSystemWorker.copyOrDelFile(scan210, new StringBuilder().append(".\\lan\\vlans210_").append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
+        FileSystemWorker.copyOrDelFile(oldLanFile0, new StringBuilder().append(".\\lan\\0old_lan_").append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
+        FileSystemWorker.copyOrDelFile(oldLanFile1, new StringBuilder().append(".\\lan\\1old_lan_").append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
+        FileSystemWorker.copyOrDelFile(filePingTv, new StringBuilder().append(".\\lan\\ptv_").append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
+    
+        ConcurrentMap<String, File> srvFiles = NetScanFileWorker.getI().getFilesScan();
+        srvFiles.forEach((id, file)->FileSystemWorker
+            .copyOrDelFile(file, new StringBuilder().append(".\\lan\\").append(file.getName().replaceAll(ConstantsNet.FILENAME_SERVTXT, "")).append(System.currentTimeMillis() / 1000)
+                .append(".txt").toString(), true));
+        if (appLog.exists() && appLog.canRead()) {
+            FileSystemWorker.copyOrDelFile(appLog, "\\\\10.10.111.1\\Torrents-FTP\\app.log", false);
         }
-        if (commitFile.exists() && commitFile.canRead()) {
-            try {
-                Desktop.getDesktop().browse(URI.create(GO_TO));
-            } catch (IOException e) {
-                messageToUser.errorAlert("ExitApp", "run", e.getMessage());
-            }
-            readCommit(commitFile);
-        } else {
-            messageToUser.info("NO FILES COMMIT");
+        else {
+            miniLoggerLast.add("No app.log");
+            messageToUser.info("No app.log");
         }
-        miniLoggerLast.add(reasonExit);
-        AppComponents.getOrSetProps(true);
-        copyAvail();
+        writeObj();
     }
+    
 }

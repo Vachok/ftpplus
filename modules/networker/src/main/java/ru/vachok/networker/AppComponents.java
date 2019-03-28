@@ -37,11 +37,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-
-import static ru.vachok.networker.IntoApplication.getConfigurableApplicationContext;
 
 
 /**
@@ -59,17 +56,15 @@ public class AppComponents {
 
     private static MessageToUser messageToUser = new MessageLocal(AppComponents.class.getSimpleName());
 
+    private static final Properties APP_PR = new Properties();
+
+    private static final ConcurrentMap<String, Visitor> VISITS_MAP = new ConcurrentHashMap<>();
+
     @Bean
     public TemporaryFullInternet temporaryFullInternet() {
         TemporaryFullInternet temporaryFullInternet = new TemporaryFullInternet();
         messageToUser.info("AppComponents.temporaryFullInternet", "temporaryFullInternet.hashCode()", " = " + temporaryFullInternet.hashCode());
         return temporaryFullInternet;
-    }
-
-    @Bean
-    @Scope(ConstantsFor.SINGLETON)
-    public static Properties getOrSetProps() {
-        return getOrSetProps(false);
     }
 
     @Bean
@@ -117,9 +112,13 @@ public class AppComponents {
         return sshActs;
     }
 
+
+    private static ConfigurableApplicationContext context;
+
     @Bean(STR_VISITOR)
     public Visitor visitor(HttpServletRequest request) {
-        return new Visitor(request);
+        Visitor visitor = new Visitor(request);
+        return VISITS_MAP.putIfAbsent(request.getSession().getId(), visitor);
     }
 
     private static final String DB_JAVA_ID = ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName();
@@ -160,23 +159,15 @@ public class AppComponents {
         return LastNetScan.getLastNetScan();
     }
 
-    @Bean @Scope(ConstantsFor.SINGLETON) public static Properties getOrSetProps(boolean saveThis) {
-        return getAppProps();
-    }
-
     /**
      @return new {@link VersionInfo}
      */
     @SuppressWarnings("DuplicateStringLiteralInspection")
-    @Bean("versioninfo")
+    @Bean(ConstantsFor.STR_VERSIONINFO)
     @Scope(ConstantsFor.SINGLETON)
     public static VersionInfo versionInfo() {
         VersionInfo versionInfo = new VersionInfo();
-        boolean isBUGged = false;
-        if (new File("bugged").exists()) {
-            isBUGged = true;
-        }
-        versionInfo.setBUGged(isBUGged);
+        if (!ConstantsFor.thisPC().toLowerCase().contains("rups00")) versionInfo.setParams();
         return versionInfo;
     }
 
@@ -196,35 +187,53 @@ public class AppComponents {
         throw new IllegalComponentStateException("Moved to");
     }
 
-    public static Properties getAppProps() {
-        threadConfig().thrNameSet("sProps");
 
-        MysqlDataSource mysqlDataSource = new DBRegProperties(DB_JAVA_ID).getRegSourceForProperties(); mysqlDataSource.setRelaxAutoCommit(true);
-        mysqlDataSource.setLogger("java.util.Logger"); Callable<Properties> theProphecy = new DBPropsCallable(mysqlDataSource, new Properties()); Future<Properties> propertiesFuture =
-            threadConfig()
-                .getTaskExecutor()
-                .submit(theProphecy);
+    public boolean updateProps(Properties propertiesToUpdate) {
+        MysqlDataSource source = new DBRegProperties(ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName()).getRegSourceForProperties();
+        DBPropsCallable dbPropsCallable = new DBPropsCallable(source, propertiesToUpdate, true);
+        return dbPropsCallable.call().getProperty("force").equals("true");
+    }
 
+
+    public static Properties getOrSetProps() {
+        if (APP_PR.size() > 3 && (!APP_PR.equals(null))) {
+            return APP_PR;
+        }
+        else {
+            return new AppComponents().getAppProps();
+        }
+    }
+
+
+    private static boolean saveAppPropsForce() {
+        DBPropsCallable saveDBPropsCallable = new DBPropsCallable(new DBRegProperties(DB_JAVA_ID).getRegSourceForProperties(), APP_PR, true);
+        return saveDBPropsCallable.call().getProperty("force").equals("true");
+    }
+
+
+    public static ConfigurableApplicationContext getCtx() {
+        return context;
+    }
+
+
+    public static void setCtx(ConfigurableApplicationContext context) {
+        AppComponents.context = context;
+    }
+
+
+    private Properties getAppProps() {
+        threadConfig().thrNameSet("getAPr");
+        if (APP_PR.size() > 3) return APP_PR;
+        MysqlDataSource mysqlDataSource = new DBRegProperties(DB_JAVA_ID).getRegSourceForProperties();
+        mysqlDataSource.setRelaxAutoCommit(true);
+        mysqlDataSource.setLogger("java.util.Logger");
+        Callable<Properties> theProphecy = new DBPropsCallable(mysqlDataSource , APP_PR);
         try {
-            return propertiesFuture.get();
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-        } return null;
-    }
-
-    public static boolean saveAppPropsForce() {
-        Properties toSave = getOrSetProps();
-
-        DBPropsCallable saveDBPropsCallable = new DBPropsCallable(new DBRegProperties(DB_JAVA_ID).getRegSourceForProperties(), toSave, true); return saveDBPropsCallable.upProps();
-    }
-
-    @Override
-    public String toString() {
-        ConfigurableApplicationContext context = getConfigurableApplicationContext();
-        final StringBuilder sb = new StringBuilder("AppComponents{");
-        sb.append("Beans=").append(new TForms().fromArray(context.getBeanDefinitionNames(), true)).append("\n");
-        sb.append(context);
-        sb.append('}');
-        return sb.toString();
+            APP_PR.putAll(theProphecy.call());
+        }
+        catch (Exception e) {
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".getAppProps", e));
+        }
+        return APP_PR;
     }
 }

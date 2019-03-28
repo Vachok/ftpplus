@@ -61,7 +61,7 @@ public class FileOut extends FileSystemWorker implements Runnable {
              BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream)) {
             bufferedOutputStream.write(bytesToWrite, 0, bytesToWrite.length);
         } catch (IOException e) {
-            messageToUser.warn(new TForms().fromArray(e, false));
+            FileSystemWorker.error(getClass().getSimpleName() + ".writeNew", e);
         }
     }
 }

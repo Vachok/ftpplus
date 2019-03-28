@@ -161,7 +161,7 @@ public class ServiceInfoCtrl {
             .append("<b><i>").append(AppComponents.versionInfo()).append("</i></b><p><font color=\"orange\">")
             .append(ConstantsNet.getSshMapStr()).append("</font><p>")
             .append(new AppInfoOnLoad()).append(" ").append(AppInfoOnLoad.class.getSimpleName()).append("<p>")
-            .append(new TForms().fromArray(AppComponents.getOrSetProps()))
+            .append(new TForms().fromArray(AppComponents.getOrSetProps(), true))
             .append("<p>")
             .append(FileSystemWorker.readFile("exit.last")).append("<p>")
             .append("<p><font color=\"grey\">").append(listFilesToReadStr()).append("</font>")
@@ -192,11 +192,10 @@ public class ServiceInfoCtrl {
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<br>" + getJREVers());
     }
 
-
     private float getLast() {
-        return (System.currentTimeMillis() - ConstantsFor.LAST_S) / (ConstantsFor.ONE_HOUR_IN_MIN / ConstantsFor.ONE_DAY_HOURS);
+        return (System.currentTimeMillis() - Long
+            .parseLong(AppComponents.getOrSetProps().getProperty(ConstantsFor.PR_LASTS, "1515233487000"))) / (ConstantsFor.ONE_HOUR_IN_MIN / ConstantsFor.ONE_DAY_HOURS);
     }
-
 
     private String getJREVers() {
         return System.getProperty("java.version");

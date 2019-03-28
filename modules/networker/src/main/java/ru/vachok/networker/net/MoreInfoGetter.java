@@ -3,6 +3,7 @@ package ru.vachok.networker.net;
 
 
 import org.springframework.ui.Model;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.OtherKnownDevices;
 
@@ -63,8 +64,8 @@ public class MoreInfoGetter {
         String sql;
         if (isOnline) {
             sql = "select * from velkompc where NamePP like ?";
-            NetScannerSvc.onLinePCsNum += 1;
-            return ConditionChecker.onLinesCheck(sql, pcName) + " | " + NetScannerSvc.onLinePCsNum;
+            AppComponents.netScannerSvc().setOnLinePCsNum(AppComponents.netScannerSvc().getOnLinePCsNum() + 1);
+            return ConditionChecker.onLinesCheck(sql, pcName) + " | " + AppComponents.netScannerSvc().getOnLinePCsNum();
         } else {
             sql = "select * from pcuser where pcName like ?";
             return ConditionChecker.offLinesCheckUser(sql, pcName);

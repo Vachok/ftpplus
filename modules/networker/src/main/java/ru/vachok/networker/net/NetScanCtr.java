@@ -147,13 +147,11 @@ public class NetScanCtr {
         netScannerSvcInstAW.setThePc("");
     
         model.addAttribute("pc", FileSystemWorker.readFile(ConstantsNet.BEANNAME_LASTNETSCAN));
-        model.addAttribute(ConstantsFor.ATT_TITLE, new Date(lastSt));
+        model.addAttribute(ConstantsFor.ATT_TITLE, netScannerSvcInstAW.getOnLinePCsNum() + " pc at " + new Date(lastSt));
         model.addAttribute(ConstantsNet.BEANNAME_NETSCANNERSVC, netScannerSvcInstAW);
         model.addAttribute(ATT_THEPC, netScannerSvcInstAW.getThePc());
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<br>First Scan: 2018-05-05");
-    
         response.addHeader(ConstantsFor.HEAD_REFRESH, "30");
-    
         try {
             checkMapSizeAndDoAction(model, request, lastSt);
         } catch (InterruptedException e) {
@@ -221,7 +219,6 @@ public class NetScanCtr {
         netScannerSvc.setThePc("");
         return "redirect:/ad?" + thePc;
     }
-
 
     /**
      * Достаёт инфо о пользователе из БД
@@ -364,10 +361,10 @@ public class NetScanCtr {
      */
     private void mapSizeBigger(Model model, HttpServletRequest request, long lastSt, int thisTotpc) throws ExecutionException, InterruptedException, TimeoutException {
         long timeLeft = TimeUnit.MILLISECONDS.toSeconds(lastSt - System.currentTimeMillis());
-        int pcWas = Integer.parseInt(PROPERTIES.getProperty(ConstantsNet.ONLINEPC, "0"));
+        int pcWas = Integer.parseInt(PROPERTIES.getProperty(ConstantsFor.PR_ONLINEPC, "0"));
         int remainPC = thisTotpc - lastScanMAP.size();
         boolean newPSs = 0 > remainPC;
-
+    
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(timeLeft);
         stringBuilder.append(" seconds (");
@@ -383,7 +380,7 @@ public class NetScanCtr {
         titleBuilder.append("/");
         titleBuilder.append(thisTotpc);
         titleBuilder.append(" PCs (");
-        titleBuilder.append(NetScannerSvc.getOnLinePCs());
+        titleBuilder.append(netScannerSvcInstAW.getOnLinePCsNum());
         titleBuilder.append("/");
         titleBuilder.append(pcWas);
         titleBuilder.append(" at ");
@@ -501,16 +498,15 @@ public class NetScanCtr {
      */
     @Async
     private void scanIt(HttpServletRequest request, Model model, Date lastScanDate) {
-        AppComponents.getOrSetProps().setProperty(ConstantsFor.PR_TOTPC, String.valueOf(lastScanMAP.size()));
-        boolean savedPr = AppComponents.saveAppPropsForce();
-        messageToUser.warn(savedPr + " APP PR IN DB!");
         if (request != null && request.getQueryString() != null) {
             lastScanMAP.clear();
+            netScannerSvcInstAW.setOnLinePCsNum(0);
             Set<String> pcNames = netScannerSvcInstAW.getPCNamesPref(request.getQueryString());
             model.addAttribute(ConstantsFor.ATT_TITLE, new Date().toString())
                 .addAttribute("pc", new TForms().fromArray(pcNames, true));
         } else {
             lastScanMAP.clear();
+            netScannerSvcInstAW.setOnLinePCsNum(0);
             Set<String> pCsAsync = netScannerSvcInstAW.getPcNames();
             model.addAttribute(ConstantsFor.ATT_TITLE, lastScanDate)
                 .addAttribute("pc", new TForms().fromArray(pCsAsync, true));

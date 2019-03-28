@@ -94,8 +94,7 @@ public class NetMonitorPTV implements Runnable {
     }
 
     private void checkSize() throws FileNotFoundException {
-        File pingTv = new File(FILENAME_PINGTV);
-        versionInfo.setPingTVStartStamp(ConstantsFor.getAtomicTime());
+        File pingTv = new File(ConstantsFor.FILENAME_PTV);
         printWriter.print(pingResultLast + " " + LocalDateTime.now());
         printWriter.println();
         if (pingTv.length() > ConstantsFor.MBYTE) {

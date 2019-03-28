@@ -330,9 +330,8 @@ public class DiapazonedScan implements Runnable {
             }
             String retStr = stringBuffer.toString(); if (retStr.contains(PAT_IS_ONLINE)) {
                 printStream.println(hostAddress + " " + hostName); messageToUser.info("print: ", vlanFile.getName(), " = " + vlanFile.length() + " bytes");
-            } else {
-                messageToUser.info("no print", hostAddress, hostName);
-            } long msSpend = System.currentTimeMillis() - stArt;
+            }
+            long msSpend = System.currentTimeMillis() - stArt;
             return retStr;
         }
 

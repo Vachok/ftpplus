@@ -40,8 +40,6 @@ public enum ConstantsNet { ;
 
     public static final String BEANNAME_LASTNETSCAN = "lastnetscan";
 
-    public static final String ONLINEPC = "onlinepc";
-
     public static final String HTTP_LOCALHOST_8880_NETSCAN = "http://localhost:8880/netscan";
 
     public static final String DB_FIELD_WHENQUERIED = "whenQueried";
@@ -136,6 +134,8 @@ public enum ConstantsNet { ;
     public static final String FILENAME_SERVTXT_31SRVTXT = "lan_31v" + FILENAME_SERVTXT;
 
     public static final String FILENAME_SERVTXT_41SRVTXT = "lan_41v" + FILENAME_SERVTXT;
+
+    public static final String FILENAME_PINGTV = "ping.tv";
 
     private static final String[] PC_PREFIXES = {"do", "pp", "td", "no", "a", "dotd", "notd"};
 
