@@ -7,12 +7,12 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.MyServer;
@@ -39,14 +39,11 @@ import java.util.concurrent.Executors;
  @since 02.05.2018 (10:36) */
 @SpringBootApplication
 @EnableScheduling
+@EnableAutoConfiguration
 public class IntoApplication {
-
-    /**
-     new {@link SpringApplication}
-     */
-    private static final @NotNull SpringApplication SPRING_APPLICATION = new SpringApplication();
-
-    private static final Properties LOCAL_PROPS = new Properties();
+    
+    
+    private static final Properties LOCAL_PROPS = AppComponents.getOrSetProps();
 
     /**
      {@link MessageLocal}
@@ -54,31 +51,15 @@ public class IntoApplication {
     private static final MessageToUser messageToUser = new MessageLocal(IntoApplication.class.getSimpleName());
 
     private static final ThreadPoolTaskExecutor EXECUTOR = AppComponents.threadConfig().getTaskExecutor();
-
-    /**
-     Точка входа в Spring Boot Application
-     <p>
-     {@link FileSystemWorker#delFilePatterns(java.lang.String[])}. Удаление останков от предидущего запуска. <br>
-     {@link SpringApplication#run(java.lang.Class , java.lang.String...)}. Инициализация
-     {@link Logger#warn(java.lang.String)} - new {@link String} {@code msg} = {@link IntoApplication#afterSt()} <br>
-     Если есть аргументы - {@link #readArgs(String[])} <br>
-     {@link Logger#info(java.lang.String)} - время работы метода.
-
-     @param args аргументы запуска
-     @see SystemTrayHelper
-     */
-    public static void main(@Nullable String[] args) {
-        FileSystemWorker.delFilePatterns(ConstantsFor.getStringsVisit());
-        LOCAL_PROPS.putAll(AppComponents.getOrSetProps());
-        LOCAL_PROPS.setProperty("ff", "false");
-        if (args != null && args.length > 0) {
-            //noinspection NullableProblems
-            readArgs(args);
-        } else {
-            beforeSt(true);
-            SpringApplication.run(IntoApplication.class).start();
-            afterSt();
-        }
+    
+    private ConfigurableApplicationContext configurableApplicationContext;
+    
+    public ConfigurableApplicationContext getConfigurableApplicationContext() {
+        return configurableApplicationContext;
+    }
+    
+    public void setConfigurableApplicationContext(ConfigurableApplicationContext configurableApplicationContext) {
+        this.configurableApplicationContext = configurableApplicationContext;
     }
 
     /**
@@ -101,6 +82,46 @@ public class IntoApplication {
         EXECUTOR.submit(mySrv);
         EXECUTOR.submit(IntoApplication::getWeekPCStats);
     }
+    
+    /**
+     Точка входа в Spring Boot Application
+     <p>
+     {@link FileSystemWorker#delFilePatterns(java.lang.String[])}. Удаление останков от предидущего запуска. <br>
+     {@link SpringApplication#run(java.lang.Class, java.lang.String...)}. Инициализация
+     {@link Logger#warn(java.lang.String)} - new {@link String} {@code msg} = {@link IntoApplication#afterSt()} <br>
+     Если есть аргументы - {@link #readArgs(String[])} <br>
+     {@link Logger#info(java.lang.String)} - время работы метода.
+     
+     @param args аргументы запуска
+     @see SystemTrayHelper
+     */
+    public static void main(@Nullable String[] args) {
+        SpringApplication application = new SpringApplication();
+        ConfigurableApplicationContext context = application.run(IntoApplication.class);
+        FileSystemWorker.delFilePatterns(ConstantsFor.getStringsVisit());
+        AppComponents.setCtx(context);
+        if (args != null && args.length > 0) {
+            readArgs(args);
+        }
+        else {
+            beforeSt(true);
+            context.start();
+            afterSt();
+        }
+    }
+    
+    /**
+     Статистика по-пользователям за неделю.
+     <p>
+     Запуск new {@link SpeedChecker.ChkMailAndUpdateDB}, через {@link Executors#unconfigurableExecutorService(java.util.concurrent.ExecutorService)}
+     <p>
+     Если {@link LocalDate#getDayOfWeek()} equals {@link DayOfWeek#SUNDAY}, запуск new {@link WeekPCStats}
+     */
+    private static void getWeekPCStats() {
+        if (LocalDate.now().getDayOfWeek().equals(DayOfWeek.SUNDAY)) {
+            AppComponents.threadConfig().execByThreadConfig(new WeekPCStats());
+        }
+    }
 
     /**
      Чтение аргументов {@link #main(String[])}
@@ -117,7 +138,7 @@ public class IntoApplication {
         Runnable exitApp = new ExitApp(IntoApplication.class.getSimpleName());
         List<@NotNull String> argsList = Arrays.asList(args);
         ConcurrentMap<String, String> argsMap = new ConcurrentHashMap<>();
-
+    
         for (int i = 0; i < argsList.size(); i++) {
             String key = argsList.get(i);
             String value = "true";
@@ -158,26 +179,7 @@ public class IntoApplication {
         }
         AppComponents.getOrSetProps(LOCAL_PROPS);
         beforeSt(isTray);
-        configurableApplicationContext.start();
         afterSt();
-    }
-
-    /**
-     Статистика по-пользователям за неделю.
-     <p>
-     Запуск new {@link SpeedChecker.ChkMailAndUpdateDB}, через {@link Executors#unconfigurableExecutorService(java.util.concurrent.ExecutorService)}
-     <p>
-     Если {@link LocalDate#getDayOfWeek()} equals {@link DayOfWeek#SUNDAY}, запуск new {@link WeekPCStats}
-     */
-    private static void getWeekPCStats() {
-        if(LocalDate.now().getDayOfWeek().equals(DayOfWeek.SUNDAY)){
-            AppComponents.threadConfig().execByThreadConfig(new WeekPCStats());
-        }
-    }
-
-
-    public static void setConfigurableApplicationContext( ConfigurableApplicationContext configurableApplicationContext ) {
-        IntoApplication.configurableApplicationContext = configurableApplicationContext;
     }
 
     private static void trayAdd() {
@@ -214,8 +216,6 @@ public class IntoApplication {
         stringBuilder.append(" - day of week\n");
         stringBuilder.append(LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL , Locale.getDefault()));
         messageToUser.info("IntoApplication.beforeSt" , "stringBuilder" , stringBuilder.toString());
-        SPRING_APPLICATION.setMainApplicationClass(IntoApplication.class);
-        SPRING_APPLICATION.setApplicationContextClass(AppCtx.class);
         System.setProperty("encoding" , "UTF8");
         FileSystemWorker.writeFile("system" , new TForms().fromArray(System.getProperties()));
     }

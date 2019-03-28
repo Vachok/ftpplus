@@ -5,10 +5,6 @@ package ru.vachok.networker;
 
 import org.apache.commons.net.ntp.TimeInfo;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
-import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Scope;
 import org.springframework.ui.Model;
 import org.springframework.web.multipart.MultipartFile;
 import ru.vachok.messenger.MessageCons;
@@ -38,8 +34,6 @@ import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
-
-import static ru.vachok.networker.IntoApplication.getConfigurableApplicationContext;
 
 
 /**
@@ -369,12 +363,10 @@ public enum ConstantsFor {
     };
 
     public static final String PR_AND_ATT_NEWPC = "newpc";
-
+    
+    public static final String PR_LASTS = "lasts";
+    
     static final String STR_FINISH = " is finish";
-
-    public static final long LAST_S = Long.parseLong(AppComponents
-                                                         .getOrSetProps()
-                                                         .getProperty("lasts", 1544816520000L + ""));
 
     private static final String[] STRINGS_TODELONSTART = {"visit_", ".tmp"};
 
@@ -398,8 +390,6 @@ public enum ConstantsFor {
 
     private static final String PR_BUILD = "build";
 
-    private static final Properties PROPS = AppComponents.getOrSetProps();
-
 
     /**
      @return {@link #MAIL_RULES}
@@ -422,10 +412,6 @@ public enum ConstantsFor {
         }
     }
 
-    public static Visitor thisVisit(String sessionID) throws NullPointerException, NoSuchBeanDefinitionException {
-        return (Visitor) configurableApplicationContext().getBean(sessionID);
-    }
-
     /**
      @return Время работы в часах.
      */
@@ -445,17 +431,20 @@ public enum ConstantsFor {
      */
     public static long getBuildStamp() {
         long retLong = 1L;
+        Properties appPr = AppComponents.getOrSetProps();
         try {
-            String hostName = InetAddress.getLocalHost().getHostName(); if (hostName.equalsIgnoreCase(HOSTNAME_DO213) || hostName.toLowerCase().contains(HOSTNAME_HOME)) {
-                PROPS.setProperty(PR_BUILD, System.currentTimeMillis() + "");
+            String hostName = InetAddress.getLocalHost().getHostName();
+            if (hostName.equalsIgnoreCase(HOSTNAME_DO213) || hostName.toLowerCase().contains(HOSTNAME_HOME)) {
+                appPr.setProperty(PR_BUILD, System.currentTimeMillis() + "");
                 retLong = System.currentTimeMillis();
             } else {
-                retLong = Long.parseLong(PROPS.getProperty(PR_BUILD, "1"));
+                retLong = Long.parseLong(appPr.getProperty(PR_BUILD, "1"));
             }
         } catch (UnknownHostException e) {
             messageToUser.errorAlert("ConstantsFor", "getBuildStamp", e.getMessage());
             FileSystemWorker.error("ConstantsFor.getBuildStamp", e);
         }
+        AppComponents.getOrSetProps(appPr);
         return retLong;
     }
 
@@ -504,20 +493,6 @@ public enum ConstantsFor {
     }
 
     /**
-     Парсинг и проверка уникальности для new {@link Visitor}
-
-     @param request {@link HttpServletRequest}
-     @return {@link Visitor}
-     */
-    public static Visitor getVis(HttpServletRequest request) {
-        try {
-            return thisVisit(request.getSession().getId());
-        } catch (Exception e) {
-            return new AppComponents().visitor(request);
-        }
-    }
-
-    /**
      @param request для получения IP
      @return boolean авторизован или нет
      */
@@ -527,13 +502,11 @@ public enum ConstantsFor {
             request.getRemoteAddr().contains("10.10.111") ||
             request.getRemoteAddr().contains("172.16.200");
     }
-
-    @Bean
-    @Scope(SINGLETON)
-    static ConfigurableApplicationContext configurableApplicationContext() {
-        return getConfigurableApplicationContext();
+    
+    public static Visitor getVis(HttpServletRequest request) {
+        return new AppComponents().visitor(request);
     }
-
+    
     /**
      Рассчитывает {@link #DELAY}, на всё время запуска приложения.
      @return {@link #DELAY}

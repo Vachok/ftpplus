@@ -26,8 +26,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
-import static ru.vachok.networker.IntoApplication.getConfigurableApplicationContext;
-
 
 /**
  Действия, при выходе
@@ -139,7 +137,11 @@ public class ExitApp implements Runnable {
             FileSystemWorker.error(ExitApp.class.getSimpleName() + RELOAD_CTX , e);
         }
     }
-
+    
+    private static ConfigurableApplicationContext getConfigurableApplicationContext() {
+        throw new UnsupportedOperationException();
+    }
+    
     public boolean writeOwnObject() {
         try (OutputStream fileOutputStream = new FileOutputStream(fileName);
              ObjectOutput objectOutputStream = new ObjectOutputStream(fileOutputStream)

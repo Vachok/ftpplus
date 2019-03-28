@@ -192,11 +192,10 @@ public class ServiceInfoCtrl {
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<br>" + getJREVers());
     }
 
-
     private float getLast() {
-        return (System.currentTimeMillis() - ConstantsFor.LAST_S) / (ConstantsFor.ONE_HOUR_IN_MIN / ConstantsFor.ONE_DAY_HOURS);
+        return (System.currentTimeMillis() - Long
+            .parseLong(AppComponents.getOrSetProps().getProperty(ConstantsFor.PR_LASTS, "1515233487000"))) / (ConstantsFor.ONE_HOUR_IN_MIN / ConstantsFor.ONE_DAY_HOURS);
     }
-
 
     private String getJREVers() {
         return System.getProperty("java.version");

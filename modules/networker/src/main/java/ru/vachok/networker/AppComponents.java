@@ -1,12 +1,12 @@
 package ru.vachok.networker;
 
 
-
 import com.jcraft.jsch.JSch;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.target.AbstractBeanFactoryBasedTargetSource;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Scope;
@@ -35,11 +35,9 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 
 /**
@@ -58,7 +56,9 @@ public class AppComponents {
     private static MessageToUser messageToUser = new MessageLocal(AppComponents.class.getSimpleName());
 
     private static final Properties APP_PR = new Properties();
-
+    
+    private static final ConcurrentMap<String, Visitor> VISITS_MAP = new ConcurrentHashMap<>();
+    
     @Bean
     public TemporaryFullInternet temporaryFullInternet() {
         TemporaryFullInternet temporaryFullInternet = new TemporaryFullInternet();
@@ -110,10 +110,13 @@ public class AppComponents {
         messageToUser.info("AppComponents.sshActs", " sshActs.hashCode()", " = " + sshActs.hashCode());
         return sshActs;
     }
+    
+    private static ConfigurableApplicationContext context;
 
     @Bean(STR_VISITOR)
     public Visitor visitor(HttpServletRequest request) {
-        return new Visitor(request);
+        Visitor visitor = new Visitor(request);
+        return VISITS_MAP.putIfAbsent(request.getSession().getId(), visitor);
     }
 
     private static final String DB_JAVA_ID = ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName();
@@ -153,9 +156,9 @@ public class AppComponents {
     public static LastNetScan lastNetScan() {
         return LastNetScan.getLastNetScan();
     }
-
-
-    @Bean @Scope(ConstantsFor.SINGLETON) public static Properties getOrSetProps( Properties propsToSave ) {
+    
+    
+    @Bean @Scope(ConstantsFor.SINGLETON) public static Properties getOrSetProps(Map propsToSave) {
         propsToSave.forEach(( x , y ) -> {
             if (!APP_PR.contains(y)) APP_PR.setProperty(x.toString() , y.toString());
         });
@@ -193,8 +196,7 @@ public class AppComponents {
     public static AbstractBeanFactoryBasedTargetSource configurableApplicationContext() {
         throw new IllegalComponentStateException("Moved to");
     }
-
-
+    
     public static boolean getOrSetProps( boolean b ) {
         return saveAppPropsForce();
     }
@@ -207,23 +209,25 @@ public class AppComponents {
 
 
     public static Properties getOrSetProps() {
-        if (APP_PR.size() > 3) { return APP_PR; } else return getAppProps();
+        if (APP_PR.size() > 3 || (!APP_PR.equals(null))) {
+            return APP_PR;
+        }
+        else {
+            return getAppProps();
+        }
     }
-
-
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("AppComponents{");
-        sb.append("Beans=").append(new TForms().fromArray(context.getBeanDefinitionNames() , true)).append("\n");
-        sb.append('}');
-        return sb.toString();
+    
+    public static ConfigurableApplicationContext getCtx() {
+        return context;
     }
-
-
+    
+    public static void setCtx(ConfigurableApplicationContext context) {
+        AppComponents.context = context;
+    }
+    
     private static Properties getAppProps() {
         threadConfig().thrNameSet("sProps");
         if (APP_PR.size() > 3) return APP_PR;
-
         MysqlDataSource mysqlDataSource = new DBRegProperties(DB_JAVA_ID).getRegSourceForProperties();
         mysqlDataSource.setRelaxAutoCommit(true);
         mysqlDataSource.setLogger("java.util.Logger");
