@@ -103,6 +103,10 @@ public class MessageLocal implements MessageToUser {
     public void warning(String bodyMsg) {
         this.bodyMsg = bodyMsg; LoggerFactory.getLogger(headerMsg).warn(bodyMsg);
     }
+    
+    public void igExc(Exception e) {
+        LoggerFactory.getLogger(headerMsg).debug(e.getMessage(), e);
+    }
 
     @Override
     public String confirm(String headerMsg, String titleMsg, String bodyMsg) {

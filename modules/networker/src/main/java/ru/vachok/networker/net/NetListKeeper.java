@@ -129,7 +129,7 @@ public class NetListKeeper {
             if (wasSize < currentSize) {
                 boolean ownObject = new ExitApp("on.map", onLinesResolve).writeOwnObject();
                 messageToUser.info("ChkOnlinesSizeChange.call", "ownObject", " = " + ownObject);
-                properties.setProperty("onsize", String.valueOf(currentSize)); AppComponents.saveAppPropsForce();
+                properties.setProperty("onsize", String.valueOf(currentSize));
             } else {
                 readMap();
                 messageToUser.info(classMeth, "currentSize", " = " + currentSize);

@@ -101,7 +101,7 @@ public class IntoApplication {
         FileSystemWorker.delFilePatterns(ConstantsFor.getStringsVisit());
         AppComponents.setCtx(context);
         if (args != null && args.length > 0) {
-            readArgs(args);
+            readArgs(context, args);
         }
         else {
             beforeSt(true);
@@ -133,7 +133,7 @@ public class IntoApplication {
 
      @param args аргументы запуска.
      */
-    private static void readArgs(@NotNull String... args) {
+    private static void readArgs(ConfigurableApplicationContext context, @NotNull String... args) {
         boolean isTray = true;
         Runnable exitApp = new ExitApp(IntoApplication.class.getSimpleName());
         List<@NotNull String> argsList = Arrays.asList(args);
@@ -177,8 +177,8 @@ public class IntoApplication {
                 LOCAL_PROPS.setProperty("lport", stringStringEntry.getValue());
             }
         }
-        AppComponents.getOrSetProps(LOCAL_PROPS);
         beforeSt(isTray);
+        context.start();
         afterSt();
     }
 
@@ -212,6 +212,7 @@ public class IntoApplication {
             trayAdd();
         }
         @NotNull StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("updateProps = " + new AppComponents().updateProps(LOCAL_PROPS));
         stringBuilder.append(LocalDate.now().getDayOfWeek().getValue());
         stringBuilder.append(" - day of week\n");
         stringBuilder.append(LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL , Locale.getDefault()));

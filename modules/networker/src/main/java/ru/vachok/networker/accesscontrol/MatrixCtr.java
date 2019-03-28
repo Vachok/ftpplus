@@ -3,6 +3,7 @@
 package ru.vachok.networker.accesscontrol;
 
 
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,12 +23,17 @@ import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.DiapazonedScan;
 import ru.vachok.networker.net.MoreInfoGetter;
+import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.SimpleCalculator;
 import ru.vachok.networker.services.WhoIsWithSRV;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -145,9 +151,23 @@ public class MatrixCtr {
         qIsNull(model, request);
         model.addAttribute(ConstantsFor.ATT_HEAD, new PageFooter().getHeaderUtext());
         model.addAttribute("devscan",
-            "Since " + new Date(versionInfoInst.getPingTVStartStamp()) + MoreInfoGetter.getTVNetInfo() + "<br>" + currentProvider);
+            "Since " + getPTVLastStamp() + MoreInfoGetter.getTVNetInfo() + "<br>" + currentProvider);
         response.addHeader(ConstantsFor.HEAD_REFRESH, "120");
         return "starting";
+    }
+
+
+    private String getPTVLastStamp() {
+        File ptvFile = new File(ConstantsNet.FILENAME_PINGTV);
+        if (ptvFile.exists()) {
+            try {
+                FileTime creationTime = (FileTime) Files.getAttribute(ptvFile.toPath() , "creationTime" , LinkOption.NOFOLLOW_LINKS);
+                return new Date(creationTime.toMillis()).toString();
+            } catch (IOException e) {
+                FileSystemWorker.error(getClass().getSimpleName() + ".getPTVLastStamp" , e);
+            }
+        }
+        return new Date(ConstantsFor.START_STAMP).toString();
     }
 
 
@@ -327,9 +347,6 @@ public class MatrixCtr {
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext()); if (getUserPC(request).toLowerCase().contains(ConstantsFor.HOSTNAME_DO213) ||
             getUserPC(request).toLowerCase().contains("0:0:0:0")) {
             model.addAttribute(ConstantsFor.ATT_VISIT, versionInfoInst.toString());
-        }
-        else {
-            model.addAttribute(ConstantsFor.ATT_VISIT, visitorInst.getTimeSpend() + " timestamp");
         }
     }
 

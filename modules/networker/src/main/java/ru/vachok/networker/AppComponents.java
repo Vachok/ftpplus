@@ -35,9 +35,10 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 
 /**
@@ -56,9 +57,9 @@ public class AppComponents {
     private static MessageToUser messageToUser = new MessageLocal(AppComponents.class.getSimpleName());
 
     private static final Properties APP_PR = new Properties();
-    
+
     private static final ConcurrentMap<String, Visitor> VISITS_MAP = new ConcurrentHashMap<>();
-    
+
     @Bean
     public TemporaryFullInternet temporaryFullInternet() {
         TemporaryFullInternet temporaryFullInternet = new TemporaryFullInternet();
@@ -110,7 +111,8 @@ public class AppComponents {
         messageToUser.info("AppComponents.sshActs", " sshActs.hashCode()", " = " + sshActs.hashCode());
         return sshActs;
     }
-    
+
+
     private static ConfigurableApplicationContext context;
 
     @Bean(STR_VISITOR)
@@ -156,28 +158,16 @@ public class AppComponents {
     public static LastNetScan lastNetScan() {
         return LastNetScan.getLastNetScan();
     }
-    
-    
-    @Bean @Scope(ConstantsFor.SINGLETON) public static Properties getOrSetProps(Map propsToSave) {
-        propsToSave.forEach(( x , y ) -> {
-            if (!APP_PR.contains(y)) APP_PR.setProperty(x.toString() , y.toString());
-        });
-        return APP_PR;
-    }
 
     /**
      @return new {@link VersionInfo}
      */
     @SuppressWarnings("DuplicateStringLiteralInspection")
-    @Bean("versioninfo")
+    @Bean(ConstantsFor.STR_VERSIONINFO)
     @Scope(ConstantsFor.SINGLETON)
     public static VersionInfo versionInfo() {
         VersionInfo versionInfo = new VersionInfo();
-        boolean isBUGged = false;
-        if (new File("bugged").exists()) {
-            isBUGged = true;
-        }
-        versionInfo.setBUGged(isBUGged);
+        if (!ConstantsFor.thisPC().toLowerCase().contains("rups00")) versionInfo.setParams();
         return versionInfo;
     }
 
@@ -196,49 +186,53 @@ public class AppComponents {
     public static AbstractBeanFactoryBasedTargetSource configurableApplicationContext() {
         throw new IllegalComponentStateException("Moved to");
     }
-    
-    public static boolean getOrSetProps( boolean b ) {
-        return saveAppPropsForce();
-    }
 
 
-    public static boolean saveAppPropsForce() {
-        DBPropsCallable saveDBPropsCallable = new DBPropsCallable(new DBRegProperties(DB_JAVA_ID).getRegSourceForProperties() , APP_PR , true);
-        return saveDBPropsCallable.upProps();
+    public boolean updateProps(Properties propertiesToUpdate) {
+        MysqlDataSource source = new DBRegProperties(ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName()).getRegSourceForProperties();
+        DBPropsCallable dbPropsCallable = new DBPropsCallable(source, propertiesToUpdate, true);
+        return dbPropsCallable.call().getProperty("force").equals("true");
     }
 
 
     public static Properties getOrSetProps() {
-        if (APP_PR.size() > 3 || (!APP_PR.equals(null))) {
+        if (APP_PR.size() > 3 && (!APP_PR.equals(null))) {
             return APP_PR;
         }
         else {
-            return getAppProps();
+            return new AppComponents().getAppProps();
         }
     }
-    
+
+
+    private static boolean saveAppPropsForce() {
+        DBPropsCallable saveDBPropsCallable = new DBPropsCallable(new DBRegProperties(DB_JAVA_ID).getRegSourceForProperties(), APP_PR, true);
+        return saveDBPropsCallable.call().getProperty("force").equals("true");
+    }
+
+
     public static ConfigurableApplicationContext getCtx() {
         return context;
     }
-    
+
+
     public static void setCtx(ConfigurableApplicationContext context) {
         AppComponents.context = context;
     }
-    
-    private static Properties getAppProps() {
-        threadConfig().thrNameSet("sProps");
+
+
+    private Properties getAppProps() {
+        threadConfig().thrNameSet("getAPr");
         if (APP_PR.size() > 3) return APP_PR;
         MysqlDataSource mysqlDataSource = new DBRegProperties(DB_JAVA_ID).getRegSourceForProperties();
         mysqlDataSource.setRelaxAutoCommit(true);
         mysqlDataSource.setLogger("java.util.Logger");
         Callable<Properties> theProphecy = new DBPropsCallable(mysqlDataSource , APP_PR);
-        Future<Properties> propertiesFuture = threadConfig().getTaskExecutor().submit(theProphecy);
         try {
-            APP_PR.putAll(propertiesFuture.get());
-        } catch (InterruptedException | ExecutionException e) {
-            APP_PR.setProperty("err" , new TForms().fromArray(e , false));
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().interrupt();
+            APP_PR.putAll(theProphecy.call());
+        }
+        catch (Exception e) {
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".getAppProps", e));
         }
         return APP_PR;
     }
