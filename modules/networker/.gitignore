@@ -832,3 +832,4 @@ lan_200210.txt
 threads_report.txt
 DBPropsCallable.mini
 cpnsole.txt
+!/src/main/java/ru/vachok/networker/componentsrepo/Visitor.java

@@ -98,10 +98,6 @@ public class VersionInfo {
         return buildTime;
     }
 
-    @Override
-    public String toString() {
-        return "POCHINIT EPTA!";
-    }
 
 
     /**
@@ -154,5 +150,16 @@ public class VersionInfo {
         this.appBuild = properties.getProperty(ConstantsFor.PR_APP_BUILD , "Property does not exists");
         this.appVersion = properties.getProperty(ConstantsFor.PR_APP_VERSION , "Property does not exists");
         this.buildTime = properties.getProperty(ConstantsFor.PR_APP_BUILDTIME , "Property does not exists");
+    }
+
+
+    @Override public String toString() {
+        final StringBuilder sb = new StringBuilder("VersionInfo{");
+        sb.append("appBuild='").append(appBuild).append('\'');
+        sb.append(", appVersion='").append(appVersion).append('\'');
+        sb.append(", buildTime='").append(buildTime).append('\'');
+        sb.append(", thisPCNameStr='").append(thisPCNameStr).append('\'');
+        sb.append('}');
+        return sb.toString();
     }
 }

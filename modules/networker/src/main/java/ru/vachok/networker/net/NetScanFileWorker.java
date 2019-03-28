@@ -11,6 +11,7 @@ import ru.vachok.networker.services.MessageLocal;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.concurrent.ConcurrentHashMap;
@@ -22,17 +23,18 @@ import java.util.concurrent.ConcurrentMap;
  *
  * @since 25.12.2018 (10:43)
  */
-public class NetScanFileWorker {
+public class NetScanFileWorker implements Serializable {
 
 
     static final ConcurrentMap<String, File> srvFiles = new ConcurrentHashMap<>();
-    
+
     private static final NetScanFileWorker ourInst = new NetScanFileWorker(srvFiles);
 
     private static MessageToUser messageToUser = new MessageLocal(NetScanFileWorker.class.getSimpleName());
 
     private long lastStamp = System.currentTimeMillis();
-    
+
+
     public NetScanFileWorker( ConcurrentMap<String, File> mapFiles ) {
     }
 
