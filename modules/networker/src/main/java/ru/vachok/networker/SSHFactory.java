@@ -89,7 +89,6 @@ public class SSHFactory implements Callable<String> {
         this.sessionType = builder.sessionType;
         this.userName = builder.userName;
         this.classCaller = builder.classCaller;
-        this.builderToStr = builder.toString();
     }
 
     private InputStream connect() throws IOException, JSchException {

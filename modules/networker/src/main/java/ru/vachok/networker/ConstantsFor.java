@@ -129,8 +129,8 @@ public enum ConstantsFor {
      <i>Boiler Plate</i>
      */
     public static final String ATT_STATCODE = "statcode";
-
-    public static final boolean IS_SYSTRAY_AVAIL = (SystemTray.isSupported() || SystemTray.getSystemTray() != null);
+    
+    public static final boolean IS_SYSTRAY_AVAIL = SystemTray.isSupported();
 
     /**
      <i>Boiler Plate</i>
@@ -270,6 +270,8 @@ public enum ConstantsFor {
      IP stv-git.eatmeat.ru
      */
     public static final String IPADDR_SRVGIT = "192.168.13.42";
+    
+    public static final String IPADDR_SRVINETSTAT = "192.168.13.155";
 
     /**
      Кол-во минут в часе

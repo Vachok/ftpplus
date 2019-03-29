@@ -383,7 +383,7 @@ public class NetScanCtr {
         titleBuilder.append(netScannerSvcInstAW.getOnLinePCsNum());
         titleBuilder.append("/");
         titleBuilder.append(pcWas);
-        titleBuilder.append(" at ");
+        titleBuilder.append(") Next run ");
         titleBuilder.append(LocalDateTime.ofEpochSecond(lastSt / 1000, 0, ZoneOffset.ofHours(3)).toLocalTime());
 
         model
@@ -396,10 +396,11 @@ public class NetScanCtr {
             model.addAttribute(ConstantsFor.PR_AND_ATT_NEWPC , "Добавлены компы! " + Math.abs(remainPC) + " шт.");
             PROPERTIES.setProperty(ConstantsFor.PR_TOTPC, String.valueOf(lastScanMAP.size()));
             PROPERTIES.setProperty(ConstantsFor.PR_AND_ATT_NEWPC , String.valueOf(remainPC));
+            new AppComponents().updateProps(PROPERTIES);
         } else {
             if (ConstantsFor.INT_ANSWER > remainPC) {
                 PROPERTIES.setProperty(ConstantsFor.PR_TOTPC, String.valueOf(lastScanMAP.size()));
-                messageToUser.info("NetScanCtr.mapSizeBigger", "setProps", " = " + PROPERTIES.size());
+                new AppComponents().updateProps(PROPERTIES);
             }
         }
         timeCheck(remainPC, lastSt / 1000, request, model);
@@ -426,8 +427,8 @@ public class NetScanCtr {
         LocalTime lastScanLocalTime = LocalDateTime.ofEpochSecond(lastScanEpoch, 0, ZoneOffset.ofHours(3)).toLocalTime();
         String classMeth = "NetScanCtr.timeCheck";
         boolean isSystemTimeBigger = (System.currentTimeMillis() > lastScanEpoch * 1000) && remainPC <= 0;
-
-        if (isSystemTimeBigger) {
+    
+        if ((new File("scan.tmp").exists()) && isSystemTimeBigger) {
             String valStr = "isSystemTimeBigger = " + true;
             messageToUser.info(valStr);
             Future<?> submitScan = locExecutor.submit(scanRun);
@@ -464,20 +465,17 @@ public class NetScanCtr {
     private void checkMapSizeAndDoAction(Model model, HttpServletRequest request, long lastSt) throws ExecutionException, InterruptedException, TimeoutException {
         final Runnable scanRun = () -> scanIt(request, model, new Date(lastSt));
         boolean isMapSizeBigger = lastScanMAP.size() > 0;
-        final int thisTotpc = Integer.parseInt(PROPERTIES.getProperty(ConstantsFor.PR_TOTPC, "243"));
+        int thisTotpc = Integer.parseInt(PROPERTIES.getProperty(ConstantsFor.PR_TOTPC, "243"));
         File scanTemp = new File("scan.tmp");
-        if (scanTemp.isFile() && scanTemp.exists()) {
+    
+        if ((scanTemp.isFile() && scanTemp.exists()) || isMapSizeBigger) {
             mapSizeBigger(model, request, lastSt, thisTotpc);
         } else {
-            if (isMapSizeBigger) {
-                mapSizeBigger(model, request, lastSt, thisTotpc);
-            } else {
                 Future<?> submitScan = locExecutor.submit(scanRun);
                 submitScan.get(ConstantsFor.DELAY - 1, TimeUnit.MINUTES);
                 messageToUser.info("NetScanCtr.checkMapSizeAndDoAction", "submitScan.isDone()", " = " + submitScan.isDone());
             }
         }
-    }
 
     /**
      Запуск скана.

@@ -34,8 +34,8 @@ import java.net.InetAddress;
     private static final String CLASS_NAME = SystemTrayHelper.class.getSimpleName();
 
     private static final SystemTrayHelper SYSTEM_TRAY_HELPER = new SystemTrayHelper();
-
-    private static @NotNull TrayIcon trayIcon;
+    
+    private @NotNull TrayIcon trayIcon;
 
     /**
      {@link MessageLocal}
@@ -50,6 +50,7 @@ import java.net.InetAddress;
      Конструктор по-умолчанию
      */
     private SystemTrayHelper() {
+        if (!SystemTray.isSupported()) throw new UnsupportedOperationException("System system");
     }
 
     TrayIcon getTrayIcon() throws ExceptionInInitializerError {
@@ -57,7 +58,7 @@ import java.net.InetAddress;
             return trayIcon;
         }
         else{
-            throw new IllegalComponentStateException("System tray unavailable");
+            throw new UnsupportedOperationException("System tray unavailable");
         }
     }
 
@@ -186,8 +187,7 @@ import java.net.InetAddress;
             }
         }
     }
-
-
+    
     /**
      * Создаёт System Tray Icon
      *
