@@ -23,28 +23,29 @@ import java.util.concurrent.*;
 /**
  Сканирование только тех, что он-лайн
  <p>
- 
+
  @see DiapazonedScan
  @since 26.01.2019 (11:18) */
 @Service
 public class ScanOnline implements Runnable {
-    
-    
+
+
     /**
      {@link NetListKeeper#getI()}
      */
     private static final NetListKeeper NET_LIST_KEEPER = NetListKeeper.getI();
-    
+
     /**
      {@link NetListKeeper#getOnLinesResolve()}
      */
     private ConcurrentMap<String, String> onLinesResolve = NET_LIST_KEEPER.getOnLinesResolve();
-    
+
     /**
      {@link MessageLocal}
      */
     private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
-    
+
+
     @Override
     public void run() {
         AppComponents.threadConfig().execByThreadConfig(this::offlineNotEmptyActions);
@@ -53,11 +54,11 @@ public class ScanOnline implements Runnable {
             runPing(onList);
         }
         catch (IOException e) {
-            messageToUser.errorAlert("ScanOnline", "run", e.getMessage());
-            FileSystemWorker.error("ScanOnline.run", e);
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".run" , e));
         }
     }
-    
+
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder();
@@ -66,7 +67,8 @@ public class ScanOnline implements Runnable {
         sb.append("Online  pc is<font color=\"#00ff69\"> <b>").append(onLinesResolve.size()).append(":</b><br>").append(new TForms().fromArray(onLinesResolve, true)).append("</font><br>");
         return sb.toString();
     }
-    
+
+
     private void offlineNotEmptyActions() {
         AppComponents.threadConfig().thrNameSet("scOffNE");
         SwitchesAvailability switchesAvailability = new SwitchesAvailability();
@@ -77,21 +79,21 @@ public class ScanOnline implements Runnable {
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
         }
-    
+
         Set<String> availabilityOkIP = switchesAvailability.getOkIP();
         availabilityOkIP.forEach(x->{
             onLinesResolve.put(x, LocalDateTime.now().toString());
         });
     }
-    
+
+
     private void runPing(List<InetAddress> onList) {
-        String clMt = "ScanOnline.runPing. IPs to ping: " + onList.size();
-        messageToUser.infoNoTitles(clMt);
         for (InetAddress inetAddress : onList) {
             pingAddr(inetAddress);
         }
     }
-    
+
+
     /**
      Пингует конкрктный {@link InetAddress}
      <p>
@@ -101,27 +103,23 @@ public class ScanOnline implements Runnable {
      1. {@link NetListKeeper#getOffLines()}. Если нет пинга, добавляет {@code inetAddress.toString, LocalTime.now.toString} и запускает: <br> 2. {@link
     ThreadConfig#execByThreadConfig(java.lang.Runnable)}. {@link #offlineNotEmptyActions()} <br>
      <p>
-     
+
      @param inetAddress {@link InetAddress}. 3. {@link FileSystemWorker#error(java.lang.String, java.lang.Exception)}
      */
     private void pingAddr(InetAddress inetAddress) {
-    
+
         try {
             boolean xReachable = inetAddress.isReachable(250);
             if (!xReachable) {
                 NET_LIST_KEEPER.getOffLines().put(inetAddress.toString(), LocalTime.now().toString());
                 if (onLinesResolve.containsKey(inetAddress.toString())) {
                     NET_LIST_KEEPER.getOffLines().remove(inetAddress.toString());
-    
                 }
             } else {
                 onLinesResolve.putIfAbsent(inetAddress.toString(), LocalTime.now().toString());
-    
             }
         } catch (IOException e) {
-            messageToUser.errorAlert("ScanOnline", "pingAddr", e.getMessage());
-            FileSystemWorker.error("ScanOnline.pingAddr", e);
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".pingAddr" , e));
         }
-    
     }
 }

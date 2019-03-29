@@ -183,7 +183,8 @@ public class IntoApplication {
     }
 
     private static void trayAdd() {
-        SystemTrayHelper systemTrayHelper = SystemTrayHelper.getI(); if (ConstantsFor.thisPC().toLowerCase().contains(ConstantsFor.HOSTNAME_DO213)) {
+        SystemTrayHelper systemTrayHelper = SystemTrayHelper.getI();
+        if (ConstantsFor.thisPC().toLowerCase().contains(ConstantsFor.HOSTNAME_DO213)) {
             systemTrayHelper.addTray("icons8-плохие-поросята-32.png");
         }
         else{

@@ -285,7 +285,7 @@ public class DiapazonedScan implements Runnable {
                 if (vlanFile.length() > 10) {
                     FileSystemWorker.copyOrDelFile(vlanFile, vlanFile
                         .getName()
-                        .replace("lan_", ".\\lan\\" + "." + LocalTime
+                        .replace("lan_" , ".\\lan\\" + vlanFile.getName() + "." + LocalTime
                             .now()
                             .toSecondOfDay()), true);
                 } else {

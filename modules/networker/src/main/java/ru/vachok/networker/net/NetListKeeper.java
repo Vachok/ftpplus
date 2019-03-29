@@ -123,16 +123,11 @@ public class NetListKeeper {
         @Override
         public void run() {
             AppComponents.threadConfig().thrNameSet(getClass().getSimpleName());
-            final String classMeth = "ChkOnlinesSizeChange.run";
-            messageToUser.info(classMeth, "wasSize", " = " + wasSize);
-            messageToUser.info(classMeth, "currentSize", " = " + currentSize);
             if (wasSize < currentSize) {
                 boolean ownObject = new ExitApp("on.map", onLinesResolve).writeOwnObject();
-                messageToUser.info("ChkOnlinesSizeChange.call", "ownObject", " = " + ownObject);
                 properties.setProperty("onsize", String.valueOf(currentSize));
             } else {
                 readMap();
-                messageToUser.info(classMeth, "currentSize", " = " + currentSize);
             }
         }
     }

@@ -57,8 +57,12 @@ public class AppComponents {
     private static MessageToUser messageToUser = new MessageLocal(AppComponents.class.getSimpleName());
 
     private static final Properties APP_PR = new Properties();
-
-    private static final ConcurrentMap<String, Visitor> VISITS_MAP = new ConcurrentHashMap<>();
+    
+    private static final ConcurrentMap<Long, Visitor> VISITS_MAP = new ConcurrentHashMap<>();
+    
+    public static ConcurrentMap<Long, Visitor> getVisitsMap() {
+        return VISITS_MAP;
+    }
 
     @Bean
     public TemporaryFullInternet temporaryFullInternet() {
@@ -118,7 +122,7 @@ public class AppComponents {
     @Bean(STR_VISITOR)
     public Visitor visitor(HttpServletRequest request) {
         Visitor visitor = new Visitor(request);
-        return VISITS_MAP.putIfAbsent(request.getSession().getId(), visitor);
+        return VISITS_MAP.putIfAbsent(request.getSession().getCreationTime(), visitor);
     }
 
     private static final String DB_JAVA_ID = ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName();

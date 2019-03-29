@@ -204,9 +204,14 @@ public class SshActs {
             return e.getMessage();
         }
     }
-
+    
+    /**
+     Определяет, где запущен.
+     
+     @return адрес нужного сервака
+     */
     private static String whatSrvNeed() {
-        if (ConstantsFor.thisPC().toLowerCase().contains("rups")) {
+        if (ConstantsFor.thisPC().toLowerCase().contains("rups") || ConstantsFor.thisPC().contains("srv-")) {
             return ConstantsFor.IPADDR_SRVNAT;
         } else {
             return ConstantsFor.IPADDR_SRVGIT;

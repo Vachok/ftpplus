@@ -1,8 +1,18 @@
-def style:
--encoding UTF-8 -nohelp -html5 -windowtitle "The Networker"  --allow-script-in-comments
-
-css workPc:
--encoding UTF-8 -nohelp -html5 -windowtitle "The Networker"  --allow-script-in-comments -stylesheetfile C:\Users\ikudryashov\IdeaProjects\spring\modules\networker\src\main\resources\static\css\main.css ru.vachok.networker
-
-css: homePC
--encoding "UTF-8" -html5 -use -nohelp -doctitle "Networker" --allow-script-in-comments -stylesheetfile G:\My_Proj\FtpClientPlus\modules\networker\src\main\resources\static\css\main.css ru.vachok.networker
+# Commit 29.03.2019
+## .gitignore
+## ActionDefault , ConstantsFor, IntoApplication, MessageToTray, SystemTrayHelper
+### SYSTEM_TRAY_HELPER
+>1. Переработан SYSTEM_TRAY_HELPER, для запуска на FreeBSD
+## AppComponents, ExitApp
+### getVisitsMap
+>1. Добавить в exit.last 
+## NetListKeeper.ChkOnlinesSizeChange
+>1. Убраны раздражающие сообщения в консоль. 
+## ConstantsFor
+### IPADDR_SRVINETSTAT
+## SshActs
+### whatSrvNeed
+## NetScanCtr
+### mapSizeBigger
+>1. Исправлен заголовок.
+>2. new AppComponents().updateProps(PROPERTIES);

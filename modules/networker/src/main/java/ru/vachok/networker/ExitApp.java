@@ -152,6 +152,7 @@ public class ExitApp implements Runnable {
     @Override
     public void run() {
         AppComponents.threadConfig().thrNameSet("exit");
+        AppComponents.getVisitsMap().forEach((x, y)->miniLoggerLast.add(new Date(x) + " - " + y.getRemAddr()));
         File commitFile = new File("G:\\My_Proj\\FtpClientPlus\\modules\\networker\\src\\main\\resources\\static\\pages\\commit.html");
         if (!commitFile.exists()) {
             commitFile = new File("C:\\Users\\ikudryashov\\IdeaProjects\\spring\\modules\\networker\\src\\main\\resources\\static\\pages\\commit.html");
