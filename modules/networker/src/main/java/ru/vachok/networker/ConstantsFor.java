@@ -129,7 +129,7 @@ public enum ConstantsFor {
      <i>Boiler Plate</i>
      */
     public static final String ATT_STATCODE = "statcode";
-    
+
     public static final boolean IS_SYSTRAY_AVAIL = SystemTray.isSupported();
 
     /**
@@ -270,7 +270,7 @@ public enum ConstantsFor {
      IP stv-git.eatmeat.ru
      */
     public static final String IPADDR_SRVGIT = "192.168.13.42";
-    
+
     public static final String IPADDR_SRVINETSTAT = "192.168.13.155";
 
     /**
@@ -513,7 +513,7 @@ public enum ConstantsFor {
     }
 
 
-    public static Visitor getVis(HttpServletRequest request) {
+    public static Visitor getVis( HttpServletRequest request ) {
         return new AppComponents().visitor(request);
     }
 

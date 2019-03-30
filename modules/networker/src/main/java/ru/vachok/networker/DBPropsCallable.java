@@ -26,62 +26,66 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  Сохранение {@link Properties} в базу
  <p>
- 
+
  @see AppComponents#saveAppPropsForce()
  @since 25.02.2019 (10:12) */
 @SuppressWarnings("DuplicateStringLiteralInspection") public class DBPropsCallable implements Callable<Properties> {
-    
-    
+
+
     private static final MessageToUser messageToUser = new MessageLocal(DBPropsCallable.class.getSimpleName());
-    
+
     private static final String pathToPropsName = "ConstantsFor.properties";
-    
+
     /**
      Запишем .mini
      */
     private final Collection<String> miniLogger = new PriorityQueue<>();
-    
+
     private static File pFile = new File(pathToPropsName);
-    
+
     private MysqlDataSource mysqlDataSource = new RegRuMysql().getDataSourceSchema(ConstantsFor.DBPREFIX + "properties");
-    
+
     /**
      {@link Properties} для сохданения.
      */
     private Properties propsToSave = new Properties();
-    
-    private boolean isForced;
-    
+
+    private boolean isForced = false;
+
     private AtomicBoolean retBool = new AtomicBoolean(false);
-    
+
     public DBPropsCallable(Properties toUpdate) {
         this.propsToSave = toUpdate;
     }
-    
+
     DBPropsCallable(MysqlDataSource mysqlDataSource, Properties propsToSave) {
         this.mysqlDataSource = mysqlDataSource;
         this.propsToSave = propsToSave;
     }
-    
+
     DBPropsCallable(MysqlDataSource mysqlDataSource, Properties propsToSave, boolean isForced) {
         this.mysqlDataSource = mysqlDataSource;
         this.propsToSave = propsToSave;
         this.isForced = isForced;
     }
-    
+
     private DBPropsCallable() {
     }
-    
+
+
     @Override
     public Properties call() {
         if (isForced) {
-            return forceUpdate();
+            propsToSave.setProperty("forced" , String.valueOf(forceUpdate()));
+            return propsToSave;
         }
         else {
+
             return findRightProps();
         }
     }
-    
+
+
     @SuppressWarnings("DuplicateStringLiteralInspection") private boolean upProps() {
         String methName = ".upProps";
         final String sql = "insert into ru_vachok_networker (property, valueofproperty, javaid) values (?,?,?)";
@@ -112,54 +116,50 @@ import java.util.concurrent.atomic.AtomicBoolean;
         }
         return false;
     }
-    
+
+
     private Properties findRightProps() {
-        InitProperties initProperties = new FileProps(ConstantsFor.class.getSimpleName());
+        InitProperties initProperties = new DBRegProperties(ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName());
         Properties retProps = initProperties.getProps();
-        if (!(retProps.equals(null)) && retProps.size() > 7) {
-            this.propsToSave.putAll(retProps);
+        if (retProps.size() > 7 && !retProps.getProperty("file" , "false").contains("false")) {
+            retProps.setProperty("file" , ConstantsFor.class.getSimpleName());
         }
         else {
+            initProperties = new FileProps(ConstantsFor.class.getSimpleName());
+            retProps = initProperties.getProps();
+            retProps.setProperty("file" , "false");
+            this.propsToSave = retProps;
+            forceUpdate();
         }
         retProps.setProperty("force", "false");
         return retProps;
     }
-    
-    private Properties forceUpdate() {
+
+
+    private boolean forceUpdate() {
         InitProperties initProperties = new FileProps(ConstantsFor.class.getSimpleName());
         Properties updateProps = this.propsToSave;
-        
-        try {
-            initProperties.delProps();
-            initProperties.setProps(updateProps);
-            delFromDataBase();
-        }
-        catch (Exception e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".forceUpdate", e));
-            initProperties = new DBRegProperties(ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName());
-            this.propsToSave.putAll(initProperties.getProps());
-        }
-        if (propsToSave.size() > 3) {
-        
-        }
-        else {
-        
-        }
-        updateProps.setProperty("force", "true");
-        return updateProps;
+        initProperties.delProps();
+        initProperties.setProps(updateProps);
+        messageToUser.info(getClass().getSimpleName() + ".forceUpdate" , "delFromDataBase()" , " = " + delFromDataBase());
+        retBool.set(upProps());
+        return retBool.get();
     }
-    
-    private boolean delFromDataBase() {
-        String sql = "delete FROM `ru_vachok_networker` where `javaid` =  'ConstantsFor'";
+
+
+    private int delFromDataBase() {
+        final String sql = "delete FROM `ru_vachok_networker` where `javaid` =  'ConstantsFor'";
         miniLogger.add("4. Starting DELETE: " + sql);
+        int pDeleted = 0;
         try (Connection c = mysqlDataSource.getConnection();
              PreparedStatement preparedStatement = c.prepareStatement(sql);
         ) {
-            int pDeleted = preparedStatement.executeUpdate();
+            pDeleted = preparedStatement.executeUpdate();
         }
         catch (SQLException e) {
-            retBool.set(false);
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".delFromDataBase" , e));
         }
-        return retBool.get();
+        retBool.set(pDeleted > 0);
+        return pDeleted;
     }
 }

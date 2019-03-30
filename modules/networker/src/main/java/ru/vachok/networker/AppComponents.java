@@ -1,6 +1,7 @@
 package ru.vachok.networker;
 
 
+
 import com.jcraft.jsch.JSch;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.slf4j.Logger;
@@ -57,9 +58,10 @@ public class AppComponents {
     private static MessageToUser messageToUser = new MessageLocal(AppComponents.class.getSimpleName());
 
     private static final Properties APP_PR = new Properties();
-    
+
     private static final ConcurrentMap<Long, Visitor> VISITS_MAP = new ConcurrentHashMap<>();
-    
+
+
     public static ConcurrentMap<Long, Visitor> getVisitsMap() {
         return VISITS_MAP;
     }

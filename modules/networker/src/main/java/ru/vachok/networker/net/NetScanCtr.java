@@ -141,11 +141,11 @@ public class NetScanCtr {
             ConstantsFor.JAVA_LANG_STRING_NAME);
 
         AppComponents.threadConfig().thrNameSet("scan");
-    
+
         ConstantsFor.getVis(request);
         model.addAttribute("serviceinfo", (float) TimeUnit.MILLISECONDS.toSeconds(lastSt - System.currentTimeMillis()) / ConstantsFor.ONE_HOUR_IN_MIN);
         netScannerSvcInstAW.setThePc("");
-    
+
         model.addAttribute("pc", FileSystemWorker.readFile(ConstantsNet.BEANNAME_LASTNETSCAN));
         model.addAttribute(ConstantsFor.ATT_TITLE, netScannerSvcInstAW.getOnLinePCsNum() + " pc at " + new Date(lastSt));
         model.addAttribute(ConstantsNet.BEANNAME_NETSCANNERSVC, netScannerSvcInstAW);
@@ -364,7 +364,7 @@ public class NetScanCtr {
         int pcWas = Integer.parseInt(PROPERTIES.getProperty(ConstantsFor.PR_ONLINEPC, "0"));
         int remainPC = thisTotpc - lastScanMAP.size();
         boolean newPSs = 0 > remainPC;
-    
+
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(timeLeft);
         stringBuilder.append(" seconds (");
@@ -427,7 +427,7 @@ public class NetScanCtr {
         LocalTime lastScanLocalTime = LocalDateTime.ofEpochSecond(lastScanEpoch, 0, ZoneOffset.ofHours(3)).toLocalTime();
         String classMeth = "NetScanCtr.timeCheck";
         boolean isSystemTimeBigger = (System.currentTimeMillis() > lastScanEpoch * 1000) && remainPC <= 0;
-    
+
         if ((new File("scan.tmp").exists()) && isSystemTimeBigger) {
             String valStr = "isSystemTimeBigger = " + true;
             messageToUser.info(valStr);
@@ -467,7 +467,7 @@ public class NetScanCtr {
         boolean isMapSizeBigger = lastScanMAP.size() > 0;
         int thisTotpc = Integer.parseInt(PROPERTIES.getProperty(ConstantsFor.PR_TOTPC, "243"));
         File scanTemp = new File("scan.tmp");
-    
+
         if ((scanTemp.isFile() && scanTemp.exists()) || isMapSizeBigger) {
             mapSizeBigger(model, request, lastSt, thisTotpc);
         } else {
