@@ -94,7 +94,7 @@ public class PCUserResolver extends ADSrv {
                 .append(lastFileUse);
         } catch (IOException e) {
             FileSystemWorker.error("PCUserResolver.namesToFile", e);
-        } catch (ArrayIndexOutOfBoundsException ignore) {
+        } catch (ArrayIndexOutOfBoundsException | NullPointerException ignore) {
             //
         }
         if (lastFileUse != null) {

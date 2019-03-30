@@ -212,11 +212,11 @@ public class SshActs {
      */
     private static String whatSrvNeed() {
         AppComponents.getOrSetProps().setProperty("thispc" , ConstantsFor.thisPC());
-        if (ConstantsFor.thisPC().toLowerCase().contains("rups") | ConstantsFor.thisPC().toLowerCase().contains("inetstat")) {
+        if (ConstantsFor.thisPC().toLowerCase().contains("rups")) {
             return ConstantsFor.IPADDR_SRVNAT;
-        } else {
-            return ConstantsFor.IPADDR_SRVGIT;
-        }
+        } else if (ConstantsFor.thisPC().equalsIgnoreCase("srv-inetstat.eatmeat.ru")) {
+            return ConstantsFor.IPADDR_SRVNAT;
+        } else { return ConstantsFor.IPADDR_SRVGIT; }
     }
 
     /**

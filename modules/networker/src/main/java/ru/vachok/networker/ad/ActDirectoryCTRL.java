@@ -11,6 +11,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import ru.vachok.messenger.MessageCons;
+import ru.vachok.messenger.MessageFile;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
@@ -21,8 +22,6 @@ import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.controller.ServiceInfoCtrl;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetScannerSvc;
-import ru.vachok.networker.systray.ListenUserInfo;
-import ru.vachok.networker.systray.MessageToTray;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Calendar;
@@ -189,7 +188,7 @@ public class ActDirectoryCTRL {
             adSrvDetails = adSrvDetails.replaceAll("</br>" , "\n").replaceAll("<p>" , "\n\n").replaceAll("<p><b>" , "\n\n");
             long l = new Calendar.Builder().setTimeOfDay(0 , 0 , 0).build().getTimeInMillis();
             String finalAdSrvDetails = adSrvDetails;
-            new MessageToTray(new ListenUserInfo(queryString , attributeValue , finalAdSrvDetails)).info(queryString , attributeValue , ServiceInfoCtrl.percToEnd(new Date(l) , 24));
+            new MessageFile().info(queryString , attributeValue , ServiceInfoCtrl.percToEnd(new Date(l) , 24));
         } catch (Exception e) {
             model.addAttribute(ATT_DETAILS , e.getMessage());
         }

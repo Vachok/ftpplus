@@ -41,8 +41,8 @@ import java.util.concurrent.Executors;
 @EnableScheduling
 @EnableAutoConfiguration
 public class IntoApplication {
-    
-    
+
+
     private static final Properties LOCAL_PROPS = AppComponents.getOrSetProps();
 
     /**
@@ -51,13 +51,15 @@ public class IntoApplication {
     private static final MessageToUser messageToUser = new MessageLocal(IntoApplication.class.getSimpleName());
 
     private static final ThreadPoolTaskExecutor EXECUTOR = AppComponents.threadConfig().getTaskExecutor();
-    
+
     private ConfigurableApplicationContext configurableApplicationContext;
-    
+
+
     public ConfigurableApplicationContext getConfigurableApplicationContext() {
         return configurableApplicationContext;
     }
-    
+
+
     public void setConfigurableApplicationContext(ConfigurableApplicationContext configurableApplicationContext) {
         this.configurableApplicationContext = configurableApplicationContext;
     }
@@ -82,22 +84,22 @@ public class IntoApplication {
         EXECUTOR.submit(mySrv);
         EXECUTOR.submit(IntoApplication::getWeekPCStats);
     }
-    
+
+
     /**
      Точка входа в Spring Boot Application
      <p>
      {@link FileSystemWorker#delFilePatterns(java.lang.String[])}. Удаление останков от предидущего запуска. <br>
      {@link SpringApplication#run(java.lang.Class, java.lang.String...)}. Инициализация
      {@link Logger#warn(java.lang.String)} - new {@link String} {@code msg} = {@link IntoApplication#afterSt()} <br>
-     Если есть аргументы - {@link #readArgs(String[])} <br>
      {@link Logger#info(java.lang.String)} - время работы метода.
-     
+
      @param args аргументы запуска
      @see SystemTrayHelper
      */
     public static void main(@Nullable String[] args) {
         SpringApplication application = new SpringApplication();
-        ConfigurableApplicationContext context = application.run(IntoApplication.class);
+        ConfigurableApplicationContext context = SpringApplication.run(IntoApplication.class);
         FileSystemWorker.delFilePatterns(ConstantsFor.getStringsVisit());
         AppComponents.setCtx(context);
         if (args != null && args.length > 0) {
@@ -109,7 +111,8 @@ public class IntoApplication {
             afterSt();
         }
     }
-    
+
+
     /**
      Статистика по-пользователям за неделю.
      <p>
@@ -138,7 +141,7 @@ public class IntoApplication {
         Runnable exitApp = new ExitApp(IntoApplication.class.getSimpleName());
         List<@NotNull String> argsList = Arrays.asList(args);
         ConcurrentMap<String, String> argsMap = new ConcurrentHashMap<>();
-    
+
         for (int i = 0; i < argsList.size(); i++) {
             String key = argsList.get(i);
             String value = "true";

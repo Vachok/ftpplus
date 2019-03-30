@@ -387,7 +387,7 @@ public enum ConstantsFor {
 
     public static final String FILENAME_PTV = "ping.tv";
     public static final int EXIT_STATUSBAD = 666;
-    public static final int INT_ANSWER = 42;
+    public static final int INT_ANSWER = 4;
     public static final String FILENAME_ALLDEVMAP = "alldev.map";
     /**
      * {@link MessageLocal}
@@ -397,6 +397,7 @@ public enum ConstantsFor {
     public static final String FILEEXT_PROPERTIES = ".properties";
 
     public static final String STR_VERSIONINFO = "versioninfo";
+    public static final String PR_FORCE = "force";
 
 
     /**

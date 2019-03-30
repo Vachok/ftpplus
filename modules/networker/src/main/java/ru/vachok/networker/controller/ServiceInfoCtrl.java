@@ -181,7 +181,7 @@ public class ServiceInfoCtrl {
             .append(".<br> Состояние памяти (МБ): <font color=\"#82caff\">")
             .append(ConstantsFor.getMemoryInfo())
             .append("</font><br>")
-            .append(DiapazonedScan.getInstance())
+            .append(DiapazonedScan.getInstance().toString())
             .append("<br>")
             .append(AppComponents.threadConfig())
             .toString());

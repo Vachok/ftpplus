@@ -52,8 +52,9 @@ public class MessageToTray implements MessageToUser {
     }
 
 
-    public MessageToTray( String simpleName ) {
+    public MessageToTray( String simpleName ) throws UnsupportedOperationException {
         this.headerMsg = simpleName;
+        if (!SystemTray.isSupported()) throw new UnsupportedOperationException();
     }
 
 

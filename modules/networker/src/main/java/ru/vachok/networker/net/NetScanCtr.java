@@ -344,7 +344,6 @@ public class NetScanCtr {
      Если {@link #lastScanMAP} более 1
      <p>
      1. {@link TForms#fromArray(java.util.Map, boolean)} добавим в {@link Model} содержимое {@link #lastScanMAP} <br> 2.
-     {@link NetScannerSvc#getOnLinePCs()} - в заголовке страницы, при обновлении,
      отображение остатка ПК. <br> 3. {@link TForms#fromArray(java.util.Map, boolean)} запишем файл {@link ConstantsNet#BEANNAME_LASTNETSCAN}, 4.
      {@link FileSystemWorker#writeFile(java.lang.String,
          java.lang.String)} <br> 5. {@link #timeCheck(int, long, HttpServletRequest, Model)} переходим в проверке времени.
@@ -423,12 +422,12 @@ public class NetScanCtr {
      @see #mapSizeBigger(Model, HttpServletRequest, long, int)
      */
     private void timeCheck(int remainPC, long lastScanEpoch, HttpServletRequest request, Model model) throws ExecutionException, InterruptedException, TimeoutException {
-        final Runnable scanRun = () -> scanIt(request, model, new Date(lastScanEpoch * 1000));
+        Runnable scanRun = () -> scanIt(request , model , new Date(lastScanEpoch * 1000));
         LocalTime lastScanLocalTime = LocalDateTime.ofEpochSecond(lastScanEpoch, 0, ZoneOffset.ofHours(3)).toLocalTime();
         String classMeth = "NetScanCtr.timeCheck";
         boolean isSystemTimeBigger = (System.currentTimeMillis() > lastScanEpoch * 1000) && remainPC <= 0;
 
-        if ((new File("scan.tmp").exists()) && isSystemTimeBigger) {
+        if (!(new File("scan.tmp").exists()) && isSystemTimeBigger) {
             String valStr = "isSystemTimeBigger = " + true;
             messageToUser.info(valStr);
             Future<?> submitScan = locExecutor.submit(scanRun);
@@ -464,11 +463,10 @@ public class NetScanCtr {
      */
     private void checkMapSizeAndDoAction(Model model, HttpServletRequest request, long lastSt) throws ExecutionException, InterruptedException, TimeoutException {
         final Runnable scanRun = () -> scanIt(request, model, new Date(lastSt));
-        boolean isMapSizeBigger = lastScanMAP.size() > 0;
         int thisTotpc = Integer.parseInt(PROPERTIES.getProperty(ConstantsFor.PR_TOTPC, "243"));
         File scanTemp = new File("scan.tmp");
 
-        if ((scanTemp.isFile() && scanTemp.exists()) || isMapSizeBigger) {
+        if ((scanTemp.isFile() && scanTemp.exists())) {
             mapSizeBigger(model, request, lastSt, thisTotpc);
         } else {
                 Future<?> submitScan = locExecutor.submit(scanRun);

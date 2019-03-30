@@ -27,7 +27,6 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
 
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 
 /**
@@ -60,8 +59,6 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
      Название метода
      */
     private static final String EXECUTE_AS_THREAD_METH_NAME = "ThreadConfig.executeAsThread";
-
-    private static final ThreadLocal<Float> upTimer = ThreadLocal.withInitial(()->(System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN);
 
     /**
      {@link MessageLocal}
@@ -165,7 +162,6 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
      @param r {@link Runnable}
      */
     public boolean execByThreadConfig(Runnable r) {
-        AtomicBoolean retBool = new AtomicBoolean(false);
         CustomizableThreadCreator customizableThreadCreator = new CustomizableThreadCreator("AsThread: ");
         customizableThreadCreator.setThreadPriority(9);
         Thread thread = customizableThreadCreator.createThread(r);
@@ -173,30 +169,24 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
         if (new ASExec().getAsyncExecutor() != null) {
             asyncExecutor = new ASExec().getAsyncExecutor();
         } else {
-            if (upTimer.get() > ConstantsFor.ONE_HOUR_IN_MIN) {
-                upTimer.set(upTimer.get() / ConstantsFor.ONE_HOUR_IN_MIN);
-            }
             thrNameSet("ASThr");
             messageToUser.errorAlert(getClass().getSimpleName(), "asyncExecutor is " + null, thread.getName());
         }
         if (asyncExecutor != null) {
             asyncExecutor.execute(r);
-            retBool.set(true);
+            return true;
         } else {
             thread.start();
-            retBool.set(false);
-            new MessageSwing().errorAlert(EXECUTE_AS_THREAD_METH_NAME, "thread.isAlive()", " = " + thread.isAlive());
+            messageToUser.error(EXECUTE_AS_THREAD_METH_NAME , "thread.isAlive()" , " = " + thread.isAlive());
             new TaskDestroyer().rejectedExecution(r, TASK_EXECUTOR.getThreadPoolExecutor());
+            return false;
         }
-        return retBool.get();
     }
 
 
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("ThreadConfig{");
-        sb.append(", THREAD_CONFIG_INST=").append(THREAD_CONFIG_INST.hashCode());
-        sb.append(", upTimer=").append(upTimer.get());
         sb.append("\n");
         sb.append(", <br><font color=\"#fcf594\">TASK_SCHEDULER=").append(TASK_SCHEDULER.getScheduledThreadPoolExecutor());
         sb.append(", <br>TASK_EXECUTOR=").append(TASK_EXECUTOR.getThreadPoolExecutor());
@@ -214,34 +204,16 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
      */
     private class ASExec extends AsyncConfigurerSupport {
 
-
-        private ThreadPoolTaskExecutor threadPoolTaskExecutor;
-
+        private Executor threadPoolTaskExecutor;
 
         ASExec() {
-            ThreadConfig.TASK_EXECUTOR.getThreadPoolExecutor().purge();
-            this.threadPoolTaskExecutor = ThreadConfig.TASK_EXECUTOR;
-            ThreadConfig.TASK_EXECUTOR.setRejectedExecutionHandler(new TaskDestroyer());
+            this.threadPoolTaskExecutor = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor());
         }
-
 
         @Override
         public Executor getAsyncExecutor() {
             thrNameSet("ASE");
-            threadPoolTaskExecutor.setThreadPriority(8);
-            threadPoolTaskExecutor.setThreadNamePrefix("ASE");
-            threadPoolTaskExecutor.setAwaitTerminationSeconds(6);
-            threadPoolTaskExecutor.setRejectedExecutionHandler(new TaskDestroyer());
             return threadPoolTaskExecutor;
-        }
-
-
-        @Override
-        public String toString() {
-            final StringBuilder sb = new StringBuilder("ASExec{");
-            sb.append("threadPoolTaskExecutor=").append(threadPoolTaskExecutor.getThreadPoolExecutor());
-            sb.append('}');
-            return sb.toString();
         }
     }
 
@@ -253,48 +225,29 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
      */
     private class TasksReRunner implements RejectedExecutionHandler {
 
+        private MessageToUser messageToUser;
 
-        private static final String CLASS_REJECTED_EXEC_METH = "TasksReRunner.rejectedExecution";
 
-        private MessageToUser messageToUser = new MessageSwing(this.getClass().getSimpleName());
-
-        private Runnable reTask;
+        private TasksReRunner() {
+            try {
+                messageToUser = new MessageSwing(this.getClass().getSimpleName());
+            } catch (Exception e) {
+                FileSystemWorker.error(getClass().getSimpleName() + ".TasksReRunner" , e);
+                messageToUser = new MessageLocal(getClass().getSimpleName());
+            }
+        }
 
 
         @Override
         public void rejectedExecution(Runnable rejectedTask, ThreadPoolExecutor executor) {
-            this.reTask = rejectedTask;
-            messageToUser.error(CLASS_REJECTED_EXEC_METH, "rejectedTask", " = " + rejectedTask);
             try {
                 ExecutorService serviceAdapter = new ExecutorServiceAdapter((TaskExecutor) executor);
-                Future<?> submit = serviceAdapter.submit(reTask);
+                Future<?> submit = serviceAdapter.submit(rejectedTask);
                 submit.get(ConstantsFor.DELAY, TimeUnit.SECONDS);
-                resultOfExecution(submit.isDone());
             } catch (InterruptedException | ExecutionException | TimeoutException e) {
-                messageToUser.errorAlert("TasksReRunner", "rejectedExecution", e.getMessage());
-                FileSystemWorker.error(CLASS_REJECTED_EXEC_METH, e);
+                messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".rejectedExecution" , e));
+                Thread.currentThread().checkAccess();
                 Thread.currentThread().interrupt();
-            }
-        }
-
-
-        @Override
-        public String toString() {
-            final StringBuilder sb = new StringBuilder("TasksReRunner{");
-            sb.append("CLASS_REJECTED_EXEC_METH='").append(CLASS_REJECTED_EXEC_METH).append('\'');
-            sb.append(", reTask=").append(reTask);
-            sb.append('}');
-            return sb.toString();
-        }
-
-
-        private void resultOfExecution(boolean submitDone) {
-            if (submitDone) {
-                messageToUser.info(getClass().getSimpleName(), "resultOfExecution", reTask + " : " + true);
-            }
-            else {
-                messageToUser = new MessageSwing();
-                messageToUser.infoTimer((int) ConstantsFor.DELAY, getClass().getSimpleName() + " resultOfExecution " + reTask + " : " + false);
             }
         }
     }

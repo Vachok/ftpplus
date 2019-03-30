@@ -6,6 +6,7 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
+import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.systray.MessageToTray;
 
 import java.io.*;
@@ -30,7 +31,13 @@ public class WeekPCStats implements Runnable {
      */
     private static final List<String> PC_NAMES_IN_TABLE = new ArrayList<>();
 
-    private static MessageToUser messageToUser = new MessageToTray(WeekPCStats.class.getSimpleName());
+    private static MessageToUser messageToUser;
+
+    static {
+        try {messageToUser = new MessageToTray(WeekPCStats.class.getSimpleName());} catch (UnsupportedOperationException e) {
+            messageToUser = new MessageLocal(WeekPCStats.class.getSimpleName());
+        }
+    }
 
     /**
      {@link #getFromDB()}

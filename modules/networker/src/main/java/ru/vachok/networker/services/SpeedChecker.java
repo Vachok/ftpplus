@@ -13,8 +13,6 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.systray.ActionDefault;
-import ru.vachok.networker.systray.MessageToTray;
 
 import javax.mail.Flags;
 import javax.mail.Folder;
@@ -302,7 +300,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
                     messageToUser.info(SpeedChecker.ChkMailAndUpdateDB.class.getSimpleName() + " " + ConstantsFor.thisPC(), true + " sending to base",
                         todayInfoStr + "\n" + chDB);
                 } else {
-                    new MessageToTray(new ActionDefault(ConstantsFor.HTTP_LOCALHOST8880SLASH)).infoNoTitles("No new messages");
+                    messageToUser.infoNoTitles("No new messages");
                 }
             } catch (MessagingException e) {
                 messageToUser.errorAlert(
@@ -340,7 +338,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
                 p.setFloat(4, (float) timeSpend);
                 p.setTimestamp(5, timestamp);
                 p.executeUpdate();
-                new MessageToTray().info("DB updated", "Today is " + DayOfWeek.of(dayOfWeek), " Time spend " + timeSpend);
+                messageToUser.info("DB updated" , "Today is " + DayOfWeek.of(dayOfWeek) , " Time spend " + timeSpend);
                 return true;
             }
             catch(SQLException | IOException e){

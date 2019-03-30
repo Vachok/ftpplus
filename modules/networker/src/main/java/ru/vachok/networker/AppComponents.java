@@ -197,12 +197,17 @@ public class AppComponents {
     public boolean updateProps(Properties propertiesToUpdate) {
         MysqlDataSource source = new DBRegProperties(ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName()).getRegSourceForProperties();
         DBPropsCallable dbPropsCallable = new DBPropsCallable(source, propertiesToUpdate, true);
-        return dbPropsCallable.call().getProperty("force").equals("true");
+        return dbPropsCallable.call().getProperty(ConstantsFor.PR_FORCE).equals("true");
+    }
+
+
+    public ConfigurableApplicationContext getCtx() {
+        return context;
     }
 
 
     public static Properties getOrSetProps() {
-        if (APP_PR.size() > 3 && (!APP_PR.equals(null))) {
+        if (APP_PR.size() > 3) {
             return APP_PR;
         }
         else {
@@ -213,12 +218,7 @@ public class AppComponents {
 
     private static boolean saveAppPropsForce() {
         DBPropsCallable saveDBPropsCallable = new DBPropsCallable(new DBRegProperties(DB_JAVA_ID).getRegSourceForProperties(), APP_PR, true);
-        return saveDBPropsCallable.call().getProperty("force").equals("true");
-    }
-
-
-    public static ConfigurableApplicationContext getCtx() {
-        return context;
+        return saveDBPropsCallable.call().getProperty(ConstantsFor.PR_FORCE).equals("true");
     }
 
 

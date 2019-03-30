@@ -76,7 +76,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
     @Override
     public Properties call() {
         if (isForced) {
-            propsToSave.setProperty("forced" , String.valueOf(forceUpdate()));
+            propsToSave.setProperty(ConstantsFor.PR_FORCE , String.valueOf(forceUpdate()));
             return propsToSave;
         }
         else {
@@ -121,17 +121,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
     private Properties findRightProps() {
         InitProperties initProperties = new DBRegProperties(ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName());
         Properties retProps = initProperties.getProps();
-        if (retProps.size() > 7 && !retProps.getProperty("file" , "false").contains("false")) {
+
+        if (retProps.size() > 3 && retProps.getProperty("file" , "false").contains("false")) {
             retProps.setProperty("file" , ConstantsFor.class.getSimpleName());
         }
         else {
             initProperties = new FileProps(ConstantsFor.class.getSimpleName());
             retProps = initProperties.getProps();
             retProps.setProperty("file" , "false");
-            this.propsToSave = retProps;
-            forceUpdate();
         }
-        retProps.setProperty("force", "false");
+        retProps.setProperty(ConstantsFor.PR_FORCE , "false");
         return retProps;
     }
 
