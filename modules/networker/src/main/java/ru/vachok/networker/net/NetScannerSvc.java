@@ -711,6 +711,9 @@ public class NetScannerSvc {
                 if (x.contains("200.217")) {
                     pcSegment = "1й этаж АДМ";
                 }
+                if (x.contains("200.218")) {
+                    pcSegment = "ОКК";
+                }
                 if (x.contains("192.168")) {
                     pcSegment = "Может быть в разных местах...";
                 }

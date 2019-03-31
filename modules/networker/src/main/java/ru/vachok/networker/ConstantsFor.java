@@ -398,6 +398,7 @@ public enum ConstantsFor {
 
     public static final String STR_VERSIONINFO = "versioninfo";
     public static final String PR_FORCE = "force";
+    public static final String PR_VLANNUM = "vlanNum";
 
 
     /**

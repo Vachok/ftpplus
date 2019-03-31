@@ -116,7 +116,7 @@ public enum ConstantsNet { ;
     public static final int MAX_IN_ONE_VLAN = 255;
 
     public static final int IPS_IN_VELKOM_VLAN = Integer
-        .parseInt(AppComponents.getOrSetProps().getProperty("vlanNum" , "68")) * MAX_IN_ONE_VLAN;
+        .parseInt(AppComponents.getOrSetProps().getProperty(ConstantsFor.PR_VLANNUM , "69")) * MAX_IN_ONE_VLAN;
 
     public static final int TIMEOUT240 = 240;
 
@@ -208,6 +208,7 @@ public enum ConstantsNet { ;
      @return {@link #ALL_DEVICES}
      */
     public static BlockingDeque<String> getAllDevices() {
+        AppComponents.getOrSetProps().setProperty(ConstantsFor.PR_VLANNUM , String.valueOf((IPS_IN_VELKOM_VLAN / MAX_IN_ONE_VLAN)));
         return ALL_DEVICES;
     }
 

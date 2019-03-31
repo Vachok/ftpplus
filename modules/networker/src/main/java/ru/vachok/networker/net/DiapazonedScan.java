@@ -148,7 +148,7 @@ public class DiapazonedScan implements Runnable {
         Runnable execScan200210 = new DiapazonedScan.ExecScan(200, 210, "10.200.", new File(FILENAME_NEWLAN200210));
         boolean is200210 = AppComponents.threadConfig().execByThreadConfig(execScan200210);
 
-        Runnable execScan210220 = new DiapazonedScan.ExecScan(210, 218, "10.200.", new File(FILENAME_NEWLAN210));
+        Runnable execScan210220 = new DiapazonedScan.ExecScan(210 , 219 , "10.200." , new File(FILENAME_NEWLAN210));
         boolean is210220 = AppComponents.threadConfig().execByThreadConfig(execScan210220);
 
         messageToUser.info(getClass().getSimpleName() , "210-220" , " = " + is210220);
