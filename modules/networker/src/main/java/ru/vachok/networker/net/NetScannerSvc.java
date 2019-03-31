@@ -127,18 +127,12 @@ public class NetScannerSvc {
      */
     private String thrName = Thread.currentThread().getName();
 
-    /**
-     {@link AppComponents#lastNetScan()}
-     */
     private Map<String, Boolean> netWorkMap;
 
     private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
 
-    /**
-     @see AppComponents#lastNetScanMap()
-     */
     private NetScannerSvc() {
-        this.netWorkMap = AppComponents.lastNetScanMap();
+        this.netWorkMap = LastNetScan.getLastNetScan().getNetWork();
     }
     static {
         try {
@@ -263,7 +257,7 @@ public class NetScannerSvc {
         stringBuilder.append(str);
         stringBuilder.append(" (");
         stringBuilder.append(")<br>Actual on: ");
-        stringBuilder.append(AppComponents.lastNetScan().getTimeLastScan());
+        stringBuilder.append(LastNetScan.getLastNetScan().getTimeLastScan());
         stringBuilder.append("</center></font>");
 
         String thePcWithDBInfo = stringBuilder.toString();
@@ -444,7 +438,6 @@ public class NetScannerSvc {
      {@link LastNetScan#setTimeLastScan(java.util.Date)} - сейчас. <br>
      {@link NetScannerSvc#countStat()}. <br>
      {@link FileSystemWorker#writeFile(java.lang.String, java.lang.String)}
-     ({@link AppComponents#lastNetScanMap()}). <br>
      {@link ESender#info(java.lang.String, java.lang.String, java.lang.String)}.
      <p>
      {@link FileSystemWorker#writeFile(java.lang.String, java.util.List)} - {@code toFileList}. <br>
@@ -469,14 +462,14 @@ public class NetScannerSvc {
         toFileList.add(new TForms().fromArray(LOCAL_PROPS, false));
         LOCAL_PROPS.setProperty(ConstantsFor.PR_ONLINEPC, String.valueOf(onLinePCsNum));
 
-        AppComponents.lastNetScan().setTimeLastScan(new Date());
+        LastNetScan.getLastNetScan().setTimeLastScan(new Date());
 
         countStat();
 
         boolean isLastModSet = new File(ConstantsFor.class.getSimpleName() + ConstantsFor.FILEEXT_PROPERTIES).setLastModified(ConstantsFor.DELAY);
         boolean isForceSaved = new AppComponents().updateProps(LOCAL_PROPS);
 
-        FileSystemWorker.writeFile(ConstantsNet.BEANNAME_LASTNETSCAN, new TForms().fromArray(AppComponents.lastNetScanMap(), false));
+        FileSystemWorker.writeFile(ConstantsNet.BEANNAME_LASTNETSCAN , new TForms().fromArray(LastNetScan.getLastNetScan().getNetWork() , false));
         FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".getPCsAsync", toFileList);
         FileSystemWorker.writeFile("unused.ips", unusedNamesTree.stream());
 

@@ -83,7 +83,6 @@ public class IntoApplication {
         SpringApplication application = new SpringApplication();
         ConfigurableApplicationContext context = SpringApplication.run(IntoApplication.class);
         FileSystemWorker.delFilePatterns(ConstantsFor.getStringsVisit());
-        AppComponents.setCtx(context);
         if (args != null && args.length > 0) {
             readArgs(context, args);
         }

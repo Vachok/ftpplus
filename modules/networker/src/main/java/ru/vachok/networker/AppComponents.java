@@ -7,7 +7,6 @@ import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.target.AbstractBeanFactoryBasedTargetSource;
-import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Scope;
@@ -19,7 +18,6 @@ import ru.vachok.networker.accesscontrol.TemporaryFullInternet;
 import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.ad.user.ADUser;
-import ru.vachok.networker.componentsrepo.LastNetScan;
 import ru.vachok.networker.componentsrepo.VersionInfo;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.config.ThreadConfig;
@@ -118,9 +116,6 @@ public class AppComponents {
         return sshActs;
     }
 
-
-    private static ConfigurableApplicationContext context;
-
     @Bean(STR_VISITOR)
     public Visitor visitor(HttpServletRequest request) {
         Visitor visitor = new Visitor(request);
@@ -145,24 +140,6 @@ public class AppComponents {
     @Scope(ConstantsFor.SINGLETON)
     public static NetScannerSvc netScannerSvc() {
         return NetScannerSvc.getInst();
-    }
-
-    /**
-     @return {@link #lastNetScan()}.getNetWork
-     */
-    @Bean
-    @Scope(ConstantsFor.SINGLETON)
-    public static ConcurrentMap<String, Boolean> lastNetScanMap() {
-        return lastNetScan().getNetWork();
-    }
-
-    /**
-     @return {@link LastNetScan#getLastNetScan()}
-     */
-    @Bean
-    @Scope(ConstantsFor.SINGLETON)
-    public static LastNetScan lastNetScan() {
-        return LastNetScan.getLastNetScan();
     }
 
     /**
@@ -201,11 +178,6 @@ public class AppComponents {
     }
 
 
-    public ConfigurableApplicationContext getCtx() {
-        return context;
-    }
-
-
     public static Properties getOrSetProps() {
         if (APP_PR.size() > 3) {
             return APP_PR;
@@ -220,12 +192,6 @@ public class AppComponents {
         DBPropsCallable saveDBPropsCallable = new DBPropsCallable(new DBRegProperties(DB_JAVA_ID).getRegSourceForProperties(), APP_PR, true);
         return saveDBPropsCallable.call().getProperty(ConstantsFor.PR_FORCE).equals("true");
     }
-
-
-    public static void setCtx(ConfigurableApplicationContext context) {
-        AppComponents.context = context;
-    }
-
 
     private Properties getAppProps() {
         threadConfig().thrNameSet("getAPr");

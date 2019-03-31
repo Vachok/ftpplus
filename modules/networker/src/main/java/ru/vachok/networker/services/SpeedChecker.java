@@ -5,7 +5,6 @@ package ru.vachok.networker.services;
 import org.slf4j.LoggerFactory;
 import org.springframework.ui.Model;
 import ru.vachok.messenger.MessageCons;
-import ru.vachok.messenger.MessageFile;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.messenger.email.ESender;
 import ru.vachok.mysqlandprops.EMailAndDB.MailMessages;
@@ -162,7 +161,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
          */
         private MailMessages mailMessages = new MailMessages();
 
-        private MessageToUser messageToUser = new MessageFile();
+        private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
 
 
         /**
@@ -300,13 +299,10 @@ public class SpeedChecker implements Callable<Long>, Runnable {
                     messageToUser.info(SpeedChecker.ChkMailAndUpdateDB.class.getSimpleName() + " " + ConstantsFor.thisPC(), true + " sending to base",
                         todayInfoStr + "\n" + chDB);
                 } else {
-                    messageToUser.infoNoTitles("No new messages");
+                    messageToUser.info(getClass().getSimpleName() + ".parseMsg" , "mailMessages" , " = " + mailMessages);
                 }
             } catch (MessagingException e) {
-                messageToUser.errorAlert(
-                    this.getClass().getSimpleName(),
-                    LocalDateTime.now() + " " + e.getMessage(),
-                    new TForms().fromArray(e, false));
+                messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".parseMsg" , e));
             }
         }
 
@@ -342,8 +338,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
                 return true;
             }
             catch(SQLException | IOException e){
-                new MessageCons().errorAlert(CLASS_NAME, "writeDB", e.getMessage());
-                FileSystemWorker.error("ChkMailAndUpdateDB.writeDB", e);
+                messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".writeDB" , e));
                 return false;
             }
         }

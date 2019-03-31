@@ -3,8 +3,6 @@ package ru.vachok.networker.ad;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
@@ -13,8 +11,6 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.ad.user.PCUserResolver;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.NetScanCtr;
-import ru.vachok.networker.net.NetScannerSvc;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 
@@ -122,7 +118,6 @@ public class ADSrv implements Runnable {
 
     /**
      @param userInputRaw пользовательский ввод в строку
-     @see NetScanCtr#pcNameForInfo(NetScannerSvc, BindingResult, Model)
      */
     public void setUserInputRaw(String userInputRaw) {
         this.userInputRaw = userInputRaw;
