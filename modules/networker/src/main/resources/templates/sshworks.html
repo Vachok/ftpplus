@@ -1,3 +1,13 @@
+<!-- Copyright (c) all rights. http://networker.vachok.ru 2019. -->
+
+<!--
+  ~ Copyright (c) 2019.
+  -->
+
+<!--
+  ~ Copyright (c) 2019.
+  -->
+
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
@@ -27,6 +37,10 @@
 </head>
 <body>
 <center>
+    <center>
+        <comment th:utext="${head}"></comment>
+    </center>
+    <br>
     <p th:utext="${sshdetail}"/>
     <form method="POST" th:action="@{/tmpfullnet}" th:object="${sshActs}"><br>
         Введите имя ПК: <br>

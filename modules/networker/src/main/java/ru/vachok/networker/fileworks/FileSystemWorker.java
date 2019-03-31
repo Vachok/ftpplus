@@ -1,6 +1,7 @@
 package ru.vachok.networker.fileworks;
 
 
+
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
@@ -26,20 +27,19 @@ import static ru.vachok.networker.ConstantsFor.FILEEXT_LOG;
 
 /**
  Вспомогательная работа с файлами.
- 
+
  @since 19.12.2018 (9:57) */
 public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
-    
-    
+
+
     private static final String CLASS_NAME = FileSystemWorker.class.getSimpleName();
-    
-    private static final String CLASS_METH = "FileSystemWorker.readFileToList";
-    
+
     /**
      {@link MessageLocal}
      */
     private static MessageToUser messageToUser = new MessageLocal(FileSystemWorker.class.getSimpleName());
-    
+
+
     public static boolean writeFile(String fileName, Stream<String> toFileRec) {
         try (OutputStream outputStream = new FileOutputStream(fileName);
              PrintStream printStream = new PrintStream(outputStream, true)) {
@@ -53,11 +53,12 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
             return false;
         }
     }
-    
+
+
     /**
      Удаление временных файлов.
      <p>
-     Usages: {@link SystemTrayHelper#addTray(String)}, {@link ru.vachok.networker.controller.ServiceInfoCtrl#closeApp()},
+     Usages: {@link SystemTrayHelper#addTray(String)}, ,
      {@link ru.vachok.networker.net.MyServer#reconSock()}. <br>
      Uses: {@link CommonScan2YOlder} <br>
      */
@@ -68,11 +69,12 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
             messageToUser.error(FileSystemWorker.class.getSimpleName(), e.getMessage(), new TForms().fromArray(e, false));
         }
     }
-    
+
+
     /**
      Поиск в \\srv-fs\common_new
      <p>
-     
+
      @param folderPath папка, откуда начать искать
      @return список файлов или {@link Exception}
      @see FileSearcher
@@ -86,17 +88,19 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
             List<String> fileSearcherResList = fileSearcher.getResList();
             String resTo = new TForms().fromArray(fileSearcherResList, true);
             if (fileSearcherResList.size() > 0) {
-                writeFile("search.last", fileSearcherResList.stream());
+                writeFile("search_" + LocalTime.now().toSecondOfDay() + ".res", fileSearcherResList.stream());
             }
             return resTo;
         } catch (Exception e) {
+            error("searchInCommon", e);
             return e.getMessage();
         }
     }
-    
+
+
     /**
      Простое копирование файла.
-     
+
      @param origFile               файл, для копирования
      @param pathToCopyWithFileName строка путь
      @param needDel                удалить или нет исходник
@@ -109,13 +113,12 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
             Path directories = Files.createDirectories(targetPath.getParent());
             toCpFile = targetPath.toFile();
             Path copy = Files.copy(origFile.toPath(), targetPath, StandardCopyOption.REPLACE_EXISTING);
-            if (needDel) {
-                Files.deleteIfExists(origFile.toPath());
+            if (needDel && !Files.deleteIfExists(origFile.toPath())) {
+                origFile.deleteOnExit();
             }
             String msg = directories + " getParent directory. " + copy + " " + toCpFile.exists();
             messageToUser.info(msg);
         } catch (IOException | NullPointerException e) {
-            messageToUser.error(FileSystemWorker.class.getSimpleName(), e.getMessage(), new TForms().fromArray(e, false));
             if (toCpFile.exists()) {
                 toCpFile.deleteOnExit();
                 messageToUser.warn(toCpFile.getName(), "will be delete On Exit", " = " + e.getMessage());
@@ -123,7 +126,8 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         }
         return toCpFile.exists();
     }
-    
+
+
     public static ConcurrentMap<String, String> readFiles(List<File> filesToRead) {
         Collections.sort(filesToRead);
         ConcurrentMap<String, String> readiedStrings = new ConcurrentHashMap<>();
@@ -133,11 +137,12 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         }
         return readiedStrings;
     }
-    
+
+
     /**
      Чтение файла из файловой системы.
      <p>
-     
+
      @param fileName путь к файлу.
      @return файл, построчно.
      */
@@ -176,7 +181,8 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         messageToUser.info(msgTimeSp);
         return stringBuilder.toString();
     }
-    
+
+
     public static void delFilePatterns(String[] patToDelArr) {
         File file = new File(".");
         for (String patToDel : patToDelArr) {
@@ -189,14 +195,16 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
             }
         }
     }
-    
+
+
     public static void writeFile(String fileName, String toWriteStr) {
         writeFile(fileName, Collections.singletonList(toWriteStr));
     }
-    
+
+
     /**
      Запись файла
-     
+
      @param fileName  имя файла
      @param toFileRec {@link List} строчек на запись.
      */
@@ -209,7 +217,8 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
             messageToUser.error(FileSystemWorker.class.getSimpleName(), e.getMessage(), new TForms().fromArray(e, false));
         }
     }
-    
+
+
     public static List<String> readFileToList(String absolutePath) {
         List<String> retList = new ArrayList<>();
         try (InputStream inputStream = new FileInputStream(absolutePath);
@@ -226,7 +235,8 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         messageToUser.info("absolutePath = [" + absolutePath + "]", " input parameters.\nReturns:", "java.util.List<java.lang.String>");
         return retList;
     }
-    
+
+
     /**
      Пишем исключения.
      <p>
@@ -234,27 +244,28 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
      <p>
      1. {@link TimeChecker#call()} сверим часы. <br>
      2. {@link TForms#fromArray(java.lang.Exception, boolean)} приведём исключение к {@link String} <br><br>
-     
+
      @param classMeth класс метод.
      @param e         исключение
      */
-    public static void error(String classMeth, Exception e) {
+    public static String error(String classMeth, Exception e) {
         File f = new File(classMeth + "_" + LocalTime.now().toSecondOfDay() + FILEEXT_LOG);
-    
+
         try (OutputStream outputStream = new FileOutputStream(f)) {
             boolean printTo = printTo(outputStream, e);
             messageToUser.info(f.getAbsolutePath(), "print", String.valueOf(printTo));
         } catch (IOException exIO) {
             messageToUser.errorAlert(CLASS_NAME, "error", exIO.getMessage());
         }
-        copyOrDelFile(f, ".\\err\\" + f.getName(), true);
+        boolean isCp = copyOrDelFile(f, ".\\err\\" + f.getName(), true);
+        return classMeth + " threw Exception: " + e.getMessage() + ": <p>\n\n" + new TForms().fromArray(e, true);
     }
     
     private static boolean printTo(OutputStream outputStream, Exception e) {
         try (PrintStream printStream = new PrintStream(outputStream, true)) {
             printStream.println(new Date(new TimeChecker().call().getReturnTime()));
             printStream.println();
-            printStream.println(e.getMessage() + " getMessage;");
+            printStream.println(e.getMessage());
             printStream.println();
             printStream.println(new TForms().fromArray(e, false));
             return printStream.checkError();

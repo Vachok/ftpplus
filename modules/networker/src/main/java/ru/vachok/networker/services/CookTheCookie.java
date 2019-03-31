@@ -15,7 +15,7 @@ public class CookTheCookie {
     private Visitor visitor;
 
     @Autowired
-    public CookTheCookie(Visitor visitor) {
+    public CookTheCookie( Visitor visitor ) {
         this.visitor = visitor;
     }
 

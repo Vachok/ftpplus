@@ -1,3 +1,13 @@
+<!-- Copyright (c) all rights. http://networker.vachok.ru 2019. -->
+
+<!--
+  ~ Copyright (c) 2019.
+  -->
+
+<!--
+  ~ Copyright (c) 2019.
+  -->
+
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
@@ -6,6 +16,7 @@
     <link href="css/style.css" media="all" rel="stylesheet" th:href="@{css/style.css}" type="text/css"/>
 </head>
 <body>
+<center><p th:utext="${head}"/></center>
 <center><h1>Анкета-конфета</h1></center>
 <center><p th:utext="${anketahead}"></center>
 <form method="POST" th:action="@{/anketaok}" th:object="${anketaKonfeta}"><br>

@@ -37,13 +37,6 @@ public class FileSearcher extends FileSystemWorker {
     private List<String> resList = new ArrayList<>();
 
     /**
-     @return {@link #resList}
-     */
-    List<String> getResList() {
-        return resList;
-    }
-
-    /**
      @param patternToSearch что искать
      */
     public FileSearcher(String patternToSearch) {
@@ -90,9 +83,15 @@ public class FileSearcher extends FileSystemWorker {
     @Override
     public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
         if (dir.toFile().isDirectory()) {
-            String msg = dir.toString() + " просмотрено";
-            messageToUser.info(msg);
+            messageToUser.info("FileSearcher.postVisitDirectory", "dir.toFile().getName()", " = " + dir.toFile().getName());
         }
         return FileVisitResult.CONTINUE;
+    }
+    
+    /**
+     @return {@link #resList}
+     */
+    List<String> getResList() {
+        return resList;
     }
 }

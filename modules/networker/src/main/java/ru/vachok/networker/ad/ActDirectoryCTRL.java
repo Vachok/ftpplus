@@ -1,3 +1,5 @@
+
+
 package ru.vachok.networker.ad;
 
 
@@ -9,6 +11,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import ru.vachok.messenger.MessageCons;
+import ru.vachok.messenger.MessageFile;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
@@ -19,8 +22,6 @@ import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.controller.ServiceInfoCtrl;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetScannerSvc;
-import ru.vachok.networker.systray.ListenUserInfo;
-import ru.vachok.networker.systray.MessageToTray;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Calendar;
@@ -34,6 +35,7 @@ import java.util.List;
  @since 02.10.2018 (23:06) */
 @Controller
 public class ActDirectoryCTRL {
+
 
     /**
      Небольшое описание, для показа на сайте.
@@ -56,11 +58,6 @@ public class ActDirectoryCTRL {
     private ADSrv adSrv;
 
     private Visitor visitor;
-    /*Comment out 03.03.2019 (11:08)
-     *//**
-     {@link SshActs}
-     *//*
-    private SshActs sshActs;*/
 
     /**
      Заголовок страницы.
@@ -71,6 +68,7 @@ public class ActDirectoryCTRL {
      {@link PhotoConverterSRV}
      */
     private PhotoConverterSRV photoConverterSRV;
+
 
     /**
      @param adSrv             {@link AppComponents#adSrv()}
@@ -86,6 +84,7 @@ public class ActDirectoryCTRL {
 */
         Thread.currentThread().setName(getClass().getSimpleName());
     }
+
 
     /**
      /ad control.
@@ -128,36 +127,6 @@ public class ActDirectoryCTRL {
         return "ad";
     }
 
-    /**
-     AdItem
-     <br> 3. {@link ADSrv#getDetails(String)} <br> 4. {@link
-    PageFooter#getFooterUtext()}
-
-     @param queryString {@link HttpServletRequest#getQueryString()}
-     @param model       {@link Model}
-     @return aditem.html
-     */
-    private String queryStringExists(String queryString, Model model) {
-        NetScannerSvc netScannerSvc = AppComponents.netScannerSvc();
-        netScannerSvc.setThePc(queryString);
-        String attributeValue = netScannerSvc.getInfoFromDB();
-        model.addAttribute(ConstantsFor.ATT_TITLE, queryString + " " + attributeValue);
-        model.addAttribute(ConstantsFor.ATT_USERS, NetScannerSvc.getInputWithInfoFromDB());
-        try{
-            String adSrvDetails = adSrv.getDetails(queryString);
-            model.addAttribute(ATT_DETAILS, adSrvDetails);
-            adSrvDetails = adSrvDetails.replaceAll("</br>", "\n").replaceAll("<p>", "\n\n").replaceAll("<p><b>", "\n\n");
-            long l = new Calendar.Builder().setTimeOfDay(0, 0, 0).build().getTimeInMillis();
-            String finalAdSrvDetails = adSrvDetails;
-            new MessageToTray(new ListenUserInfo(queryString, attributeValue, finalAdSrvDetails)).info(queryString, attributeValue,
-                ServiceInfoCtrl.percToEnd(new Date(l), 24));
-        }
-        catch(Exception e){
-            model.addAttribute(ATT_DETAILS, e.getMessage());
-        }
-        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
-        return "aditem";
-    }
 
     /**
      Get adphoto.html
@@ -182,8 +151,6 @@ public class ActDirectoryCTRL {
         this.photoConverterSRV = photoConverterSRV;
         try{
             model.addAttribute("photoConverterSRV", photoConverterSRV);
-/*Comment out 03.03.2019 (11:08)
-            model.addAttribute(ConstantsFor.ATT_SSH_ACTS, sshActs);*/
             if(!ConstantsFor.isPingOK()){
                 titleStr = "ping srv-git.eatmeat.ru is " + false;
             }
@@ -197,6 +164,36 @@ public class ActDirectoryCTRL {
             FileSystemWorker.error("ActDirectoryCTRL.adFoto", e);
         }
         return "adphoto";
+    }
+
+
+    /**
+     * AdItem
+     * <br> 3. {@link ADSrv#getDetails(String)} <br> 4. {@link
+     * PageFooter#getFooterUtext()}
+     *
+     * @param queryString {@link HttpServletRequest#getQueryString()}
+     * @param model       {@link Model}
+     * @return aditem.html
+     */
+    private String queryStringExists( String queryString , Model model ) {
+        NetScannerSvc netScannerSvc = AppComponents.netScannerSvc();
+        netScannerSvc.setThePc(queryString);
+        String attributeValue = netScannerSvc.getInfoFromDB();
+        model.addAttribute(ConstantsFor.ATT_TITLE , queryString + " " + attributeValue);
+        model.addAttribute(ConstantsFor.ATT_USERS , netScannerSvc.getInputWithInfoFromDB());
+        try {
+            String adSrvDetails = adSrv.getDetails(queryString);
+            model.addAttribute(ATT_DETAILS , adSrvDetails);
+            adSrvDetails = adSrvDetails.replaceAll("</br>" , "\n").replaceAll("<p>" , "\n\n").replaceAll("<p><b>" , "\n\n");
+            long l = new Calendar.Builder().setTimeOfDay(0 , 0 , 0).build().getTimeInMillis();
+            String finalAdSrvDetails = adSrvDetails;
+            new MessageFile().info(queryString , attributeValue , ServiceInfoCtrl.percToEnd(new Date(l) , 24));
+        } catch (Exception e) {
+            model.addAttribute(ATT_DETAILS , e.getMessage());
+        }
+        model.addAttribute(ConstantsFor.ATT_FOOTER , new PageFooter().getFooterUtext());
+        return "aditem";
     }
 
 }

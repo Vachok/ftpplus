@@ -48,17 +48,19 @@ public class MyServer extends Thread {
     /**
      {@link DBMessenger}
      */
-    private static final MessageToUser messageToUser = new MessageLocal();
-    
-    private static final int LPORT = Integer.parseInt(ConstantsFor.getAppProps().getProperty("LPORT", "9990"));
+    private static final MessageToUser messageToUser = new MessageLocal(MyServer.class.getSimpleName());
+
+    private static final int LPORT = Integer.parseInt(AppComponents
+        .getOrSetProps()
+        .getProperty("LPORT", "9990"));
 
     /**
      <b>Сокет для клиента</b>
      <p>
      {@link #getSocket()} , {@link #setSocket(Socket)}
      */
-    private static Socket socket;
-    
+    private static Socket socket = null;
+
     public static Socket getSocket() {
         return socket;
     }
@@ -73,13 +75,14 @@ public class MyServer extends Thread {
     public static MyServer getI() {
         return myServer;
     }
-    
+
+
     /**
      Сокет для сервера
      */
     @SuppressWarnings("CanBeFinal")
-    private static ServerSocket serverSocket;
-    
+    private static ServerSocket serverSocket = null;
+
     /**
      {@link #myServer}
      */

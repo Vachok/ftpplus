@@ -37,7 +37,7 @@ public interface Pinger {
      @return {@link List} of {@link String} результатов.
      */
     default List<String> pingDev(Deque<InetAddress> devicesDeq) {
-        MessageLocal messageToUser = new MessageLocal();
+        MessageLocal messageToUser = new MessageLocal(Pinger.class.getSimpleName() + "SACE!");
         String classMeth = "Pinger.pingDev";
         Properties properties = AppComponents.getOrSetProps();
         long pingSleep = ConstantsFor.TIMEOUT_650;

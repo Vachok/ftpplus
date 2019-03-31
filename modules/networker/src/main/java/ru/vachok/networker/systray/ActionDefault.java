@@ -25,8 +25,6 @@ public class ActionDefault extends AbstractAction {
      */
     private static MessageToUser messageToUser = new MessageLocal(ActionDefault.class.getSimpleName());
 
-    private static final SystemTrayHelper SYSTEM_TRAY_HELPER = SystemTrayHelper.getI();
-
     private String goTo;
 
     public ActionDefault(String goTo) {
@@ -35,16 +33,17 @@ public class ActionDefault extends AbstractAction {
 
     ActionDefault() {
         this.goTo = ConstantsFor.HTTP_LOCALHOST8880SLASH;
-        if(ConstantsFor.IS_SYSTRAY_AVAIL && SYSTEM_TRAY_HELPER.getTrayIcon()!=null){
-            SYSTEM_TRAY_HELPER.delOldActions();
+        if (!ConstantsFor.IS_SYSTRAY_AVAIL) {
+            throw new UnsupportedOperationException();
         }
     }
     @Override
     public void actionPerformed(ActionEvent e) {
+        if (SystemTrayHelper.getI().getTrayIcon() != null) SystemTrayHelper.getI().delOldActions();
         try{
             Desktop.getDesktop().browse(URI.create(goTo));
         } catch (IOException | IllegalArgumentException e1) {
-            messageToUser.errorAlert("ActionDefault", "actionPerformed", e1.getMessage());
+            messageToUser.errorAlert("ActionDefault" , ConstantsFor.METHNAME_ACTIONPERFORMED , e1.getMessage());
         }
         Thread.currentThread().checkAccess();
         Thread.currentThread().interrupt();

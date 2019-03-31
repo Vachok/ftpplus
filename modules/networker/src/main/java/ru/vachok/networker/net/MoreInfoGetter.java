@@ -1,31 +1,19 @@
 package ru.vachok.networker.net;
 
 
+
 import org.springframework.ui.Model;
-import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.TForms;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.net.enums.OtherKnownDevices;
-import ru.vachok.networker.services.MessageLocal;
-import ru.vachok.networker.systray.ActionCloseMsg;
-import ru.vachok.networker.systray.MessageToTray;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 
 /**
@@ -76,62 +64,11 @@ public class MoreInfoGetter {
         String sql;
         if (isOnline) {
             sql = "select * from velkompc where NamePP like ?";
-            NetScannerSvc.onLinePCsNum += 1;
-            return ConditionChecker.onLinesCheck(sql, pcName) + " | " + NetScannerSvc.onLinePCsNum;
+            AppComponents.netScannerSvc().setOnLinePCsNum(AppComponents.netScannerSvc().getOnLinePCsNum() + 1);
+            return ConditionChecker.onLinesCheck(sql, pcName) + " | " + AppComponents.netScannerSvc().getOnLinePCsNum();
         } else {
             sql = "select * from pcuser where pcName like ?";
             return ConditionChecker.offLinesCheckUser(sql, pcName);
         }
-    }
-
-    /**
-     Достаёт инфо о пользователе из БД
-     <p>
-
-     @param userInputRaw {@link NetScannerSvc#getThePc()}
-     @return LAST 20 USER PCs
-     */
-    static String getUserFromDB(String userInputRaw) {
-        StringBuilder retBuilder = new StringBuilder();
-        String sql = "select * from pcuserauto where userName like ? ORDER BY whenQueried DESC LIMIT 0, 20";
-        try {
-            userInputRaw = userInputRaw.split(": ")[1];
-        } catch (ArrayIndexOutOfBoundsException e) {
-            retBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false));
-        }
-        try (Connection c = new AppComponents().connection(ConstantsFor.DBPREFIX + ConstantsFor.STR_VELKOM);
-             PreparedStatement p = c.prepareStatement(sql)) {
-            p.setString(1, "%" + userInputRaw + "%");
-            try (ResultSet r = p.executeQuery()) {
-                StringBuilder stringBuilder = new StringBuilder();
-                String headER = "<h3><center>LAST 20 USER PCs</center></h3>";
-                stringBuilder.append(headER);
-                List<String> stringList = new ArrayList<>();
-                while (r.next()) {
-                    String pcName = r.getString(ConstantsFor.DBFIELD_PCNAME);
-                    stringList.add(pcName);
-                    String returnER = "<br><center><a href=\"/ad?" + pcName.split("\\Q.\\E")[0] + "\">" + pcName + "</a> set: " +
-                        r.getString(ConstantsNet.DB_FIELD_WHENQUERIED) + ConstantsFor.HTML_CENTER;
-                    stringBuilder.append(returnER);
-                }
-                List<String> collect = stringList.stream().distinct().collect(Collectors.toList());
-                for (String x : collect) {
-                    int frequency = Collections.frequency(stringList, x);
-                    stringBuilder.append(frequency).append(") ").append(x).append("<br>");
-                }
-                if (r.last()) {
-                    MessageToUser messageToUser = new MessageToTray(new ActionCloseMsg(new MessageLocal()));
-                    messageToUser.info(
-                        r.getString(ConstantsFor.DBFIELD_PCNAME),
-                        r.getString(ConstantsNet.DB_FIELD_WHENQUERIED),
-                        r.getString(ConstantsFor.DB_FIELD_USER));
-                }
-                return stringBuilder.toString();
-            }
-        }
-        catch(SQLException | IOException e){
-            retBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false));
-        }
-        return retBuilder.toString();
     }
 }

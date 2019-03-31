@@ -33,23 +33,30 @@ public class MessageToTray implements MessageToUser {
 
     private String bodyMsg = "No body";
 
-    private MessageToUser messageToUser = new MessageLocal();
+    private MessageToUser messageToUser = new MessageLocal(MessageToTray.class.getSimpleName());
 
     public MessageToTray() throws NullPointerException, IllegalStateException {
         if (!ConstantsFor.IS_SYSTRAY_AVAIL) {
-            throw new IllegalStateException("***System Tray not Available!***");
+            throw new UnsupportedOperationException("***System Tray not Available!***");
         }
     }
 
     public MessageToTray(ActionListener aListener) throws HeadlessException, IllegalStateException {
-        if(ConstantsFor.IS_SYSTRAY_AVAIL){
+        if (ConstantsFor.IS_SYSTRAY_AVAIL && SYSTEM_TRAY_HELPER.getTrayIcon() != null) {
             delActions();
             this.aListener = aListener;
         }
         else{
-            throw new IllegalStateException("***System Tray not Available!***");
+            throw new UnsupportedOperationException("***System Tray not Available!***");
         }
     }
+
+
+    public MessageToTray( String simpleName ) throws UnsupportedOperationException {
+        this.headerMsg = simpleName;
+        if (!SystemTray.isSupported()) throw new UnsupportedOperationException();
+    }
+
 
     @Override
     public void error(String s) {

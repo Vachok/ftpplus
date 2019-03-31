@@ -13,15 +13,16 @@ buildscript {
 
 plugins {
     id "com.gradle.build-scan" version "2.1"
-    id "org.sonarqube" version "2.6"
     id 'java'
     id 'idea'
     id "org.springframework.boot" version "2.0.4.RELEASE"
     id "io.spring.dependency-management" version "1.0.6.RELEASE"
+    id "com.github.breadmoirai.github-release" version "2.2.6"
 }
 
 group = 'ru.vachok.networker'
-version = '8.0.1912'
+//noinspection SpellCheckingInspection
+version = '8.0.1913'
 sourceCompatibility = 1.8
 
 repositories {
@@ -50,4 +51,22 @@ dependencies {
 buildScan {
     termsOfServiceUrl = 'https://gradle.com/terms-of-service'
     termsOfServiceAgree = 'yes'
+}
+
+githubRelease {
+    token "4d930b2a796b5b8f051ea35e4f4eb471e4724881"// This is your personal access token with Repo permissions
+    // You get this from your user settings > developer settings
+    // If this value is not set, a login dialog will prompt you for your credentials.
+    // 2fa is not supported
+    owner "Vachok" // default is the last part of your group. Eg group: "com.github.breadmoirai" => owner: "breadmoirai"
+    repo "ftpplus" // by default this is set to your project name
+    tagName "v${project.version}" // by default this is set to "v${project.version}"
+    targetCommitish "b${project.version}" // by default this is set to "master"
+    releaseName "networker" // Release title, by default this is the same as the tagName
+    body "" // by default this is empty
+    draft false // by default this is false
+    prerelease false // by default this is false
+    releaseAssets "G:\\My_Proj\\FtpClientPlus\\modules\\networker\\build\\libs\\networker-${project.version}.jar" // this points to which files you want to upload as assets with your release
+//   override true // by default false; if set to true, will delete an existing release with the same tag and name
+    apiEndpoint "https://api.github.com" // should only change for github enterprise users
 }

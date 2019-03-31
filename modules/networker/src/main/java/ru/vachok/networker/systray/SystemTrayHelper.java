@@ -6,6 +6,7 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.Putty;
 
@@ -22,8 +23,7 @@ import java.net.InetAddress;
  Если трэй доступен.
 
  @since 29.09.2018 (22:33) */
-@SuppressWarnings ("InjectedReferences")
-public final class SystemTrayHelper {
+@SuppressWarnings ("InjectedReferences") public class SystemTrayHelper {
 
     /**
      Путь к папке со значками
@@ -35,12 +35,12 @@ public final class SystemTrayHelper {
 
     private static final SystemTrayHelper SYSTEM_TRAY_HELPER = new SystemTrayHelper();
     
-    private static @NotNull TrayIcon trayIcon;
+    private @NotNull TrayIcon trayIcon;
 
     /**
      {@link MessageLocal}
      */
-    private static MessageToUser messageToUser = new MessageLocal();
+    private static MessageToUser messageToUser = new MessageLocal(SystemTrayHelper.class.getSimpleName());
 
     public static SystemTrayHelper getI() {
         return SYSTEM_TRAY_HELPER;
@@ -50,6 +50,7 @@ public final class SystemTrayHelper {
      Конструктор по-умолчанию
      */
     private SystemTrayHelper() {
+        if (!SystemTray.isSupported()) throw new UnsupportedOperationException("System system");
     }
 
     TrayIcon getTrayIcon() throws ExceptionInInitializerError {
@@ -57,7 +58,7 @@ public final class SystemTrayHelper {
             return trayIcon;
         }
         else{
-            throw new IllegalComponentStateException("System tray unavailable");
+            throw new UnsupportedOperationException("System tray unavailable");
         }
     }
 
@@ -66,26 +67,15 @@ public final class SystemTrayHelper {
         addTray(iconFileName, true);
     }
 
-    /**
-     Создаёт System Tray Icon
- 
-     @param imageFileName имя файла-картинки
-     @param isNeedTray если трэй не нужен.
-     */
-    private void addTray(String imageFileName, boolean isNeedTray) {
-        trayIcon = new TrayIcon(
-            getImage(imageFileName),
-            new StringBuilder()
-                .append(AppComponents.versionInfo().getAppBuild()).append(" v. ")
-                .append(AppComponents.versionInfo().getAppVersion()).append(" ")
-                .append(AppComponents.versionInfo().getBuildTime()).toString(),
-            getMenu());
-        trayIcon.setImage(getImage(imageFileName));
-        trayIcon.setImageAutoSize(true);
-        trayIcon.addActionListener(new ActionDefault());
 
-        boolean isTrayAdded = addTrayToSys(isNeedTray);
-        messageToUser.info("SystemTrayHelper.addTray", "isTrayAdded", String.valueOf(isTrayAdded));
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("SystemTrayHelper{");
+        sb.append("IMG_FOLDER_NAME='").append(IMG_FOLDER_NAME).append('\'');
+        sb.append(ConstantsFor.TOSTRING_CLASS_NAME).append(CLASS_NAME).append('\'');
+        sb.append(", trayIcon=").append(trayIcon.hashCode());
+        sb.append('}');
+        return sb.toString();
     }
 
     private static Image getImage(String iconFileName) {
@@ -101,6 +91,7 @@ public final class SystemTrayHelper {
         }
         throw new IllegalArgumentException();
     }
+
 
     /**
      Добавление компонентов в меню
@@ -129,7 +120,7 @@ public final class SystemTrayHelper {
         toConsole.addActionListener((ActionEvent e) -> System.setOut(System.err));
         popupMenu.add(toConsole);
 
-        if(ConstantsFor.thisPC().toLowerCase().contains("home")){
+        if (ConstantsFor.thisPC().toLowerCase().contains(ConstantsNet.HOSTNAMEPATT_HOME)) {
             MenuItem reloadContext = new MenuItem();
             reloadContext.addActionListener(new ActionTests());
             reloadContext.setLabel("Run tests");
@@ -180,7 +171,7 @@ public final class SystemTrayHelper {
      */
     private static boolean isSrvGitOK() {
         try{
-            return InetAddress.getByName(ConstantsFor.HOSTNAME_SRVGIT_EATMEATRU).isReachable(1000);
+            return InetAddress.getByName(ConstantsFor.HOSTNAME_SRVGITEATMEATRU).isReachable(1000);
         }
         catch(IOException e){
             throw new IllegalStateException("***Network Problems Detected***");
@@ -196,15 +187,20 @@ public final class SystemTrayHelper {
             }
         }
     }
+    
+    /**
+     * Создаёт System Tray Icon
+     *
+     * @param imageFileName имя файла-картинки
+     * @param isNeedTray    если трэй не нужен.
+     */
+    private void addTray( String imageFileName , boolean isNeedTray ) {
+        trayIcon = new TrayIcon(getImage(imageFileName) , new StringBuilder().append(AppComponents.versionInfo().getAppBuild()).append(" v. ").append(AppComponents.versionInfo().getAppVersion()).append(" ").append(AppComponents.versionInfo().getBuildTime()).toString() , getMenu());
+        trayIcon.setImage(getImage(imageFileName));
+        trayIcon.setImageAutoSize(true);
+        trayIcon.addActionListener(new ActionDefault());
 
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("SystemTrayHelper{");
-        sb.append("IMG_FOLDER_NAME='").append(IMG_FOLDER_NAME).append('\'');
-        sb.append(", CLASS_NAME='").append(CLASS_NAME).append('\'');
-        sb.append(", trayIcon=").append(trayIcon.hashCode());
-        sb.append(", messageToUser=").append(messageToUser);
-        sb.append('}');
-        return sb.toString();
+        boolean isTrayAdded = addTrayToSys(isNeedTray);
+        messageToUser.info("SystemTrayHelper.addTray" , "isTrayAdded" , String.valueOf(isTrayAdded));
     }
 }

@@ -79,7 +79,7 @@ public class SshActs {
      Имя ПК для разрешения
      */
     private String pcName;
-    
+
     private String userInput;
 
     /**
@@ -94,7 +94,7 @@ public class SshActs {
      Разрешить адрес
      */
     private String allowDomain;
-    
+
     private String ipAddrOnly;
 
     /**
@@ -106,13 +106,13 @@ public class SshActs {
      Имя домена для удаления.
      */
     private String delDomain;
-    
+
     private boolean squid;
-    
+
     private boolean squidLimited;
-    
+
     private boolean tempFull;
-    
+
     private boolean vipNet;
 
     public void setIpAddrOnly(String ipAddrOnly) {
@@ -205,12 +205,18 @@ public class SshActs {
         }
     }
 
+    /**
+     Определяет, где запущен.
+
+     @return адрес нужного сервака
+     */
     private static String whatSrvNeed() {
+        AppComponents.getOrSetProps().setProperty("thispc" , ConstantsFor.thisPC());
         if (ConstantsFor.thisPC().toLowerCase().contains("rups")) {
             return ConstantsFor.IPADDR_SRVNAT;
-        } else {
-            return ConstantsFor.IPADDR_SRVGIT;
-        }
+        } else if (ConstantsFor.thisPC().equalsIgnoreCase("srv-inetstat.eatmeat.ru")) {
+            return ConstantsFor.IPADDR_SRVNAT;
+        } else { return ConstantsFor.IPADDR_SRVGIT; }
     }
 
     /**
@@ -235,7 +241,7 @@ public class SshActs {
         String callForRoute = null;
         Future<String> submitTrace = AppComponents.threadConfig().getTaskExecutor().submit(sshFactory);
         try {
-            callForRoute = submitTrace.get(30, TimeUnit.SECONDS);
+            callForRoute = submitTrace.get((long) (ConstantsFor.ONE_HOUR_IN_MIN / 2) , TimeUnit.SECONDS);
             if (callForRoute.contains("91.210.85.")) {
                 stringBuilder.append("<h3>FORTEX</h3>");
             } else {
@@ -244,9 +250,7 @@ public class SshActs {
                 }
             }
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
-            LOGGER.error("SshActs  providerTraceStr: {}", e.getMessage());
-            FileSystemWorker.error("SshActs.providerTraceStr", e);
-            stringBuilder.append(e.getMessage());
+            stringBuilder.append(FileSystemWorker.error("SshActs.providerTraceStr" , e));
             Thread.currentThread().interrupt();
         }
         String logStr = "LOG: ";
@@ -255,10 +259,8 @@ public class SshActs {
             try {
                 stringBuilder.append("<br><font color=\"gray\">").append(callForRoute.split(logStr)[1].replaceAll(";", "<br>")).append("</font>");
             } catch (ArrayIndexOutOfBoundsException e) {
-                stringBuilder.append("SshActs." + "providerTraceStr : " + e.getMessage());
-                FileSystemWorker.error("SshActs.providerTraceStr", e);
+                stringBuilder.append(FileSystemWorker.error("SshActs.providerTraceStr" , e));
             }
-    
         }
         return stringBuilder.toString();
     }
@@ -291,7 +293,7 @@ public class SshActs {
             .append(SSH_SQUID_RECONFIGURE)
 
             .append("exit;").toString();
-        String call = "<b>" + new SSHFactory.Builder(DEFAULT_SERVER_TO_SSH, commandSSH, getClass().getSimpleName()).build().call() + "</b>";
+        String call = "<b>" + new SSHFactory.Builder(DEFAULT_SERVER_TO_SSH, commandSSH, getClass().getSimpleName()).build().call().split("\n<br>end")[1] + "</b>";
         call = call + "<font color=\"gray\"><br><br>" + new WhoIsWithSRV().whoIs(resolveIp(allowDomain)) + "</font>";
         writeToLog(new String((call + "\n\n" + this).getBytes(), Charset.defaultCharset()));
         return call;

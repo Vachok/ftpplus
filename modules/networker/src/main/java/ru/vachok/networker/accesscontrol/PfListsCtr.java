@@ -1,3 +1,6 @@
+
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.accesscontrol;
 
 
@@ -38,6 +41,7 @@ import java.util.concurrent.TimeUnit;
 @SuppressWarnings ({"SameReturnValue", "ClassUnconnectedToPackage"})
 @Controller
 public class PfListsCtr {
+
 
     /**
      {@link ThreadLocal} {@link String} - {@code metric}
@@ -83,7 +87,8 @@ public class PfListsCtr {
     /**
      {@link MessageLocal}
      */
-    private final MessageToUser messageToUser = new MessageLocal();
+    private final MessageToUser messageToUser = new MessageLocal(PfListsCtr.class.getSimpleName());
+
 
     /**
      Public-консттруктор.
@@ -98,6 +103,7 @@ public class PfListsCtr {
         this.pfListsSrvInstAW = pfListsSrv;
         this.pingGITOk = ConstantsFor.isPingOK();
     }
+
 
     /**
      Контроллер <a href="/pflists" target=_blank>/pflists</a>
@@ -127,19 +133,20 @@ public class PfListsCtr {
         long lastScan = Long.parseLong(properties.getProperty(ConstantsFor.PR_PFSCAN, "1"));
         @NotNull String refreshRate = String.valueOf(TimeUnit.MILLISECONDS.toMinutes(delayRefInt) * ConstantsFor.ONE_HOUR_IN_MIN);
         timeOutLong = lastScan + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY);
+        model.addAttribute(ConstantsFor.ATT_HEAD, new PageFooter().getHeaderUtext());
         if (!pingGITOk) {
             noPing(model);
         } else {
             modSet(model);
         }
         if (request.getQueryString() != null) {
-            AppComponents.threadConfig().executeAsThread(pfListsSrvInstAW::makeListRunner);
+            AppComponents.threadConfig().execByThreadConfig(pfListsSrvInstAW::makeListRunner);
             model.addAttribute(ATT_METRIC, refreshRate);
         }
         long nextUpd = pfListsInstAW.getGitStatsUpdatedStampLong() + TimeUnit.MINUTES.toMillis(DELAY_LOCAL_INT);
         pfListsInstAW.setTimeStampToNextUpdLong(nextUpd);
         if (nextUpd < System.currentTimeMillis()) {
-            AppComponents.threadConfig().executeAsThread(pfListsSrvInstAW::makeListRunner);
+            AppComponents.threadConfig().execByThreadConfig(pfListsSrvInstAW::makeListRunner);
             model.addAttribute(ATT_METRIC, "Запущено обновление");
             model.addAttribute(ConstantsFor.ATT_GITSTATS, toString());
         } else {
@@ -151,17 +158,20 @@ public class PfListsCtr {
         return ConstantsFor.BEANNAME_PFLISTS;
     }
 
+
     @PostMapping ("/runcom")
     public @NotNull String runCommand(@NotNull Model model, @NotNull @ModelAttribute PfListsSrv pfListsSrv) {
         this.pfListsSrvInstAW = pfListsSrv;
         AppComponents.threadConfig().thrNameSet("com.pst");
 
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
+        model.addAttribute(ConstantsFor.ATT_HEAD, new PageFooter().getHeaderUtext());
         model.addAttribute(ConstantsFor.ATT_TITLE, pfListsSrv.getCommandForNatStr());
         model.addAttribute("PfListsSrv", pfListsSrv);
         model.addAttribute("ok", pfListsSrv.runCom());
         return "ok";
     }
+
 
     private static void noPing(Model model) throws UnknownHostException {
         model.addAttribute(ATT_VIPNET, "No ping to srv-git");
@@ -169,15 +179,13 @@ public class PfListsCtr {
         throw new UnknownHostException("srv-git. <font color=\"red\"> NO PING!!!</font>");
     }
 
-    /**
-     @param properties {@link ConstantsFor#PROPS}
-     */
     private void propUpd(Properties properties) {
         properties.setProperty(ConstantsFor.PR_PFSCAN, pfListsInstAW.getGitStatsUpdatedStampLong() + "");
         messageToUser.info("PfListsCtr.propUpd", "new TForms().fromArray(properties, false)", new TForms().fromArray(properties, false));
         properties.setProperty("meminfo", ConstantsFor.getMemoryInfo());
         properties.setProperty("thr", Thread.activeCount() + "");
     }
+
 
     /**
      Установка аттрибутов модели.
@@ -220,6 +228,7 @@ public class PfListsCtr {
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
     }
 
+
     @Override
     public @NotNull String toString() {
         final @NotNull StringBuilder sb = new StringBuilder("PfListsCtr{");
@@ -231,9 +240,7 @@ public class PfListsCtr {
         sb.append(", delayRefInt=").append(delayRefInt);
         sb.append(", pfListsSrvInstAW=").append(pfListsSrvInstAW.hashCode());
         sb.append(", timeOutLong=").append(timeOutLong);
-        sb.append(", messageToUser=").append(messageToUser);
         sb.append('}');
         return sb.toString();
     }
-
 }

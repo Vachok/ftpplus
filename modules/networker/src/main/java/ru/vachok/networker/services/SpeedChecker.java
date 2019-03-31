@@ -1,7 +1,7 @@
 package ru.vachok.networker.services;
 
 
-import org.slf4j.Logger;
+
 import org.slf4j.LoggerFactory;
 import org.springframework.ui.Model;
 import ru.vachok.messenger.MessageCons;
@@ -13,8 +13,6 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.systray.ActionDefault;
-import ru.vachok.networker.systray.MessageToTray;
 
 import javax.mail.Flags;
 import javax.mail.Folder;
@@ -48,7 +46,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
     /**
      Логер. {@link LoggerFactory}
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(SpeedChecker.class.getSimpleName());
+    private static final MessageToUser LOGGER = new MessageLocal(SpeedChecker.class.getSimpleName());
 
     /**
      Property name: lastworkstart
@@ -140,7 +138,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
         long l = rtLong + TimeUnit.HOURS.toMillis(20);
         boolean is20HRSSpend = System.currentTimeMillis() > l;
         if (is20HRSSpend || !isWeekEnd) {
-            AppComponents.threadConfig().executeAsThread(this::setRtLong);
+            AppComponents.threadConfig().execByThreadConfig(this::setRtLong);
         } else {
             this.rtLong = Long.valueOf(AppComponents.getOrSetProps().getProperty(PR_LASTWORKSTART));
         }
@@ -163,9 +161,10 @@ public class SpeedChecker implements Callable<Long>, Runnable {
          {@link MailMessages}
          */
         private MailMessages mailMessages = new MailMessages();
-    
+
         private MessageToUser messageToUser = new MessageFile();
-    
+
+
         /**
          Получение информации о текущем дне недели.
          <p>
@@ -189,8 +188,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
                     List<Double> speedList = new ArrayList<>();
                     List<Float> timeList = new ArrayList<>();
                     while (r.next()) {
-                        speedList.add(r.getDouble("Speed"));
-                        timeList.add(r.getFloat("TimeSpend"));
+                        speedList.add(r.getDouble("Speed")); timeList.add(r.getFloat(ConstantsFor.DBFIELD_TIMESPEND));
                     }
                     double avSpeed = 0.0;
                     for (Double aDouble : speedList) {
@@ -208,10 +206,10 @@ public class SpeedChecker implements Callable<Long>, Runnable {
                 }
             }
             catch(SQLException | IOException e){
-                new MessageLocal().errorAlert(CLASS_NAME, "todayInfo", e.getMessage());
+                LOGGER.errorAlert(CLASS_NAME , "todayInfo" , e.getMessage());
                 FileSystemWorker.error("ChkMailAndUpdateDB.todayInfo", e);
             }
-            new MessageLocal().infoNoTitles(stringBuilder.toString());
+            LOGGER.infoNoTitles(stringBuilder.toString());
             return stringBuilder.toString();
         }
 
@@ -273,7 +271,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
         /**
          Парсинг сообщений от бота.
          <p>
-         {@link ESender} ({@link ConstantsFor#EADDR_143500GMAILCOM}). <br>
+         {@link ESender} ({@link ConstantsFor#MAILADDR_143500GMAILCOM}). <br>
          Если тема сообщения содержит {@code speed:}, берётся дата отправки {@link Message#getSentDate()}.
          <p>
          Если {@link #writeDB(String, int, long)}, удалим сообщение {@link #delMessage(Message)}.
@@ -302,7 +300,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
                     messageToUser.info(SpeedChecker.ChkMailAndUpdateDB.class.getSimpleName() + " " + ConstantsFor.thisPC(), true + " sending to base",
                         todayInfoStr + "\n" + chDB);
                 } else {
-                    new MessageToTray(new ActionDefault(ConstantsFor.HTTP_LOCALHOST8880SLASH)).infoNoTitles("No new messages");
+                    messageToUser.infoNoTitles("No new messages");
                 }
             } catch (MessagingException e) {
                 messageToUser.errorAlert(
@@ -332,7 +330,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
             }
             Timestamp timestamp = new Timestamp(timeSt);
             String sql = "insert into speed (Speed, Road, WeekDay, TimeSpend, TimeStamp) values (?,?,?,?,?)";
-            try (Connection c = new AppComponents().connection("u0466446_liferpg");
+            try (Connection c = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_LIFERPG);
                  PreparedStatement p = c.prepareStatement(sql)) {
                 p.setDouble(1, speedFromStr);
                 p.setInt(2, roadFromStr);
@@ -340,7 +338,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
                 p.setFloat(4, (float) timeSpend);
                 p.setTimestamp(5, timestamp);
                 p.executeUpdate();
-                new MessageToTray().info("DB updated", "Today is " + DayOfWeek.of(dayOfWeek), " Time spend " + timeSpend);
+                messageToUser.info("DB updated" , "Today is " + DayOfWeek.of(dayOfWeek) , " Time spend " + timeSpend);
                 return true;
             }
             catch(SQLException | IOException e){

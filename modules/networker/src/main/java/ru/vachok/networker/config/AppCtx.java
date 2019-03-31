@@ -9,6 +9,9 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
+import java.io.File;
+import java.nio.file.Paths;
+import java.util.Objects;
 import java.util.PriorityQueue;
 import java.util.Queue;
 
@@ -23,7 +26,7 @@ public class AppCtx extends AnnotationConfigApplicationContext {
 
     private static final String SOURCE_CLASS = AppCtx.class.getSimpleName();
 
-    private static Queue<String> outQueue = new PriorityQueue<>();
+    private static Queue<String> miniLogger = new PriorityQueue<>();
 
     private AutowireCapableBeanFactory autowireCapableBeanFactory = this.getAutowireCapableBeanFactory();
 
@@ -58,16 +61,32 @@ public class AppCtx extends AnnotationConfigApplicationContext {
             .append(new TForms().fromArray(configApplicationContext.getBeanDefinitionNames(), false))
             .append("<p>").toString();
         stringBuilder.append(msg);
-        outQueue.add(stringBuilder.toString());
-        outQueue.add(AppCtx.CLASSPATH_ALL_URL_PREFIX);
-        outQueue.add(AppCtx.LIFECYCLE_PROCESSOR_BEAN_NAME);
-        FileSystemWorker.writeFile(SOURCE_CLASS + ".qadd", outQueue.stream());
+        miniLogger.add(stringBuilder.toString());
+        miniLogger.add(AppCtx.CLASSPATH_ALL_URL_PREFIX);
+        miniLogger.add(AppCtx.LIFECYCLE_PROCESSOR_BEAN_NAME);
+        FileSystemWorker.writeFile(SOURCE_CLASS + ".qadd", miniLogger.stream());
+        moveProps();
+    }
+
+    /**
+     * Двигает .properties в properties/
+     */
+    private static void moveProps() {
+        File[] filesInRoot = new File(".").listFiles();
+        for (File f : Objects.requireNonNull(filesInRoot)) {
+            if (f.isFile() && f.getName().toLowerCase().contains(ConstantsFor.FILEEXT_PROPERTIES)) {
+                String pathToCopyWithFileName = String.valueOf(Paths.get(".\\props\\" + f.getName()));
+                boolean isMoved = FileSystemWorker.copyOrDelFile(f, pathToCopyWithFileName, true);
+                miniLogger.add(pathToCopyWithFileName);
+                miniLogger.add(f.getName() + " is moved = " + isMoved);
+            }
+        }
     }
 
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("AppCtx{");
-        sb.append("outQueue=").append(new TForms().fromArray(outQueue, false));
+        sb.append("miniLogger=").append(new TForms().fromArray(miniLogger, false));
         sb.append('}');
         return sb.toString();
     }

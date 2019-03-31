@@ -26,7 +26,7 @@ import java.util.concurrent.ConcurrentMap;
 @Service
 public class DataBaseADUsersSRV {
 
-    private static MessageToUser messageToUser = new MessageLocal();
+    private static MessageToUser messageToUser = new MessageLocal(DataBaseADUsersSRV.class.getSimpleName());
 
     private ADUser adUser;
 
