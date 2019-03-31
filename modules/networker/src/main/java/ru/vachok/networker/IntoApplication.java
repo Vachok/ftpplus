@@ -3,6 +3,7 @@
 package ru.vachok.networker;
 
 
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -21,13 +22,13 @@ import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.SpeedChecker;
 import ru.vachok.networker.systray.SystemTrayHelper;
 
+import java.awt.*;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.TextStyle;
+import java.util.List;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 
 
 /**
@@ -52,6 +53,8 @@ public class IntoApplication {
 
     private static final ThreadPoolTaskExecutor EXECUTOR = AppComponents.threadConfig().getTaskExecutor();
 
+    private static final ScheduledThreadPoolExecutor SCHEDULED_THREAD_POOL_EXECUTOR = AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor();
+
     private ConfigurableApplicationContext configurableApplicationContext;
 
 
@@ -62,27 +65,6 @@ public class IntoApplication {
 
     public void setConfigurableApplicationContext(ConfigurableApplicationContext configurableApplicationContext) {
         this.configurableApplicationContext = configurableApplicationContext;
-    }
-
-    /**
-     Запуск после старта Spring boot app <br> Usages: {@link #main(String[])}
-     <p>
-     1. {@link AppComponents#threadConfig()}. Управление запуском и трэдами. <br><br>
-     <b>Runnable</b><br>
-     2. {@link IntoApplication#getWeekPCStats()} собирает инфо о скорости в файл. Если воскресенье, запускает {@link WeekPCStats} <br><br>
-     <b>Далее:</b><br>
-     3. {@link AppComponents#threadConfig()} (4. {@link ThreadConfig#getTaskExecutor()}) - запуск <b>Runnable</b> <br>
-     5. {@link ThreadConfig#getTaskExecutor()} - запуск {@link AppInfoOnLoad}. <br><br>
-     <b>{@link Exception}:</b><br>
-     6. {@link TForms#fromArray(java.lang.Exception, boolean)} - искл. в строку. 7. {@link FileSystemWorker#writeFile(java.lang.String, java.util.List)} и
-     запишем в файл.
-     */
-    private static void afterSt() {
-        @NotNull Runnable infoAndSched = new AppInfoOnLoad();
-        Runnable mySrv = MyServer.getI();
-        EXECUTOR.submit(infoAndSched);
-        EXECUTOR.submit(mySrv);
-        EXECUTOR.submit(IntoApplication::getWeekPCStats);
     }
 
 
@@ -110,6 +92,28 @@ public class IntoApplication {
             context.start();
             afterSt();
         }
+    }
+
+
+    /**
+     Запуск после старта Spring boot app <br> Usages: {@link #main(String[])}
+     <p>
+     1. {@link AppComponents#threadConfig()}. Управление запуском и трэдами. <br><br>
+     <b>Runnable</b><br>
+     2. {@link IntoApplication#getWeekPCStats()} собирает инфо о скорости в файл. Если воскресенье, запускает {@link WeekPCStats} <br><br>
+     <b>Далее:</b><br>
+     3. {@link AppComponents#threadConfig()} (4. {@link ThreadConfig#getTaskExecutor()}) - запуск <b>Runnable</b> <br>
+     5. {@link ThreadConfig#getTaskExecutor()} - запуск {@link AppInfoOnLoad}. <br><br>
+     <b>{@link Exception}:</b><br>
+     6. {@link TForms#fromArray(java.lang.Exception , boolean)} - искл. в строку. 7. {@link FileSystemWorker#writeFile(java.lang.String , java.util.List)} и
+     запишем в файл.
+     */
+    private static void afterSt() {
+        @NotNull Runnable infoAndSched = new AppInfoOnLoad();
+        Runnable mySrv = MyServer.getI();
+        EXECUTOR.submit(infoAndSched);
+        EXECUTOR.submit(mySrv);
+        EXECUTOR.submit(IntoApplication::getWeekPCStats);
     }
 
 
@@ -185,8 +189,8 @@ public class IntoApplication {
         afterSt();
     }
 
-    private static void trayAdd() {
-        SystemTrayHelper systemTrayHelper = SystemTrayHelper.getI();
+
+    private static void trayAdd(SystemTrayHelper systemTrayHelper) {
         if (ConstantsFor.thisPC().toLowerCase().contains(ConstantsFor.HOSTNAME_DO213)) {
             systemTrayHelper.addTray("icons8-плохие-поросята-32.png");
         }
@@ -211,17 +215,18 @@ public class IntoApplication {
      *
      * @param isTrayNeed нужен трэй или нет.
      */
-    private static void beforeSt( boolean isTrayNeed ) {
-        if (isTrayNeed) {
-            trayAdd();
+    private static void beforeSt(boolean isTrayNeed) {
+        if(SystemTray.isSupported() & isTrayNeed){
+            trayAdd(SystemTrayHelper.getI());
         }
         @NotNull StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("updateProps = " + new AppComponents().updateProps(LOCAL_PROPS));
+        stringBuilder.append("updateProps = ").append(new AppComponents().updateProps(LOCAL_PROPS));
         stringBuilder.append(LocalDate.now().getDayOfWeek().getValue());
         stringBuilder.append(" - day of week\n");
         stringBuilder.append(LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL , Locale.getDefault()));
         messageToUser.info("IntoApplication.beforeSt" , "stringBuilder" , stringBuilder.toString());
         System.setProperty("encoding" , "UTF8");
         FileSystemWorker.writeFile("system" , new TForms().fromArray(System.getProperties()));
+        SCHEDULED_THREAD_POOL_EXECUTOR.schedule(() -> messageToUser.info(new TForms().fromArray(LOCAL_PROPS , false)) , ConstantsFor.DELAY + 10 , TimeUnit.MINUTES);
     }
 }

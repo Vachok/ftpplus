@@ -92,9 +92,7 @@ public class PCUserResolver extends ADSrv {
                 .append(Arrays.toString(files).replace(", ", "\n"))
                 .append("\n\n\n")
                 .append(lastFileUse);
-        } catch (IOException e) {
-            FileSystemWorker.error("PCUserResolver.namesToFile", e);
-        } catch (ArrayIndexOutOfBoundsException | NullPointerException ignore) {
+        }catch(IOException | ArrayIndexOutOfBoundsException | NullPointerException e){
             //
         }
         if (lastFileUse != null) {

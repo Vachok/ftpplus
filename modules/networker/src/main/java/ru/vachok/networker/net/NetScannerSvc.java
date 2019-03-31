@@ -7,7 +7,6 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
 import ru.vachok.messenger.MessageCons;
-import ru.vachok.messenger.MessageFile;
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.messenger.email.ESender;
@@ -133,7 +132,7 @@ public class NetScannerSvc {
      */
     private Map<String, Boolean> netWorkMap;
 
-    private MessageToUser messageToUser = new MessageFile();
+    private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
 
     /**
      @see AppComponents#lastNetScanMap()
@@ -482,19 +481,16 @@ public class NetScannerSvc {
         FileSystemWorker.writeFile("unused.ips", unusedNamesTree.stream());
 
         boolean ownObject = new ExitApp(ConstantsFor.FILENAME_ALLDEVMAP , ConstantsNet.getAllDevices()).writeOwnObject();
-        int lenFile;
+        boolean isFile = fileCreate(false);
         File file = new File(ConstantsFor.FILENAME_ALLDEVMAP);
-        if (file.exists()) {
-            lenFile = (int) (file.length() / ConstantsFor.KBYTE);
+        String bodyMsg = "Online: " + onLinePCsNum + ".\n" + upTime + " min uptime. \n\n" + "AppProps database updated: " + isForceSaved;
+        try{
+            new MessageSwing().infoTimer(50 , bodyMsg);
+        }catch(Exception e){
+            messageToUser.warn(bodyMsg);
         }
-        else {
-            lenFile = -1;
-        }
-        new MessageSwing()
-            .infoTimer(50 , "Online: " + onLinePCsNum + ".\n" + upTime + " min uptime. \n\n" + "AppProps database updated: " + isForceSaved);
         this.onLinePCsNum = 0;
-
-        messageToUser.info(getClass().getSimpleName() + ".runAfterAllScan" , "fileCreate" , " = " + fileCreate(false));
+        messageToUser.info(getClass().getSimpleName() + ".runAfterAllScan" , "fileCreate" , " = " + isFile);
         messageToUser.info(getClass().getSimpleName() , "LOCAL_PROPS" , " = " + new TForms().fromArray(LOCAL_PROPS , false));
     }
 
