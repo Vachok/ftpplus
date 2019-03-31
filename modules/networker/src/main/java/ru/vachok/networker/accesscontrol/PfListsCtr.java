@@ -179,10 +179,6 @@ public class PfListsCtr {
         throw new UnknownHostException("srv-git. <font color=\"red\"> NO PING!!!</font>");
     }
 
-
-    /**
-     @param properties {@link ConstantsFor#PROPS}
-     */
     private void propUpd(Properties properties) {
         properties.setProperty(ConstantsFor.PR_PFSCAN, pfListsInstAW.getGitStatsUpdatedStampLong() + "");
         messageToUser.info("PfListsCtr.propUpd", "new TForms().fromArray(properties, false)", new TForms().fromArray(properties, false));
