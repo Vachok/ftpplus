@@ -8,6 +8,8 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
+import ru.vachok.networker.accesscontrol.inetstats.InternetUse;
 import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.ad.user.PCUserResolver;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -82,30 +84,6 @@ public class ADSrv implements Runnable {
     public ADComputer getAdComputer() {
         return adComputer;
     }
-
-// --Commented out by Inspection START (27.02.2019 12:43):
-//    /**
-//     {@link ADUser}, как {@link ConcurrentHashMap}
-//     <p>
-//     {@link ADSrv#userSetter()}.{@link Optional#ifPresent(java.util.function.Consumer)}. <br>
-//     Поиск соответсвия {@link #adUser} и {@link #userInputRaw} <br>
-//
-//     @return new {@link ConcurrentHashMap} key: <b>AD field name</b>, value: <b>x.get...</b>
-//     */
-//    public ConcurrentMap<String, String> getUserCommonRights() {
-//        ConcurrentMap<String, String> retMap = new ConcurrentHashMap<>();
-//        userSetter().stream().findAny().ifPresent((ADUser x) -> {
-//            boolean contains = x.getSamAccountName().toLowerCase().contains(adUser.getInputName().toLowerCase());
-//            if (contains) {
-//                ADSrv.this.adUser = x;
-//                retMap.put("InputName", x.getInputName());
-//                retMap.put(PROP_SAMACCOUNTNAME, x.getSamAccountName());
-//                retMap.put("Sid", x.getSid());
-//            }
-//        });
-//        return retMap;
-//    }
-// --Commented out by Inspection STOP (27.02.2019 12:43)
 
     /**
      @return {@link #userInputRaw}
@@ -344,10 +322,13 @@ public class ADSrv implements Runnable {
      * @see ActDirectoryCTRL#queryStringExists(java.lang.String , org.springframework.ui.Model)
      */
     String getDetails( String queryString ) throws IOException {
+        InternetUse internetUse = new InetUserPCName();
+        String internetUseUsage = internetUse.getUsage(queryString + ConstantsNet.DOMAIN_EATMEATRU);
+        internetUseUsage = internetUseUsage.replace("юзер", "компьютер");
         if (InetAddress.getByName(queryString + ConstantsNet.DOMAIN_EATMEATRU).isReachable(ConstantsFor.TIMEOUT_650)) {
-            return getUserName(queryString);
+            return getUserName(queryString) + "<p><center>" + internetUseUsage + "</center>";
         } else {
-            return offNowGetU(queryString);
+            return offNowGetU(queryString) + "<p><center>" + internetUseUsage + "</center>";
         }
     }
 

@@ -27,6 +27,7 @@ import ru.vachok.networker.net.NetScannerSvc;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.SimpleCalculator;
+import ru.vachok.stats.SaveLogsToDB;
 
 import javax.servlet.http.HttpServletRequest;
 import java.awt.*;
@@ -123,6 +124,12 @@ public class AppComponents {
     }
 
     private static final String DB_JAVA_ID = ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName();
+    
+    @Bean
+    @Scope(ConstantsFor.SINGLETON)
+    public SaveLogsToDB saveLogsToDB() {
+        return new SaveLogsToDB();
+    }
 
     @Bean
     @Scope(ConstantsFor.SINGLETON)
@@ -169,8 +176,7 @@ public class AppComponents {
     public static AbstractBeanFactoryBasedTargetSource configurableApplicationContext() {
         throw new IllegalComponentStateException("Moved to");
     }
-
-
+    
     public boolean updateProps(Properties propertiesToUpdate) {
         MysqlDataSource source = new DBRegProperties(ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName()).getRegSourceForProperties();
         DBPropsCallable dbPropsCallable = new DBPropsCallable(source, propertiesToUpdate, true);

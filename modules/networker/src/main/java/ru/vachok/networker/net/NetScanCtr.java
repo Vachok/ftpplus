@@ -16,6 +16,8 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
+import ru.vachok.networker.accesscontrol.inetstats.InternetUse;
 import ru.vachok.networker.componentsrepo.LastNetScan;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
@@ -206,7 +208,7 @@ public class NetScanCtr {
         String thePc = netScannerSvc.getThePc();
         AppComponents.adSrv().setUserInputRaw(thePc);
         if (thePc.toLowerCase().contains("user: ")) {
-            model.addAttribute("ok" , getUserFromDB(thePc));
+            model.addAttribute("ok", getUserFromDB(thePc).trim());
             model.addAttribute(ConstantsFor.ATT_TITLE, thePc);
             model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
             return "ok";
@@ -227,33 +229,46 @@ public class NetScanCtr {
     static String getUserFromDB( String userInputRaw ) {
         StringBuilder retBuilder = new StringBuilder();
         String sql = "select * from pcuserauto where userName like ? ORDER BY whenQueried DESC LIMIT 0, 20";
+        List<String> userPCName = new ArrayList<>();
+        String mostFreqName = "No Name";
+        
         try {
             userInputRaw = userInputRaw.split(": ")[1];
         } catch (ArrayIndexOutOfBoundsException e) {
             retBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e , false));
         }
-        try (Connection c = new AppComponents().connection(ConstantsFor.DBPREFIX + ConstantsFor.STR_VELKOM); PreparedStatement p = c.prepareStatement(sql)) {
-            p.setString(1 , "%" + userInputRaw + "%");
+        try (Connection c = new AppComponents().connection(ConstantsFor.DBPREFIX + ConstantsFor.STR_VELKOM);
+             PreparedStatement p = c.prepareStatement(sql)
+        ) {
+            p.setString(1, "%" + userInputRaw.trim() + "%");
             try (ResultSet r = p.executeQuery()) {
                 StringBuilder stringBuilder = new StringBuilder();
                 String headER = "<h3><center>LAST 20 USER PCs</center></h3>";
                 stringBuilder.append(headER);
-                List<String> stringList = new ArrayList<>();
+    
                 while (r.next()) {
                     String pcName = r.getString(ConstantsFor.DBFIELD_PCNAME);
-                    stringList.add(pcName);
+                    userPCName.add(pcName);
                     String returnER = "<br><center><a href=\"/ad?" + pcName.split("\\Q.\\E")[0] + "\">" + pcName + "</a> set: " + r.getString(ConstantsNet.DB_FIELD_WHENQUERIED) + ConstantsFor.HTML_CENTER;
                     stringBuilder.append(returnER);
                 }
-                List<String> collect = stringList.stream().distinct().collect(Collectors.toList());
-                for (String x : collect) {
-                    int frequency = Collections.frequency(stringList , x);
+                List<String> collectedNames = userPCName.stream().distinct().collect(Collectors.toList());
+                Map<Integer, String> freqName = new HashMap<>();
+                for (String x : collectedNames) {
+                    int frequency = Collections.frequency(userPCName, x);
                     stringBuilder.append(frequency).append(") ").append(x).append("<br>");
+                    freqName.putIfAbsent(frequency, x);
                 }
                 if (r.last()) {
                     MessageToUser messageToUser = new MessageToTray(new ActionCloseMsg(new MessageLocal(NetScanCtr.class.getSimpleName())));
                     messageToUser.info(r.getString(ConstantsFor.DBFIELD_PCNAME) , r.getString(ConstantsNet.DB_FIELD_WHENQUERIED) , r.getString(ConstantsFor.DB_FIELD_USER));
                 }
+                Collections.sort(collectedNames);
+                Set<Integer> integers = freqName.keySet();
+                mostFreqName = freqName.get(Collections.max(integers));
+                InternetUse internetUse = new InetUserPCName();
+                stringBuilder.append("<br>");
+                stringBuilder.append(internetUse.getUsage(mostFreqName));
                 return stringBuilder.toString();
             }
         } catch (SQLException | IOException e) {

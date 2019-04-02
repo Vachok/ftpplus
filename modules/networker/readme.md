@@ -1,29 +1,38 @@
-# Commit **** NO TASK ****
+# Inet stats
 
-## NetScanCtr
-### timeCheck
->1. File & isSystemTimeBigger
-### checkMapSizeAndDoAction
->1. else - timeCheck
-### timeCheck
->1. Аттрибут модели "newpc" - lastScanLocalTime
+## ActDirectoryCTRL
+> Удалён Comment Out от 3 марта 2019
+### messageToUser
+### queryStringExists
+>1. new MessageFile заменен на messageToUser.
+### adFoto
+>1. new MessageCons заменен на messageToUser.
 ## ADSrv
->1. Убран импорт ru.vachok.networker.net.NetScanCtr;
+> Удалён Comment Out от 27 февраля 2019.
+### getDetails
+>1. В вывод добавлена инет-статистика. Выравнивание по-центру.
 ## AppComponents
->1. Убран lastNetScanMap
->2. Убран ConfigurableApplicationContext
->3. Убран lastNetScan
+### saveLogsToDB
+## AppInfoOnLoad
+### schedStarter
+>1. saveLogsToDB scheduled с первоначальной задержкой 4 мин и общей ConstantsFor.DELAY
+## InetIPUser
+## InetUserPCName
+## InternetUse
 ## IntoApplication
 ### main
->1. Убран AppComponents.setCtx(context);
-## LastNetScan
-### setTimeLastScan
->1. Актуальный MessageCons.
->2. Убран equals & hashCode.
->3. timeLastScan = new Date(). 
+>1. Запуск saveLogsToDB при старте.
+## NetScanCtr
+### pcNameForInfo
+>1. Trim аттрибут "ok"
+### getUserFromDB
+>1. userInputRaw - Trim.
+>2. collectedNames - новый лист строк. distinct имён компьютера пользователя.
+>3. freqName. Map: Integer, String - частота повторения , имя компьютера.
+>4. Определение самого частого имени, и получение инет-статистики.
 ## NetScannerSvc
->1. LastNetScan.getLastNetScan
-## SpeedChecker
-### messageToUser
->1. Актуальный
-
+> Косметика
+## SquidLogsDBSaver
+## stats-8.0.1914.jar библиотека
+## TForms
+### fromArray для ResultSetMetaData

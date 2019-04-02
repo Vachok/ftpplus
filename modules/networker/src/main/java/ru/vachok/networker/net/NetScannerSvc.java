@@ -507,7 +507,8 @@ public class NetScannerSvc {
             .append(false)
             .append("<br>").toString();
         PC_NAMES_SET.add(pcName + ":" + byName.getHostAddress() + " " + onLines);
-        netWorkMap.put(pcName + " last name is " + someMore, false); LOGGER.warn(pcName, onLines, someMore);
+        netWorkMap.put(pcName + " last name is " + someMore, false);
+        LOGGER.warn(pcName, onLines, someMore);
     }
 
 

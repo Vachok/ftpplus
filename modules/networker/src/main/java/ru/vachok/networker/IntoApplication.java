@@ -3,7 +3,6 @@
 package ru.vachok.networker;
 
 
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -21,6 +20,7 @@ import ru.vachok.networker.net.WeekPCStats;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.SpeedChecker;
 import ru.vachok.networker.systray.SystemTrayHelper;
+import ru.vachok.stats.SaveLogsToDB;
 
 import java.awt.*;
 import java.time.DayOfWeek;
@@ -91,6 +91,8 @@ public class IntoApplication {
             context.start();
             afterSt();
         }
+        SaveLogsToDB saveLogsToDB = new AppComponents().saveLogsToDB();
+        messageToUser.info(IntoApplication.class.getSimpleName() + ".main", "startScheduled()", " = " + saveLogsToDB.startScheduled());
     }
 
 

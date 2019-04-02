@@ -13,6 +13,8 @@ import javax.mail.Address;
 import javax.servlet.http.Cookie;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
@@ -391,7 +393,34 @@ public class TForms {
             return nStringBuilder.toString();
         }
     }
-
+    
+    public String fromArray(ResultSetMetaData resultSetMetaData, int colIndex, boolean isHTML) throws SQLException {
+        this.brStringBuilder = new StringBuilder();
+        this.nStringBuilder = new StringBuilder();
+        
+        brStringBuilder.append(resultSetMetaData.getColumnCount() + " collumns<br>");
+        nStringBuilder.append(resultSetMetaData.getColumnCount() + " collumns\n");
+        
+        brStringBuilder.append(resultSetMetaData.getCatalogName(colIndex)).append(" getCatalogName").append(BR_STR);
+        nStringBuilder.append(resultSetMetaData.getCatalogName(colIndex)).append(" getCatalogName").append(N_STR);
+        
+        brStringBuilder.append(resultSetMetaData.getColumnName(colIndex)).append(" getColumnName").append(BR_STR);
+        nStringBuilder.append(resultSetMetaData.getColumnName(colIndex)).append(" getColumnName").append(N_STR);
+        
+        brStringBuilder.append(resultSetMetaData.getColumnDisplaySize(colIndex)).append(" getColumnDisplaySize").append(BR_STR);
+        nStringBuilder.append(resultSetMetaData.getColumnDisplaySize(colIndex)).append(" getColumnDisplaySize").append(N_STR);
+        
+        brStringBuilder.append(resultSetMetaData.getColumnType(colIndex)).append(" getColumnType").append(BR_STR);
+        nStringBuilder.append(resultSetMetaData.getColumnType(colIndex)).append(" getColumnType").append(N_STR);
+        
+        if (isHTML) {
+            return brStringBuilder.toString();
+        }
+        else {
+            return nStringBuilder.toString();
+        }
+    }
+    
     /**
      Если {@link Exception} содержит getSuppressed.
      <p>
