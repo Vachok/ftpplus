@@ -16,18 +16,21 @@ public class MessageLocal implements MessageToUser {
     private String bodyMsg = "NO BODY";
 
     private String titleMsg = ConstantsFor.getUpTime();
-
-    private String headerMsg = "Header from " + getClass().getSimpleName() + ":" + ConstantsFor.thisPC();
+    
+    private String headerMsg;
 
 
     public MessageLocal(String className) {
         this.headerMsg = className;
     }
-
-
+    
+    /**
+     @deprecated since 02.04.2019 (17:25)
+     */
+    @Deprecated
     private MessageLocal() {
+        this.headerMsg = "DEPRECATED";
     }
-
 
     @Override
     public void warning(String headerMsg, String titleMsg, String bodyMsg) {
@@ -63,10 +66,10 @@ public class MessageLocal implements MessageToUser {
 
     @Override
     public void info(String headerMsg, String titleMsg, String bodyMsg) {
-        Logger logger = LoggerFactory.getLogger(headerMsg);
         this.headerMsg = headerMsg;
         this.titleMsg = titleMsg;
         this.bodyMsg = bodyMsg;
+        Logger logger = LoggerFactory.getLogger(headerMsg);
         String logRec = String.join(", ", headerMsg, titleMsg, bodyMsg);
         logger.info(logRec);
     }
@@ -74,7 +77,6 @@ public class MessageLocal implements MessageToUser {
     @Override
     public void infoNoTitles(String bodyMsg) {
         this.bodyMsg = bodyMsg;
-        this.titleMsg = "infoNoTitles";
         info(headerMsg, titleMsg, bodyMsg);
     }
 

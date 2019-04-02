@@ -24,28 +24,28 @@ import java.util.concurrent.ConcurrentMap;
  * @since 25.12.2018 (10:43)
  */
 public class NetScanFileWorker implements Serializable {
-
-
-    static final ConcurrentMap<String, File> srvFiles = new ConcurrentHashMap<>();
-
-    private static final NetScanFileWorker ourInst = new NetScanFileWorker(srvFiles);
+    
+    
+    private static final ConcurrentMap<String, File> SRV_FILES = new ConcurrentHashMap<>();
+    
+    private static final NetScanFileWorker NET_SCAN_FILE_WORKER = new NetScanFileWorker();
 
     private static MessageToUser messageToUser = new MessageLocal(NetScanFileWorker.class.getSimpleName());
 
     private long lastStamp = System.currentTimeMillis();
-
-
-    public NetScanFileWorker( ConcurrentMap<String, File> mapFiles ) {
+    
+    
+    public NetScanFileWorker() {
     }
 
 
     public long getLastStamp() {
         return lastStamp;
     }
-
-
-    public ConcurrentMap<String, File> getFilesScan() {
-        return srvFiles;
+    
+    
+    public ConcurrentMap<String, File> getSrvFiles() {
+        return SRV_FILES;
     }
 
 
@@ -55,7 +55,7 @@ public class NetScanFileWorker implements Serializable {
 
 
     public static NetScanFileWorker getI() {
-        return ourInst;
+        return NET_SCAN_FILE_WORKER;
     }
 
 
@@ -65,14 +65,14 @@ public class NetScanFileWorker implements Serializable {
         String classMeth = "NetScanFileWorker.getListOfOnlineDev";
         String titleMsg = "retDeque.size()";
         Deque<String> retDeque = new ArrayDeque<>();
-
-        File newLanLastScan200 = srvFiles.get("200");
-        File newLanLastScan210 = srvFiles.get("210");
-        File oldLanLastScan0 = srvFiles.get("old0");
-        File oldLanLastScan1 = srvFiles.get("old1");
+    
+        File newLanLastScan200 = SRV_FILES.get("200");
+        File newLanLastScan210 = SRV_FILES.get("210");
+        File oldLanLastScan0 = SRV_FILES.get("old0");
+        File oldLanLastScan1 = SRV_FILES.get("old1");
 
         String msg = newLanLastScan200.getAbsolutePath() + ";\n" + newLanLastScan210.getAbsolutePath() + ";\n" + oldLanLastScan0.getAbsolutePath() + ", " + oldLanLastScan1.getAbsolutePath() +
-            ";\n" + new TForms().fromArray(srvFiles, false) +
+            ";\n" + new TForms().fromArray(SRV_FILES, false) +
             ";\nCreated by " + getClass().getSimpleName();
 
         if (newLanLastScan200.exists() && newLanLastScan210.exists()) {
@@ -96,8 +96,8 @@ public class NetScanFileWorker implements Serializable {
             msg = oldLanLastScanNewFile0 + " " + msg;
             msg = oldLanLastScanNewFile1 + " " + msg;
         }
-        if (srvFiles.size() == 8) {
-            srvFiles.forEach(( id , srvFileX ) -> fileWrk(srvFileX , titleMsg , retDeque));
+        if (SRV_FILES.size() == 8) {
+            SRV_FILES.forEach((id, srvFileX)->fileWrk(srvFileX, titleMsg, retDeque));
         }
         else {
             messageToUser.info(msg + " " + retDeque.size(), "positions] [Returns:", "java.util.Deque<java.lang.String>");

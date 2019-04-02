@@ -47,8 +47,8 @@ public class DiapazonedScan implements Runnable {
     private static final String FONT_BR_STR = "</font><br>\n";
 
     private static final int MAX_IN_VLAN_INT = 255;
-
-    private final ExecScan[] runnablesScans = {
+    
+    private final DiapazonedScan.ExecScan[] runnablesScans = {
         new DiapazonedScan.ExecScan(10 , 20 , "10.10." , new File(FILENAME_SERVTXT_11SRVTXT)) ,
         new DiapazonedScan.ExecScan(21 , 31 , "10.10." , new File(FILENAME_SERVTXT_21SRVTXT)) ,
         new DiapazonedScan.ExecScan(31 , 41 , "10.10." , new File(FILENAME_SERVTXT_31SRVTXT)) ,
@@ -71,8 +71,8 @@ public class DiapazonedScan implements Runnable {
     private static final DiapazonedScan OUR_INSTANCE = new DiapazonedScan();
 
     private long stopClassStampLong = NetScanFileWorker.getI().getLastStamp();
-
-    private Map<String, File> srvFiles = new ConcurrentHashMap<>();
+    
+    private Map<String, File> srvFiles = NET_SCAN_FILE_WORKER_INST.getSrvFiles();
 
     private final long timeStart = System.currentTimeMillis();
 
@@ -84,7 +84,7 @@ public class DiapazonedScan implements Runnable {
     }
 
     public Map<String, File> getSrvFiles() throws NullPointerException {
-        return NET_SCAN_FILE_WORKER_INST.getFilesScan();
+        return NET_SCAN_FILE_WORKER_INST.getSrvFiles();
     }
 
     public long getStopClassStampLong() {
@@ -139,7 +139,8 @@ public class DiapazonedScan implements Runnable {
         Collection<File> fileList = srvFiles.values();
         for (File f : fileList) {
             FileSystemWorker.copyOrDelFile(f , ".\\lan\\" + f.getName().replace(".txt" , "") + archID + ".scan" , true);
-        } srvFiles.clear();
+        }
+        srvFiles.clear();
     }
 
     @SuppressWarnings({"resource", "IOResourceOpenedButNotSafelyClosed"})
@@ -189,7 +190,7 @@ public class DiapazonedScan implements Runnable {
      Скан подсетей 10.10.xx.xxx
      */
     private void scanServers() {
-        for (ExecScan r : runnablesScans) {
+        for (DiapazonedScan.ExecScan r : runnablesScans) {
             boolean isExecuting = AppComponents.threadConfig().execByThreadConfig(r);
             messageToUser.info(getClass().getSimpleName() + ".scanServers" , "isExecuting" , " = " + isExecuting);
         }
@@ -204,11 +205,14 @@ public class DiapazonedScan implements Runnable {
         StringBuilder fileTimes = new StringBuilder();
         try {
             String atStr = " size in bytes: ";
-            fileTimes.append(FILENAME_NEWLAN210).append(FILENAME_NEWLAN200210).append(atStr); fileTimes.append(Paths.get(FILENAME_NEWLAN210).toFile().length());
-            fileTimes.append(Paths.get(FILENAME_NEWLAN200210).toFile().length()).append("<br>\n"); fileTimes.append(FILENAME_OLDLANTXT0).append(", ");
-            fileTimes.append(FILENAME_OLDLANTXT1).append(atStr); fileTimes.append(Paths.get(FILENAME_OLDLANTXT0).toFile().length()).append("<br>\n");
-            fileTimes.append(Paths.get(FILENAME_OLDLANTXT1).toFile().length()).append("<br>\n");
-            NetScanFileWorker.srvFiles.forEach(( k , v ) -> fileTimes.append(k).append(" is ").append(v.getName()).append(atStr).append(v.length()).append("<br>\n"));
+            fileTimes.append(FILENAME_NEWLAN210).append(atStr).append(Paths.get(FILENAME_NEWLAN210).toFile().length()).append("<br>\n");
+            fileTimes.append(FILENAME_NEWLAN200210).append(atStr).append(Paths.get(FILENAME_NEWLAN200210).toFile().length()).append("<br>\n");
+            fileTimes.append(FILENAME_OLDLANTXT0).append(atStr).append(Paths.get(FILENAME_OLDLANTXT0).toFile().length()).append("<br>\n");
+            fileTimes.append(FILENAME_OLDLANTXT1).append(atStr).append(Paths.get(FILENAME_OLDLANTXT1).toFile().length()).append("<br>\n");
+            fileTimes.append(FILENAME_SERVTXT_11SRVTXT).append(atStr).append(Paths.get(FILENAME_SERVTXT_11SRVTXT).toFile().length()).append("<br>\n");
+            fileTimes.append(FILENAME_SERVTXT_21SRVTXT).append(atStr).append(Paths.get(FILENAME_SERVTXT_21SRVTXT).toFile().length()).append("<br>\n");
+            fileTimes.append(FILENAME_SERVTXT_31SRVTXT).append(atStr).append(Paths.get(FILENAME_SERVTXT_31SRVTXT).toFile().length()).append("<br>\n");
+            fileTimes.append(FILENAME_SERVTXT_41SRVTXT).append(atStr).append(Paths.get(FILENAME_SERVTXT_41SRVTXT).toFile().length()).append("<br>\n");
         } catch (NullPointerException e) {
             messageToUser.info("NO FILES!");
         }
@@ -234,7 +238,7 @@ public class DiapazonedScan implements Runnable {
 
     private long getRunMin() {
         List<Long> timeSpend = new ArrayList<>();
-        for (ExecScan e : runnablesScans) {
+        for (DiapazonedScan.ExecScan e : runnablesScans) {
             timeSpend.add(e.getSpend());
         }
         return Collections.max(timeSpend);
