@@ -845,3 +845,4 @@ a156
 do0003
 do0008
 key.pem
+LogFileReader.sendToDB.err
