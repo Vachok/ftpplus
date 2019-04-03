@@ -15,12 +15,15 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.SshActs;
+import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
+import ru.vachok.networker.accesscontrol.inetstats.InternetUse;
 import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.controller.ServiceInfoCtrl;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetScannerSvc;
+import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 
 import javax.servlet.http.HttpServletRequest;
@@ -176,6 +179,7 @@ public class ActDirectoryCTRL {
         NetScannerSvc netScannerSvc = AppComponents.netScannerSvc();
         netScannerSvc.setThePc(queryString);
         String attributeValue = netScannerSvc.getInfoFromDB();
+        InternetUse internetUse = new InetUserPCName();
         model.addAttribute(ConstantsFor.ATT_TITLE , queryString + " " + attributeValue);
         model.addAttribute(ConstantsFor.ATT_USERS , netScannerSvc.getInputWithInfoFromDB());
         try {
@@ -186,7 +190,7 @@ public class ActDirectoryCTRL {
             String finalAdSrvDetails = adSrvDetails;
             messageToUser.info(queryString, attributeValue, ServiceInfoCtrl.percToEnd(new Date(l), 24));
         } catch (Exception e) {
-            model.addAttribute(ATT_DETAILS , e.getMessage());
+            model.addAttribute(ATT_DETAILS, "<center>" + internetUse.getUsage(queryString + ConstantsNet.DOMAIN_EATMEATRU) + "</center>");
         }
         model.addAttribute(ConstantsFor.ATT_FOOTER , new PageFooter().getFooterUtext());
         return "aditem";

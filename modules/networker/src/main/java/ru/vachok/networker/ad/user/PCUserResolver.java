@@ -171,7 +171,6 @@ public class PCUserResolver extends ADSrv {
         }
     }
 
-
     /**
      Поиск файлов в папках {@code c-users}.
 

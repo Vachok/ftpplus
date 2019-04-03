@@ -846,3 +846,10 @@ do0003
 do0008
 key.pem
 LogFileReader.sendToDB.err
+DataBaseHelper.sendToDB.err
+DelOldLogs.visitFile.err
+LogParser.readLog.err
+parsed/
+DataBaseHelper.log.lck
+LogFileReader.log.lck
+LogParser.log.lck

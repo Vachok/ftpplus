@@ -35,11 +35,6 @@ public class InetIPUser implements InternetUse {
             try (PreparedStatement p = c.prepareStatement(sql)) {
                 p.setString(1, userCred);
                 try (ResultSet r = p.executeQuery()) {
-                    if (r.first()) {
-                        LocalDate localDate = LocalDateTime.ofEpochSecond((r.getLong("Date") / 1000), 0, ZoneOffset.ofHours(3)).toLocalDate();
-                        int compareTo = LocalDate.now().compareTo(localDate);
-                        stringBuilder.append("<b>Stats for " + compareTo + " days</b><br>");
-                    }
                     while (r.next()) {
                         Date date = new Date(r.getLong("Date"));
                         String siteString = r.getString("site");
@@ -53,6 +48,11 @@ public class InetIPUser implements InternetUse {
                         }
                         String responseString = r.getString("response") + " " + r.getString("method");
                         siteResponseMap.putIfAbsent(siteString, responseString + " when: " + date);
+                    }
+                    if (r.last()) {
+                        LocalDate localDate = LocalDateTime.ofEpochSecond((r.getLong("Date") / 1000), 0, ZoneOffset.ofHours(3)).toLocalDate();
+                        int compareTo = LocalDate.now().compareTo(localDate);
+                        stringBuilder.append("<b>Stats for " + compareTo + " days</b><br>");
                     }
                     if (r.wasNull()) stringBuilder.append("No usage detected");
                     makeReadableResults(siteResponseMap, stringBuilder);
@@ -73,6 +73,8 @@ public class InetIPUser implements InternetUse {
         stringBuilder.append("DENIED SITES: <br>");
         Collections.sort(toWriteAllowed);
         Collections.sort(toWriteDenied);
+        Collections.reverse(toWriteDenied);
+        Collections.reverse(toWriteAllowed);
         toWriteDenied.forEach(x->stringBuilder.append(x).append("<br>"));
         stringBuilder.append("<p>ALLOWED SITES: <br>");
         toWriteAllowed.forEach(x->stringBuilder.append(x).append("<br>"));

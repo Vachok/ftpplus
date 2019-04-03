@@ -11,7 +11,7 @@ public interface InternetUse {
     
     
     static final MysqlDataSource MYSQL_DATA_SOURCE = new RegRuMysql().getDataSourceSchema("u0466446_velkom");
-    static final String sql = "SELECT DISTINCT `Date`, `ip`, `response`, `method`, `site`, `bytes` FROM `inetstats` WHERE `ip` LIKE ?";
+    static final String sql = "SELECT DISTINCT `Date`, `ip`, `response`, `method`, `site`, `bytes` FROM `inetstats` WHERE `ip` LIKE ? ORDER BY `inetstats`.`Date` DESC";
     
     String getUsage(String userCred);
     
