@@ -35,39 +35,38 @@ import java.util.concurrent.*;
  Старт
  <p>
  1. {@link #main(String[])}<br>
-
+ 
  @see AppInfoOnLoad
  @since 02.05.2018 (10:36) */
 @SpringBootApplication
 @EnableScheduling
 @EnableAutoConfiguration
 public class IntoApplication {
-
-
+    
+    
     private static final Properties LOCAL_PROPS = AppComponents.getOrSetProps();
-
+    
     /**
      {@link MessageLocal}
      */
     private static final MessageToUser messageToUser = new MessageLocal(IntoApplication.class.getSimpleName());
-
+    
     private static final ThreadPoolTaskExecutor EXECUTOR = AppComponents.threadConfig().getTaskExecutor();
-
+    
     private static final ScheduledThreadPoolExecutor SCHEDULED_THREAD_POOL_EXECUTOR = AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor();
-
+    
     private ConfigurableApplicationContext configurableApplicationContext;
-
-
+    
     public ConfigurableApplicationContext getConfigurableApplicationContext() {
         return configurableApplicationContext;
     }
-
-
+    
+    
     public void setConfigurableApplicationContext(ConfigurableApplicationContext configurableApplicationContext) {
         this.configurableApplicationContext = configurableApplicationContext;
     }
-
-
+    
+    
     /**
      Точка входа в Spring Boot Application
      <p>
@@ -75,7 +74,7 @@ public class IntoApplication {
      {@link SpringApplication#run(java.lang.Class, java.lang.String...)}. Инициализация
      {@link Logger#warn(java.lang.String)} - new {@link String} {@code msg} = {@link IntoApplication#afterSt()} <br>
      {@link Logger#info(java.lang.String)} - время работы метода.
-
+     
      @param args аргументы запуска
      @see SystemTrayHelper
      */
@@ -94,8 +93,8 @@ public class IntoApplication {
         SaveLogsToDB saveLogsToDB = new AppComponents().saveLogsToDB();
         messageToUser.info(IntoApplication.class.getSimpleName() + ".main", "startScheduled()", " = " + saveLogsToDB.startScheduled());
     }
-
-
+    
+    
     /**
      Запуск после старта Spring boot app <br> Usages: {@link #main(String[])}
      <p>
@@ -106,7 +105,7 @@ public class IntoApplication {
      3. {@link AppComponents#threadConfig()} (4. {@link ThreadConfig#getTaskExecutor()}) - запуск <b>Runnable</b> <br>
      5. {@link ThreadConfig#getTaskExecutor()} - запуск {@link AppInfoOnLoad}. <br><br>
      <b>{@link Exception}:</b><br>
-     6. {@link TForms#fromArray(java.lang.Exception , boolean)} - искл. в строку. 7. {@link FileSystemWorker#writeFile(java.lang.String , java.util.List)} и
+     6. {@link TForms#fromArray(java.lang.Exception, boolean)} - искл. в строку. 7. {@link FileSystemWorker#writeFile(java.lang.String, java.util.List)} и
      запишем в файл.
      */
     private static void afterSt() {
@@ -116,8 +115,8 @@ public class IntoApplication {
         EXECUTOR.submit(mySrv);
         EXECUTOR.submit(IntoApplication::getWeekPCStats);
     }
-
-
+    
+    
     /**
      Статистика по-пользователям за неделю.
      <p>
@@ -130,7 +129,7 @@ public class IntoApplication {
             AppComponents.threadConfig().execByThreadConfig(new WeekPCStats());
         }
     }
-
+    
     /**
      Чтение аргументов {@link #main(String[])}
      <p>
@@ -138,7 +137,7 @@ public class IntoApplication {
      {@link ConstantsFor#PR_TOTPC} - {@link Properties#setProperty(java.lang.String, java.lang.String)}.
      Property: {@link ConstantsFor#PR_TOTPC}, value: {@link String#replaceAll(String, String)} ({@link ConstantsFor#PR_TOTPC}, "") <br>
      {@code off}: {@link ThreadConfig#killAll()}
-
+     
      @param args аргументы запуска.
      */
     private static void readArgs(ConfigurableApplicationContext context, @NotNull String... args) {
@@ -146,21 +145,24 @@ public class IntoApplication {
         Runnable exitApp = new ExitApp(IntoApplication.class.getSimpleName());
         List<@NotNull String> argsList = Arrays.asList(args);
         ConcurrentMap<String, String> argsMap = new ConcurrentHashMap<>();
-
+    
         for (int i = 0; i < argsList.size(); i++) {
             String key = argsList.get(i);
             String value = "true";
             try {
                 value = argsList.get(i + 1);
-            } catch (ArrayIndexOutOfBoundsException ignore) {
+            }
+            catch (ArrayIndexOutOfBoundsException ignore) {
                 //
             }
             if (!value.contains("-")) {
                 argsMap.put(key, value);
-            } else {
+            }
+            else {
                 if (!key.contains("-")) {
                     argsMap.put("", "");
-                } else {
+                }
+                else {
                     argsMap.put(key, "true");
                 }
             }
@@ -189,45 +191,44 @@ public class IntoApplication {
         context.start();
         afterSt();
     }
-
-
+    
     private static void trayAdd(SystemTrayHelper systemTrayHelper) {
         if (ConstantsFor.thisPC().toLowerCase().contains(ConstantsFor.HOSTNAME_DO213)) {
             systemTrayHelper.addTray("icons8-плохие-поросята-32.png");
         }
-        else{
-            if(ConstantsFor.thisPC().toLowerCase().contains("home")){
+        else {
+            if (ConstantsFor.thisPC().toLowerCase().contains("home")) {
                 systemTrayHelper.addTray("icons8-house-26.png");
             }
-            else{
+            else {
                 systemTrayHelper.addTray(ConstantsFor.FILENAME_ICON);
             }
         }
     }
-
+    
     /**
-     * Запуск до старта Spring boot app <br> Usages: {@link #main(String[])}
-     * <p>
-     * {@link Logger#warn(java.lang.String)} - день недели. <br>
-     * Если {@link ConstantsFor#thisPC()} - {@link ConstantsFor#HOSTNAME_DO213} или "home",
-     * {@link SystemTrayHelper#addTray(java.lang.String)} "icons8-плохие-поросята-32.png".
-     * Else - {@link SystemTrayHelper#addTray(java.lang.String)} {@link String} null<br>
-     * {@link SpringApplication#setMainApplicationClass(java.lang.Class)}
-     *
-     * @param isTrayNeed нужен трэй или нет.
+     Запуск до старта Spring boot app <br> Usages: {@link #main(String[])}
+     <p>
+     {@link Logger#warn(java.lang.String)} - день недели. <br>
+     Если {@link ConstantsFor#thisPC()} - {@link ConstantsFor#HOSTNAME_DO213} или "home",
+     {@link SystemTrayHelper#addTray(java.lang.String)} "icons8-плохие-поросята-32.png".
+     Else - {@link SystemTrayHelper#addTray(java.lang.String)} {@link String} null<br>
+     {@link SpringApplication#setMainApplicationClass(java.lang.Class)}
+     
+     @param isTrayNeed нужен трэй или нет.
      */
     private static void beforeSt(boolean isTrayNeed) {
-        if(SystemTray.isSupported() & isTrayNeed){
+        if (SystemTray.isSupported() & isTrayNeed) {
             trayAdd(SystemTrayHelper.getI());
         }
         @NotNull StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("updateProps = ").append(new AppComponents().updateProps(LOCAL_PROPS));
         stringBuilder.append(LocalDate.now().getDayOfWeek().getValue());
         stringBuilder.append(" - day of week\n");
-        stringBuilder.append(LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL , Locale.getDefault()));
-        messageToUser.info("IntoApplication.beforeSt" , "stringBuilder" , stringBuilder.toString());
-        System.setProperty("encoding" , "UTF8");
-        FileSystemWorker.writeFile("system" , new TForms().fromArray(System.getProperties()));
-        SCHEDULED_THREAD_POOL_EXECUTOR.schedule(() -> messageToUser.info(new TForms().fromArray(LOCAL_PROPS , false)) , ConstantsFor.DELAY + 10 , TimeUnit.MINUTES);
+        stringBuilder.append(LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault()));
+        messageToUser.info("IntoApplication.beforeSt", "stringBuilder", stringBuilder.toString());
+        System.setProperty("encoding", "UTF8");
+        FileSystemWorker.writeFile("system", new TForms().fromArray(System.getProperties()));
+        SCHEDULED_THREAD_POOL_EXECUTOR.schedule(()->messageToUser.info(new TForms().fromArray(LOCAL_PROPS, false)), ConstantsFor.DELAY + 10, TimeUnit.MINUTES);
     }
 }

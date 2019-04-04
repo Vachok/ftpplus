@@ -38,8 +38,6 @@ dependencies {
 	compile('org.springframework.boot:spring-boot-starter-web')
     // https://mvnrepository.com/artifact/commons-net/commons-net
     compile group: 'commons-net', name: 'commons-net', version: '3.6'
-// https://mvnrepository.com/artifact/org.samba.jcifs/jcifs
-    compile group: 'org.samba.jcifs', name: 'jcifs', version: '1.3.14-kohsuke-1'
 // https://mvnrepository.com/artifact/com.jcraft/jsch
     compile group: 'com.jcraft', name: 'jsch', version: '0.1.55'
     // https://mvnrepository.com/artifact/com.ad-authenticator/ad-authenticator
