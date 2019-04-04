@@ -144,7 +144,6 @@ public class NetScanCtr {
         ConstantsFor.getVis(request);
         model.addAttribute("serviceinfo", (float) TimeUnit.MILLISECONDS.toSeconds(lastSt - System.currentTimeMillis()) / ConstantsFor.ONE_HOUR_IN_MIN);
         netScannerSvcInstAW.setThePc("");
-
         model.addAttribute("pc", FileSystemWorker.readFile(ConstantsNet.BEANNAME_LASTNETSCAN));
         model.addAttribute(ConstantsFor.ATT_TITLE, netScannerSvcInstAW.getOnLinePCsNum() + " pc at " + new Date(lastSt));
         model.addAttribute(ConstantsNet.BEANNAME_NETSCANNERSVC, netScannerSvcInstAW);
@@ -226,21 +225,22 @@ public class NetScanCtr {
      * @param userInputRaw {@link NetScannerSvc#getThePc()}
      * @return LAST 20 USER PCs
      */
-    static String getUserFromDB( String userInputRaw ) {
+    static String getUserFromDB(String userInputRaw) {
         StringBuilder retBuilder = new StringBuilder();
         String sql = "select * from pcuserauto where userName like ? ORDER BY whenQueried DESC LIMIT 0, 20";
         List<String> userPCName = new ArrayList<>();
         String mostFreqName = "No Name";
         
         try {
-            userInputRaw = userInputRaw.split(": ")[1];
+            userInputRaw = userInputRaw.split(": ")[1].trim();
         } catch (ArrayIndexOutOfBoundsException e) {
             retBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e , false));
+            userInputRaw = userInputRaw.split(":")[1].trim();
         }
         try (Connection c = new AppComponents().connection(ConstantsFor.DBPREFIX + ConstantsFor.STR_VELKOM);
              PreparedStatement p = c.prepareStatement(sql)
         ) {
-            p.setString(1, "%" + userInputRaw.trim() + "%");
+            p.setString(1, "%" + userInputRaw + "%");
             try (ResultSet r = p.executeQuery()) {
                 StringBuilder stringBuilder = new StringBuilder();
                 String headER = "<h3><center>LAST 20 USER PCs</center></h3>";
