@@ -197,6 +197,7 @@ public class NetScannerSvc {
                         .append("<font color = \"silver\">OnLines = ").append(timeNow.size())
                         .append(". Offline = ").append(integersOff.size()).append(". TOTAL: ")
                         .append(integersOff.size() + timeNow.size()).toString();
+    
                     stringBuilder
                         .append(namePP)
                         .append(". <br>");
@@ -364,7 +365,8 @@ public class NetScannerSvc {
                     String pcOnline = stringBuilder.toString();
 
                     netWorkMap.put(printStr, true);
-                    PC_NAMES_SET.add(pcName + ":" + byName.getHostAddress() + pcOnline); LOGGER.info(pcName, pcOnline, onOffCounterAndLastUser);
+                    PC_NAMES_SET.add(pcName + ":" + byName.getHostAddress() + pcOnline);
+                    LOGGER.info(pcName, pcOnline, onOffCounterAndLastUser);
                     this.onLinePCsNum += 1;
                 }
             } catch (IOException e) {

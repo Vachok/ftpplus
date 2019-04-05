@@ -1,13 +1,8 @@
-# ftpplus-59
-
-## ADSrv
-### Reformat, Rearrange
-### getUserName
-> Условия, при которых имена локальных файлов добавляются в лист. 
-## NetScanCtr
-### getUserFromDB
-> userInputRaw - TRIM
+## ConstantsFor
+### STRINGS_TODELONSTART
+> добавлен .log и .tv
+## IntoApplication
+### main
+> saveLogsToDB, warn вместо info
 ## NetScannerSvc
-### getInfoFromDB
-> 1. namePP. append InetAddress by name. 
->2. Соотв. UnknownHostException добавлен в catch
+>Reformat, rearrange.

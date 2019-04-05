@@ -375,8 +375,8 @@ public enum ConstantsFor {
     public static final String PR_APP_BUILDTIME = "buildTime";
 
     static final String STR_FINISH = " is finish";
-
-    private static final String[] STRINGS_TODELONSTART = {"visit_", ".tmp"};
+    
+    private static final String[] STRINGS_TODELONSTART = {"visit_", ".tmp", ".log", ".tv"};
 
     /**
      {@link ru.vachok.networker.mailserver.ExCTRL#uplFile(MultipartFile, Model)}, {@link ExSRV#getOFields()},

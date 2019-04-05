@@ -91,7 +91,7 @@ public class IntoApplication {
             afterSt();
         }
         SaveLogsToDB saveLogsToDB = new AppComponents().saveLogsToDB();
-        messageToUser.info(IntoApplication.class.getSimpleName() + ".main", "startScheduled()", " = " + saveLogsToDB.startScheduled());
+        messageToUser.warn(IntoApplication.class.getSimpleName() + ".main", "startScheduled()", " = " + saveLogsToDB.startScheduled());
     }
     
     
