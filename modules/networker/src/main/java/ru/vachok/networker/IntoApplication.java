@@ -3,6 +3,7 @@
 package ru.vachok.networker;
 
 
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -35,38 +36,39 @@ import java.util.concurrent.*;
  Старт
  <p>
  1. {@link #main(String[])}<br>
- 
+
  @see AppInfoOnLoad
  @since 02.05.2018 (10:36) */
 @SpringBootApplication
 @EnableScheduling
 @EnableAutoConfiguration
 public class IntoApplication {
-    
-    
+
+
     private static final Properties LOCAL_PROPS = AppComponents.getOrSetProps();
-    
+
     /**
      {@link MessageLocal}
      */
     private static final MessageToUser messageToUser = new MessageLocal(IntoApplication.class.getSimpleName());
-    
+
     private static final ThreadPoolTaskExecutor EXECUTOR = AppComponents.threadConfig().getTaskExecutor();
-    
+
     private static final ScheduledThreadPoolExecutor SCHEDULED_THREAD_POOL_EXECUTOR = AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor();
-    
+
     private ConfigurableApplicationContext configurableApplicationContext;
-    
+
+
     public ConfigurableApplicationContext getConfigurableApplicationContext() {
         return configurableApplicationContext;
     }
-    
-    
+
+
     public void setConfigurableApplicationContext(ConfigurableApplicationContext configurableApplicationContext) {
         this.configurableApplicationContext = configurableApplicationContext;
     }
-    
-    
+
+
     /**
      Точка входа в Spring Boot Application
      <p>
@@ -74,7 +76,7 @@ public class IntoApplication {
      {@link SpringApplication#run(java.lang.Class, java.lang.String...)}. Инициализация
      {@link Logger#warn(java.lang.String)} - new {@link String} {@code msg} = {@link IntoApplication#afterSt()} <br>
      {@link Logger#info(java.lang.String)} - время работы метода.
-     
+
      @param args аргументы запуска
      @see SystemTrayHelper
      */
@@ -90,11 +92,9 @@ public class IntoApplication {
             context.start();
             afterSt();
         }
-        SaveLogsToDB saveLogsToDB = new AppComponents().saveLogsToDB();
-        messageToUser.warn(IntoApplication.class.getSimpleName() + ".main", "startScheduled()", " = " + saveLogsToDB.startScheduled());
     }
-    
-    
+
+
     /**
      Запуск после старта Spring boot app <br> Usages: {@link #main(String[])}
      <p>
@@ -114,9 +114,14 @@ public class IntoApplication {
         EXECUTOR.submit(infoAndSched);
         EXECUTOR.submit(mySrv);
         EXECUTOR.submit(IntoApplication::getWeekPCStats);
+        if(!ConstantsFor.thisPC().toLowerCase().contains("home")) {
+            SaveLogsToDB saveLogsToDB = new AppComponents().saveLogsToDB();
+            AppComponents.threadConfig().execByThreadConfig(() -> messageToUser
+                .warn(IntoApplication.class.getSimpleName() + ".main" , "startScheduled()" , " = " + saveLogsToDB.startScheduled()));
+        }
     }
-    
-    
+
+
     /**
      Статистика по-пользователям за неделю.
      <p>
@@ -129,7 +134,8 @@ public class IntoApplication {
             AppComponents.threadConfig().execByThreadConfig(new WeekPCStats());
         }
     }
-    
+
+
     /**
      Чтение аргументов {@link #main(String[])}
      <p>
@@ -137,7 +143,7 @@ public class IntoApplication {
      {@link ConstantsFor#PR_TOTPC} - {@link Properties#setProperty(java.lang.String, java.lang.String)}.
      Property: {@link ConstantsFor#PR_TOTPC}, value: {@link String#replaceAll(String, String)} ({@link ConstantsFor#PR_TOTPC}, "") <br>
      {@code off}: {@link ThreadConfig#killAll()}
-     
+
      @param args аргументы запуска.
      */
     private static void readArgs(ConfigurableApplicationContext context, @NotNull String... args) {
@@ -145,7 +151,7 @@ public class IntoApplication {
         Runnable exitApp = new ExitApp(IntoApplication.class.getSimpleName());
         List<@NotNull String> argsList = Arrays.asList(args);
         ConcurrentMap<String, String> argsMap = new ConcurrentHashMap<>();
-    
+
         for (int i = 0; i < argsList.size(); i++) {
             String key = argsList.get(i);
             String value = "true";
@@ -191,7 +197,8 @@ public class IntoApplication {
         context.start();
         afterSt();
     }
-    
+
+
     private static void trayAdd(SystemTrayHelper systemTrayHelper) {
         if (ConstantsFor.thisPC().toLowerCase().contains(ConstantsFor.HOSTNAME_DO213)) {
             systemTrayHelper.addTray("icons8-плохие-поросята-32.png");
@@ -205,7 +212,8 @@ public class IntoApplication {
             }
         }
     }
-    
+
+
     /**
      Запуск до старта Spring boot app <br> Usages: {@link #main(String[])}
      <p>
@@ -214,7 +222,7 @@ public class IntoApplication {
      {@link SystemTrayHelper#addTray(java.lang.String)} "icons8-плохие-поросята-32.png".
      Else - {@link SystemTrayHelper#addTray(java.lang.String)} {@link String} null<br>
      {@link SpringApplication#setMainApplicationClass(java.lang.Class)}
-     
+
      @param isTrayNeed нужен трэй или нет.
      */
     private static void beforeSt(boolean isTrayNeed) {

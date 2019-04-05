@@ -1,8 +1,6 @@
-## ConstantsFor
-### STRINGS_TODELONSTART
-> добавлен .log и .tv
+perf: 
+
 ## IntoApplication
 ### main
-> saveLogsToDB, warn вместо info
-## NetScannerSvc
->Reformat, rearrange.
+> 1. saveLogsToDB as thread. Перемещён в afterStart().
+> 2. Будет запущено, если имя ПК !contains "home"
