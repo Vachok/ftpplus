@@ -28,7 +28,9 @@ import static ru.vachok.networker.ConstantsFor.FILEEXT_LOG;
 /**
  Вспомогательная работа с файлами.
 
+ @deprecated 06.04.2019 (16:00)
  @since 19.12.2018 (9:57) */
+@Deprecated
 public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
 
 
@@ -40,7 +42,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     private static MessageToUser messageToUser = new MessageLocal(FileSystemWorker.class.getSimpleName());
 
 
-    public static boolean writeFile(String fileName, Stream<String> toFileRec) {
+    public static boolean writeFile(String fileName , Stream<?> toFileRec) {
         try (OutputStream outputStream = new FileOutputStream(fileName);
              PrintStream printStream = new PrintStream(outputStream, true)) {
             printStream.println(new Date(ConstantsFor.getAtomicTime()));
@@ -197,18 +199,18 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     }
 
 
-    public static void writeFile(String fileName, String toWriteStr) {
+    public static void writeFile(String fileName , String toWriteStr) {
         writeFile(fileName, Collections.singletonList(toWriteStr));
     }
 
 
     /**
-     Запись файла
-
-     @param fileName  имя файла
+     Запись файла@param fileName  имя файла
      @param toFileRec {@link List} строчек на запись.
+
+
      */
-    public static void writeFile(String fileName, List<String> toFileRec) {
+    public static boolean writeFile(String fileName , List<?> toFileRec) {
         try (OutputStream outputStream = new FileOutputStream(fileName);
              PrintWriter printWriter = new PrintWriter(outputStream, true)) {
             printWriter.println(new Date(ConstantsFor.getAtomicTime()));
@@ -216,6 +218,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         } catch (IOException e) {
             messageToUser.error(FileSystemWorker.class.getSimpleName(), e.getMessage(), new TForms().fromArray(e, false));
         }
+        return new File(fileName).exists();
     }
 
 
@@ -260,7 +263,8 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         boolean isCp = copyOrDelFile(f, ".\\err\\" + f.getName(), true);
         return classMeth + " threw Exception: " + e.getMessage() + ": <p>\n\n" + new TForms().fromArray(e, true);
     }
-    
+
+
     private static boolean printTo(OutputStream outputStream, Exception e) {
         try (PrintStream printStream = new PrintStream(outputStream, true)) {
             printStream.println(new Date(new TimeChecker().call().getReturnTime()));

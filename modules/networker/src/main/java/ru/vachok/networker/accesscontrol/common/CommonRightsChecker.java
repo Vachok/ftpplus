@@ -5,8 +5,8 @@ package ru.vachok.networker.accesscontrol.common;
 import org.slf4j.Logger;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.fileworks.FileOut;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
@@ -21,6 +21,7 @@ import java.util.List;
 
 
 @SuppressWarnings ("DuplicateStringLiteralInspection")
+@Deprecated
 public class CommonRightsChecker extends SimpleFileVisitor<Path> {
 
     /**
@@ -78,6 +79,6 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> {
     }
 
     private void writeFile(String fileName, byte[] appendToFileBytes) {
-        new Thread(new FileOut(fileName, appendToFileBytes)).start();
+        throw new IllegalComponentStateException("Deprecated");
     }
 }

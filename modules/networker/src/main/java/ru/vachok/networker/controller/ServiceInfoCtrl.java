@@ -10,6 +10,8 @@ import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.fileworks.CountSizeOfWorkDir;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.fileworks.ProgrammFilesReader;
+import ru.vachok.networker.fileworks.ReadFileTo;
 import ru.vachok.networker.net.DiapazonedScan;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.DBMessenger;
@@ -44,6 +46,8 @@ import static java.time.temporal.ChronoUnit.HOURS;
 public class ServiceInfoCtrl {
 
     private static final String SERVICE_INFO_CTRL_CLOSE_APP = "ServiceInfoCtrl.closeApp";
+
+    private ProgrammFilesReader filesReader = new ReadFileTo();
 
     private boolean authReq = false;
 
@@ -154,10 +158,11 @@ public class ServiceInfoCtrl {
 
     private void modModMaker( Model model , HttpServletRequest request , Visitor visitor ) throws ExecutionException, InterruptedException {
         this.visitor = ConstantsFor.getVis(request);
+        Callable<String> sizeOfDir = new CountSizeOfWorkDir("sizeofdir");
         Callable<Long> callWhenCome = new SpeedChecker();
-        Callable<String> filesWithSize = new CountSizeOfWorkDir();
+        Callable<String> filesWithSize;
         Future<Long> whenCome = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(callWhenCome);
-        Future<String> filesSizeFuture = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(filesWithSize);
+        Future<String> filesSizeFuture = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(sizeOfDir);
         Date comeD = new Date(whenCome.get());
         String resValue = new StringBuilder()
             .append(MyCalen.toStringS()).append("<br><br>")
@@ -166,7 +171,7 @@ public class ServiceInfoCtrl {
             .append(new AppInfoOnLoad()).append(" ").append(AppInfoOnLoad.class.getSimpleName()).append("<p>")
             .append(new TForms().fromArray(AppComponents.getOrSetProps(), true))
             .append("<p>")
-            .append(FileSystemWorker.readFile("exit.last")).append("<p>")
+            .append(filesReader.readFile(new File("exit.last"))).append("<p>")
             .append("<p><font color=\"grey\">").append(listFilesToReadStr()).append("</font>")
             .toString();
 

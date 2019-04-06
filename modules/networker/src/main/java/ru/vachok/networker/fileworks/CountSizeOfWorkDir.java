@@ -2,18 +2,21 @@ package ru.vachok.networker.fileworks;
 
 
 
+import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
+import ru.vachok.networker.services.MessageLocal;
 
-import java.io.IOException;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.*;
+import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.time.LocalTime;
+import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 
 /**
@@ -21,12 +24,27 @@ import java.util.concurrent.TimeUnit;
  <p>
 
  @since 06.04.2019 (13:15) */
-public class CountSizeOfWorkDir extends FileSystemWorker implements Callable<String> {
+public class CountSizeOfWorkDir extends SimpleFileVisitor<Path> implements ProgrammFilesWriter {
 
     private long sizeBytes = 0L;
 
     private Map<Long, String> longPathMap = new TreeMap<>();
 
+    private String fileName;
+
+    private PrintStream printStream = null;
+
+    private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
+
+
+    public CountSizeOfWorkDir(String fileName) {
+        this.fileName = fileName;
+        try(OutputStream outputStream = new FileOutputStream(fileName)){
+            this.printStream = new PrintStream(outputStream , true);
+        }catch(IOException e){
+            messageToUser.error(e.getMessage());
+        }
+    }
 
     @Override public String call() throws Exception {
         return getSizeOfDir();
@@ -67,6 +85,40 @@ public class CountSizeOfWorkDir extends FileSystemWorker implements Callable<Str
         return FileVisitResult.CONTINUE;
     }
 
+
+    @Override public boolean writeFile(List<?> toWriteList) {
+        return false;
+    }
+
+
+    @Override public boolean writeFile(Stream<?> toWriteStream) {
+        File file = new File(fileName + "stream");
+        printStream.println("Writing stream. Now: ");
+        printStream.print(new Date());
+        toWriteStream.forEach(x -> printStream.println(x));
+        return file.exists();
+    }
+
+
+    @Override public boolean writeFile(Map<?, ?> toWriteMap) {
+        return false;
+    }
+
+
+    @Override public boolean writeFile(File toWriteFile) {
+        return false;
+    }
+
+
+    @Override
+    public boolean writeFile(Exception e) {
+        File file = new File(fileName + "_" + LocalTime.now().toSecondOfDay() + "_.err");
+        printStream.println(new Date());
+        printStream.println();
+        printStream.println(new TForms().fromArray(e , false));
+        messageToUser.info(file + " is " + file.exists());
+        return file.exists();
+    }
 
     private String getSizeOfDir() throws IOException {
         StringBuilder stringBuilder = new StringBuilder();
