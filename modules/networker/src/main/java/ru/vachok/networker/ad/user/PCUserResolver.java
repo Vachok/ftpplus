@@ -139,13 +139,11 @@ public class PCUserResolver extends ADSrv {
                 preparedStatement.executeUpdate();
             }
             catch (SQLException e) {
-                connection.clearWarnings();
-                messageToUser.errorAlert(ConstantsFor.CLASS_NAME_PCUSERRESOLVER, "recAutoDB", e.getMessage());
-                FileSystemWorker.error(METHNAME_REC_AUTO_DB, e);
+                messageToUser.error(e.getMessage());
             }
         }
         catch (SQLException | ArrayIndexOutOfBoundsException | NullPointerException | IOException e) {
-            FileSystemWorker.error(METHNAME_REC_AUTO_DB, e);
+            messageToUser.error(e.getMessage());
         }
 
     }
@@ -172,7 +170,6 @@ public class PCUserResolver extends ADSrv {
             return e.getMessage();
         }
     }
-
 
     /**
      Поиск файлов в папках {@code c-users}.

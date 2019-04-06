@@ -16,6 +16,9 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
+import ru.vachok.networker.accesscontrol.inetstats.InternetUse;
+import ru.vachok.networker.componentsrepo.LastNetScan;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.config.ThreadConfig;
@@ -91,10 +94,7 @@ public class NetScanCtr {
 
     private static ThreadPoolTaskExecutor locExecutor = AppComponents.threadConfig().getTaskExecutor();
 
-    /**
-     {@link AppComponents#lastNetScanMap()}
-     */
-    private static ConcurrentMap<String, Boolean> lastScanMAP = AppComponents.lastNetScanMap();
+    private static ConcurrentMap<String, Boolean> lastScanMAP = LastNetScan.getLastNetScan().getNetWork();
 
     private ScanOnline scanOnline;
 
@@ -122,7 +122,6 @@ public class NetScanCtr {
      2.{@link NetScannerSvc#setThePc(java.lang.String)} обнуляем строку в форме. <br>
      3. {@link FileSystemWorker#readFile(java.lang.String)} добавляем файл {@code lastnetscan.log} в качестве аттрибута {@code pc} в {@link Model} <br>
      4. {@link NetScannerSvc#getThePc()} аттрибут {@link Model} - {@link #ATT_THEPC}. <br>
-     5. {@link PageFooter#getFooterUtext()} footer web-страницы. 6. {@link AppComponents#lastNetScan()} <br>
      7. {@link #checkMapSizeAndDoAction(Model, HttpServletRequest, long)} - начинаем проверку.
      <p>
 
@@ -145,7 +144,6 @@ public class NetScanCtr {
         ConstantsFor.getVis(request);
         model.addAttribute("serviceinfo", (float) TimeUnit.MILLISECONDS.toSeconds(lastSt - System.currentTimeMillis()) / ConstantsFor.ONE_HOUR_IN_MIN);
         netScannerSvcInstAW.setThePc("");
-
         model.addAttribute("pc", FileSystemWorker.readFile(ConstantsNet.BEANNAME_LASTNETSCAN));
         model.addAttribute(ConstantsFor.ATT_TITLE, netScannerSvcInstAW.getOnLinePCsNum() + " pc at " + new Date(lastSt));
         model.addAttribute(ConstantsNet.BEANNAME_NETSCANNERSVC, netScannerSvcInstAW);
@@ -209,7 +207,7 @@ public class NetScanCtr {
         String thePc = netScannerSvc.getThePc();
         AppComponents.adSrv().setUserInputRaw(thePc);
         if (thePc.toLowerCase().contains("user: ")) {
-            model.addAttribute("ok" , getUserFromDB(thePc));
+            model.addAttribute("ok", getUserFromDB(thePc).trim());
             model.addAttribute(ConstantsFor.ATT_TITLE, thePc);
             model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
             return "ok";
@@ -227,36 +225,50 @@ public class NetScanCtr {
      * @param userInputRaw {@link NetScannerSvc#getThePc()}
      * @return LAST 20 USER PCs
      */
-    static String getUserFromDB( String userInputRaw ) {
+    static String getUserFromDB(String userInputRaw) {
         StringBuilder retBuilder = new StringBuilder();
         String sql = "select * from pcuserauto where userName like ? ORDER BY whenQueried DESC LIMIT 0, 20";
+        List<String> userPCName = new ArrayList<>();
+        String mostFreqName = "No Name";
+        
         try {
-            userInputRaw = userInputRaw.split(": ")[1];
+            userInputRaw = userInputRaw.split(": ")[1].trim();
         } catch (ArrayIndexOutOfBoundsException e) {
             retBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e , false));
+            userInputRaw = userInputRaw.split(":")[1].trim();
         }
-        try (Connection c = new AppComponents().connection(ConstantsFor.DBPREFIX + ConstantsFor.STR_VELKOM); PreparedStatement p = c.prepareStatement(sql)) {
-            p.setString(1 , "%" + userInputRaw + "%");
+        try (Connection c = new AppComponents().connection(ConstantsFor.DBPREFIX + ConstantsFor.STR_VELKOM);
+             PreparedStatement p = c.prepareStatement(sql)
+        ) {
+            p.setString(1, "%" + userInputRaw + "%");
             try (ResultSet r = p.executeQuery()) {
                 StringBuilder stringBuilder = new StringBuilder();
                 String headER = "<h3><center>LAST 20 USER PCs</center></h3>";
                 stringBuilder.append(headER);
-                List<String> stringList = new ArrayList<>();
+    
                 while (r.next()) {
                     String pcName = r.getString(ConstantsFor.DBFIELD_PCNAME);
-                    stringList.add(pcName);
+                    userPCName.add(pcName);
                     String returnER = "<br><center><a href=\"/ad?" + pcName.split("\\Q.\\E")[0] + "\">" + pcName + "</a> set: " + r.getString(ConstantsNet.DB_FIELD_WHENQUERIED) + ConstantsFor.HTML_CENTER;
                     stringBuilder.append(returnER);
                 }
-                List<String> collect = stringList.stream().distinct().collect(Collectors.toList());
-                for (String x : collect) {
-                    int frequency = Collections.frequency(stringList , x);
+                List<String> collectedNames = userPCName.stream().distinct().collect(Collectors.toList());
+                Map<Integer, String> freqName = new HashMap<>();
+                for (String x : collectedNames) {
+                    int frequency = Collections.frequency(userPCName, x);
                     stringBuilder.append(frequency).append(") ").append(x).append("<br>");
+                    freqName.putIfAbsent(frequency, x);
                 }
                 if (r.last()) {
                     MessageToUser messageToUser = new MessageToTray(new ActionCloseMsg(new MessageLocal(NetScanCtr.class.getSimpleName())));
                     messageToUser.info(r.getString(ConstantsFor.DBFIELD_PCNAME) , r.getString(ConstantsNet.DB_FIELD_WHENQUERIED) , r.getString(ConstantsFor.DB_FIELD_USER));
                 }
+                Collections.sort(collectedNames);
+                Set<Integer> integers = freqName.keySet();
+                mostFreqName = freqName.get(Collections.max(integers));
+                InternetUse internetUse = new InetUserPCName();
+                stringBuilder.append("<br>");
+                stringBuilder.append(internetUse.getUsage(mostFreqName));
                 return stringBuilder.toString();
             }
         } catch (SQLException | IOException e) {
@@ -425,14 +437,16 @@ public class NetScanCtr {
         Runnable scanRun = () -> scanIt(request , model , new Date(lastScanEpoch * 1000));
         LocalTime lastScanLocalTime = LocalDateTime.ofEpochSecond(lastScanEpoch, 0, ZoneOffset.ofHours(3)).toLocalTime();
         String classMeth = "NetScanCtr.timeCheck";
-        boolean isSystemTimeBigger = (System.currentTimeMillis() > lastScanEpoch * 1000) && remainPC <= 0;
-
-        if (!(new File("scan.tmp").exists()) && isSystemTimeBigger) {
-            String valStr = "isSystemTimeBigger = " + true;
-            messageToUser.info(valStr);
-            Future<?> submitScan = locExecutor.submit(scanRun);
-            submitScan.get(ConstantsFor.DELAY - 1, TimeUnit.MINUTES);
-            messageToUser.info("NetScanCtr.checkMapSizeAndDoAction", "submitScan.isDone()", " = " + submitScan.isDone());
+        boolean isSystemTimeBigger = (System.currentTimeMillis() > lastScanEpoch * 1000);
+        if(!(new File("scan.tmp").exists())) {
+            model.addAttribute("newpc" , lastScanLocalTime);
+            if(isSystemTimeBigger) {
+                String valStr = "isSystemTimeBigger = " + true;
+                messageToUser.info(valStr);
+                Future<?> submitScan = locExecutor.submit(scanRun);
+                submitScan.get(ConstantsFor.DELAY - 1 , TimeUnit.MINUTES);
+                messageToUser.info("NetScanCtr.checkMapSizeAndDoAction" , "submitScan.isDone()" , " = " + submitScan.isDone());
+            }
         } else {
             String valStr = "lastScanLocalTime = " + lastScanLocalTime;
             messageToUser.infoNoTitles(Thread.currentThread().getName() + "\n" + classMeth + "\n" + valStr);
@@ -462,16 +476,15 @@ public class NetScanCtr {
      @see #netScan(HttpServletRequest, HttpServletResponse, Model)
      */
     private void checkMapSizeAndDoAction(Model model, HttpServletRequest request, long lastSt) throws ExecutionException, InterruptedException, TimeoutException {
-        final Runnable scanRun = () -> scanIt(request, model, new Date(lastSt));
-        int thisTotpc = Integer.parseInt(PROPERTIES.getProperty(ConstantsFor.PR_TOTPC, "243"));
+        Runnable scanRun = () -> scanIt(request , model , new Date(lastSt));
+        int thisTotpc = Integer.parseInt(PROPERTIES.getProperty(ConstantsFor.PR_TOTPC , "259"));
         File scanTemp = new File("scan.tmp");
 
         if ((scanTemp.isFile() && scanTemp.exists())) {
             mapSizeBigger(model, request, lastSt, thisTotpc);
-        } else {
-                Future<?> submitScan = locExecutor.submit(scanRun);
-                submitScan.get(ConstantsFor.DELAY - 1, TimeUnit.MINUTES);
-                messageToUser.info("NetScanCtr.checkMapSizeAndDoAction", "submitScan.isDone()", " = " + submitScan.isDone());
+        }
+        else {
+            timeCheck(thisTotpc - lastScanMAP.size() , lastSt / 1000 , request , model);
             }
         }
 
@@ -500,13 +513,13 @@ public class NetScanCtr {
             Set<String> pcNames = netScannerSvcInstAW.getPCNamesPref(request.getQueryString());
             model.addAttribute(ConstantsFor.ATT_TITLE, new Date().toString())
                 .addAttribute("pc", new TForms().fromArray(pcNames, true));
-        } else {
+        }
+        else {
             lastScanMAP.clear();
             netScannerSvcInstAW.setOnLinePCsNum(0);
             Set<String> pCsAsync = netScannerSvcInstAW.getPcNames();
-            model.addAttribute(ConstantsFor.ATT_TITLE, lastScanDate)
-                .addAttribute("pc", new TForms().fromArray(pCsAsync, true));
-            AppComponents.lastNetScan().setTimeLastScan(new Date());
+            model.addAttribute(ConstantsFor.ATT_TITLE , lastScanDate).addAttribute("pc" , new TForms().fromArray(pCsAsync , true));
+            LastNetScan.getLastNetScan().setTimeLastScan(new Date());
         }
     }
 

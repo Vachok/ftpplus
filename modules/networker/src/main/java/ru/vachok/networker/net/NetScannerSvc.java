@@ -25,6 +25,7 @@ import ru.vachok.networker.systray.MessageToTray;
 import javax.servlet.http.HttpServletRequest;
 import java.io.*;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.Connection;
@@ -127,18 +128,12 @@ public class NetScannerSvc {
      */
     private String thrName = Thread.currentThread().getName();
 
-    /**
-     {@link AppComponents#lastNetScan()}
-     */
     private Map<String, Boolean> netWorkMap;
 
     private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
 
-    /**
-     @see AppComponents#lastNetScanMap()
-     */
     private NetScannerSvc() {
-        this.netWorkMap = AppComponents.lastNetScanMap();
+        this.netWorkMap = LastNetScan.getLastNetScan().getNetWork();
     }
     static {
         try {
@@ -197,13 +192,12 @@ public class NetScannerSvc {
                         integersOff.add(onlineNow);
                     }
                     StringBuilder stringBuilder = new StringBuilder();
-                    String namePP = "<center><h2>" + resultSet.getString("NamePP") +
-                        " information.<br></h2>" +
-                        "<font color = \"silver\">OnLines = " +
-                        timeNow.size() +
-                        ". Offline = " +
-                        integersOff.size() +
-                        ". TOTAL: " + (integersOff.size() + timeNow.size());
+                    String namePP = new StringBuilder()
+                        .append("<center><h2>").append(InetAddress.getByName(thePcLoc + ConstantsNet.DOMAIN_EATMEATRU)).append(" information.<br></h2>")
+                        .append("<font color = \"silver\">OnLines = ").append(timeNow.size())
+                        .append(". Offline = ").append(integersOff.size()).append(". TOTAL: ")
+                        .append(integersOff.size() + timeNow.size()).toString();
+    
                     stringBuilder
                         .append(namePP)
                         .append(". <br>");
@@ -213,7 +207,8 @@ public class NetScannerSvc {
             }
         } catch (SQLException e) {
             FileSystemWorker.error("NetScannerSvc.getInfoFromDB", e);
-        } catch (IndexOutOfBoundsException e) {
+        }
+        catch (IndexOutOfBoundsException | UnknownHostException e) {
             AppComponents.netScannerSvc().setThePc(e.getMessage() + " " + new TForms().fromArray(e, false));
         }
         return "ok";
@@ -259,11 +254,12 @@ public class NetScannerSvc {
         String str = timeNow.get(timeNow.size() - 1);
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(AppComponents.netScannerSvc().getThePc());
+    
         stringBuilder.append("Last online: ");
         stringBuilder.append(str);
         stringBuilder.append(" (");
         stringBuilder.append(")<br>Actual on: ");
-        stringBuilder.append(AppComponents.lastNetScan().getTimeLastScan());
+        stringBuilder.append(LastNetScan.getLastNetScan().getTimeLastScan());
         stringBuilder.append("</center></font>");
 
         String thePcWithDBInfo = stringBuilder.toString();
@@ -369,7 +365,8 @@ public class NetScannerSvc {
                     String pcOnline = stringBuilder.toString();
 
                     netWorkMap.put(printStr, true);
-                    PC_NAMES_SET.add(pcName + ":" + byName.getHostAddress() + pcOnline); LOGGER.info(pcName, pcOnline, onOffCounterAndLastUser);
+                    PC_NAMES_SET.add(pcName + ":" + byName.getHostAddress() + pcOnline);
+                    LOGGER.info(pcName, pcOnline, onOffCounterAndLastUser);
                     this.onLinePCsNum += 1;
                 }
             } catch (IOException e) {
@@ -444,7 +441,6 @@ public class NetScannerSvc {
      {@link LastNetScan#setTimeLastScan(java.util.Date)} - сейчас. <br>
      {@link NetScannerSvc#countStat()}. <br>
      {@link FileSystemWorker#writeFile(java.lang.String, java.lang.String)}
-     ({@link AppComponents#lastNetScanMap()}). <br>
      {@link ESender#info(java.lang.String, java.lang.String, java.lang.String)}.
      <p>
      {@link FileSystemWorker#writeFile(java.lang.String, java.util.List)} - {@code toFileList}. <br>
@@ -469,14 +465,14 @@ public class NetScannerSvc {
         toFileList.add(new TForms().fromArray(LOCAL_PROPS, false));
         LOCAL_PROPS.setProperty(ConstantsFor.PR_ONLINEPC, String.valueOf(onLinePCsNum));
 
-        AppComponents.lastNetScan().setTimeLastScan(new Date());
+        LastNetScan.getLastNetScan().setTimeLastScan(new Date());
 
         countStat();
 
         boolean isLastModSet = new File(ConstantsFor.class.getSimpleName() + ConstantsFor.FILEEXT_PROPERTIES).setLastModified(ConstantsFor.DELAY);
         boolean isForceSaved = new AppComponents().updateProps(LOCAL_PROPS);
 
-        FileSystemWorker.writeFile(ConstantsNet.BEANNAME_LASTNETSCAN, new TForms().fromArray(AppComponents.lastNetScanMap(), false));
+        FileSystemWorker.writeFile(ConstantsNet.BEANNAME_LASTNETSCAN , new TForms().fromArray(LastNetScan.getLastNetScan().getNetWork() , false));
         FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".getPCsAsync", toFileList);
         FileSystemWorker.writeFile("unused.ips", unusedNamesTree.stream());
 
@@ -514,7 +510,8 @@ public class NetScannerSvc {
             .append(false)
             .append("<br>").toString();
         PC_NAMES_SET.add(pcName + ":" + byName.getHostAddress() + " " + onLines);
-        netWorkMap.put(pcName + " last name is " + someMore, false); LOGGER.warn(pcName, onLines, someMore);
+        netWorkMap.put(pcName + " last name is " + someMore, false);
+        LOGGER.warn(pcName, onLines, someMore);
     }
 
 

@@ -840,3 +840,16 @@ NetScannerSvc
 MessageCons.log.lck
 do0213
 context.*
+do0009
+a156
+do0003
+do0008
+key.pem
+LogFileReader.sendToDB.err
+DataBaseHelper.sendToDB.err
+DelOldLogs.visitFile.err
+LogParser.readLog.err
+parsed/
+DataBaseHelper.log.lck
+LogFileReader.log.lck
+LogParser.log.lck

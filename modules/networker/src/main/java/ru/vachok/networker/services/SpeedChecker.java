@@ -1,11 +1,8 @@
 package ru.vachok.networker.services;
 
 
-
 import org.slf4j.LoggerFactory;
 import org.springframework.ui.Model;
-import ru.vachok.messenger.MessageCons;
-import ru.vachok.messenger.MessageFile;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.messenger.email.ESender;
 import ru.vachok.mysqlandprops.EMailAndDB.MailMessages;
@@ -47,12 +44,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
      Логер. {@link LoggerFactory}
      */
     private static final MessageToUser LOGGER = new MessageLocal(SpeedChecker.class.getSimpleName());
-
-    /**
-     Property name: lastworkstart
-     */
-    private static final String PR_LASTWORKSTART = "lastworkstart";
-
+    
     /**
      Выходной день
      */
@@ -61,9 +53,9 @@ public class SpeedChecker implements Callable<Long>, Runnable {
     /**
      Time as long
      <p>
-     Время из Базы. Берется из {@link AppComponents#getOrSetProps()} - {@link #PR_LASTWORKSTART}.
+     Время из Базы. Берется из {@link AppComponents#getOrSetProps()}
      */
-    private Long rtLong = Long.valueOf(AppComponents.getOrSetProps().getProperty(PR_LASTWORKSTART, "2"));
+    private Long rtLong = Long.valueOf(AppComponents.getOrSetProps().getProperty(ConstantsFor.PR_LASTWORKSTART, "2"));
 
     /**
      Метрика метода.
@@ -79,6 +71,32 @@ public class SpeedChecker implements Callable<Long>, Runnable {
             .append(ConstantsFor.STR_SEC_SPEND)
             .toString();
         LOGGER.info(msgTimeSp);
+    }
+    
+    /**
+     Запуск.
+     <p>
+     Если прошло 20 часов, с момента {@link #rtLong} или не {@link #isWeekEnd}, запуск {@link #setRtLong()}.
+     Иначе {@link #rtLong} = {@link AppComponents#getOrSetProps()}
+     */
+    @Override
+    public void run() {
+        long l = rtLong + TimeUnit.HOURS.toMillis(20);
+        boolean is20HRSSpend = System.currentTimeMillis() > l;
+        if (is20HRSSpend || !isWeekEnd) {
+            AppComponents.threadConfig().execByThreadConfig(this::setRtLong);
+        }
+        else {
+            this.rtLong = Long.valueOf(AppComponents.getOrSetProps().getProperty(ConstantsFor.PR_LASTWORKSTART));
+        }
+    }
+    
+    /**
+     @return {@link #rtLong}
+     */
+    @Override
+    public Long call() {
+        return rtLong;
     }
 
     /**
@@ -108,7 +126,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
                     long timeStamp = r.getTimestamp(ConstantsFor.DBFIELD_TIMESTAMP).getTime();
                     String msg = timeSpend + " time spend;\n" + timeStamp;
                     this.rtLong = timeStamp + TimeUnit.SECONDS.toMillis(90);
-                    properties.setProperty(PR_LASTWORKSTART, rtLong + "");
+                    properties.setProperty(ConstantsFor.PR_LASTWORKSTART, rtLong + "");
                     LOGGER.info(msg);
                 }
             }
@@ -119,30 +137,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
         methMetr(stArt);
     }
 
-    /**
-     @return {@link #rtLong}
-     */
-    @Override
-    public Long call() {
-        return rtLong;
-    }
 
-    /**
-     Запуск.
-     <p>
-     Если прошло 20 часов, с момента {@link #rtLong} или не {@link #isWeekEnd}, запуск {@link #setRtLong()}.
-     Иначе {@link #rtLong} = {@link AppComponents#getOrSetProps()} {@link #PR_LASTWORKSTART}.
-     */
-    @Override
-    public void run() {
-        long l = rtLong + TimeUnit.HOURS.toMillis(20);
-        boolean is20HRSSpend = System.currentTimeMillis() > l;
-        if (is20HRSSpend || !isWeekEnd) {
-            AppComponents.threadConfig().execByThreadConfig(this::setRtLong);
-        } else {
-            this.rtLong = Long.valueOf(AppComponents.getOrSetProps().getProperty(PR_LASTWORKSTART));
-        }
-    }
 
     /**
      Проверка и обновление БД, при необходимости.
@@ -150,8 +145,9 @@ public class SpeedChecker implements Callable<Long>, Runnable {
      @see SpeedChecker
      @since 21.01.2019 (14:20)
      */
-    public final class ChkMailAndUpdateDB implements Runnable {
-
+    public class ChkMailAndUpdateDB implements Runnable {
+    
+    
         /**
          ChkMailAndUpdateDB
          */
@@ -162,7 +158,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
          */
         private MailMessages mailMessages = new MailMessages();
 
-        private MessageToUser messageToUser = new MessageFile();
+        private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
 
 
         /**
@@ -192,14 +188,14 @@ public class SpeedChecker implements Callable<Long>, Runnable {
                     }
                     double avSpeed = 0.0;
                     for (Double aDouble : speedList) {
-                        avSpeed = avSpeed + aDouble;
+                        avSpeed += aDouble;
                     }
-                    avSpeed = avSpeed / speedList.size();
+                    avSpeed /= speedList.size();
                     double avTime = 0.0;
                     for (Float aFloat : timeList) {
-                        avTime = avTime + aFloat;
+                        avTime += aFloat;
                     }
-                    avTime = avTime / timeList.size();
+                    avTime /= timeList.size();
                     stringBuilder.append("Today is ").append(LocalDate.now().getDayOfWeek()).append("\n");
                     stringBuilder.append("AV speed at this day: ").append(avSpeed).append("\n");
                     stringBuilder.append("AV time: ").append(avTime);
@@ -300,13 +296,10 @@ public class SpeedChecker implements Callable<Long>, Runnable {
                     messageToUser.info(SpeedChecker.ChkMailAndUpdateDB.class.getSimpleName() + " " + ConstantsFor.thisPC(), true + " sending to base",
                         todayInfoStr + "\n" + chDB);
                 } else {
-                    messageToUser.infoNoTitles("No new messages");
+                    messageToUser.info(getClass().getSimpleName() + ".parseMsg", "mailMessages", " = " + mailMessages.getInbox().getMessageCount());
                 }
             } catch (MessagingException e) {
-                messageToUser.errorAlert(
-                    this.getClass().getSimpleName(),
-                    LocalDateTime.now() + " " + e.getMessage(),
-                    new TForms().fromArray(e, false));
+                messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".parseMsg" , e));
             }
         }
 
@@ -342,8 +335,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
                 return true;
             }
             catch(SQLException | IOException e){
-                new MessageCons().errorAlert(CLASS_NAME, "writeDB", e.getMessage());
-                FileSystemWorker.error("ChkMailAndUpdateDB.writeDB", e);
+                messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".writeDB" , e));
                 return false;
             }
         }
@@ -360,8 +352,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
                 inboxFolder.getMessage(m.getMessageNumber()).setFlag(Flags.Flag.DELETED, true);
                 inboxFolder.close(true);
             } catch (MessagingException e) {
-                new MessageCons().errorAlert(CLASS_NAME, "delMessage", e.getMessage());
-                FileSystemWorker.error("ChkMailAndUpdateDB.delMessage", e);
+                messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".delMessage", e));
             }
         }
 

@@ -10,18 +10,21 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
-import ru.vachok.messenger.MessageCons;
-import ru.vachok.messenger.MessageFile;
+import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.SshActs;
+import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
+import ru.vachok.networker.accesscontrol.inetstats.InternetUse;
 import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.controller.ServiceInfoCtrl;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetScannerSvc;
+import ru.vachok.networker.net.enums.ConstantsNet;
+import ru.vachok.networker.services.MessageLocal;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Calendar;
@@ -68,7 +71,8 @@ public class ActDirectoryCTRL {
      {@link PhotoConverterSRV}
      */
     private PhotoConverterSRV photoConverterSRV;
-
+    
+    private static MessageToUser messageToUser = new MessageLocal(ActDirectoryCTRL.class.getSimpleName());
 
     /**
      @param adSrv             {@link AppComponents#adSrv()}
@@ -79,9 +83,6 @@ public class ActDirectoryCTRL {
     public ActDirectoryCTRL(ADSrv adSrv, PhotoConverterSRV photoConverterSRV, SshActs sshActs) {
         this.photoConverterSRV = photoConverterSRV;
         this.adSrv = adSrv;
-/*Comment out 03.03.2019 (11:08)
-        this.sshActs = sshActs;
-*/
         Thread.currentThread().setName(getClass().getSimpleName());
     }
 
@@ -118,8 +119,6 @@ public class ActDirectoryCTRL {
         else{
             ADComputer adComputer = adSrv.getAdComputer();
             model.addAttribute(ConstantsFor.ATT_PHOTO_CONVERTER, photoConverterSRV);
-/*Comment out 03.03.2019 (11:08)
-            model.addAttribute(ConstantsFor.ATT_SSH_ACTS, sshActs);*/
             model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<p>" + visitor);
             model.addAttribute("pcs", new TForms().adPCMap(adComputer.getAdComputers(), true));
             model.addAttribute(ConstantsFor.ATT_USERS, new TForms().fromADUsersList(adUsers, true));
@@ -160,7 +159,7 @@ public class ActDirectoryCTRL {
             model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<br>" + visitor);
         }
         catch(NullPointerException e){
-            new MessageCons().errorAlert("ActDirectoryCTRL", "adFoto", e.getMessage());
+            messageToUser.errorAlert("ActDirectoryCTRL", "adFoto", e.getMessage());
             FileSystemWorker.error("ActDirectoryCTRL.adFoto", e);
         }
         return "adphoto";
@@ -180,6 +179,7 @@ public class ActDirectoryCTRL {
         NetScannerSvc netScannerSvc = AppComponents.netScannerSvc();
         netScannerSvc.setThePc(queryString);
         String attributeValue = netScannerSvc.getInfoFromDB();
+        InternetUse internetUse = new InetUserPCName();
         model.addAttribute(ConstantsFor.ATT_TITLE , queryString + " " + attributeValue);
         model.addAttribute(ConstantsFor.ATT_USERS , netScannerSvc.getInputWithInfoFromDB());
         try {
@@ -188,9 +188,9 @@ public class ActDirectoryCTRL {
             adSrvDetails = adSrvDetails.replaceAll("</br>" , "\n").replaceAll("<p>" , "\n\n").replaceAll("<p><b>" , "\n\n");
             long l = new Calendar.Builder().setTimeOfDay(0 , 0 , 0).build().getTimeInMillis();
             String finalAdSrvDetails = adSrvDetails;
-            new MessageFile().info(queryString , attributeValue , ServiceInfoCtrl.percToEnd(new Date(l) , 24));
+            messageToUser.info(queryString, attributeValue, ServiceInfoCtrl.percToEnd(new Date(l), 24));
         } catch (Exception e) {
-            model.addAttribute(ATT_DETAILS , e.getMessage());
+            model.addAttribute(ATT_DETAILS, "<center>" + internetUse.getUsage(queryString + ConstantsNet.DOMAIN_EATMEATRU) + "</center>");
         }
         model.addAttribute(ConstantsFor.ATT_FOOTER , new PageFooter().getFooterUtext());
         return "aditem";
