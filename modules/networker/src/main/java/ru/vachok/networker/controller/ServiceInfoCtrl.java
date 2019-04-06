@@ -8,6 +8,7 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.*;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.fileworks.CountSizeOfWorkDir;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.DiapazonedScan;
 import ru.vachok.networker.net.enums.ConstantsNet;
@@ -154,7 +155,9 @@ public class ServiceInfoCtrl {
     private void modModMaker( Model model , HttpServletRequest request , Visitor visitor ) throws ExecutionException, InterruptedException {
         this.visitor = ConstantsFor.getVis(request);
         Callable<Long> callWhenCome = new SpeedChecker();
+        Callable<String> filesWithSize = new CountSizeOfWorkDir();
         Future<Long> whenCome = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(callWhenCome);
+        Future<String> filesSizeFuture = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(filesWithSize);
         Date comeD = new Date(whenCome.get());
         String resValue = new StringBuilder()
             .append(MyCalen.toStringS()).append("<br><br>")
@@ -179,7 +182,7 @@ public class ServiceInfoCtrl {
             .append(String.format("%.02f",
                 (float) (ConstantsFor.getAtomicTime() - ConstantsFor.START_STAMP) / TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY))).append(" delays)</i>")
             .append(".<br> Состояние памяти (МБ): <font color=\"#82caff\">")
-            .append(ConstantsFor.getMemoryInfo())
+            .append(ConstantsFor.getMemoryInfo()).append("<details><summary> disk usage by program: </summary>").append(filesSizeFuture.get()).append("</details><br>")
             .append("</font><br>")
             .append(DiapazonedScan.getInstance().toString())
             .append("<br>")
