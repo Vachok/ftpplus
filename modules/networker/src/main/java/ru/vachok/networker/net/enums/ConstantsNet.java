@@ -149,6 +149,7 @@ public enum ConstantsNet { ;
     private static final BlockingDeque<String> ALL_DEVICES = new LinkedBlockingDeque<>(IPS_IN_VELKOM_VLAN);
 
     public static final String HOSTNAMEPATT_HOME = "home";
+    public static final String COM_INITPF = "sudo /etc/initpf.fw;exit";
 
     /**
      new {@link HashSet}

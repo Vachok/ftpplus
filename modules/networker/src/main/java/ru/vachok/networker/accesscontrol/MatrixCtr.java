@@ -151,7 +151,7 @@ public class MatrixCtr {
         qIsNull(model, request);
         model.addAttribute(ConstantsFor.ATT_HEAD, new PageFooter().getHeaderUtext());
         model.addAttribute("devscan",
-            "Since " + getPTVLastStamp() + MoreInfoGetter.getTVNetInfo() + "<br>" + currentProvider);
+            "Since " + getPTVLastStamp() + MoreInfoGetter.getTVNetInfo() + "<br><a href=\"/makeok\">" + currentProvider + "</a>");
         response.addHeader(ConstantsFor.HEAD_REFRESH, "120");
         return "starting";
     }

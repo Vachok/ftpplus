@@ -2,7 +2,10 @@ package ru.vachok.networker.fileworks;
 
 
 
-import java.io.File;
+import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.services.MessageLocal;
+
+import java.io.*;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -15,13 +18,40 @@ import java.util.stream.Stream;
  @since 06.04.2019 (17:48) */
 public class WriteFilesTo implements ProgrammFilesWriter {
 
+    private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
+    private String fileName;
+
+
+    public WriteFilesTo(String fileName) {
+        this.fileName = fileName;
+    }
+
+
     @Override public boolean writeFile(List<?> toWriteList) {
-        return false;
+        File file = new File(fileName);
+        writeFile(toWriteList.stream());
+        return file.exists();
     }
 
 
     @Override public boolean writeFile(Stream<?> toWriteStream) {
-        return false;
+        File file = new File(fileName);
+        try(OutputStream outputStream = new FileOutputStream(file);
+            PrintStream printStream = new PrintStream(outputStream , true)
+        )
+        {
+            toWriteStream.forEach(printStream::println);
+        }catch(IOException e){
+            messageToUser.error(e.getMessage());
+        }
+        return file.exists();
+    }
+
+
+    @Override public String error(String fileName , Exception e) {
+        this.fileName = fileName;
+        boolean isWritten = new CountSizeOfWorkDir(fileName).writeFile(e);
+        return fileName + " is " + isWritten;
     }
 
 
@@ -40,11 +70,9 @@ public class WriteFilesTo implements ProgrammFilesWriter {
     }
 
 
-    @Override public String error(String fileName , Exception e) {
-        boolean isWritten = new CountSizeOfWorkDir(fileName).writeFile(e);
-        return fileName + " is " + isWritten;
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
     }
-
 
     /**
      Computes a result, or throws an exception if unable to do so.

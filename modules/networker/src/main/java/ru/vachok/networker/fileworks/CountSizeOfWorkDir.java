@@ -128,6 +128,11 @@ public class CountSizeOfWorkDir extends SimpleFileVisitor<Path> implements Progr
     }
 
 
+    @Override public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
+
+
     private String getSizeOfDir() throws IOException {
         StringBuilder stringBuilder = new StringBuilder();
         Files.walkFileTree(Paths.get(".") , this);

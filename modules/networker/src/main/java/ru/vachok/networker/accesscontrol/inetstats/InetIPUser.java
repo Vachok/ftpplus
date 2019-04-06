@@ -30,7 +30,7 @@ public class InetIPUser implements InternetUse {
 
     private List<String> toWriteAllowed = new ArrayList<>();
 
-    private ProgrammFilesWriter programmFilesWriter = new WriteFilesTo();
+    private ProgrammFilesWriter programmFilesWriter = new WriteFilesTo(getClass().getSimpleName());
 
     @Override public String getUsage(String userCred) {
         StringBuilder stringBuilder = new StringBuilder();

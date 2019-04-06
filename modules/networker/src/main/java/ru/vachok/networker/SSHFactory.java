@@ -7,6 +7,8 @@ import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.fileworks.ProgrammFilesWriter;
+import ru.vachok.networker.fileworks.WriteFilesTo;
 import ru.vachok.networker.services.MessageLocal;
 
 import java.io.File;
@@ -16,7 +18,11 @@ import java.io.InputStream;
 import java.net.ConnectException;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
-import java.util.*;
+import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.RejectedExecutionException;
 
@@ -49,6 +55,8 @@ public class SSHFactory implements Callable<String> {
     private String userName;
 
     private String classCaller;
+
+    private ProgrammFilesWriter programmFilesWriter = new WriteFilesTo(getClass().getSimpleName());
 
     private Channel respChannel;
 
@@ -182,9 +190,6 @@ public class SSHFactory implements Callable<String> {
     public String call() {
         StringBuilder stringBuilder = new StringBuilder();
         File file = new File(classCaller + "_" + System.currentTimeMillis() + ".ssh");
-
-        stringBuilder.append(new Date()).append(".\n<br> SSH server is : \n<br>").append(connectToSrv).append(" executing: ").append(commandSSH).append("\n<br>end");
-
         byte[] bytes = new byte[ConstantsFor.KBYTE * 20];
 
         try (InputStream connect = connect()) {
@@ -202,7 +207,9 @@ public class SSHFactory implements Callable<String> {
         recList.add(stringBuilder.toString());
         recList.add(toString());
         recList.add(builderToStr);
-        FileSystemWorker.writeFile(file.getName(), recList);
+        programmFilesWriter.setFileName("ssh_" + LocalTime.now().toSecondOfDay() + ".log");
+        boolean isOk = programmFilesWriter.writeFile(recList);
+        stringBuilder.append(programmFilesWriter.getClass().getSimpleName()).append(" ").append(isOk);
         FileSystemWorker.copyOrDelFile(file, ".\\ssh\\" + file.getName(), true);
         return stringBuilder.toString();
     }

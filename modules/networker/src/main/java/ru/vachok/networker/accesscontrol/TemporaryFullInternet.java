@@ -32,8 +32,6 @@ import java.util.concurrent.TimeoutException;
 @Service
 public class TemporaryFullInternet implements Runnable {
 
-    private static final String INIT_PING_EXIT_STR = "sudo /etc/initpf.fw;exit";
-
     private static final MessageToUser messageToUser = new MessageLocal(TemporaryFullInternet.class.getSimpleName());
 
     private static final String SERVER_TO_CONNECT = whatServerNow();
@@ -43,7 +41,7 @@ public class TemporaryFullInternet implements Runnable {
     private static final Queue<String> MINI_LOGGER = new ArrayDeque<>();
 
     private static final SSHFactory SSH_FACTORY = new SSHFactory.Builder(SERVER_TO_CONNECT, "ls", TemporaryFullInternet.class.getSimpleName()).build();
-    
+
     private static final String TEMPORARY_FULL_INTERNET_RUN = "TemporaryFullInternet.run";
 
     @SuppressWarnings("CanBeFinal")
@@ -97,7 +95,7 @@ public class TemporaryFullInternet implements Runnable {
             String sshCommand = new StringBuilder()
                 .append(SshActs.SUDO_ECHO)
                 .append("\"").append(sshIP).append(" #")
-                .append(delStamp).append("\"").append(" >> /etc/pf/24hrs;").append(INIT_PING_EXIT_STR).toString();
+                .append(delStamp).append("\"").append(" >> /etc/pf/24hrs;").append(ConstantsNet.COM_INITPF).toString();
             SSH_FACTORY.setCommandSSH(sshCommand);
             retBuilder.append(SSH_FACTORY.call().replaceAll("\n", "<br>"));
         }
@@ -129,7 +127,8 @@ public class TemporaryFullInternet implements Runnable {
     private boolean doDelete( String x ) {
         AppComponents.threadConfig().thrNameSet("delSSH");
 
-        String sshC = new StringBuilder().append(SshActs.SSH_SUDO_GREP_V).append(x).append("' /etc/pf/24hrs > /etc/pf/24hrs_tmp;").append("sudo cp /etc/pf/24hrs_tmp /etc/pf/24hrs;").append(INIT_PING_EXIT_STR).toString();
+        String sshC = new StringBuilder().append(SshActs.SSH_SUDO_GREP_V).append(x).append("' /etc/pf/24hrs > /etc/pf/24hrs_tmp;").append("sudo cp /etc/pf/24hrs_tmp /etc/pf/24hrs;")
+            .append(ConstantsNet.COM_INITPF).toString();
         SSH_FACTORY.setCommandSSH(sshC);
         String sshCommand = SSH_FACTORY.call();
         messageToUser.info("TemporaryFullInternet.doDelete" , STR_SSH_COMMAND , " = " + sshCommand);
