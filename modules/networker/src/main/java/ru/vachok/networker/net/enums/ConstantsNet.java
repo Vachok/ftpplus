@@ -150,6 +150,7 @@ public enum ConstantsNet { ;
 
     public static final String HOSTNAMEPATT_HOME = "home";
     public static final String COM_INITPF = "sudo /etc/initpf.fw;exit";
+    public static final String COM_CAT24HRSLIST = "cat /etc/pf/24hrs;exit";
 
     /**
      new {@link HashSet}

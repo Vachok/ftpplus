@@ -51,6 +51,12 @@ public class TemporaryFullInternet implements Runnable {
 
     private long initStamp = System.currentTimeMillis();
 
+
+    TemporaryFullInternet(String userInput , long timeToApply) {
+        this.userInput = userInput;
+        this.delStamp = ConstantsFor.getAtomicTime() + TimeUnit.HOURS.toMillis(timeToApply);
+    }
+
     TemporaryFullInternet(String userInput, String numOfHoursStr) {
         this.userInput = userInput;
         this.delStamp = ConstantsFor.getAtomicTime() + TimeUnit.HOURS.toMillis(Long.parseLong(numOfHoursStr));
@@ -73,7 +79,7 @@ public class TemporaryFullInternet implements Runnable {
 
     String doAdd() {
         AppComponents.threadConfig().thrNameSet("addSSH");
-        SSH_FACTORY.setCommandSSH("cat /etc/pf/24hrs;exit");
+        SSH_FACTORY.setCommandSSH(ConstantsNet.COM_CAT24HRSLIST);
         NameOrIPChecker nameOrIPChecker = new NameOrIPChecker(userInput);
         String tempFile = SSH_FACTORY.call();
         StringBuilder retBuilder = new StringBuilder();
@@ -102,7 +108,6 @@ public class TemporaryFullInternet implements Runnable {
         MINI_LOGGER.add("doAdd(): " + retBuilder);
         return retBuilder.toString();
     }
-
 
     @Override
     public void run() {
@@ -171,7 +176,8 @@ public class TemporaryFullInternet implements Runnable {
 
     private void sshChecker() {
         AppComponents.threadConfig().thrNameSet("chkSSH");
-        SSH_FACTORY.setCommandSSH("cat /etc/pf/24hrs;exit"); String tempFile = SSH_FACTORY.call();
+        SSH_FACTORY.setCommandSSH(ConstantsNet.COM_CAT24HRSLIST);
+        String tempFile = SSH_FACTORY.call();
         String classMeth = "TemporaryFullInternet.sshChecker";
 
         final Map<String, Long> sshCheckerMap = ConstantsNet.getSshCheckerMap();
@@ -189,7 +195,6 @@ public class TemporaryFullInternet implements Runnable {
                 }
             });
         }
-
         for (Map.Entry<String, Long> entry : sshCheckerMap.entrySet()) {
             String x = entry.getKey();
             Long y = entry.getValue();

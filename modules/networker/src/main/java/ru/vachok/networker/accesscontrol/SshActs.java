@@ -597,11 +597,14 @@ public class SshActs {
 
         @PostMapping("/tmpfullnet")
         public String tempFullInetAccess(@ModelAttribute SshActs sshActs, Model model) {
+            long timeToApply = Long.parseLong(sshActs.getNumOfHours());
             model.addAttribute(ConstantsFor.ATT_SSH_ACTS, sshActs);
             model.addAttribute(ConstantsFor.ATT_TITLE, ConstantsFor.getMemoryInfo());
-            model.addAttribute("ok", new TemporaryFullInternet(sshActs.getUserInput(), sshActs.getNumOfHours()).doAdd());
+            model.addAttribute("ok" , new TemporaryFullInternet(sshActs.getUserInput() , timeToApply).doAdd());
             model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
-            sshActs.setNumOfHours(String.valueOf(Math.abs(TimeUnit.SECONDS.toHours(LocalTime.parse("18:30").toSecondOfDay() - LocalTime.now().toSecondOfDay()))));
+            timeToApply = Math.abs(TimeUnit.SECONDS.toHours(LocalTime.parse("18:30").toSecondOfDay() - LocalTime.now().toSecondOfDay()));
+            if(timeToApply == 0) timeToApply = 1;
+            sshActs.setNumOfHours(String.valueOf(timeToApply));
             return "ok";
         }
 
