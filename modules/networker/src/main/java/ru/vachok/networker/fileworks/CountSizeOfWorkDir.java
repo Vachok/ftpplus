@@ -120,6 +120,14 @@ public class CountSizeOfWorkDir extends SimpleFileVisitor<Path> implements Progr
         return file.exists();
     }
 
+
+    @Override public String error(String fileName , Exception e) {
+        boolean isWritten = writeFile(e);
+        if(isWritten) { return new File(fileName).getAbsolutePath(); }
+        else { return "NO FILE!"; }
+    }
+
+
     private String getSizeOfDir() throws IOException {
         StringBuilder stringBuilder = new StringBuilder();
         Files.walkFileTree(Paths.get(".") , this);

@@ -114,11 +114,12 @@ public class IntoApplication {
         EXECUTOR.submit(infoAndSched);
         EXECUTOR.submit(mySrv);
         EXECUTOR.submit(IntoApplication::getWeekPCStats);
+        SaveLogsToDB saveLogsToDB = new AppComponents().saveLogsToDB();
         if(!ConstantsFor.thisPC().toLowerCase().contains("home")) {
-            SaveLogsToDB saveLogsToDB = new AppComponents().saveLogsToDB();
             AppComponents.threadConfig().execByThreadConfig(() -> messageToUser
                 .warn(IntoApplication.class.getSimpleName() + ".main" , "startScheduled()" , " = " + saveLogsToDB.startScheduled()));
         }
+        else { AppComponents.threadConfig().execByThreadConfig(saveLogsToDB::showInfo); }
     }
 
 

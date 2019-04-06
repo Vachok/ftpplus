@@ -853,3 +853,5 @@ parsed/
 DataBaseHelper.log.lck
 LogFileReader.log.lck
 LogParser.log.lck
+CacheLogGetter.getKey.err
+CacheLogGetter.showLog.err

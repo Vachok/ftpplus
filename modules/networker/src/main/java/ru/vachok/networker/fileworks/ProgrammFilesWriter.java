@@ -22,4 +22,6 @@ public interface ProgrammFilesWriter extends Callable<String> {
     boolean writeFile(File toWriteFile);
 
     boolean writeFile(Exception e);
+
+    String error(String fileName , Exception e);
 }
