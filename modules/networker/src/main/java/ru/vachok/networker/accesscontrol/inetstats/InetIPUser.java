@@ -36,7 +36,8 @@ public class InetIPUser implements InternetUse {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("<details><summary>Посмотреть сайты, где был юзер (BETA)</summary>");
         Map<String, String> siteResponseMap = new HashMap<>();
-        stringBuilder.append("Показаны только <b>уникальные</b> сайты<br><br>");
+        stringBuilder.append("Показаны только <b>уникальные</b> сайты<br>");
+        stringBuilder.append(cleanDBClients1()).append("<p>");
         try (Connection c = MYSQL_DATA_SOURCE.getConnection()) {
             try (PreparedStatement p = c.prepareStatement(sql)) {
                 p.setString(1, userCred);
@@ -60,6 +61,20 @@ public class InetIPUser implements InternetUse {
         return stringBuilder.toString();
     }
 
+
+    private String cleanDBClients1() {
+        StringBuilder stringBuilder = new StringBuilder();
+        final String sql = "DELETE  FROM `inetstats` WHERE `site` LIKE '%clients1.google%'";
+        try(Connection c = MYSQL_DATA_SOURCE.getConnection();
+            PreparedStatement p = c.prepareStatement(sql)
+        )
+        {
+            stringBuilder.append(p.executeUpdate()).append(" rows in statement: ").append(sql);
+        }catch(SQLException e){
+            stringBuilder.append(e.getMessage());
+        }
+        return stringBuilder.toString();
+    }
 
     @Override public void showLog() {
         SaveLogsToDB saveLogsToDB = new AppComponents().saveLogsToDB();
