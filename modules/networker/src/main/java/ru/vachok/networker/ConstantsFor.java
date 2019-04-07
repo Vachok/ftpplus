@@ -375,7 +375,7 @@ public enum ConstantsFor {
     public static final String PR_APP_BUILDTIME = "buildTime";
 
     static final String STR_FINISH = " is finish";
-    
+
     private static final String[] STRINGS_TODELONSTART = {"visit_", ".tmp", ".log", ".tv"};
 
     /**
@@ -399,13 +399,14 @@ public enum ConstantsFor {
     public static final String STR_VERSIONINFO = "versioninfo";
     public static final String PR_FORCE = "force";
     public static final String PR_VLANNUM = "vlanNum";
-    
+
     /**
      Property name: lastworkstart
      */
     public static final String PR_LASTWORKSTART = "lastworkstart";
-    
-    
+    public static final String PRTABLE_GENERALJSCH = "general-jsch";
+
+
     /**
      @return {@link #MAIL_RULES}
      */

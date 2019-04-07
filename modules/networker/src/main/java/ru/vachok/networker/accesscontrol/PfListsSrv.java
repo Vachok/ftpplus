@@ -140,7 +140,7 @@ public class PfListsSrv {
 
             SSHFactory.@NotNull Builder builderInst = new SSHFactory.Builder(DEFAULT_CONNECT_SRV, commandForNatStr, getClass().getSimpleName());
             SSHFactory build = builderInst.build();
-            if (!new File("a161.pem").exists()) {
+        if(!new File(builderInst.pem()).exists()) {
                 throw new FileNotFoundException("NO CERTIFICATE a161.pem...");
             }
 

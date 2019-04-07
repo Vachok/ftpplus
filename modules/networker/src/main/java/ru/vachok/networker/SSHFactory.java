@@ -1,7 +1,9 @@
 package ru.vachok.networker;
 
 
+
 import com.jcraft.jsch.*;
+import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
@@ -11,12 +13,13 @@ import ru.vachok.networker.fileworks.ProgrammFilesWriter;
 import ru.vachok.networker.fileworks.WriteFilesTo;
 import ru.vachok.networker.services.MessageLocal;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.ConnectException;
 import java.nio.charset.StandardCharsets;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -44,7 +47,7 @@ public class SSHFactory implements Callable<String> {
 
     private static final MessageToUser messageToUser = new MessageLocal(SSHFactory.class.getSimpleName());
 
-    private InitProperties initProperties = new DBRegProperties("general-jsch");
+    private InitProperties initProperties = new DBRegProperties(ConstantsFor.PRTABLE_GENERALJSCH);
 
     private String connectToSrv;
 
@@ -214,10 +217,6 @@ public class SSHFactory implements Callable<String> {
         return stringBuilder.toString();
     }
 
-    private String pem() {
-        File pemFile = new File("a161.pem");
-        return pemFile.getAbsolutePath();
-    }
 
 
     /**
@@ -374,5 +373,32 @@ public class SSHFactory implements Callable<String> {
             return this;
         }
 
+
+        public String pem() {
+            return this.sshFactory.pem();
+        }
+    }
+
+
+    private String pem() {
+        File pemFile = new File("a161.pem");
+        if(pemFile.exists()) { return pemFile.getAbsolutePath(); }
+        else {
+            MysqlDataSource source = new DBRegProperties(ConstantsFor.PRTABLE_GENERALJSCH).getRegSourceForProperties();
+            String sqlGetKey = "SELECT *  FROM `sshid` WHERE `pc` LIKE 'do0213'";
+            try(Connection c = source.getConnection();
+                PreparedStatement p = c.prepareStatement(sqlGetKey);
+                ResultSet r = p.executeQuery();
+                OutputStream outputStream = new FileOutputStream(pemFile);
+                PrintStream printStream = new PrintStream(outputStream , true)
+            )
+            {
+                printStream.print(r.getString("pem"));
+            }catch(SQLException | IOException e){
+                messageToUser.error(e.getMessage());
+            }
+        }
+        pemFile.deleteOnExit();
+        return pemFile.getAbsolutePath();
     }
 }
