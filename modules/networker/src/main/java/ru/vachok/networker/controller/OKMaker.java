@@ -31,16 +31,16 @@ public class OKMaker {
         SSHFactory sshFactory = new SSHFactory.Builder(connectToSrv , "uname -a" , this.getClass().getSimpleName()).build();
         String titLe = connectToSrv + ": " + sshFactory.call();
         try {
-            sshFactory.setCommandSSH(ConstantsNet.COM_INITPF);
-            stringBuilder.append("<i>" + sshFactory.getCommandSSH() + " ||| executing:</i><br>");
+            sshFactory.setCommandSSH(ConstantsNet.COM_INITPF.replace("initpf" , "1915initpf"));
+            stringBuilder.append("<i>").append(sshFactory.getCommandSSH()).append(" ||| executing:</i><br>");
             stringBuilder.append(sshFactory.call()).append("<p>");
-        
+
             sshFactory.setCommandSSH("sudo squid -k reconfigure && exit");
-            stringBuilder.append("<i>" + sshFactory.getCommandSSH() + " ||| executing:</i><br>");
+            stringBuilder.append("<i>").append(sshFactory.getCommandSSH()).append(" ||| executing:</i><br>");
             stringBuilder.append(sshFactory.call()).append("<br>");
-        
+
             sshFactory.setCommandSSH("sudo pfctl -s nat;sudo pfctl -s rules;sudo ps ax | grep squid && exit");
-            stringBuilder.append("<i>" + sshFactory.getCommandSSH() + " ||| executing:</i><br>");
+            stringBuilder.append("<i>").append(sshFactory.getCommandSSH()).append(" ||| executing:</i><br>");
             stringBuilder.append(sshFactory.call()).append("<br>");
         }
         catch (IndexOutOfBoundsException e) {

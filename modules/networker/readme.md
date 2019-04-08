@@ -1,6 +1,3 @@
-## MatrixCtr
-### getFirst
-> Ссылка на /makeok убрана в currentProvider
-## SshActs
-### providerTraceStr
-> /makeok
+## OKMaker
+### makeOk
+> Неменяемый конфиг "1915initpf"
