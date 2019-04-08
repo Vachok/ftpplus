@@ -240,6 +240,7 @@ public class SshActs {
         SSHFactory sshFactory = new SSHFactory.Builder(DEFAULT_SERVER_TO_SSH, "traceroute ya.ru;exit", getClass().getSimpleName()).build();
         String callForRoute = null;
         Future<String> submitTrace = AppComponents.threadConfig().getTaskExecutor().submit(sshFactory);
+        stringBuilder.append("<br><a href=\"/makeok\">");
         try {
             callForRoute = submitTrace.get((long) (ConstantsFor.ONE_HOUR_IN_MIN / 2) , TimeUnit.SECONDS);
             if (callForRoute.contains("91.210.85.")) {
@@ -253,6 +254,7 @@ public class SshActs {
             stringBuilder.append(FileSystemWorker.error("SshActs.providerTraceStr" , e));
             Thread.currentThread().interrupt();
         }
+        stringBuilder.append("</a>");
         String logStr = "LOG: ";
         callForRoute = callForRoute + "<br>LOG: " + getInetLog();
         if (callForRoute.contains(logStr)) {
