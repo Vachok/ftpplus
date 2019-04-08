@@ -59,8 +59,9 @@ public class NetListKeeper {
              ObjectInputStream objectInputStream = new ObjectInputStream(inputStream)) {
             Map<String, String> fromFileMap = (ConcurrentMap<String, String>) objectInputStream.readObject();
             onLinesResolve.putAll(fromFileMap);
-        } catch (IOException | ClassNotFoundException e) {
-            FileSystemWorker.error("NetListKeeper.readMap", e);
+        }
+        catch (IOException | ClassNotFoundException ignore) {
+            //
         }
     }
 
@@ -82,7 +83,6 @@ public class NetListKeeper {
                 byte[] bytes = InetAddress.getByName(x.split(" ")[1]).getAddress();
                 onlineAddresses.add(InetAddress.getByAddress(bytes));
             } catch (UnknownHostException e) {
-                messageToUser.errorAlert("NetListKeeper", "onlinesAddressesList", e.getMessage());
                 FileSystemWorker.error(classMeth, e);
             }
         });

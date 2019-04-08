@@ -135,7 +135,6 @@ public class PfListsSrv {
      * <i>/home/kudr/inet.log</i>
      */
     private void buildFactory() throws FileNotFoundException {
-
             AppComponents.threadConfig().thrNameSet("bFact");
 
             SSHFactory.@NotNull Builder builderInst = new SSHFactory.Builder(DEFAULT_CONNECT_SRV, commandForNatStr, getClass().getSimpleName());

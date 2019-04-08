@@ -48,13 +48,13 @@ public class ServiceInfoCtrl {
     private static final String SERVICE_INFO_CTRL_CLOSE_APP = "ServiceInfoCtrl.closeApp";
 
     private ProgrammFilesReader filesReader = new ReadFileTo();
-
-    private boolean authReq = false;
+    
+    private boolean authReq;
 
     /**
      {@link Visitor}
      */
-    private Visitor visitor = null;
+    private Visitor visitor;
 
     private static final MessageToUser messageToUser = new MessageLocal(ServiceInfoCtrl.class.getSimpleName());
 
@@ -189,7 +189,7 @@ public class ServiceInfoCtrl {
             .append(".<br> Состояние памяти (МБ): <font color=\"#82caff\">")
             .append(ConstantsFor.getMemoryInfo()).append("<details><summary> disk usage by program: </summary>").append(filesSizeFuture.get()).append("</details><br>")
             .append("</font><br>")
-            .append(DiapazonedScan.getInstance().toString())
+            .append(DiapazonedScan.getInstance())
             .append("<br>")
             .append(AppComponents.threadConfig())
             .toString());
@@ -207,10 +207,13 @@ public class ServiceInfoCtrl {
     }
 
     private String getJREVers() {
-        return System.getProperty("java.version");
+        SSHFactory tailFac = new SSHFactory
+            .Builder("srv-inetstat.eatmeat.ru", "sudo tail /home/kudr/nohup.out", this.getClass().getSimpleName()).build();
+        String getTailStr = tailFac.call();
+        return System.getProperty("java.version") + getTailStr;
     }
-
-
+    
+    
     private String prepareRequest(HttpServletRequest request) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("<center><h3>Заголовки</h3></center>");

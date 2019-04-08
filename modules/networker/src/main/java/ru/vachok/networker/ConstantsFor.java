@@ -404,7 +404,8 @@ public enum ConstantsFor {
      Property name: lastworkstart
      */
     public static final String PR_LASTWORKSTART = "lastworkstart";
-    public static final String PRTABLE_GENERALJSCH = "general-jsch";
+    
+    public static final String DBTABLE_GENERALJSCH = "general-jsch";
 
 
     /**

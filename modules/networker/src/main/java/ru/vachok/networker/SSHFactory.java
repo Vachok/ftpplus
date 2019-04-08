@@ -4,7 +4,9 @@ package ru.vachok.networker;
 
 import com.jcraft.jsch.*;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
+import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
@@ -46,8 +48,8 @@ public class SSHFactory implements Callable<String> {
     private static final String SOURCE_CLASS = SSHFactory.class.getSimpleName();
 
     private static final MessageToUser messageToUser = new MessageLocal(SSHFactory.class.getSimpleName());
-
-    private InitProperties initProperties = new DBRegProperties(ConstantsFor.PRTABLE_GENERALJSCH);
+    
+    private InitProperties initProperties = new DBRegProperties(ConstantsFor.DBTABLE_GENERALJSCH);
 
     private String connectToSrv;
 
@@ -86,7 +88,7 @@ public class SSHFactory implements Callable<String> {
 
      @return the command ssh
      */
-    private String getCommandSSH() {
+    public String getCommandSSH() {
         return commandSSH;
     }
 
@@ -193,7 +195,7 @@ public class SSHFactory implements Callable<String> {
     public String call() {
         StringBuilder stringBuilder = new StringBuilder();
         File file = new File(classCaller + "_" + System.currentTimeMillis() + ".ssh");
-        byte[] bytes = new byte[ConstantsFor.KBYTE * 20];
+        byte[] bytes = new byte[ConstantsFor.KBYTE * 30];
 
         try (InputStream connect = connect()) {
             messageToUser.info(connect().available() + "", " bytes, ssh-channel is ", respChannel.isConnected() + "");
@@ -204,7 +206,7 @@ public class SSHFactory implements Callable<String> {
             messageToUser.errorAlert(getClass().getSimpleName(), "call", e.getMessage());
             FileSystemWorker.error("SSHFactory.call", e);
         }
-        messageToUser.warn(getClass().getSimpleName(), "CALL FROM CLASS: ", classCaller);
+        messageToUser.warn("CALL FROM CLASS: ", classCaller, ", to server: " + connectToSrv);
         List<String> recList = new ArrayList<>();
 
         recList.add(stringBuilder.toString());
@@ -378,24 +380,33 @@ public class SSHFactory implements Callable<String> {
             return this.sshFactory.pem();
         }
     }
-
-
-    private String pem() {
+    
+    
+    @NotNull private String pem() {
         File pemFile = new File("a161.pem");
-        if(pemFile.exists()) { return pemFile.getAbsolutePath(); }
+        if (pemFile.exists()) {
+            return pemFile.getAbsolutePath();
+        }
         else {
-            MysqlDataSource source = new DBRegProperties(ConstantsFor.PRTABLE_GENERALJSCH).getRegSourceForProperties();
+            MysqlDataSource source = new RegRuMysql().getDataSourceSchema(ConstantsFor.DBBASENAME_U0466446_LIFERPG);
+            String pemFileStr = "";
             String sqlGetKey = "SELECT *  FROM `sshid` WHERE `pc` LIKE 'do0213'";
-            try(Connection c = source.getConnection();
-                PreparedStatement p = c.prepareStatement(sqlGetKey);
-                ResultSet r = p.executeQuery();
-                OutputStream outputStream = new FileOutputStream(pemFile);
-                PrintStream printStream = new PrintStream(outputStream , true)
-            )
-            {
-                printStream.print(r.getString("pem"));
-            }catch(SQLException | IOException e){
-                messageToUser.error(e.getMessage());
+            try (Connection c = source.getConnection()) {
+                try (PreparedStatement p = c.prepareStatement(sqlGetKey)) {
+                    try (ResultSet r = p.executeQuery()) {
+                        while (r.next()) {
+                            pemFileStr = r.getString("pem");
+                        }
+                        try (OutputStream outputStream = new FileOutputStream(pemFile)) {
+                            try (PrintStream printStream = new PrintStream(outputStream, true)) {
+                                printStream.print(pemFileStr);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (SQLException | IOException e) {
+                messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".pem", e));
             }
         }
         pemFile.deleteOnExit();

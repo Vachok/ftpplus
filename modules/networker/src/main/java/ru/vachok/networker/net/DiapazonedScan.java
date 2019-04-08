@@ -145,15 +145,11 @@ public class DiapazonedScan implements Runnable {
 
     @SuppressWarnings({"resource", "IOResourceOpenedButNotSafelyClosed"})
     private void theNewLan() {
-
         Runnable execScan200210 = new DiapazonedScan.ExecScan(200, 210, "10.200.", new File(FILENAME_NEWLAN200210));
-        boolean is200210 = AppComponents.threadConfig().execByThreadConfig(execScan200210);
+        AppComponents.threadConfig().execByThreadConfig(execScan200210);
 
         Runnable execScan210220 = new DiapazonedScan.ExecScan(210 , 219 , "10.200." , new File(FILENAME_NEWLAN210));
-        boolean is210220 = AppComponents.threadConfig().execByThreadConfig(execScan210220);
-
-        messageToUser.info(getClass().getSimpleName() , "210-220" , " = " + is210220);
-        messageToUser.info(getClass().getSimpleName() , "200-210" , " = " + is200210);
+        AppComponents.threadConfig().execByThreadConfig(execScan210220);
     }
 
     private void startDo() {
@@ -175,15 +171,11 @@ public class DiapazonedScan implements Runnable {
      */
     @SuppressWarnings("MagicNumber")
     private void scanOldLan() {
-
         Runnable execScanOld0 = new DiapazonedScan.ExecScan(11, 16, "192.168.", new File(FILENAME_OLDLANTXT0));
         Runnable execScanOld1 = new DiapazonedScan.ExecScan(16, 21, "192.168.", new File(FILENAME_OLDLANTXT1));
-
-        boolean isOld0 = AppComponents.threadConfig().execByThreadConfig(execScanOld0);
-        boolean isOld1 = AppComponents.threadConfig().execByThreadConfig(execScanOld1);
-
-        messageToUser.info(getClass().getSimpleName() , "isOld1" , " = " + isOld1);
-        messageToUser.info(getClass().getSimpleName() , "isOld0" , " = " + isOld0);
+    
+        AppComponents.threadConfig().execByThreadConfig(execScanOld0);
+        AppComponents.threadConfig().execByThreadConfig(execScanOld1);
     }
 
     /**
@@ -191,8 +183,7 @@ public class DiapazonedScan implements Runnable {
      */
     private void scanServers() {
         for (DiapazonedScan.ExecScan r : runnablesScans) {
-            boolean isExecuting = AppComponents.threadConfig().execByThreadConfig(r);
-            messageToUser.info(getClass().getSimpleName() + ".scanServers" , "isExecuting" , " = " + isExecuting);
+            AppComponents.threadConfig().execByThreadConfig(r);
         }
     }
 
@@ -234,8 +225,7 @@ public class DiapazonedScan implements Runnable {
         sb.append("<br><b>\nfileTimes= </b><br>").append(fileTimes);
         return sb.toString();
     }
-
-
+    
     private long getRunMin() {
         List<Long> timeSpend = new ArrayList<>();
         for (DiapazonedScan.ExecScan e : runnablesScans) {

@@ -111,42 +111,6 @@ public class PfLists {
     }
 
     @Override
-    public int hashCode() {
-        int result = getVipNet()!=null? getVipNet().hashCode(): 0;
-        result = 31 * result + (getStdSquid()!=null? getStdSquid().hashCode(): 0);
-        result = 31 * result + (getLimitSquid()!=null? getLimitSquid().hashCode(): 0);
-        result = 31 * result + (getFullSquid()!=null? getFullSquid().hashCode(): 0);
-        result = 31 * result + ( int ) (getTimeStampToNextUpdLong() ^ (getTimeStampToNextUpdLong() >>> 32));
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if(this==o){
-            return true;
-        }
-        if(o==null || getClass()!=o.getClass()){
-            return false;
-        }
-
-        PfLists pfLists = ( PfLists ) o;
-
-        if(getTimeStampToNextUpdLong()!=pfLists.getTimeStampToNextUpdLong()){
-            return false;
-        }
-        if(getVipNet()!=null? !getVipNet().equals(pfLists.getVipNet()): pfLists.getVipNet()!=null){
-            return false;
-        }
-        if(getStdSquid()!=null? !getStdSquid().equals(pfLists.getStdSquid()): pfLists.getStdSquid()!=null){
-            return false;
-        }
-        if(getLimitSquid()!=null? !getLimitSquid().equals(pfLists.getLimitSquid()): pfLists.getLimitSquid()!=null){
-            return false;
-        }
-        return getFullSquid() != null ? getFullSquid().equals(pfLists.getFullSquid()) : pfLists.getFullSquid() == null;
-    }
-
-    @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("PfLists{");
         sb.append("fullSquid='").append(fullSquid).append('\'');

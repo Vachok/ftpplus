@@ -30,18 +30,22 @@ public class OKMaker {
         if(ConstantsFor.thisPC().toLowerCase().contains("home")) connectToSrv = "192.168.13.42";
         SSHFactory sshFactory = new SSHFactory.Builder(connectToSrv , "uname -a" , this.getClass().getSimpleName()).build();
         String titLe = connectToSrv + ": " + sshFactory.call();
-        sshFactory.setCommandSSH(ConstantsNet.COM_INITPF);
-        stringBuilder.append("<i>" + ConstantsNet.COM_INITPF + " ||| executing:</i><br>");
-        stringBuilder.append(sshFactory.call()).append("<p>");
-
-        sshFactory.setCommandSSH("sudo squid -k reconfigure;exit");
-        stringBuilder.append("<i>sudo squid -k reconfigure;exit ||| executing:</i><br>");
-        stringBuilder.append(sshFactory.call()).append("<br>");
-
-        sshFactory.setCommandSSH("sudo ps ax;exit");
-        stringBuilder.append("<i>sudo ps ax;exit ||| executing:</i><br>");
-        stringBuilder.append(sshFactory.call()).append("<br>");
-
+        try {
+            sshFactory.setCommandSSH(ConstantsNet.COM_INITPF);
+            stringBuilder.append("<i>" + sshFactory.getCommandSSH() + " ||| executing:</i><br>");
+            stringBuilder.append(sshFactory.call()).append("<p>");
+        
+            sshFactory.setCommandSSH("sudo squid -k reconfigure && exit");
+            stringBuilder.append("<i>" + sshFactory.getCommandSSH() + " ||| executing:</i><br>");
+            stringBuilder.append(sshFactory.call()).append("<br>");
+        
+            sshFactory.setCommandSSH("sudo pfctl -s nat;sudo pfctl -s rules;sudo ps ax | grep squid && exit");
+            stringBuilder.append("<i>" + sshFactory.getCommandSSH() + " ||| executing:</i><br>");
+            stringBuilder.append(sshFactory.call()).append("<br>");
+        }
+        catch (IndexOutOfBoundsException e) {
+            stringBuilder.append(e.getMessage());
+        }
         model.addAttribute(ConstantsFor.ATT_TITLE , titLe + " " + new Date());
         model.addAttribute("ok" , stringBuilder.toString().replace("\n" , "<br>"));
         model.addAttribute(ConstantsFor.ATT_FOOTER , new PageFooter().getFooterUtext());
