@@ -1,3 +1,4 @@
 ## OKMaker
-### makeOk
-> Неменяемый конфиг "1915initpf"
+### implements SSHService
+## SSHService
+> Interface для работ с ssh

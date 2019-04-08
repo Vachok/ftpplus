@@ -9,6 +9,7 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.net.enums.ConstantsNet;
+import ru.vachok.networker.services.SSHService;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
@@ -20,7 +21,7 @@ import java.util.Date;
 
  @since 06.04.2019 (20:49) */
 @Controller
-public class OKMaker {
+public class OKMaker implements SSHService {
 
     @GetMapping("/makeok")
     public String makeOk(Model model , HttpServletRequest request) {
@@ -28,27 +29,39 @@ public class OKMaker {
         StringBuilder stringBuilder = new StringBuilder();
         String connectToSrv = "192.168.13.30";
         if(ConstantsFor.thisPC().toLowerCase().contains("home")) connectToSrv = "192.168.13.42";
-        SSHFactory sshFactory = new SSHFactory.Builder(connectToSrv , "uname -a" , this.getClass().getSimpleName()).build();
-        String titLe = connectToSrv + ": " + sshFactory.call();
         try {
-            sshFactory.setCommandSSH(ConstantsNet.COM_INITPF.replace("initpf" , "1915initpf"));
-            stringBuilder.append("<i>").append(sshFactory.getCommandSSH()).append(" ||| executing:</i><br>");
-            stringBuilder.append(sshFactory.call()).append("<p>");
-
-            sshFactory.setCommandSSH("sudo squid -k reconfigure && exit");
-            stringBuilder.append("<i>").append(sshFactory.getCommandSSH()).append(" ||| executing:</i><br>");
-            stringBuilder.append(sshFactory.call()).append("<br>");
-
-            sshFactory.setCommandSSH("sudo pfctl -s nat;sudo pfctl -s rules;sudo ps ax | grep squid && exit");
-            stringBuilder.append("<i>").append(sshFactory.getCommandSSH()).append(" ||| executing:</i><br>");
-            stringBuilder.append(sshFactory.call()).append("<br>");
+            stringBuilder.append(execCommand(connectToSrv , connectToSrv));
         }
         catch (IndexOutOfBoundsException e) {
             stringBuilder.append(e.getMessage());
         }
-        model.addAttribute(ConstantsFor.ATT_TITLE , titLe + " " + new Date());
+        model.addAttribute(ConstantsFor.ATT_TITLE , connectToSrv + " at " + new Date());
         model.addAttribute("ok" , stringBuilder.toString().replace("\n" , "<br>"));
         model.addAttribute(ConstantsFor.ATT_FOOTER , new PageFooter().getFooterUtext());
         return "ok";
+    }
+
+
+    @Override public String execCommand(String connectToSrv , String commandToExec) {
+        SSHFactory sshFactory = new SSHFactory.Builder(connectToSrv , commandToExec , this.getClass().getSimpleName()).build();
+        StringBuilder stringBuilder = new StringBuilder();
+
+        sshFactory.setCommandSSH(ConstantsNet.COM_INITPF.replace("initpf" , "1915initpf"));
+        stringBuilder.append("<i>").append(sshFactory.getCommandSSH()).append(" ||| executing:</i><br>");
+        stringBuilder.append(sshFactory.call()).append("<p>");
+
+        sshFactory.setCommandSSH("sudo squid -k reconfigure && exit");
+        stringBuilder.append("<i>").append(sshFactory.getCommandSSH()).append(" ||| executing:</i><br>");
+        stringBuilder.append(sshFactory.call()).append("<br>");
+
+        sshFactory.setCommandSSH("sudo pfctl -s nat;sudo pfctl -s rules;sudo ps ax | grep squid && exit");
+        stringBuilder.append("<i>").append(sshFactory.getCommandSSH()).append(" ||| executing:</i><br>");
+        stringBuilder.append(sshFactory.call()).append("<br>");
+        return stringBuilder.toString();
+    }
+
+
+    @Override public void checkPem() {
+
     }
 }
