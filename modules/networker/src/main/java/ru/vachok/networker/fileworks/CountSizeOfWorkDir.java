@@ -57,7 +57,7 @@ public class CountSizeOfWorkDir extends SimpleFileVisitor<Path> implements Progr
 
 
     @Override public FileVisitResult visitFile(Path file , BasicFileAttributes attrs) throws IOException {
-        if(file.toFile().length() <= 0) {
+        if(file.toFile().length() <= 0 && !file.toFile().getName().equalsIgnoreCase("scan.tmp")) {
             try{
                 Files.deleteIfExists(file);
             }catch(Exception e){

@@ -48,7 +48,6 @@ import java.util.stream.Stream;
 @Scope(ConstantsFor.SINGLETON)
 public class NetScannerSvc {
 
-
     /**
      NetScannerSvc
      */
@@ -80,6 +79,7 @@ public class NetScannerSvc {
      Время инициализации
      */
     private final long startClassTime = System.currentTimeMillis();
+    private static final String METH_GETPCSASYNC = ".getPCsAsync";
 
     /**
      Компьютеры онлайн
@@ -197,7 +197,7 @@ public class NetScannerSvc {
                         .append("<font color = \"silver\">OnLines = ").append(timeNow.size())
                         .append(". Offline = ").append(integersOff.size()).append(". TOTAL: ")
                         .append(integersOff.size() + timeNow.size()).toString();
-    
+
                     stringBuilder
                         .append(namePP)
                         .append(". <br>");
@@ -254,7 +254,7 @@ public class NetScannerSvc {
         String str = timeNow.get(timeNow.size() - 1);
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(AppComponents.netScannerSvc().getThePc());
-    
+
         stringBuilder.append("Last online: ");
         stringBuilder.append(str);
         stringBuilder.append(" (");
@@ -298,6 +298,7 @@ public class NetScannerSvc {
      @see NetScanCtr#scanIt(HttpServletRequest , Model , Date)
      */
     Set<String> getPcNames() {
+        fileCreate(true);
         getPCsAsync();
         return PC_NAMES_SET;
     }
@@ -400,15 +401,14 @@ public class NetScannerSvc {
      */
     @SuppressWarnings("OverlyLongLambda")
     private void getPCsAsync() {
-        boolean fileCreate = fileCreate(true);
         try {
             new MessageToTray(new ActionCloseMsg(new MessageLocal(CLASS_NAME)))
-                .info("NetScannerSvc started scan" , ConstantsFor.getUpTime() , "" + onLinePCsNum + " last online PCs\n File: " + fileCreate);
+                .info("NetScannerSvc started scan" , ConstantsFor.getUpTime() , "" + onLinePCsNum + " last online PCs\n File: " + new File("scan.tmp").getAbsolutePath());
         }
         catch (NoClassDefFoundError e) {
-            messageToUser.error(getClass().getSimpleName() , ".getPCsAsync" , new TForms().fromArray(e.getStackTrace() , false));
+            messageToUser.error(getClass().getSimpleName() , METH_GETPCSASYNC , new TForms().fromArray(e.getStackTrace() , false));
         } catch (Exception e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".getPCsAsync" , e));
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + METH_GETPCSASYNC , e));
         }
         AppComponents.threadConfig().execByThreadConfig(()->{
             for (String s : ConstantsNet.getPcPrefixes()) {
@@ -452,7 +452,6 @@ public class NetScannerSvc {
     private void runAfterAllScan() {
         float upTime = (float) (TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime)) / ConstantsFor.ONE_HOUR_IN_MIN;
         List<String> toFileList = new ArrayList<>();
-
         String compNameUsers = new TForms().fromArray(ConstantsNet.getPCnameUsersMap() , false);
         String psUser = new TForms().fromArrayUsers(ConstantsNet.getPcUMap(), false);
         String msgTimeSp =
@@ -473,20 +472,19 @@ public class NetScannerSvc {
         boolean isForceSaved = new AppComponents().updateProps(LOCAL_PROPS);
 
         FileSystemWorker.writeFile(ConstantsNet.BEANNAME_LASTNETSCAN , new TForms().fromArray(LastNetScan.getLastNetScan().getNetWork() , false));
-        FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".getPCsAsync", toFileList);
+        FileSystemWorker.writeFile(this.getClass().getSimpleName() + METH_GETPCSASYNC , toFileList);
         FileSystemWorker.writeFile("unused.ips", unusedNamesTree.stream());
 
         boolean ownObject = new ExitApp(ConstantsFor.FILENAME_ALLDEVMAP , ConstantsNet.getAllDevices()).writeOwnObject();
         boolean isFile = fileCreate(false);
         File file = new File(ConstantsFor.FILENAME_ALLDEVMAP);
-        String bodyMsg = "Online: " + onLinePCsNum + ".\n" + upTime + " min uptime. \n\n" + "AppProps database updated: " + isForceSaved;
+        String bodyMsg = "Online: " + onLinePCsNum + ".\n" + upTime + " min uptime. \n\n" + "AppProps database updated: " + isForceSaved + "\n" + isFile + " = scan.tmp";
         try{
             new MessageSwing().infoTimer(50 , bodyMsg);
         }catch(Exception e){
             messageToUser.warn(bodyMsg);
         }
         this.onLinePCsNum = 0;
-        messageToUser.info(getClass().getSimpleName() + ".runAfterAllScan" , "fileCreate" , " = " + isFile);
         messageToUser.info(getClass().getSimpleName() , "LOCAL_PROPS" , " = " + new TForms().fromArray(LOCAL_PROPS , false));
     }
 
