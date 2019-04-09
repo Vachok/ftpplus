@@ -311,8 +311,6 @@ public class NetScannerSvc {
      <i>ПК офлайн:</i> <br>
      2. {@link #pcNameUnreachable(String, InetAddress)}. Если комп не пингуется. Добавить в {@link #netWorkMap}. <br>
      <i>ПК он-лайн:</i> <br>
-     3. {@link MoreInfoGetter#getSomeMore(String, boolean)}. Когда копм онлайн. Получает последний известный username. 4.
-     {@link MoreInfoGetter#getSomeMore(String, boolean)} получает статистику
      (сколько online, сколько offline) <br> Создаётся ссылка {@code a href=\"/ad?"<b>имя</b>/a}. Добавляет в {@link #netWorkMap} put форматированную строку
      {@code printStr, true} <br> Выводит в консоль
      через {@link #LOGGER} строку {@code printStr}. <br> Добавляет в {@link ConstantsNet#getPcNames()}, имя, ip и {@code online true}. <br> При
@@ -340,17 +338,17 @@ public class NetScannerSvc {
                 byName = InetAddress.getByName(pcName);
                 reachable = byName.isReachable(ConstantsFor.TIMEOUT_650);
                 ((MoreInfoGetter) infoGetter).setOnline(reachable);
-    
-                StringBuilder buildEr = new StringBuilder();
+
+
                 String someMore = infoGetter.getInfoAbout();
-    
-                if (reachable) {
-                    buildEr.append(someMore);
+
+                if(!reachable) {
+                    pcNameUnreachable(someMore , byName);
                 }
                 else {
-                    pcNameUnreachable(someMore, byName);
-                }
-                
+                    StringBuilder buildEr = new StringBuilder();
+                    buildEr.append(someMore);
+
                     String onOffCounterAndLastUser = buildEr.toString();
 
                     StringBuilder stringBuilder = new StringBuilder();
@@ -374,8 +372,8 @@ public class NetScannerSvc {
                     PC_NAMES_SET.add(pcName + ":" + byName.getHostAddress() + pcOnline);
                     LOGGER.info(pcName, pcOnline, onOffCounterAndLastUser);
                     this.onLinePCsNum += 1;
-    
-            } catch (IOException e) {
+                }
+            }catch(IOException e){
                 unusedNamesTree.add(e.getMessage());
             }
         }
@@ -499,10 +497,6 @@ public class NetScannerSvc {
      <p>
      Добавить в {@link #netWorkMap} , {@code online = false}.
      <p>
-     {@link MoreInfoGetter#getSomeMore(String, boolean)}. Получить более подробную информацию о ПК.
-     <p>
-
-     @param pcName имя ПК
      @param byName {@link InetAddress}
      @see #getPCNamesPref(String)
      */
@@ -511,9 +505,9 @@ public class NetScannerSvc {
             .append("online ")
             .append(false)
             .append("<br>").toString();
-        PC_NAMES_SET.add(byName.getHostName() + ":" + byName.getHostAddress() + " " + onLines);
-        netWorkMap.put(byName.getHostName() + " last name is " + someMore, false);
-        LOGGER.warn(byName.getHostName(), onLines, someMore);
+        PC_NAMES_SET.add(byName.toString() + ":" + byName.getHostAddress() + " " + onLines);
+        netWorkMap.put("<br>" + byName.toString() + " last name is " + someMore , false);
+        LOGGER.warn(byName.toString() , onLines , someMore);
     }
 
 

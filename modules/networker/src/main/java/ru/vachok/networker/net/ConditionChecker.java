@@ -4,6 +4,7 @@ package ru.vachok.networker.net;
 
 import org.springframework.ui.Model;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.abstr.InfoGetter;
@@ -37,20 +38,22 @@ class ConditionChecker implements InfoGetter {
 
 
     private static final String CLASS_NAME = ConditionChecker.class.getSimpleName();
-    
+
     private static Connection connection;
 
     private static MessageToUser messageToUser = new MessageLocal(ConditionChecker.class.getSimpleName());
-    
+
     private String sql;
-    
+
     private String pcName;
-    
+
+
     ConditionChecker(String sql, String pcName) {
         this.sql = sql;
         this.pcName = pcName;
     }
-    
+
+
     static {
         try {
             connection = new AppComponents().connection(ConstantsNet.DB_NAME);
@@ -59,12 +62,12 @@ class ConditionChecker implements InfoGetter {
             FileSystemWorker.error("ConditionChecker.static initializer", e);
         }
     }
-    
-    
+
     @Override public String getInfoAbout() {
         StringBuilder stringBuilder = new StringBuilder();
         try {
             if (InetAddress.getByName(pcName).isReachable(ConstantsFor.TIMEOUT_650 / 4)) {
+                stringBuilder.append(getUserResolved());
                 stringBuilder.append(onLinesCheck());
             }
             else {
@@ -76,17 +79,27 @@ class ConditionChecker implements InfoGetter {
         }
         return stringBuilder.toString();
     }
-    
-    /**
-     Проверяет имя пользователя когда ПК онлайн
-     <p>
 
-     @param sql запрос
-     @param pcName имя ПК
-     @return кол-во проверок и сколько был вкл/выкл
 
-     @see MoreInfoGetter#getSomeMore(String, boolean)
-     */
+    private String getUserResolved() {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(" <font color=\"white\">");
+        final String sqlLoc = "SELECT * FROM `pcuser` WHERE `pcName` LIKE ?";
+        try(Connection c = new RegRuMysql().getDataSourceSchema(ConstantsFor.DBDASENAME_U0466446_VELKOM).getConnection()){
+            try(PreparedStatement p = c.prepareStatement(sqlLoc)){
+                p.setString(1 , pcName);
+                try(ResultSet r = p.executeQuery()){
+                    while(r.next()) stringBuilder.append(r.getString(ConstantsFor.DB_FIELD_USER));
+                }
+            }
+        }catch(SQLException e){
+            stringBuilder.append(e.getMessage());
+        }
+        stringBuilder.append("</font> ");
+        return stringBuilder.toString();
+    }
+
+
     private String onLinesCheck() {
         AppComponents.threadConfig().thrNameSet("onChk");
         PCUserResolver pcUserResolver = PCUserResolver.getPcUserResolver();
@@ -126,14 +139,6 @@ class ConditionChecker implements InfoGetter {
             .append(" online times.").toString();
     }
 
-
-    /**
-     <b>Проверяет есть ли в БД имя пользователя</b>
-
-     @param sql запрос
-     @param pcName имя ПК
-     @return имя юзера, если есть.
-     */
     @SuppressWarnings("MethodWithMultipleLoops")
     private String offLinesCheckUser() {
         AppComponents.threadConfig().thrNameSet("offChk");

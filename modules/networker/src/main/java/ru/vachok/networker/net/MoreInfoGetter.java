@@ -24,24 +24,27 @@ import java.util.List;
 
  @since 25.01.2019 (11:06) */
 public class MoreInfoGetter implements InfoGetter {
-    
-    
+
+
     private static final String TV = "tv";
-    
+
     private String aboutWhat;
-    
+
     private boolean isOnline;
-    
+
     private MessageToUser messageToUser = new MessageCons(getClass().getSimpleName());
-    
+
+
     public MoreInfoGetter(String aboutWhat) {
         this.aboutWhat = aboutWhat;
     }
-    
+
+
     public void setOnline(boolean online) {
         isOnline = online;
     }
-    
+
+
     @Override public String getInfoAbout() {
         if (aboutWhat.equalsIgnoreCase(TV)) {
             return getTVNetInfo();
@@ -50,7 +53,8 @@ public class MoreInfoGetter implements InfoGetter {
             return getSomeMore(isOnline);
         }
     }
-    
+
+
     /**
      <b>ptv1</b> and <b>ptv2</b> ping stats
 
@@ -75,21 +79,17 @@ public class MoreInfoGetter implements InfoGetter {
         String ptv2Stats = "<font color=\"#00ff69\">" + frequencyOnPTV2 + " on " + ptv2Str + "</font> | <font color=\"red\">" + frequencyOffPTV2 + " off " + ptv2Str + "</font>";
         return String.join("<br>\n", ptv1Stats, ptv2Stats);
     }
-    
+
+
     /**
      Поиск имён пользователей компьютера
      <p>
-     Вернуть: <br> 1. {@link ConditionChecker#onLinesCheck(String, String)}. Если ПК онлайн. Прибавить 1 к {@link NetScannerSvc#onLinePCsNum}. <br> {@code select * from velkompc where NamePP like ?} <br>
-     2. {@link ConditionChecker#offLinesCheckUser(String, String)}. Если ПК офлайн. <br> {@code select * from pcuser where pcName like ?}
-     <p>
-
-     @param pcName   имя компьютера
      @param isOnline онлайн = true
      @return выдержка из БД (когда последний раз был онлайн + кол-во проверок) либо хранимый в БД юзернейм (для offlines)
      @see NetScannerSvc#getPCNamesPref(String)
      */
     private String getSomeMore(boolean isOnline) {
-    
+
         StringBuilder buildEr = new StringBuilder();
         if (isOnline) {
             buildEr.append("<i><font color=\"yellow\">last name is ");
@@ -97,7 +97,7 @@ public class MoreInfoGetter implements InfoGetter {
             AppComponents.netScannerSvc().setOnLinePCsNum(AppComponents.netScannerSvc().getOnLinePCsNum() + 1);
             buildEr.append(infoGetter.getInfoAbout());
             buildEr.append("</i></font> ");
-            buildEr.append(" | " + AppComponents.netScannerSvc().getOnLinePCsNum());
+            buildEr.append(" | ").append(AppComponents.netScannerSvc().getOnLinePCsNum());
         } else {
             InfoGetter infoGetter = new ConditionChecker("select * from pcuser where pcName like ?", aboutWhat);
             buildEr.append(infoGetter.getInfoAbout());
