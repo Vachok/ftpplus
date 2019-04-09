@@ -373,12 +373,14 @@ public enum ConstantsFor {
     public static final String PR_APP_BUILD = "build";
 
     public static final String PR_APP_BUILDTIME = "buildTime";
-    
+
     /**
      Домен с точкой
      */
     public static final String DOMAIN_EATMEATRU = ".eatmeat.ru";
-    
+    public static final double KM_A107 = 21.6;
+    public static final double KM_M9 = 31.2;
+
     static final String STR_FINISH = " is finish";
 
     private static final String[] STRINGS_TODELONSTART = {"visit_", ".tmp", ".log", ".tv"};
@@ -409,12 +411,12 @@ public enum ConstantsFor {
      Property name: lastworkstart
      */
     public static final String PR_LASTWORKSTART = "lastworkstart";
-    
+
     public static final String DBTABLE_GENERALJSCH = "general-jsch";
-    
+
     public static final String ATT_DEVSCAN = "devscan";
-    
-    
+
+
     /**
      @return {@link #MAIL_RULES}
      */

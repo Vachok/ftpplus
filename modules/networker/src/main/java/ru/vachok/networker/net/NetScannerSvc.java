@@ -505,7 +505,7 @@ public class NetScannerSvc {
             .append("online ")
             .append(false)
             .append("<br>").toString();
-        PC_NAMES_SET.add(byName.toString() + ":" + byName.getHostAddress() + " " + onLines);
+        PC_NAMES_SET.add(byName.getHostName() + ":" + byName.getHostAddress() + " " + onLines);
         netWorkMap.put("<br>" + byName.toString() + " last name is " + someMore , false);
         LOGGER.warn(byName.toString() , onLines , someMore);
     }
@@ -645,6 +645,7 @@ public class NetScannerSvc {
      */
     @SuppressWarnings({"OverlyComplexMethod", "OverlyLongMethod"})
     private String writeDB() throws SQLException {
+        int exUpInt = 0;
         List<String> list = new ArrayList<>();
         try (PreparedStatement p = connection.prepareStatement("insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow) values (?,?,?,?)")) {
             List<String> toSort = new ArrayList<>(PC_NAMES_SET);
@@ -719,11 +720,12 @@ public class NetScannerSvc {
                 p.setString(2, x2.split("<")[0]);
                 p.setString(3, pcSegment);
                 p.setBoolean(4, onLine);
-                p.executeUpdate();
+                exUpInt += p.executeUpdate();
                 list.add(x1 + " " + x2 + " " + pcSegment + " " + onLine);
             }
         }
         ConstantsNet.setPcNames(PC_NAMES_SET);
+        messageToUser.info(getClass().getSimpleName() + ".writeDB" , "executeUpdate: " , " = " + exUpInt);
         return new TForms().fromArray(list, true);
     }
 }

@@ -60,24 +60,6 @@ public class PCUserResolver extends ADSrv {
     private PCUserResolver() {
     }
 
-    /**
-     Записывает содержимое c-users в файл с именем ПК
-     <p>
-     Создаёт {@link String} пути к пользовательской папке, через
-     {@link StringBuilder#append(java.lang.String)}: "\\\\" + name + "\\c$\\Users\\"
-     <p>
-     1 {@link #getLastTimeUse(java.lang.String)}. Получение строки, с последним модифицированным файлом.
-     <p>
-     <b>{@link IOException}</b>:<br>
-     {@link FileSystemWorker#error(java.lang.String, java.lang.Exception)} <br>
-     {@link ArrayIndexOutOfBoundsException}:<br>
-     IGNORED
-     <p>
-     Если {@link #lastFileUse} != 0: {@link #recAutoDB(String, String)}
-
-     @param pcName имя компьютера
-     @see ru.vachok.networker.net.ConditionChecker#onLinesCheck(String, String)
-     */
     public void namesToFile(String pcName) {
         AppComponents.threadConfig().thrNameSet("pcfile-");
 
