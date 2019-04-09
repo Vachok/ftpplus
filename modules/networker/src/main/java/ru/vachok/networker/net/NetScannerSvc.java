@@ -14,6 +14,7 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ExitApp;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.abstr.InfoGetter;
 import ru.vachok.networker.ad.ActDirectoryCTRL;
 import ru.vachok.networker.componentsrepo.LastNetScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -193,7 +194,7 @@ public class NetScannerSvc {
                     }
                     StringBuilder stringBuilder = new StringBuilder();
                     String namePP = new StringBuilder()
-                        .append("<center><h2>").append(InetAddress.getByName(thePcLoc + ConstantsNet.DOMAIN_EATMEATRU)).append(" information.<br></h2>")
+                        .append("<center><h2>").append(InetAddress.getByName(thePcLoc + ConstantsFor.DOMAIN_EATMEATRU)).append(" information.<br></h2>")
                         .append("<font color = \"silver\">OnLines = ").append(timeNow.size())
                         .append(". Offline = ").append(integersOff.size()).append(". TOTAL: ")
                         .append(integersOff.size() + timeNow.size()).toString();
@@ -334,18 +335,22 @@ public class NetScannerSvc {
         InetAddress byName;
         String pcsString = "No name";
         for (String pcName : getCycleNames(prefixPcName)) {
+            InfoGetter infoGetter = new MoreInfoGetter(pcName);
             try {
                 byName = InetAddress.getByName(pcName);
                 reachable = byName.isReachable(ConstantsFor.TIMEOUT_650);
-                if (!reachable) {
-                    pcNameUnreachable(pcName, byName);
-                } else {
-                    StringBuilder buildEr = new StringBuilder();
-                    buildEr.append("<i><font color=\"yellow\">last name is ");
-                    buildEr.append(MoreInfoGetter.getSomeMore(pcName, false));
-                    buildEr.append("</i></font> ");
-                    buildEr.append(MoreInfoGetter.getSomeMore(pcName, true));
-
+                ((MoreInfoGetter) infoGetter).setOnline(reachable);
+    
+                StringBuilder buildEr = new StringBuilder();
+                String someMore = infoGetter.getInfoAbout();
+    
+                if (reachable) {
+                    buildEr.append(someMore);
+                }
+                else {
+                    pcNameUnreachable(someMore, byName);
+                }
+                
                     String onOffCounterAndLastUser = buildEr.toString();
 
                     StringBuilder stringBuilder = new StringBuilder();
@@ -369,7 +374,7 @@ public class NetScannerSvc {
                     PC_NAMES_SET.add(pcName + ":" + byName.getHostAddress() + pcOnline);
                     LOGGER.info(pcName, pcOnline, onOffCounterAndLastUser);
                     this.onLinePCsNum += 1;
-                }
+    
             } catch (IOException e) {
                 unusedNamesTree.add(e.getMessage());
             }
@@ -501,15 +506,14 @@ public class NetScannerSvc {
      @param byName {@link InetAddress}
      @see #getPCNamesPref(String)
      */
-    private void pcNameUnreachable(String pcName, InetAddress byName) {
-        String someMore = MoreInfoGetter.getSomeMore(pcName, false);
+    private void pcNameUnreachable(String someMore, InetAddress byName) {
         String onLines = new StringBuilder()
             .append("online ")
             .append(false)
             .append("<br>").toString();
-        PC_NAMES_SET.add(pcName + ":" + byName.getHostAddress() + " " + onLines);
-        netWorkMap.put(pcName + " last name is " + someMore, false);
-        LOGGER.warn(pcName, onLines, someMore);
+        PC_NAMES_SET.add(byName.getHostName() + ":" + byName.getHostAddress() + " " + onLines);
+        netWorkMap.put(byName.getHostName() + " last name is " + someMore, false);
+        LOGGER.warn(byName.getHostName(), onLines, someMore);
     }
 
 
@@ -594,7 +598,7 @@ public class NetScannerSvc {
             } else {
                 nameCount = String.format("%03d", ++pcNum);
             }
-            list.add(namePCPrefix + nameCount + ConstantsNet.DOMAIN_EATMEATRU);
+            list.add(namePCPrefix + nameCount + ConstantsFor.DOMAIN_EATMEATRU);
         }
         LOGGER.info(
             ConstantsFor.STR_INPUT_OUTPUT,

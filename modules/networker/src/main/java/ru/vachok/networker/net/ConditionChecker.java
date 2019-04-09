@@ -6,6 +6,7 @@ import org.springframework.ui.Model;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.abstr.InfoGetter;
 import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.user.PCUserResolver;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -14,6 +15,7 @@ import ru.vachok.networker.services.MessageLocal;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -31,20 +33,24 @@ import java.util.concurrent.TimeUnit;
 
  @since 31.01.2019 (0:20) */
 @SuppressWarnings("StaticMethodOnlyUsedInOneClass")
-class ConditionChecker {
+class ConditionChecker implements InfoGetter {
 
 
     private static final String CLASS_NAME = ConditionChecker.class.getSimpleName();
-
-    private static Connection connection = null;
+    
+    private static Connection connection;
 
     private static MessageToUser messageToUser = new MessageLocal(ConditionChecker.class.getSimpleName());
-
-    private ConditionChecker() {
-        AppComponents.threadConfig().thrNameSet("CondC");
+    
+    private String sql;
+    
+    private String pcName;
+    
+    ConditionChecker(String sql, String pcName) {
+        this.sql = sql;
+        this.pcName = pcName;
     }
-
-
+    
     static {
         try {
             connection = new AppComponents().connection(ConstantsNet.DB_NAME);
@@ -53,7 +59,24 @@ class ConditionChecker {
             FileSystemWorker.error("ConditionChecker.static initializer", e);
         }
     }
-
+    
+    
+    @Override public String getInfoAbout() {
+        StringBuilder stringBuilder = new StringBuilder();
+        try {
+            if (InetAddress.getByName(pcName).isReachable(ConstantsFor.TIMEOUT_650 / 4)) {
+                stringBuilder.append(onLinesCheck());
+            }
+            else {
+                stringBuilder.append(offLinesCheckUser());
+            }
+        }
+        catch (IOException e) {
+            stringBuilder.append(e.getMessage());
+        }
+        return stringBuilder.toString();
+    }
+    
     /**
      Проверяет имя пользователя когда ПК онлайн
      <p>
@@ -64,7 +87,7 @@ class ConditionChecker {
 
      @see MoreInfoGetter#getSomeMore(String, boolean)
      */
-    static String onLinesCheck(String sql, String pcName) {
+    private String onLinesCheck() {
         AppComponents.threadConfig().thrNameSet("onChk");
         PCUserResolver pcUserResolver = PCUserResolver.getPcUserResolver();
         Collection<Integer> onLine = new ArrayList<>();
@@ -112,7 +135,7 @@ class ConditionChecker {
      @return имя юзера, если есть.
      */
     @SuppressWarnings("MethodWithMultipleLoops")
-    static String offLinesCheckUser(String sql, String pcName) {
+    private String offLinesCheckUser() {
         AppComponents.threadConfig().thrNameSet("offChk");
 
         StringBuilder stringBuilder = new StringBuilder();
@@ -141,6 +164,9 @@ class ConditionChecker {
             messageToUser.errorAlert("ConditionChecker", "offLinesCheckUser", e.getMessage());
             FileSystemWorker.error("ConditionChecker.offLinesCheckUser", e);
             stringBuilder.append(e.getMessage());
+        }
+        catch (NullPointerException ignore) {
+            //
         }
         return "<font color=\"orange\">EXCEPTION in SQL dropped. <br>" + stringBuilder + "</font>";
     }

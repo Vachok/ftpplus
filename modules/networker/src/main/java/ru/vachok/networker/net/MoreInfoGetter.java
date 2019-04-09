@@ -1,9 +1,11 @@
 package ru.vachok.networker.net;
 
 
-
 import org.springframework.ui.Model;
+import ru.vachok.messenger.MessageCons;
+import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.abstr.InfoGetter;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.OtherKnownDevices;
 
@@ -21,15 +23,41 @@ import java.util.List;
  <p>
 
  @since 25.01.2019 (11:06) */
-public class MoreInfoGetter {
-
+public class MoreInfoGetter implements InfoGetter {
+    
+    
+    private static final String TV = "tv";
+    
+    private String aboutWhat;
+    
+    private boolean isOnline;
+    
+    private MessageToUser messageToUser = new MessageCons(getClass().getSimpleName());
+    
+    public MoreInfoGetter(String aboutWhat) {
+        this.aboutWhat = aboutWhat;
+    }
+    
+    public void setOnline(boolean online) {
+        isOnline = online;
+    }
+    
+    @Override public String getInfoAbout() {
+        if (aboutWhat.equalsIgnoreCase(TV)) {
+            return getTVNetInfo();
+        }
+        else {
+            return getSomeMore(isOnline);
+        }
+    }
+    
     /**
      <b>ptv1</b> and <b>ptv2</b> ping stats
 
      @return статистика пинга ptv
      @see ru.vachok.networker.accesscontrol.MatrixCtr#getFirst(HttpServletRequest, Model, HttpServletResponse)
      */
-    public static String getTVNetInfo() {
+    private static String getTVNetInfo() {
         List<String> readFileToList = FileSystemWorker.readFileToList(new File("ping.tv").getAbsolutePath());
         List<String> onList = new ArrayList<>();
         List<String> offList = new ArrayList<>();
@@ -47,7 +75,7 @@ public class MoreInfoGetter {
         String ptv2Stats = "<font color=\"#00ff69\">" + frequencyOnPTV2 + " on " + ptv2Str + "</font> | <font color=\"red\">" + frequencyOffPTV2 + " off " + ptv2Str + "</font>";
         return String.join("<br>\n", ptv1Stats, ptv2Stats);
     }
-
+    
     /**
      Поиск имён пользователей компьютера
      <p>
@@ -60,15 +88,20 @@ public class MoreInfoGetter {
      @return выдержка из БД (когда последний раз был онлайн + кол-во проверок) либо хранимый в БД юзернейм (для offlines)
      @see NetScannerSvc#getPCNamesPref(String)
      */
-    static String getSomeMore(String pcName, boolean isOnline) {
-        String sql;
+    private String getSomeMore(boolean isOnline) {
+    
+        StringBuilder buildEr = new StringBuilder();
         if (isOnline) {
-            sql = "select * from velkompc where NamePP like ?";
+            buildEr.append("<i><font color=\"yellow\">last name is ");
+            InfoGetter infoGetter = new ConditionChecker("select * from velkompc where NamePP like ?", aboutWhat);
             AppComponents.netScannerSvc().setOnLinePCsNum(AppComponents.netScannerSvc().getOnLinePCsNum() + 1);
-            return ConditionChecker.onLinesCheck(sql, pcName) + " | " + AppComponents.netScannerSvc().getOnLinePCsNum();
+            buildEr.append(infoGetter.getInfoAbout());
+            buildEr.append("</i></font> ");
+            buildEr.append(" | " + AppComponents.netScannerSvc().getOnLinePCsNum());
         } else {
-            sql = "select * from pcuser where pcName like ?";
-            return ConditionChecker.offLinesCheckUser(sql, pcName);
+            InfoGetter infoGetter = new ConditionChecker("select * from pcuser where pcName like ?", aboutWhat);
+            buildEr.append(infoGetter.getInfoAbout());
         }
+        return buildEr.toString();
     }
 }

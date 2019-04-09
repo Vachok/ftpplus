@@ -261,9 +261,9 @@ public class ADSrv implements Runnable {
      */
     String getDetails(String queryString) throws IOException {
         InternetUse internetUse = new InetUserPCName();
-        String internetUseUsage = internetUse.getUsage(queryString + ConstantsNet.DOMAIN_EATMEATRU);
+        String internetUseUsage = internetUse.getUsage(queryString + ConstantsFor.DOMAIN_EATMEATRU);
         internetUseUsage = internetUseUsage.replace("юзер", "компьютер");
-        if (InetAddress.getByName(queryString + ConstantsNet.DOMAIN_EATMEATRU).isReachable(ConstantsFor.TIMEOUT_650)) {
+        if (InetAddress.getByName(queryString + ConstantsFor.DOMAIN_EATMEATRU).isReachable(ConstantsFor.TIMEOUT_650)) {
             return getUserName(queryString) + "<p><center>" + internetUseUsage + "</center>";
         }
         else {
@@ -457,7 +457,7 @@ public class ADSrv implements Runnable {
         }
         ConstantsNet.getPCnameUsersMap().put(timesUserLast, filesAsFile);
         try {
-            recToDB(queryString + ConstantsNet.DOMAIN_EATMEATRU, timesUserLast.split(" ")[1]);
+            recToDB(queryString + ConstantsFor.DOMAIN_EATMEATRU, timesUserLast.split(" ")[1]);
         }
         catch (ArrayIndexOutOfBoundsException ignore) {
             //

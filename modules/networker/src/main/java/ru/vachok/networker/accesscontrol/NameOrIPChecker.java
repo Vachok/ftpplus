@@ -3,8 +3,8 @@ package ru.vachok.networker.accesscontrol;
 
 
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 
 import java.net.InetAddress;
@@ -22,7 +22,7 @@ public class NameOrIPChecker {
 
 
     /**
-     {@link Pattern} локального имени в домене {@link ConstantsNet#DOMAIN_EATMEATRU}
+     {@link Pattern} локального имени в домене {@link ConstantsFor#DOMAIN_EATMEATRU}
      */
     private static final Pattern PATTERN_NAME = Pattern.compile("^(([aAdDTtNn])(([0-3])|([oOTtPp])))((\\d{2})|(\\d{4}))");
 
@@ -53,7 +53,7 @@ public class NameOrIPChecker {
     }
 
     /**
-     Резолвинг имени компа, или допись {@link ConstantsNet#DOMAIN_EATMEATRU}
+     Резолвинг имени компа, или допись {@link ConstantsFor#DOMAIN_EATMEATRU}
      <p>
      {@link #resolveName(String)}
 
@@ -66,7 +66,7 @@ public class NameOrIPChecker {
         Matcher mName = PATTERN_NAME.matcher(userIn);
         Matcher mIP = PATTERN_IP.matcher(userIn);
         if(mName.matches()){
-            stringBuilder.append(userIn).append(ConstantsNet.DOMAIN_EATMEATRU);
+            stringBuilder.append(userIn).append(ConstantsFor.DOMAIN_EATMEATRU);
         }
         else{
             if(mIP.matches()){
@@ -114,7 +114,7 @@ public class NameOrIPChecker {
             }
             else{
                 if(mName.matches()){
-                    userIn += ConstantsNet.DOMAIN_EATMEATRU;
+                    userIn += ConstantsFor.DOMAIN_EATMEATRU;
                     inetAddress = InetAddress.getByName(userIn);
                 }
                 else{

@@ -8,6 +8,7 @@ import ru.vachok.messenger.email.ESender;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.abstr.Pinger;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;

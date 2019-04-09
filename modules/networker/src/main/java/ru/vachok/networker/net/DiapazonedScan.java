@@ -324,7 +324,8 @@ public class DiapazonedScan implements Runnable {
             String hostName = byAddress.getHostName();
             String hostAddress = byAddress.getHostAddress();
             if (byAddress.isReachable(timeOutMSec)) {
-                NetListKeeper.getI().getOnLinesResolve().put(hostAddress, hostName); NetScanFileWorker
+                NetListKeeper.getI().getOnLinesResolve().put(hostAddress, hostName);
+                NetScanFileWorker
                     .getI()
                     .setLastStamp(System.currentTimeMillis()); ALL_DEVICES_LOCAL_DEQUE.add("<font color=\"green\">" + hostName + FONT_BR_STR);
                 stringBuffer.append(hostAddress).append(" ").append(hostName).append(PAT_IS_ONLINE);

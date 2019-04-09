@@ -6,6 +6,7 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.abstr.InfoGetter;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
@@ -44,6 +45,8 @@ public class ScanOnline implements Runnable {
      {@link MessageLocal}
      */
     private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
+    
+    private InfoGetter tvInfo = new MoreInfoGetter("tv");
 
 
     @Override
@@ -62,7 +65,7 @@ public class ScanOnline implements Runnable {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder();
-        sb.append("<b>Since ").append("<i>").append(new Date(NetScanFileWorker.getI().getLastStamp())).append("</i>").append(MoreInfoGetter.getTVNetInfo()).append("</b><br><br>");
+        sb.append("<b>Since ").append("<i>").append(new Date(NetScanFileWorker.getI().getLastStamp())).append("</i>").append(tvInfo.getInfoAbout()).append("</b><br><br>");
         sb.append("Offline pc is <font color=\"red\"><b>").append(NET_LIST_KEEPER.getOffLines().size()).append(":</b></font><br>");
         sb.append("Online  pc is<font color=\"#00ff69\"> <b>").append(onLinesResolve.size()).append(":</b><br>").append(new TForms().fromArray(onLinesResolve, true)).append("</font><br>");
         return sb.toString();
