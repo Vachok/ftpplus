@@ -7,6 +7,7 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.services.MessageLocal;
 
+import java.awt.*;
 import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -77,6 +78,7 @@ public class CountSizeOfWorkDir extends SimpleFileVisitor<Path> implements Progr
 
 
     @Override public FileVisitResult visitFileFailed(Path file , IOException exc) throws IOException {
+        file.toFile().deleteOnExit();
         return FileVisitResult.CONTINUE;
     }
 
@@ -87,7 +89,7 @@ public class CountSizeOfWorkDir extends SimpleFileVisitor<Path> implements Progr
 
 
     @Override public boolean writeFile(List<?> toWriteList) {
-        return false;
+        throw new IllegalComponentStateException("Not ready");
     }
 
 
@@ -101,7 +103,7 @@ public class CountSizeOfWorkDir extends SimpleFileVisitor<Path> implements Progr
 
 
     @Override public boolean writeFile(Map<?, ?> toWriteMap) {
-        return false;
+        throw new IllegalComponentStateException("Not ready");
     }
 
 

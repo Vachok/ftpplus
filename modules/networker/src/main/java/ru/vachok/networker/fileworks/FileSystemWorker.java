@@ -28,7 +28,6 @@ import static ru.vachok.networker.ConstantsFor.FILEEXT_LOG;
 /**
  Вспомогательная работа с файлами.
 
- @deprecated 06.04.2019 (16:00)
  @since 19.12.2018 (9:57) */
 public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
 

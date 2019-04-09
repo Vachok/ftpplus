@@ -55,7 +55,6 @@ public class InetIPUser implements InternetUse {
                 }
             }
         }catch(SQLException e){
-            messageToUser.error(programmFilesWriter.error(getClass().getSimpleName() + ".getUsage" , e));
             stringBuilder.append(e.getMessage());
         }
         return stringBuilder.toString();
@@ -89,8 +88,8 @@ public class InetIPUser implements InternetUse {
             String[] noPref = siteString.split("//");
             siteString = noPref[1].split("/")[0];
             siteString = noPref[0] + "//" + siteString;
-        }catch(ArrayIndexOutOfBoundsException e){
-            messageToUser.error(programmFilesWriter.error(getClass().getSimpleName() + ".getUsage" , e));
+        }catch(ArrayIndexOutOfBoundsException ingore){
+            //
         }
         String responseString = r.getString("response") + " " + r.getString("method");
         siteResponseMap.putIfAbsent(siteString , responseString + " when: " + date);
