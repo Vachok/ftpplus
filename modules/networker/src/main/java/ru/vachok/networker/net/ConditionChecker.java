@@ -8,7 +8,6 @@ import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.abstr.InfoGetter;
-import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.user.PCUserResolver;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
@@ -16,7 +15,6 @@ import ru.vachok.networker.services.MessageLocal;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -46,11 +44,19 @@ class ConditionChecker implements InfoGetter {
     private String sql;
 
     private String pcName;
+    
+    private boolean isOnline;
 
 
     ConditionChecker(String sql, String pcName) {
         this.sql = sql;
-        this.pcName = pcName;
+        if (pcName.contains(":")) {
+            this.pcName = pcName.split(":")[0];
+            this.isOnline = pcName.split(":")[1].contains("true");
+        }
+        else {
+            this.pcName = pcName;
+        }
     }
 
 
@@ -65,17 +71,12 @@ class ConditionChecker implements InfoGetter {
 
     @Override public String getInfoAbout() {
         StringBuilder stringBuilder = new StringBuilder();
-        try {
-            if (InetAddress.getByName(pcName).isReachable(ConstantsFor.TIMEOUT_650 / 4)) {
-                stringBuilder.append(getUserResolved());
-                stringBuilder.append(onLinesCheck());
-            }
-            else {
-                stringBuilder.append(offLinesCheckUser());
-            }
+        if (isOnline) {
+            stringBuilder.append(getUserResolved());
+            stringBuilder.append(onLinesCheck());
         }
-        catch (IOException e) {
-            stringBuilder.append(e.getMessage());
+        else {
+            stringBuilder.append(offLinesCheckUser());
         }
         return stringBuilder.toString();
     }
@@ -83,7 +84,7 @@ class ConditionChecker implements InfoGetter {
 
     private String getUserResolved() {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(" <font color=\"white\">");
+        stringBuilder.append("<b><font color=\"white\">");
         final String sqlLoc = "SELECT * FROM `pcuser` WHERE `pcName` LIKE ?";
         try(Connection c = new RegRuMysql().getDataSourceSchema(ConstantsFor.DBDASENAME_U0466446_VELKOM).getConnection()){
             try(PreparedStatement p = c.prepareStatement(sqlLoc)){
@@ -95,7 +96,7 @@ class ConditionChecker implements InfoGetter {
         }catch(SQLException e){
             stringBuilder.append(e.getMessage());
         }
-        stringBuilder.append("</font> ");
+        stringBuilder.append("</b></font> ");
         return stringBuilder.toString();
     }
 
@@ -103,22 +104,22 @@ class ConditionChecker implements InfoGetter {
     private String onLinesCheck() {
         AppComponents.threadConfig().thrNameSet("onChk");
         PCUserResolver pcUserResolver = PCUserResolver.getPcUserResolver();
+        String classMeth = "ConditionChecker.onLinesCheck";
+        Runnable rPCResolver = ()->pcUserResolver.namesToFile(pcName);
         Collection<Integer> onLine = new ArrayList<>();
         Collection<Integer> offLine = new ArrayList<>();
         StringBuilder stringBuilder = new StringBuilder();
-        String classMeth = "ConditionChecker.onLinesCheck";
+    
+        AppComponents.threadConfig().execByThreadConfig(rPCResolver);
+        
         try (
             PreparedStatement statement = connection.prepareStatement(sql)) {
-            Runnable rPCResolver = ()->pcUserResolver.namesToFile(pcName);
-            AppComponents.threadConfig().execByThreadConfig(rPCResolver);
             statement.setString(1, pcName);
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
-                    ADComputer adComputer = new ADComputer();
                     int onlineNow = resultSet.getInt(ConstantsNet.ONLINE_NOW);
                     if (onlineNow == 1) {
                         onLine.add(onlineNow);
-                        adComputer.setDnsHostName(pcName);
                     }
                     if (onlineNow == 0) {
                         offLine.add(onlineNow);
@@ -138,42 +139,45 @@ class ConditionChecker implements InfoGetter {
             .append(onLine.size())
             .append(" online times.").toString();
     }
-
-    @SuppressWarnings("MethodWithMultipleLoops")
+    
     private String offLinesCheckUser() {
         AppComponents.threadConfig().thrNameSet("offChk");
-
+        String methName = "offLinesCheckUser";
         StringBuilder stringBuilder = new StringBuilder();
-        try (
-            PreparedStatement p = connection.prepareStatement(sql);
-            PreparedStatement p1 = connection.prepareStatement(sql.replaceAll(ConstantsFor.DBFIELD_PCUSER, ConstantsFor.DBFIELD_PCUSERAUTO))) {
+        try (PreparedStatement p = connection.prepareStatement(sql)) {
             p.setString(1, pcName);
-            p1.setString(1, pcName);
-            try (ResultSet resultSet = p.executeQuery();
-                 ResultSet resultSet1 = p1.executeQuery()) {
-                while (resultSet.next()) {
-                    stringBuilder.append("<b>")
-                        .append(resultSet.getString(ConstantsFor.DB_FIELD_USER).trim()).append("</b> (time: ")
-                        .append(resultSet.getString(ConstantsNet.DB_FIELD_WHENQUERIED)).append(")");
-                }
-                while (resultSet1.next()) {
-                    if (resultSet1.last()) {
-                        return stringBuilder
-                            .append("    (AutoResolved name: ")
-                            .append(resultSet1.getString(ConstantsFor.DB_FIELD_USER).trim()).append(" (time: ")
-                            .append(resultSet1.getString(ConstantsNet.DB_FIELD_WHENQUERIED)).append("))").toString();
+            try (PreparedStatement p1 = connection.prepareStatement(sql.replaceAll(ConstantsFor.DBFIELD_PCUSER, ConstantsFor.DBFIELD_PCUSERAUTO))) {
+                p1.setString(1, pcName);
+                try (ResultSet resultSet = p.executeQuery()) {
+                    while (resultSet.next()) {
+                        stringBuilder.append("<b>")
+                            .append(resultSet.getString(ConstantsFor.DB_FIELD_USER).trim()).append("</b> (time: ")
+                            .append(resultSet.getString(ConstantsNet.DB_FIELD_WHENQUERIED)).append(")");
+                    }
+                    if (resultSet.wasNull()) stringBuilder.append("<font color=\"red\">user name is null </font>");
+                    try (ResultSet resultSet1 = p1.executeQuery()) {
+                        while (resultSet1.next()) {
+                            if (resultSet1.last()) {
+                                stringBuilder
+                                    .append("    (AutoResolved name: ")
+                                    .append(resultSet1.getString(ConstantsFor.DB_FIELD_USER).trim()).append(" (time: ")
+                                    .append(resultSet1.getString(ConstantsNet.DB_FIELD_WHENQUERIED)).append("))").toString();
+                            }
+                            if (resultSet1.wasNull()) stringBuilder.append("<font color=\"orange\">auto resolve is null </font>");
+                        }
                     }
                 }
             }
-        } catch (SQLException e) {
-            messageToUser.errorAlert("ConditionChecker", "offLinesCheckUser", e.getMessage());
-            FileSystemWorker.error("ConditionChecker.offLinesCheckUser", e);
+        }
+        catch (SQLException | NullPointerException e) {
+            
+            messageToUser.errorAlert("ConditionChecker", methName, e.getMessage());
+            stringBuilder.append("<font color=\"red\">EXCEPTION in SQL dropped. <b>");
             stringBuilder.append(e.getMessage());
+            stringBuilder.append("</b></font>");
         }
-        catch (NullPointerException ignore) {
-            //
-        }
-        return "<font color=\"orange\">EXCEPTION in SQL dropped. <br>" + stringBuilder + "</font>";
+        if (stringBuilder.toString().isEmpty()) stringBuilder.append(getClass().getSimpleName()).append(" <font color=\"red\">").append(methName).append(" null</font>");
+        return stringBuilder.toString();
     }
 
 

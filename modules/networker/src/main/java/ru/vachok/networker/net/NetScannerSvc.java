@@ -15,7 +15,6 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ExitApp;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.InfoGetter;
-import ru.vachok.networker.ad.ActDirectoryCTRL;
 import ru.vachok.networker.componentsrepo.LastNetScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
@@ -329,59 +328,16 @@ public class NetScannerSvc {
      */
     Set<String> getPCNamesPref(String prefixPcName) {
         final long startMethTime = System.currentTimeMillis();
-        boolean reachable;
-        InetAddress byName;
         String pcsString = "No name";
         for (String pcName : getCycleNames(prefixPcName)) {
-            InfoGetter infoGetter = new MoreInfoGetter(pcName);
-            try {
-                byName = InetAddress.getByName(pcName);
-                reachable = byName.isReachable(ConstantsFor.TIMEOUT_650);
-                ((MoreInfoGetter) infoGetter).setOnline(reachable);
-
-
-                String someMore = infoGetter.getInfoAbout();
-
-                if(!reachable) {
-                    pcNameUnreachable(someMore , byName);
-                }
-                else {
-                    StringBuilder buildEr = new StringBuilder();
-                    buildEr.append(someMore);
-
-                    String onOffCounterAndLastUser = buildEr.toString();
-
-                    StringBuilder stringBuilder = new StringBuilder();
-                    stringBuilder.append(" online ");
-                    stringBuilder.append(true);
-                    stringBuilder.append("<br>");
-
-                    StringBuilder builder = new StringBuilder();
-                    builder.append("<br><b><a href=\"/ad?");
-                    builder.append(pcName.split(".eatm")[0]);
-                    builder.append("\" >");
-                    builder.append(pcName);
-                    builder.append("</b></a>     ");
-                    builder.append(onOffCounterAndLastUser);
-                    builder.append(". ");
-
-                    String printStr = builder.toString();
-                    String pcOnline = stringBuilder.toString();
-
-                    netWorkMap.put(printStr, true);
-                    PC_NAMES_SET.add(pcName + ":" + byName.getHostAddress() + pcOnline);
-                    LOGGER.info(pcName, pcOnline, onOffCounterAndLastUser);
-                    this.onLinePCsNum += 1;
-                }
-            }catch(IOException e){
-                unusedNamesTree.add(e.getMessage());
-            }
+            pcNameInfo(pcName);
         }
         netWorkMap.put("<h4>" + prefixPcName + "     " + PC_NAMES_SET.size() + "</h4>", true);
         try {
             pcsString = writeDB();
-        } catch (SQLException e) {
-            LOGGER.errorAlert(CLASS_NAME , "getPCNamesPref" , e.getMessage());
+        }
+        catch (SQLException e) {
+            LOGGER.errorAlert(CLASS_NAME, "getPCNamesPref", e.getMessage());
             FileSystemWorker.error("NetScannerSvc.getPCNamesPref", e);
         }
         String elapsedTime = "<b>Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethTime) + " sec.</b> " + LocalTime.now();
@@ -390,8 +346,45 @@ public class NetScannerSvc {
         LOGGER.info(pcsString);
         return PC_NAMES_SET;
     }
-
-
+    
+    private void pcNameInfo(String pcName) {
+        InfoGetter infoGetter = new MoreInfoGetter(pcName);
+        boolean reachable;
+        InetAddress byName;
+        try {
+            byName = InetAddress.getByName(pcName);
+            reachable = byName.isReachable(ConstantsFor.TIMEOUT_650);
+            ((MoreInfoGetter) infoGetter).setOnline(reachable);
+            
+            String someMore = infoGetter.getInfoAbout();
+            if (!reachable) {
+                pcNameUnreachable(someMore, byName);
+            }
+            else {
+                StringBuilder builder = new StringBuilder();
+                builder.append("<br><b><a href=\"/ad?");
+                builder.append(pcName.split(".eatm")[0]);
+                builder.append("\" >");
+                builder.append(pcName);
+                builder.append("</b></a>     ");
+                builder.append(someMore);
+                builder.append(". ");
+                
+                String printStr = builder.toString();
+                String pcOnline = "online is true<br>";
+                
+                netWorkMap.put(printStr, true);
+                PC_NAMES_SET.add(pcName + ":" + byName.getHostAddress() + pcOnline);
+                LOGGER.info(pcName, pcOnline, someMore);
+                this.onLinePCsNum += 1;
+            }
+        }
+        catch (IOException e) {
+            unusedNamesTree.add(e.getMessage());
+        }
+    }
+    
+    
     /**
      Основной скан-метод.
      <p>
@@ -406,7 +399,7 @@ public class NetScannerSvc {
     private void getPCsAsync() {
         try {
             new MessageToTray(new ActionCloseMsg(new MessageLocal(CLASS_NAME)))
-                .info("NetScannerSvc started scan" , ConstantsFor.getUpTime() , "" + onLinePCsNum + " last online PCs\n File: " + new File("scan.tmp").getAbsolutePath());
+                .info("NetScannerSvc started scan", ConstantsFor.getUpTime(), "" + onLinePCsNum + " last online PCs\n File: " + new File("scan.tmp").getAbsolutePath());
         }
         catch (NoClassDefFoundError e) {
             messageToUser.error(getClass().getSimpleName() , METH_GETPCSASYNC , new TForms().fromArray(e.getStackTrace() , false));
@@ -506,7 +499,7 @@ public class NetScannerSvc {
             .append(false)
             .append("<br>").toString();
         PC_NAMES_SET.add(byName.getHostName() + ":" + byName.getHostAddress() + " " + onLines);
-        netWorkMap.put("<br>" + byName.toString() + " last name is " + someMore , false);
+        netWorkMap.put("<br>" + byName + " last name is " + someMore, false);
         LOGGER.warn(byName.toString() , onLines , someMore);
     }
 
@@ -725,7 +718,7 @@ public class NetScannerSvc {
             }
         }
         ConstantsNet.setPcNames(PC_NAMES_SET);
-        messageToUser.info(getClass().getSimpleName() + ".writeDB" , "executeUpdate: " , " = " + exUpInt);
+        messageToUser.warn(getClass().getSimpleName() + ".writeDB", "executeUpdate: ", " = " + exUpInt);
         return new TForms().fromArray(list, true);
     }
 }

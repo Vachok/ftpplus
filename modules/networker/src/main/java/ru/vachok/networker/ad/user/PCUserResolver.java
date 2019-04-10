@@ -8,7 +8,6 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 
 import java.io.*;
@@ -111,7 +110,7 @@ public class PCUserResolver extends ADSrv {
     private void recAutoDB(String pcName, String lastFileUse) {
 
         String sql = "insert into pcuser (pcName, userName, lastmod, stamp) values(?,?,?,?)";
-        try (Connection connection = new AppComponents().connection(ConstantsNet.DB_NAME)) {
+        try (Connection connection = new AppComponents().connection(ConstantsFor.DBDASENAME_U0466446_VELKOM)) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql.replaceAll(ConstantsFor.DBFIELD_PCUSER, ConstantsFor.DBFIELD_PCUSERAUTO))) {
                 String[] split = lastFileUse.split(" ");
                 preparedStatement.setString(1, pcName);

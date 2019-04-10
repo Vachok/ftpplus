@@ -5,17 +5,28 @@ import org.springframework.ui.Model;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.InfoGetter;
+import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
+import ru.vachok.networker.accesscontrol.inetstats.InternetUse;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.net.enums.OtherKnownDevices;
+import ru.vachok.networker.services.MessageLocal;
+import ru.vachok.networker.systray.ActionCloseMsg;
+import ru.vachok.networker.systray.MessageToTray;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 /**
@@ -53,8 +64,70 @@ public class MoreInfoGetter implements InfoGetter {
             return getSomeMore(isOnline);
         }
     }
-
-
+    
+    /**
+     Достаёт инфо о пользователе из БД
+     <p>
+     
+     @param userInputRaw {@link NetScannerSvc#getThePc()}
+     @return LAST 20 USER PCs
+     */
+    static String getUserFromDB(String userInputRaw) {
+        StringBuilder retBuilder = new StringBuilder();
+        String sql = "select * from pcuserauto where userName like ? ORDER BY whenQueried DESC LIMIT 0, 20";
+        List<String> userPCName = new ArrayList<>();
+        String mostFreqName = "No Name";
+        
+        try {
+            userInputRaw = userInputRaw.split(": ")[1].trim();
+        }
+        catch (ArrayIndexOutOfBoundsException e) {
+            retBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false));
+            userInputRaw = userInputRaw.split(":")[1].trim();
+        }
+        try (Connection c = new AppComponents().connection(ConstantsFor.DBPREFIX + ConstantsFor.STR_VELKOM);
+             PreparedStatement p = c.prepareStatement(sql)
+        ) {
+            p.setString(1, "%" + userInputRaw + "%");
+            try (ResultSet r = p.executeQuery()) {
+                StringBuilder stringBuilder = new StringBuilder();
+                String headER = "<h3><center>LAST 20 USER PCs</center></h3>";
+                stringBuilder.append(headER);
+                
+                while (r.next()) {
+                    String pcName = r.getString(ConstantsFor.DBFIELD_PCNAME);
+                    userPCName.add(pcName);
+                    String returnER = "<br><center><a href=\"/ad?" + pcName.split("\\Q.\\E")[0] + "\">" + pcName + "</a> set: " + r
+                        .getString(ConstantsNet.DB_FIELD_WHENQUERIED) + ConstantsFor.HTML_CENTER;
+                    stringBuilder.append(returnER);
+                }
+                List<String> collectedNames = userPCName.stream().distinct().collect(Collectors.toList());
+                Map<Integer, String> freqName = new HashMap<>();
+                for (String x : collectedNames) {
+                    int frequency = Collections.frequency(userPCName, x);
+                    stringBuilder.append(frequency).append(") ").append(x).append("<br>");
+                    freqName.putIfAbsent(frequency, x);
+                }
+                if (r.last()) {
+                    MessageToUser messageToUser = new MessageToTray(new ActionCloseMsg(new MessageLocal(NetScanCtr.class.getSimpleName())));
+                    messageToUser.info(r.getString(ConstantsFor.DBFIELD_PCNAME), r.getString(ConstantsNet.DB_FIELD_WHENQUERIED), r.getString(ConstantsFor.DB_FIELD_USER));
+                }
+                Collections.sort(collectedNames);
+                Set<Integer> integers = freqName.keySet();
+                mostFreqName = freqName.get(Collections.max(integers));
+                InternetUse internetUse = new InetUserPCName();
+                stringBuilder.append("<br>");
+                stringBuilder.append(internetUse.getUsage(mostFreqName));
+                return stringBuilder.toString();
+            }
+        }
+        catch (SQLException | IOException e) {
+            retBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false));
+        }
+        return retBuilder.toString();
+    }
+    
+    
     /**
      <b>ptv1</b> and <b>ptv2</b> ping stats
 
@@ -89,17 +162,16 @@ public class MoreInfoGetter implements InfoGetter {
      @see NetScannerSvc#getPCNamesPref(String)
      */
     private String getSomeMore(boolean isOnline) {
-
         StringBuilder buildEr = new StringBuilder();
         if (isOnline) {
-            buildEr.append("<i><font color=\"yellow\">last name is ");
-            InfoGetter infoGetter = new ConditionChecker("select * from velkompc where NamePP like ?", aboutWhat);
+            buildEr.append("<font color=\"yellow\">last name is ");
+            InfoGetter infoGetter = new ConditionChecker("select * from velkompc where NamePP like ?", aboutWhat + ":true");
             AppComponents.netScannerSvc().setOnLinePCsNum(AppComponents.netScannerSvc().getOnLinePCsNum() + 1);
             buildEr.append(infoGetter.getInfoAbout());
-            buildEr.append("</i></font> ");
-            buildEr.append(" | ").append(AppComponents.netScannerSvc().getOnLinePCsNum());
-        } else {
-            InfoGetter infoGetter = new ConditionChecker("select * from pcuser where pcName like ?", aboutWhat);
+            buildEr.append("</font> ");
+        }
+        else {
+            InfoGetter infoGetter = new ConditionChecker("select * from pcuser where pcName like ?", aboutWhat + ":false");
             buildEr.append(infoGetter.getInfoAbout());
         }
         return buildEr.toString();
