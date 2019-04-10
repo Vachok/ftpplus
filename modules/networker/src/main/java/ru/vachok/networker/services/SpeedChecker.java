@@ -44,7 +44,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
      Логер. {@link LoggerFactory}
      */
     private static final MessageToUser LOGGER = new MessageLocal(SpeedChecker.class.getSimpleName());
-    
+
     /**
      Выходной день
      */
@@ -72,7 +72,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
             .toString();
         LOGGER.info(msgTimeSp);
     }
-    
+
     /**
      Запуск.
      <p>
@@ -90,7 +90,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
             this.rtLong = Long.valueOf(AppComponents.getOrSetProps().getProperty(ConstantsFor.PR_LASTWORKSTART));
         }
     }
-    
+
     /**
      @return {@link #rtLong}
      */
@@ -146,8 +146,8 @@ public class SpeedChecker implements Callable<Long>, Runnable {
      @since 21.01.2019 (14:20)
      */
     public class ChkMailAndUpdateDB implements Runnable {
-    
-    
+
+
         /**
          ChkMailAndUpdateDB
          */
@@ -317,9 +317,9 @@ public class SpeedChecker implements Callable<Long>, Runnable {
             double speedFromStr = Double.parseDouble(speedAndRoad.split(" ")[0]);
             int roadFromStr = Integer.parseInt(speedAndRoad.split(" ")[1]);
             if (roadFromStr == 0) {
-                timeSpend = (21.6 / speedFromStr) * 60;
+                timeSpend = (ConstantsFor.KM_A107 / speedFromStr) * ConstantsFor.ONE_HOUR_IN_MIN;
             } else {
-                timeSpend = (31.2 / speedFromStr) * 60;
+                timeSpend = (ConstantsFor.KM_M9 / speedFromStr) * ConstantsFor.ONE_HOUR_IN_MIN;
             }
             Timestamp timestamp = new Timestamp(timeSt);
             String sql = "insert into speed (Speed, Road, WeekDay, TimeSpend, TimeStamp) values (?,?,?,?,?)";

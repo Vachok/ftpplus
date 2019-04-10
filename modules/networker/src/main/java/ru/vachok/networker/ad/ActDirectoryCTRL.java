@@ -23,7 +23,6 @@ import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.controller.ServiceInfoCtrl;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetScannerSvc;
-import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 
 import javax.servlet.http.HttpServletRequest;
@@ -190,7 +189,7 @@ public class ActDirectoryCTRL {
             String finalAdSrvDetails = adSrvDetails;
             messageToUser.info(queryString, attributeValue, ServiceInfoCtrl.percToEnd(new Date(l), 24));
         } catch (Exception e) {
-            model.addAttribute(ATT_DETAILS, "<center>" + internetUse.getUsage(queryString + ConstantsNet.DOMAIN_EATMEATRU) + "</center>");
+            model.addAttribute(ATT_DETAILS, "<center>" + internetUse.getUsage(queryString + ConstantsFor.DOMAIN_EATMEATRU) + "</center>");
         }
         model.addAttribute(ConstantsFor.ATT_FOOTER , new PageFooter().getFooterUtext());
         return "aditem";

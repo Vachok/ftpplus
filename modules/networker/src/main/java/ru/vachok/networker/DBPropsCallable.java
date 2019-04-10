@@ -7,9 +7,11 @@ import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
+import ru.vachok.networker.abstr.DataBaseRegSQL;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
 
+import java.awt.*;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -17,6 +19,7 @@ import java.io.OutputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Savepoint;
 import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.Callable;
@@ -29,12 +32,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
  @see AppComponents#saveAppPropsForce()
  @since 25.02.2019 (10:12) */
-@SuppressWarnings("DuplicateStringLiteralInspection") public class DBPropsCallable implements Callable<Properties> {
+@SuppressWarnings("DuplicateStringLiteralInspection") public class DBPropsCallable implements Callable<Properties>, DataBaseRegSQL {
 
 
     private static final MessageToUser messageToUser = new MessageLocal(DBPropsCallable.class.getSimpleName());
 
     private static final String pathToPropsName = "ConstantsFor.properties";
+
+    private IllegalComponentStateException in_progress = new IllegalComponentStateException("In progress");
 
     /**
      Запишем .mini
@@ -83,6 +88,42 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
             return findRightProps();
         }
+    }
+
+
+    @Override public int selectFrom() {
+        throw in_progress;
+    }
+
+
+    @Override public int insertTo() {
+        throw in_progress;
+    }
+
+
+    @Override public int deleteFrom() {
+        throw in_progress;
+    }
+
+
+    @Override public int updateTable() {
+        throw in_progress;
+    }
+
+
+    @Override public void setSavepoint(Connection connection) {
+        throw in_progress;
+    }
+
+
+    @Override public MysqlDataSource getDataSource() {
+        MysqlDataSource dataSource = new RegRuMysql().getDataSource();
+        return dataSource;
+    }
+
+
+    @Override public Savepoint getSavepoint(Connection connection) {
+        throw in_progress;
     }
 
 

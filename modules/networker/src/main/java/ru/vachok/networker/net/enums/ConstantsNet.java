@@ -107,12 +107,7 @@ public enum ConstantsNet { ;
     public static final String FILENAME_OLDLANTXT0 = "lan_old0.txt";
 
     public static final String FILENAME_OLDLANTXT1 = "lan_old1.txt";
-
-    /**
-     Домен с точкой
-     */
-    public static final String DOMAIN_EATMEATRU = ".eatmeat.ru";
-
+    
     public static final int MAX_IN_ONE_VLAN = 255;
 
     public static final int IPS_IN_VELKOM_VLAN = Integer
@@ -143,8 +138,8 @@ public enum ConstantsNet { ;
     private static final ConcurrentMap<String, String> PC_U_MAP = new ConcurrentHashMap<>();
 
     private static final Properties LOC_PROPS = AppComponents.getOrSetProps();
-
-    private static final ConcurrentMap<String, Long> SSH_CHECKER_MAP = new ConcurrentHashMap<>();
+    
+    private static final Map<String, Long> SSH_CHECKER_MAP = new ConcurrentHashMap<>();
 
     private static final BlockingDeque<String> ALL_DEVICES = new LinkedBlockingDeque<>(IPS_IN_VELKOM_VLAN);
 

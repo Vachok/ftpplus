@@ -856,3 +856,4 @@ LogParser.log.lck
 CacheLogGetter.getKey.err
 CacheLogGetter.showLog.err
 InetIPUser.getUsage
+com.ssh

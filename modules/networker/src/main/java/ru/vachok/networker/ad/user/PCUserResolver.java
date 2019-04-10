@@ -8,7 +8,6 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 
 import java.io.*;
@@ -60,24 +59,6 @@ public class PCUserResolver extends ADSrv {
     private PCUserResolver() {
     }
 
-    /**
-     Записывает содержимое c-users в файл с именем ПК
-     <p>
-     Создаёт {@link String} пути к пользовательской папке, через
-     {@link StringBuilder#append(java.lang.String)}: "\\\\" + name + "\\c$\\Users\\"
-     <p>
-     1 {@link #getLastTimeUse(java.lang.String)}. Получение строки, с последним модифицированным файлом.
-     <p>
-     <b>{@link IOException}</b>:<br>
-     {@link FileSystemWorker#error(java.lang.String, java.lang.Exception)} <br>
-     {@link ArrayIndexOutOfBoundsException}:<br>
-     IGNORED
-     <p>
-     Если {@link #lastFileUse} != 0: {@link #recAutoDB(String, String)}
-
-     @param pcName имя компьютера
-     @see ru.vachok.networker.net.ConditionChecker#onLinesCheck(String, String)
-     */
     public void namesToFile(String pcName) {
         AppComponents.threadConfig().thrNameSet("pcfile-");
 
@@ -129,7 +110,7 @@ public class PCUserResolver extends ADSrv {
     private void recAutoDB(String pcName, String lastFileUse) {
 
         String sql = "insert into pcuser (pcName, userName, lastmod, stamp) values(?,?,?,?)";
-        try (Connection connection = new AppComponents().connection(ConstantsNet.DB_NAME)) {
+        try (Connection connection = new AppComponents().connection(ConstantsFor.DBDASENAME_U0466446_VELKOM)) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql.replaceAll(ConstantsFor.DBFIELD_PCUSER, ConstantsFor.DBFIELD_PCUSERAUTO))) {
                 String[] split = lastFileUse.split(" ");
                 preparedStatement.setString(1, pcName);
