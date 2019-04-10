@@ -7,7 +7,7 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.abstr.InfoGetter;
+import ru.vachok.networker.abstr.InfoWorker;
 import ru.vachok.networker.ad.user.PCUserResolver;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
@@ -29,25 +29,24 @@ import java.util.concurrent.TimeUnit;
  Проверки из классов.
  <p>
  Пинги, и тп
-
+ 
  @since 31.01.2019 (0:20) */
 @SuppressWarnings("StaticMethodOnlyUsedInOneClass")
-class ConditionChecker implements InfoGetter {
-
-
+class ConditionChecker implements InfoWorker {
+    
+    
     private static final String CLASS_NAME = ConditionChecker.class.getSimpleName();
-
+    
     private static Connection connection;
-
+    
     private static MessageToUser messageToUser = new MessageLocal(ConditionChecker.class.getSimpleName());
-
+    
     private String sql;
-
+    
     private String pcName;
     
     private boolean isOnline;
-
-
+    
     ConditionChecker(String sql, String pcName) {
         this.sql = sql;
         if (pcName.contains(":")) {
@@ -58,17 +57,18 @@ class ConditionChecker implements InfoGetter {
             this.pcName = pcName;
         }
     }
-
-
+    
     static {
         try {
             connection = new AppComponents().connection(ConstantsNet.DB_NAME);
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             messageToUser.errorAlert(CLASS_NAME, ConstantsFor.METHNAME_STATIC_INITIALIZER, e.getMessage());
             FileSystemWorker.error("ConditionChecker.static initializer", e);
         }
     }
-
+    
+    
     @Override public String getInfoAbout() {
         StringBuilder stringBuilder = new StringBuilder();
         if (isOnline) {
@@ -80,27 +80,49 @@ class ConditionChecker implements InfoGetter {
         }
         return stringBuilder.toString();
     }
-
-
+    
+    @Override public void setInfo() {
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("ConditionChecker{");
+        sb.append(ConstantsFor.TOSTRING_CLASS_NAME).append(CLASS_NAME).append('\'');
+        sb.append('}');
+        return sb.toString();
+    }
+    
+    static void qerNotNullScanAllDevices(Model model, HttpServletResponse response) {
+        StringBuilder stringBuilder = new StringBuilder();
+        if (ConstantsNet.getAllDevices().remainingCapacity() == 0) {
+            ConstantsNet.getAllDevices().forEach(x->stringBuilder.append(ConstantsNet.getAllDevices().remove()));
+            model.addAttribute("pcs", stringBuilder.toString());
+        }
+        else {
+            allDevNotNull(model, response);
+        }
+    }
+    
     private String getUserResolved() {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("<b><font color=\"white\">");
         final String sqlLoc = "SELECT * FROM `pcuser` WHERE `pcName` LIKE ?";
-        try(Connection c = new RegRuMysql().getDataSourceSchema(ConstantsFor.DBDASENAME_U0466446_VELKOM).getConnection()){
-            try(PreparedStatement p = c.prepareStatement(sqlLoc)){
-                p.setString(1 , pcName);
-                try(ResultSet r = p.executeQuery()){
-                    while(r.next()) stringBuilder.append(r.getString(ConstantsFor.DB_FIELD_USER));
+        try (Connection c = new RegRuMysql().getDataSourceSchema(ConstantsFor.DBDASENAME_U0466446_VELKOM).getConnection()) {
+            try (PreparedStatement p = c.prepareStatement(sqlLoc)) {
+                p.setString(1, pcName);
+                try (ResultSet r = p.executeQuery()) {
+                    while (r.next()) stringBuilder.append(r.getString(ConstantsFor.DB_FIELD_USER));
                 }
             }
-        }catch(SQLException e){
+        }
+        catch (SQLException e) {
             stringBuilder.append(e.getMessage());
         }
         stringBuilder.append("</b></font> ");
         return stringBuilder.toString();
     }
-
-
+    
     private String onLinesCheck() {
         AppComponents.threadConfig().thrNameSet("onChk");
         PCUserResolver pcUserResolver = PCUserResolver.getPcUserResolver();
@@ -109,11 +131,12 @@ class ConditionChecker implements InfoGetter {
         Collection<Integer> onLine = new ArrayList<>();
         Collection<Integer> offLine = new ArrayList<>();
         StringBuilder stringBuilder = new StringBuilder();
-    
+        
         AppComponents.threadConfig().execByThreadConfig(rPCResolver);
         
         try (
-            PreparedStatement statement = connection.prepareStatement(sql)) {
+            PreparedStatement statement = connection.prepareStatement(sql)
+        ) {
             statement.setString(1, pcName);
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
@@ -126,11 +149,13 @@ class ConditionChecker implements InfoGetter {
                     }
                 }
             }
-        } catch (SQLException e) {
+        }
+        catch (SQLException e) {
             messageToUser.errorAlert(CLASS_NAME, "onLinesCheck", e.getMessage());
             FileSystemWorker.error(classMeth, e);
             stringBuilder.append(e.getMessage());
-        } catch (NullPointerException e) {
+        }
+        catch (NullPointerException e) {
             stringBuilder.append(e.getMessage());
         }
         return stringBuilder
@@ -179,19 +204,7 @@ class ConditionChecker implements InfoGetter {
         if (stringBuilder.toString().isEmpty()) stringBuilder.append(getClass().getSimpleName()).append(" <font color=\"red\">").append(methName).append(" null</font>");
         return stringBuilder.toString();
     }
-
-
-    static void qerNotNullScanAllDevices(Model model, HttpServletResponse response) {
-        StringBuilder stringBuilder = new StringBuilder();
-        if (ConstantsNet.getAllDevices().remainingCapacity() == 0) {
-            ConstantsNet.getAllDevices().forEach(x -> stringBuilder.append(ConstantsNet.getAllDevices().remove()));
-            model.addAttribute("pcs", stringBuilder.toString());
-        } else {
-            allDevNotNull(model, response);
-        }
-    }
-
-
+    
     /**
      Если размер {@link ConstantsNet#getAllDevices()} более 0
      <p>
@@ -204,7 +217,7 @@ class ConditionChecker implements InfoGetter {
      <p>
      <b>{@link HttpServletResponse#addHeader(String, String)}:</b><br>
      {@link ConstantsFor#HEAD_REFRESH} = 45
-
+     
      @param model {@link Model}
      @param response {@link HttpServletResponse}
      */
@@ -219,19 +232,10 @@ class ConditionChecker implements InfoGetter {
             FileSystemWorker.readFile(ConstantsNet.FILENAME_NEWLAN210).replace(", ", "<br>") + "<p>" + FileSystemWorker.readFile(ConstantsNet.FILENAME_NEWLAN200210).replace(", ", "<br>") +
                 "<p>" + FileSystemWorker.readFile(ConstantsNet.FILENAME_OLDLANTXT0).replace(", ", "<br>") + "<p>" +
                 FileSystemWorker.readFile(ConstantsNet.FILENAME_OLDLANTXT1).replace(", ", "<br>") + "<p>" +
-            FileSystemWorker.readFile(ConstantsNet.FILENAME_SERVTXT_11SRVTXT).replace(", ", "<br>") + "<p>" +
-            FileSystemWorker.readFile(ConstantsNet.FILENAME_SERVTXT_21SRVTXT).replace(", ", "<br>") + "<p>" +
-            FileSystemWorker.readFile(ConstantsNet.FILENAME_SERVTXT_31SRVTXT).replace(", ", "<br>") + "<p>" +
-            FileSystemWorker.readFile(ConstantsNet.FILENAME_SERVTXT_41SRVTXT).replace(", ", "<br>") + "<p>");
+                FileSystemWorker.readFile(ConstantsNet.FILENAME_SERVTXT_11SRVTXT).replace(", ", "<br>") + "<p>" +
+                FileSystemWorker.readFile(ConstantsNet.FILENAME_SERVTXT_21SRVTXT).replace(", ", "<br>") + "<p>" +
+                FileSystemWorker.readFile(ConstantsNet.FILENAME_SERVTXT_31SRVTXT).replace(", ", "<br>") + "<p>" +
+                FileSystemWorker.readFile(ConstantsNet.FILENAME_SERVTXT_41SRVTXT).replace(", ", "<br>") + "<p>");
         response.addHeader(ConstantsFor.HEAD_REFRESH, "45");
-    }
-
-
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("ConditionChecker{");
-        sb.append(ConstantsFor.TOSTRING_CLASS_NAME).append(CLASS_NAME).append('\'');
-        sb.append('}');
-        return sb.toString();
     }
 }

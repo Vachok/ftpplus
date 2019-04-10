@@ -16,12 +16,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
-import ru.vachok.networker.abstr.InfoGetter;
+import ru.vachok.networker.abstr.InfoWorker;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.VersionInfo;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.MoreInfoGetter;
+import ru.vachok.networker.net.MoreInfoWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.SimpleCalculator;
 import ru.vachok.networker.services.WhoIsWithSRV;
@@ -91,7 +91,7 @@ public class MatrixCtr {
      */
     private long metricMatrixStartLong = System.currentTimeMillis();
     
-    private InfoGetter infoGetter;
+    private InfoWorker infoWorker;
 
 
     /**
@@ -134,7 +134,7 @@ public class MatrixCtr {
      2. {@link #qIsNull(Model, HttpServletRequest)}. Нулевой {@link HttpServletRequest#getQueryString()}
      <p>
      <b>{@link Model}-аттрибуты:</b><br>
-     {@code "devscan"} = {@link MoreInfoGetter#getTVNetInfo()} так же дата запуска приложения.
+     {@code "devscan"} = {@link MoreInfoWorker#getTVNetInfo()} так же дата запуска приложения.
      <p>
      {@link HttpServletResponse#addHeader(java.lang.String, java.lang.String)}. {@link ConstantsFor#HEAD_REFRESH} = 120 <br>
      {@link Logger#info(java.lang.String, java.lang.Object)} = this {@link Visitor#toString()}
@@ -149,11 +149,11 @@ public class MatrixCtr {
     @GetMapping("/")
     public String getFirst(final HttpServletRequest request, Model model, HttpServletResponse response) {
         this.visitorInst = ConstantsFor.getVis(request);
-        this.infoGetter = new MoreInfoGetter("tv");
+        this.infoWorker = new MoreInfoWorker("tv");
         qIsNull(model, request);
         model.addAttribute(ConstantsFor.ATT_HEAD, new PageFooter().getHeaderUtext());
         model.addAttribute(ConstantsFor.ATT_DEVSCAN,
-            "Since " + getPTVLastStamp() + infoGetter.getInfoAbout() + currentProvider);
+            "Since " + getPTVLastStamp() + infoWorker.getInfoAbout() + currentProvider);
         response.addHeader(ConstantsFor.HEAD_REFRESH, "120");
         return "starting";
     }

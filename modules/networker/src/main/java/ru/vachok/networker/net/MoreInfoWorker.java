@@ -7,7 +7,7 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.abstr.InfoGetter;
+import ru.vachok.networker.abstr.InfoWorker;
 import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
 import ru.vachok.networker.accesscontrol.inetstats.InternetUse;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
  <p>
 
  @since 25.01.2019 (11:06) */
-public class MoreInfoGetter implements InfoGetter {
+public class MoreInfoWorker implements InfoWorker {
 
 
     private static final String TV = "tv";
@@ -44,9 +44,9 @@ public class MoreInfoGetter implements InfoGetter {
     private boolean isOnline;
 
     private MessageToUser messageToUser = new MessageCons(getClass().getSimpleName());
-
-
-    public MoreInfoGetter(String aboutWhat) {
+    
+    
+    public MoreInfoWorker(String aboutWhat) {
         this.aboutWhat = aboutWhat;
     }
 
@@ -63,6 +63,10 @@ public class MoreInfoGetter implements InfoGetter {
         else {
             return getSomeMore(isOnline);
         }
+    }
+    
+    @Override public void setInfo() {
+    
     }
     
     /**
@@ -165,14 +169,14 @@ public class MoreInfoGetter implements InfoGetter {
         StringBuilder buildEr = new StringBuilder();
         if (isOnline) {
             buildEr.append("<font color=\"yellow\">last name is ");
-            InfoGetter infoGetter = new ConditionChecker("select * from velkompc where NamePP like ?", aboutWhat + ":true");
+            InfoWorker infoWorker = new ConditionChecker("select * from velkompc where NamePP like ?", aboutWhat + ":true");
             AppComponents.netScannerSvc().setOnLinePCsNum(AppComponents.netScannerSvc().getOnLinePCsNum() + 1);
-            buildEr.append(infoGetter.getInfoAbout());
+            buildEr.append(infoWorker.getInfoAbout());
             buildEr.append("</font> ");
         }
         else {
-            InfoGetter infoGetter = new ConditionChecker("select * from pcuser where pcName like ?", aboutWhat + ":false");
-            buildEr.append(infoGetter.getInfoAbout());
+            InfoWorker infoWorker = new ConditionChecker("select * from pcuser where pcName like ?", aboutWhat + ":false");
+            buildEr.append(infoWorker.getInfoAbout());
         }
         return buildEr.toString();
     }

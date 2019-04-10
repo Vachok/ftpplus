@@ -14,7 +14,7 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ExitApp;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.abstr.InfoGetter;
+import ru.vachok.networker.abstr.InfoWorker;
 import ru.vachok.networker.componentsrepo.LastNetScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
@@ -348,15 +348,15 @@ public class NetScannerSvc {
     }
     
     private void pcNameInfo(String pcName) {
-        InfoGetter infoGetter = new MoreInfoGetter(pcName);
+        InfoWorker infoWorker = new MoreInfoWorker(pcName);
         boolean reachable;
         InetAddress byName;
         try {
             byName = InetAddress.getByName(pcName);
             reachable = byName.isReachable(ConstantsFor.TIMEOUT_650);
-            ((MoreInfoGetter) infoGetter).setOnline(reachable);
-            
-            String someMore = infoGetter.getInfoAbout();
+            ((MoreInfoWorker) infoWorker).setOnline(reachable);
+    
+            String someMore = infoWorker.getInfoAbout();
             if (!reachable) {
                 pcNameUnreachable(someMore, byName);
             }

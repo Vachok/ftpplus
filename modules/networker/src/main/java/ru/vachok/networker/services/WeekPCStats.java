@@ -1,4 +1,4 @@
-package ru.vachok.networker.net;
+package ru.vachok.networker.services;
 
 
 import ru.vachok.messenger.MessageToUser;
@@ -6,7 +6,6 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
-import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.systray.MessageToTray;
 
 import java.io.*;
@@ -38,7 +37,8 @@ public class WeekPCStats implements Runnable {
             messageToUser = new MessageLocal(WeekPCStats.class.getSimpleName());
         }
     }
-
+    
+    
     /**
      {@link #getFromDB()}
      */

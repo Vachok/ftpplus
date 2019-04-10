@@ -3,7 +3,6 @@
 package ru.vachok.networker;
 
 
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -17,9 +16,9 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.MyServer;
-import ru.vachok.networker.net.WeekPCStats;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.SpeedChecker;
+import ru.vachok.networker.services.WeekPCStats;
 import ru.vachok.networker.systray.SystemTrayHelper;
 import ru.vachok.stats.SaveLogsToDB;
 

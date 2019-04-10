@@ -6,7 +6,7 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.abstr.InfoGetter;
+import ru.vachok.networker.abstr.InfoWorker;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
@@ -46,7 +46,7 @@ public class ScanOnline implements Runnable {
      */
     private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
     
-    private InfoGetter tvInfo = new MoreInfoGetter("tv");
+    private InfoWorker tvInfo = new MoreInfoWorker("tv");
 
 
     @Override

@@ -198,7 +198,7 @@ public class NetScanCtr {
         AppComponents.adSrv().setUserInputRaw(thePc);
 */
         if (thePc.toLowerCase().contains("user: ")) {
-            model.addAttribute("ok", MoreInfoGetter.getUserFromDB(thePc).trim());
+            model.addAttribute("ok", MoreInfoWorker.getUserFromDB(thePc).trim());
             model.addAttribute(ConstantsFor.ATT_TITLE, thePc);
             model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
             return "ok";

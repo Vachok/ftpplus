@@ -3,8 +3,9 @@ package ru.vachok.networker.abstr;
 
 /**
  @since 09.04.2019 (13:16) */
-@FunctionalInterface public interface InfoGetter {
+public interface InfoWorker {
     
     
     String getInfoAbout();
+    void setInfo();
 }
