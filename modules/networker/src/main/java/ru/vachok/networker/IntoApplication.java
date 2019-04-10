@@ -34,7 +34,14 @@ import java.util.concurrent.*;
 /**
  Старт
  <p>
- 1. {@link #main(String[])}<br>
+ Dependencies:
+ {@link ru.vachok.networker} - 5 : {@link AppComponents}, {@link AppInfoOnLoad}, {@link ConstantsFor}, {@link ExitApp}, {@link TForms}<br>
+ {@link ru.vachok.networker.config} - 1 : {@link ThreadConfig} <br>
+ {@link ru.vachok.networker.fileworks} - 1 : {@link FileSystemWorker} <br>
+ {@link ru.vachok.networker.net} - 1 : {@link MyServer} <br>
+ {@link ru.vachok.networker.services} - 2 : {@link MessageLocal}, {@link WeekPCStats} <br>
+ {@link ru.vachok.networker.systray} - 1 : {@link SystemTrayHelper}
+ <p>
 
  @see AppInfoOnLoad
  @since 02.05.2018 (10:36) */
@@ -71,10 +78,11 @@ public class IntoApplication {
     /**
      Точка входа в Spring Boot Application
      <p>
+     Создает новый объект {@link SpringApplication}. <br>
+     Далее создается {@link ConfigurableApplicationContext}, из {@link SpringApplication}.run({@link IntoApplication}.class).
      {@link FileSystemWorker#delFilePatterns(java.lang.String[])}. Удаление останков от предидущего запуска. <br>
-     {@link SpringApplication#run(java.lang.Class, java.lang.String...)}. Инициализация
-     {@link Logger#warn(java.lang.String)} - new {@link String} {@code msg} = {@link IntoApplication#afterSt()} <br>
-     {@link Logger#info(java.lang.String)} - время работы метода.
+     Пытается читать аргументы {@link #readArgs(ConfigurableApplicationContext , String...)}, если они не null и их больше 0. <br>
+     В другом случае - {@link #beforeSt(boolean)} до запуска контекста, {@link ConfigurableApplicationContext}.start(), {@link #afterSt()}.
 
      @param args аргументы запуска
      @see SystemTrayHelper
