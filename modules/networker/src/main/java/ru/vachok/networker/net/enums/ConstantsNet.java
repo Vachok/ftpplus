@@ -138,8 +138,8 @@ public enum ConstantsNet { ;
     private static final ConcurrentMap<String, String> PC_U_MAP = new ConcurrentHashMap<>();
 
     private static final Properties LOC_PROPS = AppComponents.getOrSetProps();
-
-    private static final ConcurrentMap<String, Long> SSH_CHECKER_MAP = new ConcurrentHashMap<>();
+    
+    private static final Map<String, Long> SSH_CHECKER_MAP = new ConcurrentHashMap<>();
 
     private static final BlockingDeque<String> ALL_DEVICES = new LinkedBlockingDeque<>(IPS_IN_VELKOM_VLAN);
 

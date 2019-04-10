@@ -10,6 +10,7 @@ import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
+import ru.vachok.networker.abstr.SSHFace;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.fileworks.ProgrammFilesWriter;
 import ru.vachok.networker.fileworks.WriteFilesTo;
@@ -38,7 +39,7 @@ import java.util.concurrent.RejectedExecutionException;
  Фабрика, для ssh-комманд.
  */
 @SuppressWarnings("unused")
-public class SSHFactory implements Callable<String> {
+public class SSHFactory implements Callable<String>, SSHFace {
 
     /**
      Файл с ошибкой.
@@ -103,7 +104,11 @@ public class SSHFactory implements Callable<String> {
         this.userName = builder.userName;
         this.classCaller = builder.classCaller;
     }
-
+    
+    @Override public String doCommand() throws JSchException {
+        return call();
+    }
+    
     private InputStream connect() throws IOException, JSchException {
         boolean isConnected;
         chanRespChannel();
