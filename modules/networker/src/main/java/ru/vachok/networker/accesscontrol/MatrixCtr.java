@@ -75,7 +75,7 @@ public class MatrixCtr {
     private final VersionInfo versionInfoInst;
 
     private String currentProvider = "Unknown yet";
-    
+
     /**
      {@link MatrixSRV}
      */
@@ -90,7 +90,7 @@ public class MatrixCtr {
      {@link System#currentTimeMillis()}. Время инициализации класса.
      */
     private long metricMatrixStartLong = System.currentTimeMillis();
-    
+
     private InfoWorker infoWorker;
 
 
@@ -125,27 +125,6 @@ public class MatrixCtr {
     }
 
 
-    /**
-     Начальная страница
-     <p>
-     starting.html
-     <p>
-     1. {@link ConstantsFor#getVis(javax.servlet.http.HttpServletRequest)}. Записиваем визит. <br>
-     2. {@link #qIsNull(Model, HttpServletRequest)}. Нулевой {@link HttpServletRequest#getQueryString()}
-     <p>
-     <b>{@link Model}-аттрибуты:</b><br>
-     {@code "devscan"} = {@link MoreInfoWorker#getTVNetInfo()} так же дата запуска приложения.
-     <p>
-     {@link HttpServletResponse#addHeader(java.lang.String, java.lang.String)}. {@link ConstantsFor#HEAD_REFRESH} = 120 <br>
-     {@link Logger#info(java.lang.String, java.lang.Object)} = this {@link Visitor#toString()}
-
-     @param request {@link HttpServletRequest}
-     @param model {@link Model}
-     @param response {@link HttpServletResponse}
-     @return название файла html, в который помещаем модель.
-
-     @see DiapazonedScan
-     */
     @GetMapping("/")
     public String getFirst(final HttpServletRequest request, Model model, HttpServletResponse response) {
         this.visitorInst = ConstantsFor.getVis(request);
@@ -173,22 +152,6 @@ public class MatrixCtr {
     }
 
 
-    /**
-     Получить должность. {@code Post}.
-     <p>
-     1. {@link MatrixSRV#getWorkPos()}. Получим пользовательскую строку ввода в {@link String} {@code workPos}. <br>
-     2. {@link WhoIsWithSRV#whoisStat(java.lang.String, org.springframework.ui.Model)}, если строка содержит {@code whois:} <br>
-     3. {@link #calculateDoubles(java.lang.String, org.springframework.ui.Model)}. Подсчёт {@link Double}, если строка содержит {@code calc:} <br>
-     4. {@link UserRightsOnCommon#getCommonAccessRights(String, Model)}, если строка содержит {@code common: } <br>
-     5. {@link #timeStamp(ru.vachok.networker.services.SimpleCalculator, org.springframework.ui.Model, java.lang.String)}, если строка содержит {@code calctime:} или {@code calctimes:} <br>
-     6. {@link #matrixAccess(java.lang.String)}, в ином случае.
-     <p>
-
-     @param matrixSRV {@link #matrixSRV}
-     @param result {@link BindingResult}
-     @param model {@link Model}
-     @return {@link ConstantsFor#BEANNAME_MATRIX}.html
-     */
     @SuppressWarnings("MethodWithMultipleReturnPoints")
     @PostMapping(GET_MATRIX)
     public String getWorkPosition(@ModelAttribute(ConstantsFor.BEANNAME_MATRIX) MatrixSRV matrixSRV, BindingResult result, Model model) {
@@ -289,8 +252,8 @@ public class MatrixCtr {
         sb.append('}');
         return sb.toString();
     }
-    
-    
+
+
     /**
      Перевод времени из long в {@link Date} и обратно.
      <p>
