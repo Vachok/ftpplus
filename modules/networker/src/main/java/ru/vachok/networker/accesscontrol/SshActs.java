@@ -119,9 +119,6 @@ public class SshActs {
     }
 
     public String getNumOfHours() {
-        long abs = Math.abs(TimeUnit.SECONDS.toHours((long) LocalTime.parse("18:30").toSecondOfDay() - LocalTime.now().toSecondOfDay()));
-        if (0 >= abs) abs = 1;
-        this.numOfHours = String.valueOf(abs);
         return numOfHours;
     }
 
@@ -606,6 +603,10 @@ public class SshActs {
             model.addAttribute(ConstantsFor.ATT_TITLE, ConstantsFor.getMemoryInfo());
             model.addAttribute("ok" , new TemporaryFullInternet(sshActs.getUserInput() , timeToApply).doAdd());
             model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
+    
+            long abs = Math.abs(TimeUnit.SECONDS.toHours((long) LocalTime.parse("18:30").toSecondOfDay() - LocalTime.now().toSecondOfDay()));
+            if (0 >= abs) abs = 1;
+            sshActs.setNumOfHours(String.valueOf(abs));
             return "ok";
         }
 

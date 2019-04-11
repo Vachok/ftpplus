@@ -78,7 +78,7 @@ public class TemporaryFullInternet implements Runnable {
     public void execNewMeth() {
         SSHFace face = new SSHHelper("sudo cat /etc/pf/24hrs");
         try {
-            String doCommand = face.doCommand();
+            String doCommand = face.execCommand("192.168.13.30", "ls");
             System.out.println("doCommand = " + doCommand);
             System.exit(222);
         }
@@ -157,7 +157,6 @@ public class TemporaryFullInternet implements Runnable {
     private void execOldMeth() {
         AppComponents.threadConfig().execByThreadConfig(this::sshChecker);
         Map<String, Long> stringLongMap = ConstantsNet.getSshCheckerMap();
-        String classMeth = TEMPORARY_FULL_INTERNET_RUN;
         File miniLog = new File(getClass().getSimpleName() + ".mini");
         String fromArray = new TForms().fromArray(stringLongMap, false);
     
@@ -196,7 +195,9 @@ public class TemporaryFullInternet implements Runnable {
         AppComponents.threadConfig().thrNameSet("chkSSH");
         SSH_FACTORY.setCommandSSH(ConstantsNet.COM_CAT24HRSLIST);
         String tempFile = SSH_FACTORY.call();
+    
         MINI_LOGGER.add(tempFile);
+    
         String classMeth = "TemporaryFullInternet.sshChecker";
         Map<String, Long> sshCheckerMap = ConstantsNet.getSshCheckerMap();
         
@@ -263,8 +264,8 @@ public class TemporaryFullInternet implements Runnable {
         public void setCommandSSH(String commandSSH) {
             this.commandSSH = commandSSH;
         }
-        
-        @Override public String doCommand() throws JSchException, IOException {
+    
+        @Override public String execCommand(String srv, String commandSSH) throws JSchException, IOException {
             execCh().setCommand(commandSSH);
             StringBuilder stringBuilder = new StringBuilder();
             byte[] bytes = new byte[ConstantsFor.KBYTE];

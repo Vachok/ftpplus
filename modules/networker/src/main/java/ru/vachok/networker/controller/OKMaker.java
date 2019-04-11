@@ -1,15 +1,14 @@
 package ru.vachok.networker.controller;
 
 
-
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
+import ru.vachok.networker.abstr.SSHFace;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.net.enums.ConstantsNet;
-import ru.vachok.networker.services.SSHService;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
@@ -21,7 +20,7 @@ import java.util.Date;
 
  @since 06.04.2019 (20:49) */
 @Controller
-public class OKMaker implements SSHService {
+public class OKMaker implements SSHFace {
 
     @GetMapping("/makeok")
     public String makeOk(Model model , HttpServletRequest request) {
@@ -58,10 +57,5 @@ public class OKMaker implements SSHService {
         stringBuilder.append("<i>").append(sshFactory.getCommandSSH()).append(" ||| executing:</i><br>");
         stringBuilder.append(sshFactory.call()).append("<br>");
         return stringBuilder.toString();
-    }
-
-
-    @Override public void checkPem() {
-
     }
 }

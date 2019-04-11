@@ -1,7 +1,6 @@
 package ru.vachok.networker;
 
 
-
 import com.jcraft.jsch.*;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.NotNull;
@@ -10,7 +9,6 @@ import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
-import ru.vachok.networker.abstr.SSHFace;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.fileworks.ProgrammFilesWriter;
 import ru.vachok.networker.fileworks.WriteFilesTo;
@@ -39,7 +37,7 @@ import java.util.concurrent.RejectedExecutionException;
  Фабрика, для ssh-комманд.
  */
 @SuppressWarnings("unused")
-public class SSHFactory implements Callable<String>, SSHFace {
+public class SSHFactory implements Callable<String> {
 
     /**
      Файл с ошибкой.
@@ -103,10 +101,6 @@ public class SSHFactory implements Callable<String>, SSHFace {
         this.sessionType = builder.sessionType;
         this.userName = builder.userName;
         this.classCaller = builder.classCaller;
-    }
-    
-    @Override public String doCommand() throws JSchException {
-        return call();
     }
     
     private InputStream connect() throws IOException, JSchException {

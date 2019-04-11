@@ -11,6 +11,6 @@ import java.io.IOException;
 @FunctionalInterface public interface SSHFace {
     
     
-    String doCommand() throws JSchException, IOException;
+    String execCommand(String connectToSrv, String commandToExec) throws JSchException, IOException;
     
 }
