@@ -1,6 +1,7 @@
 package ru.vachok.networker;
 
 
+
 import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import ru.vachok.messenger.MessageCons;
@@ -9,6 +10,8 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.accesscontrol.TemporaryFullInternet;
 import ru.vachok.networker.accesscontrol.common.CommonRightsChecker;
+import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
+import ru.vachok.networker.accesscontrol.inetstats.InternetUse;
 import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -314,7 +317,11 @@ public class AppInfoOnLoad implements Runnable {
         scheduledExecutorService.scheduleWithFixedDelay(temporaryFullInternet, 1, ConstantsFor.DELAY, TimeUnit.MINUTES);
         scheduledExecutorService.scheduleWithFixedDelay(DiapazonedScan.getInstance(), 2, AppInfoOnLoad.THIS_DELAY, TimeUnit.MINUTES);
         scheduledExecutorService.scheduleWithFixedDelay(new ScanOnline(), 3, 1, TimeUnit.MINUTES);
-        scheduledExecutorService.scheduleWithFixedDelay(()->new AppComponents().saveLogsToDB().startScheduled(), 4, ConstantsFor.DELAY, TimeUnit.MINUTES);
+        scheduledExecutorService.scheduleWithFixedDelay(() -> {
+            new AppComponents().saveLogsToDB().startScheduled();
+            InternetUse internetUse = new InetUserPCName();
+            int cleanInetstatDB = internetUse.cleanTrash();
+        } , 4 , ConstantsFor.DELAY , TimeUnit.MINUTES);
         String msg = new StringBuilder()
             .append(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(AppInfoOnLoad.THIS_DELAY)))
             .append(DiapazonedScan.getInstance().getClass().getSimpleName())

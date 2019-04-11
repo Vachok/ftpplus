@@ -1,6 +1,3 @@
-## InetUserPCName
-### getUsage
-> cleanTrash() 
-## InternetUse
-### cleanTrash
-> return exequteQuery()
+## AppInfoOnLoad
+### schedStarter
+>cleanTrash
