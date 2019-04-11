@@ -281,7 +281,7 @@ public class ADSrv implements Runnable {
      */
     private static String offNowGetU(CharSequence pcName) {
         StringBuilder v = new StringBuilder();
-        try (Connection c = new AppComponents().connection(ConstantsFor.DBDASENAME_U0466446_VELKOM)) {
+        try (Connection c = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
             try (PreparedStatement p = c.prepareStatement("select * from pcuser");
                  PreparedStatement pAuto = c.prepareStatement("select * from pcuserauto where pcName in (select pcName from pcuser) order by pcName asc limit 203");
                  ResultSet resultSet = p.executeQuery();

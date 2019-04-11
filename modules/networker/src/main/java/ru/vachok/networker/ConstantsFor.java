@@ -145,7 +145,7 @@ public enum ConstantsFor {
     /**
      Название БД в reg.ru
      */
-    public static final String DBDASENAME_U0466446_VELKOM = "u0466446_velkom";
+    public static final String DBBASENAME_U0466446_VELKOM = "u0466446_velkom";
     
     /**
      Название property

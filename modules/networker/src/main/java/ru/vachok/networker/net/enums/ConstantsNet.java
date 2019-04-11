@@ -5,7 +5,6 @@ import org.springframework.ui.Model;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.net.DiapazonedScan;
 import ru.vachok.networker.net.NetScannerSvc;
 import ru.vachok.networker.services.MessageLocal;
@@ -49,7 +48,7 @@ public enum ConstantsNet { ;
     /**
      {@link ConstantsFor#DBPREFIX} + velkom
      */
-    public static final String DB_NAME = ConstantsFor.DBDASENAME_U0466446_VELKOM;
+    public static final String DB_NAME = ConstantsFor.DBBASENAME_U0466446_VELKOM;
 
     public static final int APC = 350;
 

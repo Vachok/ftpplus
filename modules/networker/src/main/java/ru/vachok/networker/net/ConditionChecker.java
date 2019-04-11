@@ -108,7 +108,7 @@ class ConditionChecker implements InfoWorker {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("<b><font color=\"white\">");
         final String sqlLoc = "SELECT * FROM `pcuser` WHERE `pcName` LIKE ?";
-        try (Connection c = new RegRuMysql().getDataSourceSchema(ConstantsFor.DBDASENAME_U0466446_VELKOM).getConnection()) {
+        try (Connection c = new RegRuMysql().getDataSourceSchema(ConstantsFor.DBBASENAME_U0466446_VELKOM).getConnection()) {
             try (PreparedStatement p = c.prepareStatement(sqlLoc)) {
                 p.setString(1, pcName);
                 try (ResultSet r = p.executeQuery()) {

@@ -116,7 +116,7 @@ public class AppInfoOnLoad implements Runnable {
      Очистка pcuserauto
      */
     private static void trunkTableUsers() {
-        try (Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.DBDASENAME_U0466446_VELKOM);
+        try (Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
              PreparedStatement preparedStatement = c.prepareStatement("TRUNCATE TABLE pcuserauto")) {
             preparedStatement.executeUpdate();
             miniLogger.add("TRUNCATE true\n" + ConstantsFor.getUpTime() + STR_UPTIME);

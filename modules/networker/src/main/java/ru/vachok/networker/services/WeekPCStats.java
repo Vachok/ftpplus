@@ -64,7 +64,7 @@ public class WeekPCStats implements Runnable {
         final long stArt = System.currentTimeMillis();
         String sql = "select * from pcuserauto";
         File file = new File(ConstantsNet.VELKOM_PCUSERAUTO_TXT);
-        try (Connection c = new AppComponents().connection(ConstantsFor.DBDASENAME_U0466446_VELKOM);
+        try (Connection c = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
              PreparedStatement p = c.prepareStatement(sql);
              ResultSet r = p.executeQuery();
              OutputStream outputStream = new FileOutputStream(file);

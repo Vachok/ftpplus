@@ -25,6 +25,7 @@ public class InetUserPCName implements InternetUse {
         catch (UnknownHostException e) {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".getUsage", e));
         }
+        cleanTrash();
         return stringBuilder.toString();
     }
 

@@ -125,7 +125,7 @@ public class PCUserResolver extends ADSrv implements InfoWorker {
     private void recAutoDB(String pcName, String lastFileUse) {
     
         String sql = "insert into pcuser (pcName, userName, lastmod, stamp) values(?,?,?,?)";
-        try (Connection connection = new AppComponents().connection(ConstantsFor.DBDASENAME_U0466446_VELKOM)) {
+        try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql.replaceAll(ConstantsFor.DBFIELD_PCUSER, ConstantsFor.DBFIELD_PCUSERAUTO))) {
                 String[] split = lastFileUse.split(" ");
                 preparedStatement.setString(1, pcName);
