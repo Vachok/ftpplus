@@ -1,4 +1,6 @@
-## CountSizeOfWorkDir
-### IllegalComponentStateException
-## InetIPUser
-> Ignore exceptions
+## InetUserPCName
+### getUsage
+> cleanTrash() 
+## InternetUse
+### cleanTrash
+> return exequteQuery()

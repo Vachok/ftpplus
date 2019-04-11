@@ -1,12 +1,15 @@
 package ru.vachok.networker.accesscontrol.inetstats;
 
 
+
+import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.stats.SaveLogsToDB;
 
+import java.awt.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
@@ -25,7 +28,11 @@ public class InetUserPCName implements InternetUse {
         catch (UnknownHostException e) {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".getUsage", e));
         }
-        cleanTrash();
+        int deletedRows = cleanTrash();
+
+        if(SystemTray.isSupported()) messageToUser = new MessageSwing();
+
+        messageToUser.info(getClass().getSimpleName() + "clients1" , "deletedRows" , " = " + deletedRows);
         return stringBuilder.toString();
     }
 
