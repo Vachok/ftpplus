@@ -532,7 +532,7 @@ public class SshActs {
         /**
          {@link SshActs}
          */
-        private final SshActs sshActs;
+        private SshActs sshActs;
 
         @Autowired
         public SshActsCTRL(SshActs sshActs) {
@@ -541,6 +541,7 @@ public class SshActs {
 
         @PostMapping(URL_SSHACTS)
         public String sshActsPOST(@ModelAttribute SshActs sshActs, Model model, HttpServletRequest request) throws AccessDeniedException {
+            this.sshActs = sshActs;
             String pcReq = request.getRemoteAddr().toLowerCase();
             if (getAuthentic(pcReq)) {
                 model.addAttribute("head", new PageFooter().getHeaderUtext());
@@ -556,10 +557,12 @@ public class SshActs {
         public String sshActsGET(Model model, HttpServletRequest request) throws AccessDeniedException {
             Visitor visitor = ConstantsFor.getVis(request);
             String pcReq = request.getRemoteAddr().toLowerCase();
-
             sshActs.setAllowDomain("");
             sshActs.setDelDomain("");
             sshActs.setUserInput("");
+            long abs = Math.abs(TimeUnit.SECONDS.toHours((long) LocalTime.parse("18:30").toSecondOfDay() - LocalTime.now().toSecondOfDay()));
+            if (0 >= abs) abs = 1;
+            sshActs.setNumOfHours(String.valueOf(abs));
             setInet(pcReq);
             if (getAuthentic(pcReq)) {
                 model.addAttribute(ConstantsFor.ATT_TITLE, visitor.getTimeSpend());
@@ -580,6 +583,7 @@ public class SshActs {
 
         @PostMapping("/allowdomain")
         public String allowPOST(@ModelAttribute SshActs sshActs, Model model) {
+            this.sshActs = sshActs;
             model.addAttribute(ConstantsFor.ATT_TITLE, sshActs.getAllowDomain() + " добавлен");
             model.addAttribute(ConstantsFor.ATT_SSH_ACTS, sshActs);
             model.addAttribute("ok", sshActs + "<p>" + sshActs.allowDomainAdd());
@@ -589,6 +593,7 @@ public class SshActs {
 
         @PostMapping("/deldomain")
         public String delDomPOST(@ModelAttribute SshActs sshActs, Model model) {
+            this.sshActs = sshActs;
             model.addAttribute(ConstantsFor.ATT_TITLE, sshActs.getDelDomain() + " удалён");
             model.addAttribute(ConstantsFor.ATT_SSH_ACTS, sshActs);
             model.addAttribute("ok", sshActs + "<p>" + sshActs.allowDomainDel());
@@ -598,15 +603,12 @@ public class SshActs {
 
         @PostMapping("/tmpfullnet")
         public String tempFullInetAccess(@ModelAttribute SshActs sshActs, Model model) {
+            this.sshActs = sshActs;
             long timeToApply = Long.parseLong(sshActs.getNumOfHours());
             model.addAttribute(ConstantsFor.ATT_SSH_ACTS, sshActs);
             model.addAttribute(ConstantsFor.ATT_TITLE, ConstantsFor.getMemoryInfo());
             model.addAttribute("ok" , new TemporaryFullInternet(sshActs.getUserInput() , timeToApply).doAdd());
             model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
-    
-            long abs = Math.abs(TimeUnit.SECONDS.toHours((long) LocalTime.parse("18:30").toSecondOfDay() - LocalTime.now().toSecondOfDay()));
-            if (0 >= abs) abs = 1;
-            sshActs.setNumOfHours(String.valueOf(abs));
             return "ok";
         }
 

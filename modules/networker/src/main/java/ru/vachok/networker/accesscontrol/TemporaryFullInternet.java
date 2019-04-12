@@ -67,6 +67,7 @@ public class TemporaryFullInternet implements Runnable {
     TemporaryFullInternet(String userInput, long timeToApply) {
         this.userInput = userInput;
         this.delStamp = ConstantsFor.getAtomicTime() + TimeUnit.HOURS.toMillis(timeToApply);
+        MINI_LOGGER.add("TemporaryFullInternet: " + userInput + " " + delStamp + "(" + new Date(delStamp) + ")");
     }
     
     TemporaryFullInternet(String userInput, String numOfHoursStr) {
@@ -80,7 +81,6 @@ public class TemporaryFullInternet implements Runnable {
         try {
             String doCommand = face.execCommand("192.168.13.30", "ls");
             System.out.println("doCommand = " + doCommand);
-            System.exit(222);
         }
         catch (JSchException | IOException e) {
             messageToUser.error(e.getMessage());
@@ -133,7 +133,6 @@ public class TemporaryFullInternet implements Runnable {
         catch (ArrayIndexOutOfBoundsException e) {
             sshIP = e.getMessage();
         }
-        
         if (tempString24HRSFile.contains(sshIP)) {
             retBuilder
                 .append(getClass().getSimpleName())
@@ -249,7 +248,6 @@ public class TemporaryFullInternet implements Runnable {
     }
     
     class SSHHelper implements SSHFace {
-        
         
         String commandSSH;
         

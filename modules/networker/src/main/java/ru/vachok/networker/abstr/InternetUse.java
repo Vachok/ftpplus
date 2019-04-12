@@ -1,4 +1,4 @@
-package ru.vachok.networker.accesscontrol.inetstats;
+package ru.vachok.networker.abstr;
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import ru.vachok.messenger.MessageToUser;

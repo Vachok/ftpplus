@@ -1,17 +1,16 @@
 package ru.vachok.networker;
 
 
-
 import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageFile;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
+import ru.vachok.networker.abstr.InternetUse;
 import ru.vachok.networker.accesscontrol.TemporaryFullInternet;
 import ru.vachok.networker.accesscontrol.common.CommonRightsChecker;
 import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
-import ru.vachok.networker.accesscontrol.inetstats.InternetUse;
 import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
