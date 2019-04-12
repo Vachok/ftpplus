@@ -3,7 +3,7 @@ package ru.vachok.networker.systray;
 
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.net.MoreInfoGetter;
+import ru.vachok.networker.net.MoreInfoWorker;
 import ru.vachok.networker.net.NetScannerSvc;
 
 import javax.swing.*;
@@ -16,7 +16,7 @@ import java.util.Date;
 /**
  Убивает из {@link #trayIcon} все экшн-листенеры.
  <p>
- {@link MoreInfoGetter}, {@link NetScannerSvc}, {@link ActionOnAppStart}
+ {@link MoreInfoWorker}, {@link NetScannerSvc}, {@link ActionOnAppStart}
 
  @since 29.01.2019 (12:21) */
 public class ActionCloseMsg extends AbstractAction {
@@ -24,7 +24,7 @@ public class ActionCloseMsg extends AbstractAction {
     /**
      {@link TrayIcon}
      */
-    private transient TrayIcon trayIcon = null;
+    private transient TrayIcon trayIcon;
 
     private transient MessageToUser messageToUser;
 
@@ -71,7 +71,7 @@ public class ActionCloseMsg extends AbstractAction {
     public String toString() {
         final StringBuilder sb = new StringBuilder("ActionCloseMsg{");
         sb.append("trayIcon=").append(trayIcon.getActionListeners() != null);
-        sb.append(ConstantsFor.TOSTRING_MESSAGE_TO_USER).append(messageToUser.toString());
+        sb.append(ConstantsFor.TOSTRING_MESSAGE_TO_USER).append(messageToUser);
         sb.append('}');
         return sb.toString();
     }

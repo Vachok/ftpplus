@@ -3,8 +3,6 @@
 package ru.vachok.networker.ad;
 
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -14,16 +12,15 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.abstr.InternetUse;
 import ru.vachok.networker.accesscontrol.SshActs;
 import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
-import ru.vachok.networker.accesscontrol.inetstats.InternetUse;
 import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.controller.ServiceInfoCtrl;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetScannerSvc;
-import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 
 import javax.servlet.http.HttpServletRequest;
@@ -47,12 +44,7 @@ public class ActDirectoryCTRL {
         "<p>Для корректной работы, вам нужно положить фото юзеров <a href=\"file://srv-mail3.eatmeat.ru/c$/newmailboxes/fotoraw/\" " +
             "target=\"_blank\">\\\\srv-mail3.eatmeat" +
             ".ru\\c$\\newmailboxes\\fotoraw\\</a>\n";
-
-    /**
-     {@link LoggerFactory}
-     */
-    private static final Logger LOGGER = LoggerFactory.getLogger(ActDirectoryCTRL.class.getSimpleName());
-
+    
     private static final String ATT_DETAILS = "details";
 
     /**
@@ -190,7 +182,7 @@ public class ActDirectoryCTRL {
             String finalAdSrvDetails = adSrvDetails;
             messageToUser.info(queryString, attributeValue, ServiceInfoCtrl.percToEnd(new Date(l), 24));
         } catch (Exception e) {
-            model.addAttribute(ATT_DETAILS, "<center>" + internetUse.getUsage(queryString + ConstantsNet.DOMAIN_EATMEATRU) + "</center>");
+            model.addAttribute(ATT_DETAILS, "<center>" + internetUse.getUsage(queryString + ConstantsFor.DOMAIN_EATMEATRU) + "</center>");
         }
         model.addAttribute(ConstantsFor.ATT_FOOTER , new PageFooter().getFooterUtext());
         return "aditem";

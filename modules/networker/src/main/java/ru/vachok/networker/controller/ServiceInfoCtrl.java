@@ -8,7 +8,10 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.*;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.fileworks.CountSizeOfWorkDir;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.fileworks.ProgrammFilesReader;
+import ru.vachok.networker.fileworks.ReadFileTo;
 import ru.vachok.networker.net.DiapazonedScan;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.DBMessenger;
@@ -44,12 +47,14 @@ public class ServiceInfoCtrl {
 
     private static final String SERVICE_INFO_CTRL_CLOSE_APP = "ServiceInfoCtrl.closeApp";
 
-    private boolean authReq = false;
+    private ProgrammFilesReader filesReader = new ReadFileTo();
+    
+    private boolean authReq;
 
     /**
      {@link Visitor}
      */
-    private Visitor visitor = null;
+    private Visitor visitor;
 
     private static final MessageToUser messageToUser = new MessageLocal(ServiceInfoCtrl.class.getSimpleName());
 
@@ -75,13 +80,13 @@ public class ServiceInfoCtrl {
 
         visitor = new AppComponents().visitor(request);
         AppComponents.threadConfig().execByThreadConfig(new SpeedChecker());
-        this.authReq = Stream.of("0:0:0:0", "10.10.111", "10.200.213.85", "172.16.20", "10.200.214.80").anyMatch(sP->request.getRemoteAddr().contains(sP));
+        this.authReq = Stream.of("0:0:0:0", "10.10.111", "10.200.213.85", "172.16.20", "10.200.214.80", "192.168.13.143").anyMatch(sP->request.getRemoteAddr().contains(sP));
         if (authReq) {
             modModMaker(model, request, visitor);
             response.addHeader(ConstantsFor.HEAD_REFRESH, "90");
             return "vir";
         } else {
-            throw new AccessDeniedException("Sorry. Denied");
+            throw new AccessDeniedException("Sorry. Denied, for you: " + request.getRemoteAddr());
         }
     }
 
@@ -153,8 +158,11 @@ public class ServiceInfoCtrl {
 
     private void modModMaker( Model model , HttpServletRequest request , Visitor visitor ) throws ExecutionException, InterruptedException {
         this.visitor = ConstantsFor.getVis(request);
+        Callable<String> sizeOfDir = new CountSizeOfWorkDir("sizeofdir");
         Callable<Long> callWhenCome = new SpeedChecker();
+        Callable<String> filesWithSize;
         Future<Long> whenCome = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(callWhenCome);
+        Future<String> filesSizeFuture = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(sizeOfDir);
         Date comeD = new Date(whenCome.get());
         String resValue = new StringBuilder()
             .append(MyCalen.toStringS()).append("<br><br>")
@@ -163,7 +171,7 @@ public class ServiceInfoCtrl {
             .append(new AppInfoOnLoad()).append(" ").append(AppInfoOnLoad.class.getSimpleName()).append("<p>")
             .append(new TForms().fromArray(AppComponents.getOrSetProps(), true))
             .append("<p>")
-            .append(FileSystemWorker.readFile("exit.last")).append("<p>")
+            .append(filesReader.readFile(new File("exit.last"))).append("<p>")
             .append("<p><font color=\"grey\">").append(listFilesToReadStr()).append("</font>")
             .toString();
 
@@ -179,9 +187,9 @@ public class ServiceInfoCtrl {
             .append(String.format("%.02f",
                 (float) (ConstantsFor.getAtomicTime() - ConstantsFor.START_STAMP) / TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY))).append(" delays)</i>")
             .append(".<br> Состояние памяти (МБ): <font color=\"#82caff\">")
-            .append(ConstantsFor.getMemoryInfo())
+            .append(ConstantsFor.getMemoryInfo()).append("<details><summary> disk usage by program: </summary>").append(filesSizeFuture.get()).append("</details><br>")
             .append("</font><br>")
-            .append(DiapazonedScan.getInstance().toString())
+            .append(DiapazonedScan.getInstance())
             .append("<br>")
             .append(AppComponents.threadConfig())
             .toString());
@@ -190,6 +198,7 @@ public class ServiceInfoCtrl {
         model.addAttribute("res", resValue);
         model.addAttribute("back", request.getHeader(ConstantsFor.ATT_REFERER.toLowerCase()));
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<br>" + getJREVers());
+        AppComponents.threadConfig().execByThreadConfig(() -> new AppComponents().saveLogsToDB().showInfo());
     }
 
     private float getLast() {
@@ -198,10 +207,13 @@ public class ServiceInfoCtrl {
     }
 
     private String getJREVers() {
-        return System.getProperty("java.version");
+        SSHFactory tailFac = new SSHFactory
+            .Builder("srv-inetstat.eatmeat.ru", "sudo tail /home/kudr/nohup.out", this.getClass().getSimpleName()).build();
+        String getTailStr = tailFac.call();
+        return System.getProperty("java.version") + getTailStr;
     }
-
-
+    
+    
     private String prepareRequest(HttpServletRequest request) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("<center><h3>Заголовки</h3></center>");

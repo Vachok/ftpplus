@@ -5,7 +5,6 @@ import org.springframework.ui.Model;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.net.DiapazonedScan;
 import ru.vachok.networker.net.NetScannerSvc;
 import ru.vachok.networker.services.MessageLocal;
@@ -49,7 +48,7 @@ public enum ConstantsNet { ;
     /**
      {@link ConstantsFor#DBPREFIX} + velkom
      */
-    public static final String DB_NAME = ConstantsFor.DBDASENAME_U0466446_VELKOM;
+    public static final String DB_NAME = ConstantsFor.DBBASENAME_U0466446_VELKOM;
 
     public static final int APC = 350;
 
@@ -107,12 +106,7 @@ public enum ConstantsNet { ;
     public static final String FILENAME_OLDLANTXT0 = "lan_old0.txt";
 
     public static final String FILENAME_OLDLANTXT1 = "lan_old1.txt";
-
-    /**
-     Домен с точкой
-     */
-    public static final String DOMAIN_EATMEATRU = ".eatmeat.ru";
-
+    
     public static final int MAX_IN_ONE_VLAN = 255;
 
     public static final int IPS_IN_VELKOM_VLAN = Integer
@@ -143,12 +137,16 @@ public enum ConstantsNet { ;
     private static final ConcurrentMap<String, String> PC_U_MAP = new ConcurrentHashMap<>();
 
     private static final Properties LOC_PROPS = AppComponents.getOrSetProps();
-
-    private static final ConcurrentMap<String, Long> SSH_CHECKER_MAP = new ConcurrentHashMap<>();
+    
+    private static final Map<String, Long> SSH_CHECKER_MAP = new ConcurrentHashMap<>();
 
     private static final BlockingDeque<String> ALL_DEVICES = new LinkedBlockingDeque<>(IPS_IN_VELKOM_VLAN);
 
     public static final String HOSTNAMEPATT_HOME = "home";
+    
+    public static final String COM_INITPF = "sudo /etc/initpf.fw;sudo squid -k reconfigure && exit";
+    
+    public static final String COM_CAT24HRSLIST = "cat /etc/pf/24hrs && exit";
 
     /**
      new {@link HashSet}

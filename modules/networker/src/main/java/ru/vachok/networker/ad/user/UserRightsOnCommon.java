@@ -3,7 +3,13 @@ package ru.vachok.networker.ad.user;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.ui.Model;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.ad.ADSrv;
+import ru.vachok.networker.componentsrepo.PageFooter;
+import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
 
 import java.io.IOException;
@@ -35,7 +41,22 @@ public class UserRightsOnCommon extends SimpleFileVisitor<Path> {
     protected UserRightsOnCommon() {
         super();
     }
-
+    
+    public static String getCommonAccessRights(String workPos, Model model) {
+        ADSrv adSrv = AppComponents.adSrv();
+        try {
+            String users = workPos.split(": ")[1];
+            String commonRights = adSrv.checkCommonRightsForUserName(users);
+            model.addAttribute(ConstantsFor.ATT_WHOIS, commonRights);
+            model.addAttribute(ConstantsFor.ATT_TITLE, workPos);
+            model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
+        }
+        catch (ArrayIndexOutOfBoundsException e) {
+            FileSystemWorker.error("CommonRightsChecker.getCommonAccessRights", e);
+        }
+        return ConstantsFor.BEANNAME_MATRIX;
+    }
+    
     @Override
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
         AclFileAttributeView fileAttributeView = Files.getFileAttributeView(dir, AclFileAttributeView.class);

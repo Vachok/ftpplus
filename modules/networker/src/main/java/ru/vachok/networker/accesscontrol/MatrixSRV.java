@@ -171,10 +171,10 @@ public class MatrixSRV {
      */
     String getWorkPosition(String sql) {
         Map<String, String> doljAndAccess = new ConcurrentHashMap<>();
-
-        try(Connection c = new AppComponents().connection(ConstantsFor.DBDASENAME_U0466446_VELKOM);
-            PreparedStatement statement = c.prepareStatement(sql);
-            ResultSet r = statement.executeQuery()) {
+    
+        try (Connection c = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
+             PreparedStatement statement = c.prepareStatement(sql);
+             ResultSet r = statement.executeQuery()) {
             while (r.next()) {
                 getInfo(r, doljAndAccess);
             }

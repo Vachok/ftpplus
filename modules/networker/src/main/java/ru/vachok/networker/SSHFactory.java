@@ -2,21 +2,31 @@ package ru.vachok.networker;
 
 
 import com.jcraft.jsch.*;
+import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
+import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.fileworks.ProgrammFilesWriter;
+import ru.vachok.networker.fileworks.WriteFilesTo;
 import ru.vachok.networker.services.MessageLocal;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.ConnectException;
 import java.nio.charset.StandardCharsets;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.*;
+import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.RejectedExecutionException;
 
@@ -37,8 +47,8 @@ public class SSHFactory implements Callable<String> {
     private static final String SOURCE_CLASS = SSHFactory.class.getSimpleName();
 
     private static final MessageToUser messageToUser = new MessageLocal(SSHFactory.class.getSimpleName());
-
-    private InitProperties initProperties = new DBRegProperties("general-jsch");
+    
+    private InitProperties initProperties = new DBRegProperties(ConstantsFor.DBTABLE_GENERALJSCH);
 
     private String connectToSrv;
 
@@ -49,6 +59,8 @@ public class SSHFactory implements Callable<String> {
     private String userName;
 
     private String classCaller;
+
+    private ProgrammFilesWriter programmFilesWriter = new WriteFilesTo(getClass().getSimpleName());
 
     private Channel respChannel;
 
@@ -75,7 +87,7 @@ public class SSHFactory implements Callable<String> {
 
      @return the command ssh
      */
-    private String getCommandSSH() {
+    public String getCommandSSH() {
         return commandSSH;
     }
 
@@ -90,7 +102,7 @@ public class SSHFactory implements Callable<String> {
         this.userName = builder.userName;
         this.classCaller = builder.classCaller;
     }
-
+    
     private InputStream connect() throws IOException, JSchException {
         boolean isConnected;
         chanRespChannel();
@@ -182,10 +194,7 @@ public class SSHFactory implements Callable<String> {
     public String call() {
         StringBuilder stringBuilder = new StringBuilder();
         File file = new File(classCaller + "_" + System.currentTimeMillis() + ".ssh");
-
-        stringBuilder.append(new Date()).append(".\n<br> SSH server is : \n<br>").append(connectToSrv).append(" executing: ").append(commandSSH).append("\n<br>end");
-
-        byte[] bytes = new byte[ConstantsFor.KBYTE * 20];
+        byte[] bytes = new byte[ConstantsFor.KBYTE * 30];
 
         try (InputStream connect = connect()) {
             messageToUser.info(connect().available() + "", " bytes, ssh-channel is ", respChannel.isConnected() + "");
@@ -196,21 +205,19 @@ public class SSHFactory implements Callable<String> {
             messageToUser.errorAlert(getClass().getSimpleName(), "call", e.getMessage());
             FileSystemWorker.error("SSHFactory.call", e);
         }
-        messageToUser.warn(getClass().getSimpleName(), "CALL FROM CLASS: ", classCaller);
+        messageToUser.warn("CALL FROM CLASS: ", classCaller, ", to server: " + connectToSrv);
         List<String> recList = new ArrayList<>();
 
         recList.add(stringBuilder.toString());
         recList.add(toString());
         recList.add(builderToStr);
-        FileSystemWorker.writeFile(file.getName(), recList);
+        programmFilesWriter.setFileName("ssh_" + LocalTime.now().toSecondOfDay() + ".log");
+        boolean isOk = programmFilesWriter.writeFile(recList);
+        stringBuilder.append(programmFilesWriter.getClass().getSimpleName()).append(" ").append(isOk);
         FileSystemWorker.copyOrDelFile(file, ".\\ssh\\" + file.getName(), true);
         return stringBuilder.toString();
     }
 
-    private String pem() {
-        File pemFile = new File("a161.pem");
-        return pemFile.getAbsolutePath();
-    }
 
 
     /**
@@ -367,5 +374,41 @@ public class SSHFactory implements Callable<String> {
             return this;
         }
 
+
+        public String pem() {
+            return this.sshFactory.pem();
+        }
+    }
+    
+    
+    @NotNull private String pem() {
+        File pemFile = new File("a161.pem");
+        if (pemFile.exists()) {
+            return pemFile.getAbsolutePath();
+        }
+        else {
+            MysqlDataSource source = new RegRuMysql().getDataSourceSchema(ConstantsFor.DBBASENAME_U0466446_LIFERPG);
+            String pemFileStr = "";
+            String sqlGetKey = "SELECT *  FROM `sshid` WHERE `pc` LIKE 'do0213'";
+            try (Connection c = source.getConnection()) {
+                try (PreparedStatement p = c.prepareStatement(sqlGetKey)) {
+                    try (ResultSet r = p.executeQuery()) {
+                        while (r.next()) {
+                            pemFileStr = r.getString("pem");
+                        }
+                        try (OutputStream outputStream = new FileOutputStream(pemFile)) {
+                            try (PrintStream printStream = new PrintStream(outputStream, true)) {
+                                printStream.print(pemFileStr);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (SQLException | IOException e) {
+                messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".pem", e));
+            }
+        }
+        pemFile.deleteOnExit();
+        return pemFile.getAbsolutePath();
     }
 }

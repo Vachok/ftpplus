@@ -137,11 +137,8 @@ public class ExitApp implements Runnable {
              ObjectOutput objectOutputStream = new ObjectOutputStream(fileOutputStream)
         ) {
             objectOutputStream.writeObject(toWriteObj);
-            messageToUser.info(getClass().getSimpleName() + ".writeOwnObject: ", fileName, " = " + new File(fileName).length() / ConstantsFor.KBYTE);
             return true;
         } catch (IOException e) {
-            messageToUser.errorAlert(getClass().getSimpleName(), "writeOwnObject", e.getMessage());
-            FileSystemWorker.error("ExitApp.writeOwnObject", e);
             return false;
         }
     }

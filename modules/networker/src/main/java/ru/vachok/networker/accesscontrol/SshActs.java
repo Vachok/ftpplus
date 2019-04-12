@@ -16,7 +16,6 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.WhoIsWithSRV;
 
 import javax.servlet.http.HttpServletRequest;
@@ -148,7 +147,7 @@ public class SshActs {
     }
 
     public void setPcName(String pcName) {
-        if (pcName.contains(ConstantsNet.DOMAIN_EATMEATRU)) {
+        if (pcName.contains(ConstantsFor.DOMAIN_EATMEATRU)) {
             this.pcName = pcName;
         } else {
             this.pcName = new NameOrIPChecker(this.pcName).checkPat(pcName);
@@ -240,6 +239,7 @@ public class SshActs {
         SSHFactory sshFactory = new SSHFactory.Builder(DEFAULT_SERVER_TO_SSH, "traceroute ya.ru;exit", getClass().getSimpleName()).build();
         String callForRoute = null;
         Future<String> submitTrace = AppComponents.threadConfig().getTaskExecutor().submit(sshFactory);
+        stringBuilder.append("<br><a href=\"/makeok\">");
         try {
             callForRoute = submitTrace.get((long) (ConstantsFor.ONE_HOUR_IN_MIN / 2) , TimeUnit.SECONDS);
             if (callForRoute.contains("91.210.85.")) {
@@ -253,6 +253,7 @@ public class SshActs {
             stringBuilder.append(FileSystemWorker.error("SshActs.providerTraceStr" , e));
             Thread.currentThread().interrupt();
         }
+        stringBuilder.append("</a>");
         String logStr = "LOG: ";
         callForRoute = callForRoute + "<br>LOG: " + getInetLog();
         if (callForRoute.contains(logStr)) {
@@ -531,7 +532,7 @@ public class SshActs {
         /**
          {@link SshActs}
          */
-        private final SshActs sshActs;
+        private SshActs sshActs;
 
         @Autowired
         public SshActsCTRL(SshActs sshActs) {
@@ -540,6 +541,7 @@ public class SshActs {
 
         @PostMapping(URL_SSHACTS)
         public String sshActsPOST(@ModelAttribute SshActs sshActs, Model model, HttpServletRequest request) throws AccessDeniedException {
+            this.sshActs = sshActs;
             String pcReq = request.getRemoteAddr().toLowerCase();
             if (getAuthentic(pcReq)) {
                 model.addAttribute("head", new PageFooter().getHeaderUtext());
@@ -555,10 +557,13 @@ public class SshActs {
         public String sshActsGET(Model model, HttpServletRequest request) throws AccessDeniedException {
             Visitor visitor = ConstantsFor.getVis(request);
             String pcReq = request.getRemoteAddr().toLowerCase();
-
+            long abs = Math.abs(TimeUnit.SECONDS.toHours((long) LocalTime.parse("18:30").toSecondOfDay() - LocalTime.now().toSecondOfDay()));
+            if (0 >= abs) abs = 1;
+    
             sshActs.setAllowDomain("");
             sshActs.setDelDomain("");
             sshActs.setUserInput("");
+            sshActs.setNumOfHours(String.valueOf(abs));
             setInet(pcReq);
             if (getAuthentic(pcReq)) {
                 model.addAttribute(ConstantsFor.ATT_TITLE, visitor.getTimeSpend());
@@ -573,21 +578,23 @@ public class SshActs {
                 model.addAttribute(ConstantsFor.ATT_SSHDETAIL, sshActs.toString());
                 return PAGE_NAME;
             } else {
-                throw new AccessDeniedException("NOT Allowed! ");
+                throw new AccessDeniedException("NOT Allowed!");
             }
         }
 
         @PostMapping("/allowdomain")
         public String allowPOST(@ModelAttribute SshActs sshActs, Model model) {
+            this.sshActs = sshActs;
             model.addAttribute(ConstantsFor.ATT_TITLE, sshActs.getAllowDomain() + " добавлен");
             model.addAttribute(ConstantsFor.ATT_SSH_ACTS, sshActs);
             model.addAttribute("ok", sshActs + "<p>" + sshActs.allowDomainAdd());
             model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
             return "ok";
         }
-
+    
         @PostMapping("/deldomain")
         public String delDomPOST(@ModelAttribute SshActs sshActs, Model model) {
+            this.sshActs = sshActs;
             model.addAttribute(ConstantsFor.ATT_TITLE, sshActs.getDelDomain() + " удалён");
             model.addAttribute(ConstantsFor.ATT_SSH_ACTS, sshActs);
             model.addAttribute("ok", sshActs + "<p>" + sshActs.allowDomainDel());
@@ -597,17 +604,18 @@ public class SshActs {
 
         @PostMapping("/tmpfullnet")
         public String tempFullInetAccess(@ModelAttribute SshActs sshActs, Model model) {
+            this.sshActs = sshActs;
+            long timeToApply = Long.parseLong(sshActs.getNumOfHours());
             model.addAttribute(ConstantsFor.ATT_SSH_ACTS, sshActs);
             model.addAttribute(ConstantsFor.ATT_TITLE, ConstantsFor.getMemoryInfo());
-            model.addAttribute("ok", new TemporaryFullInternet(sshActs.getUserInput(), sshActs.getNumOfHours()).doAdd());
+            model.addAttribute("ok" , new TemporaryFullInternet(sshActs.getUserInput() , timeToApply).doAdd());
             model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
-            sshActs.setNumOfHours(String.valueOf(Math.abs(TimeUnit.SECONDS.toHours(LocalTime.parse("18:30").toSecondOfDay() - LocalTime.now().toSecondOfDay()))));
             return "ok";
         }
 
         private boolean getAuthentic(String pcReq) {
             return
-                Stream.of("10.10.111.", "10.200.213.85", "10.200.213.200", "0:0:0:0", "172.16.200.").anyMatch(pcReq::contains);
+                Stream.of("10.10.111.", "10.200.213.85", "10.200.213.200", "0:0:0:0", "172.16.200.", "10.200.214.80").anyMatch(pcReq::contains);
         }
 
         /**

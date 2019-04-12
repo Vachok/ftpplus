@@ -8,8 +8,8 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.abstr.InternetUse;
 import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
-import ru.vachok.networker.accesscontrol.inetstats.InternetUse;
 import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.ad.user.PCUserResolver;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -261,9 +261,9 @@ public class ADSrv implements Runnable {
      */
     String getDetails(String queryString) throws IOException {
         InternetUse internetUse = new InetUserPCName();
-        String internetUseUsage = internetUse.getUsage(queryString + ConstantsNet.DOMAIN_EATMEATRU);
+        String internetUseUsage = internetUse.getUsage(queryString + ConstantsFor.DOMAIN_EATMEATRU);
         internetUseUsage = internetUseUsage.replace("юзер", "компьютер");
-        if (InetAddress.getByName(queryString + ConstantsNet.DOMAIN_EATMEATRU).isReachable(ConstantsFor.TIMEOUT_650)) {
+        if (InetAddress.getByName(queryString + ConstantsFor.DOMAIN_EATMEATRU).isReachable(ConstantsFor.TIMEOUT_650)) {
             return getUserName(queryString) + "<p><center>" + internetUseUsage + "</center>";
         }
         else {
@@ -281,7 +281,7 @@ public class ADSrv implements Runnable {
      */
     private static String offNowGetU(CharSequence pcName) {
         StringBuilder v = new StringBuilder();
-        try (Connection c = new AppComponents().connection(ConstantsFor.DBDASENAME_U0466446_VELKOM)) {
+        try (Connection c = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
             try (PreparedStatement p = c.prepareStatement("select * from pcuser");
                  PreparedStatement pAuto = c.prepareStatement("select * from pcuserauto where pcName in (select pcName from pcuser) order by pcName asc limit 203");
                  ResultSet resultSet = p.executeQuery();
@@ -457,7 +457,7 @@ public class ADSrv implements Runnable {
         }
         ConstantsNet.getPCnameUsersMap().put(timesUserLast, filesAsFile);
         try {
-            recToDB(queryString + ConstantsNet.DOMAIN_EATMEATRU, timesUserLast.split(" ")[1]);
+            recToDB(queryString + ConstantsFor.DOMAIN_EATMEATRU, timesUserLast.split(" ")[1]);
         }
         catch (ArrayIndexOutOfBoundsException ignore) {
             //

@@ -1,4 +1,4 @@
-package ru.vachok.networker.net;
+package ru.vachok.networker.services;
 
 
 import ru.vachok.messenger.MessageToUser;
@@ -6,7 +6,6 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
-import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.systray.MessageToTray;
 
 import java.io.*;
@@ -38,7 +37,8 @@ public class WeekPCStats implements Runnable {
             messageToUser = new MessageLocal(WeekPCStats.class.getSimpleName());
         }
     }
-
+    
+    
     /**
      {@link #getFromDB()}
      */
@@ -64,7 +64,7 @@ public class WeekPCStats implements Runnable {
         final long stArt = System.currentTimeMillis();
         String sql = "select * from pcuserauto";
         File file = new File(ConstantsNet.VELKOM_PCUSERAUTO_TXT);
-        try (Connection c = new AppComponents().connection(ConstantsFor.DBDASENAME_U0466446_VELKOM);
+        try (Connection c = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
              PreparedStatement p = c.prepareStatement(sql);
              ResultSet r = p.executeQuery();
              OutputStream outputStream = new FileOutputStream(file);

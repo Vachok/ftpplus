@@ -16,35 +16,24 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
-import ru.vachok.networker.accesscontrol.inetstats.InternetUse;
 import ru.vachok.networker.componentsrepo.LastNetScan;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
-import ru.vachok.networker.net.enums.OtherKnownDevices;
 import ru.vachok.networker.services.MessageLocal;
-import ru.vachok.networker.systray.ActionCloseMsg;
-import ru.vachok.networker.systray.MessageToTray;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.net.InetAddress;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
-import java.util.*;
+import java.util.Date;
+import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.*;
-import java.util.stream.Collectors;
 
 
 /**
@@ -171,7 +160,7 @@ public class NetScanCtr {
         model.addAttribute("pingResult" , FileSystemWorker.readFile(ConstantsNet.PINGRESULT_LOG));
         model.addAttribute(ConstantsFor.ATT_TITLE , netPingerInst.getTimeToEndStr() + " pinger hash: " + netPingerInst.hashCode());
         model.addAttribute(ConstantsFor.ATT_FOOTER , new PageFooter().getFooterUtext());
-        model.addAttribute("pingTest" , new TForms().fromArray(netPingerInst.pingDev(getDeqAddr()) , true));
+        model.addAttribute("pingTest", new TForms().fromArray(netPingerInst.pingDev(NetListKeeper.getDeqAddr()), true));
         //noinspection MagicNumber
         response.addHeader(ConstantsFor.HEAD_REFRESH , String.valueOf(ConstantsFor.DELAY * 1.8f));
         messageToUser.info("NetScanCtr.pingAddr" , "HEAD_REFRESH" , " = " + response.getHeader(ConstantsFor.HEAD_REFRESH));
@@ -205,78 +194,23 @@ public class NetScanCtr {
     @PostMapping(STR_NETSCAN)
     public static String pcNameForInfo(@ModelAttribute NetScannerSvc netScannerSvc, BindingResult result, Model model) {
         String thePc = netScannerSvc.getThePc();
+/*Comment out 10.04.2019 (9:40)
         AppComponents.adSrv().setUserInputRaw(thePc);
+*/
         if (thePc.toLowerCase().contains("user: ")) {
-            model.addAttribute("ok", getUserFromDB(thePc).trim());
+            model.addAttribute("ok", MoreInfoWorker.getUserFromDB(thePc).trim());
             model.addAttribute(ConstantsFor.ATT_TITLE, thePc);
             model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
             return "ok";
         }
         model.addAttribute(ATT_THEPC, thePc);
+/*Comment out 10.04.2019 (9:41)
         AppComponents.adSrv().setUserInputRaw(netScannerSvc.getThePc());
+*/
         netScannerSvc.setThePc("");
         return "redirect:/ad?" + thePc;
     }
-
-    /**
-     * Достаёт инфо о пользователе из БД
-     * <p>
-     *
-     * @param userInputRaw {@link NetScannerSvc#getThePc()}
-     * @return LAST 20 USER PCs
-     */
-    static String getUserFromDB(String userInputRaw) {
-        StringBuilder retBuilder = new StringBuilder();
-        String sql = "select * from pcuserauto where userName like ? ORDER BY whenQueried DESC LIMIT 0, 20";
-        List<String> userPCName = new ArrayList<>();
-        String mostFreqName = "No Name";
-        
-        try {
-            userInputRaw = userInputRaw.split(": ")[1].trim();
-        } catch (ArrayIndexOutOfBoundsException e) {
-            retBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e , false));
-            userInputRaw = userInputRaw.split(":")[1].trim();
-        }
-        try (Connection c = new AppComponents().connection(ConstantsFor.DBPREFIX + ConstantsFor.STR_VELKOM);
-             PreparedStatement p = c.prepareStatement(sql)
-        ) {
-            p.setString(1, "%" + userInputRaw + "%");
-            try (ResultSet r = p.executeQuery()) {
-                StringBuilder stringBuilder = new StringBuilder();
-                String headER = "<h3><center>LAST 20 USER PCs</center></h3>";
-                stringBuilder.append(headER);
     
-                while (r.next()) {
-                    String pcName = r.getString(ConstantsFor.DBFIELD_PCNAME);
-                    userPCName.add(pcName);
-                    String returnER = "<br><center><a href=\"/ad?" + pcName.split("\\Q.\\E")[0] + "\">" + pcName + "</a> set: " + r.getString(ConstantsNet.DB_FIELD_WHENQUERIED) + ConstantsFor.HTML_CENTER;
-                    stringBuilder.append(returnER);
-                }
-                List<String> collectedNames = userPCName.stream().distinct().collect(Collectors.toList());
-                Map<Integer, String> freqName = new HashMap<>();
-                for (String x : collectedNames) {
-                    int frequency = Collections.frequency(userPCName, x);
-                    stringBuilder.append(frequency).append(") ").append(x).append("<br>");
-                    freqName.putIfAbsent(frequency, x);
-                }
-                if (r.last()) {
-                    MessageToUser messageToUser = new MessageToTray(new ActionCloseMsg(new MessageLocal(NetScanCtr.class.getSimpleName())));
-                    messageToUser.info(r.getString(ConstantsFor.DBFIELD_PCNAME) , r.getString(ConstantsNet.DB_FIELD_WHENQUERIED) , r.getString(ConstantsFor.DB_FIELD_USER));
-                }
-                Collections.sort(collectedNames);
-                Set<Integer> integers = freqName.keySet();
-                mostFreqName = freqName.get(Collections.max(integers));
-                InternetUse internetUse = new InetUserPCName();
-                stringBuilder.append("<br>");
-                stringBuilder.append(internetUse.getUsage(mostFreqName));
-                return stringBuilder.toString();
-            }
-        } catch (SQLException | IOException e) {
-            retBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e , false));
-        }
-        return retBuilder.toString();
-    }
-
     @GetMapping("/showalldev")
     public String allDevices(Model model, HttpServletRequest request, HttpServletResponse response) {
         model.addAttribute(ConstantsFor.ATT_TITLE, ConstantsNet.getAllDevices().remainingCapacity() + " ip remain");
@@ -297,19 +231,6 @@ public class NetScanCtr {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        NetScanCtr ctr = (NetScanCtr) o;
-        return Objects.equals(scanOnline, ctr.scanOnline) && Objects.equals(netScannerSvcInstAW, ctr.netScannerSvcInstAW) && Objects.equals(netPingerInst, ctr.netPingerInst);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(scanOnline, netScannerSvcInstAW, netPingerInst);
-    }
-
-    @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("NetScanCtr{");
         sb.append("ATT_NETSCAN='").append(ConstantsNet.ATT_NETSCAN).append('\'');
@@ -326,32 +247,7 @@ public class NetScanCtr {
         sb.append('}');
         return sb.toString();
     }
-
-
-    /**
-     ИП-адреса, которые проверяются в момент входа на <a href="http://rups00.eatmeat.ru:8880/ping" target=_blank>http://rups00.eatmeat.ru:8880/ping</a>
-
-     @return {@link Deque} {@link InetAddress}
-     */
-    private static Deque<InetAddress> getDeqAddr() {
-        Deque<InetAddress> retDeq = new ConcurrentLinkedDeque<>();
-        Field[] fields = OtherKnownDevices.class.getFields();
-        try {
-            for (Field field : fields) {
-                if (field.getName().contains("IP")) {
-                    byte[] inetAddressBytes = InetAddress.getByName(field.get(field).toString()).getAddress();
-                    retDeq.add(InetAddress.getByAddress(inetAddressBytes));
-                } else {
-                    retDeq.add(InetAddress.getByName(field.get(field).toString()));
-                }
-            }
-        } catch (IOException | IllegalAccessException e) {
-            messageToUser.errorAlert("NetScanCtr", "getDeqAddr", e.getMessage());
-            FileSystemWorker.error("NetScanCtr.getDeqAddr", e);
-        }
-        return retDeq;
-    }
-
+    
     /**
      Если {@link #lastScanMAP} более 1
      <p>
@@ -416,6 +312,7 @@ public class NetScanCtr {
         }
         timeCheck(remainPC, lastSt / 1000, request, model);
     }
+    
     /**
      Проверки времени
      <p>
@@ -441,15 +338,12 @@ public class NetScanCtr {
         if(!(new File("scan.tmp").exists())) {
             model.addAttribute("newpc" , lastScanLocalTime);
             if(isSystemTimeBigger) {
-                String valStr = "isSystemTimeBigger = " + true;
-                messageToUser.info(valStr);
                 Future<?> submitScan = locExecutor.submit(scanRun);
                 submitScan.get(ConstantsFor.DELAY - 1 , TimeUnit.MINUTES);
                 messageToUser.info("NetScanCtr.checkMapSizeAndDoAction" , "submitScan.isDone()" , " = " + submitScan.isDone());
             }
         } else {
-            String valStr = "lastScanLocalTime = " + lastScanLocalTime;
-            messageToUser.infoNoTitles(Thread.currentThread().getName() + "\n" + classMeth + "\n" + valStr);
+            messageToUser.warn(getClass().getSimpleName() + ".timeCheck", "lastScanLocalTime", " = " + lastScanLocalTime);
         }
     }
 

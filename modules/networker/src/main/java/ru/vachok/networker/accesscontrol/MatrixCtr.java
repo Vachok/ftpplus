@@ -16,13 +16,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
-import ru.vachok.networker.ad.ADSrv;
+import ru.vachok.networker.abstr.InfoWorker;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.VersionInfo;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.DiapazonedScan;
-import ru.vachok.networker.net.MoreInfoGetter;
+import ru.vachok.networker.net.MoreInfoWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.SimpleCalculator;
 import ru.vachok.networker.services.WhoIsWithSRV;
@@ -92,6 +91,8 @@ public class MatrixCtr {
      */
     private long metricMatrixStartLong = System.currentTimeMillis();
 
+    private InfoWorker infoWorker;
+
 
     /**
      Конструктор autowired
@@ -124,34 +125,14 @@ public class MatrixCtr {
     }
 
 
-    /**
-     Начальная страница
-     <p>
-     starting.html
-     <p>
-     1. {@link ConstantsFor#getVis(javax.servlet.http.HttpServletRequest)}. Записиваем визит. <br>
-     2. {@link #qIsNull(Model, HttpServletRequest)}. Нулевой {@link HttpServletRequest#getQueryString()}
-     <p>
-     <b>{@link Model}-аттрибуты:</b><br>
-     {@code "devscan"} = {@link MoreInfoGetter#getTVNetInfo()} так же дата запуска приложения.
-     <p>
-     {@link HttpServletResponse#addHeader(java.lang.String, java.lang.String)}. {@link ConstantsFor#HEAD_REFRESH} = 120 <br>
-     {@link Logger#info(java.lang.String, java.lang.Object)} = this {@link Visitor#toString()}
-
-     @param request {@link HttpServletRequest}
-     @param model {@link Model}
-     @param response {@link HttpServletResponse}
-     @return название файла html, в который помещаем модель.
-
-     @see DiapazonedScan
-     */
     @GetMapping("/")
     public String getFirst(final HttpServletRequest request, Model model, HttpServletResponse response) {
         this.visitorInst = ConstantsFor.getVis(request);
+        this.infoWorker = new MoreInfoWorker("tv");
         qIsNull(model, request);
         model.addAttribute(ConstantsFor.ATT_HEAD, new PageFooter().getHeaderUtext());
-        model.addAttribute("devscan",
-            "Since " + getPTVLastStamp() + MoreInfoGetter.getTVNetInfo() + "<br>" + currentProvider);
+        model.addAttribute(ConstantsFor.ATT_DEVSCAN,
+            "Since " + getPTVLastStamp() + infoWorker.getInfoAbout() + currentProvider);
         response.addHeader(ConstantsFor.HEAD_REFRESH, "120");
         return "starting";
     }
@@ -171,22 +152,6 @@ public class MatrixCtr {
     }
 
 
-    /**
-     Получить должность. {@code Post}.
-     <p>
-     1. {@link MatrixSRV#getWorkPos()}. Получим пользовательскую строку ввода в {@link String} {@code workPos}. <br>
-     2. {@link WhoIsWithSRV#whoisStat(java.lang.String, org.springframework.ui.Model)}, если строка содержит {@code whois:} <br>
-     3. {@link #calculateDoubles(java.lang.String, org.springframework.ui.Model)}. Подсчёт {@link Double}, если строка содержит {@code calc:} <br>
-     4. {@link MatrixCtr#getCommonAccessRights(String , Model)}, если строка содержит {@code common: } <br>
-     5. {@link #timeStamp(ru.vachok.networker.services.SimpleCalculator, org.springframework.ui.Model, java.lang.String)}, если строка содержит {@code calctime:} или {@code calctimes:} <br>
-     6. {@link #matrixAccess(java.lang.String)}, в ином случае.
-     <p>
-
-     @param matrixSRV {@link #matrixSRV}
-     @param result {@link BindingResult}
-     @param model {@link Model}
-     @return {@link ConstantsFor#BEANNAME_MATRIX}.html
-     */
     @SuppressWarnings("MethodWithMultipleReturnPoints")
     @PostMapping(GET_MATRIX)
     public String getWorkPosition(@ModelAttribute(ConstantsFor.BEANNAME_MATRIX) MatrixSRV matrixSRV, BindingResult result, Model model) {
@@ -197,9 +162,6 @@ public class MatrixCtr {
         }
         else if (workPos.toLowerCase().contains("calc:")) {
             return calculateDoubles(workPos, model);
-        }
-        else if (workPos.toLowerCase().contains("common: ")) {
-            return getCommonAccessRights(workPos , model);
         }
         else if (workPos.toLowerCase().contains("calctime:") || workPos.toLowerCase().contains("calctimes:") || workPos.toLowerCase().contains("t:")) {
             timeStamp(new SimpleCalculator(), model, workPos);
@@ -223,12 +185,12 @@ public class MatrixCtr {
         model.addAttribute(ConstantsFor.ATT_HEAD, new PageFooter().getHeaderUtext());
         this.visitorInst = ConstantsFor.getVis(request);
         model.addAttribute(ConstantsFor.ATT_HEAD, new PageFooter().getHeaderUtext());
-        SSHFactory gitOner = new SSHFactory.Builder(ConstantsFor.IPADDR_SRVGIT, "sudo cd /usr/home/ITDept;sudo git instaweb;exit",
+        SSHFactory gitOwner = new SSHFactory.Builder(ConstantsFor.IPADDR_SRVGIT, "sudo cd /usr/home/ITDept;sudo git instaweb;exit",
             getClass().getSimpleName()).build();
         if (request.getQueryString() != null && request.getQueryString().equalsIgnoreCase(ConstantsFor.COM_REBOOT)) {
-            gitOner = new SSHFactory.Builder(ConstantsFor.IPADDR_SRVGIT, "sudo reboot", getClass().getSimpleName()).build();
+            gitOwner = new SSHFactory.Builder(ConstantsFor.IPADDR_SRVGIT, "sudo reboot", getClass().getSimpleName()).build();
         }
-        String call = gitOner.call() + "\n" + visitorInst;
+        String call = gitOwner.call() + "\n" + visitorInst;
         LOGGER.info(call);
         metricMatrixStartLong = System.currentTimeMillis() - metricMatrixStartLong;
         return "redirect:http://srv-git.eatmeat.ru:1234";
@@ -289,21 +251,6 @@ public class MatrixCtr {
         sb.append(", visitorInst=").append(visitorInst.hashCode());
         sb.append('}');
         return sb.toString();
-    }
-
-
-    public static String getCommonAccessRights( String workPos , Model model ) {
-        ADSrv adSrv = AppComponents.adSrv();
-        try {
-            String users = workPos.split(": ")[1];
-            String commonRights = adSrv.checkCommonRightsForUserName(users);
-            model.addAttribute(ConstantsFor.ATT_WHOIS , commonRights);
-            model.addAttribute(ConstantsFor.ATT_TITLE , workPos);
-            model.addAttribute(ConstantsFor.ATT_FOOTER , new PageFooter().getFooterUtext());
-        } catch (ArrayIndexOutOfBoundsException e) {
-            FileSystemWorker.error("CommonRightsChecker.getCommonAccessRights" , e);
-        }
-        return ConstantsFor.BEANNAME_MATRIX;
     }
 
 
