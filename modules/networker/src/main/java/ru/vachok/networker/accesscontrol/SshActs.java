@@ -557,11 +557,12 @@ public class SshActs {
         public String sshActsGET(Model model, HttpServletRequest request) throws AccessDeniedException {
             Visitor visitor = ConstantsFor.getVis(request);
             String pcReq = request.getRemoteAddr().toLowerCase();
+            long abs = Math.abs(TimeUnit.SECONDS.toHours((long) LocalTime.parse("18:30").toSecondOfDay() - LocalTime.now().toSecondOfDay()));
+            if (0 >= abs) abs = 1;
+    
             sshActs.setAllowDomain("");
             sshActs.setDelDomain("");
             sshActs.setUserInput("");
-            long abs = Math.abs(TimeUnit.SECONDS.toHours((long) LocalTime.parse("18:30").toSecondOfDay() - LocalTime.now().toSecondOfDay()));
-            if (0 >= abs) abs = 1;
             sshActs.setNumOfHours(String.valueOf(abs));
             setInet(pcReq);
             if (getAuthentic(pcReq)) {
@@ -577,7 +578,7 @@ public class SshActs {
                 model.addAttribute(ConstantsFor.ATT_SSHDETAIL, sshActs.toString());
                 return PAGE_NAME;
             } else {
-                throw new AccessDeniedException("NOT Allowed! ");
+                throw new AccessDeniedException("NOT Allowed!");
             }
         }
 
@@ -590,7 +591,7 @@ public class SshActs {
             model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
             return "ok";
         }
-
+    
         @PostMapping("/deldomain")
         public String delDomPOST(@ModelAttribute SshActs sshActs, Model model) {
             this.sshActs = sshActs;
@@ -614,7 +615,7 @@ public class SshActs {
 
         private boolean getAuthentic(String pcReq) {
             return
-                Stream.of("10.10.111.", "10.200.213.85", "10.200.213.200", "0:0:0:0", "172.16.200.").anyMatch(pcReq::contains);
+                Stream.of("10.10.111.", "10.200.213.85", "10.200.213.200", "0:0:0:0", "172.16.200.", "10.200.214.80").anyMatch(pcReq::contains);
         }
 
         /**
