@@ -1,3 +1,0 @@
-## AppInfoOnLoad
-### schedStarter
->cleanTrash
