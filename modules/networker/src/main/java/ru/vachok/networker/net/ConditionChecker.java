@@ -29,24 +29,25 @@ import java.util.concurrent.TimeUnit;
  Проверки из классов.
  <p>
  Пинги, и тп
- 
+
  @since 31.01.2019 (0:20) */
 @SuppressWarnings("StaticMethodOnlyUsedInOneClass")
 class ConditionChecker implements InfoWorker {
-    
-    
+
+
     private static final String CLASS_NAME = ConditionChecker.class.getSimpleName();
-    
+
     private static Connection connection;
-    
+
     private static MessageToUser messageToUser = new MessageLocal(ConditionChecker.class.getSimpleName());
-    
+
     private String sql;
-    
+
     private String pcName;
-    
+
     private boolean isOnline;
-    
+
+
     ConditionChecker(String sql, String pcName) {
         this.sql = sql;
         if (pcName.contains(":")) {
@@ -57,7 +58,8 @@ class ConditionChecker implements InfoWorker {
             this.pcName = pcName;
         }
     }
-    
+
+
     static {
         try {
             connection = new AppComponents().connection(ConstantsNet.DB_NAME);
@@ -67,8 +69,7 @@ class ConditionChecker implements InfoWorker {
             FileSystemWorker.error("ConditionChecker.static initializer", e);
         }
     }
-    
-    
+
     @Override public String getInfoAbout() {
         StringBuilder stringBuilder = new StringBuilder();
         if (isOnline) {
@@ -80,11 +81,13 @@ class ConditionChecker implements InfoWorker {
         }
         return stringBuilder.toString();
     }
-    
+
+
     @Override public void setInfo() {
         throw new UnsupportedOperationException();
     }
-    
+
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("ConditionChecker{");
@@ -92,7 +95,8 @@ class ConditionChecker implements InfoWorker {
         sb.append('}');
         return sb.toString();
     }
-    
+
+
     static void qerNotNullScanAllDevices(Model model, HttpServletResponse response) {
         StringBuilder stringBuilder = new StringBuilder();
         if (ConstantsNet.getAllDevices().remainingCapacity() == 0) {
@@ -103,7 +107,8 @@ class ConditionChecker implements InfoWorker {
             allDevNotNull(model, response);
         }
     }
-    
+
+
     private String getUserResolved() {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("<b><font color=\"white\">");
@@ -122,18 +127,54 @@ class ConditionChecker implements InfoWorker {
         stringBuilder.append("</b></font> ");
         return stringBuilder.toString();
     }
-    
+
+
+    /**
+     Если размер {@link ConstantsNet#getAllDevices()} более 0
+     <p>
+     {@code scansInMin} - кол-во сканирований в минуту для рассчёта времени. {@code minLeft} - примерное кол-во оставшихся минут.
+     {@code attributeValue} - то, что видим на страничке.
+     <p>
+     <b>{@link Model#addAttribute(Object)}:</b> <br>
+     {@link ConstantsFor#ATT_TITLE} = {@code attributeValue} <br>
+     {@code pcs} = {@link ConstantsNet#FILENAME_NEWLAN210} + {@link ConstantsNet#FILENAME_OLDLANTXT0} и {@link ConstantsNet#FILENAME_OLDLANTXT1} + {@link ConstantsNet#FILENAME_SERVTXT}
+     <p>
+     <b>{@link HttpServletResponse#addHeader(String , String)}:</b><br>
+     {@link ConstantsFor#HEAD_REFRESH} = 45
+
+     @param model    {@link Model}
+     @param response {@link HttpServletResponse}
+     */
+    private static void allDevNotNull(Model model , HttpServletResponse response) {
+        final float scansInMin = Float.parseFloat(AppComponents.getOrSetProps().getProperty("scansInMin" , "90"));
+        float minLeft = ConstantsNet.getAllDevices().remainingCapacity() / scansInMin;
+        String attributeValue = new StringBuilder()
+            .append(minLeft).append(" ~minLeft. ")
+            .append(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis((long) minLeft))).toString();
+        model.addAttribute(ConstantsFor.ATT_TITLE , attributeValue);
+        model.addAttribute("pcs" ,
+            FileSystemWorker.readFile(ConstantsNet.FILENAME_NEWLAN210).replace(", " , "<br>") + "<p>" + FileSystemWorker.readFile(ConstantsNet.FILENAME_NEWLAN200210).replace(", " , "<br>") +
+                "<p>" + FileSystemWorker.readFile(ConstantsNet.FILENAME_OLDLANTXT0).replace(", " , "<br>") + "<p>" +
+                FileSystemWorker.readFile(ConstantsNet.FILENAME_OLDLANTXT1).replace(", " , "<br>") + "<p>" +
+                FileSystemWorker.readFile(ConstantsNet.FILENAME_SERVTXT_11SRVTXT).replace(", " , "<br>") + "<p>" +
+                FileSystemWorker.readFile(ConstantsNet.FILENAME_SERVTXT_21SRVTXT).replace(", " , "<br>") + "<p>" +
+                FileSystemWorker.readFile(ConstantsNet.FILENAME_SERVTXT_31SRVTXT).replace(", " , "<br>") + "<p>" +
+                FileSystemWorker.readFile(ConstantsNet.FILENAME_SERVTXT_41SRVTXT).replace(", " , "<br>") + "<p>");
+        response.addHeader(ConstantsFor.HEAD_REFRESH , "45");
+    }
+
+
     private String onLinesCheck() {
         AppComponents.threadConfig().thrNameSet("onChk");
-        PCUserResolver pcUserResolver = PCUserResolver.getPcUserResolver();
+        InfoWorker pcUserResolver = new PCUserResolver(pcName);
         String classMeth = "ConditionChecker.onLinesCheck";
-        Runnable rPCResolver = ()->pcUserResolver.namesToFile(pcName);
+        Runnable rPCResolver = pcUserResolver::getInfoAbout;
         Collection<Integer> onLine = new ArrayList<>();
         Collection<Integer> offLine = new ArrayList<>();
         StringBuilder stringBuilder = new StringBuilder();
-        
+
         AppComponents.threadConfig().execByThreadConfig(rPCResolver);
-        
+
         try (
             PreparedStatement statement = connection.prepareStatement(sql)
         ) {
@@ -164,7 +205,8 @@ class ConditionChecker implements InfoWorker {
             .append(onLine.size())
             .append(" online times.").toString();
     }
-    
+
+
     private String offLinesCheckUser() {
         AppComponents.threadConfig().thrNameSet("offChk");
         String methName = "offLinesCheckUser";
@@ -195,7 +237,7 @@ class ConditionChecker implements InfoWorker {
             }
         }
         catch (SQLException | NullPointerException e) {
-            
+
             messageToUser.errorAlert("ConditionChecker", methName, e.getMessage());
             stringBuilder.append("<font color=\"red\">EXCEPTION in SQL dropped. <b>");
             stringBuilder.append(e.getMessage());
@@ -203,39 +245,5 @@ class ConditionChecker implements InfoWorker {
         }
         if (stringBuilder.toString().isEmpty()) stringBuilder.append(getClass().getSimpleName()).append(" <font color=\"red\">").append(methName).append(" null</font>");
         return stringBuilder.toString();
-    }
-    
-    /**
-     Если размер {@link ConstantsNet#getAllDevices()} более 0
-     <p>
-     {@code scansInMin} - кол-во сканирований в минуту для рассчёта времени. {@code minLeft} - примерное кол-во оставшихся минут.
-     {@code attributeValue} - то, что видим на страничке.
-     <p>
-     <b>{@link Model#addAttribute(Object)}:</b> <br>
-     {@link ConstantsFor#ATT_TITLE} = {@code attributeValue} <br>
-     {@code pcs} = {@link ConstantsNet#FILENAME_NEWLAN210} + {@link ConstantsNet#FILENAME_OLDLANTXT0} и {@link ConstantsNet#FILENAME_OLDLANTXT1} + {@link ConstantsNet#FILENAME_SERVTXT}
-     <p>
-     <b>{@link HttpServletResponse#addHeader(String, String)}:</b><br>
-     {@link ConstantsFor#HEAD_REFRESH} = 45
-     
-     @param model {@link Model}
-     @param response {@link HttpServletResponse}
-     */
-    private static void allDevNotNull(Model model, HttpServletResponse response) {
-        final float scansInMin = Float.parseFloat(AppComponents.getOrSetProps().getProperty("scansInMin", "90"));
-        float minLeft = ConstantsNet.getAllDevices().remainingCapacity() / scansInMin;
-        String attributeValue = new StringBuilder()
-            .append(minLeft).append(" ~minLeft. ")
-            .append(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis((long) minLeft))).toString();
-        model.addAttribute(ConstantsFor.ATT_TITLE, attributeValue);
-        model.addAttribute("pcs",
-            FileSystemWorker.readFile(ConstantsNet.FILENAME_NEWLAN210).replace(", ", "<br>") + "<p>" + FileSystemWorker.readFile(ConstantsNet.FILENAME_NEWLAN200210).replace(", ", "<br>") +
-                "<p>" + FileSystemWorker.readFile(ConstantsNet.FILENAME_OLDLANTXT0).replace(", ", "<br>") + "<p>" +
-                FileSystemWorker.readFile(ConstantsNet.FILENAME_OLDLANTXT1).replace(", ", "<br>") + "<p>" +
-                FileSystemWorker.readFile(ConstantsNet.FILENAME_SERVTXT_11SRVTXT).replace(", ", "<br>") + "<p>" +
-                FileSystemWorker.readFile(ConstantsNet.FILENAME_SERVTXT_21SRVTXT).replace(", ", "<br>") + "<p>" +
-                FileSystemWorker.readFile(ConstantsNet.FILENAME_SERVTXT_31SRVTXT).replace(", ", "<br>") + "<p>" +
-                FileSystemWorker.readFile(ConstantsNet.FILENAME_SERVTXT_41SRVTXT).replace(", ", "<br>") + "<p>");
-        response.addHeader(ConstantsFor.HEAD_REFRESH, "45");
     }
 }

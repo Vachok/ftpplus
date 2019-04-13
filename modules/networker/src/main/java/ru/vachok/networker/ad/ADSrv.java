@@ -8,6 +8,7 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.abstr.InfoWorker;
 import ru.vachok.networker.abstr.InternetUse;
 import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
 import ru.vachok.networker.ad.user.ADUser;
@@ -29,30 +30,30 @@ import java.util.*;
  @since 25.09.2018 (15:10) */
 @Service("adSrv")
 public class ADSrv implements Runnable {
-    
-    
+
+
     private static final String PROP_SAMACCOUNTNAME = "SamAccountName";
-    
+
     private static final MessageToUser messageToUser = new MessageLocal(ADSrv.class.getSimpleName());
-    
+
     /**
      {@link ADUser}
      */
     private ADUser adUser;
-    
+
     /**
      Строка из формы на сайте.
      */
     private String userInputRaw;
-    
+
     /**
      {@link ADComputer}
      */
     private ADComputer adComputer;
-    
+
     /**
      Thread name = ADSrv
-     
+
      @param adUser {@link ADUser}
      @param adComputer {@link ADComputer}
      */
@@ -62,7 +63,7 @@ public class ADSrv implements Runnable {
         this.adComputer = adComputer;
         Thread.currentThread().setName(getClass().getSimpleName());
     }
-    
+
     public ADSrv(ADUser adUser) {
         this.userInputRaw = adUser.getInputName();
         this.adUser = adUser;
@@ -73,19 +74,19 @@ public class ADSrv implements Runnable {
             //
         }
     }
-    
-    
+
+
     protected ADSrv() {
     }
-    
-    
+
+
     /**
      @return {@link #adComputer}
      */
     public ADComputer getAdComputer() {
         return adComputer;
     }
-    
+
     /**
      @return {@link #userInputRaw}
      */
@@ -93,27 +94,27 @@ public class ADSrv implements Runnable {
     public String getUserInputRaw() {
         return userInputRaw;
     }
-    
-    
+
+
     /**
      @param userInputRaw пользовательский ввод в строку
      */
     public void setUserInputRaw(String userInputRaw) {
         this.userInputRaw = userInputRaw;
     }
-    
-    
+
+
     /**
      @return {@link #adUser}
      */
     public ADUser getAdUser() {
         return adUser;
     }
-    
-    
+
+
     /**
      Проверяет по-базе, какие папки есть у юзера.
-     
+
      @param users Active Dir Username <i>(Example: ikudryashov)</i>
      @return информация о правах юзера, взятая из БД.
      */
@@ -151,7 +152,8 @@ public class ADSrv implements Runnable {
             return e.getMessage();
         }
     }
-    
+
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("ADSrv{");
@@ -161,8 +163,8 @@ public class ADSrv implements Runnable {
         sb.append('}');
         return sb.toString();
     }
-    
-    
+
+
     /**
      Запуск.
      */
@@ -170,11 +172,80 @@ public class ADSrv implements Runnable {
     public void run() {
         new MessageCons().errorAlert("ADSrv.run");
     }
-    
-    
+
+
+    /**
+     Читает БД на предмет наличия юзера для <b>offline</b> компьютера.<br>
+
+     @param pcName имя ПК
+     @return имя юзера, время записи.
+
+     @see ADSrv#getDetails(String)
+     */
+    private static String offNowGetU(CharSequence pcName) {
+        StringBuilder v = new StringBuilder();
+        try(Connection c = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM)){
+            try(PreparedStatement p = c.prepareStatement("select * from pcuser");
+                PreparedStatement pAuto = c.prepareStatement("select * from pcuserauto where pcName in (select pcName from pcuser) order by pcName asc limit 203");
+                ResultSet resultSet = p.executeQuery();
+                ResultSet resultSetA = pAuto.executeQuery()
+            )
+            {
+                while(resultSet.next()){
+                    if(resultSet.getString(ConstantsFor.DBFIELD_PCNAME).toLowerCase().contains(pcName)) {
+                        v.append("<b>").append(resultSet.getString(ConstantsFor.DB_FIELD_USER)).append("</b> <br>At ").append(resultSet.getString(ConstantsNet.DB_FIELD_WHENQUERIED));
+                    }
+                }
+                while(resultSetA.next()){
+                    if(resultSetA.getString(ConstantsFor.DBFIELD_PCNAME).toLowerCase().contains(pcName)) {
+                        v.append("<p>").append(resultSet.getString(ConstantsFor.DB_FIELD_USER)).append(" auto QUERY at: ").append(resultSet.getString(ConstantsNet.DB_FIELD_WHENQUERIED));
+                    }
+                }
+            }
+        }catch(SQLException | IOException e){
+            new MessageCons().errorAlert(ConstantsFor.CLASS_NAME_PCUSERRESOLVER , "offNowGetU" , e.getMessage());
+            FileSystemWorker.error("PCUserResolver.offNowGetU" , e);
+        }
+        return v.toString();
+    }
+
+
+    /**
+     Запись в БД <b>pcuser</b><br> Запись по-запросу от браузера.
+     <p>
+     pcName - уникальный (таблица не переписывается или не дополняется, при наличиизаписи по-компу)
+     <p>
+     Лог - <b>PCUserResolver.recToDB</b> в папке запуска.
+     <p>
+
+     @param userName имя юзера
+     @param pcName   имя ПК
+     @see ADSrv#getDetails(String)
+     */
+    private static void recToDB(String userName , String pcName) {
+        String sql = "insert into pcuser (pcName, userName) values(?,?)";
+        String msg = userName + " on pc " + pcName + " is set.";
+        try(Connection connection = new AppComponents().connection(ConstantsNet.DB_NAME);
+            PreparedStatement p = connection.prepareStatement(sql)
+        )
+        {
+            p.setString(1 , userName);
+            p.setString(2 , pcName);
+            p.executeUpdate();
+            messageToUser.info(msg);
+            ConstantsNet.getPcUMap().put(pcName , msg);
+        }catch(SQLException ignore){
+            //nah
+        }catch(IOException e){
+            messageToUser.errorAlert(ADSrv.class.getSimpleName() , "recToDB" , e.getMessage());
+            FileSystemWorker.error("ADSrv.recToDB" , e);
+        }
+    }
+
+
     /**
      Читает /static/texts/users.txt
-     
+
      @return {@link ADUser} как {@link List}
      */
     @SuppressWarnings("DuplicateStringLiteralInspection")
@@ -248,14 +319,15 @@ public class ADSrv implements Runnable {
         psComm();
         return adUserList;
     }
-    
+
+
     /**
      Резолвит онлайн пользователя ПК.
      <p>
-     
+
      @param queryString запрос из браузера
      @return {@link #getUserName(String)} или {@link ADSrv#offNowGetU(CharSequence)}
-     
+
      @throws IOException {@link InetAddress}.getByName(queryString + ".eatmeat.ru").isReachable(650))
      @see ActDirectoryCTRL#queryStringExists(java.lang.String, org.springframework.ui.Model)
      */
@@ -270,76 +342,10 @@ public class ADSrv implements Runnable {
             return offNowGetU(queryString) + "<p><center>" + internetUseUsage + "</center>";
         }
     }
-    
-    /**
-     Читает БД на предмет наличия юзера для <b>offline</b> компьютера.<br>
-     
-     @param pcName имя ПК
-     @return имя юзера, время записи.
-     
-     @see ADSrv#getDetails(String)
-     */
-    private static String offNowGetU(CharSequence pcName) {
-        StringBuilder v = new StringBuilder();
-        try (Connection c = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
-            try (PreparedStatement p = c.prepareStatement("select * from pcuser");
-                 PreparedStatement pAuto = c.prepareStatement("select * from pcuserauto where pcName in (select pcName from pcuser) order by pcName asc limit 203");
-                 ResultSet resultSet = p.executeQuery();
-                 ResultSet resultSetA = pAuto.executeQuery()
-            ) {
-                while (resultSet.next()) {
-                    if (resultSet.getString(ConstantsFor.DBFIELD_PCNAME).toLowerCase().contains(pcName)) {
-                        v.append("<b>").append(resultSet.getString(ConstantsFor.DB_FIELD_USER)).append("</b> <br>At ").append(resultSet.getString(ConstantsNet.DB_FIELD_WHENQUERIED));
-                    }
-                }
-                while (resultSetA.next()) {
-                    if (resultSetA.getString(ConstantsFor.DBFIELD_PCNAME).toLowerCase().contains(pcName)) {
-                        v.append("<p>").append(resultSet.getString(ConstantsFor.DB_FIELD_USER)).append(" auto QUERY at: ").append(resultSet.getString(ConstantsNet.DB_FIELD_WHENQUERIED));
-                    }
-                }
-            }
-        }
-        catch (SQLException | IOException e) {
-            new MessageCons().errorAlert(ConstantsFor.CLASS_NAME_PCUSERRESOLVER, "offNowGetU", e.getMessage());
-            FileSystemWorker.error("PCUserResolver.offNowGetU", e);
-        }
-        return v.toString();
-    }
-    
-    /**
-     Запись в БД <b>pcuser</b><br> Запись по-запросу от браузера.
-     <p>
-     pcName - уникальный (таблица не переписывается или не дополняется, при наличиизаписи по-компу)
-     <p>
-     Лог - <b>PCUserResolver.recToDB</b> в папке запуска.
-     <p>
-     
-     @param userName имя юзера
-     @param pcName имя ПК
-     @see ADSrv#getDetails(String)
-     */
-    private static void recToDB(String userName, String pcName) {
-        String sql = "insert into pcuser (pcName, userName) values(?,?)";
-        String msg = userName + " on pc " + pcName + " is set.";
-        try (Connection connection = new AppComponents().connection(ConstantsNet.DB_NAME);
-             PreparedStatement p = connection.prepareStatement(sql)
-        ) {
-            p.setString(1, userName);
-            p.setString(2, pcName);
-            p.executeUpdate();
-            messageToUser.info(msg);
-            ConstantsNet.getPcUMap().put(pcName, msg);
-        }
-        catch (SQLException ignore) {
-            //nah
-        }
-        catch (IOException e) {
-            messageToUser.errorAlert(ADSrv.class.getSimpleName(), "recToDB", e.getMessage());
-            FileSystemWorker.error("ADSrv.recToDB", e);
-        }
-    }
-    
+
+
     private void parseFile() {
+        InfoWorker pcUserRes = new PCUserResolver(adUser.getInputName());
         List<String> stringList;
         List<ADUser> adUsers = new ArrayList<>();
         if (adUser.getUsersAD() != null) {
@@ -358,13 +364,13 @@ public class ADSrv implements Runnable {
             messageToUser.infoNoTitles(adUsers.size() + "");
         }
         else {
-            PCUserResolver.getPcUserResolver().searchForUser(adUser.getInputName());
+            pcUserRes.setInfo();
         }
         for (ADUser adUser1 : adUsers) {
             messageToUser.infoNoTitles(adUser1.toString());
         }
     }
-    
+
     @SuppressWarnings("DuplicateStringLiteralInspection")
     private ADUser setUserFromInput(List<String> uList) {
         ADUser adU = new ADUser();
@@ -402,7 +408,7 @@ public class ADSrv implements Runnable {
         }
         return adU;
     }
-    
+
     private List<String> adUsrFromFile() {
         List<String> retList = new ArrayList<>();
         try (InputStream inputStream = adUser.getUsersAD().getInputStream();
@@ -417,14 +423,14 @@ public class ADSrv implements Runnable {
         }
         return retList;
     }
-    
-    
+
+
     /**
      Информация о пользователе ПК.
      <p>
      {@link List} со строками {@code file.lastModified() file.getName }, для папок из директории Users , компьютера из запроса. <br> {@link String} timesUserLast - последняя строка из
      сортированого списка <br> Цикл резолвит время файла в папке. <br>
-     
+
      @param queryString запрос (имя ПК) {@code http://localhost:8880/ad?queryString}
      @return html Более подробно о ПК: из http://localhost:8880/ad?
      */
@@ -433,9 +439,9 @@ public class ADSrv implements Runnable {
         StringBuilder stringBuilder = new StringBuilder();
         File filesAsFile = new File("\\\\" + queryString + ".eatmeat.ru\\c$\\Users\\");
         File[] usersDirectory = filesAsFile.listFiles();
-    
+
         stringBuilder.append("<p>   Более подробно про ПК:<br>");
-    
+
         for (File file : Objects.requireNonNull(usersDirectory)) {
             if (!file.getName().toLowerCase().contains("temp") &&
                 !file.getName().toLowerCase().contains("default") &&
@@ -467,15 +473,15 @@ public class ADSrv implements Runnable {
             .append("</p></b>");
         return stringBuilder.toString();
     }
-    
+
     /**
      <b>Запрос на конвертацию фото</b>
-     
+
      @see PhotoConverterSRV
      */
     private void psComm() {
         PhotoConverterSRV photoConverterSRV = new PhotoConverterSRV();
         photoConverterSRV.psCommands();
     }
-    
+
 }

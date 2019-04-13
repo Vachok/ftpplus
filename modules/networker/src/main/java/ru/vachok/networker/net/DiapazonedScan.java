@@ -47,7 +47,7 @@ public class DiapazonedScan implements Runnable {
     private static final String FONT_BR_STR = "</font><br>\n";
 
     private static final int MAX_IN_VLAN_INT = 255;
-    
+
     private final DiapazonedScan.ExecScan[] runnablesScans = {
         new DiapazonedScan.ExecScan(10 , 20 , "10.10." , new File(FILENAME_SERVTXT_11SRVTXT)) ,
         new DiapazonedScan.ExecScan(21 , 31 , "10.10." , new File(FILENAME_SERVTXT_21SRVTXT)) ,
@@ -71,7 +71,7 @@ public class DiapazonedScan implements Runnable {
     private static final DiapazonedScan OUR_INSTANCE = new DiapazonedScan();
 
     private long stopClassStampLong = NetScanFileWorker.getI().getLastStamp();
-    
+
     private Map<String, File> srvFiles = NET_SCAN_FILE_WORKER_INST.getSrvFiles();
 
     private final long timeStart = System.currentTimeMillis();
@@ -164,74 +164,6 @@ public class DiapazonedScan implements Runnable {
         AppComponents.threadConfig().execByThreadConfig(this::theNewLan);
         AppComponents.threadConfig().execByThreadConfig(this::scanServers);
         AppComponents.threadConfig().execByThreadConfig(this::scanOldLan);
-    }
-
-    /**
-     192.168.11-14.254
-     */
-    @SuppressWarnings("MagicNumber")
-    private void scanOldLan() {
-        Runnable execScanOld0 = new DiapazonedScan.ExecScan(11, 16, "192.168.", new File(FILENAME_OLDLANTXT0));
-        Runnable execScanOld1 = new DiapazonedScan.ExecScan(16, 21, "192.168.", new File(FILENAME_OLDLANTXT1));
-    
-        AppComponents.threadConfig().execByThreadConfig(execScanOld0);
-        AppComponents.threadConfig().execByThreadConfig(execScanOld1);
-    }
-
-    /**
-     Скан подсетей 10.10.xx.xxx
-     */
-    private void scanServers() {
-        for (DiapazonedScan.ExecScan r : runnablesScans) {
-            AppComponents.threadConfig().execByThreadConfig(r);
-        }
-    }
-
-    /**
-     Чтобы случайно не уничтожить Overridden {@link #toString()}
-     <p>
-     @return информация о состоянии файлов
-     */
-    private String theInfoToString() {
-        StringBuilder fileTimes = new StringBuilder();
-        try {
-            String atStr = " size in bytes: ";
-            fileTimes.append(FILENAME_NEWLAN210).append(atStr).append(Paths.get(FILENAME_NEWLAN210).toFile().length()).append("<br>\n");
-            fileTimes.append(FILENAME_NEWLAN200210).append(atStr).append(Paths.get(FILENAME_NEWLAN200210).toFile().length()).append("<br>\n");
-            fileTimes.append(FILENAME_OLDLANTXT0).append(atStr).append(Paths.get(FILENAME_OLDLANTXT0).toFile().length()).append("<br>\n");
-            fileTimes.append(FILENAME_OLDLANTXT1).append(atStr).append(Paths.get(FILENAME_OLDLANTXT1).toFile().length()).append("<br>\n");
-            fileTimes.append(FILENAME_SERVTXT_11SRVTXT).append(atStr).append(Paths.get(FILENAME_SERVTXT_11SRVTXT).toFile().length()).append("<br>\n");
-            fileTimes.append(FILENAME_SERVTXT_21SRVTXT).append(atStr).append(Paths.get(FILENAME_SERVTXT_21SRVTXT).toFile().length()).append("<br>\n");
-            fileTimes.append(FILENAME_SERVTXT_31SRVTXT).append(atStr).append(Paths.get(FILENAME_SERVTXT_31SRVTXT).toFile().length()).append("<br>\n");
-            fileTimes.append(FILENAME_SERVTXT_41SRVTXT).append(atStr).append(Paths.get(FILENAME_SERVTXT_41SRVTXT).toFile().length()).append("<br>\n");
-        } catch (NullPointerException e) {
-            messageToUser.info("NO FILES!");
-        }
-        StringBuilder sb = new StringBuilder("DiapazonedScan. Start at ");
-        sb.append(new Date(timeStart));
-        sb.append("( ");
-        sb.append(TimeUnit.MILLISECONDS.toMinutes(getRunMin()));
-        sb.append(" min) ");
-        sb.append("{ ");
-        sb.append("<a href=\"/showalldev\">ALL_DEVICES ")
-            .append(ALL_DEVICES_LOCAL_DEQUE.size())
-            .append("/")
-            .append(IPS_IN_VELKOM_VLAN)
-            .append("(")
-            .append((float) ALL_DEVICES_LOCAL_DEQUE.size() / (float) (IPS_IN_VELKOM_VLAN / 100))
-            .append(" %)");
-        sb.append("</a>}");
-        sb.append(" ROOT_PATH_STR= ").append(ROOT_PATH_STR);
-        sb.append("<br><b>\nfileTimes= </b><br>").append(fileTimes);
-        return sb.toString();
-    }
-    
-    private long getRunMin() {
-        List<Long> timeSpend = new ArrayList<>();
-        for (DiapazonedScan.ExecScan e : runnablesScans) {
-            timeSpend.add(e.getSpend());
-        }
-        return Collections.max(timeSpend);
     }
 
     /**
@@ -337,7 +269,8 @@ public class DiapazonedScan implements Runnable {
                 stringBuffer.append(hostAddress).append(" ").append(hostName);
             }
             String retStr = stringBuffer.toString(); if (retStr.contains(PAT_IS_ONLINE)) {
-                printStream.println(hostAddress + " " + hostName); messageToUser.info("print: ", vlanFile.getName(), " = " + vlanFile.length() + " bytes");
+                printStream.println(hostAddress + " " + hostName);
+                messageToUser.info("print: " , vlanFile.getName() , " = " + vlanFile.length() + ConstantsFor.STR_BYTES);
             }
             long msSpend = System.currentTimeMillis() - stArt;
             return retStr;
@@ -378,5 +311,78 @@ public class DiapazonedScan implements Runnable {
                 .append(", to=")
                 .append(to); sb.append('}'); return sb.toString();
         }
+    }
+
+
+    /**
+     Скан подсетей 10.10.xx.xxx
+     */
+    private void scanServers() {
+        for(DiapazonedScan.ExecScan r : runnablesScans){
+            AppComponents.threadConfig().execByThreadConfig(r);
+        }
+    }
+
+
+    /**
+     Чтобы случайно не уничтожить Overridden {@link #toString()}
+     <p>
+
+     @return информация о состоянии файлов
+     */
+    private String theInfoToString() {
+        StringBuilder fileTimes = new StringBuilder();
+        try{
+            String atStr = " size in bytes: ";
+            fileTimes.append(FILENAME_NEWLAN210).append(atStr).append(Paths.get(FILENAME_NEWLAN210).toFile().length()).append("<br>\n");
+            fileTimes.append(FILENAME_NEWLAN200210).append(atStr).append(Paths.get(FILENAME_NEWLAN200210).toFile().length()).append("<br>\n");
+            fileTimes.append(FILENAME_OLDLANTXT0).append(atStr).append(Paths.get(FILENAME_OLDLANTXT0).toFile().length()).append("<br>\n");
+            fileTimes.append(FILENAME_OLDLANTXT1).append(atStr).append(Paths.get(FILENAME_OLDLANTXT1).toFile().length()).append("<br>\n");
+            fileTimes.append(FILENAME_SERVTXT_11SRVTXT).append(atStr).append(Paths.get(FILENAME_SERVTXT_11SRVTXT).toFile().length()).append("<br>\n");
+            fileTimes.append(FILENAME_SERVTXT_21SRVTXT).append(atStr).append(Paths.get(FILENAME_SERVTXT_21SRVTXT).toFile().length()).append("<br>\n");
+            fileTimes.append(FILENAME_SERVTXT_31SRVTXT).append(atStr).append(Paths.get(FILENAME_SERVTXT_31SRVTXT).toFile().length()).append("<br>\n");
+            fileTimes.append(FILENAME_SERVTXT_41SRVTXT).append(atStr).append(Paths.get(FILENAME_SERVTXT_41SRVTXT).toFile().length()).append("<br>\n");
+        }catch(NullPointerException e){
+            messageToUser.info("NO FILES!");
+        }
+        StringBuilder sb = new StringBuilder("DiapazonedScan. Start at ");
+        sb.append(new Date(timeStart));
+        sb.append("( ");
+        sb.append(TimeUnit.MILLISECONDS.toMinutes(getRunMin()));
+        sb.append(" min) ");
+        sb.append("{ ");
+        sb.append("<a href=\"/showalldev\">ALL_DEVICES ")
+            .append(ALL_DEVICES_LOCAL_DEQUE.size())
+            .append("/")
+            .append(IPS_IN_VELKOM_VLAN)
+            .append("(")
+            .append((float) ALL_DEVICES_LOCAL_DEQUE.size() / (float) (IPS_IN_VELKOM_VLAN / 100))
+            .append(" %)");
+        sb.append("</a>}");
+        sb.append(" ROOT_PATH_STR= ").append(ROOT_PATH_STR);
+        sb.append("<br><b>\nfileTimes= </b><br>").append(fileTimes);
+        return sb.toString();
+    }
+
+
+    private long getRunMin() {
+        List<Long> timeSpend = new ArrayList<>();
+        for(DiapazonedScan.ExecScan e : runnablesScans){
+            timeSpend.add(e.getSpend());
+        }
+        return Collections.max(timeSpend);
+    }
+
+
+    /**
+     192.168.11-14.254
+     */
+    @SuppressWarnings("MagicNumber")
+    private void scanOldLan() {
+        Runnable execScanOld0 = new DiapazonedScan.ExecScan(11 , 16 , "192.168." , new File(FILENAME_OLDLANTXT0));
+        Runnable execScanOld1 = new DiapazonedScan.ExecScan(16 , 21 , "192.168." , new File(FILENAME_OLDLANTXT1));
+
+        AppComponents.threadConfig().execByThreadConfig(execScanOld0);
+        AppComponents.threadConfig().execByThreadConfig(execScanOld1);
     }
 }
