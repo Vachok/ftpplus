@@ -77,11 +77,6 @@ public enum ConstantsNet { ;
 
     public static final String STR_COMPNAME_USERS_MAP_SIZE = " COMPNAME_USERS_MAP size";
 
-    /**
-     Выгрузка из БД {@link ConstantsFor#DBPREFIX} {@code velkom} - pcuserauto
-     */
-    public static final String VELKOM_PCUSERAUTO_TXT = "velkom_pcuserauto.txt";
-
     public static final String ONLINE_NOW = "OnlineNow";
 
     /**
@@ -106,7 +101,7 @@ public enum ConstantsNet { ;
     public static final String FILENAME_OLDLANTXT0 = "lan_old0.txt";
 
     public static final String FILENAME_OLDLANTXT1 = "lan_old1.txt";
-    
+
     public static final int MAX_IN_ONE_VLAN = 255;
 
     public static final int IPS_IN_VELKOM_VLAN = Integer
@@ -137,15 +132,15 @@ public enum ConstantsNet { ;
     private static final ConcurrentMap<String, String> PC_U_MAP = new ConcurrentHashMap<>();
 
     private static final Properties LOC_PROPS = AppComponents.getOrSetProps();
-    
+
     private static final Map<String, Long> SSH_CHECKER_MAP = new ConcurrentHashMap<>();
 
     private static final BlockingDeque<String> ALL_DEVICES = new LinkedBlockingDeque<>(IPS_IN_VELKOM_VLAN);
 
     public static final String HOSTNAMEPATT_HOME = "home";
-    
+
     public static final String COM_INITPF = "sudo /etc/initpf.fw;sudo squid -k reconfigure && exit";
-    
+
     public static final String COM_CAT24HRSLIST = "cat /etc/pf/24hrs && exit";
 
     /**

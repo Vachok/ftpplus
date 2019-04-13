@@ -1,19 +1,17 @@
 package ru.vachok.networker.services;
 
 
+
+import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.abstr.DataBaseRegSQL;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.systray.MessageToTray;
 
 import java.io.*;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.text.MessageFormat;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,7 +21,7 @@ import java.util.List;
  <p>
 
  @since 08.12.2018 (0:12) */
-public class WeekPCStats implements Runnable {
+public class WeekPCStats implements Runnable, DataBaseRegSQL {
 
     /**
      Лист только с именами ПК
@@ -32,53 +30,49 @@ public class WeekPCStats implements Runnable {
 
     private static MessageToUser messageToUser;
 
+    private final String sql;
+
+    private final String fileName;
+    private IllegalStateException illegalStateException = new IllegalStateException("13.04.2019 (18:17)");
+
+
+    public WeekPCStats(String sql , String fileName) {
+        this.sql = sql;
+        this.fileName = fileName;
+    }
+
+
+    public WeekPCStats(String sql) {
+        this.sql = sql;
+        this.fileName = ConstantsFor.FILENAME_VELKOMPCUSERAUTOTXT;
+    }
+
+
     static {
         try {messageToUser = new MessageToTray(WeekPCStats.class.getSimpleName());} catch (UnsupportedOperationException e) {
             messageToUser = new MessageLocal(WeekPCStats.class.getSimpleName());
         }
     }
-    
-    
-    /**
-     {@link #getFromDB()}
-     */
+
     @Override
     public void run() {
         Thread.currentThread().setName("WeekPCStats.run");
         final long stArt = System.currentTimeMillis();
-        getFromDB();
-        String tSpend = ConstantsFor.STR_SEC_SPEND;
-        String msgTimeSp = MessageFormat
-            .format("WeekPCStats.run method. {0}{1}", ( float ) (System.currentTimeMillis() - stArt) / 1000, tSpend);
-        messageToUser.info(msgTimeSp);
+        selectFrom();
     }
 
-    /**
-     Инфо из БД
-     <p>
-     Читает БД pcuserauto <br>
-     Записывает файл {@code velkom_pcuserauto.txt} <br>
-     Usages: {@link #run()}
-     */
-    private void getFromDB() {
+
+    @Override public int selectFrom() {
         final long stArt = System.currentTimeMillis();
-        String sql = "select * from pcuserauto";
-        File file = new File(ConstantsNet.VELKOM_PCUSERAUTO_TXT);
+        int retInt = 0;
+        File file = new File(fileName);
         try (Connection c = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
              PreparedStatement p = c.prepareStatement(sql);
              ResultSet r = p.executeQuery();
              OutputStream outputStream = new FileOutputStream(file);
              PrintWriter printWriter = new PrintWriter(outputStream, true)){
             while(r.next()){
-                printWriter.println(new StringBuilder()
-                    .append(r.getString(1))
-                    .append(" at ")
-                    .append(r.getString(6))
-                    .append(") ")
-                    .append(r.getString(2))
-                    .append(" ")
-                    .append(r.getString(3)));
-                PC_NAMES_IN_TABLE.add(r.getString(2) + " " + r.getString(3));
+                if(sql.equals(ConstantsFor.SQL_SELECTFROM_PCUSERAUTO)) pcUserAutoSelect(r , printWriter);
             }
             String msgTimeSp = new StringBuilder()
                 .append("WeekPCStats.getFromDB method. ")
@@ -97,8 +91,52 @@ public class WeekPCStats implements Runnable {
             toCopy = file.getName() + "_cp";
         }
         FileSystemWorker.copyOrDelFile(file, toCopy, false);
-        messageToUser.infoNoTitles(this.getClass().getSimpleName() + " ends\n" + PC_NAMES_IN_TABLE.size() + " PC_NAMES_IN_TABLE.size()");
+        return PC_NAMES_IN_TABLE.size();
     }
+
+
+    @Override public int insertTo() {
+        throw illegalStateException;
+    }
+
+
+    @Override public int deleteFrom() {
+        throw illegalStateException;
+    }
+
+
+    @Override public int updateTable() {
+        throw illegalStateException;
+    }
+
+
+    @Override public void setSavepoint(Connection connection) {
+        throw illegalStateException;
+    }
+
+
+    @Override public MysqlDataSource getDataSource() {
+        throw illegalStateException;
+    }
+
+
+    @Override public Savepoint getSavepoint(Connection connection) {
+        throw illegalStateException;
+    }
+
+
+    private void pcUserAutoSelect(ResultSet r , PrintWriter printWriter) throws SQLException {
+        printWriter.println(new StringBuilder()
+            .append(r.getString(1))
+            .append(" at ")
+            .append(r.getString(6))
+            .append(") ")
+            .append(r.getString(2))
+            .append(" ")
+            .append(r.getString(3)));
+        PC_NAMES_IN_TABLE.add(r.getString(2) + " " + r.getString(3));
+    }
+
 
     @Override
     public String toString() {

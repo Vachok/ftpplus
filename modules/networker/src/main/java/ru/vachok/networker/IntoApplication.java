@@ -139,7 +139,7 @@ public class IntoApplication {
      */
     private static void getWeekPCStats() {
         if (LocalDate.now().getDayOfWeek().equals(DayOfWeek.SUNDAY)) {
-            AppComponents.threadConfig().execByThreadConfig(new WeekPCStats());
+            AppComponents.threadConfig().execByThreadConfig(new WeekPCStats(ConstantsFor.SQL_SELECTFROM_PCUSERAUTO));
         }
     }
 

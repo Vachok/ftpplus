@@ -408,6 +408,11 @@ public enum ConstantsFor {
     public static final String DBTABLE_GENERALJSCH = "general-jsch";
 
     public static final String ATT_DEVSCAN = "devscan";
+    /**
+     Выгрузка из БД {@link ConstantsFor#DBPREFIX} {@code velkom} - pcuserauto
+     */
+    public static final String FILENAME_VELKOMPCUSERAUTOTXT = "velkom_pcuserauto.txt";
+    public static final String SQL_SELECTFROM_PCUSERAUTO = "select * from pcuserauto";
 
     static final String STR_FINISH = " is finish";
 

@@ -346,7 +346,7 @@ public class NetScannerSvc {
         LOGGER.info(pcsString);
         return PC_NAMES_SET;
     }
-    
+
     private void pcNameInfo(String pcName) {
         InfoWorker infoWorker = new MoreInfoWorker(pcName);
         boolean reachable;
@@ -355,7 +355,7 @@ public class NetScannerSvc {
             byName = InetAddress.getByName(pcName);
             reachable = byName.isReachable(ConstantsFor.TIMEOUT_650);
             ((MoreInfoWorker) infoWorker).setOnline(reachable);
-    
+
             String someMore = infoWorker.getInfoAbout();
             if (!reachable) {
                 pcNameUnreachable(someMore, byName);
@@ -369,10 +369,10 @@ public class NetScannerSvc {
                 builder.append("</b></a>     ");
                 builder.append(someMore);
                 builder.append(". ");
-                
+
                 String printStr = builder.toString();
                 String pcOnline = "online is true<br>";
-                
+
                 netWorkMap.put(printStr, true);
                 PC_NAMES_SET.add(pcName + ":" + byName.getHostAddress() + pcOnline);
                 LOGGER.info(pcName, pcOnline, someMore);
@@ -383,8 +383,8 @@ public class NetScannerSvc {
             unusedNamesTree.add(e.getMessage());
         }
     }
-    
-    
+
+
     /**
      Основной скан-метод.
      <p>
@@ -505,9 +505,9 @@ public class NetScannerSvc {
 
 
     /**
-     Подсчёт статистики по {@link ConstantsNet#VELKOM_PCUSERAUTO_TXT}
+     Подсчёт статистики по {@link ConstantsFor#FILENAME_VELKOMPCUSERAUTOTXT}
      <p>
-     {@link List} readFileAsList - читает по-строкам {@link ConstantsNet#VELKOM_PCUSERAUTO_TXT}.
+     {@link List} readFileAsList - читает по-строкам {@link ConstantsFor#FILENAME_VELKOMPCUSERAUTOTXT}.
      <p>
      {@link Stream#distinct()} - запись файла {@link ConstantsNet#FILENAME_PCAUTODISTXT}.
      <p>
@@ -516,9 +516,9 @@ public class NetScannerSvc {
      */
     private void countStat() {
         List<String> readFileAsList = new ArrayList<>();
-        try (InputStream inputStream = new FileInputStream(ConstantsNet.VELKOM_PCUSERAUTO_TXT);
-             InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-             BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
+        try(InputStream inputStream = new FileInputStream(ConstantsFor.FILENAME_VELKOMPCUSERAUTOTXT);
+            InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+            BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
             while (inputStreamReader.ready()) {
                 readFileAsList.add(bufferedReader.readLine().split("\\Q0) \\E")[1]);
             }

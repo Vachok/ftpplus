@@ -255,7 +255,7 @@ public class AppInfoOnLoad implements Runnable {
         StringBuilder stringBuilder = new StringBuilder();
         ThreadPoolTaskScheduler threadPoolTaskScheduler = AppComponents.threadConfig().getTaskScheduler();
 
-        threadPoolTaskScheduler.scheduleWithFixedDelay(new WeekPCStats(), nextStartDay, delay);
+        threadPoolTaskScheduler.scheduleWithFixedDelay(new WeekPCStats(ConstantsFor.SQL_SELECTFROM_PCUSERAUTO) , nextStartDay , delay);
         stringBuilder.append(nextStartDay).append(" WeekPCStats() start\n");
         nextStartDay = new Date(nextStartDay.getTime() - TimeUnit.HOURS.toMillis(1));
 
