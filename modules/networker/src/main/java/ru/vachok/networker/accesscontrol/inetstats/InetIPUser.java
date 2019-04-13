@@ -3,6 +3,7 @@ package ru.vachok.networker.accesscontrol.inetstats;
 
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.abstr.InternetUse;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.fileworks.ProgrammFilesWriter;
@@ -92,7 +93,7 @@ public class InetIPUser implements InternetUse {
         }catch(ArrayIndexOutOfBoundsException ingore){
             //
         }
-        String responseString = r.getString("response") + " " + r.getString("method");
+        String responseString = r.getString(ConstantsFor.DBFIELB_RESPONSE) + " " + r.getString(ConstantsFor.DBFIELD_METHOD);
         siteResponseMap.putIfAbsent(siteString , responseString + " when: " + date);
     }
 
