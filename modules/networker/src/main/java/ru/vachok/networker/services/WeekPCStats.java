@@ -129,8 +129,8 @@ public class WeekPCStats implements Runnable, DataBaseRegSQL {
         List<String> chkIps = FileSystemWorker.readFileToList(new File(FILENAME_INETSTATSIPCSV).getPath());
         long totalBytes = 0;
         for(String ip : chkIps){
-            File file = new File(fileName);
             this.fileName = FILENAME_INETSTATSCSV.replace("inetstats" , ip).replace(".csv" , "_" + LocalTime.now().toSecondOfDay() + ".csv");
+            File file = new File(fileName);
             this.sql = "SELECT * FROM `inetstats` WHERE `ip` LIKE '" + ip + "'";
             selectFrom();
             totalBytes = totalBytes + file.length();
