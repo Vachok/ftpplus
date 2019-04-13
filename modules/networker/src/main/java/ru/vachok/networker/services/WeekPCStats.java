@@ -27,12 +27,13 @@ public class WeekPCStats implements Runnable, DataBaseRegSQL {
      Лист только с именами ПК
      */
     private static final List<String> PC_NAMES_IN_TABLE = new ArrayList<>();
+    private static final String FILENAME_INETSTATSCSV = "inetstats.csv";
 
     private static MessageToUser messageToUser;
 
-    private final String sql;
+    private String sql;
 
-    private final String fileName;
+    private String fileName;
     private IllegalStateException illegalStateException = new IllegalStateException("13.04.2019 (18:17)");
 
 
@@ -58,7 +59,8 @@ public class WeekPCStats implements Runnable, DataBaseRegSQL {
     public void run() {
         Thread.currentThread().setName("WeekPCStats.run");
         final long stArt = System.currentTimeMillis();
-        selectFrom();
+        pcUsrAutoMake();
+        messageToUser.info(getClass().getSimpleName() + "in kbytes. " , new File(FILENAME_INETSTATSCSV).getAbsolutePath() , " = " + cleanInetStats());
     }
 
 
@@ -73,6 +75,7 @@ public class WeekPCStats implements Runnable, DataBaseRegSQL {
              PrintWriter printWriter = new PrintWriter(outputStream, true)){
             while(r.next()){
                 if(sql.equals(ConstantsFor.SQL_SELECTFROM_PCUSERAUTO)) pcUserAutoSelect(r , printWriter);
+                else { cleanInetStatsRSet(r , printWriter); }
             }
             String msgTimeSp = new StringBuilder()
                 .append("WeekPCStats.getFromDB method. ")
@@ -92,6 +95,33 @@ public class WeekPCStats implements Runnable, DataBaseRegSQL {
         }
         FileSystemWorker.copyOrDelFile(file, toCopy, false);
         return PC_NAMES_IN_TABLE.size();
+    }
+
+
+    private void pcUsrAutoMake() {
+        messageToUser.info(getClass().getSimpleName() + ".pcUsrAutoMake" , "pcUsrAutoMake();" , " = " + selectFrom());
+    }
+
+
+    private void cleanInetStatsRSet(ResultSet r , PrintWriter printWriter) throws SQLException {
+        printWriter.print(new Date(r.getLong("Date")));
+        printWriter.print(",");
+        printWriter.print(r.getString("ip"));
+        printWriter.print(",");
+        printWriter.print(r.getString(ConstantsFor.DBFIELB_RESPONSE));
+        printWriter.print(",");
+        printWriter.print(r.getString(ConstantsFor.DBFIELD_METHOD));
+        printWriter.print(",");
+        printWriter.print(r.getString("site"));
+        printWriter.println();
+    }
+
+
+    private long cleanInetStats() {
+        this.sql = "select * from inetstats";
+        this.fileName = FILENAME_INETSTATSCSV;
+        selectFrom();
+        return new File(FILENAME_INETSTATSCSV).length() / ConstantsFor.KBYTE;
     }
 
 
