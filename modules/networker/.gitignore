@@ -858,3 +858,8 @@ CacheLogGetter.showLog.err
 InetIPUser.getUsage
 com.ssh
 *.csv
+inet.zip
+inet/disips.inet
+inet.files
+inet.lan
+inet.ssh

@@ -43,8 +43,6 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     public static boolean writeFile(String fileName , Stream<?> toFileRec) {
         try (OutputStream outputStream = new FileOutputStream(fileName);
              PrintStream printStream = new PrintStream(outputStream, true)) {
-            printStream.println(new Date(ConstantsFor.getAtomicTime()));
-            printStream.print(" recording Stream<String>");
             printStream.println();
             toFileRec.forEach(printStream::println);
             return true;
@@ -233,7 +231,6 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
             retList.add(e.getMessage());
             retList.add(new TForms().fromArray(e, true));
         }
-        messageToUser.info("absolutePath = [" + absolutePath + "]", " input parameters.\nReturns:", "java.util.List<java.lang.String>");
         return retList;
     }
 

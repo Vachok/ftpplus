@@ -8,6 +8,7 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.abstr.DataBaseRegSQL;
+import ru.vachok.networker.accesscontrol.inetstats.InetStatSorter;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.systray.MessageToTray;
 
@@ -69,6 +70,7 @@ public class WeekPCStats implements Runnable, DataBaseRegSQL {
         pcUsrAutoMake();
         messageToUser.info(getClass().getSimpleName() + "in kbytes. " , new File(FILENAME_INETSTATSIPCSV).getAbsolutePath() , " = " + readInetStats());
         readInetStatsRSetToCSV();
+        AppComponents.threadConfig().execByThreadConfig(new InetStatSorter());
     }
 
 
@@ -102,6 +104,7 @@ public class WeekPCStats implements Runnable, DataBaseRegSQL {
                                     printWriter.print(",");
                                     printWriter.print(r.getString("site"));
                                     printWriter.println();
+                                    file.deleteOnExit();
                                 }
                             }
                         }
