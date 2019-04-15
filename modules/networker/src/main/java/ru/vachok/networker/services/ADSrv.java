@@ -1,4 +1,4 @@
-package ru.vachok.networker.ad;
+package ru.vachok.networker.services;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,14 +8,15 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.abstr.InfoWorker;
 import ru.vachok.networker.abstr.InternetUse;
 import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
+import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.user.ADUser;
-import ru.vachok.networker.ad.user.PCUserResolver;
+import ru.vachok.networker.controller.ActDirectoryCTRL;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.InfoWorker;
+import ru.vachok.networker.net.PCUserResolver;
 import ru.vachok.networker.net.enums.ConstantsNet;
-import ru.vachok.networker.services.MessageLocal;
 
 import java.io.*;
 import java.net.InetAddress;
@@ -248,8 +249,7 @@ public class ADSrv implements Runnable {
 
      @return {@link ADUser} как {@link List}
      */
-    @SuppressWarnings("DuplicateStringLiteralInspection")
-    List<ADUser> userSetter() {
+    @SuppressWarnings("DuplicateStringLiteralInspection") public List<ADUser> userSetter() {
         List<String> fileAsList = new ArrayList<>();
         List<ADUser> adUserList = new ArrayList<>();
         try (InputStream usrInputStream = getClass().getResourceAsStream(ConstantsFor.FILEPATHSTR_USERSTXT);
@@ -324,14 +324,14 @@ public class ADSrv implements Runnable {
     /**
      Резолвит онлайн пользователя ПК.
      <p>
-
-     @param queryString запрос из браузера
+ 
      @return {@link #getUserName(String)} или {@link ADSrv#offNowGetU(CharSequence)}
 
      @throws IOException {@link InetAddress}.getByName(queryString + ".eatmeat.ru").isReachable(650))
      @see ActDirectoryCTRL#queryStringExists(java.lang.String, org.springframework.ui.Model)
+     @param queryString запрос из браузера
      */
-    String getDetails(String queryString) throws IOException {
+    public String getDetails(String queryString) throws IOException {
         InternetUse internetUse = new InetUserPCName();
         String internetUseUsage = internetUse.getUsage(queryString + ConstantsFor.DOMAIN_EATMEATRU);
         internetUseUsage = internetUseUsage.replace("юзер", "компьютер");
@@ -480,7 +480,8 @@ public class ADSrv implements Runnable {
      @see PhotoConverterSRV
      */
     private void psComm() {
-        PhotoConverterSRV photoConverterSRV = new PhotoConverterSRV();
+        Properties p = AppComponents.getOrSetProps();
+        PhotoConverterSRV photoConverterSRV = new PhotoConverterSRV(p);
         photoConverterSRV.psCommands();
     }
 

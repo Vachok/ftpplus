@@ -1,4 +1,4 @@
-package ru.vachok.networker.ad;
+package ru.vachok.networker.services;
 
 
 import org.slf4j.Logger;
@@ -34,8 +34,8 @@ public class CsvTxt {
     private List<String> txtList = new ArrayList<>();
 
     private List<String> psCommandsList = new ArrayList<>();
-
-    List<String> getPsCommandsList() {
+    
+    public List<String> getPsCommandsList() {
         parseCSV();
         return psCommandsList;
     }
@@ -93,15 +93,16 @@ public class CsvTxt {
             psCommandsList.add(new String(commStr.getBytes(), StandardCharsets.UTF_8));
         }
     }
-
-    ConcurrentMap<String, File> getFiles() {
+    
+    public ConcurrentMap<String, File> getFiles() {
         return files;
     }
-
-    String readFileToString() {
+    
+    public String readFileToString() {
         StringBuilder stringBuilder = new StringBuilder();
-        try (InputStreamReader reader = new InputStreamReader(file.getInputStream())) {
-            BufferedReader bufferedReader = new BufferedReader(reader);
+        try (InputStreamReader reader = new InputStreamReader(file.getInputStream());
+             BufferedReader bufferedReader = new BufferedReader(reader)
+        ) {
             while (bufferedReader.ready()) {
                 if (file.getOriginalFilename().toLowerCase().contains(".xls")) xlsList.add(bufferedReader.readLine());
                 else if (file.getOriginalFilename().toLowerCase().contains(".txt")) txtList.add(bufferedReader.readLine());
@@ -121,8 +122,8 @@ public class CsvTxt {
         }
         return stringBuilder.toString();
     }
-
-    List<String> getXlsList() {
+    
+    public List<String> getXlsList() {
         return xlsList;
     }
 
@@ -135,8 +136,8 @@ public class CsvTxt {
         return new String((keyName.get() + "<br>" + new TForms().fromArray(csvList, true) + "<p>" +
             new TForms().fromArray(txtList, true)).getBytes(), StandardCharsets.UTF_8);
     }
-
-    List<String> getTxtList() {
+    
+    public List<String> getTxtList() {
         return txtList;
     }
 

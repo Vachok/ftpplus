@@ -115,7 +115,7 @@ public class NetListKeeper {
      
      @return {@link Deque} {@link InetAddress}
      */
-    static Deque<InetAddress> getDeqAddr() {
+    public static Deque<InetAddress> getDeqAddr() {
         Deque<InetAddress> retDeq = new ConcurrentLinkedDeque<>();
         Field[] fields = OtherKnownDevices.class.getFields();
         try {

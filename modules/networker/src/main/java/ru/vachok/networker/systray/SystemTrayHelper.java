@@ -2,19 +2,17 @@ package ru.vachok.networker.systray;
 
 
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.enums.ConstantsNet;
-import ru.vachok.networker.services.MessageLocal;
-import ru.vachok.networker.services.Putty;
+import ru.vachok.networker.IntoApplication;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.util.concurrent.Executors;
 
 
 /**
@@ -40,7 +38,7 @@ import java.net.InetAddress;
     /**
      {@link MessageLocal}
      */
-    private static MessageToUser messageToUser = new MessageLocal(SystemTrayHelper.class.getSimpleName());
+    private static MessageToUser messageToUser = new MessageCons(SystemTrayHelper.class.getSimpleName());
 
     public static SystemTrayHelper getI() {
         return SYSTEM_TRAY_HELPER;
@@ -50,11 +48,11 @@ import java.net.InetAddress;
      Конструктор по-умолчанию
      */
     private SystemTrayHelper() {
-        if (!SystemTray.isSupported()) throw new UnsupportedOperationException("System system");
+        if (!IntoApplication.TRAY_SUPPORTED) throw new UnsupportedOperationException(System.getProperty("os.name"));
     }
 
     TrayIcon getTrayIcon() throws ExceptionInInitializerError {
-        if(ConstantsFor.IS_SYSTRAY_AVAIL){
+        if (SystemTray.isSupported()) {
             return trayIcon;
         }
         else{
@@ -66,8 +64,7 @@ import java.net.InetAddress;
     public void addTray(String iconFileName) {
         addTray(iconFileName, true);
     }
-
-
+    
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("SystemTrayHelper{");
@@ -87,12 +84,10 @@ import java.net.InetAddress;
         }
         catch(Exception e){
             messageToUser.errorAlert(CLASS_NAME, "getImage", e.getMessage());
-            FileSystemWorker.error("SystemTrayHelper.getImage", e);
         }
         throw new IllegalArgumentException();
     }
-
-
+    
     /**
      Добавление компонентов в меню
      <p>
@@ -119,21 +114,15 @@ import java.net.InetAddress;
         toConsole.setLabel("Console Back");
         toConsole.addActionListener((ActionEvent e) -> System.setOut(System.err));
         popupMenu.add(toConsole);
-
-        if (ConstantsFor.thisPC().toLowerCase().contains(ConstantsNet.HOSTNAMEPATT_HOME)) {
+    
+        if (ConstantsFor.thisPC().toLowerCase().contains("home")) {
             MenuItem reloadContext = new MenuItem();
             reloadContext.addActionListener(new ActionTests());
             reloadContext.setLabel("Run tests");
             popupMenu.add(reloadContext);
         }
-        else{
-            MenuItem puttyStarter = new MenuItem();
-            puttyStarter.addActionListener((ActionEvent e) -> new Putty().start());
-            puttyStarter.setLabel("Putty");
-            popupMenu.add(puttyStarter);
-        }
-
-        delFiles.addActionListener(new ActionDelTMP(AppComponents.threadConfig().getTaskExecutor(), delFiles, popupMenu));
+    
+        delFiles.addActionListener(new ActionDelTMP(Executors.newSingleThreadExecutor(), delFiles, popupMenu));
         delFiles.setLabel("Clean last year");
         popupMenu.add(delFiles);
 
@@ -145,7 +134,7 @@ import java.net.InetAddress;
 
     private boolean addTrayToSys(boolean isNeedTray) {
         try{
-            if(isNeedTray && ConstantsFor.IS_SYSTRAY_AVAIL){
+            if (isNeedTray && SystemTray.isSupported()) {
                 SystemTray systemTray = SystemTray.getSystemTray();
                 systemTray.add(trayIcon);
                 isNeedTray = systemTray.getTrayIcons().length > 0;
@@ -157,7 +146,6 @@ import java.net.InetAddress;
         }
         catch(AWTException e){
             messageToUser.errorAlert(CLASS_NAME, "addTrayToSys", e.getMessage());
-            FileSystemWorker.error("SystemTrayHelper.addTrayToSys", e);
             isNeedTray = false;
         }
         return isNeedTray;
@@ -195,7 +183,7 @@ import java.net.InetAddress;
      * @param isNeedTray    если трэй не нужен.
      */
     private void addTray( String imageFileName , boolean isNeedTray ) {
-        trayIcon = new TrayIcon(getImage(imageFileName) , new StringBuilder().append(AppComponents.versionInfo().getAppBuild()).append(" v. ").append(AppComponents.versionInfo().getAppVersion()).append(" ").append(AppComponents.versionInfo().getBuildTime()).toString() , getMenu());
+        trayIcon = new TrayIcon(getImage(imageFileName), imageFileName, getMenu());
         trayIcon.setImage(getImage(imageFileName));
         trayIcon.setImageAutoSize(true);
         trayIcon.addActionListener(new ActionDefault());

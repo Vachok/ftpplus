@@ -1,6 +1,6 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.net;
+package ru.vachok.networker.services;
 
 
 import org.springframework.context.annotation.Scope;
@@ -14,11 +14,12 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ExitApp;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.abstr.InfoWorker;
+import ru.vachok.networker.ad.user.MoreInfoWorker;
 import ru.vachok.networker.componentsrepo.LastNetScan;
+import ru.vachok.networker.controller.NetScanCtr;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.InfoWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
-import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.systray.ActionCloseMsg;
 import ru.vachok.networker.systray.MessageToTray;
 
@@ -297,7 +298,7 @@ public class NetScannerSvc {
      @see #getPCNamesPref(String)
      @see NetScanCtr#scanIt(HttpServletRequest , Model , Date)
      */
-    Set<String> getPcNames() {
+    public Set<String> getPcNames() {
         fileCreate(true);
         getPCsAsync();
         return PC_NAMES_SET;
@@ -319,14 +320,14 @@ public class NetScannerSvc {
      <i>По завершении цикла:</i> <br>
      {@link #netWorkMap} put префикс, кол-во 5. {@link #writeDB()}. записывает в базу.
      <p>
-
-     @param prefixPcName префикс имени ПК. {@link ConstantsNet#PC_PREFIXES}
+ 
      @return состояние запрошенного сегмента
 
      @see NetScanCtr#scanIt(HttpServletRequest, Model, Date)
      @see #getPCsAsync()
+     @param prefixPcName префикс имени ПК. {@link ConstantsNet#PC_PREFIXES}
      */
-    Set<String> getPCNamesPref(String prefixPcName) {
+    public Set<String> getPCNamesPref(String prefixPcName) {
         final long startMethTime = System.currentTimeMillis();
         String pcsString = "No name";
         for (String pcName : getCycleNames(prefixPcName)) {

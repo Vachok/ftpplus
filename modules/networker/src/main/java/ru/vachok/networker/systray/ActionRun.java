@@ -1,10 +1,8 @@
 package ru.vachok.networker.systray;
 
 
+import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.services.MessageLocal;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -20,8 +18,8 @@ public class ActionRun extends AbstractAction {
 
 
     private String commandToRun;
-
-    private MessageToUser messageToUser = new MessageLocal(ActionRun.class.getSimpleName());
+    
+    private MessageToUser messageToUser = new MessageCons(ActionRun.class.getSimpleName());
 
     /**
      Creates an {@code Action}.
@@ -40,8 +38,7 @@ public class ActionRun extends AbstractAction {
             Runtime.getRuntime().exec(commandToRun);
         }
         catch(IOException e1){
-            messageToUser.errorAlert("ActionRun" , ConstantsFor.METHNAME_ACTIONPERFORMED , e1.getMessage());
-            FileSystemWorker.error("ActionRun.actionPerformed", e1);
+            messageToUser.error(e1.getMessage());
         }
     }
 }

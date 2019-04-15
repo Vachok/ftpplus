@@ -1,6 +1,6 @@
 
 
-package ru.vachok.networker.ad;
+package ru.vachok.networker.controller;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,13 +15,15 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.InternetUse;
 import ru.vachok.networker.accesscontrol.SshActs;
 import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
+import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
-import ru.vachok.networker.controller.ServiceInfoCtrl;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.NetScannerSvc;
+import ru.vachok.networker.services.ADSrv;
 import ru.vachok.networker.services.MessageLocal;
+import ru.vachok.networker.services.NetScannerSvc;
+import ru.vachok.networker.services.PhotoConverterSRV;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Calendar;

@@ -1,4 +1,4 @@
-package ru.vachok.networker.net;
+package ru.vachok.networker.ad.user;
 
 
 import org.springframework.ui.Model;
@@ -7,13 +7,15 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.abstr.InfoWorker;
 import ru.vachok.networker.abstr.InternetUse;
 import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
+import ru.vachok.networker.controller.NetScanCtr;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.InfoWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.net.enums.OtherKnownDevices;
 import ru.vachok.networker.services.MessageLocal;
+import ru.vachok.networker.services.NetScannerSvc;
 import ru.vachok.networker.systray.ActionCloseMsg;
 import ru.vachok.networker.systray.MessageToTray;
 
@@ -72,11 +74,11 @@ public class MoreInfoWorker implements InfoWorker {
     /**
      Достаёт инфо о пользователе из БД
      <p>
-     
-     @param userInputRaw {@link NetScannerSvc#getThePc()}
+ 
      @return LAST 20 USER PCs
+     @param userInputRaw {@link NetScannerSvc#getThePc()}
      */
-    static String getUserFromDB(String userInputRaw) {
+    public static String getUserFromDB(String userInputRaw) {
         StringBuilder retBuilder = new StringBuilder();
         String sql = "select * from pcuserauto where userName like ? ORDER BY whenQueried DESC LIMIT 0, 20";
         List<String> userPCName = new ArrayList<>();

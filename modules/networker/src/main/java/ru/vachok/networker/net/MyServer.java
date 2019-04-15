@@ -10,6 +10,7 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.DBMessenger;
 import ru.vachok.networker.services.MessageLocal;
+import ru.vachok.networker.services.NetScannerSvc;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -59,7 +60,7 @@ public class MyServer extends Thread {
      <p>
      {@link #getSocket()} , {@link #setSocket(Socket)}
      */
-    private static Socket socket = null;
+    private static Socket socket;
 
     public static Socket getSocket() {
         return socket;
@@ -81,7 +82,7 @@ public class MyServer extends Thread {
      Сокет для сервера
      */
     @SuppressWarnings("CanBeFinal")
-    private static ServerSocket serverSocket = null;
+    private static ServerSocket serverSocket;
 
     /**
      {@link #myServer}

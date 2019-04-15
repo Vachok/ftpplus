@@ -34,15 +34,12 @@ public class MessageToTray implements MessageToUser {
     private String bodyMsg = "No body";
 
     private MessageToUser messageToUser = new MessageLocal(MessageToTray.class.getSimpleName());
-
-    public MessageToTray() throws NullPointerException, IllegalStateException {
-        if (!ConstantsFor.IS_SYSTRAY_AVAIL) {
-            throw new UnsupportedOperationException("***System Tray not Available!***");
-        }
+    
+    public MessageToTray() {
     }
 
     public MessageToTray(ActionListener aListener) throws HeadlessException, IllegalStateException {
-        if (ConstantsFor.IS_SYSTRAY_AVAIL && SYSTEM_TRAY_HELPER.getTrayIcon() != null) {
+        if (SystemTray.isSupported() && SYSTEM_TRAY_HELPER.getTrayIcon() != null) {
             delActions();
             this.aListener = aListener;
         }
@@ -140,7 +137,7 @@ public class MessageToTray implements MessageToUser {
         this.headerMsg = s;
         this.titleMsg = s1;
         this.bodyMsg = s2;
-        if(ConstantsFor.IS_SYSTRAY_AVAIL && trayIcon!=null){
+        if (SystemTray.isSupported() && trayIcon != null) {
             trayIcon.addActionListener(aListener);
             trayIcon.displayMessage(headerMsg, titleMsg + " " + bodyMsg, TrayIcon.MessageType.WARNING);
         }

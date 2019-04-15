@@ -7,9 +7,9 @@ import org.springframework.ui.Model;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.services.ADSrv;
 import ru.vachok.networker.services.MessageLocal;
 
 import java.io.IOException;

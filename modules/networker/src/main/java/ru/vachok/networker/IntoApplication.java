@@ -52,6 +52,8 @@ public class IntoApplication {
 
 
     private static final Properties LOCAL_PROPS = AppComponents.getOrSetProps();
+    
+    public static final boolean TRAY_SUPPORTED = SystemTray.isSupported();
 
     /**
      {@link MessageLocal}
@@ -64,7 +66,6 @@ public class IntoApplication {
 
     private ConfigurableApplicationContext configurableApplicationContext;
 
-
     public ConfigurableApplicationContext getConfigurableApplicationContext() {
         return configurableApplicationContext;
     }
@@ -73,7 +74,6 @@ public class IntoApplication {
     public void setConfigurableApplicationContext(ConfigurableApplicationContext configurableApplicationContext) {
         this.configurableApplicationContext = configurableApplicationContext;
     }
-
 
     /**
      Точка входа в Spring Boot Application
@@ -101,7 +101,6 @@ public class IntoApplication {
         }
     }
 
-
     /**
      Запуск после старта Spring boot app <br> Usages: {@link #main(String[])}
      <p>
@@ -128,7 +127,6 @@ public class IntoApplication {
         }
         else { AppComponents.threadConfig().execByThreadConfig(saveLogsToDB::showInfo); }
     }
-
 
     /**
      Статистика по-пользователям за неделю.
@@ -220,8 +218,7 @@ public class IntoApplication {
             }
         }
     }
-
-
+    
     /**
      Запуск до старта Spring boot app <br> Usages: {@link #main(String[])}
      <p>
@@ -234,7 +231,7 @@ public class IntoApplication {
      @param isTrayNeed нужен трэй или нет.
      */
     private static void beforeSt(boolean isTrayNeed) {
-        if (SystemTray.isSupported() & isTrayNeed) {
+        if (isTrayNeed) {
             trayAdd(SystemTrayHelper.getI());
         }
         @NotNull StringBuilder stringBuilder = new StringBuilder();

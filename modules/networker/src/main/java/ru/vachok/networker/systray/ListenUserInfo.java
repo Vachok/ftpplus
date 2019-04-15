@@ -2,7 +2,7 @@ package ru.vachok.networker.systray;
 
 
 import ru.vachok.messenger.MessageSwing;
-import ru.vachok.networker.ad.ActDirectoryCTRL;
+import ru.vachok.networker.controller.ActDirectoryCTRL;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;

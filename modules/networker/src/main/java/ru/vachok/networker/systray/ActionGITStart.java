@@ -3,10 +3,7 @@ package ru.vachok.networker.systray;
 
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.SSHFactory;
-import ru.vachok.networker.TForms;
+import ru.vachok.networker.*;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import javax.swing.*;
@@ -26,7 +23,7 @@ class ActionGITStart extends AbstractAction {
     private static final SystemTrayHelper SYSTEM_TRAY_HELPER = SystemTrayHelper.getI();
 
     ActionGITStart() {
-        if(ConstantsFor.IS_SYSTRAY_AVAIL && SYSTEM_TRAY_HELPER.getTrayIcon()!=null){
+        if (IntoApplication.TRAY_SUPPORTED && SYSTEM_TRAY_HELPER.getTrayIcon() != null) {
             SYSTEM_TRAY_HELPER.delOldActions();
         }
     }

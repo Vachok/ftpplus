@@ -37,8 +37,8 @@ public class DataBaseADUsersSRV {
 
     public DataBaseADUsersSRV() {
     }
-
-    Map<String, String> fileParser(List<String> strings) {
+    
+    public Map<String, String> fileParser(List<String> strings) {
         Map<String, String> paramNameValue = new HashMap<>();
         StringBuilder stringBuilderSQL = new StringBuilder();
         String distinguishedName = "";

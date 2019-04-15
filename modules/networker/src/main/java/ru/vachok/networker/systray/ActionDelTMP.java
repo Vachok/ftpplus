@@ -3,7 +3,6 @@ package ru.vachok.networker.systray;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.accesscontrol.common.ArchivesAutoCleaner;
 
@@ -11,6 +10,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.Date;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -22,14 +22,14 @@ import java.util.concurrent.TimeUnit;
 class ActionDelTMP extends AbstractAction {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ActionDelTMP.class.getSimpleName());
-
-    private final ThreadPoolTaskExecutor executor;
+    
+    private final ExecutorService executor;
 
     private final MenuItem delFiles;
 
     private final PopupMenu popupMenu;
-
-    ActionDelTMP(ThreadPoolTaskExecutor executor, MenuItem delFiles, PopupMenu popupMenu) {
+    
+    ActionDelTMP(ExecutorService executor, MenuItem delFiles, PopupMenu popupMenu) {
         this.executor = executor;
         this.delFiles = delFiles;
         this.popupMenu = popupMenu;
@@ -40,10 +40,7 @@ class ActionDelTMP extends AbstractAction {
     public void actionPerformed(ActionEvent e) {
         Date date = new Date(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(ConstantsFor.ONE_YEAR));
         String msg = (new StringBuilder().append("starting clean for ").append(date).toString()).toUpperCase();
-
-        executor.setThreadGroup(new ThreadGroup(("CLR")));
-        executor.setThreadNamePrefix("CLEAN");
-        executor.setThreadNamePrefix(date + "-");
+    
         executor.execute(new ArchivesAutoCleaner());
 
         delFiles.setLabel("Autoclean");

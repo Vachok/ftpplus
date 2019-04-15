@@ -5,9 +5,10 @@ import org.springframework.ui.Model;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.controller.NetScanCtr;
 import ru.vachok.networker.net.DiapazonedScan;
-import ru.vachok.networker.net.NetScannerSvc;
 import ru.vachok.networker.services.MessageLocal;
+import ru.vachok.networker.services.NetScannerSvc;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
@@ -137,17 +138,15 @@ public enum ConstantsNet { ;
 
     private static final BlockingDeque<String> ALL_DEVICES = new LinkedBlockingDeque<>(IPS_IN_VELKOM_VLAN);
 
-    public static final String HOSTNAMEPATT_HOME = "home";
-
     public static final String COM_INITPF = "sudo /etc/initpf.fw;sudo squid -k reconfigure && exit";
 
     public static final String COM_CAT24HRSLIST = "cat /etc/pf/24hrs && exit";
 
     /**
      new {@link HashSet}
-
-     @see ru.vachok.networker.net.NetScannerSvc#getPCNamesPref(String)
-     @see ru.vachok.networker.net.NetScanCtr#scanIt(HttpServletRequest, Model, Date)
+ 
+     @see NetScannerSvc#getPCNamesPref(String)
+     @see NetScanCtr#scanIt(HttpServletRequest, Model, Date)
      */
     private static Set<String> pcNames = new HashSet<>(Integer.parseInt(LOC_PROPS.getOrDefault(ConstantsFor.PR_TOTPC , "42").toString()));
 

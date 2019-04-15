@@ -1,4 +1,4 @@
-package ru.vachok.networker.net;
+package ru.vachok.networker.controller;
 
 
 import org.slf4j.Logger;
@@ -16,13 +16,19 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.ad.user.MoreInfoWorker;
 import ru.vachok.networker.componentsrepo.LastNetScan;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.DiapazonedScan;
+import ru.vachok.networker.net.NetListKeeper;
+import ru.vachok.networker.net.NetPinger;
+import ru.vachok.networker.net.ScanOnline;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
+import ru.vachok.networker.services.NetScannerSvc;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -221,7 +227,7 @@ public class NetScanCtr {
             FileSystemWorker.error("NetScanCtr.allDevices", e);
         }
         if (request.getQueryString() != null) {
-            ConditionChecker.qerNotNullScanAllDevices(model, response);
+            qerNotNullScanAllDevices(model, response);
         }
         model.addAttribute("head", new PageFooter().getHeaderUtext() + "<center><p><a href=\"/showalldev?needsopen\"><h2>Show All IPs in file</h2></a></center>");
         model.addAttribute("ok", DiapazonedScan.getInstance().toString());
@@ -416,5 +422,50 @@ public class NetScanCtr {
             LastNetScan.getLastNetScan().setTimeLastScan(new Date());
         }
     }
-
+    
+    private void qerNotNullScanAllDevices(Model model, HttpServletResponse response) {
+        StringBuilder stringBuilder = new StringBuilder();
+        if (ConstantsNet.getAllDevices().remainingCapacity() == 0) {
+            ConstantsNet.getAllDevices().forEach(x->stringBuilder.append(ConstantsNet.getAllDevices().remove()));
+            model.addAttribute("pcs", stringBuilder.toString());
+        }
+        else {
+            allDevNotNull(model, response);
+        }
+    }
+    
+    /**
+     Если размер {@link ConstantsNet#getAllDevices()} более 0
+     <p>
+     {@code scansInMin} - кол-во сканирований в минуту для рассчёта времени. {@code minLeft} - примерное кол-во оставшихся минут.
+     {@code attributeValue} - то, что видим на страничке.
+     <p>
+     <b>{@link Model#addAttribute(Object)}:</b> <br>
+     {@link ConstantsFor#ATT_TITLE} = {@code attributeValue} <br>
+     {@code pcs} = {@link ConstantsNet#FILENAME_NEWLAN210} + {@link ConstantsNet#FILENAME_OLDLANTXT0} и {@link ConstantsNet#FILENAME_OLDLANTXT1} + {@link ConstantsNet#FILENAME_SERVTXT}
+     <p>
+     <b>{@link HttpServletResponse#addHeader(String, String)}:</b><br>
+     {@link ConstantsFor#HEAD_REFRESH} = 45
+     
+     @param model {@link Model}
+     @param response {@link HttpServletResponse}
+     */
+    private void allDevNotNull(Model model, HttpServletResponse response) {
+        final float scansInMin = Float.parseFloat(AppComponents.getOrSetProps().getProperty("scansInMin", "90"));
+        float minLeft = ConstantsNet.getAllDevices().remainingCapacity() / scansInMin;
+        String attributeValue = new StringBuilder()
+            .append(minLeft).append(" ~minLeft. ")
+            .append(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis((long) minLeft))).toString();
+        model.addAttribute(ConstantsFor.ATT_TITLE, attributeValue);
+        model.addAttribute("pcs",
+            FileSystemWorker.readFile(ConstantsNet.FILENAME_NEWLAN210).replace(", ", "<br>") + "<p>" + FileSystemWorker.readFile(ConstantsNet.FILENAME_NEWLAN200210).replace(", ", "<br>") +
+                "<p>" + FileSystemWorker.readFile(ConstantsNet.FILENAME_OLDLANTXT0).replace(", ", "<br>") + "<p>" +
+                FileSystemWorker.readFile(ConstantsNet.FILENAME_OLDLANTXT1).replace(", ", "<br>") + "<p>" +
+                FileSystemWorker.readFile(ConstantsNet.FILENAME_SERVTXT_11SRVTXT).replace(", ", "<br>") + "<p>" +
+                FileSystemWorker.readFile(ConstantsNet.FILENAME_SERVTXT_21SRVTXT).replace(", ", "<br>") + "<p>" +
+                FileSystemWorker.readFile(ConstantsNet.FILENAME_SERVTXT_31SRVTXT).replace(", ", "<br>") + "<p>" +
+                FileSystemWorker.readFile(ConstantsNet.FILENAME_SERVTXT_41SRVTXT).replace(", ", "<br>") + "<p>");
+        response.addHeader(ConstantsFor.HEAD_REFRESH, "45");
+    }
+    
 }

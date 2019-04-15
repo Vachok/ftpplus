@@ -3,8 +3,8 @@ package ru.vachok.networker.systray;
 
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.net.MoreInfoWorker;
-import ru.vachok.networker.net.NetScannerSvc;
+import ru.vachok.networker.ad.user.MoreInfoWorker;
+import ru.vachok.networker.services.NetScannerSvc;
 
 import javax.swing.*;
 import java.awt.*;

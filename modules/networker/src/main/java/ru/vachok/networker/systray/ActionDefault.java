@@ -33,7 +33,7 @@ public class ActionDefault extends AbstractAction {
 
     ActionDefault() {
         this.goTo = ConstantsFor.HTTP_LOCALHOST8880SLASH;
-        if (!ConstantsFor.IS_SYSTRAY_AVAIL) {
+        if (!SystemTray.isSupported()) {
             throw new UnsupportedOperationException();
         }
     }

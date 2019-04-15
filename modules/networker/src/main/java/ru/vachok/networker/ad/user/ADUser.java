@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.controller.UserWebCTRL;
 
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -41,8 +42,8 @@ public class ADUser {
     private String distinguishedName = "";
 
     private String userPrincipalName = "";
-
-    private MultipartFile usersAD = null;
+    
+    private MultipartFile usersAD;
 
     public MultipartFile getUsersAD() {
         return usersAD;
@@ -81,8 +82,8 @@ public class ADUser {
      Лист прав на common, где пользователь является владельцем.
      */
     private List<String> ownerRights = new ArrayList<>();
-
-    private BufferedImage userPhoto = null;
+    
+    private BufferedImage userPhoto;
 
     /**
      @return {@link #inputName}

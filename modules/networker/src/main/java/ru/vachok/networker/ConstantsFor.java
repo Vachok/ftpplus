@@ -10,18 +10,17 @@ import org.springframework.web.multipart.MultipartFile;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.ad.user.PCUserResolver;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.controller.ServiceInfoCtrl;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.mailserver.ExSRV;
 import ru.vachok.networker.mailserver.MailRule;
+import ru.vachok.networker.net.PCUserResolver;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.TimeChecker;
 import ru.vachok.networker.systray.ActionDefault;
 
 import javax.servlet.http.HttpServletRequest;
-import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -129,8 +128,6 @@ public enum ConstantsFor {
      <i>Boiler Plate</i>
      */
     public static final String ATT_STATCODE = "statcode";
-
-    public static final boolean IS_SYSTRAY_AVAIL = SystemTray.isSupported();
 
     /**
      <i>Boiler Plate</i>
