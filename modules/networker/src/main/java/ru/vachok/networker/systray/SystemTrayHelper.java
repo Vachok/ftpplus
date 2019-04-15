@@ -32,12 +32,9 @@ import java.util.concurrent.Executors;
     private static final String CLASS_NAME = SystemTrayHelper.class.getSimpleName();
 
     private static final SystemTrayHelper SYSTEM_TRAY_HELPER = new SystemTrayHelper();
-    
+
     private @NotNull TrayIcon trayIcon;
 
-    /**
-     {@link MessageLocal}
-     */
     private static MessageToUser messageToUser = new MessageCons(SystemTrayHelper.class.getSimpleName());
 
     public static SystemTrayHelper getI() {
@@ -64,7 +61,8 @@ import java.util.concurrent.Executors;
     public void addTray(String iconFileName) {
         addTray(iconFileName, true);
     }
-    
+
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("SystemTrayHelper{");
@@ -87,7 +85,8 @@ import java.util.concurrent.Executors;
         }
         throw new IllegalArgumentException();
     }
-    
+
+
     /**
      Добавление компонентов в меню
      <p>
@@ -114,14 +113,14 @@ import java.util.concurrent.Executors;
         toConsole.setLabel("Console Back");
         toConsole.addActionListener((ActionEvent e) -> System.setOut(System.err));
         popupMenu.add(toConsole);
-    
+
         if (ConstantsFor.thisPC().toLowerCase().contains("home")) {
             MenuItem reloadContext = new MenuItem();
             reloadContext.addActionListener(new ActionTests());
             reloadContext.setLabel("Run tests");
             popupMenu.add(reloadContext);
         }
-    
+
         delFiles.addActionListener(new ActionDelTMP(Executors.newSingleThreadExecutor(), delFiles, popupMenu));
         delFiles.setLabel("Clean last year");
         popupMenu.add(delFiles);
@@ -175,7 +174,8 @@ import java.util.concurrent.Executors;
             }
         }
     }
-    
+
+
     /**
      * Создаёт System Tray Icon
      *
@@ -183,7 +183,7 @@ import java.util.concurrent.Executors;
      * @param isNeedTray    если трэй не нужен.
      */
     private void addTray( String imageFileName , boolean isNeedTray ) {
-        trayIcon = new TrayIcon(getImage(imageFileName), imageFileName, getMenu());
+        trayIcon = new TrayIcon(getImage(imageFileName) , ConstantsFor.DELAY + " delay" , getMenu());
         trayIcon.setImage(getImage(imageFileName));
         trayIcon.setImageAutoSize(true);
         trayIcon.addActionListener(new ActionDefault());
