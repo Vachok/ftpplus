@@ -85,7 +85,7 @@ public class NetScannerSvc {
     /**
      Компьютеры онлайн
      */
-    private int onLinePCsNum;
+    private int onLinePCsNum = 0;
 
     @SuppressWarnings({"CanBeFinal" , "StaticVariableMayNotBeInitialized"})
     private static Connection connection;
@@ -320,7 +320,7 @@ public class NetScannerSvc {
      <i>По завершении цикла:</i> <br>
      {@link #netWorkMap} put префикс, кол-во 5. {@link #writeDB()}. записывает в базу.
      <p>
- 
+
      @return состояние запрошенного сегмента
 
      @see NetScanCtr#scanIt(HttpServletRequest, Model, Date)

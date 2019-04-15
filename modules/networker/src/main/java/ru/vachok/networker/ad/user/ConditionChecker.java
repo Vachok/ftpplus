@@ -4,15 +4,13 @@ package ru.vachok.networker.ad.user;
 
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.mysqlandprops.RegRuMysql;
-import ru.vachok.mysqlandprops.props.DBRegProperties;
-import ru.vachok.mysqlandprops.props.FileProps;
-import ru.vachok.mysqlandprops.props.InitProperties;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.net.InfoWorker;
 import ru.vachok.networker.net.PCUserResolver;
 import ru.vachok.networker.net.enums.ConstantsNet;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -33,28 +31,34 @@ class ConditionChecker implements InfoWorker {
 
 
     private static final String CLASS_NAME = ConditionChecker.class.getSimpleName();
-    
+
     private static MessageToUser messageToUser = new MessageCons(ConditionChecker.class.getSimpleName());
-    
-    private Connection connection;
-    
+
+    private static Connection connection = null;
+    private boolean isOnline = false;
+
     private String javaID;
-    
-    private String dbName = "u0466446_velkom";
-    
+
     private String sql;
 
     private String pcName;
 
-    private boolean isOnline;
-    
-    
+    static {
+        try{
+            connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
+        }catch(IOException e){
+            messageToUser.error(e.getMessage());
+        }
+    }
+
+
     public ConditionChecker(String javaID, String sql, String pcName) {
         this.javaID = javaID;
         this.sql = sql;
         this.pcName = pcName;
     }
-    
+
+
     ConditionChecker(String sql, String pcName) {
         this.javaID = "ru_vachok_networker-ConstantsFor";
         this.sql = sql;
@@ -64,23 +68,6 @@ class ConditionChecker implements InfoWorker {
         }
         else {
             this.pcName = pcName;
-        }
-    }
-    
-    
-    {
-        InitProperties initProperties;
-        try {
-            initProperties = new DBRegProperties(javaID);
-        }
-        catch (NullPointerException e) {
-            initProperties = new FileProps("ConstantsFor");
-        }
-        try {
-            connection = new RegRuMysql().getDataSourceSchema(dbName).getConnection();
-        }
-        catch (SQLException e) {
-            messageToUser.error(e.getMessage());
         }
     }
 
@@ -109,26 +96,25 @@ class ConditionChecker implements InfoWorker {
         return sb.toString();
     }
 
+
     private String getUserResolved() {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("<b><font color=\"white\">");
         final String sqlLoc = "SELECT * FROM `pcuser` WHERE `pcName` LIKE ?";
-        try (Connection c = new RegRuMysql().getDataSourceSchema(dbName).getConnection()) {
-            try (PreparedStatement p = c.prepareStatement(sqlLoc)) {
+        try(PreparedStatement p = connection.prepareStatement(sqlLoc)){
                 p.setString(1, pcName);
                 try (ResultSet r = p.executeQuery()) {
                     while (r.next()) stringBuilder.append(r.getString("userName"));
                 }
             }
-        }
         catch (SQLException e) {
             stringBuilder.append(e.getMessage());
         }
         stringBuilder.append("</b></font> ");
         return stringBuilder.toString();
     }
-    
-    
+
+
     private String onLinesCheck() {
         InfoWorker pcUserResolver = new PCUserResolver(pcName);
         String classMeth = "ConditionChecker.onLinesCheck";
@@ -136,7 +122,7 @@ class ConditionChecker implements InfoWorker {
         Collection<Integer> onLine = new ArrayList<>();
         Collection<Integer> offLine = new ArrayList<>();
         StringBuilder stringBuilder = new StringBuilder();
-        
+
         Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(rPCResolver);
 
         try (
@@ -168,7 +154,8 @@ class ConditionChecker implements InfoWorker {
             .append(onLine.size())
             .append(" online times.").toString();
     }
-    
+
+
     private String offLinesCheckUser() {
         String methName = "offLinesCheckUser";
         StringBuilder stringBuilder = new StringBuilder();

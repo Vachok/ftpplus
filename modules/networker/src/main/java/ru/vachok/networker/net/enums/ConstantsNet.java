@@ -144,7 +144,7 @@ public enum ConstantsNet { ;
 
     /**
      new {@link HashSet}
- 
+
      @see NetScannerSvc#getPCNamesPref(String)
      @see NetScanCtr#scanIt(HttpServletRequest, Model, Date)
      */
@@ -183,16 +183,9 @@ public enum ConstantsNet { ;
         return COMPNAME_USERS_MAP;
     }
 
-
-    /**
-     {@link ADSrv#recToDB(String, String)}
-
-     @return {@link #PC_U_MAP}
-     */
     public static ConcurrentMap<String, String> getPcUMap() {
         return PC_U_MAP;
     }
-
 
     /**
      Все возможные IP из диапазонов {@link DiapazonedScan}

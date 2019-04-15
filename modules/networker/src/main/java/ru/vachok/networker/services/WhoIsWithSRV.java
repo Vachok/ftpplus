@@ -64,7 +64,7 @@ public class WhoIsWithSRV {
 
     public static String whoisStat(String workPos, Model model) {
         WhoIsWithSRV whoIsWithSRV = new WhoIsWithSRV();
-        workPos = workPos.split(": ")[1];
+        workPos = workPos.split(": ")[1].trim();
         String attributeValue = whoIsWithSRV.whoIs(workPos);
         model.addAttribute(ConstantsFor.ATT_WHOIS, attributeValue);
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
