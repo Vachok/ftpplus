@@ -1,10 +1,8 @@
 package ru.vachok.networker.systray;
 
 
+import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.services.MessageLocal;
-import ru.vachok.networker.services.TimeChecker;
 
 import java.awt.*;
 import java.awt.event.ActionListener;
@@ -26,14 +24,14 @@ public class MessageToTray implements MessageToUser {
      {@link SystemTrayHelper#getTrayIcon()}
      */
     private TrayIcon trayIcon = SYSTEM_TRAY_HELPER.getTrayIcon();
-
-    private String headerMsg = ConstantsFor.APPNAME_WITHMINUS.replace('-', ' ');
-
-    private String titleMsg = new Date(new TimeChecker().call().getReturnTime()).toString();
+    
+    private String headerMsg = getClass().getPackage().getName();
+    
+    private String titleMsg = new Date().toString();
 
     private String bodyMsg = "No body";
-
-    private MessageToUser messageToUser = new MessageLocal(MessageToTray.class.getSimpleName());
+    
+    private MessageToUser messageToUser = new MessageCons(MessageToTray.class.getSimpleName());
     
     public MessageToTray() {
     }

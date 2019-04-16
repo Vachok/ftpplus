@@ -1,4 +1,4 @@
-package ru.vachok.networker.systray;
+package ru.vachok.networker.services.actions;
 
 
 import ru.vachok.messenger.MessageCons;
@@ -6,6 +6,7 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.net.DiapazonedScan;
 import ru.vachok.networker.services.MessageLocal;
+import ru.vachok.networker.systray.SystemTrayHelper;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -19,11 +20,11 @@ import java.util.concurrent.TimeUnit;
 
  @see SystemTrayHelper
  @since 25.01.2019 (9:33) */
-class ActionSomeInfo extends AbstractAction {
+public class ActionSomeInfo extends AbstractAction {
 
     private transient MessageToUser messageToUser = new MessageLocal(ActionSomeInfo.class.getSimpleName());
-
-    ActionSomeInfo() {
+    
+    public ActionSomeInfo() {
         new MessageCons().errorAlert("ActionSomeInfo.ActionSomeInfo");
     }
 

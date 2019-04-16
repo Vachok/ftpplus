@@ -1,4 +1,4 @@
-package ru.vachok.networker.systray;
+package ru.vachok.networker.services.actions;
 
 
 import ru.vachok.messenger.MessageToUser;

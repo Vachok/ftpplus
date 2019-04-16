@@ -1,10 +1,11 @@
-package ru.vachok.networker.systray;
+package ru.vachok.networker.services.actions;
 
 
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.*;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.systray.SystemTrayHelper;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -16,13 +17,13 @@ import java.util.concurrent.*;
 
  @see SystemTrayHelper
  @since 25.01.2019 (9:43) */
-class ActionGITStart extends AbstractAction {
+public class ActionGITStart extends AbstractAction {
 
     private static MessageToUser messageToUser = new MessageSwing();
 
     private static final SystemTrayHelper SYSTEM_TRAY_HELPER = SystemTrayHelper.getI();
-
-    ActionGITStart() {
+    
+    public ActionGITStart() {
         if (IntoApplication.TRAY_SUPPORTED && SYSTEM_TRAY_HELPER.getTrayIcon() != null) {
             SYSTEM_TRAY_HELPER.delOldActions();
         }

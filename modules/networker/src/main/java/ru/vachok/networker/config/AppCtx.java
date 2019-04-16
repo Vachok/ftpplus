@@ -5,6 +5,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.support.AbstractApplicationContext;
+import org.springframework.core.io.support.ResourcePatternResolver;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -62,8 +64,8 @@ public class AppCtx extends AnnotationConfigApplicationContext {
             .append("<p>").toString();
         stringBuilder.append(msg);
         miniLogger.add(stringBuilder.toString());
-        miniLogger.add(AppCtx.CLASSPATH_ALL_URL_PREFIX);
-        miniLogger.add(AppCtx.LIFECYCLE_PROCESSOR_BEAN_NAME);
+        miniLogger.add(ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX);
+        miniLogger.add(AbstractApplicationContext.LIFECYCLE_PROCESSOR_BEAN_NAME);
         FileSystemWorker.writeFile(SOURCE_CLASS + ".qadd", miniLogger.stream());
         moveProps();
     }

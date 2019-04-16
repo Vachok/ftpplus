@@ -6,6 +6,10 @@ import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.IntoApplication;
+import ru.vachok.networker.services.actions.ActionExit;
+import ru.vachok.networker.services.actions.ActionGITStart;
+import ru.vachok.networker.services.actions.ActionSomeInfo;
+import ru.vachok.networker.services.actions.ActionTests;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -47,8 +51,8 @@ import java.util.concurrent.Executors;
     private SystemTrayHelper() {
         if (!IntoApplication.TRAY_SUPPORTED) throw new UnsupportedOperationException(System.getProperty("os.name"));
     }
-
-    TrayIcon getTrayIcon() throws ExceptionInInitializerError {
+    
+    public TrayIcon getTrayIcon() throws ExceptionInInitializerError {
         if (SystemTray.isSupported()) {
             return trayIcon;
         }
@@ -164,8 +168,8 @@ import java.util.concurrent.Executors;
             throw new IllegalStateException("***Network Problems Detected***");
         }
     }
-
-    void delOldActions() {
+    
+    public void delOldActions() {
         ActionListener[] actionListeners;
         if(trayIcon.getActionListeners()!=null){
             actionListeners = trayIcon.getActionListeners();

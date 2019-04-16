@@ -5,9 +5,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
-import ru.vachok.networker.ad.ADComputer;
-import ru.vachok.networker.ad.user.ADUser;
-import ru.vachok.networker.mailserver.MailRule;
 
 import javax.mail.Address;
 import javax.servlet.http.Cookie;
@@ -140,42 +137,7 @@ public class TForms {
             return nStringBuilder.toString();
         }
     }
-
-    public String fromADUsersList(List<ADUser> adUsers, boolean br) {
-        nStringBuilder.append(N_STR);
-        for (ADUser ad : adUsers) {
-            nStringBuilder
-                .append(ad)
-                .append(N_STR);
-        }
-        nStringBuilder.append(N_STR);
-        if (br) {
-            return brStringBuilder.toString();
-        } else {
-            return nStringBuilder.toString();
-        }
-    }
-
-    public String adPCMap(List<ADComputer> adComputers, boolean br) {
-        brStringBuilder.append(P_STR);
-        nStringBuilder.append(N_STR);
-        for (ADComputer ad : adComputers) {
-            brStringBuilder
-                .append(ad)
-                .append(BR_STR);
-            nStringBuilder
-                .append(ad)
-                .append("\n\n");
-        }
-        brStringBuilder.append("</p>");
-        nStringBuilder.append("\n\n\n");
-        if (br) {
-            return brStringBuilder.toString();
-        } else {
-            return nStringBuilder.toString();
-        }
-    }
-
+    
     public String fromArray(Address[] mailAddress, boolean br) {
         for (Address address : mailAddress) {
             brStringBuilder
@@ -209,30 +171,7 @@ public class TForms {
             return nStringBuilder.toString();
         }
     }
-
-    public String fromArrayRules(ConcurrentMap<Integer, MailRule> mailRules, boolean br) {
-        mailRules.forEach((x, y) -> {
-            nStringBuilder
-                .append(N_STR)
-                .append(x)
-                .append(" MAP ID  RULE:")
-                .append(N_STR)
-                .append(y);
-            brStringBuilder
-                .append("<p><h4>")
-                .append(x)
-                .append(" MAP ID  RULE:</h4>")
-                .append(BR_STR)
-                .append(y)
-                .append("</p>");
-        });
-        if (br) {
-            return brStringBuilder.toString();
-        } else {
-            return nStringBuilder.toString();
-        }
-    }
-
+    
     public String fromArray(Throwable[] suppressed) {
         nStringBuilder.append("suppressed throwable!\n".toUpperCase());
         for (Throwable throwable : suppressed) {

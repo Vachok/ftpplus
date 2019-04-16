@@ -16,7 +16,7 @@ import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.net.enums.OtherKnownDevices;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.NetScannerSvc;
-import ru.vachok.networker.systray.ActionCloseMsg;
+import ru.vachok.networker.services.actions.ActionCloseMsg;
 import ru.vachok.networker.systray.MessageToTray;
 
 import javax.servlet.http.HttpServletRequest;

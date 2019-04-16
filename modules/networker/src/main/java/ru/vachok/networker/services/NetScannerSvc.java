@@ -20,7 +20,7 @@ import ru.vachok.networker.controller.NetScanCtr;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.InfoWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
-import ru.vachok.networker.systray.ActionCloseMsg;
+import ru.vachok.networker.services.actions.ActionCloseMsg;
 import ru.vachok.networker.systray.MessageToTray;
 
 import javax.servlet.http.HttpServletRequest;
@@ -85,7 +85,7 @@ public class NetScannerSvc {
     /**
      Компьютеры онлайн
      */
-    private int onLinePCsNum = 0;
+    private int onLinePCsNum;
 
     @SuppressWarnings({"CanBeFinal" , "StaticVariableMayNotBeInitialized"})
     private static Connection connection;

@@ -1,6 +1,6 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.systray;
+package ru.vachok.networker.services.actions;
 
 
 
@@ -27,6 +27,6 @@ import java.util.Date;
         DiapazonedScan instance = DiapazonedScan.getInstance();
         messageToUser.info(String.valueOf(new Date(instance.getStopClassStampLong())));
         instance.run();
-        System.out.println(instance.toString());
+        System.out.println(instance);
     }
 }

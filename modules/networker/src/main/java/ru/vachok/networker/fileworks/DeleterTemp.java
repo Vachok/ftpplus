@@ -108,7 +108,7 @@ class DeleterTemp extends FileSystemWorker implements Runnable {
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
         Thread.currentThread().setName("DeleterTemp.visitFile");
-        this.filesCounter = filesCounter + 1;
+        this.filesCounter += 1;
         String fileAbs = new StringBuilder()
             .append(file.toAbsolutePath())
             .append(ConstantsFor.STR_DELETED).toString();

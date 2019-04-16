@@ -112,7 +112,7 @@ public class ExCTRL {
             .append(exSRV.getOFields())
             .append("</textarea>")
             .toString();
-        String rules = new TForms().fromArrayRules(localMap, true);
+        String rules = MailRule.fromArrayRules(localMap, true);
         model.addAttribute(ConstantsFor.ATT_EXSRV, exSRV);
         model.addAttribute(ConstantsFor.AT_NAME_RULESET, ruleSet);
         model.addAttribute("file", rules + s);

@@ -426,8 +426,11 @@ public enum ConstantsFor {
      {@link MessageLocal}
      */
     private static final MessageToUser messageToUser = new MessageLocal(ConstantsFor.class.getSimpleName());
+    
     public static final String STR_BYTES = " bytes";
+    
     public static final String DBFIELB_RESPONSE = "response";
+    
     public static final String DBFIELD_METHOD = "method";
 
 
