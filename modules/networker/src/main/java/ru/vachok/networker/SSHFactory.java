@@ -16,7 +16,6 @@ import ru.vachok.networker.services.MessageLocal;
 
 import java.io.*;
 import java.net.ConnectException;
-import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -194,13 +193,15 @@ public class SSHFactory implements Callable<String> {
     public String call() {
         StringBuilder stringBuilder = new StringBuilder();
         File file = new File(classCaller + "_" + System.currentTimeMillis() + ".ssh");
-        byte[] bytes = new byte[ConstantsFor.KBYTE * 30];
-
+        byte[] bytes = new byte[ConstantsFor.KBYTE];
+        int readBytes = 0;
         try (InputStream connect = connect()) {
-            messageToUser.info(connect().available() + "", " bytes, ssh-channel is ", respChannel.isConnected() + "");
-            int readBytes = connect.read(bytes, 0, connect.available());
-            messageToUser.warn("SSHFactory.call", "readBytes", " = " + readBytes);
-            stringBuilder.append(new String(bytes, StandardCharsets.UTF_8));
+            while (true) {
+                readBytes = connect.read(bytes, 0, bytes.length);
+                if (readBytes <= 0) break;
+                stringBuilder.append(new String(bytes));
+                messageToUser.warn("readBytes", stringBuilder.toString(), " = " + readBytes);
+            }
         } catch (IOException | JSchException e) {
             messageToUser.errorAlert(getClass().getSimpleName(), "call", e.getMessage());
             FileSystemWorker.error("SSHFactory.call", e);
@@ -212,9 +213,6 @@ public class SSHFactory implements Callable<String> {
         recList.add(toString());
         recList.add(builderToStr);
         programmFilesWriter.setFileName("ssh_" + LocalTime.now().toSecondOfDay() + ".log");
-        boolean isOk = programmFilesWriter.writeFile(recList);
-        stringBuilder.append(programmFilesWriter.getClass().getSimpleName()).append(" ").append(isOk);
-        FileSystemWorker.copyOrDelFile(file, ".\\ssh\\" + file.getName(), true);
         return stringBuilder.toString();
     }
 

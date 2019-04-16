@@ -35,7 +35,9 @@ import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 
 /**
@@ -120,7 +122,13 @@ public class MatrixCtr {
      */
     public void setCurrentProvider() {
         SshActs sshActs = new AppComponents().sshActs();
-        this.currentProvider = sshActs.providerTraceStr();
+        try {
+            this.currentProvider = sshActs.providerTraceStr();
+        }
+        catch (InterruptedException | ExecutionException | TimeoutException e) {
+            this.currentProvider = "<br><a href=\"/makeok\">" + e.getMessage() + "</a><br>";
+            Thread.currentThread().interrupt();
+        }
     }
 
 
