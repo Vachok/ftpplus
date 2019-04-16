@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.fileworks;
 
 
@@ -29,9 +31,6 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     
     private static final String CLASS_NAME = FileSystemWorker.class.getSimpleName();
     
-    /**
-     {@link MessageLocal}
-     */
     private static MessageToUser messageToUser = new MessageCons(FileSystemWorker.class.getSimpleName());
     
     
@@ -50,13 +49,6 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     }
     
     
-    /**
-     Удаление временных файлов.
-     <p>
-     Usages: {@link SystemTrayHelper#addTray(String)}, ,
-     {@link ru.vachok.networker.net.MyServer#reconSock()}. <br>
-     Uses: {@link CommonScan2YOlder} <br>
-     */
     public static void delTemp() {
         try {
             Files.walkFileTree(Paths.get("."), new DeleterTemp());
@@ -214,7 +206,6 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         try (OutputStream outputStream = new FileOutputStream(fileName);
              PrintWriter printWriter = new PrintWriter(outputStream, true)
         ) {
-            printWriter.println(new Date(ConstantsFor.getAtomicTime()));
             toFileRec.forEach(printWriter::println);
         }
         catch (IOException e) {
@@ -242,18 +233,6 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         return retList;
     }
     
-    
-    /**
-     Пишем исключения.
-     <p>
-     Название файла {@code classMeth}.log
-     <p>
-     1. {@link TimeChecker#call()} сверим часы. <br>
-     2. {@link TForms#fromArray(java.lang.Exception, boolean)} приведём исключение к {@link String} <br><br>
-     
-     @param classMeth класс метод.
-     @param e исключение
-     */
     public static String error(String classMeth, Exception e) {
         File f = new File(classMeth + "_" + LocalTime.now().toSecondOfDay() + FILEEXT_LOG);
     

@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.controller;
 
 
@@ -107,7 +109,7 @@ public class ServiceInfoCtrl {
             try {
                 new ExitApp(getClass().getSimpleName()).run();
             } catch (RuntimeException e) {
-                new DBMessenger().infoNoTitles(this.getClass().getSimpleName() + " " + e.getMessage() + " :(((");
+                new DBMessenger(getClass().getSimpleName()).infoNoTitles(this.getClass().getSimpleName() + " " + e.getMessage() + " :(((");
                 System.exit(ConstantsFor.EXIT_STATUSBAD / 3);
             }
         } else {

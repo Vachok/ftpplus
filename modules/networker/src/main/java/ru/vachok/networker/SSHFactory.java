@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker;
 
 
@@ -22,7 +24,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.time.LocalTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
@@ -64,7 +65,12 @@ public class SSHFactory implements Callable<String> {
     private Channel respChannel;
 
     private String builderToStr;
-
+    
+    private SSHFactory(SSHFactory.Builder builder) {
+        this.connectToSrv = builder.connectToSrv; this.commandSSH = builder.commandSSH; this.sessionType = builder.sessionType; this.userName = builder.userName;
+        this.classCaller = builder.classCaller;
+    }
+    
     public String getSessionType() {
         return sessionType;
     }
@@ -93,15 +99,27 @@ public class SSHFactory implements Callable<String> {
     public void setCommandSSH(String commandSSH) {
         this.commandSSH = commandSSH;
     }
-
-    private SSHFactory(SSHFactory.Builder builder) {
-        this.connectToSrv = builder.connectToSrv;
-        this.commandSSH = builder.commandSSH;
-        this.sessionType = builder.sessionType;
-        this.userName = builder.userName;
-        this.classCaller = builder.classCaller;
+    
+    @Override public String toString() {
+        final StringBuilder sb = new StringBuilder("SSHFactory{"); sb.append("classCaller='").append(classCaller).append('\''); sb.append(", commandSSH='").append(commandSSH).append('\'');
+        sb.append(", connectToSrv='").append(connectToSrv).append('\''); sb.append(", sessionType='").append(sessionType).append('\'');
+        sb.append(", userName='").append(userName).append('\''); sb.append('}'); return sb.toString();
     }
     
+    public String call() {
+        StringBuilder stringBuilder = new StringBuilder(); File file = new File(classCaller + "_" + System.currentTimeMillis() / 1000 + ".ssh"); byte[] bytes = new byte[ConstantsFor.KBYTE];
+        int readBytes; try {
+            InputStream connect = connect(); OutputStream outputStream = new FileOutputStream(file); while (true) {
+                readBytes = connect.read(bytes, 0, bytes.length); if (readBytes <= 0) break; outputStream.write(bytes, 0, readBytes);
+                messageToUser.info("Bytes. ", file.getAbsolutePath(), " is " + readBytes + " (file.len = " + file.length() + ")");
+            }
+        }
+        catch (IOException | JSchException e) {
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".call", e));
+        } messageToUser.warn("CALL FROM CLASS: ", classCaller, ", to server: " + connectToSrv); List<String> recList = FileSystemWorker.readFileToList(file.getPath());
+        recList.forEach(x->stringBuilder.append(x).append("<br>\n")); FileSystemWorker.copyOrDelFile(file, ".\\ssh\\" + file.getName(), true); return stringBuilder.toString();
+    }
+
     private InputStream connect() throws IOException, JSchException {
         boolean isConnected;
         chanRespChannel();
@@ -143,10 +161,9 @@ public class SSHFactory implements Callable<String> {
         }
         catch(JSchException e){
             FileSystemWorker.error(classMeth, e);
-        }
-        session.setConfig(properties);
+        } Objects.requireNonNull(session).setConfig(properties);
         try{
-            session.connect(ConstantsFor.TIMEOUT_650);
+            session.connect(LocalTime.now().toSecondOfDay());
         }
         catch(JSchException e){
             FileSystemWorker.error(classMeth, e);
@@ -165,18 +182,6 @@ public class SSHFactory implements Callable<String> {
         Objects.requireNonNull(respChannel);
     }
 
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("SSHFactory{");
-        sb.append("classCaller='").append(classCaller).append('\'');
-        sb.append(", commandSSH='").append(commandSSH).append('\'');
-        sb.append(", connectToSrv='").append(connectToSrv).append('\'');
-        sb.append(", sessionType='").append(sessionType).append('\'');
-        sb.append(", userName='").append(userName).append('\'');
-        sb.append('}');
-        return sb.toString();
-    }
-
     private void sshException(Exception e) {
         initProperties = new FileProps(SOURCE_CLASS);
         initProperties.getProps();
@@ -189,35 +194,33 @@ public class SSHFactory implements Callable<String> {
     public void setConnectToSrv(String connectToSrv) {
         this.connectToSrv = connectToSrv;
     }
-
-    public String call() {
-        StringBuilder stringBuilder = new StringBuilder();
-        File file = new File(classCaller + "_" + System.currentTimeMillis() + ".ssh");
-        byte[] bytes = new byte[ConstantsFor.KBYTE];
-        int readBytes = 0;
-        try (InputStream connect = connect()) {
-            while (true) {
-                readBytes = connect.read(bytes, 0, bytes.length);
-                if (readBytes <= 0) break;
-                stringBuilder.append(new String(bytes));
-                messageToUser.warn("readBytes", stringBuilder.toString(), " = " + readBytes);
-            }
-        } catch (IOException | JSchException e) {
-            messageToUser.errorAlert(getClass().getSimpleName(), "call", e.getMessage());
-            FileSystemWorker.error("SSHFactory.call", e);
+    
+    private @NotNull String pem() {
+        File pemFile = new File("a161.pem"); if (pemFile.exists()) {
+            return pemFile.getAbsolutePath();
         }
-        messageToUser.warn("CALL FROM CLASS: ", classCaller, ", to server: " + connectToSrv);
-        List<String> recList = new ArrayList<>();
-
-        recList.add(stringBuilder.toString());
-        recList.add(toString());
-        recList.add(builderToStr);
-        programmFilesWriter.setFileName("ssh_" + LocalTime.now().toSecondOfDay() + ".log");
-        return stringBuilder.toString();
+        else {
+            MysqlDataSource source = new RegRuMysql().getDataSourceSchema(ConstantsFor.DBBASENAME_U0466446_LIFERPG); String pemFileStr = "";
+            String sqlGetKey = "SELECT *  FROM `sshid` WHERE `pc` LIKE 'do0213'"; try (Connection c = source.getConnection()) {
+                try (PreparedStatement p = c.prepareStatement(sqlGetKey)) {
+                    try (ResultSet r = p.executeQuery()) {
+                        while (r.next()) {
+                            pemFileStr = r.getString("pem");
+                        } try (OutputStream outputStream = new FileOutputStream(pemFile)) {
+                            try (PrintStream printStream = new PrintStream(outputStream, true)) {
+                                printStream.print(pemFileStr);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (SQLException | IOException e) {
+                messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".pem", e));
+            }
+        } pemFile.deleteOnExit(); return pemFile.getAbsolutePath();
     }
-
-
-
+    
+    
     /**
      Builder.
      <p>
@@ -260,16 +263,15 @@ public class SSHFactory implements Callable<String> {
         public String getCommandSSH() {
             return commandSSH;
         }
-
-
-        @Override
-        public int hashCode() {
-            int result = getUserName().hashCode();
-            result = 31 * result + (getPass()!=null? getPass().hashCode(): 0);
-            result = 31 * result + getSessionType().hashCode();
-            result = 31 * result + (getConnectToSrv()!=null? getConnectToSrv().hashCode(): 0);
-            result = 31 * result + (getCommandSSH()!=null? getCommandSSH().hashCode(): 0);
-            return result;
+        
+        /**
+         Sets command ssh.
+         
+         @param commandSSH the command ssh
+         @return the command ssh
+         */
+        public SSHFactory.Builder setCommandSSH(String commandSSH) {
+            this.commandSSH = commandSSH; return this;
         }
 
         /**
@@ -300,7 +302,17 @@ public class SSHFactory implements Callable<String> {
         public String getPass() {
             return pass;
         }
-
+        
+        /**
+         Sets pass.
+         
+         @param pass the pass
+         @return the pass
+         */
+        public SSHFactory.Builder setPass(String pass) {
+            this.pass = pass; return this;
+        }
+        
         /**
          Gets session type.
 
@@ -331,26 +343,6 @@ public class SSHFactory implements Callable<String> {
         }
 
         /**
-         Sets command ssh.
-
-         @param commandSSH the command ssh
-         @return the command ssh
-         */
-        public SSHFactory.Builder setCommandSSH(String commandSSH) {
-            this.commandSSH = commandSSH;
-            return this;
-        }
-
-        /**
-         Build ssh factory.
-
-         @return the ssh factory
-         */
-        public SSHFactory build() {
-            return sshFactory;
-        }
-
-        /**
          Sets connect to srv.
 
          @param connectToSrv the connect to srv
@@ -362,51 +354,22 @@ public class SSHFactory implements Callable<String> {
         }
 
         /**
-         Sets pass.
-
-         @param pass the pass
-         @return the pass
+         Build ssh factory.
+ 
+         @return the ssh factory
          */
-        public SSHFactory.Builder setPass(String pass) {
-            this.pass = pass;
-            return this;
+        public SSHFactory build() {
+            return sshFactory;
         }
-
-
+        
         public String pem() {
             return this.sshFactory.pem();
         }
-    }
-    
-    
-    @NotNull private String pem() {
-        File pemFile = new File("a161.pem");
-        if (pemFile.exists()) {
-            return pemFile.getAbsolutePath();
+        
+        @Override public int hashCode() {
+            int result = getUserName().hashCode(); result = 31 * result + (getPass() != null ? getPass().hashCode() : 0); result = 31 * result + getSessionType().hashCode();
+            result = 31 * result + (getConnectToSrv() != null ? getConnectToSrv().hashCode() : 0); result = 31 * result + (getCommandSSH() != null ? getCommandSSH().hashCode() : 0);
+            return result;
         }
-        else {
-            MysqlDataSource source = new RegRuMysql().getDataSourceSchema(ConstantsFor.DBBASENAME_U0466446_LIFERPG);
-            String pemFileStr = "";
-            String sqlGetKey = "SELECT *  FROM `sshid` WHERE `pc` LIKE 'do0213'";
-            try (Connection c = source.getConnection()) {
-                try (PreparedStatement p = c.prepareStatement(sqlGetKey)) {
-                    try (ResultSet r = p.executeQuery()) {
-                        while (r.next()) {
-                            pemFileStr = r.getString("pem");
-                        }
-                        try (OutputStream outputStream = new FileOutputStream(pemFile)) {
-                            try (PrintStream printStream = new PrintStream(outputStream, true)) {
-                                printStream.print(pemFileStr);
-                            }
-                        }
-                    }
-                }
-            }
-            catch (SQLException | IOException e) {
-                messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".pem", e));
-            }
-        }
-        pemFile.deleteOnExit();
-        return pemFile.getAbsolutePath();
     }
 }

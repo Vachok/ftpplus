@@ -31,8 +31,7 @@ public class PfListsSrv {
     /**
      {@link PfLists}
      */
-    @SuppressWarnings("CanBeFinal")
-    private @NotNull PfLists pfListsInstAW;
+    @SuppressWarnings("CanBeFinal") private final PfLists pfListsInstAW;
     
     /**
      SSH-команда.
@@ -133,7 +132,6 @@ public class PfListsSrv {
     private void buildFactory() throws FileNotFoundException, NullPointerException {
         SSHFactory.Builder builderInst = new SSHFactory.Builder(DEFAULT_CONNECT_SRV, commandForNatStr, getClass().getSimpleName());
         SSHFactory build = builderInst.build();
-    
         if (!new File(builderInst.pem()).exists()) {
             throw new FileNotFoundException("NO CERTIFICATE a161.pem...");
         }

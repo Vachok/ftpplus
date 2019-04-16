@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.accesscontrol;
 
 
@@ -63,9 +65,9 @@ public class TemporaryFullInternet implements Runnable {
         this.delStamp = System.currentTimeMillis();
         MINI_LOGGER.add("TemporaryFullInternet(): " + this.userInput + " " + delStamp + "(" + new Date(delStamp) + ")");
     }
-
-
-    TemporaryFullInternet(String userInput, long timeToApply) {
+    
+    
+    public TemporaryFullInternet(String userInput, long timeToApply) {
         this.userInput = userInput;
         this.delStamp = ConstantsFor.getAtomicTime() + TimeUnit.HOURS.toMillis(timeToApply);
         MINI_LOGGER.add("TemporaryFullInternet: " + userInput + " " + delStamp + "(" + new Date(delStamp) + ")");
@@ -126,9 +128,9 @@ public class TemporaryFullInternet implements Runnable {
         sb.append("<p>\n").append(new TForms().fromArray(MINI_LOGGER, true));
         return sb.toString();
     }
-
-
-    String doAdd() {
+    
+    
+    public String doAdd() {
         AppComponents.threadConfig().thrNameSet("addSSH");
         SSH_FACTORY.setCommandSSH(ConstantsNet.COM_CAT24HRSLIST);
         NameOrIPChecker nameOrIPChecker = new NameOrIPChecker(userInput);

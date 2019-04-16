@@ -155,7 +155,7 @@ public class DiapazonedScan implements Runnable {
 
     private void startDo() {
         if (ALL_DEVICES_LOCAL_DEQUE.remainingCapacity() == 0) {
-            boolean isWritten = new ExitApp("alldev." + (System.currentTimeMillis() / 1000) + ".map", ALL_DEVICES_LOCAL_DEQUE).writeOwnObject();
+            boolean isWritten = new ExitApp("alldev_" + (System.currentTimeMillis() / 1000) + ".map", ALL_DEVICES_LOCAL_DEQUE).writeOwnObject();
             if (isWritten) {
                 ALL_DEVICES_LOCAL_DEQUE.clear();
             } else {

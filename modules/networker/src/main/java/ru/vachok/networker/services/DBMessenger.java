@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.services;
 
 
@@ -16,29 +18,24 @@ import java.sql.SQLException;
  * @since 26.08.2018 (12:29)
  */
 public class DBMessenger implements MessageToUser {
-
-    /**
-     * Simple Name класса, для поиска настроек
-     */
-    private static final String SOURCE_CLASS = DBMessenger.class.getSimpleName();
-
-    @Override
-    public void errorAlert( String s , String s1 , String s2 ) {
-        dbSend(s,s1,s2);
+    
+    
+    private String headerMsg;
+    
+    private String titleMsg;
+    
+    private String bodyMsg;
+    
+    public DBMessenger(String headerMsg) {
+        this.headerMsg = headerMsg;
     }
-
-    private void dbSend(String s , String s1 , String s2 ) {
-        String sql = "insert into ru_vachok_networker (classname, msgtype, msgvalue) values (?,?,?)";
-        try (Connection c = new AppComponents().connection(ConstantsFor.DBPREFIX + "webapp");
-             PreparedStatement p = c.prepareStatement(sql)){
-            p.setString(1,s);
-            p.setString(2,s1);
-            p.setString(3,s2);
-            p.executeUpdate();
-        }
-        catch(SQLException | IOException e){
-            FileSystemWorker.error("DBMessenger.dbSend", e);
-        }
+    
+    @Override public void errorAlert(String headerMsg, String titleMsg, String bodyMsg) {
+        this.headerMsg = headerMsg; this.titleMsg = titleMsg; this.bodyMsg = bodyMsg; dbSend(headerMsg, titleMsg, bodyMsg);
+    }
+    
+    @Override public void infoNoTitles(String s) {
+        dbSend(headerMsg, "INFO", s);
     }
 
 
@@ -47,10 +44,8 @@ public class DBMessenger implements MessageToUser {
         dbSend(s,s1,s2);
     }
 
-
-    @Override
-    public void infoNoTitles( String s ) {
-        dbSend(SOURCE_CLASS, "INFO", s);
+    @Override public void error(String s) {
+        this.bodyMsg = s; errorAlert(headerMsg, "untitled", s);
     }
 
     @Override
@@ -58,14 +53,18 @@ public class DBMessenger implements MessageToUser {
         infoNoTitles(s);
     }
 
-    @Override
-    public void error(String s) {
-        errorAlert("", "", s);
+    @Override public void error(String headerMsg, String s1, String s2) {
+        this.headerMsg = headerMsg; this.titleMsg = s1; this.bodyMsg = s2; errorAlert(headerMsg, s1, s2);
     }
-
-    @Override
-    public void error(String s, String s1, String s2) {
-        errorAlert(s, s1, s2);
+    
+    private void dbSend(String headerMsg, String titleMsg, String bodyMsg) {
+        String sql = "insert into ru_vachok_networker (classname, msgtype, msgvalue) values (?,?,?)"; try (Connection c = new AppComponents().connection(ConstantsFor.DBPREFIX + "webapp");
+                                                                                                           PreparedStatement p = c.prepareStatement(sql)) {
+            p.setString(1, headerMsg); p.setString(2, titleMsg); p.setString(3, bodyMsg); p.executeUpdate();
+        }
+        catch (SQLException | IOException e) {
+            FileSystemWorker.error("DBMessenger.dbSend", e);
+        }
     }
 
     @Override
