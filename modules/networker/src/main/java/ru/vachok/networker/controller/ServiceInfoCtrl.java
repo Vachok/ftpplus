@@ -209,10 +209,7 @@ public class ServiceInfoCtrl {
     }
 
     private String getJREVers() {
-        SSHFactory tailFac = new SSHFactory
-            .Builder("srv-inetstat.eatmeat.ru", "sudo tail /home/kudr/nohup.out", this.getClass().getSimpleName()).build();
-        String getTailStr = tailFac.call();
-        return System.getProperty("java.version") + getTailStr;
+        return System.getProperty("java.version");
     }
     
     

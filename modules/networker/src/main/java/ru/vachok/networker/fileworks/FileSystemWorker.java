@@ -11,10 +11,7 @@ import ru.vachok.networker.TForms;
 import java.io.*;
 import java.nio.file.*;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Stream;
@@ -231,6 +228,20 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
             retList.add(new TForms().fromArray(e, true));
         }
         return retList;
+    }
+    
+    public static Queue<String> readFileToQueue(Path filePath) {
+        Queue<String> retQueue = new LinkedList<>();
+        try (InputStream inputStream = new FileInputStream(filePath.toFile());
+             InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+             BufferedReader bufferedReader = new BufferedReader(inputStreamReader)
+        ) {
+            bufferedReader.lines().forEach(retQueue::add);
+        }
+        catch (IOException e) {
+            messageToUser.error(e.getMessage());
+        }
+        return retQueue;
     }
     
     public static String error(String classMeth, Exception e) {

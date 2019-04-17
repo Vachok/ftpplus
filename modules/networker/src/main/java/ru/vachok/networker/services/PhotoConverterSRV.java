@@ -4,7 +4,9 @@ package ru.vachok.networker.services;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import javax.imageio.ImageIO;
@@ -63,7 +65,9 @@ public class PhotoConverterSRV {
     
     public PhotoConverterSRV(Properties properties) {
         this.properties = properties;
-        
+        if (properties == null || properties.size() < 3) {
+            this.properties = AppComponents.getOrSetProps();
+        }
     }
     
     @SuppressWarnings("unused")
@@ -83,13 +87,13 @@ public class PhotoConverterSRV {
      @return Комманды Exchange PowerShell
      */
     public String psCommands() {
+        StringBuilder stringBuilder = new StringBuilder();
         try {
             convertFoto();
         } catch (IOException | NullPointerException e) {
             messageToUser.errorAlert(getClass().getSimpleName(), "psCommands", e.getMessage());
-            FileSystemWorker.error("PhotoConverterSRV.psCommands", e);
+            stringBuilder.append(e.getMessage()).append("<p>").append(new TForms().fromArray(e, true));
         }
-        StringBuilder stringBuilder = new StringBuilder();
         for (String s : psCommands) {
             stringBuilder.append(s);
             stringBuilder.append("<br>");

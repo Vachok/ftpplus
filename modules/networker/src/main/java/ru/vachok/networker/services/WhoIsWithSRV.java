@@ -5,12 +5,8 @@ package ru.vachok.networker.services;
 
 import org.apache.commons.net.whois.WhoisClient;
 import org.springframework.stereotype.Service;
-import org.springframework.ui.Model;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.PageFooter;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -28,8 +24,6 @@ public class WhoIsWithSRV {
         Locale locale = Locale.getDefault();
         WhoisClient whoisClient = new WhoisClient();
         String country = locale.getCountry() + " country, " + locale.getLanguage() + " lang";
-        String traceRoute = traceRt(inetAddr);
-        geoLocation.append(traceRoute).append("<p>");
         geoLocation.append(country).append("</p>");
         geoLocation.append("<p>");
         geoLocation.append("<h3>").append(inetAddr).append("</h3><br>").append("<p>");
@@ -60,32 +54,8 @@ public class WhoIsWithSRV {
 
         return geoLocation.toString();
     }
-
-
-    public static String whoisStat(String workPos, Model model) {
-        WhoIsWithSRV whoIsWithSRV = new WhoIsWithSRV();
-        workPos = workPos.split(": ")[1].trim();
-        String attributeValue = whoIsWithSRV.whoIs(workPos);
-        model.addAttribute(ConstantsFor.ATT_WHOIS, attributeValue);
-        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
-        model.addAttribute("toHead", new PageFooter().getHeaderUtext());
-        return ConstantsFor.BEANNAME_MATRIX;
-    }
-
-
-    private String traceRt(String inetAddr) {
-        SSHFactory.Builder sshFactoryBu = new SSHFactory.Builder(ConstantsFor.IPADDR_SRVGIT, "traceroute " + inetAddr, getClass().getSimpleName());
-        String retStr = sshFactoryBu.build().call();
-        try {
-            retStr = retStr.split(" = ")[1].replaceAll("(\\s\\d?\\d\\s)", "<br>").trim();
-        } catch (ArrayIndexOutOfBoundsException e) {
-            return e.getMessage();
-        }
-
-        return retStr;
-    }
-
-
+    
+    
     private String whoIsQuery(String inetAddr) throws IOException {
         WhoisClient whoisClient = new WhoisClient();
         StringBuilder whoIsQBuilder = new StringBuilder();

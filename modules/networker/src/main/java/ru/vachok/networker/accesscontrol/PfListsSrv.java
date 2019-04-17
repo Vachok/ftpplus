@@ -87,7 +87,7 @@ public class PfListsSrv {
     
     
     String runCom() {
-        return new SSHFactory.Builder(DEFAULT_CONNECT_SRV, commandForNatStr, getClass().getSimpleName()).build().call().replace("\n", "<br>");
+        return new SSHFactory.Builder(DEFAULT_CONNECT_SRV, commandForNatStr, getClass().getSimpleName()).build().call();
     }
     
     /**

@@ -143,29 +143,14 @@ public class MatrixCtr {
         response.addHeader(ConstantsFor.HEAD_REFRESH, "120");
         return "starting";
     }
-
-
-    private String getPTVLastStamp() {
-        File ptvFile = new File(ConstantsNet.FILENAME_PINGTV);
-        if (ptvFile.exists()) {
-            try {
-                FileTime creationTime = (FileTime) Files.getAttribute(ptvFile.toPath() , "creationTime" , LinkOption.NOFOLLOW_LINKS);
-                return new Date(creationTime.toMillis()).toString();
-            } catch (IOException e) {
-                FileSystemWorker.error(getClass().getSimpleName() + ".getPTVLastStamp" , e);
-            }
-        }
-        return new Date(ConstantsFor.START_STAMP).toString();
-    }
-
-
+    
     @SuppressWarnings("MethodWithMultipleReturnPoints")
     @PostMapping(GET_MATRIX)
     public String getWorkPosition(@ModelAttribute(ConstantsFor.BEANNAME_MATRIX) MatrixSRV matrixSRV, BindingResult result, Model model) {
         this.matrixSRV = matrixSRV;
         String workPos = matrixSRV.getWorkPos();
         if (workPos.toLowerCase().contains("whois:")) {
-            return WhoIsWithSRV.whoisStat(workPos, model);
+            return whoisStat(workPos, model);
         }
         else if (workPos.toLowerCase().contains("calc:")) {
             return calculateDoubles(workPos, model);
@@ -176,6 +161,31 @@ public class MatrixCtr {
         else {
             return matrixAccess(workPos);
         }
+        return ConstantsFor.BEANNAME_MATRIX;
+    }
+    
+    
+    private String getPTVLastStamp() {
+        File ptvFile = new File(ConstantsNet.FILENAME_PINGTV);
+        if (ptvFile.exists()) {
+            try {
+                FileTime creationTime = (FileTime) Files.getAttribute(ptvFile.toPath(), "creationTime", LinkOption.NOFOLLOW_LINKS);
+                return new Date(creationTime.toMillis()).toString();
+            }
+            catch (IOException e) {
+                FileSystemWorker.error(getClass().getSimpleName() + ".getPTVLastStamp", e);
+            }
+        }
+        return new Date(ConstantsFor.START_STAMP).toString();
+    }
+    
+    private static String whoisStat(String workPos, Model model) {
+        WhoIsWithSRV whoIsWithSRV = new WhoIsWithSRV();
+        workPos = workPos.split(": ")[1].trim();
+        String attributeValue = whoIsWithSRV.whoIs(workPos);
+        model.addAttribute(ConstantsFor.ATT_WHOIS, attributeValue);
+        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
+        model.addAttribute("toHead", new PageFooter().getHeaderUtext());
         return ConstantsFor.BEANNAME_MATRIX;
     }
 
