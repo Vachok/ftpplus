@@ -853,13 +853,11 @@ parsed/
 DataBaseHelper.log.lck
 LogFileReader.log.lck
 LogParser.log.lck
-CacheLogGetter.getKey.err
-CacheLogGetter.showLog.err
 InetIPUser.getUsage
-com.ssh
 *.csv
 inet.zip
 inet/disips.inet
 inet.files
-inet.lan
-inet.ssh
+*.lan
+*.ssh
+*.err
