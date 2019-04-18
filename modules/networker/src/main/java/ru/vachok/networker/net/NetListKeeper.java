@@ -16,7 +16,6 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.lang.reflect.Field;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -29,7 +28,7 @@ import java.util.concurrent.TimeUnit;
  <p>
  
  @since 30.01.2019 (17:02) */
-public class NetListKeeper {
+@SuppressWarnings("StaticMethodOnlyUsedInOneClass") public class NetListKeeper {
     
     
     /**
@@ -39,9 +38,13 @@ public class NetListKeeper {
     
     private static NetListKeeper netListKeeper = new NetListKeeper();
     
+    private static String ptvTime;
+    
     private ConcurrentMap<String, String> onLinesResolve = new ConcurrentHashMap<>();
     
     private ConcurrentMap<String, String> offLines = new ConcurrentHashMap<>();
+    
+    private String nameOfExtObject = getClass().getSimpleName() + "onLinesResolve.map";
     
     private NetListKeeper() {
         AppComponents.threadConfig().getTaskScheduler().submitListenable(new ExitApp("on.map", this.onLinesResolve));
@@ -50,8 +53,6 @@ public class NetListKeeper {
     public static NetListKeeper getI() {
         return netListKeeper;
     }
-    
-    private static String ptvTime;
     
     public static String getPtvTime() {
         return ptvTime;
@@ -124,7 +125,8 @@ public class NetListKeeper {
     }
     
     void readMap() {
-        try (InputStream inputStream = new FileInputStream("on.map");
+    
+        try (InputStream inputStream = new FileInputStream(nameOfExtObject);
              ObjectInputStream objectInputStream = new ObjectInputStream(inputStream)
         ) {
             Map<String, String> fromFileMap = (ConcurrentMap<String, String>) objectInputStream.readObject();
@@ -149,30 +151,25 @@ public class NetListKeeper {
         String classMeth = "NetListKeeper.onlinesAddressesList";
         List<InetAddress> onlineAddresses = new ArrayList<>();
         Deque<String> fileAsDeque = NetScanFileWorker.getI().getListOfOnlineDev();
-        fileAsDeque.forEach(x->{
-            try {
-                byte[] bytes = InetAddress.getByName(x.split(" ")[1]).getAddress();
-                onlineAddresses.add(InetAddress.getByAddress(bytes));
-            }
-            catch (UnknownHostException e) {
-                FileSystemWorker.error(classMeth, e);
-            }
-        });
-        messageToUser.info(classMeth, "returning: " + onlineAddresses.size(), " onlineAddresses");
+    
+        while (!fileAsDeque.isEmpty()) {
+            byte[] bytes = InetAddress.getByName(fileAsDeque.poll().split(" ")[1]).getAddress();
+            onlineAddresses.add(InetAddress.getByAddress(bytes));
+        }
+        
         return onlineAddresses;
     }
     
     
     private class ChkOnlinesSizeChange implements Runnable {
-        
-        
-        private Properties properties = AppComponents.getOrSetProps();
-        
+    
+    
         private int currentSize = onLinesResolve.size();
         
         private int wasSize;
         
         public ChkOnlinesSizeChange() {
+            Properties properties = AppComponents.getOrSetProps();
             this.wasSize = Integer.parseInt(properties.getProperty("onsize", "0"));
         }
         
@@ -180,8 +177,7 @@ public class NetListKeeper {
         public void run() {
             AppComponents.threadConfig().thrNameSet(getClass().getSimpleName());
             if (wasSize < currentSize) {
-                boolean ownObject = new ExitApp("on.map", onLinesResolve).writeOwnObject();
-                properties.setProperty("onsize", String.valueOf(currentSize));
+                boolean ownObject = new ExitApp(nameOfExtObject, onLinesResolve).writeOwnObject();
             }
             else {
                 readMap();

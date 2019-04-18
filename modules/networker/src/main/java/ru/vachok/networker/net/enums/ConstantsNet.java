@@ -5,14 +5,12 @@ import org.springframework.ui.Model;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.controller.NetScanCtr;
 import ru.vachok.networker.net.DiapazonedScan;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.NetScannerSvc;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.File;
-import java.util.*;
+import java.util.Properties;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -134,36 +132,21 @@ public enum ConstantsNet { ;
 
     private static final Properties LOC_PROPS = AppComponents.getOrSetProps();
 
-    private static final Map<String, Long> SSH_CHECKER_MAP = new ConcurrentHashMap<>();
-
     private static final BlockingDeque<String> ALL_DEVICES = new LinkedBlockingDeque<>(IPS_IN_VELKOM_VLAN);
 
     public static final String COM_INITPF = "sudo /etc/initpf.fw;sudo squid -k reconfigure && exit";
 
     public static final String COM_CAT24HRSLIST = "cat /etc/pf/24hrs && exit";
-
-    /**
-     new {@link HashSet}
-
-     @see NetScannerSvc#getPCNamesPref(String)
-     @see NetScanCtr#scanIt(HttpServletRequest, Model, Date)
-     */
-    private static Set<String> pcNames = new HashSet<>(Integer.parseInt(LOC_PROPS.getOrDefault(ConstantsFor.PR_TOTPC , "42").toString()));
-
+    
     private static MessageToUser messageToUser = new MessageLocal(ConstantsNet.class.getSimpleName());
-
+    
+    public static void setSshMapStr(String sshMapStr) {
+        ConstantsNet.sshMapStr = sshMapStr;
+    }
+    
     private static String sshMapStr = "SSH Temp list is empty";
-
-
-    public static Set<String> getPcNames() {
-        return pcNames;
-    }
-
-
-    public static void setPcNames(Set<String> pcNames) {
-        ConstantsNet.pcNames = pcNames;
-    }
-
+    
+    
     /**
      Префиксы имён ПК Велком.
 
@@ -196,17 +179,6 @@ public enum ConstantsNet { ;
         AppComponents.getOrSetProps().setProperty(ConstantsFor.PR_VLANNUM , String.valueOf((IPS_IN_VELKOM_VLAN / MAX_IN_ONE_VLAN)));
         return ALL_DEVICES;
     }
-
-
-    public static void setSSHMapStr(String sshMapStr) {
-        ConstantsNet.sshMapStr = sshMapStr;
-    }
-
-
-    public static Map<String, Long> getSshCheckerMap() {
-        return SSH_CHECKER_MAP;
-    }
-
 
     public static String getSshMapStr() {
         return sshMapStr;

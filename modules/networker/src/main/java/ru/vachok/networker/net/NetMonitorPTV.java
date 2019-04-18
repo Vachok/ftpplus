@@ -4,6 +4,7 @@ package ru.vachok.networker.net;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.VersionInfo;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.OtherKnownDevices;
@@ -60,42 +61,15 @@ public class NetMonitorPTV implements Runnable {
     public long getPtvStartStamp() {
         return ptvStartStamp;
     }
-
-    private void pingIPTV() throws IOException {
-        StringBuilder stringBuilder = new StringBuilder();
-
-        byte[] upakCisco2042b = InetAddress.getByName(SwitchesWiFi.C_204_2_UPAK).getAddress();
-        byte[] upakCisco2043b = InetAddress.getByName(SwitchesWiFi.C_204_3_UPAK).getAddress();
-        byte[] gpCisco20410b = InetAddress.getByName(SwitchesWiFi.C_204_3_UPAK).getAddress();
-
-        InetAddress ptv1 = InetAddress.getByName(OtherKnownDevices.PTV1_EATMEAT_RU);
-        InetAddress ptv2 = InetAddress.getByName(OtherKnownDevices.PTV2_EATMEAT_RU);
-        InetAddress upakCisco2042 = InetAddress.getByAddress(upakCisco2042b);
-        InetAddress upakCisco2043 = InetAddress.getByAddress(upakCisco2043b);
-        InetAddress gpCisco20410 = InetAddress.getByAddress(gpCisco20410b);
-
-        boolean ptv1Reachable = ptv1.isReachable(ConstantsFor.TIMEOUT_650);
-        boolean ptv2Reachable = ptv2.isReachable(ConstantsFor.TIMEOUT_650);
-        boolean upakCisco2042Reachable = upakCisco2042.isReachable(ConstantsFor.TIMEOUT_650);
-        boolean upakCisco2043Reachable = upakCisco2043.isReachable(ConstantsFor.TIMEOUT_650);
-        boolean gpCisco2042Reachable = gpCisco20410.isReachable(ConstantsFor.TIMEOUT_650);
-
-        stringBuilder.append(ptv1);
-        stringBuilder.append(" is ");
-        stringBuilder.append(ptv1Reachable);
-        stringBuilder.append(", ");
-        stringBuilder.append(ptv2);
-        stringBuilder.append(" is ");
-        stringBuilder.append(ptv2Reachable);
-
-        stringBuilder.append("<br>");
-        stringBuilder.append("\n***Wi-Fi points:");
-
-        stringBuilder.append(upakCisco2042).append(" is ").append(upakCisco2042Reachable).append(", ");
-        stringBuilder.append(upakCisco2043).append(" is ").append(upakCisco2043Reachable).append(", ");
-        stringBuilder.append(gpCisco20410).append(" is ").append(gpCisco2042Reachable).append("<br>***");
-        this.pingResultLast = stringBuilder.toString();
-        checkSize();
+    
+    @Override
+    public void run() {
+        try {
+            pingIPTV();
+        }
+        catch (IOException e) {
+            messageToUser.errorAlert(CLASS_NAME, "run", e.getMessage() + "\n" + new TForms().fromArray(e, false));
+        }
     }
     
     private void checkSize() throws IOException {
@@ -106,7 +80,8 @@ public class NetMonitorPTV implements Runnable {
         if (pingTv.length() > ConstantsFor.MBYTE) {
             printStream.close();
             ifPingTVIsBig(pingTv);
-        } else {
+        }
+        else {
             this.pingResultLast = pingResultLast + " (" + pingTv.length() / ConstantsFor.KBYTE + " KBytes)";
         }
     }
@@ -120,11 +95,12 @@ public class NetMonitorPTV implements Runnable {
             this.outputStream = new FileOutputStream(pingTv);
             this.printStream = new PrintStream(outputStream, true);
             this.ptvStartStamp = System.currentTimeMillis();
-        } else {
+        }
+        else {
             messageToUser.info(FILENAME_PINGTV, "creating", new Date(ptvStartStamp).toString());
         }
     }
-
+    
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("NetMonitorPTV{");
@@ -133,12 +109,46 @@ public class NetMonitorPTV implements Runnable {
         return sb.toString();
     }
 
-    @Override
-    public void run() {
-        try {
-            pingIPTV();
-        } catch (IOException e) {
-            messageToUser.errorAlert(CLASS_NAME, "run", e.getMessage());
-        }
+    private void pingIPTV() throws IOException {
+        StringBuilder stringBuilder = new StringBuilder();
+
+        byte[] upakCisco2042b = InetAddress.getByName(SwitchesWiFi.C_204_2_UPAK).getAddress();
+        byte[] upakCisco2043b = InetAddress.getByName(SwitchesWiFi.C_204_3_UPAK).getAddress();
+        byte[] gpCisco20410b = InetAddress.getByName(SwitchesWiFi.C_204_3_UPAK).getAddress();
+
+        InetAddress ptv1 = InetAddress.getByName(OtherKnownDevices.PTV1_EATMEAT_RU);
+        InetAddress ptv2 = InetAddress.getByName(OtherKnownDevices.PTV2_EATMEAT_RU);
+//        InetAddress ptv3 = InetAddress.getByName(OtherKnownDevices.PTV3_EATMEAT_RU);
+        
+        InetAddress upakCisco2042 = InetAddress.getByAddress(upakCisco2042b);
+        InetAddress upakCisco2043 = InetAddress.getByAddress(upakCisco2043b);
+        InetAddress gpCisco20410 = InetAddress.getByAddress(gpCisco20410b);
+
+        boolean ptv1Reachable = ptv1.isReachable(ConstantsFor.TIMEOUT_650);
+        boolean ptv2Reachable = ptv2.isReachable(ConstantsFor.TIMEOUT_650);
+//        boolean ptv3Reachable = ptv3.isReachable(ConstantsFor.TIMEOUT_650);
+        boolean upakCisco2042Reachable = upakCisco2042.isReachable(ConstantsFor.TIMEOUT_650);
+        boolean upakCisco2043Reachable = upakCisco2043.isReachable(ConstantsFor.TIMEOUT_650);
+        boolean gpCisco2042Reachable = gpCisco20410.isReachable(ConstantsFor.TIMEOUT_650);
+
+        stringBuilder.append(ptv1);
+        stringBuilder.append(" is ");
+        stringBuilder.append(ptv1Reachable);
+        stringBuilder.append(", ");
+        stringBuilder.append(ptv2);
+        stringBuilder.append(" is ");
+        stringBuilder.append(ptv2Reachable);
+//        stringBuilder.append(ptv3);
+//        stringBuilder.append(" is ");
+//        stringBuilder.append(ptv3Reachable);
+
+        stringBuilder.append("<br>");
+        stringBuilder.append("\n***Wi-Fi points:");
+
+        stringBuilder.append(upakCisco2042).append(" is ").append(upakCisco2042Reachable).append(", ");
+        stringBuilder.append(upakCisco2043).append(" is ").append(upakCisco2043Reachable).append(", ");
+        stringBuilder.append(gpCisco20410).append(" is ").append(gpCisco2042Reachable).append("<br>***");
+        this.pingResultLast = stringBuilder.toString();
+        checkSize();
     }
 }

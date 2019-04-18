@@ -2,7 +2,6 @@
 package ru.vachok.networker.net;
 
 
-
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
@@ -13,68 +12,61 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayDeque;
+import java.util.Collection;
 import java.util.Deque;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 
 /**
- * Файловые работы.
- *
- * @since 25.12.2018 (10:43)
- */
+ Файловые работы.
+ 
+ @since 25.12.2018 (10:43) */
 public class NetScanFileWorker implements Serializable {
     
     
     private static final ConcurrentMap<String, File> SRV_FILES = new ConcurrentHashMap<>();
     
     private static final NetScanFileWorker NET_SCAN_FILE_WORKER = new NetScanFileWorker();
-
+    
     private static MessageToUser messageToUser = new MessageLocal(NetScanFileWorker.class.getSimpleName());
-
+    
     private long lastStamp = System.currentTimeMillis();
     
     
-    public NetScanFileWorker() {
-    }
-
-
     public long getLastStamp() {
         return lastStamp;
     }
     
+    void setLastStamp(long lastStamp) {
+        this.lastStamp = lastStamp;
+    }
     
     public ConcurrentMap<String, File> getSrvFiles() {
         return SRV_FILES;
     }
-
-
-    void setLastStamp(long lastStamp) {
-        this.lastStamp = lastStamp;
-    }
-
-
+    
     public static NetScanFileWorker getI() {
         return NET_SCAN_FILE_WORKER;
     }
-
-
+    
+    
     Deque<String> getListOfOnlineDev() throws IOException {
-        AppComponents.threadConfig().thrNameSet("ON_Dq");
-
+        AppComponents.threadConfig().thrNameSet("ON");
+        
         String classMeth = "NetScanFileWorker.getListOfOnlineDev";
         String titleMsg = "retDeque.size()";
         Deque<String> retDeque = new ArrayDeque<>();
-    
         File newLanLastScan200 = SRV_FILES.get("200");
         File newLanLastScan210 = SRV_FILES.get("210");
         File oldLanLastScan0 = SRV_FILES.get("old0");
         File oldLanLastScan1 = SRV_FILES.get("old1");
-
-        String msg = newLanLastScan200.getAbsolutePath() + ";\n" + newLanLastScan210.getAbsolutePath() + ";\n" + oldLanLastScan0.getAbsolutePath() + ", " + oldLanLastScan1.getAbsolutePath() +
-            ";\n" + new TForms().fromArray(SRV_FILES, false) +
+        String msg = newLanLastScan200.getAbsolutePath() + ";\n"
+            + newLanLastScan210.getAbsolutePath() + ";\n"
+            + oldLanLastScan0.getAbsolutePath() + ", " + oldLanLastScan1.getAbsolutePath() + ";\n"
+            + new TForms().fromArray(SRV_FILES, false) +
             ";\nCreated by " + getClass().getSimpleName();
-
+        
         if (newLanLastScan200.exists() && newLanLastScan210.exists()) {
             retDeque.addAll(FileSystemWorker.readFileToList(newLanLastScan200.getAbsolutePath()));
             retDeque.addAll(FileSystemWorker.readFileToList(newLanLastScan210.getAbsolutePath()));
@@ -104,14 +96,11 @@ public class NetScanFileWorker implements Serializable {
         }
         return retDeque;
     }
-
-
-    private void fileWrk(File srvFileX, String titleMsg, Deque<String> retDeque) {
-        String classMeth = "NetScanFileWorker.fileWrk";
-
+    
+    
+    private void fileWrk(File srvFileX, String titleMsg, Collection<String> retDeque) {
         if (srvFileX.exists() && srvFileX.canRead()) {
             retDeque.addAll(FileSystemWorker.readFileToList(srvFileX.getAbsolutePath()));
-            messageToUser.info(classMeth, titleMsg, " = " + retDeque.size());
         }
         else {
             boolean srvScanFile = false;
@@ -119,9 +108,8 @@ public class NetScanFileWorker implements Serializable {
                 srvScanFile = srvFileX.createNewFile();
             }
             catch (IOException e) {
-                messageToUser.errorAlert("NetScanFileWorker", "getListOfOnlineDev", e.getMessage());
+                messageToUser.error(e.getMessage());
             }
-            messageToUser.info(srvFileX.getAbsolutePath(), " is new file? ", new StringBuilder().append(" = ").append(srvScanFile).toString());
         }
     }
 }

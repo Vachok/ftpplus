@@ -26,10 +26,7 @@ import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Queue;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 
 
 /**
@@ -47,6 +44,8 @@ public class TemporaryFullInternet implements Runnable {
     private static final String STR_SSH_COMMAND = "sshCommand";
     
     private static final Queue<String> MINI_LOGGER = new ArrayDeque<>();
+    
+    private static final Map<String, Long> SSH_CHECKER_MAP = new ConcurrentHashMap<>();
     
     private static final SSHFactory SSH_FACTORY = new SSHFactory.Builder(SERVER_TO_CONNECT, "ls", TemporaryFullInternet.class.getSimpleName()).build();
     
@@ -111,7 +110,7 @@ public class TemporaryFullInternet implements Runnable {
                 .append(" doAdd ")
                 .append(sshIP)
                 .append(" is exist!<br>")
-                .append(new TForms().fromArray(ConstantsNet.getSshCheckerMap(), true));
+                .append(new TForms().fromArray(SSH_CHECKER_MAP, true));
         }
         else {
             String sshCommand = new StringBuilder()
@@ -169,7 +168,7 @@ public class TemporaryFullInternet implements Runnable {
     
     private void execOldMeth() {
         AppComponents.threadConfig().execByThreadConfig(this::sshChecker);
-        Map<String, Long> stringLongMap = ConstantsNet.getSshCheckerMap();
+        Map<String, Long> stringLongMap = SSH_CHECKER_MAP;
         File miniLog = new File(getClass().getSimpleName() + ".mini");
         String fromArray = new TForms().fromArray(stringLongMap, false);
         
@@ -192,9 +191,9 @@ public class TemporaryFullInternet implements Runnable {
             .append(ConstantsNet.COM_INITPF).toString();
         SSH_FACTORY.setCommandSSH(sshC);
         String sshCommand = SSH_FACTORY.call();
-        Long aLong = ConstantsNet.getSshCheckerMap().remove(x);
+        Long aLong = SSH_CHECKER_MAP.remove(x);
         MINI_LOGGER.add(new Date(aLong) + ", doDelete: " + sshCommand);
-        return ConstantsNet.getSshCheckerMap().containsKey(x);
+        return SSH_CHECKER_MAP.containsKey(x);
     }
     
     private void sshChecker() {
@@ -205,7 +204,7 @@ public class TemporaryFullInternet implements Runnable {
         MINI_LOGGER.add(tempFile);
         
         String classMeth = "TemporaryFullInternet.sshChecker";
-        Map<String, Long> sshCheckerMap = ConstantsNet.getSshCheckerMap();
+        Map<String, Long> sshCheckerMap = SSH_CHECKER_MAP;
         
         if (tempFile.isEmpty()) {
             throw new IllegalComponentStateException("File is empty");
@@ -231,7 +230,7 @@ public class TemporaryFullInternet implements Runnable {
             mapEntryParse(x, y, atomicTimeLong);
         }
         Future<?> setMapAsStringHTMLFuture = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor()
-            .submit(()->ConstantsNet.setSSHMapStr(new TForms().sshCheckerMapWithDates(sshCheckerMap, true)));
+            .submit(()->ConstantsNet.setSshMapStr(new TForms().sshCheckerMapWithDates(sshCheckerMap, true)));
         try {
             setMapAsStringHTMLFuture.get(ConstantsFor.DELAY, TimeUnit.SECONDS);
             messageToUser.info(getClass().getSimpleName() + ".sshChecker", "ConstantsNet.getSshMapStr()", " = " + ConstantsNet.getSshMapStr());

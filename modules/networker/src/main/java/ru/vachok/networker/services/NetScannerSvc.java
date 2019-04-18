@@ -75,7 +75,7 @@ public class NetScannerSvc {
     /**
      {@link ConstantsNet#getPcNames()}
      */
-    private static final Set<String> PC_NAMES_SET = ConstantsNet.getPcNames();
+    private static final Set<String> PC_NAMES_SET = new HashSet<>();
     
     private static final String METH_GETPCSASYNC = ".getPCsAsync";
     
@@ -306,7 +306,6 @@ public class NetScannerSvc {
         }
         String elapsedTime = "<b>Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethTime) + " sec.</b> " + LocalTime.now();
         PC_NAMES_SET.add(elapsedTime);
-        ConstantsNet.setPcNames(PC_NAMES_SET);
         LOGGER.info(pcsString);
         return PC_NAMES_SET;
     }
@@ -732,7 +731,6 @@ public class NetScannerSvc {
                 list.add(x1 + " " + x2 + " " + pcSegment + " " + onLine);
             }
         }
-        ConstantsNet.setPcNames(PC_NAMES_SET);
         messageToUser.warn(getClass().getSimpleName() + ".writeDB", "executeUpdate: ", " = " + exUpInt);
         return new TForms().fromArray(list, true);
     }
