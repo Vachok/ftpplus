@@ -11,6 +11,7 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.ResoCache;
 import ru.vachok.networker.config.ResLoader;
+import ru.vachok.networker.controller.MatrixCtr;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.io.File;
@@ -164,12 +165,12 @@ public class MatrixSRV {
      <p>
      {@link TForms#fromArray(java.util.Map, boolean)}. Переделываем из мапы с результатом в строку для возврата для WEB. <br>
      this.{@link #workPos} = returned {@link String}
-
-     @param sql запрос
+ 
      @return {@link #workPos}
      @see MatrixCtr#matrixAccess(java.lang.String)
+     @param sql запрос
      */
-    String getWorkPosition(String sql) {
+    public String getWorkPosition(String sql) {
         Map<String, String> doljAndAccess = new ConcurrentHashMap<>();
     
         try (Connection c = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);

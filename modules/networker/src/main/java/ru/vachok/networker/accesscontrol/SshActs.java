@@ -224,7 +224,7 @@ public class SshActs {
      @return {@link StringBuilder#toString()} собравший инфо из строки с сервера.
      @throws ArrayIndexOutOfBoundsException при разборе строки
      */
-    String providerTraceStr() throws ArrayIndexOutOfBoundsException, InterruptedException, ExecutionException, TimeoutException {
+    public String providerTraceStr() throws ArrayIndexOutOfBoundsException, InterruptedException, ExecutionException, TimeoutException {
         StringBuilder stringBuilder = new StringBuilder();
         SSHFactory sshFactory = new SSHFactory.Builder(DEFAULT_SERVER_TO_SSH, "traceroute velkomfood.ru && exit", getClass().getSimpleName()).build();
         Future<String> curProvFuture = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(sshFactory);

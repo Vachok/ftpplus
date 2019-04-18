@@ -43,7 +43,7 @@ public class MailIISLogsCleaner extends FileSystemWorker implements Runnable {
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
         if (attrs.isRegularFile() && attrs.creationTime().toMillis() < System.currentTimeMillis() - TimeUnit.DAYS.toMillis(5)) {
-            this.filesSize = this.filesSize + file.toFile().length();
+            this.filesSize += file.toFile().length();
             toLog.add("Removing file: " + file);
             boolean deleteIfExists = Files.deleteIfExists(file);
             toLog.add(deleteIfExists + " deleteIfExists");

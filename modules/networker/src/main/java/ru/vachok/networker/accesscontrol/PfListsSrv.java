@@ -25,6 +25,10 @@ import java.io.FileNotFoundException;
 public class PfListsSrv {
     
     
+    public static String getDefaultConnectSrv() {
+        return DEFAULT_CONNECT_SRV;
+    }
+    
     private static final String DEFAULT_CONNECT_SRV = whatSrv();
     
     private static MessageToUser messageToUser = new MessageLocal(PfListsSrv.class.getSimpleName());

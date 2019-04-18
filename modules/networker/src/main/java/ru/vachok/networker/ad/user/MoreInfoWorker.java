@@ -9,6 +9,7 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.InternetUse;
 import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
+import ru.vachok.networker.controller.MatrixCtr;
 import ru.vachok.networker.controller.NetScanCtr;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.InfoWorker;
@@ -138,10 +139,12 @@ public class MoreInfoWorker implements InfoWorker {
      <b>ptv1</b> and <b>ptv2</b> ping stats
 
      @return статистика пинга ptv
-     @see ru.vachok.networker.accesscontrol.MatrixCtr#getFirst(HttpServletRequest, Model, HttpServletResponse)
+     @see MatrixCtr#getFirst(HttpServletRequest, Model, HttpServletResponse)
      */
     private static String getTVNetInfo() {
-        List<String> readFileToList = FileSystemWorker.readFileToList(new File("ping.tv").getAbsolutePath());
+        File ptvFile = new File("ping.tv");
+    
+        List<String> readFileToList = FileSystemWorker.readFileToList(ptvFile.getAbsolutePath());
         List<String> onList = new ArrayList<>();
         List<String> offList = new ArrayList<>();
         readFileToList.stream().flatMap((String x) -> Arrays.stream(x.split(", "))).forEach((String s) -> {
@@ -150,12 +153,15 @@ public class MoreInfoWorker implements InfoWorker {
         });
         String ptv1Str = OtherKnownDevices.PTV1_EATMEAT_RU;
         String ptv2Str = OtherKnownDevices.PTV2_EATMEAT_RU;
+    
         int frequencyOffPTV1 = Collections.frequency(offList, ptv1Str);
         int frequencyOnPTV1 = Collections.frequency(onList, ptv1Str);
         int frequencyOnPTV2 = Collections.frequency(onList, ptv2Str);
         int frequencyOffPTV2 = Collections.frequency(offList, ptv2Str);
+    
         String ptv1Stats = "<br><font color=\"#00ff69\">" + frequencyOnPTV1 + " on " + ptv1Str + "</font> | <font color=\"red\">" + frequencyOffPTV1 + " off " + ptv1Str + "</font>";
         String ptv2Stats = "<font color=\"#00ff69\">" + frequencyOnPTV2 + " on " + ptv2Str + "</font> | <font color=\"red\">" + frequencyOffPTV2 + " off " + ptv2Str + "</font>";
+    
         return String.join("<br>\n", ptv1Stats, ptv2Stats);
     }
 

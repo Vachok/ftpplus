@@ -10,7 +10,9 @@ import org.springframework.web.multipart.MultipartFile;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.accesscontrol.PfListsSrv;
 import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.controller.MatrixCtr;
 import ru.vachok.networker.controller.ServiceInfoCtrl;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.mailserver.ExSRV;
@@ -108,8 +110,8 @@ public enum ConstantsFor {
 
     /**
      <i>Boiler Plate</i>
-
-     @see ru.vachok.networker.accesscontrol.MatrixCtr
+ 
+     @see MatrixCtr
      @see ru.vachok.networker.net.MyServer
      */
     public static final String COM_REBOOT = "reboot";
@@ -449,7 +451,7 @@ public enum ConstantsFor {
      */
     public static boolean isPingOK() {
         try {
-            return InetAddress.getByName(HOSTNAME_SRVGITEATMEATRU).isReachable(500);
+            return InetAddress.getByName(PfListsSrv.getDefaultConnectSrv()).isReachable(500);
         }
         catch (IOException e) {
             LoggerFactory.getLogger(ConstantsFor.class.getSimpleName()).error(e.getMessage(), e);

@@ -7,5 +7,6 @@ public interface InfoWorker {
     
     
     String getInfoAbout();
+    
     void setInfo();
 }
