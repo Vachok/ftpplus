@@ -64,15 +64,15 @@ public class IntoApplication {
     
     private static final ScheduledThreadPoolExecutor SCHEDULED_THREAD_POOL_EXECUTOR = AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor();
     
-    private ConfigurableApplicationContext configurableApplicationContext;
+    private static ConfigurableApplicationContext configurableApplicationContext;
     
-    public ConfigurableApplicationContext getConfigurableApplicationContext() {
+    public static ConfigurableApplicationContext getConfigurableApplicationContext() {
         return configurableApplicationContext;
     }
     
     
     public void setConfigurableApplicationContext(ConfigurableApplicationContext configurableApplicationContext) {
-        this.configurableApplicationContext = configurableApplicationContext;
+        IntoApplication.configurableApplicationContext = configurableApplicationContext;
     }
     
     /**
@@ -90,6 +90,7 @@ public class IntoApplication {
     public static void main(@Nullable String[] args) {
         SpringApplication application = new SpringApplication();
         ConfigurableApplicationContext context = SpringApplication.run(IntoApplication.class);
+        IntoApplication.configurableApplicationContext = context;
         FileSystemWorker.delFilePatterns(ConstantsFor.getStringsVisit());
         if (args != null && args.length > 0) {
             readArgs(context, args);

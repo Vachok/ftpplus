@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker;
 
 
@@ -173,7 +175,7 @@ public class AppComponents {
     }
 
     public static AbstractBeanFactoryBasedTargetSource configurableApplicationContext() {
-        throw new IllegalComponentStateException("Moved to");
+        throw new IllegalComponentStateException("Moved to: " + IntoApplication.class.getSimpleName());
     }
     
     public boolean updateProps(Properties propertiesToUpdate) {

@@ -7,8 +7,8 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
@@ -141,7 +141,8 @@ public class PfListsSrv {
             throw new FileNotFoundException("NO CERTIFICATE a161.pem...");
         }
         if (pfListsInstAW == null) {
-            pfListsInstAW = (PfLists) AppComponents.configurableApplicationContext().getBeanFactory().getBean(ConstantsFor.BEANNAME_PFLISTS);
+            new IntoApplication();
+            pfListsInstAW = (PfLists) IntoApplication.getConfigurableApplicationContext().getBeanFactory().getBean(ConstantsFor.BEANNAME_PFLISTS);
         }
         build.setCommandSSH("sudo cat /etc/pf/vipnet;sudo cat /etc/pf/24hrs && exit");
         pfListsInstAW.setVipNet(build.call());
