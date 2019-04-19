@@ -143,7 +143,7 @@ public class NetPinger implements Runnable, Pinger {
                 resList.add(inetAddress + " is " + inetAddress.isReachable(ConstantsFor.TIMEOUT_650));
                 Thread.sleep(pingSleepMsec);
             } catch (IOException | InterruptedException e) {
-                FileSystemWorker.error(getClass().getSimpleName() + ".pingSW", e);
+                messageToUser.error(e.getMessage());
                 Thread.currentThread().checkAccess();
                 Thread.currentThread().interrupt();
             }

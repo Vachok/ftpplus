@@ -10,10 +10,7 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.OtherKnownDevices;
 import ru.vachok.networker.services.MessageLocal;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
+import java.io.*;
 import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.util.*;
@@ -147,8 +144,6 @@ import java.util.concurrent.TimeUnit;
      @throws IOException файловая система
      */
     List<InetAddress> onlinesAddressesList() throws IOException {
-        AppComponents.threadConfig().thrNameSet("LsIP");
-        String classMeth = "NetListKeeper.onlinesAddressesList";
         List<InetAddress> onlineAddresses = new ArrayList<>();
         Deque<String> fileAsDeque = NetScanFileWorker.getI().getListOfOnlineDev();
     
@@ -175,7 +170,7 @@ import java.util.concurrent.TimeUnit;
         
         @Override
         public void run() {
-            AppComponents.threadConfig().thrNameSet(getClass().getSimpleName());
+            AppComponents.threadConfig().thrNameSet(String.valueOf(new File(nameOfExtObject).exists()) + nameOfExtObject.substring(0, 3));
             if (wasSize < currentSize) {
                 boolean ownObject = new ExitApp(nameOfExtObject, onLinesResolve).writeOwnObject();
             }

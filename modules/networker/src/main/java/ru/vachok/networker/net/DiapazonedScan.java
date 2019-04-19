@@ -20,7 +20,9 @@ import java.io.*;
 import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.ConcurrentHashMap;
@@ -87,7 +89,7 @@ public class DiapazonedScan implements Runnable {
     }
     
     public Map<String, File> getSrvFiles() throws NullPointerException {
-        return NET_SCAN_FILE_WORKER_INST.getSrvFiles();
+        return this.srvFiles;
     }
     
     public long getStopClassStampLong() {
@@ -118,7 +120,6 @@ public class DiapazonedScan implements Runnable {
         for (Field swF : swFields) {
             String ipAddrStr = swF.get(swF).toString();
             swList.add(ipAddrStr);
-            messageToUser.info(ipAddrStr);
         }
         return swList;
     }
@@ -182,8 +183,8 @@ public class DiapazonedScan implements Runnable {
     /**
      Чтобы случайно не уничтожить Overridden {@link #toString()}
      <p>
-     
-     @return информация о состоянии файлов
+ 
+     @return информация о состоянии файлов {@code DiapazonedScan. Start at} ...для {@link ru.vachok.networker.controller.ServiceInfoCtrl} .
      */
     private String theInfoToString() {
         StringBuilder fileTimes = new StringBuilder();
@@ -220,6 +221,9 @@ public class DiapazonedScan implements Runnable {
         return sb.toString();
     }
     
+    /**
+     @return {@link DiapazonedScan.ExecScan} (from [10,21,31,41] to [20,31,41,51]) запрос из {@link #theInfoToString()}
+     */
     private long getRunMin() {
         List<Long> timeSpend = new ArrayList<>();
         for (DiapazonedScan.ExecScan e : runnablesScans) {
@@ -250,10 +254,10 @@ public class DiapazonedScan implements Runnable {
         
         
         private static final String PAT_IS_ONLINE = " is online";
-        
-        private final long stArt;
-        
+    
         private final MessageToUser messageToUser = new MessageLocal(DiapazonedScan.ExecScan.class.getSimpleName());
+        
+        private long stArt;
         
         private int from;
         
@@ -285,8 +289,8 @@ public class DiapazonedScan implements Runnable {
             }
             
             this.printStream = new PrintStream(Objects.requireNonNull(outputStream), true);
-            
-            stArt = System.currentTimeMillis();
+    
+            stArt = LocalDateTime.of(1984, 7, 1, 2, 0).toEpochSecond(ZoneOffset.ofHours(3)) * 1000;
         }
         
         @Override
@@ -316,11 +320,14 @@ public class DiapazonedScan implements Runnable {
         }
         
         private long getSpend() {
+            messageToUser.info(getClass().getSimpleName() + ".getSpend", "new Date(stArt)", " = " + new Date(stArt));
             return System.currentTimeMillis() - stArt;
         }
         
         private boolean execScan() {
-            AppComponents.threadConfig().thrNameSet(String.valueOf(ALL_DEVICES_LOCAL_DEQUE.remainingCapacity()));
+            final long exeStart = System.currentTimeMillis();
+            this.stArt = exeStart;
+    
             try {
                 ConcurrentMap<String, String> stringStringConcurrentMap = scanLanSegment(from, to, whatVlan, printStream);
                 NetScanFileWorker.getI().setLastStamp(System.currentTimeMillis());
@@ -341,9 +348,17 @@ public class DiapazonedScan implements Runnable {
                 return false;
             }
         }
-        
+    
+        /**
+         @param iThree третий октет vlan
+         @param jFour четвертый октет vlan
+         @return Example: {@code 192.168.11.0 192.168.11.0} or {@code 10.200.200.1 10.200.200.1 is online}
+     
+         @throws IOException при записи файла
+         */
         private String oneIpScanAndPrintToFile(int iThree, int jFour) throws IOException {
-            
+            AppComponents.threadConfig().thrNameSet(String.valueOf(iThree));
+    
             int timeOutMSec = (int) ConstantsFor.DELAY;
             byte[] aBytes = InetAddress.getByName(whatVlan + iThree + "." + jFour).getAddress();
             StringBuilder stringBuilder = new StringBuilder();
@@ -370,7 +385,8 @@ public class DiapazonedScan implements Runnable {
             }
             if (stringBuilder.toString().contains(PAT_IS_ONLINE)) {
                 printStream.println(hostAddress + " " + hostName);
-                messageToUser.info("print: ", vlanFile.getName(), " = " + vlanFile.length() + ConstantsFor.STR_BYTES);
+                messageToUser.info(getClass().getSimpleName() + ".oneIpScanAndPrintToFile ip online " + whatVlan + iThree + "." + jFour, vlanFile.getName(), " = " + vlanFile
+                    .length() + ConstantsFor.STR_BYTES);
             }
             return stringBuilder.toString();
         }
@@ -381,13 +397,13 @@ public class DiapazonedScan implements Runnable {
          @param whatVlan первый 2 октета, с точкоё в конце.
          */
         private ConcurrentMap<String, String> scanLanSegment(int fromVlan, int toVlan, String whatVlan, PrintStream printStream) {
-            @SuppressWarnings("DuplicateStringLiteralInspection") String methName = ".scanLanSegment";
             ConcurrentMap<String, String> stStMap = new ConcurrentHashMap<>(MAX_IN_VLAN_INT);
             String theScannedIPHost = "No scan yet";
     
             for (int i = fromVlan; i < toVlan; i++) {
                 StringBuilder msgBuild = new StringBuilder();
                 for (int j = 0; j < MAX_IN_VLAN_INT; j++) {
+                    AppComponents.threadConfig().thrNameSet(i + "." + j);
                     try {
                         theScannedIPHost = oneIpScanAndPrintToFile(i, j);
                         stStMap.put(theScannedIPHost.split(" ")[0], theScannedIPHost.split(" ")[1]);

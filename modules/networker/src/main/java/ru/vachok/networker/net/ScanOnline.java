@@ -76,7 +76,6 @@ public class ScanOnline implements Runnable, Pinger {
         }
     }
     
-    
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder();
@@ -88,13 +87,13 @@ public class ScanOnline implements Runnable, Pinger {
     
     
     private void offlineNotEmptyActions() {
-        AppComponents.threadConfig().thrNameSet("Offl");
         SwitchesAvailability switchesAvailability = new SwitchesAvailability();
-        final Future<?> submit = AppComponents.threadConfig().getTaskExecutor().submit(switchesAvailability);
+        Future<?> submit = AppComponents.threadConfig().getTaskExecutor().submit(switchesAvailability);
         try {
             submit.get(ConstantsFor.DELAY * 2, TimeUnit.SECONDS);
         }
         catch (InterruptedException | ExecutionException | TimeoutException e) {
+            messageToUser.error(e.getMessage());
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
         }
@@ -103,13 +102,11 @@ public class ScanOnline implements Runnable, Pinger {
         availabilityOkIP.forEach(x->onLinesResolve.put(x, LocalDateTime.now().toString()));
     }
     
-    
-    private void runPing(List<InetAddress> onList) {
+    private void runPing(List<InetAddress> onList) throws IOException {
         for (InetAddress inetAddress : onList) {
             pingAddr(inetAddress);
         }
     }
-    
     
     /**
      Пингует конкрктный {@link InetAddress}
@@ -123,22 +120,17 @@ public class ScanOnline implements Runnable, Pinger {
      
      @param inetAddress {@link InetAddress}. 3. {@link FileSystemWorker#error(java.lang.String, java.lang.Exception)}
      */
-    private void pingAddr(InetAddress inetAddress) {
+    private void pingAddr(InetAddress inetAddress) throws IOException {
     
-        try {
-            boolean xReachable = inetAddress.isReachable(250);
-            if (!xReachable) {
-                NET_LIST_KEEPER.getOffLines().put(inetAddress.toString(), LocalTime.now().toString());
-                if (onLinesResolve.containsKey(inetAddress.toString())) {
-                    NET_LIST_KEEPER.getOffLines().remove(inetAddress.toString());
-                }
-            }
-            else {
-                onLinesResolve.putIfAbsent(inetAddress.toString(), LocalTime.now().toString());
+        boolean xReachable = inetAddress.isReachable(250);
+        if (!xReachable) {
+            NET_LIST_KEEPER.getOffLines().put(inetAddress.toString(), LocalTime.now().toString());
+            if (onLinesResolve.containsKey(inetAddress.toString())) {
+                NET_LIST_KEEPER.getOffLines().remove(inetAddress.toString());
             }
         }
-        catch (IOException e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".pingAddr", e));
+        else {
+            onLinesResolve.putIfAbsent(inetAddress.toString(), LocalTime.now().toString());
         }
     }
 }
