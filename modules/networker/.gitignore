@@ -862,3 +862,4 @@ inet.files
 *.ssh
 *.err
 *.lck
+ScanOnlineonList
