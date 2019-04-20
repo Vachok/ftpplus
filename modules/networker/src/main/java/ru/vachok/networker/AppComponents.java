@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker;
 
 
@@ -15,16 +17,16 @@ import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.networker.accesscontrol.SshActs;
 import ru.vachok.networker.accesscontrol.TemporaryFullInternet;
 import ru.vachok.networker.ad.ADComputer;
-import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.componentsrepo.VersionInfo;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetPinger;
-import ru.vachok.networker.net.NetScannerSvc;
 import ru.vachok.networker.net.enums.ConstantsNet;
+import ru.vachok.networker.services.ADSrv;
 import ru.vachok.networker.services.MessageLocal;
+import ru.vachok.networker.services.NetScannerSvc;
 import ru.vachok.networker.services.SimpleCalculator;
 import ru.vachok.stats.SaveLogsToDB;
 
@@ -173,7 +175,7 @@ public class AppComponents {
     }
 
     public static AbstractBeanFactoryBasedTargetSource configurableApplicationContext() {
-        throw new IllegalComponentStateException("Moved to");
+        throw new IllegalComponentStateException("Moved to: " + IntoApplication.class.getSimpleName());
     }
     
     public boolean updateProps(Properties propertiesToUpdate) {

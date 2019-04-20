@@ -1,4 +1,4 @@
-package ru.vachok.networker.systray;
+package ru.vachok.networker.services.actions;
 
 
 
@@ -8,6 +8,7 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ExitApp;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
+import ru.vachok.networker.systray.SystemTrayHelper;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -22,16 +23,15 @@ import java.util.concurrent.TimeUnit;
 
  @see SystemTrayHelper
  @since 25.01.2019 (9:59) */
-@SuppressWarnings("ClassHasNoToStringMethod")
-class ActionExit extends AbstractAction {
+@SuppressWarnings("ClassHasNoToStringMethod") public class ActionExit extends AbstractAction {
 
 
     private String reason;
 
     private transient MessageToUser messageToUser = new MessageLocal(ActionExit.class.getSimpleName());
-
-
-    ActionExit(String reason) {
+    
+    
+    public ActionExit(String reason) {
         this.reason = reason;
     }
 

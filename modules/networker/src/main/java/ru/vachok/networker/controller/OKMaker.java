@@ -46,16 +46,16 @@ public class OKMaker implements SSHFace {
         StringBuilder stringBuilder = new StringBuilder();
 
         sshFactory.setCommandSSH(ConstantsNet.COM_INITPF.replace("initpf" , "1915initpf"));
-        stringBuilder.append("<i>").append(sshFactory.getCommandSSH()).append(" ||| executing:</i><br>");
-        stringBuilder.append(sshFactory.call()).append("<p>");
+        stringBuilder.append("<p><i>").append(sshFactory.getCommandSSH()).append(" ||| executing:</i><br>");
+        stringBuilder.append(sshFactory.call());
 
         sshFactory.setCommandSSH("sudo squid -k reconfigure && exit");
-        stringBuilder.append("<i>").append(sshFactory.getCommandSSH()).append(" ||| executing:</i><br>");
-        stringBuilder.append(sshFactory.call()).append("<br>");
+        stringBuilder.append("<p><i>").append(sshFactory.getCommandSSH()).append(" ||| executing:</i><br>");
+        stringBuilder.append(sshFactory.call());
 
         sshFactory.setCommandSSH("sudo pfctl -s nat;sudo pfctl -s rules;sudo ps ax | grep squid && exit");
-        stringBuilder.append("<i>").append(sshFactory.getCommandSSH()).append(" ||| executing:</i><br>");
-        stringBuilder.append(sshFactory.call()).append("<br>");
+        stringBuilder.append("<p><i>").append(sshFactory.getCommandSSH()).append(" ||| executing:</i><br>");
+        stringBuilder.append(sshFactory.call());
         return stringBuilder.toString();
     }
 }

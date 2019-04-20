@@ -1,4 +1,4 @@
-package ru.vachok.networker.abstr;
+package ru.vachok.networker.net;
 
 
 /**
@@ -7,5 +7,6 @@ public interface InfoWorker {
     
     
     String getInfoAbout();
+    
     void setInfo();
 }

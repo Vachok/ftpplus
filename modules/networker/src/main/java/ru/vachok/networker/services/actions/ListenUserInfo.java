@@ -1,8 +1,9 @@
-package ru.vachok.networker.systray;
+package ru.vachok.networker.services.actions;
 
 
 import ru.vachok.messenger.MessageSwing;
-import ru.vachok.networker.ad.ActDirectoryCTRL;
+import ru.vachok.networker.systray.MessageToTray;
+import ru.vachok.networker.systray.SystemTrayHelper;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;

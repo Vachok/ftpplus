@@ -1,8 +1,9 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.fileworks;
 
 
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.services.MessageLocal;
@@ -15,7 +16,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -60,9 +60,14 @@ class DeleterTemp extends FileSystemWorker implements Runnable {
         getList();
         run();
     }
-
-
-    private void getList() {
+    
+    
+    @Override
+    public void run() {
+        Thread.currentThread().setName(ConstantsFor.getUpTime());
+    }
+    
+    @SuppressWarnings("InjectedReferences") private void getList() {
         if(patToDel!=null){
             fromFile.add(patToDel);
         }
@@ -70,7 +75,7 @@ class DeleterTemp extends FileSystemWorker implements Runnable {
             try(InputStream inputStream = DeleterTemp.class.getResourceAsStream("/BOOT-INF/classes/static/config/temp_pat.cfg");
                 InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
                 BufferedReader bufferedReader = new BufferedReader(reader)){
-                while(bufferedReader.ready()){
+                while (reader.ready()) {
                     fromFile.add(bufferedReader.readLine());
                 }
             }
@@ -79,36 +84,11 @@ class DeleterTemp extends FileSystemWorker implements Runnable {
             }
         }
     }
-    
-    private void oldSSHLogDel() {
-        File sshFolder = new File(".\\ssh\\");
-        List<File> files = Arrays.asList(sshFolder.listFiles());
-        files.forEach(x -> {
-            if(x.lastModified() < System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1)){
-                try{
-                    Files.deleteIfExists(x.toPath());
-                } catch(IOException e){
-                    messageToUser.error(e.getMessage());
-                }
-            }
-        });
-        
-    }
-    
-    @Override
-    public void run() {
-        AppComponents.threadConfig().thrNameSet("delTmp");
-        try {
-            AppComponents.threadConfig().execByThreadConfig(this::oldSSHLogDel);
-        } catch (RuntimeException e) {
-            messageToUser.error(e.getMessage());
-        }
-    }
 
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
         Thread.currentThread().setName("DeleterTemp.visitFile");
-        this.filesCounter = filesCounter + 1;
+        this.filesCounter += 1;
         String fileAbs = new StringBuilder()
             .append(file.toAbsolutePath())
             .append(ConstantsFor.STR_DELETED).toString();

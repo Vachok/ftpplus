@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.accesscontrol;
 
 
@@ -24,10 +26,7 @@ import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Queue;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 
 
 /**
@@ -45,6 +44,8 @@ public class TemporaryFullInternet implements Runnable {
     private static final String STR_SSH_COMMAND = "sshCommand";
     
     private static final Queue<String> MINI_LOGGER = new ArrayDeque<>();
+    
+    private static final Map<String, Long> SSH_CHECKER_MAP = new ConcurrentHashMap<>();
     
     private static final SSHFactory SSH_FACTORY = new SSHFactory.Builder(SERVER_TO_CONNECT, "ls", TemporaryFullInternet.class.getSimpleName()).build();
     
@@ -64,17 +65,20 @@ public class TemporaryFullInternet implements Runnable {
         MINI_LOGGER.add("TemporaryFullInternet(): " + this.userInput + " " + delStamp + "(" + new Date(delStamp) + ")");
     }
     
-    TemporaryFullInternet(String userInput, long timeToApply) {
+    
+    public TemporaryFullInternet(String userInput, long timeToApply) {
         this.userInput = userInput;
         this.delStamp = ConstantsFor.getAtomicTime() + TimeUnit.HOURS.toMillis(timeToApply);
         MINI_LOGGER.add("TemporaryFullInternet: " + userInput + " " + delStamp + "(" + new Date(delStamp) + ")");
     }
+    
     
     TemporaryFullInternet(String userInput, String numOfHoursStr) {
         this.userInput = userInput;
         this.delStamp = ConstantsFor.getAtomicTime() + TimeUnit.HOURS.toMillis(Long.parseLong(numOfHoursStr));
         MINI_LOGGER.add("TemporaryFullInternet: " + userInput + " " + delStamp + "(" + new Date(delStamp) + ")");
     }
+    
     
     public void execNewMeth() {
         SSHFace face = new SSHHelper("sudo cat /etc/pf/24hrs");
@@ -85,6 +89,39 @@ public class TemporaryFullInternet implements Runnable {
         catch (JSchException | IOException e) {
             messageToUser.error(e.getMessage());
         }
+    }
+    
+    public String doAdd() {
+        AppComponents.threadConfig().thrNameSet("addSSH");
+        SSH_FACTORY.setCommandSSH(ConstantsNet.COM_CAT24HRSLIST);
+        NameOrIPChecker nameOrIPChecker = new NameOrIPChecker(userInput);
+        String tempString24HRSFile = SSH_FACTORY.call();
+        StringBuilder retBuilder = new StringBuilder();
+        String sshIP;
+        try {
+            sshIP = String.valueOf(nameOrIPChecker.resolveIP()).split("/")[1];
+        }
+        catch (ArrayIndexOutOfBoundsException e) {
+            sshIP = e.getMessage();
+        }
+        if (tempString24HRSFile.contains(sshIP)) {
+            retBuilder
+                .append(getClass().getSimpleName())
+                .append(" doAdd ")
+                .append(sshIP)
+                .append(" is exist!<br>")
+                .append(new TForms().fromArray(SSH_CHECKER_MAP, true));
+        }
+        else {
+            String sshCommand = new StringBuilder()
+                .append(SshActs.SUDO_ECHO)
+                .append("\"").append(sshIP).append(" #")
+                .append(delStamp).append("\"").append(" >> /etc/pf/24hrs;").append(ConstantsNet.COM_INITPF).toString();
+            SSH_FACTORY.setCommandSSH(sshCommand);
+            retBuilder.append(SSH_FACTORY.call());
+        }
+        MINI_LOGGER.add("doAdd(): " + retBuilder);
+        return retBuilder.toString();
     }
     
     @Override
@@ -120,59 +157,28 @@ public class TemporaryFullInternet implements Runnable {
         return sb.toString();
     }
     
-    String doAdd() {
-        AppComponents.threadConfig().thrNameSet("addSSH");
-        SSH_FACTORY.setCommandSSH(ConstantsNet.COM_CAT24HRSLIST);
-        NameOrIPChecker nameOrIPChecker = new NameOrIPChecker(userInput);
-        String tempString24HRSFile = SSH_FACTORY.call();
-        StringBuilder retBuilder = new StringBuilder();
-        String sshIP;
-        try {
-            sshIP = String.valueOf(nameOrIPChecker.resolveIP()).split("/")[1];
-        }
-        catch (ArrayIndexOutOfBoundsException e) {
-            sshIP = e.getMessage();
-        }
-        if (tempString24HRSFile.contains(sshIP)) {
-            retBuilder
-                .append(getClass().getSimpleName())
-                .append(" doAdd ")
-                .append(sshIP)
-                .append(" is exist!<br>")
-                .append(new TForms().fromArray(ConstantsNet.getSshCheckerMap(), true));
-        }
-        else {
-            String sshCommand = new StringBuilder()
-                .append(SshActs.SUDO_ECHO)
-                .append("\"").append(sshIP).append(" #")
-                .append(delStamp).append("\"").append(" >> /etc/pf/24hrs;").append(ConstantsNet.COM_INITPF).toString();
-            SSH_FACTORY.setCommandSSH(sshCommand);
-            retBuilder.append(SSH_FACTORY.call().replaceAll("\n", "<br>"));
-        }
-        MINI_LOGGER.add("doAdd(): " + retBuilder);
-        return retBuilder.toString();
-    }
-    
-    private void execOldMeth() {
-        AppComponents.threadConfig().execByThreadConfig(this::sshChecker);
-        Map<String, Long> stringLongMap = ConstantsNet.getSshCheckerMap();
-        File miniLog = new File(getClass().getSimpleName() + ".mini");
-        String fromArray = new TForms().fromArray(stringLongMap, false);
-    
-        MINI_LOGGER.add("execOldMeth: " + userInput + " " + fromArray);
-        Date nextStart = new Date(ConstantsFor.getAtomicTime() + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY));
-        MINI_LOGGER.add(nextStart.toString());
-        boolean writeFile = FileSystemWorker.writeFile(miniLog.getName(), MINI_LOGGER.stream());
-        FileSystemWorker.copyOrDelFile(miniLog, ".\\ssh\\" + miniLog.getName(), true);
-        if (writeFile) MINI_LOGGER.clear();
-    }
-    
     private static String whatServerNow() {
         if (ConstantsFor.thisPC().toLowerCase().contains("rups")) {
             return ConstantsFor.IPADDR_SRVNAT;
         }
         else {
             return ConstantsFor.IPADDR_SRVGIT;
+        }
+    }
+    
+    private void execOldMeth() {
+        AppComponents.threadConfig().execByThreadConfig(this::sshChecker);
+        Map<String, Long> stringLongMap = SSH_CHECKER_MAP;
+        File miniLog = new File(getClass().getSimpleName() + ".mini");
+        String fromArray = new TForms().fromArray(stringLongMap, false);
+        
+        MINI_LOGGER.add("execOldMeth: " + userInput + " " + fromArray);
+        Date nextStart = new Date(ConstantsFor.getAtomicTime() + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY));
+        MINI_LOGGER.add(nextStart.toString());
+        boolean writeFile = FileSystemWorker.writeFile(miniLog.getName(), MINI_LOGGER.stream());
+        FileSystemWorker.copyOrDelFile(miniLog, ".\\ssh\\" + miniLog.getName(), true);
+        if (writeFile) {
+            MINI_LOGGER.clear();
         }
     }
     
@@ -185,84 +191,93 @@ public class TemporaryFullInternet implements Runnable {
             .append(ConstantsNet.COM_INITPF).toString();
         SSH_FACTORY.setCommandSSH(sshC);
         String sshCommand = SSH_FACTORY.call();
-        Long aLong = ConstantsNet.getSshCheckerMap().remove(x);
+        Long aLong = SSH_CHECKER_MAP.remove(x);
         MINI_LOGGER.add(new Date(aLong) + ", doDelete: " + sshCommand);
-        return ConstantsNet.getSshCheckerMap().containsKey(x);
+        return SSH_CHECKER_MAP.containsKey(x);
     }
     
     private void sshChecker() {
         AppComponents.threadConfig().thrNameSet("chkSSH");
         SSH_FACTORY.setCommandSSH(ConstantsNet.COM_CAT24HRSLIST);
         String tempFile = SSH_FACTORY.call();
-    
+        
         MINI_LOGGER.add(tempFile);
-    
+        
         String classMeth = "TemporaryFullInternet.sshChecker";
-        Map<String, Long> sshCheckerMap = ConstantsNet.getSshCheckerMap();
+        Map<String, Long> sshCheckerMap = SSH_CHECKER_MAP;
         
         if (tempFile.isEmpty()) {
             throw new IllegalComponentStateException("File is empty");
         }
         else {
-            String[] strings = tempFile.split("\n");
+            String[] strings = tempFile.split("<br>\n");
             List<String> stringList = Arrays.asList(strings);
             stringList.forEach(x->{
                 try {
                     Long ifAbsent = sshCheckerMap.putIfAbsent(x.split(" #")[0].trim(), Long.valueOf(x.split(" #")[1]));
                     MINI_LOGGER.add("Added to map = " + x + " " + ifAbsent);
                 }
-                catch (Exception e) {
+                catch (ArrayIndexOutOfBoundsException e) {
                     messageToUser.errorAlert("TemporaryFullInternet", "sshChecker", e.getMessage());
                     MINI_LOGGER.add(e.getMessage());
                 }
             });
         }
+        long atomicTimeLong = ConstantsFor.getAtomicTime();
         for (Map.Entry<String, Long> entry : sshCheckerMap.entrySet()) {
             String x = entry.getKey();
             Long y = entry.getValue();
-            String willBeDel = x + " will be deleted at " + LocalDateTime.ofEpochSecond(delStamp / 1000, 0, ZoneOffset.ofHours(3));
-            MINI_LOGGER.add(willBeDel);
-            this.delStamp = y;
-            if (delStamp < ConstantsFor.getAtomicTime()) {
-                boolean isDelete = doDelete(x);
-                MINI_LOGGER.add("sshChecker(SSH_CHECKER_MAP.forEach): time is" + true + "\n" + x + " is delete = " + isDelete);
-                MINI_LOGGER.add("delStamp = " + delStamp);
-                MINI_LOGGER.add("ConstantsFor.getAtomicTime() = " + ConstantsFor.getAtomicTime());
-                MINI_LOGGER.add("ConstantsFor.getAtomicTime()-delStamp = " + (ConstantsFor.getAtomicTime() - delStamp));
-            }
-            else {
-                MINI_LOGGER.add("IP" + " = " + x + " time: " + y + " (" + new Date(y) + ")");
-            }
+            mapEntryParse(x, y, atomicTimeLong);
         }
-        Future<?> future =
-            AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor()
-                .submit(()->ConstantsNet.setSSHMapStr(new TForms().sshCheckerMapWithDates(sshCheckerMap, true)));
+        Future<?> setMapAsStringHTMLFuture = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor()
+            .submit(()->ConstantsNet.setSshMapStr(new TForms().sshCheckerMapWithDates(sshCheckerMap, true)));
         try {
-            future.get(25, TimeUnit.SECONDS);
+            setMapAsStringHTMLFuture.get(ConstantsFor.DELAY, TimeUnit.SECONDS);
+            messageToUser.info(getClass().getSimpleName() + ".sshChecker", "ConstantsNet.getSshMapStr()", " = " + ConstantsNet.getSshMapStr());
         }
         catch (InterruptedException | TimeoutException | ExecutionException e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".sshChecker", e));
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".sshChecker is interrupted.\n", e));
+            Thread.currentThread().interrupt();
         }
-        messageToUser.info("TemporaryFullInternet.sshChecker", "future.isDone()", " = " + future.isDone());
-        messageToUser.warn("TemporaryFullInternet.sshChecker", "future.isDone()", " = " + future.isCancelled());
     }
+    
+    private void mapEntryParse(String x, Long y, long atomicTimeLong) {
+        String willBeDel = x + " will be deleted at " + LocalDateTime.ofEpochSecond(delStamp / 1000, 0, ZoneOffset.ofHours(3));
+        MINI_LOGGER.add(willBeDel);
+        this.delStamp = y;
+        if (delStamp < atomicTimeLong) {
+            boolean isDelete = doDelete(x);
+            MINI_LOGGER.add("sshChecker(SSH_CHECKER_MAP.forEach): time is" + true + "\n" + x + " is delete = " + isDelete);
+            MINI_LOGGER.add("delStamp = " + delStamp);
+            MINI_LOGGER.add("ConstantsFor.getAtomicTime()-delStamp = " + (atomicTimeLong - delStamp));
+        }
+        else {
+            MINI_LOGGER.add("IP" + " = " + x + " time: " + y + " (" + new Date(y) + ")");
+        }
+    }
+    
     
     class SSHHelper implements SSHFace {
         
+        
         String commandSSH;
+        
         
         public SSHHelper(String commandSSH) {
             this.commandSSH = commandSSH;
         }
         
+        
         public String getCommandSSH() {
             return commandSSH;
         }
         
+        
         public void setCommandSSH(String commandSSH) {
             this.commandSSH = commandSSH;
         }
-    
+        
+        
         @Override public String execCommand(String srv, String commandSSH) throws JSchException, IOException {
             execCh().setCommand(commandSSH);
             StringBuilder stringBuilder = new StringBuilder();
@@ -284,6 +299,7 @@ public class TemporaryFullInternet implements Runnable {
             }
         }
         
+        
         private ChannelExec execCh() throws JSchException {
             Session session = null;
             session = sessionWithJsch();
@@ -296,6 +312,7 @@ public class TemporaryFullInternet implements Runnable {
                 throw new JSchException();
             }
         }
+        
         
         private Session sessionWithJsch() throws JSchException {
             JSch jSch = new JSch();

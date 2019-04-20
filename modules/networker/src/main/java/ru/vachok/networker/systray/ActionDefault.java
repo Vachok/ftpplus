@@ -1,6 +1,7 @@
 package ru.vachok.networker.systray;
 
 
+import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.services.MessageLocal;
@@ -23,17 +24,17 @@ public class ActionDefault extends AbstractAction {
     /**
      {@link MessageLocal}
      */
-    private static MessageToUser messageToUser = new MessageLocal(ActionDefault.class.getSimpleName());
+    private static MessageToUser messageToUser = new MessageCons(ActionDefault.class.getSimpleName());
 
     private String goTo;
 
     public ActionDefault(String goTo) {
         this.goTo = goTo;
     }
-
-    ActionDefault() {
+    
+    public ActionDefault() {
         this.goTo = ConstantsFor.HTTP_LOCALHOST8880SLASH;
-        if (!ConstantsFor.IS_SYSTRAY_AVAIL) {
+        if (!SystemTray.isSupported()) {
             throw new UnsupportedOperationException();
         }
     }

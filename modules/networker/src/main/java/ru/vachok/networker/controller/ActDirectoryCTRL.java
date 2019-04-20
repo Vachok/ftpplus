@@ -1,6 +1,6 @@
 
 
-package ru.vachok.networker.ad;
+package ru.vachok.networker.controller;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,17 +11,18 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.InternetUse;
 import ru.vachok.networker.accesscontrol.SshActs;
 import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
+import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
-import ru.vachok.networker.controller.ServiceInfoCtrl;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.NetScannerSvc;
+import ru.vachok.networker.services.ADSrv;
 import ru.vachok.networker.services.MessageLocal;
+import ru.vachok.networker.services.NetScannerSvc;
+import ru.vachok.networker.services.PhotoConverterSRV;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Calendar;
@@ -92,8 +93,8 @@ public class ActDirectoryCTRL {
      Берём {@link ADComputer} - {@link ADSrv#getAdComputer()} <br>
      Добавляем аттрибуты модели: <br>
      {@link ConstantsFor#ATT_FOOTER} = {@link PageFooter#getFooterUtext()} + {@link Visitor#toString()} <br>
-     {@code "pcs"} = {@link TForms#adPCMap(java.util.List, boolean)} <br>
-     {@link ConstantsFor#ATT_USERS} = {@link TForms#fromADUsersList(java.util.List, boolean)}
+     {@code "pcs"} = {@link ADSrv#adPCMap(List, boolean)} <br>
+     {@link ConstantsFor#ATT_USERS} = {@link ADSrv#fromADUsersList(List, boolean)}
      <p>
      {@code return "ad"}
 
@@ -112,8 +113,8 @@ public class ActDirectoryCTRL {
             ADComputer adComputer = adSrv.getAdComputer();
             model.addAttribute(ConstantsFor.ATT_PHOTO_CONVERTER, photoConverterSRV);
             model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<p>" + visitor);
-            model.addAttribute("pcs", new TForms().adPCMap(adComputer.getAdComputers(), true));
-            model.addAttribute(ConstantsFor.ATT_USERS, new TForms().fromADUsersList(adUsers, true));
+            model.addAttribute("pcs", ADSrv.adPCMap(adComputer.getAdComputers(), true));
+            model.addAttribute(ConstantsFor.ATT_USERS, ADSrv.fromADUsersList(adUsers));
         }
         return "ad";
     }

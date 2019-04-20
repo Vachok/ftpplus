@@ -1,7 +1,6 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.accesscontrol;
-
+package ru.vachok.networker.controller;
 
 
 import org.slf4j.Logger;
@@ -13,30 +12,31 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
-import ru.vachok.networker.abstr.InfoWorker;
+import ru.vachok.networker.accesscontrol.MatrixSRV;
+import ru.vachok.networker.accesscontrol.SshActs;
+import ru.vachok.networker.ad.user.MoreInfoWorker;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.VersionInfo;
 import ru.vachok.networker.componentsrepo.Visitor;
-import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.MoreInfoWorker;
-import ru.vachok.networker.net.enums.ConstantsNet;
+import ru.vachok.networker.net.InfoWorker;
+import ru.vachok.networker.net.NetListKeeper;
+import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.SimpleCalculator;
 import ru.vachok.networker.services.WhoIsWithSRV;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.LinkOption;
-import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 
 /**
@@ -85,15 +85,16 @@ public class MatrixCtr {
      {@link Visitor}
      */
     private Visitor visitorInst;
-
+    
+    
     /**
      {@link System#currentTimeMillis()}. Время инициализации класса.
      */
     private long metricMatrixStartLong = System.currentTimeMillis();
-
-    private InfoWorker infoWorker;
-
-
+    
+    private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
+    
+    
     /**
      Конструктор autowired
      <p>
@@ -121,44 +122,35 @@ public class MatrixCtr {
      */
     public void setCurrentProvider() {
         SshActs sshActs = new AppComponents().sshActs();
-        this.currentProvider = sshActs.providerTraceStr();
+        try {
+            this.currentProvider = sshActs.providerTraceStr();
+        }
+        catch (InterruptedException | ExecutionException | TimeoutException e) {
+            this.currentProvider = "<br><a href=\"/makeok\">" + e.getMessage() + "</a><br>";
+            Thread.currentThread().interrupt();
+        }
     }
 
 
     @GetMapping("/")
     public String getFirst(final HttpServletRequest request, Model model, HttpServletResponse response) {
         this.visitorInst = ConstantsFor.getVis(request);
-        this.infoWorker = new MoreInfoWorker("tv");
+        InfoWorker infoWorker = new MoreInfoWorker("tv");
         qIsNull(model, request);
         model.addAttribute(ConstantsFor.ATT_HEAD, new PageFooter().getHeaderUtext());
         model.addAttribute(ConstantsFor.ATT_DEVSCAN,
-            "Since " + getPTVLastStamp() + infoWorker.getInfoAbout() + currentProvider);
+            "Since " + NetListKeeper.getPtvTime() + infoWorker.getInfoAbout() + currentProvider);
         response.addHeader(ConstantsFor.HEAD_REFRESH, "120");
         return "starting";
     }
-
-
-    private String getPTVLastStamp() {
-        File ptvFile = new File(ConstantsNet.FILENAME_PINGTV);
-        if (ptvFile.exists()) {
-            try {
-                FileTime creationTime = (FileTime) Files.getAttribute(ptvFile.toPath() , "creationTime" , LinkOption.NOFOLLOW_LINKS);
-                return new Date(creationTime.toMillis()).toString();
-            } catch (IOException e) {
-                FileSystemWorker.error(getClass().getSimpleName() + ".getPTVLastStamp" , e);
-            }
-        }
-        return new Date(ConstantsFor.START_STAMP).toString();
-    }
-
-
+    
     @SuppressWarnings("MethodWithMultipleReturnPoints")
     @PostMapping(GET_MATRIX)
     public String getWorkPosition(@ModelAttribute(ConstantsFor.BEANNAME_MATRIX) MatrixSRV matrixSRV, BindingResult result, Model model) {
         this.matrixSRV = matrixSRV;
         String workPos = matrixSRV.getWorkPos();
         if (workPos.toLowerCase().contains("whois:")) {
-            return WhoIsWithSRV.whoisStat(workPos, model);
+            return whoisStat(workPos, model);
         }
         else if (workPos.toLowerCase().contains("calc:")) {
             return calculateDoubles(workPos, model);
@@ -169,6 +161,16 @@ public class MatrixCtr {
         else {
             return matrixAccess(workPos);
         }
+        return ConstantsFor.BEANNAME_MATRIX;
+    }
+    
+    private static String whoisStat(String workPos, Model model) {
+        WhoIsWithSRV whoIsWithSRV = new WhoIsWithSRV();
+        workPos = workPos.split(": ")[1].trim();
+        String attributeValue = whoIsWithSRV.whoIs(workPos);
+        model.addAttribute(ConstantsFor.ATT_WHOIS, attributeValue);
+        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
+        model.addAttribute("toHead", new PageFooter().getHeaderUtext());
         return ConstantsFor.BEANNAME_MATRIX;
     }
 

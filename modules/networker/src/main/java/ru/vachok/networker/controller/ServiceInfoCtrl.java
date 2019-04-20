@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.controller;
 
 
@@ -80,7 +82,7 @@ public class ServiceInfoCtrl {
 
         visitor = new AppComponents().visitor(request);
         AppComponents.threadConfig().execByThreadConfig(new SpeedChecker());
-        this.authReq = Stream.of("0:0:0:0", "10.10.111", "10.200.213.85", "172.16.20", "10.200.214.80", "192.168.13.143").anyMatch(sP->request.getRemoteAddr().contains(sP));
+        this.authReq = Stream.of("0:0:0:0", "127.0.0.1", "10.10.111", "10.200.213.85", "172.16.20", "10.200.214.80", "192.168.13.143").anyMatch(sP->request.getRemoteAddr().contains(sP));
         if (authReq) {
             modModMaker(model, request, visitor);
             response.addHeader(ConstantsFor.HEAD_REFRESH, "90");
@@ -107,7 +109,7 @@ public class ServiceInfoCtrl {
             try {
                 new ExitApp(getClass().getSimpleName()).run();
             } catch (RuntimeException e) {
-                new DBMessenger().infoNoTitles(this.getClass().getSimpleName() + " " + e.getMessage() + " :(((");
+                new DBMessenger(getClass().getSimpleName()).infoNoTitles(this.getClass().getSimpleName() + " " + e.getMessage() + " :(((");
                 System.exit(ConstantsFor.EXIT_STATUSBAD / 3);
             }
         } else {
@@ -207,10 +209,7 @@ public class ServiceInfoCtrl {
     }
 
     private String getJREVers() {
-        SSHFactory tailFac = new SSHFactory
-            .Builder("srv-inetstat.eatmeat.ru", "sudo tail /home/kudr/nohup.out", this.getClass().getSimpleName()).build();
-        String getTailStr = tailFac.call();
-        return System.getProperty("java.version") + getTailStr;
+        return System.getProperty("java.version");
     }
     
     

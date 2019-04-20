@@ -1,10 +1,8 @@
-package ru.vachok.networker.systray;
+package ru.vachok.networker.services.actions;
 
 
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.net.MoreInfoWorker;
-import ru.vachok.networker.net.NetScannerSvc;
+import ru.vachok.networker.systray.ActionDefault;
 
 import javax.swing.*;
 import java.awt.*;
@@ -71,7 +69,6 @@ public class ActionCloseMsg extends AbstractAction {
     public String toString() {
         final StringBuilder sb = new StringBuilder("ActionCloseMsg{");
         sb.append("trayIcon=").append(trayIcon.getActionListeners() != null);
-        sb.append(ConstantsFor.TOSTRING_MESSAGE_TO_USER).append(messageToUser);
         sb.append('}');
         return sb.toString();
     }

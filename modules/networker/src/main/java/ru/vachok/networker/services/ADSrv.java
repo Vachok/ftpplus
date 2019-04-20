@@ -1,4 +1,4 @@
-package ru.vachok.networker.ad;
+package ru.vachok.networker.services;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,11 +10,13 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.InternetUse;
 import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
+import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.user.ADUser;
-import ru.vachok.networker.ad.user.PCUserResolver;
+import ru.vachok.networker.controller.ActDirectoryCTRL;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.InfoWorker;
+import ru.vachok.networker.net.PCUserResolver;
 import ru.vachok.networker.net.enums.ConstantsNet;
-import ru.vachok.networker.services.MessageLocal;
 
 import java.io.*;
 import java.net.InetAddress;
@@ -152,33 +154,24 @@ public class ADSrv implements Runnable {
         }
     }
     
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("ADSrv{");
-        sb.append("CLASS_NAME_PCUSERRESOLVER='").append(ConstantsFor.CLASS_NAME_PCUSERRESOLVER).append('\'');
-        sb.append(", adUser=").append(adUser);
-        sb.append(", userInputRaw='").append(userInputRaw).append('\'');
-        sb.append('}');
-        return sb.toString();
+    public static String fromADUsersList(List<ADUser> adUsers) {
+        StringBuilder nStringBuilder = new StringBuilder();
+        nStringBuilder.append("\n");
+        for (ADUser ad : adUsers) {
+            nStringBuilder
+                .append(ad)
+                .append("\n");
+        }
+        nStringBuilder.append("\n");
+        return nStringBuilder.toString();
     }
-    
-    
-    /**
-     Запуск.
-     */
-    @Override
-    public void run() {
-        new MessageCons().errorAlert("ADSrv.run");
-    }
-    
     
     /**
      Читает /static/texts/users.txt
-     
+ 
      @return {@link ADUser} как {@link List}
      */
-    @SuppressWarnings("DuplicateStringLiteralInspection")
-    List<ADUser> userSetter() {
+    @SuppressWarnings("DuplicateStringLiteralInspection") public List<ADUser> userSetter() {
         List<String> fileAsList = new ArrayList<>();
         List<ADUser> adUserList = new ArrayList<>();
         try (InputStream usrInputStream = getClass().getResourceAsStream(ConstantsFor.FILEPATHSTR_USERSTXT);
@@ -259,7 +252,7 @@ public class ADSrv implements Runnable {
      @throws IOException {@link InetAddress}.getByName(queryString + ".eatmeat.ru").isReachable(650))
      @see ActDirectoryCTRL#queryStringExists(java.lang.String, org.springframework.ui.Model)
      */
-    String getDetails(String queryString) throws IOException {
+    public String getDetails(String queryString) throws IOException {
         InternetUse internetUse = new InetUserPCName();
         String internetUseUsage = internetUse.getUsage(queryString + ConstantsFor.DOMAIN_EATMEATRU);
         internetUseUsage = internetUseUsage.replace("юзер", "компьютер");
@@ -269,6 +262,47 @@ public class ADSrv implements Runnable {
         else {
             return offNowGetU(queryString) + "<p><center>" + internetUseUsage + "</center>";
         }
+    }
+    
+    public static String adPCMap(List<ADComputer> adComputers, boolean br) {
+        StringBuilder brStringBuilder = new StringBuilder();
+        StringBuilder nStringBuilder = new StringBuilder();
+        brStringBuilder.append("<p>");
+        nStringBuilder.append("\n");
+        for (ADComputer ad : adComputers) {
+            brStringBuilder
+                .append(ad)
+                .append("<br>");
+            nStringBuilder
+                .append(ad)
+                .append("\n\n");
+        }
+        brStringBuilder.append("</p>");
+        nStringBuilder.append("\n\n\n");
+        if (br) {
+            return brStringBuilder.toString();
+        }
+        else {
+            return nStringBuilder.toString();
+        }
+    }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("ADSrv{");
+        sb.append("CLASS_NAME_PCUSERRESOLVER='").append(ConstantsFor.CLASS_NAME_PCUSERRESOLVER).append('\'');
+        sb.append(", adUser=").append(adUser);
+        sb.append(", userInputRaw='").append(userInputRaw).append('\'');
+        sb.append('}');
+        return sb.toString();
+    }
+    
+    /**
+     Запуск.
+     */
+    @Override
+    public void run() {
+        new MessageCons().errorAlert("ADSrv.run");
     }
     
     /**
@@ -340,6 +374,7 @@ public class ADSrv implements Runnable {
     }
     
     private void parseFile() {
+        InfoWorker pcUserRes = new PCUserResolver(adUser.getInputName());
         List<String> stringList;
         List<ADUser> adUsers = new ArrayList<>();
         if (adUser.getUsersAD() != null) {
@@ -358,7 +393,7 @@ public class ADSrv implements Runnable {
             messageToUser.infoNoTitles(adUsers.size() + "");
         }
         else {
-            PCUserResolver.getPcUserResolver().searchForUser(adUser.getInputName());
+            pcUserRes.setInfo();
         }
         for (ADUser adUser1 : adUsers) {
             messageToUser.infoNoTitles(adUser1.toString());
@@ -433,9 +468,9 @@ public class ADSrv implements Runnable {
         StringBuilder stringBuilder = new StringBuilder();
         File filesAsFile = new File("\\\\" + queryString + ".eatmeat.ru\\c$\\Users\\");
         File[] usersDirectory = filesAsFile.listFiles();
-    
+        
         stringBuilder.append("<p>   Более подробно про ПК:<br>");
-    
+        
         for (File file : Objects.requireNonNull(usersDirectory)) {
             if (!file.getName().toLowerCase().contains("temp") &&
                 !file.getName().toLowerCase().contains("default") &&
@@ -474,7 +509,8 @@ public class ADSrv implements Runnable {
      @see PhotoConverterSRV
      */
     private void psComm() {
-        PhotoConverterSRV photoConverterSRV = new PhotoConverterSRV();
+        Properties p = AppComponents.getOrSetProps();
+        PhotoConverterSRV photoConverterSRV = new PhotoConverterSRV(p);
         photoConverterSRV.psCommands();
     }
     

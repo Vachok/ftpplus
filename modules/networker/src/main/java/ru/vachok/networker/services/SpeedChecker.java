@@ -10,6 +10,7 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.services.actions.ActionOnAppStart;
 
 import javax.mail.Flags;
 import javax.mail.Folder;
@@ -36,7 +37,7 @@ import static java.time.DayOfWeek.SUNDAY;
  Обновление инфо о скорости и дороге.
 
  @see ru.vachok.networker.controller.ServiceInfoCtrl#infoMapping(Model, HttpServletRequest, HttpServletResponse)
- @see ru.vachok.networker.systray.ActionOnAppStart#actionPerformed(ActionEvent)
+ @see ActionOnAppStart#actionPerformed(ActionEvent)
  @since 22.08.2018 (9:36) */
 public class SpeedChecker implements Callable<Long>, Runnable {
 

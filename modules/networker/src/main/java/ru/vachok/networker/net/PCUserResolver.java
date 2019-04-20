@@ -1,24 +1,23 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.ad.user;
+package ru.vachok.networker.net;
 
 
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.abstr.InfoWorker;
-import ru.vachok.networker.ad.ADSrv;
+import ru.vachok.networker.ad.user.ADUser;
+import ru.vachok.networker.ad.user.DataBaseADUsersSRV;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.services.ADSrv;
 import ru.vachok.networker.services.MessageLocal;
 
-import java.awt.*;
 import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.List;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -33,11 +32,6 @@ import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
 public class PCUserResolver extends ADSrv implements InfoWorker {
     
     
-    /**
-     New instance
-     */
-    private static final PCUserResolver PC_USER_RESOLVER = new PCUserResolver();
-    
     private static final String METHNAME_REC_AUTO_DB = "PCUserResolver.recAutoDB";
     
     private final MessageToUser messageToUser = new MessageLocal(PCUserResolver.class.getSimpleName());
@@ -49,23 +43,44 @@ public class PCUserResolver extends ADSrv implements InfoWorker {
      */
     private String lastFileUse = "null";
     
+    private String pcName;
     
-    /**
-     Default-конструктор
-     */
-    private PCUserResolver() {
+    
+    public PCUserResolver(String pcName) {
+        this.pcName = pcName;
     }
     
-    /**
-     @return {@link #PC_USER_RESOLVER}
-     */
-    public static PCUserResolver getPcUserResolver() {
-        return PC_USER_RESOLVER;
+    
+    public void searchForUser() {
+        ADUser adUser = new ADUser();
+        DataBaseADUsersSRV adUsersSRV = new DataBaseADUsersSRV(adUser);
+        Map<String, String> fileParser = adUsersSRV
+            .fileParser(FileSystemWorker.readFileToList("C:\\Users\\ikudryashov\\IdeaProjects\\spring\\modules\\networker\\src\\main\\resources\\static\\texts\\users.txt"));
+        Set<String> stringSet = fileParser.keySet();
+        stringSet.forEach(x->{
+            String s = fileParser.get(x);
+            if (s.contains(pcName)) {
+                messageToUser.infoNoTitles(s + " " + s.contains(pcName));
+            }
+        });
     }
     
-    public void namesToFile(String pcName) {
+    
+    @Override public String getInfoAbout() {
+        namesToFile();
+        File file = new File(pcName);
+        return file.getAbsolutePath() + " " + file.length() + ConstantsFor.STR_BYTES;
+    }
+    
+    
+    @Override public void setInfo() {
+        searchForUser();
+        messageToUser.infoNoTitles("PCUserResolver.setInfo");
+    }
+    
+    private void namesToFile() {
         AppComponents.threadConfig().thrNameSet("pcfile-");
-    
+        
         File pcNameFile = new File(pcName);
         File[] files;
         try (OutputStream outputStream = new FileOutputStream(pcNameFile);
@@ -88,29 +103,6 @@ public class PCUserResolver extends ADSrv implements InfoWorker {
         pcNameFile.deleteOnExit();
     }
     
-    public void searchForUser(String userInput) {
-        ADUser adUser = new ADUser();
-        DataBaseADUsersSRV adUsersSRV = new DataBaseADUsersSRV(adUser);
-        Map<String, String> fileParser = adUsersSRV
-            .fileParser(FileSystemWorker.readFileToList("C:\\Users\\ikudryashov\\IdeaProjects\\spring\\modules\\networker\\src\\main\\resources\\static\\texts\\users.txt"));
-        Set<String> stringSet = fileParser.keySet();
-        stringSet.forEach(x->{
-            String s = fileParser.get(x);
-            if (s.contains(userInput)) {
-                messageToUser.infoNoTitles(s + " " + s.contains(userInput));
-            }
-        });
-    }
-    
-    @Override public String getInfoAbout() {
-        throw new IllegalComponentStateException("Not Ready 10.04.2019 (16:51)");
-    }
-    
-    @Override public void setInfo() {
-        throw new IllegalComponentStateException("10.04.2019 (16:51)");
-    }
-    
-    
     /**
      Записывает инфо о пльзователе в <b>pcuserauto</b>
      <p>
@@ -123,7 +115,7 @@ public class PCUserResolver extends ADSrv implements InfoWorker {
      @param lastFileUse строка - имя последнего измененного файла в папке пользователя.
      */
     private void recAutoDB(String pcName, String lastFileUse) {
-    
+        
         String sql = "insert into pcuser (pcName, userName, lastmod, stamp) values(?,?,?,?)";
         try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql.replaceAll(ConstantsFor.DBFIELD_PCUSER, ConstantsFor.DBFIELD_PCUSERAUTO))) {
@@ -141,7 +133,6 @@ public class PCUserResolver extends ADSrv implements InfoWorker {
         catch (SQLException | ArrayIndexOutOfBoundsException | NullPointerException | IOException e) {
             messageToUser.error(e.getMessage());
         }
-    
     }
     
     /**
@@ -168,6 +159,7 @@ public class PCUserResolver extends ADSrv implements InfoWorker {
         }
     }
     
+    
     /**
      Поиск файлов в папках {@code c-users}.
      
@@ -185,6 +177,7 @@ public class PCUserResolver extends ADSrv implements InfoWorker {
          */
         private final List<String> timePath = new ArrayList<>();
         
+        
         /**
          Предпросмотр директории.
          <p>
@@ -198,6 +191,7 @@ public class PCUserResolver extends ADSrv implements InfoWorker {
         public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
             return FileVisitResult.CONTINUE;
         }
+        
         
         /**
          Просмотр файла.
@@ -215,6 +209,7 @@ public class PCUserResolver extends ADSrv implements InfoWorker {
             return FileVisitResult.CONTINUE;
         }
         
+        
         /**
          Просмотр файла не удался.
          <p>
@@ -227,6 +222,7 @@ public class PCUserResolver extends ADSrv implements InfoWorker {
         public FileVisitResult visitFileFailed(Path file, IOException exc) {
             return FileVisitResult.CONTINUE;
         }
+        
         
         /**
          Постпросмотр директории.
@@ -241,6 +237,7 @@ public class PCUserResolver extends ADSrv implements InfoWorker {
         public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
             return FileVisitResult.CONTINUE;
         }
+        
         
         /**
          @return {@link #timePath}

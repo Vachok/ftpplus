@@ -4,7 +4,9 @@ package ru.vachok.networker.mailserver;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
 import java.util.StringJoiner;
+
 
 /**
  @since 05.10.2018 (10:05) */
@@ -110,8 +112,34 @@ public class MailRule {
     public void setRunspaceId(String runspaceId) {
         this.runspaceId = runspaceId;
     }
-
-
+    
+    public static String fromArrayRules(Map<Integer, MailRule> mailRules, boolean br) {
+        StringBuilder nStringBuilder = new StringBuilder();
+        StringBuilder brStringBuilder = new StringBuilder();
+        mailRules.forEach((x, y)->{
+            nStringBuilder
+                .append("\n")
+                .append(x)
+                .append(" MAP ID  RULE:")
+                .append("\n")
+                .append(y);
+            brStringBuilder
+                .append("<p><h4>")
+                .append(x)
+                .append(" MAP ID  RULE:</h4>")
+                .append("<br>")
+                .append(y)
+                .append("</p>");
+        });
+        if (br) {
+            return brStringBuilder.toString();
+        }
+        else {
+            return nStringBuilder.toString();
+        }
+    }
+    
+    
     @Override
     public String toString() {
         return new StringJoiner("\n", MailRule.class.getSimpleName() + "\n", "\n")

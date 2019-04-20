@@ -21,8 +21,10 @@ plugins {
 }
 
 group = 'ru.vachok.networker'
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 //noinspection SpellCheckingInspection
-version = '8.0.1915'
+version = '8.0.1916'
 sourceCompatibility = 1.8
 
 repositories {
@@ -44,7 +46,7 @@ dependencies {
     compile group: 'com.ad-authenticator', name: 'ad-authenticator', version: '0.3.3'
     // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-test
     testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: '2.1.2.RELEASE'
-    // https://mvnrepository.com/artifact/org.testng/testng
+// https://mvnrepository.com/artifact/org.testng/testng
     testCompile group: 'org.testng', name: 'testng', version: '7.0.0-beta3'
 }
 

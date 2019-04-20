@@ -106,7 +106,7 @@ public class ExSRV {
                 setRule(index);
             }
         }
-        String msg = new TForms().fromArrayRules(localMap, false);
+        String msg = MailRule.fromArrayRules(localMap, false);
         LOGGER.info(msg);
         msg = localMap.size() + " rules map size";
         LOGGER.warn(msg);

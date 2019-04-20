@@ -42,54 +42,55 @@ import java.util.concurrent.*;
  {@link ru.vachok.networker.services} - 2 : {@link MessageLocal}, {@link WeekPCStats} <br>
  {@link ru.vachok.networker.systray} - 1 : {@link SystemTrayHelper}
  <p>
-
+ 
  @see AppInfoOnLoad
  @since 02.05.2018 (10:36) */
 @SpringBootApplication
 @EnableScheduling
 @EnableAutoConfiguration
 public class IntoApplication {
-
-
+    
+    
+    public static final boolean TRAY_SUPPORTED = SystemTray.isSupported();
+    
     private static final Properties LOCAL_PROPS = AppComponents.getOrSetProps();
-
+    
     /**
      {@link MessageLocal}
      */
     private static final MessageToUser messageToUser = new MessageLocal(IntoApplication.class.getSimpleName());
-
+    
     private static final ThreadPoolTaskExecutor EXECUTOR = AppComponents.threadConfig().getTaskExecutor();
-
+    
     private static final ScheduledThreadPoolExecutor SCHEDULED_THREAD_POOL_EXECUTOR = AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor();
-
-    private ConfigurableApplicationContext configurableApplicationContext;
-
-
-    public ConfigurableApplicationContext getConfigurableApplicationContext() {
+    
+    private static ConfigurableApplicationContext configurableApplicationContext;
+    
+    public static ConfigurableApplicationContext getConfigurableApplicationContext() {
         return configurableApplicationContext;
     }
-
-
+    
+    
     public void setConfigurableApplicationContext(ConfigurableApplicationContext configurableApplicationContext) {
-        this.configurableApplicationContext = configurableApplicationContext;
+        IntoApplication.configurableApplicationContext = configurableApplicationContext;
     }
-
-
+    
     /**
      Точка входа в Spring Boot Application
      <p>
      Создает новый объект {@link SpringApplication}. <br>
      Далее создается {@link ConfigurableApplicationContext}, из {@link SpringApplication}.run({@link IntoApplication}.class).
      {@link FileSystemWorker#delFilePatterns(java.lang.String[])}. Удаление останков от предидущего запуска. <br>
-     Пытается читать аргументы {@link #readArgs(ConfigurableApplicationContext , String...)}, если они не null и их больше 0. <br>
+     Пытается читать аргументы {@link #readArgs(ConfigurableApplicationContext, String...)}, если они не null и их больше 0. <br>
      В другом случае - {@link #beforeSt(boolean)} до запуска контекста, {@link ConfigurableApplicationContext}.start(), {@link #afterSt()}.
-
+     
      @param args аргументы запуска
      @see SystemTrayHelper
      */
     public static void main(@Nullable String[] args) {
         SpringApplication application = new SpringApplication();
         ConfigurableApplicationContext context = SpringApplication.run(IntoApplication.class);
+        IntoApplication.configurableApplicationContext = context;
         FileSystemWorker.delFilePatterns(ConstantsFor.getStringsVisit());
         if (args != null && args.length > 0) {
             readArgs(context, args);
@@ -100,8 +101,7 @@ public class IntoApplication {
             afterSt();
         }
     }
-
-
+    
     /**
      Запуск после старта Spring boot app <br> Usages: {@link #main(String[])}
      <p>
@@ -122,14 +122,14 @@ public class IntoApplication {
         EXECUTOR.submit(mySrv);
         EXECUTOR.submit(IntoApplication::getWeekPCStats);
         SaveLogsToDB saveLogsToDB = new AppComponents().saveLogsToDB();
-        if(!ConstantsFor.thisPC().toLowerCase().contains("home")) {
-            AppComponents.threadConfig().execByThreadConfig(() -> messageToUser
-                .warn(IntoApplication.class.getSimpleName() + ".main" , "startScheduled()" , " = " + saveLogsToDB.startScheduled()));
+        if (!ConstantsFor.thisPC().toLowerCase().contains("home")) {
+            AppComponents.threadConfig().execByThreadConfig(saveLogsToDB::startScheduled);
         }
-        else { AppComponents.threadConfig().execByThreadConfig(saveLogsToDB::showInfo); }
+        else {
+            AppComponents.threadConfig().execByThreadConfig(saveLogsToDB::showInfo);
+        }
     }
-
-
+    
     /**
      Статистика по-пользователям за неделю.
      <p>
@@ -139,11 +139,11 @@ public class IntoApplication {
      */
     private static void getWeekPCStats() {
         if (LocalDate.now().getDayOfWeek().equals(DayOfWeek.SUNDAY)) {
-            AppComponents.threadConfig().execByThreadConfig(new WeekPCStats());
+            AppComponents.threadConfig().execByThreadConfig(new WeekPCStats(ConstantsFor.SQL_SELECTFROM_PCUSERAUTO));
         }
     }
-
-
+    
+    
     /**
      Чтение аргументов {@link #main(String[])}
      <p>
@@ -151,7 +151,7 @@ public class IntoApplication {
      {@link ConstantsFor#PR_TOTPC} - {@link Properties#setProperty(java.lang.String, java.lang.String)}.
      Property: {@link ConstantsFor#PR_TOTPC}, value: {@link String#replaceAll(String, String)} ({@link ConstantsFor#PR_TOTPC}, "") <br>
      {@code off}: {@link ThreadConfig#killAll()}
-
+     
      @param args аргументы запуска.
      */
     private static void readArgs(ConfigurableApplicationContext context, @NotNull String... args) {
@@ -159,7 +159,7 @@ public class IntoApplication {
         Runnable exitApp = new ExitApp(IntoApplication.class.getSimpleName());
         List<@NotNull String> argsList = Arrays.asList(args);
         ConcurrentMap<String, String> argsMap = new ConcurrentHashMap<>();
-
+    
         for (int i = 0; i < argsList.size(); i++) {
             String key = argsList.get(i);
             String value = "true";
@@ -182,31 +182,38 @@ public class IntoApplication {
             }
         }
         for (Map.Entry<String, String> stringStringEntry : argsMap.entrySet()) {
-            if (stringStringEntry.getKey().contains(ConstantsFor.PR_TOTPC)) {
-                LOCAL_PROPS.setProperty(ConstantsFor.PR_TOTPC, stringStringEntry.getValue());
-            }
-            if (stringStringEntry.getKey().equalsIgnoreCase("off")) {
-                AppComponents.threadConfig().execByThreadConfig(exitApp);
-            }
-            if (stringStringEntry.getKey().contains("notray")) {
-                messageToUser.info("IntoApplication.readArgs", "key", " = " + stringStringEntry.getKey());
-                isTray = false;
-            }
-            if (stringStringEntry.getKey().contains("ff")) {
-                Map<Object, Object> objectMap = Collections.unmodifiableMap(AppComponents.getOrSetProps());
-                LOCAL_PROPS.clear();
-                LOCAL_PROPS.putAll(objectMap);
-            }
-            if (stringStringEntry.getKey().contains("lport")) {
-                LOCAL_PROPS.setProperty("lport", stringStringEntry.getValue());
-            }
+            isTray = parseMapEntry(stringStringEntry, exitApp);
         }
         beforeSt(isTray);
         context.start();
         afterSt();
     }
-
-
+    
+    private static boolean parseMapEntry(Map.Entry<String, String> stringStringEntry, Runnable exitApp) {
+        boolean isTray = true;
+        if (stringStringEntry.getKey().contains(ConstantsFor.PR_TOTPC)) {
+            LOCAL_PROPS.setProperty(ConstantsFor.PR_TOTPC, stringStringEntry.getValue());
+        }
+        if (stringStringEntry.getKey().equalsIgnoreCase("off")) {
+            AppComponents.threadConfig().execByThreadConfig(exitApp);
+        }
+        if (stringStringEntry.getKey().contains("notray")) {
+            messageToUser.info("IntoApplication.readArgs", "key", " = " + stringStringEntry.getKey());
+            isTray = false;
+        }
+        if (stringStringEntry.getKey().contains("ff")) {
+            Map<Object, Object> objectMap = Collections.unmodifiableMap(AppComponents.getOrSetProps());
+            LOCAL_PROPS.clear();
+            LOCAL_PROPS.putAll(objectMap);
+        }
+        if (stringStringEntry.getKey().contains("lport")) {
+            LOCAL_PROPS.setProperty("lport", stringStringEntry.getValue());
+        }
+        
+        return isTray;
+    }
+    
+    
     private static void trayAdd(SystemTrayHelper systemTrayHelper) {
         if (ConstantsFor.thisPC().toLowerCase().contains(ConstantsFor.HOSTNAME_DO213)) {
             systemTrayHelper.addTray("icons8-плохие-поросята-32.png");
@@ -220,8 +227,7 @@ public class IntoApplication {
             }
         }
     }
-
-
+    
     /**
      Запуск до старта Spring boot app <br> Usages: {@link #main(String[])}
      <p>
@@ -230,11 +236,11 @@ public class IntoApplication {
      {@link SystemTrayHelper#addTray(java.lang.String)} "icons8-плохие-поросята-32.png".
      Else - {@link SystemTrayHelper#addTray(java.lang.String)} {@link String} null<br>
      {@link SpringApplication#setMainApplicationClass(java.lang.Class)}
-
+ 
      @param isTrayNeed нужен трэй или нет.
      */
     private static void beforeSt(boolean isTrayNeed) {
-        if (SystemTray.isSupported() & isTrayNeed) {
+        if (isTrayNeed) {
             trayAdd(SystemTrayHelper.getI());
         }
         @NotNull StringBuilder stringBuilder = new StringBuilder();

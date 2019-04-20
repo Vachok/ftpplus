@@ -26,5 +26,8 @@ public enum OtherKnownDevices {
     public static final String IP_RDEMINAIPHONE_1 = "10.200.214.56";
 
     public static final String PTV1_EATMEAT_RU = "ptv1.eatmeat.ru";
-
-    public static final String PTV2_EATMEAT_RU = "ptv2.eatmeat.ru";}
+    
+    public static final String PTV2_EATMEAT_RU = "ptv2.eatmeat.ru";
+    
+    public static final String PTV3_EATMEAT_RU = "ptv3.eatmeat.ru";
+}

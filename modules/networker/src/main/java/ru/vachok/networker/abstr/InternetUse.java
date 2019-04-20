@@ -1,10 +1,10 @@
 package ru.vachok.networker.abstr;
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
+import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.services.MessageLocal;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -24,9 +24,9 @@ public interface InternetUse {
     void showLog();
 
     default int cleanTrash() {
-        MessageToUser messageToUser = new MessageLocal(InternetUse.class.getSimpleName());
+        MessageToUser messageToUser = new MessageCons(getClass().getSimpleName());
         String sqlDel = "DELETE  FROM `inetstats` WHERE `site` LIKE '%clients1.google%'";
-        try (Connection c = new RegRuMysql().getDataSourceSchema(ConstantsFor.DBBASENAME_U0466446_VELKOM).getConnection();
+        try (Connection c = MYSQL_DATA_SOURCE.getConnection();
              PreparedStatement preparedStatement = c.prepareStatement(sqlDel)
         ) {
             int retQuery = preparedStatement.executeUpdate();

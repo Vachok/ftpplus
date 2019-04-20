@@ -1,4 +1,4 @@
-package ru.vachok.networker.ad.user;
+package ru.vachok.networker.controller;
 
 
 import org.springframework.context.annotation.Bean;
@@ -11,8 +11,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.ad.ADSrv;
+import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.componentsrepo.PageFooter;
+import ru.vachok.networker.services.ADSrv;
 
 import javax.servlet.http.HttpServletRequest;
 

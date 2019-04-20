@@ -1,10 +1,10 @@
 package ru.vachok.networker.net;
 
 
-import ru.vachok.messenger.MessageFile;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.VersionInfo;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.OtherKnownDevices;
@@ -14,6 +14,7 @@ import ru.vachok.networker.services.MessageLocal;
 import java.io.*;
 import java.net.InetAddress;
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.Objects;
 
 /**
@@ -31,29 +32,81 @@ public class NetMonitorPTV implements Runnable {
     private VersionInfo versionInfo = AppComponents.versionInfo();
 
     private OutputStream outputStream;
-
-    private PrintWriter printWriter;
-
-    private final String simpleName = NetMonitorPTV.class.getSimpleName();
-
-    private MessageToUser messageToUser = new MessageLocal(simpleName);
-
-    private String pingResultLast = "No pings yet.";
-
-    public String getPingResultLast() {
-        return pingResultLast;
-    }
-
-    private static final String FILENAME_PINGTV = "ping.tv";
-
+    
+    private PrintStream printStream;
+    
+    private long ptvStartStamp;
+    
     public NetMonitorPTV() {
+        File ptvFile = new File(FILENAME_PINGTV);
+        NetListKeeper.setPtvTime(new Date().toString());
         try {
-            outputStream = new FileOutputStream(FILENAME_PINGTV);
-            printWriter = new PrintWriter(Objects.requireNonNull(outputStream), true);
-        } catch (FileNotFoundException e) {
+            outputStream = new FileOutputStream(ptvFile);
+            printStream = new PrintStream(Objects.requireNonNull(outputStream), true);
+        }
+        catch (IOException e) {
             messageToUser.errorAlert("NetMonitorPTV", "NetMonitorPTV", e.getMessage());
             FileSystemWorker.error("NetMonitorPTV.NetMonitorPTV", e);
         }
+    }
+    
+    private final String simpleName = NetMonitorPTV.class.getSimpleName();
+    
+    private MessageToUser messageToUser = new MessageLocal(simpleName);
+    
+    private String pingResultLast = "No pings yet.";
+    
+    private static final String FILENAME_PINGTV = "ping.tv";
+    
+    public long getPtvStartStamp() {
+        return ptvStartStamp;
+    }
+    
+    @Override
+    public void run() {
+        try {
+            pingIPTV();
+        }
+        catch (IOException e) {
+            messageToUser.errorAlert(CLASS_NAME, "run", e.getMessage() + "\n" + new TForms().fromArray(e, false));
+        }
+    }
+    
+    private void checkSize() throws IOException {
+        File pingTv = new File(ConstantsFor.FILENAME_PTV);
+        printStream.print(pingResultLast + " " + LocalDateTime.now());
+        printStream.println();
+        
+        if (pingTv.length() > ConstantsFor.MBYTE) {
+            printStream.close();
+            ifPingTVIsBig(pingTv);
+        }
+        else {
+            this.pingResultLast = pingResultLast + " (" + pingTv.length() / ConstantsFor.KBYTE + " KBytes)";
+        }
+    }
+    
+    private void ifPingTVIsBig(File pingTv) throws IOException {
+        boolean isPingTvCopied = FileSystemWorker.copyOrDelFile(pingTv, ".\\lan\\tv_" + System.currentTimeMillis() / 1000 + ".ping", true);
+        String classMeth = "NetMonitorPTV.ifPingTVIsBig";
+        if (isPingTvCopied) {
+            NetListKeeper.setPtvTime(new Date().toString());
+            AppComponents.threadConfig().thrNameSet(getClass().getSimpleName());
+            this.outputStream = new FileOutputStream(pingTv);
+            this.printStream = new PrintStream(outputStream, true);
+            this.ptvStartStamp = System.currentTimeMillis();
+        }
+        else {
+            messageToUser.info(FILENAME_PINGTV, "creating", new Date(ptvStartStamp).toString());
+        }
+    }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("NetMonitorPTV{");
+        sb.append("pingResultLast='").append(pingResultLast).append('\'');
+        sb.append('}');
+        return sb.toString();
     }
 
     private void pingIPTV() throws IOException {
@@ -65,12 +118,15 @@ public class NetMonitorPTV implements Runnable {
 
         InetAddress ptv1 = InetAddress.getByName(OtherKnownDevices.PTV1_EATMEAT_RU);
         InetAddress ptv2 = InetAddress.getByName(OtherKnownDevices.PTV2_EATMEAT_RU);
+//        InetAddress ptv3 = InetAddress.getByName(OtherKnownDevices.PTV3_EATMEAT_RU);
+        
         InetAddress upakCisco2042 = InetAddress.getByAddress(upakCisco2042b);
         InetAddress upakCisco2043 = InetAddress.getByAddress(upakCisco2043b);
         InetAddress gpCisco20410 = InetAddress.getByAddress(gpCisco20410b);
 
         boolean ptv1Reachable = ptv1.isReachable(ConstantsFor.TIMEOUT_650);
         boolean ptv2Reachable = ptv2.isReachable(ConstantsFor.TIMEOUT_650);
+//        boolean ptv3Reachable = ptv3.isReachable(ConstantsFor.TIMEOUT_650);
         boolean upakCisco2042Reachable = upakCisco2042.isReachable(ConstantsFor.TIMEOUT_650);
         boolean upakCisco2043Reachable = upakCisco2043.isReachable(ConstantsFor.TIMEOUT_650);
         boolean gpCisco2042Reachable = gpCisco20410.isReachable(ConstantsFor.TIMEOUT_650);
@@ -82,6 +138,9 @@ public class NetMonitorPTV implements Runnable {
         stringBuilder.append(ptv2);
         stringBuilder.append(" is ");
         stringBuilder.append(ptv2Reachable);
+//        stringBuilder.append(ptv3);
+//        stringBuilder.append(" is ");
+//        stringBuilder.append(ptv3Reachable);
 
         stringBuilder.append("<br>");
         stringBuilder.append("\n***Wi-Fi points:");
@@ -91,49 +150,5 @@ public class NetMonitorPTV implements Runnable {
         stringBuilder.append(gpCisco20410).append(" is ").append(gpCisco2042Reachable).append("<br>***");
         this.pingResultLast = stringBuilder.toString();
         checkSize();
-    }
-
-    private void checkSize() throws FileNotFoundException {
-        File pingTv = new File(ConstantsFor.FILENAME_PTV);
-        printWriter.print(pingResultLast + " " + LocalDateTime.now());
-        printWriter.println();
-        if (pingTv.length() > ConstantsFor.MBYTE) {
-            printWriter.close();
-            ifPingTVIsBig(pingTv);
-        } else {
-            this.pingResultLast = pingResultLast + " (" + pingTv.length() / ConstantsFor.KBYTE + " KBytes)";
-        }
-    }
-
-    private void ifPingTVIsBig(File pingTv) throws FileNotFoundException {
-        boolean isPingTvCopied = FileSystemWorker.copyOrDelFile(pingTv, ".\\lan\\tv_" + System.currentTimeMillis() / 1000 + ".ping", true);
-        String classMeth = "NetMonitorPTV.ifPingTVIsBig";
-        if (isPingTvCopied) {
-            AppComponents.threadConfig().thrNameSet(getClass().getSimpleName());
-            this.outputStream = new FileOutputStream(FILENAME_PINGTV);
-            this.printWriter = new PrintWriter(outputStream, true);
-        } else {
-            messageToUser = new MessageFile();
-            messageToUser.info(classMeth, "printWriter.checkError()", String.valueOf(printWriter.checkError()));
-            messageToUser = new MessageLocal(simpleName);
-        }
-    }
-
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("NetMonitorPTV{");
-        sb.append("pingResultLast='").append(pingResultLast).append('\'');
-        sb.append('}');
-        return sb.toString();
-    }
-
-    @Override
-    public void run() {
-        try {
-            pingIPTV();
-        } catch (IOException e) {
-            messageToUser.errorAlert(CLASS_NAME, "run", e.getMessage());
-            FileSystemWorker.error("NetMonitorPTV.run", e);
-        }
     }
 }

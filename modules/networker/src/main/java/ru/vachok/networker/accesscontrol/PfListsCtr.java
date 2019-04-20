@@ -171,12 +171,12 @@ public class PfListsCtr {
         model.addAttribute("ok", pfListsSrv.runCom());
         return "ok";
     }
-
-
-    private static void noPing(Model model) throws UnknownHostException {
-        model.addAttribute(ATT_VIPNET, "No ping to srv-git");
+    
+    
+    private void noPing(Model model) throws UnknownHostException {
+        model.addAttribute(ATT_VIPNET, "No ping to " + PfListsSrv.getDefaultConnectSrv());
         model.addAttribute(ATT_METRIC, LocalTime.now().toString());
-        throw new UnknownHostException("srv-git. <font color=\"red\"> NO PING!!!</font>");
+        throw new UnknownHostException(PfListsSrv.getDefaultConnectSrv() + ". <font color=\"red\"> NO PING!!!</font>");
     }
 
     private void propUpd(Properties properties) {

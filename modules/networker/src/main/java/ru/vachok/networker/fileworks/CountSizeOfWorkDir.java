@@ -26,14 +26,15 @@ import java.util.stream.Stream;
 
  @since 06.04.2019 (13:15) */
 public class CountSizeOfWorkDir extends SimpleFileVisitor<Path> implements ProgrammFilesWriter {
-
-    private long sizeBytes = 0L;
+    
+    
+    private long sizeBytes;
 
     private Map<Long, String> longPathMap = new TreeMap<>();
 
     private String fileName;
-
-    private PrintStream printStream = null;
+    
+    private PrintStream printStream;
 
     private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
 
@@ -66,10 +67,10 @@ public class CountSizeOfWorkDir extends SimpleFileVisitor<Path> implements Progr
             }
         }
         if(attrs.isRegularFile()) {
-            this.sizeBytes = sizeBytes + file.toFile().length();
+            this.sizeBytes += file.toFile().length();
             if(attrs.lastAccessTime().toMillis() < System.currentTimeMillis() - TimeUnit.DAYS.toMillis(3)) {
                 longPathMap.putIfAbsent(file.toFile().length() ,
-                    file.toAbsolutePath().toString() + "<b> 3 days old...</b>");
+                    file.toAbsolutePath() + "<b> 3 days old...</b>");
             }
             else { longPathMap.putIfAbsent(file.toFile().length() , file.toAbsolutePath().toString()); }
         }

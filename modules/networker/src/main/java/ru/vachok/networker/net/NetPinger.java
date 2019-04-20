@@ -10,6 +10,7 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.Pinger;
 import ru.vachok.networker.config.ThreadConfig;
+import ru.vachok.networker.controller.NetScanCtr;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
@@ -142,7 +143,7 @@ public class NetPinger implements Runnable, Pinger {
                 resList.add(inetAddress + " is " + inetAddress.isReachable(ConstantsFor.TIMEOUT_650));
                 Thread.sleep(pingSleepMsec);
             } catch (IOException | InterruptedException e) {
-                FileSystemWorker.error(getClass().getSimpleName() + ".pingSW", e);
+                messageToUser.error(e.getMessage());
                 Thread.currentThread().checkAccess();
                 Thread.currentThread().interrupt();
             }

@@ -1,4 +1,4 @@
-package ru.vachok.networker.net;
+package ru.vachok.networker.ad.user;
 
 
 import org.springframework.ui.Model;
@@ -7,14 +7,17 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.abstr.InfoWorker;
 import ru.vachok.networker.abstr.InternetUse;
 import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
+import ru.vachok.networker.controller.MatrixCtr;
+import ru.vachok.networker.controller.NetScanCtr;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.InfoWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.net.enums.OtherKnownDevices;
 import ru.vachok.networker.services.MessageLocal;
-import ru.vachok.networker.systray.ActionCloseMsg;
+import ru.vachok.networker.services.NetScannerSvc;
+import ru.vachok.networker.services.actions.ActionCloseMsg;
 import ru.vachok.networker.systray.MessageToTray;
 
 import javax.servlet.http.HttpServletRequest;
@@ -72,11 +75,11 @@ public class MoreInfoWorker implements InfoWorker {
     /**
      Достаёт инфо о пользователе из БД
      <p>
-     
-     @param userInputRaw {@link NetScannerSvc#getThePc()}
+ 
      @return LAST 20 USER PCs
+     @param userInputRaw {@link NetScannerSvc#getThePc()}
      */
-    static String getUserFromDB(String userInputRaw) {
+    public static String getUserFromDB(String userInputRaw) {
         StringBuilder retBuilder = new StringBuilder();
         String sql = "select * from pcuserauto where userName like ? ORDER BY whenQueried DESC LIMIT 0, 20";
         List<String> userPCName = new ArrayList<>();
@@ -136,10 +139,12 @@ public class MoreInfoWorker implements InfoWorker {
      <b>ptv1</b> and <b>ptv2</b> ping stats
 
      @return статистика пинга ptv
-     @see ru.vachok.networker.accesscontrol.MatrixCtr#getFirst(HttpServletRequest, Model, HttpServletResponse)
+     @see MatrixCtr#getFirst(HttpServletRequest, Model, HttpServletResponse)
      */
     private static String getTVNetInfo() {
-        List<String> readFileToList = FileSystemWorker.readFileToList(new File("ping.tv").getAbsolutePath());
+        File ptvFile = new File("ping.tv");
+    
+        List<String> readFileToList = FileSystemWorker.readFileToList(ptvFile.getAbsolutePath());
         List<String> onList = new ArrayList<>();
         List<String> offList = new ArrayList<>();
         readFileToList.stream().flatMap((String x) -> Arrays.stream(x.split(", "))).forEach((String s) -> {
@@ -147,13 +152,22 @@ public class MoreInfoWorker implements InfoWorker {
             else offList.add(s.split("/")[0]);
         });
         String ptv1Str = OtherKnownDevices.PTV1_EATMEAT_RU;
+    
         String ptv2Str = OtherKnownDevices.PTV2_EATMEAT_RU;
+
+//        String ptv3Str = OtherKnownDevices.PTV3_EATMEAT_RU;
+    
         int frequencyOffPTV1 = Collections.frequency(offList, ptv1Str);
         int frequencyOnPTV1 = Collections.frequency(onList, ptv1Str);
         int frequencyOnPTV2 = Collections.frequency(onList, ptv2Str);
         int frequencyOffPTV2 = Collections.frequency(offList, ptv2Str);
+//        int frequencyOnPTV3 = Collections.frequency(onList, ptv3Str);
+//        int frequencyOffPTV3 = Collections.frequency(offList, ptv3Str);
+    
         String ptv1Stats = "<br><font color=\"#00ff69\">" + frequencyOnPTV1 + " on " + ptv1Str + "</font> | <font color=\"red\">" + frequencyOffPTV1 + " off " + ptv1Str + "</font>";
         String ptv2Stats = "<font color=\"#00ff69\">" + frequencyOnPTV2 + " on " + ptv2Str + "</font> | <font color=\"red\">" + frequencyOffPTV2 + " off " + ptv2Str + "</font>";
+//        String ptv3Stats = "<font color=\"#00ff69\">" + frequencyOnPTV3 + " on " + ptv3Str + "</font> | <font color=\"red\">" + frequencyOffPTV3 + " off " + ptv3Str + "</font>";
+    
         return String.join("<br>\n", ptv1Stats, ptv2Stats);
     }
 
