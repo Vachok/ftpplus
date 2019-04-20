@@ -863,3 +863,4 @@ inet.files
 *.err
 *.lck
 ScanOnlineonList
+ScanOnline.onList
