@@ -290,7 +290,7 @@ public class DiapazonedScan implements Runnable {
             
             this.printStream = new PrintStream(Objects.requireNonNull(outputStream), true);
     
-            stArt = LocalDateTime.of(1984, 7, 1, 2, 0).toEpochSecond(ZoneOffset.ofHours(3)) * 1000;
+            stArt = LocalDateTime.of(1984, 1, 7, 2, 0).toEpochSecond(ZoneOffset.ofHours(3)) * 1000;
         }
         
         @Override

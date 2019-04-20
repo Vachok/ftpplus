@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.net;
 
 
@@ -8,12 +10,14 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.Pinger;
 import ru.vachok.networker.ad.user.MoreInfoWorker;
-import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
 
 import java.awt.*;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.net.InetAddress;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -38,6 +42,8 @@ public class ScanOnline implements Runnable, Pinger {
      */
     private static final NetListKeeper NET_LIST_KEEPER = NetListKeeper.getI();
     
+    private static final String FILENAME_ON = ScanOnline.class.getSimpleName() + ".onList";
+    
     /**
      {@link NetListKeeper#getOnLinesResolve()}
      */
@@ -50,16 +56,38 @@ public class ScanOnline implements Runnable, Pinger {
     
     private InfoWorker tvInfo = new MoreInfoWorker("tv");
     
+    private PrintStream printStream = null;
+    
     @Override public String getTimeToEndStr() {
         throw new IllegalComponentStateException("18.04.2019 (11:31)");
     }
     
     @Override public String getPingResultStr() {
-        throw new IllegalComponentStateException("18.04.2019 (11:31)");
+        return FileSystemWorker.readFile(FILENAME_ON);
     }
     
     @Override public boolean isReach(String inetAddrStr) {
-        throw new IllegalComponentStateException("18.04.2019 (11:32)");
+        boolean xReachable = true;
+        try {
+            byte[] addressBytes = InetAddress.getByName(inetAddrStr).getAddress();
+            InetAddress inetAddress = InetAddress.getByAddress(addressBytes);
+            xReachable = inetAddress.isReachable(100);
+            if (!xReachable) {
+                NET_LIST_KEEPER.getOffLines().put(inetAddress.toString(), LocalTime.now().toString());
+                if (onLinesResolve.containsKey(inetAddress.toString())) {
+                    NET_LIST_KEEPER.getOffLines().remove(inetAddress.toString());
+                }
+                printStream.println(inetAddress.toString() + " offline at: " + new Date());
+            }
+            else {
+                printStream.println(inetAddress.toString());
+                onLinesResolve.putIfAbsent(inetAddress.toString(), LocalTime.now().toString());
+            }
+        }
+        catch (IOException e) {
+            messageToUser.error(e.getMessage());
+        }
+        return xReachable;
     }
     
     
@@ -67,9 +95,10 @@ public class ScanOnline implements Runnable, Pinger {
     public void run() {
         AppComponents.threadConfig().execByThreadConfig(this::offlineNotEmptyActions);
         try {
+            OutputStream outputStream = new FileOutputStream(FILENAME_ON);
+            this.printStream = new PrintStream(outputStream);
             List<InetAddress> onList = NET_LIST_KEEPER.onlinesAddressesList();
             runPing(onList);
-            FileSystemWorker.writeFile(getClass().getSimpleName() + "onList", onList.stream());
         }
         catch (IOException e) {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".run", e));
@@ -102,35 +131,10 @@ public class ScanOnline implements Runnable, Pinger {
         availabilityOkIP.forEach(x->onLinesResolve.put(x, LocalDateTime.now().toString()));
     }
     
-    private void runPing(List<InetAddress> onList) throws IOException {
+    private void runPing(List<InetAddress> onList) {
+        messageToUser.info(getClass().getSimpleName() + ".runPing", "onList", " = " + onList.size());
         for (InetAddress inetAddress : onList) {
-            pingAddr(inetAddress);
-        }
-    }
-    
-    /**
-     Пингует конкрктный {@link InetAddress}
-     <p>
-     TimeOut is 250 mSec.
-     <p>
-     <b>Схема:</b> <br>
-     1. {@link NetListKeeper#getOffLines()}. Если нет пинга, добавляет {@code inetAddress.toString, LocalTime.now.toString} и запускает: <br> 2. {@link
-    ThreadConfig#execByThreadConfig(java.lang.Runnable)}. {@link #offlineNotEmptyActions()} <br>
-     <p>
-     
-     @param inetAddress {@link InetAddress}. 3. {@link FileSystemWorker#error(java.lang.String, java.lang.Exception)}
-     */
-    private void pingAddr(InetAddress inetAddress) throws IOException {
-    
-        boolean xReachable = inetAddress.isReachable(250);
-        if (!xReachable) {
-            NET_LIST_KEEPER.getOffLines().put(inetAddress.toString(), LocalTime.now().toString());
-            if (onLinesResolve.containsKey(inetAddress.toString())) {
-                NET_LIST_KEEPER.getOffLines().remove(inetAddress.toString());
-            }
-        }
-        else {
-            onLinesResolve.putIfAbsent(inetAddress.toString(), LocalTime.now().toString());
+            isReach(inetAddress.getHostAddress());
         }
     }
 }
