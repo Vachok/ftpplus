@@ -202,11 +202,9 @@ public class DiapazonedScan implements Runnable {
         catch (NullPointerException e) {
             messageToUser.info("NO FILES!");
         }
-        StringBuilder sb = new StringBuilder("DiapazonedScan. Start at ");
-        sb.append(new Date(timeStart));
-        sb.append("( ");
+        StringBuilder sb = new StringBuilder("DiapazonedScan. Running ");
         sb.append(TimeUnit.MILLISECONDS.toMinutes(getRunMin()));
-        sb.append(" min) ");
+        sb.append(" min ");
         sb.append("{ ");
         sb.append("<a href=\"/showalldev\">ALL_DEVICES ")
             .append(ALL_DEVICES_LOCAL_DEQUE.size())
@@ -325,8 +323,7 @@ public class DiapazonedScan implements Runnable {
         }
         
         private boolean execScan() {
-            final long exeStart = System.currentTimeMillis();
-            this.stArt = exeStart;
+            this.stArt = System.currentTimeMillis();
     
             try {
                 ConcurrentMap<String, String> stringStringConcurrentMap = scanLanSegment(from, to, whatVlan, printStream);
