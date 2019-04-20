@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.abstr;
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
@@ -15,9 +17,9 @@ import java.sql.SQLException;
  @since 02.04.2019 (10:24) */
 public interface InternetUse {
 
-
     MysqlDataSource MYSQL_DATA_SOURCE = new RegRuMysql().getDataSourceSchema(ConstantsFor.DBBASENAME_U0466446_VELKOM);
-    String sql = "SELECT DISTINCT `Date`, `ip`, `response`, `method`, `site`, `bytes` FROM `inetstats` WHERE `ip` LIKE ? ORDER BY `inetstats`.`Date` DESC";
+    
+    String SQL_DELETE = "SELECT DISTINCT `Date`, `ip`, `response`, `method`, `site`, `bytes` FROM `inetstats` WHERE `ip` LIKE ? ORDER BY `inetstats`.`Date` DESC";
 
     String getUsage(String userCred);
 

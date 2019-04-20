@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.accesscontrol.inetstats;
 
 
@@ -40,10 +42,9 @@ public class InetStatSorter implements Runnable {
                 }
             }
         }
-        File[] filesList = rootFiles;
-        for(File ipF : filesList){
+        for (File ipF : rootFiles) {
             Set<String> fileAsQu = new LinkedHashSet<>();
-            ipsFromFiles.stream().forEach(x -> {
+            ipsFromFiles.forEach(x->{
                 if(ipF.getName().contains(x + "_")) {
                     fileAsQu.add(FileSystemWorker.readFile(ipF.getAbsolutePath()));
                     ipF.deleteOnExit();
@@ -62,7 +63,7 @@ public class InetStatSorter implements Runnable {
         }
         else {
             List<String> stringsFromFile = FileSystemWorker.readFileToList(f.getAbsolutePath());
-            stringsFromFile.forEach(x -> fileAsQu.add(x));
+            fileAsQu.addAll(stringsFromFile);
             messageToUser.info(f.getAbsolutePath() , "exist: " + true , " To write =  " + fileAsQu.size() + " strings");
             FileSystemWorker.writeFile(f.getName() , fileAsQu.stream());
         }
