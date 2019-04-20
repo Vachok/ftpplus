@@ -1,4 +1,6 @@
 
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.ad.user;
 
 
@@ -60,7 +62,8 @@ class ConditionChecker implements InfoWorker {
 
 
     ConditionChecker(String sql, String pcName) {
-        this.javaID = "ru_vachok_networker-ConstantsFor";
+        AppComponents.threadConfig().thrNameSet(pcName.substring(0, 6));
+        this.javaID = ConstantsFor.FILE_RU_VACHOK_NETWORKER_CONSTANTS_FOR;
         this.sql = sql;
         if (pcName.contains(":")) {
             this.pcName = pcName.split(":")[0];

@@ -22,7 +22,7 @@ import java.net.InetAddress;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Date;
-import java.util.List;
+import java.util.Deque;
 import java.util.Set;
 import java.util.concurrent.*;
 
@@ -69,7 +69,7 @@ public class ScanOnline implements Runnable, Pinger {
     @Override public boolean isReach(String inetAddrStr) {
         boolean xReachable = true;
         try {
-            byte[] addressBytes = InetAddress.getByName(inetAddrStr).getAddress();
+            byte[] addressBytes = InetAddress.getByName(inetAddrStr.split(" ")[0]).getAddress();
             InetAddress inetAddress = InetAddress.getByAddress(addressBytes);
             xReachable = inetAddress.isReachable(100);
             if (!xReachable) {
@@ -77,14 +77,14 @@ public class ScanOnline implements Runnable, Pinger {
                 if (onLinesResolve.containsKey(inetAddress.toString())) {
                     NET_LIST_KEEPER.getOffLines().remove(inetAddress.toString());
                 }
-                printStream.println(inetAddress.toString() + " offline at: " + new Date());
+                printStream.println(inetAddrStr + " is offline. Checked: " + new Date());
             }
             else {
-                printStream.println(inetAddress.toString());
+                printStream.println(inetAddrStr);
                 onLinesResolve.putIfAbsent(inetAddress.toString(), LocalTime.now().toString());
             }
         }
-        catch (IOException e) {
+        catch (IOException | ArrayIndexOutOfBoundsException e) {
             messageToUser.error(e.getMessage());
         }
         return xReachable;
@@ -97,8 +97,10 @@ public class ScanOnline implements Runnable, Pinger {
         try {
             OutputStream outputStream = new FileOutputStream(FILENAME_ON);
             this.printStream = new PrintStream(outputStream);
-            List<InetAddress> onList = NET_LIST_KEEPER.onlinesAddressesList();
-            runPing(onList);
+            Deque<String> onList = NetScanFileWorker.getI().getListOfOnlineDev();
+            while (!onList.isEmpty()) {
+                isReach(onList.poll());
+            }
         }
         catch (IOException e) {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".run", e));
@@ -129,12 +131,5 @@ public class ScanOnline implements Runnable, Pinger {
         
         Set<String> availabilityOkIP = switchesAvailability.getOkIP();
         availabilityOkIP.forEach(x->onLinesResolve.put(x, LocalDateTime.now().toString()));
-    }
-    
-    private void runPing(List<InetAddress> onList) {
-        messageToUser.info(getClass().getSimpleName() + ".runPing", "onList", " = " + onList.size());
-        for (InetAddress inetAddress : onList) {
-            isReach(inetAddress.getHostAddress());
-        }
     }
 }

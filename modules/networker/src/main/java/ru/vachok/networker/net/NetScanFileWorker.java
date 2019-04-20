@@ -82,7 +82,7 @@ public class NetScanFileWorker implements Serializable {
             SRV_FILES.forEach((fileName, srvFileX)->fileWrk(srvFileX, titleMsg, retDeque));
         }
         else {
-    
+            messageToUser.error(SRV_FILES.size() + " is SRV_FILES!");
         }
         return retDeque;
     }

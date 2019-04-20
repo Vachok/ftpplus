@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.net;
 
 
@@ -13,7 +15,9 @@ import ru.vachok.networker.services.MessageLocal;
 import java.io.*;
 import java.lang.reflect.Field;
 import java.net.InetAddress;
-import java.util.*;
+import java.util.Deque;
+import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentMap;
@@ -137,24 +141,6 @@ import java.util.concurrent.TimeUnit;
     ConcurrentMap<String, String> getOffLines() {
         return this.offLines;
     }
-    
-    /**
-     @return {@link List} of {@link InetAddress}, из
-     
-     @throws IOException файловая система
-     */
-    List<InetAddress> onlinesAddressesList() throws IOException {
-        List<InetAddress> onlineAddresses = new ArrayList<>();
-        Deque<String> fileAsDeque = NetScanFileWorker.getI().getListOfOnlineDev();
-    
-        while (!fileAsDeque.isEmpty()) {
-            byte[] bytes = InetAddress.getByName(fileAsDeque.poll().split(" ")[1]).getAddress();
-            onlineAddresses.add(InetAddress.getByAddress(bytes));
-        }
-        
-        return onlineAddresses;
-    }
-    
     
     private class ChkOnlinesSizeChange implements Runnable {
     
