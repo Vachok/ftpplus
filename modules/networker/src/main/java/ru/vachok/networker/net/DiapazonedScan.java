@@ -173,7 +173,7 @@ public class DiapazonedScan implements Runnable {
     }
     
     private void setScanInMin() {
-        if (ALL_DEVICES_LOCAL_DEQUE.remainingCapacity() > 0 && TimeUnit.MILLISECONDS.toMinutes(getRunMin()) > 0) {
+        if (ALL_DEVICES_LOCAL_DEQUE.remainingCapacity() > 0 && TimeUnit.MILLISECONDS.toMinutes(getRunMin()) > 0 && ALL_DEVICES_LOCAL_DEQUE.size() > 0) {
             long scansItMin = ALL_DEVICES_LOCAL_DEQUE.size() / TimeUnit.MILLISECONDS.toMinutes(getRunMin());
             AppComponents.getProps().setProperty(ConstantsFor.PR_SCANSINMIN, String.valueOf(scansItMin));
             messageToUser.warn(getClass().getSimpleName(), "scansItMin", " = " + scansItMin);
