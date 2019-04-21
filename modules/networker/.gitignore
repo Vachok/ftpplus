@@ -864,3 +864,4 @@ inet.files
 *.lck
 ScanOnlineonList
 ScanOnline.onList
+*.map
