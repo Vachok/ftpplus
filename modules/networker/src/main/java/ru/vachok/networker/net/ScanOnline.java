@@ -6,6 +6,7 @@ package ru.vachok.networker.net;
 import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.AppInfoOnLoad;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.Pinger;
@@ -13,16 +14,13 @@ import ru.vachok.networker.ad.user.MoreInfoWorker;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
 
-import java.awt.*;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
+import java.io.*;
 import java.net.InetAddress;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Date;
 import java.util.Deque;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.*;
 
@@ -42,7 +40,9 @@ public class ScanOnline implements Runnable, Pinger {
      */
     private static final NetListKeeper NET_LIST_KEEPER = NetListKeeper.getI();
     
-    private static final String FILENAME_ON = ScanOnline.class.getSimpleName() + ".onList";
+    private static final String FILEEXT_ONLIST = ".onList";
+    
+    private static final String FILENAME_ON = ScanOnline.class.getSimpleName() + FILEEXT_ONLIST;
     
     /**
      {@link NetListKeeper#getOnLinesResolve()}
@@ -59,7 +59,7 @@ public class ScanOnline implements Runnable, Pinger {
     private PrintStream printStream = null;
     
     @Override public String getTimeToEndStr() {
-        throw new IllegalComponentStateException("18.04.2019 (11:31)");
+        return new AppInfoOnLoad().toString();
     }
     
     @Override public String getPingResultStr() {
@@ -94,8 +94,23 @@ public class ScanOnline implements Runnable, Pinger {
     @Override
     public void run() {
         AppComponents.threadConfig().execByThreadConfig(this::offlineNotEmptyActions);
+        File onlinesFile = new File(FILENAME_ON);
+        if (onlinesFile.exists()) {
+            String replaceStr = onlinesFile.getAbsolutePath().replace(FILEEXT_ONLIST, ".last");
+            File repFile = new File(replaceStr);
+            List<String> stringsLastScan = FileSystemWorker.readFileToList(repFile.getAbsolutePath());
+            try {
+                if (stringsLastScan.size() < NetScanFileWorker.getI().getListOfOnlineDev().size()) {
+                    FileSystemWorker.copyOrDelFile(onlinesFile, replaceStr, false);
+                }
+            }
+            catch (IOException e) {
+                messageToUser.error(e.getMessage());
+            }
+            repFile.deleteOnExit();
+        }
         try {
-            OutputStream outputStream = new FileOutputStream(FILENAME_ON);
+            OutputStream outputStream = new FileOutputStream(onlinesFile);
             this.printStream = new PrintStream(outputStream);
             Deque<String> onList = NetScanFileWorker.getI().getListOfOnlineDev();
             while (!onList.isEmpty()) {

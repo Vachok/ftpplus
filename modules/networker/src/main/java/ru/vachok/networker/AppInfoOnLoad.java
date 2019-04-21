@@ -87,6 +87,10 @@ public class AppInfoOnLoad implements Runnable {
      */
     private final TemporaryFullInternet temporaryFullInternet = new AppComponents().temporaryFullInternet();
     
+    public static int getThisDelay() {
+        return thisDelay;
+    }
+    
     private static int thisDelay;
     
     
