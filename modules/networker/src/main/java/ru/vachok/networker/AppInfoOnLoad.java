@@ -132,7 +132,15 @@ public class AppInfoOnLoad implements Runnable {
         ConstantsFor.INFO_MSG_RUNNABLE.run();
         AppComponents.threadConfig().execByThreadConfig(AppInfoOnLoad::starterTelnet);
     }
-
+    
+    @Override public String toString() {
+        final StringBuilder sb = new StringBuilder("AppInfoOnLoad{");
+        sb.append(", thisDelay=").append(thisDelay);
+        sb.append("<br>").append(new TForms().fromArray(miniLogger, true));
+        sb.append('}');
+        return sb.toString();
+    }
+    
     /**
      Очистка pcuserauto
      */
@@ -303,7 +311,7 @@ public class AppInfoOnLoad implements Runnable {
         AppInfoOnLoad.miniLogger.add("infoForU ends. now schedStarter(). Result: " + stringBuilder);
         schedStarter();
     }
-
+    
     /**
      Запуск заданий по-расписанию
      <p>
@@ -348,5 +356,4 @@ public class AppInfoOnLoad implements Runnable {
         messageToUser.info(AppInfoOnLoad.class.getSimpleName() + ".schedStarter()" + ConstantsFor.STR_FINISH);
         AppInfoOnLoad.dateSchedulers(scheduledExecutorService);
     }
-    
 }
