@@ -55,12 +55,13 @@ public class AppComponents {
      */
     private static final String STR_VISITOR = "visitor";
 
-    private static MessageToUser messageToUser = new MessageLocal(AppComponents.class.getSimpleName());
-
     private static final Properties APP_PR = new Properties();
 
     private static final ConcurrentMap<Long, Visitor> VISITS_MAP = new ConcurrentHashMap<>();
-
+    
+    private static final String DB_JAVA_ID = ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName();
+    
+    private static MessageToUser messageToUser = new MessageLocal(AppComponents.class.getSimpleName());
 
     public static ConcurrentMap<Long, Visitor> getVisitsMap() {
         return VISITS_MAP;
@@ -123,8 +124,6 @@ public class AppComponents {
         Visitor visitor = new Visitor(request);
         return VISITS_MAP.putIfAbsent(request.getSession().getCreationTime(), visitor);
     }
-
-    private static final String DB_JAVA_ID = ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName();
     
     @Bean
     @Scope(ConstantsFor.SINGLETON)
@@ -183,9 +182,9 @@ public class AppComponents {
         DBPropsCallable dbPropsCallable = new DBPropsCallable(source, propertiesToUpdate, true);
         return dbPropsCallable.call().getProperty(ConstantsFor.PR_FORCE).equals("true");
     }
-
-
-    public static Properties getOrSetProps() {
+    
+    
+    public static Properties getProps() {
         if (APP_PR.size() > 3) {
             return APP_PR;
         }
@@ -193,8 +192,17 @@ public class AppComponents {
             return new AppComponents().getAppProps();
         }
     }
-
-
+    
+    public void updateProps() {
+        if (APP_PR.size() > 3) {
+            updateProps(APP_PR);
+        }
+        else {
+            throw new IllegalComponentStateException("Properties to small : " + APP_PR.size());
+        }
+    }
+    
+    
     private static boolean saveAppPropsForce() {
         DBPropsCallable saveDBPropsCallable = new DBPropsCallable(new DBRegProperties(DB_JAVA_ID).getRegSourceForProperties(), APP_PR, true);
         return saveDBPropsCallable.call().getProperty(ConstantsFor.PR_FORCE).equals("true");

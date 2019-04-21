@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.services;
 
 
@@ -509,7 +511,7 @@ public class ADSrv implements Runnable {
      @see PhotoConverterSRV
      */
     private void psComm() {
-        Properties p = AppComponents.getOrSetProps();
+        Properties p = AppComponents.getProps();
         PhotoConverterSRV photoConverterSRV = new PhotoConverterSRV(p);
         photoConverterSRV.psCommands();
     }

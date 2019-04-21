@@ -169,6 +169,16 @@ public class DiapazonedScan implements Runnable {
         AppComponents.threadConfig().execByThreadConfig(this::theNewLan);
         AppComponents.threadConfig().execByThreadConfig(this::scanServers);
         AppComponents.threadConfig().execByThreadConfig(this::scanOldLan);
+        AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor().scheduleAtFixedRate(this::setScanInMin, 3, 5, TimeUnit.MINUTES);
+    }
+    
+    private void setScanInMin() {
+        if (ALL_DEVICES_LOCAL_DEQUE.remainingCapacity() > 0 && TimeUnit.MILLISECONDS.toMinutes(getRunMin()) > 0) {
+            long scansItMin = ALL_DEVICES_LOCAL_DEQUE.size() / TimeUnit.MILLISECONDS.toMinutes(getRunMin());
+            AppComponents.getProps().setProperty(ConstantsFor.PR_SCANSINMIN, String.valueOf(scansItMin));
+            messageToUser.warn(getClass().getSimpleName(), "scansItMin", " = " + scansItMin);
+            new AppComponents().updateProps();
+        }
     }
     
     /**

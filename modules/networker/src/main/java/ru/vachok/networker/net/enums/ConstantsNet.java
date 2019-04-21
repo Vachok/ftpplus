@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.net.enums;
 
 
@@ -57,8 +59,8 @@ public enum ConstantsNet { ;
      Название настройки.
      <p>
      pingsleep. Сколько делать перерыв в пингах. В <b>миллисекундах</b>.
-
-     @see AppComponents#getOrSetProps()
+ 
+     @see AppComponents#getProps()
      */
     public static final String PROP_PINGSLEEP = "pingsleep";
 
@@ -104,7 +106,7 @@ public enum ConstantsNet { ;
     public static final int MAX_IN_ONE_VLAN = 255;
 
     public static final int IPS_IN_VELKOM_VLAN = Integer
-        .parseInt(AppComponents.getOrSetProps().getProperty(ConstantsFor.PR_VLANNUM , "69")) * MAX_IN_ONE_VLAN;
+        .parseInt(AppComponents.getProps().getProperty(ConstantsFor.PR_VLANNUM, "69")) * MAX_IN_ONE_VLAN;
 
     public static final int TIMEOUT240 = 240;
 
@@ -129,8 +131,8 @@ public enum ConstantsNet { ;
     private static final ConcurrentMap<String, File> COMPNAME_USERS_MAP = new ConcurrentHashMap<>();
 
     private static final ConcurrentMap<String, String> PC_U_MAP = new ConcurrentHashMap<>();
-
-    private static final Properties LOC_PROPS = AppComponents.getOrSetProps();
+    
+    private static final Properties LOC_PROPS = AppComponents.getProps();
 
     private static final BlockingDeque<String> ALL_DEVICES = new LinkedBlockingDeque<>(IPS_IN_VELKOM_VLAN);
 
@@ -176,7 +178,7 @@ public enum ConstantsNet { ;
      @return {@link #ALL_DEVICES}
      */
     public static BlockingDeque<String> getAllDevices() {
-        AppComponents.getOrSetProps().setProperty(ConstantsFor.PR_VLANNUM , String.valueOf((IPS_IN_VELKOM_VLAN / MAX_IN_ONE_VLAN)));
+        AppComponents.getProps().setProperty(ConstantsFor.PR_VLANNUM, String.valueOf((IPS_IN_VELKOM_VLAN / MAX_IN_ONE_VLAN)));
         return ALL_DEVICES;
     }
 

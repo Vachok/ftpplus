@@ -53,7 +53,7 @@ public class IntoApplication {
     
     public static final boolean TRAY_SUPPORTED = SystemTray.isSupported();
     
-    private static final Properties LOCAL_PROPS = AppComponents.getOrSetProps();
+    private static final Properties LOCAL_PROPS = AppComponents.getProps();
     
     /**
      {@link MessageLocal}
@@ -202,7 +202,7 @@ public class IntoApplication {
             isTray = false;
         }
         if (stringStringEntry.getKey().contains("ff")) {
-            Map<Object, Object> objectMap = Collections.unmodifiableMap(AppComponents.getOrSetProps());
+            Map<Object, Object> objectMap = Collections.unmodifiableMap(AppComponents.getProps());
             LOCAL_PROPS.clear();
             LOCAL_PROPS.putAll(objectMap);
         }

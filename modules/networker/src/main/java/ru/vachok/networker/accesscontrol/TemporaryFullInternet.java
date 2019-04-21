@@ -303,7 +303,7 @@ public class TemporaryFullInternet implements Runnable {
         private ChannelExec execCh() throws JSchException {
             Session session = null;
             session = sessionWithJsch();
-            session.setConfig(new DBRegProperties("general-jsch").getProps());
+            session.setConfig(new DBRegProperties(ConstantsFor.DBTABLE_GENERALJSCH).getProps());
             session.connect();
             if (session.isConnected()) {
                 return (ChannelExec) session.openChannel("exec");

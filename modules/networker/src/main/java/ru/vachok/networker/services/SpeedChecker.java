@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.services;
 
 
@@ -54,9 +56,9 @@ public class SpeedChecker implements Callable<Long>, Runnable {
     /**
      Time as long
      <p>
-     Время из Базы. Берется из {@link AppComponents#getOrSetProps()}
+     Время из Базы. Берется из {@link AppComponents#getProps()}
      */
-    private Long rtLong = Long.valueOf(AppComponents.getOrSetProps().getProperty(ConstantsFor.PR_LASTWORKSTART, "2"));
+    private Long rtLong = Long.valueOf(AppComponents.getProps().getProperty(ConstantsFor.PR_LASTWORKSTART, "2"));
 
     /**
      Метрика метода.
@@ -78,7 +80,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
      Запуск.
      <p>
      Если прошло 20 часов, с момента {@link #rtLong} или не {@link #isWeekEnd}, запуск {@link #setRtLong()}.
-     Иначе {@link #rtLong} = {@link AppComponents#getOrSetProps()}
+     Иначе {@link #rtLong} = {@link AppComponents#getProps()}
      */
     @Override
     public void run() {
@@ -88,7 +90,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
             AppComponents.threadConfig().execByThreadConfig(this::setRtLong);
         }
         else {
-            this.rtLong = Long.valueOf(AppComponents.getOrSetProps().getProperty(ConstantsFor.PR_LASTWORKSTART));
+            this.rtLong = Long.valueOf(AppComponents.getProps().getProperty(ConstantsFor.PR_LASTWORKSTART));
         }
     }
 
@@ -114,7 +116,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
     private void setRtLong() {
         String classMeth = "SpeedChecker.chkForLast";
         String sql = ConstantsFor.DBQUERY_SELECTFROMSPEED;
-        Properties properties = AppComponents.getOrSetProps();
+        Properties properties = AppComponents.getProps();
         final long stArt = System.currentTimeMillis();
         new SpeedChecker.ChkMailAndUpdateDB().run();
 

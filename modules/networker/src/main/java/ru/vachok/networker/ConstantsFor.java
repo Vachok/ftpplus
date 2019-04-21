@@ -411,31 +411,33 @@ public enum ConstantsFor {
      Выгрузка из БД {@link ConstantsFor#DBPREFIX} {@code velkom} - pcuserauto
      */
     public static final String FILENAME_VELKOMPCUSERAUTOTXT = "velkom_pcuserauto.txt";
+    
     public static final String SQL_SELECTFROM_PCUSERAUTO = "select * from pcuserauto";
-
-    static final String STR_FINISH = " is finish";
-
-    private static final String[] STRINGS_TODELONSTART = {"visit_", ".tmp", ".log", ".tv"};
-
-    /**
-     {@link ru.vachok.networker.mailserver.ExCTRL#uplFile(MultipartFile, Model)}, {@link ExSRV#getOFields()},
-     */
-    private static final ConcurrentMap<Integer, MailRule> MAIL_RULES = new ConcurrentHashMap<>();
-
-    private static final int MIN_DELAY = 17;
-
-    /**
-     {@link MessageLocal}
-     */
-    private static final MessageToUser messageToUser = new MessageLocal(ConstantsFor.class.getSimpleName());
     
     public static final String STR_BYTES = " bytes";
     
     public static final String DBFIELB_RESPONSE = "response";
     
     public static final String DBFIELD_METHOD = "method";
-
-
+    
+    public static final String PR_SCANSINMIN = "scansInMin";
+    
+    static final String STR_FINISH = " is finish";
+    
+    private static final String[] STRINGS_TODELONSTART = {"visit_", ".tmp", ".log", ".tv"};
+    
+    /**
+     {@link ru.vachok.networker.mailserver.ExCTRL#uplFile(MultipartFile, Model)}, {@link ExSRV#getOFields()},
+     */
+    private static final ConcurrentMap<Integer, MailRule> MAIL_RULES = new ConcurrentHashMap<>();
+    
+    private static final int MIN_DELAY = 17;
+    
+    /**
+     {@link MessageLocal}
+     */
+    private static final MessageToUser messageToUser = new MessageLocal(ConstantsFor.class.getSimpleName());
+    
     /**
      @return {@link #MAIL_RULES}
      */
@@ -480,7 +482,7 @@ public enum ConstantsFor {
      */
     public static long getBuildStamp() {
         long retLong = 1L;
-        Properties appPr = AppComponents.getOrSetProps();
+        Properties appPr = AppComponents.getProps();
 
         try {
             String hostName = InetAddress.getLocalHost().getHostName();

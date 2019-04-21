@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker;
 
 
@@ -209,7 +211,7 @@ public class ExitApp implements Runnable {
      */
     private void exitAppDO() {
         BlockingDeque<String> devices = ConstantsNet.getAllDevices();
-        Properties properties = AppComponents.getOrSetProps();
+        Properties properties = AppComponents.getProps();
         miniLoggerLast.add("Devices " + "iterator next: " + " = " + devices.iterator().next());
         miniLoggerLast.add("Last" + " = " + devices.getLast());
         miniLoggerLast.add("BlockingDeque " + "size/remainingCapacity/total" + " = " + devices.size() + "/" + devices.remainingCapacity() + "/" + ConstantsNet.IPS_IN_VELKOM_VLAN);

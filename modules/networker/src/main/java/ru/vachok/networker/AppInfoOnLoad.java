@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker;
 
 
@@ -19,6 +21,7 @@ import ru.vachok.networker.net.DiapazonedScan;
 import ru.vachok.networker.net.MyServer;
 import ru.vachok.networker.net.NetMonitorPTV;
 import ru.vachok.networker.net.ScanOnline;
+import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.MyCalen;
 import ru.vachok.networker.services.WeekPCStats;
@@ -58,17 +61,10 @@ public class AppInfoOnLoad implements Runnable {
     private static final String CLASS_NAME = AppInfoOnLoad.class.getSimpleName();
 
     /**
-     Задержка выполнения для этого класса
-
-     @see #schedStarter()
+     {@link AppComponents#getProps()}
      */
-    private static final int THIS_DELAY = 111;
-
-    /**
-     {@link AppComponents#getOrSetProps()}
-     */
-    private static final Properties APP_PROPS = AppComponents.getOrSetProps();
-
+    private static final Properties APP_PROPS = AppComponents.getProps();
+    
     /**
      " uptime."
      */
@@ -90,8 +86,19 @@ public class AppInfoOnLoad implements Runnable {
      @see TemporaryFullInternet
      */
     private final TemporaryFullInternet temporaryFullInternet = new AppComponents().temporaryFullInternet();
-
-
+    
+    private static int thisDelay;
+    
+    
+    static {
+        int scansDelay = Integer.parseInt(APP_PROPS.getProperty(ConstantsFor.PR_SCANSINMIN, "150"));
+        if (scansDelay <= 0) {
+            scansDelay = 1;
+        }
+        thisDelay = ConstantsNet.IPS_IN_VELKOM_VLAN / scansDelay;
+    }
+    
+    
     /**
      Получение размера логов IIS-Exchange.
      <p>
@@ -112,7 +119,19 @@ public class AppInfoOnLoad implements Runnable {
         miniLogger.add(s);
         return s;
     }
-
+    
+    /**
+     Старт
+     <p>
+     {@link #infoForU(ApplicationContext)}
+     */
+    @Override
+    public void run() {
+        infoForU(AppCtx.scanForBeansAndRefreshContext());
+        messageToUser.info(getClass().getSimpleName() + ".run", "thisDelay", " = " + thisDelay);
+        ConstantsFor.INFO_MSG_RUNNABLE.run();
+        AppComponents.threadConfig().execByThreadConfig(AppInfoOnLoad::starterTelnet);
+    }
 
     /**
      Очистка pcuserauto
@@ -126,7 +145,6 @@ public class AppInfoOnLoad implements Runnable {
             miniLogger.add("TRUNCATE false\n" + ConstantsFor.getUpTime() + STR_UPTIME);
         }
     }
-
 
     /**
      Сборщик прав \\srv-fs.eatmeat.ru\common_new
@@ -150,7 +168,6 @@ public class AppInfoOnLoad implements Runnable {
         commonRightsMetrics(stMeth);
     }
 
-
     /**
      Метрика метода
      <p>
@@ -169,7 +186,6 @@ public class AppInfoOnLoad implements Runnable {
         messageToUser.infoNoTitles(msgTimeSp);
         return msgTimeSp;
     }
-
 
     /**
      Reconnect Socket, пока он открыт
@@ -194,7 +210,6 @@ public class AppInfoOnLoad implements Runnable {
         }
     }
 
-
     /**
      Проверяет день недели.
 
@@ -212,7 +227,6 @@ public class AppInfoOnLoad implements Runnable {
         return msg;
     }
 
-
     /**
      Запускает сканнер прав Common
 
@@ -228,7 +242,6 @@ public class AppInfoOnLoad implements Runnable {
 
         new MessageFile().info("AppInfoOnLoad.runCommonScanMetrics", "metricOfCommonScan", " = " + metricOfCommonScan);
     }
-
 
     /**
      Стата за неделю по-ПК
@@ -273,7 +286,6 @@ public class AppInfoOnLoad implements Runnable {
         FileSystemWorker.writeFile(CLASS_NAME + ".mini", miniLogger.stream());
     }
 
-
     /**
      Немного инфомации о приложении.
 
@@ -291,7 +303,6 @@ public class AppInfoOnLoad implements Runnable {
         AppInfoOnLoad.miniLogger.add("infoForU ends. now schedStarter(). Result: " + stringBuilder);
         schedStarter();
     }
-
 
     /**
      Запуск заданий по-расписанию
@@ -314,7 +325,7 @@ public class AppInfoOnLoad implements Runnable {
         }
         scheduledExecutorService.scheduleWithFixedDelay(new NetMonitorPTV(), 0, 10, TimeUnit.SECONDS);
         scheduledExecutorService.scheduleWithFixedDelay(temporaryFullInternet, 1, ConstantsFor.DELAY, TimeUnit.MINUTES);
-        scheduledExecutorService.scheduleWithFixedDelay(DiapazonedScan.getInstance(), 2, AppInfoOnLoad.THIS_DELAY, TimeUnit.MINUTES);
+        scheduledExecutorService.scheduleWithFixedDelay(DiapazonedScan.getInstance(), 2, AppInfoOnLoad.thisDelay, TimeUnit.MINUTES);
         scheduledExecutorService.scheduleWithFixedDelay(new ScanOnline(), 3, 1, TimeUnit.MINUTES);
         scheduledExecutorService.scheduleWithFixedDelay(() -> {
             new AppComponents().saveLogsToDB().startScheduled();
@@ -322,7 +333,7 @@ public class AppInfoOnLoad implements Runnable {
             int cleanInetstatDB = internetUse.cleanTrash();
         } , 4 , ConstantsFor.DELAY , TimeUnit.MINUTES);
         String msg = new StringBuilder()
-            .append(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(AppInfoOnLoad.THIS_DELAY)))
+            .append(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(AppInfoOnLoad.thisDelay)))
             .append(DiapazonedScan.getInstance().getClass().getSimpleName())
             .append(" is starts next time.\n")
             .append(AppInfoOnLoad.methMetr(stArt, classMeth))
@@ -331,32 +342,11 @@ public class AppInfoOnLoad implements Runnable {
         AppInfoOnLoad.miniLogger.add(NetMonitorPTV.class.getSimpleName() + " init delay 0, delay 10. SECONDS");
         final String minutesStr = ". MINUTES";
         AppInfoOnLoad.miniLogger.add(TemporaryFullInternet.class.getSimpleName() + " init delay 1, delay " + ConstantsFor.DELAY + minutesStr);
-        AppInfoOnLoad.miniLogger.add(DiapazonedScan.getInstance().getClass().getSimpleName() + " init delay 2, delay " + AppInfoOnLoad.THIS_DELAY + minutesStr);
+        AppInfoOnLoad.miniLogger.add(DiapazonedScan.getInstance().getClass().getSimpleName() + " init delay 2, delay " + AppInfoOnLoad.thisDelay + minutesStr);
         AppInfoOnLoad.miniLogger.add(ScanOnline.class.getSimpleName() + " init delay 3, delay 1. MINUTES");
-        AppInfoOnLoad.miniLogger.add(AppComponents.class.getSimpleName() + ".getOrSetProps(true) 4, ConstantsFor.DELAY, TimeUnit.MINUTES");
+        AppInfoOnLoad.miniLogger.add(AppComponents.class.getSimpleName() + ".getProps(true) 4, ConstantsFor.DELAY, TimeUnit.MINUTES");
         messageToUser.info(AppInfoOnLoad.class.getSimpleName() + ".schedStarter()" + ConstantsFor.STR_FINISH);
         AppInfoOnLoad.dateSchedulers(scheduledExecutorService);
     }
-
-
-    /**
-     Старт
-     <p>
-     {@link #infoForU(ApplicationContext)}
-     */
-    @Override
-    public void run() {
-        infoForU(AppCtx.scanForBeansAndRefreshContext());
-        ConstantsFor.INFO_MSG_RUNNABLE.run();
-        AppComponents.threadConfig().execByThreadConfig(AppInfoOnLoad::starterTelnet);
-    }
-
-
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("AppInfoOnLoad{");
-        sb.append("miniLogger=").append(new TForms().fromArray(AppInfoOnLoad.miniLogger, false));
-        sb.append('}');
-        return sb.toString();
-    }
+    
 }

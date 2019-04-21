@@ -109,7 +109,7 @@ public class MatrixCtr {
         AppComponents.threadConfig().getTaskScheduler()
             .scheduleAtFixedRate(
                 this::setCurrentProvider,
-                TimeUnit.MINUTES.toMillis(Long.parseLong(AppComponents.getOrSetProps().getProperty("trace", String.valueOf(ConstantsFor.DELAY)))));
+                TimeUnit.MINUTES.toMillis(Long.parseLong(AppComponents.getProps().getProperty("trace", String.valueOf(ConstantsFor.DELAY)))));
     }
 
 

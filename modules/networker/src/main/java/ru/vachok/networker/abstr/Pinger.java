@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.abstr;
 
 
@@ -40,7 +42,7 @@ public interface Pinger {
     default List<String> pingDev(Deque<InetAddress> devicesDeq) {
         MessageLocal messageToUser = new MessageLocal(Pinger.class.getSimpleName() + "SACE!");
         String classMeth = "Pinger.pingDev";
-        Properties properties = AppComponents.getOrSetProps();
+        Properties properties = AppComponents.getProps();
         long pingSleep = ConstantsFor.TIMEOUT_650;
 
         try {

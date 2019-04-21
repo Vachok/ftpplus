@@ -5,7 +5,6 @@ package ru.vachok.networker.services;
 
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
-import org.springframework.ui.Model;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
@@ -23,7 +22,6 @@ import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.actions.ActionCloseMsg;
 import ru.vachok.networker.systray.MessageToTray;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -61,9 +59,9 @@ public class NetScannerSvc {
     private static final MessageToUser LOGGER = new MessageLocal(CLASS_NAME);
     
     /**
-     {@link AppComponents#getOrSetProps()}
+     {@link AppComponents#getProps()}
      */
-    private static final Properties LOCAL_PROPS = AppComponents.getOrSetProps();
+    private static final Properties LOCAL_PROPS = AppComponents.getProps();
     
     /**
      Имя метода, как строка.
@@ -245,44 +243,12 @@ public class NetScannerSvc {
         this.onLinePCsNum = onLinePCsNum;
     }
     
-    /**
-     Выполняет {@link #getPCsAsync()}.
-     <p>
-     
-     @return {@link ConstantsNet#getPcNames()}
-     
-     @see #getPCNamesPref(String)
-     @see NetScanCtr#scanIt(HttpServletRequest, Model, Date)
-     */
     public Set<String> getPcNames() {
         fileCreate(true);
         getPCsAsync();
         return PC_NAMES_SET;
     }
     
-    /**
-     Сканирование с определённым префиксом.
-     <p>
-     1. {@link #getCycleNames(String)} создаёт имена, для конкретного префикса. <br>
-     <i>ПК офлайн:</i> <br>
-     2. {@link #pcNameUnreachable(String, InetAddress)}. Если комп не пингуется. Добавить в {@link #netWorkMap}. <br>
-     <i>ПК он-лайн:</i> <br>
-     (сколько online, сколько offline) <br> Создаётся ссылка {@code a href=\"/ad?"<b>имя</b>/a}. Добавляет в {@link #netWorkMap} put форматированную строку
-     {@code printStr, true} <br> Выводит в консоль
-     через {@link #LOGGER} строку {@code printStr}. <br> Добавляет в {@link ConstantsNet#getPcNames()}, имя, ip и {@code online true}. <br> При
-     возникновении {@link IOException}, например если имя ПК не
-     существует, добавляет {@code getMessage} в {@link #unusedNamesTree}
-     <p>
-     <i>По завершении цикла:</i> <br>
-     {@link #netWorkMap} put префикс, кол-во 5. {@link #writeDB()}. записывает в базу.
-     <p>
-     
-     @param prefixPcName префикс имени ПК. {@link ConstantsNet#PC_PREFIXES}
-     @return состояние запрошенного сегмента
-     
-     @see NetScanCtr#scanIt(HttpServletRequest, Model, Date)
-     @see #getPCsAsync()
-     */
     public Set<String> getPCNamesPref(String prefixPcName) {
         final long startMethTime = System.currentTimeMillis();
         String pcsString = "No name";
@@ -307,7 +273,7 @@ public class NetScannerSvc {
     public String toString() {
         final StringBuilder sb = new StringBuilder("NetScannerSvc{");
         sb.append("CLASS_NAME='").append(CLASS_NAME).append('\'');
-        sb.append(", LOCAL_PROPS=").append(LOCAL_PROPS.equals(AppComponents.getOrSetProps()));
+        sb.append(", LOCAL_PROPS=").append(LOCAL_PROPS.equals(AppComponents.getProps()));
         sb.append(", METH_NAME_GET_PCS_ASYNC='").append(METH_NAME_GET_PCS_ASYNC).append('\'');
         sb.append(", FILENAME_PCAUTODISTXT='").append(ConstantsNet.FILENAME_PCAUTODISTXT).append('\'');
         sb.append(", PC_NAMES_SET=").append(PC_NAMES_SET.size());

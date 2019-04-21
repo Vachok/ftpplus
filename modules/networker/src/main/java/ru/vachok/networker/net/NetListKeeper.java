@@ -150,7 +150,7 @@ import java.util.concurrent.TimeUnit;
         private int wasSize;
         
         public ChkOnlinesSizeChange() {
-            Properties properties = AppComponents.getOrSetProps();
+            Properties properties = AppComponents.getProps();
             this.wasSize = Integer.parseInt(properties.getProperty("onsize", "0"));
         }
         

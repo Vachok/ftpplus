@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.services;
 
 
@@ -16,8 +18,8 @@ import java.util.Properties;
 public class SimpleCalculator {
 
     private String query;
-
-    private static final Properties PROPS = AppComponents.getOrSetProps();
+    
+    private static final Properties PROPS = AppComponents.getProps();
 
     public String getQuery() {
         return query;

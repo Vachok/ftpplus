@@ -60,9 +60,9 @@ public class NetScanCtr {
     private static final Logger LOGGER = LoggerFactory.getLogger(NetScanCtr.class.getSimpleName());
 
     /**
-     {@link AppComponents#getOrSetProps()}
+     {@link AppComponents#getProps()}
      */
-    private static final Properties PROPERTIES = AppComponents.getOrSetProps();
+    private static final Properties PROPERTIES = AppComponents.getProps();
 
     /**
      {@link ConstantsFor#DELAY}
@@ -453,7 +453,7 @@ public class NetScanCtr {
      @param response {@link HttpServletResponse}
      */
     private void allDevNotNull(Model model, HttpServletResponse response) {
-        final float scansInMin = Float.parseFloat(AppComponents.getOrSetProps().getProperty("scansInMin", "200"));
+        final float scansInMin = Float.parseFloat(AppComponents.getProps().getProperty(ConstantsFor.PR_SCANSINMIN, "200"));
         float minLeft = ConstantsNet.getAllDevices().remainingCapacity() / scansInMin;
     
         StringBuilder attTit = new StringBuilder().append(minLeft).append(" ~minLeft. ").append(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis((long) minLeft)));

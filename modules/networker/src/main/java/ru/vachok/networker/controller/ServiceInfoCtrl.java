@@ -179,7 +179,7 @@ public class ServiceInfoCtrl {
             .append("<b><i>").append(AppComponents.versionInfo()).append("</i></b><p><font color=\"orange\">")
             .append(ConstantsNet.getSshMapStr()).append("</font><p>")
             .append(new AppInfoOnLoad()).append(" ").append(AppInfoOnLoad.class.getSimpleName()).append("<p>")
-            .append(new TForms().fromArray(AppComponents.getOrSetProps(), true))
+            .append(new TForms().fromArray(AppComponents.getProps(), true))
             .append("<p>")
             .append(filesReader.readFile(new File("exit.last"))).append("<p>")
             .append("<p><font color=\"grey\">").append(listFilesToReadStr()).append("</font>")
@@ -213,7 +213,7 @@ public class ServiceInfoCtrl {
 
     private float getLast() {
         return (System.currentTimeMillis() - Long
-            .parseLong(AppComponents.getOrSetProps().getProperty(ConstantsFor.PR_LASTS, "1515233487000"))) / (ConstantsFor.ONE_HOUR_IN_MIN / ConstantsFor.ONE_DAY_HOURS);
+            .parseLong(AppComponents.getProps().getProperty(ConstantsFor.PR_LASTS, "1515233487000"))) / (ConstantsFor.ONE_HOUR_IN_MIN / ConstantsFor.ONE_DAY_HOURS);
     }
     
     private String getJREVers() {

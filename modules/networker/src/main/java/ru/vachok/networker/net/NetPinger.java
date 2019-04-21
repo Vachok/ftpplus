@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.net;
 
 
@@ -49,11 +51,11 @@ public class NetPinger implements Runnable, Pinger {
     /**
      Таймаут метода {@link #pingSW()}.
      <p>
-     Берётся из {@link AppComponents#getOrSetProps()}. В <b>миллисекундах</b>. По-умолчанию 20 мсек.
+     Берётся из {@link AppComponents#getProps()}. В <b>миллисекундах</b>. По-умолчанию 20 мсек.
 
      @see ConstantsNet#PROP_PINGSLEEP
      */
-    private long pingSleepMsec = Long.parseLong(AppComponents.getOrSetProps().getProperty(ConstantsNet.PROP_PINGSLEEP, "20"));
+    private long pingSleepMsec = Long.parseLong(AppComponents.getProps().getProperty(ConstantsNet.PROP_PINGSLEEP, "20"));
 
     /**
      Лист {@link InetAddress}.
@@ -136,7 +138,7 @@ public class NetPinger implements Runnable, Pinger {
      {@link InetAddress#isReachable(int)}) добавляется в {@link #resList}.
      */
     private void pingSW() {
-        Properties properties = AppComponents.getOrSetProps();
+        Properties properties = AppComponents.getProps();
         this.pingSleepMsec = Long.parseLong(properties.getProperty(ConstantsNet.PROP_PINGSLEEP, String.valueOf(pingSleepMsec)));
         for (InetAddress inetAddress : ipAsList) {
             try {

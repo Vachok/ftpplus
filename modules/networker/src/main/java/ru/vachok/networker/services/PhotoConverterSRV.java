@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.services;
 
 
@@ -66,7 +68,7 @@ public class PhotoConverterSRV {
     public PhotoConverterSRV(Properties properties) {
         this.properties = properties;
         if (properties == null || properties.size() < 3) {
-            this.properties = AppComponents.getOrSetProps();
+            this.properties = AppComponents.getProps();
         }
     }
     

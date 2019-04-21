@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.accesscontrol;
 
 
@@ -40,7 +42,7 @@ public class AccessListsCheckUniq implements SSHWorker, Runnable {
         }
         try {
             Session itDept = jSch.getSession("ITDept", "srv-nat.eatmeat.ru");
-            itDept.setConfig(new DBRegProperties("general-jsch").getProps());
+            itDept.setConfig(new DBRegProperties(ConstantsFor.DBTABLE_GENERALJSCH).getProps());
             itDept.setInputStream(System.in);
             itDept.connect();
             if (itDept.isConnected()) {

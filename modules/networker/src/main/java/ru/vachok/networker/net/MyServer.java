@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.net;
 
 
@@ -52,7 +54,7 @@ public class MyServer extends Thread {
     private static final MessageToUser messageToUser = new MessageLocal(MyServer.class.getSimpleName());
 
     private static final int LPORT = Integer.parseInt(AppComponents
-        .getOrSetProps()
+        .getProps()
         .getProperty("LPORT", "9990"));
 
     /**
