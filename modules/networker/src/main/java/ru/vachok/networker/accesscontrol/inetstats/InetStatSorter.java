@@ -43,29 +43,29 @@ public class InetStatSorter implements Runnable {
             }
         }
         for (File ipF : rootFiles) {
-            Set<String> fileAsQu = new LinkedHashSet<>();
+            Set<String> fileAsSet = new LinkedHashSet<>();
             ipsFromFiles.forEach(x->{
                 if(ipF.getName().contains(x + "_")) {
-                    fileAsQu.add(FileSystemWorker.readFile(ipF.getAbsolutePath()));
+                    fileAsSet.add(FileSystemWorker.readFile(ipF.getAbsolutePath()));
+                    File f = new File("inet." + ipF.getName().split("_")[0] + ".csv");
+                    makeCSV(f, fileAsSet);
                     ipF.deleteOnExit();
                 }
             });
-            File f = new File("inet." + ipF.getName().split("_")[0] + ".csv");
-            makeCSV(f , fileAsQu);
         }
     }
-
-
-    private void makeCSV(File f , Collection<String> fileAsQu) {
+    
+    
+    private void makeCSV(File f, Collection<String> fileAsSet) {
         if(!f.exists()) {
-            messageToUser.info(f.getAbsolutePath() , "is exist: " + false , " Queue to write =  " + fileAsQu.size() + " items.");
-            FileSystemWorker.writeFile(f.getName() , fileAsQu.stream());
+            messageToUser.info(f.getAbsolutePath(), "is exist: " + false, " Queue to write =  " + fileAsSet.size() + " items.");
+            FileSystemWorker.writeFile(f.getName(), fileAsSet.stream());
         }
         else {
             List<String> stringsFromFile = FileSystemWorker.readFileToList(f.getAbsolutePath());
-            fileAsQu.addAll(stringsFromFile);
-            messageToUser.info(f.getAbsolutePath() , "exist: " + true , " To write =  " + fileAsQu.size() + " strings");
-            FileSystemWorker.writeFile(f.getName() , fileAsQu.stream());
+            fileAsSet.addAll(stringsFromFile);
+            messageToUser.info(f.getAbsolutePath(), "exist: " + true, " To write =  " + fileAsSet.size() + " strings");
+            FileSystemWorker.writeFile(f.getName(), fileAsSet.stream());
         }
     }
 }

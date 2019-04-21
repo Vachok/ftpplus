@@ -48,17 +48,17 @@ import static java.time.temporal.ChronoUnit.HOURS;
 public class ServiceInfoCtrl {
 
     private static final String SERVICE_INFO_CTRL_CLOSE_APP = "ServiceInfoCtrl.closeApp";
-
-    private ProgrammFilesReader filesReader = new ReadFileTo();
     
+    private static final MessageToUser messageToUser = new MessageLocal(ServiceInfoCtrl.class.getSimpleName());
+    
+    private ProgrammFilesReader filesReader = new ReadFileTo();
+
     private boolean authReq;
 
     /**
      {@link Visitor}
      */
     private Visitor visitor;
-
-    private static final MessageToUser messageToUser = new MessageLocal(ServiceInfoCtrl.class.getSimpleName());
 
     /**
      GetMapping /serviceinfo
@@ -156,7 +156,15 @@ public class ServiceInfoCtrl {
         stringBuilder.append(localTime);
         return stringBuilder.toString();
     }
-
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("ServiceInfoCtrl{");
+        sb.append("authReq=").append(authReq);
+        sb.append(", visitor=").append(visitor);
+        sb.append('}');
+        return sb.toString();
+    }
 
     private void modModMaker( Model model , HttpServletRequest request , Visitor visitor ) throws ExecutionException, InterruptedException {
         this.visitor = ConstantsFor.getVis(request);
@@ -207,11 +215,10 @@ public class ServiceInfoCtrl {
         return (System.currentTimeMillis() - Long
             .parseLong(AppComponents.getOrSetProps().getProperty(ConstantsFor.PR_LASTS, "1515233487000"))) / (ConstantsFor.ONE_HOUR_IN_MIN / ConstantsFor.ONE_DAY_HOURS);
     }
-
+    
     private String getJREVers() {
         return System.getProperty("java.version");
     }
-    
     
     private String prepareRequest(HttpServletRequest request) {
         StringBuilder stringBuilder = new StringBuilder();
@@ -250,7 +257,6 @@ public class ServiceInfoCtrl {
         return stringBuilder.toString();
     }
 
-
     private static String listFilesToReadStr() {
         List<File> readUs = new ArrayList<>();
         for (File f : Objects.requireNonNull(new File(".").listFiles())) {
@@ -272,7 +278,6 @@ public class ServiceInfoCtrl {
         return new TForms().fromArray(retListStr, true);
     }
 
-
     private String pingGit() {
         boolean reachable = false;
         try {
@@ -289,15 +294,5 @@ public class ServiceInfoCtrl {
         } else {
             return "<b><font color=\"#ff2121\">" + true + s + LocalTime.now() + s2;
         }
-    }
-
-
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("ServiceInfoCtrl{");
-        sb.append("authReq=").append(authReq);
-        sb.append(", visitor=").append(visitor);
-        sb.append('}');
-        return sb.toString();
     }
 }

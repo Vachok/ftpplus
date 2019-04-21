@@ -167,13 +167,6 @@ public class NetScannerSvc {
     }
     
     
-    /**
-     Выполняет запрос в БД по-пользовательскому вводу
-     <p>
-     Устанавливает {@link ActDirectoryCTRL#queryStringExists(java.lang.String, org.springframework.ui.Model)}
-     
-     @return web-страница с результатом
-     */
     @SuppressWarnings("SameReturnValue")
     public String getInfoFromDB() {
         StringBuilder sqlQBuilder = new StringBuilder();

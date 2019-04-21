@@ -107,7 +107,6 @@ public class WeekPCStats implements Runnable, DataBaseRegSQL {
                                     printWriter.print(",");
                                     printWriter.print(r.getString("site"));
                                     printWriter.println();
-                                    file.deleteOnExit();
                                 }
                             }
                         }
@@ -122,6 +121,7 @@ public class WeekPCStats implements Runnable, DataBaseRegSQL {
             toCopy = file.getName() + "_cp";
         }
         FileSystemWorker.copyOrDelFile(file, toCopy, false);
+        file.deleteOnExit();
         return PC_NAMES_IN_TABLE.size();
     }
 

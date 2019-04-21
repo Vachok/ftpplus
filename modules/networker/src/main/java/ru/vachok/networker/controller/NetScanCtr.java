@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.controller;
 
 
@@ -451,21 +453,12 @@ public class NetScanCtr {
      @param response {@link HttpServletResponse}
      */
     private void allDevNotNull(Model model, HttpServletResponse response) {
-        final float scansInMin = Float.parseFloat(AppComponents.getOrSetProps().getProperty("scansInMin", "90"));
+        final float scansInMin = Float.parseFloat(AppComponents.getOrSetProps().getProperty("scansInMin", "200"));
         float minLeft = ConstantsNet.getAllDevices().remainingCapacity() / scansInMin;
-        String attributeValue = new StringBuilder()
-            .append(minLeft).append(" ~minLeft. ")
-            .append(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis((long) minLeft))).toString();
-        model.addAttribute(ConstantsFor.ATT_TITLE, attributeValue);
-        model.addAttribute("pcs",
-            FileSystemWorker.readFile(ConstantsNet.FILENAME_NEWLAN210).replace(", ", "<br>") + "<p>" + FileSystemWorker.readFile(ConstantsNet.FILENAME_NEWLAN200210).replace(", ", "<br>") +
-                "<p>" + FileSystemWorker.readFile(ConstantsNet.FILENAME_OLDLANTXT0).replace(", ", "<br>") + "<p>" +
-                FileSystemWorker.readFile(ConstantsNet.FILENAME_OLDLANTXT1).replace(", ", "<br>") + "<p>" +
-                FileSystemWorker.readFile(ConstantsNet.FILENAME_SERVTXT_11SRVTXT).replace(", ", "<br>") + "<p>" +
-                FileSystemWorker.readFile(ConstantsNet.FILENAME_SERVTXT_21SRVTXT).replace(", ", "<br>") + "<p>" +
-                FileSystemWorker.readFile(ConstantsNet.FILENAME_SERVTXT_31SRVTXT).replace(", ", "<br>") + "<p>" +
-                FileSystemWorker.readFile(ConstantsNet.FILENAME_SERVTXT_41SRVTXT).replace(", ", "<br>") + "<p>");
-        response.addHeader(ConstantsFor.HEAD_REFRESH, "45");
-    }
     
+        StringBuilder attTit = new StringBuilder().append(minLeft).append(" ~minLeft. ").append(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis((long) minLeft)));
+        model.addAttribute(ConstantsFor.ATT_TITLE, attTit.toString());
+        model.addAttribute("pcs", new ScanOnline().getPingResultStr());
+        response.addHeader(ConstantsFor.HEAD_REFRESH, "75");
+    }
 }

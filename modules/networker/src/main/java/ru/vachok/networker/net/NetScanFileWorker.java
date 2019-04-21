@@ -11,10 +11,7 @@ import ru.vachok.networker.services.MessageLocal;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.ArrayDeque;
-import java.util.Collection;
-import java.util.Deque;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -44,7 +41,7 @@ public class NetScanFileWorker implements Serializable {
     }
     
     public ConcurrentMap<String, File> getSrvFiles() {
-        for (File f : new File(".").listFiles()) {
+        for (File f : Objects.requireNonNull(new File(".").listFiles())) {
             if (f.getName().contains("lan_")) {
                 SRV_FILES.putIfAbsent(f.getName(), f);
             }
