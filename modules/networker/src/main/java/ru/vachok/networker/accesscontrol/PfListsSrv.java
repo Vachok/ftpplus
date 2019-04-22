@@ -162,6 +162,10 @@ public class PfListsSrv {
         pfListsInstAW.setPfRules(build.call());
     
         build.setCommandSSH("sudo cat /home/kudr/inet.log && exit");
-        pfListsInstAW.setInetLog(build.call());
+        String inetLog = build.call();
+        pfListsInstAW.setInetLog(inetLog);
+    
+        String setOfAllowDomains = new AccessListsCheckUniq().connectTo();
+        pfListsInstAW.setInetLog(setOfAllowDomains.replace("<br>", "\n") + "\n" + inetLog);
     }
 }

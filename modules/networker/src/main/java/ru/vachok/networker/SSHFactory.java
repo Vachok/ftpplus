@@ -64,6 +64,16 @@ public class SSHFactory implements Callable<String> {
     
     private String classCaller;
     
+    private Path tempFile;
+    
+    public Path getTempFile() {
+        return tempFile;
+    }
+    
+    public void setTempFile(Path tempFile) {
+        this.tempFile = tempFile;
+    }
+    
     private ProgrammFilesWriter programmFilesWriter = new WriteFilesTo(getClass().getSimpleName());
     
     private Channel respChannel;
@@ -124,7 +134,7 @@ public class SSHFactory implements Callable<String> {
         byte[] bytes = new byte[ConstantsFor.KBYTE];
         int readBytes;
         try {
-            Path tempFile = Files.createTempFile(classCaller, "ssh");
+            this.tempFile = Files.createTempFile(classCaller, "ssh");
             InputStream connect = connect();
             OutputStream outputStream = new FileOutputStream(tempFile.toFile());
             while (true) {
