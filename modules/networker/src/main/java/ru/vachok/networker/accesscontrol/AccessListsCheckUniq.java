@@ -4,6 +4,7 @@ package ru.vachok.networker.accesscontrol;
 
 
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -29,7 +30,7 @@ public class AccessListsCheckUniq implements SSHWorker, Runnable {
     
     @Override public String connectTo() {
         StringBuilder stringBuilder = new StringBuilder();
-        SSHFactory.Builder builder = new SSHFactory.Builder("srv-nat.eatmeat.ru", "uname -a", getClass().getSimpleName());
+        SSHFactory.Builder builder = new SSHFactory.Builder(ConstantsFor.IPADDR_SRVNAT, "uname -a", getClass().getSimpleName());
         SSHFactory sshFactory = builder.build();
         String[] commandsToGetList = {"sudo cat /etc/pf/vipnet && exit", "sudo cat /etc/pf/squid && exit", "sudo cat /etc/pf/squidlimited && exit", "sudo cat /etc/pf/tempfull && exit"};
         for (String getList : commandsToGetList) {
