@@ -6,7 +6,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.controller.UserWebCTRL;
 
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
