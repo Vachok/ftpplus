@@ -56,7 +56,7 @@ public class ScanOnline implements Runnable, Pinger {
     
     private InfoWorker tvInfo = new MoreInfoWorker("tv");
     
-    private PrintStream printStream = null;
+    private PrintStream printStream;
     
     @Override public String getTimeToEndStr() {
         return new AppInfoOnLoad().toString();
@@ -67,21 +67,21 @@ public class ScanOnline implements Runnable, Pinger {
     }
     
     @Override public boolean isReach(String inetAddrStr) {
+        ConcurrentMap<String, String> offLines = NET_LIST_KEEPER.getOffLines();
         boolean xReachable = true;
         try {
             byte[] addressBytes = InetAddress.getByName(inetAddrStr.split(" ")[0]).getAddress();
             InetAddress inetAddress = InetAddress.getByAddress(addressBytes);
             xReachable = inetAddress.isReachable(100);
             if (!xReachable) {
-                NET_LIST_KEEPER.getOffLines().put(inetAddress.toString(), LocalTime.now().toString());
-                if (onLinesResolve.containsKey(inetAddress.toString())) {
-                    NET_LIST_KEEPER.getOffLines().remove(inetAddress.toString());
-                }
-                printStream.println(inetAddrStr + " is offline. Checked: " + new Date());
+                String ifAbsent = offLines.putIfAbsent(inetAddress.toString(), new Date().toString());
+                printStream.println(inetAddrStr + " " + offLines.get(inetAddress.toString()));
+                messageToUser.warn(inetAddrStr, "offline", " = " + ifAbsent);
             }
             else {
                 printStream.println(inetAddrStr);
                 onLinesResolve.putIfAbsent(inetAddress.toString(), LocalTime.now().toString());
+                offLines.remove(inetAddress.toString());
             }
         }
         catch (IOException | ArrayIndexOutOfBoundsException e) {
