@@ -91,13 +91,13 @@ public class AppInfoOnLoad implements Runnable {
     
     
     static {
-        int scansDelay = Integer.parseInt(APP_PROPS.getProperty(ConstantsFor.PR_SCANSINMIN, "150"));
+        int scansDelay = Integer.parseInt(APP_PROPS.getProperty(ConstantsFor.PR_SCANSINMIN, "111"));
         if (scansDelay <= 0) {
             scansDelay = 1;
         }
         thisDelay = ConstantsNet.IPS_IN_VELKOM_VLAN / scansDelay;
-        if (thisDelay < 70 | thisDelay > 120) {
-            thisDelay = 70;
+        if (thisDelay < 80 | thisDelay > 112) {
+            thisDelay = 85;
         }
     }
     
