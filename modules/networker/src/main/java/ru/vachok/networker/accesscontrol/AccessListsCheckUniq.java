@@ -11,8 +11,7 @@ import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.stats.connector.SSHWorker;
 
 import java.io.File;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 
 /**
@@ -22,20 +21,44 @@ public class AccessListsCheckUniq implements SSHWorker, Runnable {
     
     private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
     
+    private List<String> fileNames = new ArrayList<>();
+    
     @Override public void run() {
         messageToUser.info(getClass().getSimpleName() + ".run", "connectTo()", " = " + connectTo());
     }
     
     @Override public String connectTo() {
+        StringBuilder stringBuilder = new StringBuilder();
         SSHFactory.Builder builder = new SSHFactory.Builder("srv-nat.eatmeat.ru", "uname -a", getClass().getSimpleName());
         SSHFactory sshFactory = builder.build();
-        sshFactory.setCommandSSH("sudo cat /etc/pf/allowdomain && exit");
+        String[] commandsToGetList = {"sudo cat /etc/pf/vipnet && exit", "sudo cat /etc/pf/squid && exit", "sudo cat /etc/pf/squidlimited && exit", "sudo cat /etc/pf/tempfull && exit"};
+        for (String getList : commandsToGetList) {
+            sshFactory.setCommandSSH(getList);
         String call = sshFactory.call();
-        Set<String> stringSet = FileSystemWorker.readFileToSet(sshFactory.getTempFile());
-        return new TForms().fromArray(stringSet, true);
+            Set<String> stringSet = FileSystemWorker.readNatListsToSet(sshFactory.getTempFile());
+            String fileName = getList.split("/pf/")[1].split(" && ")[0] + ".list";
+            fileNames.add(fileName);
+            FileSystemWorker.writeFile(fileName, stringSet.stream());
+            stringBuilder.append(call);
+        }
+        parseListFiles();
+        return stringBuilder.toString();
     }
     
-    private List<String> parseListFiles(File file) {
-        return FileSystemWorker.readFileToList(file.getAbsolutePath());
+    private void parseListFiles() {
+        Map<String, String> mapInet = new HashMap<>();
+        for (String fileName : fileNames) {
+            Queue<String> stringDeque = FileSystemWorker.readFileToQueue(new File(fileName).toPath());
+            while (!stringDeque.isEmpty()) {
+                String key = stringDeque.poll();
+                String put = mapInet.putIfAbsent(key, fileName);
+                if (put != null) {
+                    mapInet.put(key + " " + fileName, "NOT UNIQUE");
+                }
+            }
+        }
+        String fromArray = new TForms().fromArray(mapInet, false);
+        messageToUser.info(getClass().getSimpleName(), ".parseListFiles", " = \n" + fromArray);
+        FileSystemWorker.writeFile("inet.uniq", fromArray);
     }
 }

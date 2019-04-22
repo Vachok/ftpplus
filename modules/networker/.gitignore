@@ -866,3 +866,10 @@ ScanOnlineonList
 ScanOnline.onList
 *.map
 *.log.*
+ScanOnline.last
+call
+squid.list
+squidlimited.list
+stringSet.stream
+tempfull.list
+vipnet.list

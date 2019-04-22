@@ -258,13 +258,20 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         return classMeth + " threw Exception: " + e.getMessage() + ": <p>\n\n" + new TForms().fromArray(e, true);
     }
     
-    public static Set<String> readFileToSet(Path file) {
+    public static Set<String> readNatListsToSet(Path file) {
         Set<String> retSet = new HashSet<>();
         try (InputStream inputStream = new FileInputStream(file.toFile());
              InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
              BufferedReader bufferedReader = new BufferedReader(inputStreamReader)
         ) {
-            bufferedReader.lines().forEach(retSet::add);
+            bufferedReader.lines().forEach(x->{
+                try {
+                    retSet.add(x.split(" #")[0]);
+                }
+                catch (ArrayIndexOutOfBoundsException e) {
+                    retSet.add(x);
+                }
+            });
         }
         catch (IOException e) {
             messageToUser.error(e.getMessage());
