@@ -12,7 +12,6 @@ import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.accesscontrol.PfListsSrv;
 import ru.vachok.networker.componentsrepo.Visitor;
-import ru.vachok.networker.controller.ServiceInfoCtrl;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.mailserver.ExSRV;
 import ru.vachok.networker.mailserver.MailRule;
@@ -107,12 +106,6 @@ public enum ConstantsFor {
      */
     public static final String BEANNAME_PFLISTS = "pflists";
 
-    /**
-     <i>Boiler Plate</i>
- 
-     @see MatrixCtr
-     @see ru.vachok.networker.net.MyServer
-     */
     public static final String COM_REBOOT = "reboot";
 
     /**
@@ -250,9 +243,6 @@ public enum ConstantsFor {
      */
     public static final String ATT_TITLE = "title";
 
-    /**
-     {@link ServiceInfoCtrl#closeApp(HttpServletRequest)}
-     */
     public static final int CODE_USEREXIT = 222;
 
     public static final String ATT_HEAD = "head";
@@ -334,8 +324,8 @@ public enum ConstantsFor {
      Имя аттрибута
      */
     public static final String ATT_SSHDETAIL = "sshdetail";
-
-    public static final String HTML_CENTER = "</center>";
+    
+    public static final String HTML_CENTER_CLOSE = "</center>";
 
     public static final String STR_INPUT_OUTPUT = "input/output\n";
 
@@ -436,6 +426,8 @@ public enum ConstantsFor {
      {@link MessageLocal}
      */
     private static final MessageToUser messageToUser = new MessageLocal(ConstantsFor.class.getSimpleName());
+    
+    public static final String HTMLTAG_CENTER = "<center>";
     
     /**
      @return {@link #MAIL_RULES}

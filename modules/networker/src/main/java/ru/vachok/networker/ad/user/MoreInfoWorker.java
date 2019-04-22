@@ -1,7 +1,8 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.ad.user;
 
 
-import org.springframework.ui.Model;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
@@ -9,8 +10,6 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.InternetUse;
 import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
-import ru.vachok.networker.controller.MatrixCtr;
-import ru.vachok.networker.controller.NetScanCtr;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.InfoWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
@@ -20,8 +19,6 @@ import ru.vachok.networker.services.NetScannerSvc;
 import ru.vachok.networker.services.actions.ActionCloseMsg;
 import ru.vachok.networker.systray.MessageToTray;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
@@ -58,20 +55,6 @@ public class MoreInfoWorker implements InfoWorker {
         isOnline = online;
     }
 
-
-    @Override public String getInfoAbout() {
-        if (aboutWhat.equalsIgnoreCase(TV)) {
-            return getTVNetInfo();
-        }
-        else {
-            return getSomeMore(isOnline);
-        }
-    }
-    
-    @Override public void setInfo() {
-    
-    }
-    
     /**
      Достаёт инфо о пользователе из БД
      <p>
@@ -105,7 +88,7 @@ public class MoreInfoWorker implements InfoWorker {
                     String pcName = r.getString(ConstantsFor.DBFIELD_PCNAME);
                     userPCName.add(pcName);
                     String returnER = "<br><center><a href=\"/ad?" + pcName.split("\\Q.\\E")[0] + "\">" + pcName + "</a> set: " + r
-                        .getString(ConstantsNet.DB_FIELD_WHENQUERIED) + ConstantsFor.HTML_CENTER;
+                        .getString(ConstantsNet.DB_FIELD_WHENQUERIED) + ConstantsFor.HTML_CENTER_CLOSE;
                     stringBuilder.append(returnER);
                 }
                 List<String> collectedNames = userPCName.stream().distinct().collect(Collectors.toList());
@@ -116,7 +99,7 @@ public class MoreInfoWorker implements InfoWorker {
                     freqName.putIfAbsent(frequency, x);
                 }
                 if (r.last()) {
-                    MessageToUser messageToUser = new MessageToTray(new ActionCloseMsg(new MessageLocal(NetScanCtr.class.getSimpleName())));
+                    MessageToUser messageToUser = new MessageToTray(new ActionCloseMsg(new MessageLocal("NetScanCtr")));
                     messageToUser.info(r.getString(ConstantsFor.DBFIELD_PCNAME), r.getString(ConstantsNet.DB_FIELD_WHENQUERIED), r.getString(ConstantsFor.DB_FIELD_USER));
                 }
                 Collections.sort(collectedNames);
@@ -134,13 +117,19 @@ public class MoreInfoWorker implements InfoWorker {
         return retBuilder.toString();
     }
     
+    @Override public String getInfoAbout() {
+        if (aboutWhat.equalsIgnoreCase(TV)) {
+            return getTVNetInfo();
+        }
+        else {
+            return getSomeMore(isOnline);
+        }
+    }
     
-    /**
-     <b>ptv1</b> and <b>ptv2</b> ping stats
-
-     @return статистика пинга ptv
-     @see MatrixCtr#getFirst(HttpServletRequest, Model, HttpServletResponse)
-     */
+    @Override public void setInfo() {
+    
+    }
+    
     private static String getTVNetInfo() {
         File ptvFile = new File("ping.tv");
     
@@ -170,8 +159,7 @@ public class MoreInfoWorker implements InfoWorker {
     
         return String.join("<br>\n", ptv1Stats, ptv2Stats);
     }
-
-
+    
     /**
      Поиск имён пользователей компьютера
      <p>

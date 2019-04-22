@@ -12,7 +12,6 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.Pinger;
 import ru.vachok.networker.config.ThreadConfig;
-import ru.vachok.networker.controller.NetScanCtr;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
@@ -69,11 +68,6 @@ public class NetPinger implements Runnable, Pinger {
      */
     private MessageToUser messageToUser = new MessageLocal(NetPinger.class.getSimpleName());
 
-    /**
-     Ввод минут из браузера. По-умолчанию 3.
-
-     @see NetScanCtr#pingPost(org.springframework.ui.Model, javax.servlet.http.HttpServletRequest, ru.vachok.networker.net.NetPinger, javax.servlet.http.HttpServletResponse)
-     */
     private String timeToScanStr = "3";
 
     /**
@@ -93,11 +87,6 @@ public class NetPinger implements Runnable, Pinger {
      */
     private String timeToEndStr = "0";
 
-    /**
-     Файл, загружаемый из браузера.
-
-     @see NetScanCtr#pingPost(org.springframework.ui.Model, javax.servlet.http.HttpServletRequest, ru.vachok.networker.net.NetPinger, javax.servlet.http.HttpServletResponse)
-     */
     private MultipartFile multipartFile;
 
     /**

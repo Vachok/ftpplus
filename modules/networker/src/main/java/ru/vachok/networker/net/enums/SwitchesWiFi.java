@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.net.enums;
 
 
@@ -109,19 +111,19 @@ public enum SwitchesWiFi {
                 inetAddress = InetAddress.getByAddress(addressBytes);
 
                 if (inetAddress.isReachable(500)) {
-                    stringBuilder.append("<center>");
+                    stringBuilder.append(ConstantsFor.HTMLTAG_CENTER);
                     stringBuilder
                         .append("<font color=\"#00ff69\">")
                         .append(s)
                         .append("</font>");
-                    stringBuilder.append(ConstantsFor.HTML_CENTER);
+                    stringBuilder.append(ConstantsFor.HTML_CENTER_CLOSE);
                 } else {
-                    stringBuilder.append("<center>");
+                    stringBuilder.append(ConstantsFor.HTMLTAG_CENTER);
                     stringBuilder
                         .append("<strike><font color=\"red\">")
                         .append(s)
                         .append("</font></strike>");
-                    stringBuilder.append(ConstantsFor.HTML_CENTER);
+                    stringBuilder.append(ConstantsFor.HTML_CENTER_CLOSE);
                 }
             }
         } catch (IllegalAccessException | IOException e) {

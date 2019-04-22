@@ -5,7 +5,6 @@ package ru.vachok.networker.abstr;
 
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.controller.NetScanCtr;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
@@ -16,7 +15,6 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.ConcurrentLinkedDeque;
 
 
 /**
@@ -29,16 +27,7 @@ public interface Pinger {
     String getTimeToEndStr();
 
     String getPingResultStr();
-
-    /**
-     Default метод пингер.
-     <p>
-     Отображает доступность ip-адресов.
-
-     @see NetScanCtr#pingAddr(org.springframework.ui.Model, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
-     @param devicesDeq {@link ConcurrentLinkedDeque} of {@link InetAddress}.
-     @return {@link List} of {@link String} результатов.
-     */
+    
     default List<String> pingDev(Deque<InetAddress> devicesDeq) {
         MessageLocal messageToUser = new MessageLocal(Pinger.class.getSimpleName() + "SACE!");
         String classMeth = "Pinger.pingDev";

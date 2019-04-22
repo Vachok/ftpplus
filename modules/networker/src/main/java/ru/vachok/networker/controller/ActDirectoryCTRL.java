@@ -1,5 +1,7 @@
 
 
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.controller;
 
 
@@ -47,7 +49,9 @@ public class ActDirectoryCTRL {
             ".ru\\c$\\newmailboxes\\fotoraw\\</a>\n";
     
     private static final String ATT_DETAILS = "details";
-
+    
+    private static MessageToUser messageToUser = new MessageLocal(ActDirectoryCTRL.class.getSimpleName());
+    
     /**
      {@link ADSrv}
      */
@@ -59,13 +63,11 @@ public class ActDirectoryCTRL {
      Заголовок страницы.
      */
     private String titleStr = "PowerShell. Применить на SRV-MAIL3";
-
+    
     /**
      {@link PhotoConverterSRV}
      */
     private PhotoConverterSRV photoConverterSRV;
-    
-    private static MessageToUser messageToUser = new MessageLocal(ActDirectoryCTRL.class.getSimpleName());
 
     /**
      @param adSrv             {@link AppComponents#adSrv()}
@@ -79,29 +81,6 @@ public class ActDirectoryCTRL {
         Thread.currentThread().setName(getClass().getSimpleName());
     }
 
-
-    /**
-     /ad control.
-     <p>
-     Записываем визит - {@link ConstantsFor#getVis(javax.servlet.http.HttpServletRequest)}. <br>
-     Берём {@link List} {@link ADUser} - {@link ADSrv#userSetter()}
-     <p>
-     Если {@link HttpServletRequest#getQueryString()} присутствует - возвращаем
-     {@link ActDirectoryCTRL#queryStringExists(java.lang.String, org.springframework.ui.Model)} ({@code return "aditem"})
-     <p>
-     Else сетаем {@link Model} : <br>
-     Берём {@link ADComputer} - {@link ADSrv#getAdComputer()} <br>
-     Добавляем аттрибуты модели: <br>
-     {@link ConstantsFor#ATT_FOOTER} = {@link PageFooter#getFooterUtext()} + {@link Visitor#toString()} <br>
-     {@code "pcs"} = {@link ADSrv#adPCMap(List, boolean)} <br>
-     {@link ConstantsFor#ATT_USERS} = {@link ADSrv#fromADUsersList(List, boolean)}
-     <p>
-     {@code return "ad"}
-
-     @param request {@link HttpServletRequest}
-     @param model   {@link Model}
-     @return ad.html или aditem.html
-     */
     @GetMapping ("/ad")
     public String adUsersComps(HttpServletRequest request, Model model) {
         this.visitor = ConstantsFor.getVis(request);
@@ -118,8 +97,7 @@ public class ActDirectoryCTRL {
         }
         return "ad";
     }
-
-
+    
     /**
      Get adphoto.html
      <p>
@@ -157,8 +135,7 @@ public class ActDirectoryCTRL {
         }
         return "adphoto";
     }
-
-
+    
     /**
      * AdItem
      * <br> 3. {@link ADSrv#getDetails(String)} <br> 4. {@link
@@ -183,7 +160,7 @@ public class ActDirectoryCTRL {
             String finalAdSrvDetails = adSrvDetails;
             messageToUser.info(queryString, attributeValue, ServiceInfoCtrl.percToEnd(new Date(l), 24));
         } catch (Exception e) {
-            model.addAttribute(ATT_DETAILS, "<center>" + internetUse.getUsage(queryString + ConstantsFor.DOMAIN_EATMEATRU) + "</center>");
+            model.addAttribute(ATT_DETAILS, ConstantsFor.HTMLTAG_CENTER + internetUse.getUsage(queryString + ConstantsFor.DOMAIN_EATMEATRU) + ConstantsFor.HTML_CENTER_CLOSE);
         }
         model.addAttribute(ConstantsFor.ATT_FOOTER , new PageFooter().getFooterUtext());
         return "aditem";

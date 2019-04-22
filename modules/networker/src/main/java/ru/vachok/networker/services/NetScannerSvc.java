@@ -15,7 +15,6 @@ import ru.vachok.networker.ExitApp;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.user.MoreInfoWorker;
 import ru.vachok.networker.componentsrepo.LastNetScan;
-import ru.vachok.networker.controller.NetScanCtr;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.InfoWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
@@ -70,9 +69,6 @@ public class NetScannerSvc {
      */
     private static final String METH_NAME_GET_PCS_ASYNC = "NetScannerSvc.getPCsAsync";
     
-    /**
-     {@link ConstantsNet#getPcNames()}
-     */
     private static final Set<String> PC_NAMES_SET = new HashSet<>();
     
     private static final String METH_GETPCSASYNC = ".getPCsAsync";
@@ -103,13 +99,8 @@ public class NetScannerSvc {
     /**
      Компьютеры онлайн
      */
-    private int onLinePCsNum;
+    private int onLinePCsNum = 0;
     
-    /**
-     /netscan POST форма
-     <p>
-     @see NetScanCtr
-     */
     private String thePc = "PC";
     
     /**
