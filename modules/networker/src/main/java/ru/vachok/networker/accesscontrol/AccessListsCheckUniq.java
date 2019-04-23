@@ -33,7 +33,7 @@ public class AccessListsCheckUniq implements SSHWorker, Runnable {
         StringBuilder stringBuilder = new StringBuilder();
         SSHFactory.Builder builder = new SSHFactory.Builder(ConstantsFor.IPADDR_SRVNAT, "uname -a", getClass().getSimpleName());
         SSHFactory sshFactory = builder.build();
-        String[] commandsToGetList = {"sudo cat /etc/pf/vipnet && exit", "sudo cat /etc/pf/squid && exit", "sudo cat /etc/pf/squidlimited && exit", "sudo cat /etc/pf/tempfull && exit"};
+        String[] commandsToGetList = {"sudo cat /etc/pf/24hrs && exit", "sudo cat /etc/pf/vipnet && exit", "sudo cat /etc/pf/squid && exit", "sudo cat /etc/pf/squidlimited && exit", "sudo cat /etc/pf/tempfull && exit"};
         for (String getList : commandsToGetList) {
             sshFactory.setCommandSSH(getList);
             String call = sshFactory.call();

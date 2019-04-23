@@ -1,7 +1,8 @@
- vipnet.list
+ 24hrs.list
  squid.list NOT UNIQUE
  squidlimited.list NOT UNIQUE
  tempfull.list NOT UNIQUE
+ vipnet.list NOT UNIQUE
 # Magaz VLAN 200 squid.list
 # Tech Slyjba VLAN 202 squid.list
 ## vipnet.list
@@ -145,7 +146,8 @@
 10.200.213.155 vipnet.list
 10.200.213.156 vipnet.list
 10.200.213.158 vipnet.list
-10.200.213.160 squid.list
+10.200.213.160 24hrs.list
+10.200.213.160 squid.list NOT UNIQUE
 10.200.213.161 vipnet.list
 10.200.213.163 vipnet.list
 10.200.213.164 vipnet.list
@@ -183,6 +185,7 @@
 10.200.213.81 squid.list
 10.200.213.83 vipnet.list
 10.200.213.84 squid.list
+10.200.213.85 24hrs.list
 10.200.213.86 vipnet.list
 10.200.213.90 vipnet.list
 10.200.213.91 vipnet.list
@@ -206,6 +209,7 @@
 10.200.214.113 vipnet.list
 10.200.214.117 tempfull.list
 10.200.214.118 vipnet.list
+10.200.214.120 24hrs.list
 10.200.214.124 tempfull.list
 10.200.214.51 squid.list
 10.200.214.52 vipnet.list
