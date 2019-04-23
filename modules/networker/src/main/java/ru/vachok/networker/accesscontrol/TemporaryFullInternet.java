@@ -67,6 +67,11 @@ public class TemporaryFullInternet implements Runnable {
         MINI_LOGGER.add("TemporaryFullInternet: " + userInput + " " + delStamp + "(" + new Date(delStamp) + ")");
     }
     
+    public TemporaryFullInternet(long timeStampOff) {
+        this.userInput = "10.200.213.85";
+        this.delStamp = timeStampOff;
+    }
+    
     
     TemporaryFullInternet(String userInput, String numOfHoursStr) {
         this.userInput = userInput;
