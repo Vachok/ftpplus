@@ -431,6 +431,8 @@ public enum ConstantsFor {
     
     public static final String HTMLTAG_CENTER = "<center>";
     
+    public static final String STR_PROPERTIES = "properties";
+    
     /**
      @return {@link #MAIL_RULES}
      */

@@ -54,6 +54,16 @@ public class VersionInfo {
      Время сборки
      */
     private String buildTime = "1";
+    
+    private String propertiesFrom = ConstantsFor.DBPREFIX + ConstantsFor.STR_PROPERTIES;
+    
+    public String getPropertiesFrom() {
+        return propertiesFrom;
+    }
+    
+    public void setPropertiesFrom(String propertiesFrom) {
+        this.propertiesFrom = propertiesFrom;
+    }
 
 
     @Override public int hashCode() {
@@ -154,12 +164,12 @@ public class VersionInfo {
         this.buildTime = properties.getProperty(ConstantsFor.PR_APP_BUILDTIME , "Property does not exists");
     }
 
-
     @Override public String toString() {
         final StringBuilder sb = new StringBuilder("VersionInfo{");
         sb.append("appBuild='").append(appBuild).append('\'');
         sb.append(", appVersion='").append(appVersion).append('\'');
         sb.append(", buildTime='").append(buildTime).append('\'');
+        sb.append(", propertiesFrom='").append(propertiesFrom).append('\'');
         sb.append(", thisPCNameStr='").append(thisPCNameStr).append('\'');
         sb.append('}');
         return sb.toString();

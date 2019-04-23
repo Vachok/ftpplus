@@ -157,7 +157,9 @@ public class AppComponents {
     @Scope(ConstantsFor.SINGLETON)
     public static VersionInfo versionInfo() {
         VersionInfo versionInfo = new VersionInfo();
-        if (!ConstantsFor.thisPC().toLowerCase().contains("rups00")) versionInfo.setParams();
+        if (ConstantsFor.thisPC().toLowerCase().contains("home") && ConstantsFor.thisPC().toLowerCase().contains("do00213")) {
+            versionInfo.setParams();
+        }
         return versionInfo;
     }
 

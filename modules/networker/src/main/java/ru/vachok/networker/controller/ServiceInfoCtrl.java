@@ -176,7 +176,7 @@ public class ServiceInfoCtrl {
         Date comeD = new Date(whenCome.get());
         String resValue = new StringBuilder()
             .append(MyCalen.toStringS()).append("<br><br>")
-            .append("<b><i>").append(AppComponents.versionInfo()).append("</i></b><p><font color=\"orange\">")
+            .append("<b><i>").append(AppComponents.versionInfo().toString()).append("</i></b><p><font color=\"orange\">")
             .append(ConstantsNet.getSshMapStr()).append("</font><p>")
             .append(new AppInfoOnLoad()).append(" ").append(AppInfoOnLoad.class.getSimpleName()).append("<p>")
             .append(new TForms().fromArray(AppComponents.getProps(), true))
