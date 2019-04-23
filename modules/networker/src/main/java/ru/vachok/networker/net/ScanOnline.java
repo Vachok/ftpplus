@@ -73,7 +73,6 @@ public class ScanOnline implements Runnable, Pinger {
             byte[] addressBytes = InetAddress.getByName(inetAddrStr.split(" ")[0]).getAddress();
             InetAddress inetAddress = InetAddress.getByAddress(addressBytes);
             xReachable = inetAddress.isReachable(100);
-            printStream.println("Checked: " + new Date());
             if (!xReachable) {
                 String removeOnline = onLinesResolve.remove(inetAddress.toString());
                 printStream.println(inetAddrStr + " <font color=\"red\">offline</font>.");
@@ -120,6 +119,7 @@ public class ScanOnline implements Runnable, Pinger {
             OutputStream outputStream = new FileOutputStream(onlinesFile);
             this.printStream = new PrintStream(outputStream);
             Deque<String> onList = NetScanFileWorker.getI().getListOfOnlineDev();
+            printStream.println("Checked: " + new Date());
             while (!onList.isEmpty()) {
                 isReach(onList.poll());
             }
