@@ -379,6 +379,8 @@ public enum ConstantsFor {
     public static final int INT_ANSWER = 4;
 
     public static final String FILENAME_ALLDEVMAP = "alldev.map";
+    
+    public static final String FILENAME_INETUNIQ = "inet.uniq";
 
     public static final String FILEEXT_PROPERTIES = ".properties";
 

@@ -72,8 +72,8 @@ public class TForms {
     public String fromArray(Exception e, boolean isHTML) {
         this.brStringBuilder = new StringBuilder();
         this.nStringBuilder = new StringBuilder();
-
-        brStringBuilder.append(LocalDateTime.now()).append(BR_STR).append(e.getMessage()).append(" Exception message.<p>");
+    
+        brStringBuilder.append(LocalDateTime.now()).append(BR_STR).append("<h3>").append(e.getMessage()).append(" Exception message.</h3><p>");
 
         for (StackTraceElement stackTraceElement : e.getStackTrace()) {
             parseTrace(stackTraceElement);

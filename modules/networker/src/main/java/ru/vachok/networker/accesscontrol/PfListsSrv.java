@@ -164,7 +164,7 @@ public class PfListsSrv {
         String inetLog = build.call();
         pfListsInstAW.setInetLog(inetLog);
     
-        String setOfAllowDomains = new AccessListsCheckUniq().connectTo();
-        pfListsInstAW.setInetLog(setOfAllowDomains.replace("<br>", "\n") + "\n" + inetLog);
+        String inetUniqStr = new AccessListsCheckUniq().connectTo();
+        pfListsInstAW.setInetLog(inetLog + inetUniqStr.replace("<br>", "\n"));
     }
 }

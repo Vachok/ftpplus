@@ -3,24 +3,19 @@
 package ru.vachok.networker.accesscontrol;
 
 
-import com.jcraft.jsch.ChannelExec;
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
 import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.abstr.SSHFace;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.NetListKeeper;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 
 import java.awt.*;
-import java.io.*;
+import java.io.File;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
@@ -79,38 +74,36 @@ public class TemporaryFullInternet implements Runnable {
         MINI_LOGGER.add("TemporaryFullInternet: " + userInput + " " + delStamp + "(" + new Date(delStamp) + ")");
     }
     
-    
-    public void execNewMeth() {
-        SSHFace face = new SSHHelper("sudo cat /etc/pf/24hrs");
-        try {
-            String doCommand = face.execCommand("192.168.13.30", "ls");
-            System.out.println("doCommand = " + doCommand);
-        }
-        catch (JSchException | IOException e) {
-            messageToUser.error(e.getMessage());
-        }
-    }
-    
     public String doAdd() {
-        AppComponents.threadConfig().thrNameSet("addSSH");
-        SSH_FACTORY.setCommandSSH(ConstantsNet.COM_CAT24HRSLIST);
         NameOrIPChecker nameOrIPChecker = new NameOrIPChecker(userInput);
-        String tempString24HRSFile = SSH_FACTORY.call();
         StringBuilder retBuilder = new StringBuilder();
+        String tempString24HRSFile;
         String sshIP;
         try {
             sshIP = String.valueOf(nameOrIPChecker.resolveIP()).split("/")[1];
+            SSH_FACTORY.setCommandSSH(ConstantsNet.COM_CAT24HRSLIST);
+            tempString24HRSFile = SSH_FACTORY.call();
         }
-        catch (ArrayIndexOutOfBoundsException e) {
-            sshIP = e.getMessage();
+        catch (ArrayIndexOutOfBoundsException | UnknownFormatConversionException e) {
+            sshIP = new TForms().fromArray(e, true);
+            tempString24HRSFile = null;
+            return sshIP;
         }
         if (tempString24HRSFile.contains(sshIP)) {
-            retBuilder
+            retBuilder.append("<h2>")
                 .append(getClass().getSimpleName())
-                .append(" doAdd ")
+                .append(" doAdd: ")
                 .append(sshIP)
-                .append(" is exist!<br>")
+                .append(" is exist!</h2><br>")
                 .append(new TForms().fromArray(SSH_CHECKER_MAP, true));
+        }
+        else if (NetListKeeper.getI().getInetUniqMap().containsKey(sshIP)) {
+            retBuilder
+                .append("<h2>")
+                .append(sshIP)
+                .append(" in regular list: ")
+                .append(NetListKeeper.getI().getInetUniqMap().get(sshIP.replace(".list", "")))
+                .append("</h2>");
         }
         else {
             String sshCommand = new StringBuilder()
@@ -197,12 +190,9 @@ public class TemporaryFullInternet implements Runnable {
     }
     
     private void sshChecker() {
-        AppComponents.threadConfig().thrNameSet("chkSSH");
         SSH_FACTORY.setCommandSSH(ConstantsNet.COM_CAT24HRSLIST);
         String tempFile = SSH_FACTORY.call();
-        
         MINI_LOGGER.add(tempFile);
-        
         String classMeth = "TemporaryFullInternet.sshChecker";
         Map<String, Long> sshCheckerMap = SSH_CHECKER_MAP;
         
@@ -253,76 +243,6 @@ public class TemporaryFullInternet implements Runnable {
         }
         else {
             MINI_LOGGER.add("IP" + " = " + x + " time: " + y + " (" + new Date(y) + ")");
-        }
-    }
-    
-    
-    class SSHHelper implements SSHFace {
-        
-        
-        String commandSSH;
-        
-        
-        public SSHHelper(String commandSSH) {
-            this.commandSSH = commandSSH;
-        }
-        
-        
-        public String getCommandSSH() {
-            return commandSSH;
-        }
-        
-        
-        public void setCommandSSH(String commandSSH) {
-            this.commandSSH = commandSSH;
-        }
-        
-        
-        @Override public String execCommand(String srv, String commandSSH) throws JSchException, IOException {
-            execCh().setCommand(commandSSH);
-            StringBuilder stringBuilder = new StringBuilder();
-            byte[] bytes = new byte[ConstantsFor.KBYTE];
-            while (true) {
-                execCh().connect();
-                InputStream inputStream = execCh().getInputStream();
-                OutputStream outputStream = new FileOutputStream("com.ssh");
-                byte[] buf = new byte[1024];
-                while (true) {
-                    int readBuf = inputStream.read(buf, 0, buf.length);
-                    if (readBuf <= 0) {
-                        break;
-                    }
-                    outputStream.write(buf, 0, readBuf);
-                }
-                outputStream.close();
-                inputStream.close();
-            }
-        }
-        
-        
-        private ChannelExec execCh() throws JSchException {
-            Session session = null;
-            session = sessionWithJsch();
-            session.setConfig(new DBRegProperties(ConstantsFor.DBTABLE_GENERALJSCH).getProps());
-            session.connect();
-            if (session.isConnected()) {
-                return (ChannelExec) session.openChannel("exec");
-            }
-            else {
-                throw new JSchException();
-            }
-        }
-        
-        
-        private Session sessionWithJsch() throws JSchException {
-            JSch jSch = new JSch();
-            try {
-                jSch.addIdentity("a161.pem");
-            }
-            catch (JSchException e) {
-                messageToUser.error(e.getMessage());
-            }
-            return jSch.getSession("ITDept", ConstantsFor.IPADDR_SRVNAT);
         }
     }
 }

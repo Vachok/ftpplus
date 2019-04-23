@@ -31,14 +31,14 @@ class DeleterTemp extends FileSystemWorker implements Runnable {
     
     private static final MessageToUser messageToUser = new MessageLocal(DeleterTemp.class.getSimpleName());
     
-    private PrintWriter printWriter = null;
+    private PrintWriter printWriter;
 
     /**
      Счётчик файлов
      */
-    private int filesCounter = 0;
+    private int filesCounter;
     
-    private String patToDel = null;
+    private String patToDel;
 
     private List<String> fromFile = new ArrayList<>();
     
@@ -70,19 +70,16 @@ class DeleterTemp extends FileSystemWorker implements Runnable {
     
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-        AppComponents.threadConfig().thrNameSet(file.toFile().getName().substring(0, 5));
+        AppComponents.threadConfig().thrNameSet(file.toFile().getName().substring(0, 2));
         this.filesCounter += 1;
         String fileAbs = new StringBuilder().append(filesCounter).append(") ")
             .append(file.toFile().getName())
             .append(ConstantsFor.STR_DELETED).toString();
         if (moreInfo(attrs)) {
-            Files.setAttribute(file, ConstantsFor.DOS_ARCHIVE, true);
             printWriter.println(new StringBuilder()
                 .append(file.toAbsolutePath())
                 .append(",")
-                .append(new Date(attrs.lastAccessTime().toMillis()))
-                .append(",")
-                .append(Files.readAttributes(file, "dos:*")));
+                .append(new Date(attrs.lastAccessTime().toMillis())));
         }
         if(tempFile(file.toAbsolutePath())){
             try{

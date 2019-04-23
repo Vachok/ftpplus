@@ -45,6 +45,16 @@ import java.util.concurrent.TimeUnit;
     
     private ConcurrentMap<String, String> offLines = new ConcurrentHashMap<>();
     
+    private Map<String, String> inetUniqMap = new ConcurrentHashMap<>();
+    
+    public Map<String, String> getInetUniqMap() {
+        return inetUniqMap;
+    }
+    
+    public void setInetUniqMap(Map<String, String> inetUniqMap) {
+        this.inetUniqMap = inetUniqMap;
+    }
+    
     private String nameOfExtObject = getClass().getSimpleName() + "onLinesResolve.map";
     
     private NetListKeeper() {

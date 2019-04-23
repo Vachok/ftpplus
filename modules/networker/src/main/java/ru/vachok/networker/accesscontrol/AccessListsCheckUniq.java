@@ -8,6 +8,7 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.NetListKeeper;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.stats.connector.SSHWorker;
 
@@ -35,7 +36,7 @@ public class AccessListsCheckUniq implements SSHWorker, Runnable {
         String[] commandsToGetList = {"sudo cat /etc/pf/vipnet && exit", "sudo cat /etc/pf/squid && exit", "sudo cat /etc/pf/squidlimited && exit", "sudo cat /etc/pf/tempfull && exit"};
         for (String getList : commandsToGetList) {
             sshFactory.setCommandSSH(getList);
-        String call = sshFactory.call();
+            String call = sshFactory.call();
             Set<String> stringSet = FileSystemWorker.readNatListsToSet(sshFactory.getTempFile());
             String fileName = getList.split("/pf/")[1].split(" && ")[0] + ".list";
             fileNames.add(fileName);
@@ -60,6 +61,7 @@ public class AccessListsCheckUniq implements SSHWorker, Runnable {
         }
         String fromArray = new TForms().fromArray(mapInet, false);
         messageToUser.info(getClass().getSimpleName(), ".parseListFiles", " = \n" + fromArray);
-        FileSystemWorker.writeFile("inet.uniq", fromArray);
+        FileSystemWorker.writeFile(ConstantsFor.FILENAME_INETUNIQ, fromArray);
+        NetListKeeper.getI().setInetUniqMap(mapInet);
     }
 }
