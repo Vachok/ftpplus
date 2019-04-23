@@ -74,15 +74,15 @@ public class ScanOnline implements Runnable, Pinger {
             InetAddress inetAddress = InetAddress.getByAddress(addressBytes);
             xReachable = inetAddress.isReachable(100);
             if (!xReachable) {
-                offLines.putIfAbsent(inetAddress.toString(), new Date().toString());
                 String removeOnline = onLinesResolve.remove(inetAddress.toString());
-                printStream.println(inetAddrStr + " " + offLines.get(inetAddress.toString()));
+                printStream.println(inetAddrStr + " <font color=\"red\">offline</font>. Checked: " + new Date());
                 if (!(removeOnline == null)) {
-                    messageToUser.warn(inetAddrStr, "offline", " = " + removeOnline);
+                    offLines.putIfAbsent(inetAddress.toString(), new Date().toString());
+                    messageToUser.warn(inetAddrStr, " offline", " = " + removeOnline);
                 }
             }
             else {
-                printStream.println(inetAddrStr);
+                printStream.println(inetAddrStr + " <font color=\"green\">online</font>. Checked: " + new Date());
                 String ifAbsent = onLinesResolve.putIfAbsent(inetAddress.toString(), LocalTime.now().toString());
                 String removeOffline = offLines.remove(inetAddress.toString());
                 if (!(removeOffline == null)) {
@@ -133,7 +133,8 @@ public class ScanOnline implements Runnable, Pinger {
         final StringBuilder sb = new StringBuilder();
         sb.append("<b>Since ").append("<i>").append(new Date(NetScanFileWorker.getI().getLastStamp())).append("</i>").append(tvInfo.getInfoAbout()).append("</b><br><br>");
         sb.append("Offline pc is <font color=\"red\"><b>").append(NET_LIST_KEEPER.getOffLines().size()).append(":</b></font><br>");
-        sb.append("Online  pc is<font color=\"#00ff69\"> <b>").append(onLinesResolve.size()).append(":</b><br>").append(new TForms().fromArray(onLinesResolve, true)).append("</font><br>");
+        sb.append("Online  pc is<font color=\"#00ff69\"> <b>").append(onLinesResolve.size()).append(":</b><br>")
+            .append(new TForms().fromArray(onLinesResolve, true)).append("</font><br>");
         return sb.toString();
     }
     
