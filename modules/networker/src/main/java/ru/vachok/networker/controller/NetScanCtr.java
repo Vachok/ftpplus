@@ -168,7 +168,7 @@ public class NetScanCtr {
         model.addAttribute("pingResult" , FileSystemWorker.readFile(ConstantsNet.PINGRESULT_LOG));
         model.addAttribute(ConstantsFor.ATT_TITLE , netPingerInst.getTimeToEndStr() + " pinger hash: " + netPingerInst.hashCode());
         model.addAttribute(ConstantsFor.ATT_FOOTER , new PageFooter().getFooterUtext());
-        model.addAttribute("pingTest", new TForms().fromArray(netPingerInst.pingDev(NetListKeeper.getDeqAddr()), true));
+        model.addAttribute("pingTest", new TForms().fromArray(netPingerInst.pingDev(NetListKeeper.getMapAddr()), true));
         //noinspection MagicNumber
         response.addHeader(ConstantsFor.HEAD_REFRESH , String.valueOf(ConstantsFor.DELAY * 1.8f));
         messageToUser.info("NetScanCtr.pingAddr" , "HEAD_REFRESH" , " = " + response.getHeader(ConstantsFor.HEAD_REFRESH));

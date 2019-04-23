@@ -20,7 +20,6 @@ import java.util.Deque;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
@@ -88,22 +87,22 @@ import java.util.concurrent.TimeUnit;
      
      @return {@link Deque} {@link InetAddress}
      */
-    public static Deque<InetAddress> getDeqAddr() {
-        Deque<InetAddress> retDeq = new ConcurrentLinkedDeque<>();
+    public static Map<InetAddress, String> getMapAddr() {
+        Map<InetAddress, String> retDeq = new ConcurrentHashMap<>();
         Field[] fields = OtherKnownDevices.class.getFields();
         try {
             for (Field field : fields) {
                 if (field.getName().contains("IP")) {
                     byte[] inetAddressBytes = InetAddress.getByName(field.get(field).toString()).getAddress();
-                    retDeq.add(InetAddress.getByAddress(inetAddressBytes));
+                    retDeq.putIfAbsent(InetAddress.getByAddress(inetAddressBytes), field.getName());
                 }
                 else {
-                    retDeq.add(InetAddress.getByName(field.get(field).toString()));
+                    retDeq.putIfAbsent(InetAddress.getByName(field.get(field).toString()), field.getName());
                 }
             }
         }
         catch (IOException | IllegalAccessException e) {
-            messageToUser.error(FileSystemWorker.error(NetListKeeper.class.getSimpleName() + ".getDeqAddr", e));
+            messageToUser.error(FileSystemWorker.error(NetListKeeper.class.getSimpleName() + ".getMapAddr", e));
         }
         return retDeq;
     }
@@ -147,8 +146,8 @@ import java.util.concurrent.TimeUnit;
             Map<String, String> fromFileMap = (ConcurrentMap<String, String>) objectInputStream.readObject();
             onLinesResolve.putAll(fromFileMap);
         }
-        catch (IOException | ClassNotFoundException ignore) {
-            //
+        catch (IOException | ClassNotFoundException e) {
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".readMap", e));
         }
     }
     

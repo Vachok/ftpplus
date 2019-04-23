@@ -3,6 +3,7 @@
 package ru.vachok.networker.abstr;
 
 
+import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -12,8 +13,8 @@ import ru.vachok.networker.services.MessageLocal;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
-import java.util.Deque;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 
@@ -28,8 +29,8 @@ public interface Pinger {
 
     String getPingResultStr();
     
-    default List<String> pingDev(Deque<InetAddress> devicesDeq) {
-        MessageLocal messageToUser = new MessageLocal(Pinger.class.getSimpleName() + "SACE!");
+    default List<String> pingDev(Map<InetAddress, String> devicesDeq) {
+        MessageToUser messageToUser = new MessageLocal(Pinger.class.getSimpleName() + " SAFE!");
         String classMeth = "Pinger.pingDev";
         Properties properties = AppComponents.getProps();
         long pingSleep = ConstantsFor.TIMEOUT_650;
@@ -41,25 +42,25 @@ public interface Pinger {
         }
         List<String> resList = new ArrayList<>();
         properties.setProperty(ConstantsNet.PROP_PINGSLEEP, pingSleep + "");
-
-        while (!devicesDeq.isEmpty()) {
+        long finalPingSleep = pingSleep;
+        
+        devicesDeq.forEach((devAdr, devName)->{
             try {
-                InetAddress inetAddress = devicesDeq.removeFirst();
-                boolean reachable = inetAddress.isReachable(ConstantsFor.TIMEOUT_650);
+                boolean reachable = devAdr.isReachable(ConstantsFor.TIMEOUT_650);
                 String msg;
                 if (reachable) {
-                    msg = "<font color=\"#00ff69\">" + inetAddress + " is " + true + "</font>";
+                    msg = "<font color=\"#00ff69\">" + devName + " = " + devAdr + " is " + true + "</font>";
                 } else {
-                    msg = "<font color=\"red\">" + inetAddress + " is " + false + "</font>";
+                    msg = "<font color=\"red\">" + devName + " = " + devAdr + " is " + false + "</font>";
                 }
                 resList.add(msg);
-                Thread.sleep(pingSleep);
+                Thread.sleep(finalPingSleep);
             } catch (IOException | InterruptedException e) {
                 messageToUser.errorAlert("Pinger", "pingDev", e.getMessage());
                 FileSystemWorker.error(classMeth, e);
                 Thread.currentThread().interrupt();
             }
-        }
+        });
         return resList;
     }
 
