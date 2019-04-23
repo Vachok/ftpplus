@@ -74,14 +74,20 @@ public class ScanOnline implements Runnable, Pinger {
             InetAddress inetAddress = InetAddress.getByAddress(addressBytes);
             xReachable = inetAddress.isReachable(100);
             if (!xReachable) {
-                String ifAbsent = offLines.putIfAbsent(inetAddress.toString(), new Date().toString());
+                offLines.putIfAbsent(inetAddress.toString(), new Date().toString());
+                String removeOnline = onLinesResolve.remove(inetAddress.toString());
                 printStream.println(inetAddrStr + " " + offLines.get(inetAddress.toString()));
-                messageToUser.warn(inetAddrStr, "offline", " = " + ifAbsent);
+                if (!(removeOnline == null)) {
+                    messageToUser.warn(inetAddrStr, "offline", " = " + removeOnline);
+                }
             }
             else {
                 printStream.println(inetAddrStr);
-                onLinesResolve.putIfAbsent(inetAddress.toString(), LocalTime.now().toString());
-                offLines.remove(inetAddress.toString());
+                String ifAbsent = onLinesResolve.putIfAbsent(inetAddress.toString(), LocalTime.now().toString());
+                String removeOffline = offLines.remove(inetAddress.toString());
+                if (!(removeOffline == null)) {
+                    messageToUser.info(inetAddrStr, "online", " = " + removeOffline);
+                }
             }
         }
         catch (IOException | ArrayIndexOutOfBoundsException e) {

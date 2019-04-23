@@ -8,6 +8,7 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ExitApp;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.accesscontrol.AccessListsCheckUniq;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.OtherKnownDevices;
 import ru.vachok.networker.services.MessageLocal;
@@ -48,6 +49,9 @@ import java.util.concurrent.TimeUnit;
     private Map<String, String> inetUniqMap = new ConcurrentHashMap<>();
     
     public Map<String, String> getInetUniqMap() {
+        if (inetUniqMap.size() == 0) {
+            new AccessListsCheckUniq().run();
+        }
         return inetUniqMap;
     }
     
