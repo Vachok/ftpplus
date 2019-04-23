@@ -67,21 +67,26 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
      */
     public static String searchInCommon(String[] folderPath) {
         FileSearcher fileSearcher = new FileSearcher(folderPath[0]);
+        String folderToSearch = "";
         try {
-            String folderToSearch = folderPath[1];
-            folderToSearch = "\\\\srv-fs.eatmeat.ru\\common_new\\" + folderToSearch;
+            folderToSearch = folderPath[1];
+        }
+        catch (ArrayIndexOutOfBoundsException e) {
+            folderToSearch = "";
+        }
+        folderToSearch = "\\\\srv-fs.eatmeat.ru\\common_new\\" + folderToSearch;
+        try {
             Files.walkFileTree(Paths.get(folderToSearch), fileSearcher);
-            List<String> fileSearcherResList = fileSearcher.getResList();
-            String resTo = new TForms().fromArray(fileSearcherResList, true);
-            if (fileSearcherResList.size() > 0) {
-                writeFile("search_" + LocalTime.now().toSecondOfDay() + ".res", fileSearcherResList.stream());
-            }
-            return resTo;
         }
-        catch (Exception e) {
-            error("searchInCommon", e);
-            return e.getMessage();
+        catch (IOException e) {
+            messageToUser.error(e.getMessage());
         }
+        List<String> fileSearcherResList = fileSearcher.getResList();
+        String resTo = new TForms().fromArray(fileSearcherResList, true);
+        if (fileSearcherResList.size() > 0) {
+            writeFile("search_" + LocalTime.now().toSecondOfDay() + ".res", fileSearcherResList.stream());
+        }
+        return resTo;
     }
     
     
@@ -278,7 +283,6 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         }
         return retSet;
     }
-    
     
     private static boolean printTo(OutputStream outputStream, Exception e) {
         try (PrintStream printStream = new PrintStream(outputStream, true)) {
