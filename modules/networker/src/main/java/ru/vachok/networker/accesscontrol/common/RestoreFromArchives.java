@@ -52,8 +52,8 @@ public class RestoreFromArchives extends SimpleFileVisitor<Path> {
      {@link StringBuilder} результата работы.
      */
     private final StringBuilder resultStr = new StringBuilder();
-
-    private final int perionDays;
+    
+    private int perionDays;
 
     Path getArchiveDir() {
         return ARCHIVE_DIR;

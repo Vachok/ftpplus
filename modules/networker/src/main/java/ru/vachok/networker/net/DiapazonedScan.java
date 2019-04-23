@@ -296,13 +296,14 @@ public class DiapazonedScan implements Runnable {
         
         @Override
         public void run() {
-            boolean isExecute = execScan();
-            if (isExecute) {
+            if (ALL_DEVICES_LOCAL_DEQUE.remainingCapacity() > 0) {
+                execScan();
                 messageToUser.info(getClass().getSimpleName() + ".run", "ALL_DEVICES_LOCAL_DEQUE.size()", " = " + ALL_DEVICES_LOCAL_DEQUE.size());
             }
             else {
                 messageToUser.error(getClass().getSimpleName(), String.valueOf(ALL_DEVICES_LOCAL_DEQUE.remainingCapacity()), " ALL_DEVICES_LOCAL_DEQUE remainingCapacity!");
             }
+    
         }
         
         @Override public String toString() {
