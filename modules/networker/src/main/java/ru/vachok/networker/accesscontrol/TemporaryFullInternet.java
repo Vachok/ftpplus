@@ -97,7 +97,7 @@ public class TemporaryFullInternet implements Runnable {
                 .append(" is exist!</h2><br>")
                 .append(new TForms().fromArray(SSH_CHECKER_MAP, true));
         }
-        else if (NetListKeeper.getI().getInetUniqMap().containsKey(sshIP)) {
+        else if (NetListKeeper.getI().getInetUniqMap().containsKey(sshIP) && !NetListKeeper.getI().getInetUniqMap().get(sshIP).equalsIgnoreCase("10.200.213.85")) {
             retBuilder
                 .append("<h2>")
                 .append(sshIP)
