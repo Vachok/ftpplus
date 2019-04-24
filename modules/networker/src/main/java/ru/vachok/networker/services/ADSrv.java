@@ -303,7 +303,7 @@ public class ADSrv implements Runnable {
      */
     @Override
     public void run() {
-        new MessageCons().errorAlert("ADSrv.run");
+        new MessageCons(getClass().getSimpleName()).errorAlert("ADSrv.run");
     }
     
     /**
@@ -335,8 +335,7 @@ public class ADSrv implements Runnable {
             }
         }
         catch (SQLException | IOException e) {
-            new MessageCons().errorAlert(ConstantsFor.CLASS_NAME_PCUSERRESOLVER, "offNowGetU", e.getMessage());
-            FileSystemWorker.error("PCUserResolver.offNowGetU", e);
+            messageToUser.error(FileSystemWorker.error(ADSrv.class.getSimpleName() + ".offNowGetU", e));
         }
         return v.toString();
     }

@@ -349,7 +349,7 @@ public enum ConstantsFor {
             new MessageSwing(new ActionDefault("https://github.com/Vachok/ftpplus/issues")).warn("CHECK TODO!");
         }
         else {
-            new MessageCons().info("ConstantsFor.INFO_MSG_RUNNABLE", "thisPC()", " = " + thisPC());
+            new MessageCons(ConstantsFor.class.getSimpleName()).info("ConstantsFor.INFO_MSG_RUNNABLE", "thisPC()", " = " + thisPC());
         }
     };
 

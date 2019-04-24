@@ -1,7 +1,6 @@
 package ru.vachok.networker.services.actions;
 
 
-import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.net.DiapazonedScan;
@@ -23,10 +22,6 @@ import java.util.concurrent.TimeUnit;
 public class ActionSomeInfo extends AbstractAction {
 
     private transient MessageToUser messageToUser = new MessageLocal(ActionSomeInfo.class.getSimpleName());
-    
-    public ActionSomeInfo() {
-        new MessageCons().errorAlert("ActionSomeInfo.ActionSomeInfo");
-    }
 
     @Override
     public void actionPerformed(ActionEvent e) {
