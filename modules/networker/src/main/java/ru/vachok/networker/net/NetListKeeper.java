@@ -9,7 +9,6 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ExitApp;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.AccessListsCheckUniq;
-import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.OtherKnownDevices;
 import ru.vachok.networker.services.MessageLocal;
 
@@ -47,6 +46,12 @@ import java.util.concurrent.TimeUnit;
     
     private Map<String, String> inetUniqMap = new ConcurrentHashMap<>();
     
+    private String nameOfExtObject = getClass().getSimpleName() + "onLinesResolve.map";
+    
+    private NetListKeeper() {
+        AppComponents.threadConfig().getTaskScheduler().submitListenable(new ExitApp("on.map", this.onLinesResolve));
+    }
+    
     public Map<String, String> getInetUniqMap() {
         if (inetUniqMap.size() == 0) {
             new AccessListsCheckUniq().run();
@@ -56,12 +61,6 @@ import java.util.concurrent.TimeUnit;
     
     public void setInetUniqMap(Map<String, String> inetUniqMap) {
         this.inetUniqMap = inetUniqMap;
-    }
-    
-    private String nameOfExtObject = getClass().getSimpleName() + "onLinesResolve.map";
-    
-    private NetListKeeper() {
-        AppComponents.threadConfig().getTaskScheduler().submitListenable(new ExitApp("on.map", this.onLinesResolve));
     }
     
     public static NetListKeeper getI() {
@@ -90,8 +89,8 @@ import java.util.concurrent.TimeUnit;
     public static Map<InetAddress, String> getMapAddr() {
         Map<InetAddress, String> retDeq = new ConcurrentHashMap<>();
         Field[] fields = OtherKnownDevices.class.getFields();
-        try {
-            for (Field field : fields) {
+        for (Field field : fields) {
+            try {
                 if (field.getName().contains("IP")) {
                     byte[] inetAddressBytes = InetAddress.getByName(field.get(field).toString()).getAddress();
                     retDeq.putIfAbsent(InetAddress.getByAddress(inetAddressBytes), field.getName());
@@ -100,10 +99,11 @@ import java.util.concurrent.TimeUnit;
                     retDeq.putIfAbsent(InetAddress.getByName(field.get(field).toString()), field.getName());
                 }
             }
+            catch (IOException | IllegalAccessException e) {
+                messageToUser.error(e.getMessage());
+            }
         }
-        catch (IOException | IllegalAccessException e) {
-            messageToUser.error(FileSystemWorker.error(NetListKeeper.class.getSimpleName() + ".getMapAddr", e));
-        }
+        
         return retDeq;
     }
     

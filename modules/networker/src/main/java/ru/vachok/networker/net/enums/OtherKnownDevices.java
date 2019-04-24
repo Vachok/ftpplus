@@ -34,4 +34,6 @@ public enum OtherKnownDevices {
     public static final String PTV3_EATMEAT_RU = "ptv3.eatmeat.ru";
     
     public static final String DO0213_KUDR = "do0213.eatmeat.ru";
+    
+    public static final String NO0027_KUDROLD = "no0027.eatmeat.ru";
 }
