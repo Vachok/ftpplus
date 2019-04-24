@@ -109,6 +109,7 @@ public class NetScanCtr {
         this.netScannerSvcInstAW = netScannerSvc;
         this.netPingerInst = netPingerInst;
         this.scanOnline = scanOnline;
+        messageToUser.info(getClass().getSimpleName() + ".pingDev", "AppComponents.ipFlushDNS()", " = " + AppComponents.ipFlushDNS());
     }
 
 

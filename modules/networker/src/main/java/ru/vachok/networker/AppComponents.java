@@ -32,8 +32,7 @@ import ru.vachok.stats.SaveLogsToDB;
 
 import javax.servlet.http.HttpServletRequest;
 import java.awt.*;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
@@ -77,6 +76,22 @@ public class AppComponents {
     @Bean
     public static Logger getLogger(String className) {
         return LoggerFactory.getLogger(className);
+    }
+    
+    public static String ipFlushDNS() {
+        StringBuilder stringBuilder = new StringBuilder();
+        try {
+            Process processFlushDNS = Runtime.getRuntime().exec("ipconfig /flushdns");
+            InputStream flushDNSInputStream = processFlushDNS.getInputStream();
+            InputStreamReader reader = new InputStreamReader(flushDNSInputStream);
+            try (BufferedReader bufferedReader = new BufferedReader(reader)) {
+                bufferedReader.lines().forEach(stringBuilder::append);
+            }
+        }
+        catch (IOException e) {
+            messageToUser.error(e.getMessage());
+        }
+        return stringBuilder.toString();
     }
 
     @Bean

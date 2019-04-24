@@ -34,16 +34,15 @@ public interface Pinger {
         String classMeth = "Pinger.pingDev";
         Properties properties = AppComponents.getProps();
         long pingSleep = ConstantsFor.TIMEOUT_650;
-
         try {
             pingSleep = Long.parseLong(properties.getProperty(ConstantsNet.PROP_PINGSLEEP));
         } catch (Exception e) {
             messageToUser.warn(pingSleep + " is " + ConstantsFor.TIMEOUT_650 + "\n" + e.getMessage());
         }
         List<String> resList = new ArrayList<>();
-        properties.setProperty(ConstantsNet.PROP_PINGSLEEP, pingSleep + "");
+        properties.setProperty(ConstantsNet.PROP_PINGSLEEP, String.valueOf(pingSleep));
         long finalPingSleep = pingSleep;
-        
+        messageToUser.info(getClass().getSimpleName() + ".pingDev", "AppComponents.ipFlushDNS()", " = " + AppComponents.ipFlushDNS());
         devicesDeq.forEach((devAdr, devName)->{
             try {
                 boolean reachable = devAdr.isReachable(ConstantsFor.TIMEOUT_650);
@@ -56,8 +55,8 @@ public interface Pinger {
                 resList.add(msg);
                 Thread.sleep(finalPingSleep);
             } catch (IOException | InterruptedException e) {
-                messageToUser.errorAlert("Pinger", "pingDev", e.getMessage());
-                FileSystemWorker.error(classMeth, e);
+                messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".pingDev", e));
+                Thread.currentThread().checkAccess();
                 Thread.currentThread().interrupt();
             }
         });

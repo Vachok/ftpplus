@@ -90,7 +90,7 @@ public class IntoApplication {
     public static void main(@Nullable String[] args) {
         SpringApplication application = new SpringApplication();
         ConfigurableApplicationContext context = SpringApplication.run(IntoApplication.class);
-        IntoApplication.configurableApplicationContext = context;
+        configurableApplicationContext = context;
         FileSystemWorker.delFilePatterns(ConstantsFor.getStringsVisit());
         if (args != null && args.length > 0) {
             readArgs(context, args);
@@ -248,6 +248,7 @@ public class IntoApplication {
         stringBuilder.append(LocalDate.now().getDayOfWeek().getValue());
         stringBuilder.append(" - day of week\n");
         stringBuilder.append(LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault()));
+        stringBuilder.append(AppComponents.ipFlushDNS());
         messageToUser.info("IntoApplication.beforeSt", "stringBuilder", stringBuilder.toString());
         System.setProperty("encoding", "UTF8");
         FileSystemWorker.writeFile("system", new TForms().fromArray(System.getProperties()));
