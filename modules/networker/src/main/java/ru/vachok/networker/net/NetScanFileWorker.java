@@ -51,10 +51,10 @@ public class NetScanFileWorker implements Serializable {
         }
         else {
             SRV_FILES.putIfAbsent(ConstantsNet.FILENAME_NEWLAN210, new File(ConstantsNet.FILENAME_NEWLAN210));
-            SRV_FILES.putIfAbsent(ConstantsNet.FILENAME_NEWLAN200210, new File(ConstantsNet.FILENAME_NEWLAN200210));
+            SRV_FILES.putIfAbsent(ConstantsNet.FILENAME_NEWLAN220, new File(ConstantsNet.FILENAME_NEWLAN220));
             SRV_FILES.putIfAbsent(ConstantsNet.FILENAME_OLDLANTXT0, new File(ConstantsNet.FILENAME_OLDLANTXT0));
             SRV_FILES.putIfAbsent(ConstantsNet.FILENAME_OLDLANTXT1, new File(ConstantsNet.FILENAME_OLDLANTXT1));
-            SRV_FILES.putIfAbsent(ConstantsNet.FILENAME_SERVTXT_11SRVTXT, new File(ConstantsNet.FILENAME_SERVTXT_11SRVTXT));
+            SRV_FILES.putIfAbsent(ConstantsNet.FILENAME_SERVTXT_10SRVTXT, new File(ConstantsNet.FILENAME_SERVTXT_10SRVTXT));
             SRV_FILES.putIfAbsent(ConstantsNet.FILENAME_SERVTXT_21SRVTXT, new File(ConstantsNet.FILENAME_SERVTXT_21SRVTXT));
             SRV_FILES.putIfAbsent(ConstantsNet.FILENAME_SERVTXT_31SRVTXT, new File(ConstantsNet.FILENAME_SERVTXT_31SRVTXT));
             SRV_FILES.putIfAbsent(ConstantsNet.FILENAME_SERVTXT_41SRVTXT, new File(ConstantsNet.FILENAME_SERVTXT_41SRVTXT));

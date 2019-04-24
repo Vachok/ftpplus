@@ -94,8 +94,8 @@ public enum ConstantsNet { ;
      Название файла новой подсети 10.200.х.х
      */
     public static final String FILENAME_NEWLAN210 = "lan_200210.txt";
-
-    public static final String FILENAME_NEWLAN200210 = "lan_210220.txt";
+    
+    public static final String FILENAME_NEWLAN220 = "lan_210220.txt";
     /**
      Название файла старой подсети 192.168.х.х
      */
@@ -115,8 +115,8 @@ public enum ConstantsNet { ;
     public static final int NOTDPC = 50;
 
     public static final String FILENAME_SERVTXT = "srv.txt";
-
-    public static final String FILENAME_SERVTXT_11SRVTXT = "lan_11v" + FILENAME_SERVTXT;
+    
+    public static final String FILENAME_SERVTXT_10SRVTXT = "lan_11v" + FILENAME_SERVTXT;
 
     public static final String FILENAME_SERVTXT_21SRVTXT = "lan_21v" + FILENAME_SERVTXT;
 
