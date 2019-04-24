@@ -147,7 +147,7 @@ import java.util.concurrent.TimeUnit;
             onLinesResolve.putAll(fromFileMap);
         }
         catch (IOException | ClassNotFoundException e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".readMap", e));
+            messageToUser.error(e.getMessage());
         }
     }
     

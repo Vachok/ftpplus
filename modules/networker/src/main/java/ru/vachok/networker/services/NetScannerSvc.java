@@ -99,7 +99,7 @@ public class NetScannerSvc {
     /**
      Компьютеры онлайн
      */
-    private int onLinePCsNum = 0;
+    private int onLinePCsNum;
     
     private String thePc = "PC";
     
@@ -111,8 +111,6 @@ public class NetScannerSvc {
     private String thrName = Thread.currentThread().getName();
     
     private Map<String, Boolean> netWorkMap;
-    
-    private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
     
     private NetScannerSvc() {
         this.netWorkMap = LastNetScan.getLastNetScan().getNetWork();
@@ -249,14 +247,13 @@ public class NetScannerSvc {
         netWorkMap.put("<h4>" + prefixPcName + "     " + PC_NAMES_SET.size() + "</h4>", true);
         try {
             pcsString = writeDB();
+            LOGGER.info(pcsString);
         }
         catch (SQLException e) {
-            LOGGER.errorAlert(CLASS_NAME, "getPCNamesPref", e.getMessage());
-            FileSystemWorker.error("NetScannerSvc.getPCNamesPref", e);
+            LOGGER.error(e.getMessage());
         }
         String elapsedTime = "<b>Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethTime) + " sec.</b> " + LocalTime.now();
         PC_NAMES_SET.add(elapsedTime);
-        LOGGER.info(pcsString);
         return PC_NAMES_SET;
     }
     
@@ -340,7 +337,6 @@ public class NetScannerSvc {
         }
     }
     
-    
     /**
      Основной скан-метод.
      <p>
@@ -358,10 +354,10 @@ public class NetScannerSvc {
                 .info("NetScannerSvc started scan", ConstantsFor.getUpTime(), "" + onLinePCsNum + " last online PCs\n File: " + new File("scan.tmp").getAbsolutePath());
         }
         catch (NoClassDefFoundError e) {
-            messageToUser.error(getClass().getSimpleName(), METH_GETPCSASYNC, new TForms().fromArray(e.getStackTrace(), false));
+            LOGGER.error(getClass().getSimpleName(), METH_GETPCSASYNC, new TForms().fromArray(e.getStackTrace(), false));
         }
         catch (Exception e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + METH_GETPCSASYNC, e));
+            LOGGER.error(FileSystemWorker.error(getClass().getSimpleName() + METH_GETPCSASYNC, e));
         }
         AppComponents.threadConfig().execByThreadConfig(()->{
             for (String s : ConstantsNet.getPcPrefixes()) {
@@ -404,17 +400,17 @@ public class NetScannerSvc {
     @SuppressWarnings("MagicNumber")
     private void runAfterAllScan() {
         float upTime = (float) (TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime)) / ConstantsFor.ONE_HOUR_IN_MIN;
-        List<String> toFileList = new ArrayList<>();
+        List<String> miniLogger = new ArrayList<>();
         String compNameUsers = new TForms().fromArray(ConstantsNet.getPCnameUsersMap(), false);
         String psUser = new TForms().fromArrayUsers(ConstantsNet.getPcUMap(), false);
         String msgTimeSp =
             "NetScannerSvc.getPCsAsync method. " + (float) (System.currentTimeMillis() - startClassTime) / 1000 + ConstantsFor.STR_SEC_SPEND;
-        String valueOfPropLastScan = System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY) + "";
+        String valueOfPropLastScan = String.valueOf((System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY)));
         LOCAL_PROPS.setProperty(ConstantsNet.PR_LASTSCAN, valueOfPropLastScan);
-        toFileList.add(compNameUsers);
-        toFileList.add(psUser);
-        toFileList.add(msgTimeSp);
-        toFileList.add(new TForms().fromArray(LOCAL_PROPS, false));
+        miniLogger.add(compNameUsers);
+        miniLogger.add(psUser);
+        miniLogger.add(msgTimeSp);
+        miniLogger.add(new TForms().fromArray(LOCAL_PROPS, false));
         LOCAL_PROPS.setProperty(ConstantsFor.PR_ONLINEPC, String.valueOf(onLinePCsNum));
     
         LastNetScan.getLastNetScan().setTimeLastScan(new Date());
@@ -425,7 +421,7 @@ public class NetScannerSvc {
         boolean isForceSaved = new AppComponents().updateProps(LOCAL_PROPS);
     
         FileSystemWorker.writeFile(ConstantsNet.BEANNAME_LASTNETSCAN, new TForms().fromArray(LastNetScan.getLastNetScan().getNetWork(), false));
-        FileSystemWorker.writeFile(this.getClass().getSimpleName() + METH_GETPCSASYNC, toFileList);
+        FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".mini", miniLogger);
         FileSystemWorker.writeFile("unused.ips", unusedNamesTree.stream());
     
         boolean ownObject = new ExitApp(ConstantsFor.FILENAME_ALLDEVMAP, ConstantsNet.getAllDevices()).writeOwnObject();
@@ -436,10 +432,9 @@ public class NetScannerSvc {
             new MessageSwing().infoTimer(50, bodyMsg);
         }
         catch (Exception e) {
-            messageToUser.warn(bodyMsg);
+            LOGGER.warn(bodyMsg);
         }
         this.onLinePCsNum = 0;
-        messageToUser.info(getClass().getSimpleName(), "LOCAL_PROPS", " = " + new TForms().fromArray(LOCAL_PROPS, false));
     }
     
     
@@ -551,10 +546,6 @@ public class NetScannerSvc {
             }
             list.add(namePCPrefix + nameCount + ConstantsFor.DOMAIN_EATMEATRU);
         }
-        LOGGER.info(
-            ConstantsFor.STR_INPUT_OUTPUT,
-            "namePCPrefix = [" + namePCPrefix + "]",
-            "java.util.Collection<java.lang.String>");
         return list;
     }
     
@@ -609,7 +600,6 @@ public class NetScannerSvc {
             toSort.sort(null);
             for (String x : toSort) {
                 String pcSegment = "Я не знаю...";
-                LOGGER.info(x);
                 if (x.contains("200.200")) {
                     pcSegment = "Торговый дом";
                 }
@@ -681,7 +671,7 @@ public class NetScannerSvc {
                 list.add(x1 + " " + x2 + " " + pcSegment + " " + onLine);
             }
         }
-        messageToUser.warn(getClass().getSimpleName() + ".writeDB", "executeUpdate: ", " = " + exUpInt);
+        LOGGER.warn(getClass().getSimpleName() + ".writeDB", "executeUpdate: ", " = " + exUpInt);
         return new TForms().fromArray(list, true);
     }
 }
