@@ -872,3 +872,4 @@ stringSet.stream
 *.res
 DeleterTemp.txt
 ScanOnline.last
+/NetScannerSvc.mini

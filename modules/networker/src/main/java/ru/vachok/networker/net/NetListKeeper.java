@@ -146,8 +146,8 @@ import java.util.concurrent.TimeUnit;
             Map<String, String> fromFileMap = (ConcurrentMap<String, String>) objectInputStream.readObject();
             onLinesResolve.putAll(fromFileMap);
         }
-        catch (IOException | ClassNotFoundException e) {
-            messageToUser.error(e.getMessage());
+        catch (IOException | ClassNotFoundException ignore) {
+            //
         }
     }
     

@@ -87,7 +87,7 @@ public class FileSearcher extends FileSystemWorker {
     @Override
     public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
         if (dir.toFile().isDirectory()) {
-            messageToUser.info("scanned: " + dir, "total files: " + totalFiles, "found: " + resList.size());
+            messageToUser.info("total files: " + totalFiles, "found: " + resList.size(), "scanned: " + dir.toString().replace("\\\\srv-fs.eatmeat.ru\\common_new\\", ""));
         }
         return FileVisitResult.CONTINUE;
     }

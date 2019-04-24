@@ -297,7 +297,7 @@ public class DiapazonedScan implements Runnable {
         @Override
         public void run() {
             if (vlanFile.exists()) {
-                String newFileName = ".\\lan\\" + vlanFile.getName().replace(".txt", "_" + (System.currentTimeMillis() / 1000) + ".scan");
+                String newFileName = ROOT_PATH_STR + vlanFile.getName().replace(".txt", "_" + (System.currentTimeMillis() / 1000) + ".scan");
                 FileSystemWorker.copyOrDelFile(vlanFile, newFileName, false);
             }
             if (ALL_DEVICES_LOCAL_DEQUE.remainingCapacity() > 0) {
