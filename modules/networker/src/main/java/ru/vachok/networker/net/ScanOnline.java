@@ -19,10 +19,7 @@ import java.net.InetAddress;
 import java.nio.charset.Charset;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.Date;
-import java.util.Deque;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.*;
 
 
@@ -58,6 +55,8 @@ public class ScanOnline implements Runnable, Pinger {
     private InfoWorker tvInfo = new MoreInfoWorker("tv");
     
     private PrintStream printStream;
+    
+    private List<String> maxOnList = new ArrayList<>();
     
     @Override public String getTimeToEndStr() {
         return new AppInfoOnLoad().toString();
@@ -102,6 +101,8 @@ public class ScanOnline implements Runnable, Pinger {
     public void run() {
         AppComponents.threadConfig().execByThreadConfig(this::offlineNotEmptyActions);
         File onlinesFile = new File(FILENAME_ON);
+        File fileMAX = new File(onlinesFile.toPath().toAbsolutePath().toString().replace(FILENAME_ON, "\\lan\\max.online"));
+        
         if (onlinesFile.exists()) {
             String replaceStr = onlinesFile.getAbsolutePath().replace(FILEEXT_ONLIST, ".last");
             File repFile = new File(replaceStr);
@@ -113,6 +114,12 @@ public class ScanOnline implements Runnable, Pinger {
             }
             catch (IOException e) {
                 messageToUser.error(e.getMessage());
+            }
+            if (repFile.length() > fileMAX.length()) {
+                messageToUser.warn(repFile.getName(), fileMAX.getName() + " size difference", " = " + (repFile.length() - fileMAX.length()));
+                List<String> readFileToList = FileSystemWorker.readFileToList(fileMAX.getAbsolutePath());
+                readFileToList.stream().forEach(x->maxOnList.add(x));
+                FileSystemWorker.copyOrDelFile(repFile, fileMAX.getAbsolutePath(), false);
             }
             repFile.deleteOnExit();
         }
@@ -138,6 +145,7 @@ public class ScanOnline implements Runnable, Pinger {
         sb.append("Offline pc is <font color=\"red\"><b>").append(NET_LIST_KEEPER.getOffLines().size()).append(":</b></font><br>");
         sb.append("Online  pc is<font color=\"#00ff69\"> <b>").append(onLinesResolve.size()).append(":</b><br>");
         sb.append(new TForms().fromArray(onLinesResolve, true)).append("</font><br>");
+        sb.append("<details><summary>Максимальное кол-во онлайн адресов: " + maxOnList.size() + "</summary>" + new TForms().fromArray(maxOnList, true) + "</details>");
         return sb.toString();
     }
     

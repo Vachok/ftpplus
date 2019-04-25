@@ -173,6 +173,7 @@
 10.200.213.62 squid.list
 10.200.213.63 vipnet.list
 10.200.213.65 vipnet.list
+10.200.213.66 tempfull.list
 10.200.213.68 vipnet.list
 10.200.213.7 vipnet.list
 10.200.213.70 vipnet.list
@@ -193,6 +194,7 @@
 10.200.213.92 tempfull.list
 10.200.213.95 vipnet.list
 10.200.213.96 vipnet.list
+10.200.213.97 tempfull.list
 10.200.213.98 squid.list
 10.200.214.100 vipnet.list
 10.200.214.101 vipnet.list
