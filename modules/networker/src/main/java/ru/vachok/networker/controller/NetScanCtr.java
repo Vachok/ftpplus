@@ -82,9 +82,7 @@ public class NetScanCtr {
     private static final String STR_REQUEST = "request = [";
 
     private static final String STR_MODEL = "], model = [";
-
-    private static final String ATT_NETPINGER = "netPinger";
-
+    
     private static final String ATT_PCS = "pcs";
 
     private static final MessageToUser messageToUser = new MessageLocal(NetScanCtr.class.getSimpleName());
@@ -165,7 +163,8 @@ public class NetScanCtr {
 
     @GetMapping("/ping")
     public String pingAddr( Model model , HttpServletRequest request , HttpServletResponse response ) {
-        model.addAttribute(ATT_NETPINGER , netPingerInst);
+        netPingerInst.setTimeForScanStr(String.valueOf(TimeUnit.SECONDS.toMinutes(Math.abs(LocalTime.now().toSecondOfDay() - LocalTime.parse("08:30").toSecondOfDay()))));
+        model.addAttribute(ConstantsFor.ATT_NETPINGER, netPingerInst);
         model.addAttribute("pingResult" , FileSystemWorker.readFile(ConstantsNet.PINGRESULT_LOG));
         model.addAttribute(ConstantsFor.ATT_TITLE , netPingerInst.getTimeToEndStr() + " pinger hash: " + netPingerInst.hashCode());
         model.addAttribute(ConstantsFor.ATT_FOOTER , new PageFooter().getFooterUtext());
@@ -181,7 +180,7 @@ public class NetScanCtr {
     public String pingPost( Model model , HttpServletRequest request , @ModelAttribute NetPinger netPinger , HttpServletResponse response ) {
         this.netPingerInst = netPinger;
         netPinger.run();
-        model.addAttribute(ATT_NETPINGER , netPinger);
+        model.addAttribute(ConstantsFor.ATT_NETPINGER, netPinger);
         String npEq = "Netpinger equals is " + netPinger.equals(this.netPingerInst);
         model.addAttribute(ConstantsFor.ATT_TITLE , npEq);
         model.addAttribute("ok" , FileSystemWorker.readFile(ConstantsNet.PINGRESULT_LOG));
@@ -250,7 +249,7 @@ public class NetScanCtr {
         sb.append(", NETSCANNERSVC_INST=").append(netScannerSvcInstAW.hashCode());
         sb.append(", STR_REQUEST='").append(STR_REQUEST).append('\'');
         sb.append(", STR_MODEL='").append(STR_MODEL).append('\'');
-        sb.append(", ATT_NETPINGER='").append(ATT_NETPINGER).append('\'');
+        sb.append(", ATT_NETPINGER='").append(ConstantsFor.ATT_NETPINGER).append('\'');
         sb.append(", lastScanMAP=").append(lastScanMAP.size());
         sb.append(", netPingerInst=").append(netPingerInst.hashCode());
         sb.append('}');

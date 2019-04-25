@@ -413,6 +413,8 @@ public enum ConstantsFor {
     
     public static final String PR_SCANSINMIN = "scansInMin";
     
+    public static final String ATT_NETPINGER = "netPinger";
+    
     static final String STR_FINISH = " is finish";
     
     private static final String[] STRINGS_TODELONSTART = {"visit_", ".tmp", ".log", ".tv"};
