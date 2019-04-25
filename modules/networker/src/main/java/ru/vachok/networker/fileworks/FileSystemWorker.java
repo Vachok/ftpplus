@@ -195,10 +195,14 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     }
     
     
-    public static void writeFile(String fileName, String toWriteStr) {
-        writeFile(fileName, Collections.singletonList(toWriteStr));
+    public static String writeFile(String fileName, String toWriteStr) {
+        if (writeFile(fileName, Collections.singletonList(toWriteStr))) {
+            return new File(fileName).getAbsolutePath();
+        }
+        else {
+            return String.valueOf(false);
+        }
     }
-    
     
     /**
      Запись файла@param fileName  имя файла

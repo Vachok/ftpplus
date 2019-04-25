@@ -39,7 +39,7 @@ public class DiapazonedScan implements Runnable {
     /**
      Корень директории.
      */
-    private static final String ROOT_PATH_STR = Paths.get(".").toAbsolutePath().toString();
+    private static final String ROOT_PATH_STR = Paths.get("").toAbsolutePath().toString();
     
     /**
      Повторения.
@@ -297,7 +297,7 @@ public class DiapazonedScan implements Runnable {
         @Override
         public void run() {
             if (vlanFile.exists()) {
-                String newFileName = ROOT_PATH_STR + vlanFile.getName().replace(".txt", "_" + (System.currentTimeMillis() / 1000) + ".scan");
+                String newFileName = Paths.get(ROOT_PATH_STR + "\\lan\\" + vlanFile.getName().replace(".txt", "_" + (System.currentTimeMillis() / 1000) + ".scan")).toString();
                 FileSystemWorker.copyOrDelFile(vlanFile, newFileName, false);
             }
             if (ALL_DEVICES_LOCAL_DEQUE.remainingCapacity() > 0) {
