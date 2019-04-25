@@ -56,7 +56,16 @@ public class ScanOnline implements Runnable, Pinger {
     
     private PrintStream printStream;
     
-    private List<String> maxOnList = new ArrayList<>();
+    private List<String> maxOnList;
+    
+    public ScanOnline() {
+        try {
+            this.maxOnList = FileSystemWorker.readFileToList(new File(FILENAME_ON).getAbsolutePath().replace(FILENAME_ON, "\\lan\\max.online"));
+        }
+        catch (NullPointerException e) {
+            this.maxOnList = new ArrayList<>();
+        }
+    }
     
     @Override public String getTimeToEndStr() {
         return new AppInfoOnLoad().toString();
