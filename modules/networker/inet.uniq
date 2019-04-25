@@ -115,12 +115,14 @@
 10.200.213.109 vipnet.list
 10.200.213.110 tempfull.list
 10.200.213.111 tempfull.list
+10.200.213.112 tempfull.list
 10.200.213.114 squidlimited.list
 10.200.213.115 tempfull.list
 10.200.213.116 tempfull.list
 10.200.213.117  tempfull.list
 10.200.213.120 tempfull.list
 10.200.213.121 tempfull.list
+10.200.213.124 tempfull.list
 10.200.213.125 squidlimited.list
 10.200.213.126 tempfull.list
 10.200.213.127 tempfull.list
@@ -150,7 +152,7 @@
 10.200.213.161 vipnet.list
 10.200.213.163 vipnet.list
 10.200.213.164 vipnet.list
-10.200.213.167 tempfull.list
+10.200.213.167 squidlimited.list
 10.200.213.169 vipnet.list
 10.200.213.171 vipnet.list
 10.200.213.173 tempfull.list
@@ -281,6 +283,7 @@
 10.200.217.89 tempfull.list
 10.200.217.90 squid.list
 10.200.217.92 vipnet.list
+10.200.218.54 24hrs.list
 10.200.218.56 tempfull.list
 10.200.218.59 tempfull.list
 10.200.218.60 squid.list

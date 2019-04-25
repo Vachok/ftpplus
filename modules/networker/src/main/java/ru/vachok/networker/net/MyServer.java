@@ -117,10 +117,8 @@ public class MyServer extends Thread {
         PrintStream printStream = new PrintStream(socket.getOutputStream());
         InputStreamReader reader = new InputStreamReader(inputStream);
         BufferedReader bufferedReader = new BufferedReader(reader);
-        printStream.println((System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN + " min up | " + ConstantsFor.APPNAME_WITHMINUS);
-        printStream.println(AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor());
-        printStream.println(AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor());
-        printStream.println(ConstantsFor.getMemoryInfo());
+        printStream.println(AppComponents.threadConfig());
+        printStream.println(ConstantsFor.getMemoryInfo() + "\n" + ConstantsFor.getUpTime());
         printStream.println("Press Enter or enter command:\n");
         String readLine = bufferedReader.readLine();
         makeDeal(readLine);
