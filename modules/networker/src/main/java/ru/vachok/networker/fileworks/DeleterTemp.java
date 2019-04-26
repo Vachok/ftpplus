@@ -11,10 +11,7 @@ import ru.vachok.networker.services.MessageLocal;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.FileSystemException;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Date;
@@ -32,6 +29,12 @@ class DeleterTemp extends FileSystemWorker implements Runnable {
     private static final MessageToUser messageToUser = new MessageLocal(DeleterTemp.class.getSimpleName());
     
     private PrintWriter printWriter;
+    
+    private List<WatchEvent<?>> eventList;
+    
+    public List<WatchEvent<?>> getEventList() {
+        return eventList;
+    }
 
     /**
      Счётчик файлов
@@ -41,7 +44,6 @@ class DeleterTemp extends FileSystemWorker implements Runnable {
     private String patToDel;
 
     private List<String> fromFile = new ArrayList<>();
-    
     
     {
         try {
@@ -97,6 +99,15 @@ class DeleterTemp extends FileSystemWorker implements Runnable {
         return FileVisitResult.CONTINUE;
     }
     
+    @Override public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+        WatchEvent.Kind<Path> createEvent = StandardWatchEventKinds.ENTRY_CREATE;
+        try (WatchService watchService = dir.getFileSystem().newWatchService()) {
+            WatchKey createEntKey = dir.register(watchService, createEvent);
+            eventList = createEntKey.pollEvents();
+        }
+        return FileVisitResult.CONTINUE;
+    }
+    
     @SuppressWarnings("InjectedReferences") private void getList() {
         if (patToDel != null) {
             fromFile.add(patToDel);
@@ -109,6 +120,8 @@ class DeleterTemp extends FileSystemWorker implements Runnable {
                 while (reader.ready()) {
                     fromFile.add(bufferedReader.readLine());
                 }
+                FileStore fileStore = Files.getFileStore(Paths.get(""));
+                messageToUser.info(getClass().getSimpleName() + ".getList", fileStore.name(), " = " + fileStore.type());
             }
             catch (IOException e) {
                 messageToUser.warn(new TForms().fromArray(e, false));

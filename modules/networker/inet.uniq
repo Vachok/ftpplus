@@ -53,6 +53,7 @@
 10.200.200.47 vipnet.list
 10.200.200.52 vipnet.list
 10.200.200.53 vipnet.list
+10.200.200.58 tempfull.list
 10.200.200.60 tempfull.list
 10.200.200.70 vipnet.list
 10.200.200.71 vipnet.list
@@ -187,6 +188,7 @@
 10.200.213.81 squid.list
 10.200.213.83 vipnet.list
 10.200.213.84 squid.list
+10.200.213.85 24hrs.list
 10.200.213.86 vipnet.list
 10.200.213.90 vipnet.list
 10.200.213.91 vipnet.list

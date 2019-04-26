@@ -10,6 +10,7 @@ import javax.mail.Address;
 import javax.servlet.http.Cookie;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.file.WatchEvent;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
@@ -397,6 +398,24 @@ public class TForms {
     
     public String fromArray(Collection<?> values, boolean isHTML) {
         return fromArray(values.stream(), isHTML);
+    }
+    
+    public String fromArrayW(List<WatchEvent<?>> watchEventlist, boolean isHTML) {
+        this.brStringBuilder = new StringBuilder();
+        this.nStringBuilder = new StringBuilder();
+        watchEventlist.stream().forEach(x->{
+            brStringBuilder.append(x.count()).append(" events").append(BR_STR);
+            nStringBuilder.append(x.count()).append(" events").append(N_STR);
+            
+            brStringBuilder.append(x.kind()).append(" ").append(x.context()).append(BR_STR);
+            nStringBuilder.append(x.kind()).append(" ").append(x.context()).append(N_STR);
+        });
+        if (isHTML) {
+            return brStringBuilder.toString();
+        }
+        else {
+            return nStringBuilder.toString();
+        }
     }
     
     @Override

@@ -67,16 +67,16 @@ public class NetScanFileWorker implements Serializable {
     }
     
     
-    Deque<String> getListOfOnlineDev() throws IOException {
+    /**
+     @return {@link Deque} of {@link String}, с именами девайсов онлайн.
+     */
+    Deque<String> getListOfOnlineDev() {
         AppComponents.threadConfig().thrNameSet("ON");
-        
-        String classMeth = "NetScanFileWorker.getListOfOnlineDev";
-        String titleMsg = "retDeque.size()";
         Deque<String> retDeque = new ArrayDeque<>();
         Set<String> fileNameSet = SRV_FILES.keySet();
         
         if (SRV_FILES.size() == 8) {
-            SRV_FILES.forEach((fileName, srvFileX)->fileWrk(srvFileX, titleMsg, retDeque));
+            SRV_FILES.forEach((fileName, srvFileX)->fileWrk(srvFileX, retDeque));
         }
         else {
             messageToUser.error(SRV_FILES.size() + " is SRV_FILES!");
@@ -85,7 +85,11 @@ public class NetScanFileWorker implements Serializable {
     }
     
     
-    private void fileWrk(File srvFileX, String titleMsg, Collection<String> retDeque) {
+    /**
+     @param srvFileX файл lan_* из корневой папки.
+     @param retDeque обратная очередь, для наполнения.
+     */
+    private void fileWrk(File srvFileX, Collection<String> retDeque) {
         if (srvFileX.exists() && srvFileX.canRead()) {
             retDeque.addAll(FileSystemWorker.readFileToList(srvFileX.getAbsolutePath()));
         }

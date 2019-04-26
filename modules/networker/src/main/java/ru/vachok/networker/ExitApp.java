@@ -219,7 +219,7 @@ public class ExitApp implements Runnable {
         miniLoggerLast.add("Properties in DATABASE : " + new AppComponents().updateProps(properties));
         miniLoggerLast.add("\n" + new TForms().fromArray(properties, false));
         FileSystemWorker.writeFile("exit.last", miniLoggerLast.stream());
-        FileSystemWorker.delTemp();
+        miniLoggerLast.add(FileSystemWorker.delTemp());
         AppComponents.threadConfig().killAll();
         System.exit(Math.toIntExact(toMinutes));
     }

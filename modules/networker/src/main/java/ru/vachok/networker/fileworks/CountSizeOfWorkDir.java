@@ -1,7 +1,6 @@
 package ru.vachok.networker.fileworks;
 
 
-
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
@@ -12,10 +11,8 @@ import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.LocalTime;
-import java.util.Date;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
@@ -37,23 +34,33 @@ public class CountSizeOfWorkDir extends SimpleFileVisitor<Path> implements Progr
     private PrintStream printStream;
 
     private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
-
-
+    
+    private List<WatchEvent<?>> eventList = new ArrayList<>();
+    
     public CountSizeOfWorkDir(String fileName) {
         this.fileName = fileName;
+    
         try(OutputStream outputStream = new FileOutputStream(fileName)){
             this.printStream = new PrintStream(outputStream , true);
         }catch(IOException e){
             messageToUser.error(e.getMessage());
         }
     }
+    
+    public List<WatchEvent<?>> getEventList() {
+        return eventList;
+    }
 
     @Override public String call() throws Exception {
         return getSizeOfDir();
     }
 
-
     @Override public FileVisitResult preVisitDirectory(Path dir , BasicFileAttributes attrs) throws IOException {
+        WatchEvent.Kind<Path> createEvent = StandardWatchEventKinds.ENTRY_CREATE;
+        try (WatchService watchService = dir.getFileSystem().newWatchService()) {
+            WatchKey createEntKey = dir.register(watchService, createEvent);
+            eventList.addAll(createEntKey.pollEvents());
+        }
         return FileVisitResult.CONTINUE;
     }
 
@@ -79,7 +86,8 @@ public class CountSizeOfWorkDir extends SimpleFileVisitor<Path> implements Progr
 
 
     @Override public FileVisitResult visitFileFailed(Path file , IOException exc) throws IOException {
-        file.toFile().deleteOnExit();
+        printStream.println(file);
+        printStream.println(new TForms().fromArray(exc, false));
         return FileVisitResult.CONTINUE;
     }
 
@@ -140,6 +148,7 @@ public class CountSizeOfWorkDir extends SimpleFileVisitor<Path> implements Progr
         StringBuilder stringBuilder = new StringBuilder();
         Files.walkFileTree(Paths.get(".") , this);
         stringBuilder.append("Total size = ").append(sizeBytes / ConstantsFor.KBYTE / ConstantsFor.KBYTE).append(" MB<br>\n");
+        stringBuilder.append(new TForms().fromArray(eventList, true));
         longPathMap.forEach((x , y) -> stringBuilder.append(String.format("%.02f" , (float) x / ConstantsFor.KBYTE)).append(" kb in: ").append(y).append("<br>\n"));
         return stringBuilder.toString();
     }

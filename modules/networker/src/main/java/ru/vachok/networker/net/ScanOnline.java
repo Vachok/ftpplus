@@ -71,6 +71,11 @@ public class ScanOnline implements Runnable, Pinger {
         return new AppInfoOnLoad().toString();
     }
     
+    /**
+     Активируется при обновлении <a href="http://localhost:8880/showalldev?needsopen" target=_blank>showalldev?needsopen</a>
+     
+     @return файл {@link #FILENAME_ON} из корня.
+     */
     @Override public String getPingResultStr() {
         return FileSystemWorker.readFile(FILENAME_ON);
     }
@@ -83,8 +88,8 @@ public class ScanOnline implements Runnable, Pinger {
             InetAddress inetAddress = InetAddress.getByAddress(addressBytes);
             xReachable = inetAddress.isReachable(100);
             if (!xReachable) {
-                String removeOnline = onLinesResolve.remove(inetAddress.toString());
                 printStream.println(inetAddrStr + " <font color=\"red\">offline</font>.");
+                String removeOnline = onLinesResolve.remove(inetAddress.toString());
                 if (!(removeOnline == null)) {
                     offLines.putIfAbsent(inetAddress.toString(), new Date().toString());
                     messageToUser.warn(inetAddrStr, " offline", " = " + removeOnline);
@@ -111,39 +116,40 @@ public class ScanOnline implements Runnable, Pinger {
         AppComponents.threadConfig().execByThreadConfig(this::offlineNotEmptyActions);
         File onlinesFile = new File(FILENAME_ON);
         File fileMAX = new File(onlinesFile.toPath().toAbsolutePath().toString().replace(FILENAME_ON, "\\lan\\max.online"));
-        
         if (onlinesFile.exists()) {
-            String replaceStr = onlinesFile.getAbsolutePath().replace(FILEEXT_ONLIST, ".last");
-            File repFile = new File(replaceStr);
-            List<String> stringsLastScan = FileSystemWorker.readFileToList(repFile.getAbsolutePath());
-            try {
-                if (stringsLastScan.size() < NetScanFileWorker.getI().getListOfOnlineDev().size()) {
-                    FileSystemWorker.copyOrDelFile(onlinesFile, replaceStr, false);
-                }
-            }
-            catch (IOException e) {
-                messageToUser.error(e.getMessage());
-            }
-            if (repFile.length() > fileMAX.length()) {
-                messageToUser.warn(repFile.getName(), fileMAX.getName() + " size difference", " = " + (repFile.length() - fileMAX.length()));
-                List<String> readFileToList = FileSystemWorker.readFileToList(fileMAX.getAbsolutePath());
-                readFileToList.stream().forEach(x->maxOnList.add(x));
-                FileSystemWorker.copyOrDelFile(repFile, fileMAX.getAbsolutePath(), false);
-            }
-            repFile.deleteOnExit();
+            onlineFileExists(onlinesFile, fileMAX);
         }
         try {
             OutputStream outputStream = new FileOutputStream(onlinesFile);
             this.printStream = new PrintStream(outputStream);
-            Deque<String> onList = NetScanFileWorker.getI().getListOfOnlineDev();
+            Deque<String> onDeq = NetScanFileWorker.getI().getListOfOnlineDev();
             printStream.println("Checked: " + new Date());
-            while (!onList.isEmpty()) {
-                isReach(onList.poll());
+            while (!onDeq.isEmpty()) {
+                isReach(onDeq.poll());
             }
         }
         catch (IOException e) {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".run", e));
         }
+    }
+    
+    private void onlineFileExists(File onlinesFile, File fileMAX) {
+        String replaceStr = onlinesFile.getAbsolutePath().replace(FILEEXT_ONLIST, ".last");
+        File repFile = new File(replaceStr);
+        List<String> stringsLastScan = FileSystemWorker.readFileToList(repFile.getAbsolutePath());
+        Collections.sort(stringsLastScan);
+        SortedSet<String> setLastScan = Collections.emptySortedSet();
+        stringsLastScan.forEach(setLastScan::add);
+        if (setLastScan.size() < NetScanFileWorker.getI().getListOfOnlineDev().size()) {
+            FileSystemWorker.copyOrDelFile(onlinesFile, replaceStr, false);
+        }
+        if (repFile.length() > fileMAX.length()) {
+            messageToUser.warn(repFile.getName(), fileMAX.getName() + " size difference", " = " + (repFile.length() - fileMAX.length()));
+            List<String> readFileToList = FileSystemWorker.readFileToList(fileMAX.getAbsolutePath());
+            readFileToList.stream().forEach(x->maxOnList.add(x));
+            FileSystemWorker.copyOrDelFile(repFile, fileMAX.getAbsolutePath(), false);
+        }
+        repFile.deleteOnExit();
     }
     
     @Override

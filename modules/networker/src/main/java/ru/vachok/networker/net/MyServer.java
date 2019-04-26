@@ -111,6 +111,7 @@ public class MyServer extends Thread {
      @throws InterruptedException help и thread
      */
     public static void reconSock() throws IOException, InterruptedException, NullPointerException {
+        AppComponents.threadConfig().thrNameSet("ReconSRV");
         Socket socket = serverSocket.accept();
         setSocket(socket);
         InputStream inputStream = socket.getInputStream();
@@ -278,6 +279,7 @@ public class MyServer extends Thread {
      @throws IOException {@link ServerSocket} accept() , .getReuseAddress()
      */
     private static void runSocket() throws IOException {
+        AppComponents.threadConfig().thrNameSet("SRV9990");
         while(true){
             socket = serverSocket.accept();
             accepSoc(socket);

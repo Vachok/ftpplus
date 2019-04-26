@@ -46,13 +46,15 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     }
     
     
-    public static void delTemp() {
+    public static String delTemp() {
+        DeleterTemp deleterTemp = new DeleterTemp();
         try {
-            Files.walkFileTree(Paths.get("."), new DeleterTemp());
+            Files.walkFileTree(Paths.get("."), deleterTemp);
         }
         catch (IOException e) {
             messageToUser.error(FileSystemWorker.class.getSimpleName(), e.getMessage(), new TForms().fromArray(e, false));
         }
+        return new TForms().fromArray(deleterTemp.getEventList(), false);
     }
     
     
