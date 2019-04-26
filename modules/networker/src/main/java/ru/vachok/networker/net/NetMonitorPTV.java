@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.net;
 
 
@@ -35,7 +37,7 @@ public class NetMonitorPTV implements Runnable {
     
     private PrintStream printStream;
     
-    private long ptvStartStamp;
+    private MessageToUser messageToUser = new MessageLocal(NetMonitorPTV.class.getSimpleName());
     
     public NetMonitorPTV() {
         File ptvFile = new File(FILENAME_PINGTV);
@@ -45,22 +47,13 @@ public class NetMonitorPTV implements Runnable {
             printStream = new PrintStream(Objects.requireNonNull(outputStream), true);
         }
         catch (IOException e) {
-            messageToUser.errorAlert("NetMonitorPTV", "NetMonitorPTV", e.getMessage());
-            FileSystemWorker.error("NetMonitorPTV.NetMonitorPTV", e);
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".NetMonitorPTV", e));
         }
     }
-    
-    private final String simpleName = NetMonitorPTV.class.getSimpleName();
-    
-    private MessageToUser messageToUser = new MessageLocal(simpleName);
     
     private String pingResultLast = "No pings yet.";
     
     private static final String FILENAME_PINGTV = "ping.tv";
-    
-    public long getPtvStartStamp() {
-        return ptvStartStamp;
-    }
     
     @Override
     public void run() {
@@ -94,10 +87,9 @@ public class NetMonitorPTV implements Runnable {
             AppComponents.threadConfig().thrNameSet(getClass().getSimpleName());
             this.outputStream = new FileOutputStream(pingTv);
             this.printStream = new PrintStream(outputStream, true);
-            this.ptvStartStamp = System.currentTimeMillis();
         }
         else {
-            messageToUser.info(FILENAME_PINGTV, "creating", new Date(ptvStartStamp).toString());
+            messageToUser.info(FILENAME_PINGTV, "creating", NetListKeeper.getPtvTime());
         }
     }
     

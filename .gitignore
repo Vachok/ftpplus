@@ -889,3 +889,5 @@ TemporaryFullInternet_1555450182.ssh
 WhoIsWithSRV_1555439807.ssh
 src/main/java/ru/vachok/networker/services/diskwork/
 ScanOnline.onList
+NetListKeeperonLinesResolve.map
+CacheLogGetter.showLog.log.1

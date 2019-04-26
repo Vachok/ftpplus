@@ -26,7 +26,7 @@ public class TraceRoute implements Callable<String> {
         StringBuilder stringBuilder = new StringBuilder();
         try {
             InetAddress yaRu = InetAddress.getByName("ya.ru");
-            stringBuilder.append(yaRu.toString());
+            stringBuilder.append(yaRu);
             String valStr = "yaRu = " + yaRu.isReachable(500);
             stringBuilder.append(valStr);
             if (System.getProperty("os.name").toLowerCase().contains("window")) {
@@ -50,7 +50,7 @@ public class TraceRoute implements Callable<String> {
             byte[] bytes = new byte[ConstantsFor.KBYTE];
             while (inputStream.read() > 0) {
                 String str = new String(bytes);
-                new MessageCons().infoNoTitles(str);
+                new MessageCons(getClass().getSimpleName()).infoNoTitles(str);
                 stringBuilder.append(str);
             }
             inputStream.close();

@@ -35,12 +35,15 @@ public class FileSearcher extends FileSystemWorker {
      * {@link List} с результатами
      */
     private List<String> resList = new ArrayList<>();
+    
+    private int totalFiles;
 
     /**
      @param patternToSearch что искать
      */
     public FileSearcher(String patternToSearch) {
         this.patternToSearch = patternToSearch;
+        totalFiles = 0;
     }
 
     /**
@@ -66,6 +69,7 @@ public class FileSearcher extends FileSystemWorker {
      */
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+        this.totalFiles += 1;
         if (attrs.isRegularFile() && file.toFile().getName().toLowerCase().contains(patternToSearch)) {
             resList.add(file.toFile().getAbsolutePath());
         }
@@ -83,7 +87,7 @@ public class FileSearcher extends FileSystemWorker {
     @Override
     public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
         if (dir.toFile().isDirectory()) {
-            messageToUser.info("FileSearcher.postVisitDirectory", "dir.toFile().getName()", " = " + dir.toFile().getName());
+            messageToUser.info("total files: " + totalFiles, "found: " + resList.size(), "scanned: " + dir.toString().replace("\\\\srv-fs.eatmeat.ru\\common_new\\", ""));
         }
         return FileVisitResult.CONTINUE;
     }

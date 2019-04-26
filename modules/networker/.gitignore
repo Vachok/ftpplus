@@ -864,3 +864,13 @@ inet.files
 *.lck
 ScanOnlineonList
 ScanOnline.onList
+*.map
+*.log.*
+call
+stringSet.stream
+*.list
+*.res
+DeleterTemp.txt
+ScanOnline.last
+*.mini
+charsets.info

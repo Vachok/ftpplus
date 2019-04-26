@@ -32,8 +32,7 @@ import ru.vachok.stats.SaveLogsToDB;
 
 import javax.servlet.http.HttpServletRequest;
 import java.awt.*;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
@@ -55,12 +54,13 @@ public class AppComponents {
      */
     private static final String STR_VISITOR = "visitor";
 
-    private static MessageToUser messageToUser = new MessageLocal(AppComponents.class.getSimpleName());
-
     private static final Properties APP_PR = new Properties();
 
     private static final ConcurrentMap<Long, Visitor> VISITS_MAP = new ConcurrentHashMap<>();
-
+    
+    private static final String DB_JAVA_ID = ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName();
+    
+    private static MessageToUser messageToUser = new MessageLocal(AppComponents.class.getSimpleName());
 
     public static ConcurrentMap<Long, Visitor> getVisitsMap() {
         return VISITS_MAP;
@@ -76,6 +76,22 @@ public class AppComponents {
     @Bean
     public static Logger getLogger(String className) {
         return LoggerFactory.getLogger(className);
+    }
+    
+    public static String ipFlushDNS() {
+        StringBuilder stringBuilder = new StringBuilder();
+        try {
+            Process processFlushDNS = Runtime.getRuntime().exec("ipconfig /flushdns");
+            InputStream flushDNSInputStream = processFlushDNS.getInputStream();
+            InputStreamReader reader = new InputStreamReader(flushDNSInputStream);
+            try (BufferedReader bufferedReader = new BufferedReader(reader)) {
+                bufferedReader.lines().forEach(stringBuilder::append);
+            }
+        }
+        catch (IOException e) {
+            messageToUser.error(e.getMessage());
+        }
+        return stringBuilder.toString();
     }
 
     @Bean
@@ -123,8 +139,6 @@ public class AppComponents {
         Visitor visitor = new Visitor(request);
         return VISITS_MAP.putIfAbsent(request.getSession().getCreationTime(), visitor);
     }
-
-    private static final String DB_JAVA_ID = ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName();
     
     @Bean
     @Scope(ConstantsFor.SINGLETON)
@@ -158,7 +172,9 @@ public class AppComponents {
     @Scope(ConstantsFor.SINGLETON)
     public static VersionInfo versionInfo() {
         VersionInfo versionInfo = new VersionInfo();
-        if (!ConstantsFor.thisPC().toLowerCase().contains("rups00")) versionInfo.setParams();
+        if (ConstantsFor.thisPC().toLowerCase().contains("home") && ConstantsFor.thisPC().toLowerCase().contains("do00213")) {
+            versionInfo.setParams();
+        }
         return versionInfo;
     }
 
@@ -183,9 +199,9 @@ public class AppComponents {
         DBPropsCallable dbPropsCallable = new DBPropsCallable(source, propertiesToUpdate, true);
         return dbPropsCallable.call().getProperty(ConstantsFor.PR_FORCE).equals("true");
     }
-
-
-    public static Properties getOrSetProps() {
+    
+    
+    public static Properties getProps() {
         if (APP_PR.size() > 3) {
             return APP_PR;
         }
@@ -193,8 +209,17 @@ public class AppComponents {
             return new AppComponents().getAppProps();
         }
     }
-
-
+    
+    public void updateProps() {
+        if (APP_PR.size() > 3) {
+            updateProps(APP_PR);
+        }
+        else {
+            throw new IllegalComponentStateException("Properties to small : " + APP_PR.size());
+        }
+    }
+    
+    
     private static boolean saveAppPropsForce() {
         DBPropsCallable saveDBPropsCallable = new DBPropsCallable(new DBRegProperties(DB_JAVA_ID).getRegSourceForProperties(), APP_PR, true);
         return saveDBPropsCallable.call().getProperty(ConstantsFor.PR_FORCE).equals("true");

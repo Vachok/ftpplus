@@ -79,13 +79,18 @@ public class PCUserResolver extends ADSrv implements InfoWorker {
     }
     
     private void namesToFile() {
-        AppComponents.threadConfig().thrNameSet("pcfile-");
-        
-        File pcNameFile = new File(pcName);
         File[] files;
+        File pcNameFile = null;
+        try {
+            pcNameFile = Files.createTempFile(pcName, ".tmp").toFile();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
         try (OutputStream outputStream = new FileOutputStream(pcNameFile);
              PrintWriter writer = new PrintWriter(outputStream, true)
         ) {
+    
             String pathAsStr = new StringBuilder().append("\\\\").append(pcName).append("\\c$\\Users\\").toString();
             lastFileUse = getLastTimeUse(pathAsStr).split("Users")[1];
             files = new File(pathAsStr).listFiles();

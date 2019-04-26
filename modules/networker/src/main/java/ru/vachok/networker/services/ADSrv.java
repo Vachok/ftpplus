@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.services;
 
 
@@ -12,7 +14,6 @@ import ru.vachok.networker.abstr.InternetUse;
 import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
 import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.user.ADUser;
-import ru.vachok.networker.controller.ActDirectoryCTRL;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.InfoWorker;
 import ru.vachok.networker.net.PCUserResolver;
@@ -302,7 +303,7 @@ public class ADSrv implements Runnable {
      */
     @Override
     public void run() {
-        new MessageCons().errorAlert("ADSrv.run");
+        new MessageCons(getClass().getSimpleName()).errorAlert("ADSrv.run");
     }
     
     /**
@@ -334,8 +335,7 @@ public class ADSrv implements Runnable {
             }
         }
         catch (SQLException | IOException e) {
-            new MessageCons().errorAlert(ConstantsFor.CLASS_NAME_PCUSERRESOLVER, "offNowGetU", e.getMessage());
-            FileSystemWorker.error("PCUserResolver.offNowGetU", e);
+            messageToUser.error(FileSystemWorker.error(ADSrv.class.getSimpleName() + ".offNowGetU", e));
         }
         return v.toString();
     }
@@ -509,7 +509,7 @@ public class ADSrv implements Runnable {
      @see PhotoConverterSRV
      */
     private void psComm() {
-        Properties p = AppComponents.getOrSetProps();
+        Properties p = AppComponents.getProps();
         PhotoConverterSRV photoConverterSRV = new PhotoConverterSRV(p);
         photoConverterSRV.psCommands();
     }

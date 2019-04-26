@@ -3,25 +3,21 @@
 package ru.vachok.networker.net;
 
 
-import org.springframework.ui.Model;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ExitApp;
-import ru.vachok.networker.controller.NetScanCtr;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.net.enums.SwitchesWiFi;
 import ru.vachok.networker.services.MessageLocal;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.BlockingDeque;
@@ -43,7 +39,7 @@ public class DiapazonedScan implements Runnable {
     /**
      Корень директории.
      */
-    private static final String ROOT_PATH_STR = Paths.get(".").toAbsolutePath().toString();
+    private static final String ROOT_PATH_STR = Paths.get("").toAbsolutePath().toString();
     
     /**
      Повторения.
@@ -69,12 +65,7 @@ public class DiapazonedScan implements Runnable {
      */
     private static final DiapazonedScan OUR_INSTANCE = new DiapazonedScan();
     
-    private final DiapazonedScan.ExecScan[] runnablesScans = {
-        new DiapazonedScan.ExecScan(10, 20, "10.10.", new File(FILENAME_SERVTXT_11SRVTXT)),
-        new DiapazonedScan.ExecScan(21, 31, "10.10.", new File(FILENAME_SERVTXT_21SRVTXT)),
-        new DiapazonedScan.ExecScan(31, 41, "10.10.", new File(FILENAME_SERVTXT_31SRVTXT)),
-        new DiapazonedScan.ExecScan(41, 51, "10.10.", new File(FILENAME_SERVTXT_41SRVTXT)),
-    };
+    private final DiapazonedScan.ExecScan[] runnablesScans;
     
     private final long timeStart = System.currentTimeMillis();
     
@@ -86,6 +77,12 @@ public class DiapazonedScan implements Runnable {
      Приватный конструктор
      */
     private DiapazonedScan() {
+        runnablesScans = new ExecScan[]{
+            new ExecScan(10, 20, "10.10.", srvFiles.get(FILENAME_SERVTXT_10SRVTXT)),
+            new ExecScan(21, 31, "10.10.", srvFiles.get(FILENAME_SERVTXT_21SRVTXT)),
+            new ExecScan(31, 41, "10.10.", srvFiles.get(FILENAME_SERVTXT_31SRVTXT)),
+            new ExecScan(41, 51, "10.10.", srvFiles.get(FILENAME_SERVTXT_41SRVTXT)),
+        };
     }
     
     public Map<String, File> getSrvFiles() throws NullPointerException {
@@ -129,9 +126,6 @@ public class DiapazonedScan implements Runnable {
         startDo();
     }
     
-    /**
-     @return /showalldev = {@link NetScanCtr#allDevices(Model, HttpServletRequest, HttpServletResponse)}
-     */
     @SuppressWarnings("StringConcatenation")
     @Override
     public String toString() {
@@ -149,10 +143,9 @@ public class DiapazonedScan implements Runnable {
     
     @SuppressWarnings({"resource", "IOResourceOpenedButNotSafelyClosed"})
     private void theNewLan() {
-        Runnable execScan200210 = new DiapazonedScan.ExecScan(200, 210, "10.200.", new File(FILENAME_NEWLAN200210));
+        Runnable execScan200210 = new DiapazonedScan.ExecScan(200, 210, "10.200.", srvFiles.get(FILENAME_NEWLAN210));
         AppComponents.threadConfig().execByThreadConfig(execScan200210);
-        
-        Runnable execScan210220 = new DiapazonedScan.ExecScan(210, 219, "10.200.", new File(FILENAME_NEWLAN210));
+        Runnable execScan210220 = new DiapazonedScan.ExecScan(210, 219, "10.200.", srvFiles.get(FILENAME_NEWLAN220));
         AppComponents.threadConfig().execByThreadConfig(execScan210220);
     }
     
@@ -169,6 +162,16 @@ public class DiapazonedScan implements Runnable {
         AppComponents.threadConfig().execByThreadConfig(this::theNewLan);
         AppComponents.threadConfig().execByThreadConfig(this::scanServers);
         AppComponents.threadConfig().execByThreadConfig(this::scanOldLan);
+        AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor().scheduleAtFixedRate(this::setScanInMin, 3, 5, TimeUnit.MINUTES);
+    }
+    
+    private void setScanInMin() {
+        if (ALL_DEVICES_LOCAL_DEQUE.remainingCapacity() > 0 && TimeUnit.MILLISECONDS.toMinutes(getRunMin()) > 0 && ALL_DEVICES_LOCAL_DEQUE.size() > 0) {
+            long scansItMin = ALL_DEVICES_LOCAL_DEQUE.size() / TimeUnit.MILLISECONDS.toMinutes(getRunMin());
+            AppComponents.getProps().setProperty(ConstantsFor.PR_SCANSINMIN, String.valueOf(scansItMin));
+            messageToUser.warn(getClass().getSimpleName(), "scansItMin", " = " + scansItMin);
+            new AppComponents().updateProps();
+        }
     }
     
     /**
@@ -191,10 +194,10 @@ public class DiapazonedScan implements Runnable {
         try {
             String atStr = " size in bytes: ";
             fileTimes.append(FILENAME_NEWLAN210).append(atStr).append(Paths.get(FILENAME_NEWLAN210).toFile().length()).append("<br>\n");
-            fileTimes.append(FILENAME_NEWLAN200210).append(atStr).append(Paths.get(FILENAME_NEWLAN200210).toFile().length()).append("<br>\n");
+            fileTimes.append(FILENAME_NEWLAN220).append(atStr).append(Paths.get(FILENAME_NEWLAN220).toFile().length()).append("<br>\n");
             fileTimes.append(FILENAME_OLDLANTXT0).append(atStr).append(Paths.get(FILENAME_OLDLANTXT0).toFile().length()).append("<br>\n");
             fileTimes.append(FILENAME_OLDLANTXT1).append(atStr).append(Paths.get(FILENAME_OLDLANTXT1).toFile().length()).append("<br>\n");
-            fileTimes.append(FILENAME_SERVTXT_11SRVTXT).append(atStr).append(Paths.get(FILENAME_SERVTXT_11SRVTXT).toFile().length()).append("<br>\n");
+            fileTimes.append(FILENAME_SERVTXT_10SRVTXT).append(atStr).append(Paths.get(FILENAME_SERVTXT_10SRVTXT).toFile().length()).append("<br>\n");
             fileTimes.append(FILENAME_SERVTXT_21SRVTXT).append(atStr).append(Paths.get(FILENAME_SERVTXT_21SRVTXT).toFile().length()).append("<br>\n");
             fileTimes.append(FILENAME_SERVTXT_31SRVTXT).append(atStr).append(Paths.get(FILENAME_SERVTXT_31SRVTXT).toFile().length()).append("<br>\n");
             fileTimes.append(FILENAME_SERVTXT_41SRVTXT).append(atStr).append(Paths.get(FILENAME_SERVTXT_41SRVTXT).toFile().length()).append("<br>\n");
@@ -293,13 +296,18 @@ public class DiapazonedScan implements Runnable {
         
         @Override
         public void run() {
-            boolean isExecute = execScan();
-            if (isExecute) {
-                messageToUser.info(getClass().getSimpleName() + ".run", "ALL_DEVICES_LOCAL_DEQUE.size()", " = " + ALL_DEVICES_LOCAL_DEQUE.size());
+            if (vlanFile.exists()) {
+                String newFileName = Paths.get(ROOT_PATH_STR + "\\lan\\" + vlanFile.getName().replace(".txt", "_" + (System.currentTimeMillis() / 1000) + ".scan")).toString();
+                FileSystemWorker.copyOrDelFile(vlanFile, newFileName, false);
+            }
+            if (ALL_DEVICES_LOCAL_DEQUE.remainingCapacity() > 0) {
+                boolean execScanB = execScan();
+                messageToUser.info("ALL_DEV", "Scan from " + from + " to " + to + " is " + execScanB, "ALL_DEVICES_LOCAL_DEQUE = " + ALL_DEVICES_LOCAL_DEQUE.size());
             }
             else {
                 messageToUser.error(getClass().getSimpleName(), String.valueOf(ALL_DEVICES_LOCAL_DEQUE.remainingCapacity()), " ALL_DEVICES_LOCAL_DEQUE remainingCapacity!");
             }
+    
         }
         
         @Override public String toString() {
@@ -324,21 +332,10 @@ public class DiapazonedScan implements Runnable {
         
         private boolean execScan() {
             this.stArt = System.currentTimeMillis();
-    
             try {
                 ConcurrentMap<String, String> stringStringConcurrentMap = scanLanSegment(from, to, whatVlan, printStream);
                 NetScanFileWorker.getI().setLastStamp(System.currentTimeMillis());
-                if (vlanFile.length() > 10) {
-                    FileSystemWorker.copyOrDelFile(vlanFile, vlanFile
-                        .getName()
-                        .replace("lan_", ".\\lan\\" + vlanFile.getName() + "." + LocalTime
-                            .now()
-                            .toSecondOfDay()), true);
-                }
-                else {
-                    new ExitApp(NET_SCAN_FILE_WORKER_INST.getClass().getSimpleName() + ".cla", NET_SCAN_FILE_WORKER_INST).writeOwnObject();
-                }
-                return true;
+                return stringStringConcurrentMap.size() == 255;
             }
             catch (Exception e) {
                 messageToUser.error(e.getMessage());
@@ -406,14 +403,14 @@ public class DiapazonedScan implements Runnable {
                         stStMap.put(theScannedIPHost.split(" ")[0], theScannedIPHost.split(" ")[1]);
                     }
                     catch (IOException e) {
-                        String errorWrite = FileSystemWorker.error("DiapazonedScan.scanLanSegment", e);
-                        stStMap.put(e.getMessage(), errorWrite);
+                        stStMap.put(e.getMessage(), new TForms().fromArray(e, false));
                     }
                     catch (ArrayIndexOutOfBoundsException e) {
                         stStMap.put(theScannedIPHost, e.getMessage());
                     }
                 }
             }
+    
             return stStMap;
         }
     }

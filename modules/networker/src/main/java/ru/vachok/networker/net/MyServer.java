@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.net;
 
 
@@ -52,7 +54,7 @@ public class MyServer extends Thread {
     private static final MessageToUser messageToUser = new MessageLocal(MyServer.class.getSimpleName());
 
     private static final int LPORT = Integer.parseInt(AppComponents
-        .getOrSetProps()
+        .getProps()
         .getProperty("LPORT", "9990"));
 
     /**
@@ -109,16 +111,15 @@ public class MyServer extends Thread {
      @throws InterruptedException help и thread
      */
     public static void reconSock() throws IOException, InterruptedException, NullPointerException {
+        AppComponents.threadConfig().thrNameSet("ReconSRV");
         Socket socket = serverSocket.accept();
         setSocket(socket);
         InputStream inputStream = socket.getInputStream();
         PrintStream printStream = new PrintStream(socket.getOutputStream());
         InputStreamReader reader = new InputStreamReader(inputStream);
         BufferedReader bufferedReader = new BufferedReader(reader);
-        printStream.println((System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN + " min up | " + ConstantsFor.APPNAME_WITHMINUS);
-        printStream.println(AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor());
-        printStream.println(AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor());
-        printStream.println(ConstantsFor.getMemoryInfo());
+        printStream.println(AppComponents.threadConfig());
+        printStream.println(ConstantsFor.getMemoryInfo() + "\n" + ConstantsFor.getUpTime());
         printStream.println("Press Enter or enter command:\n");
         String readLine = bufferedReader.readLine();
         makeDeal(readLine);
@@ -278,6 +279,7 @@ public class MyServer extends Thread {
      @throws IOException {@link ServerSocket} accept() , .getReuseAddress()
      */
     private static void runSocket() throws IOException {
+        AppComponents.threadConfig().thrNameSet("SRV9990");
         while(true){
             socket = serverSocket.accept();
             accepSoc(socket);

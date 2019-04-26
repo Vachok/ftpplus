@@ -200,7 +200,7 @@ public class SshActs {
      @return адрес нужного сервака
      */
     private static String whatSrvNeed() {
-        AppComponents.getOrSetProps().setProperty("thispc" , ConstantsFor.thisPC());
+        AppComponents.getProps().setProperty("thispc", ConstantsFor.thisPC());
         if (ConstantsFor.thisPC().toLowerCase().contains("rups")) {
             return ConstantsFor.IPADDR_SRVNAT;
         } else if (ConstantsFor.thisPC().equalsIgnoreCase("srv-inetstat.eatmeat.ru")) {

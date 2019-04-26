@@ -1,7 +1,7 @@
 
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.accesscontrol;
+package ru.vachok.networker.controller;
 
 
 import org.jetbrains.annotations.NotNull;
@@ -16,6 +16,8 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.accesscontrol.PfLists;
+import ru.vachok.networker.accesscontrol.PfListsSrv;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.config.ThreadConfig;
@@ -53,9 +55,9 @@ public class PfListsCtr {
     private static final String ATT_VIPNET = "vipnet";
 
     /**
-     {@link AppComponents#getOrSetProps()}
+     {@link AppComponents#getProps()}
      */
-    private final Properties properties = AppComponents.getOrSetProps();
+    private final Properties properties = AppComponents.getProps();
 
     /**
      {@link PfLists}

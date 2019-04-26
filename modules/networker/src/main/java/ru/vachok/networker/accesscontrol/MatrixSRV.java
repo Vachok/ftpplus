@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.accesscontrol;
 
 
@@ -11,7 +13,6 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.ResoCache;
 import ru.vachok.networker.config.ResLoader;
-import ru.vachok.networker.controller.MatrixCtr;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.io.File;
@@ -39,7 +40,7 @@ public class MatrixSRV {
     private static final Logger LOGGER = LoggerFactory.getLogger(MatrixSRV.class.getSimpleName());
 
     /**
-     Имя колонки в sql-таблице.
+     Имя колонки в SQL_DELETE-таблице.
 
      @see #getWorkPos()
      */

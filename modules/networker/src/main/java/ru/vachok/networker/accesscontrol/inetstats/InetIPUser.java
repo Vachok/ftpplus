@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.accesscontrol.inetstats;
 
 
@@ -41,7 +43,7 @@ public class InetIPUser implements InternetUse {
         stringBuilder.append("Показаны только <b>уникальные</b> сайты<br>");
         stringBuilder.append(cleanDBClients1()).append("<p>");
         try (Connection c = MYSQL_DATA_SOURCE.getConnection()) {
-            try (PreparedStatement p = c.prepareStatement(sql)) {
+            try (PreparedStatement p = c.prepareStatement(SQL_DELETE)) {
                 p.setString(1, userCred);
                 try (ResultSet r = p.executeQuery()) {
                     while (r.next()) {
@@ -65,12 +67,11 @@ public class InetIPUser implements InternetUse {
 
     private String cleanDBClients1() {
         StringBuilder stringBuilder = new StringBuilder();
-        final String sql = "DELETE  FROM `inetstats` WHERE `site` LIKE '%clients1.google%'";
         try(Connection c = MYSQL_DATA_SOURCE.getConnection();
-            PreparedStatement p = c.prepareStatement(sql)
+            PreparedStatement p = c.prepareStatement(SQL_DELETE)
         )
         {
-            stringBuilder.append(p.executeUpdate()).append(" rows in statement: ").append(sql);
+            stringBuilder.append(p.executeUpdate()).append(" rows in statement: ").append(SQL_DELETE);
         }catch(SQLException e){
             stringBuilder.append(e.getMessage());
         }

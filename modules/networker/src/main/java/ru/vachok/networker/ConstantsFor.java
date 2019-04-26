@@ -12,8 +12,6 @@ import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.accesscontrol.PfListsSrv;
 import ru.vachok.networker.componentsrepo.Visitor;
-import ru.vachok.networker.controller.MatrixCtr;
-import ru.vachok.networker.controller.ServiceInfoCtrl;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.mailserver.ExSRV;
 import ru.vachok.networker.mailserver.MailRule;
@@ -108,12 +106,6 @@ public enum ConstantsFor {
      */
     public static final String BEANNAME_PFLISTS = "pflists";
 
-    /**
-     <i>Boiler Plate</i>
- 
-     @see MatrixCtr
-     @see ru.vachok.networker.net.MyServer
-     */
     public static final String COM_REBOOT = "reboot";
 
     /**
@@ -251,9 +243,6 @@ public enum ConstantsFor {
      */
     public static final String ATT_TITLE = "title";
 
-    /**
-     {@link ServiceInfoCtrl#closeApp(HttpServletRequest)}
-     */
     public static final int CODE_USEREXIT = 222;
 
     public static final String ATT_HEAD = "head";
@@ -335,8 +324,8 @@ public enum ConstantsFor {
      Имя аттрибута
      */
     public static final String ATT_SSHDETAIL = "sshdetail";
-
-    public static final String HTML_CENTER = "</center>";
+    
+    public static final String HTML_CENTER_CLOSE = "</center>";
 
     public static final String STR_INPUT_OUTPUT = "input/output\n";
 
@@ -360,7 +349,7 @@ public enum ConstantsFor {
             new MessageSwing(new ActionDefault("https://github.com/Vachok/ftpplus/issues")).warn("CHECK TODO!");
         }
         else {
-            new MessageCons().info("ConstantsFor.INFO_MSG_RUNNABLE", "thisPC()", " = " + thisPC());
+            new MessageCons(ConstantsFor.class.getSimpleName()).info("ConstantsFor.INFO_MSG_RUNNABLE", "thisPC()", " = " + thisPC());
         }
     };
 
@@ -390,6 +379,8 @@ public enum ConstantsFor {
     public static final int INT_ANSWER = 4;
 
     public static final String FILENAME_ALLDEVMAP = "alldev.map";
+    
+    public static final String FILENAME_INETUNIQ = "inet.uniq";
 
     public static final String FILEEXT_PROPERTIES = ".properties";
 
@@ -411,31 +402,39 @@ public enum ConstantsFor {
      Выгрузка из БД {@link ConstantsFor#DBPREFIX} {@code velkom} - pcuserauto
      */
     public static final String FILENAME_VELKOMPCUSERAUTOTXT = "velkom_pcuserauto.txt";
+    
     public static final String SQL_SELECTFROM_PCUSERAUTO = "select * from pcuserauto";
-
-    static final String STR_FINISH = " is finish";
-
-    private static final String[] STRINGS_TODELONSTART = {"visit_", ".tmp", ".log", ".tv"};
-
-    /**
-     {@link ru.vachok.networker.mailserver.ExCTRL#uplFile(MultipartFile, Model)}, {@link ExSRV#getOFields()},
-     */
-    private static final ConcurrentMap<Integer, MailRule> MAIL_RULES = new ConcurrentHashMap<>();
-
-    private static final int MIN_DELAY = 17;
-
-    /**
-     {@link MessageLocal}
-     */
-    private static final MessageToUser messageToUser = new MessageLocal(ConstantsFor.class.getSimpleName());
     
     public static final String STR_BYTES = " bytes";
     
     public static final String DBFIELB_RESPONSE = "response";
     
     public static final String DBFIELD_METHOD = "method";
-
-
+    
+    public static final String PR_SCANSINMIN = "scansInMin";
+    
+    public static final String ATT_NETPINGER = "netPinger";
+    
+    static final String STR_FINISH = " is finish";
+    
+    private static final String[] STRINGS_TODELONSTART = {"visit_", ".tmp", ".log", ".tv"};
+    
+    /**
+     {@link ru.vachok.networker.mailserver.ExCTRL#uplFile(MultipartFile, Model)}, {@link ExSRV#getOFields()},
+     */
+    private static final ConcurrentMap<Integer, MailRule> MAIL_RULES = new ConcurrentHashMap<>();
+    
+    private static final int MIN_DELAY = 17;
+    
+    /**
+     {@link MessageLocal}
+     */
+    private static final MessageToUser messageToUser = new MessageLocal(ConstantsFor.class.getSimpleName());
+    
+    public static final String HTMLTAG_CENTER = "<center>";
+    
+    public static final String STR_PROPERTIES = "properties";
+    
     /**
      @return {@link #MAIL_RULES}
      */
@@ -480,7 +479,7 @@ public enum ConstantsFor {
      */
     public static long getBuildStamp() {
         long retLong = 1L;
-        Properties appPr = AppComponents.getOrSetProps();
+        Properties appPr = AppComponents.getProps();
 
         try {
             String hostName = InetAddress.getLocalHost().getHostName();

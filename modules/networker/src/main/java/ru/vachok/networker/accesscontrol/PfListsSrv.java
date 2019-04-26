@@ -25,10 +25,6 @@ import java.io.FileNotFoundException;
 public class PfListsSrv {
     
     
-    public static String getDefaultConnectSrv() {
-        return DEFAULT_CONNECT_SRV;
-    }
-    
     private static final String DEFAULT_CONNECT_SRV = whatSrv();
     
     private static MessageToUser messageToUser = new MessageLocal(PfListsSrv.class.getSimpleName());
@@ -48,7 +44,6 @@ public class PfListsSrv {
      */
     private @NotNull String commandForNatStr = "sudo cat /etc/pf/allowdomain && exit";
     
-    
     /**
      {@code this.builderInst}
      <p>
@@ -61,6 +56,9 @@ public class PfListsSrv {
         this.pfListsInstAW = pfLists;
     }
     
+    public static String getDefaultConnectSrv() {
+        return DEFAULT_CONNECT_SRV;
+    }
     
     /**
      @return {@link #commandForNatStr}
@@ -79,6 +77,23 @@ public class PfListsSrv {
         this.commandForNatStr = commandForNatStr;
     }
     
+    public String runCom() {
+        return new SSHFactory.Builder(DEFAULT_CONNECT_SRV, commandForNatStr, getClass().getSimpleName()).build().call();
+    }
+    
+    /**
+     Формирует списки <b>pf</b>
+     
+     @see PfListsCtr
+     */
+    public void makeListRunner() {
+        try {
+            buildFactory();
+        }
+        catch (FileNotFoundException | NullPointerException e) {
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".makeListRunner", e));
+        }
+    }
     
     @Override
     public String toString() {
@@ -88,25 +103,6 @@ public class PfListsSrv {
         sb.append(", pfListsInstAW=").append(pfListsInstAW);
         sb.append('}');
         return sb.toString();
-    }
-    
-    
-    String runCom() {
-        return new SSHFactory.Builder(DEFAULT_CONNECT_SRV, commandForNatStr, getClass().getSimpleName()).build().call();
-    }
-    
-    /**
-     Формирует списки <b>pf</b>
-     
-     @see PfListsCtr
-     */
-    void makeListRunner() {
-        try {
-            buildFactory();
-        }
-        catch (FileNotFoundException | NullPointerException e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".makeListRunner", e));
-        }
     }
     
     private static String whatSrv() {
@@ -144,6 +140,8 @@ public class PfListsSrv {
             new IntoApplication();
             pfListsInstAW = (PfLists) IntoApplication.getConfigurableApplicationContext().getBeanFactory().getBean(ConstantsFor.BEANNAME_PFLISTS);
         }
+        pfListsInstAW.setGitStatsUpdatedStampLong(System.currentTimeMillis());
+    
         build.setCommandSSH("sudo cat /etc/pf/vipnet;sudo cat /etc/pf/24hrs && exit");
         pfListsInstAW.setVipNet(build.call());
     
@@ -163,8 +161,10 @@ public class PfListsSrv {
         pfListsInstAW.setPfRules(build.call());
     
         build.setCommandSSH("sudo cat /home/kudr/inet.log && exit");
-        pfListsInstAW.setInetLog(build.call());
+        String inetLog = build.call();
+        pfListsInstAW.setInetLog(inetLog);
     
-        pfListsInstAW.setGitStatsUpdatedStampLong(System.currentTimeMillis());
+        String inetUniqStr = new AccessListsCheckUniq().connectTo();
+        pfListsInstAW.setInetLog(inetLog + inetUniqStr.replace("<br>", "\n"));
     }
 }

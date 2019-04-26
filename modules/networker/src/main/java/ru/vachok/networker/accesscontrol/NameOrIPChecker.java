@@ -103,7 +103,7 @@ public class NameOrIPChecker {
      @return {@link InetAddress}
      @throws UnknownFormatConversionException если не удалось опознать строку-ввод.
      */
-    InetAddress resolveIP() throws UnknownFormatConversionException {
+    InetAddress resolveIP() throws UnknownFormatConversionException, UnknownFormatConversionException {
         InetAddress inetAddress;
         Matcher mName = PATTERN_NAME.matcher(userIn);
         Matcher mIP = PATTERN_IP.matcher(userIn);
@@ -118,6 +118,7 @@ public class NameOrIPChecker {
                     inetAddress = InetAddress.getByName(userIn);
                 }
                 else{
+                    inetAddress = InetAddress.getLoopbackAddress();
                     throw new UnknownFormatConversionException("Can't convert user input to Inet Address :(");
                 }
             }

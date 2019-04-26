@@ -182,8 +182,7 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
             return false;
         }
     }
-
-
+    
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("ThreadConfig{");

@@ -1,5 +1,6 @@
-package ru.vachok.networker.services;
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
 
+package ru.vachok.networker.services;
 
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
@@ -7,6 +8,7 @@ import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.DataBaseRegSQL;
 import ru.vachok.networker.accesscontrol.inetstats.InetStatSorter;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -40,6 +42,7 @@ public class WeekPCStats implements Runnable, DataBaseRegSQL {
     private String sql;
 
     private String fileName;
+    
     private IllegalStateException illegalStateException = new IllegalStateException("13.04.2019 (18:17)");
 
     private static final String SQL_DISTINCTIPSWITHINET = "SELECT DISTINCT `ip` FROM `inetstats`";
@@ -104,7 +107,6 @@ public class WeekPCStats implements Runnable, DataBaseRegSQL {
                                     printWriter.print(",");
                                     printWriter.print(r.getString("site"));
                                     printWriter.println();
-                                    file.deleteOnExit();
                                 }
                             }
                         }
@@ -112,13 +114,14 @@ public class WeekPCStats implements Runnable, DataBaseRegSQL {
                 }
             }
         }catch(SQLException | IOException e){
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".selectFrom" , e));
+            messageToUser.error(new TForms().fromArray(e, false));
         }
         String toCopy = "\\\\10.10.111.1\\Torrents-FTP\\" + file.getName();
         if(!ConstantsFor.thisPC().toLowerCase().contains("home")){
             toCopy = file.getName() + "_cp";
         }
         FileSystemWorker.copyOrDelFile(file, toCopy, false);
+        file.deleteOnExit();
         return PC_NAMES_IN_TABLE.size();
     }
 

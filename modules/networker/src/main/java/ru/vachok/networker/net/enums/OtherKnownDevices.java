@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.net.enums;
 
 
@@ -30,4 +32,14 @@ public enum OtherKnownDevices {
     public static final String PTV2_EATMEAT_RU = "ptv2.eatmeat.ru";
     
     public static final String PTV3_EATMEAT_RU = "ptv3.eatmeat.ru";
+    
+    public static final String DO0213_KUDR = "do0213.eatmeat.ru";
+    
+    public static final String NO0027_KUDROLD = "no0027.eatmeat.ru";
+    
+    public static final String IP_BANKOMAT_INSIDE = "192.168.14.246";
+    
+    public static final String IP_BANKOMAT_OUTSIDE = "192.168.14.20";
+    
+    public static final String IP_FEMTOSOTA = "192.168.13.122";
 }

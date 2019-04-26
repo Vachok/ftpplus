@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.net;
 
 
@@ -10,7 +12,6 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.Pinger;
 import ru.vachok.networker.config.ThreadConfig;
-import ru.vachok.networker.controller.NetScanCtr;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
@@ -21,6 +22,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
@@ -33,7 +35,7 @@ import java.util.stream.Stream;
 
  @since 08.02.2019 (9:34) */
 @SuppressWarnings("unused")
-@Service("netPinger")
+@Service(ConstantsFor.ATT_NETPINGER)
 public class NetPinger implements Runnable, Pinger {
 
     /**
@@ -49,11 +51,11 @@ public class NetPinger implements Runnable, Pinger {
     /**
      Таймаут метода {@link #pingSW()}.
      <p>
-     Берётся из {@link AppComponents#getOrSetProps()}. В <b>миллисекундах</b>. По-умолчанию 20 мсек.
+     Берётся из {@link AppComponents#getProps()}. В <b>миллисекундах</b>. По-умолчанию 20 мсек.
 
      @see ConstantsNet#PROP_PINGSLEEP
      */
-    private long pingSleepMsec = Long.parseLong(AppComponents.getOrSetProps().getProperty(ConstantsNet.PROP_PINGSLEEP, "20"));
+    private long pingSleepMsec = Long.parseLong(AppComponents.getProps().getProperty(ConstantsNet.PROP_PINGSLEEP, "20"));
 
     /**
      Лист {@link InetAddress}.
@@ -66,13 +68,8 @@ public class NetPinger implements Runnable, Pinger {
      {@link MessageLocal}. Вывод сообщений
      */
     private MessageToUser messageToUser = new MessageLocal(NetPinger.class.getSimpleName());
-
-    /**
-     Ввод минут из браузера. По-умолчанию 3.
-
-     @see NetScanCtr#pingPost(org.springframework.ui.Model, javax.servlet.http.HttpServletRequest, ru.vachok.networker.net.NetPinger, javax.servlet.http.HttpServletResponse)
-     */
-    private String timeToScanStr = "3";
+    
+    private String timeForScanStr = String.valueOf(TimeUnit.SECONDS.toMinutes(Math.abs(LocalTime.parse("08:30").toSecondOfDay() - LocalTime.now().toSecondOfDay())));
 
     /**
      Результат работы, как {@link String}
@@ -91,26 +88,21 @@ public class NetPinger implements Runnable, Pinger {
      */
     private String timeToEndStr = "0";
 
-    /**
-     Файл, загружаемый из браузера.
-
-     @see NetScanCtr#pingPost(org.springframework.ui.Model, javax.servlet.http.HttpServletRequest, ru.vachok.networker.net.NetPinger, javax.servlet.http.HttpServletResponse)
-     */
     private MultipartFile multipartFile;
-
+    
     /**
-     @return {@link #timeToScanStr}
+     @return {@link #timeForScanStr}
      */
     @SuppressWarnings("WeakerAccess")
-    public String getTimeToScanStr() {
-        return timeToScanStr;
+    public String getTimeForScanStr() {
+        return timeForScanStr;
     }
 
     /**
-     @param timeToScanStr {@link #timeToScanStr}
+     @param timeForScanStr {@link #timeForScanStr}
      */
-    public void setTimeToScanStr(String timeToScanStr) {
-        this.timeToScanStr = timeToScanStr;
+    public void setTimeForScanStr(String timeForScanStr) {
+        this.timeForScanStr = timeForScanStr;
     }
 
     /**
@@ -136,7 +128,7 @@ public class NetPinger implements Runnable, Pinger {
      {@link InetAddress#isReachable(int)}) добавляется в {@link #resList}.
      */
     private void pingSW() {
-        Properties properties = AppComponents.getOrSetProps();
+        Properties properties = AppComponents.getProps();
         this.pingSleepMsec = Long.parseLong(properties.getProperty(ConstantsNet.PROP_PINGSLEEP, String.valueOf(pingSleepMsec)));
         for (InetAddress inetAddress : ipAsList) {
             try {
@@ -242,12 +234,12 @@ public class NetPinger implements Runnable, Pinger {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         NetPinger pinger = (NetPinger) o;
-        return pingSleepMsec == pinger.pingSleepMsec && Objects.equals(timeToScanStr, pinger.timeToScanStr) && Objects.equals(timeToEndStr, pinger.timeToEndStr) && Objects
+        return pingSleepMsec == pinger.pingSleepMsec && Objects.equals(timeForScanStr, pinger.timeForScanStr) && Objects.equals(timeToEndStr, pinger.timeToEndStr) && Objects
             .equals(multipartFile, pinger.multipartFile);
     }
     
     @Override public int hashCode() {
-        return Objects.hash(pingSleepMsec, timeToScanStr, timeToEndStr, multipartFile);
+        return Objects.hash(pingSleepMsec, timeForScanStr, timeToEndStr, multipartFile);
     }
     
     /**
@@ -279,7 +271,7 @@ public class NetPinger implements Runnable, Pinger {
     /**
      Старт.
      <p>
-     Если {@link #multipartFile} не null, 1. {@link #parseFile()}. <br> 2. {@link #getTimeToScanStr()}. Парсинг строки в {@link Long}. <br> 3. Пока {@link System#currentTimeMillis()} меньше
+     Если {@link #multipartFile} не null, 1. {@link #parseFile()}. <br> 2. {@link #getTimeForScanStr()}. Парсинг строки в {@link Long}. <br> 3. Пока {@link System#currentTimeMillis()} меньше
      чем время старта ({@code final long startSt}), запускать {@link #pingSW()}. Устанавливаем {@link ThreadConfig#thrNameSet(String)} -
      {@link ConstantsFor#getUpTime()}.<br> 4. {@link
     TForms#fromArray(java.util.List, boolean)}. Устанавливаем {@link #pingResultStr}, после сканирования. <br> 5. {@link #parseResult(long)}. Парсим результат пингера.
@@ -293,7 +285,7 @@ public class NetPinger implements Runnable, Pinger {
         if (multipartFile != null) {
             parseFile();
         }
-        long userIn = TimeUnit.MINUTES.toMillis(Long.parseLong(getTimeToScanStr()));
+        long userIn = TimeUnit.MINUTES.toMillis(Long.parseLong(getTimeForScanStr()));
         long totalMillis = startSt + userIn;
         while (System.currentTimeMillis() < totalMillis) {
             pingSW();
@@ -311,8 +303,11 @@ public class NetPinger implements Runnable, Pinger {
         final StringBuilder sb = new StringBuilder("NetPinger{");
         sb.append("pingResultStr='").append(pingResultStr).append('\'');
         sb.append(", pingSleepMsec=").append(pingSleepMsec);
-        sb.append(", timeToEndStr='").append(timeToEndStr).append('\'');
-        sb.append(", timeToScanStr='").append(timeToScanStr).append('\'');
+        sb.append(", timeToEndStr='").append(timeToEndStr).append('\'').append("\n");
+        sb.append(TimeUnit.SECONDS.toMinutes(LocalTime.now().toSecondOfDay())).append("-")
+            .append(TimeUnit.SECONDS.toMinutes(LocalTime.parse("08:30").toSecondOfDay())).append(" (08:30)")
+            .append(String.valueOf((LocalTime.now().toSecondOfDay() - LocalTime.parse("08:30").toSecondOfDay())))
+            .append(" = ").append(timeForScanStr);
         sb.append('}');
         return sb.toString();
     }

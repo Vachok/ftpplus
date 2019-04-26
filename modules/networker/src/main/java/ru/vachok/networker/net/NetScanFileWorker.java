@@ -11,10 +11,7 @@ import ru.vachok.networker.services.MessageLocal;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.ArrayDeque;
-import java.util.Collection;
-import java.util.Deque;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -44,7 +41,7 @@ public class NetScanFileWorker implements Serializable {
     }
     
     public ConcurrentMap<String, File> getSrvFiles() {
-        for (File f : new File(".").listFiles()) {
+        for (File f : Objects.requireNonNull(new File(".").listFiles())) {
             if (f.getName().contains("lan_")) {
                 SRV_FILES.putIfAbsent(f.getName(), f);
             }
@@ -54,10 +51,10 @@ public class NetScanFileWorker implements Serializable {
         }
         else {
             SRV_FILES.putIfAbsent(ConstantsNet.FILENAME_NEWLAN210, new File(ConstantsNet.FILENAME_NEWLAN210));
-            SRV_FILES.putIfAbsent(ConstantsNet.FILENAME_NEWLAN200210, new File(ConstantsNet.FILENAME_NEWLAN200210));
+            SRV_FILES.putIfAbsent(ConstantsNet.FILENAME_NEWLAN220, new File(ConstantsNet.FILENAME_NEWLAN220));
             SRV_FILES.putIfAbsent(ConstantsNet.FILENAME_OLDLANTXT0, new File(ConstantsNet.FILENAME_OLDLANTXT0));
             SRV_FILES.putIfAbsent(ConstantsNet.FILENAME_OLDLANTXT1, new File(ConstantsNet.FILENAME_OLDLANTXT1));
-            SRV_FILES.putIfAbsent(ConstantsNet.FILENAME_SERVTXT_11SRVTXT, new File(ConstantsNet.FILENAME_SERVTXT_11SRVTXT));
+            SRV_FILES.putIfAbsent(ConstantsNet.FILENAME_SERVTXT_10SRVTXT, new File(ConstantsNet.FILENAME_SERVTXT_10SRVTXT));
             SRV_FILES.putIfAbsent(ConstantsNet.FILENAME_SERVTXT_21SRVTXT, new File(ConstantsNet.FILENAME_SERVTXT_21SRVTXT));
             SRV_FILES.putIfAbsent(ConstantsNet.FILENAME_SERVTXT_31SRVTXT, new File(ConstantsNet.FILENAME_SERVTXT_31SRVTXT));
             SRV_FILES.putIfAbsent(ConstantsNet.FILENAME_SERVTXT_41SRVTXT, new File(ConstantsNet.FILENAME_SERVTXT_41SRVTXT));
@@ -70,16 +67,16 @@ public class NetScanFileWorker implements Serializable {
     }
     
     
-    Deque<String> getListOfOnlineDev() throws IOException {
+    /**
+     @return {@link Deque} of {@link String}, с именами девайсов онлайн.
+     */
+    Deque<String> getListOfOnlineDev() {
         AppComponents.threadConfig().thrNameSet("ON");
-        
-        String classMeth = "NetScanFileWorker.getListOfOnlineDev";
-        String titleMsg = "retDeque.size()";
         Deque<String> retDeque = new ArrayDeque<>();
         Set<String> fileNameSet = SRV_FILES.keySet();
         
         if (SRV_FILES.size() == 8) {
-            SRV_FILES.forEach((fileName, srvFileX)->fileWrk(srvFileX, titleMsg, retDeque));
+            SRV_FILES.forEach((fileName, srvFileX)->fileWrk(srvFileX, retDeque));
         }
         else {
             messageToUser.error(SRV_FILES.size() + " is SRV_FILES!");
@@ -88,7 +85,11 @@ public class NetScanFileWorker implements Serializable {
     }
     
     
-    private void fileWrk(File srvFileX, String titleMsg, Collection<String> retDeque) {
+    /**
+     @param srvFileX файл lan_* из корневой папки.
+     @param retDeque обратная очередь, для наполнения.
+     */
+    private void fileWrk(File srvFileX, Collection<String> retDeque) {
         if (srvFileX.exists() && srvFileX.canRead()) {
             retDeque.addAll(FileSystemWorker.readFileToList(srvFileX.getAbsolutePath()));
         }

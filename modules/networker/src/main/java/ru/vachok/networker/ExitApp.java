@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker;
 
 
@@ -209,7 +211,7 @@ public class ExitApp implements Runnable {
      */
     private void exitAppDO() {
         BlockingDeque<String> devices = ConstantsNet.getAllDevices();
-        Properties properties = AppComponents.getOrSetProps();
+        Properties properties = AppComponents.getProps();
         miniLoggerLast.add("Devices " + "iterator next: " + " = " + devices.iterator().next());
         miniLoggerLast.add("Last" + " = " + devices.getLast());
         miniLoggerLast.add("BlockingDeque " + "size/remainingCapacity/total" + " = " + devices.size() + "/" + devices.remainingCapacity() + "/" + ConstantsNet.IPS_IN_VELKOM_VLAN);
@@ -217,7 +219,7 @@ public class ExitApp implements Runnable {
         miniLoggerLast.add("Properties in DATABASE : " + new AppComponents().updateProps(properties));
         miniLoggerLast.add("\n" + new TForms().fromArray(properties, false));
         FileSystemWorker.writeFile("exit.last", miniLoggerLast.stream());
-        FileSystemWorker.delTemp();
+        miniLoggerLast.add(FileSystemWorker.delTemp());
         AppComponents.threadConfig().killAll();
         System.exit(Math.toIntExact(toMinutes));
     }
@@ -236,16 +238,7 @@ public class ExitApp implements Runnable {
     @SuppressWarnings({"HardCodedStringLiteral", "FeatureEnvy"})
     private void copyAvail() {
         File appLog = new File("g:\\My_Proj\\FtpClientPlus\\modules\\networker\\app.log");
-        File scan200 = new File(ConstantsNet.FILENAME_NEWLAN210);
-        File scan210 = new File(ConstantsNet.FILENAME_NEWLAN200210);
-        File oldLanFile0 = new File(ConstantsNet.FILENAME_OLDLANTXT0);
-        File oldLanFile1 = new File(ConstantsNet.FILENAME_OLDLANTXT1);
         File filePingTv = new File(ConstantsFor.FILENAME_PTV);
-    
-        FileSystemWorker.copyOrDelFile(scan200, new StringBuilder().append("\\lan\\vlans200_").append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
-        FileSystemWorker.copyOrDelFile(scan210, new StringBuilder().append(".\\lan\\vlans210_").append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
-        FileSystemWorker.copyOrDelFile(oldLanFile0, new StringBuilder().append(".\\lan\\0old_lan_").append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
-        FileSystemWorker.copyOrDelFile(oldLanFile1, new StringBuilder().append(".\\lan\\1old_lan_").append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
         FileSystemWorker.copyOrDelFile(filePingTv, new StringBuilder().append(".\\lan\\ptv_").append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
     
         ConcurrentMap<String, File> srvFiles = NetScanFileWorker.getI().getSrvFiles();

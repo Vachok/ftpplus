@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.controller;
 
 
@@ -58,9 +60,9 @@ public class NetScanCtr {
     private static final Logger LOGGER = LoggerFactory.getLogger(NetScanCtr.class.getSimpleName());
 
     /**
-     {@link AppComponents#getOrSetProps()}
+     {@link AppComponents#getProps()}
      */
-    private static final Properties PROPERTIES = AppComponents.getOrSetProps();
+    private static final Properties PROPERTIES = AppComponents.getProps();
 
     /**
      {@link ConstantsFor#DELAY}
@@ -80,9 +82,7 @@ public class NetScanCtr {
     private static final String STR_REQUEST = "request = [";
 
     private static final String STR_MODEL = "], model = [";
-
-    private static final String ATT_NETPINGER = "netPinger";
-
+    
     private static final String ATT_PCS = "pcs";
 
     private static final MessageToUser messageToUser = new MessageLocal(NetScanCtr.class.getSimpleName());
@@ -107,6 +107,7 @@ public class NetScanCtr {
         this.netScannerSvcInstAW = netScannerSvc;
         this.netPingerInst = netPingerInst;
         this.scanOnline = scanOnline;
+        messageToUser.info(getClass().getSimpleName() + ".pingDev", "AppComponents.ipFlushDNS()", " = " + AppComponents.ipFlushDNS());
     }
 
 
@@ -162,11 +163,12 @@ public class NetScanCtr {
 
     @GetMapping("/ping")
     public String pingAddr( Model model , HttpServletRequest request , HttpServletResponse response ) {
-        model.addAttribute(ATT_NETPINGER , netPingerInst);
+        netPingerInst.setTimeForScanStr(String.valueOf(TimeUnit.SECONDS.toMinutes(Math.abs(LocalTime.now().toSecondOfDay() - LocalTime.parse("08:30").toSecondOfDay()))));
+        model.addAttribute(ConstantsFor.ATT_NETPINGER, netPingerInst);
         model.addAttribute("pingResult" , FileSystemWorker.readFile(ConstantsNet.PINGRESULT_LOG));
         model.addAttribute(ConstantsFor.ATT_TITLE , netPingerInst.getTimeToEndStr() + " pinger hash: " + netPingerInst.hashCode());
         model.addAttribute(ConstantsFor.ATT_FOOTER , new PageFooter().getFooterUtext());
-        model.addAttribute("pingTest", new TForms().fromArray(netPingerInst.pingDev(NetListKeeper.getDeqAddr()), true));
+        model.addAttribute("pingTest", new TForms().fromArray(netPingerInst.pingDev(NetListKeeper.getMapAddr()), true));
         //noinspection MagicNumber
         response.addHeader(ConstantsFor.HEAD_REFRESH , String.valueOf(ConstantsFor.DELAY * 1.8f));
         messageToUser.info("NetScanCtr.pingAddr" , "HEAD_REFRESH" , " = " + response.getHeader(ConstantsFor.HEAD_REFRESH));
@@ -178,7 +180,7 @@ public class NetScanCtr {
     public String pingPost( Model model , HttpServletRequest request , @ModelAttribute NetPinger netPinger , HttpServletResponse response ) {
         this.netPingerInst = netPinger;
         netPinger.run();
-        model.addAttribute(ATT_NETPINGER , netPinger);
+        model.addAttribute(ConstantsFor.ATT_NETPINGER, netPinger);
         String npEq = "Netpinger equals is " + netPinger.equals(this.netPingerInst);
         model.addAttribute(ConstantsFor.ATT_TITLE , npEq);
         model.addAttribute("ok" , FileSystemWorker.readFile(ConstantsNet.PINGRESULT_LOG));
@@ -247,7 +249,7 @@ public class NetScanCtr {
         sb.append(", NETSCANNERSVC_INST=").append(netScannerSvcInstAW.hashCode());
         sb.append(", STR_REQUEST='").append(STR_REQUEST).append('\'');
         sb.append(", STR_MODEL='").append(STR_MODEL).append('\'');
-        sb.append(", ATT_NETPINGER='").append(ATT_NETPINGER).append('\'');
+        sb.append(", ATT_NETPINGER='").append(ConstantsFor.ATT_NETPINGER).append('\'');
         sb.append(", lastScanMAP=").append(lastScanMAP.size());
         sb.append(", netPingerInst=").append(netPingerInst.hashCode());
         sb.append('}');
@@ -451,21 +453,12 @@ public class NetScanCtr {
      @param response {@link HttpServletResponse}
      */
     private void allDevNotNull(Model model, HttpServletResponse response) {
-        final float scansInMin = Float.parseFloat(AppComponents.getOrSetProps().getProperty("scansInMin", "90"));
+        final float scansInMin = Float.parseFloat(AppComponents.getProps().getProperty(ConstantsFor.PR_SCANSINMIN, "200"));
         float minLeft = ConstantsNet.getAllDevices().remainingCapacity() / scansInMin;
-        String attributeValue = new StringBuilder()
-            .append(minLeft).append(" ~minLeft. ")
-            .append(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis((long) minLeft))).toString();
-        model.addAttribute(ConstantsFor.ATT_TITLE, attributeValue);
-        model.addAttribute("pcs",
-            FileSystemWorker.readFile(ConstantsNet.FILENAME_NEWLAN210).replace(", ", "<br>") + "<p>" + FileSystemWorker.readFile(ConstantsNet.FILENAME_NEWLAN200210).replace(", ", "<br>") +
-                "<p>" + FileSystemWorker.readFile(ConstantsNet.FILENAME_OLDLANTXT0).replace(", ", "<br>") + "<p>" +
-                FileSystemWorker.readFile(ConstantsNet.FILENAME_OLDLANTXT1).replace(", ", "<br>") + "<p>" +
-                FileSystemWorker.readFile(ConstantsNet.FILENAME_SERVTXT_11SRVTXT).replace(", ", "<br>") + "<p>" +
-                FileSystemWorker.readFile(ConstantsNet.FILENAME_SERVTXT_21SRVTXT).replace(", ", "<br>") + "<p>" +
-                FileSystemWorker.readFile(ConstantsNet.FILENAME_SERVTXT_31SRVTXT).replace(", ", "<br>") + "<p>" +
-                FileSystemWorker.readFile(ConstantsNet.FILENAME_SERVTXT_41SRVTXT).replace(", ", "<br>") + "<p>");
-        response.addHeader(ConstantsFor.HEAD_REFRESH, "45");
-    }
     
+        StringBuilder attTit = new StringBuilder().append(minLeft).append(" ~minLeft. ").append(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis((long) minLeft)));
+        model.addAttribute(ConstantsFor.ATT_TITLE, attTit.toString());
+        model.addAttribute("pcs", new ScanOnline().getPingResultStr());
+        response.addHeader(ConstantsFor.HEAD_REFRESH, "75");
+    }
 }

@@ -46,13 +46,15 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     }
     
     
-    public static void delTemp() {
+    public static String delTemp() {
+        DeleterTemp deleterTemp = new DeleterTemp();
         try {
-            Files.walkFileTree(Paths.get("."), new DeleterTemp());
+            Files.walkFileTree(Paths.get("."), deleterTemp);
         }
         catch (IOException e) {
             messageToUser.error(FileSystemWorker.class.getSimpleName(), e.getMessage(), new TForms().fromArray(e, false));
         }
+        return new TForms().fromArray(deleterTemp.getEventList(), false);
     }
     
     
@@ -67,21 +69,27 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
      */
     public static String searchInCommon(String[] folderPath) {
         FileSearcher fileSearcher = new FileSearcher(folderPath[0]);
+        String folderToSearch = "";
         try {
-            String folderToSearch = folderPath[1];
-            folderToSearch = "\\\\srv-fs.eatmeat.ru\\common_new\\" + folderToSearch;
+            folderToSearch = folderPath[1];
+        }
+        catch (ArrayIndexOutOfBoundsException e) {
+            folderToSearch = "";
+        }
+        folderToSearch = "\\\\srv-fs.eatmeat.ru\\common_new\\" + folderToSearch;
+        try {
             Files.walkFileTree(Paths.get(folderToSearch), fileSearcher);
-            List<String> fileSearcherResList = fileSearcher.getResList();
-            String resTo = new TForms().fromArray(fileSearcherResList, true);
-            if (fileSearcherResList.size() > 0) {
-                writeFile("search_" + LocalTime.now().toSecondOfDay() + ".res", fileSearcherResList.stream());
-            }
-            return resTo;
         }
-        catch (Exception e) {
-            error("searchInCommon", e);
-            return e.getMessage();
+        catch (IOException e) {
+            messageToUser.error(e.getMessage());
         }
+        List<String> fileSearcherResList = fileSearcher.getResList();
+        fileSearcherResList.add("Searched: " + new Date() + "\n");
+        String resTo = new TForms().fromArray(fileSearcherResList, true);
+        if (fileSearcherResList.size() > 0) {
+            writeFile("search_" + LocalTime.now().toSecondOfDay() + ".res", fileSearcherResList.stream());
+        }
+        return resTo;
     }
     
     
@@ -189,10 +197,14 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     }
     
     
-    public static void writeFile(String fileName, String toWriteStr) {
-        writeFile(fileName, Collections.singletonList(toWriteStr));
+    public static String writeFile(String fileName, String toWriteStr) {
+        if (writeFile(fileName, Collections.singletonList(toWriteStr))) {
+            return new File(fileName).getAbsolutePath();
+        }
+        else {
+            return String.valueOf(false);
+        }
     }
-    
     
     /**
      Запись файла@param fileName  имя файла
@@ -258,6 +270,26 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         return classMeth + " threw Exception: " + e.getMessage() + ": <p>\n\n" + new TForms().fromArray(e, true);
     }
     
+    public static Set<String> readNatListsToSet(Path file) {
+        Set<String> retSet = new HashSet<>();
+        try (InputStream inputStream = new FileInputStream(file.toFile());
+             InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+             BufferedReader bufferedReader = new BufferedReader(inputStreamReader)
+        ) {
+            bufferedReader.lines().forEach(x->{
+                try {
+                    retSet.add(x.split(" #")[0]);
+                }
+                catch (ArrayIndexOutOfBoundsException e) {
+                    retSet.add(x);
+                }
+            });
+        }
+        catch (IOException e) {
+            messageToUser.error(e.getMessage());
+        }
+        return retSet;
+    }
     
     private static boolean printTo(OutputStream outputStream, Exception e) {
         try (PrintStream printStream = new PrintStream(outputStream, true)) {

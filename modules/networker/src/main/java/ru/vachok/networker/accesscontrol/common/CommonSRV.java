@@ -15,38 +15,40 @@ import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.util.Collections;
 
+
 /**
  /common сервис
  <p>
-
+ 
  @since 05.12.2018 (9:07) */
 @Service(ConstantsFor.ATT_COMMON)
 public class CommonSRV {
-
+    
+    
     /**
      {@link AppComponents#getLogger(String)}
      */
     private static final Logger LOGGER = AppComponents.getLogger(CommonSRV.class.getSimpleName());
-
+    
     /**
      Пользовательский ввод через форму на сайте
-
+     
      @see CommonCTRL
      */
     private String delFolderPath;
-
+    
     private String perionDays;
-
+    
     private String searchPat;
-
+    
     public String getPerionDays() {
         return perionDays;
     }
-
+    
     public void setPerionDays(String perionDays) {
         this.perionDays = perionDays;
     }
-
+    
     /**
      @return {@link #delFolderPath}
      */
@@ -54,44 +56,52 @@ public class CommonSRV {
     public String getDelFolderPath() {
         return delFolderPath;
     }
-
+    
     /**
      common.html форма
      <p>
-
+     
      @param delFolderPath {@link #delFolderPath}
      */
     public void setDelFolderPath(String delFolderPath) {
         this.delFolderPath = delFolderPath;
     }
-
+    
     @SuppressWarnings("WeakerAccess")
     public String getSearchPat() {
         return searchPat;
     }
-
+    
     public void setSearchPat(String searchPat) {
         this.searchPat = searchPat;
     }
-
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("CommonSRV{");
+        sb.append("delFolderPath='").append(delFolderPath).append('\'');
+        sb.append(", perionDays='").append(perionDays).append('\'');
+        sb.append('}');
+        return sb.toString();
+    }
+    
     String searchByPat() {
         StringBuilder stringBuilder = new StringBuilder();
+        if (searchPat.equals(":")) {
+            stringBuilder.append(getFromFile());
+        }
+        String[] toSearch = new String[2];
         try {
-            String[] toSearch = searchPat.split("\\Q:\\E");
+            toSearch = searchPat.split("\\Q:\\E");
             String searchInCommon = FileSystemWorker.searchInCommon(toSearch);
             stringBuilder.append(searchInCommon);
-        } catch (Exception e) {
-            FileSystemWorker.error("CommonSRV.searchByPat", e);
+        }
+        catch (ArrayIndexOutOfBoundsException | NullPointerException e) {
             stringBuilder.append(e.getMessage());
         }
         return stringBuilder.toString();
     }
-
-    void setNullToAllFields() {
-        this.delFolderPath = "";
-        this.perionDays = "";
-    }
-
+    
     /**
      @return {@link RestoreFromArchives#toString()}
      */
@@ -106,7 +116,8 @@ public class CommonSRV {
         try {
             String[] foldersInPath = delFolderPath.split("\\Q\\\\E");
             followInt = foldersInPath.length;
-        } catch (ArrayIndexOutOfBoundsException e) {
+        }
+        catch (ArrayIndexOutOfBoundsException e) {
             followInt = 1;
         }
         stringBuilder
@@ -117,39 +128,48 @@ public class CommonSRV {
             LOGGER.warn(msg);
             Thread.sleep(1000);
             Files.walkFileTree(restoreFromArchives.getArchiveDir(), Collections.singleton(FileVisitOption.FOLLOW_LINKS), followInt + 1, restoreFromArchives);
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             return e.getMessage();
-        } catch (InterruptedException e) {
+        }
+        catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
         stringBuilder.append(restoreFromArchives);
         writeResult(stringBuilder.toString());
         return restoreFromArchives.toString();
     }
-
+    
+    void setNullToAllFields() {
+        this.delFolderPath = "";
+        this.perionDays = "";
+    }
+    
+    private String getFromFile() {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (File file : new File(".").listFiles()) {
+            if (file.getName().toLowerCase().contains("search_")) {
+                stringBuilder.append(FileSystemWorker.readFile(file.getAbsolutePath()));
+            }
+        }
+        return stringBuilder.toString();
+    }
+    
     /**
      Записывает файл с именем {@code CommonSRV.reStoreDir.results.txt}
      <p>
-
+ 
      @param resultToFile результат работы {@link RestoreFromArchives}
      */
     private void writeResult(String resultToFile) {
         File file = new File(getClass().getSimpleName() + ".reStoreDir.results.txt");
         try (OutputStream outputStream = new FileOutputStream(file)) {
             outputStream.write(resultToFile.getBytes());
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             LOGGER.warn(e.getMessage(), e);
         }
-        @SuppressWarnings ("DuplicateStringLiteralInspection") String msg = file.getAbsolutePath() + " written";
+        @SuppressWarnings("DuplicateStringLiteralInspection") String msg = file.getAbsolutePath() + " written";
         LOGGER.info(msg);
-    }
-
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("CommonSRV{");
-        sb.append("delFolderPath='").append(delFolderPath).append('\'');
-        sb.append(", perionDays='").append(perionDays).append('\'');
-        sb.append('}');
-        return sb.toString();
     }
 }

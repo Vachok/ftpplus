@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.componentsrepo;
 
 
@@ -28,9 +30,9 @@ public class VersionInfo {
     private static final String DOC_URL = "<a href=\"/doc/index.html\">DOC</a>";
 
     /**
-     {@link AppComponents#getOrSetProps()}
+     {@link AppComponents#getProps()}
      */
-    private static final Properties PROPERTIES = AppComponents.getOrSetProps();
+    private static final Properties PROPERTIES = AppComponents.getProps();
 
     private static final String PR_APP_BUILD = "appBuild";
 
@@ -52,6 +54,16 @@ public class VersionInfo {
      Время сборки
      */
     private String buildTime = "1";
+    
+    private String propertiesFrom = ConstantsFor.DBPREFIX + ConstantsFor.STR_PROPERTIES;
+    
+    public String getPropertiesFrom() {
+        return propertiesFrom;
+    }
+    
+    public void setPropertiesFrom(String propertiesFrom) {
+        this.propertiesFrom = propertiesFrom;
+    }
 
 
     @Override public int hashCode() {
@@ -146,18 +158,18 @@ public class VersionInfo {
 
 
     private void getParams() throws Exception {
-        Properties properties = AppComponents.getOrSetProps();
+        Properties properties = AppComponents.getProps();
         this.appBuild = properties.getProperty(ConstantsFor.PR_APP_BUILD , "Property does not exists");
         this.appVersion = properties.getProperty(ConstantsFor.PR_APP_VERSION , "Property does not exists");
         this.buildTime = properties.getProperty(ConstantsFor.PR_APP_BUILDTIME , "Property does not exists");
     }
-
 
     @Override public String toString() {
         final StringBuilder sb = new StringBuilder("VersionInfo{");
         sb.append("appBuild='").append(appBuild).append('\'');
         sb.append(", appVersion='").append(appVersion).append('\'');
         sb.append(", buildTime='").append(buildTime).append('\'');
+        sb.append(", propertiesFrom='").append(propertiesFrom).append('\'');
         sb.append(", thisPCNameStr='").append(thisPCNameStr).append('\'');
         sb.append('}');
         return sb.toString();
