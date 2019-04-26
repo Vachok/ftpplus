@@ -133,25 +133,6 @@ public class ScanOnline implements Runnable, Pinger {
         }
     }
     
-    private void onlineFileExists(File onlinesFile, File fileMAX) {
-        String replaceStr = onlinesFile.getAbsolutePath().replace(FILEEXT_ONLIST, ".last");
-        File repFile = new File(replaceStr);
-        List<String> stringsLastScan = FileSystemWorker.readFileToList(repFile.getAbsolutePath());
-        Collections.sort(stringsLastScan);
-        SortedSet<String> setLastScan = Collections.emptySortedSet();
-        stringsLastScan.forEach(setLastScan::add);
-        if (setLastScan.size() < NetScanFileWorker.getI().getListOfOnlineDev().size()) {
-            FileSystemWorker.copyOrDelFile(onlinesFile, replaceStr, false);
-        }
-        if (repFile.length() > fileMAX.length()) {
-            messageToUser.warn(repFile.getName(), fileMAX.getName() + " size difference", " = " + (repFile.length() - fileMAX.length()));
-            List<String> readFileToList = FileSystemWorker.readFileToList(fileMAX.getAbsolutePath());
-            readFileToList.stream().forEach(x->maxOnList.add(x));
-            FileSystemWorker.copyOrDelFile(repFile, fileMAX.getAbsolutePath(), false);
-        }
-        repFile.deleteOnExit();
-    }
-    
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder();
@@ -164,6 +145,24 @@ public class ScanOnline implements Runnable, Pinger {
         return sb.toString();
     }
     
+    private void onlineFileExists(File onlinesFile, File fileMAX) {
+        String replaceStr = onlinesFile.getAbsolutePath().replace(FILEEXT_ONLIST, ".last");
+        File repFile = new File(replaceStr);
+        List<String> stringsLastScan = FileSystemWorker.readFileToList(repFile.getAbsolutePath());
+        Collections.sort(stringsLastScan);
+        SortedSet<String> setLastScan = new TreeSet<>();
+        stringsLastScan.forEach(setLastScan::add);
+        if (setLastScan.size() < NetScanFileWorker.getI().getListOfOnlineDev().size()) {
+            FileSystemWorker.copyOrDelFile(onlinesFile, replaceStr, false);
+        }
+        if (repFile.length() > fileMAX.length()) {
+            messageToUser.warn(repFile.getName(), fileMAX.getName() + " size difference", " = " + (repFile.length() - fileMAX.length()));
+            List<String> readFileToList = FileSystemWorker.readFileToList(fileMAX.getAbsolutePath());
+            readFileToList.stream().forEach(x->maxOnList.add(x));
+            FileSystemWorker.copyOrDelFile(repFile, fileMAX.getAbsolutePath(), false);
+        }
+        repFile.deleteOnExit();
+    }
     
     private void offlineNotEmptyActions() {
         SwitchesAvailability switchesAvailability = new SwitchesAvailability();

@@ -11,8 +11,10 @@ import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.LocalTime;
+import java.util.Date;
 import java.util.List;
-import java.util.*;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
@@ -23,9 +25,6 @@ import java.util.stream.Stream;
  
  @since 06.04.2019 (13:15) */
 public class CountSizeOfWorkDir extends SimpleFileVisitor<Path> implements ProgrammFilesWriter {
-    
-    
-    private static List<WatchEvent<?>> eventList = new ArrayList<>();
     
     private long sizeBytes;
     
@@ -48,22 +47,9 @@ public class CountSizeOfWorkDir extends SimpleFileVisitor<Path> implements Progr
         }
     }
     
-    public List<WatchEvent<?>> getEventList() {
-        return eventList;
-    }
-    
     @Override public String call() throws Exception {
         return getSizeOfDir();
     }
-    
-    @Override public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-        WatchEvent.Kind<Path> createEvent = StandardWatchEventKinds.ENTRY_CREATE;
-        WatchService watchService = dir.getFileSystem().newWatchService();
-        WatchKey createEntKey = dir.register(watchService, createEvent);
-        eventList.addAll(createEntKey.pollEvents());
-        return FileVisitResult.CONTINUE;
-    }
-    
     
     @Override public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
         if (file.toFile().length() <= 0 && !file.toFile().getName().equalsIgnoreCase("scan.tmp")) {
@@ -154,7 +140,6 @@ public class CountSizeOfWorkDir extends SimpleFileVisitor<Path> implements Progr
         StringBuilder stringBuilder = new StringBuilder();
         Files.walkFileTree(Paths.get("."), this);
         stringBuilder.append("Total size = ").append(sizeBytes / ConstantsFor.KBYTE / ConstantsFor.KBYTE).append(" MB<br>\n");
-        stringBuilder.append(new TForms().fromArray(eventList, true));
         longPathMap.forEach((x, y)->stringBuilder.append(String.format("%.02f", (float) x / ConstantsFor.KBYTE)).append(" kb in: ").append(y).append("<br>\n"));
         return stringBuilder.toString();
     }
