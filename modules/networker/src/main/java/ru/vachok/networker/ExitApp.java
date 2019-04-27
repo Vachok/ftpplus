@@ -241,7 +241,7 @@ public class ExitApp implements Runnable {
         File filePingTv = new File(ConstantsFor.FILENAME_PTV);
         FileSystemWorker.copyOrDelFile(filePingTv, new StringBuilder().append(".\\lan\\ptv_").append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
     
-        ConcurrentMap<String, File> srvFiles = NetScanFileWorker.getI().getSrvFiles();
+        ConcurrentMap<String, File> srvFiles = NetScanFileWorker.getI().getScanFiles();
         srvFiles.forEach((id, file)->FileSystemWorker
             .copyOrDelFile(file, new StringBuilder().append(".\\lan\\").append(file.getName().replaceAll(ConstantsNet.FILENAME_SERVTXT, "")).append(System.currentTimeMillis() / 1000)
                 .append(".txt").toString(), true));
