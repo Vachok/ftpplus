@@ -11,6 +11,9 @@ import ru.vachok.networker.services.MessageLocal;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -76,7 +79,7 @@ public class NetScanFileWorker implements Serializable {
         Set<String> fileNameSet = SRV_FILES.keySet();
         
         if (SRV_FILES.size() == 8) {
-            SRV_FILES.forEach((fileName, srvFileX)->fileWrk(srvFileX, retDeque));
+            SRV_FILES.forEach((fileName, srvFileX)->messageToUser.info(getClass().getSimpleName(), "list onLine", " = " + fileWrk(srvFileX, retDeque)));
         }
         else {
             messageToUser.error(SRV_FILES.size() + " is SRV_FILES!");
@@ -89,18 +92,20 @@ public class NetScanFileWorker implements Serializable {
      @param srvFileX файл lan_* из корневой папки.
      @param retDeque обратная очередь, для наполнения.
      */
-    private void fileWrk(File srvFileX, Collection<String> retDeque) {
+    private Path fileWrk(File srvFileX, Collection<String> retDeque) {
+        Path retPath = Paths.get("\\lan\\");
         if (srvFileX.exists() && srvFileX.canRead()) {
             retDeque.addAll(FileSystemWorker.readFileToList(srvFileX.getAbsolutePath()));
+            retPath = srvFileX.toPath();
         }
         else {
-            boolean srvScanFile = false;
             try {
-                srvScanFile = srvFileX.createNewFile();
+                retPath = Files.createFile(srvFileX.toPath());
             }
             catch (IOException e) {
                 messageToUser.error(e.getMessage());
             }
         }
+        return retPath;
     }
 }

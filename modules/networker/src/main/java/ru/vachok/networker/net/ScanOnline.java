@@ -155,15 +155,14 @@ public class ScanOnline implements Runnable, Pinger {
         File repFile = new File(replaceStr);
         List<String> stringsLastScan = FileSystemWorker.readFileToList(repFile.getAbsolutePath());
         Collections.sort(stringsLastScan);
-        SortedSet<String> setLastScan = new TreeSet<>();
-        stringsLastScan.forEach(setLastScan::add);
+        Set<String> setLastScan = new TreeSet<>(stringsLastScan);
         if (setLastScan.size() < NetScanFileWorker.getI().getListOfOnlineDev().size()) {
             FileSystemWorker.copyOrDelFile(onlinesFile, replaceStr, false);
         }
         if (repFile.length() > fileMAX.length()) {
             messageToUser.warn(repFile.getName(), fileMAX.getName() + " size difference", " = " + (repFile.length() - fileMAX.length()));
             List<String> readFileToList = FileSystemWorker.readFileToList(fileMAX.getAbsolutePath());
-            readFileToList.stream().forEach(x->maxOnList.add(x));
+            maxOnList.addAll(readFileToList);
             FileSystemWorker.copyOrDelFile(repFile, fileMAX.getAbsolutePath(), false);
         }
         repFile.deleteOnExit();

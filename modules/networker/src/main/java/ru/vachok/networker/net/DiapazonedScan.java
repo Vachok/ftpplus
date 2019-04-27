@@ -279,6 +279,11 @@ public class DiapazonedScan implements Runnable {
             this.whatVlan = whatVlan;
             
             this.vlanFile = vlanFile;
+            if (vlanFile.exists()) {
+                String newFileName =
+                    Paths.get(ROOT_PATH_STR + "\\lan\\" + vlanFile.getName().replace(".txt", "_" + (System.currentTimeMillis() / 1000) + ".scan")).toString();
+                FileSystemWorker.copyOrDelFile(vlanFile, newFileName, true);
+            }
             
             OutputStream outputStream = null;
             
@@ -296,10 +301,6 @@ public class DiapazonedScan implements Runnable {
         
         @Override
         public void run() {
-            if (vlanFile.exists()) {
-                String newFileName = Paths.get(ROOT_PATH_STR + "\\lan\\" + vlanFile.getName().replace(".txt", "_" + (System.currentTimeMillis() / 1000) + ".scan")).toString();
-                FileSystemWorker.copyOrDelFile(vlanFile, newFileName, false);
-            }
             if (ALL_DEVICES_LOCAL_DEQUE.remainingCapacity() > 0) {
                 boolean execScanB = execScan();
                 messageToUser.info("ALL_DEV", "Scan from " + from + " to " + to + " is " + execScanB, "ALL_DEVICES_LOCAL_DEQUE = " + ALL_DEVICES_LOCAL_DEQUE.size());
