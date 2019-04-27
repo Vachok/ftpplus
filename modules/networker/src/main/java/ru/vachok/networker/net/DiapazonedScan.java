@@ -16,6 +16,8 @@ import ru.vachok.networker.services.MessageLocal;
 import java.io.*;
 import java.lang.reflect.Field;
 import java.net.InetAddress;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -267,6 +269,8 @@ public class DiapazonedScan implements Runnable {
         private String whatVlan;
         
         private PrintStream printStream;
+    
+        private Path lockFile;
         
         private File vlanFile;
         
@@ -289,6 +293,8 @@ public class DiapazonedScan implements Runnable {
             
             try {
                 outputStream = new FileOutputStream(vlanFile);
+                this.lockFile = Files.createTempFile(getClass().getSimpleName() + "_" + from + to, ".lck");
+                messageToUser.info(getClass().getSimpleName(), lockFile.toString(), " = " + lockFile.toFile().exists());
             }
             catch (IOException e) {
                 messageToUser.errorAlert(getClass().getSimpleName(), ".ExecScan", e.getMessage());
@@ -302,13 +308,23 @@ public class DiapazonedScan implements Runnable {
         @Override
         public void run() {
             if (ALL_DEVICES_LOCAL_DEQUE.remainingCapacity() > 0) {
-                boolean execScanB = execScan();
+                boolean execScanB = false;
+                try {
+                    execScanB = execScan();
+                    boolean lckDeleted = Files.deleteIfExists(lockFile);
+                    messageToUser.info(getClass().getSimpleName() + ".run", lockFile.toString(), " = " + lckDeleted);
+                    if (!lckDeleted) {
+                        lockFile.toFile().deleteOnExit();
+                    }
+                }
+                catch (IOException e) {
+                    messageToUser.error(e.getMessage());
+                }
                 messageToUser.info("ALL_DEV", "Scan from " + from + " to " + to + " is " + execScanB, "ALL_DEVICES_LOCAL_DEQUE = " + ALL_DEVICES_LOCAL_DEQUE.size());
             }
             else {
                 messageToUser.error(getClass().getSimpleName(), String.valueOf(ALL_DEVICES_LOCAL_DEQUE.remainingCapacity()), " ALL_DEVICES_LOCAL_DEQUE remainingCapacity!");
             }
-    
         }
         
         @Override public String toString() {
@@ -330,18 +346,23 @@ public class DiapazonedScan implements Runnable {
             messageToUser.info(getClass().getSimpleName() + ".getSpend", "new Date(stArt)", " = " + new Date(stArt));
             return System.currentTimeMillis() - stArt;
         }
-        
-        private boolean execScan() {
+    
+        private boolean execScan() throws IOException {
             this.stArt = System.currentTimeMillis();
-            try {
-                ConcurrentMap<String, String> stringStringConcurrentMap = scanLanSegment(from, to, whatVlan, printStream);
-                NetScanFileWorker.getI().setLastStamp(System.currentTimeMillis());
-                return stringStringConcurrentMap.size() == 255;
+            boolean retBool = false;
+            if (!lockFile.toFile().exists()) {
+                try {
+                    ConcurrentMap<String, String> stringStringConcurrentMap = scanLanSegment(from, to, whatVlan, printStream);
+                    NetScanFileWorker.getI().setLastStamp(System.currentTimeMillis());
+                    retBool = stringStringConcurrentMap.size() == 255;
+                }
+                catch (Exception e) {
+                    messageToUser.error(e.getMessage());
+                    retBool = false;
+                    Files.deleteIfExists(lockFile);
+                }
             }
-            catch (Exception e) {
-                messageToUser.error(e.getMessage());
-                return false;
-            }
+            return retBool;
         }
     
         /**
@@ -394,7 +415,6 @@ public class DiapazonedScan implements Runnable {
         private ConcurrentMap<String, String> scanLanSegment(int fromVlan, int toVlan, String whatVlan, PrintStream printStream) {
             ConcurrentMap<String, String> stStMap = new ConcurrentHashMap<>(MAX_IN_VLAN_INT);
             String theScannedIPHost = "No scan yet";
-    
             for (int i = fromVlan; i < toVlan; i++) {
                 StringBuilder msgBuild = new StringBuilder();
                 for (int j = 0; j < MAX_IN_VLAN_INT; j++) {
