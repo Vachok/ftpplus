@@ -270,7 +270,7 @@ public class DiapazonedScan implements Runnable {
         
         private PrintStream printStream;
     
-        private Path lockFile;
+        private Path lockFile = Paths.get("%tmp%\\" + getClass().getSimpleName() + ".lck");
         
         private File vlanFile;
         
@@ -293,8 +293,7 @@ public class DiapazonedScan implements Runnable {
             
             try {
                 outputStream = new FileOutputStream(vlanFile);
-                this.lockFile = Files.createTempFile(getClass().getSimpleName() + "_" + from + to, ".lck");
-                messageToUser.info(getClass().getSimpleName(), lockFile.toString(), " = " + lockFile.toFile().exists());
+    
             }
             catch (IOException e) {
                 messageToUser.errorAlert(getClass().getSimpleName(), ".ExecScan", e.getMessage());
@@ -351,6 +350,8 @@ public class DiapazonedScan implements Runnable {
             this.stArt = System.currentTimeMillis();
             boolean retBool = false;
             if (!lockFile.toFile().exists()) {
+                this.lockFile = Files.createFile(Paths.get("." + getClass().getSimpleName() + "_" + from + to + ".lck"));
+                messageToUser.info(getClass().getSimpleName(), lockFile.toString(), " = " + lockFile.toFile().exists());
                 try {
                     ConcurrentMap<String, String> stringStringConcurrentMap = scanLanSegment(from, to, whatVlan, printStream);
                     NetScanFileWorker.getI().setLastStamp(System.currentTimeMillis());
