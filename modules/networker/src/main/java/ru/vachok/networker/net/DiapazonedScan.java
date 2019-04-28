@@ -16,6 +16,7 @@ import ru.vachok.networker.services.MessageLocal;
 import java.io.*;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.net.InetAddress;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
@@ -194,7 +195,7 @@ public class DiapazonedScan implements Runnable {
         sb.append(IPS_IN_VELKOM_VLAN);
         sb.append("(");
         try {
-            sb.append(BigDecimal.valueOf(ALL_DEVICES_LOCAL_DEQUE.size()).divide((BigDecimal.valueOf((IPS_IN_VELKOM_VLAN) / 100))));
+            sb.append(BigDecimal.valueOf(ALL_DEVICES_LOCAL_DEQUE.size()).divide((BigDecimal.valueOf((IPS_IN_VELKOM_VLAN) / 100)), 3, RoundingMode.HALF_DOWN));
         }
         catch (ArithmeticException e) {
             sb.append((float) (ALL_DEVICES_LOCAL_DEQUE.size()) / (float) (IPS_IN_VELKOM_VLAN / 100));
