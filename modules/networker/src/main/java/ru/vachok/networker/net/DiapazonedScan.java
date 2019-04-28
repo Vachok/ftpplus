@@ -15,6 +15,7 @@ import ru.vachok.networker.services.MessageLocal;
 
 import java.io.*;
 import java.lang.reflect.Field;
+import java.math.BigDecimal;
 import java.net.InetAddress;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
@@ -187,14 +188,18 @@ public class DiapazonedScan implements Runnable {
         sb.append(TimeUnit.MILLISECONDS.toMinutes(getRunMin()));
         sb.append(" min ");
         sb.append("{ ");
-        sb.append("<a href=\"/showalldev\">ALL_DEVICES ")
-            .append(ALL_DEVICES_LOCAL_DEQUE.size())
-            .append("/")
-            .append(IPS_IN_VELKOM_VLAN)
-            .append("(")
-            .append((float) ALL_DEVICES_LOCAL_DEQUE.size() / (float) (IPS_IN_VELKOM_VLAN / 100))
-            .append(" %)");
-        sb.append("</a>}");
+        sb.append("<a href=\"/showalldev\">ALL_DEVICES ");
+        sb.append(ALL_DEVICES_LOCAL_DEQUE.size());
+        sb.append("/");
+        sb.append(IPS_IN_VELKOM_VLAN);
+        sb.append("(");
+        try {
+            sb.append(BigDecimal.valueOf(ALL_DEVICES_LOCAL_DEQUE.size()).divide((BigDecimal.valueOf((IPS_IN_VELKOM_VLAN) / 100))));
+        }
+        catch (ArithmeticException e) {
+            sb.append((float) (ALL_DEVICES_LOCAL_DEQUE.size()) / (float) (IPS_IN_VELKOM_VLAN / 100));
+        }
+        sb.append(" %)").append("</a>}");
         sb.append(" ROOT_PATH_STR= ").append(ROOT_PATH_STR);
         sb.append("<br><b>\nfileTimes= </b><br>").append(fileTimes);
         return sb.toString();
