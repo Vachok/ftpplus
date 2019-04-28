@@ -219,8 +219,9 @@ public class ServiceInfoCtrl {
     }
     
     private float getLast() {
-        return (System.currentTimeMillis() - Long.parseLong(AppComponents.getProps()
-            .getProperty(ConstantsFor.PR_LASTS, "1515233487000"))) / 1000 / (ConstantsFor.ONE_HOUR_IN_MIN / ConstantsFor.ONE_HOUR_IN_MIN / ConstantsFor.ONE_DAY_HOURS);
+        return TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - Long
+            .parseLong(AppComponents.getProps()
+                .getProperty(ConstantsFor.PR_LASTS, "1543958100000"))) / ConstantsFor.ONE_HOUR_IN_MIN / ConstantsFor.ONE_HOUR_IN_MIN / ConstantsFor.ONE_DAY_HOURS;
     }
     
     private String getJREVers() {
@@ -309,7 +310,7 @@ public class ServiceInfoCtrl {
     private String pingDO0213() {
         try {
             InetAddress nameHost = InetAddress.getByName(OtherKnownDevices.DO0213_KUDR);
-            return nameHost.getHostName() + " is " + nameHost.isReachable((int) (ConstantsFor.DELAY * 3));
+            return nameHost.getHostName().replace(ConstantsFor.DOMAIN_EATMEATRU, "") + " is " + nameHost.isReachable((int) (ConstantsFor.DELAY * 3));
         }
         catch (IOException e) {
             messageToUser.error(e.getMessage());
