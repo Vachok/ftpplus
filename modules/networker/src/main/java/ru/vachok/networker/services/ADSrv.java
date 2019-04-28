@@ -243,25 +243,15 @@ public class ADSrv implements Runnable {
         return adUserList;
     }
     
-    /**
-     Резолвит онлайн пользователя ПК.
-     <p>
-     
-     @param queryString запрос из браузера
-     @return {@link #getUserName(String)} или {@link ADSrv#offNowGetU(CharSequence)}
-     
-     @throws IOException {@link InetAddress}.getByName(queryString + ".eatmeat.ru").isReachable(650))
-     @see ActDirectoryCTRL#queryStringExists(java.lang.String, org.springframework.ui.Model)
-     */
     public String getDetails(String queryString) throws IOException {
         InternetUse internetUse = new InetUserPCName();
         String internetUseUsage = internetUse.getUsage(queryString + ConstantsFor.DOMAIN_EATMEATRU);
         internetUseUsage = internetUseUsage.replace("юзер", "компьютер");
         if (InetAddress.getByName(queryString + ConstantsFor.DOMAIN_EATMEATRU).isReachable(ConstantsFor.TIMEOUT_650)) {
-            return getUserName(queryString) + "<p><center>" + internetUseUsage + "</center>";
+            return getUserName(queryString) + ConstantsFor.HTML_PCENTER + internetUseUsage + ConstantsFor.HTML_CENTER_CLOSE;
         }
         else {
-            return offNowGetU(queryString) + "<p><center>" + internetUseUsage + "</center>";
+            return offNowGetU(queryString) + ConstantsFor.HTML_PCENTER + internetUseUsage + ConstantsFor.HTML_CENTER_CLOSE;
         }
     }
     

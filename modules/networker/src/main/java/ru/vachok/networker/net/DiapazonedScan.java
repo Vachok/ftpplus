@@ -81,7 +81,6 @@ public class DiapazonedScan implements Runnable {
             new ExecScan(10, 20, "10.10.", scanFiles.get(FILENAME_SERVTXT_10SRVTXT)),
             new ExecScan(21, 31, "10.10.", scanFiles.get(FILENAME_SERVTXT_21SRVTXT)),
             new ExecScan(31, 41, "10.10.", scanFiles.get(FILENAME_SERVTXT_31SRVTXT)),
-            new ExecScan(41, 51, "10.10.", scanFiles.get(FILENAME_SERVTXT_41SRVTXT)),
         };
     }
     
@@ -132,33 +131,16 @@ public class DiapazonedScan implements Runnable {
         return theInfoToString();
     }
     
-    private void copyToArch() {
-        int archID = new Random().nextInt(1000);
-        Collection<File> fileList = scanFiles.values();
-        for (File f : fileList) {
-            FileSystemWorker.copyOrDelFile(f, ".\\lan\\" + f.getName().replace(".txt", "") + archID + ".scan", true);
-        }
-        scanFiles.clear();
-    }
-    
     @SuppressWarnings({"resource", "IOResourceOpenedButNotSafelyClosed"})
     private void theNewLan() {
         Runnable execScan200210 = new DiapazonedScan.ExecScan(200, 210, "10.200.", scanFiles.get(FILENAME_NEWLAN210));
-        AppComponents.threadConfig().execByThreadConfig(execScan200210);
         Runnable execScan210220 = new DiapazonedScan.ExecScan(210, 219, "10.200.", scanFiles.get(FILENAME_NEWLAN220));
+        
+        AppComponents.threadConfig().execByThreadConfig(execScan200210);
         AppComponents.threadConfig().execByThreadConfig(execScan210220);
     }
     
     private void startDo() {
-        if (ALL_DEVICES_LOCAL_DEQUE.remainingCapacity() == 0) {
-            boolean isWritten = new ExitApp("alldev_" + (System.currentTimeMillis() / 1000) + ".map", ALL_DEVICES_LOCAL_DEQUE).writeOwnObject();
-            if (isWritten) {
-                ALL_DEVICES_LOCAL_DEQUE.clear();
-            }
-            else {
-                messageToUser.info(getClass().getSimpleName() + ".startDo", "ALL_DEVICES_LOCAL_DEQUE:", " = " + ALL_DEVICES_LOCAL_DEQUE.size());
-            }
-        }
         AppComponents.threadConfig().execByThreadConfig(this::theNewLan);
         AppComponents.threadConfig().execByThreadConfig(this::scanServers);
         AppComponents.threadConfig().execByThreadConfig(this::scanOldLan);
@@ -278,7 +260,8 @@ public class DiapazonedScan implements Runnable {
             if (vlanFile.exists()) {
                 String newFileName = Paths
                     .get(ROOT_PATH_STR + "\\lan\\" + vlanFile.getName().replace(".txt", "_" + (System.currentTimeMillis() / 1000) + ".scan")).toString();
-                FileSystemWorker.copyOrDelFile(vlanFile, newFileName, true);
+                boolean copyFile = FileSystemWorker.copyOrDelFile(vlanFile, newFileName, true);
+                messageToUser.info(vlanFile.getName() + " copied to ", newFileName, " = " + copyFile);
             }
             
             OutputStream outputStream = null;

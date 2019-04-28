@@ -106,7 +106,7 @@ public enum ConstantsNet { ;
     public static final int MAX_IN_ONE_VLAN = 255;
 
     public static final int IPS_IN_VELKOM_VLAN = Integer
-        .parseInt(AppComponents.getProps().getProperty(ConstantsFor.PR_VLANNUM, "69")) * MAX_IN_ONE_VLAN;
+        .parseInt(AppComponents.getProps().getProperty(ConstantsFor.PR_VLANNUM, "59")) * MAX_IN_ONE_VLAN;
 
     public static final int TIMEOUT240 = 240;
 

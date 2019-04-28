@@ -49,7 +49,7 @@ public class NetScanFileWorker implements Serializable {
                 SCAN_FILES.putIfAbsent(f.getName(), f);
             }
         }
-        if (SCAN_FILES.size() == 8) {
+        if (SCAN_FILES.size() == 7) {
             return SCAN_FILES;
         }
         else {
@@ -60,7 +60,6 @@ public class NetScanFileWorker implements Serializable {
             SCAN_FILES.putIfAbsent(ConstantsNet.FILENAME_SERVTXT_10SRVTXT, new File(ConstantsNet.FILENAME_SERVTXT_10SRVTXT));
             SCAN_FILES.putIfAbsent(ConstantsNet.FILENAME_SERVTXT_21SRVTXT, new File(ConstantsNet.FILENAME_SERVTXT_21SRVTXT));
             SCAN_FILES.putIfAbsent(ConstantsNet.FILENAME_SERVTXT_31SRVTXT, new File(ConstantsNet.FILENAME_SERVTXT_31SRVTXT));
-            SCAN_FILES.putIfAbsent(ConstantsNet.FILENAME_SERVTXT_41SRVTXT, new File(ConstantsNet.FILENAME_SERVTXT_41SRVTXT));
             return SCAN_FILES;
         }
     }
@@ -77,13 +76,7 @@ public class NetScanFileWorker implements Serializable {
         AppComponents.threadConfig().thrNameSet("ON");
         Deque<String> retDeque = new ArrayDeque<>();
         Set<String> fileNameSet = SCAN_FILES.keySet();
-    
-        if (SCAN_FILES.size() == 8) {
-            SCAN_FILES.forEach((fileName, srvFileX)->messageToUser.info(getClass().getSimpleName(), "list onLine", " = " + fileWrk(srvFileX, retDeque)));
-        }
-        else {
-            messageToUser.error(SCAN_FILES.size() + " is SCAN_FILES!");
-        }
+        SCAN_FILES.forEach((fileName, srvFileX)->messageToUser.info(getClass().getSimpleName(), "list onLine", " = " + fileWrk(srvFileX, retDeque)));
         return retDeque;
     }
     

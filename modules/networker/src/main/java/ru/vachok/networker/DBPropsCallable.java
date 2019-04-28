@@ -162,11 +162,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
     
     
     private Properties findRightProps() {
-        File prFile = new File(ConstantsFor.class.getSimpleName() + ".properties");
+        File prFile = new File(ConstantsFor.class.getSimpleName() + ConstantsFor.FILEEXT_PROPERTIES);
         InitProperties initProperties;
         Properties retProps;
         if (prFile.exists() & !prFile.canWrite()) {
-            initProperties = new FileProps(prFile.getName().replace(".properties", ""));
+            initProperties = new FileProps(prFile.getName().replace(ConstantsFor.FILEEXT_PROPERTIES, ""));
             retProps = initProperties.getProps();
             retProps.setProperty("file", "true");
             new AppComponents().updateProps(retProps);

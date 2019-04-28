@@ -415,6 +415,8 @@ public enum ConstantsFor {
     
     public static final String ATT_NETPINGER = "netPinger";
     
+    public static final String HTML_PCENTER = "<p><center>";
+    
     static final String STR_FINISH = " is finish";
     
     private static final String[] STRINGS_TODELONSTART = {"visit_", ".tmp", ".log", ".tv"};

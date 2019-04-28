@@ -344,7 +344,7 @@ public class NetScanCtr {
         String classMeth = "NetScanCtr.timeCheck";
         boolean isSystemTimeBigger = (System.currentTimeMillis() > lastScanEpoch * 1000);
         if(!(new File("scan.tmp").exists())) {
-            model.addAttribute("newpc" , lastScanLocalTime);
+            model.addAttribute(ConstantsFor.PR_AND_ATT_NEWPC, lastScanLocalTime);
             if(isSystemTimeBigger) {
                 Future<?> submitScan = locExecutor.submit(scanRun);
                 submitScan.get(ConstantsFor.DELAY - 1 , TimeUnit.MINUTES);
