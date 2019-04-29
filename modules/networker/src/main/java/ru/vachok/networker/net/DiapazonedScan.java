@@ -143,6 +143,15 @@ public class DiapazonedScan implements Runnable {
     }
     
     private void startDo() {
+        if (ALL_DEVICES_LOCAL_DEQUE.remainingCapacity() == 0) {
+            scanFiles.values().stream().forEach(x->{
+                String newName = "\\lan\\" + x.getName().replace(".txt", "_" + (System.currentTimeMillis() / 1000)) + ".scan";
+                File newFile = new File(x.getAbsolutePath().replace(x.getName(), newName));
+                FileSystemWorker.copyOrDelFile(x, newFile.getAbsolutePath(), true);
+                messageToUser.info(getClass().getSimpleName() + ".startDo", "newFile", " = " + newFile.getAbsolutePath());
+            });
+            ALL_DEVICES_LOCAL_DEQUE.clear();
+        }
         AppComponents.threadConfig().execByThreadConfig(this::theNewLan);
         AppComponents.threadConfig().execByThreadConfig(this::scanServers);
         AppComponents.threadConfig().execByThreadConfig(this::scanOldLan);
