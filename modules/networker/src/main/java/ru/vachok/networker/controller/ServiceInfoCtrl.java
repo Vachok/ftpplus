@@ -26,6 +26,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.net.InetAddress;
 import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
@@ -218,10 +220,12 @@ public class ServiceInfoCtrl {
         AppComponents.threadConfig().execByThreadConfig(() -> new AppComponents().saveLogsToDB().showInfo());
     }
     
-    private float getLast() {
-        return TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - Long
-            .parseLong(AppComponents.getProps()
-                .getProperty(ConstantsFor.PR_LASTS, "1543958100000"))) / ConstantsFor.ONE_HOUR_IN_MIN / ConstantsFor.ONE_HOUR_IN_MIN / ConstantsFor.ONE_DAY_HOURS;
+    private BigDecimal getLast() {
+        long toSeconds = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - Long.parseLong(AppComponents.getProps()
+            .getProperty(ConstantsFor.PR_LASTS, "1543958100000")));
+        float val = ConstantsFor.ONE_HOUR_IN_MIN * ConstantsFor.ONE_HOUR_IN_MIN * ConstantsFor.ONE_DAY_HOURS;
+    
+        return BigDecimal.valueOf(toSeconds).divide(BigDecimal.valueOf(val), 2, RoundingMode.HALF_DOWN);
     }
     
     private String getJREVers() {
