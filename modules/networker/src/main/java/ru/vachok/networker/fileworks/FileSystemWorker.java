@@ -270,7 +270,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         return classMeth + " threw Exception: " + e.getMessage() + ": <p>\n\n" + new TForms().fromArray(e, true);
     }
     
-    public static Set<String> readNatListsToSet(Path file) {
+    public static Set<String> readFileToSet(Path file) {
         Set<String> retSet = new HashSet<>();
         try (InputStream inputStream = new FileInputStream(file.toFile());
              InputStreamReader inputStreamReader = new InputStreamReader(inputStream);

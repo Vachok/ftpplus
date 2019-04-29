@@ -22,7 +22,7 @@ public class AccessListsCheckUniq implements SSHWorker, Runnable {
     
     
     private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
-    
+
     private List<String> fileNames = new ArrayList<>();
     
     @Override public void run() {
@@ -37,7 +37,7 @@ public class AccessListsCheckUniq implements SSHWorker, Runnable {
         for (String getList : commandsToGetList) {
             sshFactory.setCommandSSH(getList);
             String call = sshFactory.call();
-            Set<String> stringSet = FileSystemWorker.readNatListsToSet(sshFactory.getTempFile());
+            Set<String> stringSet = FileSystemWorker.readFileToSet(sshFactory.getTempFile());
             String fileName = getList.split("/pf/")[1].split(" && ")[0] + ".list";
             fileNames.add(fileName);
             FileSystemWorker.writeFile(fileName, stringSet.stream());

@@ -68,7 +68,7 @@ public class WeekPCStats implements Runnable, DataBaseRegSQL {
 
     @Override
     public void run() {
-        Thread.currentThread().setName("WeekPCStats.run");
+        AppComponents.threadConfig().thrNameSet("week");
         final long stArt = System.currentTimeMillis();
         pcUsrAutoMake();
         messageToUser.info(getClass().getSimpleName() + "in kbytes. " , new File(FILENAME_INETSTATSIPCSV).getAbsolutePath() , " = " + readInetStats());
