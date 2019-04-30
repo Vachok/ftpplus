@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.ostpst;
 
 
@@ -32,7 +34,7 @@ public class OstToPst implements MakeConvert {
             properties.load(new FileInputStream("app.properties"));
         }
         catch (IOException e) {
-            messageToUser.error(e.getMessage());
+            messageToUser.error(e.getMessage() + " " + new File("app.properties").getAbsolutePath());
         }
         this.fileName = properties.getProperty("file");
         if (fileName == null) {

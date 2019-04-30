@@ -1,9 +1,12 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.ostpst;
 
 
 import com.pff.PSTRAFileContent;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.stats.constants.ConstantsFor;
 
 import java.io.*;
 import java.util.Properties;
@@ -11,10 +14,12 @@ import java.util.Properties;
 
 /**
  @since 30.04.2019 (9:36) */
-class RNDFileread {
+class RNDFileread implements Serializable {
     
     
     private PSTRAFileContent content;
+    
+    private static final long serialVersionUID = 42L;
     
     private long lastFileCaretPosition;
     
@@ -42,8 +47,16 @@ class RNDFileread {
     }
     
     long readRNDFileContentFromPosition() {
-        int capacity = 1024 * 1024 * 500;
-        byte[] bytes = new byte[capacity];
+        int capacity = ConstantsFor.KBYTE_BYTES * ConstantsFor.KBYTE_BYTES;
+        byte[] bytes = new byte[ConstantsFor.KBYTE_BYTES * ConstantsFor.KBYTE_BYTES];
+        try {
+            capacity = Integer.parseInt(properties.getProperty("capacity"));
+            bytes = new byte[capacity];
+        }
+        catch (Exception e) {
+            properties.setProperty("capacity", String.valueOf(ConstantsFor.KBYTE_BYTES * ConstantsFor.KBYTE_BYTES));
+            messageToUser.error(capacity + " to big!");
+        }
         try {
             content.seek(lastFileCaretPosition);
             int read = content.read(bytes);
