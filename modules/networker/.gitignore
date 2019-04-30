@@ -923,3 +923,6 @@ msg/
 "\320\276\321\202\320\264\320\265\320\273 \320\277\321\200\320\276\320\264\320\260\320\266.pstObjStr"
 "\321\204\320\276\321\202\320\276\321\201\321\202\321\203\320\264\320\270\321\217 silverplate.pstObjStr"
 possible_users.txt
+/ostpst/test.pst
+/ostpst/RNDFileread.properties
+/ostpst/app.properties
