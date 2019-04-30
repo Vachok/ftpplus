@@ -273,7 +273,7 @@ public class TemporaryFullInternet implements Runnable {
     
     private String addBackToList(String ip, String accList) {
         StringBuilder sshBuilder = new StringBuilder();
-        sshBuilder.append(SshActs.SUDO_ECHO).append("\"").append(ip).append("\"")
+        sshBuilder.append(SshActs.SUDO_ECHO).append("\"").append(ip).append(" #").append(new java.util.Date()).append("\"")
             .append(" >> /etc/pf/").append(accList).append(";").append(ConstantsNet.COM_INITPF);
         SSH_FACTORY.setCommandSSH(sshBuilder.toString());
         return SSH_FACTORY.call();
