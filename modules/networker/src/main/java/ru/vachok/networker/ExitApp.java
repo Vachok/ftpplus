@@ -14,6 +14,8 @@ import ru.vachok.networker.services.MessageLocal;
 import java.awt.*;
 import java.io.*;
 import java.net.URI;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.*;
@@ -239,10 +241,7 @@ public class ExitApp implements Runnable {
     private void copyAvail() {
         File appLog = new File("g:\\My_Proj\\FtpClientPlus\\modules\\networker\\app.log");
         File filePingTv = new File(ConstantsFor.FILENAME_PTV);
-        List<File> myLibs = Arrays.asList(Objects.requireNonNull(new File("\\ostpst\\build\\libs\\").listFiles()));
-        myLibs.addAll(Arrays.asList(Objects.requireNonNull(new File("g:\\My_Proj\\libs\\messenger\\build\\libs\\").listFiles())));
         FileSystemWorker.copyOrDelFile(filePingTv, new StringBuilder().append(".\\lan\\ptv_").append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
-    
         ConcurrentMap<String, File> srvFiles = NetScanFileWorker.getI().getScanFiles();
         srvFiles.forEach((id, file)->FileSystemWorker
             .copyOrDelFile(file, new StringBuilder().append(".\\lan\\").append(file.getName().replaceAll(ConstantsNet.FILENAME_SERVTXT, "")).append(System.currentTimeMillis() / 1000)
@@ -254,12 +253,20 @@ public class ExitApp implements Runnable {
             miniLoggerLast.add("No app.log");
             messageToUser.info("No app.log");
         }
+        writeObj();
+    }
+    
+    private void libCopy() {
+        Path path = Paths.get(".");
+        List<File> myLibs = Arrays.asList(Objects.requireNonNull(new File(path.toString() + "\\ostpst\\build\\libs\\").listFiles()));
+        for (File f : new File("g:\\My_Proj\\libs\\messenger\\build\\libs\\").listFiles()) {
+            myLibs.add(f);
+        }
         myLibs.forEach(x->{
             if (x.exists() && x.getName().toLowerCase().contains(".jar")) {
                 FileSystemWorker.copyOrDelFile(x, "\\lib\\" + x.getName(), false);
             }
         });
-        writeObj();
     }
     
 }
