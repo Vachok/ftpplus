@@ -239,6 +239,8 @@ public class ExitApp implements Runnable {
     private void copyAvail() {
         File appLog = new File("g:\\My_Proj\\FtpClientPlus\\modules\\networker\\app.log");
         File filePingTv = new File(ConstantsFor.FILENAME_PTV);
+        List<File> myLibs = Arrays.asList(Objects.requireNonNull(new File("\\ostpst\\build\\libs\\").listFiles()));
+        myLibs.addAll(Arrays.asList(Objects.requireNonNull(new File("g:\\My_Proj\\libs\\messenger\\build\\libs\\").listFiles())));
         FileSystemWorker.copyOrDelFile(filePingTv, new StringBuilder().append(".\\lan\\ptv_").append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
     
         ConcurrentMap<String, File> srvFiles = NetScanFileWorker.getI().getScanFiles();
@@ -252,6 +254,11 @@ public class ExitApp implements Runnable {
             miniLoggerLast.add("No app.log");
             messageToUser.info("No app.log");
         }
+        myLibs.forEach(x->{
+            if (x.exists() && x.getName().toLowerCase().contains(".jar")) {
+                FileSystemWorker.copyOrDelFile(x, "\\lib\\" + x.getName(), false);
+            }
+        });
         writeObj();
     }
     
