@@ -3,6 +3,7 @@
 import org.testng.annotations.Test;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.ostpst.ConstantsFor;
 import ru.vachok.ostpst.MakeConvert;
 import ru.vachok.ostpst.OstToPst;
 
@@ -19,11 +20,11 @@ public class TestMain {
     public void launchProg() {
         MakeConvert makeConvert = new OstToPst();
         MessageToUser messageToUser = new MessageCons(getClass().getSimpleName());
-        makeConvert.setFileName("\\\\192.168.14.10\\IT-Backup\\Mailboxes_users\\yu.gukov.pst");
-        makeConvert.copyierWithSave();
+        makeConvert.setFileName("G:\\My_Proj\\FtpClientPlus\\modules\\networker\\ostpst\\test.pst");
+        makeConvert.showFileContent();
         Properties properties = new Properties();
         try {
-            properties.load(new FileInputStream("app.properties"));
+            properties.load(new FileInputStream(ConstantsFor.FILENAME_PROPERTIES));
         }
         catch (IOException e) {
             messageToUser.error(e.getMessage());

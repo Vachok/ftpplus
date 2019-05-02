@@ -33,9 +33,9 @@ class RNDFileread implements Serializable {
         this.content = content;
         try {
             this.properties = new Properties();
-            this.properties.load(new FileInputStream("app.properties"));
-            this.lastFileCaretPosition = Long.parseLong(properties.getProperty("reading"));
-            this.lastWritePosition = Long.parseLong(properties.getProperty("write"));
+            this.properties.load(new FileInputStream(ru.vachok.ostpst.ConstantsFor.FILENAME_PROPERTIES));
+            this.lastFileCaretPosition = Long.parseLong(properties.getProperty(ru.vachok.ostpst.ConstantsFor.PR_READING));
+            this.lastWritePosition = Long.parseLong(properties.getProperty(ru.vachok.ostpst.ConstantsFor.PR_WRITE));
         }
         catch (NullPointerException e) {
             this.lastFileCaretPosition = 0;
@@ -50,20 +50,20 @@ class RNDFileread implements Serializable {
         int capacity = ConstantsFor.KBYTE_BYTES * ConstantsFor.KBYTE_BYTES;
         byte[] bytes = new byte[ConstantsFor.KBYTE_BYTES * ConstantsFor.KBYTE_BYTES];
         try {
-            capacity = Integer.parseInt(properties.getProperty("capacity"));
+            capacity = Integer.parseInt(properties.getProperty(ru.vachok.ostpst.ConstantsFor.PR_CAPACITY));
             bytes = new byte[capacity];
         }
         catch (Exception e) {
-            properties.setProperty("capacity", String.valueOf(ConstantsFor.KBYTE_BYTES * ConstantsFor.KBYTE_BYTES));
+            properties.setProperty(ru.vachok.ostpst.ConstantsFor.PR_CAPACITY, String.valueOf(ConstantsFor.KBYTE_BYTES * ConstantsFor.KBYTE_BYTES));
             messageToUser.error(capacity + " to big!");
         }
         try {
             content.seek(lastFileCaretPosition);
             int read = content.read(bytes);
             this.lastFileCaretPosition += read;
-            properties.setProperty("reading", String.valueOf(lastFileCaretPosition));
-            properties.setProperty("write", String.valueOf(writeReaded(bytes)));
-            properties.store(new FileOutputStream("app.properties"), "");
+            properties.setProperty(ru.vachok.ostpst.ConstantsFor.PR_READING, String.valueOf(lastFileCaretPosition));
+            properties.setProperty(ru.vachok.ostpst.ConstantsFor.PR_WRITE, String.valueOf(writeReaded(bytes)));
+            properties.store(new FileOutputStream(ru.vachok.ostpst.ConstantsFor.FILENAME_PROPERTIES), "");
             return lastFileCaretPosition;
         }
         catch (IOException e) {

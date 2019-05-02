@@ -31,10 +31,10 @@ public class OstToPst implements MakeConvert {
     public OstToPst() {
         Properties properties = new Properties();
         try {
-            properties.load(new FileInputStream("app.properties"));
+            properties.load(new FileInputStream(ConstantsFor.FILENAME_PROPERTIES));
         }
         catch (IOException e) {
-            messageToUser.error(e.getMessage() + " " + new File("app.properties").getAbsolutePath());
+            messageToUser.error(e.getMessage() + " " + new File(ConstantsFor.FILENAME_PROPERTIES).getAbsolutePath());
         }
         this.fileName = properties.getProperty("file");
         if (fileName == null) {

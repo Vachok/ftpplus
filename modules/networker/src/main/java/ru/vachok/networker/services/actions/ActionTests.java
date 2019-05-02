@@ -3,14 +3,18 @@
 package ru.vachok.networker.services.actions;
 
 
-
+import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.net.DiapazonedScan;
 import ru.vachok.networker.services.MessageLocal;
+import ru.vachok.ostpst.MakeConvert;
+import ru.vachok.ostpst.OstToPst;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Date;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Properties;
 
 
 /**
@@ -23,10 +27,19 @@ import java.util.Date;
 
 
     @Override
-    public void actionPerformed(ActionEvent e) {
-        DiapazonedScan instance = DiapazonedScan.getInstance();
-        messageToUser.info(String.valueOf(new Date(instance.getStopClassStampLong())));
-        instance.run();
-        System.out.println(instance);
+    public void actionPerformed(ActionEvent e1) {
+        MakeConvert makeConvert = new OstToPst();
+        MessageToUser messageToUser = new MessageCons(getClass().getSimpleName());
+        makeConvert.setFileName("\\\\192.168.14.10\\IT-Backup\\Mailboxes_users\\yu.gukov.pst");
+        makeConvert.copyierWithSave();
+        Properties properties = new Properties();
+        try {
+            properties.load(new FileInputStream("app.properties"));
+        }
+        catch (IOException e) {
+            messageToUser.error(e.getMessage());
+        }
+        properties.setProperty("file", new File("test.pst").getAbsolutePath());
+        makeConvert.showFileContent();
     }
 }
