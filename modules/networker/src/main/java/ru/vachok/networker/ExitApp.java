@@ -244,8 +244,7 @@ public class ExitApp implements Runnable {
         FileSystemWorker.copyOrDelFile(filePingTv, new StringBuilder().append(".\\lan\\ptv_").append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
         ConcurrentMap<String, File> srvFiles = NetScanFileWorker.getI().getScanFiles();
         srvFiles.forEach((id, file)->FileSystemWorker
-            .copyOrDelFile(file, new StringBuilder().append(".\\lan\\").append(file.getName().replaceAll(ConstantsNet.FILENAME_SERVTXT, "")).append(System.currentTimeMillis() / 1000)
-                .append(".txt").toString(), true));
+            .copyOrDelFile(file, file.getAbsolutePath().replace(file.getName(), "\\lan\\" + file.getName()), true));
         if (appLog.exists() && appLog.canRead()) {
             FileSystemWorker.copyOrDelFile(appLog, "\\\\10.10.111.1\\Torrents-FTP\\app.log", false);
         }
@@ -259,9 +258,7 @@ public class ExitApp implements Runnable {
     private void libCopy() {
         Path path = Paths.get(".");
         List<File> myLibs = Arrays.asList(Objects.requireNonNull(new File(path.toString() + "\\ostpst\\build\\libs\\").listFiles()));
-        for (File f : new File("g:\\My_Proj\\libs\\messenger\\build\\libs\\").listFiles()) {
-            myLibs.add(f);
-        }
+        myLibs.addAll(Arrays.asList(Objects.requireNonNull(new File("g:\\My_Proj\\libs\\messenger\\build\\libs\\").listFiles())));
         myLibs.forEach(x->{
             if (x.exists() && x.getName().toLowerCase().contains(".jar")) {
                 FileSystemWorker.copyOrDelFile(x, "\\lib\\" + x.getName(), false);
