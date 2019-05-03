@@ -244,7 +244,7 @@ public class ExitApp implements Runnable {
         FileSystemWorker.copyOrDelFile(filePingTv, new StringBuilder().append(".\\lan\\ptv_").append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
         ConcurrentMap<String, File> srvFiles = NetScanFileWorker.getI().getScanFiles();
         srvFiles.forEach((id, file)->FileSystemWorker
-            .copyOrDelFile(file, file.getAbsolutePath().replace(file.getName(), "\\lan\\" + file.getName()), true));
+            .copyOrDelFile(file, file.getAbsolutePath().replace(file.getName(), "lan\\" + file.getName()), true));
         if (appLog.exists() && appLog.canRead()) {
             FileSystemWorker.copyOrDelFile(appLog, "\\\\10.10.111.1\\Torrents-FTP\\app.log", false);
         }
