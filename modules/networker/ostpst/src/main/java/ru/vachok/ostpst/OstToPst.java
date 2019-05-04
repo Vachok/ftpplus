@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
-import java.util.UUID;
 import java.util.Vector;
 
 
@@ -75,10 +74,9 @@ public class OstToPst implements MakeConvert {
     }
     
     @Override public void showFileContent() {
-        messageToUser.info(getClass().getSimpleName() + ".showFileContent", "fileName", " = " + fileName);
         try {
-            PSTContent pstContent = new PSTContent(new PSTFile(fileName));
-            pstContent.showStore(UUID.fromString("888054f3-95ff-4b10-a8a3-a3c3ec0c6dc1"));
+            PSTContent contentOfPST = new PSTContent(new PSTFile(fileName));
+            contentOfPST.showFolders();
         }
         catch (PSTException | IOException e) {
             messageToUser.error(e.getMessage());

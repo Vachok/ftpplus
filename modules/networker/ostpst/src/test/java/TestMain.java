@@ -20,7 +20,6 @@ public class TestMain {
     public void launchProg() {
         MakeConvert makeConvert = new OstToPst();
         MessageToUser messageToUser = new MessageCons(getClass().getSimpleName());
-        makeConvert.setFileName("G:\\My_Proj\\FtpClientPlus\\modules\\networker\\ostpst\\test.pst");
         makeConvert.showFileContent();
         Properties properties = new Properties();
         try {
