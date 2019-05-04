@@ -10,8 +10,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.services.PassGenerator;
 import ru.vachok.networker.services.SimpleCalculator;
-import ru.vachok.ostpst.MakeConvert;
-import ru.vachok.ostpst.OstToPst;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -60,12 +58,4 @@ public class UtilitCTRL {
         LoggerFactory.getLogger(UtilitCTRL.class.getName()).info(msg);
         return v;
     }
-    
-    @GetMapping("/ostpst")
-    public String ostToPstTests(Model model) {
-        MakeConvert makeConvert = new OstToPst();
-        makeConvert.copyierWithSave();
-        return "ok";
-    }
-
 }

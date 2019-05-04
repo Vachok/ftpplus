@@ -11,13 +11,10 @@ import ru.vachok.networker.net.NetScanFileWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 
-import java.awt.*;
 import java.io.*;
-import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.*;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.ConcurrentMap;
@@ -154,22 +151,6 @@ public class ExitApp implements Runnable {
     public void run() {
         AppComponents.threadConfig().thrNameSet("exit");
         AppComponents.getVisitsMap().forEach((x, y)->miniLoggerLast.add(new Date(x) + " - " + y.getRemAddr()));
-        File commitFile = new File("G:\\My_Proj\\FtpClientPlus\\modules\\networker\\src\\main\\resources\\static\\pages\\commit.html");
-        if (!commitFile.exists()) {
-            commitFile = new File("C:\\Users\\ikudryashov\\IdeaProjects\\spring\\modules\\networker\\src\\main\\resources\\static\\pages\\commit.html");
-        }
-        if (commitFile.exists() && commitFile.canRead()) {
-            try {
-                Desktop.getDesktop().browse(URI.create(GO_TO));
-            }
-            catch (IOException e) {
-                messageToUser.errorAlert("ExitApp", "run", e.getMessage());
-            }
-            readCommit(commitFile);
-        }
-        else {
-            messageToUser.info("NO FILES COMMIT");
-        }
         miniLoggerLast.add(reasonExit);
         copyAvail();
     }
@@ -224,12 +205,6 @@ public class ExitApp implements Runnable {
         miniLoggerLast.add(FileSystemWorker.delTemp());
         AppComponents.threadConfig().killAll();
         System.exit(Math.toIntExact(toMinutes));
-    }
-
-    private void readCommit(File file) {
-        messageToUser.info(classMeth , file.getAbsolutePath() + " Modified:" , " " + new Date(file.lastModified()));
-        String readFile = file.getAbsolutePath();
-        messageToUser.info(classMeth , "commit" , " = " + readFile);
     }
     
     /**
