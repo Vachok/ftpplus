@@ -12,6 +12,7 @@ import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.accesscontrol.PfListsSrv;
 import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.controller.ExCTRL;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.mailserver.ExSRV;
 import ru.vachok.networker.mailserver.MailRule;
@@ -421,10 +422,7 @@ public enum ConstantsFor {
     
     private static final String[] STRINGS_TODELONSTART = {"visit_", ".tmp", ".log", ".tv"};
     
-    /**
-     {@link ru.vachok.networker.mailserver.ExCTRL#uplFile(MultipartFile, Model)}, {@link ExSRV#getOFields()},
-     */
-    private static final ConcurrentMap<Integer, MailRule> MAIL_RULES = new ConcurrentHashMap<>();
+    public static final String PR_OSTFILENAME = "ostfilename";
     
     private static final int MIN_DELAY = 17;
     
@@ -436,6 +434,15 @@ public enum ConstantsFor {
     public static final String HTMLTAG_CENTER = "<center>";
     
     public static final String STR_PROPERTIES = "properties";
+    
+    public static final String PR_OSTREAD = "ostread";
+    
+    public static final String PR_OSTWRITE = "ostwrite";
+    
+    /**
+     {@link ExCTRL#uplFile(MultipartFile, Model)}, {@link ExSRV#getOFields()},
+     */
+    private static final ConcurrentMap<Integer, MailRule> MAIL_RULES = new ConcurrentHashMap<>();
     
     /**
      @return {@link #MAIL_RULES}

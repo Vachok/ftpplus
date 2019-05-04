@@ -1,4 +1,6 @@
-package ru.vachok.networker.mailserver;
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
+package ru.vachok.networker.controller;
 
 
 
@@ -12,10 +14,16 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.mailserver.ExSRV;
+import ru.vachok.networker.mailserver.MailRule;
+import ru.vachok.networker.mailserver.OstPstUtils;
+import ru.vachok.networker.mailserver.RuleSet;
+import ru.vachok.ostpst.MakeConvert;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -41,6 +49,8 @@ public class ExCTRL {
     private ConcurrentMap<Integer, MailRule> localMap = ConstantsFor.getMailRules();
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ExCTRL.class.getSimpleName());
+    
+    private MakeConvert ostToPstConverter = new OstPstUtils();
 
     private Visitor visitor;
 
@@ -156,5 +166,15 @@ public class ExCTRL {
         model.addAttribute(ConstantsFor.AT_NAME_RULESET, ruleSet);
         model.addAttribute("ok", rawS);
         return "redirect:/ok?FromAddressMatchesPatterns";
+    }
+    
+    @GetMapping("/osppst")
+    public String ostPstGet(Model model, HttpServletRequest request) {
+        new AppComponents().visitor(request);
+        ostToPstConverter.showFileContent();
+        model.addAttribute("ok", ostToPstConverter.convertToPST() + " " + ostToPstConverter.copyierWithSave() + ConstantsFor.STR_BYTES);
+        model.addAttribute(ConstantsFor.ATT_HEAD, new PageFooter().getHeaderUtext());
+        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
+        return "ok";
     }
 }
