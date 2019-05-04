@@ -5,6 +5,8 @@ package ru.vachok.networker.mailserver;
 
 import ru.vachok.ostpst.MakeConvert;
 
+import java.awt.*;
+
 
 /**
  @since 04.05.2019 (11:11) */
@@ -14,11 +16,11 @@ public class OstPstUtils implements MakeConvert {
     private String fileName;
     
     @Override public String convertToPST() {
-        return null;
+        throw new IllegalComponentStateException("04.05.2019 (11:21)");
     }
     
     @Override public void showFileContent() {
-    
+        throw new IllegalComponentStateException("04.05.2019 (11:21)");
     }
     
     @Override public void setFileName(String fileName) {
@@ -26,6 +28,6 @@ public class OstPstUtils implements MakeConvert {
     }
     
     @Override public long copyierWithSave() {
-        return 0;
+        throw new IllegalComponentStateException("04.05.2019 (11:21)");
     }
 }
