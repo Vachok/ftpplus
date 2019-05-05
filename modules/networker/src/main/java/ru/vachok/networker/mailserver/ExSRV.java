@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.mailserver;
 
 
@@ -8,6 +10,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.multipart.MultipartFile;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.controller.ExCTRL;
 
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -46,7 +49,7 @@ public class ExSRV {
 
      @return {@link ConstantsFor#MAIL_RULES}.values()
      */
-    String getOFields() {
+    public String getOFields() {
 
         StringBuilder stringBuilder = new StringBuilder();
         Consumer<String> consumer = (x) -> stringBuilder
@@ -61,8 +64,8 @@ public class ExSRV {
         }
         return stringBuilder.toString();
     }
-
-    String fileAsStrings() {
+    
+    public String fileAsStrings() {
         try {
             getRulesFromFile();
         } catch (NullPointerException e) {

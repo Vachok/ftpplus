@@ -1,9 +1,12 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.mailserver;
 
 
 import org.springframework.stereotype.Component;
 import org.springframework.ui.Model;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.controller.ExCTRL;
 
 
 /**<b>Exchange Rules Changer</b>
@@ -43,7 +46,7 @@ public class RuleSet {
 
      @return Set-TransportRule -Identity "{@link #identity}" -FromAddressMatchesPattern {@link #fromAddressMatchesPatterns} -ExceptIfHasClassification "Default\ExCompanyConfidential"
      */
-    String getCopyToRuleSetter() {
+    public String getCopyToRuleSetter() {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder
             .append("Set-TransportRule -Identity \"")

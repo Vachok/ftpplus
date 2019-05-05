@@ -16,6 +16,7 @@ import ru.vachok.networker.fileworks.ProgrammFilesReader;
 import ru.vachok.networker.fileworks.ReadFileTo;
 import ru.vachok.networker.net.DiapazonedScan;
 import ru.vachok.networker.net.enums.ConstantsNet;
+import ru.vachok.networker.net.enums.OtherKnownDevices;
 import ru.vachok.networker.services.DBMessenger;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.MyCalen;
@@ -25,6 +26,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.net.InetAddress;
 import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
@@ -79,7 +82,7 @@ public class ServiceInfoCtrl {
      */
     @GetMapping("/serviceinfo")
     public String infoMapping(Model model, HttpServletRequest request, HttpServletResponse response) throws AccessDeniedException, ExecutionException, InterruptedException {
-        AppComponents.threadConfig().thrNameSet("sINFO");
+        AppComponents.threadConfig().thrNameSet("info");
         messageToUser.warn(getClass().getSimpleName(), "netPinger minutes", " = " + AppComponents.netPinger());
         visitor = new AppComponents().visitor(request);
         AppComponents.threadConfig().execByThreadConfig(new SpeedChecker());
@@ -190,9 +193,9 @@ public class ServiceInfoCtrl {
             .append(filesReader.readFile(new File("exit.last"))).append("<p>")
             .append("<p><font color=\"grey\">").append(listFilesToReadStr()).append("</font>")
             .toString();
-
-        model.addAttribute(ConstantsFor.ATT_TITLE, getLast() + " (" + getLast() * ConstantsFor.ONE_DAY_HOURS + ")");
-
+    
+        model.addAttribute(ConstantsFor.ATT_TITLE, getLast() + " " + pingDO0213());
+        
         model.addAttribute("mail", percToEnd(comeD, 9));
         model.addAttribute("ping", pingGit());
         model.addAttribute("urls", new StringBuilder()
@@ -217,9 +220,12 @@ public class ServiceInfoCtrl {
         AppComponents.threadConfig().execByThreadConfig(() -> new AppComponents().saveLogsToDB().showInfo());
     }
     
-    private float getLast() {
-        return (System.currentTimeMillis() - Long
-            .parseLong(AppComponents.getProps().getProperty(ConstantsFor.PR_LASTS, "1515233487000"))) / (ConstantsFor.ONE_HOUR_IN_MIN / ConstantsFor.ONE_DAY_HOURS);
+    private BigDecimal getLast() {
+        long toSeconds = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - Long.parseLong(AppComponents.getProps()
+            .getProperty(ConstantsFor.PR_LASTS, "1543958100000")));
+        float val = ConstantsFor.ONE_HOUR_IN_MIN * ConstantsFor.ONE_HOUR_IN_MIN * ConstantsFor.ONE_DAY_HOURS;
+    
+        return BigDecimal.valueOf(toSeconds).divide(BigDecimal.valueOf(val), 2, RoundingMode.HALF_DOWN);
     }
     
     private String getJREVers() {
@@ -302,6 +308,17 @@ public class ServiceInfoCtrl {
         }
         else {
             return "<b><font color=\"#ff2121\">" + true + s + LocalTime.now() + s2;
+        }
+    }
+    
+    private String pingDO0213() {
+        try {
+            InetAddress nameHost = InetAddress.getByName(OtherKnownDevices.DO0213_KUDR);
+            return nameHost.getHostName().replace(ConstantsFor.DOMAIN_EATMEATRU, "") + " is " + nameHost.isReachable((int) (ConstantsFor.DELAY * 3));
+        }
+        catch (IOException e) {
+            messageToUser.error(e.getMessage());
+            return e.getMessage();
         }
     }
 }

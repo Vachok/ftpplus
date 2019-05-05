@@ -891,3 +891,7 @@ src/main/java/ru/vachok/networker/services/diskwork/
 ScanOnline.onList
 NetListKeeperonLinesResolve.map
 CacheLogGetter.showLog.log.1
+possible_users.txt
+*.pst
+*.ost
+/modules/networker/ostpst/obj/

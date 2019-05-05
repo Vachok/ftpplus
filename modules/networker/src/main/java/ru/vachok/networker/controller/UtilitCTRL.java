@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.controller;
 
 
@@ -56,5 +58,4 @@ public class UtilitCTRL {
         LoggerFactory.getLogger(UtilitCTRL.class.getName()).info(msg);
         return v;
     }
-
 }

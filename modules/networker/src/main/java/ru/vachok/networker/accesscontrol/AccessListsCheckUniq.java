@@ -22,7 +22,7 @@ public class AccessListsCheckUniq implements SSHWorker, Runnable {
     
     
     private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
-    
+
     private List<String> fileNames = new ArrayList<>();
     
     @Override public void run() {
@@ -31,13 +31,13 @@ public class AccessListsCheckUniq implements SSHWorker, Runnable {
     
     @Override public String connectTo() {
         StringBuilder stringBuilder = new StringBuilder();
-        SSHFactory.Builder builder = new SSHFactory.Builder(ConstantsFor.IPADDR_SRVNAT, "uname -a", getClass().getSimpleName());
+        SSHFactory.Builder builder = new SSHFactory.Builder(getSRVNeed(), "uname -a", getClass().getSimpleName());
         SSHFactory sshFactory = builder.build();
         String[] commandsToGetList = {"sudo cat /etc/pf/24hrs && exit", "sudo cat /etc/pf/vipnet && exit", "sudo cat /etc/pf/squid && exit", "sudo cat /etc/pf/squidlimited && exit", "sudo cat /etc/pf/tempfull && exit"};
         for (String getList : commandsToGetList) {
             sshFactory.setCommandSSH(getList);
             String call = sshFactory.call();
-            Set<String> stringSet = FileSystemWorker.readNatListsToSet(sshFactory.getTempFile());
+            Set<String> stringSet = FileSystemWorker.readFileToSet(sshFactory.getTempFile());
             String fileName = getList.split("/pf/")[1].split(" && ")[0] + ".list";
             fileNames.add(fileName);
             FileSystemWorker.writeFile(fileName, stringSet.stream());
@@ -45,6 +45,15 @@ public class AccessListsCheckUniq implements SSHWorker, Runnable {
         }
         parseListFiles();
         return stringBuilder.toString();
+    }
+    
+    private String getSRVNeed() {
+        if (ConstantsFor.thisPC().toLowerCase().contains("rups")) {
+            return ConstantsFor.IPADDR_SRVNAT;
+        }
+        else {
+            return ConstantsFor.IPADDR_SRVGIT;
+        }
     }
     
     private void parseListFiles() {

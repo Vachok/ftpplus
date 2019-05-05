@@ -21,7 +21,8 @@ import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.actions.ActionCloseMsg;
 import ru.vachok.networker.systray.MessageToTray;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
@@ -111,6 +112,8 @@ public class NetScannerSvc {
     private String thrName = Thread.currentThread().getName();
     
     private Map<String, Boolean> netWorkMap;
+    
+    private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
     
     private NetScannerSvc() {
         this.netWorkMap = LastNetScan.getLastNetScan().getNetWork();
@@ -469,24 +472,29 @@ public class NetScannerSvc {
      Копируем на 111.1, if {@link String#contains(java.lang.CharSequence)} "home". {@link ConstantsFor#thisPC()}.
      */
     private void countStat() {
-        List<String> readFileAsList = new ArrayList<>();
-        try (InputStream inputStream = new FileInputStream(ConstantsFor.FILENAME_VELKOMPCUSERAUTOTXT);
-             InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-             BufferedReader bufferedReader = new BufferedReader(inputStreamReader)
-        ) {
-            while (inputStreamReader.ready()) {
-                readFileAsList.add(bufferedReader.readLine().split("\\Q0) \\E")[1]);
-            }
-        }
-        catch (IOException e) {
-            LOGGER.errorAlert(CLASS_NAME, "countStat", e.getMessage());
-        }
+        List<String> readFileAsList = FileSystemWorker.readFileToList(new File(ConstantsFor.FILENAME_VELKOMPCUSERAUTOTXT).getAbsolutePath());
         FileSystemWorker.writeFile(ConstantsNet.FILENAME_PCAUTODISTXT, readFileAsList.parallelStream().distinct());
-        String valStr = FileSystemWorker.readFile(ConstantsNet.FILENAME_PCAUTODISTXT);
-        LOGGER.info(ConstantsFor.SOUTV, "NetScannerSvc.countStat", valStr);
         if (ConstantsFor.thisPC().toLowerCase().contains("home")) {
             String toCopy = "\\\\10.10.111.1\\Torrents-FTP\\" + ConstantsNet.FILENAME_PCAUTODISTXT;
             FileSystemWorker.copyOrDelFile(new File(ConstantsNet.FILENAME_PCAUTODISTXT), toCopy, true);
+        }
+        messageToUser.info(countFreqOfUsers());
+    }
+    
+    private String countFreqOfUsers() {
+        List<String> pcAutoThisList = FileSystemWorker.readFileToList(new File(ConstantsNet.FILENAME_PCAUTODISTXT).getAbsolutePath());
+        Collections.sort(pcAutoThisList);
+        Collection<String> stringCollect = new LinkedList<>();
+        for (String pcUser : pcAutoThisList) {
+            stringCollect.add(Collections.frequency(pcAutoThisList, pcUser) + " times = " + pcUser);
+        }
+        String absolutePath = new File("possible_users.txt").getAbsolutePath();
+        boolean fileWritten = FileSystemWorker.writeFile(absolutePath, stringCollect.stream());
+        if (fileWritten) {
+            return absolutePath;
+        }
+        else {
+            return "Error. File not written!\n\n\n\n" + absolutePath;
         }
     }
     

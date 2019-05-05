@@ -60,7 +60,6 @@ public class TemporaryFullInternet implements Runnable {
         MINI_LOGGER.add("TemporaryFullInternet(): " + this.userInput + " " + delStamp + "(" + new Date(delStamp) + ")");
     }
     
-    
     public TemporaryFullInternet(String userInput, long timeToApply) {
         this.userInput = userInput;
         this.delStamp = ConstantsFor.getAtomicTime() + TimeUnit.HOURS.toMillis(timeToApply);
@@ -103,12 +102,10 @@ public class TemporaryFullInternet implements Runnable {
                 .append(new TForms().fromArray(SSH_CHECKER_MAP, true));
         }
         else if (NetListKeeper.getI().getInetUniqMap().containsKey(sshIP) && !NetListKeeper.getI().getInetUniqMap().get(sshIP).equalsIgnoreCase("10.200.213.85")) {
-            retBuilder
-                .append("<h2>")
-                .append(sshIP)
-                .append(" in regular list: ")
-                .append(NetListKeeper.getI().getInetUniqMap().get(sshIP.replace(".list", "")))
-                .append("</h2>");
+            String listWhere = NetListKeeper.getI().getInetUniqMap().get(sshIP.replace(".list", ""));
+    
+            retBuilder.append("<h2>").append(sshIP).append(" in regular list: ").append(listWhere).append("</h2>");
+            retBuilder.append(addFromExistList(sshIP, listWhere));
         }
         else {
             String sshCommand = new StringBuilder()
@@ -120,6 +117,31 @@ public class TemporaryFullInternet implements Runnable {
         }
         MINI_LOGGER.add("doAdd(): " + retBuilder);
         return retBuilder.toString();
+    }
+    
+    private String addFromExistList(String sshIP, String listWhere) {
+        String etcPf = " /etc/pf/";
+        listWhere = listWhere.replace(".list", "");
+        
+        StringBuilder comSSHBuilder = new StringBuilder();
+        comSSHBuilder.append(SshActs.SSH_SUDO_GREP_V);
+        comSSHBuilder.append(sshIP).append("'");
+        comSSHBuilder.append(etcPf).append(listWhere).append(" >").append(etcPf).append(listWhere).append("_tmp;");
+        
+        SSH_FACTORY.setCommandSSH(comSSHBuilder.toString());
+        messageToUser.info(getClass().getSimpleName() + ".addFromExistList", "comSSHBuilder", " = " + SSH_FACTORY.call());
+        
+        comSSHBuilder = new StringBuilder();
+        comSSHBuilder.append("sudo cp /etc/pf/").append(listWhere).append("_tmp /etc/pf/").append(listWhere).append(";");
+        
+        SSH_FACTORY.setCommandSSH(comSSHBuilder.toString());
+        SSH_FACTORY.call();
+        
+        comSSHBuilder = new StringBuilder();
+        comSSHBuilder.append(SshActs.SUDO_ECHO).append("\"").append(sshIP).append(" #").append(delStamp).append(" #").append(listWhere).append("\"").append(" >> /etc/pf/24hrs;")
+            .append(ConstantsNet.COM_INITPF);
+        SSH_FACTORY.setCommandSSH(comSSHBuilder.toString());
+        return SSH_FACTORY.call();
     }
     
     @Override
@@ -190,7 +212,9 @@ public class TemporaryFullInternet implements Runnable {
         SSH_FACTORY.setCommandSSH(sshC);
         String sshCommand = SSH_FACTORY.call();
         Long aLong = SSH_CHECKER_MAP.remove(x);
-        MINI_LOGGER.add(new Date(aLong) + ", doDelete: " + sshCommand);
+        if (!(aLong == null)) {
+            MINI_LOGGER.add(new Date(aLong) + ", doDelete: " + sshCommand);
+        }
         return SSH_CHECKER_MAP.containsKey(x);
     }
     
@@ -208,6 +232,9 @@ public class TemporaryFullInternet implements Runnable {
             String[] strings = tempFile.split("<br>\n");
             List<String> stringList = Arrays.asList(strings);
             stringList.forEach(x->{
+                if (x.split(" #").length > 2) {
+                    chkWithList(x.split(" #"));
+                }
                 try {
                     Long ifAbsent = sshCheckerMap.putIfAbsent(x.split(" #")[0].trim(), Long.valueOf(x.split(" #")[1]));
                     MINI_LOGGER.add("Added to map = " + x + " " + ifAbsent);
@@ -234,6 +261,22 @@ public class TemporaryFullInternet implements Runnable {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".sshChecker is interrupted.\n", e));
             Thread.currentThread().interrupt();
         }
+    }
+    
+    private void chkWithList(String[] x) {
+        this.delStamp = Long.parseLong(x[1]);
+        if (delStamp < ConstantsFor.getAtomicTime()) {
+            doDelete(x[0]);
+            addBackToList(x[0], x[2]);
+        }
+    }
+    
+    private String addBackToList(String ip, String accList) {
+        StringBuilder sshBuilder = new StringBuilder();
+        sshBuilder.append(SshActs.SUDO_ECHO).append("\"").append(ip).append(" #").append(new java.util.Date()).append("\"")
+            .append(" >> /etc/pf/").append(accList).append(";").append(ConstantsNet.COM_INITPF);
+        SSH_FACTORY.setCommandSSH(sshBuilder.toString());
+        return SSH_FACTORY.call();
     }
     
     private void mapEntryParse(String x, Long y, long atomicTimeLong) {

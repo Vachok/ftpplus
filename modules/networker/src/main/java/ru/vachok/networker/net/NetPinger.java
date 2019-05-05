@@ -87,6 +87,8 @@ public class NetPinger implements Runnable, Pinger {
      Время до конца работы.
      */
     private String timeToEndStr = "0";
+    
+    private long timeStartLong = System.currentTimeMillis();
 
     private MultipartFile multipartFile;
     
@@ -203,31 +205,18 @@ public class NetPinger implements Runnable, Pinger {
             ipAsList.add(ipIsIP(readLine));
         }
     }
-
-    /**
-     Разбор IP-адреса, если строке не hostname.
-     <p>
-     Если в {@link #parseAddr(java.lang.String)}, возникло исключение, пробуем преобразовать строку из <i>х.х.х.х</i>. <br> {@link InetAddress#getAddress()} - делаем байты из строки.
-     <br> {@link InetAddress#getByAddress(byte[])} пробуем преобразовать байты в {@link InetAddress}
-     <p>
-     <b>{@link UnknownHostException}:</b><br>
-     1. {@link MessageToUser#errorAlert(java.lang.String, java.lang.String, java.lang.String)} <br> 2. {@link FileSystemWorker#error(java.lang.String, java.lang.Exception)} <br> throw
-     new {@link IllegalStateException}.
-
-     @param readLine строка из {@link #multipartFile}
-     @return {@link InetAddress#getByAddress(byte[])}
-     */
-    private InetAddress ipIsIP(String readLine)  {
-        InetAddress resolvedAddress = InetAddress.getLoopbackAddress();
+    
+    @Override
+    public boolean isReach(String inetAddrStr) {
+        AppComponents.threadConfig().thrNameSet(inetAddrStr.substring(0, 3));
         try {
-            byte[] addressBytes = InetAddress.getByName(readLine).getAddress();
-            resolvedAddress=InetAddress.getByAddress(addressBytes);
+            byte[] bytesAddr = InetAddress.getByName(inetAddrStr).getAddress();
+            return InetAddress.getByAddress(bytesAddr).isReachable(ConstantsFor.TIMEOUT_650 / 3);
         }
-        catch (UnknownHostException e) {
-            messageToUser.errorAlert(getClass().getSimpleName(), ".ipIsIP", e.getMessage());
-            FileSystemWorker.error(getClass().getSimpleName() + ".ipIsIP", e);
+        catch (IOException e) {
+            messageToUser.error(e.getMessage());
+            return false;
         }
-        return resolvedAddress;
     }
     
     @Override public boolean equals(Object o) {
@@ -256,18 +245,33 @@ public class NetPinger implements Runnable, Pinger {
     public String getPingResultStr() {
         return pingResultStr;
     }
-
-    @Override
-    public boolean isReach(String inetAddrStr) {
+    
+    /**
+     Разбор IP-адреса, если строке не hostname.
+     <p>
+     Если в {@link #parseAddr(java.lang.String)}, возникло исключение, пробуем преобразовать строку из <i>х.х.х.х</i>. <br> {@link InetAddress#getAddress()} - делаем байты из строки.
+     <br> {@link InetAddress#getByAddress(byte[])} пробуем преобразовать байты в {@link InetAddress}
+     <p>
+     <b>{@link UnknownHostException}:</b><br>
+     1. {@link MessageToUser#errorAlert(java.lang.String, java.lang.String, java.lang.String)} <br> 2. {@link FileSystemWorker#error(java.lang.String, java.lang.Exception)} <br> throw
+     new {@link IllegalStateException}.
+     
+     @param readLine строка из {@link #multipartFile}
+     @return {@link InetAddress#getByAddress(byte[])}
+     */
+    private InetAddress ipIsIP(String readLine) {
+        AppComponents.threadConfig().thrNameSet(String.valueOf(TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - timeStartLong)) + "min");
+        InetAddress resolvedAddress = InetAddress.getLoopbackAddress();
         try {
-            byte[] bytesAddr = InetAddress.getByName(inetAddrStr).getAddress();
-            return InetAddress.getByAddress(bytesAddr).isReachable(ConstantsFor.TIMEOUT_650);
-        } catch (IOException e) {
-            FileSystemWorker.error("NetPinger.isReach", e);
-            return false;
+            byte[] addressBytes = InetAddress.getByName(readLine).getAddress();
+            resolvedAddress = InetAddress.getByAddress(addressBytes);
         }
+        catch (UnknownHostException e) {
+            messageToUser.error(e.getMessage());
+        }
+        return resolvedAddress;
     }
-
+    
     /**
      Старт.
      <p>

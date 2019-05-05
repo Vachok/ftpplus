@@ -107,7 +107,9 @@ class ConditionChecker implements InfoWorker {
         try(PreparedStatement p = connection.prepareStatement(sqlLoc)){
                 p.setString(1, pcName);
                 try (ResultSet r = p.executeQuery()) {
-                    while (r.next()) stringBuilder.append(r.getString("userName"));
+                    while (r.next()) {
+                        stringBuilder.append(r.getString(ConstantsFor.DB_FIELD_USER));
+                    }
                 }
             }
         catch (SQLException e) {
@@ -164,7 +166,7 @@ class ConditionChecker implements InfoWorker {
         StringBuilder stringBuilder = new StringBuilder();
         try (PreparedStatement p = connection.prepareStatement(sql)) {
             p.setString(1, pcName);
-            try (PreparedStatement p1 = connection.prepareStatement(sql.replaceAll("pcuser", "pcuserauto"))) {
+            try (PreparedStatement p1 = connection.prepareStatement(sql.replaceAll(ConstantsFor.DBFIELD_PCUSER, ConstantsFor.DBFIELD_PCUSERAUTO))) {
                 p1.setString(1, pcName);
                 try (ResultSet resultSet = p.executeQuery()) {
                     while (resultSet.next()) {

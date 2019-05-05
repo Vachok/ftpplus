@@ -11,11 +11,10 @@ import ru.vachok.networker.net.NetScanFileWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 
-import java.awt.*;
 import java.io.*;
-import java.net.URI;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.*;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.ConcurrentMap;
@@ -152,22 +151,6 @@ public class ExitApp implements Runnable {
     public void run() {
         AppComponents.threadConfig().thrNameSet("exit");
         AppComponents.getVisitsMap().forEach((x, y)->miniLoggerLast.add(new Date(x) + " - " + y.getRemAddr()));
-        File commitFile = new File("G:\\My_Proj\\FtpClientPlus\\modules\\networker\\src\\main\\resources\\static\\pages\\commit.html");
-        if (!commitFile.exists()) {
-            commitFile = new File("C:\\Users\\ikudryashov\\IdeaProjects\\spring\\modules\\networker\\src\\main\\resources\\static\\pages\\commit.html");
-        }
-        if (commitFile.exists() && commitFile.canRead()) {
-            try {
-                Desktop.getDesktop().browse(URI.create(GO_TO));
-            }
-            catch (IOException e) {
-                messageToUser.errorAlert("ExitApp", "run", e.getMessage());
-            }
-            readCommit(commitFile);
-        }
-        else {
-            messageToUser.info("NO FILES COMMIT");
-        }
         miniLoggerLast.add(reasonExit);
         copyAvail();
     }
@@ -223,12 +206,6 @@ public class ExitApp implements Runnable {
         AppComponents.threadConfig().killAll();
         System.exit(Math.toIntExact(toMinutes));
     }
-
-    private void readCommit(File file) {
-        messageToUser.info(classMeth , file.getAbsolutePath() + " Modified:" , " " + new Date(file.lastModified()));
-        String readFile = file.getAbsolutePath();
-        messageToUser.info(classMeth , "commit" , " = " + readFile);
-    }
     
     /**
      Копирует логи
@@ -240,11 +217,9 @@ public class ExitApp implements Runnable {
         File appLog = new File("g:\\My_Proj\\FtpClientPlus\\modules\\networker\\app.log");
         File filePingTv = new File(ConstantsFor.FILENAME_PTV);
         FileSystemWorker.copyOrDelFile(filePingTv, new StringBuilder().append(".\\lan\\ptv_").append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
-    
-        ConcurrentMap<String, File> srvFiles = NetScanFileWorker.getI().getSrvFiles();
+        ConcurrentMap<String, File> srvFiles = NetScanFileWorker.getI().getScanFiles();
         srvFiles.forEach((id, file)->FileSystemWorker
-            .copyOrDelFile(file, new StringBuilder().append(".\\lan\\").append(file.getName().replaceAll(ConstantsNet.FILENAME_SERVTXT, "")).append(System.currentTimeMillis() / 1000)
-                .append(".txt").toString(), true));
+            .copyOrDelFile(file, file.getAbsolutePath().replace(file.getName(), "lan\\" + file.getName()), true));
         if (appLog.exists() && appLog.canRead()) {
             FileSystemWorker.copyOrDelFile(appLog, "\\\\10.10.111.1\\Torrents-FTP\\app.log", false);
         }
@@ -253,6 +228,17 @@ public class ExitApp implements Runnable {
             messageToUser.info("No app.log");
         }
         writeObj();
+    }
+    
+    private void libCopy() {
+        Path path = Paths.get(".");
+        List<File> myLibs = Arrays.asList(Objects.requireNonNull(new File(path.toString() + "\\ostpst\\build\\libs\\").listFiles()));
+        myLibs.addAll(Arrays.asList(Objects.requireNonNull(new File("g:\\My_Proj\\libs\\messenger\\build\\libs\\").listFiles())));
+        myLibs.forEach(x->{
+            if (x.exists() && x.getName().toLowerCase().contains(".jar")) {
+                FileSystemWorker.copyOrDelFile(x, "\\lib\\" + x.getName(), false);
+            }
+        });
     }
     
 }
