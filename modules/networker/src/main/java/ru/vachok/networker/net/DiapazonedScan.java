@@ -280,7 +280,7 @@ public class DiapazonedScan implements Runnable {
         public void run() {
             if (vlanFile.exists()) {
                 String newFileName = vlanFile.getAbsolutePath()
-                    .replace(vlanFile.getName(), "lan\\" + vlanFile.getName().replace("txt", "_" + (System.currentTimeMillis() / 1000)) + ".scan");
+                    .replace(vlanFile.getName(), "lan\\" + vlanFile.getName().replace(".txt", "_" + (System.currentTimeMillis() / 1000)) + ".scan");
                 boolean copyFile = FileSystemWorker.copyOrDelFile(vlanFile, newFileName, true);
                 messageToUser.info(vlanFile.getName() + " copied to ", newFileName, " = " + copyFile);
             }

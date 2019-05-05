@@ -17,7 +17,6 @@ import java.awt.*;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -135,9 +134,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
         miniLogger.add("2. " + sql);
         FileSystemWorker.writeFile(getClass().getSimpleName() + ".mini", miniLogger.stream());
         try (Connection c = mysqlDataSource.getConnection();
-             OutputStream outputStream = new FileOutputStream(ConstantsFor.class.getSimpleName() + ConstantsFor.FILEEXT_PROPERTIES)
         ) {
-            Objects.requireNonNull(propsToSave).store(outputStream, getClass().getSimpleName() + " " + LocalTime.now());
+            Objects.requireNonNull(propsToSave)
+                .store(new FileOutputStream(ConstantsFor.class.getSimpleName() + ConstantsFor.FILEEXT_PROPERTIES),
+                    getClass().getSimpleName() + " " + LocalTime.now());
             int executeUpdateInt = 0;
             try (PreparedStatement preparedStatement = c.prepareStatement(sql)) {
                 for (Map.Entry<Object, Object> entry : propsToSave.entrySet()) {
