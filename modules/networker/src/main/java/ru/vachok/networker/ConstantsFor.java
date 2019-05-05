@@ -418,6 +418,8 @@ public enum ConstantsFor {
     
     public static final String HTML_PCENTER = "<p><center>";
     
+    public static final String FILENAME_USERSSET = "users.set";
+    
     static final String STR_FINISH = " is finish";
     
     private static final String[] STRINGS_TODELONSTART = {"visit_", ".tmp", ".log", ".tv"};

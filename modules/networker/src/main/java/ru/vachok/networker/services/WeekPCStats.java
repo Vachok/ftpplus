@@ -19,6 +19,7 @@ import java.sql.*;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -47,13 +48,6 @@ public class WeekPCStats implements Runnable, DataBaseRegSQL {
 
     private static final String SQL_DISTINCTIPSWITHINET = "SELECT DISTINCT `ip` FROM `inetstats`";
 
-
-    public WeekPCStats(String sql , String fileName) {
-        this.sql = sql;
-        this.fileName = fileName;
-    }
-
-
     public WeekPCStats(String sql) {
         this.sql = sql;
         this.fileName = ConstantsFor.FILENAME_VELKOMPCUSERAUTOTXT;
@@ -61,7 +55,10 @@ public class WeekPCStats implements Runnable, DataBaseRegSQL {
 
 
     static {
-        try {messageToUser = new MessageToTray(WeekPCStats.class.getSimpleName());} catch (UnsupportedOperationException e) {
+        try {
+            messageToUser = new MessageToTray(WeekPCStats.class.getSimpleName());
+        }
+        catch (UnsupportedOperationException e) {
             messageToUser = new MessageLocal(WeekPCStats.class.getSimpleName());
         }
     }
@@ -92,7 +89,9 @@ public class WeekPCStats implements Runnable, DataBaseRegSQL {
                     try(OutputStream outputStream = new FileOutputStream(file)){
                         try(PrintWriter printWriter = new PrintWriter(outputStream , true)){
                             while(r.next()){
-                                if(sql.equals(ConstantsFor.SQL_SELECTFROM_PCUSERAUTO)) pcUserAutoSelect(r , printWriter);
+                                if (sql.equals(ConstantsFor.SQL_SELECTFROM_PCUSERAUTO)) {
+                                    pcUserAutoSelect(r, printWriter);
+                                }
                                 if(sql.equals(SQL_DISTINCTIPSWITHINET)) {
                                     printWriter.println(r.getString("ip"));
                                 }
@@ -125,9 +124,8 @@ public class WeekPCStats implements Runnable, DataBaseRegSQL {
         return PC_NAMES_IN_TABLE.size();
     }
 
-
     private void pcUsrAutoMake() {
-        messageToUser.info(getClass().getSimpleName() + ".pcUsrAutoMake" , "pcUsrAutoMake();" , " = " + selectFrom());
+        messageToUser.warn(getClass().getSimpleName(), fileName + "file, SQL: " + sql, " = " + selectFrom());
     }
 
 
@@ -187,21 +185,28 @@ public class WeekPCStats implements Runnable, DataBaseRegSQL {
     @Override public Savepoint getSavepoint(Connection connection) {
         throw illegalStateException;
     }
-
-
+    
+    
     private void pcUserAutoSelect(ResultSet r , PrintWriter printWriter) throws SQLException {
-        printWriter.println(new StringBuilder()
-            .append(r.getString(1))
-            .append(" at ")
-            .append(r.getString(6))
-            .append(") ")
-            .append(r.getString(2))
-            .append(" ")
-            .append(r.getString(3)));
+        printWriter.println(r.getString(1));
+        printWriter.print(" at ");
+        printWriter.print(r.getString(6));
+        printWriter.print(") ");
+        printWriter.print(r.getString(2));
+        printWriter.print(" ");
+        printWriter.print(r.getString(3));
         PC_NAMES_IN_TABLE.add(r.getString(2) + " " + r.getString(3));
+        filesWork();
     }
-
-
+    
+    private void filesWork() {
+        File file = new File(fileName);
+        Set<String> usersUnique = FileSystemWorker.readFileToSet(file.toPath());
+        messageToUser.info(getClass().getSimpleName() + ".filesWork", "usersUnique.size()", " = " + usersUnique.size());
+        FileSystemWorker.writeFile(ConstantsFor.FILENAME_USERSSET, usersUnique.stream());
+    }
+    
+    
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("WeekPCStats{");
