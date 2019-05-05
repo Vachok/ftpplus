@@ -18,10 +18,10 @@ public class TestMain {
     
     @Test(enabled = false)
     public void launchProg() {
-        MakeConvert makeConvert = new OstToPst();
+        Properties properties = new Properties();
+        MakeConvert makeConvert = new OstToPst("mailconverter\\test.pst");
         MessageToUser messageToUser = new MessageCons(getClass().getSimpleName());
         makeConvert.showFileContent();
-        Properties properties = new Properties();
         try {
             properties.load(new FileInputStream(ConstantsFor.FILENAME_PROPERTIES));
         }

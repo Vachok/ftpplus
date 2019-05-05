@@ -895,3 +895,7 @@ possible_users.txt
 *.pst
 *.ost
 /modules/networker/ostpst/obj/
+ostpst/build/
+ostpst/out/
+ostpst/src/main/resources/
+ostpst/src/test/resources/

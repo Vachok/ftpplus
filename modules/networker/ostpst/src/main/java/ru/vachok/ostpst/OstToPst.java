@@ -8,11 +8,9 @@ import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Properties;
 import java.util.Vector;
 
 
@@ -27,15 +25,8 @@ public class OstToPst implements MakeConvert {
     
     private int deepCount = -1;
     
-    public OstToPst() {
-        Properties properties = new Properties();
-        try {
-            properties.load(new FileInputStream(ConstantsFor.FILENAME_PROPERTIES));
-        }
-        catch (IOException e) {
-            messageToUser.error(e.getMessage() + " " + new File(ConstantsFor.FILENAME_PROPERTIES).getAbsolutePath());
-        }
-        this.fileName = properties.getProperty("file");
+    public OstToPst(String fileName) {
+        this.fileName = fileName;
         if (fileName == null) {
             fileName = "c:\\Users\\ikudryashov\\Desktop\\ksamarchenko@velkomfood.ru.ost";
         }
