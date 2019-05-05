@@ -5,10 +5,10 @@ package ru.vachok.networker.mailserver;
 
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.ostpst.MakeConvert;
 import ru.vachok.ostpst.OstToPst;
 
-import java.awt.*;
 import java.io.File;
 import java.util.Properties;
 
@@ -34,11 +34,11 @@ public class OstPstUtils implements MakeConvert {
     private String fileName;
     
     @Override public String convertToPST() {
-        throw new IllegalComponentStateException("04.05.2019 (11:21)");
+        ostToPst.showFileContent();
+        return FileSystemWorker.delTemp();
     }
     
     @Override public void showFileContent() {
-    
         ostToPst.showFileContent();
     }
     

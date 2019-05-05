@@ -9,12 +9,10 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.stats.files.FileSystemWorker;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-import java.util.Vector;
+import java.util.*;
 import java.util.stream.Stream;
 
 
@@ -24,6 +22,8 @@ class PSTContent {
     
     
     private static final String CONTENT = ".getSubFolderContent";
+    
+    private int fCount = 0;
     
     private PSTFile pstFile;
     
@@ -50,40 +50,55 @@ class PSTContent {
     }
     
     Stream<PSTFolder> showFolders() {
+        Vector<PSTFolder> subFolders;
         try {
             PSTFolder rootFolder = pstFile.getRootFolder();
-            Vector<PSTFolder> subFolders = rootFolder.getSubFolders();
-            for (PSTFolder folder : subFolders) {
-                getSubFolderContent(folder);
-            }
-            return subFolders.stream();
+            subFolders = rootFolder.getSubFolders();
+            showSubFolders(rootFolder);
         }
         catch (PSTException | IOException e) {
             messageToUser.error(e.getMessage());
             Stream<PSTFolder> pstFolderStream = null;
             return pstFolderStream;
         }
+        return subFolders.stream();
+    }
+    
+    private void showSubFolders(final PSTFolder rootFolder) throws PSTException, IOException {
+        messageToUser.info(getClass().getSimpleName() + ".showSubFolders", "rootFolder", " = " + rootFolder.getDisplayName());
+        if(rootFolder.hasSubfolders()){
+            Vector<PSTFolder> rootSubFolders = rootFolder.getSubFolders();
+            ++fCount;
+            Iterator<PSTFolder> iteratorFolder = rootSubFolders.iterator();
+            while (iteratorFolder.hasNext()){
+                PSTFolder nextFold = iteratorFolder.next();
+                messageToUser.info(getClass().getSimpleName() + ".showSubFolders", "iteratorFolder", " = " + nextFold.getDisplayName());
+                if(nextFold.getDisplayName().toLowerCase().contains("входящие")) getSubFolderContent(nextFold);
+    
+                this.showSubFolders(nextFold);
+                }
+            }
+        messageToUser.info(getClass().getSimpleName() + ".showSubFolders", "fCount", " = " + fCount);
     }
     
     private void getSubFolderContent(PSTFolder folder) throws PSTException, IOException {
         Vector<PSTFolder> folders = folder.getSubFolders();
-        
         try {
             for (PSTFolder pstFolder : folders) {
+                ++fCount;
                 String name = pstFolder.getDisplayName();
-                if (name.contains("Входящие")) {
                     String aClass = pstFolder.getContainerClass();
                     Vector<PSTFolder> inSub = pstFolder.getSubFolders();
-                    messageToUser.info(getClass().getSimpleName() + CONTENT, "name", " = " + inSub.size());
                     inSub.forEach(x->{
                         try {
-                            parseInbox(x.getChildren(x.getContentCount()));
+                            messageToUser.info(getClass().getSimpleName() ,"PARSING:", " = " + x.getDisplayName());
+                            parseInbox(x.getChildren(x.getContentCount()), x.getDisplayName());
                         }
                         catch (PSTException | IOException e) {
                             messageToUser.error(e.getMessage());
                         }
                     });
-                }
+                
             }
         }
         catch (PSTException | IOException e) {
@@ -91,12 +106,13 @@ class PSTContent {
         }
     }
     
-    private void parseInbox(Vector<PSTObject> pstObjs) {
+    private void parseInbox(Vector<PSTObject> pstObjs, String name) throws IOException {
         Map<DescriptorIndexNode, String> nodes = new HashMap<>();
         for (PSTObject object : pstObjs) {
             PSTMessage message = (PSTMessage) object;
             Path msgPath = Paths.get(".");
-            String path = msgPath.toAbsolutePath().toString().replace(".", "obj\\");
+            String path = msgPath.toAbsolutePath().toString().replace(".", "obj\\"+name+"\\");
+            Files.createDirectories(Paths.get(path));
             try (OutputStream outputStream = new FileOutputStream(path + object.getDescriptorNodeId() + ".pstparser")) {
                 if (object.getMessageClass().toLowerCase().contains("note")) {
                     StringBuilder stringBuilder = new StringBuilder();
