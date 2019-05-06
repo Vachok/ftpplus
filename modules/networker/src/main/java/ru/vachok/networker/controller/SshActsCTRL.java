@@ -45,7 +45,8 @@ import java.util.stream.Stream;
         this.sshActs = sshActs;
     }
     
-    @PostMapping(URL_SSHACTS) public String sshActsPOST(@ModelAttribute SshActs sshActs, Model model, HttpServletRequest request) throws AccessDeniedException {
+    @PostMapping(URL_SSHACTS)
+    public String sshActsPOST(@ModelAttribute SshActs sshActs, Model model, HttpServletRequest request) throws AccessDeniedException {
         this.sshActs = sshActs;
         String pcReq = request.getRemoteAddr().toLowerCase();
         if (getAuthentic(pcReq)) {

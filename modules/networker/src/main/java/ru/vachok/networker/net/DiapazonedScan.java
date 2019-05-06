@@ -86,10 +86,6 @@ public class DiapazonedScan implements Runnable {
         };
     }
     
-    public Map<String, File> getScanFiles() throws NullPointerException {
-        return this.scanFiles;
-    }
-    
     public long getStopClassStampLong() {
         return stopClassStampLong;
     }
@@ -136,17 +132,19 @@ public class DiapazonedScan implements Runnable {
     @SuppressWarnings({"resource", "IOResourceOpenedButNotSafelyClosed"})
     private void theNewLan() {
         Runnable execScan200210 = new DiapazonedScan.ExecScan(200, 210, "10.200.", scanFiles.get(FILENAME_NEWLAN210));
-        Runnable execScan210220 = new DiapazonedScan.ExecScan(210, 219, "10.200.", scanFiles.get(FILENAME_NEWLAN220));
+        Runnable execScan210220 = new DiapazonedScan.ExecScan(210, 213, "10.200.", scanFiles.get(FILENAME_NEWLAN213));
+        Runnable execScan213220 = new DiapazonedScan.ExecScan(213, 219, "10.200.", scanFiles.get(FILENAME_NEWLAN220));
         
         AppComponents.threadConfig().execByThreadConfig(execScan200210);
         AppComponents.threadConfig().execByThreadConfig(execScan210220);
+        AppComponents.threadConfig().execByThreadConfig(execScan213220);
     }
     
     private void startDo() {
         if (ALL_DEVICES_LOCAL_DEQUE.remainingCapacity() == 0) {
             scanFiles.values().stream().forEach(x->{
-                String newName = "\\lan\\" + x.getName().replace(".txt", "_" + (System.currentTimeMillis() / 1000)) + ".scan";
-                File newFile = new File(x.getAbsolutePath().replace(x.getName(), newName));
+                String newName = ROOT_PATH_STR + "\\lan\\" + x.getName().replace(".txt", "_" + (System.currentTimeMillis() / 1000)) + ".scan";
+                File newFile = new File(newName);
                 FileSystemWorker.copyOrDelFile(x, newFile.getAbsolutePath(), true);
                 messageToUser.info(getClass().getSimpleName() + ".startDo", "newFile", " = " + newFile.getAbsolutePath());
             });

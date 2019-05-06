@@ -49,12 +49,13 @@ public class NetScanFileWorker implements Serializable {
                 SCAN_FILES.putIfAbsent(f.getName(), f);
             }
         }
-        if (SCAN_FILES.size() == 7) {
+        if (SCAN_FILES.size() == 8) {
             return SCAN_FILES;
         }
         else {
-            SCAN_FILES.putIfAbsent(ConstantsNet.FILENAME_NEWLAN210, new File(ConstantsNet.FILENAME_NEWLAN210));
             SCAN_FILES.putIfAbsent(ConstantsNet.FILENAME_NEWLAN220, new File(ConstantsNet.FILENAME_NEWLAN220));
+            SCAN_FILES.putIfAbsent(ConstantsNet.FILENAME_NEWLAN210, new File(ConstantsNet.FILENAME_NEWLAN210));
+            SCAN_FILES.putIfAbsent(ConstantsNet.FILENAME_NEWLAN213, new File(ConstantsNet.FILENAME_NEWLAN213));
             SCAN_FILES.putIfAbsent(ConstantsNet.FILENAME_OLDLANTXT0, new File(ConstantsNet.FILENAME_OLDLANTXT0));
             SCAN_FILES.putIfAbsent(ConstantsNet.FILENAME_OLDLANTXT1, new File(ConstantsNet.FILENAME_OLDLANTXT1));
             SCAN_FILES.putIfAbsent(ConstantsNet.FILENAME_SERVTXT_10SRVTXT, new File(ConstantsNet.FILENAME_SERVTXT_10SRVTXT));
@@ -76,7 +77,7 @@ public class NetScanFileWorker implements Serializable {
         AppComponents.threadConfig().thrNameSet("ON");
         Deque<String> retDeque = new ArrayDeque<>();
         Set<String> fileNameSet = SCAN_FILES.keySet();
-        SCAN_FILES.forEach((fileName, srvFileX)->messageToUser.info(getClass().getSimpleName(), "list onLine", " = " + fileWrk(srvFileX, retDeque)));
+        SCAN_FILES.forEach((fileName, srvFileX)->fileWrk(srvFileX, retDeque));
         return retDeque;
     }
     
@@ -86,19 +87,21 @@ public class NetScanFileWorker implements Serializable {
      @param retDeque обратная очередь, для наполнения.
      */
     private Path fileWrk(File srvFileX, Collection<String> retDeque) {
-        Path retPath = Paths.get("\\lan\\");
+        Path retPath = Paths.get("");
+        retPath = Paths.get(retPath.toAbsolutePath() + "\\lan\\");
+        
         if (srvFileX.exists() && srvFileX.canRead()) {
-            retDeque.addAll(FileSystemWorker.readFileToList(srvFileX.getAbsolutePath()));
-            retPath = srvFileX.toPath();
+            retDeque.addAll(FileSystemWorker.readFileToSet(srvFileX.toPath()));
+            retPath = Paths.get(srvFileX.toPath().toAbsolutePath().toString().replace(".\\", "\\"));
         }
         else {
             try {
-                retPath = Files.createFile(srvFileX.toPath());
+                retPath = Files.createFile(srvFileX.toPath()).toAbsolutePath();
             }
             catch (IOException e) {
                 messageToUser.error(e.getMessage());
             }
         }
-        return retPath;
+        return retPath.toAbsolutePath();
     }
 }

@@ -86,7 +86,7 @@ public class ScanOnline implements Runnable, Pinger {
         try {
             byte[] addressBytes = InetAddress.getByName(inetAddrStr.split(" ")[0]).getAddress();
             InetAddress inetAddress = InetAddress.getByAddress(addressBytes);
-            xReachable = inetAddress.isReachable(100);
+            xReachable = inetAddress.isReachable(300);
             if (!xReachable) {
                 printStream.println(inetAddrStr + " <font color=\"red\">offline</font>.");
                 String removeOnline = onLinesResolve.remove(inetAddress.toString());
