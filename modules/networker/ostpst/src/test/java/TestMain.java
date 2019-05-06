@@ -11,7 +11,7 @@ import java.nio.charset.Charset;
 public class TestMain {
     
     
-    @Test(enabled = true)
+    @Test(enabled = false)
     public void launchProg() {
         File file = new File(new String("c:\\\\Users\\\\ikudryashov\\\\OneDrive\\\\Документы\\\\Файлы Outlook\\\\ksamarchenko@velkomfood.ru.ost".getBytes(), Charset.forName("UTF-8")));
         MakeConvert makeConvert = new OstToPst(file.getAbsolutePath());
