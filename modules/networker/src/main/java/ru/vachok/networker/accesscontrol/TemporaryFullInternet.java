@@ -191,9 +191,7 @@ public class TemporaryFullInternet implements Runnable {
         Map<String, Long> stringLongMap = SSH_CHECKER_MAP;
         File miniLog = new File(getClass().getSimpleName() + ".mini");
         String fromArray = new TForms().fromArray(stringLongMap, false);
-        
         MINI_LOGGER.add("execOldMeth: " + userInput + " " + fromArray);
-        MINI_LOGGER.add(squidCheck());
         Date nextStart = new Date(ConstantsFor.getAtomicTime() + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY));
         MINI_LOGGER.add(nextStart.toString());
         boolean writeFile = FileSystemWorker.writeFile(miniLog.getName(), MINI_LOGGER.stream());
@@ -262,6 +260,7 @@ public class TemporaryFullInternet implements Runnable {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".sshChecker is interrupted.\n", e));
             Thread.currentThread().interrupt();
         }
+        messageToUser.warn(getClass().getSimpleName() + ".execOldMeth", "squidCheck()", " = " + squidCheck());
     }
     
     private void chkWithList(String[] x) {
@@ -298,11 +297,11 @@ public class TemporaryFullInternet implements Runnable {
     private String squidCheck() {
         SSH_FACTORY.setCommandSSH("sudo ps ax | grep squid && exit");
         String callChk = SSH_FACTORY.call();
-        if (callChk.contains("(ssl_crtd)")) {
+        if (callChk.contains("ssl_crtd")) {
             return callChk;
         }
         else {
-            SSH_FACTORY.setCommandSSH("sudo squid && exit");
+            SSH_FACTORY.setCommandSSH("sudo squid && sudo ps ax | grep squid && exit");
             return SSH_FACTORY.call();
         }
     }
