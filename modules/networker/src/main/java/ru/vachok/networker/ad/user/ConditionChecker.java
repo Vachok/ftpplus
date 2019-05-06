@@ -19,6 +19,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.Executors;
 
 
@@ -171,21 +173,39 @@ class ConditionChecker implements InfoWorker {
                 try (ResultSet resultSet = p.executeQuery()) {
                     while (resultSet.next()) {
                         stringBuilder.append("<b>")
-                            .append(resultSet.getString(ConstantsFor.DB_FIELD_USER).trim()).append("</b> (time: ")
-                            .append(resultSet.getString(ConstantsNet.DB_FIELD_WHENQUERIED)).append(")");
+                            .append(resultSet.getString(ConstantsFor.DB_FIELD_USER).trim()).append("</b> (time from: <i>")
+                            .append(resultSet.getString(ConstantsNet.DB_FIELD_WHENQUERIED)).append("</i> to ");
                     }
                     if (resultSet.wasNull()) stringBuilder.append("<font color=\"red\">user name is null </font>");
                     try (ResultSet resultSet1 = p1.executeQuery()) {
                         while (resultSet1.next()) {
+                            if (resultSet.first()) {
+                                stringBuilder.append("<i>").append(resultSet1.getString(ConstantsNet.DB_FIELD_WHENQUERIED)).append("</i>)");
+                            }
                             if (resultSet1.last()) {
                                 stringBuilder
                                     .append("    (AutoResolved name: ")
-                                    .append(resultSet1.getString(ConstantsFor.DB_FIELD_USER).trim()).append(" (time: ")
-                                    .append(resultSet1.getString(ConstantsNet.DB_FIELD_WHENQUERIED)).append("))").toString();
+                                    .append(resultSet1.getString(ConstantsFor.DB_FIELD_USER).trim()).append(")").toString();
                             }
                             if (resultSet1.wasNull()) stringBuilder.append("<font color=\"orange\">auto resolve is null </font>");
                         }
                     }
+                }
+            }
+            try (PreparedStatement p2 = connection.prepareStatement("SELECT * FROM `velkompc` WHERE `NamePP` LIKE '" + pcName + "' ORDER BY `TimeNow` DESC LIMIT 75");
+                 ResultSet resultSet = p2.executeQuery()
+            ) {
+                List<String> onList = new ArrayList<>();
+                while (resultSet.next()) {
+                    if (resultSet.getString("AddressPP").toLowerCase().contains("true")) {
+                        onList.add(resultSet.getString("TimeNow"));
+                    }
+                }
+                Collections.sort(onList);
+                Collections.reverse(onList);
+                if (onList.size() > 0) {
+                    stringBuilder.append("    Last online PC: ");
+                    stringBuilder.append(onList.get(0));
                 }
             }
         }

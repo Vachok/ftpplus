@@ -243,7 +243,7 @@ public class NetScannerSvc {
     
     public Set<String> getPCNamesPref(String prefixPcName) {
         final long startMethTime = System.currentTimeMillis();
-        String pcsString = "No name";
+        String pcsString;
         for (String pcName : getCycleNames(prefixPcName)) {
             pcNameInfo(pcName);
         }
@@ -280,6 +280,8 @@ public class NetScannerSvc {
     }
     
     /**
+     Возвращает последнее время когда видели онлайн.
+     
      @param timeNow колонка из БД {@code velkompc} TimeNow (время записи)
      @see NetScannerSvc#getInfoFromDB()
      */

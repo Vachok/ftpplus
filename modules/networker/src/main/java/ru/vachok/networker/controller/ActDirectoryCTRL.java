@@ -27,8 +27,7 @@ import ru.vachok.networker.services.NetScannerSvc;
 import ru.vachok.networker.services.PhotoConverterSRV;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Calendar;
-import java.util.Date;
+import java.io.IOException;
 import java.util.List;
 
 
@@ -150,20 +149,26 @@ public class ActDirectoryCTRL {
         netScannerSvc.setThePc(queryString);
         String attributeValue = netScannerSvc.getInfoFromDB();
         InternetUse internetUse = new InetUserPCName();
+    
         model.addAttribute(ConstantsFor.ATT_TITLE , queryString + " " + attributeValue);
         model.addAttribute(ConstantsFor.ATT_USERS , netScannerSvc.getInputWithInfoFromDB());
+    
         try {
-            String adSrvDetails = adSrv.getDetails(queryString);
-            model.addAttribute(ATT_DETAILS , adSrvDetails);
-            adSrvDetails = adSrvDetails.replaceAll("</br>" , "\n").replaceAll("<p>" , "\n\n").replaceAll("<p><b>" , "\n\n");
-            long l = new Calendar.Builder().setTimeOfDay(0 , 0 , 0).build().getTimeInMillis();
-            String finalAdSrvDetails = adSrvDetails;
-            messageToUser.info(queryString, attributeValue, ServiceInfoCtrl.percToEnd(new Date(l), 24));
-        } catch (Exception e) {
+            adDetails(queryString, attributeValue, model);
+        }
+        catch (Exception e) {
             model.addAttribute(ATT_DETAILS, ConstantsFor.HTMLTAG_CENTER + internetUse.getUsage(queryString + ConstantsFor.DOMAIN_EATMEATRU) + ConstantsFor.HTML_CENTER_CLOSE);
         }
-        model.addAttribute(ConstantsFor.ATT_FOOTER , new PageFooter().getFooterUtext());
+        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
         return "aditem";
     }
-
+    
+    private void adDetails(String queryString, String attributeValue, Model model) throws IOException {
+        String adSrvDetails = adSrv.getDetails(queryString);
+        model.addAttribute(ATT_DETAILS, adSrvDetails);
+        adSrvDetails = adSrvDetails.replaceAll("</br>", "\n").replaceAll("<p>", "\n\n").replaceAll("<p><b>", "\n\n");
+        String finalAdSrvDetails = adSrvDetails;
+        messageToUser.info(getClass().getSimpleName(), queryString, attributeValue);
+    }
+    
 }
