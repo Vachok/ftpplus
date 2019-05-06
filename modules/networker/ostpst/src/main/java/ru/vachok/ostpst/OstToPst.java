@@ -64,7 +64,7 @@ public class OstToPst implements MakeConvert {
         }
     }
     
-    @Override public void showFileContent() {
+    @Override public void saveFolders() {
         try {
             PSTContent contentOfPST = new PSTContent(new PSTFile(fileName));
             contentOfPST.showFolders();
@@ -72,6 +72,11 @@ public class OstToPst implements MakeConvert {
         catch (PSTException | IOException e) {
             messageToUser.error(e.getMessage());
         }
+    }
+    
+    @Override public void saveContacts() {
+        ParserContacts contacts = new ParserContacts(fileName);
+        contacts.run();
     }
     
     @Override public void setFileName(String fileName) {

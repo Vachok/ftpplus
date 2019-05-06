@@ -23,7 +23,7 @@ class PSTContent {
     
     private static final String CONTENT = ".getSubFolderContent";
     
-    private int fCount = 0;
+    private int fCount;
     
     private PSTFile pstFile;
     
@@ -66,18 +66,19 @@ class PSTContent {
     
     private void showSubFolders(final PSTFolder rootFolder) throws PSTException, IOException {
         messageToUser.info(getClass().getSimpleName() + ".showSubFolders", "rootFolder", " = " + rootFolder.getDisplayName());
-        if(rootFolder.hasSubfolders()){
+        if (rootFolder.hasSubfolders()) {
             Vector<PSTFolder> rootSubFolders = rootFolder.getSubFolders();
             ++fCount;
             Iterator<PSTFolder> iteratorFolder = rootSubFolders.iterator();
-            while (iteratorFolder.hasNext()){
+            while (iteratorFolder.hasNext()) {
                 PSTFolder nextFold = iteratorFolder.next();
                 messageToUser.info(getClass().getSimpleName() + ".showSubFolders", "iteratorFolder", " = " + nextFold.getDisplayName());
-                if(nextFold.getDisplayName().toLowerCase().contains("входящие")) getSubFolderContent(nextFold);
-    
-                this.showSubFolders(nextFold);
+                if (nextFold.getDisplayName().toLowerCase().contains("входящие")) {
+                    getSubFolderContent(nextFold);
                 }
+                this.showSubFolders(nextFold);
             }
+        }
         messageToUser.info(getClass().getSimpleName() + ".showSubFolders", "fCount", " = " + fCount);
     }
     
@@ -87,17 +88,17 @@ class PSTContent {
             for (PSTFolder pstFolder : folders) {
                 ++fCount;
                 String name = pstFolder.getDisplayName();
-                    String aClass = pstFolder.getContainerClass();
-                    Vector<PSTFolder> inSub = pstFolder.getSubFolders();
-                    inSub.forEach(x->{
-                        try {
-                            messageToUser.info(getClass().getSimpleName() ,"PARSING:", " = " + x.getDisplayName());
-                            parseInbox(x.getChildren(x.getContentCount()), x.getDisplayName());
-                        }
-                        catch (PSTException | IOException e) {
-                            messageToUser.error(e.getMessage());
-                        }
-                    });
+                String aClass = pstFolder.getContainerClass();
+                Vector<PSTFolder> inSub = pstFolder.getSubFolders();
+                inSub.forEach(x->{
+                    try {
+                        messageToUser.info(getClass().getSimpleName(), "PARSING:", " = " + x.getDisplayName());
+                        parseFld(x.getChildren(x.getContentCount()), x.getDisplayName());
+                    }
+                    catch (PSTException | IOException e) {
+                        messageToUser.error(e.getMessage());
+                    }
+                });
                 
             }
         }
@@ -106,17 +107,17 @@ class PSTContent {
         }
     }
     
-    private void parseInbox(Vector<PSTObject> pstObjs, String name) throws IOException {
+    private void parseFld(Vector<PSTObject> pstObjs, String name) throws IOException {
         Map<DescriptorIndexNode, String> nodes = new HashMap<>();
+        Path msgPath = Paths.get(".");
+        String path = msgPath.toAbsolutePath().toString().replace(".", "obj\\" + name + "\\");
         for (PSTObject object : pstObjs) {
             PSTMessage message = (PSTMessage) object;
-            Path msgPath = Paths.get(".");
-            String path = msgPath.toAbsolutePath().toString().replace(".", "obj\\"+name+"\\");
             Files.createDirectories(Paths.get(path));
             try (OutputStream outputStream = new FileOutputStream(path + object.getDescriptorNodeId() + ".pstparser")) {
                 if (object.getMessageClass().toLowerCase().contains("note")) {
                     StringBuilder stringBuilder = new StringBuilder();
-                    stringBuilder.append(message.toString());
+                    stringBuilder.append(message.getItemsString());
                     if (message.hasAttachments()) {
                         hasAtt(path, message, stringBuilder);
                     }
@@ -127,6 +128,21 @@ class PSTContent {
                 messageToUser.error(e.getMessage());
             }
         }
+        for (PSTObject object : pstObjs) {
+            if (object.getMessageClass().toLowerCase().contains("contact")) {
+                parseContact(object, path);
+            }
+        }
+    }
+    
+    private void parseContact(PSTObject object, String path) {
+        PSTContact contact = (PSTContact) object;
+        try (OutputStream outputStream = new FileOutputStream(path + contact.getDescriptorNodeId() + ".contact")) {
+            outputStream.write(contact.toString().getBytes());
+        }
+        catch (IOException e) {
+            messageToUser.error(e.getMessage());
+        }
     }
     
     private void hasAtt(String path, PSTMessage message, StringBuilder stringBuilder) throws PSTException, IOException {
@@ -136,15 +152,15 @@ class PSTContent {
             try (InputStream attStream = attachment.getFileInputStream();
                  InputStreamReader inputStreamReader = new InputStreamReader(attStream);
                  BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-                 OutputStream attOut = new FileOutputStream(path + attachment.getFilename());
+                 OutputStream attOut = new FileOutputStream(path + message.getDescriptorNodeId() + "_" + attachment.getFilename());
             ) {
                 byte[] bytes = new byte[attachment.getSize()];
                 int readB = attStream.read(bytes);
-                stringBuilder.append(readB).append(" bts");
+                stringBuilder.append(readB).append(" bts ").append(attachment.getMimeTag()).append(" ").append(attachment.getMessageClass());
                 attOut.write(bytes);
             }
             catch (IOException e) {
-                messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".parseInbox", e));
+                messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".parseFld", e));
             }
         }
     }

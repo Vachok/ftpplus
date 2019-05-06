@@ -1,0 +1,160 @@
+Корень - Общие
+ has subs: true container class: 
+
+
+NON_IPM_SUBTREE
+ has subs: true container class: 
+
+
+EFORMS REGISTRY
+ has subs: true container class: 
+
+
+Корень - п/я
+ has subs: true container class: 
+
+
+Система поиска
+ has subs: true container class: 
+
+
+Напоминания emails: -1
+Поиск дел emails: -1
+MS-OLK-BGPooledSearchFolder4A0B6EC18B759549BBB5DD3C94EA4816 emails: -1
+IPM_SUBTREE
+ has subs: true container class: 
+
+
+Входящие
+ has subs: true container class: IPF.Note
+
+
+ПИР-Экспо emails: 78
+Общий адрес
+ has subs: true container class: IPF.Note
+
+
+Промо-коды emails: 3
+Digital, SMM emails: 17
+Unibake emails: 31
+Декор-Строй emails: 347
+ИТ-отдел emails: 133
+Ксюша emails: 1622
+Метро-Экспо emails: 153
+Архив
+ has subs: true container class: IPF.Note
+
+
+ICE emails: 62
+Ресторан emails: 43
+Adwotch emails: 827
+Artox-media emails: 1603
+Выставка Крым emails: 41
+Milk emails: 57
+Эля emails: 446
+Супермаркет emails: 42
+TDEF (Товарный дефицит) emails: 61
+Growth emails: 761
+Лариса emails: 819
+Family emails: 835
+Gallery emails: 126
+GLOBAL emails: 296
+Russ Outdoor emails: 17
+Video International emails: 131
+А-Клуб emails: 36
+Алькасар-Медиа emails: 7
+Логопринт emails: 11
+фотостудия silverplate emails: 47
+Эверест (СТС, Домашний) emails: 35
+Васильева Т.В. emails: 152
+Таня Бабичева emails: 93
+отдел персонала emails: 168
+Каратаев emails: 656
+Ира Гарнагина emails: 395
+Сканнер emails: 24
+Adventum emails: 35
+Солви-Пак emails: 46
+Аня emails: 203
+отдел продаж emails: 2111
+Метро СПб emails: 52
+Трофименков emails: 229
+Прод-Экспо emails: 234
+Выставка MEGUSTRO emails: 30
+Пицца/Паста emails: 41
+ГД emails: 24
+Демина РВ emails: 66
+Отправленные emails: 9914
+Задачи emails: 1
+Заметки emails: 1
+Календарь emails: 262
+Ошибки синхронизации
+ has subs: true container class: IPF.Note
+
+
+Конфликты emails: 49
+Локальные ошибки emails: 1
+Предлагаемые контакты emails: 246
+Общие данные
+ has subs: true container class: 
+
+
+Моськина, Елена
+ has subs: true container class: 
+
+
+Входящие emails: 9519
+Задачи emails: 1
+Заметки emails: 1
+Календарь emails: 128
+Контакты emails: 5
+Предлагаемые контакты emails: 174
+Отправленные emails: 6989
+Конфликты emails: 35
+Халилюлина, Эльвира
+ has subs: true container class: 
+
+
+Входящие emails: 6217
+Adwatch emails: 416
+DPJN emails: 101
+Logo_Print emails: 306
+Present_Print emails: 73
+Wellhead emails: 154
+А-Клуб emails: 356
+Артокс emails: 314
+Декор-Строй emails: 191
+документооборот emails: 248
+Каратаев emails: 761
+МЕТРО-Экспо emails: 91
+ОКК emails: 997
+Chilli emails: 311
+Vizeum emails: 186
+Алие emails: 185
+Едим Дома emails: 13
+МЕТРО emails: 38
+от Алие emails: 345
+от Антона emails: 511
+от Дениса emails: 19
+от Михаила emails: 114
+от коммерсантов emails: 1492
+от Ксении emails: 929
+от Лены emails: 992
+от Натальи О emails: 639
+от Татьяны emails: 339
+от Чистовой Натальи emails: 1225
+7Дней emails: 92
+VI emails: 295
+Алькасар emails: 95
+АфишаЕда emails: 103
+Аэрофлот emails: 73
+Гастрономъ emails: 95
+Интернет emails: 15
+МИЛК emails: 735
+ООН emails: 367
+Радио emails: 28
+Экспоцентр emails: 33
+Заметки emails: 1
+Календарь emails: 342
+Отправленные emails: 8770
+Конфликты emails: 12
+Предлагаемые контакты emails: 264

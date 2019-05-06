@@ -8,7 +8,9 @@ public interface MakeConvert {
     
     String convertToPST();
     
-    void showFileContent();
+    void saveFolders();
+    
+    void saveContacts();
     
     void setFileName(String fileName);
     
