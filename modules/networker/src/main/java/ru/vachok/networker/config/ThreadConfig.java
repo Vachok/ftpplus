@@ -68,8 +68,7 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
     private ThreadConfig() {
         thrNameSet("tc_" + hashCode());
     }
-
-
+    
     static {
         TASK_SCHEDULER = new ThreadPoolTaskScheduler();
         TASK_SCHEDULER.initialize();
@@ -187,8 +186,9 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
     public String toString() {
         final StringBuilder sb = new StringBuilder("ThreadConfig{");
         sb.append("\n");
-        sb.append(", <br><font color=\"#fcf594\">TASK_SCHEDULER=").append(TASK_SCHEDULER.getScheduledThreadPoolExecutor());
-        sb.append(", <br>TASK_EXECUTOR=").append(TASK_EXECUTOR.getThreadPoolExecutor());
+        sb.append(", <br><font color=\"#fcf594\">TASK_SCHEDULER=").append(TASK_SCHEDULER.getScheduledThreadPoolExecutor().toString().split("\\Q@\\E")[1]);
+        sb.append(", <br>TASK_EXECUTOR=").append(TASK_EXECUTOR.getThreadPoolExecutor().toString().split("\\Q@\\E")[1]);
+        sb.append(", <br>Locks: ").append(new DeadLockMonitor());
         sb.append("</font>}");
         return sb.toString();
     }
@@ -253,8 +253,8 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
 
 
     private class TaskDestroyer implements RejectedExecutionHandler {
-
-
+    
+    
         @Override
         public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
             BlockingQueue<Runnable> queue = executor.getQueue();
@@ -263,4 +263,7 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
             messageToUser.warn("rejectedTask !", "executor is purged", " = " + executor);
         }
     }
+    
+    
+    
 }

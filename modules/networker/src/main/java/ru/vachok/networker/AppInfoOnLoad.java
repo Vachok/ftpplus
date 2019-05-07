@@ -14,6 +14,7 @@ import ru.vachok.networker.accesscontrol.TemporaryFullInternet;
 import ru.vachok.networker.accesscontrol.common.CommonRightsChecker;
 import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
 import ru.vachok.networker.config.AppCtx;
+import ru.vachok.networker.config.DeadLockMonitor;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.mailserver.MailIISLogsCleaner;
@@ -320,6 +321,7 @@ public class AppInfoOnLoad implements Runnable {
         stringBuilder.append(ConstantsFor.getBuildStamp());
         AppInfoOnLoad.messageToUser.info("AppInfoOnLoad.infoForU", ConstantsFor.STR_FINISH, " = " + stringBuilder);
         AppInfoOnLoad.miniLogger.add("infoForU ends. now schedStarter(). Result: " + stringBuilder);
+        AppComponents.threadConfig().execByThreadConfig(new DeadLockMonitor());
         schedStarter();
     }
     

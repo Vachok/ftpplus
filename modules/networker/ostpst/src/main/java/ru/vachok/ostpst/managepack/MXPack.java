@@ -62,5 +62,4 @@ public class MXPack implements MXManager {
         }
         return rmiServer;
     }
-    
 }
