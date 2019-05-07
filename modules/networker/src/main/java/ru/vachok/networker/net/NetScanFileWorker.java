@@ -44,7 +44,7 @@ public class NetScanFileWorker implements Serializable {
     }
     
     public ConcurrentMap<String, File> getScanFiles() {
-        Path absolutePath = Paths.get(".").toAbsolutePath();
+        Path absolutePath = Paths.get("").toAbsolutePath();
         for (File f : Objects.requireNonNull(new File(absolutePath.toString()).listFiles(), "Path is null")) {
             if (f.getName().contains("lan_")) {
                 SCAN_FILES.putIfAbsent(f.getName(), f);
