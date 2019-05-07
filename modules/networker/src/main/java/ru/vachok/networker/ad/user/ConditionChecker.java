@@ -204,22 +204,11 @@ class ConditionChecker implements InfoWorker {
                 Collections.sort(onList);
                 Collections.reverse(onList);
                 if (onList.size() > 0) {
-                    String strDate = onList.get(0);
-                    SimpleDateFormat simpleDateFormat = new SimpleDateFormat();
-                    simpleDateFormat.applyPattern("YYYY-MM-DD");
-                    Date dateFormat = simpleDateFormat.parse(strDate.split(" ")[0]);
-                    if ((dateFormat.getTime() + TimeUnit.DAYS.toMillis(7) < System.currentTimeMillis())) {
-                        strDate = "<font color=\"yellow\">" + strDate + "</font>";
-                    }
-                    if ((dateFormat.getTime() + TimeUnit.DAYS.toMillis(ConstantsFor.ONE_DAY_HOURS) < System.currentTimeMillis())) {
-                        strDate = "<font color=\"red\">" + strDate + "</font>";
-                    }
-                    stringBuilder.append("    Last online PC: ");
-                    stringBuilder.append(strDate);
+                    onSizeNotNull(onList, stringBuilder);
                 }
             }
         }
-        catch (SQLException | NullPointerException | ParseException | ArrayIndexOutOfBoundsException e) {
+        catch (SQLException | NullPointerException e) {
 
             messageToUser.errorAlert("ConditionChecker", methName, e.getMessage());
             stringBuilder.append("<font color=\"red\">EXCEPTION in SQL dropped. <b>");
@@ -228,5 +217,31 @@ class ConditionChecker implements InfoWorker {
         }
         if (stringBuilder.toString().isEmpty()) stringBuilder.append(getClass().getSimpleName()).append(" <font color=\"red\">").append(methName).append(" null</font>");
         return stringBuilder.toString();
+    }
+    
+    private void onSizeNotNull(List<String> onList, StringBuilder stringBuilder) {
+        String strDate = onList.get(0);
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat();
+        simpleDateFormat.applyPattern("yyyy-MM-dd");
+        Date dateFormat = new Date(Long.parseLong(AppComponents.getProps().getProperty(ConstantsNet.PR_LASTSCAN)));
+        try {
+            dateFormat = simpleDateFormat.parse(strDate.split(" ")[0]);
+        }
+        catch (ParseException | ArrayIndexOutOfBoundsException e) {
+            messageToUser.error(e.getMessage());
+        }
+    
+        if ((dateFormat.getTime() + TimeUnit.DAYS.toMillis(5) < System.currentTimeMillis())) {
+            strDate = "<font color=\"yellow\">" + strDate + "</font>";
+        }
+        if ((dateFormat.getTime() + TimeUnit.DAYS.toMillis(ConstantsFor.ONE_DAY_HOURS / 2) < System.currentTimeMillis())) {
+            strDate = "<font color=\"red\">" + strDate + "</font>";
+            
+        }
+        else {
+            strDate = "<font color=\"green\">" + strDate + "</font>";
+        }
+        stringBuilder.append("    Last online PC: ");
+        stringBuilder.append(strDate);
     }
 }
