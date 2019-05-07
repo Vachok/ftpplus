@@ -15,4 +15,6 @@ public interface MakeConvert {
     void setFileName(String fileName);
     
     long copyierWithSave();
+    
+    String folderContentItemsString();
 }

@@ -6,6 +6,7 @@ package ru.vachok.ostpst;
 import com.pff.*;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.ostpst.utils.FileSystemWorker;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,17 +24,18 @@ public class OstToPst implements MakeConvert {
     
     private MessageToUser messageToUser = new MessageCons(getClass().getSimpleName());
     
+    private PSTContentToFoldersWithAttachments foldersWithAtt;
+    
     private int deepCount = -1;
     
     public OstToPst(String fileName) {
         this.fileName = fileName;
-        if (fileName == null) {
-            fileName = "c:\\Users\\ikudryashov\\Desktop\\ksamarchenko@velkomfood.ru.ost";
+        try {
+            this.foldersWithAtt = new PSTContentToFoldersWithAttachments(new PSTFile(fileName));
         }
-    }
-    
-    public static void main(String[] args) {
-        throw new UnsupportedOperationException("Use Interface " + MakeConvert.class.getSimpleName());
+        catch (PSTException | IOException e) {
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".OstToPst", e));
+        }
     }
     
     @Override public long copyierWithSave() {
@@ -54,6 +56,12 @@ public class OstToPst implements MakeConvert {
         }
     }
     
+    @Override public String folderContentItemsString() {
+        final StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(foldersWithAtt.getContents());
+        return stringBuilder.toString();
+    }
+    
     @Override public String convertToPST() {
         try {
             PSTFile pstFile = new PSTFile(fileName);
@@ -65,13 +73,7 @@ public class OstToPst implements MakeConvert {
     }
     
     @Override public void saveFolders() {
-        try {
-            PSTContent contentOfPST = new PSTContent(new PSTFile(fileName));
-            contentOfPST.showFolders();
-        }
-        catch (PSTException | IOException e) {
-            messageToUser.error(e.getMessage());
-        }
+        foldersWithAtt.showFolders();
     }
     
     @Override public void saveContacts() {

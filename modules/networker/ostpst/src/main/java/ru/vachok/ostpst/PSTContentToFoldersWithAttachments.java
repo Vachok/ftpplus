@@ -13,12 +13,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 
 /**
  @since 30.04.2019 (15:04) */
-class PSTContent {
+class PSTContentToFoldersWithAttachments {
     
     
     private static final String CONTENT = ".getSubFolderContent";
@@ -29,24 +30,8 @@ class PSTContent {
     
     private MessageToUser messageToUser = new MessageCons(getClass().getSimpleName());
     
-    public PSTContent(PSTFile pstFile) {
+    public PSTContentToFoldersWithAttachments(PSTFile pstFile) {
         this.pstFile = pstFile;
-    }
-    
-    public void showStore(UUID itemID) {
-        try {
-            PSTMessageStore messageStore = pstFile.getMessageStore();
-            boolean equals = itemID.equals(messageStore.getTagRecordKeyAsUUID());
-            if (equals) {
-                getContents(messageStore);
-            }
-            else {
-                messageToUser.warn(equals + " is store read");
-            }
-        }
-        catch (PSTException | IOException e) {
-            messageToUser.error(e.getMessage());
-        }
     }
     
     Stream<PSTFolder> showFolders() {
@@ -54,7 +39,6 @@ class PSTContent {
         try {
             PSTFolder rootFolder = pstFile.getRootFolder();
             subFolders = rootFolder.getSubFolders();
-            showSubFolders(rootFolder);
         }
         catch (PSTException | IOException e) {
             messageToUser.error(e.getMessage());
@@ -64,22 +48,40 @@ class PSTContent {
         return subFolders.stream();
     }
     
-    private void showSubFolders(final PSTFolder rootFolder) throws PSTException, IOException {
-        messageToUser.info(getClass().getSimpleName() + ".showSubFolders", "rootFolder", " = " + rootFolder.getDisplayName());
+    void saveSubFolders(final PSTFolder rootFolder) throws PSTException, IOException {
+        messageToUser.info(getClass().getSimpleName() + ".saveSubFolders", "rootFolder", " = " + rootFolder.getDisplayName());
         if (rootFolder.hasSubfolders()) {
             Vector<PSTFolder> rootSubFolders = rootFolder.getSubFolders();
             ++fCount;
             Iterator<PSTFolder> iteratorFolder = rootSubFolders.iterator();
             while (iteratorFolder.hasNext()) {
                 PSTFolder nextFold = iteratorFolder.next();
-                messageToUser.info(getClass().getSimpleName() + ".showSubFolders", "iteratorFolder", " = " + nextFold.getDisplayName());
+                messageToUser.info(getClass().getSimpleName() + ".saveSubFolders", "iteratorFolder", " = " + nextFold.getDisplayName());
                 if (nextFold.getDisplayName().toLowerCase().contains("входящие")) {
                     getSubFolderContent(nextFold);
                 }
-                this.showSubFolders(nextFold);
+                this.saveSubFolders(nextFold);
             }
         }
-        messageToUser.info(getClass().getSimpleName() + ".showSubFolders", "fCount", " = " + fCount);
+        messageToUser.info(getClass().getSimpleName() + ".saveSubFolders", "fCount", " = " + fCount);
+    }
+    
+    String getContents() {
+        StringBuilder stringBuilder = new StringBuilder();
+        Collection<PSTFolder> pstFolders = showFolders().collect(Collectors.toList());
+        for (PSTFolder folder : pstFolders) {
+            String folderDisplayName = folder.getDisplayName();
+            stringBuilder.append(folderDisplayName).append("\n");
+            try {
+                stringBuilder.append(folder.getAssociateContentCount()).append(" count");
+                stringBuilder.append(" subfolders: ").append(folder.hasSubfolders());
+                stringBuilder.append("\nItems: \n").append(folder.getItemsString());
+            }
+            catch (NullPointerException e) {
+                stringBuilder.append(e.getMessage());
+            }
+        }
+        return stringBuilder.toString();
     }
     
     private void getSubFolderContent(PSTFolder folder) throws PSTException, IOException {
@@ -93,7 +95,7 @@ class PSTContent {
                 inSub.forEach(x->{
                     try {
                         messageToUser.info(getClass().getSimpleName(), "PARSING:", " = " + x.getDisplayName());
-                        parseFld(x.getChildren(x.getContentCount()), x.getDisplayName());
+                        parseFldAndSaveToDisk(x.getChildren(x.getContentCount()), x.getDisplayName());
                     }
                     catch (PSTException | IOException e) {
                         messageToUser.error(e.getMessage());
@@ -107,7 +109,7 @@ class PSTContent {
         }
     }
     
-    private void parseFld(Vector<PSTObject> pstObjs, String name) throws IOException {
+    private void parseFldAndSaveToDisk(Vector<PSTObject> pstObjs, String name) throws IOException {
         Map<DescriptorIndexNode, String> nodes = new HashMap<>();
         Path msgPath = Paths.get(".");
         String path = msgPath.toAbsolutePath().toString().replace(".", "obj\\" + name + "\\");
@@ -128,21 +130,6 @@ class PSTContent {
                 messageToUser.error(e.getMessage());
             }
         }
-        for (PSTObject object : pstObjs) {
-            if (object.getMessageClass().toLowerCase().contains("contact")) {
-                parseContact(object, path);
-            }
-        }
-    }
-    
-    private void parseContact(PSTObject object, String path) {
-        PSTContact contact = (PSTContact) object;
-        try (OutputStream outputStream = new FileOutputStream(path + contact.getDescriptorNodeId() + ".contact")) {
-            outputStream.write(contact.toString().getBytes());
-        }
-        catch (IOException e) {
-            messageToUser.error(e.getMessage());
-        }
     }
     
     private void hasAtt(String path, PSTMessage message, StringBuilder stringBuilder) throws PSTException, IOException {
@@ -160,14 +147,8 @@ class PSTContent {
                 attOut.write(bytes);
             }
             catch (IOException e) {
-                messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".parseFld", e));
+                messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".parseFldAndSaveToDisk", e));
             }
         }
-    }
-    
-    private void getContents(PSTMessageStore store) {
-        DescriptorIndexNode node = store.getDescriptorNode();
-        String s = node.toString();
-        messageToUser.info(getClass().getSimpleName() + ".getContents", "s", " = " + s);
     }
 }
