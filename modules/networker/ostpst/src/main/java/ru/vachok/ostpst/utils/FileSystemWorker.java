@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.ostpst.utils;
 
 
@@ -16,7 +18,6 @@ public abstract class FileSystemWorker {
         Path rootPath = Paths.get("err");
         try {
             Files.createDirectories(rootPath);
-            throw new IllegalStateException("07.05.2019 (16:11)");
         }
         catch (IOException ex) {
             e.printStackTrace();
