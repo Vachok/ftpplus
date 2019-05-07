@@ -15,10 +15,6 @@ public class ThreadInformator implements InfoWorker {
     @Override public String getInfoAbout() {
         ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
         long[] deadlockedThreads = threadMXBean.findDeadlockedThreads();
-        for (long thread : deadlockedThreads) {
-            Thread.currentThread().checkAccess();
-            
-        }
         return "null";
     }
     

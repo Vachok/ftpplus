@@ -39,6 +39,7 @@ import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -203,10 +204,15 @@ public class AppComponents {
     
     public static Properties getProps() {
         if (APP_PR.size() > 3) {
+            if ((APP_PR.getProperty("dbstamp") != null) && (Long.parseLong(APP_PR.getProperty("dbstamp")) + TimeUnit.MINUTES.toMillis(180)) < System.currentTimeMillis()) {
+                APP_PR.putAll(new AppComponents().getAppProps());
+            }
             return APP_PR;
         }
         else {
-            return new AppComponents().getAppProps();
+            Properties appProps = new AppComponents().getAppProps();
+            appProps.setProperty("dbstamp", String.valueOf(System.currentTimeMillis()));
+            return appProps;
         }
     }
     
@@ -227,7 +233,6 @@ public class AppComponents {
 
     private Properties getAppProps() {
         threadConfig().thrNameSet("getAPr");
-        if (APP_PR.size() > 3) return APP_PR;
         MysqlDataSource mysqlDataSource = new DBRegProperties(DB_JAVA_ID).getRegSourceForProperties();
         mysqlDataSource.setRelaxAutoCommit(true);
         mysqlDataSource.setLogger("java.util.Logger");
