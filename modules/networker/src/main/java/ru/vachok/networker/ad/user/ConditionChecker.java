@@ -17,11 +17,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -198,18 +198,28 @@ class ConditionChecker implements InfoWorker {
                 List<String> onList = new ArrayList<>();
                 while (resultSet.next()) {
                     if (resultSet.getString("AddressPP").toLowerCase().contains("true")) {
-                        onList.add(resultSet.getString("TimeNow"));
+                        onList.add(resultSet.getString(ConstantsFor.DBFIELD_TIMENOW));
                     }
                 }
                 Collections.sort(onList);
                 Collections.reverse(onList);
                 if (onList.size() > 0) {
+                    String strDate = onList.get(0);
+                    SimpleDateFormat simpleDateFormat = new SimpleDateFormat();
+                    simpleDateFormat.applyPattern("YYYY-MM-DD");
+                    Date dateFormat = simpleDateFormat.parse(strDate.split(" ")[0]);
+                    if ((dateFormat.getTime() + TimeUnit.DAYS.toMillis(7) < System.currentTimeMillis())) {
+                        strDate = "<font color=\"yellow\">" + strDate + "</font>";
+                    }
+                    if ((dateFormat.getTime() + TimeUnit.DAYS.toMillis(ConstantsFor.ONE_DAY_HOURS) < System.currentTimeMillis())) {
+                        strDate = "<font color=\"red\">" + strDate + "</font>";
+                    }
                     stringBuilder.append("    Last online PC: ");
-                    stringBuilder.append(onList.get(0));
+                    stringBuilder.append(strDate);
                 }
             }
         }
-        catch (SQLException | NullPointerException e) {
+        catch (SQLException | NullPointerException | ParseException | ArrayIndexOutOfBoundsException e) {
 
             messageToUser.errorAlert("ConditionChecker", methName, e.getMessage());
             stringBuilder.append("<font color=\"red\">EXCEPTION in SQL dropped. <b>");
