@@ -446,6 +446,10 @@ public enum ConstantsFor {
      */
     private static final ConcurrentMap<Integer, MailRule> MAIL_RULES = new ConcurrentHashMap<>();
     
+    public static final String DBFIELD_TIMENOW = "TimeNow";
+    
+    public static final String PR_WINDOWSOS = "windows";
+    
     /**
      @return {@link #MAIL_RULES}
      */

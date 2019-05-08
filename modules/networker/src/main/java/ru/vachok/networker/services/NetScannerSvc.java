@@ -177,7 +177,7 @@ public class NetScannerSvc {
                 while (resultSet.next()) {
                     int onlineNow = resultSet.getInt(ConstantsNet.ONLINE_NOW);
                     if (onlineNow == 1) {
-                        timeNow.add(resultSet.getString("TimeNow"));
+                        timeNow.add(resultSet.getString(ConstantsFor.DBFIELD_TIMENOW));
                     }
                     else {
                         integersOff.add(onlineNow);
