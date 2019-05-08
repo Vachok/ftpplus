@@ -448,6 +448,8 @@ public enum ConstantsFor {
     
     public static final String DBFIELD_TIMENOW = "TimeNow";
     
+    public static final String PR_WINDOWSOS = "windows";
+    
     /**
      @return {@link #MAIL_RULES}
      */

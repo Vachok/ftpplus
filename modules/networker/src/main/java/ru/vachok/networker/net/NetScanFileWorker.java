@@ -14,7 +14,10 @@ import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.Collection;
+import java.util.Deque;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -45,15 +48,19 @@ public class NetScanFileWorker implements Serializable {
     
     public ConcurrentMap<String, File> getScanFiles() {
         Path absolutePath = Paths.get("").toAbsolutePath();
-        for (File f : Objects.requireNonNull(new File(absolutePath.toString()).listFiles(), "Path is null")) {
-            if (f.getName().contains("lan_")) {
-                SCAN_FILES.putIfAbsent(f.getName(), f);
+        try {
+            for (File f : new File(absolutePath.toString()).listFiles()) {
+                if (f.getName().contains("lan_")) {
+                    SCAN_FILES.putIfAbsent(f.getName(), f);
+                }
             }
         }
-        if (SCAN_FILES.size() == 8) {
-            return SCAN_FILES;
+        catch (NullPointerException e) {
+            messageToUser.error(e.getMessage());
         }
-        else {
+    
+        if (!(SCAN_FILES.size() == 8)) {
+            SCAN_FILES.clear();
             SCAN_FILES.putIfAbsent(ConstantsNet.FILENAME_NEWLAN220, new File(ConstantsNet.FILENAME_NEWLAN220));
             SCAN_FILES.putIfAbsent(ConstantsNet.FILENAME_NEWLAN210, new File(ConstantsNet.FILENAME_NEWLAN210));
             SCAN_FILES.putIfAbsent(ConstantsNet.FILENAME_NEWLAN213, new File(ConstantsNet.FILENAME_NEWLAN213));
@@ -62,8 +69,8 @@ public class NetScanFileWorker implements Serializable {
             SCAN_FILES.putIfAbsent(ConstantsNet.FILENAME_SERVTXT_10SRVTXT, new File(ConstantsNet.FILENAME_SERVTXT_10SRVTXT));
             SCAN_FILES.putIfAbsent(ConstantsNet.FILENAME_SERVTXT_21SRVTXT, new File(ConstantsNet.FILENAME_SERVTXT_21SRVTXT));
             SCAN_FILES.putIfAbsent(ConstantsNet.FILENAME_SERVTXT_31SRVTXT, new File(ConstantsNet.FILENAME_SERVTXT_31SRVTXT));
-            return SCAN_FILES;
         }
+        return SCAN_FILES;
     }
     
     public static NetScanFileWorker getI() {

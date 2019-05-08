@@ -18,6 +18,7 @@ import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.InetAddress;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -141,13 +142,16 @@ public class DiapazonedScan implements Runnable {
     }
     
     private void startDo() {
-        if (ALL_DEVICES_LOCAL_DEQUE.remainingCapacity() == 0) {
+        if ((ALL_DEVICES_LOCAL_DEQUE.remainingCapacity() == 0) && (System.getProperty("os.name").toLowerCase().contains(ConstantsFor.PR_WINDOWSOS))) {
             scanFiles.values().stream().forEach(x->{
                 String newName = ROOT_PATH_STR + "\\lan\\" + x.getName().replace(".txt", "_" + (System.currentTimeMillis() / 1000)) + ".scan";
                 File newFile = new File(newName);
                 FileSystemWorker.copyOrDelFile(x, newFile.getAbsolutePath(), true);
                 messageToUser.info(getClass().getSimpleName() + ".startDo", "newFile", " = " + newFile.getAbsolutePath());
             });
+            ALL_DEVICES_LOCAL_DEQUE.clear();
+        }
+        else if (ALL_DEVICES_LOCAL_DEQUE.remainingCapacity() == 0) {
             ALL_DEVICES_LOCAL_DEQUE.clear();
         }
         AppComponents.threadConfig().execByThreadConfig(this::theNewLan);
@@ -276,30 +280,44 @@ public class DiapazonedScan implements Runnable {
         
         @Override
         public void run() {
-            if (vlanFile.exists()) {
-                String newFileName = vlanFile.getAbsolutePath()
-                    .replace(vlanFile.getName(), "lan\\" + vlanFile.getName().replace(".txt", "_" + (System.currentTimeMillis() / 1000)) + ".scan");
-                boolean copyFile = FileSystemWorker.copyOrDelFile(vlanFile, newFileName, true);
-                messageToUser.info(vlanFile.getName() + " copied to ", newFileName, " = " + copyFile);
+            if (vlanFile.exists() && System.getProperty("os.name").toLowerCase().contains(ConstantsFor.PR_WINDOWSOS)) {
+                inWin();
             }
-            OutputStream outputStream = null;
-            try {
-                outputStream = new FileOutputStream(vlanFile);
+            else {
+                messageToUser.warn(vlanFile.toPath().toAbsolutePath().toString());
+                try {
+                    Files.deleteIfExists(vlanFile.toPath());
+                }
+                catch (IOException e) {
+                    messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".run", e));
+                }
+            }
+            writeNewFile();
+        }
+    
+        private void writeNewFile() {
+            try (OutputStream outputStream = new FileOutputStream(vlanFile.toPath().toAbsolutePath().toString())) {
+                this.printStream = new PrintStream(outputStream, true);
             }
             catch (IOException e) {
-                messageToUser.errorAlert(getClass().getSimpleName(), ".ExecScan", e.getMessage());
+                messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".run", e));
             }
-            this.printStream = new PrintStream(Objects.requireNonNull(outputStream), true);
             if (ALL_DEVICES_LOCAL_DEQUE.remainingCapacity() > 0) {
                 boolean execScanB = execScan();
                 messageToUser.info("ALL_DEV", "Scan from " + from + " to " + to + " is " + execScanB, "ALL_DEVICES_LOCAL_DEQUE = " + ALL_DEVICES_LOCAL_DEQUE.size());
             }
             else {
-                messageToUser.error(getClass().getSimpleName(), String.valueOf(ALL_DEVICES_LOCAL_DEQUE.remainingCapacity()), " ALL_DEVICES_LOCAL_DEQUE remainingCapacity!");
+                messageToUser.warn(String.valueOf(ALL_DEVICES_LOCAL_DEQUE.remainingCapacity()) + " ALL_DEVICES_LOCAL_DEQUE remainingCapacity!");
             }
-    
         }
-        
+    
+        private void inWin() {
+            String newFileName = vlanFile.getAbsolutePath()
+                .replace(vlanFile.getName(), "lan\\" + vlanFile.getName().replace(".txt", "_" + (System.currentTimeMillis() / 1000)) + ".scan");
+            boolean copyFile = FileSystemWorker.copyOrDelFile(vlanFile, newFileName, true);
+            messageToUser.info(vlanFile.getName() + " copied to ", newFileName, " = " + copyFile);
+        }
+    
         @Override public String toString() {
             final StringBuilder sb = new StringBuilder("ExecScan{");
             sb
@@ -322,16 +340,9 @@ public class DiapazonedScan implements Runnable {
     
         private boolean execScan() {
             this.stArt = System.currentTimeMillis();
-            try {
-                ConcurrentMap<String, String> stringStringConcurrentMap = scanLanSegment(from, to, whatVlan, printStream);
-                NetScanFileWorker.getI().setLastStamp(System.currentTimeMillis());
-                new ExitApp(from + "-" + to + ".map", stringStringConcurrentMap).writeOwnObject();
-                return true;
-            }
-            catch (Exception e) {
-                messageToUser.error(e.getMessage());
-                return false;
-            }
+            ConcurrentMap<String, String> stringStringConcurrentMap = scanLanSegment(from, to, whatVlan, printStream);
+            NetScanFileWorker.getI().setLastStamp(System.currentTimeMillis());
+            return stringStringConcurrentMap.size() == (to - from) * 255 || new ExitApp(from + "-" + to + ".map", stringStringConcurrentMap).writeOwnObject();
         }
     
         /**
@@ -348,34 +359,38 @@ public class DiapazonedScan implements Runnable {
             byte[] aBytes = InetAddress.getByName(whatVlan + iThree + "." + jFour).getAddress();
             StringBuilder stringBuilder = new StringBuilder();
             InetAddress byAddress = InetAddress.getByAddress(aBytes);
-            String hostName = byAddress.getHostName();
-            String hostAddress = byAddress.getHostAddress();
-            
             if (ConstantsFor.thisPC().equalsIgnoreCase("HOME")) {
                 timeOutMSec = (int) (ConstantsFor.DELAY * 2);
                 NetScanFileWorker.getI().setLastStamp(System.currentTimeMillis());
             }
-            
+    
+            String[] addrName = pingTest(byAddress, timeOutMSec, stringBuilder);
+    
+            if (stringBuilder.toString().contains(PAT_IS_ONLINE)) {
+                printStream.println(addrName[0] + " " + addrName[1]);
+                messageToUser.info(whatVlan + iThree + "." + jFour + ". File: " + vlanFile.getName() + " = " + vlanFile.length() + ConstantsFor.STR_BYTES);
+            }
+            return stringBuilder.toString();
+        }
+    
+        private String[] pingTest(InetAddress byAddress, int timeOutMSec, StringBuilder stringBuilder) throws IOException {
+            String hostName = byAddress.getHostName();
+            String hostAddress = byAddress.getHostAddress();
             if (byAddress.isReachable(timeOutMSec)) {
                 NetListKeeper.getI().getOnLinesResolve().put(hostAddress, hostName);
-                
+            
                 ALL_DEVICES_LOCAL_DEQUE.add("<font color=\"green\">" + hostName + FONT_BR_STR);
                 stringBuilder.append(hostAddress).append(" ").append(hostName).append(PAT_IS_ONLINE);
             }
             else {
                 NetListKeeper.getI().getOffLines().put(byAddress.getHostAddress(), hostName);
-                
+            
                 ALL_DEVICES_LOCAL_DEQUE.add("<font color=\"red\">" + hostName + FONT_BR_STR);
                 stringBuilder.append(hostAddress).append(" ").append(hostName);
             }
-            if (stringBuilder.toString().contains(PAT_IS_ONLINE)) {
-                printStream.println(hostAddress + " " + hostName);
-                messageToUser.info(getClass().getSimpleName() + ".oneIpScanAndPrintToFile ip online " + whatVlan + iThree + "." + jFour, vlanFile.getName(), " = " + vlanFile
-                    .length() + ConstantsFor.STR_BYTES);
-            }
-            return stringBuilder.toString();
+            return new String[]{hostAddress, hostName};
         }
-        
+    
         /**
          Сканер локальной сети@param stStMap Запись в лог@param fromVlan начало с 3 октета IP@param toVlan   конец с 3 октета IP
          
