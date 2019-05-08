@@ -23,10 +23,10 @@ import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetPinger;
+import ru.vachok.networker.net.NetScannerSvc;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.ADSrv;
 import ru.vachok.networker.services.MessageLocal;
-import ru.vachok.networker.services.NetScannerSvc;
 import ru.vachok.networker.services.SimpleCalculator;
 import ru.vachok.stats.SaveLogsToDB;
 

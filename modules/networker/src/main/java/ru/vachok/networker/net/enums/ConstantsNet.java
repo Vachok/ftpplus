@@ -8,8 +8,8 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.net.DiapazonedScan;
+import ru.vachok.networker.net.NetScannerSvc;
 import ru.vachok.networker.services.MessageLocal;
-import ru.vachok.networker.services.NetScannerSvc;
 
 import java.io.File;
 import java.util.Properties;

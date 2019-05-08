@@ -1,6 +1,6 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.services;
+package ru.vachok.networker.net;
 
 
 import org.springframework.context.annotation.Scope;
@@ -16,13 +16,15 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.user.MoreInfoWorker;
 import ru.vachok.networker.componentsrepo.LastNetScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.InfoWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
+import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.actions.ActionCloseMsg;
 import ru.vachok.networker.systray.MessageToTray;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
@@ -80,6 +82,15 @@ public class NetScannerSvc {
     
     public void setThrInformation(String thrInformation) {
         this.thrInformation = thrInformation;
+        try (OutputStream outputStream = new FileOutputStream("thrInformation", true)) {
+            outputStream.write(new Date().toString().getBytes());
+            outputStream.write("\n".getBytes());
+            outputStream.write(thrInformation.getBytes());
+            outputStream.write("\n\n\n".getBytes());
+        }
+        catch (IOException e) {
+            messageToUser.error(e.getMessage());
+        }
     }
     
     private static final String METH_GETPCSASYNC = ".getPCsAsync";
@@ -128,7 +139,6 @@ public class NetScannerSvc {
     private NetScannerSvc() {
         this.netWorkMap = LastNetScan.getLastNetScan().getNetWork();
     }
-    
     
     static {
         try {

@@ -21,9 +21,9 @@ import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.NetScannerSvc;
 import ru.vachok.networker.services.ADSrv;
 import ru.vachok.networker.services.MessageLocal;
-import ru.vachok.networker.services.NetScannerSvc;
 import ru.vachok.networker.services.PhotoConverterSRV;
 
 import javax.servlet.http.HttpServletRequest;

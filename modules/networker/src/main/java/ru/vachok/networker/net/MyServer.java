@@ -12,7 +12,6 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.DBMessenger;
 import ru.vachok.networker.services.MessageLocal;
-import ru.vachok.networker.services.NetScannerSvc;
 
 import java.io.*;
 import java.net.ServerSocket;

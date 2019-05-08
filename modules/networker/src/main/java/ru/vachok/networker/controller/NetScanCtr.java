@@ -24,13 +24,9 @@ import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.DiapazonedScan;
-import ru.vachok.networker.net.NetListKeeper;
-import ru.vachok.networker.net.NetPinger;
-import ru.vachok.networker.net.ScanOnline;
+import ru.vachok.networker.net.*;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
-import ru.vachok.networker.services.NetScannerSvc;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
