@@ -319,7 +319,13 @@ public class NetScanCtr {
      @see #mapSizeBigger(Model, HttpServletRequest, long, int)
      */
     private void timeCheck(int remainPC, long lastScanEpoch, HttpServletRequest request, Model model) throws ExecutionException, InterruptedException, TimeoutException {
-        Runnable scanRun = ()->scanIt(request, model, new Date(lastScanEpoch * 1000));
+        Runnable scanRun = ()->{
+            ThreadMXBean threadMXBean = getTHRBeanMX();
+            String threadsInfoInit = getInformationForThreads(threadMXBean);
+            messageToUser.warn(getClass().getSimpleName(), ".scanIt", " = " + threadsInfoInit);
+            scanIt(request, model, new Date(lastScanEpoch * 1000));
+            netScannerSvcInstAW.setThrInformation(getInformationForThreads(threadMXBean));
+        };
         LocalTime lastScanLocalTime = LocalDateTime.ofEpochSecond(lastScanEpoch, 0, ZoneOffset.ofHours(3)).toLocalTime();
         String classMeth = "NetScanCtr.timeCheck";
         boolean isSystemTimeBigger = (System.currentTimeMillis() > lastScanEpoch * 1000);
@@ -367,7 +373,13 @@ public class NetScanCtr {
      @see #netScan(HttpServletRequest, HttpServletResponse, Model)
      */
     private void checkMapSizeAndDoAction(Model model, HttpServletRequest request, long lastSt) throws ExecutionException, InterruptedException, TimeoutException {
-        Runnable scanRun = ()->scanIt(request, model, new Date(lastSt));
+        Runnable scanRun = ()->{
+            ThreadMXBean threadMXBean = getTHRBeanMX();
+            String threadsInfoInit = getInformationForThreads(threadMXBean);
+            messageToUser.warn(getClass().getSimpleName(), ".scanIt", " = " + threadsInfoInit);
+            scanIt(request, model, new Date(lastSt));
+            netScannerSvcInstAW.setThrInformation(getInformationForThreads(threadMXBean));
+        };
         int thisTotpc = Integer.parseInt(PROPERTIES.getProperty(ConstantsFor.PR_TOTPC , "259"));
         File scanTemp = new File("scan.tmp");
 
@@ -398,16 +410,12 @@ public class NetScanCtr {
      */
     @Async
     private void scanIt(HttpServletRequest request, Model model, Date lastScanDate) {
-        ThreadMXBean threadMXBean = getTHRBeanMX();
-        String threadsInfoInit = getInformationForThreads(threadMXBean);
-        messageToUser.warn(getClass().getSimpleName(), ".scanIt", " = " + threadsInfoInit);
         if (request != null && request.getQueryString() != null) {
             lastScanMAP.clear();
             netScannerSvcInstAW.setOnLinePCsNum(0);
             Set<String> pcNames = netScannerSvcInstAW.getPCNamesPref(request.getQueryString());
             model.addAttribute(ConstantsFor.ATT_TITLE, new Date().toString())
                 .addAttribute("pc", new TForms().fromArray(pcNames, true));
-            netScannerSvcInstAW.setThrInformation(getInformationForThreads(threadMXBean));
         }
         else {
             lastScanMAP.clear();
@@ -415,7 +423,6 @@ public class NetScanCtr {
             Set<String> pCsAsync = netScannerSvcInstAW.getPcNames();
             model.addAttribute(ConstantsFor.ATT_TITLE , lastScanDate).addAttribute("pc" , new TForms().fromArray(pCsAsync , true));
             LastNetScan.getLastNetScan().setTimeLastScan(new Date());
-            netScannerSvcInstAW.setThrInformation(getInformationForThreads(threadMXBean));
         }
     }
     

@@ -887,7 +887,6 @@ TemporaryFullInternet_1555439698.ssh
 TemporaryFullInternet_1555439848.ssh
 TemporaryFullInternet_1555450182.ssh
 WhoIsWithSRV_1555439807.ssh
-src/main/java/ru/vachok/networker/services/diskwork/
 ScanOnline.onList
 NetListKeeperonLinesResolve.map
 CacheLogGetter.showLog.log.1
@@ -897,5 +896,9 @@ possible_users.txt
 /modules/networker/ostpst/obj/
 ostpst/build/
 ostpst/out/
-ostpst/src/main/resources/
-ostpst/src/test/resources/
+/modules/networker/thrInformation
+DeleterTemp.txt
+OstToPst.log.lck
+OstToPst.showFileContent.log.lck
+modules/networker/ostpst/out/
+modules/networker/thrInformation
