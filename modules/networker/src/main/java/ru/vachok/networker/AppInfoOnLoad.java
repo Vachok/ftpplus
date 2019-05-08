@@ -43,7 +43,6 @@ import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 
@@ -335,7 +334,15 @@ public class AppInfoOnLoad implements Runnable {
         String classMeth = "AppInfoOnLoad.schedStarter";
         AppInfoOnLoad.miniLogger.add("***" + classMeth);
         final long stArt = System.currentTimeMillis();
-        ScheduledThreadPoolExecutor scheduledExecutorService = AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor();
+        ScheduledExecutorService scheduledExecutorService = AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor();
+        
+/*Test UNIX 08.05.2019 (9:18)
+        if(!ConstantsFor.PR_OSNAME.toLowerCase().contains("windows")) {
+            scheduledExecutorService = Executors.unconfigurableScheduledExecutorService(Executors.newScheduledThreadPool(20));
+            miniLogger.add(ConstantsFor.PR_OSNAME);
+        }
+*/
+        
         String thisPC = ConstantsFor.thisPC();
         AppInfoOnLoad.miniLogger.add(thisPC);
     

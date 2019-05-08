@@ -420,6 +420,8 @@ public enum ConstantsFor {
     
     public static final String FILENAME_USERSSET = "users.set";
     
+    public static final String PR_OSNAME = System.getProperty("os.name");
+    
     static final String STR_FINISH = " is finish";
     
     private static final String[] STRINGS_TODELONSTART = {"visit_", ".tmp", ".log", ".tv"};
