@@ -15,7 +15,6 @@
 ###SQUID LIMITED### squidlimited.list
 #14 podset vipnet.list
 #SQUID STANDART squid.list
-1.1.1.1 24hrs.list
 10.10.11.114 vipnet.list
 10.10.11.119 vipnet.list
 10.10.11.122 vipnet.list
@@ -290,7 +289,6 @@
 10.200.217.89 tempfull.list
 10.200.217.90 squid.list
 10.200.217.92 vipnet.list
-10.200.218.61 24hrs.list
 172.16.200.10  squidlimited.list
 172.16.200.10  tempfull.list NOT UNIQUE
 172.16.201.6 squid.list
@@ -308,7 +306,7 @@
 192.168.13.136 vipnet.list
 192.168.13.138 tempfull.list
 192.168.13.142 vipnet.list
-192.168.13.143 24hrs.list
+192.168.13.143 vipnet.list
 192.168.13.148 tempfull.list
 192.168.13.149 vipnet.list
 192.168.13.152 squid.list

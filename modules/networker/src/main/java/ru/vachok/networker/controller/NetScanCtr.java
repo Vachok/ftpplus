@@ -309,7 +309,7 @@ public class NetScanCtr {
      Проверки времени
      <p>
      Если {@link System#currentTimeMillis()} больше {@code lastScanEpoch}*1000 ии {@code remainPC} меньше либо равно 0, запустить
-     {@link #scanIt(HttpServletRequest, Model, Date, ThreadMXBean)}. <br> Иначе выдать
+     {@link #scanIt(HttpServletRequest, Model, Date)}. <br> Иначе выдать
      сообщение в консоль, с временем след. запуска.
      <p>
 
@@ -323,7 +323,7 @@ public class NetScanCtr {
      @see #mapSizeBigger(Model, HttpServletRequest, long, int)
      */
     private void timeCheck(int remainPC, long lastScanEpoch, HttpServletRequest request, Model model) throws ExecutionException, InterruptedException, TimeoutException {
-        Runnable scanRun = ()->scanIt(request, model, new Date(lastScanEpoch * 1000), getTHRBeanMX());
+        Runnable scanRun = ()->scanIt(request, model, new Date(lastScanEpoch * 1000));
         LocalTime lastScanLocalTime = LocalDateTime.ofEpochSecond(lastScanEpoch, 0, ZoneOffset.ofHours(3)).toLocalTime();
         String classMeth = "NetScanCtr.timeCheck";
         boolean isSystemTimeBigger = (System.currentTimeMillis() > lastScanEpoch * 1000);
@@ -355,7 +355,7 @@ public class NetScanCtr {
      <p>
      <b>Runnable:</b>
      3. {@link #mapSizeBigger(Model, HttpServletRequest, long, int)} когда {@link #lastScanMAP} больше 1. <br> или <br> 4.
-     {@link #scanIt(HttpServletRequest, Model, Date, ThreadMXBean)}.
+     {@link #scanIt(HttpServletRequest, Model, Date)}.
      <p>
      Объявим дополнительно lock {@link File} {@code scan.tmp}. Чтобы исключить запуск, если предидущий скан не закончен. <br> Проверяем его наличие.
      Если он существует - запускаем {@link
@@ -371,7 +371,7 @@ public class NetScanCtr {
      @see #netScan(HttpServletRequest, HttpServletResponse, Model)
      */
     private void checkMapSizeAndDoAction(Model model, HttpServletRequest request, long lastSt) throws ExecutionException, InterruptedException, TimeoutException {
-        Runnable scanRun = ()->scanIt(request, model, new Date(lastSt), getTHRBeanMX());
+        Runnable scanRun = ()->scanIt(request, model, new Date(lastSt));
         int thisTotpc = Integer.parseInt(PROPERTIES.getProperty(ConstantsFor.PR_TOTPC , "259"));
         File scanTemp = new File("scan.tmp");
 
@@ -397,15 +397,14 @@ public class NetScanCtr {
     NetScannerSvc#getPcNames()}.@param request      {@link HttpServletRequest}
      @param model        {@link Model}
      @param lastScanDate дата последнего скана
-     @param threadMXBean
  
  
      */
     @Async
-    private void scanIt(HttpServletRequest request, Model model, Date lastScanDate, ThreadMXBean threadMXBean) {
+    private void scanIt(HttpServletRequest request, Model model, Date lastScanDate) {
+        ThreadMXBean threadMXBean = getTHRBeanMX();
         String threadsInfoInit = getInformationForThreads(threadMXBean);
         messageToUser.warn(getClass().getSimpleName(), ".scanIt", " = " + threadsInfoInit);
-        
         if (request != null && request.getQueryString() != null) {
             lastScanMAP.clear();
             netScannerSvcInstAW.setOnLinePCsNum(0);
@@ -427,14 +426,12 @@ public class NetScanCtr {
     private String getInformationForThreads(ThreadMXBean threadMXBean) {
         long cpuTimeMS = TimeUnit.NANOSECONDS.toMillis(threadMXBean.getCurrentThreadCpuTime());
         long userTimeMS = TimeUnit.NANOSECONDS.toMillis(threadMXBean.getCurrentThreadUserTime());
-        String informationForThreads =
-            cpuTimeMS + " ms cpu time. " +
-                userTimeMS + " user ms time. " +
-                threadMXBean.getThreadCount() + " thr running, " +
-                threadMXBean.getPeakThreadCount() + " peak threads." +
-                threadMXBean.getTotalStartedThreadCount() + " total threads started. (" +
-                threadMXBean.getDaemonThreadCount() + " daemons)";
-        return informationForThreads;
+        return cpuTimeMS + " ms cpu time. " +
+            userTimeMS + " user ms time. " +
+            threadMXBean.getThreadCount() + " thr running, " +
+            threadMXBean.getPeakThreadCount() + " peak threads." +
+            threadMXBean.getTotalStartedThreadCount() + " total threads started. (" +
+            threadMXBean.getDaemonThreadCount() + " daemons)";
     }
     
     private void qerNotNullScanAllDevices(Model model, HttpServletResponse response) {
