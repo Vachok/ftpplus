@@ -72,6 +72,16 @@ public class NetScannerSvc {
     
     private static final Set<String> PC_NAMES_SET = new HashSet<>();
     
+    private String thrInformation;
+    
+    public String getThrInformation() {
+        return thrInformation;
+    }
+    
+    public void setThrInformation(String thrInformation) {
+        this.thrInformation = thrInformation;
+    }
+    
     private static final String METH_GETPCSASYNC = ".getPCsAsync";
     
     /**
@@ -432,7 +442,9 @@ public class NetScannerSvc {
         boolean ownObject = new ExitApp(ConstantsFor.FILENAME_ALLDEVMAP, ConstantsNet.getAllDevices()).writeOwnObject();
         boolean isFile = fileCreate(false);
         File file = new File(ConstantsFor.FILENAME_ALLDEVMAP);
-        String bodyMsg = "Online: " + onLinePCsNum + ".\n" + upTime + " min uptime. \n\n" + "AppProps database updated: " + isForceSaved + "\n" + isFile + " = scan.tmp";
+        String bodyMsg = "Online: " + onLinePCsNum + ".\n"
+            + upTime + " min uptime. \n" + "AppProps database updated: " + isForceSaved + " ; " + isFile + " = scan.tmp\n" +
+            this.thrInformation;
         try {
             new MessageSwing().infoTimer(50, bodyMsg);
         }

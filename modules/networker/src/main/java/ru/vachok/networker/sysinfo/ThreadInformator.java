@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.sysinfo;
 
 
@@ -29,7 +31,7 @@ public class ThreadInformator implements InfoWorker, SystemInformator {
         final StringBuilder stringBuilder = new StringBuilder();
         if ((deadlockedThreads!=null)&&deadlockedThreads.length > 0) {
             for (long l : deadlockedThreads) {
-                ThreadInfo threadInfo = threadMXBean.getThreadInfo(l);
+                ThreadInfo threadInfo = threadMXBean.getThrInformation(l);
                 stringBuilder.append(threadInfo.getLockName()).append("\n");
                 stringBuilder.append(threadInfo.getLockInfo());
             }
@@ -37,7 +39,7 @@ public class ThreadInformator implements InfoWorker, SystemInformator {
         else {
             for (long threadId : threadMXBean.getAllThreadIds()) {
                 stringBuilder.append("ThreadID: ").append(threadId).append(". Info: ");
-                stringBuilder.append(threadMXBean.getThreadInfo(threadId)).append("<br>");
+                stringBuilder.append(threadMXBean.getThrInformation(threadId)).append("<br>");
                 stringBuilder.append("CPU time: ").append(TimeUnit.NANOSECONDS.toMillis(threadMXBean.getThreadCpuTime(threadId))).append(" millisec, ");
                 stringBuilder.append("User time: ").append(TimeUnit.NANOSECONDS.toMillis(threadMXBean.getThreadUserTime(threadId))).append(" millisec, ");
             }
