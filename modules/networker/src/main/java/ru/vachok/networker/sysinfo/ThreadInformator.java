@@ -5,11 +5,6 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.net.InfoWorker;
 
 import java.awt.*;
-import java.lang.management.ManagementFactory;
-import java.lang.management.ThreadInfo;
-import java.lang.management.ThreadMXBean;
-import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -26,11 +21,13 @@ public class ThreadInformator implements InfoWorker, SystemInformator {
     }
     
     @Override public String getInfoAbout() {
+        throw new IllegalComponentStateException("08.05.2019 (16:35)");
+/*
         ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
         long[] deadlockedThreads = threadMXBean.findDeadlockedThreads();
         Objects.requireNonNull(deadlockedThreads, "No DEAD locks");
         final StringBuilder stringBuilder = new StringBuilder();
-        if (deadlockedThreads.length > 0) {
+        if ((deadlockedThreads!=null)&&deadlockedThreads.length > 0) {
             for (long l : deadlockedThreads) {
                 ThreadInfo threadInfo = threadMXBean.getThreadInfo(l);
                 stringBuilder.append(threadInfo.getLockName()).append("\n");
@@ -47,6 +44,7 @@ public class ThreadInformator implements InfoWorker, SystemInformator {
             ;
         }
         return stringBuilder.toString();
+*/
     }
     
     @Override public void setInfo() {

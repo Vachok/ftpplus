@@ -25,7 +25,6 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
-import ru.vachok.networker.sysinfo.ThreadInformator;
 
 import java.util.concurrent.*;
 
@@ -190,7 +189,6 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
         sb.append(", <br><font color=\"#fcf594\">TASK_SCHEDULER=").append(TASK_SCHEDULER.getScheduledThreadPoolExecutor().toString().split("\\Q@\\E")[1]);
         sb.append(", <br>TASK_EXECUTOR=").append(TASK_EXECUTOR.getThreadPoolExecutor().toString().split("\\Q@\\E")[1]);
         sb.append(", <br>Locks: ").append(new DeadLockMonitor()).append("<p>");
-        sb.append(new ThreadInformator().getInfoAbout());
         sb.append("</font>}");
         return sb.toString();
     }
