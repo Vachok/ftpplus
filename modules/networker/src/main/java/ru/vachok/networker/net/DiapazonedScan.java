@@ -280,7 +280,8 @@ public class DiapazonedScan implements Runnable {
         
         @Override
         public void run() {
-            if (vlanFile.exists() && System.getProperty("os.name").toLowerCase().contains(ConstantsFor.PR_WINDOWSOS)) {
+            if (System.getProperty("os.name").toLowerCase().contains(ConstantsFor.PR_WINDOWSOS) && vlanFile.exists()) {
+                messageToUser.warn("OS = " + System.getProperty("os.name").toLowerCase());
                 inWin();
             }
             else {
@@ -296,7 +297,8 @@ public class DiapazonedScan implements Runnable {
         }
     
         private void writeNewFile() {
-            try (OutputStream outputStream = new FileOutputStream(vlanFile.toPath().toAbsolutePath().toString())) {
+            try {
+                OutputStream outputStream = new FileOutputStream(vlanFile.toPath().toAbsolutePath().toString());
                 this.printStream = new PrintStream(outputStream, true);
             }
             catch (IOException e) {
@@ -334,7 +336,6 @@ public class DiapazonedScan implements Runnable {
         }
         
         private long getSpend() {
-            messageToUser.info(getClass().getSimpleName() + ".getSpend", "new Date(stArt)", " = " + new Date(stArt));
             return System.currentTimeMillis() - stArt;
         }
     
@@ -363,22 +364,16 @@ public class DiapazonedScan implements Runnable {
                 timeOutMSec = (int) (ConstantsFor.DELAY * 2);
                 NetScanFileWorker.getI().setLastStamp(System.currentTimeMillis());
             }
-    
-            String[] addrName = pingTest(byAddress, timeOutMSec, stringBuilder);
-    
-            if (stringBuilder.toString().contains(PAT_IS_ONLINE)) {
-                printStream.println(addrName[0] + " " + addrName[1]);
-                messageToUser.info(whatVlan + iThree + "." + jFour + ". File: " + vlanFile.getName() + " = " + vlanFile.length() + ConstantsFor.STR_BYTES);
-            }
+            pingTest(byAddress, timeOutMSec, stringBuilder);
             return stringBuilder.toString();
         }
     
-        private String[] pingTest(InetAddress byAddress, int timeOutMSec, StringBuilder stringBuilder) throws IOException {
+        private void pingTest(InetAddress byAddress, int timeOutMSec, StringBuilder stringBuilder) throws IOException {
             String hostName = byAddress.getHostName();
             String hostAddress = byAddress.getHostAddress();
             if (byAddress.isReachable(timeOutMSec)) {
                 NetListKeeper.getI().getOnLinesResolve().put(hostAddress, hostName);
-            
+    
                 ALL_DEVICES_LOCAL_DEQUE.add("<font color=\"green\">" + hostName + FONT_BR_STR);
                 stringBuilder.append(hostAddress).append(" ").append(hostName).append(PAT_IS_ONLINE);
             }
@@ -388,7 +383,10 @@ public class DiapazonedScan implements Runnable {
                 ALL_DEVICES_LOCAL_DEQUE.add("<font color=\"red\">" + hostName + FONT_BR_STR);
                 stringBuilder.append(hostAddress).append(" ").append(hostName);
             }
-            return new String[]{hostAddress, hostName};
+            if (stringBuilder.toString().contains(PAT_IS_ONLINE)) {
+                printStream.println(hostAddress + " " + hostName);
+                messageToUser.info(whatVlan, ". File: " + vlanFile.getName() + " = " + vlanFile.length() + ConstantsFor.STR_BYTES, hostName + "/" + hostAddress);
+            }
         }
     
         /**
