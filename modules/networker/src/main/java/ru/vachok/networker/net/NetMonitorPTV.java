@@ -80,7 +80,8 @@ public class NetMonitorPTV implements Runnable {
     }
     
     private void ifPingTVIsBig(File pingTv) throws IOException {
-        boolean isPingTvCopied = FileSystemWorker.copyOrDelFile(pingTv, ".\\lan\\tv_" + System.currentTimeMillis() / 1000 + ".ping", true);
+        boolean isPingTvCopied = FileSystemWorker
+            .copyOrDelFile(pingTv, ConstantsFor.FILESYSTEM_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + "tv_" + System.currentTimeMillis() / 1000 + ".ping", true);
         String classMeth = "NetMonitorPTV.ifPingTVIsBig";
         if (isPingTvCopied) {
             NetListKeeper.setPtvTime(new Date().toString());

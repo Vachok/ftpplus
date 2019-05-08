@@ -143,7 +143,8 @@ public class DiapazonedScan implements Runnable {
     private void startDo() {
         if (ALL_DEVICES_LOCAL_DEQUE.remainingCapacity() == 0) {
             scanFiles.values().stream().forEach(x->{
-                String newName = ROOT_PATH_STR + "\\lan\\" + x.getName().replace(".txt", "_" + (System.currentTimeMillis() / 1000)) + ".scan";
+                String newName = ROOT_PATH_STR + ConstantsFor.FILESYSTEM_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + x.getName()
+                    .replace(".txt", "_" + (System.currentTimeMillis() / 1000)) + ".scan";
                 File newFile = new File(newName);
                 FileSystemWorker.copyOrDelFile(x, newFile.getAbsolutePath(), true);
                 messageToUser.info(getClass().getSimpleName() + ".startDo", "newFile", " = " + newFile.getAbsolutePath());
@@ -278,7 +279,7 @@ public class DiapazonedScan implements Runnable {
         public void run() {
             if (vlanFile.exists()) {
                 String newFileName = vlanFile.getAbsolutePath()
-                    .replace(vlanFile.getName(), "lan\\" + vlanFile.getName().replace(".txt", "_" + (System.currentTimeMillis() / 1000)) + ".scan");
+                    .replace(vlanFile.getName(), "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + vlanFile.getName().replace(".txt", "_" + (System.currentTimeMillis() / 1000)) + ".scan");
                 boolean copyFile = FileSystemWorker.copyOrDelFile(vlanFile, newFileName, true);
                 messageToUser.info(vlanFile.getName() + " copied to ", newFileName, " = " + copyFile);
             }

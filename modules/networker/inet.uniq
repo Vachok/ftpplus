@@ -15,6 +15,7 @@
 ###SQUID LIMITED### squidlimited.list
 #14 podset vipnet.list
 #SQUID STANDART squid.list
+1.1.1.1 24hrs.list
 10.10.11.114 vipnet.list
 10.10.11.119 vipnet.list
 10.10.11.122 vipnet.list

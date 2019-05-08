@@ -6,7 +6,7 @@ package ru.vachok.ostpst;
 import com.pff.*;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.stats.files.FileSystemWorker;
+import ru.vachok.ostpst.utils.FileSystemWorker;
 
 import java.io.*;
 import java.nio.file.Files;

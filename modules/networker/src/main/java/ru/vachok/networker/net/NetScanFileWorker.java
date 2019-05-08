@@ -4,6 +4,7 @@ package ru.vachok.networker.net;
 
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
@@ -89,11 +90,11 @@ public class NetScanFileWorker implements Serializable {
      */
     private Path fileWrk(File srvFileX, Collection<String> retDeque) {
         Path retPath = Paths.get("");
-        retPath = Paths.get(retPath.toAbsolutePath() + "\\lan\\");
+        retPath = Paths.get(retPath.toAbsolutePath() + ConstantsFor.FILESYSTEM_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR);
         
         if (srvFileX.exists() && srvFileX.canRead()) {
             retDeque.addAll(FileSystemWorker.readFileToSet(srvFileX.toPath()));
-            retPath = Paths.get(srvFileX.toPath().toAbsolutePath().toString().replace(".\\", "\\"));
+            retPath = Paths.get(srvFileX.toPath().toAbsolutePath().toString().replace("." + ConstantsFor.FILESYSTEM_SEPARATOR, ConstantsFor.FILESYSTEM_SEPARATOR));
         }
         else {
             try {

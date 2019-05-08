@@ -42,6 +42,8 @@ public class ScanOnline implements Runnable, Pinger {
     
     private static final String FILENAME_ON = ScanOnline.class.getSimpleName() + FILEEXT_ONLIST;
     
+    private final String sep = ConstantsFor.FILESYSTEM_SEPARATOR;
+    
     /**
      {@link NetListKeeper#getOnLinesResolve()}
      */
@@ -60,7 +62,7 @@ public class ScanOnline implements Runnable, Pinger {
     
     public ScanOnline() {
         try {
-            this.maxOnList = FileSystemWorker.readFileToList(new File(FILENAME_ON).getAbsolutePath().replace(FILENAME_ON, "\\lan\\max.online"));
+            this.maxOnList = FileSystemWorker.readFileToList(new File(FILENAME_ON).getAbsolutePath().replace(FILENAME_ON, sep + "lan" + sep + "max.online"));
         }
         catch (NullPointerException e) {
             this.maxOnList = new ArrayList<>();
@@ -115,7 +117,7 @@ public class ScanOnline implements Runnable, Pinger {
     public void run() {
         AppComponents.threadConfig().execByThreadConfig(this::offlineNotEmptyActions);
         File onlinesFile = new File(FILENAME_ON);
-        File fileMAX = new File(onlinesFile.toPath().toAbsolutePath().toString().replace(FILENAME_ON, "\\lan\\max.online"));
+        File fileMAX = new File(onlinesFile.toPath().toAbsolutePath().toString().replace(FILENAME_ON, sep + "lan" + sep + "max.online"));
         if (onlinesFile.exists()) {
             onlineFileExists(onlinesFile, fileMAX);
         }

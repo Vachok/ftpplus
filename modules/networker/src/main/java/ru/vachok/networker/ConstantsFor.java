@@ -420,7 +420,7 @@ public enum ConstantsFor {
     
     public static final String FILENAME_USERSSET = "users.set";
     
-    public static final String PR_OSNAME = System.getProperty("os.name");
+    public static final String PR_OSNAME_LOWERCASE = System.getProperty("os.name").toLowerCase();
     
     static final String STR_FINISH = " is finish";
     
@@ -456,8 +456,18 @@ public enum ConstantsFor {
     public static ConcurrentMap<Integer, MailRule> getMailRules() {
         return MAIL_RULES;
     }
-
-
+    
+    public static final String FILESYSTEM_SEPARATOR = getSeparator();
+    
+    private static String getSeparator() {
+        if (PR_OSNAME_LOWERCASE.contains("windows")) {
+            return "\\";
+        }
+        else {
+            return "/";
+        }
+    }
+    
     /**
      Доступность srv-git.eatmeat.ru.
 

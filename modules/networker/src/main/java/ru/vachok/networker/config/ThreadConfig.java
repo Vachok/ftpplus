@@ -115,10 +115,6 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
         TASK_SCHEDULER.setWaitForTasksToCompleteOnShutdown(false);
         TASK_SCHEDULER.setDaemon(true);
         TASK_SCHEDULER.setRejectedExecutionHandler(new TasksReRunner());
-        if (!ConstantsFor.PR_OSNAME.toLowerCase().contains("windows")) {
-            messageToUser.warn(getClass().getSimpleName() + ".getTaskScheduler", "OSNAME", " = " + ConstantsFor.PR_OSNAME);
-            return (ThreadPoolTaskScheduler) Executors.unconfigurableScheduledExecutorService(Executors.newScheduledThreadPool(20));
-        }
         return TASK_SCHEDULER;
     }
 
