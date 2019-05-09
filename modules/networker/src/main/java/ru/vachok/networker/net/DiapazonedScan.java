@@ -418,7 +418,8 @@ public class DiapazonedScan implements Runnable {
                 }
                 executionProcessLog.add(toString());
                 Collections.sort(executionProcessLog);
-                if (executionProcessLog.size() > ConstantsFor.DELAY) {
+                if (executionProcessLog.size() >= 8) {
+                    FileSystemWorker.writeFile((this.from + "_vlan-to_" + this.to + ".log"), executionProcessLog.stream());
                     executionProcessLog.clear();
                 }
             }

@@ -111,7 +111,7 @@ public class InetIPUser implements InternetUse {
         toWriteDenied.forEach(x->stringBuilder.append(x).append("<br>"));
         stringBuilder.append("<p>ALLOWED SITES: <br>");
         toWriteAllowed.forEach(x->stringBuilder.append(x).append("<br>"));
-        stringBuilder.append("</details>");
+        stringBuilder.append(ConstantsFor.HTMLTAG_DETAILSCLOSE);
     }
 
 

@@ -452,6 +452,8 @@ public enum ConstantsFor {
     
     public static final String PR_WINDOWSOS = "windows";
     
+    public static final String HTMLTAG_DETAILSCLOSE = "</details>";
+    
     /**
      @return {@link #MAIL_RULES}
      */
