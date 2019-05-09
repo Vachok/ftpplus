@@ -462,6 +462,8 @@ public enum ConstantsFor {
     
     public static final String COMMAND_CALCTIME = "calctime:";
     
+    public static final String STR_ERROR = "ERROR";
+    
     /**
      @return {@link #MAIL_RULES}
      */

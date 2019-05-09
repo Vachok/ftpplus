@@ -120,7 +120,7 @@ public class PhotoConverterSRV {
         try {
             filesList.forEach(imageBiConsumer);
         } catch (NullPointerException e) {
-            filesList.put("ERROR", null);
+            filesList.put(ConstantsFor.STR_ERROR, null);
         }
     }
 

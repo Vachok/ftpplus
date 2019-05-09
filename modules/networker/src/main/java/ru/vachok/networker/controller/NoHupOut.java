@@ -40,7 +40,9 @@ public class NoHupOut {
         new AppComponents().visitor(request);
         model.addAttribute(ConstantsFor.ATT_TITLE, System.getProperty("os.name"));
         model.addAttribute(ConstantsFor.ATT_HEAD, new PageFooter().getHeaderUtext());
-        model.addAttribute("ok", new TForms().fromArray(strings, true));
+        model.addAttribute("ok", new TForms().fromArray(strings, true).replace(ConstantsFor.STR_ERROR, "<font color=\"red\">ERROR</font>")
+            .replace("WARN", "<font color=\"yellow\">WARN</font>").replace("INFO", "<font color=\"green\">INFO</font>")
+            .replace("ru.vachok", "<b>ru.vachok</b>"));
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
         response.addHeader(ConstantsFor.HEAD_REFRESH, "15");
         return "ok";
