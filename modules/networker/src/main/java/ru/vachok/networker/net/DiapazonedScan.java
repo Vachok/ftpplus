@@ -14,9 +14,7 @@ import ru.vachok.networker.net.enums.SwitchesWiFi;
 import ru.vachok.networker.services.MessageLocal;
 
 import java.io.*;
-import java.lang.management.ManagementFactory;
-import java.lang.management.OperatingSystemMXBean;
-import java.lang.management.ThreadMXBean;
+import java.lang.management.*;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -269,6 +267,8 @@ public class DiapazonedScan implements Runnable {
         private ThreadMXBean threadMXBean;
     
         private OperatingSystemMXBean operatingSystemMXBean;
+    
+        private RuntimeMXBean runtimeMXBean;
         
         private File vlanFile;
         
@@ -289,6 +289,8 @@ public class DiapazonedScan implements Runnable {
         public void run() {
             this.threadMXBean = ManagementFactory.getThreadMXBean();
             this.operatingSystemMXBean = ManagementFactory.getOperatingSystemMXBean();
+            this.runtimeMXBean = ManagementFactory.getRuntimeMXBean();
+            
             if (vlanFile.exists()) {
                 String newFileName = vlanFile.getAbsolutePath()
                     .replace(vlanFile.getName(), "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + vlanFile.getName().replace(".txt", "_" + (System.currentTimeMillis() / 1000)) + ".scan");
@@ -326,11 +328,38 @@ public class DiapazonedScan implements Runnable {
                 .append(to);
             sb.append('}');
             sb.append("<br>\n");
-            sb.append(threadMXBean.getThreadInfo(Thread.currentThread().getId()));
-            sb.append(operatingSystemMXBean.getSystemLoadAverage()).append(" avg system load.");
+            sb.append(getBeansInfo());
             return sb.toString();
         }
+    
+        private String getBeansInfo() {
+            final StringBuilder sb = new StringBuilder();
         
+            sb.append(operatingSystemMXBean.getSystemLoadAverage()).append(" avg system load. ");
+            sb.append(operatingSystemMXBean.getAvailableProcessors()).append(" Processors. ");
+            sb.append(operatingSystemMXBean.getName()).append(" Name. ");
+            sb.append(operatingSystemMXBean.getArch()).append(" Arch. ");
+            sb.append(operatingSystemMXBean.getVersion()).append(" Version. ");
+            sb.append("<br>");
+            sb.append(runtimeMXBean.getName()).append(" Name. ");
+            sb.append(runtimeMXBean.getUptime()).append(" Time. ");
+            sb.append(runtimeMXBean.getInputArguments()).append(" InputArguments. ");
+            sb.append(runtimeMXBean.getClassPath()).append(" ClassPath. ");
+            sb.append(runtimeMXBean.getLibraryPath()).append(" LibraryPath. ");
+            sb.append(runtimeMXBean.getVmVersion()).append(" VmVersion. ");
+        
+            sb.append("<br>");
+            sb.append("<br>");
+        
+            ThreadInfo infoThisThr = threadMXBean.getThreadInfo(Thread.currentThread().getId());
+            sb.append(infoThisThr.toString()).append(" String. ");
+            sb.append(infoThisThr.isSuspended()).append(" Suspended. ");
+            sb.append(infoThisThr.getThreadName()).append(" ThreadName. ");
+            sb.append(infoThisThr.getWaitedTime()).append(" WaitedTime (millis). ");
+        
+            return sb.toString();
+        }
+    
         private long getSpend() {
             messageToUser.info(getClass().getSimpleName() + ".getSpend", "new Date(stArt)", " = " + new Date(stArt));
             return System.currentTimeMillis() - stArt;
