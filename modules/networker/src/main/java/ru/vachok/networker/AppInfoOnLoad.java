@@ -352,7 +352,7 @@ public class AppInfoOnLoad implements Runnable {
                 TimeUnit.SECONDS);
             AppInfoOnLoad.miniLogger.add("runCommonScan init delay " + ConstantsFor.INIT_DELAY + ", delay " + TimeUnit.DAYS.toSeconds(1) + ". SECONDS");
         }
-        if (!ConstantsFor.PR_OSNAME_LOWERCASE.contains("windows")) {
+        if (!ConstantsFor.PR_OSNAME_LOWERCASE.contains(ConstantsFor.PR_WINDOWSOS)) {
             unixTrySched();
         }
         else {

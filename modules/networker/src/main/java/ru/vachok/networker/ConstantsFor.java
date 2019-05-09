@@ -422,6 +422,8 @@ public enum ConstantsFor {
     
     public static final String PR_OSNAME_LOWERCASE = System.getProperty("os.name").toLowerCase();
     
+    public static final String PR_THISPC = "thispc";
+    
     static final String STR_FINISH = " is finish";
     
     private static final String[] STRINGS_TODELONSTART = {"visit_", ".tmp", ".log", ".tv"};
@@ -454,6 +456,8 @@ public enum ConstantsFor {
     
     public static final String HTMLTAG_DETAILSCLOSE = "</details>";
     
+    public static final String PR_DBSTAMP = "dbstamp";
+    
     /**
      @return {@link #MAIL_RULES}
      */
@@ -464,7 +468,7 @@ public enum ConstantsFor {
     public static final String FILESYSTEM_SEPARATOR = getSeparator();
     
     private static String getSeparator() {
-        if (PR_OSNAME_LOWERCASE.contains("windows")) {
+        if (PR_OSNAME_LOWERCASE.contains(PR_WINDOWSOS)) {
             return "\\";
         }
         else {

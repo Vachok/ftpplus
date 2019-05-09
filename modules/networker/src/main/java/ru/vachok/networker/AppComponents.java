@@ -204,14 +204,16 @@ public class AppComponents {
     
     public static Properties getProps() {
         if (APP_PR.size() > 3) {
-            if ((APP_PR.getProperty("dbstamp") != null) && (Long.parseLong(APP_PR.getProperty("dbstamp")) + TimeUnit.MINUTES.toMillis(180)) < System.currentTimeMillis()) {
+            if ((APP_PR.getProperty(ConstantsFor.PR_DBSTAMP) != null) && (Long.parseLong(APP_PR.getProperty(ConstantsFor.PR_DBSTAMP)) + TimeUnit.MINUTES.toMillis(180)) < System
+                .currentTimeMillis()) {
                 APP_PR.putAll(new AppComponents().getAppProps());
             }
             return APP_PR;
         }
         else {
             Properties appProps = new AppComponents().getAppProps();
-            appProps.setProperty("dbstamp", String.valueOf(System.currentTimeMillis()));
+            appProps.setProperty(ConstantsFor.PR_DBSTAMP, String.valueOf(System.currentTimeMillis()));
+            appProps.setProperty(ConstantsFor.PR_THISPC, ConstantsFor.thisPC());
             return appProps;
         }
     }
