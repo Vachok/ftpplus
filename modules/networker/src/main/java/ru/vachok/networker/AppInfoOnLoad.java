@@ -29,6 +29,9 @@ import ru.vachok.networker.services.WeekPCStats;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.PlatformManagedObject;
+import java.lang.management.ThreadMXBean;
 import java.net.Socket;
 import java.nio.file.FileVisitor;
 import java.nio.file.Files;
@@ -42,9 +45,7 @@ import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.util.*;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 
 /**
@@ -336,13 +337,10 @@ public class AppInfoOnLoad implements Runnable {
         AppInfoOnLoad.miniLogger.add("***" + classMeth);
         final long stArt = System.currentTimeMillis();
         ScheduledExecutorService scheduledExecutorService = AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor();
-        
-/*Test UNIX 08.05.2019 (9:18)
-        if(!ConstantsFor.PR_OSNAME.toLowerCase().contains("windows")) {
-            scheduledExecutorService = Executors.unconfigurableScheduledExecutorService(Executors.newScheduledThreadPool(20));
-            miniLogger.add(ConstantsFor.PR_OSNAME);
+        if (!ConstantsFor.PR_OSNAME_LOWERCASE.contains(ConstantsFor.PR_WINDOWSOS)) {
+            unixTrySched();
         }
-*/
+
         
         String thisPC = ConstantsFor.thisPC();
         AppInfoOnLoad.miniLogger.add(thisPC);
@@ -387,11 +385,36 @@ public class AppInfoOnLoad implements Runnable {
     }
     
     private void unixTrySched() {
-        ScheduledExecutorService executorService = Executors.unconfigurableScheduledExecutorService(Executors.newScheduledThreadPool(10));
+        AppComponents.threadConfig().thrNameSet("unix");
+        ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
+        threadMXBean.setThreadContentionMonitoringEnabled(true);
+        threadMXBean.setThreadCpuTimeEnabled(true);
+    
+        ScheduledExecutorService executorService = Executors.unconfigurableScheduledExecutorService(Executors.newScheduledThreadPool(ConstantsFor.ONE_DAY_HOURS));
+        messageToUser.info("executorService = " + executorService.toString());
+        Set<Class<? extends PlatformManagedObject>> platformInterfaces = ManagementFactory.getPlatformManagementInterfaces();
+        platformInterfaces.forEach(x->{
+            String faceName = x.getSimpleName();
+            String descriptorStr = x.descriptorString();
+            String canName = x.getCanonicalName();
+            String typeName = x.getTypeName();
+            messageToUser.warn("Platform manage faces = " + faceName + " name, " + descriptorStr + " descriptor, " + canName + " canonical name, " + typeName + " type");
+        });
+        ScheduledFuture<?> ptvPing = executorService.scheduleWithFixedDelay(new NetMonitorPTV(), 0, ConstantsFor.ONE_DAY_HOURS, TimeUnit.SECONDS);
+        ScheduledFuture<?> tmpInet = executorService.scheduleWithFixedDelay(new TemporaryFullInternet(), 0, ConstantsFor.ONE_DAY_HOURS, TimeUnit.SECONDS);
+        ScheduledFuture<?> diapScan = executorService.scheduleWithFixedDelay(DiapazonedScan.getInstance(), 2, ConstantsFor.DELAY, TimeUnit.MINUTES);
+        ScheduledFuture<?> scanOnline = executorService.scheduleWithFixedDelay(new ScanOnline(), 3, 3, TimeUnit.MINUTES);
         try {
-            schedWithService(executorService);
+            ptvPing.get();
+            tmpInet.get();
+            diapScan.get();
+            scanOnline.get();
+            for (long id : threadMXBean.getAllThreadIds()) {
+                FileSystemWorker.writeFile("scheduler.stack", Arrays.toString(threadMXBean.getThreadInfo(id).getStackTrace()));
+                messageToUser.info(threadMXBean.getThreadInfo(Thread.currentThread().getId()).toString());
+            }
         }
-        catch (Exception e) {
+        catch (InterruptedException | ExecutionException e) {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".unixTrySched", e));
         }
     }
