@@ -351,7 +351,7 @@ public class AppInfoOnLoad implements Runnable {
             AppInfoOnLoad.miniLogger.add("runCommonScan init delay " + ConstantsFor.INIT_DELAY + ", delay " + TimeUnit.DAYS.toSeconds(1) + ". SECONDS");
         }
         if (!ConstantsFor.PR_OSNAME_LOWERCASE.contains(ConstantsFor.PR_WINDOWSOS)) {
-            unixTrySched();
+            messageToUser.warn(unixTrySched());
         }
         else {
             schedWithService(scheduledExecutorService);
@@ -384,14 +384,15 @@ public class AppInfoOnLoad implements Runnable {
         AppInfoOnLoad.dateSchedulers(scheduledExecutorService);
     }
     
-    private void unixTrySched() {
+    private String unixTrySched() {
+        StringBuilder stringBuilder = new StringBuilder();
         AppComponents.threadConfig().thrNameSet("unix");
         ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
         threadMXBean.setThreadContentionMonitoringEnabled(true);
         threadMXBean.setThreadCpuTimeEnabled(true);
     
         ScheduledExecutorService executorService = Executors.unconfigurableScheduledExecutorService(Executors.newScheduledThreadPool(ConstantsFor.ONE_DAY_HOURS));
-        messageToUser.info("executorService = " + executorService.toString());
+        stringBuilder.append(executorService.toString());
         Set<Class<? extends PlatformManagedObject>> platformInterfaces = ManagementFactory.getPlatformManagementInterfaces();
         platformInterfaces.forEach(x->{
             String faceName = x.getSimpleName();
@@ -405,17 +406,26 @@ public class AppInfoOnLoad implements Runnable {
         ScheduledFuture<?> diapScan = executorService.scheduleWithFixedDelay(DiapazonedScan.getInstance(), 2, ConstantsFor.DELAY, TimeUnit.MINUTES);
         ScheduledFuture<?> scanOnline = executorService.scheduleWithFixedDelay(new ScanOnline(), 3, 3, TimeUnit.MINUTES);
         try {
-            ptvPing.get();
-            tmpInet.get();
-            diapScan.get();
-            scanOnline.get();
-            for (long id : threadMXBean.getAllThreadIds()) {
-                FileSystemWorker.writeFile("scheduler.stack", Arrays.toString(threadMXBean.getThreadInfo(id).getStackTrace()));
-                messageToUser.info(threadMXBean.getThreadInfo(Thread.currentThread().getId()).toString());
+            if (ptvPing.get() != null) {
+                stringBuilder.append("ptvPing");
+            }
+            if (tmpInet.get() != null) {
+                stringBuilder.append("tmpInet");
+            }
+            if (diapScan.get() != null) {
+                stringBuilder.append("diapScan");
+            }
+            if (scanOnline.get() != null) {
+                stringBuilder.append("scanOnline");
             }
         }
         catch (InterruptedException | ExecutionException e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".unixTrySched", e));
+            stringBuilder.append(FileSystemWorker.error(getClass().getSimpleName() + ".unixTrySched", e));
         }
+        for (long id : threadMXBean.getAllThreadIds()) {
+            FileSystemWorker.writeFile("scheduler.stack", Arrays.toString(threadMXBean.getThreadInfo(id).getStackTrace()));
+            stringBuilder.append(threadMXBean.getThreadInfo(Thread.currentThread().getId()).toString());
+        }
+        return stringBuilder.toString();
     }
 }
