@@ -1,11 +1,14 @@
 
 
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.services;
 
 
 import org.apache.commons.net.whois.WhoisClient;
 import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 
 import java.io.IOException;
@@ -18,7 +21,11 @@ public class WhoIsWithSRV {
 
 
     private MessageToUser messageToUser = new MessageLocal(WhoIsWithSRV.class.getSimpleName());
-
+    
+    public WhoIsWithSRV() {
+        messageToUser.info(AppComponents.ipFlushDNS());
+    }
+    
     public String whoIs(String inetAddr) {
         StringBuilder geoLocation = new StringBuilder();
         Locale locale = Locale.getDefault();
