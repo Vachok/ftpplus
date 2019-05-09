@@ -351,7 +351,7 @@ public class AppInfoOnLoad implements Runnable {
             AppInfoOnLoad.miniLogger.add("runCommonScan init delay " + ConstantsFor.INIT_DELAY + ", delay " + TimeUnit.DAYS.toSeconds(1) + ". SECONDS");
         }
         if (!ConstantsFor.PR_OSNAME_LOWERCASE.contains(ConstantsFor.PR_WINDOWSOS)) {
-            messageToUser.warn(unixTrySched());
+            AppComponents.threadConfig().execByThreadConfig(()->messageToUser.warn(unixTrySched()));
         }
         else {
             schedWithService(scheduledExecutorService);
