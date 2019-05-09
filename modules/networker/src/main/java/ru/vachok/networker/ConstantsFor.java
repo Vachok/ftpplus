@@ -458,6 +458,10 @@ public enum ConstantsFor {
     
     public static final String PR_DBSTAMP = "dbstamp";
     
+    public static final String COMMAND_CALCTIMES = "calctimes:";
+    
+    public static final String COMMAND_CALCTIME = "calctime:";
+    
     /**
      @return {@link #MAIL_RULES}
      */

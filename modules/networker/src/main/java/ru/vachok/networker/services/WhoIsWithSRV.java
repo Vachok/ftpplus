@@ -18,12 +18,12 @@ import java.util.Locale;
 
 @Service
 public class WhoIsWithSRV {
-
-
-    private MessageToUser messageToUser = new MessageLocal(WhoIsWithSRV.class.getSimpleName());
+    
+    
+    private static final MessageToUser messageToUser = new MessageLocal(WhoIsWithSRV.class.getSimpleName());
     
     public WhoIsWithSRV() {
-        messageToUser.info(AppComponents.ipFlushDNS());
+        AppComponents.ipFlushDNS();
     }
     
     public String whoIs(String inetAddr) {
