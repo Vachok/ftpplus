@@ -14,6 +14,9 @@ import ru.vachok.networker.net.enums.SwitchesWiFi;
 import ru.vachok.networker.services.MessageLocal;
 
 import java.io.*;
+import java.lang.management.ManagementFactory;
+import java.lang.management.OperatingSystemMXBean;
+import java.lang.management.ThreadMXBean;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -74,6 +77,8 @@ public class DiapazonedScan implements Runnable {
     private long stopClassStampLong = NetScanFileWorker.getI().getLastStamp();
     
     private Map<String, File> scanFiles = NET_SCAN_FILE_WORKER_INST.getScanFiles();
+    
+    private List<String> executionProcessLog = new ArrayList<>();
     
     /**
      Приватный конструктор
@@ -211,6 +216,7 @@ public class DiapazonedScan implements Runnable {
         sb.append(" %)").append("</a>}");
         sb.append(" ROOT_PATH_STR= ").append(ROOT_PATH_STR);
         sb.append("<br><b>\nfileTimes= </b><br>").append(fileTimes);
+        sb.append("<p>").append(new TForms().fromArray(executionProcessLog, true));
         return sb.toString();
     }
     
@@ -259,6 +265,10 @@ public class DiapazonedScan implements Runnable {
         private String whatVlan;
         
         private PrintStream printStream;
+    
+        private ThreadMXBean threadMXBean;
+    
+        private OperatingSystemMXBean operatingSystemMXBean;
         
         private File vlanFile;
         
@@ -277,6 +287,8 @@ public class DiapazonedScan implements Runnable {
         
         @Override
         public void run() {
+            this.threadMXBean = ManagementFactory.getThreadMXBean();
+            this.operatingSystemMXBean = ManagementFactory.getOperatingSystemMXBean();
             if (vlanFile.exists()) {
                 String newFileName = vlanFile.getAbsolutePath()
                     .replace(vlanFile.getName(), "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + vlanFile.getName().replace(".txt", "_" + (System.currentTimeMillis() / 1000)) + ".scan");
@@ -313,6 +325,9 @@ public class DiapazonedScan implements Runnable {
                 .append(", to=")
                 .append(to);
             sb.append('}');
+            sb.append("<br>\n");
+            sb.append(threadMXBean.getThreadInfo(Thread.currentThread().getId()));
+            sb.append(operatingSystemMXBean.getSystemLoadAverage()).append(" avg system load.");
             return sb.toString();
         }
         
@@ -400,6 +415,11 @@ public class DiapazonedScan implements Runnable {
                     catch (ArrayIndexOutOfBoundsException e) {
                         stStMap.put(theScannedIPHost, e.getMessage());
                     }
+                }
+                executionProcessLog.add(toString());
+                Collections.sort(executionProcessLog);
+                if (executionProcessLog.size() > ConstantsFor.DELAY) {
+                    executionProcessLog.clear();
                 }
             }
     
