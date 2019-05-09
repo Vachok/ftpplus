@@ -249,7 +249,7 @@ public class NetScanCtr {
         sb.append(", STR_MODEL='").append(STR_MODEL).append('\'');
         sb.append(", ATT_NETPINGER='").append(ConstantsFor.ATT_NETPINGER).append('\'');
         sb.append(", lastScanMAP=").append(lastScanMAP.size());
-        sb.append(", netPingerInst=").append(netPingerInst.hashCode());
+        sb.append(", Bean information=").append(getInformationForThreads(getTHRBeanMX()));
         sb.append('}');
         return sb.toString();
     }
