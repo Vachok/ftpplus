@@ -9,6 +9,7 @@ import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageFile;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
+import ru.vachok.networker.abstr.ConnectToMe;
 import ru.vachok.networker.abstr.InternetUse;
 import ru.vachok.networker.accesscontrol.TemporaryFullInternet;
 import ru.vachok.networker.accesscontrol.common.CommonRightsChecker;
@@ -18,10 +19,7 @@ import ru.vachok.networker.config.DeadLockMonitor;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.mailserver.MailIISLogsCleaner;
-import ru.vachok.networker.net.DiapazonedScan;
-import ru.vachok.networker.net.MyConsoleServer;
-import ru.vachok.networker.net.NetMonitorPTV;
-import ru.vachok.networker.net.ScanOnline;
+import ru.vachok.networker.net.*;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.MyCalen;
@@ -228,17 +226,33 @@ public class AppInfoOnLoad implements Runnable {
      */
     @SuppressWarnings("resource")
     private static void starterTelnet() {
-        MyConsoleServer myConsoleServer = MyConsoleServer.getI();
-        myConsoleServer.setSocket(new Socket());
-        while (!myConsoleServer.getSocket().isClosed()) {
-            try {
-                myConsoleServer.reconSock();
+        ConnectToMe myConsoleServer = MyConsoleServer.getI();
+        if (APP_PROPS.getProperty("testserver").contains("true")) {
+            testServerStart();
+        }
+        else {
+            ((MyConsoleServer) myConsoleServer).setSocket(new Socket());
+        
+            while (!((MyConsoleServer) myConsoleServer).getSocket().isClosed()) {
+                try {
+                    myConsoleServer.reconSock();
+                }
+                catch (IOException | InterruptedException | NullPointerException e1) {
+                    messageToUser.info("AppInfoOnLoad.starterTelnet", "e1.getMessage()", e1.getMessage());
+                    FileSystemWorker.error("SystemTrayHelper.starterTelnet", e1);
+                    Thread.currentThread().interrupt();
+                }
             }
-            catch (IOException | InterruptedException | NullPointerException e1) {
-                messageToUser.info("AppInfoOnLoad.starterTelnet", "e1.getMessage()", e1.getMessage());
-                FileSystemWorker.error("SystemTrayHelper.starterTelnet", e1);
-                Thread.currentThread().interrupt();
-            }
+        }
+    }
+    
+    private static void testServerStart() {
+        TestServer testServer = new TestServer();
+        try {
+            testServer.runSocket();
+        }
+        catch (IOException e) {
+            messageToUser.error(e.getMessage());
         }
     }
     
