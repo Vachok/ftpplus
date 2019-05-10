@@ -14,6 +14,7 @@ import ru.vachok.networker.accesscontrol.TemporaryFullInternet;
 import ru.vachok.networker.accesscontrol.common.CommonRightsChecker;
 import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
 import ru.vachok.networker.config.AppCtx;
+import ru.vachok.networker.config.DeadLockMonitor;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.mailserver.MailIISLogsCleaner;
@@ -41,8 +42,8 @@ import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.util.*;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 
@@ -320,6 +321,7 @@ public class AppInfoOnLoad implements Runnable {
         stringBuilder.append(ConstantsFor.getBuildStamp());
         AppInfoOnLoad.messageToUser.info("AppInfoOnLoad.infoForU", ConstantsFor.STR_FINISH, " = " + stringBuilder);
         AppInfoOnLoad.miniLogger.add("infoForU ends. now schedStarter(). Result: " + stringBuilder);
+        AppComponents.threadConfig().execByThreadConfig(new DeadLockMonitor());
         schedStarter();
     }
     
@@ -333,7 +335,15 @@ public class AppInfoOnLoad implements Runnable {
         String classMeth = "AppInfoOnLoad.schedStarter";
         AppInfoOnLoad.miniLogger.add("***" + classMeth);
         final long stArt = System.currentTimeMillis();
-        ScheduledThreadPoolExecutor scheduledExecutorService = AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor();
+        ScheduledExecutorService scheduledExecutorService = AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor();
+        
+/*Test UNIX 08.05.2019 (9:18)
+        if(!ConstantsFor.PR_OSNAME.toLowerCase().contains("windows")) {
+            scheduledExecutorService = Executors.unconfigurableScheduledExecutorService(Executors.newScheduledThreadPool(20));
+            miniLogger.add(ConstantsFor.PR_OSNAME);
+        }
+*/
+        
         String thisPC = ConstantsFor.thisPC();
         AppInfoOnLoad.miniLogger.add(thisPC);
     
@@ -342,6 +352,15 @@ public class AppInfoOnLoad implements Runnable {
                 TimeUnit.SECONDS);
             AppInfoOnLoad.miniLogger.add("runCommonScan init delay " + ConstantsFor.INIT_DELAY + ", delay " + TimeUnit.DAYS.toSeconds(1) + ". SECONDS");
         }
+        if (!ConstantsFor.PR_OSNAME_LOWERCASE.contains(ConstantsFor.PR_WINDOWSOS)) {
+            unixTrySched();
+        }
+        else {
+            schedWithService(scheduledExecutorService);
+        }
+    }
+    
+    private void schedWithService(ScheduledExecutorService scheduledExecutorService) {
         scheduledExecutorService.scheduleWithFixedDelay(new NetMonitorPTV(), 0, 10, TimeUnit.SECONDS);
         scheduledExecutorService.scheduleWithFixedDelay(temporaryFullInternet, 1, ConstantsFor.DELAY, TimeUnit.MINUTES);
         scheduledExecutorService.scheduleWithFixedDelay(DiapazonedScan.getInstance(), 2, AppInfoOnLoad.thisDelay, TimeUnit.MINUTES);
@@ -355,7 +374,6 @@ public class AppInfoOnLoad implements Runnable {
             .append(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(AppInfoOnLoad.thisDelay)))
             .append(DiapazonedScan.getInstance().getClass().getSimpleName())
             .append(" is starts next time.\n")
-            .append(AppInfoOnLoad.methMetr(stArt, classMeth))
             .toString();
         AppInfoOnLoad.miniLogger.add(msg + ". Trying start dateSchedulers***| Local time: " + LocalTime.now());
         AppInfoOnLoad.miniLogger.add(NetMonitorPTV.class.getSimpleName() + " init delay 0, delay 10. SECONDS");
@@ -366,5 +384,15 @@ public class AppInfoOnLoad implements Runnable {
         AppInfoOnLoad.miniLogger.add(AppComponents.class.getSimpleName() + ".getProps(true) 4, ConstantsFor.DELAY, TimeUnit.MINUTES");
         messageToUser.info(AppInfoOnLoad.class.getSimpleName() + ".schedStarter()" + ConstantsFor.STR_FINISH);
         AppInfoOnLoad.dateSchedulers(scheduledExecutorService);
+    }
+    
+    private void unixTrySched() {
+        ScheduledExecutorService executorService = Executors.unconfigurableScheduledExecutorService(Executors.newScheduledThreadPool(10));
+        try {
+            schedWithService(executorService);
+        }
+        catch (Exception e) {
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".unixTrySched", e));
+        }
     }
 }

@@ -14,6 +14,7 @@ import ru.vachok.networker.net.enums.SwitchesWiFi;
 import ru.vachok.networker.services.MessageLocal;
 
 import java.io.*;
+import java.lang.management.*;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -75,6 +76,8 @@ public class DiapazonedScan implements Runnable {
     
     private Map<String, File> scanFiles = NET_SCAN_FILE_WORKER_INST.getScanFiles();
     
+    private List<String> executionProcessLog = new ArrayList<>();
+    
     /**
      Приватный конструктор
      */
@@ -84,10 +87,6 @@ public class DiapazonedScan implements Runnable {
             new ExecScan(21, 31, "10.10.", scanFiles.get(FILENAME_SERVTXT_21SRVTXT)),
             new ExecScan(31, 41, "10.10.", scanFiles.get(FILENAME_SERVTXT_31SRVTXT)),
         };
-    }
-    
-    public Map<String, File> getScanFiles() throws NullPointerException {
-        return this.scanFiles;
     }
     
     public long getStopClassStampLong() {
@@ -136,17 +135,20 @@ public class DiapazonedScan implements Runnable {
     @SuppressWarnings({"resource", "IOResourceOpenedButNotSafelyClosed"})
     private void theNewLan() {
         Runnable execScan200210 = new DiapazonedScan.ExecScan(200, 210, "10.200.", scanFiles.get(FILENAME_NEWLAN210));
-        Runnable execScan210220 = new DiapazonedScan.ExecScan(210, 219, "10.200.", scanFiles.get(FILENAME_NEWLAN220));
+        Runnable execScan210220 = new DiapazonedScan.ExecScan(210, 213, "10.200.", scanFiles.get(FILENAME_NEWLAN213));
+        Runnable execScan213220 = new DiapazonedScan.ExecScan(213, 219, "10.200.", scanFiles.get(FILENAME_NEWLAN220));
         
         AppComponents.threadConfig().execByThreadConfig(execScan200210);
         AppComponents.threadConfig().execByThreadConfig(execScan210220);
+        AppComponents.threadConfig().execByThreadConfig(execScan213220);
     }
     
     private void startDo() {
         if (ALL_DEVICES_LOCAL_DEQUE.remainingCapacity() == 0) {
             scanFiles.values().stream().forEach(x->{
-                String newName = "\\lan\\" + x.getName().replace(".txt", "_" + (System.currentTimeMillis() / 1000)) + ".scan";
-                File newFile = new File(x.getAbsolutePath().replace(x.getName(), newName));
+                String newName = ROOT_PATH_STR + ConstantsFor.FILESYSTEM_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + x.getName()
+                    .replace(".txt", "_" + (System.currentTimeMillis() / 1000)) + ".scan";
+                File newFile = new File(newName);
                 FileSystemWorker.copyOrDelFile(x, newFile.getAbsolutePath(), true);
                 messageToUser.info(getClass().getSimpleName() + ".startDo", "newFile", " = " + newFile.getAbsolutePath());
             });
@@ -212,6 +214,7 @@ public class DiapazonedScan implements Runnable {
         sb.append(" %)").append("</a>}");
         sb.append(" ROOT_PATH_STR= ").append(ROOT_PATH_STR);
         sb.append("<br><b>\nfileTimes= </b><br>").append(fileTimes);
+        sb.append("<p>").append(new TForms().fromArray(executionProcessLog, true));
         return sb.toString();
     }
     
@@ -260,6 +263,12 @@ public class DiapazonedScan implements Runnable {
         private String whatVlan;
         
         private PrintStream printStream;
+    
+        private ThreadMXBean threadMXBean;
+    
+        private OperatingSystemMXBean operatingSystemMXBean;
+    
+        private RuntimeMXBean runtimeMXBean;
         
         private File vlanFile;
         
@@ -278,9 +287,13 @@ public class DiapazonedScan implements Runnable {
         
         @Override
         public void run() {
+            this.threadMXBean = ManagementFactory.getThreadMXBean();
+            this.operatingSystemMXBean = ManagementFactory.getOperatingSystemMXBean();
+            this.runtimeMXBean = ManagementFactory.getRuntimeMXBean();
+            
             if (vlanFile.exists()) {
                 String newFileName = vlanFile.getAbsolutePath()
-                    .replace(vlanFile.getName(), "lan\\" + vlanFile.getName().replace("txt", "_" + (System.currentTimeMillis() / 1000)) + ".scan");
+                    .replace(vlanFile.getName(), "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + vlanFile.getName().replace(".txt", "_" + (System.currentTimeMillis() / 1000)) + ".scan");
                 boolean copyFile = FileSystemWorker.copyOrDelFile(vlanFile, newFileName, true);
                 messageToUser.info(vlanFile.getName() + " copied to ", newFileName, " = " + copyFile);
             }
@@ -314,9 +327,39 @@ public class DiapazonedScan implements Runnable {
                 .append(", to=")
                 .append(to);
             sb.append('}');
+            sb.append("<br>\n");
+            sb.append(getBeansInfo());
             return sb.toString();
         }
+    
+        private String getBeansInfo() {
+            final StringBuilder sb = new StringBuilder();
         
+            sb.append(operatingSystemMXBean.getSystemLoadAverage()).append(" avg system load. ");
+            sb.append(operatingSystemMXBean.getAvailableProcessors()).append(" Processors. ");
+            sb.append(operatingSystemMXBean.getName()).append(" Name. ");
+            sb.append(operatingSystemMXBean.getArch()).append(" Arch. ");
+            sb.append(operatingSystemMXBean.getVersion()).append(" Version. ");
+            sb.append("<br>");
+            sb.append(runtimeMXBean.getName()).append(" Name. ");
+            sb.append(runtimeMXBean.getUptime()).append(" Time. ");
+            sb.append(runtimeMXBean.getInputArguments()).append(" InputArguments. ");
+            sb.append(runtimeMXBean.getClassPath()).append(" ClassPath. ");
+            sb.append(runtimeMXBean.getLibraryPath()).append(" LibraryPath. ");
+            sb.append(runtimeMXBean.getVmVersion()).append(" VmVersion. ");
+        
+            sb.append("<br>");
+            sb.append("<br>");
+        
+            ThreadInfo infoThisThr = threadMXBean.getThreadInfo(Thread.currentThread().getId());
+            sb.append(infoThisThr.toString()).append(" String. ");
+            sb.append(infoThisThr.isSuspended()).append(" Suspended. ");
+            sb.append(infoThisThr.getThreadName()).append(" ThreadName. ");
+            sb.append(infoThisThr.getWaitedTime()).append(" WaitedTime (millis). ");
+        
+            return sb.toString();
+        }
+    
         private long getSpend() {
             messageToUser.info(getClass().getSimpleName() + ".getSpend", "new Date(stArt)", " = " + new Date(stArt));
             return System.currentTimeMillis() - stArt;
@@ -401,6 +444,12 @@ public class DiapazonedScan implements Runnable {
                     catch (ArrayIndexOutOfBoundsException e) {
                         stStMap.put(theScannedIPHost, e.getMessage());
                     }
+                }
+                executionProcessLog.add(toString());
+                Collections.sort(executionProcessLog);
+                if (executionProcessLog.size() >= 8) {
+                    FileSystemWorker.writeFile((this.from + "_vlan-to_" + this.to + ".log"), executionProcessLog.stream());
+                    executionProcessLog.clear();
                 }
             }
     

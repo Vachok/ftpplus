@@ -216,7 +216,7 @@ public class ServiceInfoCtrl {
         model.addAttribute(ConstantsFor.ATT_VISIT, visitor.toString());
         model.addAttribute("res", resValue);
         model.addAttribute("back", request.getHeader(ConstantsFor.ATT_REFERER.toLowerCase()));
-        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<br>" + getJREVers());
+        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<br><a href=\"/nohup\">" + getJREVers() + "</a>");
         AppComponents.threadConfig().execByThreadConfig(() -> new AppComponents().saveLogsToDB().showInfo());
     }
     

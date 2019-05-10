@@ -3,61 +3,38 @@
 package ru.vachok.networker.mailserver;
 
 
+import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.ostpst.MakeConvert;
 import ru.vachok.ostpst.OstToPst;
 
-import java.io.File;
 import java.util.Properties;
 
 
 /**
  @since 04.05.2019 (11:11) */
-public class OstPstUtils implements MakeConvert {
+public class OstPstUtils  {
     
+    
+    private static MessageToUser messageToUser = new MessageLocal(OstToPst.class.getSimpleName());
     
     private Properties properties = AppComponents.getProps();
     
-    private MakeConvert ostToPst = new OstToPst();
+    private MakeConvert ostToPst;
     
     
     public OstPstUtils(String fileName) {
         this.fileName = fileName;
+        ostToPst = new OstToPst(fileName);
     }
     
     public OstPstUtils() {
         this.fileName = properties.getProperty(ConstantsFor.PR_OSTFILENAME, "test.ost");
+        ostToPst = new OstToPst(fileName);
     }
     
     private String fileName;
     
-    @Override public String convertToPST() {
-        ostToPst.showFileContent();
-        return FileSystemWorker.delTemp();
-    }
-    
-    @Override public void showFileContent() {
-        ostToPst.showFileContent();
-    }
-    
-    @Override public void setFileName(String fileName) {
-        this.fileName = fileName;
-        properties.setProperty(ConstantsFor.PR_OSTFILENAME, fileName);
-    }
-    
-    @Override public long copyierWithSave() {
-        long fileWriteByte;
-        long fileReadByte = Long.parseLong(properties.getProperty(ConstantsFor.PR_OSTREAD, "0"));
-        ostToPst.setFileName(fileName);
-        long fileLen = new File(fileName).length();
-        while (fileLen > 0) {
-            fileWriteByte = ostToPst.copyierWithSave();
-            fileLen = fileLen - fileWriteByte;
-            properties.setProperty(ConstantsFor.PR_OSTWRITE, String.valueOf(fileWriteByte));
-            properties.setProperty(ConstantsFor.PR_OSTREAD, String.valueOf(fileLen));
-        }
-        return fileReadByte;
-    }
 }

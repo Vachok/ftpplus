@@ -216,10 +216,11 @@ public class ExitApp implements Runnable {
     private void copyAvail() {
         File appLog = new File("g:\\My_Proj\\FtpClientPlus\\modules\\networker\\app.log");
         File filePingTv = new File(ConstantsFor.FILENAME_PTV);
-        FileSystemWorker.copyOrDelFile(filePingTv, new StringBuilder().append(".\\lan\\ptv_").append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
+        FileSystemWorker.copyOrDelFile(filePingTv, new StringBuilder().append(ConstantsFor.FILESYSTEM_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + "ptv_")
+            .append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
         ConcurrentMap<String, File> srvFiles = NetScanFileWorker.getI().getScanFiles();
         srvFiles.forEach((id, file)->FileSystemWorker
-            .copyOrDelFile(file, file.getAbsolutePath().replace(file.getName(), "lan\\" + file.getName()), true));
+            .copyOrDelFile(file, file.getAbsolutePath().replace(file.getName(), "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + file.getName()), true));
         if (appLog.exists() && appLog.canRead()) {
             FileSystemWorker.copyOrDelFile(appLog, "\\\\10.10.111.1\\Torrents-FTP\\app.log", false);
         }
@@ -232,11 +233,13 @@ public class ExitApp implements Runnable {
     
     private void libCopy() {
         Path path = Paths.get(".");
-        List<File> myLibs = Arrays.asList(Objects.requireNonNull(new File(path.toString() + "\\ostpst\\build\\libs\\").listFiles()));
+        List<File> myLibs = Arrays.asList(Objects
+            .requireNonNull(new File(path + ConstantsFor.FILESYSTEM_SEPARATOR + "ostpst" + ConstantsFor.FILESYSTEM_SEPARATOR + "build" + ConstantsFor.FILESYSTEM_SEPARATOR + "libs" + ConstantsFor.FILESYSTEM_SEPARATOR)
+                .listFiles()));
         myLibs.addAll(Arrays.asList(Objects.requireNonNull(new File("g:\\My_Proj\\libs\\messenger\\build\\libs\\").listFiles())));
         myLibs.forEach(x->{
             if (x.exists() && x.getName().toLowerCase().contains(".jar")) {
-                FileSystemWorker.copyOrDelFile(x, "\\lib\\" + x.getName(), false);
+                FileSystemWorker.copyOrDelFile(x, ConstantsFor.FILESYSTEM_SEPARATOR + "lib" + ConstantsFor.FILESYSTEM_SEPARATOR + x.getName(), false);
             }
         });
     }

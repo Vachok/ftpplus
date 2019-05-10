@@ -24,17 +24,15 @@ import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.DiapazonedScan;
-import ru.vachok.networker.net.NetListKeeper;
-import ru.vachok.networker.net.NetPinger;
-import ru.vachok.networker.net.ScanOnline;
+import ru.vachok.networker.net.*;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
-import ru.vachok.networker.services.NetScannerSvc;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadMXBean;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
@@ -97,7 +95,7 @@ public class NetScanCtr {
      {@link AppComponents#netScannerSvc()}
      */
     private NetScannerSvc netScannerSvcInstAW;
-
+    
     private NetPinger netPingerInst;
 
 
@@ -251,29 +249,11 @@ public class NetScanCtr {
         sb.append(", STR_MODEL='").append(STR_MODEL).append('\'');
         sb.append(", ATT_NETPINGER='").append(ConstantsFor.ATT_NETPINGER).append('\'');
         sb.append(", lastScanMAP=").append(lastScanMAP.size());
-        sb.append(", netPingerInst=").append(netPingerInst.hashCode());
+        sb.append(", Bean information=").append(getInformationForThreads(getTHRBeanMX()));
         sb.append('}');
         return sb.toString();
     }
     
-    /**
-     Если {@link #lastScanMAP} более 1
-     <p>
-     1. {@link TForms#fromArray(java.util.Map, boolean)} добавим в {@link Model} содержимое {@link #lastScanMAP} <br> 2.
-     отображение остатка ПК. <br> 3. {@link TForms#fromArray(java.util.Map, boolean)} запишем файл {@link ConstantsNet#BEANNAME_LASTNETSCAN}, 4.
-     {@link FileSystemWorker#writeFile(java.lang.String,
-         java.lang.String)} <br> 5. {@link #timeCheck(int, long, HttpServletRequest, Model)} переходим в проверке времени.
-     <p>
-
-     @param model     {@link Model}
-     @param request   {@link HttpServletRequest}
-     @param lastSt    время последнего скана. Берется из {@link #PROPERTIES}. Default: {@code 1548919734742}.
-     @param thisTotpc кол-во ПК для скана. Берется из {@link #PROPERTIES}. Default: {@code 243}.
-     @throws ExecutionException    timeCheck
-     @throws InterruptedException timeCheck
-     @throws TimeoutException     timeCheck
-     @see #checkMapSizeAndDoAction(Model, HttpServletRequest, long)
-     */
     private void mapSizeBigger(Model model, HttpServletRequest request, long lastSt, int thisTotpc) throws ExecutionException, InterruptedException, TimeoutException {
         long timeLeft = TimeUnit.MILLISECONDS.toSeconds(lastSt - System.currentTimeMillis());
         int pcWas = Integer.parseInt(PROPERTIES.getProperty(ConstantsFor.PR_ONLINEPC, "0"));
@@ -339,7 +319,13 @@ public class NetScanCtr {
      @see #mapSizeBigger(Model, HttpServletRequest, long, int)
      */
     private void timeCheck(int remainPC, long lastScanEpoch, HttpServletRequest request, Model model) throws ExecutionException, InterruptedException, TimeoutException {
-        Runnable scanRun = () -> scanIt(request , model , new Date(lastScanEpoch * 1000));
+        Runnable scanRun = ()->{
+            ThreadMXBean threadMXBean = getTHRBeanMX();
+            String threadsInfoInit = getInformationForThreads(threadMXBean);
+            messageToUser.warn(getClass().getSimpleName(), ".scanIt", " = " + threadsInfoInit);
+            scanIt(request, model, new Date(lastScanEpoch * 1000));
+            netScannerSvcInstAW.setThrInformation(getInformationForThreads(threadMXBean));
+        };
         LocalTime lastScanLocalTime = LocalDateTime.ofEpochSecond(lastScanEpoch, 0, ZoneOffset.ofHours(3)).toLocalTime();
         String classMeth = "NetScanCtr.timeCheck";
         boolean isSystemTimeBigger = (System.currentTimeMillis() > lastScanEpoch * 1000);
@@ -354,7 +340,16 @@ public class NetScanCtr {
             messageToUser.warn(getClass().getSimpleName() + ".timeCheck", "lastScanLocalTime", " = " + lastScanLocalTime);
         }
     }
-
+    
+    private ThreadMXBean getTHRBeanMX() {
+        ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
+        threadMXBean.setThreadContentionMonitoringEnabled(true);
+        threadMXBean.setThreadCpuTimeEnabled(true);
+        messageToUser.warn("PEAK THREADS: " + threadMXBean.getPeakThreadCount());
+        threadMXBean.resetPeakThreadCount();
+        return threadMXBean;
+    }
+    
     /**
      Начало проверок перед сканом.
      <p>
@@ -378,7 +373,13 @@ public class NetScanCtr {
      @see #netScan(HttpServletRequest, HttpServletResponse, Model)
      */
     private void checkMapSizeAndDoAction(Model model, HttpServletRequest request, long lastSt) throws ExecutionException, InterruptedException, TimeoutException {
-        Runnable scanRun = () -> scanIt(request , model , new Date(lastSt));
+        Runnable scanRun = ()->{
+            ThreadMXBean threadMXBean = getTHRBeanMX();
+            String threadsInfoInit = getInformationForThreads(threadMXBean);
+            messageToUser.warn(getClass().getSimpleName(), ".scanIt", " = " + threadsInfoInit);
+            scanIt(request, model, new Date(lastSt));
+            netScannerSvcInstAW.setThrInformation(getInformationForThreads(threadMXBean));
+        };
         int thisTotpc = Integer.parseInt(PROPERTIES.getProperty(ConstantsFor.PR_TOTPC , "259"));
         File scanTemp = new File("scan.tmp");
 
@@ -401,11 +402,11 @@ public class NetScanCtr {
      <p>
      Иначе: <br> Очищаем {@link #lastScanMAP} <br> Запускаем {@link NetScannerSvc#getPcNames()} <br> В {@link Model} добавим {@code lastScanDate} как
      {@code title}, и {@link Set} {@link
-    NetScannerSvc#getPcNames()}.
-
-     @param request      {@link HttpServletRequest}
+    NetScannerSvc#getPcNames()}.@param request      {@link HttpServletRequest}
      @param model        {@link Model}
      @param lastScanDate дата последнего скана
+ 
+ 
      */
     @Async
     private void scanIt(HttpServletRequest request, Model model, Date lastScanDate) {
@@ -423,6 +424,17 @@ public class NetScanCtr {
             model.addAttribute(ConstantsFor.ATT_TITLE , lastScanDate).addAttribute("pc" , new TForms().fromArray(pCsAsync , true));
             LastNetScan.getLastNetScan().setTimeLastScan(new Date());
         }
+    }
+    
+    private String getInformationForThreads(ThreadMXBean threadMXBean) {
+        long cpuTimeMS = TimeUnit.NANOSECONDS.toMillis(threadMXBean.getCurrentThreadCpuTime());
+        long userTimeMS = TimeUnit.NANOSECONDS.toMillis(threadMXBean.getCurrentThreadUserTime());
+        return cpuTimeMS + " ms cpu time. " +
+            userTimeMS + " user ms time. " +
+            threadMXBean.getThreadCount() + " thr running, " +
+            threadMXBean.getPeakThreadCount() + " peak threads." +
+            threadMXBean.getTotalStartedThreadCount() + " total threads started. (" +
+            threadMXBean.getDaemonThreadCount() + " daemons)";
     }
     
     private void qerNotNullScanAllDevices(Model model, HttpServletResponse response) {

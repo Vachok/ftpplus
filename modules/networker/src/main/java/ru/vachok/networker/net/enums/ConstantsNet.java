@@ -8,8 +8,8 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.net.DiapazonedScan;
+import ru.vachok.networker.net.NetScannerSvc;
 import ru.vachok.networker.services.MessageLocal;
-import ru.vachok.networker.services.NetScannerSvc;
 
 import java.io.File;
 import java.util.Properties;
@@ -95,7 +95,9 @@ public enum ConstantsNet { ;
      */
     public static final String FILENAME_NEWLAN210 = "lan_200210.txt";
     
-    public static final String FILENAME_NEWLAN220 = "lan_210220.txt";
+    public static final String FILENAME_NEWLAN220 = "lan_213220.txt";
+    
+    public static final String FILENAME_NEWLAN213 = "lan_210213.txt";
     /**
      Название файла старой подсети 192.168.х.х
      */

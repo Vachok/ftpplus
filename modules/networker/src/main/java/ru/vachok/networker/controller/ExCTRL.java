@@ -49,8 +49,6 @@ public class ExCTRL {
     private ConcurrentMap<Integer, MailRule> localMap = ConstantsFor.getMailRules();
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ExCTRL.class.getSimpleName());
-    
-    private MakeConvert ostToPstConverter = new OstPstUtils();
 
     private Visitor visitor;
 
@@ -171,8 +169,6 @@ public class ExCTRL {
     @GetMapping("/osppst")
     public String ostPstGet(Model model, HttpServletRequest request) {
         new AppComponents().visitor(request);
-        ostToPstConverter.showFileContent();
-        model.addAttribute("ok", ostToPstConverter.convertToPST() + " " + ostToPstConverter.copyierWithSave() + ConstantsFor.STR_BYTES);
         model.addAttribute(ConstantsFor.ATT_HEAD, new PageFooter().getHeaderUtext());
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
         return "ok";

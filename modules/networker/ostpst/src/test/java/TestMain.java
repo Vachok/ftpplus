@@ -3,14 +3,11 @@
 import org.testng.annotations.Test;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.ostpst.ConstantsFor;
 import ru.vachok.ostpst.MakeConvert;
 import ru.vachok.ostpst.OstToPst;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.Properties;
+import java.nio.charset.Charset;
 
 
 public class TestMain {
@@ -18,17 +15,11 @@ public class TestMain {
     
     @Test(enabled = false)
     public void launchProg() {
-        MakeConvert makeConvert = new OstToPst();
+        File file = new File(new String("c:\\\\Users\\\\ikudryashov\\\\OneDrive\\\\Документы\\\\Файлы Outlook\\\\ksamarchenko@velkomfood.ru.ost".getBytes(), Charset.forName("UTF-8")));
+        MakeConvert makeConvert = new OstToPst(file.getAbsolutePath());
+        makeConvert.saveContacts();
+        String itemsString = makeConvert.folderContentItemsString();
         MessageToUser messageToUser = new MessageCons(getClass().getSimpleName());
-        makeConvert.showFileContent();
-        Properties properties = new Properties();
-        try {
-            properties.load(new FileInputStream(ConstantsFor.FILENAME_PROPERTIES));
-        }
-        catch (IOException e) {
-            messageToUser.error(e.getMessage());
-        }
-        properties.setProperty("file", new File("test.pst").getAbsolutePath());
-        makeConvert.showFileContent();
+        messageToUser.info(getClass().getSimpleName() + ".launchProg", "itemsString", " = " + itemsString);
     }
 }

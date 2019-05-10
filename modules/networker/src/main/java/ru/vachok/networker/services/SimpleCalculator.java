@@ -4,6 +4,7 @@ package ru.vachok.networker.services;
 
 
 import org.springframework.stereotype.Service;
+import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 
@@ -21,13 +22,20 @@ public class SimpleCalculator {
     private String query;
     
     private static final Properties PROPS = AppComponents.getProps();
-
+    
+    private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
+    
     public String getQuery() {
         return query;
     }
 
     public void setQuery(String query) {
         this.query = query;
+    }
+    
+    public String getStampFromDate(String workPos) {
+        this.query = workPos;
+        return getStampFromDate();
     }
 
     /**
@@ -36,16 +44,16 @@ public class SimpleCalculator {
     private String getStampFromDate() {
         boolean setTo = query.toLowerCase().contains("s");
         if(setTo){
-            query = query.replaceFirst("calctimes:", "");
+            query = query.replaceFirst(ConstantsFor.COMMAND_CALCTIMES, "");
         } else if (query.contains("calc")) {
-            query = query.replaceFirst("calctime:", "");
+            query = query.replaceFirst(ConstantsFor.COMMAND_CALCTIME, "");
         } else {
-            query = query.replaceFirst("t:", "");
+            query = query.replaceFirst("[Tt]+:", "");
         }
         Calendar.Builder builder = new Calendar.Builder();
         try{
             String[] stringsDate = query.split("-");
-            parseInput(stringsDate, builder);
+            messageToUser.info(getClass().getSimpleName() + ".getStampFromDate", "", " = " + parseInput(stringsDate, builder));
             if(setTo){
                 setToDB(builder.build().getTimeInMillis());
             }
@@ -56,23 +64,17 @@ public class SimpleCalculator {
         return String.valueOf(builder.build().getTimeInMillis());
     }
 
-    public String getStampFromDate(String workPos) {
-        this.query = workPos;
-        return getStampFromDate();
-    }
-
     /**
      @param stringsDate массив ввода, делитель {@code -}.
      @param builder     new {@link Calendar.Builder}
      @return {@link Calendar.Builder} установленный на введённую дату-время.
      */
-    private Calendar.Builder parseInput(String[] stringsDate, Calendar.Builder builder) {
+    private Calendar.Builder parseInput(String[] stringsDate, Calendar.Builder builder) throws RuntimeException {
         int year = Integer.parseInt(stringsDate[2]);
         int month = Integer.parseInt(stringsDate[1]) - 1;
         int day = Integer.parseInt(stringsDate[0]);
         int hour = Integer.parseInt(stringsDate[3]);
         int minute = Integer.parseInt(stringsDate[4]);
-
         builder.setDate(year, month, day);
         builder.setTimeOfDay(hour, minute, 0);
         return builder;

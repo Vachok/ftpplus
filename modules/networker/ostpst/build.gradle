@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 plugins {
     id 'java'
     id 'idea'
@@ -5,7 +7,7 @@ plugins {
 }
 
 group 'ru.vachok.ostpst'
-version '8.0.1918'
+version '8.0.1919'
 
 sourceCompatibility = 1.8
 

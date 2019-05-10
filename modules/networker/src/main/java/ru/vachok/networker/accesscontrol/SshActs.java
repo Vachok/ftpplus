@@ -55,8 +55,8 @@ public class SshActs {
     private static final String PAGE_NAME = "sshworks";
 
     private static final String STR_HTTPS = "https://";
-
-    private static final String SSH_SQUID_RECONFIGURE = "sudo squid -k reconfigure;";
+    
+    private static final String SSH_SQUID_RECONFIGURE = "sudo squid && sudo squid -k reconfigure;";
 
     private static final String SSH_PING5_200_1 = "ping -c 5 10.200.200.1;";
     
@@ -200,7 +200,7 @@ public class SshActs {
      @return адрес нужного сервака
      */
     private static String whatSrvNeed() {
-        AppComponents.getProps().setProperty("thispc", ConstantsFor.thisPC());
+        AppComponents.getProps().setProperty(ConstantsFor.PR_THISPC, ConstantsFor.thisPC());
         if (ConstantsFor.thisPC().toLowerCase().contains("rups")) {
             return ConstantsFor.IPADDR_SRVNAT;
         } else if (ConstantsFor.thisPC().equalsIgnoreCase("srv-inetstat.eatmeat.ru")) {

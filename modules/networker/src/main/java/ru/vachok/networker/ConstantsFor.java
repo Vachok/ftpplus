@@ -418,6 +418,12 @@ public enum ConstantsFor {
     
     public static final String HTML_PCENTER = "<p><center>";
     
+    public static final String FILENAME_USERSSET = "users.set";
+    
+    public static final String PR_OSNAME_LOWERCASE = System.getProperty("os.name").toLowerCase();
+    
+    public static final String PR_THISPC = "thispc";
+    
     static final String STR_FINISH = " is finish";
     
     private static final String[] STRINGS_TODELONSTART = {"visit_", ".tmp", ".log", ".tv"};
@@ -444,14 +450,38 @@ public enum ConstantsFor {
      */
     private static final ConcurrentMap<Integer, MailRule> MAIL_RULES = new ConcurrentHashMap<>();
     
+    public static final String DBFIELD_TIMENOW = "TimeNow";
+    
+    public static final String PR_WINDOWSOS = "windows";
+    
+    public static final String HTMLTAG_DETAILSCLOSE = "</details>";
+    
+    public static final String PR_DBSTAMP = "dbstamp";
+    
+    public static final String COMMAND_CALCTIMES = "calctimes:";
+    
+    public static final String COMMAND_CALCTIME = "calctime:";
+    
+    public static final String STR_ERROR = "ERROR";
+    
     /**
      @return {@link #MAIL_RULES}
      */
     public static ConcurrentMap<Integer, MailRule> getMailRules() {
         return MAIL_RULES;
     }
-
-
+    
+    public static final String FILESYSTEM_SEPARATOR = getSeparator();
+    
+    private static String getSeparator() {
+        if (PR_OSNAME_LOWERCASE.contains(PR_WINDOWSOS)) {
+            return "\\";
+        }
+        else {
+            return "/";
+        }
+    }
+    
     /**
      Доступность srv-git.eatmeat.ru.
 

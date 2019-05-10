@@ -18,7 +18,7 @@ public class InetUserPCName implements InternetUse {
 
 
     private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
-
+    
     @Override public String getUsage(String userCred) {
         StringBuilder stringBuilder = new StringBuilder();
         try {
@@ -32,8 +32,8 @@ public class InetUserPCName implements InternetUse {
         messageToUser.info("clients1", "deletedRows", " = " + deletedRows);
         return stringBuilder.toString();
     }
-
-
+    
+    
     @Override public void showLog() {
         SaveLogsToDB saveLogsToDB = new AppComponents().saveLogsToDB();
         saveLogsToDB.showInfo();

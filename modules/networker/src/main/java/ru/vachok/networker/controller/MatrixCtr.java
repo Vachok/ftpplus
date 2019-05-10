@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Stream;
 
 
 /**
@@ -155,7 +156,7 @@ public class MatrixCtr {
         else if (workPos.toLowerCase().contains("calc:")) {
             return calculateDoubles(workPos, model);
         }
-        else if (workPos.toLowerCase().contains("calctime:") || workPos.toLowerCase().contains("calctimes:") || workPos.toLowerCase().contains("t:")) {
+        else if (Stream.of(ConstantsFor.COMMAND_CALCTIME, ConstantsFor.COMMAND_CALCTIMES, "t:", "T:").anyMatch(s->workPos.toLowerCase().contains(s))) {
             timeStamp(new SimpleCalculator(), model, workPos);
         }
         else {

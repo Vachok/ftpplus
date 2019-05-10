@@ -4,6 +4,7 @@ package ru.vachok.networker.net;
 
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
@@ -14,7 +15,10 @@ import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.Collection;
+import java.util.Deque;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -44,24 +48,30 @@ public class NetScanFileWorker implements Serializable {
     }
     
     public ConcurrentMap<String, File> getScanFiles() {
-        for (File f : Objects.requireNonNull(new File(".").listFiles())) {
-            if (f.getName().contains("lan_")) {
-                SCAN_FILES.putIfAbsent(f.getName(), f);
+        Path absolutePath = Paths.get("").toAbsolutePath();
+        try {
+            for (File f : new File(absolutePath.toString()).listFiles()) {
+                if (f.getName().contains("lan_")) {
+                    SCAN_FILES.putIfAbsent(f.getName(), f);
+                }
             }
         }
-        if (SCAN_FILES.size() == 7) {
-            return SCAN_FILES;
+        catch (NullPointerException e) {
+            messageToUser.error(e.getMessage());
         }
-        else {
-            SCAN_FILES.putIfAbsent(ConstantsNet.FILENAME_NEWLAN210, new File(ConstantsNet.FILENAME_NEWLAN210));
+    
+        if (!(SCAN_FILES.size() == 8)) {
+            SCAN_FILES.clear();
             SCAN_FILES.putIfAbsent(ConstantsNet.FILENAME_NEWLAN220, new File(ConstantsNet.FILENAME_NEWLAN220));
+            SCAN_FILES.putIfAbsent(ConstantsNet.FILENAME_NEWLAN210, new File(ConstantsNet.FILENAME_NEWLAN210));
+            SCAN_FILES.putIfAbsent(ConstantsNet.FILENAME_NEWLAN213, new File(ConstantsNet.FILENAME_NEWLAN213));
             SCAN_FILES.putIfAbsent(ConstantsNet.FILENAME_OLDLANTXT0, new File(ConstantsNet.FILENAME_OLDLANTXT0));
             SCAN_FILES.putIfAbsent(ConstantsNet.FILENAME_OLDLANTXT1, new File(ConstantsNet.FILENAME_OLDLANTXT1));
             SCAN_FILES.putIfAbsent(ConstantsNet.FILENAME_SERVTXT_10SRVTXT, new File(ConstantsNet.FILENAME_SERVTXT_10SRVTXT));
             SCAN_FILES.putIfAbsent(ConstantsNet.FILENAME_SERVTXT_21SRVTXT, new File(ConstantsNet.FILENAME_SERVTXT_21SRVTXT));
             SCAN_FILES.putIfAbsent(ConstantsNet.FILENAME_SERVTXT_31SRVTXT, new File(ConstantsNet.FILENAME_SERVTXT_31SRVTXT));
-            return SCAN_FILES;
         }
+        return SCAN_FILES;
     }
     
     public static NetScanFileWorker getI() {
@@ -76,7 +86,7 @@ public class NetScanFileWorker implements Serializable {
         AppComponents.threadConfig().thrNameSet("ON");
         Deque<String> retDeque = new ArrayDeque<>();
         Set<String> fileNameSet = SCAN_FILES.keySet();
-        SCAN_FILES.forEach((fileName, srvFileX)->messageToUser.info(getClass().getSimpleName(), "list onLine", " = " + fileWrk(srvFileX, retDeque)));
+        SCAN_FILES.forEach((fileName, srvFileX)->fileWrk(srvFileX, retDeque));
         return retDeque;
     }
     
@@ -86,19 +96,21 @@ public class NetScanFileWorker implements Serializable {
      @param retDeque обратная очередь, для наполнения.
      */
     private Path fileWrk(File srvFileX, Collection<String> retDeque) {
-        Path retPath = Paths.get("\\lan\\");
+        Path retPath = Paths.get("");
+        retPath = Paths.get(retPath.toAbsolutePath() + ConstantsFor.FILESYSTEM_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR);
+        
         if (srvFileX.exists() && srvFileX.canRead()) {
-            retDeque.addAll(FileSystemWorker.readFileToList(srvFileX.getAbsolutePath()));
-            retPath = srvFileX.toPath();
+            retDeque.addAll(FileSystemWorker.readFileToSet(srvFileX.toPath()));
+            retPath = Paths.get(srvFileX.toPath().toAbsolutePath().toString().replace("." + ConstantsFor.FILESYSTEM_SEPARATOR, ConstantsFor.FILESYSTEM_SEPARATOR));
         }
         else {
             try {
-                retPath = Files.createFile(srvFileX.toPath());
+                retPath = Files.createFile(srvFileX.toPath()).toAbsolutePath();
             }
             catch (IOException e) {
                 messageToUser.error(e.getMessage());
             }
         }
-        return retPath;
+        return retPath.toAbsolutePath();
     }
 }

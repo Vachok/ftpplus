@@ -6,7 +6,6 @@ package ru.vachok.ostpst;
 import com.pff.PSTRAFileContent;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.stats.constants.ConstantsFor;
 
 import java.io.*;
 import java.util.Properties;

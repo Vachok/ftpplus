@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.fileworks;
 
 
@@ -28,7 +30,7 @@ public class CountSizeOfWorkDir extends SimpleFileVisitor<Path> implements Progr
     
     private long sizeBytes;
     
-    private Map<Long, String> longPathMap = new TreeMap<>();
+    private Map<Long, String> longStrPathMap = new TreeMap<>();
     
     private String fileName;
     
@@ -63,11 +65,11 @@ public class CountSizeOfWorkDir extends SimpleFileVisitor<Path> implements Progr
         if (attrs.isRegularFile()) {
             this.sizeBytes += file.toFile().length();
             if (attrs.lastAccessTime().toMillis() < System.currentTimeMillis() - TimeUnit.DAYS.toMillis(3)) {
-                longPathMap.putIfAbsent(file.toFile().length(),
+                longStrPathMap.putIfAbsent(file.toFile().length(),
                     file.toAbsolutePath() + "<b> 3 days old...</b>");
             }
             else {
-                longPathMap.putIfAbsent(file.toFile().length(), file.toAbsolutePath().toString());
+                longStrPathMap.putIfAbsent(file.toFile().length(), file.toAbsolutePath().toString());
             }
         }
         return FileVisitResult.CONTINUE;
@@ -138,9 +140,9 @@ public class CountSizeOfWorkDir extends SimpleFileVisitor<Path> implements Progr
     
     private String getSizeOfDir() throws IOException {
         StringBuilder stringBuilder = new StringBuilder();
-        Files.walkFileTree(Paths.get("."), this);
+        Files.walkFileTree(Paths.get(".").normalize(), this);
         stringBuilder.append("Total size = ").append(sizeBytes / ConstantsFor.KBYTE / ConstantsFor.KBYTE).append(" MB<br>\n");
-        longPathMap.forEach((x, y)->stringBuilder.append(String.format("%.02f", (float) x / ConstantsFor.KBYTE)).append(" kb in: ").append(y).append("<br>\n"));
+        longStrPathMap.forEach((x, y)->stringBuilder.append(String.format("%.02f", (float) x / ConstantsFor.KBYTE)).append(" kb in: ").append(y).append("<br>\n"));
         return stringBuilder.toString();
     }
 }

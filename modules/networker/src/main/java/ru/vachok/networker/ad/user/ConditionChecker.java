@@ -17,9 +17,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -171,21 +173,38 @@ class ConditionChecker implements InfoWorker {
                 try (ResultSet resultSet = p.executeQuery()) {
                     while (resultSet.next()) {
                         stringBuilder.append("<b>")
-                            .append(resultSet.getString(ConstantsFor.DB_FIELD_USER).trim()).append("</b> (time: ")
-                            .append(resultSet.getString(ConstantsNet.DB_FIELD_WHENQUERIED)).append(")");
+                            .append(resultSet.getString(ConstantsFor.DB_FIELD_USER).trim()).append("</b> (time from: <i>")
+                            .append(resultSet.getString(ConstantsNet.DB_FIELD_WHENQUERIED)).append("</i> to ");
                     }
                     if (resultSet.wasNull()) stringBuilder.append("<font color=\"red\">user name is null </font>");
                     try (ResultSet resultSet1 = p1.executeQuery()) {
                         while (resultSet1.next()) {
+                            if (resultSet.first()) {
+                                stringBuilder.append("<i>").append(resultSet1.getString(ConstantsNet.DB_FIELD_WHENQUERIED)).append("</i>)");
+                            }
                             if (resultSet1.last()) {
                                 stringBuilder
                                     .append("    (AutoResolved name: ")
-                                    .append(resultSet1.getString(ConstantsFor.DB_FIELD_USER).trim()).append(" (time: ")
-                                    .append(resultSet1.getString(ConstantsNet.DB_FIELD_WHENQUERIED)).append("))").toString();
+                                    .append(resultSet1.getString(ConstantsFor.DB_FIELD_USER).trim()).append(")").toString();
                             }
                             if (resultSet1.wasNull()) stringBuilder.append("<font color=\"orange\">auto resolve is null </font>");
                         }
                     }
+                }
+            }
+            try (PreparedStatement p2 = connection.prepareStatement("SELECT * FROM `velkompc` WHERE `NamePP` LIKE '" + pcName + "' ORDER BY `TimeNow` DESC LIMIT 75");
+                 ResultSet resultSet = p2.executeQuery()
+            ) {
+                List<String> onList = new ArrayList<>();
+                while (resultSet.next()) {
+                    if (resultSet.getString("AddressPP").toLowerCase().contains("true")) {
+                        onList.add(resultSet.getString(ConstantsFor.DBFIELD_TIMENOW));
+                    }
+                }
+                Collections.sort(onList);
+                Collections.reverse(onList);
+                if (onList.size() > 0) {
+                    onSizeNotNull(onList, stringBuilder);
                 }
             }
         }
@@ -198,5 +217,31 @@ class ConditionChecker implements InfoWorker {
         }
         if (stringBuilder.toString().isEmpty()) stringBuilder.append(getClass().getSimpleName()).append(" <font color=\"red\">").append(methName).append(" null</font>");
         return stringBuilder.toString();
+    }
+    
+    private void onSizeNotNull(List<String> onList, StringBuilder stringBuilder) {
+        String strDate = onList.get(0);
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat();
+        simpleDateFormat.applyPattern("yyyy-MM-dd");
+        Date dateFormat = new Date(Long.parseLong(AppComponents.getProps().getProperty(ConstantsNet.PR_LASTSCAN)));
+        try {
+            dateFormat = simpleDateFormat.parse(strDate.split(" ")[0]);
+        }
+        catch (ParseException | ArrayIndexOutOfBoundsException e) {
+            messageToUser.error(e.getMessage());
+        }
+    
+        if ((dateFormat.getTime() + TimeUnit.DAYS.toMillis(5) < System.currentTimeMillis())) {
+            strDate = "<font color=\"yellow\">" + strDate + "</font>";
+        }
+        if ((dateFormat.getTime() + TimeUnit.DAYS.toMillis(ConstantsFor.ONE_DAY_HOURS / 2) < System.currentTimeMillis())) {
+            strDate = "<font color=\"red\">" + strDate + "</font>";
+            
+        }
+        else {
+            strDate = "<font color=\"green\">" + strDate + "</font>";
+        }
+        stringBuilder.append("    Last online PC: ");
+        stringBuilder.append(strDate);
     }
 }

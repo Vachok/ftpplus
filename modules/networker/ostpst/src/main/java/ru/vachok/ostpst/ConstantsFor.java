@@ -15,4 +15,6 @@ public enum ConstantsFor {
     public static final String PR_WRITE = "write";
     
     public static final String PR_CAPACITY = "capacity";
+    
+    public static final int KBYTE_BYTES = 1024;
 }

@@ -42,6 +42,8 @@ public class ScanOnline implements Runnable, Pinger {
     
     private static final String FILENAME_ON = ScanOnline.class.getSimpleName() + FILEEXT_ONLIST;
     
+    private final String sep = ConstantsFor.FILESYSTEM_SEPARATOR;
+    
     /**
      {@link NetListKeeper#getOnLinesResolve()}
      */
@@ -60,7 +62,7 @@ public class ScanOnline implements Runnable, Pinger {
     
     public ScanOnline() {
         try {
-            this.maxOnList = FileSystemWorker.readFileToList(new File(FILENAME_ON).getAbsolutePath().replace(FILENAME_ON, "\\lan\\max.online"));
+            this.maxOnList = FileSystemWorker.readFileToList(new File(FILENAME_ON).getAbsolutePath().replace(FILENAME_ON, sep + "lan" + sep + "max.online"));
         }
         catch (NullPointerException e) {
             this.maxOnList = new ArrayList<>();
@@ -86,7 +88,7 @@ public class ScanOnline implements Runnable, Pinger {
         try {
             byte[] addressBytes = InetAddress.getByName(inetAddrStr.split(" ")[0]).getAddress();
             InetAddress inetAddress = InetAddress.getByAddress(addressBytes);
-            xReachable = inetAddress.isReachable(100);
+            xReachable = inetAddress.isReachable(300);
             if (!xReachable) {
                 printStream.println(inetAddrStr + " <font color=\"red\">offline</font>.");
                 String removeOnline = onLinesResolve.remove(inetAddress.toString());
@@ -115,7 +117,7 @@ public class ScanOnline implements Runnable, Pinger {
     public void run() {
         AppComponents.threadConfig().execByThreadConfig(this::offlineNotEmptyActions);
         File onlinesFile = new File(FILENAME_ON);
-        File fileMAX = new File(onlinesFile.toPath().toAbsolutePath().toString().replace(FILENAME_ON, "\\lan\\max.online"));
+        File fileMAX = new File(onlinesFile.toPath().toAbsolutePath().toString().replace(FILENAME_ON, sep + "lan" + sep + "max.online"));
         if (onlinesFile.exists()) {
             onlineFileExists(onlinesFile, fileMAX);
         }
@@ -142,11 +144,12 @@ public class ScanOnline implements Runnable, Pinger {
     public String toString() {
         final StringBuilder sb = new StringBuilder();
         sb.append("<b>Since ").append("<i>").append(new Date(NetScanFileWorker.getI().getLastStamp())).append("</i>").append(tvInfo.getInfoAbout()).append("</b><br><br>");
+        sb.append("<details><summary>Максимальное кол-во онлайн адресов: ").append(maxOnList.size()).append("</summary>").append(new TForms().fromArray(maxOnList, true))
+            .append(ConstantsFor.HTMLTAG_DETAILSCLOSE);
         sb.append("<b>ipconfig /flushdns = </b>").append(new String(AppComponents.ipFlushDNS().getBytes(), Charset.forName("IBM866"))).append("<br>");
         sb.append("Offline pc is <font color=\"red\"><b>").append(NET_LIST_KEEPER.getOffLines().size()).append(":</b></font><br>");
         sb.append("Online  pc is<font color=\"#00ff69\"> <b>").append(onLinesResolve.size()).append(":</b><br>");
         sb.append(new TForms().fromArray(onLinesResolve, true)).append("</font><br>");
-        sb.append("<details><summary>Максимальное кол-во онлайн адресов: " + maxOnList.size() + "</summary>" + new TForms().fromArray(maxOnList, true) + "</details>");
         return sb.toString();
     }
     

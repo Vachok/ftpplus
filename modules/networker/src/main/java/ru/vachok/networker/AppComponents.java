@@ -23,10 +23,10 @@ import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetPinger;
+import ru.vachok.networker.net.NetScannerSvc;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.ADSrv;
 import ru.vachok.networker.services.MessageLocal;
-import ru.vachok.networker.services.NetScannerSvc;
 import ru.vachok.networker.services.SimpleCalculator;
 import ru.vachok.stats.SaveLogsToDB;
 
@@ -39,6 +39,7 @@ import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -203,10 +204,17 @@ public class AppComponents {
     
     public static Properties getProps() {
         if (APP_PR.size() > 3) {
+            if ((APP_PR.getProperty(ConstantsFor.PR_DBSTAMP) != null) && (Long.parseLong(APP_PR.getProperty(ConstantsFor.PR_DBSTAMP)) + TimeUnit.MINUTES.toMillis(180)) < System
+                .currentTimeMillis()) {
+                APP_PR.putAll(new AppComponents().getAppProps());
+            }
             return APP_PR;
         }
         else {
-            return new AppComponents().getAppProps();
+            Properties appProps = new AppComponents().getAppProps();
+            appProps.setProperty(ConstantsFor.PR_DBSTAMP, String.valueOf(System.currentTimeMillis()));
+            appProps.setProperty(ConstantsFor.PR_THISPC, ConstantsFor.thisPC());
+            return appProps;
         }
     }
     
@@ -227,7 +235,6 @@ public class AppComponents {
 
     private Properties getAppProps() {
         threadConfig().thrNameSet("getAPr");
-        if (APP_PR.size() > 3) return APP_PR;
         MysqlDataSource mysqlDataSource = new DBRegProperties(DB_JAVA_ID).getRegSourceForProperties();
         mysqlDataSource.setRelaxAutoCommit(true);
         mysqlDataSource.setLogger("java.util.Logger");
