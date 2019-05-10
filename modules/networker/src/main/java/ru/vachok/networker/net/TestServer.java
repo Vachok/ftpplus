@@ -15,6 +15,7 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.channels.ServerSocketChannel;
 
 
 /**
@@ -25,31 +26,36 @@ import java.net.Socket;
 public class TestServer implements ConnectToMe {
     
     
+    private ServerSocketChannel channel;
+    
     private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
     
     @Override public void runSocket() throws IOException {
         ServerSocket socketSrv = new ServerSocket(11111);
         while (true) {
+            socketSrv.setReuseAddress(true);
+            this.channel = socketSrv.getChannel();
             accepSoc(socketSrv.accept());
         }
     }
     
-    @Override public void accepSoc(Socket socket) {
+    @Override public void accepSoc(final Socket socket) {
+        
         try {
             InputStream iStream = socket.getInputStream();
             OutputStream outputStream = socket.getOutputStream();
             PrintStream printStream = new PrintStream(outputStream);
             {
-                System.setIn(iStream);
-                System.setOut(printStream);
-                while (true) {
+                while (socket.isConnected()) {
+                    System.setIn(iStream);
+                    System.setOut(printStream);
                     printStream.print(iStream.read());
                 }
             }
         }
         catch (IOException e) {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".accepSoc", e));
-            }
+        }
         System.setOut(System.err);
     }
     
