@@ -219,10 +219,11 @@ public class AppInfoOnLoad implements Runnable {
      */
     @SuppressWarnings("resource")
     private static void starterTelnet() {
-        MyServer.setSocket(new Socket());
-        while (!MyServer.getSocket().isClosed()) {
+        MyServer myServer = MyServer.getI();
+        myServer.setSocket(new Socket());
+        while (!myServer.getSocket().isClosed()) {
             try {
-                MyServer.reconSock();
+                myServer.reconSock();
             }
             catch (IOException | InterruptedException | NullPointerException e1) {
                 messageToUser.info("AppInfoOnLoad.starterTelnet", "e1.getMessage()", e1.getMessage());
