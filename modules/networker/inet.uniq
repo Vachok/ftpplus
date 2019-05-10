@@ -66,13 +66,10 @@
 10.200.202.21 vipnet.list
 10.200.202.4 vipnet.list
 10.200.202.4 squid.list NOT UNIQUE
-10.200.202.5 squid.list
-10.200.202.51 squid.list
+10.200.202.5 24hrs.list
 10.200.202.52 tempfull.list
-10.200.202.54 squid.list
 10.200.202.55 tempfull.list
 10.200.202.56 tempfull.list
-10.200.202.58 squid.list
 10.200.202.59 vipnet.list
 10.200.202.59 tempfull.list NOT UNIQUE
 10.200.202.6 squid.list
@@ -192,7 +189,7 @@
 10.200.213.81 tempfull.list NOT UNIQUE
 10.200.213.83 vipnet.list
 10.200.213.84 squid.list
-10.200.213.85 tempfull.list
+10.200.213.85 24hrs.list
 10.200.213.86 vipnet.list
 10.200.213.90 vipnet.list
 10.200.213.91 vipnet.list
