@@ -52,8 +52,7 @@ public class WeekPCStats implements Runnable, DataBaseRegSQL {
         this.sql = sql;
         this.fileName = ConstantsFor.FILENAME_VELKOMPCUSERAUTOTXT;
     }
-
-
+    
     static {
         try {
             messageToUser = new MessageToTray(WeekPCStats.class.getSimpleName());
@@ -77,17 +76,19 @@ public class WeekPCStats implements Runnable, DataBaseRegSQL {
     @Override public int selectFrom() {
         final long stArt = System.currentTimeMillis();
         int retInt = 0;
-        File file = new File(fileName);
         try(Connection c = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM)){
             try(PreparedStatement p = c.prepareStatement(sql)){
-                if(sql.contains("DELETE")) {
-                    int delUp = p.executeUpdate();
-                    new MessageLocal(getClass().getSimpleName()).info(fileName , "deleted" , delUp + " rows.");
-                    return delUp;
+                if (sql.contains("DELETE")) {
+                    contDelete(p);
                 }
+                
                 try(ResultSet r = p.executeQuery()){
-                    try(OutputStream outputStream = new FileOutputStream(file)){
+                    try (OutputStream outputStream = new FileOutputStream(fileName)) {
                         try(PrintWriter printWriter = new PrintWriter(outputStream , true)){
+                            printWriter.println(r.getFetchSize());
+                            printWriter.print(" FetchSize of ResultSet r. ");
+                            printWriter.print(new java.util.Date());
+                            printWriter.println();
                             while(r.next()){
                                 if (sql.equals(ConstantsFor.SQL_SELECTFROM_PCUSERAUTO)) {
                                     pcUserAutoSelect(r, printWriter);
@@ -96,16 +97,7 @@ public class WeekPCStats implements Runnable, DataBaseRegSQL {
                                     printWriter.println(r.getString("ip"));
                                 }
                                 if(sql.contains("SELECT * FROM `inetstats` WHERE `ip` LIKE")) {
-                                    printWriter.print(new java.util.Date(Long.parseLong(r.getString("Date"))));
-                                    printWriter.print(",");
-                                    printWriter.print(r.getString(ConstantsFor.DBFIELB_RESPONSE));
-                                    printWriter.print(",");
-                                    printWriter.print(r.getString("bytes"));
-                                    printWriter.print(",");
-                                    printWriter.print(r.getString(ConstantsFor.DBFIELD_METHOD));
-                                    printWriter.print(",");
-                                    printWriter.print(r.getString("site"));
-                                    printWriter.println();
+                                    inetstatsIP(printWriter, r);
                                 }
                             }
                         }
@@ -115,15 +107,39 @@ public class WeekPCStats implements Runnable, DataBaseRegSQL {
         }catch(SQLException | IOException e){
             messageToUser.error(new TForms().fromArray(e, false));
         }
-        String toCopy = "\\\\10.10.111.1\\Torrents-FTP\\" + file.getName();
+        String toCopy = "\\\\10.10.111.1\\Torrents-FTP\\" + fileName;
         if(!ConstantsFor.thisPC().toLowerCase().contains("home")){
-            toCopy = file.getName() + "_cp";
+            toCopy = fileName + "_cp";
         }
-        FileSystemWorker.copyOrDelFile(file, toCopy, false);
-        file.deleteOnExit();
+        File file = new File(fileName);
+        boolean isCopyDel = FileSystemWorker.copyOrDelFile(file, toCopy, false);
+        if (isCopyDel) {
+            boolean isDelete = file.delete();
+            if (!isDelete) {
+                file.deleteOnExit();
+            }
+        }
         return PC_NAMES_IN_TABLE.size();
     }
-
+    
+    private void inetstatsIP(PrintWriter printWriter, ResultSet r) throws SQLException {
+        printWriter.print(new java.util.Date(Long.parseLong(r.getString("Date"))));
+        printWriter.print(",");
+        printWriter.print(r.getString(ConstantsFor.DBFIELB_RESPONSE));
+        printWriter.print(",");
+        printWriter.print(r.getString("bytes"));
+        printWriter.print(",");
+        printWriter.print(r.getString(ConstantsFor.DBFIELD_METHOD));
+        printWriter.print(",");
+        printWriter.print(r.getString("site"));
+        printWriter.println();
+    }
+    
+    private void contDelete(PreparedStatement p) throws SQLException {
+        int delUp = p.executeUpdate();
+        messageToUser.info(fileName, "deleted", delUp + " rows.");
+    }
+    
     private void pcUsrAutoMake() {
         messageToUser.warn(getClass().getSimpleName(), fileName + "file, SQL: " + sql, " = " + selectFrom());
     }
