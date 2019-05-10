@@ -30,6 +30,7 @@ import ru.vachok.networker.services.WeekPCStats;
 import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
+import java.lang.management.OperatingSystemMXBean;
 import java.lang.management.PlatformManagedObject;
 import java.lang.management.ThreadMXBean;
 import java.net.Socket;
@@ -304,7 +305,8 @@ public class AppInfoOnLoad implements Runnable {
         exitLast = exitLast + "\n" + checkDay(scheduledExecutorService) + "\n" + stringBuilder;
         miniLogger.add(exitLast);
         messageToUser.info(AppInfoOnLoad.class.getSimpleName() + ConstantsFor.STR_FINISH);
-        FileSystemWorker.writeFile(CLASS_NAME + ".mini", miniLogger.stream());
+        boolean isWrite = FileSystemWorker.writeFile(CLASS_NAME + ".mini", miniLogger.stream());
+        messageToUser.info(CLASS_NAME + " = " + isWrite);
     }
     
     /**
@@ -315,13 +317,10 @@ public class AppInfoOnLoad implements Runnable {
     @SuppressWarnings("DuplicateStringLiteralInspection")
     private void infoForU(ApplicationContext appCtx) {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(appCtx.getApplicationName());
-        stringBuilder.append(" app name");
-        stringBuilder.append(appCtx.getDisplayName());
-        stringBuilder.append(" app display name\n");
+        stringBuilder.append(AppComponents.versionInfo().toString()).append("\n");
         stringBuilder.append(ConstantsFor.getBuildStamp());
-        AppInfoOnLoad.messageToUser.info("AppInfoOnLoad.infoForU", ConstantsFor.STR_FINISH, " = " + stringBuilder);
-        AppInfoOnLoad.miniLogger.add("infoForU ends. now schedStarter(). Result: " + stringBuilder);
+        messageToUser.info("AppInfoOnLoad.infoForU", ConstantsFor.STR_FINISH, " = " + stringBuilder);
+        miniLogger.add("infoForU ends. now schedStarter(). Result: " + stringBuilder);
         AppComponents.threadConfig().execByThreadConfig(new DeadLockMonitor());
         schedStarter();
     }
@@ -333,14 +332,10 @@ public class AppInfoOnLoad implements Runnable {
      Uses: 1.1 {@link #dateSchedulers(ScheduledExecutorService)}, 1.2 {@link ConstantsFor#thisPC()}, 1.3 {@link ConstantsFor#thisPC()}.
      */
     private void schedStarter() {
-        String classMeth = "AppInfoOnLoad.schedStarter";
-        AppInfoOnLoad.miniLogger.add("***" + classMeth);
+        OperatingSystemMXBean operatingSystemMXBean = ManagementFactory.getOperatingSystemMXBean();
+        String osName = operatingSystemMXBean.getName();
         final long stArt = System.currentTimeMillis();
-        ScheduledExecutorService scheduledExecutorService = AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor();
-        if (!ConstantsFor.PR_OSNAME_LOWERCASE.contains(ConstantsFor.PR_WINDOWSOS)) {
-            unixTrySched();
-        }
-
+        ScheduledThreadPoolExecutor scheduledExecutorService = AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor();
         
         String thisPC = ConstantsFor.thisPC();
         AppInfoOnLoad.miniLogger.add(thisPC);
@@ -350,7 +345,9 @@ public class AppInfoOnLoad implements Runnable {
                 TimeUnit.SECONDS);
             AppInfoOnLoad.miniLogger.add("runCommonScan init delay " + ConstantsFor.INIT_DELAY + ", delay " + TimeUnit.DAYS.toSeconds(1) + ". SECONDS");
         }
-        if (!ConstantsFor.PR_OSNAME_LOWERCASE.contains(ConstantsFor.PR_WINDOWSOS)) {
+        if (!osName.contains(ConstantsFor.PR_WINDOWSOS)) {
+            messageToUser.warn(operatingSystemMXBean.getName(), operatingSystemMXBean.getVersion() + " proc = " + operatingSystemMXBean
+                .getAvailableProcessors(), thisPC + " (av load: " + operatingSystemMXBean.getSystemLoadAverage() + ")");
             AppComponents.threadConfig().execByThreadConfig(()->messageToUser.warn(unixTrySched()));
         }
         else {
@@ -426,6 +423,7 @@ public class AppInfoOnLoad implements Runnable {
             FileSystemWorker.writeFile("scheduler.stack", Arrays.toString(threadMXBean.getThreadInfo(id).getStackTrace()));
             stringBuilder.append(threadMXBean.getThreadInfo(Thread.currentThread().getId()).toString());
         }
+        dateSchedulers(executorService);
         return stringBuilder.toString();
     }
 }
