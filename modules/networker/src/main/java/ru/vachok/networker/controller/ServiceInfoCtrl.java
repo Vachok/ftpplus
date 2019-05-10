@@ -26,6 +26,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.OperatingSystemMXBean;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.InetAddress;
@@ -312,13 +314,25 @@ public class ServiceInfoCtrl {
     }
     
     private String pingDO0213() {
+        StringBuilder stringBuilder = new StringBuilder();
+        OperatingSystemMXBean operatingSystemMXBean = ManagementFactory.getOperatingSystemMXBean();
+        double averageLoad = operatingSystemMXBean.getSystemLoadAverage();
+    
+        if (averageLoad > 0) {
+            stringBuilder.append(averageLoad).append(" load");
+        }
+        else {
+            stringBuilder.append(ManagementFactory.getMemoryMXBean().getHeapMemoryUsage()).append("/")
+                .append(ManagementFactory.getMemoryMXBean().getNonHeapMemoryUsage()).append(" heap/noheap");
+        }
         try {
             InetAddress nameHost = InetAddress.getByName(OtherKnownDevices.DO0213_KUDR);
-            return nameHost.getHostName().replace(ConstantsFor.DOMAIN_EATMEATRU, "") + " is " + nameHost.isReachable((int) (ConstantsFor.DELAY * 3));
+            stringBuilder.append(nameHost.getHostName().replace(ConstantsFor.DOMAIN_EATMEATRU, "")).append(" is ").append(nameHost.isReachable((int) (ConstantsFor.DELAY * 3)));
         }
         catch (IOException e) {
             messageToUser.error(e.getMessage());
-            return e.getMessage();
+            stringBuilder.append(e.getMessage());
         }
+        return stringBuilder.toString();
     }
 }
