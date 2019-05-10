@@ -15,7 +15,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.MyServer;
+import ru.vachok.networker.net.MyConsoleServer;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.SpeedChecker;
 import ru.vachok.networker.services.WeekPCStats;
@@ -38,7 +38,7 @@ import java.util.concurrent.*;
  {@link ru.vachok.networker} - 5 : {@link AppComponents}, {@link AppInfoOnLoad}, {@link ConstantsFor}, {@link ExitApp}, {@link TForms}<br>
  {@link ru.vachok.networker.config} - 1 : {@link ThreadConfig} <br>
  {@link ru.vachok.networker.fileworks} - 1 : {@link FileSystemWorker} <br>
- {@link ru.vachok.networker.net} - 1 : {@link MyServer} <br>
+ {@link ru.vachok.networker.net} - 1 : {@link MyConsoleServer} <br>
  {@link ru.vachok.networker.services} - 2 : {@link MessageLocal}, {@link WeekPCStats} <br>
  {@link ru.vachok.networker.systray} - 1 : {@link SystemTrayHelper}
  <p>
@@ -117,7 +117,7 @@ public class IntoApplication {
      */
     private static void afterSt() {
         @NotNull Runnable infoAndSched = new AppInfoOnLoad();
-        Runnable mySrv = MyServer.getI();
+        Runnable mySrv = MyConsoleServer.getI();
         EXECUTOR.submit(infoAndSched);
         EXECUTOR.submit(mySrv);
         EXECUTOR.submit(IntoApplication::getWeekPCStats);

@@ -30,22 +30,22 @@ import static java.lang.System.out;
 
  @since 03.11.2018 (23:51) */
 @SuppressWarnings ({"resource", "IOResourceOpenedButNotSafelyClosed"})
-public class MyServer extends Thread implements ConnectToMe {
+public class MyConsoleServer extends Thread implements ConnectToMe {
 
     /**
      Simple Name класса, для поиска настроек
      */
-    private static final String SOURCE_CLASS = MyServer.class.getSimpleName();
+    private static final String SOURCE_CLASS = MyConsoleServer.class.getSimpleName();
 
     /**
      <b>Single Instance</b>
      */
-    private static final MyServer myServer = new MyServer();
+    private static final MyConsoleServer MY_CONSOLE_SERVER = new MyConsoleServer();
 
     /**
      {@link DBMessenger}
      */
-    private static final MessageToUser messageToUser = new MessageLocal(MyServer.class.getSimpleName());
+    private static final MessageToUser messageToUser = new MessageLocal(MyConsoleServer.class.getSimpleName());
 
     private static final int LPORT = Integer.parseInt(AppComponents
         .getProps()
@@ -59,25 +59,25 @@ public class MyServer extends Thread implements ConnectToMe {
     private Socket socket;
     
     
+    /**
+     {@link #MY_CONSOLE_SERVER}
+     */
+    private MyConsoleServer() {
+        AppComponents.threadConfig().thrNameSet("tport:" + LPORT);
+    }
+    
+    
     static {
         try {
             serverSocket = new ServerSocket(LPORT);
         }
         catch (IOException e) {
-            messageToUser.error(MyServer.class.getSimpleName(), e.getMessage(), new TForms().fromArray(e, false));
+            messageToUser.error(MyConsoleServer.class.getSimpleName(), e.getMessage(), new TForms().fromArray(e, false));
         }
     }
-    
-    
+
     public Socket getSocket() {
         return socket;
-    }
-
-    /**
-     @return instance
-     */
-    public static MyServer getI() {
-        return myServer;
     }
 
 
@@ -88,10 +88,10 @@ public class MyServer extends Thread implements ConnectToMe {
     private static ServerSocket serverSocket;
 
     /**
-     {@link #myServer}
+     @return instance
      */
-    private MyServer() {
-        AppComponents.threadConfig().thrNameSet("tport:" + LPORT);
+    public static MyConsoleServer getI() {
+        return MY_CONSOLE_SERVER;
     }
     
     public void setSocket(Socket socket) {
@@ -323,7 +323,7 @@ public class MyServer extends Thread implements ConnectToMe {
     public String toString() {
         final StringBuilder sb = new StringBuilder("MyServer{");
         sb.append("messageToUser=").append(messageToUser);
-        sb.append(", myServer=").append(myServer);
+        sb.append(", myServer=").append(MY_CONSOLE_SERVER);
         sb.append(", serverSocket=").append(serverSocket);
         sb.append(", socket=").append(socket);
         sb.append(", SOURCE_CLASS='").append(SOURCE_CLASS).append('\'');

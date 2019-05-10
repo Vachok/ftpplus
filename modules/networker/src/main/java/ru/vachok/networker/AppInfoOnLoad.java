@@ -19,7 +19,7 @@ import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.mailserver.MailIISLogsCleaner;
 import ru.vachok.networker.net.DiapazonedScan;
-import ru.vachok.networker.net.MyServer;
+import ru.vachok.networker.net.MyConsoleServer;
 import ru.vachok.networker.net.NetMonitorPTV;
 import ru.vachok.networker.net.ScanOnline;
 import ru.vachok.networker.net.enums.ConstantsNet;
@@ -31,7 +31,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
-import java.lang.management.PlatformManagedObject;
 import java.lang.management.ThreadMXBean;
 import java.net.Socket;
 import java.nio.file.FileVisitor;
@@ -91,6 +90,16 @@ public class AppInfoOnLoad implements Runnable {
     private final TemporaryFullInternet temporaryFullInternet = new AppComponents().temporaryFullInternet();
     
     private static int thisDelay;
+    
+    private static String unixThreadInfo = System.getProperty("os.name");
+    
+    public static String getUnixThreadInfo() {
+        return unixThreadInfo;
+    }
+    
+    public static void setUnixThreadInfo(String unixThreadInfo) {
+        AppInfoOnLoad.unixThreadInfo = unixThreadInfo;
+    }
     
     
     static {
@@ -211,19 +220,19 @@ public class AppInfoOnLoad implements Runnable {
     /**
      Reconnect Socket, пока он открыт
      <p>
-     1. {@link MyServer#setSocket(java.net.Socket)}. Создаём новый {@link Socket}. <br>
-     2. {@link MyServer#getSocket()} - пока он не {@code isClosed}, 3. {@link MyServer#reconSock()} реконнект. <br><br>
+     1. {@link MyConsoleServer#setSocket(java.net.Socket)}. Создаём новый {@link Socket}. <br>
+     2. {@link MyConsoleServer#getSocket()} - пока он не {@code isClosed}, 3. {@link MyConsoleServer#reconSock()} реконнект. <br><br>
      {@link IOException}, {@link InterruptedException}, {@link NullPointerException} : <br>
      4. {@link TForms#fromArray(Exception, boolean)} - преобразуем исключение в строку. <br>
-     5. {@link AppComponents#threadConfig()} , 6 {@link ThreadConfig#getTaskExecutor()} перезапуск {@link MyServer#getI()}
+     5. {@link AppComponents#threadConfig()} , 6 {@link ThreadConfig#getTaskExecutor()} перезапуск {@link MyConsoleServer#getI()}
      */
     @SuppressWarnings("resource")
     private static void starterTelnet() {
-        MyServer myServer = MyServer.getI();
-        myServer.setSocket(new Socket());
-        while (!myServer.getSocket().isClosed()) {
+        MyConsoleServer myConsoleServer = MyConsoleServer.getI();
+        myConsoleServer.setSocket(new Socket());
+        while (!myConsoleServer.getSocket().isClosed()) {
             try {
-                myServer.reconSock();
+                myConsoleServer.reconSock();
             }
             catch (IOException | InterruptedException | NullPointerException e1) {
                 messageToUser.info("AppInfoOnLoad.starterTelnet", "e1.getMessage()", e1.getMessage());
@@ -352,7 +361,19 @@ public class AppInfoOnLoad implements Runnable {
         else {
             messageToUser.warn(operatingSystemMXBean.getName(), operatingSystemMXBean.getVersion() + " proc = " + operatingSystemMXBean
                 .getAvailableProcessors(), thisPC + " (av load: " + operatingSystemMXBean.getSystemLoadAverage() + ")");
-            new Thread(()->messageToUser.warn(unixTrySched())).start();
+            Thread unixThread = new Thread() {
+                public void run() {
+                    try {
+                        messageToUser.warn(unixTrySched());
+                    }
+                    catch (Exception e) {
+                        messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".schedStarter", e));
+                    }
+                }
+            };
+            unixThread.setName("unix");
+            unixThread.start();
+            setUnixThreadInfo(ManagementFactory.getThreadMXBean().getThreadInfo(unixThread.getId()).toString());
         }
     }
     
@@ -382,23 +403,15 @@ public class AppInfoOnLoad implements Runnable {
         AppInfoOnLoad.dateSchedulers(scheduledExecutorService);
     }
     
-    private String unixTrySched() {
+    private String unixTrySched() throws RuntimeException {
         StringBuilder stringBuilder = new StringBuilder();
-        AppComponents.threadConfig().thrNameSet("unix");
         ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
         threadMXBean.setThreadContentionMonitoringEnabled(true);
         threadMXBean.setThreadCpuTimeEnabled(true);
     
         ScheduledExecutorService executorService = Executors.unconfigurableScheduledExecutorService(Executors.newScheduledThreadPool(ConstantsFor.ONE_DAY_HOURS));
         stringBuilder.append(executorService.toString());
-        Set<Class<? extends PlatformManagedObject>> platformInterfaces = ManagementFactory.getPlatformManagementInterfaces();
-        platformInterfaces.forEach(x->{
-            String faceName = x.getSimpleName();
-            String descriptorStr = x.descriptorString();
-            String canName = x.getCanonicalName();
-            String typeName = x.getTypeName();
-            messageToUser.warn("Platform manage faces = " + faceName + " name, " + descriptorStr + " descriptor, " + canName + " canonical name, " + typeName + " type");
-        });
+        
         ScheduledFuture<?> ptvPing = executorService.scheduleWithFixedDelay(new NetMonitorPTV(), 0, ConstantsFor.ONE_DAY_HOURS, TimeUnit.SECONDS);
         ScheduledFuture<?> tmpInet = executorService.scheduleWithFixedDelay(new TemporaryFullInternet(), 0, ConstantsFor.ONE_DAY_HOURS, TimeUnit.SECONDS);
         ScheduledFuture<?> diapScan = executorService.scheduleWithFixedDelay(DiapazonedScan.getInstance(), 2, ConstantsFor.DELAY, TimeUnit.MINUTES);
@@ -424,6 +437,7 @@ public class AppInfoOnLoad implements Runnable {
             FileSystemWorker.writeFile("scheduler.stack", Arrays.toString(threadMXBean.getThreadInfo(id).getStackTrace()));
             stringBuilder.append(threadMXBean.getThreadInfo(Thread.currentThread().getId()).toString());
         }
+        setUnixThreadInfo(stringBuilder.toString());
         dateSchedulers(executorService);
         return stringBuilder.toString();
     }

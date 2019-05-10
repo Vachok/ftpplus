@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.AppInfoOnLoad;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
@@ -171,6 +172,7 @@ public class VersionInfo {
         sb.append(", buildTime='").append(buildTime).append('\'');
         sb.append(", propertiesFrom='").append(propertiesFrom).append('\'');
         sb.append(", thisPCNameStr='").append(thisPCNameStr).append('\'');
+        sb.append(", unix='").append(AppInfoOnLoad.getUnixThreadInfo()).append('\'');
         sb.append('}');
         return sb.toString();
     }
