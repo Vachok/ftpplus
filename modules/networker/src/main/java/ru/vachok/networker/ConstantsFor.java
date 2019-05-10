@@ -464,6 +464,8 @@ public enum ConstantsFor {
     
     public static final String STR_ERROR = "ERROR";
     
+    public static final String PR_TESTSERVER = "testserver";
+    
     /**
      @return {@link #MAIL_RULES}
      */

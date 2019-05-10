@@ -42,7 +42,7 @@ public class TestServer implements ConnectToMe {
             {
                 System.setIn(iStream);
                 System.setOut(printStream);
-                while (socket.isBound() && socket.isConnected()) {
+                while (true) {
                     printStream.print(iStream.read());
                 }
             }
