@@ -194,7 +194,7 @@ public class ServiceInfoCtrl {
             .append("<p><font color=\"grey\">").append(listFilesToReadStr()).append("</font>")
             .toString();
     
-        model.addAttribute(ConstantsFor.ATT_TITLE, getLast() + " " + pingDO0213());
+        model.addAttribute(ConstantsFor.ATT_TITLE, System.getProperty("os.name") + " " + pingDO0213());
         
         model.addAttribute("mail", percToEnd(comeD, 9));
         model.addAttribute("ping", pingGit());
