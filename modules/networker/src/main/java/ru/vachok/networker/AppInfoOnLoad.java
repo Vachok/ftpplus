@@ -356,8 +356,8 @@ public class AppInfoOnLoad implements Runnable {
      Uses: 1.1 {@link #dateSchedulers(ScheduledExecutorService)}, 1.2 {@link ConstantsFor#thisPC()}, 1.3 {@link ConstantsFor#thisPC()}.
      */
     private void schedStarter() {
-        OperatingSystemMXBean operatingSystemMXBean = ManagementFactory.getOperatingSystemMXBean();
-        String osName = operatingSystemMXBean.getName();
+        String osName = System.getProperty("os.name");
+        messageToUser.info(osName);
         final long stArt = System.currentTimeMillis();
         ScheduledThreadPoolExecutor scheduledExecutorService = AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor();
         
@@ -369,10 +369,11 @@ public class AppInfoOnLoad implements Runnable {
                 TimeUnit.SECONDS);
             AppInfoOnLoad.miniLogger.add("runCommonScan init delay " + ConstantsFor.INIT_DELAY + ", delay " + TimeUnit.DAYS.toSeconds(1) + ". SECONDS");
         }
-        else if (osName.contains(ConstantsFor.PR_WINDOWSOS)) {
+        else if (osName.toLowerCase().contains(ConstantsFor.PR_WINDOWSOS)) {
             schedWithService(scheduledExecutorService);
         }
-        else {
+        else if (osName.toLowerCase().contains("bsd")) {
+            OperatingSystemMXBean operatingSystemMXBean = ManagementFactory.getOperatingSystemMXBean();
             messageToUser.warn(operatingSystemMXBean.getName(), operatingSystemMXBean.getVersion() + " proc = " + operatingSystemMXBean
                 .getAvailableProcessors(), thisPC + " (av load: " + operatingSystemMXBean.getSystemLoadAverage() + ")");
             Thread unixThread = new Thread() {
@@ -388,6 +389,11 @@ public class AppInfoOnLoad implements Runnable {
             unixThread.setName("unix");
             unixThread.start();
             setUnixThreadInfo(ManagementFactory.getThreadMXBean().getThreadInfo(unixThread.getId()).toString());
+        }
+        else {
+            OperatingSystemMXBean operatingSystemMXBean = ManagementFactory.getOperatingSystemMXBean();
+            osName = operatingSystemMXBean.getName();
+            messageToUser.error(osName);
         }
     }
     
