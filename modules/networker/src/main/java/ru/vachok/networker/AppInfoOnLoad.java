@@ -345,13 +345,13 @@ public class AppInfoOnLoad implements Runnable {
                 TimeUnit.SECONDS);
             AppInfoOnLoad.miniLogger.add("runCommonScan init delay " + ConstantsFor.INIT_DELAY + ", delay " + TimeUnit.DAYS.toSeconds(1) + ". SECONDS");
         }
-        if (!osName.contains(ConstantsFor.PR_WINDOWSOS)) {
-            messageToUser.warn(operatingSystemMXBean.getName(), operatingSystemMXBean.getVersion() + " proc = " + operatingSystemMXBean
-                .getAvailableProcessors(), thisPC + " (av load: " + operatingSystemMXBean.getSystemLoadAverage() + ")");
-            AppComponents.threadConfig().execByThreadConfig(()->messageToUser.warn(unixTrySched()));
+        else if (osName.contains(ConstantsFor.PR_WINDOWSOS)) {
+            schedWithService(scheduledExecutorService);
         }
         else {
-            schedWithService(scheduledExecutorService);
+            messageToUser.warn(operatingSystemMXBean.getName(), operatingSystemMXBean.getVersion() + " proc = " + operatingSystemMXBean
+                .getAvailableProcessors(), thisPC + " (av load: " + operatingSystemMXBean.getSystemLoadAverage() + ")");
+            new Thread(()->messageToUser.warn(unixTrySched())).start();
         }
     }
     

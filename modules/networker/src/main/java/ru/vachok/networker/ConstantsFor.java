@@ -452,7 +452,7 @@ public enum ConstantsFor {
     
     public static final String DBFIELD_TIMENOW = "TimeNow";
     
-    public static final String PR_WINDOWSOS = "windows";
+    public static final String PR_WINDOWSOS = "indows";
     
     public static final String HTMLTAG_DETAILSCLOSE = "</details>";
     
