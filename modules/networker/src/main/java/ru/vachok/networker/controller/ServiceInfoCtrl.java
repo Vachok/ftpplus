@@ -319,11 +319,12 @@ public class ServiceInfoCtrl {
         double averageLoad = operatingSystemMXBean.getSystemLoadAverage();
     
         if (averageLoad > 0) {
-            stringBuilder.append(averageLoad).append(" load");
+            BigDecimal bigDecimal = BigDecimal.valueOf(averageLoad);
+            bigDecimal = bigDecimal.setScale(3, RoundingMode.HALF_EVEN);
+            stringBuilder.append(bigDecimal).append(" %load; ");
         }
         else {
-            stringBuilder.append(ManagementFactory.getMemoryMXBean().getHeapMemoryUsage()).append("/")
-                .append(ManagementFactory.getMemoryMXBean().getNonHeapMemoryUsage()).append(" heap/noheap");
+            stringBuilder.append(ManagementFactory.getMemoryMXBean().getHeapMemoryUsage()).append(" heap ");
         }
         try {
             InetAddress nameHost = InetAddress.getByName(OtherKnownDevices.DO0213_KUDR);
