@@ -228,11 +228,10 @@ public class AppInfoOnLoad implements Runnable {
     private static void starterTelnet() {
         ConnectToMe myConsoleServer = MyConsoleServer.getI();
         if (ConstantsFor.PR_OSNAME_LOWERCASE.contains("bsd") || APP_PROPS.getProperty(ConstantsFor.PR_TESTSERVER).contains("true")) {
-            testServerStart();
+            AppComponents.threadConfig().execByThreadConfig(AppInfoOnLoad::testServerStart);
         }
         else {
             ((MyConsoleServer) myConsoleServer).setSocket(new Socket());
-        
             while (!((MyConsoleServer) myConsoleServer).getSocket().isClosed()) {
                 try {
                     myConsoleServer.reconSock();
@@ -248,12 +247,13 @@ public class AppInfoOnLoad implements Runnable {
     }
     
     private static void testServerStart() {
-        TestServer testServer = new TestServer();
+        AppComponents.threadConfig().thrNameSet("11111");
+        ConnectToMe testServer = new TestServer();
         try {
             testServer.runSocket();
         }
         catch (IOException e) {
-            messageToUser.error(e.getMessage());
+            messageToUser.error(FileSystemWorker.error(AppInfoOnLoad.class.getSimpleName() + ".testServerStart", e));
         }
     }
     

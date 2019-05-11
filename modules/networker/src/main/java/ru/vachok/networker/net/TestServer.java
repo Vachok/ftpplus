@@ -11,6 +11,8 @@ import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.abstr.ConnectToMe;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
+import ru.vachok.ostpst.MakeConvert;
+import ru.vachok.ostpst.OstToPst;
 
 import java.awt.*;
 import java.io.IOException;
@@ -29,13 +31,19 @@ import java.util.concurrent.TimeoutException;
  <p>
  
  @since 10.05.2019 (13:48) */
-public class TestServer implements ConnectToMe {
+public class TestServer implements ConnectToMe, AutoCloseable {
     
     private ServerSocket serverSocket;
     
     private PrintStream printStreamF;
     
+    private Socket socket;
+    
     private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
+    
+    @Override public void close() throws Exception {
+        printStreamF.close();
+    }
     
     @Override public void runSocket() throws IOException {
         ServerSocket socketSrv = new ServerSocket(11111);
@@ -46,7 +54,8 @@ public class TestServer implements ConnectToMe {
         }
     }
     
-    @Override public void accepSoc(final Socket socket) {
+    @Override public void accepSoc(Socket socket) {
+        this.socket = socket;
         try {
             InputStream iStream = socket.getInputStream();
             Scanner scanner = new Scanner(iStream);
@@ -61,7 +70,7 @@ public class TestServer implements ConnectToMe {
                     scanInput(scanner.nextLine(), socket);
                 }
                 printStream.print(iStream.read());
-                }
+            }
     
         }
         catch (IOException e) {
@@ -72,7 +81,7 @@ public class TestServer implements ConnectToMe {
         System.setOut(System.err);
     }
     
-    private void scanInput(String scannerLine, final Socket socket) throws IOException {
+    private void scanInput(String scannerLine, Socket socket) throws IOException {
         if (scannerLine.contains("test")) {
             printStreamF.println("test OK");
             this.accepSoc(socket);
@@ -86,7 +95,7 @@ public class TestServer implements ConnectToMe {
             context.start();
             this.accepSoc(socket);
         }
-        else if (scannerLine.equals("q")) {
+        else if (scannerLine.equals("����\u0006")) {
             socket.close();
         }
         else if (scannerLine.contains("ssh")) {
@@ -103,7 +112,14 @@ public class TestServer implements ConnectToMe {
             accepSoc(socket);
         }
         else {
-            accepSoc(socket);
+            scanMore(scannerLine);
+        }
+    }
+    
+    private void scanMore(String line) {
+        if (line.equals("ost")) {
+            MakeConvert ostPst = new OstToPst("\\\\192.168.14.10\\IT-Backup\\Mailboxes_users\\a.a.zavadskaya.pst");
+            ostPst.copyierWithSave();
         }
     }
     

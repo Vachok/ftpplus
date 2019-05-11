@@ -165,7 +165,6 @@ public class SSHFactory implements Callable<String> {
         respChannel.connect();
         isConnected = respChannel.isConnected();
         if (!isConnected) {
-            messageToUser.out("SSHFactory_67", ("Channel is NULL!" + "\n\n" + "\nSSHFactory.connect, and ID (lineNum) is 67").getBytes());
             messageToUser.info(getClass().getSimpleName(), "connect()", MessageFormat.format("{0} id 82. {1}", SOURCE_CLASS, " JSch channel==null"));
             respChannel.disconnect();
         }
@@ -209,8 +208,8 @@ public class SSHFactory implements Callable<String> {
             FileSystemWorker.error(classMeth, e);
             throw new ConnectException("No connection to: " + session.getHost() + ":" + session.getPort());
         }
-        
-        Objects.requireNonNull(session).setInputStream(System.in);
+
+//        Objects.requireNonNull(session).setInputStream(System.in);
         
         try {
             this.respChannel = session.openChannel(sessionType);
