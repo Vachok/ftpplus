@@ -3,8 +3,10 @@
 package ru.vachok.networker.net;
 
 
+import org.springframework.boot.SpringApplication;
+import org.springframework.context.ConfigurableApplicationContext;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.abstr.ConnectToMe;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
@@ -16,10 +18,7 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.channels.ServerSocketChannel;
 import java.util.Scanner;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
 
 
 /**
@@ -28,9 +27,6 @@ import java.util.concurrent.TimeoutException;
  
  @since 10.05.2019 (13:48) */
 public class TestServer implements ConnectToMe {
-    
-    
-    private ServerSocketChannel channel;
     
     private ServerSocket serverSocket;
     
@@ -41,17 +37,13 @@ public class TestServer implements ConnectToMe {
     @Override public void runSocket() throws IOException {
         ServerSocket socketSrv = new ServerSocket(11111);
         this.serverSocket = socketSrv;
+        socketSrv.setReuseAddress(true);
         while (true) {
-            socketSrv.setReuseAddress(true);
-            this.channel = socketSrv.getChannel();
-            if (channel != null) {
-                channel.bind(socketSrv.getLocalSocketAddress());
-            }
             accepSoc(socketSrv.accept());
         }
     }
     
-    @Override public void accepSoc(final Socket socket) {
+    @Override public void accepSoc(Socket socket) {
         try {
             InputStream iStream = socket.getInputStream();
             Scanner scanner = new Scanner(iStream);
@@ -59,35 +51,41 @@ public class TestServer implements ConnectToMe {
             PrintStream printStream = new PrintStream(outputStream);
             {
                 this.printStreamF = printStream;
+                System.setOut(printStreamF);
+                System.out.println("Socket " + socket.getInetAddress().toString() + ":" + socket.getPort() + " is connected");
                 while (socket.isConnected()) {
                     System.setIn(iStream);
-                    System.setOut(printStream);
-                    scanInput(scanner, socket);
+                    scanInput(scanner.nextLine(), socket);
                     printStream.print(iStream.read());
                 }
             }
-            this.accepSoc(socket);
         }
         catch (IOException e) {
             System.setOut(System.err);
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".accepSoc", e));
         }
-        System.setOut(System.err);
+        printStreamF.close();
+        System.setOut(System.out);
     }
     
-    private void scanInput(Scanner scanner, Socket socket) {
-        if (scanner.nextLine().contains("test")) {
+    private void scanInput(String scannerLine, Socket socket) throws IOException {
+        if (scannerLine.contains("test")) {
             System.out.println("test");
+            accepSoc(socket);
+        }
+        else if (scannerLine.contains("refresh")) {
+            ConfigurableApplicationContext context = IntoApplication.getConfigurableApplicationContext();
+            context.stop();
+            context.close();
+            context = new SpringApplication().run(IntoApplication.class);
+            new IntoApplication().setConfigurableApplicationContext(context);
+            context.start();
+        }
+        else if (scannerLine.contains("q")) {
+            socket.close();
         }
         else {
-            try {
-                String str = new AppComponents().sshActs().getProviderTraceStr();
-                messageToUser.info(getClass().getSimpleName() + ".scanInput", "str", " = " + str);
-            }
-            catch (InterruptedException | ExecutionException | TimeoutException e) {
-                messageToUser.error(e.getMessage());
-            }
-            this.accepSoc(socket);
+            accepSoc(socket);
         }
     }
     

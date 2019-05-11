@@ -227,7 +227,7 @@ public class AppInfoOnLoad implements Runnable {
     @SuppressWarnings("resource")
     private static void starterTelnet() {
         ConnectToMe myConsoleServer = MyConsoleServer.getI();
-        if (APP_PROPS.getProperty(ConstantsFor.PR_TESTSERVER).contains("true")) {
+        if (APP_PROPS.getProperty(ConstantsFor.PR_TESTSERVER).contains("true") || ConstantsFor.thisPC().contains("vachok.ru")) {
             testServerStart();
         }
         else {
