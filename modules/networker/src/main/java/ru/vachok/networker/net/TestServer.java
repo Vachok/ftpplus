@@ -6,6 +6,7 @@ package ru.vachok.networker.net;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.abstr.ConnectToMe;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -19,6 +20,8 @@ import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Scanner;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 
 /**
@@ -43,35 +46,36 @@ public class TestServer implements ConnectToMe {
         }
     }
     
-    @Override public void accepSoc(Socket socket) {
+    @Override public void accepSoc(final Socket socket) {
         try {
             InputStream iStream = socket.getInputStream();
             Scanner scanner = new Scanner(iStream);
             OutputStream outputStream = socket.getOutputStream();
             PrintStream printStream = new PrintStream(outputStream);
-            {
-                this.printStreamF = printStream;
-                System.setOut(printStreamF);
-                System.out.println("Socket " + socket.getInetAddress().toString() + ":" + socket.getPort() + " is connected");
-                while (socket.isConnected()) {
-                    System.setIn(iStream);
+            System.setIn(iStream);
+            this.printStreamF = printStream;
+            System.setOut(printStreamF);
+            System.out.println("Socket " + socket.getInetAddress().toString() + ":" + socket.getPort() + " is connected");
+            while (socket.isConnected()) {
+                if (scanner.hasNextLine()) {
                     scanInput(scanner.nextLine(), socket);
-                    printStream.print(iStream.read());
                 }
-            }
+                printStream.print(iStream.read());
+                }
+    
         }
         catch (IOException e) {
             System.setOut(System.err);
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".accepSoc", e));
         }
         printStreamF.close();
-        System.setOut(System.out);
+        System.setOut(System.err);
     }
     
-    private void scanInput(String scannerLine, Socket socket) throws IOException {
+    private void scanInput(String scannerLine, final Socket socket) throws IOException {
         if (scannerLine.contains("test")) {
-            System.out.println("test");
-            accepSoc(socket);
+            printStreamF.println("test OK");
+            this.accepSoc(socket);
         }
         else if (scannerLine.contains("refresh")) {
             ConfigurableApplicationContext context = IntoApplication.getConfigurableApplicationContext();
@@ -80,9 +84,23 @@ public class TestServer implements ConnectToMe {
             context = new SpringApplication().run(IntoApplication.class);
             new IntoApplication().setConfigurableApplicationContext(context);
             context.start();
+            this.accepSoc(socket);
         }
-        else if (scannerLine.contains("q")) {
+        else if (scannerLine.equals("q")) {
             socket.close();
+        }
+        else if (scannerLine.contains("ssh")) {
+            try {
+                printStreamF.println(new AppComponents().sshActs().getProviderTraceStr());
+            }
+            catch (InterruptedException | TimeoutException | ExecutionException e) {
+                messageToUser.error(e.getMessage());
+                this.accepSoc(socket);
+            }
+        }
+        else if (scannerLine.contains("con")) {
+            System.setOut(System.out);
+            accepSoc(socket);
         }
         else {
             accepSoc(socket);
