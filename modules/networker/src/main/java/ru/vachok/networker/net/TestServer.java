@@ -15,10 +15,7 @@ import ru.vachok.ostpst.MakeConvert;
 import ru.vachok.ostpst.OstToPst;
 
 import java.awt.*;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintStream;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Scanner;
@@ -31,7 +28,7 @@ import java.util.concurrent.TimeoutException;
  <p>
  
  @since 10.05.2019 (13:48) */
-public class TestServer implements ConnectToMe, AutoCloseable {
+public class TestServer implements ConnectToMe, Closeable {
     
     private ServerSocket serverSocket;
     
@@ -41,8 +38,23 @@ public class TestServer implements ConnectToMe, AutoCloseable {
     
     private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
     
-    @Override public void close() throws Exception {
-        printStreamF.close();
+    /**
+     Closes this stream and releases any system resources associated
+     with it. If the stream is already closed then invoking this
+     method has no effect.
+     
+     <p> As noted in {@link AutoCloseable#close()}, cases where the
+     close may fail require careful attention. It is strongly advised
+     to relinquish the underlying resources and to internally
+     <em>mark</em> the {@code Closeable} as closed, prior to throwing
+     the {@code IOException}.
+     
+     @throws IOException if an I/O error occurs
+     */
+    @Override public void close() throws IOException {
+        this.printStreamF.close();
+        this.socket.close();
+        this.serverSocket.close();
     }
     
     @Override public void runSocket() throws IOException {
@@ -71,14 +83,16 @@ public class TestServer implements ConnectToMe, AutoCloseable {
                 }
                 printStream.print(iStream.read());
             }
-    
+            socket.close();
         }
         catch (IOException e) {
             System.setOut(System.err);
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".accepSoc", e));
+        }finally {
+            printStreamF.close();
+            System.setOut(System.err);
         }
-        printStreamF.close();
-        System.setOut(System.err);
+    
     }
     
     private void scanInput(String scannerLine, Socket socket) throws IOException {

@@ -248,11 +248,11 @@ public class AppInfoOnLoad implements Runnable {
     
     private static void testServerStart() {
         AppComponents.threadConfig().thrNameSet("11111");
-        ConnectToMe testServer = new TestServer();
         try {
-            testServer.runSocket();
+            ConnectToMe connectToMe = new TestServer();
+            connectToMe.runSocket();
         }
-        catch (IOException e) {
+        catch (Exception e) {
             messageToUser.error(FileSystemWorker.error(AppInfoOnLoad.class.getSimpleName() + ".testServerStart", e));
         }
     }
