@@ -243,8 +243,8 @@ public enum ConstantsFor {
      {@link Model} имя атрибута
      */
     public static final String ATT_TITLE = "title";
-
-    public static final int CODE_USEREXIT = 222;
+    
+    public static final int EXIT_USEREXIT = 222;
 
     public static final String ATT_HEAD = "head";
 

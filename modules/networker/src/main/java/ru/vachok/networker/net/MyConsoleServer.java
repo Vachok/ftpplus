@@ -132,7 +132,7 @@ public class MyConsoleServer extends Thread implements ConnectToMe {
         if(readLine.toLowerCase().contains("exit")){
             FileSystemWorker.delTemp();
             socket.close();
-            System.exit(ConstantsFor.CODE_USEREXIT);
+            System.exit(ConstantsFor.EXIT_USEREXIT);
         }
         if(readLine.toLowerCase().contains("help")){
             ifHelp();
