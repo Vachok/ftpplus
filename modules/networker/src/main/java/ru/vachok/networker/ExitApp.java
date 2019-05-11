@@ -234,7 +234,7 @@ public class ExitApp implements Runnable {
     private void libCopy() {
         Path path = Paths.get(".");
         List<File> myLibs = Arrays.asList(Objects
-            .requireNonNull(new File(path + ConstantsFor.FILESYSTEM_SEPARATOR + "ostpst" + ConstantsFor.FILESYSTEM_SEPARATOR + "build" + ConstantsFor.FILESYSTEM_SEPARATOR + "libs" + ConstantsFor.FILESYSTEM_SEPARATOR)
+            .requireNonNull(new File(path + ConstantsFor.FILESYSTEM_SEPARATOR + ConstantsFor.RES_OSTPST + ConstantsFor.FILESYSTEM_SEPARATOR + "build" + ConstantsFor.FILESYSTEM_SEPARATOR + "libs" + ConstantsFor.FILESYSTEM_SEPARATOR)
                 .listFiles()));
         myLibs.addAll(Arrays.asList(Objects.requireNonNull(new File("g:\\My_Proj\\libs\\messenger\\build\\libs\\").listFiles())));
         myLibs.forEach(x->{

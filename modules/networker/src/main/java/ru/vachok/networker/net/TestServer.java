@@ -18,6 +18,9 @@ import java.awt.*;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.Enumeration;
 import java.util.Scanner;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -29,6 +32,9 @@ import java.util.concurrent.TimeoutException;
  
  @since 10.05.2019 (13:48) */
 public class TestServer implements ConnectToMe, Closeable {
+    
+    
+    private static final String JAR = "file:///G:/My_Proj/FtpClientPlus/modules/networker/ostpst/build/libs/";
     
     private ServerSocket serverSocket;
     
@@ -130,11 +136,43 @@ public class TestServer implements ConnectToMe, Closeable {
         }
     }
     
-    private void scanMore(String line) {
+    private void scanMore(String line) throws IOException {
+        String fileName = "\\\\192.168.14.10\\IT-Backup\\Mailboxes_users\\a.a.zavadskaya.pst";
+        printStreamF.println(fileName);
         if (line.equals("ost")) {
-            MakeConvert ostPst = new OstToPst("\\\\192.168.14.10\\IT-Backup\\Mailboxes_users\\a.a.zavadskaya.pst");
+            printStreamF.println("OSTTOPST: ");
+            printStreamF.println(loadLib());
+            MakeConvert ostPst = new OstToPst(fileName);
             ostPst.copyierWithSave();
+            ostPst.showFileContent();
         }
+    }
+    
+    private String loadLib() throws IOException {
+        File ostJar = new File("ost.jar");
+        StringBuilder stringBuilder = new StringBuilder();
+        try (URLClassLoader urlClassLoader = URLClassLoader.newInstance(new URL[]{new URL(JAR)});
+             OutputStream outputStream = new FileOutputStream(ostJar)
+        ) {
+            String libName = "ostpst-8.0.1919.jar";
+            Enumeration<URL> resources = urlClassLoader.getResources(libName);
+            while (resources.hasMoreElements()) {
+                URL url = resources.nextElement();
+                stringBuilder.append(new File(JAR + libName).length() / 1024 + "/");
+                try (InputStream inputStream = url.openStream();
+                     InputStreamReader reader = new InputStreamReader(inputStream);
+                     BufferedReader bufferedReader = new BufferedReader(reader)
+                ) {
+                    while (reader.ready()) {
+                        int read = inputStream.read();
+                        outputStream.write(bufferedReader.read());
+                    }
+                }
+            }
+        }
+        stringBuilder.append(ostJar.length() / 1024);
+        ostJar.deleteOnExit();
+        return stringBuilder.toString();
     }
     
     @Override public void reconSock() throws IOException, InterruptedException, NullPointerException {
