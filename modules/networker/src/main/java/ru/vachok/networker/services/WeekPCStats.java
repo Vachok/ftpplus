@@ -12,7 +12,6 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.DataBaseRegSQL;
 import ru.vachok.networker.accesscontrol.inetstats.InetStatSorter;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.systray.MessageToTray;
 
 import java.io.*;
 import java.sql.*;
@@ -37,8 +36,8 @@ public class WeekPCStats implements Runnable, DataBaseRegSQL {
     private static final String FILENAME_INETSTATSIPCSV = "inetstatsIP.csv";
 
     private static final String FILENAME_INETSTATSCSV = "inetstats.csv";
-
-    private static MessageToUser messageToUser;
+    
+    private static final MessageToUser messageToUser = new MessageLocal(WeekPCStats.class.getSimpleName());
 
     private String sql;
 
@@ -51,16 +50,6 @@ public class WeekPCStats implements Runnable, DataBaseRegSQL {
     public WeekPCStats(String sql) {
         this.sql = sql;
         this.fileName = ConstantsFor.FILENAME_VELKOMPCUSERAUTOTXT;
-    }
-
-
-    static {
-        try {
-            messageToUser = new MessageToTray(WeekPCStats.class.getSimpleName());
-        }
-        catch (UnsupportedOperationException e) {
-            messageToUser = new MessageLocal(WeekPCStats.class.getSimpleName());
-        }
     }
 
     @Override
