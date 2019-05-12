@@ -919,3 +919,4 @@ modules/networker/ostpst/build/
 modules/networker/unused.ips
 *.list
 ostpst/lib
+*.csv
