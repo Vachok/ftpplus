@@ -16,6 +16,12 @@ import java.awt.*;
 public class TestServer implements ConnectToMe {
     
     
+    private int listenPort;
+    
+    public TestServer(int listenPort) {
+        this.listenPort = listenPort;
+    }
+    
     @Override public void runSocket() {
         throw new IllegalComponentStateException("12.05.2019 (17:24)");
     }

@@ -192,7 +192,7 @@ class ConditionChecker implements InfoWorker {
                     }
                 }
             }
-            try (PreparedStatement p2 = connection.prepareStatement("SELECT * FROM `velkompc` WHERE `NamePP` LIKE '" + pcName + "' ORDER BY `TimeNow` DESC LIMIT 75");
+            try (PreparedStatement p2 = connection.prepareStatement("SELECT * FROM `velkompc` WHERE `NamePP` LIKE '" + pcName + "' ORDER BY `TimeNow` DESC LIMIT 1750");
                  ResultSet resultSet = p2.executeQuery()
             ) {
                 List<String> onList = new ArrayList<>();
