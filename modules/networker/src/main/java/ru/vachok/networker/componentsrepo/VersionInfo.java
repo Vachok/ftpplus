@@ -3,7 +3,6 @@
 package ru.vachok.networker.componentsrepo;
 
 
-
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import ru.vachok.messenger.MessageToUser;
@@ -13,7 +12,12 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
 
-import java.io.*;
+import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.LocalDate;
+import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 
@@ -117,20 +121,17 @@ public class VersionInfo {
      *
      */
     public void setParams() {
-        File file = new File("G:\\My_Proj\\FtpClientPlus\\modules\\networker\\build.gradle");
+        Path rootPath = Paths.get(".").toAbsolutePath().normalize();
+        File file = new File(rootPath.toString() + "\\build.gradle");
 
         if (file.exists()) {
             setterVersionFromFiles(file);
         } else {
-            file = new File("C:\\Users\\ikudryashov\\IdeaProjects\\spring\\modules\\networker\\build.gradle");
-            if (file.exists()) {
-                setterVersionFromFiles(file);
-            } else {
-                try {
-                    getParams();
-                } catch (Exception e) {
-                    messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".setParams" , e));
-                }
+            try {
+                getParams();
+            }
+            catch (Exception e) {
+                messageToUser.error(e.getMessage());
             }
         }
     }
@@ -142,19 +143,16 @@ public class VersionInfo {
      @param file gradle.build
      */
     private void setterVersionFromFiles( File file ) {
-        try (InputStream inputStream = new FileInputStream(file);
-             InputStreamReader reader = new InputStreamReader(inputStream);
-             BufferedReader bufferedReader = new BufferedReader(reader)
-        )
-        {
-            bufferedReader.lines().forEach(x -> {
-                if (x.contains("version = '8.")) {
-                    PROPERTIES.setProperty(ConstantsFor.PR_APP_VERSION , x.split("'")[1]);
-                }
-            });
-        } catch (IOException e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".setterVersionFromFiles" , e));
-        }
+        List<String> stringsBuild = FileSystemWorker.readFileToList(file.getAbsolutePath());
+        stringsBuild.forEach(x->{
+            if (x.toLowerCase().contains("version = '")) {
+                this.appVersion = x.split(" = '")[1].replace("'", "");
+            }
+        });
+        this.buildTime = new Date(ConstantsFor.getAtomicTime()).toString();
+        this.appBuild = String.valueOf(LocalDate.now().getDayOfWeek());
+        PROPERTIES.setProperty(ConstantsFor.PR_APP_VERSION, appVersion);
+        PROPERTIES.setProperty(ConstantsFor.PR_APP_BUILD, buildTime + " " + appBuild);
     }
 
 

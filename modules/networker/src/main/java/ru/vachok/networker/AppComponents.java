@@ -173,7 +173,8 @@ public class AppComponents {
     @Scope(ConstantsFor.SINGLETON)
     public static VersionInfo versionInfo() {
         VersionInfo versionInfo = new VersionInfo();
-        if (ConstantsFor.thisPC().toLowerCase().contains("home") && ConstantsFor.thisPC().toLowerCase().contains("213")) {
+        String thisPC = ConstantsFor.thisPC();
+        if (thisPC.toLowerCase().contains("home") || thisPC.toLowerCase().contains("do0")) {
             versionInfo.setParams();
         }
         return versionInfo;

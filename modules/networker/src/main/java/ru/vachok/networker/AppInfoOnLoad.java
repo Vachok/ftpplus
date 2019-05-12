@@ -11,6 +11,7 @@ import ru.vachok.networker.abstr.InternetUse;
 import ru.vachok.networker.accesscontrol.TemporaryFullInternet;
 import ru.vachok.networker.accesscontrol.common.CommonSRV;
 import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
+import ru.vachok.networker.componentsrepo.VersionInfo;
 import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.mailserver.MailIISLogsCleaner;
@@ -134,7 +135,6 @@ public class AppInfoOnLoad implements Runnable {
     @Override
     public void run() {
         infoForU(AppCtx.scanForBeansAndRefreshContext());
-        messageToUser.info(getClass().getSimpleName() + ".run", "thisDelay", " = " + thisDelay);
         ConstantsFor.INFO_MSG_RUNNABLE.run();
         AppComponents.threadConfig().execByThreadConfig(new TelnetStarter());
     }
@@ -222,6 +222,8 @@ public class AppInfoOnLoad implements Runnable {
         stringBuilder.append(ConstantsFor.getBuildStamp());
         messageToUser.info("AppInfoOnLoad.infoForU", ConstantsFor.STR_FINISH, " = " + stringBuilder);
         miniLogger.add("infoForU ends. now schedStarter(). Result: " + stringBuilder);
+        VersionInfo versionInfo = AppComponents.versionInfo();
+        messageToUser.info(getClass().getSimpleName() + ".run", versionInfo.toString(), " = " + iisLogSize());
         schedStarter();
     }
     
