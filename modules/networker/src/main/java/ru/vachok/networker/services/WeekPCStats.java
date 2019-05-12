@@ -19,7 +19,6 @@ import java.sql.*;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 
 /**
@@ -28,30 +27,39 @@ import java.util.Set;
  Устойчивость (in/(in+out)): 2/(2+6) = 0.25 (устойчив на 75%);
  @since 08.12.2018 (0:12) */
 public class WeekPCStats implements Runnable, DataBaseRegSQL {
-
+    
+    
     /**
      Лист только с именами ПК
      */
     private static final List<String> PC_NAMES_IN_TABLE = new ArrayList<>();
-
+    
     private static final String FILENAME_INETSTATSIPCSV = "inetstatsIP.csv";
-
+    
     private static final String FILENAME_INETSTATSCSV = "inetstats.csv";
-
+    
     private static MessageToUser messageToUser;
-
+    
     private String sql;
-
+    
     private String fileName;
     
     private IllegalStateException illegalStateException = new IllegalStateException("13.04.2019 (18:17)");
-
+    
     private static final String SQL_DISTINCTIPSWITHINET = "SELECT DISTINCT `ip` FROM `inetstats`";
-
+    
+    
+    public WeekPCStats(String sql, String fileName) {
+        this.sql = sql;
+        this.fileName = fileName;
+    }
+    
+    
     public WeekPCStats(String sql) {
         this.sql = sql;
         this.fileName = ConstantsFor.FILENAME_VELKOMPCUSERAUTOTXT;
     }
+    
     
     static {
         try {
@@ -61,7 +69,7 @@ public class WeekPCStats implements Runnable, DataBaseRegSQL {
             messageToUser = new MessageLocal(WeekPCStats.class.getSimpleName());
         }
     }
-
+    
     @Override
     public void run() {
         AppComponents.threadConfig().thrNameSet("week");
@@ -71,24 +79,22 @@ public class WeekPCStats implements Runnable, DataBaseRegSQL {
         readInetStatsRSetToCSV();
         AppComponents.threadConfig().execByThreadConfig(new InetStatSorter());
     }
-
-
+    
+    
     @Override public int selectFrom() {
         final long stArt = System.currentTimeMillis();
         int retInt = 0;
+        File file = new File(fileName);
         try(Connection c = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM)){
             try(PreparedStatement p = c.prepareStatement(sql)){
                 if (sql.contains("DELETE")) {
-                    contDelete(p);
+                    int delUp = p.executeUpdate();
+                    new MessageLocal(getClass().getSimpleName()).info(fileName, "deleted", delUp + " rows.");
+                    return delUp;
                 }
-                
                 try(ResultSet r = p.executeQuery()){
-                    try (OutputStream outputStream = new FileOutputStream(fileName)) {
+                    try (OutputStream outputStream = new FileOutputStream(file)) {
                         try(PrintWriter printWriter = new PrintWriter(outputStream , true)){
-                            printWriter.println(r.getFetchSize());
-                            printWriter.print(" FetchSize of ResultSet r. ");
-                            printWriter.print(new java.util.Date());
-                            printWriter.println();
                             while(r.next()){
                                 if (sql.equals(ConstantsFor.SQL_SELECTFROM_PCUSERAUTO)) {
                                     pcUserAutoSelect(r, printWriter);
@@ -97,54 +103,41 @@ public class WeekPCStats implements Runnable, DataBaseRegSQL {
                                     printWriter.println(r.getString("ip"));
                                 }
                                 if(sql.contains("SELECT * FROM `inetstats` WHERE `ip` LIKE")) {
-                                    inetstatsIP(printWriter, r);
+                                    printWriter.print(new java.util.Date(Long.parseLong(r.getString("Date"))));
+                                    printWriter.print(",");
+                                    printWriter.print(r.getString(ConstantsFor.DBFIELB_RESPONSE));
+                                    printWriter.print(",");
+                                    printWriter.print(r.getString("bytes"));
+                                    printWriter.print(",");
+                                    printWriter.print(r.getString(ConstantsFor.DBFIELD_METHOD));
+                                    printWriter.print(",");
+                                    printWriter.print(r.getString("site"));
+                                    printWriter.println();
                                 }
                             }
                         }
                     }
                 }
             }
-        }catch(SQLException | IOException e){
+        }
+        catch (SQLException | IOException e) {
             messageToUser.error(new TForms().fromArray(e, false));
         }
-        String toCopy = "\\\\10.10.111.1\\Torrents-FTP\\" + fileName;
-        if(!ConstantsFor.thisPC().toLowerCase().contains("home")){
-            toCopy = fileName + "_cp";
+        String toCopy = "\\\\10.10.111.1\\Torrents-FTP\\" + file.getName();
+        if (!ConstantsFor.thisPC().toLowerCase().contains("home")) {
+            toCopy = file.getName() + "_cp";
         }
-        File file = new File(fileName);
-        boolean isCopyDel = FileSystemWorker.copyOrDelFile(file, toCopy, false);
-        if (isCopyDel) {
-            boolean isDelete = file.delete();
-            if (!isDelete) {
-                file.deleteOnExit();
-            }
-        }
+        FileSystemWorker.copyOrDelFile(file, toCopy, false);
+        file.deleteOnExit();
         return PC_NAMES_IN_TABLE.size();
     }
     
-    private void inetstatsIP(PrintWriter printWriter, ResultSet r) throws SQLException {
-        printWriter.print(new java.util.Date(Long.parseLong(r.getString("Date"))));
-        printWriter.print(",");
-        printWriter.print(r.getString(ConstantsFor.DBFIELB_RESPONSE));
-        printWriter.print(",");
-        printWriter.print(r.getString("bytes"));
-        printWriter.print(",");
-        printWriter.print(r.getString(ConstantsFor.DBFIELD_METHOD));
-        printWriter.print(",");
-        printWriter.print(r.getString("site"));
-        printWriter.println();
-    }
-    
-    private void contDelete(PreparedStatement p) throws SQLException {
-        int delUp = p.executeUpdate();
-        messageToUser.info(fileName, "deleted", delUp + " rows.");
-    }
     
     private void pcUsrAutoMake() {
-        messageToUser.warn(getClass().getSimpleName(), fileName + "file, SQL: " + sql, " = " + selectFrom());
+        messageToUser.info(getClass().getSimpleName() + ".pcUsrAutoMake", "pcUsrAutoMake();", " = " + selectFrom());
     }
-
-
+    
+    
     private void readInetStatsRSetToCSV() {
         List<String> chkIps = FileSystemWorker.readFileToList(new File(FILENAME_INETSTATSIPCSV).getPath());
         long totalBytes = 0;
@@ -163,63 +156,56 @@ public class WeekPCStats implements Runnable, DataBaseRegSQL {
         }
         new MessageSwing().infoTimer(ConstantsFor.ONE_DAY_HOURS * 3 , "ALL STATS SAVED\n" + totalBytes / ConstantsFor.KBYTE / ConstantsFor.KBYTE + " Megabytes");
     }
-
-
+    
+    
     private long readInetStats() {
         this.fileName = FILENAME_INETSTATSIPCSV;
         this.sql = SQL_DISTINCTIPSWITHINET;
         selectFrom();
         return new File(FILENAME_INETSTATSIPCSV).length() / ConstantsFor.KBYTE;
     }
-
-
+    
+    
     @Override public int insertTo() {
         throw illegalStateException;
     }
-
-
+    
+    
     @Override public int deleteFrom() {
         throw illegalStateException;
     }
-
-
+    
+    
     @Override public int updateTable() {
         throw illegalStateException;
     }
-
-
+    
+    
     @Override public void setSavepoint(Connection connection) {
         throw illegalStateException;
     }
-
-
+    
+    
     @Override public MysqlDataSource getDataSource() {
         throw illegalStateException;
     }
-
-
+    
+    
     @Override public Savepoint getSavepoint(Connection connection) {
         throw illegalStateException;
     }
     
     
     private void pcUserAutoSelect(ResultSet r , PrintWriter printWriter) throws SQLException {
-        printWriter.println(r.getString(1));
-        printWriter.print(" at ");
-        printWriter.print(r.getString(6));
-        printWriter.print(") ");
-        printWriter.print(r.getString(2));
-        printWriter.print(" ");
-        printWriter.print(r.getString(3));
+        printWriter.println(new StringBuilder()
+            .append(r.getString(1))
+            .append(" at ")
+            .append(r.getString(6))
+            .append(") ")
+            .append(r.getString(2))
+            .append(" ")
+            .append(r.getString(3)));
         PC_NAMES_IN_TABLE.add(r.getString(2) + " " + r.getString(3));
-        filesWork();
-    }
-    
-    private void filesWork() {
-        File file = new File(fileName);
-        Set<String> usersUnique = FileSystemWorker.readFileToSet(file.toPath());
-        messageToUser.info(getClass().getSimpleName() + ".filesWork", "usersUnique.size()", " = " + usersUnique.size());
-        FileSystemWorker.writeFile(ConstantsFor.FILENAME_USERSSET, usersUnique.stream());
     }
     
     
