@@ -206,8 +206,8 @@ public class IntoApplication {
             LOCAL_PROPS.clear();
             LOCAL_PROPS.putAll(objectMap);
         }
-        if (stringStringEntry.getKey().contains("lport")) {
-            LOCAL_PROPS.setProperty("lport", stringStringEntry.getValue());
+        if (stringStringEntry.getKey().contains(ConstantsFor.PR_LPORT)) {
+            LOCAL_PROPS.setProperty(ConstantsFor.PR_LPORT, stringStringEntry.getValue());
         }
         
         return isTray;

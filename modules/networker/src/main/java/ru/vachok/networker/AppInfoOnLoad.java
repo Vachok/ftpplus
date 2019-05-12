@@ -6,40 +6,29 @@ package ru.vachok.networker;
 import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import ru.vachok.messenger.MessageCons;
-import ru.vachok.messenger.MessageFile;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.mysqlandprops.RegRuMysql;
-import ru.vachok.networker.abstr.ConnectToMe;
 import ru.vachok.networker.abstr.InternetUse;
 import ru.vachok.networker.accesscontrol.TemporaryFullInternet;
-import ru.vachok.networker.accesscontrol.common.CommonRightsChecker;
+import ru.vachok.networker.accesscontrol.common.CommonSRV;
 import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
 import ru.vachok.networker.config.AppCtx;
-import ru.vachok.networker.config.DeadLockMonitor;
-import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.mailserver.MailIISLogsCleaner;
-import ru.vachok.networker.net.*;
+import ru.vachok.networker.net.DiapazonedScan;
+import ru.vachok.networker.net.NetMonitorPTV;
+import ru.vachok.networker.net.ScanOnline;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.MyCalen;
+import ru.vachok.networker.services.TelnetStarter;
 import ru.vachok.networker.services.WeekPCStats;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
 import java.lang.management.ThreadMXBean;
-import java.net.Socket;
-import java.nio.file.FileVisitor;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.util.*;
@@ -147,7 +136,7 @@ public class AppInfoOnLoad implements Runnable {
         infoForU(AppCtx.scanForBeansAndRefreshContext());
         messageToUser.info(getClass().getSimpleName() + ".run", "thisDelay", " = " + thisDelay);
         ConstantsFor.INFO_MSG_RUNNABLE.run();
-        AppComponents.threadConfig().execByThreadConfig(AppInfoOnLoad::starterTelnet);
+        AppComponents.threadConfig().execByThreadConfig(new TelnetStarter());
     }
     
     @Override public String toString() {
@@ -156,44 +145,6 @@ public class AppInfoOnLoad implements Runnable {
         sb.append("<br>").append(new TForms().fromArray(miniLogger, true));
         sb.append('}');
         return sb.toString();
-    }
-    
-    /**
-     Очистка pcuserauto
-     */
-    private static void trunkTableUsers() {
-        try (Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
-             PreparedStatement preparedStatement = c.prepareStatement("TRUNCATE TABLE pcuserauto")
-        ) {
-            preparedStatement.executeUpdate();
-            miniLogger.add("TRUNCATE true\n" + ConstantsFor.getUpTime() + STR_UPTIME);
-        }
-        catch (SQLException e) {
-            miniLogger.add("TRUNCATE false\n" + ConstantsFor.getUpTime() + STR_UPTIME);
-        }
-    }
-    
-    /**
-     Сборщик прав \\srv-fs.eatmeat.ru\common_new
-     <p>
-     {@link Files#walkFileTree(java.nio.file.Path, java.nio.file.FileVisitor)}, где {@link Path} = \\srv-fs.eatmeat.ru\common_new и {@link FileVisitor}
-     = new {@link CommonRightsChecker}.
-     <p>
-     <b>{@link IOException}:</b><br>
-     {@link MessageToUser#errorAlert(java.lang.String, java.lang.String, java.lang.String)},
-     {@link FileSystemWorker#error(java.lang.String, java.lang.Exception)}
-     */
-    private static void runCommonScan() {
-        final long stMeth = System.currentTimeMillis();
-        try {
-            FileVisitor<Path> commonRightsChecker = new CommonRightsChecker();
-            Files.walkFileTree(Paths.get("\\\\srv-fs.eatmeat.ru\\common_new"), commonRightsChecker);
-        }
-        catch (IOException e) {
-            messageToUser.errorAlert("AppInfoOnLoad", "commonRightsMeth", e.getMessage());
-            FileSystemWorker.error("AppInfoOnLoad.commonRightsMeth", e);
-        }
-        commonRightsMetrics(stMeth);
     }
     
     /**
@@ -216,89 +167,14 @@ public class AppInfoOnLoad implements Runnable {
     }
     
     /**
-     Reconnect Socket, пока он открыт
-     <p>
-     1. {@link MyConsoleServer#setSocket(java.net.Socket)}. Создаём новый {@link Socket}. <br>
-     2. {@link MyConsoleServer#getSocket()} - пока он не {@code isClosed}, 3. {@link MyConsoleServer#reconSock()} реконнект. <br><br>
-     {@link IOException}, {@link InterruptedException}, {@link NullPointerException} : <br>
-     4. {@link TForms#fromArray(Exception, boolean)} - преобразуем исключение в строку. <br>
-     5. {@link AppComponents#threadConfig()} , 6 {@link ThreadConfig#getTaskExecutor()} перезапуск {@link MyConsoleServer#getI()}
-     */
-    @SuppressWarnings("resource")
-    private static void starterTelnet() {
-        ConnectToMe myConsoleServer = MyConsoleServer.getI();
-        if (ConstantsFor.PR_OSNAME_LOWERCASE.contains("bsd") || APP_PROPS.getProperty(ConstantsFor.PR_TESTSERVER).contains("true")) {
-            AppComponents.threadConfig().execByThreadConfig(AppInfoOnLoad::testServerStart);
-        }
-        else {
-            ((MyConsoleServer) myConsoleServer).setSocket(new Socket());
-            while (!((MyConsoleServer) myConsoleServer).getSocket().isClosed()) {
-                try {
-                    myConsoleServer.reconSock();
-                }
-                catch (IOException | InterruptedException | NullPointerException e1) {
-                    messageToUser.info("AppInfoOnLoad.starterTelnet", "e1.getMessage()", e1.getMessage());
-                    FileSystemWorker.error("SystemTrayHelper.starterTelnet", e1);
-                    Thread.currentThread().interrupt();
-                }
-            }
-            System.setOut(System.err);
-        }
-    }
-    
-    private static void testServerStart() {
-        AppComponents.threadConfig().thrNameSet("11111");
-        try {
-            ConnectToMe connectToMe = new TestServer();
-            connectToMe.runSocket();
-        }
-        catch (Exception e) {
-            messageToUser.error(FileSystemWorker.error(AppInfoOnLoad.class.getSimpleName() + ".testServerStart", e));
-        }
-    }
-    
-    /**
-     Проверяет день недели.
-     
-     @param scheduledExecutorService {@link ScheduledExecutorService}
-     @return {@code msg = dateFormat.format(dateStart) + " pcuserauto (" + TimeUnit.MILLISECONDS.toHours(delayMs) + " delay hours)}
-     */
-    private static String checkDay(ScheduledExecutorService scheduledExecutorService) {
-        messageToUser.info(ConstantsFor.STR_INPUT_OUTPUT, "", ConstantsFor.JAVA_LANG_STRING_NAME);
-        Date dateStart = MyCalen.getNextDayofWeek(10, 0, DayOfWeek.MONDAY);
-        DateFormat dateFormat = new SimpleDateFormat("MM.dd, hh:mm", Locale.getDefault());
-        long delayMs = dateStart.getTime() - System.currentTimeMillis();
-        String msg = dateFormat.format(dateStart) + " pcuserauto (" + TimeUnit.MILLISECONDS.toHours(delayMs) + " delay hours)";
-        scheduledExecutorService.scheduleWithFixedDelay(AppInfoOnLoad::trunkTableUsers, delayMs, ConstantsFor.ONE_WEEK_MILLIS, TimeUnit.MILLISECONDS);
-        messageToUser.infoNoTitles("msg = " + msg);
-        return msg;
-    }
-    
-    /**
-     Запускает сканнер прав Common
-     
-     @param startMeth время старта
-     */
-    private static void commonRightsMetrics(long startMeth) {
-        long mSecRun = System.currentTimeMillis() - new Date(startMeth).getTime();
-        String metricOfCommonScan = new StringBuilder()
-            .append(TimeUnit.MILLISECONDS.toMinutes(mSecRun))
-            .append(" minutes to run ")
-            .append(CommonRightsChecker.class.getSimpleName())
-            .toString();
-    
-        new MessageFile().info("AppInfoOnLoad.runCommonScanMetrics", "metricOfCommonScan", " = " + metricOfCommonScan);
-    }
-    
-    /**
      Стата за неделю по-ПК
      <p>
      1. {@link MyCalen#getNextDayofWeek(int, int, java.time.DayOfWeek)}. Получим {@link Date}, след. воскресенье 23:57.<br>
      {@link ThreadPoolTaskScheduler}, запланируем new {@link WeekPCStats} и new {@link MailIISLogsCleaner} на это время и на это время -1 час.<br><br>
      2. {@link FileSystemWorker#readFileToList(java.lang.String)}. Прочитаем exit.last, если он существует.
      {@link TForms#fromArray(java.util.List, boolean)} <br><br>
-     3. {@link #checkDay(ScheduledExecutorService)} метрика. <br>
-     4. {@link #checkDay(java.util.concurrent.ScheduledExecutorService)}. Выведем сообщение, когда и что ствртует.
+     3. {@link MyCalen#checkDay(ScheduledExecutorService)} метрика. <br>
+     4. {@link MyCalen#checkDay(ScheduledExecutorService)}. Выведем сообщение, когда и что ствртует.
      <p>
      
      @param scheduledExecutorService {@link ScheduledExecutorService}.
@@ -327,7 +203,7 @@ public class AppInfoOnLoad implements Runnable {
         }
     
         stringBuilder.append("\n").append(methMetr(stArt, classMeth));
-        exitLast = exitLast + "\n" + checkDay(scheduledExecutorService) + "\n" + stringBuilder;
+        exitLast = exitLast + "\n" + MyCalen.checkDay(scheduledExecutorService) + "\n" + stringBuilder;
         miniLogger.add(exitLast);
         messageToUser.info(AppInfoOnLoad.class.getSimpleName() + ConstantsFor.STR_FINISH);
         boolean isWrite = FileSystemWorker.writeFile(CLASS_NAME + ".mini", miniLogger.stream());
@@ -346,7 +222,6 @@ public class AppInfoOnLoad implements Runnable {
         stringBuilder.append(ConstantsFor.getBuildStamp());
         messageToUser.info("AppInfoOnLoad.infoForU", ConstantsFor.STR_FINISH, " = " + stringBuilder);
         miniLogger.add("infoForU ends. now schedStarter(). Result: " + stringBuilder);
-        AppComponents.threadConfig().execByThreadConfig(new DeadLockMonitor());
         schedStarter();
     }
     
@@ -357,8 +232,8 @@ public class AppInfoOnLoad implements Runnable {
      Uses: 1.1 {@link #dateSchedulers(ScheduledExecutorService)}, 1.2 {@link ConstantsFor#thisPC()}, 1.3 {@link ConstantsFor#thisPC()}.
      */
     private void schedStarter() {
-        String osName = System.getProperty("os.name");
-        messageToUser.info(osName);
+        String osName = ConstantsFor.PR_OSNAME_LOWERCASE;
+        messageToUser.warn(osName);
         final long stArt = System.currentTimeMillis();
         ScheduledThreadPoolExecutor scheduledExecutorService = AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor();
         
@@ -366,36 +241,35 @@ public class AppInfoOnLoad implements Runnable {
         AppInfoOnLoad.miniLogger.add(thisPC);
     
         if (!thisPC.toLowerCase().contains("home")) {
-            scheduledExecutorService.scheduleWithFixedDelay(AppInfoOnLoad::runCommonScan, ConstantsFor.INIT_DELAY, TimeUnit.DAYS.toSeconds(1),
+            scheduledExecutorService.scheduleWithFixedDelay(CommonSRV::runCommonScan, ConstantsFor.INIT_DELAY, TimeUnit.DAYS.toSeconds(1),
                 TimeUnit.SECONDS);
             AppInfoOnLoad.miniLogger.add("runCommonScan init delay " + ConstantsFor.INIT_DELAY + ", delay " + TimeUnit.DAYS.toSeconds(1) + ". SECONDS");
         }
-        else if (osName.toLowerCase().contains(ConstantsFor.PR_WINDOWSOS)) {
+        else if (osName.contains(ConstantsFor.PR_WINDOWSOS)) {
             schedWithService(scheduledExecutorService);
         }
-        else if (osName.toLowerCase().contains("bsd")) {
-            OperatingSystemMXBean operatingSystemMXBean = ManagementFactory.getOperatingSystemMXBean();
-            messageToUser.warn(operatingSystemMXBean.getName(), operatingSystemMXBean.getVersion() + " proc = " + operatingSystemMXBean
-                .getAvailableProcessors(), thisPC + " (av load: " + operatingSystemMXBean.getSystemLoadAverage() + ")");
-            Thread unixThread = new Thread() {
-                public void run() {
-                    try {
-                        messageToUser.warn(unixTrySched());
-                    }
-                    catch (Exception e) {
-                        messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".schedStarter", e));
-                    }
-                }
-            };
-            unixThread.setName("unix");
-            unixThread.start();
-            setUnixThreadInfo(ManagementFactory.getThreadMXBean().getThreadInfo(unixThread.getId()).toString());
-        }
         else {
-            OperatingSystemMXBean operatingSystemMXBean = ManagementFactory.getOperatingSystemMXBean();
-            osName = operatingSystemMXBean.getName();
-            messageToUser.error(osName);
+            startUnixWithBeans();
         }
+    }
+    
+    private void startUnixWithBeans() {
+        OperatingSystemMXBean operatingSystemMXBean = ManagementFactory.getOperatingSystemMXBean();
+        messageToUser.warn(operatingSystemMXBean.getName(), operatingSystemMXBean.getVersion() + " proc = " + operatingSystemMXBean
+            .getAvailableProcessors(), ConstantsFor.thisPC() + " (av load: " + operatingSystemMXBean.getSystemLoadAverage() + ")");
+        Thread unixThread = new Thread() {
+            public void run() {
+                try {
+                    messageToUser.warn(unixTrySched());
+                }
+                catch (Exception e) {
+                    messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".schedStarter", e));
+                }
+            }
+        };
+        unixThread.setName("unix");
+        unixThread.start();
+        setUnixThreadInfo(ManagementFactory.getThreadMXBean().getThreadInfo(unixThread.getId()).toString());
     }
     
     private void schedWithService(ScheduledExecutorService scheduledExecutorService) {

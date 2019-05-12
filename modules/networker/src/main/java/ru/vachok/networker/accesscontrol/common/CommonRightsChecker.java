@@ -1,8 +1,11 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.accesscontrol.common;
 
 
 
 import org.slf4j.Logger;
+import ru.vachok.messenger.MessageFile;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 
@@ -18,6 +21,7 @@ import java.nio.file.attribute.AclFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 
 @SuppressWarnings ("DuplicateStringLiteralInspection")
@@ -80,5 +84,21 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> {
 
     private void writeFile(String fileName, byte[] appendToFileBytes) {
         throw new IllegalComponentStateException("Deprecated");
+    }
+    
+    /**
+     Запускает сканнер прав Common
+     
+     @param startMeth время старта
+     */
+    public static void commonRightsMetrics(long startMeth) {
+        long mSecRun = System.currentTimeMillis() - new Date(startMeth).getTime();
+        String metricOfCommonScan = new StringBuilder()
+            .append(TimeUnit.MILLISECONDS.toMinutes(mSecRun))
+            .append(" minutes to run ")
+            .append(CommonRightsChecker.class.getSimpleName())
+            .toString();
+        
+        new MessageFile().info("AppInfoOnLoad.runCommonScanMetrics", "metricOfCommonScan", " = " + metricOfCommonScan);
     }
 }

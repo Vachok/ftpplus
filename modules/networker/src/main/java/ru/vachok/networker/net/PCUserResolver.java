@@ -4,7 +4,9 @@ package ru.vachok.networker.net;
 
 
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.AppInfoOnLoad;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.ad.user.DataBaseADUsersSRV;
@@ -34,7 +36,7 @@ public class PCUserResolver extends ADSrv implements InfoWorker {
     
     private static final String METHNAME_REC_AUTO_DB = "PCUserResolver.recAutoDB";
     
-    private final MessageToUser messageToUser = new MessageLocal(PCUserResolver.class.getSimpleName());
+    private static final MessageToUser messageToUser = new MessageLocal(PCUserResolver.class.getSimpleName());
     
     /**
      Последний измененный файл.
@@ -161,6 +163,20 @@ public class PCUserResolver extends ADSrv implements InfoWorker {
         }
         catch (IOException | IndexOutOfBoundsException e) {
             return e.getMessage();
+        }
+    }
+    
+    /**
+     Очистка pcuserauto
+     */
+    public static void trunkTableUsers() {
+        try (Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
+             PreparedStatement preparedStatement = c.prepareStatement("TRUNCATE TABLE pcuserauto")
+        ) {
+            preparedStatement.executeUpdate();
+        }
+        catch (SQLException e) {
+            messageToUser.error(FileSystemWorker.error(AppInfoOnLoad.class.getSimpleName() + ".trunkTableUsers", e));
         }
     }
     

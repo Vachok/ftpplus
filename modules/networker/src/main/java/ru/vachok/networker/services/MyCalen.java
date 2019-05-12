@@ -1,17 +1,25 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.services;
 
 
 import org.apache.commons.net.ntp.TimeInfo;
 import org.slf4j.Logger;
+import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.net.PCUserResolver;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 
@@ -23,7 +31,9 @@ import java.util.concurrent.TimeUnit;
 public abstract class MyCalen {
 
     private static final String DATE_RETURNED = " date returned";
-
+    
+    private static MessageToUser messageToUser = new MessageLocal(MyCalen.class.getSimpleName());
+    
     private MyCalen() {
 
     }
@@ -167,5 +177,22 @@ public abstract class MyCalen {
             .append("\n").toString();
         LOGGER.info(msg);
         return localDateTime;
+    }
+    
+    /**
+     Проверяет день недели.
+     
+     @param scheduledExecutorService {@link ScheduledExecutorService}
+     @return {@code msg = dateFormat.format(dateStart) + " pcuserauto (" + TimeUnit.MILLISECONDS.toHours(delayMs) + " delay hours)}
+     */
+    public static String checkDay(ScheduledExecutorService scheduledExecutorService) {
+        messageToUser.info(ConstantsFor.STR_INPUT_OUTPUT, "", ConstantsFor.JAVA_LANG_STRING_NAME);
+        Date dateStart = getNextDayofWeek(10, 0, DayOfWeek.MONDAY);
+        DateFormat dateFormat = new SimpleDateFormat("MM.dd, hh:mm", Locale.getDefault());
+        long delayMs = dateStart.getTime() - System.currentTimeMillis();
+        String msg = dateFormat.format(dateStart) + " pcuserauto (" + TimeUnit.MILLISECONDS.toHours(delayMs) + " delay hours)";
+        scheduledExecutorService.scheduleWithFixedDelay(PCUserResolver::trunkTableUsers, delayMs, ConstantsFor.ONE_WEEK_MILLIS, TimeUnit.MILLISECONDS);
+        messageToUser.infoNoTitles("msg = " + msg);
+        return msg;
     }
 }

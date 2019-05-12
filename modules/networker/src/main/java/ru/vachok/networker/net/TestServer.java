@@ -42,6 +42,12 @@ public class TestServer implements ConnectToMe, Closeable {
     
     private Socket socket;
     
+    private int listenPort;
+    
+    public TestServer(int listenPort) {
+        this.listenPort = listenPort;
+    }
+    
     private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
     
     /**

@@ -468,6 +468,8 @@ public enum ConstantsFor {
     
     public static final String RES_OSTPST = "ostpst";
     
+    public static final String PR_LPORT = "lport";
+    
     /**
      @return {@link #MAIL_RULES}
      */
