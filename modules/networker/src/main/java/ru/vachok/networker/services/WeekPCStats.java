@@ -12,13 +12,13 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.DataBaseRegSQL;
 import ru.vachok.networker.accesscontrol.inetstats.InetStatSorter;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.systray.MessageToTray;
 
 import java.io.*;
 import java.sql.*;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 
 /**
@@ -37,7 +37,7 @@ public class WeekPCStats implements Runnable, DataBaseRegSQL {
 
     private static final String FILENAME_INETSTATSCSV = "inetstats.csv";
     
-    private static final MessageToUser messageToUser = new MessageLocal(WeekPCStats.class.getSimpleName());
+    private static MessageToUser messageToUser;
 
     private String sql;
 
@@ -46,10 +46,27 @@ public class WeekPCStats implements Runnable, DataBaseRegSQL {
     private IllegalStateException illegalStateException = new IllegalStateException("13.04.2019 (18:17)");
 
     private static final String SQL_DISTINCTIPSWITHINET = "SELECT DISTINCT `ip` FROM `inetstats`";
+    
+    
+    public WeekPCStats(String sql, String fileName) {
+        this.sql = sql;
+        this.fileName = fileName;
+    }
+
 
     public WeekPCStats(String sql) {
         this.sql = sql;
         this.fileName = ConstantsFor.FILENAME_VELKOMPCUSERAUTOTXT;
+    }
+    
+    
+    static {
+        try {
+            messageToUser = new MessageToTray(WeekPCStats.class.getSimpleName());
+        }
+        catch (UnsupportedOperationException e) {
+            messageToUser = new MessageLocal(WeekPCStats.class.getSimpleName());
+        }
     }
 
     @Override
@@ -113,8 +130,9 @@ public class WeekPCStats implements Runnable, DataBaseRegSQL {
         return PC_NAMES_IN_TABLE.size();
     }
 
+
     private void pcUsrAutoMake() {
-        messageToUser.warn(getClass().getSimpleName(), fileName + "file, SQL: " + sql, " = " + selectFrom());
+        messageToUser.info(getClass().getSimpleName() + ".pcUsrAutoMake", "pcUsrAutoMake();", " = " + selectFrom());
     }
 
 
@@ -177,22 +195,15 @@ public class WeekPCStats implements Runnable, DataBaseRegSQL {
     
     
     private void pcUserAutoSelect(ResultSet r , PrintWriter printWriter) throws SQLException {
-        printWriter.println(r.getString(1));
-        printWriter.print(" at ");
-        printWriter.print(r.getString(6));
-        printWriter.print(") ");
-        printWriter.print(r.getString(2));
-        printWriter.print(" ");
-        printWriter.print(r.getString(3));
+        printWriter.println(new StringBuilder()
+            .append(r.getString(1))
+            .append(" at ")
+            .append(r.getString(6))
+            .append(") ")
+            .append(r.getString(2))
+            .append(" ")
+            .append(r.getString(3)));
         PC_NAMES_IN_TABLE.add(r.getString(2) + " " + r.getString(3));
-        filesWork();
-    }
-    
-    private void filesWork() {
-        File file = new File(fileName);
-        Set<String> usersUnique = FileSystemWorker.readFileToSet(file.toPath());
-        messageToUser.info(getClass().getSimpleName() + ".filesWork", "usersUnique.size()", " = " + usersUnique.size());
-        FileSystemWorker.writeFile(ConstantsFor.FILENAME_USERSSET, usersUnique.stream());
     }
     
     
