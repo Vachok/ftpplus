@@ -210,8 +210,6 @@ public class SSHFactory implements Callable<String> {
             throw new ConnectException("No connection to: " + session.getHost() + ":" + session.getPort());
         }
         
-        Objects.requireNonNull(session).setInputStream(System.in);
-        
         try {
             this.respChannel = session.openChannel(sessionType);
         }

@@ -31,7 +31,7 @@ import java.util.concurrent.TimeoutException;
  <p>
  
  @since 10.05.2019 (13:48) */
-public class TestServer implements ConnectToMe, Closeable {
+public class TestServer implements ConnectToMe {
     
     
     private static final String JAR = "file:///G:/My_Proj/FtpClientPlus/modules/networker/ostpst/build/libs/";
@@ -50,18 +50,35 @@ public class TestServer implements ConnectToMe, Closeable {
     
     private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
     
-    public void accepSoc(Socket socket) {
+    @Override public Socket getSocket() {
+        return this.socket;
+    }
+    
+    @Override public void runSocket() throws IOException {
+        ServerSocket socketSrv = new ServerSocket(listenPort);
+        this.serverSocket = socketSrv;
+        socketSrv.setReuseAddress(true);
+        while (true) {
+            accepSoc(socketSrv.accept());
+        }
+    }
+    
+    @Override public void reconSock() {
+        throw new IllegalComponentStateException("13.05.2019 (12:57)");
+    }
+    
+    private void accepSoc(Socket socket) {
         this.socket = socket;
         try {
             InputStream iStream = socket.getInputStream();
             Scanner scanner = new Scanner(iStream);
             OutputStream outputStream = socket.getOutputStream();
             PrintStream printStream = new PrintStream(outputStream);
-            System.setIn(iStream);
             this.printStreamF = printStream;
             System.setOut(printStreamF);
             System.out.println("Socket " + socket.getInetAddress() + ":" + socket.getPort() + " is connected");
             while (socket.isConnected()) {
+                System.setIn(socket.getInputStream());
                 if (scanner.hasNextLine()) {
                     scanInput(scanner.nextLine(), socket);
                 }
@@ -78,38 +95,6 @@ public class TestServer implements ConnectToMe, Closeable {
             System.setOut(System.err);
         }
         
-    }
-    
-    /**
-     Closes this stream and releases any system resources associated
-     with it. If the stream is already closed then invoking this
-     method has no effect.
-     
-     <p> As noted in {@link AutoCloseable#close()}, cases where the
-     close may fail require careful attention. It is strongly advised
-     to relinquish the underlying resources and to internally
-     <em>mark</em> the {@code Closeable} as closed, prior to throwing
-     the {@code IOException}.
-     
-     @throws IOException if an I/O error occurs
-     */
-    @Override public void close() throws IOException {
-        this.printStreamF.close();
-        this.socket.close();
-        this.serverSocket.close();
-    }
-    
-    @Override public void runSocket() throws IOException {
-        ServerSocket socketSrv = new ServerSocket(listenPort);
-        this.serverSocket = socketSrv;
-        socketSrv.setReuseAddress(true);
-        while (true) {
-            accepSoc(socketSrv.accept());
-        }
-    }
-    
-    @Override public void reconSock() {
-        throw new IllegalComponentStateException("13.05.2019 (12:57)");
     }
     
     private void scanInput(String scannerLine, Socket socket) throws IOException {

@@ -81,7 +81,6 @@ public class AppInfoOnLoad implements Runnable {
     
     private static String unixThreadInfo = System.getProperty("os.name");
     
-
     static {
         int scansDelay = Integer.parseInt(APP_PROPS.getProperty(ConstantsFor.PR_SCANSINMIN, "111"));
         if (scansDelay <= 0) {
@@ -92,7 +91,6 @@ public class AppInfoOnLoad implements Runnable {
             thisDelay = 85;
         }
     }
-    
     
     public static String getUnixThreadInfo() {
         return unixThreadInfo;

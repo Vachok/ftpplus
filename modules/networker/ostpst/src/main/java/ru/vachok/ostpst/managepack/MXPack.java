@@ -55,7 +55,6 @@ public class MXPack implements MXManager {
              Socket accept = serverSocket.accept()
         ) {
             while (accept.isConnected()) {
-                System.setIn(accept.getInputStream());
                 PrintStream printStream = new PrintStream(accept.getOutputStream());
                 System.setOut(printStream);
             }

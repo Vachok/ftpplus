@@ -10,17 +10,12 @@ public class TelnetStarter implements Runnable {
     
     
     @Override public void run() {
-        ConnectToMe connectToMe = new MyConsoleServer();
+        ConnectToMe connectToMe = MyConsoleServer.getI();
         try {
             connectToMe.runSocket();
-            while (true) {
-                connectToMe.reconSock();
-            }
         }
-        catch (IOException | InterruptedException e) {
+        catch (IOException e) {
             e.printStackTrace();
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().interrupt();
         }
     }
 }
