@@ -922,3 +922,5 @@ ostpst/lib
 *.pstObjStr
 *.res
 *.fldr
+/ScanOnlineonList
+*.stream
