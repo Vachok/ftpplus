@@ -12,4 +12,5 @@ public interface ConnectToMe {
     
     
     void runSocket() throws IOException;
+    void reconSock() throws IOException, InterruptedException;
 }

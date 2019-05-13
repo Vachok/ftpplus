@@ -15,7 +15,6 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.MyServer;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.SpeedChecker;
 import ru.vachok.networker.services.WeekPCStats;
@@ -117,9 +116,7 @@ public class IntoApplication {
      */
     private static void afterSt() {
         @NotNull Runnable infoAndSched = new AppInfoOnLoad();
-        Runnable mySrv = MyServer.getI();
         EXECUTOR.submit(infoAndSched);
-        EXECUTOR.submit(mySrv);
         EXECUTOR.submit(IntoApplication::getWeekPCStats);
         SaveLogsToDB saveLogsToDB = new AppComponents().saveLogsToDB();
         if (!ConstantsFor.thisPC().toLowerCase().contains("home")) {

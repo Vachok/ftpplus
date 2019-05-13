@@ -15,6 +15,7 @@ import ru.vachok.networker.services.MessageLocal;
 
 import java.io.*;
 import java.net.InetAddress;
+import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Objects;
@@ -43,8 +44,12 @@ public class NetMonitorPTV implements Runnable {
         File ptvFile = new File(FILENAME_PINGTV);
         NetListKeeper.setPtvTime(new Date().toString());
         try {
-            outputStream = new FileOutputStream(ptvFile);
-            printStream = new PrintStream(Objects.requireNonNull(outputStream), true);
+            if (!ptvFile.exists()) {
+                Files.createFile(ptvFile.toPath());
+            }
+    
+            this.outputStream = new FileOutputStream(ptvFile);
+            this.printStream = new PrintStream(Objects.requireNonNull(outputStream), true);
         }
         catch (IOException e) {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".NetMonitorPTV", e));

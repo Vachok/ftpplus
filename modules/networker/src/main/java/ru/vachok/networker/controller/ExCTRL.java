@@ -21,9 +21,7 @@ import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.mailserver.ExSRV;
 import ru.vachok.networker.mailserver.MailRule;
-import ru.vachok.networker.mailserver.OstPstUtils;
 import ru.vachok.networker.mailserver.RuleSet;
-import ru.vachok.ostpst.MakeConvert;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;

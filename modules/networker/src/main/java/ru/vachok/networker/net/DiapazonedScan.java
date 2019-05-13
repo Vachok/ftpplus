@@ -352,7 +352,7 @@ public class DiapazonedScan implements Runnable {
             sb.append("<br>");
         
             ThreadInfo infoThisThr = threadMXBean.getThreadInfo(Thread.currentThread().getId());
-            sb.append(infoThisThr.toString()).append(" String. ");
+            sb.append(infoThisThr).append(" String. ");
             sb.append(infoThisThr.isSuspended()).append(" Suspended. ");
             sb.append(infoThisThr.getThreadName()).append(" ThreadName. ");
             sb.append(infoThisThr.getWaitedTime()).append(" WaitedTime (millis). ");
@@ -445,11 +445,13 @@ public class DiapazonedScan implements Runnable {
                         stStMap.put(theScannedIPHost, e.getMessage());
                     }
                 }
-                executionProcessLog.add(toString());
+                executionProcessLog.add(getBeansInfo());
                 Collections.sort(executionProcessLog);
                 if (executionProcessLog.size() >= 8) {
-                    FileSystemWorker.writeFile((this.from + "_vlan-to_" + this.to + ".log"), executionProcessLog.stream());
+                    String fileName = this.from + "_vlan-to_" + this.to + ".log";
+                    boolean fileOk = FileSystemWorker.writeFile(fileName, executionProcessLog.stream());
                     executionProcessLog.clear();
+                    messageToUser.info(fileName, "fileOk", " = " + fileOk);
                 }
             }
     

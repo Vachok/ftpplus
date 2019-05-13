@@ -424,6 +424,8 @@ public enum ConstantsFor {
     
     public static final String PR_THISPC = "thispc";
     
+    public static final int EXIT_USEREXIT = 222;
+    
     static final String STR_FINISH = " is finish";
     
     private static final String[] STRINGS_TODELONSTART = {"visit_", ".tmp", ".log", ".tv"};

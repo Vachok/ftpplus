@@ -124,7 +124,7 @@ public class MatrixCtr {
     public void setCurrentProvider() {
         SshActs sshActs = new AppComponents().sshActs();
         try {
-            this.currentProvider = sshActs.providerTraceStr();
+            this.currentProvider = sshActs.getProviderTraceStr();
         }
         catch (InterruptedException | ExecutionException | TimeoutException e) {
             this.currentProvider = "<br><a href=\"/makeok\">" + e.getMessage() + "</a><br>";

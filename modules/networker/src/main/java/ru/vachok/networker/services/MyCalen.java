@@ -1,61 +1,72 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.services;
 
 
 import org.apache.commons.net.ntp.TimeInfo;
 import org.slf4j.Logger;
+import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.net.PCUserResolver;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 
 /**
  Работа с календарём
-
+ 
  @since 09.12.2018 (15:26) */
 @SuppressWarnings ("SameParameterValue")
 public abstract class MyCalen {
-
+    
+    
     private static final String DATE_RETURNED = " date returned";
-
+    
+    private static MessageToUser messageToUser = new MessageLocal(MyCalen.class.getSimpleName());
+    
     private MyCalen() {
-
+    
     }
-
+    
     /**
      {@link AppComponents#getLogger(String)}
      */
     private static final Logger LOGGER = AppComponents.getLogger(MyCalen.class.getSimpleName());
-
+    
     /**
      {@link TimeChecker}
      */
     private static final TimeChecker TIME_CHECKER = new TimeChecker();
-
+    
     /**
      @return {@link TimeInfo}
      */
     public static TimeInfo getTimeInfo() {
         return timeInfo;
     }
-
+    
     /**
      {@link TimeChecker#call()}
      */
     @SuppressWarnings ("CanBeFinal")
     private static TimeInfo timeInfo = TIME_CHECKER.call();
-
+    
     /**
      Проверка работоспособности.
      <p>
      {@code getNextDayofWeek(0, 4, DayOfWeek.FRIDAY; getNextMonth(); getNextSat(0, 2); getNextDayofWeek(10, 2, DayOfWeek.MONDAY)}
-
+     
      @return результаты методов.
      */
     public static String toStringS() {
@@ -66,7 +77,7 @@ public abstract class MyCalen {
         sb.append(",  IS = ").append(getNextDayofWeek(10, 2, DayOfWeek.MONDAY)).append("\n");
         return sb.toString();
     }
-
+    
     /**
      Создание {@link Date}
      <p>
@@ -108,12 +119,12 @@ public abstract class MyCalen {
             return retDate;
         }
     }
-
+    
     /**
      Дата запуска common scanner
      <p>
      Usage: {@link #toStringS()}
-
+     
      @param hourNeed час
      @param minNeed  минута
      @return new {@link Date} следующая суббота 0:01
@@ -136,7 +147,7 @@ public abstract class MyCalen {
                     localDate.getDayOfMonth() + toSat)
                 .setTimeOfDay(hourNeed, minNeed, 0).build().getTime();
             timeInfo.computeDetails();
-
+            
             String msgTimeSp = new StringBuilder()
                 .append(retDate)
                 .append(" ")
@@ -152,10 +163,10 @@ public abstract class MyCalen {
             return retDate;
         }
     }
-
+    
     /**
      Usages: {@link #toStringS()}
-
+     
      @return дата через месяц.
      */
     private static LocalDateTime getNextMonth() {
@@ -167,5 +178,22 @@ public abstract class MyCalen {
             .append("\n").toString();
         LOGGER.info(msg);
         return localDateTime;
+    }
+    
+    /**
+     Проверяет день недели.
+     
+     @param scheduledExecutorService {@link ScheduledExecutorService}
+     @return {@code msg = dateFormat.format(dateStart) + " pcuserauto (" + TimeUnit.MILLISECONDS.toHours(delayMs) + " delay hours)}
+     */
+    public static String checkDay(ScheduledExecutorService scheduledExecutorService) {
+        messageToUser.info(ConstantsFor.STR_INPUT_OUTPUT, "", ConstantsFor.JAVA_LANG_STRING_NAME);
+        Date dateStart = getNextDayofWeek(10, 0, DayOfWeek.MONDAY);
+        DateFormat dateFormat = new SimpleDateFormat("MM.dd, hh:mm", Locale.getDefault());
+        long delayMs = dateStart.getTime() - System.currentTimeMillis();
+        String msg = dateFormat.format(dateStart) + " pcuserauto (" + TimeUnit.MILLISECONDS.toHours(delayMs) + " delay hours)";
+        scheduledExecutorService.scheduleWithFixedDelay(PCUserResolver::trunkTableUsers, delayMs, ConstantsFor.ONE_WEEK_MILLIS, TimeUnit.MILLISECONDS);
+        messageToUser.infoNoTitles("msg = " + msg);
+        return msg;
     }
 }
