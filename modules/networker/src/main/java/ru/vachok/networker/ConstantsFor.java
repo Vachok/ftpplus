@@ -426,6 +426,10 @@ public enum ConstantsFor {
     
     public static final int EXIT_USEREXIT = 222;
     
+    public static final String PR_TESTSERVER = "testserver";
+    
+    public static final String PR_LPORT = "lport";
+    
     static final String STR_FINISH = " is finish";
     
     private static final String[] STRINGS_TODELONSTART = {"visit_", ".tmp", ".log", ".tv"};
