@@ -141,7 +141,7 @@ public class MyConsoleServer extends Thread implements ConnectToMe {
 
      @throws IOException {@link InputStream} из {@link Socket}
      */
-    public void printToSocket() throws IOException {
+    private void printToSocket() throws IOException {
         PrintWriter printWriter = new PrintWriter(socket.getOutputStream(), true);
         InputStream inputStream = socket.getInputStream();
         System.setOut(new PrintStream(socket.getOutputStream()));
@@ -169,7 +169,7 @@ public class MyConsoleServer extends Thread implements ConnectToMe {
 
      @param socket {@link Socket} для подключившегося клиента
      */
-    public void accepSoc(Socket socket) {
+    private void accepSoc(Socket socket) {
         StringBuilder f = new StringBuilder();
 
         try(Scanner scanner = new Scanner(System.in);
