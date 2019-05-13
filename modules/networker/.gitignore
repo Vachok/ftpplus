@@ -924,3 +924,6 @@ ostpst/lib
 *.fldr
 /ScanOnlineonList
 *.stream
+obj/
+ostpst/src/main/resources/
+ostpst/src/test/resources/
