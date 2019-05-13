@@ -7,8 +7,6 @@ import org.apache.commons.net.ntp.TimeInfo;
 import org.slf4j.LoggerFactory;
 import org.springframework.ui.Model;
 import org.springframework.web.multipart.MultipartFile;
-import ru.vachok.messenger.MessageCons;
-import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.accesscontrol.PfListsSrv;
 import ru.vachok.networker.componentsrepo.Visitor;
@@ -19,10 +17,8 @@ import ru.vachok.networker.mailserver.MailRule;
 import ru.vachok.networker.net.PCUserResolver;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.TimeChecker;
-import ru.vachok.networker.systray.ActionDefault;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -342,17 +338,6 @@ public enum ConstantsFor {
      {@link #getDelay()}
      */
     public static final long DELAY = getDelay();
-
-    public static final Runnable INFO_MSG_RUNNABLE = ()->{
-        File todoFileHome = new File("G:\\My_Proj\\FtpClientPlus\\modules\\networker\\TODO");
-        File todoFileWork = new File("C:\\Users\\ikudryashov\\IdeaProjects\\spring\\modules\\networker\\TODO");
-        if (todoFileHome.exists() || todoFileWork.exists()) {
-            new MessageSwing(new ActionDefault("https://github.com/Vachok/ftpplus/issues")).warn("CHECK TODO!");
-        }
-        else {
-            new MessageCons(ConstantsFor.class.getSimpleName()).info("ConstantsFor.INFO_MSG_RUNNABLE", "thisPC()", " = " + thisPC());
-        }
-    };
 
     public static final String PR_AND_ATT_NEWPC = "newpc";
 

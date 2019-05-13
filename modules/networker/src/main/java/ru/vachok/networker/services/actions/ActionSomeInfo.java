@@ -3,7 +3,6 @@ package ru.vachok.networker.services.actions;
 
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -35,7 +34,6 @@ public class ActionSomeInfo extends AbstractAction {
             messageToUser = new MessageSwing();
         }
         Date newScan = new Date(DiapazonedScan.getInstance().getStopClassStampLong() + TimeUnit.MINUTES.toMillis(111));
-        new Thread(ConstantsFor.INFO_MSG_RUNNABLE).start();
         messageToUser.info("ActionSomeInfo.actionPerformed", "newScan = ", newScan + "\nCharsets: \n" + FileSystemWorker
             .writeFile("charsets.info", new TForms().fromArray(Charset.availableCharsets().values(), false)));
         SystemTrayHelper.getI().delOldActions();

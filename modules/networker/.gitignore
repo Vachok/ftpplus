@@ -921,3 +921,4 @@ modules/networker/unused.ips
 ostpst/lib
 *.pstObjStr
 *.res
+*.fldr

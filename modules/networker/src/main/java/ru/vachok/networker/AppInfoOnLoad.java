@@ -135,7 +135,6 @@ public class AppInfoOnLoad implements Runnable {
     @Override
     public void run() {
         infoForU(AppCtx.scanForBeansAndRefreshContext());
-        ConstantsFor.INFO_MSG_RUNNABLE.run();
         AppComponents.threadConfig().execByThreadConfig(new TelnetStarter());
     }
     
