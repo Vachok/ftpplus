@@ -81,15 +81,7 @@ public class AppInfoOnLoad implements Runnable {
     
     private static String unixThreadInfo = System.getProperty("os.name");
     
-    public static String getUnixThreadInfo() {
-        return unixThreadInfo;
-    }
-    
-    public static void setUnixThreadInfo(String unixThreadInfo) {
-        AppInfoOnLoad.unixThreadInfo = unixThreadInfo;
-    }
-    
-    
+
     static {
         int scansDelay = Integer.parseInt(APP_PROPS.getProperty(ConstantsFor.PR_SCANSINMIN, "111"));
         if (scansDelay <= 0) {
@@ -101,6 +93,14 @@ public class AppInfoOnLoad implements Runnable {
         }
     }
     
+    
+    public static String getUnixThreadInfo() {
+        return unixThreadInfo;
+    }
+    
+    public static void setUnixThreadInfo(String unixThreadInfo) {
+        AppInfoOnLoad.unixThreadInfo = unixThreadInfo;
+    }
     
     public static int getThisDelay() {
         return thisDelay;
@@ -218,7 +218,7 @@ public class AppInfoOnLoad implements Runnable {
     @SuppressWarnings("DuplicateStringLiteralInspection")
     private void infoForU(ApplicationContext appCtx) {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(AppComponents.versionInfo().toString()).append("\n");
+        stringBuilder.append(AppComponents.versionInfo()).append("\n");
         stringBuilder.append(ConstantsFor.getBuildStamp());
         messageToUser.info("AppInfoOnLoad.infoForU", ConstantsFor.STR_FINISH, " = " + stringBuilder);
         miniLogger.add("infoForU ends. now schedStarter(). Result: " + stringBuilder);
@@ -247,7 +247,7 @@ public class AppInfoOnLoad implements Runnable {
                 TimeUnit.SECONDS);
             AppInfoOnLoad.miniLogger.add("runCommonScan init delay " + ConstantsFor.INIT_DELAY + ", delay " + TimeUnit.DAYS.toSeconds(1) + ". SECONDS");
         }
-        else if (osName.contains(ConstantsFor.PR_WINDOWSOS)) {
+        if (osName.contains(ConstantsFor.PR_WINDOWSOS)) {
             schedWithService(scheduledExecutorService);
         }
         else {
@@ -307,7 +307,7 @@ public class AppInfoOnLoad implements Runnable {
         threadMXBean.setThreadCpuTimeEnabled(true);
     
         ScheduledExecutorService executorService = Executors.unconfigurableScheduledExecutorService(Executors.newScheduledThreadPool(ConstantsFor.ONE_DAY_HOURS));
-        stringBuilder.append(executorService.toString());
+        stringBuilder.append(executorService);
         
         ScheduledFuture<?> ptvPing = executorService.scheduleWithFixedDelay(new NetMonitorPTV(), 0, ConstantsFor.ONE_DAY_HOURS, TimeUnit.SECONDS);
         ScheduledFuture<?> tmpInet = executorService.scheduleWithFixedDelay(new TemporaryFullInternet(), 0, ConstantsFor.ONE_DAY_HOURS, TimeUnit.SECONDS);
@@ -332,7 +332,7 @@ public class AppInfoOnLoad implements Runnable {
         }
         for (long id : threadMXBean.getAllThreadIds()) {
             FileSystemWorker.writeFile("scheduler.stack", Arrays.toString(threadMXBean.getThreadInfo(id).getStackTrace()));
-            stringBuilder.append(threadMXBean.getThreadInfo(Thread.currentThread().getId()).toString());
+            stringBuilder.append(threadMXBean.getThreadInfo(Thread.currentThread().getId()));
         }
         setUnixThreadInfo(stringBuilder.toString());
         dateSchedulers(executorService);

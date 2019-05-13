@@ -10,9 +10,9 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.abstr.ConnectToMe;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.mailserver.MakeConvert;
+import ru.vachok.networker.mailserver.OstLoader;
 import ru.vachok.networker.services.MessageLocal;
-import ru.vachok.ostpst.MakeConvert;
-import ru.vachok.ostpst.OstToPst;
 
 import java.awt.*;
 import java.io.*;
@@ -88,7 +88,7 @@ public class TestServer implements ConnectToMe, Closeable {
             System.setIn(iStream);
             this.printStreamF = printStream;
             System.setOut(printStreamF);
-            System.out.println("Socket " + socket.getInetAddress().toString() + ":" + socket.getPort() + " is connected");
+            System.out.println("Socket " + socket.getInetAddress() + ":" + socket.getPort() + " is connected");
             while (socket.isConnected()) {
                 if (scanner.hasNextLine()) {
                     scanInput(scanner.nextLine(), socket);
@@ -148,7 +148,7 @@ public class TestServer implements ConnectToMe, Closeable {
         if (line.equals("ost")) {
             printStreamF.println("OSTTOPST: ");
             printStreamF.println(loadLib());
-            MakeConvert ostPst = new OstToPst(fileName);
+            MakeConvert ostPst = new OstLoader(fileName);
             ostPst.copyierWithSave();
             ostPst.showFileContent();
         }

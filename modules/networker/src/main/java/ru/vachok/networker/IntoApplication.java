@@ -71,7 +71,7 @@ public class IntoApplication {
     }
     
     
-    public void setConfigurableApplicationContext(ConfigurableApplicationContext configurableApplicationContext) {
+    public static void setConfigurableApplicationContext(ConfigurableApplicationContext configurableApplicationContext) {
         IntoApplication.configurableApplicationContext = configurableApplicationContext;
     }
     
@@ -122,12 +122,8 @@ public class IntoApplication {
         EXECUTOR.submit(mySrv);
         EXECUTOR.submit(IntoApplication::getWeekPCStats);
         SaveLogsToDB saveLogsToDB = new AppComponents().saveLogsToDB();
-        if (!ConstantsFor.thisPC().toLowerCase().contains("home")) {
-            AppComponents.threadConfig().execByThreadConfig(saveLogsToDB::startScheduled);
-        }
-        else {
-            AppComponents.threadConfig().execByThreadConfig(saveLogsToDB::showInfo);
-        }
+        AppComponents.threadConfig().execByThreadConfig(saveLogsToDB::startScheduled);
+        AppComponents.threadConfig().execByThreadConfig(saveLogsToDB::showInfo);
     }
     
     /**
