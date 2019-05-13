@@ -303,7 +303,7 @@
 192.168.13.136 vipnet.list
 192.168.13.138 tempfull.list
 192.168.13.142 vipnet.list
-192.168.13.143 vipnet.list
+192.168.13.143 24hrs.list
 192.168.13.148 tempfull.list
 192.168.13.149 vipnet.list
 192.168.13.152 squid.list

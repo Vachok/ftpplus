@@ -1,6 +1,7 @@
 package ru.vachok.networker.mailserver;
 
 
+import org.jetbrains.annotations.Nullable;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.services.MessageLocal;
 
@@ -14,13 +15,16 @@ import java.net.URLClassLoader;
 
 /**
  @since 13.05.2019 (9:00) */
-public interface ConverterPost {
+public interface LibraryLoader {
     
     
-    default ClassLoader libraryLoad() throws MalformedURLException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, ClassNotFoundException {
+    @Nullable
+    default Class<?> libraryLoad(URL[] libURLs, String className) throws MalformedURLException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, ClassNotFoundException {
         ClassLoader c = ClassLoader.getSystemClassLoader();
-        URL[] libURLs = {new URL("http://networker.vachok.ru/lib/ostpst-8.0.1919.jar")};
         MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
+        if (libURLs == null || libURLs.length == 0) {
+            libURLs = new URL[]{new URL("http://networker.vachok.ru/lib/ostpst-8.0.1919.jar")};
+        }
         
         if (c instanceof URLClassLoader) {
             URLClassLoader urlClassLoader = (URLClassLoader) c;
@@ -37,15 +41,15 @@ public interface ConverterPost {
         else {
             Class<?> aClass;
             try (URLClassLoader urlClassLoader = new URLClassLoader(libURLs)) {
-                aClass = urlClassLoader.loadClass("ru.vachok.ostpst.MakeConvert");
-                Package aPackage = aClass.getPackage();
-                c = aClass.getClassLoader();
+                Class<OstLoader> ostLoader = (Class<OstLoader>) urlClassLoader.loadClass(className);
+                return ostLoader;
             }
             catch (IOException e) {
                 messageToUser.error(e.getMessage());
             }
         }
-        return c;
+        return null;
     }
-    Class<?> loadedClass(String className) throws ClassNotFoundException;
+    
+    Class<?> loadedClass() throws ClassNotFoundException;
 }

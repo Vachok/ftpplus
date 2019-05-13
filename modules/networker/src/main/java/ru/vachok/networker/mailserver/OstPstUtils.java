@@ -8,6 +8,7 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.services.MessageLocal;
 
+import java.awt.*;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.util.Properties;
@@ -15,7 +16,7 @@ import java.util.Properties;
 
 /**
  @since 04.05.2019 (11:11) */
-public abstract class OstPstUtils implements ConverterPost {
+public abstract class OstPstUtils implements LibraryLoader {
     
     
     private Properties properties = AppComponents.getProps();
@@ -50,14 +51,13 @@ public abstract class OstPstUtils implements ConverterPost {
         messageToUser.info("copyierWithSave");
     }
     
-    @Override public Class<?> loadedClass(String className) throws ClassNotFoundException {
-        ClassLoader libraryLoad = ClassLoader.getSystemClassLoader();
+    @Override public Class<?> loadedClass() throws ClassNotFoundException {
         try {
-            libraryLoad = libraryLoad();
+            return libraryLoad(null, "ru.vachok.ostpst.MakeConvert");
         }
-        catch (MalformedURLException | NoSuchMethodException | InvocationTargetException | IllegalAccessException | ClassNotFoundException e) {
+        catch (MalformedURLException | NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
             e.printStackTrace();
+            throw new IllegalComponentStateException("13.05.2019 (15:18)");
         }
-        return libraryLoad.loadClass(className);
     }
 }

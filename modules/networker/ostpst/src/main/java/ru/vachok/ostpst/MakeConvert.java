@@ -17,4 +17,8 @@ public interface MakeConvert {
     long copyierWithSave();
     
     String folderContentItemsString();
+    
+    default void testMe() {
+        System.out.println("true = " + true);
+    }
 }

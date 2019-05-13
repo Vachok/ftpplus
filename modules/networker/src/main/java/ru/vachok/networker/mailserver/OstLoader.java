@@ -5,11 +5,8 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.abstr.MakeConvert;
 import ru.vachok.networker.services.MessageLocal;
 
-import java.lang.reflect.InvocationTargetException;
-import java.net.MalformedURLException;
 
-
-public class OstLoader implements ConverterPost, MakeConvert {
+public class OstLoader implements LibraryLoader, MakeConvert {
     
     
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
@@ -18,6 +15,10 @@ public class OstLoader implements ConverterPost, MakeConvert {
     
     public OstLoader(String fileName) {
         this.fileName = fileName;
+    }
+    
+    @Override public Class<?> loadedClass() throws ClassNotFoundException {
+        return null;
     }
     
     @Override public void setFileName(String fileName) {
@@ -34,16 +35,5 @@ public class OstLoader implements ConverterPost, MakeConvert {
     
     @Override public long copyierWithSave() {
         return 0;
-    }
-    
-    @Override public Class<?> loadedClass(String className) throws ClassNotFoundException {
-        ClassLoader classLoader = ClassLoader.getSystemClassLoader();
-        try {
-            classLoader = libraryLoad();
-        }
-        catch (MalformedURLException | NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
-            e.printStackTrace();
-        }
-        return classLoader.loadClass(className);
     }
 }
