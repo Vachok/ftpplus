@@ -85,6 +85,7 @@ public class TestServer implements ConnectToMe {
                 printStream.print(iStream.read());
             }
             socket.close();
+            System.setOut(System.err);
         }
         catch (IOException e) {
             System.setOut(System.err);
@@ -92,9 +93,8 @@ public class TestServer implements ConnectToMe {
         }
         finally {
             printStreamF.close();
-            System.setOut(System.err);
         }
-        
+        System.setOut(System.err);
     }
     
     private void scanInput(String scannerLine, Socket socket) throws IOException {
@@ -111,7 +111,7 @@ public class TestServer implements ConnectToMe {
             context.start();
             this.accepSoc(socket);
         }
-        else if (scannerLine.equals("����\u0006")) {
+        else if (scannerLine.equals("q")) {
             socket.close();
         }
         else if (scannerLine.contains("ssh")) {
@@ -133,15 +133,18 @@ public class TestServer implements ConnectToMe {
     }
     
     private void scanMore(String line) throws IOException {
-        String fileName = "\\\\192.168.14.10\\IT-Backup\\Mailboxes_users\\a.a.zavadskaya.pst";
-        printStreamF.println(fileName);
         if (line.equals("ost")) {
+            String fileName = "\\\\192.168.14.10\\IT-Backup\\Mailboxes_users\\a.a.zavadskaya.pst";
             printStreamF.println("OSTTOPST: ");
             printStreamF.println(loadLib());
             MakeConvert ostPst = new OstLoader(fileName);
             ostPst.copyierWithSave();
             ostPst.showFileContent();
         }
+        else if (line.equalsIgnoreCase("scan")) {
+            NetScannerSvc.getInst();
+        }
+        accepSoc(socket);
     }
     
     private String loadLib() throws IOException {

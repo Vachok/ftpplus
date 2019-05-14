@@ -23,7 +23,6 @@ public class SysConsoleToFile extends FileSystemWorker implements Runnable {
     private boolean writeSysOut() {
         try (OutputStream outputStream = new FileOutputStream("con_" + System.currentTimeMillis() + ".log");
              PrintStream printStream = new PrintStream(outputStream, true)) {
-            System.setOut(printStream);
             printStream.println();
             return true;
         } catch (IOException e) {

@@ -48,9 +48,8 @@ public class MyConsoleServer extends Thread implements ConnectToMe {
      */
     private static final MessageToUser messageToUser = new MessageLocal(MyConsoleServer.class.getSimpleName());
     
-    private static final int LPORT = Integer.parseInt(AppComponents
-        .getProps()
-        .getProperty("LPORT", "9990"));
+    //    private static final int LPORT = Integer.parseInt(AppComponents.getProps().getProperty("lport", "9990"));
+    private static final int LPORT = 9991;
     
     /**
      Сокет для сервера

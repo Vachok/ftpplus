@@ -56,7 +56,6 @@ public class MXPack implements MXManager {
         ) {
             while (accept.isConnected()) {
                 PrintStream printStream = new PrintStream(accept.getOutputStream());
-                System.setOut(printStream);
             }
         }
         return rmiServer;
