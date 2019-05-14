@@ -85,6 +85,7 @@ public class MenuConsoleLocal implements UserMenu {
         System.out.println("fileName = " + fileName);
         MakeConvert makeConvert = new ConverterImpl(fileName);
         System.out.println("saveContacts = " + makeConvert.saveContacts(null));
+        makeConvert.saveFolders();
     }
     
     private void askUser(Scanner scanner) {

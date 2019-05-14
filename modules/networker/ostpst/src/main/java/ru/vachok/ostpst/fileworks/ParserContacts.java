@@ -48,19 +48,18 @@ public class ParserContacts implements Runnable {
         }
     }
     
-    void foldersRead(final PSTFolder pstFolder, final PrintStream printStream) throws PSTException, IOException {
+    private void foldersRead(PSTFolder pstFolder, PrintStream printStream) throws PSTException, IOException {
         Vector<PSTFolder> folders = pstFolder.getSubFolders();
         Iterator<PSTFolder> pstFolderIterator = folders.iterator();
+        
         while (pstFolderIterator.hasNext()) {
             PSTFolder folder = pstFolderIterator.next();
-            if (folder.hasSubfolders()) {
-                this.foldersRead(folder, printStream);
-            }
-            if (folder.getDisplayName().toLowerCase().contains("контакт")) {
-                writeContactsToFile(folder, printStream);
+            boolean hasSubs = folder.getSubFolders().size() > 0;
+    
+            if (hasSubs) {
+                new ParserObjects(folder.getSubFolders()).getObjects("contacts");
             }
         }
-        ;
     }
     
     private void writeContactsToFile(PSTFolder folder, PrintStream printStream) throws PSTException, IOException {

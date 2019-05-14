@@ -25,7 +25,8 @@ public class ConverterImpl implements MakeConvert {
     }
     
     @Override public void saveFolders() {
-    
+        ParserFoldersWithAttachments parserFoldersWithAttachments = new ParserFoldersWithAttachments(fileName);
+        System.out.println("pstContentToFoldersWithAttachments = " + parserFoldersWithAttachments.getContents());
     }
     
     @Override public String saveContacts(String csvFileName) {
