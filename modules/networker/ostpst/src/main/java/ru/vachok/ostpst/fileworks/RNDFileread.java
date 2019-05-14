@@ -1,11 +1,12 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.ostpst;
+package ru.vachok.ostpst.fileworks;
 
 
 import com.pff.PSTRAFileContent;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.ostpst.ConstantsFor;
 
 import java.io.*;
 import java.util.Properties;
@@ -13,7 +14,7 @@ import java.util.Properties;
 
 /**
  @since 30.04.2019 (9:36) */
-class RNDFileread implements Serializable {
+public class RNDFileread implements Serializable {
     
     
     private PSTRAFileContent content;
@@ -45,7 +46,7 @@ class RNDFileread implements Serializable {
         }
     }
     
-    long readRNDFileContentFromPosition() {
+    public long readRNDFileContentFromPosition() {
         int capacity = ConstantsFor.KBYTE_BYTES * ConstantsFor.KBYTE_BYTES;
         byte[] bytes = new byte[ConstantsFor.KBYTE_BYTES * ConstantsFor.KBYTE_BYTES];
         try {

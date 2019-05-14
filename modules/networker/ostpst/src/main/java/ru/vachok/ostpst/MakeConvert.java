@@ -10,7 +10,11 @@ public interface MakeConvert {
     
     void saveFolders();
     
-    void saveContacts();
+    /**
+     @param csvFileName can be null
+     @return path to saved csv
+     */
+    String saveContacts(String csvFileName);
     
     void setFileName(String fileName);
     

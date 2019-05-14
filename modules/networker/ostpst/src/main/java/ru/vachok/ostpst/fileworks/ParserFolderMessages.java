@@ -1,4 +1,4 @@
-package ru.vachok.ostpst;
+package ru.vachok.ostpst.fileworks;
 
 
 import com.pff.PSTException;

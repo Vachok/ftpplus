@@ -1,6 +1,6 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.ostpst;
+package ru.vachok.ostpst.fileworks;
 
 
 import com.pff.*;
@@ -19,7 +19,7 @@ import java.util.stream.Stream;
 
 /**
  @since 30.04.2019 (15:04) */
-class PSTContentToFoldersWithAttachments {
+public class PSTContentToFoldersWithAttachments {
     
     
     private static final String CONTENT = ".getSubFolderContent";
@@ -34,7 +34,16 @@ class PSTContentToFoldersWithAttachments {
         this.pstFile = pstFile;
     }
     
-    Stream<PSTFolder> showFolders() {
+    public PSTContentToFoldersWithAttachments(String fileName) {
+        try {
+            this.pstFile = new PSTFile(fileName);
+        }
+        catch (PSTException | IOException e) {
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".PSTContentToFoldersWithAttachments", e));
+        }
+    }
+    
+    public Stream<PSTFolder> showFolders() {
         Vector<PSTFolder> subFolders;
         try {
             PSTFolder rootFolder = pstFile.getRootFolder();
@@ -66,7 +75,7 @@ class PSTContentToFoldersWithAttachments {
         messageToUser.info(getClass().getSimpleName() + ".saveSubFolders", "fCount", " = " + fCount);
     }
     
-    String getContents() {
+    public String getContents() {
         StringBuilder stringBuilder = new StringBuilder();
         Collection<PSTFolder> pstFolders = showFolders().collect(Collectors.toList());
         for (PSTFolder folder : pstFolders) {
