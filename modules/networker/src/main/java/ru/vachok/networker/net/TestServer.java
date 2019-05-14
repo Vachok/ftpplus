@@ -111,6 +111,7 @@ public class TestServer implements ConnectToMe {
         }
         else if (scannerLine.equals("q")) {
             System.setOut(System.err);
+            accepSoc(socket);
         }
         else if (scannerLine.equals("ssh")) {
             try {
