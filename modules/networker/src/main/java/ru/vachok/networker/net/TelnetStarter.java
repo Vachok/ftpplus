@@ -7,7 +7,6 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.abstr.ConnectToMe;
-import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
 
 import java.io.IOException;
@@ -21,28 +20,23 @@ public class TelnetStarter implements Runnable {
     
     private MessageToUser messageToUser = new MessageLocal(TelnetStarter.class.getSimpleName());
     
+    private static final int L_PORT = Integer.parseInt(AppComponents.getProps().getProperty(ConstantsFor.PR_LPORT, "9990"));
+    
     @Override public void run() {
-        ConnectToMe connectToMe = MyConsoleServer.getI();
+        ConnectToMe connectToMe;
         if (APP_PROPS.getProperty(ConstantsFor.PR_TESTSERVER).contains("true") || ConstantsFor.PR_OSNAME_LOWERCASE.contains("free")) {
-            connectToMe = new TestServer(9990);
-            try {
-                connectToMe.runSocket();
-            }
-            catch (IOException e) {
-                messageToUser.error(e.getMessage());
-            }
+            connectToMe = new TestServer(L_PORT);
         }
         else {
-            while (!connectToMe.getSocket().isClosed()) {
-                try {
-                    connectToMe.reconSock();
-                }
-                catch (IOException | InterruptedException e) {
-                    messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".run", e));
-                    Thread.currentThread().checkAccess();
-                    Thread.currentThread().interrupt();
-                }
-            }
+            connectToMe = MyConsoleServer.getI(L_PORT);
+        }
+    
+        try {
+            messageToUser.warn(connectToMe.getClass().getSimpleName() + " *** PORT IS: " + L_PORT);
+            connectToMe.runSocket();
+        }
+        catch (IOException e) {
+            messageToUser.error(e.getMessage());
         }
     }
 }
