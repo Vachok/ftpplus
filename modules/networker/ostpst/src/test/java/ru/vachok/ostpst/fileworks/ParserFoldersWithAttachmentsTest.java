@@ -19,8 +19,7 @@ public class ParserFoldersWithAttachmentsTest {
         ByteBuffer byteBuffer = cp1251.encode(fileName);
         CharBuffer charBuffer = defaultCharset.decode(byteBuffer);
         fileName = new String(charBuffer.array()).trim();
-        ParserFoldersWithAttachments parserFoldersWithAttachments = new ParserFoldersWithAttachments(fileName);
-        parserFoldersWithAttachments.getContents();
+        System.out.println("fileName = " + fileName);
     }
     
     

@@ -30,6 +30,7 @@ import ru.vachok.networker.services.MessageLocal;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.awt.*;
 import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
@@ -424,6 +425,11 @@ public class NetScanCtr {
             model.addAttribute(ConstantsFor.ATT_TITLE , lastScanDate).addAttribute("pc" , new TForms().fromArray(pCsAsync , true));
             LastNetScan.getLastNetScan().setTimeLastScan(new Date());
         }
+    }
+    
+    public void scanIt() {
+        throw new IllegalComponentStateException("14.05.2019 (17:45)\n" + getClass().getSimpleName() + ".scanIT()");
+        
     }
     
     private String getInformationForThreads(ThreadMXBean threadMXBean) {
