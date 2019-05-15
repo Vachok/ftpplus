@@ -21,7 +21,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Savepoint;
-import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -44,8 +43,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
      Запишем .mini
      */
     private final Collection<String> miniLogger = new PriorityQueue<>();
-    
-    private static File pFile = new File(pathToPropsName);
     
     private IllegalComponentStateException in_progress = new IllegalComponentStateException("In progress");
     
@@ -103,12 +100,17 @@ import java.util.concurrent.atomic.AtomicBoolean;
     
     
     @Override public int deleteFrom() {
-        throw in_progress;
+        return delFromDataBase();
     }
     
     
     @Override public int updateTable() {
-        throw in_progress;
+        if (upProps()) {
+            return 1;
+        }
+        else {
+            return 0;
+        }
     }
     
     
@@ -119,12 +121,21 @@ import java.util.concurrent.atomic.AtomicBoolean;
     
     @Override public MysqlDataSource getDataSource() {
         MysqlDataSource dataSource = new RegRuMysql().getDataSource();
+        dataSource.setRelaxAutoCommit(true);
         return dataSource;
     }
     
     
     @Override public Savepoint getSavepoint(Connection connection) {
-        throw in_progress;
+        Savepoint before = null;
+        try {
+        
+            before = connection.setSavepoint("before");
+        }
+        catch (SQLException e) {
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".getSavepoint", e));
+        }
+        return Objects.requireNonNull(before, "NO SAVEPOINT");
     }
     
     
@@ -133,11 +144,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
         final String sql = "insert into ru_vachok_networker (property, valueofproperty, javaid) values (?,?,?)";
         miniLogger.add("2. " + sql);
         FileSystemWorker.writeFile(getClass().getSimpleName() + ".mini", miniLogger.stream());
-        try (Connection c = mysqlDataSource.getConnection();
-        ) {
+        Savepoint savepoint = null;
+        try (Connection c = mysqlDataSource.getConnection()) {
+            savepoint = getSavepoint(c);
             Objects.requireNonNull(propsToSave)
-                .store(new FileOutputStream(ConstantsFor.class.getSimpleName() + ConstantsFor.FILEEXT_PROPERTIES),
-                    getClass().getSimpleName() + " " + LocalTime.now());
+                .store(new FileOutputStream(ConstantsFor.class.getSimpleName() + ConstantsFor.FILEEXT_PROPERTIES), getClass().getSimpleName() + ".upProps");
             int executeUpdateInt = 0;
             try (PreparedStatement preparedStatement = c.prepareStatement(sql)) {
                 for (Map.Entry<Object, Object> entry : propsToSave.entrySet()) {
@@ -156,8 +167,18 @@ import java.util.concurrent.atomic.AtomicBoolean;
         }
         catch (SQLException e) {
             messageToUser.error(e.getMessage());
+            rollbackSavepoint(Objects.requireNonNull(savepoint, "NO SAVEPOINT"));
         }
         return false;
+    }
+    
+    private void rollbackSavepoint(Savepoint savepoint) {
+        try {
+            messageToUser.info(getClass().getSimpleName() + ".rollbackSavepoint", "savepoint", " = " + savepoint.getSavepointName());
+        }
+        catch (SQLException e) {
+            System.err.println(e.getMessage());
+        }
     }
     
     
