@@ -12,7 +12,7 @@ public enum ConstantsFor {
     
     public static final String PR_READING = "reading";
     
-    public static final String PR_WRITE = "write";
+    public static final String PR_WRITING = "write";
     
     public static final String PR_CAPACITY = "capacity";
     

@@ -13,14 +13,14 @@ import java.util.Vector;
 
 /**
  @since 14.05.2019 (14:16) */
-public class ParserPSTMessages {
+class ParserPSTMessages {
     
     
     private MessageToUser messageToUser = new MessageCons(getClass().getSimpleName());
     
     private PSTFolder pstFolder;
     
-    public ParserPSTMessages(PSTFolder pstFolder) {
+    ParserPSTMessages(PSTFolder pstFolder) {
         this.pstFolder = pstFolder;
     }
     

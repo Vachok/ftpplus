@@ -21,7 +21,7 @@ public interface MakeConvert {
     
     void setFileName(String fileName);
     
-    long copyierWithSave();
+    String copyierWithSave();
     
     String showListFolders();
     
@@ -30,4 +30,6 @@ public interface MakeConvert {
     }
     
     Deque<String> getDequeFolderNames();
+    
+    String clearCopy();
 }

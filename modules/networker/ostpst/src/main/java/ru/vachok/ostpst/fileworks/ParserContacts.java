@@ -16,7 +16,7 @@ import java.util.Vector;
 
 /**
  @since 06.05.2019 (12:19) */
-public class ParserContacts implements Runnable {
+class ParserContacts implements Runnable {
     
     private final MessageToUser messageToUser = new MessageCons(getClass().getSimpleName());
     
@@ -26,7 +26,7 @@ public class ParserContacts implements Runnable {
     
     private String fileContactsName;
     
-    public ParserContacts(String fileName, String fileContactsName) {
+    ParserContacts(String fileName, String fileContactsName) {
         try {
             this.pstFile = new PSTFile(fileName);
         }

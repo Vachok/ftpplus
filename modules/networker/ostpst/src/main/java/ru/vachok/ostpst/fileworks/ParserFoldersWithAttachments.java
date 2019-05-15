@@ -18,7 +18,7 @@ import java.util.Vector;
 
 /**
  @since 30.04.2019 (15:04) */
-public class ParserFoldersWithAttachments {
+class ParserFoldersWithAttachments {
     
     
     private static final String CONTENT = ".inboxFolder";
@@ -31,11 +31,11 @@ public class ParserFoldersWithAttachments {
     
     private int levelCounter;
     
-    public ParserFoldersWithAttachments(PSTFile pstFile) {
+    ParserFoldersWithAttachments(PSTFile pstFile) {
         this.pstFile = pstFile;
     }
     
-    public ParserFoldersWithAttachments(String fileName) {
+    ParserFoldersWithAttachments(String fileName) {
         this.fileName = fileName;
         try {
             this.pstFile = new PSTFile(fileName);
@@ -45,7 +45,7 @@ public class ParserFoldersWithAttachments {
         }
     }
     
-    public String getListFolders() {
+    String getListFolders() {
         StringBuilder stringBuilder = new StringBuilder();
         try {
             PSTFolder rootFolder = pstFile.getRootFolder();

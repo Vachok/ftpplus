@@ -21,7 +21,7 @@ class ParserObjects {
     
     private Path recordPath;
     
-    public ParserObjects(Vector<PSTFolder> pstFolderVector) {
+    ParserObjects(Vector<PSTFolder> pstFolderVector) {
         this.pstFolderVector = pstFolderVector;
     }
     

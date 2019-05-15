@@ -24,7 +24,7 @@ public class ConverterImpl implements MakeConvert {
     public ConverterImpl(String fileName) {
         this.fileName = fileName;
         if (System.getProperty("os.name").toLowerCase().contains("windows")) {
-            fileName = new CharsetEncoding("windows-1251").getStrInAnotherCharset(fileName);
+            this.fileName = new CharsetEncoding("windows-1251").getStrInAnotherCharset(fileName);
         }
     }
     
@@ -58,8 +58,9 @@ public class ConverterImpl implements MakeConvert {
         this.fileName = fileName;
     }
     
-    @Override public long copyierWithSave() {
-        throw new IllegalComponentStateException("15.05.2019 (9:28)");
+    @Override public String copyierWithSave() {
+        RNDFileCopy rndFileCopy = new RNDFileCopy(fileName);
+        return rndFileCopy.copyFile();
     }
     
     @Override public String showListFolders() {
@@ -74,5 +75,10 @@ public class ConverterImpl implements MakeConvert {
             retDeq.add(s.replaceAll("(\\Q|\\E)*(\\d)", "").split("\\Q (\\E")[0].replace("/)", ""));
         }
         return retDeq;
+    }
+    
+    @Override public String clearCopy() {
+        String clearPositions = new RNDFileCopy(fileName).clearPositions();
+        return clearPositions;
     }
 }
