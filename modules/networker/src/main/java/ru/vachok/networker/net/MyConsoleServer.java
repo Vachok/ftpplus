@@ -48,8 +48,7 @@ public class MyConsoleServer extends Thread implements ConnectToMe {
      */
     private static final MessageToUser messageToUser = new MessageLocal(MyConsoleServer.class.getSimpleName());
     
-    //    private static final int LPORT = Integer.parseInt(AppComponents.getProps().getProperty("lport", "9990"));
-    private static final int LPORT = 9991;
+    private static int lport;
     
     /**
      Сокет для сервера
@@ -69,24 +68,20 @@ public class MyConsoleServer extends Thread implements ConnectToMe {
      {@link #MY_CONSOLE_SERVER}
      */
     private MyConsoleServer() {
-        AppComponents.threadConfig().thrNameSet("tport:" + LPORT);
+        AppComponents.threadConfig().thrNameSet("lport: " + lport);
     }
-    
-    
-    static {
-        try {
-            serverSocket = new ServerSocket(LPORT);
-        }
-        catch (IOException e) {
-            messageToUser.error(MyConsoleServer.class.getSimpleName(), e.getMessage(), new TForms().fromArray(e, false));
-        }
-    }
-    
     
     /**
      @return instance
      */
-    public static MyConsoleServer getI() {
+    public static MyConsoleServer getI(int lport) {
+        MyConsoleServer.lport = lport;
+        try {
+            ServerSocket socket = serverSocket = new ServerSocket(lport);
+        }
+        catch (IOException e) {
+            messageToUser.error(e.getMessage());
+        }
         return MY_CONSOLE_SERVER;
     }
     

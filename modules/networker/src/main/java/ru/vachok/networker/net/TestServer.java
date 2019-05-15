@@ -7,7 +7,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.IntoApplication;
+import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.abstr.ConnectToMe;
 import ru.vachok.networker.abstr.MakeConvert;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -40,8 +42,6 @@ public class TestServer implements ConnectToMe {
     
     private PrintStream printStreamF;
     
-    private Socket socket;
-    
     private int listenPort;
     
     public TestServer(int listenPort) {
@@ -51,11 +51,11 @@ public class TestServer implements ConnectToMe {
     private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
     
     @Override public Socket getSocket() {
-        return this.socket;
+        throw new IllegalComponentStateException("14.05.2019 (20:30)");
     }
     
     @Override public void runSocket() throws IOException {
-        ServerSocket socketSrv = new ServerSocket(listenPort);
+        final ServerSocket socketSrv = new ServerSocket(listenPort);
         this.serverSocket = socketSrv;
         socketSrv.setReuseAddress(true);
         while (true) {
@@ -67,40 +67,38 @@ public class TestServer implements ConnectToMe {
         throw new IllegalComponentStateException("13.05.2019 (12:57)");
     }
     
-    private void accepSoc(Socket socket) {
-        this.socket = socket;
+    private void accepSoc(final Socket socket) {
         try {
             InputStream iStream = socket.getInputStream();
             Scanner scanner = new Scanner(iStream);
             OutputStream outputStream = socket.getOutputStream();
             PrintStream printStream = new PrintStream(outputStream);
             this.printStreamF = printStream;
-            System.setOut(printStreamF);
-            System.out.println("Socket " + socket.getInetAddress() + ":" + socket.getPort() + " is connected");
+            printStreamF.println("Socket " + socket.getInetAddress() + ":" + socket.getPort() + " is connected");
+            printStreamF.println("Press ENTER. \nOr press something else for quit...");
             while (socket.isConnected()) {
-                System.setIn(socket.getInputStream());
                 if (scanner.hasNextLine()) {
+                    System.setOut(printStreamF);
+                    System.setIn(socket.getInputStream());
                     scanInput(scanner.nextLine(), socket);
+                    printStream.print(iStream.read());
                 }
-                printStream.print(iStream.read());
             }
             socket.close();
-            System.setOut(System.err);
+            if (socket.isClosed()) {
+                System.setOut(System.err);
+                printStream.close();
+            }
         }
         catch (IOException e) {
-            System.setOut(System.err);
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".accepSoc", e));
         }
-        finally {
-            printStreamF.close();
-        }
-        System.setOut(System.err);
     }
     
     private void scanInput(String scannerLine, Socket socket) throws IOException {
         if (scannerLine.contains("test")) {
             printStreamF.println("test OK");
-            this.accepSoc(socket);
+            accepSoc(socket);
         }
         else if (scannerLine.contains("refresh")) {
             ConfigurableApplicationContext context = IntoApplication.getConfigurableApplicationContext();
@@ -109,30 +107,37 @@ public class TestServer implements ConnectToMe {
             context = new SpringApplication().run(IntoApplication.class);
             new IntoApplication().setConfigurableApplicationContext(context);
             context.start();
-            this.accepSoc(socket);
+            accepSoc(socket);
         }
         else if (scannerLine.equals("q")) {
-            socket.close();
+            System.setOut(System.err);
+            accepSoc(socket);
         }
-        else if (scannerLine.contains("ssh")) {
+        else if (scannerLine.equals("ssh")) {
             try {
+                System.setOut(System.err);
                 printStreamF.println(new AppComponents().sshActs().getProviderTraceStr());
+                accepSoc(socket);
             }
             catch (InterruptedException | TimeoutException | ExecutionException e) {
+                System.setOut(System.err);
                 messageToUser.error(e.getMessage());
-                this.accepSoc(socket);
+                socket.close();
             }
         }
-        else if (scannerLine.contains("con")) {
-            System.setOut(System.out);
+        else if (scannerLine.contains("ssh:")) {
+            System.setOut(System.err);
+            String sshCom = scannerLine.split(":")[1];
+            SSHFactory buildSSH = new SSHFactory.Builder(ConstantsFor.IPADDR_SRVGIT, sshCom, getClass().getSimpleName()).build();
+            printStreamF.println(getClass().getSimpleName() + ".scanInput buildSSH  = " + buildSSH.call());
             accepSoc(socket);
         }
         else {
-            scanMore(scannerLine);
+            scanMore(scannerLine, socket);
         }
     }
     
-    private void scanMore(String line) throws IOException {
+    private void scanMore(String line, Socket socket) throws IOException {
         if (line.equals("ost")) {
             String fileName = "\\\\192.168.14.10\\IT-Backup\\Mailboxes_users\\a.a.zavadskaya.pst";
             printStreamF.println("OSTTOPST: ");
@@ -140,11 +145,21 @@ public class TestServer implements ConnectToMe {
             MakeConvert ostPst = new OstLoader(fileName);
             ostPst.copyierWithSave();
             ostPst.showFileContent();
+            accepSoc(socket);
         }
         else if (line.equalsIgnoreCase("scan")) {
-            NetScannerSvc.getInst();
+            String netScan = NetScannerSvc.getInst().toString();
+            printStreamF.println(netScan);
+            accepSoc(socket);
         }
-        accepSoc(socket);
+        else if (line.isEmpty()) {
+            accepSoc(socket);
+        }
+        else {
+            socket.close();
+            printStreamF.close();
+            System.setOut(System.err);
+        }
     }
     
     private String loadLib() throws IOException {
