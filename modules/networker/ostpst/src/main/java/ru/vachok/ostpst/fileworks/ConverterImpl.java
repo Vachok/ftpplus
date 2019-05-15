@@ -22,10 +22,7 @@ public class ConverterImpl implements MakeConvert {
     private String fileName;
     
     public ConverterImpl(String fileName) {
-        this.fileName = fileName;
-        if (System.getProperty("os.name").toLowerCase().contains("windows")) {
-            this.fileName = new CharsetEncoding("windows-1251").getStrInAnotherCharset(fileName);
-        }
+        this.fileName = new CharsetEncoding("windows-1251").getStrInAnotherCharset(fileName);
     }
     
     @Override public String convertToPST() {

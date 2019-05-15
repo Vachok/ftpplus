@@ -3,19 +3,27 @@ package ru.vachok.ostpst.fileworks;
 
 import org.testng.annotations.Test;
 import ru.vachok.ostpst.MakeConvert;
-import ru.vachok.ostpst.utils.CharsetEncoding;
 import ru.vachok.ostpst.utils.TForms;
 
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.Deque;
+import java.util.Properties;
 
 
 public class ParserFoldersWithAttachmentsTest {
     
     
-    @Test
+    @Test(enabled = false)
     public void testFolders() {
-        String fileName = "c:\\Users\\ikudryashov\\OneDrive\\Документы\\Файлы Outlook\\ksamarchenko@velkomfood.ru.ost";
-        fileName = new CharsetEncoding("windows-1251").getStrInAnotherCharset(fileName);
+        Properties properties = new Properties();
+        try {
+            properties.load(new FileInputStream("app.properties"));
+        }
+        catch (IOException e) {
+            System.err.println(e.getMessage());
+        }
+        String fileName = properties.getProperty("file");
         MakeConvert makeConvert = new ConverterImpl(fileName);
         String itemsString = makeConvert.showListFolders();
         Deque<String> deqFolderNames = makeConvert.getDequeFolderNames();
