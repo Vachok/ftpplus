@@ -1,6 +1,10 @@
 package ru.vachok.ostpst.utils;
 
 
+import java.util.Deque;
+import java.util.Set;
+
+
 /**
  @since 14.05.2019 (10:17) */
 public class TForms {
@@ -22,4 +26,21 @@ public class TForms {
         return stringBuilder.toString();
     }
     
+    public String fromArray(Set<?> set) {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (Object o : set) {
+            stringBuilder.append(o).append("\n");
+        }
+        return stringBuilder.toString();
+    }
+    
+    public String fromArray(Deque<?> deque) {
+        StringBuilder stringBuilder = new StringBuilder();
+        
+        for (Object o : deque) {
+            stringBuilder.append(deque.poll());
+        }
+        
+        return stringBuilder.toString();
+    }
 }

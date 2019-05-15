@@ -1,6 +1,9 @@
 package ru.vachok.ostpst;
 
 
+import java.util.Deque;
+
+
 /**
  @since 30.04.2019 (9:19) */
 public interface MakeConvert {
@@ -20,9 +23,11 @@ public interface MakeConvert {
     
     long copyierWithSave();
     
-    String folderContentItemsString();
+    String showListFolders();
     
     default void testMe() {
         System.out.println("true = " + true);
     }
+    
+    Deque<String> getDequeFolderNames();
 }

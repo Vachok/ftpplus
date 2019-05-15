@@ -6,15 +6,14 @@ package ru.vachok.ostpst.fileworks;
 import com.pff.PSTException;
 import com.pff.PSTFile;
 import com.pff.PSTFolder;
-import com.pff.PSTObject;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.ostpst.utils.FileSystemWorker;
 
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.*;
+import java.util.Iterator;
+import java.util.Objects;
+import java.util.Vector;
 
 
 /**
@@ -30,6 +29,8 @@ public class ParserFoldersWithAttachments {
     
     private String fileName;
     
+    private int levelCounter;
+    
     public ParserFoldersWithAttachments(PSTFile pstFile) {
         this.pstFile = pstFile;
     }
@@ -44,57 +45,43 @@ public class ParserFoldersWithAttachments {
         }
     }
     
-    public String getContents() {
+    public String getListFolders() {
         StringBuilder stringBuilder = new StringBuilder();
-        Collection<PSTObject> pstFolders = new Vector<>();
-        int contentCount = 0;
-        PSTFolder pstFileRootFolder = null;
         try {
-            pstFileRootFolder = pstFile.getRootFolder();
-            inboxFolder();
+            PSTFolder rootFolder = pstFile.getRootFolder();
+            stringBuilder.append(parseFolder(rootFolder, stringBuilder));
         }
         catch (PSTException | IOException e) {
-            e.printStackTrace();
+            stringBuilder.append(e.getMessage());
         }
         return stringBuilder.toString();
     }
     
-    private void parseFolder(final PSTFolder rootFolder) throws PSTException, IOException {
-        if (rootFolder.hasSubfolders()) {
-            Vector<PSTFolder> rootSubFolders = rootFolder.getSubFolders();
-            Iterator<PSTFolder> iteratorFolder = rootSubFolders.iterator();
-            
-            while (iteratorFolder.hasNext()) {
-                PSTFolder nextFold = iteratorFolder.next();
-                String foldDisplayName = nextFold.getDisplayName();
-                parseFolder(Objects.requireNonNull(nextFold, "No folder"));
+    private String parseFolder(PSTFolder rootFolder, final StringBuilder stringBuilder) throws PSTException, IOException {
+        Vector<PSTFolder> rootSubFolders = rootFolder.getSubFolders();
+        Iterator<PSTFolder> iteratorFolder = rootSubFolders.iterator();
+        
+        while (iteratorFolder.hasNext()) {
+            PSTFolder nextFold = iteratorFolder.next();
+            levelCounter++;
+            stringBuilder.append(getLevelCounterStr(levelCounter)).append(levelCounter).append(": ").append(nextFold.getDisplayName());
+            stringBuilder.append(" (items: ").append(nextFold.getUnreadCount()).append("/").append(nextFold.getContentCount()).append(")\n");
+            if (nextFold.hasSubfolders()) {
+                parseFolder(Objects.requireNonNull(nextFold, "No folder"), stringBuilder);
+            }
+            else {
+                levelCounter--;
             }
         }
+        levelCounter--;
+        return stringBuilder.toString();
     }
     
-    private void inboxFolder() throws PSTException, IOException {
-        PSTFolder rootFolder = pstFile.getRootFolder();
-        LinkedList<Integer> descriptorNodes = rootFolder.getChildDescriptorNodes();
-        try {
-            for (PSTFolder pstFolder : rootFolder.getSubFolders()) {
-                Vector<PSTFolder> inSub = pstFolder.getSubFolders();
-                inSub.forEach(x->{
-                    try {
-                        Path normalize = Paths.get(fileName).getParent().normalize();
-                        String objPath = normalize.toAbsolutePath() + FileSystemWorker.SYSTEM_DELIMITER + x.getDisplayName();
-                        
-                        new ParserPSTMessages(x).saveMessageToDisk(x.getChildren(x.getContentCount()), x.getDisplayName(), Paths.get(objPath));
-                    }
-                    catch (PSTException | IOException e) {
-                        messageToUser.error(e.getMessage());
-                    }
-                });
-                
-            }
+    private String getLevelCounterStr(int counter) {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (int i = 0; i < counter; i++) {
+            stringBuilder.append("|");
         }
-        catch (PSTException | IOException e) {
-            messageToUser.error(e.getMessage());
-        }
+        return stringBuilder.toString();
     }
-    
 }

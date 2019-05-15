@@ -5,10 +5,9 @@ import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.ostpst.MakeConvert;
 import ru.vachok.ostpst.fileworks.ConverterImpl;
+import ru.vachok.ostpst.utils.CharsetEncoding;
 
 import java.awt.*;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.util.Scanner;
 
@@ -51,10 +50,7 @@ public class MenuConsoleLocal implements UserMenu {
     }
     
     private void callFromConstructor() {
-        Charset defaultCharset = Charset.defaultCharset();
-        ByteBuffer byteBuffer = Charset.forName("windows-1251").encode(fileName);
-        CharBuffer charBuffer = defaultCharset.decode(byteBuffer);
-        this.fileName = new String(charBuffer.array()).trim();
+        this.fileName = new CharsetEncoding("windows-1251").getStrInAnotherCharset(fileName);
         chkFile();
     }
     
