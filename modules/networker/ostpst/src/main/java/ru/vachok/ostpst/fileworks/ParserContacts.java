@@ -4,19 +4,20 @@ package ru.vachok.ostpst.fileworks;
 import com.pff.*;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.ostpst.utils.CharsetEncoding;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.Vector;
+import java.util.concurrent.Callable;
 
 
 /**
  @since 06.05.2019 (12:19) */
-class ParserContacts implements Runnable {
+class ParserContacts implements Callable<String> {
     
     private final MessageToUser messageToUser = new MessageCons(getClass().getSimpleName());
     
@@ -36,7 +37,72 @@ class ParserContacts implements Runnable {
         this.fileContactsName = fileContactsName;
     }
     
-    @Override public void run() {
+    @Override public String call() {
+        if (fileContactsName.isEmpty()) {
+            this.fileContactsName = "contacts.csv";
+            return writeToDisk();
+        }
+        else {
+            return writeToDisk();
+        }
+    }
+    
+    private void foldersRead(PSTFolder pstFolder, PrintStream printStream) throws IOException {
+        Vector<PSTFolder> folders = null;
+        try {
+            folders = pstFolder.getSubFolders();
+        }
+        catch (PSTException e) {
+            messageToUser.error(e.getMessage());
+        }
+        
+        Iterator<PSTFolder> pstFolderIterator = folders.iterator();
+        
+        while (pstFolderIterator.hasNext()) {
+            PSTFolder folder = pstFolderIterator.next();
+            boolean nameContacts = folder.getDisplayName().toLowerCase().contains("контакт");
+            boolean hasSubs = folder.hasSubfolders();
+    
+            System.out.println("folder = " + folder.getDisplayName() + " has no contacts.");
+            
+            if (hasSubs && !nameContacts) {
+                foldersRead(folder, printStream);
+            }
+            if (nameContacts) {
+                writeContactsToFile(folder, printStream);
+            }
+        }
+    }
+    
+    private void writeContactsToFile(PSTFolder folder, PrintStream printStream) throws IOException {
+        Vector<PSTObject> folderChildren = null;
+        try {
+            folderChildren = folder.getChildren(folder.getContentCount());
+        }
+        catch (PSTException | IOException e) {
+            messageToUser.error(e.getMessage());
+        }
+        Iterator<PSTObject> pstObjectIterator = folderChildren.iterator();
+    
+        while (pstObjectIterator.hasNext()) {
+            PSTContact pstContact = (PSTContact) pstObjectIterator.next();
+            showContact(pstContact);
+            printStream.print("\"\",\"");
+            printStream.print(pstContact
+                .getDisplayName() + "\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",,,\"\",\"\",\"\",\"\",\"\",,,\"\",\"\",\"\",\"\",\"\",,,\"\",\"\",\"\",\"\",\"\",,\"\",\"\",\"\",\"\",\"\",,\"\",\"\",\"\",\"\",,\"\",\"\",\"\",\"\",\"\",\"\",\"Обычная\",\"\",\"0.0.00\",\"0.0.00\",,,\"\",\"\",,,,,,\"Не определен\",,,,,\"Обычная\",,,,,,\"\",,\"\",,,,,,,\"Ложь\",\"" + pstContact
+                .getEmail1EmailAddress() + "\",");
+            printStream.print("\"SMTP\",");
+            printStream.print("\"" + pstContact.getEmail1EmailAddress() + "\"");
+            printStream.println();
+        }
+    }
+    
+    private void showContact(PSTContact pstContact) {
+        strCounter++;
+        System.out.println(strCounter + ") " + pstContact.getDisplayName() + " is " + pstContact.getEmail1EmailAddress());
+    }
+    
+    private String writeToDisk() {
         PSTFolder rootFolder = null;
         try {
             rootFolder = pstFile.getRootFolder();
@@ -54,57 +120,6 @@ class ParserContacts implements Runnable {
         catch (IOException e) {
             messageToUser.error(e.getMessage());
         }
-    }
-    
-    private void foldersRead(PSTFolder pstFolder, PrintStream printStream) throws IOException {
-        Vector<PSTFolder> folders = null;
-        try {
-            folders = pstFolder.getSubFolders();
-        }
-        catch (PSTException e) {
-            messageToUser.error(e.getMessage());
-        }
-        
-        Iterator<PSTFolder> pstFolderIterator = folders.iterator();
-        
-        while (pstFolderIterator.hasNext()) {
-            PSTFolder folder = pstFolderIterator.next();
-            boolean nameContacts = folder.getDisplayName().contains(new CharsetEncoding("windows-1251").getStrInAnotherCharset("контакт"));
-            boolean hasSubs = folder.hasSubfolders();
-            if (hasSubs && !nameContacts) {
-                foldersRead(folder, printStream);
-                System.out.println("folder = " + folder.getDisplayName() + " has no contacts.");
-            }
-            if (nameContacts) {
-                writeContactsToFile(folder, printStream);
-            }
-        }
-    }
-    
-    private void writeContactsToFile(PSTFolder folder, PrintStream printStream) throws IOException {
-        Vector<PSTObject> folderChildren = null;
-        try {
-            folderChildren = folder.getChildren(folder.getContentCount());
-        }
-        catch (PSTException | IOException e) {
-            messageToUser.error(e.getMessage());
-        }
-        Iterator<PSTObject> pstObjectIterator = folderChildren.iterator();
-        while (pstObjectIterator.hasNext()) {
-            PSTContact pstContact = (PSTContact) pstObjectIterator.next();
-            showContact(pstContact);
-            printStream.print("\"\",\"");
-            printStream.print(pstContact
-                .getDisplayName() + "\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",,,\"\",\"\",\"\",\"\",\"\",,,\"\",\"\",\"\",\"\",\"\",,,\"\",\"\",\"\",\"\",\"\",,\"\",\"\",\"\",\"\",\"\",,\"\",\"\",\"\",\"\",,\"\",\"\",\"\",\"\",\"\",\"\",\"Обычная\",\"\",\"0.0.00\",\"0.0.00\",,,\"\",\"\",,,,,,\"Не определен\",,,,,\"Обычная\",,,,,,\"\",,\"\",,,,,,,\"Ложь\",\"" + pstContact
-                .getEmail1EmailAddress() + "\",");
-            printStream.print("\"SMTP\",");
-            printStream.print("\"" + pstContact.getEmail1EmailAddress() + "\"");
-            printStream.println();
-        }
-    }
-    
-    private void showContact(PSTContact pstContact) {
-        strCounter++;
-        System.out.println(strCounter + ") " + pstContact.getDisplayName() + " is " + pstContact.getEmail1EmailAddress());
+        return Paths.get(fileContactsName).toAbsolutePath().toString();
     }
 }

@@ -26,7 +26,7 @@ public class ParserFoldersWithAttachmentsTest {
         String fileName = properties.getProperty("file");
         MakeConvert makeConvert = new ConverterImpl(fileName);
         String itemsString = makeConvert.showListFolders();
-        Deque<String> deqFolderNames = makeConvert.getDequeFolderNames();
+        Deque<String> deqFolderNames = makeConvert.getDequeFolderNamesAndWriteToDisk();
         System.out.println(new TForms().fromArray(deqFolderNames));
     }
 }

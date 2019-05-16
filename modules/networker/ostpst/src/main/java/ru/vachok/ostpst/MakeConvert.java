@@ -29,7 +29,7 @@ public interface MakeConvert {
         System.out.println("true = " + true);
     }
     
-    Deque<String> getDequeFolderNames();
+    Deque<String> getDequeFolderNamesAndWriteToDisk();
     
     String clearCopy();
 }

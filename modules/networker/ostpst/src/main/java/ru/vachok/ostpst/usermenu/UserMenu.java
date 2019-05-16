@@ -2,12 +2,6 @@ package ru.vachok.ostpst.usermenu;
 
 
 import java.io.File;
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
-
-import static java.math.RoundingMode.HALF_EVEN;
 
 
 /**
@@ -17,16 +11,8 @@ import static java.math.RoundingMode.HALF_EVEN;
     
     void showMenu();
     
-    default double checkFileSize(String fileName) {
-        try {
-            File file = new File(fileName.trim());
-            long size = Files.size(file.toPath());
-            BigDecimal valueOf = BigDecimal.valueOf((float) size).divide(BigDecimal.valueOf(1024 * 1024 * 1024)).setScale(2, HALF_EVEN);
-            return valueOf.doubleValue();
-        }
-        catch (IOException | InvalidPathException e) {
-            return 666;
-        }
+    default void exitProgram(String fileName) {
+        System.out.println("setWritable = " + new File(fileName).setWritable(true));
+        System.exit(222);
     }
-    
 }

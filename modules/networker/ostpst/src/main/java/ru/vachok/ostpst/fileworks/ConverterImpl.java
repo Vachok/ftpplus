@@ -11,7 +11,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Deque;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.Callable;
 
 
 /**
@@ -31,24 +31,32 @@ public class ConverterImpl implements MakeConvert {
     
     @Override public void saveFolders() {
         ParserFoldersWithAttachments parserFoldersWithAttachments = new ParserFoldersWithAttachments(fileName);
-        System.out.println("pstContentToFoldersWithAttachments = " + parserFoldersWithAttachments.getListFolders());
+        System.out.println("pstContentToFoldersWithAttachments = " + parserFoldersWithAttachments.showFoldersIerarchy());
     }
     
     @Override public String saveContacts(String csvFileName) {
-        if (csvFileName == null) {
-            Path root = Paths.get(fileName).toAbsolutePath().getParent();
+        StringBuilder stringBuilder = new StringBuilder();
+        Path root = Paths.get(fileName).toAbsolutePath().getParent();
+    
+        if (csvFileName == null || csvFileName.isEmpty()) {
             csvFileName = root + FileSystemWorker.SYSTEM_DELIMITER + "contacts.csv";
         }
         File csvFile = new File(csvFileName);
-        Runnable contacts = new ParserContacts(fileName, Objects.requireNonNull(csvFileName, "No CSV fileName given!"));
-        contacts.run();
+        Callable<String> contacts = new ParserContacts(fileName, Objects.requireNonNull(csvFileName, "No CSV fileName given!"));
     
-        if (csvFile.length() > 4096) {
-            return csvFile.getAbsolutePath();
+        try {
+            File file = new File(contacts.call());
+            if (file.length() > 4096) {
+                stringBuilder.append(file.toPath());
+            }
+            else {
+                stringBuilder.append(csvFileName + " is " + csvFile.length());
+            }
         }
-        else {
-            return csvFileName + " is " + csvFile.length();
+        catch (Exception e) {
+            stringBuilder.append(e.getMessage());
         }
+        return stringBuilder.toString();
     }
     
     @Override public void setFileName(String fileName) {
@@ -62,16 +70,12 @@ public class ConverterImpl implements MakeConvert {
     
     @Override public String showListFolders() {
         ParserFoldersWithAttachments parserFoldersWithAttachments = new ParserFoldersWithAttachments(fileName);
-        return parserFoldersWithAttachments.getListFolders();
+        return parserFoldersWithAttachments.showFoldersIerarchy();
     }
     
-    @Override public Deque<String> getDequeFolderNames() {
-        Deque<String> retDeq = new ConcurrentLinkedDeque<>();
-        String[] split = showListFolders().split(": ");
-        for (String s : split) {
-            retDeq.add(s.replaceAll("(\\Q|\\E)*(\\d)", "").split("\\Q (\\E")[0].replace("/)", ""));
-        }
-        return retDeq;
+    @Override public Deque<String> getDequeFolderNamesAndWriteToDisk() {
+        ParserFoldersWithAttachments parserFoldersWithAttachments = new ParserFoldersWithAttachments(fileName);
+        return parserFoldersWithAttachments.getDeqFolderNamesAndWriteToDisk();
     }
     
     @Override public String clearCopy() {

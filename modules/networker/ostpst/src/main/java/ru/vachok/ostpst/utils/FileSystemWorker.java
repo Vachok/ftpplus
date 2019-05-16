@@ -6,11 +6,14 @@ package ru.vachok.ostpst.utils;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.stream.Stream;
 
 
 /**
@@ -29,12 +32,32 @@ public abstract class FileSystemWorker {
             String toString = directories.toAbsolutePath().normalize().toString();
             directories = Paths.get(toString + fileName);
             String fromArray = new TForms().fromArray(e);
-            writeFile(directories, fromArray);
+            writeStringToFile(directories.toString(), fromArray);
         }
         catch (IOException ex) {
             e.printStackTrace();
         }
         return rootPath.toAbsolutePath().toString();
+    }
+    
+    public static String writeFile(String fileName, Stream<String> stream) {
+        Path pathWritten = Paths.get(fileName);
+        StringBuilder stringBuilder = new StringBuilder();
+        try (OutputStream outputStream = new FileOutputStream(pathWritten.toAbsolutePath().toString())) {
+            stream.forEach(x->{
+                try {
+                    outputStream.write(x.getBytes());
+                }
+                catch (IOException e) {
+                    stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e));
+                }
+            });
+            stringBuilder.append("Strings written to: ").append(pathWritten.toAbsolutePath().normalize());
+        }
+        catch (IOException e) {
+            stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e));
+        }
+        return stringBuilder.toString();
     }
     
     private static String getDelimiter() {
@@ -46,7 +69,8 @@ public abstract class FileSystemWorker {
         }
     }
     
-    private static String writeFile(Path pathToWrite, String stringToWrite) {
+    public static String writeStringToFile(String fileName, String stringToWrite) {
+        Path pathToWrite = Paths.get(fileName);
         try {
             pathToWrite = Files.write(pathToWrite, stringToWrite.getBytes(), StandardOpenOption.CREATE);
             return pathToWrite.normalize().toAbsolutePath().toString();
