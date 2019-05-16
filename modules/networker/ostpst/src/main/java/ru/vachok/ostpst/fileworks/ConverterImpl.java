@@ -75,11 +75,11 @@ public class ConverterImpl implements MakeConvert {
     
     @Override public Deque<String> getDequeFolderNamesAndWriteToDisk() {
         ParserFoldersWithAttachments parserFoldersWithAttachments = new ParserFoldersWithAttachments(fileName);
-        return parserFoldersWithAttachments.getDeqFolderNamesAndWriteToDisk();
+        return parserFoldersWithAttachments.getDeqFolderNamesWithIDAndWriteToDisk();
     }
     
-    @Override public String clearCopy() {
-        String clearPositions = new RNDFileCopy(fileName).clearPositions();
-        return clearPositions;
+    @Override public void showContacts() {
+        ParserContacts parserContacts = new ParserContacts(fileName);
+        parserContacts.call();
     }
 }

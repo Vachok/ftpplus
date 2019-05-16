@@ -17,4 +17,15 @@ public enum ConstantsFor {
     public static final String PR_CAPACITY = "capacity";
     
     public static final int KBYTE_BYTES = 1024;
+    
+    public static final String SYSTEM_SEPARATOR = getSeparator();
+    
+    private static String getSeparator() {
+        if (System.getProperty("os.name").contains("indows")) {
+            return "\\";
+        }
+        else {
+            return "/";
+        }
+    }
 }

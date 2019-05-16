@@ -29,18 +29,21 @@ class ParserFoldersWithAttachments {
     
     private MessageToUser messageToUser = new MessageCons(getClass().getSimpleName());
     
-    private String fileName;
+    private PSTFolder rootFolder;
     
     private int levelCounter;
     
     private int totalCounter;
+    
+    ParserFoldersWithAttachments(PSTFolder folder) {
+        this.rootFolder = folder;
+    }
     
     ParserFoldersWithAttachments(PSTFile pstFile) {
         this.pstFile = pstFile;
     }
     
     ParserFoldersWithAttachments(String fileName) {
-        this.fileName = fileName;
         try {
             this.pstFile = new PSTFile(fileName);
         }
@@ -52,7 +55,9 @@ class ParserFoldersWithAttachments {
     String showFoldersIerarchy() {
         StringBuilder stringBuilder = new StringBuilder();
         try {
-            PSTFolder rootFolder = pstFile.getRootFolder();
+            if (pstFile != null) {
+                this.rootFolder = pstFile.getRootFolder();
+            }
             stringBuilder.append(parseFolder(rootFolder, stringBuilder));
         }
         catch (PSTException | IOException e) {
@@ -62,13 +67,13 @@ class ParserFoldersWithAttachments {
         return stringBuilder.toString();
     }
     
-    Deque<String> getDeqFolderNamesAndWriteToDisk() {
+    Deque<String> getDeqFolderNamesWithIDAndWriteToDisk() {
         Deque<String> retDeq = new ConcurrentLinkedDeque<>();
         String showFoldersIerarchy = showFoldersIerarchy();
-        String[] split = showFoldersIerarchy.split(": ");
+        String[] split = showFoldersIerarchy.split("\n");
         
         for (String s : split) {
-            retDeq.add(s.replaceAll("(\\Q|\\E)*(\\d)", "").split("\\Q (\\E")[0].replace("/)", ""));
+            retDeq.add(s.replaceAll("(\\Q|\\E)*(\\d\\Q: \\E)", ""));
         }
         messageToUser.info(FileSystemWorker.writeStringToFile("folders.txt", showFoldersIerarchy));
         return retDeq;
@@ -82,8 +87,8 @@ class ParserFoldersWithAttachments {
         return stringBuilder.toString();
     }
     
-    private String parseFolder(PSTFolder rootFolder, final StringBuilder stringBuilder) throws PSTException, IOException {
-        Vector<PSTFolder> rootSubFolders = rootFolder.getSubFolders();
+    private String parseFolder(PSTFolder folder, final StringBuilder stringBuilder) throws PSTException, IOException {
+        Vector<PSTFolder> rootSubFolders = folder.getSubFolders();
         Iterator<PSTFolder> iteratorFolder = rootSubFolders.iterator();
         
         while (iteratorFolder.hasNext()) {
@@ -93,7 +98,9 @@ class ParserFoldersWithAttachments {
             String nextFoldDisplayName = nextFold.getDisplayName();
             String levelCounterStr = getLevelCounterStr(levelCounter);
             stringBuilder.append(levelCounterStr).append(levelCounter).append(": ").append(nextFoldDisplayName);
-            stringBuilder.append(" (items: ").append(nextFold.getUnreadCount()).append("/").append(nextFold.getContentCount()).append(")\n");
+            stringBuilder.append(" (items: ").append(nextFold.getUnreadCount()).append("/").append(nextFold.getContentCount()).append(")")
+                .append(" id ").append(nextFold.getDescriptorNodeId())
+                .append("\n");
             System.out.println(levelCounterStr + " :" + levelCounter + ": " + nextFoldDisplayName);
             if (nextFold.hasSubfolders()) {
                 parseFolder(Objects.requireNonNull(nextFold, "No folder"), stringBuilder);

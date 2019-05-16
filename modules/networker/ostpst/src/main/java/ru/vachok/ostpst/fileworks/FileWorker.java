@@ -7,4 +7,6 @@ public interface FileWorker {
     
     
     boolean chkFile(String fileName);
+    
+    String clearCopy();
 }

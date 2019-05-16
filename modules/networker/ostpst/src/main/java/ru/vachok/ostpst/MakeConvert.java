@@ -31,5 +31,5 @@ public interface MakeConvert {
     
     Deque<String> getDequeFolderNamesAndWriteToDisk();
     
-    String clearCopy();
+    void showContacts();
 }

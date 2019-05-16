@@ -15,6 +15,12 @@ import static java.math.RoundingMode.HALF_EVEN;
 public class FileChecker implements FileWorker {
     
     
+    private String fileName;
+    
+    public FileChecker(String fileName) {
+        this.fileName = fileName;
+    }
+    
     @Override public boolean chkFile(String fileName) {
         double fileSize = checkFileSize(fileName);
         boolean isOst = fileName.toLowerCase().contains(".ost") || fileName.toLowerCase().contains(".pst");
@@ -30,6 +36,11 @@ public class FileChecker implements FileWorker {
             System.out.println("is readonly = " + isLock);
             return isLock;
         }
+    }
+    
+    @Override public String clearCopy() {
+        String clearPositions = new RNDFileCopy(fileName).clearPositions();
+        return clearPositions;
     }
     
     private boolean lockFile(String fileName) {

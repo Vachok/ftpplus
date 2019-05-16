@@ -36,6 +36,7 @@ class MenuItemsConsoleImpl implements MenuItems {
     
     @Override public void ansIsOne() {
         System.out.println("Enter name of csv, for contacts save:");
+    
         try (Scanner scanner = new Scanner(System.in)) {
             while (scanner.hasNextLine()) {
                 String csvFileName = scanner.nextLine();
@@ -53,8 +54,9 @@ class MenuItemsConsoleImpl implements MenuItems {
     @Override public void showSecondStage() {
         System.out.println("What should I do with this file?");
         System.out.println("1. Save contacts to csv");
-        System.out.println("2. Show folders");
-        System.out.println("3. Write folder names to disk");
+        System.out.println("2. Show contacts");
+        System.out.println("3. Show folders");
+        System.out.println("4. Write folder names to disk");
         System.out.println("0. Exit");
         System.out.println("Choose: ");
     }
@@ -67,11 +69,15 @@ class MenuItemsConsoleImpl implements MenuItems {
             if (userAns == 1) {
                 new MenuItemsConsoleImpl(fileName).ansIsOne();
             }
-            else if (userAns == 2) {
+            if (userAns == 2) {
+                MakeConvert makeConvert = new ConverterImpl(fileName);
+                makeConvert.showContacts();
+            }
+            else if (userAns == 3) {
                 MakeConvert makeConvert = new ConverterImpl(fileName);
                 makeConvert.showListFolders();
             }
-            else if (userAns == 3) {
+            else if (userAns == 4) {
                 MakeConvert makeConvert = new ConverterImpl(fileName);
                 makeConvert.getDequeFolderNamesAndWriteToDisk();
             }

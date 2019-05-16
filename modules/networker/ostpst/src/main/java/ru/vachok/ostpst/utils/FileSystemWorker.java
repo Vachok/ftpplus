@@ -5,6 +5,7 @@ package ru.vachok.ostpst.utils;
 
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.ostpst.ConstantsFor;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -26,17 +27,11 @@ public abstract class FileSystemWorker {
     private static MessageToUser messageToUser = new MessageCons(FileSystemWorker.class.getSimpleName());
     
     public static String error(String fileName, Exception e) {
-        Path rootPath = Paths.get("err");
-        try {
-            Path directories = Files.createDirectories(rootPath);
-            String toString = directories.toAbsolutePath().normalize().toString();
-            directories = Paths.get(toString + fileName);
-            String fromArray = new TForms().fromArray(e);
-            writeStringToFile(directories.toString(), fromArray);
-        }
-        catch (IOException ex) {
-            e.printStackTrace();
-        }
+        Path rootPath = Paths.get(".").toAbsolutePath().normalize();
+        String toString = rootPath.toAbsolutePath().normalize().toString();
+        rootPath = Paths.get(toString + ConstantsFor.SYSTEM_SEPARATOR + fileName);
+        String fromArray = new TForms().fromArray(e);
+        writeStringToFile(rootPath.toString(), fromArray);
         return rootPath.toAbsolutePath().toString();
     }
     

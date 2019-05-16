@@ -28,7 +28,7 @@ public class MenuConsoleLocal implements UserMenu {
     }
     
     @Override public void showMenu() {
-        FileWorker fileWorker = new FileChecker();
+        FileWorker fileWorker = new FileChecker(fileName);
         System.out.println("Please, enter a filename: ");
         if (fileName == null) {
             try (Scanner scanner = new Scanner(System.in)) {
@@ -56,7 +56,7 @@ public class MenuConsoleLocal implements UserMenu {
     }
     
     private void callFromConstructor() {
-        FileWorker fileWorker = new FileChecker();
+        FileWorker fileWorker = new FileChecker(fileName);
         this.fileName = new CharsetEncoding("windows-1251").getStrInAnotherCharset(fileName);
         if (fileWorker.chkFile(fileName)) {
             MenuItems menuItems = new MenuItemsConsoleImpl(fileName);
