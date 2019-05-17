@@ -12,6 +12,8 @@ import ru.vachok.ostpst.utils.TForms;
 
 import java.awt.*;
 import java.io.*;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -97,23 +99,27 @@ class RNDFileCopy implements Serializable {
             tmpFileLen = new File("tmp_" + Paths.get(fileName).getFileName()).length();
             stringBuilder.append(tmpFileLen).append(" bytes copied\n");
             final long lengthOfCopy = new File(fileName).length();
-            int hundrMB = (ConstantsFor.KBYTE_BYTES * ConstantsFor.KBYTE_BYTES) * 100;
-            if (lengthOfCopy < hundrMB) {
+            int hundredMB = (ConstantsFor.KBYTE_BYTES * ConstantsFor.KBYTE_BYTES) * 5;
+            if (lengthOfCopy < hundredMB) {
                 properties.setProperty(ConstantsFor.PR_CAPACITY, String.valueOf(lengthOfCopy));
             }
             else {
-                long capLong = lengthOfCopy / hundrMB;
-                properties.setProperty(ConstantsFor.PR_CAPACITY, String.valueOf(capLong));
+                BigDecimal capLong = BigDecimal.valueOf((float) lengthOfCopy).divide(BigDecimal.valueOf((float) hundredMB), RoundingMode.HALF_DOWN);
+                BigDecimal bufLen = BigDecimal.valueOf(lengthOfCopy).divide(capLong, RoundingMode.HALF_DOWN);
+        
+                long floor = lengthOfCopy - bufLen.longValue() * capLong.longValue();
+                properties.setProperty(ConstantsFor.PR_CAPACITY, String.valueOf(bufLen));
+                properties.setProperty(ConstantsFor.PR_CAPFLOOR, String.valueOf(floor));
             }
             long totalMegaBytesToCopy = lengthOfCopy / megaByte;
             while (true) {
                 long positionOfCopy = readRNDFileContentFromPosition();
-                if (positionOfCopy == lengthOfCopy) {
-                    break;
-                }
                 long mBytesCopied = positionOfCopy / megaByte;
                 String copiedStr = mBytesCopied + "/" + totalMegaBytesToCopy + " mb readied";
                 System.out.println(copiedStr);
+                if (positionOfCopy >= lengthOfCopy) {
+                    break;
+                }
             }
         }
         catch (NullPointerException e) {
@@ -149,7 +155,12 @@ class RNDFileCopy implements Serializable {
             catch (FileNotFoundException e) {
                 content = new PSTRAFileContent(new File(new CharsetEncoding(ConstantsFor.CP_WINDOWS_1251).getStrInAnotherCharset(fileName)));
             }
-            content.seek(lastFileCaretPosition);
+            if (lastWritePosition > lastFileCaretPosition) {
+                return lastWritePosition;
+            }
+            else {
+                content.seek(lastFileCaretPosition);
+            }
             int read = content.read(bytes);
             this.lastFileCaretPosition += read;
             properties.setProperty(ru.vachok.ostpst.ConstantsFor.PR_READING, String.valueOf(lastFileCaretPosition));

@@ -10,6 +10,7 @@ import ru.vachok.ostpst.fileworks.ConverterImpl;
 import ru.vachok.ostpst.utils.FileSystemWorker;
 import ru.vachok.ostpst.utils.TForms;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Scanner;
@@ -151,11 +152,11 @@ class MenuItemsConsoleImpl implements MenuItems {
             while (scanner.hasNextLine()) {
                 String newCP = scanner.nextLine();
                 System.out.println(makeConvert.copyierWithSave(newCP));
+                new MenuConsoleLocal("tmp_" + new File(fileName).getName()).showMenu();
             }
         }
         catch (Exception e) {
             System.out.println(e.getMessage() + "\n" + new TForms().fromArray(e));
         }
-        new MenuConsoleLocal(fileName).showMenu();
     }
 }

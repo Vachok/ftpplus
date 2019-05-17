@@ -10,7 +10,7 @@ import ru.vachok.ostpst.MakeConvert;
 public class RNDFileCopyTest {
     
     
-    @Test
+    @Test(enabled = false)
     public void copyTest() {
         String fileName = "\\\\192.168.14.10\\IT-Backup\\Mailboxes_users\\t.p.magdich.pst";
         MakeConvert makeConvert = new ConverterImpl(fileName);

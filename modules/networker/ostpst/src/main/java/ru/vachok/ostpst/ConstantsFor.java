@@ -26,6 +26,8 @@ public enum ConstantsFor {
     
     public static final String FILENAME_FOLDERSTXT = "folders.txt";
     
+    public static final String PR_CAPFLOOR = "capfloor";
+    
     private static String getSeparator() {
         if (System.getProperty("os.name").contains("indows")) {
             return "\\";
