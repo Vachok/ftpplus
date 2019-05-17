@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.ostpst.usermenu;
 
 
@@ -20,7 +22,7 @@ class MenuItemsConsoleImpl implements MenuItems {
     
     private static UserMenu userMenu = new MenuConsoleLocal();
     
-    private static MakeConvert makeConvert;
+    private static MakeConvert makeConvert = null;
     
     private MessageToUser messageToUser = new MessageCons(getClass().getSimpleName());
     
@@ -97,6 +99,9 @@ class MenuItemsConsoleImpl implements MenuItems {
             else if (userAns == 6) {
                 new MenuItemsConsoleImpl(fileName).ansIsSixGetListMSGSubj();
             }
+            else if (userAns == 7) {
+                new MenuItemsConsoleImpl(fileName).ansSevenCopy();
+            }
             else if (userAns == 0) {
                 userMenu.exitProgram(fileName);
             }
@@ -137,5 +142,20 @@ class MenuItemsConsoleImpl implements MenuItems {
                 new MenuConsoleLocal(fileName).showMenu();
             }
         }
+    }
+    
+    private void ansSevenCopy() {
+        System.out.println("New copy? (y/n)");
+        System.out.println();
+        try (Scanner scanner = new Scanner(System.in)) {
+            while (scanner.hasNextLine()) {
+                String newCP = scanner.nextLine();
+                System.out.println(makeConvert.copyierWithSave(newCP));
+            }
+        }
+        catch (Exception e) {
+            System.out.println(e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+        new MenuConsoleLocal(fileName).showMenu();
     }
 }

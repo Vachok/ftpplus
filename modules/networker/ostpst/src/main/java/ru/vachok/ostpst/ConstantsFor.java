@@ -20,6 +20,12 @@ public enum ConstantsFor {
     
     public static final String SYSTEM_SEPARATOR = getSeparator();
     
+    public static final String CP_WINDOWS_1251 = "windows-1251";
+    
+    public static final String FILENAME_CONTACTSCSV = "contacts.csv";
+    
+    public static final String FILENAME_FOLDERSTXT = "folders.txt";
+    
     private static String getSeparator() {
         if (System.getProperty("os.name").contains("indows")) {
             return "\\";

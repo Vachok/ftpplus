@@ -1,8 +1,11 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.ostpst.usermenu;
 
 
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.ostpst.ConstantsFor;
 import ru.vachok.ostpst.fileworks.FileChecker;
 import ru.vachok.ostpst.fileworks.FileWorker;
 import ru.vachok.ostpst.utils.CharsetEncoding;
@@ -29,6 +32,8 @@ public class MenuConsoleLocal implements UserMenu {
     
     @Override public void showMenu() {
         FileWorker fileWorker = new FileChecker(fileName);
+        String ANSI_CLEAR_SEQ = "\u001b[2J";
+        System.out.println(ANSI_CLEAR_SEQ);
         System.out.println("Please, enter a filename: ");
         if (fileName == null) {
             try (Scanner scanner = new Scanner(System.in)) {
@@ -57,7 +62,7 @@ public class MenuConsoleLocal implements UserMenu {
     
     private void callFromConstructor() {
         FileWorker fileWorker = new FileChecker(fileName);
-        this.fileName = new CharsetEncoding("windows-1251").getStrInAnotherCharset(fileName);
+        this.fileName = new CharsetEncoding(ConstantsFor.CP_WINDOWS_1251).getStrInAnotherCharset(fileName);
         if (fileWorker.chkFile(fileName)) {
             MenuItems menuItems = new MenuItemsConsoleImpl(fileName);
             menuItems.askUser();

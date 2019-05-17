@@ -1,9 +1,12 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.ostpst.fileworks;
 
 
 import com.pff.*;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.ostpst.ConstantsFor;
 import ru.vachok.ostpst.utils.CharsetEncoding;
 import ru.vachok.ostpst.utils.FileSystemWorker;
 
@@ -12,6 +15,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Paths;
 import java.util.Deque;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.Vector;
 import java.util.concurrent.Callable;
 
@@ -20,6 +24,8 @@ import java.util.concurrent.Callable;
  @since 06.05.2019 (12:19) */
 class ParserContacts implements Callable<String> {
     
+    
+    public static final String METHNAME_FOLDERSREAD = ".foldersRead";
     
     private final MessageToUser messageToUser = new MessageCons(getClass().getSimpleName());
     
@@ -53,7 +59,7 @@ class ParserContacts implements Callable<String> {
     
     @Override public String call() {
         if (fileContactsName.isEmpty()) {
-            this.fileContactsName = "contacts.csv";
+            this.fileContactsName = ConstantsFor.FILENAME_CONTACTSCSV;
             return getPathAndWriteHeaderToDisk();
         }
         else if (fileContactsName.equals("showContacts")) {
@@ -73,7 +79,7 @@ class ParserContacts implements Callable<String> {
             Deque<String> folderNamesAndWriteToDisk = rootFolder.getDeqFolderNamesWithIDAndWriteToDisk();
             for (String s : folderNamesAndWriteToDisk) {
                 String folderNameFromDeq = s.toLowerCase();
-                folderNameFromDeq = new CharsetEncoding("windows-1251").getStrInAnotherCharset(folderNameFromDeq);
+                folderNameFromDeq = new CharsetEncoding(ConstantsFor.CP_WINDOWS_1251).getStrInAnotherCharset(folderNameFromDeq);
     
                 if (folderNameFromDeq.contains(contStr)) {
                     s = s.split("id ")[1];
@@ -109,13 +115,13 @@ class ParserContacts implements Callable<String> {
         catch (PSTException e) {
             messageToUser.error(e.getMessage());
         }
-        
-        Iterator<PSTFolder> pstFolderIterator = folders.iterator();
+    
+        Iterator<PSTFolder> pstFolderIterator = Objects.requireNonNull(folders, "No FOLDERS " + getClass().getSimpleName() + METHNAME_FOLDERSREAD).iterator();
         
         while (pstFolderIterator.hasNext()) {
             PSTFolder folder = pstFolderIterator.next();
-            String folderDisplayName = new String(folder.getDisplayName().getBytes(), Charset.forName("windows-1251"));
-            String strCont = "онтакты";
+            String folderDisplayName = new String(folder.getDisplayName().getBytes(), Charset.forName(ConstantsFor.CP_WINDOWS_1251));
+            String strCont = new String("онтакты".getBytes(), Charset.forName(ConstantsFor.CP_WINDOWS_1251));
             boolean nameContacts = folderDisplayName.contains(strCont);
             boolean hasSubs = folder.hasSubfolders();
     
@@ -128,7 +134,7 @@ class ParserContacts implements Callable<String> {
                     writeContactsToFile(folder, printStream);
                 }
                 catch (PSTException e) {
-                    messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".foldersRead", e));
+                    messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + METHNAME_FOLDERSREAD, e));
                 }
             }
         }

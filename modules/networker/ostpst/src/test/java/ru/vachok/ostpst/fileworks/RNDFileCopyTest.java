@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.ostpst.fileworks;
 
 
@@ -10,9 +12,9 @@ public class RNDFileCopyTest {
     
     @Test
     public void copyTest() {
-        String fileName = "c:\\Users\\ikudryashov\\OneDrive\\Документы\\Файлы Outlook\\ksamarchenko@velkomfood.ru.ost";
+        String fileName = "\\\\192.168.14.10\\IT-Backup\\Mailboxes_users\\t.p.magdich.pst";
         MakeConvert makeConvert = new ConverterImpl(fileName);
-        String copyierWithSave = makeConvert.copyierWithSave();
+        String copyierWithSave = makeConvert.copyierWithSave("n");
         System.out.println("copyierWithSave = " + copyierWithSave);
     }
 }

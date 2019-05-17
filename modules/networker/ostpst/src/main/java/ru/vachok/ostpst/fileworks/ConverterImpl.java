@@ -1,8 +1,11 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.ostpst.fileworks;
 
 
 import com.pff.PSTException;
 import com.pff.PSTFile;
+import ru.vachok.ostpst.ConstantsFor;
 import ru.vachok.ostpst.MakeConvert;
 import ru.vachok.ostpst.utils.CharsetEncoding;
 import ru.vachok.ostpst.utils.FileSystemWorker;
@@ -27,7 +30,7 @@ public class ConverterImpl implements MakeConvert {
     private String fileName;
     
     public ConverterImpl(String fileName) {
-        this.fileName = new CharsetEncoding("windows-1251").getStrInAnotherCharset(fileName);
+        this.fileName = new CharsetEncoding(ConstantsFor.CP_WINDOWS_1251).getStrInAnotherCharset(fileName);
     }
     
     @Override public String convertToPST() {
@@ -37,7 +40,7 @@ public class ConverterImpl implements MakeConvert {
     @Override public String saveFolders() throws IOException {
         ParserFoldersWithAttachments parserFoldersWithAttachments = new ParserFoldersWithAttachments(fileName);
         Deque<String> deqFolderNamesWithIDAndWriteToDisk = parserFoldersWithAttachments.getDeqFolderNamesWithIDAndWriteToDisk();
-        File file = new File("folders.txt");
+        File file = new File(ConstantsFor.FILENAME_FOLDERSTXT);
         if (file.exists()) {
             return file.getAbsolutePath();
         }
@@ -51,7 +54,7 @@ public class ConverterImpl implements MakeConvert {
         Path root = Paths.get(fileName).toAbsolutePath().getParent();
     
         if (csvFileName == null || csvFileName.isEmpty()) {
-            csvFileName = root + FileSystemWorker.SYSTEM_DELIMITER + "contacts.csv";
+            csvFileName = root + FileSystemWorker.SYSTEM_DELIMITER + ConstantsFor.FILENAME_CONTACTSCSV;
         }
         File csvFile = createCSV(csvFileName);
     
@@ -63,7 +66,7 @@ public class ConverterImpl implements MakeConvert {
                 stringBuilder.append(file.toPath());
             }
             else {
-                stringBuilder.append(csvFileAbsolutePath + " is " + csvFile.length());
+                stringBuilder.append(csvFileAbsolutePath).append(" is ").append(csvFile.length());
             }
         }
         catch (Exception e) {
@@ -83,9 +86,9 @@ public class ConverterImpl implements MakeConvert {
         this.fileName = fileName;
     }
     
-    @Override public String copyierWithSave() {
+    @Override public String copyierWithSave(String newCP) {
         RNDFileCopy rndFileCopy = new RNDFileCopy(fileName);
-        return rndFileCopy.copyFile();
+        return rndFileCopy.copyFile(newCP);
     }
     
     @Override public String showListFolders() {
@@ -113,7 +116,7 @@ public class ConverterImpl implements MakeConvert {
             ParserObjects parserObjects = new ParserObjects(new PSTFile(fileName), id);
             return parserObjects.getObjectDescriptorID();
         }
-        catch (PSTException | IOException e) {
+        catch (PSTException | IOException | NullPointerException e) {
             return e.getMessage() + "\n" + new TForms().fromArray(e);
         }
         
@@ -126,7 +129,7 @@ public class ConverterImpl implements MakeConvert {
             pstMessages = new ParserPSTMessages(fileName, folderID);
         }
         catch (Exception e) {
-            this.fileName = new CharsetEncoding("windows-1251").getStrInAnotherCharset(fileName);
+            this.fileName = new CharsetEncoding(ConstantsFor.CP_WINDOWS_1251).getStrInAnotherCharset(fileName);
         }
         try {
             List<String> messagesSubject = pstMessages.getMessagesSubject();
@@ -147,7 +150,7 @@ public class ConverterImpl implements MakeConvert {
             return new File(path.toAbsolutePath().toString());
         }
         catch (IOException e) {
-            csvFileName = new CharsetEncoding("windows-1251").getStrInAnotherCharset(csvFileName);
+            csvFileName = new CharsetEncoding(ConstantsFor.CP_WINDOWS_1251).getStrInAnotherCharset(csvFileName);
             return new File(csvFileName);
         }
     }

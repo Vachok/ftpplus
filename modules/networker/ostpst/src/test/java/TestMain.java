@@ -2,6 +2,7 @@
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
+import ru.vachok.ostpst.ConstantsFor;
 import ru.vachok.ostpst.MakeConvert;
 import ru.vachok.ostpst.OstToPst;
 import ru.vachok.ostpst.fileworks.ConverterImpl;
@@ -24,7 +25,7 @@ public class TestMain {
         File file = new File(new String("c:\\Users\\ikudryashov\\OneDrive\\Документы\\Файлы Outlook\\ksamarchenko@velkomfood.ru.ost".getBytes(), Charset.forName("UTF-8")));
         OstToPst ostToPst = new OstToPst();
         try {
-            ostToPst.main(new String[]{"-t"});
+            OstToPst.main(new String[]{"-t"});
         }
         catch (Exception e) {
             Assert.assertNotNull(e);
@@ -33,7 +34,7 @@ public class TestMain {
     
     @Test
     public void complexTest() {
-        String fileName = "c:\\Users\\ikudryashov\\OneDrive\\Документы\\Файлы Outlook\\ksamarchenko@velkomfood.ru.ost";
+        String fileName = getFileName();
         MakeConvert makeConvert = new ConverterImpl(fileName);
         String listFolders = makeConvert.showListFolders();
         Assert.assertNotNull(listFolders);
@@ -52,7 +53,7 @@ public class TestMain {
         catch (IOException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
-        boolean foldersTxt = saveFolders.contains("folders.txt");
+        boolean foldersTxt = saveFolders.contains(ConstantsFor.FILENAME_FOLDERSTXT);
         Assert.assertTrue(foldersTxt);
         
         String showContacts = makeConvert.showContacts();
@@ -84,9 +85,9 @@ public class TestMain {
                 System.out.println("bytes = " + bytes[i]);
             }
             System.out.println(str8);
-            
-            String str1251 = new String("И".getBytes(), "windows-1251");
-            str1251 = new CharsetEncoding("windows-1251").getStrInAnotherCharset(str1251);
+    
+            String str1251 = new String("И".getBytes(), ConstantsFor.CP_WINDOWS_1251);
+            str1251 = new CharsetEncoding(ConstantsFor.CP_WINDOWS_1251).getStrInAnotherCharset(str1251);
             byte[] str1251Bytes = str1251.getBytes();
             for (int i = 0; i < str1251Bytes.length; i++) {
                 System.out.println("bytes1251 = " + str1251Bytes[i]);
@@ -106,6 +107,16 @@ public class TestMain {
         }
         catch (UnsupportedEncodingException e) {
             e.printStackTrace();
+        }
+    }
+    
+    private String getFileName() {
+        if (new File("c:\\Users\\ikudryashov\\OneDrive\\Документы\\Файлы Outlook\\ksamarchenko@velkomfood.ru.ost")
+            .exists()) {
+            return "c:\\Users\\ikudryashov\\OneDrive\\Документы\\Файлы Outlook\\ksamarchenko@velkomfood.ru.ost";
+        }
+        else {
+            return "\\\\192.168.14.10\\IT-Backup\\Mailboxes_users\\v.v.palgova.pst";
         }
     }
 }

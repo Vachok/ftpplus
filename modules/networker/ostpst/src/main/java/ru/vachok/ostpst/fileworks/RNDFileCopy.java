@@ -12,7 +12,6 @@ import ru.vachok.ostpst.utils.TForms;
 
 import java.awt.*;
 import java.io.*;
-import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -87,21 +86,34 @@ class RNDFileCopy implements Serializable {
         }
     }
     
-    String copyFile() {
+    String copyFile(String newCP) {
+        if (newCP.equalsIgnoreCase("y")) {
+            System.out.println(clearPositions());
+        }
         int megaByte = ConstantsFor.KBYTE_BYTES * ConstantsFor.KBYTE_BYTES;
         StringBuilder stringBuilder = new StringBuilder();
-        long tmpFileLen = lastWritePosition;
+        long tmpFileLen;
         try {
             tmpFileLen = new File("tmp_" + Paths.get(fileName).getFileName()).length();
             stringBuilder.append(tmpFileLen).append(" bytes copied\n");
-            
-            long totalMegaBytesToCopy = new File(fileName).length() / megaByte;
-            while (readRNDFileContentFromPosition() > 0) {
-                String ANSI_CLEAR_SEQ = "\u001b[2J";
-                System.out.println(ANSI_CLEAR_SEQ);
-                long mBytesCopied = readRNDFileContentFromPosition() / megaByte;
-                String copiedStr = mBytesCopied + " mb readied" + BigDecimal.valueOf((mBytesCopied / totalMegaBytesToCopy) * 100);
-                System.out.print(copiedStr);
+            final long lengthOfCopy = new File(fileName).length();
+            int hundrMB = (ConstantsFor.KBYTE_BYTES * ConstantsFor.KBYTE_BYTES) * 100;
+            if (lengthOfCopy < hundrMB) {
+                properties.setProperty(ConstantsFor.PR_CAPACITY, String.valueOf(lengthOfCopy));
+            }
+            else {
+                long capLong = lengthOfCopy / hundrMB;
+                properties.setProperty(ConstantsFor.PR_CAPACITY, String.valueOf(capLong));
+            }
+            long totalMegaBytesToCopy = lengthOfCopy / megaByte;
+            while (true) {
+                long positionOfCopy = readRNDFileContentFromPosition();
+                if (positionOfCopy == lengthOfCopy) {
+                    break;
+                }
+                long mBytesCopied = positionOfCopy / megaByte;
+                String copiedStr = mBytesCopied + "/" + totalMegaBytesToCopy + " mb readied";
+                System.out.println(copiedStr);
             }
         }
         catch (NullPointerException e) {
@@ -113,7 +125,7 @@ class RNDFileCopy implements Serializable {
     
     private long readRNDFileContentFromPosition() {
         int capacity = ConstantsFor.KBYTE_BYTES * ConstantsFor.KBYTE_BYTES;
-        byte[] bytes = new byte[ConstantsFor.KBYTE_BYTES * ConstantsFor.KBYTE_BYTES];
+        byte[] bytes;
         try {
             capacity = Integer.parseInt(properties.getProperty(ru.vachok.ostpst.ConstantsFor.PR_CAPACITY));
         }
@@ -122,7 +134,7 @@ class RNDFileCopy implements Serializable {
         }
         bytes = new byte[capacity];
         try {
-            File file = null;
+            File file;
             try {
                 file = new File(fileName);
             }
@@ -135,7 +147,7 @@ class RNDFileCopy implements Serializable {
                 content = new PSTRAFileContent(file);
             }
             catch (FileNotFoundException e) {
-                content = new PSTRAFileContent(new File(new CharsetEncoding("windows-1251").getStrInAnotherCharset(fileName)));
+                content = new PSTRAFileContent(new File(new CharsetEncoding(ConstantsFor.CP_WINDOWS_1251).getStrInAnotherCharset(fileName)));
             }
             content.seek(lastFileCaretPosition);
             int read = content.read(bytes);

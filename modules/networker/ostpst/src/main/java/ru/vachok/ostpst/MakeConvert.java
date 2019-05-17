@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.ostpst;
 
 
@@ -23,7 +25,7 @@ public interface MakeConvert {
     
     void setFileName(String fileName);
     
-    String copyierWithSave();
+    String copyierWithSave(String newCP);
     
     String cleanPreviousCopy();
     
