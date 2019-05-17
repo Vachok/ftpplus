@@ -174,7 +174,7 @@ public class MyConsoleServer extends Thread implements ConnectToMe {
             
         }
         catch (IOException | InterruptedException e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".accepSoc", e));
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName(), e));
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
         }
@@ -193,34 +193,65 @@ public class MyConsoleServer extends Thread implements ConnectToMe {
      <p>
      Слушает первую строку ввода из Telnet. <br> Обращается в {@link #printToSocket()}
  
-     @throws IOException {@link InputStream} ; {@link Socket} ; {@link #printToSocket()}
-     @throws InterruptedException help и thread
      */
-    public void reconSock() throws IOException, InterruptedException, NullPointerException {
+    public void reconSock() throws NullPointerException {
         AppComponents.threadConfig().thrNameSet("ReconSRV");
-        this.socket = serverSocket.accept();
-        InputStream inputStream = socket.getInputStream();
-        PrintStream printStream = new PrintStream(socket.getOutputStream());
+        try {
+            this.socket = serverSocket.accept();
+        }
+        catch (IOException e) {
+            messageToUser.error(e.getMessage());
+        }
+        InputStream inputStream = null;
+        try {
+            inputStream = socket.getInputStream();
+        }
+        catch (IOException e) {
+            messageToUser.error(e.getMessage());
+        }
+        PrintStream printStream = null;
+        try {
+            printStream = new PrintStream(socket.getOutputStream());
+        }
+        catch (IOException e) {
+            messageToUser.error(e.getMessage());
+        }
         InputStreamReader reader = new InputStreamReader(inputStream);
         BufferedReader bufferedReader = new BufferedReader(reader);
         printStream.println(AppComponents.threadConfig());
         printStream.println(ConstantsFor.getMemoryInfo() + "\n" + ConstantsFor.getUpTime());
         printStream.println("Press Enter or enter command:\n");
-        String readLine = bufferedReader.readLine();
-        doCommand(readLine);
+        String readLine = null;
+        try {
+            readLine = bufferedReader.readLine();
+        }
+        catch (IOException e) {
+            messageToUser.error(e.getMessage());
+        }
+        try {
+            doCommand(readLine);
+        }
+        catch (IOException | InterruptedException e) {
+            messageToUser.error(e.getMessage());
+            Thread.currentThread().interrupt();
+        }
     }
     
     /**
      <b>Создаёт {@link ServerSocket}</b>
      <p>
      <i>{@link #run()}</i>
-     
-     @throws IOException {@link ServerSocket} accept() , .getReuseAddress()
+ 
      */
-    public void runSocket() throws IOException {
+    public void runSocket() {
         AppComponents.threadConfig().thrNameSet("SRV9990");
         while (true) {
-            socket = serverSocket.accept();
+            try {
+                socket = serverSocket.accept();
+            }
+            catch (IOException e) {
+                messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ConstantsFor.METHNAME_RUNSOCKET, e));
+            }
             accepSoc(socket);
         }
     }
@@ -230,13 +261,7 @@ public class MyConsoleServer extends Thread implements ConnectToMe {
      */
     @Override
     public void run() {
-        try {
-            runSocket();
-        }
-        catch (IOException e) {
-            messageToUser.errorAlert("MyServer", "run", e.getMessage());
-            FileSystemWorker.error("MyServer.run", e);
-        }
+        runSocket();
     }
     
     @Override

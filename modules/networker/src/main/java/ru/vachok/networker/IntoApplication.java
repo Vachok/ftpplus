@@ -15,6 +15,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.TelnetStarter;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.SpeedChecker;
 import ru.vachok.networker.services.WeekPCStats;
@@ -87,6 +88,7 @@ public class IntoApplication {
      @see SystemTrayHelper
      */
     public static void main(@Nullable String[] args) {
+        AppComponents.threadConfig().execByThreadConfig(new TelnetStarter());
         SpringApplication application = new SpringApplication();
         ConfigurableApplicationContext context = SpringApplication.run(IntoApplication.class);
         configurableApplicationContext = context;

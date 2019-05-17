@@ -9,7 +9,6 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.abstr.ConnectToMe;
 import ru.vachok.networker.services.MessageLocal;
 
-import java.io.IOException;
 import java.util.Properties;
 
 
@@ -31,12 +30,7 @@ public class TelnetStarter implements Runnable {
             connectToMe = new TestServer(L_PORT);
         }
     
-        try {
-            messageToUser.warn(connectToMe.getClass().getSimpleName() + " *** PORT IS: " + L_PORT);
-            connectToMe.runSocket();
-        }
-        catch (IOException e) {
-            messageToUser.error(e.getMessage());
-        }
+        messageToUser.warn(connectToMe.getClass().getSimpleName() + " *** PORT IS: " + L_PORT);
+        connectToMe.runSocket();
     }
 }

@@ -470,6 +470,8 @@ public enum ConstantsFor {
     
     public static final String STR_ERROR = "ERROR";
     
+    public static final String METHNAME_RUNSOCKET = ".runSocket";
+    
     /**
      @return {@link #MAIL_RULES}
      */
