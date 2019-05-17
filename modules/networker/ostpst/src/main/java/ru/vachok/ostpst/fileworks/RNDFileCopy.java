@@ -7,12 +7,14 @@ import com.pff.PSTRAFileContent;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.ostpst.ConstantsFor;
+import ru.vachok.ostpst.utils.CharsetEncoding;
 import ru.vachok.ostpst.utils.TForms;
 
 import java.awt.*;
 import java.io.*;
 import java.math.BigDecimal;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
 import java.util.concurrent.RejectedExecutionException;
@@ -46,10 +48,15 @@ class RNDFileCopy implements Serializable {
             this.lastFileCaretPosition = Long.parseLong(properties.getProperty(ru.vachok.ostpst.ConstantsFor.PR_READING));
             this.lastWritePosition = Long.parseLong(properties.getProperty(ru.vachok.ostpst.ConstantsFor.PR_WRITING));
         }
-        catch (NullPointerException e) {
+        catch (NullPointerException | NumberFormatException e) {
             this.lastFileCaretPosition = 0;
-            this.fileName = properties.getProperty("file");
-            this.lastWritePosition = new File("tmp_" + Paths.get(fileName).getFileName()).length();
+            File file = new File("tmp_" + Paths.get(fileName).getFileName());
+            if (file.exists()) {
+                this.lastWritePosition = file.length();
+            }
+            else {
+                this.lastWritePosition = 0;
+            }
         }
         catch (IOException e) {
             this.properties = new Properties();
@@ -57,16 +64,23 @@ class RNDFileCopy implements Serializable {
     }
     
     String clearPositions() {
-        File filePath = new File(fileName);
-        String fileNameP = filePath.getName();
+        File filePath;
+        try {
+            filePath = new File(fileName);
+        }
+        catch (NullPointerException e) {
+            return e.getMessage() + "\n" + new TForms().fromArray(e);
+        }
+        String fileNameLocal = filePath.getName();
         try {
             this.lastFileCaretPosition = 0;
             this.lastWritePosition = 0;
-            boolean tmpDel = Files.deleteIfExists(Paths.get("tmp_" + fileNameP));
+            Path absPath = Paths.get("tmp_" + fileNameLocal).toAbsolutePath();
+            boolean tmpDel = Files.deleteIfExists(absPath);
             Object read = properties.setProperty(ConstantsFor.PR_READING, "0");
             Object write = properties.setProperty(ConstantsFor.PR_WRITING, "0");
             properties.store(new FileOutputStream(ConstantsFor.FILENAME_PROPERTIES), "clearPositions");
-            return tmpDel + " deleting post file, " + read + " read, " + write + " write.";
+            return tmpDel + " deleting post file: " + absPath + ". " + read + " read, " + write + " write.";
         }
         catch (IOException e) {
             return e.getMessage() + "\n" + new TForms().fromArray(e);
@@ -116,7 +130,13 @@ class RNDFileCopy implements Serializable {
                 messageToUser.error("NO FILE GIVEN! Please, set the file...");
                 throw new RejectedExecutionException("No File");
             }
-            PSTRAFileContent content = new PSTRAFileContent(file);
+            PSTRAFileContent content;
+            try {
+                content = new PSTRAFileContent(file);
+            }
+            catch (FileNotFoundException e) {
+                content = new PSTRAFileContent(new File(new CharsetEncoding("windows-1251").getStrInAnotherCharset(fileName)));
+            }
             content.seek(lastFileCaretPosition);
             int read = content.read(bytes);
             this.lastFileCaretPosition += read;

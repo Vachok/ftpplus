@@ -1,8 +1,11 @@
 package ru.vachok.ostpst.fileworks;
 
 
+import com.pff.PSTException;
+import com.pff.PSTFile;
 import com.pff.PSTFolder;
 import com.pff.PSTObject;
+import ru.vachok.ostpst.utils.TForms;
 
 import java.awt.*;
 import java.io.FileOutputStream;
@@ -14,38 +17,45 @@ import java.util.Vector;
 
 class ParserObjects {
     
-    
-    private PSTFolder pstFolder;
-    
-    private Iterable<PSTFolder> pstFolderVector;
-    
     private Path recordPath;
     
     private PSTObject object;
     
-    public ParserObjects(PSTObject object) {
-        this.object = object;
-        this.pstFolderVector = new Vector<>();
+    private PSTFile pstFile;
+    
+    private long objID;
+    
+    ParserObjects(PSTFile pstFile, long objID) {
+        this.pstFile = pstFile;
+        this.objID = objID;
     }
     
-    ParserObjects(Iterable<PSTFolder> pstFolderVector) {
-        this.pstFolderVector = pstFolderVector;
+    ParserObjects(PSTObject object) {
+        this.object = object;
     }
     
     void getObjects() {
         int nodeType = object.getNodeType();
         if (nodeType == 2) {
-            getFolders(object);
+            getFolders();
         }
         else {
             throw new IllegalComponentStateException("16.05.2019 (15:59)");
         }
     }
     
-    private void getFolders(PSTObject object) {
-        this.pstFolder = (PSTFolder) object;
-        ParserFoldersWithAttachments parserFoldersWithAttachments = new ParserFoldersWithAttachments(pstFolder);
-        parserFoldersWithAttachments.showFoldersIerarchy();
+    String getObjectItemsString() {
+        StringBuilder stringBuilder = new StringBuilder();
+        try {
+            PSTObject loadedObject = PSTObject.detectAndLoadPSTObject(pstFile, objID);
+            this.object = loadedObject;
+            stringBuilder.append(loadedObject.getDisplayName()).append("\n");
+            stringBuilder.append(loadedObject.getItemsString()).append("\n\n");
+        }
+        catch (IOException | PSTException e) {
+            stringBuilder.append(e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+        return stringBuilder.toString();
     }
     
     private void printObjectDescriptorsToFile(Vector<PSTObject> objectVector, String objName) {
@@ -58,6 +68,17 @@ class ParserObjects {
             catch (IOException e) {
                 e.printStackTrace();
             }
+        }
+    }
+    
+    private void getFolders() {
+        PSTFolder pstFolder = (PSTFolder) object;
+        ParserFoldersWithAttachments parserFoldersWithAttachments = new ParserFoldersWithAttachments(pstFolder);
+        try {
+            parserFoldersWithAttachments.showFoldersIerarchy();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }

@@ -1,12 +1,17 @@
 package ru.vachok.ostpst.fileworks;
 
 
+import com.pff.PSTException;
+import com.pff.PSTFile;
 import ru.vachok.ostpst.MakeConvert;
 import ru.vachok.ostpst.utils.CharsetEncoding;
 import ru.vachok.ostpst.utils.FileSystemWorker;
+import ru.vachok.ostpst.utils.TForms;
 
 import java.awt.*;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Deque;
@@ -29,9 +34,16 @@ public class ConverterImpl implements MakeConvert {
         throw new IllegalComponentStateException("15.05.2019 (9:27)");
     }
     
-    @Override public void saveFolders() {
+    @Override public String saveFolders() throws IOException {
         ParserFoldersWithAttachments parserFoldersWithAttachments = new ParserFoldersWithAttachments(fileName);
-        System.out.println("pstContentToFoldersWithAttachments = " + parserFoldersWithAttachments.showFoldersIerarchy());
+        Deque<String> deqFolderNamesWithIDAndWriteToDisk = parserFoldersWithAttachments.getDeqFolderNamesWithIDAndWriteToDisk();
+        File file = new File("folders.txt");
+        if (file.exists()) {
+            return file.getAbsolutePath();
+        }
+        else {
+            return "No file found";
+        }
     }
     
     @Override public String saveContacts(String csvFileName) {
@@ -41,22 +53,30 @@ public class ConverterImpl implements MakeConvert {
         if (csvFileName == null || csvFileName.isEmpty()) {
             csvFileName = root + FileSystemWorker.SYSTEM_DELIMITER + "contacts.csv";
         }
-        File csvFile = new File(csvFileName);
-        Callable<String> contacts = new ParserContacts(fileName, Objects.requireNonNull(csvFileName, "No CSV fileName given!"));
+        File csvFile = createCSV(csvFileName);
     
+        String csvFileAbsolutePath = csvFile.getAbsolutePath();
+        Callable<String> contacts = new ParserContacts(fileName, Objects.requireNonNull(csvFileAbsolutePath, "No CSV fileName given!"));
         try {
             File file = new File(contacts.call());
             if (file.length() > 4096) {
                 stringBuilder.append(file.toPath());
             }
             else {
-                stringBuilder.append(csvFileName + " is " + csvFile.length());
+                stringBuilder.append(csvFileAbsolutePath + " is " + csvFile.length());
             }
         }
         catch (Exception e) {
-            stringBuilder.append(e.getMessage());
+            stringBuilder.append(e.getMessage()).append("\n");
+            stringBuilder.append(new TForms().fromArray(e));
         }
+    
         return stringBuilder.toString();
+    }
+    
+    @Override public String cleanPreviousCopy() {
+        RNDFileCopy rndFileCopy = new RNDFileCopy(fileName);
+        return rndFileCopy.clearPositions();
     }
     
     @Override public void setFileName(String fileName) {
@@ -70,16 +90,43 @@ public class ConverterImpl implements MakeConvert {
     
     @Override public String showListFolders() {
         ParserFoldersWithAttachments parserFoldersWithAttachments = new ParserFoldersWithAttachments(fileName);
-        return parserFoldersWithAttachments.showFoldersIerarchy();
+        try {
+            return parserFoldersWithAttachments.showFoldersIerarchy();
+        }
+        catch (IOException e) {
+            return e.getMessage();
+        }
     }
     
-    @Override public Deque<String> getDequeFolderNamesAndWriteToDisk() {
+    @Override public Deque<String> getDequeFolderNamesAndWriteToDisk() throws IOException {
         ParserFoldersWithAttachments parserFoldersWithAttachments = new ParserFoldersWithAttachments(fileName);
         return parserFoldersWithAttachments.getDeqFolderNamesWithIDAndWriteToDisk();
     }
     
-    @Override public void showContacts() {
+    @Override public String showContacts() {
         ParserContacts parserContacts = new ParserContacts(fileName);
-        parserContacts.call();
+        return (parserContacts.call());
+    }
+    
+    @Override public String getObjectItemsByID(long id) {
+        try {
+            ParserObjects parserObjects = new ParserObjects(new PSTFile(fileName), id);
+            return parserObjects.getObjectItemsString();
+        }
+        catch (PSTException | IOException e) {
+            return e.getMessage() + "\n" + new TForms().fromArray(e);
+        }
+        
+    }
+    
+    private File createCSV(String csvFileName) {
+        try {
+            Path path = Files.createFile(Paths.get(csvFileName));
+            return new File(path.toAbsolutePath().toString());
+        }
+        catch (IOException e) {
+            csvFileName = new CharsetEncoding("windows-1251").getStrInAnotherCharset(csvFileName);
+            return new File(csvFileName);
+        }
     }
 }

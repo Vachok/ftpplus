@@ -24,11 +24,11 @@ public class TelnetStarter implements Runnable {
     
     @Override public void run() {
         ConnectToMe connectToMe;
-        if (APP_PROPS.getProperty(ConstantsFor.PR_TESTSERVER).contains("true") || ConstantsFor.PR_OSNAME_LOWERCASE.contains("free")) {
-            connectToMe = new TestServer(L_PORT);
+        if (ConstantsFor.PR_OSNAME_LOWERCASE.contains("free")) {
+            connectToMe = MyConsoleServer.getI(L_PORT);
         }
         else {
-            connectToMe = MyConsoleServer.getI(L_PORT);
+            connectToMe = new TestServer(L_PORT);
         }
     
         try {

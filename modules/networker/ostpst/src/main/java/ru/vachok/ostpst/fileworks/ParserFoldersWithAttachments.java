@@ -52,7 +52,7 @@ class ParserFoldersWithAttachments {
         }
     }
     
-    String showFoldersIerarchy() {
+    String showFoldersIerarchy() throws IOException, NullPointerException {
         StringBuilder stringBuilder = new StringBuilder();
         try {
             if (pstFile != null) {
@@ -60,14 +60,14 @@ class ParserFoldersWithAttachments {
             }
             stringBuilder.append(parseFolder(rootFolder, stringBuilder));
         }
-        catch (PSTException | IOException e) {
+        catch (PSTException | IOException | NullPointerException e) {
             stringBuilder.append(e.getMessage());
         }
-        System.out.println("totalCounter = " + totalCounter);
+        stringBuilder.append("totalCounter = " + totalCounter);
         return stringBuilder.toString();
     }
     
-    Deque<String> getDeqFolderNamesWithIDAndWriteToDisk() {
+    Deque<String> getDeqFolderNamesWithIDAndWriteToDisk() throws IOException {
         Deque<String> retDeq = new ConcurrentLinkedDeque<>();
         String showFoldersIerarchy = showFoldersIerarchy();
         String[] split = showFoldersIerarchy.split("\n");
@@ -87,7 +87,7 @@ class ParserFoldersWithAttachments {
         return stringBuilder.toString();
     }
     
-    private String parseFolder(PSTFolder folder, final StringBuilder stringBuilder) throws PSTException, IOException {
+    private String parseFolder(PSTFolder folder, final StringBuilder stringBuilder) throws PSTException, IOException, NullPointerException {
         Vector<PSTFolder> rootSubFolders = folder.getSubFolders();
         Iterator<PSTFolder> iteratorFolder = rootSubFolders.iterator();
         
@@ -97,11 +97,11 @@ class ParserFoldersWithAttachments {
             totalCounter++;
             String nextFoldDisplayName = nextFold.getDisplayName();
             String levelCounterStr = getLevelCounterStr(levelCounter);
+    
             stringBuilder.append(levelCounterStr).append(levelCounter).append(": ").append(nextFoldDisplayName);
             stringBuilder.append(" (items: ").append(nextFold.getUnreadCount()).append("/").append(nextFold.getContentCount()).append(")")
                 .append(" id ").append(nextFold.getDescriptorNodeId())
                 .append("\n");
-            System.out.println(levelCounterStr + " :" + levelCounter + ": " + nextFoldDisplayName);
             if (nextFold.hasSubfolders()) {
                 parseFolder(Objects.requireNonNull(nextFold, "No folder"), stringBuilder);
             }

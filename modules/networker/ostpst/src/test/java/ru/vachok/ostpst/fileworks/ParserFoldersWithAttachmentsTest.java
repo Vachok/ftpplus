@@ -1,6 +1,7 @@
 package ru.vachok.ostpst.fileworks;
 
 
+import org.testng.Assert;
 import org.testng.annotations.Test;
 import ru.vachok.ostpst.MakeConvert;
 import ru.vachok.ostpst.utils.TForms;
@@ -14,7 +15,7 @@ import java.util.Properties;
 public class ParserFoldersWithAttachmentsTest {
     
     
-    @Test(enabled = false)
+    @Test
     public void testFolders() {
         Properties properties = new Properties();
         try {
@@ -26,7 +27,13 @@ public class ParserFoldersWithAttachmentsTest {
         String fileName = properties.getProperty("file");
         MakeConvert makeConvert = new ConverterImpl(fileName);
         String itemsString = makeConvert.showListFolders();
-        Deque<String> deqFolderNames = makeConvert.getDequeFolderNamesAndWriteToDisk();
-        System.out.println(new TForms().fromArray(deqFolderNames));
+        Deque<String> deqFolderNames = null;
+        try {
+            deqFolderNames = makeConvert.getDequeFolderNamesAndWriteToDisk();
+        }
+        catch (IOException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+        Assert.assertNotNull(deqFolderNames.getFirst());
     }
 }

@@ -1,6 +1,7 @@
 package ru.vachok.ostpst.utils;
 
 
+import java.util.Date;
 import java.util.Deque;
 import java.util.Set;
 
@@ -12,6 +13,7 @@ public class TForms {
     
     public String fromArray(Exception e) {
         StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(new Date());
         stringBuilder.append(e.getMessage()).append(" (").append(e.getLocalizedMessage()).append(")").append("\n");
         for (StackTraceElement traceElement : e.getStackTrace()) {
             stringBuilder.append(traceElement).append("\n");

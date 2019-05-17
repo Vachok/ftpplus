@@ -1,6 +1,7 @@
 package ru.vachok.ostpst;
 
 
+import java.io.IOException;
 import java.util.Deque;
 
 
@@ -11,7 +12,7 @@ public interface MakeConvert {
     
     String convertToPST();
     
-    void saveFolders();
+    String saveFolders() throws IOException;
     
     /**
      @param csvFileName can be null
@@ -23,13 +24,17 @@ public interface MakeConvert {
     
     String copyierWithSave();
     
+    String cleanPreviousCopy();
+    
     String showListFolders();
     
     default void testMe() {
         System.out.println("true = " + true);
     }
     
-    Deque<String> getDequeFolderNamesAndWriteToDisk();
+    Deque<String> getDequeFolderNamesAndWriteToDisk() throws IOException;
     
-    void showContacts();
+    String showContacts();
+    
+    String getObjectItemsByID(long id);
 }

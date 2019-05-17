@@ -4,6 +4,7 @@ package ru.vachok.ostpst.fileworks;
 import com.pff.*;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.ostpst.utils.CharsetEncoding;
 import ru.vachok.ostpst.utils.FileSystemWorker;
 
 import java.io.*;
@@ -66,15 +67,20 @@ class ParserContacts implements Callable<String> {
     private String showContacts() {
         StringBuilder stringBuilder = new StringBuilder();
         try {
+            String contStr = new String("онтакт".getBytes(), "UTF-8");
             this.pstFile = new PSTFile(fileName);
             ParserFoldersWithAttachments rootFolder = new ParserFoldersWithAttachments(pstFile);
             Deque<String> folderNamesAndWriteToDisk = rootFolder.getDeqFolderNamesWithIDAndWriteToDisk();
             for (String s : folderNamesAndWriteToDisk) {
-                if (s.toLowerCase().contains(new String("контак".getBytes(), Charset.forName("windows-1251")))) {
+                String folderNameFromDeq = s.toLowerCase();
+                folderNameFromDeq = new CharsetEncoding("windows-1251").getStrInAnotherCharset(folderNameFromDeq);
+    
+                if (folderNameFromDeq.contains(contStr)) {
                     s = s.split("id ")[1];
                     long parseLong = Long.parseLong(s);
                     PSTFolder pstFolder = (PSTFolder) PSTObject.detectAndLoadPSTObject(pstFile, parseLong);
                     stringBuilder.append(folderRead(pstFolder));
+                    System.out.println("s = " + s);
                 }
             }
         }
@@ -87,7 +93,10 @@ class ParserContacts implements Callable<String> {
     
     private String folderRead(PSTFolder folder) throws PSTException, IOException {
         StringBuilder stringBuilder = new StringBuilder();
-        Vector<PSTObject> folderChildren = folder.getChildren(folder.getContentCount());
+        for (PSTObject folderChild : folder.getChildren(folder.getContentCount())) {
+            PSTContact pstContact = (PSTContact) folderChild;
+            System.out.println(pstContact.getEmail1EmailAddress() + " (" + pstContact.getDisplayName() + ") id " + pstContact.getDescriptorNodeId());
+        }
         
         return stringBuilder.toString();
     }
@@ -105,12 +114,12 @@ class ParserContacts implements Callable<String> {
         
         while (pstFolderIterator.hasNext()) {
             PSTFolder folder = pstFolderIterator.next();
-            boolean nameContacts = folder.getDisplayName().toLowerCase().contains("ontacts")
-                || folder.getFolderType() == 2
-                || folder.getDisplayName().toLowerCase().contains(new String("онтакт".getBytes(), Charset.forName("windows-1251")));
+            String folderDisplayName = new String(folder.getDisplayName().getBytes(), Charset.forName("windows-1251"));
+            String strCont = "онтакты";
+            boolean nameContacts = folderDisplayName.contains(strCont);
             boolean hasSubs = folder.hasSubfolders();
     
-            System.out.println("folder = " + folder.getDisplayName() + " has no contacts.");
+            System.out.println("folder = " + folderDisplayName + " has no contacts.");
             if (hasSubs && !nameContacts) {
                 foldersRead(folder, printStream);
             }
@@ -122,6 +131,27 @@ class ParserContacts implements Callable<String> {
                     messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".foldersRead", e));
                 }
             }
+        }
+    }
+    
+    private void showBytes(byte[] bytesEthanol, byte[] bytes1) throws Exception {
+        try (OutputStream outputStream = new FileOutputStream("bytes.txt");
+             PrintStream printStream = new PrintStream(outputStream, true)
+        ) {
+            for (int i = 0; i < bytesEthanol.length; i++) {
+                String x = "byteEthanol = " + i + ") " + bytesEthanol[i];
+                printStream.println(x);
+                
+            }
+            printStream.println(" (strEthanol = " + new String(bytesEthanol) + ")");
+            for (int i = 0; i < bytes1.length; i++) {
+                String x = "byte = " + i + ") " + bytesEthanol[i];
+                printStream.println(x);
+            }
+            printStream.println(" (str1 = " + new String(bytes1) + ")");
+        }
+        catch (Exception e) {
+            e.printStackTrace();
         }
     }
     
@@ -167,6 +197,7 @@ class ParserContacts implements Callable<String> {
     }
     
     private String getPathAndWriteHeaderToDisk() {
+        String csvHeader = "Обращение,\"Имя\",\"Отчество\",\"Фамилия\",\"Суффикс\",\"Организация\",\"Отдел\",\"Должность\",\"Улица (раб. адрес)\",\"Улица 2 (раб. адрес)\",\"Улица 3 (раб. адрес)\",\"Город (раб. адрес)\",\"Область (раб. адрес)\",\"Индекс (раб. адрес)\",\"Страна или регион (раб. адрес)\",\"Улица (дом. адрес)\",\"Улица 2 (дом. адрес)\",\"Улица 3 (дом. адрес)\",\"Город (дом. адрес)\",\"Область (дом. адрес)\",\"Почтовый код (дом.)\",\"Страна или регион (дом. адрес)\",\"Улица (другой адрес)\",\"Улица  2 (другой адрес)\",\"Улица  3 (другой адрес)\",\"Город  (другой адрес)\",\"Область  (другой адрес)\",\"Индекс  (другой адрес)\",\"Страна или регион  (другой адрес)\",\"Телефон помощника\",\"Рабочий факс\",\"Рабочий телефон\",\"Телефон раб. 2\",\"Обратный вызов\",\"Телефон в машине\",\"Основной телефон организации\",\"Домашний факс\",\"Домашний телефон\",\"Телефон дом. 2\",\"ISDN\",\"Телефон переносной\",\"Другой факс\",\"Другой телефон\",\"Пейджер\",\"Основной телефон\",\"Радиотелефон\",\"Телетайп/телефон с титрами\",\"Телекс\",\"Важность\",\"Веб-страница\",\"Годовщина\",\"День рождения\",\"Дети\",\"Заметки\",\"Имя помощника\",\"Инициалы\",\"Категории\",\"Ключевые слова\",\"Код организации\",\"Личный код\",\"Отложено\",\"Пол\",\"Пользователь 1\",\"Пользователь 2\",\"Пользователь 3\",\"Пользователь 4\",\"Пометка\",\"Почтовый ящик (дом. адрес)\",\"Почтовый ящик (другой адрес)\",\"Почтовый ящик (раб. адрес)\",\"Профессия\",\"Расположение\",\"Расположение комнаты\",\"Расстояние\",\"Руководитель\",\"Сведения о доступности в Интернете\",\"Сервер каталогов\",\"Супруг(а)\",\"Счет\",\"Счета\",\"Хобби\",\"Частное\",\"Адрес эл. почты\",\"Тип эл. почты\",\"Краткое имя эл. почты\",\"Адрес 2 эл. почты\",\"Тип 2 эл. почты\",\"Краткое 2 имя эл. почты\",\"Адрес 3 эл. почты\",\"Тип 3 эл. почты\",\"Краткое 3 имя эл. почты\",\"Язык\"";
         PSTFolder rootFolder = null;
         try {
             rootFolder = pstFile.getRootFolder();
@@ -177,8 +208,7 @@ class ParserContacts implements Callable<String> {
         try (OutputStream outputStream = new FileOutputStream(fileContactsName);
              PrintStream printStream = new PrintStream(outputStream, true, "Windows-1251")
         ) {
-            printStream
-                .println("Обращение,\"Имя\",\"Отчество\",\"Фамилия\",\"Суффикс\",\"Организация\",\"Отдел\",\"Должность\",\"Улица (раб. адрес)\",\"Улица 2 (раб. адрес)\",\"Улица 3 (раб. адрес)\",\"Город (раб. адрес)\",\"Область (раб. адрес)\",\"Индекс (раб. адрес)\",\"Страна или регион (раб. адрес)\",\"Улица (дом. адрес)\",\"Улица 2 (дом. адрес)\",\"Улица 3 (дом. адрес)\",\"Город (дом. адрес)\",\"Область (дом. адрес)\",\"Почтовый код (дом.)\",\"Страна или регион (дом. адрес)\",\"Улица (другой адрес)\",\"Улица  2 (другой адрес)\",\"Улица  3 (другой адрес)\",\"Город  (другой адрес)\",\"Область  (другой адрес)\",\"Индекс  (другой адрес)\",\"Страна или регион  (другой адрес)\",\"Телефон помощника\",\"Рабочий факс\",\"Рабочий телефон\",\"Телефон раб. 2\",\"Обратный вызов\",\"Телефон в машине\",\"Основной телефон организации\",\"Домашний факс\",\"Домашний телефон\",\"Телефон дом. 2\",\"ISDN\",\"Телефон переносной\",\"Другой факс\",\"Другой телефон\",\"Пейджер\",\"Основной телефон\",\"Радиотелефон\",\"Телетайп/телефон с титрами\",\"Телекс\",\"Важность\",\"Веб-страница\",\"Годовщина\",\"День рождения\",\"Дети\",\"Заметки\",\"Имя помощника\",\"Инициалы\",\"Категории\",\"Ключевые слова\",\"Код организации\",\"Личный код\",\"Отложено\",\"Пол\",\"Пользователь 1\",\"Пользователь 2\",\"Пользователь 3\",\"Пользователь 4\",\"Пометка\",\"Почтовый ящик (дом. адрес)\",\"Почтовый ящик (другой адрес)\",\"Почтовый ящик (раб. адрес)\",\"Профессия\",\"Расположение\",\"Расположение комнаты\",\"Расстояние\",\"Руководитель\",\"Сведения о доступности в Интернете\",\"Сервер каталогов\",\"Супруг(а)\",\"Счет\",\"Счета\",\"Хобби\",\"Частное\",\"Адрес эл. почты\",\"Тип эл. почты\",\"Краткое имя эл. почты\",\"Адрес 2 эл. почты\",\"Тип 2 эл. почты\",\"Краткое 2 имя эл. почты\",\"Адрес 3 эл. почты\",\"Тип 3 эл. почты\",\"Краткое 3 имя эл. почты\",\"Язык\"");
+            printStream.println(new CharsetEncoding("UTF-8").getStrInAnotherCharset(csvHeader));
             foldersRead(rootFolder, printStream);
         }
         catch (IOException e) {

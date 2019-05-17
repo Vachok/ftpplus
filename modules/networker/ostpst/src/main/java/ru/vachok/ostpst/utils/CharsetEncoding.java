@@ -53,4 +53,13 @@ public class CharsetEncoding {
         return new TForms().fromArray(charsetSortedMap.keySet());
     }
     
+    public byte[] getInUnicode(String strToConvert) {
+        Charset in = Charset.defaultCharset();
+        Charset out = Charset.forName("unicode");
+        ByteBuffer buffer = in.encode(strToConvert);
+        CharBuffer charBuffer = out.decode(buffer);
+        strToConvert = new String(charBuffer.array()).trim();
+        return strToConvert.getBytes();
+    }
+    
 }

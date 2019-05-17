@@ -7,6 +7,7 @@ import ru.vachok.ostpst.MakeConvert;
 import ru.vachok.ostpst.fileworks.ConverterImpl;
 import ru.vachok.ostpst.utils.FileSystemWorker;
 
+import java.io.IOException;
 import java.util.Scanner;
 
 
@@ -27,6 +28,7 @@ class MenuItemsConsoleImpl implements MenuItems {
     
     @Override public void askUser() {
         try (Scanner scanner = new Scanner(System.in)) {
+            showSecondStage();
             askUser(scanner, fileName);
         }
         catch (Exception e) {
@@ -57,35 +59,53 @@ class MenuItemsConsoleImpl implements MenuItems {
         System.out.println("2. Show contacts");
         System.out.println("3. Show folders");
         System.out.println("4. Write folder names to disk");
+        System.out.println("5. Parse object");
         System.out.println("0. Exit");
         System.out.println("Choose: ");
     }
     
-    private static void askUser(Scanner scanner, String fileName) {
-        new MenuItemsConsoleImpl(fileName).showSecondStage();
+    private static void askUser(Scanner scanner, String fileName) throws IOException {
         while (scanner.hasNextInt()) {
             int userAns = scanner.nextInt();
-            
             if (userAns == 1) {
                 new MenuItemsConsoleImpl(fileName).ansIsOne();
             }
-            if (userAns == 2) {
+            else if (userAns == 2) {
                 MakeConvert makeConvert = new ConverterImpl(fileName);
                 makeConvert.showContacts();
+                new MenuConsoleLocal(fileName).showMenu();
             }
             else if (userAns == 3) {
                 MakeConvert makeConvert = new ConverterImpl(fileName);
-                makeConvert.showListFolders();
+                System.out.println(makeConvert.showListFolders());
+                new MenuConsoleLocal(fileName).showMenu();
             }
             else if (userAns == 4) {
                 MakeConvert makeConvert = new ConverterImpl(fileName);
                 makeConvert.getDequeFolderNamesAndWriteToDisk();
+                new MenuConsoleLocal(fileName).showMenu();
+            }
+            else if (userAns == 5) {
+                new MenuItemsConsoleImpl(fileName).ansIsFive();
             }
             else if (userAns == 0) {
                 userMenu.exitProgram(fileName);
             }
             else {
                 userMenu.showMenu();
+            }
+        }
+    }
+    
+    private void ansIsFive() {
+        System.out.println("Enter object ID: ");
+        try (Scanner scanner = new Scanner(System.in)) {
+            while (scanner.hasNextLong()) {
+                long objID = scanner.nextLong();
+                MakeConvert makeConvert = new ConverterImpl(fileName);
+                String itemsByID = makeConvert.getObjectItemsByID(objID);
+                System.out.println(itemsByID);
+                new MenuConsoleLocal(fileName).showMenu();
             }
         }
     }

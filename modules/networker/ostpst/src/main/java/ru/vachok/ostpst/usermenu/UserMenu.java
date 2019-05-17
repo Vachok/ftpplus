@@ -6,7 +6,7 @@ import java.io.File;
 
 /**
  @since 14.05.2019 (9:20) */
-@FunctionalInterface public interface UserMenu {
+public interface UserMenu {
     
     
     void showMenu();
