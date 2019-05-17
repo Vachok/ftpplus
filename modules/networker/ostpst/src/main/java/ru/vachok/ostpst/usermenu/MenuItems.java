@@ -7,6 +7,6 @@ public interface MenuItems {
     
     
     void askUser();
-    void ansIsOne();
+    
     void showSecondStage();
 }

@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.nio.file.Paths;
+import java.util.List;
 
 
 public class TestMain {
@@ -59,11 +60,18 @@ public class TestMain {
         
         String cleanPreviousCopy = makeConvert.cleanPreviousCopy();
         Assert.assertNotNull(cleanPreviousCopy);
-        
+    
+        String parseObject = makeConvert.getObjectItemsByID(35906);
+        Assert.assertNotNull(parseObject);
+    
+        List<String> subjList = makeConvert.getListMessagesSubjectWithID(8578);
+    
         System.out.println(listFolders);
         System.out.println(saveContacts);
         System.out.println(showContacts);
         System.out.println(cleanPreviousCopy);
+        System.out.println(parseObject);
+        System.out.println(new TForms().fromArray(subjList));
     }
     
     @Test(enabled = false)

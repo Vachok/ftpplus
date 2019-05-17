@@ -3,6 +3,7 @@ package ru.vachok.ostpst.utils;
 
 import java.util.Date;
 import java.util.Deque;
+import java.util.List;
 import java.util.Set;
 
 
@@ -43,6 +44,14 @@ public class TForms {
             stringBuilder.append(deque.poll());
         }
         
+        return stringBuilder.toString();
+    }
+    
+    public String fromArray(List<?> list) {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (int i = 0; i < list.size(); i++) {
+            stringBuilder.append(list.get(i)).append("\n");
+        }
         return stringBuilder.toString();
     }
 }

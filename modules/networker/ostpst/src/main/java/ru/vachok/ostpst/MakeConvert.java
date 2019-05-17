@@ -3,6 +3,7 @@ package ru.vachok.ostpst;
 
 import java.io.IOException;
 import java.util.Deque;
+import java.util.List;
 
 
 /**
@@ -37,4 +38,6 @@ public interface MakeConvert {
     String showContacts();
     
     String getObjectItemsByID(long id);
+    
+    List<String> getListMessagesSubjectWithID(long folderID);
 }

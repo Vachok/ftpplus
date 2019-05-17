@@ -8,20 +8,38 @@ import ru.vachok.ostpst.utils.FileSystemWorker;
 
 import java.io.*;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 
 
 /**
  @since 14.05.2019 (14:16) */
-class ParserPSTMessages {
+class ParserPSTMessages extends ParserFoldersWithAttachments {
     
     
     private MessageToUser messageToUser = new MessageCons(getClass().getSimpleName());
     
     private PSTFolder pstFolder;
     
-    ParserPSTMessages(PSTFolder pstFolder) {
-        this.pstFolder = pstFolder;
+    private long folderID;
+    
+    ParserPSTMessages(PSTFile pstFile) {
+        super(pstFile);
+    }
+    
+    ParserPSTMessages(String fileName) {
+        super(fileName);
+    }
+    
+    ParserPSTMessages(String fileName, long folderID) {
+        super(fileName);
+        try {
+            this.pstFolder = (PSTFolder) PSTObject.detectAndLoadPSTObject(new PSTFile(fileName), folderID);
+        }
+        catch (IOException | PSTException e) {
+            e.printStackTrace();
+        }
     }
     
     void saveMessageToDisk(Vector<PSTObject> pstObjs, String name, Path fldPath) throws IOException {
@@ -64,6 +82,16 @@ class ParserPSTMessages {
                 messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".saveMessageToDisk", e));
             }
         }
+    }
+    
+    List<String> getMessagesSubject() throws PSTException, IOException {
+        List<String> stringList = new ArrayList<>();
+        for (PSTObject folderChild : pstFolder.getChildren(pstFolder.getContentCount())) {
+            PSTMessage pstMessage = (PSTMessage) folderChild;
+            stringList.add(pstMessage.getSubject() + " id: " + pstMessage.getDescriptorNodeId() + " (from: " + pstMessage.getSenderName() + ")");
+        }
+        ;
+        return stringList;
     }
     
 }

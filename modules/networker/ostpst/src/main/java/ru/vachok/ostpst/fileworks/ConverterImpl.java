@@ -14,8 +14,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Deque;
-import java.util.Objects;
+import java.util.List;
+import java.util.*;
 import java.util.concurrent.Callable;
 
 
@@ -111,12 +111,34 @@ public class ConverterImpl implements MakeConvert {
     @Override public String getObjectItemsByID(long id) {
         try {
             ParserObjects parserObjects = new ParserObjects(new PSTFile(fileName), id);
-            return parserObjects.getObjectItemsString();
+            return parserObjects.getObjectDescriptorID();
         }
         catch (PSTException | IOException e) {
             return e.getMessage() + "\n" + new TForms().fromArray(e);
         }
         
+    }
+    
+    @Override public List<String> getListMessagesSubjectWithID(long folderID) {
+        List<String> retList = new ArrayList<>();
+        ParserPSTMessages pstMessages = null;
+        try {
+            pstMessages = new ParserPSTMessages(fileName, folderID);
+        }
+        catch (Exception e) {
+            this.fileName = new CharsetEncoding("windows-1251").getStrInAnotherCharset(fileName);
+        }
+        try {
+            List<String> messagesSubject = pstMessages.getMessagesSubject();
+            for (int i = 0; i < messagesSubject.size(); i++) {
+                retList.add(messagesSubject.get(i));
+            }
+        }
+        catch (PSTException | IOException | NullPointerException e) {
+            retList.add(e.getMessage());
+        }
+        Collections.sort(retList);
+        return retList;
     }
     
     private File createCSV(String csvFileName) {

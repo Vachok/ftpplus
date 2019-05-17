@@ -6,8 +6,10 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.ostpst.MakeConvert;
 import ru.vachok.ostpst.fileworks.ConverterImpl;
 import ru.vachok.ostpst.utils.FileSystemWorker;
+import ru.vachok.ostpst.utils.TForms;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Scanner;
 
 
@@ -17,6 +19,8 @@ class MenuItemsConsoleImpl implements MenuItems {
     
     
     private static UserMenu userMenu = new MenuConsoleLocal();
+    
+    private static MakeConvert makeConvert;
     
     private MessageToUser messageToUser = new MessageCons(getClass().getSimpleName());
     
@@ -36,14 +40,26 @@ class MenuItemsConsoleImpl implements MenuItems {
         }
     }
     
-    @Override public void ansIsOne() {
-        System.out.println("Enter name of csv, for contacts save:");
+    @Override public void showSecondStage() {
+        System.out.println("What should I do with this file?");
+        System.out.println("1. Save contacts to csv");
+        System.out.println("2. Show contacts");
+        System.out.println("3. Show folders");
+        System.out.println("4. Write folder names to disk");
+        System.out.println("5. Parse object");
+        System.out.println("6. Show message subjects");
+        System.out.println("0. Exit");
+        System.out.println("Choose: ");
+    }
     
+    private void ansIsOneSaveContToCSV() {
+        System.out.println("Enter name of csv, for contacts save:");
+        
         try (Scanner scanner = new Scanner(System.in)) {
             while (scanner.hasNextLine()) {
                 String csvFileName = scanner.nextLine();
-                MakeConvert makeConvert = new ConverterImpl(fileName);
-                String saveContacts = makeConvert.saveContacts(csvFileName);
+                MakeConvert converter = new ConverterImpl(fileName);
+                String saveContacts = converter.saveContacts(csvFileName);
                 messageToUser.warn(saveContacts);
                 new MenuConsoleLocal(fileName).showMenu();
             }
@@ -53,22 +69,12 @@ class MenuItemsConsoleImpl implements MenuItems {
         }
     }
     
-    @Override public void showSecondStage() {
-        System.out.println("What should I do with this file?");
-        System.out.println("1. Save contacts to csv");
-        System.out.println("2. Show contacts");
-        System.out.println("3. Show folders");
-        System.out.println("4. Write folder names to disk");
-        System.out.println("5. Parse object");
-        System.out.println("0. Exit");
-        System.out.println("Choose: ");
-    }
-    
     private static void askUser(Scanner scanner, String fileName) throws IOException {
+        makeConvert = new ConverterImpl(fileName);
         while (scanner.hasNextInt()) {
             int userAns = scanner.nextInt();
             if (userAns == 1) {
-                new MenuItemsConsoleImpl(fileName).ansIsOne();
+                new MenuItemsConsoleImpl(fileName).ansIsOneSaveContToCSV();
             }
             else if (userAns == 2) {
                 MakeConvert makeConvert = new ConverterImpl(fileName);
@@ -86,24 +92,47 @@ class MenuItemsConsoleImpl implements MenuItems {
                 new MenuConsoleLocal(fileName).showMenu();
             }
             else if (userAns == 5) {
-                new MenuItemsConsoleImpl(fileName).ansIsFive();
+                new MenuItemsConsoleImpl(fileName).ansIsFiveParseByID();
+            }
+            else if (userAns == 6) {
+                new MenuItemsConsoleImpl(fileName).ansIsSixGetListMSGSubj();
             }
             else if (userAns == 0) {
                 userMenu.exitProgram(fileName);
             }
-            else {
+            else if (userAns == 10) {
                 userMenu.showMenu();
             }
+            else {
+                System.out.println("Incorrect choice!");
+                new MenuConsoleLocal(fileName).showMenu();
+            }
+        }
+        userMenu.showMenu();
+    }
+    
+    private void ansIsSixGetListMSGSubj() {
+        System.out.println("Enter folder id: ");
+        try (Scanner scanner = new Scanner(System.in)) {
+            while (scanner.hasNextLong()) {
+                long objID = scanner.nextLong();
+                List<String> subjectWithID = makeConvert.getListMessagesSubjectWithID(objID);
+                System.out.println(new TForms().fromArray(subjectWithID));
+                new MenuConsoleLocal(fileName).showMenu();
+            }
+        }
+        catch (Exception e) {
+            userMenu.showMenu();
         }
     }
     
-    private void ansIsFive() {
+    private void ansIsFiveParseByID() {
         System.out.println("Enter object ID: ");
         try (Scanner scanner = new Scanner(System.in)) {
             while (scanner.hasNextLong()) {
                 long objID = scanner.nextLong();
-                MakeConvert makeConvert = new ConverterImpl(fileName);
-                String itemsByID = makeConvert.getObjectItemsByID(objID);
+                MakeConvert converter = new ConverterImpl(fileName);
+                String itemsByID = converter.getObjectItemsByID(objID);
                 System.out.println(itemsByID);
                 new MenuConsoleLocal(fileName).showMenu();
             }
