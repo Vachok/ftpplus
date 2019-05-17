@@ -3,11 +3,9 @@ package ru.vachok.ostpst.fileworks;
 
 import com.pff.PSTException;
 import com.pff.PSTFile;
-import com.pff.PSTFolder;
 import com.pff.PSTObject;
 import ru.vachok.ostpst.utils.TForms;
 
-import java.awt.*;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -34,16 +32,6 @@ class ParserObjects {
         this.object = object;
     }
     
-    void getObjects() {
-        int nodeType = object.getNodeType();
-        if (nodeType == 2) {
-            getFolders();
-        }
-        else {
-            throw new IllegalComponentStateException("16.05.2019 (15:59)");
-        }
-    }
-    
     String getObjectItemsString() {
         StringBuilder stringBuilder = new StringBuilder();
         try {
@@ -68,17 +56,6 @@ class ParserObjects {
             catch (IOException e) {
                 e.printStackTrace();
             }
-        }
-    }
-    
-    private void getFolders() {
-        PSTFolder pstFolder = (PSTFolder) object;
-        ParserFoldersWithAttachments parserFoldersWithAttachments = new ParserFoldersWithAttachments(pstFolder);
-        try {
-            parserFoldersWithAttachments.showFoldersIerarchy();
-        }
-        catch (IOException e) {
-            e.printStackTrace();
         }
     }
 }
