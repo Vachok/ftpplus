@@ -76,7 +76,7 @@ public class TestServer implements ConnectToMe {
             this.printStreamF = printStream;
             printStreamF.println("Socket " + socket.getInetAddress() + ":" + socket.getPort() + " is connected");
             printStreamF.println("Press ENTER. \nOr press something else for quit...");
-            while (socket.isConnected()) {
+            while (!socket.isClosed()) {
                 if (scanner.hasNextLine()) {
                     System.setOut(printStreamF);
                     System.setIn(socket.getInputStream());
