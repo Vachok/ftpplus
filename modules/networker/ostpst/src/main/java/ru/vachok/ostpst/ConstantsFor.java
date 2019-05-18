@@ -30,6 +30,8 @@ public enum ConstantsFor {
     
     public static final String PR_TMPFILE = "tmpfile";
     
+    public static final String STR_NOT_READY_YET = "Not ready yet";
+    
     private static String getSeparator() {
         if (System.getProperty("os.name").contains("indows")) {
             return "\\";

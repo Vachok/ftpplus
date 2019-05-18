@@ -102,6 +102,12 @@ class RNDFileCopy implements Serializable {
         if (newCP.equalsIgnoreCase("y")) {
             System.out.println(clearPositions());
         }
+        else if (newCP.equals("e")) {
+            return "NO COPY!";
+        }
+        else if (newCP.equals("c")) {
+            return ConstantsFor.STR_NOT_READY_YET + "\n" + threadMXBean.getThreadInfo(Thread.currentThread().getId());
+        }
         int megaByte = ConstantsFor.KBYTE_BYTES * ConstantsFor.KBYTE_BYTES;
         StringBuilder stringBuilder = new StringBuilder();
         long tmpFileLen;

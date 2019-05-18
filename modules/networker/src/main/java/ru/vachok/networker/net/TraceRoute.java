@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.net;
 
 
@@ -32,7 +34,7 @@ public class TraceRoute implements Callable<String> {
             if (System.getProperty("os.name").toLowerCase().contains("window")) {
                 stringBuilder.append(winTrace(yaRu));
             } else {
-                throw new UnsupportedOperationException("Not ready yet");
+                throw new UnsupportedOperationException(ConstantsFor.STR_NOT_READY_YET);
             }
         } catch (IOException e) {
             stringBuilder.append(e.getMessage());

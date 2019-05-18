@@ -9,6 +9,7 @@ import com.pff.PSTFolder;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.ostpst.ConstantsFor;
+import ru.vachok.ostpst.usermenu.MenuConsoleLocal;
 import ru.vachok.ostpst.utils.FileSystemWorker;
 
 import java.io.IOException;
@@ -50,6 +51,7 @@ class ParserFoldersWithAttachments {
         }
         catch (PSTException | IOException e) {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".PSTContentToFoldersWithAttachments", e));
+            new MenuConsoleLocal(fileName).showMenu();
         }
     }
     
