@@ -28,6 +28,8 @@ public enum ConstantsFor {
     
     public static final String PR_CAPFLOOR = "capfloor";
     
+    public static final String PR_TMPFILE = "tmpfile";
+    
     private static String getSeparator() {
         if (System.getProperty("os.name").contains("indows")) {
             return "\\";

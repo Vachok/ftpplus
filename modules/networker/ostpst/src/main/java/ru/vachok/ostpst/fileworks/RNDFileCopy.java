@@ -99,12 +99,12 @@ class RNDFileCopy implements Serializable {
             tmpFileLen = new File("tmp_" + Paths.get(fileName).getFileName()).length();
             stringBuilder.append(tmpFileLen).append(" bytes copied\n");
             final long lengthOfCopy = new File(fileName).length();
-            int hundredMB = (ConstantsFor.KBYTE_BYTES * ConstantsFor.KBYTE_BYTES) * 5;
-            if (lengthOfCopy < hundredMB) {
+            int mb30 = (ConstantsFor.KBYTE_BYTES * ConstantsFor.KBYTE_BYTES) * 30;
+            if (lengthOfCopy < mb30) {
                 properties.setProperty(ConstantsFor.PR_CAPACITY, String.valueOf(lengthOfCopy));
             }
             else {
-                BigDecimal capLong = BigDecimal.valueOf((float) lengthOfCopy).divide(BigDecimal.valueOf((float) hundredMB), RoundingMode.HALF_DOWN);
+                BigDecimal capLong = BigDecimal.valueOf((float) lengthOfCopy).divide(BigDecimal.valueOf((float) mb30), RoundingMode.HALF_DOWN);
                 BigDecimal bufLen = BigDecimal.valueOf(lengthOfCopy).divide(capLong, RoundingMode.HALF_DOWN);
         
                 long floor = lengthOfCopy - bufLen.longValue() * capLong.longValue();
@@ -124,8 +124,8 @@ class RNDFileCopy implements Serializable {
         }
         catch (NullPointerException e) {
             stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e));
-            this.lastWritePosition = 0;
         }
+        stringBuilder.append(Paths.get(properties.getProperty(ConstantsFor.PR_TMPFILE)).toAbsolutePath());
         return stringBuilder.toString();
     }
     
@@ -166,7 +166,7 @@ class RNDFileCopy implements Serializable {
             properties.setProperty(ru.vachok.ostpst.ConstantsFor.PR_READING, String.valueOf(lastFileCaretPosition));
             properties.setProperty(ru.vachok.ostpst.ConstantsFor.PR_WRITING, String.valueOf(writeReaded(bytes, "tmp_" + file.getName())));
             properties.setProperty("file", file.getAbsolutePath());
-            properties.setProperty("tmpfile", "tmp_" + file.getName());
+            properties.setProperty(ConstantsFor.PR_TMPFILE, "tmp_" + file.getName());
             properties.store(new FileOutputStream(ru.vachok.ostpst.ConstantsFor.FILENAME_PROPERTIES), "readRNDFileContentFromPosition");
             return lastFileCaretPosition;
         }
