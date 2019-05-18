@@ -4,6 +4,7 @@ package ru.vachok.ostpst.fileworks;
 
 
 import com.pff.PSTException;
+import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import java.io.File;
@@ -22,7 +23,9 @@ import java.io.IOException;
         }
         ParserPSTMessages pstMessages = new ParserPSTMessages("tmp_t.p.magdich.pst", 32962);
         try {
-            System.out.println(pstMessages.searchBySubj("Изменения в ПДД id:  (from: Пивоваров, Кирилл)"));
+            System.out.println(pstMessages.searchMessage("Работа SAP (from: Подковыров, Евгений)"));
+            System.out.println(pstMessages.searchMessage(2108836));
+            Assert.assertTrue(new File("attachments").isDirectory());
         }
         catch (PSTException | IOException e) {
             e.printStackTrace();

@@ -42,4 +42,8 @@ public interface MakeConvert {
     String getObjectItemsByID(long id);
     
     List<String> getListMessagesSubjectWithID(long folderID);
+    
+    String searchMessages(long folderID, long msgID);
+    
+    String searchMessages(long folderID, String msgSubject);
 }

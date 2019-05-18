@@ -51,6 +51,8 @@ class MenuItemsConsoleImpl implements MenuItems {
         System.out.println("4. Write folder names to disk");
         System.out.println("5. Parse object");
         System.out.println("6. Show message subjects");
+        System.out.println("7. Copy file");
+        System.out.println("8. Search message");
         System.out.println("0. Exit");
         System.out.println("Choose: ");
     }
@@ -103,6 +105,9 @@ class MenuItemsConsoleImpl implements MenuItems {
             else if (userAns == 7) {
                 new MenuItemsConsoleImpl(fileName).ansSevenCopy();
             }
+            else if (userAns == 8) {
+                new MenuItemsConsoleImpl(fileName).ansEightSearch();
+            }
             else if (userAns == 0) {
                 userMenu.exitProgram(fileName);
             }
@@ -115,6 +120,31 @@ class MenuItemsConsoleImpl implements MenuItems {
             }
         }
         userMenu.showMenu();
+    }
+    
+    private void ansEightSearch() {
+        System.out.println("Enter folder ID:");
+        try (Scanner scanner = new Scanner(System.in)) {
+            while (scanner.hasNext()) {
+                System.out.println("...and message ID or Subject:");
+                long folderID = scanner.nextLong();
+                if (scanner.hasNextLong()) {
+                    long messageID = scanner.nextLong();
+                    System.out.println(makeConvert.searchMessages(folderID, messageID));
+                    new MenuConsoleLocal(fileName).showMenu();
+                }
+                else if (scanner.hasNext()) {
+                    String subj = scanner.nextLine();
+                    System.out.println(makeConvert.searchMessages(folderID, subj));
+                    new MenuConsoleLocal(fileName).showMenu();
+                }
+            }
+        }
+        catch (Exception e) {
+            System.out.println(e);
+            System.out.println(new TForms().fromArray(e));
+            userMenu.showMenu();
+        }
     }
     
     private void ansIsSixGetListMSGSubj() {

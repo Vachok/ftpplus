@@ -6,11 +6,14 @@ package ru.vachok.ostpst.fileworks;
 import com.pff.*;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.ostpst.ConstantsFor;
 import ru.vachok.ostpst.utils.FileSystemWorker;
 import ru.vachok.ostpst.utils.TForms;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -69,38 +72,18 @@ class ParserPSTMessages extends ParserFoldersWithAttachments {
         }
     }
     
-    private void saveAttachment(String path, PSTMessage message, StringBuilder stringBuilder) throws PSTException, IOException {
-        for (int i = 0; i < message.getNumberOfAttachments(); i++) {
-            stringBuilder.append(i).append(" attachment\n\n\n");
-            PSTAttachment attachment = message.getAttachment(i);
-            try (InputStream attStream = attachment.getFileInputStream();
-                 InputStreamReader inputStreamReader = new InputStreamReader(attStream);
-                 BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-                 OutputStream attOut = new FileOutputStream(path + message.getDescriptorNodeId() + "_" + attachment.getFilename());
-            ) {
-                byte[] bytes = new byte[attachment.getSize()];
-                int readB = attStream.read(bytes);
-                stringBuilder.append(readB).append(" bts ").append(attachment.getMimeTag()).append(" ").append(attachment.getMessageClass());
-                attOut.write(bytes);
-            }
-            catch (IOException e) {
-                messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".saveMessageToDisk", e));
-            }
-        }
-    }
-    
     Map<Long, String> getMessagesSubject() throws PSTException, IOException {
         Map<Long, String> retMap = new ConcurrentHashMap<>();
         for (PSTObject folderChild : pstFolder.getChildren(pstFolder.getContentCount())) {
             PSTMessage pstMessage = (PSTMessage) folderChild;
-            retMap.put(pstMessage.getDescriptorNodeId(), pstMessage.getSubject() + " id: " + " (from: " + pstMessage.getSenderName() + ")");
+            retMap.put(pstMessage.getDescriptorNodeId(), pstMessage.getSubject() + " (from: " + pstMessage.getSenderName() + ")");
         }
         ;
         FileSystemWorker.writeMapToFile(pstFolder.getDisplayName() + ".txt", retMap);
         return retMap;
     }
     
-    String searchBySubj(String searchKey) throws PSTException, IOException {
+    String searchMessage(String searchKey) throws PSTException, IOException {
         StringBuilder stringBuilder = new StringBuilder();
         int indexSrch = 0;
         try {
@@ -124,8 +107,52 @@ class ParserPSTMessages extends ParserFoldersWithAttachments {
         return stringBuilder.toString();
     }
     
-    private void showMessage(long msgID) throws PSTException, IOException {
+    String searchMessage(long messageID) {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("\n***");
+        stringBuilder.append("Searching by message ID: ").append(messageID).append("\n");
+        try {
+            PSTObject objectLoaded = PSTObject.detectAndLoadPSTObject(new PSTFile(fileName), messageID);
+            PSTMessage pstMessage = (PSTMessage) objectLoaded;
+            stringBuilder.append(pstMessage.getTransportMessageHeaders());
+            stringBuilder.append(pstMessage.hasAttachments()).append(" attached files");
+            Path pathRoot = Paths.get(".").normalize().toAbsolutePath();
+            String pathStr = pathRoot.toString() + ConstantsFor.SYSTEM_SEPARATOR + "attachments" + ConstantsFor.SYSTEM_SEPARATOR;
+            saveAttachment(pathStr, pstMessage, stringBuilder);
+        }
+        catch (IOException | PSTException e) {
+            stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e));
+        }
+        return stringBuilder.toString();
+    }
+    
+    private void saveAttachment(String path, PSTMessage message, StringBuilder stringBuilder) throws PSTException, IOException {
+        Files.createDirectories(Paths.get(path));
+        for (int i = 0; i < message.getNumberOfAttachments(); i++) {
+            stringBuilder.append(i);
+            stringBuilder.append(" attachment\n");
+            PSTAttachment attachment = message.getAttachment(i);
+            String nameAtt = path + message.getDescriptorNodeId() + "_" + attachment.getFilename();
+            try (InputStream attStream = attachment.getFileInputStream();
+                 InputStreamReader inputStreamReader = new InputStreamReader(attStream);
+                 BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+                 OutputStream attOut = new FileOutputStream(nameAtt);
+            ) {
+                byte[] bytes = new byte[attachment.getSize()];
+                int readB = attStream.read(bytes);
+                stringBuilder.append(readB).append(" bytes ").append(attachment.getMimeTag()).append(" ");
+                attOut.write(bytes);
+                stringBuilder.append(nameAtt);
+            }
+            catch (IOException e) {
+                messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".saveMessageToDisk", e));
+            }
+        }
+    }
+    
+    private String showMessage(long msgID) throws PSTException, IOException {
         PSTMessage pstMessage = (PSTMessage) PSTObject.detectAndLoadPSTObject(new PSTFile(fileName), msgID);
+        StringBuilder stringBuilder = new StringBuilder();
         System.out.println(pstMessage.getBodyPrefix());
         System.out.println(pstMessage.getTransportMessageHeaders());
         if (pstMessage.hasAttachments()) {
@@ -139,6 +166,7 @@ class ParserPSTMessages extends ParserFoldersWithAttachments {
                 System.out.println(x.getSize() + " " + x.getFilename());
             }
         }
+        return stringBuilder.toString();
     }
     
 }

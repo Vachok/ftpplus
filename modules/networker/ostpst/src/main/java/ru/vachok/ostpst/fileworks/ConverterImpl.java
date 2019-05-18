@@ -142,6 +142,21 @@ public class ConverterImpl implements MakeConvert {
         return retList;
     }
     
+    @Override public String searchMessages(long folderID, long msgID) {
+        ParserPSTMessages pstMessages = new ParserPSTMessages(fileName, folderID);
+        return pstMessages.searchMessage(msgID);
+    }
+    
+    @Override public String searchMessages(long folderID, String msgSubject) {
+        ParserPSTMessages pstMessages = new ParserPSTMessages(fileName, folderID);
+        try {
+            return pstMessages.searchMessage(msgSubject);
+        }
+        catch (PSTException | IOException e) {
+            return e.getMessage() + " \n" + new TForms().fromArray(e);
+        }
+    }
+    
     private File createCSV(String csvFileName) {
         try {
             Path path = Files.createFile(Paths.get(csvFileName));
