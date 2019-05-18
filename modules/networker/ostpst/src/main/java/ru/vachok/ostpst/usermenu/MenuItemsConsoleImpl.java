@@ -40,6 +40,7 @@ class MenuItemsConsoleImpl implements MenuItems {
         }
         catch (Exception e) {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".askUser", e));
+            new MenuConsoleLocal(null).showMenu();
         }
     }
     
@@ -123,29 +124,50 @@ class MenuItemsConsoleImpl implements MenuItems {
     }
     
     private void ansEightSearch() {
-        System.out.println("Enter folder ID :");
+        System.out.println("Enter folder ID or 0 to return :");
         try (Scanner scanner = new Scanner(System.in)) {
-            long folderID = Long.parseLong(scanner.nextLine());
+            long folderID = -1;
+            try {
+                folderID = Long.parseLong(scanner.nextLine());
+            }
+            catch (NumberFormatException e) {
+                System.out.println("NumberFormat incorrect:\n");
+                System.out.println(e.getMessage());
+                new MenuConsoleLocal(fileName).showMenu();
+            }
+            if (folderID == 0) {
+                new MenuConsoleLocal(fileName).showMenu();
+            }
             System.out.println("...and message ID or Subject:");
             while (scanner.hasNextLine()) {
-                scanner.reset();
-                if (scanner.hasNextLong()) {
-                    long messageID = scanner.nextLong();
-                    System.out.println(makeConvert.searchMessages(folderID, messageID));
-                    new MenuConsoleLocal(fileName).showMenu();
-                }
-                else if (scanner.hasNextLine()) {
-                    String subj = scanner.nextLine();
-                    System.out.println(makeConvert.searchMessages(folderID, subj));
-                    new MenuConsoleLocal(fileName).showMenu();
-                }
+                ansEightSearchSecondStage(scanner, folderID);
             }
-            new MenuConsoleLocal(fileName).showMenu();
         }
-        catch (Exception e) {
+        catch (NumberFormatException e) {
             System.out.println(e);
             System.out.println(new TForms().fromArray(e));
-            userMenu.showMenu();
+            new MenuConsoleLocal(fileName).showMenu();
+        }
+    }
+    
+    private void ansEightSearchSecondStage(Scanner scanner, long folderID) {
+        System.out.println("Another message? (0 for back)");
+        scanner.reset();
+        if (scanner.hasNextLong()) {
+            long messageID = scanner.nextLong();
+            if (messageID == 0) {
+                new MenuConsoleLocal(fileName).showMenu();
+            }
+            System.out.println(makeConvert.searchMessages(folderID, messageID));
+            this.ansEightSearchSecondStage(scanner, folderID);
+        }
+        else if (scanner.hasNextLine()) {
+            String subj = scanner.nextLine();
+            System.out.println(makeConvert.searchMessages(folderID, subj));
+            this.ansEightSearchSecondStage(scanner, folderID);
+        }
+        else {
+            new MenuConsoleLocal(fileName).showMenu();
         }
     }
     

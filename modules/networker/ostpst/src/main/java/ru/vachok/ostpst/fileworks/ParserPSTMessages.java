@@ -7,6 +7,7 @@ import com.pff.*;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.ostpst.ConstantsFor;
+import ru.vachok.ostpst.usermenu.MenuConsoleLocal;
 import ru.vachok.ostpst.utils.FileSystemWorker;
 import ru.vachok.ostpst.utils.TForms;
 
@@ -47,6 +48,7 @@ class ParserPSTMessages extends ParserFoldersWithAttachments {
         }
         catch (IOException | PSTException e) {
             e.printStackTrace();
+            new MenuConsoleLocal(fileName).showMenu();
         }
     }
     

@@ -6,6 +6,7 @@ package ru.vachok.ostpst.usermenu;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.ostpst.ConstantsFor;
+import ru.vachok.ostpst.OstToPst;
 import ru.vachok.ostpst.fileworks.FileChecker;
 import ru.vachok.ostpst.fileworks.FileWorker;
 import ru.vachok.ostpst.utils.CharsetEncoding;
@@ -49,8 +50,10 @@ public class MenuConsoleLocal implements UserMenu {
                     }
                 }
             }
-            catch (Exception e) {
+            catch (RuntimeException e) {
                 messageToUser.error(e.getMessage());
+                new Thread(()->new OstToPst()).start();
+                Thread.currentThread().interrupt();
             }
         }
         else {
