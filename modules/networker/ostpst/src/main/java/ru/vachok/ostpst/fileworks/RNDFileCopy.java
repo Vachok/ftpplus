@@ -12,6 +12,8 @@ import ru.vachok.ostpst.utils.TForms;
 
 import java.awt.*;
 import java.io.*;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadMXBean;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.nio.file.Files;
@@ -36,6 +38,8 @@ class RNDFileCopy implements Serializable {
     
     private MessageToUser messageToUser = new MessageCons(getClass().getSimpleName());
     
+    private ThreadMXBean threadMXBean;
+    
     private Properties properties;
     
     /**
@@ -43,6 +47,9 @@ class RNDFileCopy implements Serializable {
      */
     RNDFileCopy(String fileName) {
         this.fileName = fileName;
+        this.threadMXBean = ManagementFactory.getThreadMXBean();
+        threadMXBean.setThreadCpuTimeEnabled(true);
+        threadMXBean.setThreadContentionMonitoringEnabled(true);
         try {
             this.properties = new Properties();
             this.properties.load(new FileInputStream(ru.vachok.ostpst.ConstantsFor.FILENAME_PROPERTIES));
@@ -65,12 +72,13 @@ class RNDFileCopy implements Serializable {
     }
     
     String clearPositions() {
-        File filePath;
+        StringBuilder stringBuilder = new StringBuilder();
+        File filePath = null;
         try {
             filePath = new File(fileName);
         }
         catch (NullPointerException e) {
-            return e.getMessage() + "\n" + new TForms().fromArray(e);
+            stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e));
         }
         String fileNameLocal = filePath.getName();
         try {
@@ -81,11 +89,13 @@ class RNDFileCopy implements Serializable {
             Object read = properties.setProperty(ConstantsFor.PR_READING, "0");
             Object write = properties.setProperty(ConstantsFor.PR_WRITING, "0");
             properties.store(new FileOutputStream(ConstantsFor.FILENAME_PROPERTIES), "clearPositions");
-            return tmpDel + " deleting post file: " + absPath + ". " + read + " read, " + write + " write.";
+            stringBuilder.append(tmpDel).append(" deleting post file: ").append(absPath).append(". ").append(read).append(" read, ").append(write).append(" write.");
         }
         catch (IOException e) {
-            return e.getMessage() + "\n" + new TForms().fromArray(e);
+            stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e));
         }
+        stringBuilder.append("\n\n").append(threadMXBean.getThreadInfo(Thread.currentThread().getId()));
+        return stringBuilder.toString();
     }
     
     String copyFile(String newCP) {
@@ -125,7 +135,8 @@ class RNDFileCopy implements Serializable {
         catch (NullPointerException e) {
             stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e));
         }
-        stringBuilder.append(Paths.get(properties.getProperty(ConstantsFor.PR_TMPFILE)).toAbsolutePath());
+        stringBuilder.append(Paths.get(properties.getProperty(ConstantsFor.PR_TMPFILE)).toAbsolutePath()).append("\n\n");
+        stringBuilder.append(threadMXBean.getThreadInfo(Thread.currentThread().getId()));
         return stringBuilder.toString();
     }
     
