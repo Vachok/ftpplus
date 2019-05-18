@@ -132,7 +132,7 @@ public class ConverterImpl implements MakeConvert {
             this.fileName = new CharsetEncoding(ConstantsFor.CP_WINDOWS_1251).getStrInAnotherCharset(fileName);
         }
         try {
-            List<String> messagesSubject = pstMessages.getMessagesSubject();
+            Map<Long, String> messagesSubject = pstMessages.getMessagesSubject();
             for (int i = 0; i < messagesSubject.size(); i++) {
                 retList.add(messagesSubject.get(i));
             }

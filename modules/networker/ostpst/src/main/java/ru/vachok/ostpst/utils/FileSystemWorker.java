@@ -14,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.Map;
 import java.util.stream.Stream;
 
 
@@ -40,6 +41,7 @@ public abstract class FileSystemWorker {
         StringBuilder stringBuilder = new StringBuilder();
         try (OutputStream outputStream = new FileOutputStream(pathWritten.toAbsolutePath().toString())) {
             stream.forEach(x->{
+                x = x + "\n";
                 try {
                     outputStream.write(x.getBytes());
                 }
@@ -48,6 +50,27 @@ public abstract class FileSystemWorker {
                 }
             });
             stringBuilder.append("Strings written to: ").append(pathWritten.toAbsolutePath().normalize());
+        }
+        catch (IOException e) {
+            stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e));
+        }
+        return stringBuilder.toString();
+    }
+    
+    public static String writeMapToFile(String fileName, Map<?, ?> map) {
+        Path pathWrite = Paths.get(fileName).toAbsolutePath();
+        StringBuilder stringBuilder = new StringBuilder();
+        try (OutputStream outputStream = new FileOutputStream(pathWrite.toFile())) {
+            map.forEach((x, y)->{
+                try {
+                    outputStream.write((x + " : " + y).getBytes());
+                    outputStream.write("\n".getBytes());
+                }
+                catch (IOException e) {
+                    stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e));
+                }
+            });
+            stringBuilder.append(pathWrite);
         }
         catch (IOException e) {
             stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e));

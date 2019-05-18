@@ -11,10 +11,8 @@ import ru.vachok.ostpst.utils.TForms;
 
 import java.io.*;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Vector;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 /**
@@ -28,6 +26,8 @@ class ParserPSTMessages extends ParserFoldersWithAttachments {
     
     private long folderID;
     
+    private String fileName;
+    
     private ParserPSTMessages(PSTFile pstFile) {
         super(pstFile);
     }
@@ -38,6 +38,7 @@ class ParserPSTMessages extends ParserFoldersWithAttachments {
     
     ParserPSTMessages(String fileName, long folderID) {
         super(fileName);
+        this.fileName = fileName;
         try {
             this.pstFolder = (PSTFolder) PSTObject.detectAndLoadPSTObject(new PSTFile(fileName), folderID);
         }
@@ -88,30 +89,56 @@ class ParserPSTMessages extends ParserFoldersWithAttachments {
         }
     }
     
-    List<String> getMessagesSubject() throws PSTException, IOException {
-        List<String> stringList = new ArrayList<>();
+    Map<Long, String> getMessagesSubject() throws PSTException, IOException {
+        Map<Long, String> retMap = new ConcurrentHashMap<>();
         for (PSTObject folderChild : pstFolder.getChildren(pstFolder.getContentCount())) {
             PSTMessage pstMessage = (PSTMessage) folderChild;
-            stringList.add(pstMessage.getSubject() + " id: " + pstMessage.getDescriptorNodeId() + " (from: " + pstMessage.getSenderName() + ")");
+            retMap.put(pstMessage.getDescriptorNodeId(), pstMessage.getSubject() + " id: " + " (from: " + pstMessage.getSenderName() + ")");
         }
         ;
-        return stringList;
+        FileSystemWorker.writeMapToFile(pstFolder.getDisplayName() + ".txt", retMap);
+        return retMap;
     }
     
     String searchBySubj(String searchKey) throws PSTException, IOException {
         StringBuilder stringBuilder = new StringBuilder();
         int indexSrch = 0;
         try {
-            List<String> subjectsList = getMessagesSubject();
+            Map<Long, String> subjectsMap = getMessagesSubject();
+            List<String> subjectsList = new ArrayList<>(subjectsMap.values());
             Collections.sort(subjectsList);
-            
             indexSrch = Collections.binarySearch(subjectsList, searchKey);
-            stringBuilder.append(subjectsList.get(indexSrch));
+            String foundStr = subjectsList.get(indexSrch);
+            stringBuilder.append(foundStr);
+            long msgID = 0;
+            for (Map.Entry<Long, String> entry : subjectsMap.entrySet()) {
+                if (entry.getValue().equals(foundStr)) {
+                    msgID = entry.getKey();
+                }
+            }
+            showMessage(msgID);
         }
         catch (NullPointerException | IndexOutOfBoundsException e) {
-            stringBuilder.append("Folder ID is not set! Key: ").append(searchKey).append(" not found... Index =").append(indexSrch).append("\n").append(new TForms().fromArray(e));
+            stringBuilder.append("Key: ").append(searchKey).append(" not found... Index =").append(indexSrch).append("\n").append(new TForms().fromArray(e));
         }
         return stringBuilder.toString();
+    }
+    
+    private void showMessage(long msgID) throws PSTException, IOException {
+        PSTMessage pstMessage = (PSTMessage) PSTObject.detectAndLoadPSTObject(new PSTFile(fileName), msgID);
+        System.out.println(pstMessage.getBodyPrefix());
+        System.out.println(pstMessage.getTransportMessageHeaders());
+        if (pstMessage.hasAttachments()) {
+            List<PSTAttachment> attachmentList = new ArrayList<>();
+            int attachmentsNum = pstMessage.getNumberOfAttachments();
+            for (int i = 0; i < attachmentsNum; i++) {
+                PSTAttachment attachment = pstMessage.getAttachment(i);
+                attachmentList.add(attachment);
+            }
+            for (PSTAttachment x : attachmentList) {
+                System.out.println(x.getSize() + " " + x.getFilename());
+            }
+        }
     }
     
 }
