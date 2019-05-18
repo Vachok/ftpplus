@@ -430,6 +430,8 @@ public enum ConstantsFor {
     
     public static final String PR_LPORT = "lport";
     
+    public static final String STR_NOT_READY_YET = "Not ready yet";
+    
     static final String STR_FINISH = " is finish";
     
     private static final String[] STRINGS_TODELONSTART = {"visit_", ".tmp", ".log", ".tv"};
