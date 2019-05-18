@@ -140,6 +140,7 @@ class MenuItemsConsoleImpl implements MenuItems {
                     new MenuConsoleLocal(fileName).showMenu();
                 }
             }
+            new MenuConsoleLocal(fileName).showMenu();
         }
         catch (Exception e) {
             System.out.println(e);

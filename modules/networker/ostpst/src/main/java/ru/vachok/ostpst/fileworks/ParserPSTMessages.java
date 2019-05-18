@@ -109,6 +109,9 @@ class ParserPSTMessages extends ParserFoldersWithAttachments {
     
     String searchMessage(long messageID) {
         StringBuilder stringBuilder = new StringBuilder();
+        Path pathRoot = Paths.get(".").normalize().toAbsolutePath();
+        String pathStr = pathRoot.toString() + ConstantsFor.SYSTEM_SEPARATOR + "attachments" + ConstantsFor.SYSTEM_SEPARATOR;
+        
         stringBuilder.append("\n***");
         stringBuilder.append("Searching by message ID: ").append(messageID).append("\n");
         try {
@@ -116,8 +119,13 @@ class ParserPSTMessages extends ParserFoldersWithAttachments {
             PSTMessage pstMessage = (PSTMessage) objectLoaded;
             stringBuilder.append(pstMessage.getTransportMessageHeaders());
             stringBuilder.append(pstMessage.hasAttachments()).append(" attached files");
-            Path pathRoot = Paths.get(".").normalize().toAbsolutePath();
-            String pathStr = pathRoot.toString() + ConstantsFor.SYSTEM_SEPARATOR + "attachments" + ConstantsFor.SYSTEM_SEPARATOR;
+            try (OutputStream outputStream = new FileOutputStream(pathStr + pstMessage.getDescriptorNodeId() + "_message.txt")) {
+                outputStream.write(pstMessage.toString().getBytes());
+            }
+            catch (Exception e) {
+                stringBuilder.append(e.getMessage()).append("\n");
+                stringBuilder.append(new TForms().fromArray(e));
+            }
             saveAttachment(pathStr, pstMessage, stringBuilder);
         }
         catch (IOException | PSTException e) {
