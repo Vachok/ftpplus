@@ -133,9 +133,7 @@ public class ConverterImpl implements MakeConvert {
         }
         try {
             Map<Long, String> messagesSubject = pstMessages.getMessagesSubject();
-            for (int i = 0; i < messagesSubject.size(); i++) {
-                retList.add(messagesSubject.get(i));
-            }
+            messagesSubject.forEach((x, y)->retList.add(x + " : " + y));
         }
         catch (PSTException | IOException | NullPointerException e) {
             retList.add(e.getMessage());
