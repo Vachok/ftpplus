@@ -12,7 +12,7 @@ import java.io.IOException;
 public class ParserPSTMessagesTest {
     
     
-    @Test
+    @Test(enabled = false)
     public void searchTest() {
         ParserPSTMessages pstMessages = new ParserPSTMessages("\\\\192.168.14.10\\IT-Backup\\Mailboxes_users\\t.p.magdich.pst", 32962);
         try {

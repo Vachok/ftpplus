@@ -109,7 +109,9 @@ public class TestServer implements ConnectToMe {
                     scanInput(scanner.nextLine());
                     printStream.print(iStream.read());
                 }
-                socket.close();
+                if (!socket.isConnected()) {
+                    socket.close();
+                }
             }
         }
         catch (IOException e) {
