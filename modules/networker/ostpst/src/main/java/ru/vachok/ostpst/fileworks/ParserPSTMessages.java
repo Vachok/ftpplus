@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.ostpst.fileworks;
 
 
@@ -5,10 +7,12 @@ import com.pff.*;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.ostpst.utils.FileSystemWorker;
+import ru.vachok.ostpst.utils.TForms;
 
 import java.io.*;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Vector;
 
@@ -24,11 +28,11 @@ class ParserPSTMessages extends ParserFoldersWithAttachments {
     
     private long folderID;
     
-    ParserPSTMessages(PSTFile pstFile) {
+    private ParserPSTMessages(PSTFile pstFile) {
         super(pstFile);
     }
     
-    ParserPSTMessages(String fileName) {
+    private ParserPSTMessages(String fileName) {
         super(fileName);
     }
     
@@ -42,7 +46,7 @@ class ParserPSTMessages extends ParserFoldersWithAttachments {
         }
     }
     
-    void saveMessageToDisk(Vector<PSTObject> pstObjs, String name, Path fldPath) throws IOException {
+    void saveMessageToDisk(Vector<PSTObject> pstObjs, String name, Path fldPath) {
         
         for (PSTObject object : pstObjs) {
             PSTMessage message = (PSTMessage) object;
@@ -92,6 +96,22 @@ class ParserPSTMessages extends ParserFoldersWithAttachments {
         }
         ;
         return stringList;
+    }
+    
+    String searchBySubj(String searchKey) throws PSTException, IOException {
+        StringBuilder stringBuilder = new StringBuilder();
+        int indexSrch = 0;
+        try {
+            List<String> subjectsList = getMessagesSubject();
+            Collections.sort(subjectsList);
+            
+            indexSrch = Collections.binarySearch(subjectsList, searchKey);
+            stringBuilder.append(subjectsList.get(indexSrch));
+        }
+        catch (NullPointerException | IndexOutOfBoundsException e) {
+            stringBuilder.append("Folder ID is not set! Key: ").append(searchKey).append(" not found... Index =").append(indexSrch).append("\n").append(new TForms().fromArray(e));
+        }
+        return stringBuilder.toString();
     }
     
 }

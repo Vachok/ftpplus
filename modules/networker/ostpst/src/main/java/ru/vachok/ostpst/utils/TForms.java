@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.ostpst.utils;
 
 
@@ -14,7 +16,7 @@ public class TForms {
     
     public String fromArray(Exception e) {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(new Date());
+        stringBuilder.append(new Date()).append("\n");
         stringBuilder.append(e.getMessage()).append(" (").append(e.getLocalizedMessage()).append(")").append("\n");
         for (StackTraceElement traceElement : e.getStackTrace()) {
             stringBuilder.append(traceElement).append("\n");

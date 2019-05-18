@@ -32,8 +32,6 @@ public class MenuConsoleLocal implements UserMenu {
     
     @Override public void showMenu() {
         FileWorker fileWorker = new FileChecker(fileName);
-        String ANSI_CLEAR_SEQ = "\u001b[2J";
-        System.out.println(ANSI_CLEAR_SEQ);
         System.out.println("Please, enter a filename: ");
         if (fileName == null) {
             try (Scanner scanner = new Scanner(System.in)) {
