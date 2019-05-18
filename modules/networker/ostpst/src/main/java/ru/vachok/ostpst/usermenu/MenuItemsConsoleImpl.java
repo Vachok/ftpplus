@@ -123,17 +123,18 @@ class MenuItemsConsoleImpl implements MenuItems {
     }
     
     private void ansEightSearch() {
-        System.out.println("Enter folder ID:");
+        System.out.println("Enter folder ID :");
         try (Scanner scanner = new Scanner(System.in)) {
-            while (scanner.hasNext()) {
-                System.out.println("...and message ID or Subject:");
-                long folderID = scanner.nextLong();
+            long folderID = Long.parseLong(scanner.nextLine());
+            System.out.println("...and message ID or Subject:");
+            while (scanner.hasNextLine()) {
+                scanner.reset();
                 if (scanner.hasNextLong()) {
                     long messageID = scanner.nextLong();
                     System.out.println(makeConvert.searchMessages(folderID, messageID));
                     new MenuConsoleLocal(fileName).showMenu();
                 }
-                else if (scanner.hasNext()) {
+                else if (scanner.hasNextLine()) {
                     String subj = scanner.nextLine();
                     System.out.println(makeConvert.searchMessages(folderID, subj));
                     new MenuConsoleLocal(fileName).showMenu();
