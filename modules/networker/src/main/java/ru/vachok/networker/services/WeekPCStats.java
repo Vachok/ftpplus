@@ -146,13 +146,13 @@ public class WeekPCStats implements Runnable, DataBaseRegSQL {
             selectFrom();
             totalBytes = totalBytes + file.length();
             new MessageLocal(getClass().getSimpleName())
-                .info(fileName , file.length() / ConstantsFor.KBYTE + " kb" , "total megabytes: " + totalBytes / ConstantsFor.KBYTE / ConstantsFor.KBYTE);
+                .info(fileName, file.length() / ConstantsFor.KBYTE + " kb", "total kb: " + totalBytes / ConstantsFor.KBYTE);
             if(file.length() > 10) {
                 this.sql = "DELETE FROM `inetstats` WHERE `ip` LIKE '" + ip + "'";
                 selectFrom();
             }
         }
-        new MessageSwing().infoTimer(ConstantsFor.ONE_DAY_HOURS * 3 , "ALL STATS SAVED\n" + totalBytes / ConstantsFor.KBYTE / ConstantsFor.KBYTE + " Megabytes");
+        new MessageSwing().infoTimer(ConstantsFor.ONE_DAY_HOURS * 3, "ALL STATS SAVED\n" + totalBytes / ConstantsFor.KBYTE + " Kbytes");
     }
 
 
