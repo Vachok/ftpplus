@@ -18,7 +18,7 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.TelnetStarter;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.SpeedChecker;
-import ru.vachok.networker.services.WeekPCStats;
+import ru.vachok.networker.statistics.WeekPCStats;
 import ru.vachok.networker.systray.SystemTrayHelper;
 import ru.vachok.stats.SaveLogsToDB;
 

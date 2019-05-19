@@ -21,7 +21,7 @@ import ru.vachok.networker.net.ScanOnline;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.MyCalen;
-import ru.vachok.networker.services.WeekPCStats;
+import ru.vachok.networker.statistics.WeekPCStats;
 
 import java.io.File;
 import java.lang.management.ManagementFactory;

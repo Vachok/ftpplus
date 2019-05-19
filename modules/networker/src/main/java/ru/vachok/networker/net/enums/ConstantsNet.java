@@ -84,12 +84,7 @@ public enum ConstantsNet { ;
      <i>Boiler Plate</i>
      */
     public static final String BEANNAME_NETSCANNERSVC = "netScannerSvc";
-
-    /**
-     Файл уникальных записей из БД velkom-pcuserauto
-     */
-    public static final String FILENAME_PCAUTODISTXT = "pcautodis.txt";
-
+    
     /**
      Название файла новой подсети 10.200.х.х
      */
