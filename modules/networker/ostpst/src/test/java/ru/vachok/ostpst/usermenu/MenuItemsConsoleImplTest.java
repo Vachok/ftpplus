@@ -21,7 +21,7 @@ import java.util.Scanner;
         String fileName = "tmp_t.p.magdich.pst";
         MakeConvert makeConvert = new ConverterImpl(fileName);
         System.out.println("Enter folder ID:");
-        try (Scanner scanner = new Scanner(new FileInputStream("scanner"))) {
+        try (Scanner scanner = new Scanner(new FileInputStream("MenuItemsConsoleImplTest.8"))) {
             long folderID = scanner.nextLong();
             while (scanner.hasNextLine()) {
                 System.out.println("...and message ID or Subject:");

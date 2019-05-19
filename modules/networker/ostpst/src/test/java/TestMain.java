@@ -17,7 +17,7 @@ import java.nio.file.Paths;
 import java.util.List;
 
 
-public class TestMain {
+@SuppressWarnings("ALL") public class TestMain {
     
     
     @Test(enabled = true)
@@ -32,7 +32,7 @@ public class TestMain {
         }
     }
     
-    @Test
+    @Test(enabled = false)
     public void complexTest() {
         String fileName = getFileName();
         MakeConvert makeConvert = new ConverterImpl(fileName);
@@ -44,7 +44,7 @@ public class TestMain {
         String csvFileName = Paths.get(fileName).getParent().toAbsolutePath() + "\\cnt.csv";
         String saveContacts = makeConvert.saveContacts(csvFileName);
         Assert.assertNotNull(saveContacts);
-        Assert.assertFalse(saveContacts.contains(" is "));
+        Assert.assertTrue(new File(csvFileName).exists());
         
         String saveFolders = null;
         try {
@@ -63,7 +63,7 @@ public class TestMain {
         Assert.assertNotNull(cleanPreviousCopy);
     
         String parseObject = makeConvert.getObjectItemsByID(35906);
-        Assert.assertNotNull(parseObject);
+        Assert.assertFalse(parseObject.contains("null (null)"));
     
         List<String> subjList = makeConvert.getListMessagesSubjectWithID(8578);
     
@@ -75,8 +75,7 @@ public class TestMain {
         System.out.println(new TForms().fromArray(subjList));
     }
     
-    @Test(enabled = false)
-    public void showBytes() {
+    private void showBytes() {
         try {
             String str8 = new String("И".getBytes(), "UTF-8");
             str8 = new CharsetEncoding("UTF-8").getStrInAnotherCharset(str8);
