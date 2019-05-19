@@ -75,7 +75,7 @@ public class TestServer implements ConnectToMe {
         this.socket = null;
         try {
             this.socket = serverSocket.accept();
-            runSocket();
+            accepSoc();
         }
         catch (IOException e) {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".reconSock", e));
@@ -110,7 +110,7 @@ public class TestServer implements ConnectToMe {
                     printStream.print(iStream.read());
                 }
                 if (!socket.isConnected()) {
-                    socket.close();
+                    System.setOut(System.err);
                 }
             }
         }
