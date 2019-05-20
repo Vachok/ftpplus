@@ -40,7 +40,7 @@ public class MatrixSRV {
     private static final Logger LOGGER = LoggerFactory.getLogger(MatrixSRV.class.getSimpleName());
 
     /**
-     Имя колонки в SQL_DELETE-таблице.
+     Имя колонки в SQL_SELECT_DIST-таблице.
 
      @see #getWorkPos()
      */

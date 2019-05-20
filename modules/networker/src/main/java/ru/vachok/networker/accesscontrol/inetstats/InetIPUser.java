@@ -41,9 +41,9 @@ public class InetIPUser implements InternetUse {
         stringBuilder.append("<details><summary>Посмотреть сайты, где был юзер (BETA)</summary>");
         Map<String, String> siteResponseMap = new HashMap<>();
         stringBuilder.append("Показаны только <b>уникальные</b> сайты<br>");
-        stringBuilder.append(cleanDBClients1()).append("<p>");
+        stringBuilder.append(cleanTrash()).append(" trash rows cleaned<p>");
         try (Connection c = MYSQL_DATA_SOURCE.getConnection()) {
-            try (PreparedStatement p = c.prepareStatement(SQL_DELETE)) {
+            try (PreparedStatement p = c.prepareStatement(SQL_SELECT_DIST)) {
                 p.setString(1, userCred);
                 try (ResultSet r = p.executeQuery()) {
                     while (r.next()) {
@@ -63,26 +63,11 @@ public class InetIPUser implements InternetUse {
         }
         return stringBuilder.toString();
     }
-
-
-    private String cleanDBClients1() {
-        StringBuilder stringBuilder = new StringBuilder();
-        try(Connection c = MYSQL_DATA_SOURCE.getConnection();
-            PreparedStatement p = c.prepareStatement(SQL_DELETE)
-        )
-        {
-            stringBuilder.append(p.executeUpdate()).append(" rows in statement: ").append(SQL_DELETE);
-        }catch(SQLException e){
-            stringBuilder.append(e.getMessage());
-        }
-        return stringBuilder.toString();
-    }
-
+    
     @Override public void showLog() {
         SaveLogsToDB saveLogsToDB = new AppComponents().saveLogsToDB();
         saveLogsToDB.showInfo();
     }
-
 
     private void resultSetWhileNext(Map<String, String> siteResponseMap , ResultSet r) throws SQLException {
         Date date = new Date(r.getLong("Date"));
@@ -97,8 +82,7 @@ public class InetIPUser implements InternetUse {
         String responseString = r.getString(ConstantsFor.DBFIELB_RESPONSE) + " " + r.getString(ConstantsFor.DBFIELD_METHOD);
         siteResponseMap.putIfAbsent(siteString , responseString + " when: " + date);
     }
-
-
+    
     private void makeReadableResults(Map<String, String> siteResponseMap, StringBuilder stringBuilder) {
         Set<String> keySet = siteResponseMap.keySet();
 
@@ -113,8 +97,7 @@ public class InetIPUser implements InternetUse {
         toWriteAllowed.forEach(x->stringBuilder.append(x).append("<br>"));
         stringBuilder.append(ConstantsFor.HTMLTAG_DETAILSCLOSE);
     }
-
-
+    
     private void parseResultSetMap(String x , Map<String, String> siteResponseMap , StringBuilder stringBuilder) {
 
         String valueX = siteResponseMap.get(x);

@@ -21,7 +21,7 @@ import ru.vachok.networker.net.ScanOnline;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.MyCalen;
-import ru.vachok.networker.statistics.WeekPCStats;
+import ru.vachok.networker.statistics.WeekStats;
 
 import java.io.File;
 import java.lang.management.ManagementFactory;
@@ -165,7 +165,7 @@ public class AppInfoOnLoad implements Runnable {
      Стата за неделю по-ПК
      <p>
      1. {@link MyCalen#getNextDayofWeek(int, int, java.time.DayOfWeek)}. Получим {@link Date}, след. воскресенье 23:57.<br>
-     {@link ThreadPoolTaskScheduler}, запланируем new {@link WeekPCStats} и new {@link MailIISLogsCleaner} на это время и на это время -1 час.<br><br>
+     {@link ThreadPoolTaskScheduler}, запланируем new {@link WeekStats} и new {@link MailIISLogsCleaner} на это время и на это время -1 час.<br><br>
      2. {@link FileSystemWorker#readFileToList(java.lang.String)}. Прочитаем exit.last, если он существует.
      {@link TForms#fromArray(java.util.List, boolean)} <br><br>
      3. {@link MyCalen#checkDay(ScheduledExecutorService)} метрика. <br>
@@ -186,7 +186,7 @@ public class AppInfoOnLoad implements Runnable {
         StringBuilder stringBuilder = new StringBuilder();
         ThreadPoolTaskScheduler threadPoolTaskScheduler = AppComponents.threadConfig().getTaskScheduler();
     
-        threadPoolTaskScheduler.scheduleWithFixedDelay(new WeekPCStats(ConstantsFor.SQL_SELECTFROM_PCUSERAUTO), nextStartDay, delay);
+        threadPoolTaskScheduler.scheduleWithFixedDelay(new WeekStats(ConstantsFor.SQL_SELECTFROM_PCUSERAUTO), nextStartDay, delay);
         stringBuilder.append(nextStartDay).append(" WeekPCStats() start\n");
         nextStartDay = new Date(nextStartDay.getTime() - TimeUnit.HOURS.toMillis(1));
     

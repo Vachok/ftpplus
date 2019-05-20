@@ -8,5 +8,6 @@ package ru.vachok.networker.statistics;
 public interface StatsOfNetAndUsers {
     
     
-    String getStats();
+    String getPCStats();
+    String getInetStats();
 }

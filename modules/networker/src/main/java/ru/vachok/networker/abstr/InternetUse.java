@@ -20,7 +20,9 @@ public interface InternetUse {
 
     MysqlDataSource MYSQL_DATA_SOURCE = new RegRuMysql().getDataSourceSchema(ConstantsFor.DBBASENAME_U0466446_VELKOM);
     
-    String SQL_DELETE = "SELECT DISTINCT `Date`, `ip`, `response`, `method`, `site`, `bytes` FROM `inetstats` WHERE `ip` LIKE ? ORDER BY `inetstats`.`Date` DESC";
+    String SQL_SELECT_DIST = "SELECT DISTINCT `Date`, `ip`, `response`, `method`, `site`, `bytes` FROM `inetstats` WHERE `ip` LIKE ? ORDER BY `inetstats`.`Date` DESC";
+    
+    String SQL_DEL_CLIENTS1GOOGLE = "DELETE  FROM `inetstats` WHERE `site` LIKE '%clients1.google%'";
 
     String getUsage(String userCred);
 
@@ -28,9 +30,8 @@ public interface InternetUse {
 
     default int cleanTrash() {
         MessageToUser messageToUser = new MessageCons(getClass().getSimpleName());
-        String sqlDel = "DELETE  FROM `inetstats` WHERE `site` LIKE '%clients1.google%'";
         try (Connection c = MYSQL_DATA_SOURCE.getConnection();
-             PreparedStatement preparedStatement = c.prepareStatement(sqlDel)
+             PreparedStatement preparedStatement = c.prepareStatement(SQL_DEL_CLIENTS1GOOGLE)
         ) {
             int retQuery = preparedStatement.executeUpdate();
             messageToUser.info(getClass().getSimpleName() + ".cleanTrash" , "deleting: " , " = " + retQuery);

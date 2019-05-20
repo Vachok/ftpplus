@@ -18,7 +18,7 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.TelnetStarter;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.SpeedChecker;
-import ru.vachok.networker.statistics.WeekPCStats;
+import ru.vachok.networker.statistics.WeekStats;
 import ru.vachok.networker.systray.SystemTrayHelper;
 import ru.vachok.stats.SaveLogsToDB;
 
@@ -39,7 +39,7 @@ import java.util.concurrent.*;
  {@link ru.vachok.networker.config} - 1 : {@link ThreadConfig} <br>
  {@link ru.vachok.networker.fileworks} - 1 : {@link FileSystemWorker} <br>
  {@link ru.vachok.networker.net} - 1 : {@link MyServer} <br>
- {@link ru.vachok.networker.services} - 2 : {@link MessageLocal}, {@link WeekPCStats} <br>
+ {@link ru.vachok.networker.services} - 2 : {@link MessageLocal}, {@link WeekStats} <br>
  {@link ru.vachok.networker.systray} - 1 : {@link SystemTrayHelper}
  <p>
  
@@ -108,7 +108,7 @@ public class IntoApplication {
      <p>
      1. {@link AppComponents#threadConfig()}. Управление запуском и трэдами. <br><br>
      <b>Runnable</b><br>
-     2. {@link IntoApplication#getWeekPCStats()} собирает инфо о скорости в файл. Если воскресенье, запускает {@link WeekPCStats} <br><br>
+     2. {@link IntoApplication#getWeekPCStats()} собирает инфо о скорости в файл. Если воскресенье, запускает {@link WeekStats} <br><br>
      <b>Далее:</b><br>
      3. {@link AppComponents#threadConfig()} (4. {@link ThreadConfig#getTaskExecutor()}) - запуск <b>Runnable</b> <br>
      5. {@link ThreadConfig#getTaskExecutor()} - запуск {@link AppInfoOnLoad}. <br><br>
@@ -134,11 +134,11 @@ public class IntoApplication {
      <p>
      Запуск new {@link SpeedChecker.ChkMailAndUpdateDB}, через {@link Executors#unconfigurableExecutorService(java.util.concurrent.ExecutorService)}
      <p>
-     Если {@link LocalDate#getDayOfWeek()} equals {@link DayOfWeek#SUNDAY}, запуск new {@link WeekPCStats}
+     Если {@link LocalDate#getDayOfWeek()} equals {@link DayOfWeek#SUNDAY}, запуск new {@link WeekStats}
      */
     private static void getWeekPCStats() {
         if (LocalDate.now().getDayOfWeek().equals(DayOfWeek.SUNDAY)) {
-            AppComponents.threadConfig().execByThreadConfig(new WeekPCStats(ConstantsFor.SQL_SELECTFROM_PCUSERAUTO));
+            AppComponents.threadConfig().execByThreadConfig(new WeekStats(ConstantsFor.SQL_SELECTFROM_PCUSERAUTO));
         }
     }
     
