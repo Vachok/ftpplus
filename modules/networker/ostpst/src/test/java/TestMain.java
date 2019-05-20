@@ -4,7 +4,7 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 import ru.vachok.ostpst.ConstantsOst;
 import ru.vachok.ostpst.MakeConvertOrCopy;
-import ru.vachok.ostpst.OstToPst;
+import ru.vachok.ostpst.OstToPstStart;
 import ru.vachok.ostpst.fileworks.ConverterImpl;
 import ru.vachok.ostpst.utils.CharsetEncoding;
 import ru.vachok.ostpst.utils.TFormsOST;
@@ -23,9 +23,9 @@ import java.util.List;
     @Test(enabled = true)
     public void launchProg() {
         File file = new File(new String("c:\\Users\\ikudryashov\\OneDrive\\Документы\\Файлы Outlook\\ksamarchenko@velkomfood.ru.ost".getBytes(), Charset.forName("UTF-8")));
-        OstToPst ostToPst = new OstToPst();
+        OstToPstStart ostToPstStart = new OstToPstStart();
         try {
-            OstToPst.main(new String[]{"-t"});
+            OstToPstStart.main(new String[]{"-t"});
         }
         catch (Exception e) {
             Assert.assertNotNull(e);

@@ -13,6 +13,7 @@ import java.nio.file.Path;
 
 class ParserObjects {
     
+    
     private Path recordPath;
     
     private PSTObject object;
@@ -40,8 +41,10 @@ class ParserObjects {
             stringBuilder.append(e.getMessage() + "\n" + new TFormsOST().fromArray(e));
         }
         stringBuilder.append(objID).append(" id parsed.").append("\n");
+    
         stringBuilder.append(object.getDisplayName()).append("\n");
         stringBuilder.append(object.getDescriptorNode()).append(" descriptor node");
+    
         return stringBuilder.toString();
     }
     

@@ -32,14 +32,6 @@ class ParserPSTMessages extends ParserFoldersWithAttachments {
     
     private String fileName;
     
-    private ParserPSTMessages(PSTFile pstFile) {
-        super(pstFile);
-    }
-    
-    private ParserPSTMessages(String fileName) {
-        super(fileName);
-    }
-    
     ParserPSTMessages(String fileName, long folderID) {
         super(fileName);
         this.fileName = fileName;
@@ -50,6 +42,14 @@ class ParserPSTMessages extends ParserFoldersWithAttachments {
             e.printStackTrace();
             new MenuConsoleLocal(fileName).showMenu();
         }
+    }
+    
+    private ParserPSTMessages(PSTFile pstFile) {
+        super(pstFile);
+    }
+    
+    private ParserPSTMessages(String fileName) {
+        super(fileName);
     }
     
     void saveMessageToDisk(Vector<PSTObject> pstObjs, String name, Path fldPath) {
@@ -78,7 +78,7 @@ class ParserPSTMessages extends ParserFoldersWithAttachments {
         Map<Long, String> retMap = new ConcurrentHashMap<>();
         for (PSTObject folderChild : pstFolder.getChildren(pstFolder.getContentCount())) {
             PSTMessage pstMessage = (PSTMessage) folderChild;
-            retMap.put(pstMessage.getDescriptorNodeId(), pstMessage.getSubject() + " (from: " + pstMessage.getSenderName() + ")");
+            retMap.put(pstMessage.getDescriptorNodeId(), pstMessage.getSubject() + " (from: " + pstMessage.getSenderName() + " sent: " + pstMessage.getMessageDeliveryTime() + ")");
         }
         ;
         FileSystemWorkerOST.writeMapToFile(pstFolder.getDisplayName() + ".txt", retMap);
@@ -121,7 +121,9 @@ class ParserPSTMessages extends ParserFoldersWithAttachments {
             PSTMessage pstMessage = (PSTMessage) objectLoaded;
             stringBuilder.append(pstMessage.getTransportMessageHeaders());
             stringBuilder.append(pstMessage.hasAttachments()).append(" attached files");
-            try (OutputStream outputStream = new FileOutputStream(pathStr + pstMessage.getDescriptorNodeId() + "_message.txt")) {
+            try (OutputStream outputStream = new FileOutputStream(pathStr + pstMessage.getDescriptorNodeId() + "_message.txt");
+                 PrintStream printStream = new PrintStream(outputStream, true, "Windows-1251")
+            ) {
                 outputStream.write(pstMessage.toString().getBytes());
             }
             catch (Exception e) {

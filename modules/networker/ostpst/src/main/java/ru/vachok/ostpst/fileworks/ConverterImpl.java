@@ -8,6 +8,7 @@ import com.pff.PSTFile;
 import ru.vachok.ostpst.ConstantsOst;
 import ru.vachok.ostpst.MakeConvertOrCopy;
 import ru.vachok.ostpst.utils.CharsetEncoding;
+import ru.vachok.ostpst.utils.FileSystemWorkerOST;
 import ru.vachok.ostpst.utils.TFormsOST;
 
 import java.awt.*;
@@ -107,7 +108,10 @@ public class ConverterImpl implements MakeConvertOrCopy {
     
     @Override public String showContacts() {
         ParserContacts parserContacts = new ParserContacts(fileName);
-        return (parserContacts.call());
+        String callContacts = parserContacts.call();
+        System.out.println(callContacts);
+        FileSystemWorkerOST.writeStringToFile("contacts.txt", callContacts);
+        return callContacts;
     }
     
     @Override public String getObjectItemsByID(long id) {

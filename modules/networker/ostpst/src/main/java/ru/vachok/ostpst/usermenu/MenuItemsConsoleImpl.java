@@ -21,7 +21,7 @@ import java.util.Scanner;
 
 /**
  @since 16.05.2019 (12:06) */
-class MenuItemsConsoleImpl implements MenuItems {
+public class MenuItemsConsoleImpl implements MenuItems {
     
     
     private static UserMenu userMenu = new MenuConsoleLocal();
@@ -65,7 +65,6 @@ class MenuItemsConsoleImpl implements MenuItems {
     
     private void ansIsOneSaveContToCSV() {
         System.out.println("Enter name of csv, for contacts save:");
-        
         try (Scanner scanner = new Scanner(System.in)) {
             while (scanner.hasNextLine()) {
                 String csvFileName = scanner.nextLine();
@@ -88,19 +87,13 @@ class MenuItemsConsoleImpl implements MenuItems {
                 new MenuItemsConsoleImpl(fileName).ansIsOneSaveContToCSV();
             }
             else if (userAns == 2) {
-                MakeConvertOrCopy makeConvertOrCopy = new ConverterImpl(fileName);
-                makeConvertOrCopy.showContacts();
-                new MenuConsoleLocal(fileName).showMenu();
+                new MenuItemsConsoleImpl(fileName).ansTwo();
             }
             else if (userAns == 3) {
-                MakeConvertOrCopy makeConvertOrCopy = new ConverterImpl(fileName);
-                System.out.println(makeConvertOrCopy.showListFolders());
-                new MenuConsoleLocal(fileName).showMenu();
+                new MenuItemsConsoleImpl(fileName).ansThree();
             }
             else if (userAns == 4) {
-                MakeConvertOrCopy makeConvertOrCopy = new ConverterImpl(fileName);
-                makeConvertOrCopy.getDequeFolderNamesAndWriteToDisk();
-                new MenuConsoleLocal(fileName).showMenu();
+                new MenuItemsConsoleImpl(fileName).ansIsFour();
             }
             else if (userAns == 5) {
                 new MenuItemsConsoleImpl(fileName).ansIsFiveParseByID();
@@ -126,6 +119,21 @@ class MenuItemsConsoleImpl implements MenuItems {
             }
         }
         userMenu.showMenu();
+    }
+    
+    private void ansTwo() {
+        makeConvertOrCopy.showContacts();
+        askUser();
+    }
+    
+    private void ansThree() {
+        System.out.println(makeConvertOrCopy.showListFolders());
+        askUser();
+    }
+    
+    private void ansIsFour() throws IOException {
+        makeConvertOrCopy.getDequeFolderNamesAndWriteToDisk();
+        askUser();
     }
     
     private void ansEightSearch() {
@@ -157,8 +165,8 @@ class MenuItemsConsoleImpl implements MenuItems {
     }
     
     private void ansIsSixGetListMSGSubj(long folderID) {
-        System.out.println("Enter folder id: ");
         if (folderID == 0) {
+            System.out.println("Enter folder id: ");
             try (Scanner scanner = new Scanner(System.in)) {
                 folderID = scanner.nextLong();
                 List<String> subjectWithID = makeConvertOrCopy.getListMessagesSubjectWithID(folderID);

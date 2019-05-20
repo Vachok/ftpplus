@@ -50,7 +50,7 @@ jar {
     version = project.version
     manifest {
         attributes(
-            'Main-Class': 'ru.vachok.ostpst.OstToPst',
+            'Main-Class': 'ru.vachok.ostpst.OstToPstStart',
             'Class-Path': configurations.runtime.collect() { 'lib/' + it.name }.join('')
         )
     }

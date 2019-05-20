@@ -29,10 +29,18 @@ public class CharsetEncoding {
         this.charsetOnInput = "UTF-8";
     }
     
-    public String getStrInAnotherCharset(String strToConvert) {
-        Charset inputChars = Charset.forName(charsetOnInput);
-        Charset outputChars;
     
+    public String getStrInAnotherCharset(String strToConvert) {
+        Charset inputChars;
+        if (charsetOnInput.equals("default")) {
+            inputChars = Charset.defaultCharset();
+        }
+        else {
+            inputChars = Charset.forName(charsetOnInput);
+        }
+        
+        Charset outputChars;
+        
         if (charsetOnOutput.equals("default")) {
             outputChars = Charset.defaultCharset();
         }

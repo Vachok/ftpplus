@@ -31,8 +31,8 @@ public class MenuConsoleLocal implements UserMenu {
     }
     
     @Override public void showMenu() {
-        System.out.println("Please, enter a filename: ");
         if (fileName == null) {
+            System.out.println("Please, enter a filename: ");
             try (Scanner scanner = new Scanner(System.in)) {
                 while (scanner.hasNextLine()) {
                     String nextLine = scanner.nextLine();
@@ -40,15 +40,7 @@ public class MenuConsoleLocal implements UserMenu {
                         exitProgram(fileName);
                     }
                     else {
-                        this.fileName = nextLine;
-                        FileWorker fileWorker = new FileChecker(fileName);
-                        String chkFileStr = fileWorker.chkFile();
-                        if (chkFileStr.contains("true")) {
-                            messageToUser.info(getClass().getSimpleName() + ".showMenu", "chkFileStr", " = " + chkFileStr);
-                            this.fileName = chkFileStr.split("Filename is: ")[1].split("\n")[0];
-                            MenuItems menuItems = new MenuItemsConsoleImpl(fileName);
-                            menuItems.askUser();
-                        }
+                        startMenu(nextLine);
                     }
                 }
             }
@@ -58,6 +50,21 @@ public class MenuConsoleLocal implements UserMenu {
         }
         else {
             callFromConstructor();
+        }
+    }
+    
+    private void startMenu(String nextLine) {
+        this.fileName = nextLine;
+        FileWorker fileWorker = new FileChecker(fileName);
+        String chkFileStr = fileWorker.chkFile();
+        if (chkFileStr.contains("true")) {
+            messageToUser.info(getClass().getSimpleName() + ".showMenu", "chkFileStr", " = " + chkFileStr);
+            this.fileName = chkFileStr.split("Filename is: ")[1].split("\n")[0];
+            MenuItems menuItems = new MenuItemsConsoleImpl(fileName);
+            menuItems.askUser();
+        }
+        else {
+            System.err.println("Incorrect file, please enter another filename, or type exit for exit: ");
         }
     }
     

@@ -56,7 +56,6 @@ public class FileChecker implements FileWorker {
     }
     
     private boolean lockFile(String fileName) {
-        File file = new File(fileName);
         return file.setReadOnly();
     }
     
@@ -67,12 +66,12 @@ public class FileChecker implements FileWorker {
             size = Files.size(file.toPath());
         }
         catch (IOException | InvalidPathException e) {
-            System.err.println(e.getMessage() + "\n");
+            System.err.println(e.getMessage() + ": " + fileName);
             String anotherCharset = new CharsetEncoding("windows-1251", "utf-8").getStrInAnotherCharset(fileName);
             this.file = new File(anotherCharset);
             this.fileName = anotherCharset;
             size = file.length();
-            System.out.println("FileName is converted CP1251-UTF8: " + anotherCharset);
+            System.out.println("Trying to decode name CP1251-UTF8: " + anotherCharset);
         }
         BigDecimal valueOf = BigDecimal.valueOf((float) size).divide(BigDecimal.valueOf(1024 * 1024 * 1024)).setScale(2, HALF_EVEN);
         return valueOf.doubleValue();
