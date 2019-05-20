@@ -85,6 +85,7 @@ public class PCUserResolver extends ADSrv implements InfoWorker {
         File pcNameFile = null;
         try {
             pcNameFile = Files.createTempFile(pcName, ".tmp").toFile();
+            pcNameFile.deleteOnExit();
         }
         catch (IOException e) {
             e.printStackTrace();
