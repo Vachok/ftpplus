@@ -3,7 +3,7 @@
 package ru.vachok.networker.abstr;
 
 
-import java.io.IOException;
+import java.net.Socket;
 
 
 /**
@@ -11,6 +11,7 @@ import java.io.IOException;
 public interface ConnectToMe {
     
     
-    void runSocket() throws IOException;
-    void reconSock() throws IOException, InterruptedException;
+    void runSocket();
+    void reconSock();
+    Socket getSocket();
 }

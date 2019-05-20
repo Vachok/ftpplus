@@ -223,11 +223,11 @@ class ConditionChecker implements InfoWorker {
         String strDate = onList.get(0);
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat();
         simpleDateFormat.applyPattern("yyyy-MM-dd");
-        Date dateFormat = new Date(Long.parseLong(AppComponents.getProps().getProperty(ConstantsNet.PR_LASTSCAN)));
+        Date dateFormat = new Date(Long.parseLong(AppComponents.getProps().getProperty(ConstantsNet.PR_LASTSCAN, String.valueOf(System.currentTimeMillis()))));
         try {
             dateFormat = simpleDateFormat.parse(strDate.split(" ")[0]);
         }
-        catch (ParseException | ArrayIndexOutOfBoundsException e) {
+        catch (ParseException | ArrayIndexOutOfBoundsException | NumberFormatException e) {
             messageToUser.error(e.getMessage());
         }
     

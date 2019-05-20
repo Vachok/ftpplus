@@ -426,6 +426,17 @@ public enum ConstantsFor {
     
     public static final int EXIT_USEREXIT = 222;
     
+    public static final String PR_TESTSERVER = "testserver";
+    
+    public static final String PR_LPORT = "lport";
+    
+    public static final String STR_NOT_READY_YET = "Not ready yet";
+    
+    /**
+     Файл уникальных записей из БД velkom-pcuserauto
+     */
+    public static final String FILENAME_PCAUTODISTXT = "pcautodis.txt";
+    
     static final String STR_FINISH = " is finish";
     
     private static final String[] STRINGS_TODELONSTART = {"visit_", ".tmp", ".log", ".tv"};
@@ -465,6 +476,8 @@ public enum ConstantsFor {
     public static final String COMMAND_CALCTIME = "calctime:";
     
     public static final String STR_ERROR = "ERROR";
+    
+    public static final String METHNAME_RUNSOCKET = ".runSocket";
     
     /**
      @return {@link #MAIL_RULES}

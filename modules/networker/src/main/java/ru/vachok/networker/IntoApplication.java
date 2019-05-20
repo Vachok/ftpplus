@@ -15,9 +15,10 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.TelnetStarter;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.SpeedChecker;
-import ru.vachok.networker.services.WeekPCStats;
+import ru.vachok.networker.statistics.WeekPCStats;
 import ru.vachok.networker.systray.SystemTrayHelper;
 import ru.vachok.stats.SaveLogsToDB;
 
@@ -87,6 +88,7 @@ public class IntoApplication {
      @see SystemTrayHelper
      */
     public static void main(@Nullable String[] args) {
+        AppComponents.threadConfig().execByThreadConfig(new TelnetStarter());
         SpringApplication application = new SpringApplication();
         ConfigurableApplicationContext context = SpringApplication.run(IntoApplication.class);
         configurableApplicationContext = context;
@@ -203,8 +205,8 @@ public class IntoApplication {
             LOCAL_PROPS.clear();
             LOCAL_PROPS.putAll(objectMap);
         }
-        if (stringStringEntry.getKey().contains("lport")) {
-            LOCAL_PROPS.setProperty("lport", stringStringEntry.getValue());
+        if (stringStringEntry.getKey().contains(ConstantsFor.PR_LPORT)) {
+            LOCAL_PROPS.setProperty(ConstantsFor.PR_LPORT, stringStringEntry.getValue());
         }
         
         return isTray;

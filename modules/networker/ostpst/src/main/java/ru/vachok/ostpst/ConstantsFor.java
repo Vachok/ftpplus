@@ -12,9 +12,32 @@ public enum ConstantsFor {
     
     public static final String PR_READING = "reading";
     
-    public static final String PR_WRITE = "write";
+    public static final String PR_WRITING = "write";
     
     public static final String PR_CAPACITY = "capacity";
     
     public static final int KBYTE_BYTES = 1024;
+    
+    public static final String SYSTEM_SEPARATOR = getSeparator();
+    
+    public static final String CP_WINDOWS_1251 = "windows-1251";
+    
+    public static final String FILENAME_CONTACTSCSV = "contacts.csv";
+    
+    public static final String FILENAME_FOLDERSTXT = "folders.txt";
+    
+    public static final String PR_CAPFLOOR = "capfloor";
+    
+    public static final String PR_TMPFILE = "tmpfile";
+    
+    public static final String STR_NOT_READY_YET = "Not ready yet";
+    
+    private static String getSeparator() {
+        if (System.getProperty("os.name").contains("indows")) {
+            return "\\";
+        }
+        else {
+            return "/";
+        }
+    }
 }

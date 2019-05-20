@@ -7,7 +7,7 @@ plugins {
 }
 
 group 'ru.vachok.ostpst'
-version '8.0.1919'
+version '8.0.1920'
 
 sourceCompatibility = 1.8
 
@@ -17,18 +17,18 @@ repositories {
     }
     mavenCentral()
 }
-mainClassName="ru.vachok.ostpst.OstToPst"
+mainClassName = "ru.vachok.ostpst.OstToPst"
 sourceSets {
     main {
         resources {
             srcDirs = ["src/main/java", "src/main/resources"]
-            includes = ["**/*.fxml", "**/*.css", "**/*.properties", "**/*.png","**/*.html","**/*.sql","**/*.jar"]
+            includes = ["**/*.fxml", "**/*.css", "**/*.properties", "**/*.png", "**/*.html", "**/*.sql", "**/*.jar"]
         }
     }
-    test{
-        resources{
+    test {
+        resources {
             srcDirs = ["src/test/java", "src/test/resources"]
-            includes = ["**/*.fxml", "**/*.css", "**/*.properties", "**/*.png","**/*.jar"]
+            includes = ["**/*.fxml", "**/*.css", "**/*.properties", "**/*.png", "**/*.jar"]
         }
     }
 }
@@ -56,7 +56,7 @@ jar {
     }
     from configurations.compile.collect() { it.isDirectory() ? it : zipTree(it) }
 }
-test{
+test {
     useTestNG()
     setMaxParallelForks(3)
     failFast = false

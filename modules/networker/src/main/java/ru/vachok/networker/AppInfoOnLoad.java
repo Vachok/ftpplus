@@ -18,11 +18,10 @@ import ru.vachok.networker.mailserver.MailIISLogsCleaner;
 import ru.vachok.networker.net.DiapazonedScan;
 import ru.vachok.networker.net.NetMonitorPTV;
 import ru.vachok.networker.net.ScanOnline;
-import ru.vachok.networker.net.TelnetStarter;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.MyCalen;
-import ru.vachok.networker.services.WeekPCStats;
+import ru.vachok.networker.statistics.WeekPCStats;
 
 import java.io.File;
 import java.lang.management.ManagementFactory;
@@ -81,7 +80,6 @@ public class AppInfoOnLoad implements Runnable {
     
     private static String unixThreadInfo = System.getProperty("os.name");
     
-
     static {
         int scansDelay = Integer.parseInt(APP_PROPS.getProperty(ConstantsFor.PR_SCANSINMIN, "111"));
         if (scansDelay <= 0) {
@@ -92,7 +90,6 @@ public class AppInfoOnLoad implements Runnable {
             thisDelay = 85;
         }
     }
-    
     
     public static String getUnixThreadInfo() {
         return unixThreadInfo;
@@ -135,7 +132,6 @@ public class AppInfoOnLoad implements Runnable {
     @Override
     public void run() {
         infoForU(AppCtx.scanForBeansAndRefreshContext());
-        AppComponents.threadConfig().execByThreadConfig(new TelnetStarter());
     }
     
     @Override public String toString() {

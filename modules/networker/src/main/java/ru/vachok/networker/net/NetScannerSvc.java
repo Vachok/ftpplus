@@ -5,10 +5,8 @@ package ru.vachok.networker.net;
 
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
-import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.messenger.email.ESender;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ExitApp;
@@ -19,6 +17,7 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.actions.ActionCloseMsg;
+import ru.vachok.networker.statistics.PCStats;
 import ru.vachok.networker.systray.MessageToTray;
 
 import java.io.File;
@@ -36,7 +35,6 @@ import java.sql.SQLException;
 import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
 
 
 /**
@@ -286,7 +284,7 @@ public class NetScannerSvc {
         sb.append("CLASS_NAME='").append(CLASS_NAME).append('\'');
         sb.append(", LOCAL_PROPS=").append(LOCAL_PROPS.equals(AppComponents.getProps()));
         sb.append(", METH_NAME_GET_PCS_ASYNC='").append(METH_NAME_GET_PCS_ASYNC).append('\'');
-        sb.append(", FILENAME_PCAUTODISTXT='").append(ConstantsNet.FILENAME_PCAUTODISTXT).append('\'');
+        sb.append(", FILENAME_PCAUTODISTXT='").append(ConstantsFor.FILENAME_PCAUTODISTXT).append('\'');
         sb.append(", PC_NAMES_SET=").append(PC_NAMES_SET.size());
         sb.append(", onLinePCsNum=").append(onLinePCsNum);
         sb.append(", unusedNamesTree=").append(unusedNamesTree.size());
@@ -397,31 +395,6 @@ public class NetScannerSvc {
         });
     }
     
-    
-    /**
-     Статистика по-сканированию.
-     <p>
-     {@link TForms#fromArray(java.util.Map, boolean)}. Преобразуем в строку {@link ConstantsNet#COMPNAME_USERS_MAP}. <br>
-     {@link TForms#fromArrayUsers(java.util.concurrent.ConcurrentMap, boolean)} - преобразуем {@link ConstantsNet#PC_U_MAP}. <br>
-     Создадим еще 2 {@link String}, {@code msgTimeSp} - сколько времени прощло после инициализации. {@code valueOfPropLastScan} - когда было последнее
-     сканирование.
-     Инфо из {@link #LOCAL_PROPS}. <br>
-     Все строки + {@link TForms#fromArray(java.util.Properties, boolean)} - {@link #LOCAL_PROPS}, добавим в {@link ArrayList} {@code toFileList}.
-     <p>
-     {@link Properties#setProperty(java.lang.String, java.lang.String)} = {@code valueOfPropLastScan}. <br>
-     <p>
-     {@link MessageToTray#info(java.lang.String, java.lang.String, java.lang.String)}
-     <p>
-     {@link LastNetScan#setTimeLastScan(java.util.Date)} - сейчас. <br>
-     {@link NetScannerSvc#countStat()}. <br>
-     {@link FileSystemWorker#writeFile(java.lang.String, java.lang.String)}
-     {@link ESender#info(java.lang.String, java.lang.String, java.lang.String)}.
-     <p>
-     {@link FileSystemWorker#writeFile(java.lang.String, java.util.List)} - {@code toFileList}. <br>
-     {@link FileSystemWorker#writeFile(java.lang.String, java.util.stream.Stream)} - {@link #unusedNamesTree}.
-     <p>
-     {@link MessageSwing#infoTimer(int, java.lang.String)}
-     */
     @SuppressWarnings("MagicNumber")
     private void runAfterAllScan() {
         float upTime = (float) (TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime)) / ConstantsFor.ONE_HOUR_IN_MIN;
@@ -440,7 +413,7 @@ public class NetScannerSvc {
     
         LastNetScan.getLastNetScan().setTimeLastScan(new Date());
     
-        countStat();
+        System.out.println(new PCStats().getStats());
     
         boolean isLastModSet = new File(ConstantsFor.class.getSimpleName() + ConstantsFor.FILEEXT_PROPERTIES).setLastModified(ConstantsFor.DELAY);
         boolean isForceSaved = new AppComponents().updateProps(LOCAL_PROPS);
@@ -485,42 +458,6 @@ public class NetScannerSvc {
     }
     
     
-    /**
-     Подсчёт статистики по {@link ConstantsFor#FILENAME_VELKOMPCUSERAUTOTXT}
-     <p>
-     {@link List} readFileAsList - читает по-строкам {@link ConstantsFor#FILENAME_VELKOMPCUSERAUTOTXT}.
-     <p>
-     {@link Stream#distinct()} - запись файла {@link ConstantsNet#FILENAME_PCAUTODISTXT}.
-     <p>
-     {@link MessageCons#info(java.lang.String, java.lang.String, java.lang.String)} - покажем в консоль. <br>
-     Копируем на 111.1, if {@link String#contains(java.lang.CharSequence)} "home". {@link ConstantsFor#thisPC()}.
-     */
-    private void countStat() {
-        List<String> readFileAsList = FileSystemWorker.readFileToList(new File(ConstantsFor.FILENAME_VELKOMPCUSERAUTOTXT).getAbsolutePath());
-        FileSystemWorker.writeFile(ConstantsNet.FILENAME_PCAUTODISTXT, readFileAsList.parallelStream().distinct());
-        if (ConstantsFor.thisPC().toLowerCase().contains("home")) {
-            String toCopy = "\\\\10.10.111.1\\Torrents-FTP\\" + ConstantsNet.FILENAME_PCAUTODISTXT;
-            FileSystemWorker.copyOrDelFile(new File(ConstantsNet.FILENAME_PCAUTODISTXT), toCopy, true);
-        }
-        messageToUser.info(countFreqOfUsers());
-    }
-    
-    private String countFreqOfUsers() {
-        List<String> pcAutoThisList = FileSystemWorker.readFileToList(new File(ConstantsNet.FILENAME_PCAUTODISTXT).getAbsolutePath());
-        Collections.sort(pcAutoThisList);
-        Collection<String> stringCollect = new LinkedList<>();
-        for (String pcUser : pcAutoThisList) {
-            stringCollect.add(Collections.frequency(pcAutoThisList, pcUser) + " times = " + pcUser);
-        }
-        String absolutePath = new File("possible_users.txt").getAbsolutePath();
-        boolean fileWritten = FileSystemWorker.writeFile(absolutePath, stringCollect.stream());
-        if (fileWritten) {
-            return absolutePath;
-        }
-        else {
-            return "Error. File not written!\n\n\n\n" + absolutePath;
-        }
-    }
     
     
     /**

@@ -1,4 +1,11 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.ostpst;
+
+
+import java.io.IOException;
+import java.util.Deque;
+import java.util.List;
 
 
 /**
@@ -8,17 +15,35 @@ public interface MakeConvert {
     
     String convertToPST();
     
-    void saveFolders();
+    String saveFolders() throws IOException;
     
-    void saveContacts();
+    /**
+     @param csvFileName can be null
+     @return path to saved csv
+     */
+    String saveContacts(String csvFileName);
     
     void setFileName(String fileName);
     
-    long copyierWithSave();
+    String copyierWithSave(String newCP);
     
-    String folderContentItemsString();
+    String cleanPreviousCopy();
+    
+    String showListFolders();
     
     default void testMe() {
         System.out.println("true = " + true);
     }
+    
+    Deque<String> getDequeFolderNamesAndWriteToDisk() throws IOException;
+    
+    String showContacts();
+    
+    String getObjectItemsByID(long id);
+    
+    List<String> getListMessagesSubjectWithID(long folderID);
+    
+    String searchMessages(long folderID, long msgID);
+    
+    String searchMessages(long folderID, String msgSubject);
 }

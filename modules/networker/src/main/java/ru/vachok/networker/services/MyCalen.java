@@ -188,7 +188,7 @@ public abstract class MyCalen {
      */
     public static String checkDay(ScheduledExecutorService scheduledExecutorService) {
         messageToUser.info(ConstantsFor.STR_INPUT_OUTPUT, "", ConstantsFor.JAVA_LANG_STRING_NAME);
-        Date dateStart = getNextDayofWeek(10, 0, DayOfWeek.MONDAY);
+        Date dateStart = getNextDayofWeek(8, 30, DayOfWeek.MONDAY);
         DateFormat dateFormat = new SimpleDateFormat("MM.dd, hh:mm", Locale.getDefault());
         long delayMs = dateStart.getTime() - System.currentTimeMillis();
         String msg = dateFormat.format(dateStart) + " pcuserauto (" + TimeUnit.MILLISECONDS.toHours(delayMs) + " delay hours)";

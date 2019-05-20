@@ -1,6 +1,6 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.services;
+package ru.vachok.networker.statistics;
 
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
@@ -12,6 +12,7 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.DataBaseRegSQL;
 import ru.vachok.networker.accesscontrol.inetstats.InetStatSorter;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.systray.MessageToTray;
 
 import java.io.*;
@@ -26,8 +27,8 @@ import java.util.List;
  <p>
  Устойчивость (in/(in+out)): 2/(2+6) = 0.25 (устойчив на 75%);
  @since 08.12.2018 (0:12) */
-public class WeekPCStats implements Runnable, DataBaseRegSQL {
-
+public class WeekPCStats implements Runnable, DataBaseRegSQL, StatsOfNetAndUsers {
+    
     /**
      Лист только с именами ПК
      */
@@ -59,6 +60,10 @@ public class WeekPCStats implements Runnable, DataBaseRegSQL {
         this.fileName = ConstantsFor.FILENAME_VELKOMPCUSERAUTOTXT;
     }
     
+    public WeekPCStats() {
+        this.sql = ConstantsFor.SQL_SELECTFROM_PCUSERAUTO;
+    }
+    
     
     static {
         try {
@@ -68,7 +73,14 @@ public class WeekPCStats implements Runnable, DataBaseRegSQL {
             messageToUser = new MessageLocal(WeekPCStats.class.getSimpleName());
         }
     }
-
+    
+    
+    @Override public String getStats() {
+        this.fileName = ConstantsFor.FILENAME_VELKOMPCUSERAUTOTXT;
+        selectFrom();
+        return new TForms().fromArray(PC_NAMES_IN_TABLE, false);
+    }
+    
     @Override
     public void run() {
         AppComponents.threadConfig().thrNameSet("week");
@@ -93,25 +105,25 @@ public class WeekPCStats implements Runnable, DataBaseRegSQL {
                 }
                 try(ResultSet r = p.executeQuery()){
                     try(OutputStream outputStream = new FileOutputStream(file)){
-                        try(PrintWriter printWriter = new PrintWriter(outputStream , true)){
+                        try (PrintStream printStream = new PrintStream(outputStream, true)) {
                             while(r.next()){
                                 if (sql.equals(ConstantsFor.SQL_SELECTFROM_PCUSERAUTO)) {
-                                    pcUserAutoSelect(r, printWriter);
+                                    pcUserAutoSelect(r, printStream);
                                 }
                                 if(sql.equals(SQL_DISTINCTIPSWITHINET)) {
-                                    printWriter.println(r.getString("ip"));
+                                    printStream.println(r.getString("ip"));
                                 }
                                 if(sql.contains("SELECT * FROM `inetstats` WHERE `ip` LIKE")) {
-                                    printWriter.print(new java.util.Date(Long.parseLong(r.getString("Date"))));
-                                    printWriter.print(",");
-                                    printWriter.print(r.getString(ConstantsFor.DBFIELB_RESPONSE));
-                                    printWriter.print(",");
-                                    printWriter.print(r.getString("bytes"));
-                                    printWriter.print(",");
-                                    printWriter.print(r.getString(ConstantsFor.DBFIELD_METHOD));
-                                    printWriter.print(",");
-                                    printWriter.print(r.getString("site"));
-                                    printWriter.println();
+                                    printStream.print(new java.util.Date(Long.parseLong(r.getString("Date"))));
+                                    printStream.print(",");
+                                    printStream.print(r.getString(ConstantsFor.DBFIELB_RESPONSE));
+                                    printStream.print(",");
+                                    printStream.print(r.getString("bytes"));
+                                    printStream.print(",");
+                                    printStream.print(r.getString(ConstantsFor.DBFIELD_METHOD));
+                                    printStream.print(",");
+                                    printStream.print(r.getString("site"));
+                                    printStream.println();
                                 }
                             }
                         }
@@ -119,7 +131,7 @@ public class WeekPCStats implements Runnable, DataBaseRegSQL {
                 }
             }
         }catch(SQLException | IOException e){
-            messageToUser.error(new TForms().fromArray(e, false));
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".selectFrom", e));
         }
         String toCopy = "\\\\10.10.111.1\\Torrents-FTP\\" + file.getName();
         if(!ConstantsFor.thisPC().toLowerCase().contains("home")){
@@ -146,13 +158,13 @@ public class WeekPCStats implements Runnable, DataBaseRegSQL {
             selectFrom();
             totalBytes = totalBytes + file.length();
             new MessageLocal(getClass().getSimpleName())
-                .info(fileName , file.length() / ConstantsFor.KBYTE + " kb" , "total megabytes: " + totalBytes / ConstantsFor.KBYTE / ConstantsFor.KBYTE);
+                .info(fileName, file.length() / ConstantsFor.KBYTE + " kb", "total kb: " + totalBytes / ConstantsFor.KBYTE);
             if(file.length() > 10) {
                 this.sql = "DELETE FROM `inetstats` WHERE `ip` LIKE '" + ip + "'";
                 selectFrom();
             }
         }
-        new MessageSwing().infoTimer(ConstantsFor.ONE_DAY_HOURS * 3 , "ALL STATS SAVED\n" + totalBytes / ConstantsFor.KBYTE / ConstantsFor.KBYTE + " Megabytes");
+        new MessageSwing().infoTimer(ConstantsFor.ONE_DAY_HOURS * 3, "ALL STATS SAVED\n" + totalBytes / ConstantsFor.KBYTE + " Kbytes");
     }
 
 
@@ -194,16 +206,10 @@ public class WeekPCStats implements Runnable, DataBaseRegSQL {
     }
     
     
-    private void pcUserAutoSelect(ResultSet r , PrintWriter printWriter) throws SQLException {
-        printWriter.println(new StringBuilder()
-            .append(r.getString(1))
-            .append(" at ")
-            .append(r.getString(6))
-            .append(") ")
-            .append(r.getString(2))
-            .append(" ")
-            .append(r.getString(3)));
-        PC_NAMES_IN_TABLE.add(r.getString(2) + " " + r.getString(3));
+    private void pcUserAutoSelect(ResultSet r, PrintStream prStream) throws SQLException {
+        String toPrint = r.getString(2) + " " + r.getString(3);
+        PC_NAMES_IN_TABLE.add(toPrint);
+        prStream.println(toPrint);
     }
     
     

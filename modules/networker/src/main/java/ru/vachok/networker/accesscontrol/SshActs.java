@@ -109,7 +109,13 @@ public class SshActs {
     }
 
     public String getNumOfHours() {
-        return numOfHours;
+        try {
+            long l = Long.parseLong(numOfHours);
+            return String.valueOf(Math.abs(l));
+        }
+        catch (Exception e) {
+            return String.valueOf(Math.abs(Integer.MAX_VALUE));
+        }
     }
 
     public void setNumOfHours(String numOfHours) {

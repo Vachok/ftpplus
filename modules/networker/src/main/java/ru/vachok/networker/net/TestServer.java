@@ -6,8 +6,7 @@ package ru.vachok.networker.net;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.IntoApplication;
+import ru.vachok.networker.*;
 import ru.vachok.networker.abstr.ConnectToMe;
 import ru.vachok.networker.abstr.MakeConvert;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -16,13 +15,11 @@ import ru.vachok.networker.services.MessageLocal;
 
 import java.awt.*;
 import java.io.*;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.URL;
-import java.net.URLClassLoader;
+import java.net.*;
 import java.util.Enumeration;
 import java.util.Scanner;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 
@@ -31,10 +28,12 @@ import java.util.concurrent.TimeoutException;
  <p>
  
  @since 10.05.2019 (13:48) */
-public class TestServer implements ConnectToMe, Closeable {
+public class TestServer implements ConnectToMe {
     
     
     private static final String JAR = "file:///G:/My_Proj/FtpClientPlus/modules/networker/ostpst/build/libs/";
+    
+    private static final String METHNAME_ACCEPTSOC = ".accepSoc";
     
     private ServerSocket serverSocket;
     
@@ -46,101 +45,121 @@ public class TestServer implements ConnectToMe, Closeable {
     
     public TestServer(int listenPort) {
         this.listenPort = listenPort;
+        try {
+            this.serverSocket = new ServerSocket(listenPort);
+        }
+        catch (IOException e) {
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".TestServer", e));
+        }
     }
     
     private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
     
-    public void accepSoc(Socket socket) {
-        this.socket = socket;
+    @Override public Socket getSocket() {
+        throw new IllegalComponentStateException("14.05.2019 (20:30)");
+    }
+    
+    @Override public void runSocket() {
+        try {
+            this.socket = serverSocket.accept();
+            do {
+                accepSoc();
+            } while (!socket.isClosed());
+        }
+        catch (Exception e) {
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ConstantsFor.METHNAME_RUNSOCKET, e));
+        }
+    }
+    
+    @Override public void reconSock() {
+        this.socket = null;
+        try {
+            this.socket = serverSocket.accept();
+            accepSoc();
+        }
+        catch (IOException e) {
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".reconSock", e));
+        }
+    }
+    
+    private void accepSoc() {
+        int timeout = 0;
+        try {
+            socket.setTcpNoDelay(true);
+            timeout = (int) (ConstantsFor.DELAY * ConstantsFor.DELAY) * 100;
+            socket.setSoTimeout(timeout);
+        }
+        catch (SocketException e) {
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + METHNAME_ACCEPTSOC, e));
+        }
+        
         try {
             InputStream iStream = socket.getInputStream();
             Scanner scanner = new Scanner(iStream);
             OutputStream outputStream = socket.getOutputStream();
             PrintStream printStream = new PrintStream(outputStream);
-            System.setIn(iStream);
             this.printStreamF = printStream;
-            System.setOut(printStreamF);
-            System.out.println("Socket " + socket.getInetAddress() + ":" + socket.getPort() + " is connected");
+            printStreamF.println("Socket " + socket.getInetAddress() + ":" + socket.getPort() + " is connected");
+            printStreamF.println("Press ENTER. \nOr press something else for quit...");
+            printStreamF.println(TimeUnit.MILLISECONDS.toSeconds(timeout) + " socket timeout in second");
             while (socket.isConnected()) {
                 if (scanner.hasNextLine()) {
-                    scanInput(scanner.nextLine(), socket);
+                    System.setIn(socket.getInputStream());
+                    System.setOut(printStreamF);
+                    scanInput(scanner.nextLine());
+                    printStream.print(iStream.read());
                 }
-                printStream.print(iStream.read());
+                if (!socket.isConnected()) {
+                    System.setOut(System.err);
+                }
             }
-            socket.close();
         }
         catch (IOException e) {
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + METHNAME_ACCEPTSOC, e));
             System.setOut(System.err);
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".accepSoc", e));
+            reconSock();
         }
-        finally {
-            printStreamF.close();
-            System.setOut(System.err);
-        }
-        
+        System.out.println(socket.isClosed() + " socket");
+        System.setOut(System.err);
+        reconSock();
     }
     
-    /**
-     Closes this stream and releases any system resources associated
-     with it. If the stream is already closed then invoking this
-     method has no effect.
-     
-     <p> As noted in {@link AutoCloseable#close()}, cases where the
-     close may fail require careful attention. It is strongly advised
-     to relinquish the underlying resources and to internally
-     <em>mark</em> the {@code Closeable} as closed, prior to throwing
-     the {@code IOException}.
-     
-     @throws IOException if an I/O error occurs
-     */
-    @Override public void close() throws IOException {
-        this.printStreamF.close();
-        this.socket.close();
-        this.serverSocket.close();
-    }
-    
-    @Override public void runSocket() throws IOException {
-        ServerSocket socketSrv = new ServerSocket(listenPort);
-        this.serverSocket = socketSrv;
-        socketSrv.setReuseAddress(true);
-        while (true) {
-            accepSoc(socketSrv.accept());
-        }
-    }
-    
-    @Override public void reconSock() {
-        throw new IllegalComponentStateException("13.05.2019 (12:57)");
-    }
-    
-    private void scanInput(String scannerLine, Socket socket) throws IOException {
+    private void scanInput(String scannerLine) throws IOException {
         if (scannerLine.contains("test")) {
             printStreamF.println("test OK");
-            this.accepSoc(socket);
+            accepSoc();
         }
         else if (scannerLine.contains("refresh")) {
             ConfigurableApplicationContext context = IntoApplication.getConfigurableApplicationContext();
             context.stop();
             context.close();
-            context = new SpringApplication().run(IntoApplication.class);
+            context = SpringApplication.run(IntoApplication.class);
             new IntoApplication().setConfigurableApplicationContext(context);
             context.start();
-            this.accepSoc(socket);
+            accepSoc();
         }
-        else if (scannerLine.equals("����\u0006")) {
-            socket.close();
+        else if (scannerLine.equals("q")) {
+            System.setOut(System.err);
+            accepSoc();
         }
-        else if (scannerLine.contains("ssh")) {
+        else if (scannerLine.equals("ssh")) {
             try {
+                System.setOut(System.err);
                 printStreamF.println(new AppComponents().sshActs().getProviderTraceStr());
+                accepSoc();
             }
             catch (InterruptedException | TimeoutException | ExecutionException e) {
+                System.setOut(System.err);
                 messageToUser.error(e.getMessage());
-                this.accepSoc(socket);
+                socket.close();
             }
         }
-        else if (scannerLine.contains("con")) {
-            System.setOut(System.out);
-            accepSoc(socket);
+        else if (scannerLine.contains("ssh:")) {
+            System.setOut(System.err);
+            String sshCom = scannerLine.split(":")[1];
+            SSHFactory buildSSH = new SSHFactory.Builder(ConstantsFor.IPADDR_SRVGIT, sshCom, getClass().getSimpleName()).build();
+            printStreamF.println(getClass().getSimpleName() + ".scanInput buildSSH  = " + buildSSH.call());
+            accepSoc();
         }
         else {
             scanMore(scannerLine);
@@ -148,14 +167,33 @@ public class TestServer implements ConnectToMe, Closeable {
     }
     
     private void scanMore(String line) throws IOException {
-        String fileName = "\\\\192.168.14.10\\IT-Backup\\Mailboxes_users\\a.a.zavadskaya.pst";
-        printStreamF.println(fileName);
         if (line.equals("ost")) {
+            String fileName = "\\\\192.168.14.10\\IT-Backup\\Mailboxes_users\\a.a.zavadskaya.pst";
             printStreamF.println("OSTTOPST: ");
             printStreamF.println(loadLib());
             MakeConvert ostPst = new OstLoader(fileName);
             ostPst.copyierWithSave();
             ostPst.showFileContent();
+            accepSoc();
+        }
+        else if (line.equalsIgnoreCase("scan")) {
+            String netScan = NetScannerSvc.getInst().toString();
+            printStreamF.println(netScan);
+            accepSoc();
+        }
+        else if (line.equalsIgnoreCase("thr")) {
+            printStreamF.println(AppComponents.threadConfig().toString());
+            accepSoc();
+        }
+        else if (line.equalsIgnoreCase("exitapp")) {
+            new ExitApp(getClass().getSimpleName()).run();
+        }
+        else if (line.isEmpty()) {
+            accepSoc();
+        }
+        else {
+            printStreamF.close();
+            System.setOut(System.err);
         }
     }
     
@@ -169,7 +207,7 @@ public class TestServer implements ConnectToMe, Closeable {
             Enumeration<URL> resources = urlClassLoader.getResources(libName);
             while (resources.hasMoreElements()) {
                 URL url = resources.nextElement();
-                stringBuilder.append(new File(JAR + libName).length() / 1024 + "/");
+                stringBuilder.append(new File(JAR + libName).length() / 1024).append("/");
                 try (InputStream inputStream = url.openStream();
                      InputStreamReader reader = new InputStreamReader(inputStream);
                      BufferedReader bufferedReader = new BufferedReader(reader)
