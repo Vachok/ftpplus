@@ -5,8 +5,7 @@ package ru.vachok.ostpst.usermenu;
 
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.ostpst.ConstantsFor;
-import ru.vachok.ostpst.OstToPst;
+import ru.vachok.ostpst.ConstantsOst;
 import ru.vachok.ostpst.fileworks.FileChecker;
 import ru.vachok.ostpst.fileworks.FileWorker;
 import ru.vachok.ostpst.utils.CharsetEncoding;
@@ -32,7 +31,6 @@ public class MenuConsoleLocal implements UserMenu {
     }
     
     @Override public void showMenu() {
-        FileWorker fileWorker = new FileChecker(fileName);
         System.out.println("Please, enter a filename: ");
         if (fileName == null) {
             try (Scanner scanner = new Scanner(System.in)) {
@@ -43,7 +41,11 @@ public class MenuConsoleLocal implements UserMenu {
                     }
                     else {
                         this.fileName = nextLine;
-                        if (fileWorker.chkFile(nextLine)) {
+                        FileWorker fileWorker = new FileChecker(fileName);
+                        String chkFileStr = fileWorker.chkFile();
+                        if (chkFileStr.contains("true")) {
+                            messageToUser.info(getClass().getSimpleName() + ".showMenu", "chkFileStr", " = " + chkFileStr);
+                            this.fileName = chkFileStr.split("Filename is: ")[1].split("\n")[0];
                             MenuItems menuItems = new MenuItemsConsoleImpl(fileName);
                             menuItems.askUser();
                         }
@@ -52,8 +54,6 @@ public class MenuConsoleLocal implements UserMenu {
             }
             catch (RuntimeException e) {
                 messageToUser.error(e.getMessage());
-                new Thread(()->new OstToPst()).start();
-                Thread.currentThread().interrupt();
             }
         }
         else {
@@ -63,8 +63,9 @@ public class MenuConsoleLocal implements UserMenu {
     
     private void callFromConstructor() {
         FileWorker fileWorker = new FileChecker(fileName);
-        this.fileName = new CharsetEncoding(ConstantsFor.CP_WINDOWS_1251).getStrInAnotherCharset(fileName);
-        if (fileWorker.chkFile(fileName)) {
+        this.fileName = new CharsetEncoding(ConstantsOst.CP_WINDOWS_1251).getStrInAnotherCharset(fileName);
+        String chkFileStr = fileWorker.chkFile();
+        if (chkFileStr.contains("true")) {
             MenuItems menuItems = new MenuItemsConsoleImpl(fileName);
             menuItems.askUser();
         }

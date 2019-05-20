@@ -6,9 +6,9 @@ package ru.vachok.ostpst.fileworks;
 import com.pff.*;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.ostpst.ConstantsFor;
+import ru.vachok.ostpst.ConstantsOst;
 import ru.vachok.ostpst.utils.CharsetEncoding;
-import ru.vachok.ostpst.utils.FileSystemWorker;
+import ru.vachok.ostpst.utils.FileSystemWorkerOST;
 
 import java.io.*;
 import java.nio.charset.Charset;
@@ -59,7 +59,7 @@ class ParserContacts implements Callable<String> {
     
     @Override public String call() {
         if (fileContactsName.isEmpty()) {
-            this.fileContactsName = ConstantsFor.FILENAME_CONTACTSCSV;
+            this.fileContactsName = ConstantsOst.FILENAME_CONTACTSCSV;
             return getPathAndWriteHeaderToDisk();
         }
         else if (fileContactsName.equals("showContacts")) {
@@ -79,7 +79,7 @@ class ParserContacts implements Callable<String> {
             Deque<String> folderNamesAndWriteToDisk = rootFolder.getDeqFolderNamesWithIDAndWriteToDisk();
             for (String s : folderNamesAndWriteToDisk) {
                 String folderNameFromDeq = s.toLowerCase();
-                folderNameFromDeq = new CharsetEncoding(ConstantsFor.CP_WINDOWS_1251).getStrInAnotherCharset(folderNameFromDeq);
+                folderNameFromDeq = new CharsetEncoding(ConstantsOst.CP_WINDOWS_1251).getStrInAnotherCharset(folderNameFromDeq);
     
                 if (folderNameFromDeq.contains(contStr)) {
                     s = s.split("id ")[1];
@@ -91,7 +91,7 @@ class ParserContacts implements Callable<String> {
             }
         }
         catch (PSTException | IOException e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".showContacts", e));
+            messageToUser.error(FileSystemWorkerOST.error(getClass().getSimpleName() + ".showContacts", e));
             stringBuilder.append(e.getMessage());
         }
         return stringBuilder.toString();
@@ -120,8 +120,8 @@ class ParserContacts implements Callable<String> {
         
         while (pstFolderIterator.hasNext()) {
             PSTFolder folder = pstFolderIterator.next();
-            String folderDisplayName = new String(folder.getDisplayName().getBytes(), Charset.forName(ConstantsFor.CP_WINDOWS_1251));
-            String strCont = new String("онтакты".getBytes(), Charset.forName(ConstantsFor.CP_WINDOWS_1251));
+            String folderDisplayName = new String(folder.getDisplayName().getBytes(), Charset.forName(ConstantsOst.CP_WINDOWS_1251));
+            String strCont = new String("онтакты".getBytes(), Charset.forName(ConstantsOst.CP_WINDOWS_1251));
             boolean nameContacts = folderDisplayName.contains(strCont);
             boolean hasSubs = folder.hasSubfolders();
     
@@ -134,7 +134,7 @@ class ParserContacts implements Callable<String> {
                     writeContactsToFile(folder, printStream);
                 }
                 catch (PSTException e) {
-                    messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + METHNAME_FOLDERSREAD, e));
+                    messageToUser.error(FileSystemWorkerOST.error(getClass().getSimpleName() + METHNAME_FOLDERSREAD, e));
                 }
             }
         }

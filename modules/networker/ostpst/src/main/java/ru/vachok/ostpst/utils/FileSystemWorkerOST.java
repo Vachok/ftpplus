@@ -5,7 +5,7 @@ package ru.vachok.ostpst.utils;
 
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.ostpst.ConstantsFor;
+import ru.vachok.ostpst.ConstantsOst;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -20,18 +20,16 @@ import java.util.stream.Stream;
 
 /**
  @since 07.05.2019 (15:27) */
-public abstract class FileSystemWorker {
+public abstract class FileSystemWorkerOST {
     
     
-    public static final String SYSTEM_DELIMITER = getDelimiter();
-    
-    private static MessageToUser messageToUser = new MessageCons(FileSystemWorker.class.getSimpleName());
+    private static MessageToUser messageToUser = new MessageCons(FileSystemWorkerOST.class.getSimpleName());
     
     public static String error(String fileName, Exception e) {
         Path rootPath = Paths.get(".").toAbsolutePath().normalize();
         String toString = rootPath.toAbsolutePath().normalize().toString();
-        rootPath = Paths.get(toString + ConstantsFor.SYSTEM_SEPARATOR + fileName);
-        String fromArray = new TForms().fromArray(e);
+        rootPath = Paths.get(toString + ConstantsOst.SYSTEM_SEPARATOR + fileName);
+        String fromArray = new TFormsOST().fromArray(e);
         writeStringToFile(rootPath.toString(), fromArray);
         return rootPath.toAbsolutePath().toString();
     }
@@ -46,13 +44,13 @@ public abstract class FileSystemWorker {
                     outputStream.write(x.getBytes());
                 }
                 catch (IOException e) {
-                    stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e));
+                    stringBuilder.append(e.getMessage()).append("\n").append(new TFormsOST().fromArray(e));
                 }
             });
             stringBuilder.append("Strings written to: ").append(pathWritten.toAbsolutePath().normalize());
         }
         catch (IOException e) {
-            stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e));
+            stringBuilder.append(e.getMessage()).append("\n").append(new TFormsOST().fromArray(e));
         }
         return stringBuilder.toString();
     }
@@ -67,13 +65,13 @@ public abstract class FileSystemWorker {
                     outputStream.write("\n".getBytes());
                 }
                 catch (IOException e) {
-                    stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e));
+                    stringBuilder.append(e.getMessage()).append("\n").append(new TFormsOST().fromArray(e));
                 }
             });
             stringBuilder.append(pathWrite);
         }
         catch (IOException e) {
-            stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e));
+            stringBuilder.append(e.getMessage()).append("\n").append(new TFormsOST().fromArray(e));
         }
         return stringBuilder.toString();
     }

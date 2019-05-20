@@ -5,7 +5,7 @@ package ru.vachok.ostpst;
 
 /**
  @since 02.05.2019 (19:52) */
-public enum ConstantsFor {
+public enum ConstantsOst {
     ;
     
     public static final String FILENAME_PROPERTIES = "app.properties";

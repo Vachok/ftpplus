@@ -8,9 +8,9 @@ import com.pff.PSTFile;
 import com.pff.PSTFolder;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.ostpst.ConstantsFor;
+import ru.vachok.ostpst.ConstantsOst;
 import ru.vachok.ostpst.usermenu.MenuConsoleLocal;
-import ru.vachok.ostpst.utils.FileSystemWorker;
+import ru.vachok.ostpst.utils.FileSystemWorkerOST;
 
 import java.io.IOException;
 import java.util.Deque;
@@ -50,7 +50,7 @@ class ParserFoldersWithAttachments {
             this.pstFile = new PSTFile(fileName);
         }
         catch (PSTException | IOException e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".PSTContentToFoldersWithAttachments", e));
+            messageToUser.error(FileSystemWorkerOST.error(getClass().getSimpleName() + ".PSTContentToFoldersWithAttachments", e));
             new MenuConsoleLocal(fileName).showMenu();
         }
     }
@@ -78,7 +78,7 @@ class ParserFoldersWithAttachments {
         for (String s : split) {
             retDeq.add(s.replaceAll("(\\Q|\\E)*(\\d\\Q: \\E)", ""));
         }
-        messageToUser.info(FileSystemWorker.writeStringToFile(ConstantsFor.FILENAME_FOLDERSTXT, showFoldersIerarchy));
+        messageToUser.info(FileSystemWorkerOST.writeStringToFile(ConstantsOst.FILENAME_FOLDERSTXT, showFoldersIerarchy));
         return retDeq;
     }
     

@@ -4,7 +4,7 @@ package ru.vachok.ostpst.fileworks;
 import com.pff.PSTException;
 import com.pff.PSTFile;
 import com.pff.PSTObject;
-import ru.vachok.ostpst.utils.TForms;
+import ru.vachok.ostpst.utils.TFormsOST;
 
 import java.awt.*;
 import java.io.IOException;
@@ -37,7 +37,7 @@ class ParserObjects {
             this.object = loadedObject;
         }
         catch (IOException | PSTException e) {
-            stringBuilder.append(e.getMessage() + "\n" + new TForms().fromArray(e));
+            stringBuilder.append(e.getMessage() + "\n" + new TFormsOST().fromArray(e));
         }
         stringBuilder.append(objID).append(" id parsed.").append("\n");
         stringBuilder.append(object.getDisplayName()).append("\n");

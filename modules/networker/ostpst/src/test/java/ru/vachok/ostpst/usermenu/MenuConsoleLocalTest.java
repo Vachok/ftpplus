@@ -5,7 +5,7 @@ package ru.vachok.ostpst.usermenu;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
-import ru.vachok.ostpst.ConstantsFor;
+import ru.vachok.ostpst.ConstantsOst;
 import ru.vachok.ostpst.utils.CharsetEncoding;
 
 import java.io.FileInputStream;
@@ -20,7 +20,7 @@ public class MenuConsoleLocalTest {
     
     @Test(enabled = false)
     public void checkCons() {
-        UserMenu userMenu = new MenuConsoleLocal(new CharsetEncoding(ConstantsFor.CP_WINDOWS_1251)
+        UserMenu userMenu = new MenuConsoleLocal(new CharsetEncoding(ConstantsOst.CP_WINDOWS_1251)
             .getStrInAnotherCharset("tmp_t.p.magdich.pst"));
         try (InputStream inputStream = new FileInputStream("scanner");
              Scanner scanner = new Scanner(inputStream);

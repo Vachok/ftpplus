@@ -3,8 +3,8 @@ package ru.vachok.ostpst.fileworks;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
-import ru.vachok.ostpst.MakeConvert;
-import ru.vachok.ostpst.utils.TForms;
+import ru.vachok.ostpst.MakeConvertOrCopy;
+import ru.vachok.ostpst.utils.TFormsOST;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -25,14 +25,14 @@ public class ParserFoldersWithAttachmentsTest {
             System.err.println(e.getMessage());
         }
         String fileName = properties.getProperty("file");
-        MakeConvert makeConvert = new ConverterImpl(fileName);
-        String itemsString = makeConvert.showListFolders();
+        MakeConvertOrCopy makeConvertOrCopy = new ConverterImpl(fileName);
+        String itemsString = makeConvertOrCopy.showListFolders();
         Deque<String> deqFolderNames = null;
         try {
-            deqFolderNames = makeConvert.getDequeFolderNamesAndWriteToDisk();
+            deqFolderNames = makeConvertOrCopy.getDequeFolderNamesAndWriteToDisk();
         }
         catch (IOException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            Assert.assertNull(e, e.getMessage() + "\n" + new TFormsOST().fromArray(e));
         }
         Assert.assertNotNull(deqFolderNames.getFirst());
     }

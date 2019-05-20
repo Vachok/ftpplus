@@ -26,5 +26,4 @@ public class OstToPst {
         System.out.println("Hello. This is ost to pst converter.");
         userMenu.showMenu();
     }
-    
 }

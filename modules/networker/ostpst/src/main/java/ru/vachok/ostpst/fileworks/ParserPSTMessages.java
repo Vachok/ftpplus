@@ -6,10 +6,10 @@ package ru.vachok.ostpst.fileworks;
 import com.pff.*;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.ostpst.ConstantsFor;
+import ru.vachok.ostpst.ConstantsOst;
 import ru.vachok.ostpst.usermenu.MenuConsoleLocal;
-import ru.vachok.ostpst.utils.FileSystemWorker;
-import ru.vachok.ostpst.utils.TForms;
+import ru.vachok.ostpst.utils.FileSystemWorkerOST;
+import ru.vachok.ostpst.utils.TFormsOST;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -56,7 +56,7 @@ class ParserPSTMessages extends ParserFoldersWithAttachments {
         
         for (PSTObject object : pstObjs) {
             PSTMessage message = (PSTMessage) object;
-            String fileOutPath = fldPath.toAbsolutePath() + FileSystemWorker.SYSTEM_DELIMITER + message.getDescriptorNodeId() + ".msg";
+            String fileOutPath = fldPath.toAbsolutePath() + ConstantsOst.SYSTEM_SEPARATOR + message.getDescriptorNodeId() + ".msg";
             
             try (OutputStream outputStream = new FileOutputStream(fileOutPath)) {
                 if (object.getMessageClass().toLowerCase().contains("note")) {
@@ -81,7 +81,7 @@ class ParserPSTMessages extends ParserFoldersWithAttachments {
             retMap.put(pstMessage.getDescriptorNodeId(), pstMessage.getSubject() + " (from: " + pstMessage.getSenderName() + ")");
         }
         ;
-        FileSystemWorker.writeMapToFile(pstFolder.getDisplayName() + ".txt", retMap);
+        FileSystemWorkerOST.writeMapToFile(pstFolder.getDisplayName() + ".txt", retMap);
         return retMap;
     }
     
@@ -104,7 +104,7 @@ class ParserPSTMessages extends ParserFoldersWithAttachments {
             showMessage(msgID);
         }
         catch (NullPointerException | IndexOutOfBoundsException e) {
-            stringBuilder.append("Key: ").append(searchKey).append(" not found... Index =").append(indexSrch).append("\n").append(new TForms().fromArray(e));
+            stringBuilder.append("Key: ").append(searchKey).append(" not found... Index =").append(indexSrch).append("\n").append(new TFormsOST().fromArray(e));
         }
         return stringBuilder.toString();
     }
@@ -112,7 +112,7 @@ class ParserPSTMessages extends ParserFoldersWithAttachments {
     String searchMessage(long messageID) {
         StringBuilder stringBuilder = new StringBuilder();
         Path pathRoot = Paths.get(".").normalize().toAbsolutePath();
-        String pathStr = pathRoot.toString() + ConstantsFor.SYSTEM_SEPARATOR + "attachments" + ConstantsFor.SYSTEM_SEPARATOR;
+        String pathStr = pathRoot + ConstantsOst.SYSTEM_SEPARATOR + "attachments" + ConstantsOst.SYSTEM_SEPARATOR;
         
         stringBuilder.append("\n***");
         stringBuilder.append("Searching by message ID: ").append(messageID).append("\n");
@@ -126,12 +126,12 @@ class ParserPSTMessages extends ParserFoldersWithAttachments {
             }
             catch (Exception e) {
                 stringBuilder.append(e.getMessage()).append("\n");
-                stringBuilder.append(new TForms().fromArray(e));
+                stringBuilder.append(new TFormsOST().fromArray(e));
             }
             saveAttachment(pathStr, pstMessage, stringBuilder);
         }
         catch (IOException | PSTException e) {
-            stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e));
+            stringBuilder.append(e.getMessage()).append("\n").append(new TFormsOST().fromArray(e));
         }
         return stringBuilder.toString();
     }
@@ -155,7 +155,7 @@ class ParserPSTMessages extends ParserFoldersWithAttachments {
                 stringBuilder.append(nameAtt);
             }
             catch (IOException e) {
-                messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".saveMessageToDisk", e));
+                messageToUser.error(FileSystemWorkerOST.error(getClass().getSimpleName() + ".saveMessageToDisk", e));
             }
         }
     }

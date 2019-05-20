@@ -10,7 +10,7 @@ import java.util.List;
 
 /**
  @since 30.04.2019 (9:19) */
-public interface MakeConvert {
+public interface MakeConvertOrCopy {
     
     
     String convertToPST();

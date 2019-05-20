@@ -50,7 +50,7 @@ public class CharsetEncoding {
     
     public String getCharsetNames() {
         SortedMap<String, Charset> charsetSortedMap = Charset.availableCharsets();
-        return new TForms().fromArray(charsetSortedMap.keySet());
+        return new TFormsOST().fromArray(charsetSortedMap.keySet());
     }
     
     public byte[] getInUnicode(String strToConvert) {
