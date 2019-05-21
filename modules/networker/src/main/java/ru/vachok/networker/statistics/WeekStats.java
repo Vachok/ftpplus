@@ -6,7 +6,6 @@ package ru.vachok.networker.statistics;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.DataBaseRegSQL;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.systray.MessageToTray;
@@ -59,9 +58,8 @@ public class WeekStats implements Runnable, StatsOfNetAndUsers {
     
     @Override public String getPCStats() {
         DataBaseRegSQL dataBaseRegSQL = new PCStats();
-        this.fileName = ConstantsFor.FILENAME_VELKOMPCUSERAUTOTXT;
         int selectFrom = dataBaseRegSQL.selectFrom();
-        return new TForms().fromArray(PC_NAMES_IN_TABLE, false);
+        return dataBaseRegSQL.toString();
     }
     
     @Override public String getInetStats() {
