@@ -35,11 +35,6 @@ public class PhotoConverterSRV {
     
     private final Collection<String> psCommands = new ArrayList<>();
     
-    /**
-     Файл-фото
-     */
-    private File adFotoFile;
-    
     private Properties properties;
     
     /**
@@ -52,9 +47,9 @@ public class PhotoConverterSRV {
         File outFile = new File(pathName + rawFileName + ".jpg");
         String fName = "jpg";
         try {
-            boolean write = ImageIO.write(resizedImage(rawImage), fName, outFile);
+            boolean write = ImageIO.write(scaledImage(rawImage), fName, outFile);
             if (write) {
-                String msg = outFile.getAbsolutePath() + " written";
+                String msg = outFile.getAbsolutePath() + ConstantsFor.STR_WRITTEN;
                 messageToUser.info(msg);
                 msg = "Import-RecipientDataProperty -Identity " +
                     rawFileName + " -Picture -FileData ([Byte[]] $(Get-Content -Path “C:\\newmailboxes\\foto\\" +
@@ -78,15 +73,6 @@ public class PhotoConverterSRV {
     
     public PhotoConverterSRV() {
         this.properties = AppComponents.getProps();
-    }
-    
-    @SuppressWarnings("unused")
-    public File getAdFotoFile() {
-        return adFotoFile;
-    }
-    
-    public void setAdFotoFile(File adFotoFile) {
-        this.adFotoFile = adFotoFile;
     }
     
     /**
@@ -138,12 +124,12 @@ public class PhotoConverterSRV {
         }
     }
     
-    private BufferedImage resizedImage(BufferedImage bufferedImage) {
-        int newW = 113;
-        int newH = 154;
+    private BufferedImage scaledImage(BufferedImage bufferedImage) {
+        int newWight = 113;
+        int newHeight = 154;
         
-        Image scaledImageTMP = bufferedImage.getScaledInstance(newW, newH, Image.SCALE_SMOOTH);
-        BufferedImage scaledImage = new BufferedImage(newW, newH, BufferedImage.TYPE_INT_RGB);
+        Image scaledImageTMP = bufferedImage.getScaledInstance(newWight, newHeight, Image.SCALE_SMOOTH);
+        BufferedImage scaledImage = new BufferedImage(newWight, newHeight, BufferedImage.TYPE_INT_RGB);
         Graphics2D g2d = scaledImage.createGraphics();
         boolean drawImage = g2d.drawImage(scaledImageTMP, 0, 0, Color.WHITE, null);
         g2d.dispose();

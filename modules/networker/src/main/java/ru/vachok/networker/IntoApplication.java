@@ -70,7 +70,6 @@ public class IntoApplication {
         return configurableApplicationContext;
     }
     
-    
     public void setConfigurableApplicationContext(ConfigurableApplicationContext configurableApplicationContext) {
         IntoApplication.configurableApplicationContext = configurableApplicationContext;
     }

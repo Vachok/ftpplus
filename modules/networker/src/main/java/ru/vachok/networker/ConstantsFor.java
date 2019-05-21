@@ -479,6 +479,8 @@ public enum ConstantsFor {
     
     public static final String METHNAME_RUNSOCKET = ".runSocket";
     
+    public static final String STR_WRITTEN = " written";
+    
     /**
      @return {@link #MAIL_RULES}
      */
