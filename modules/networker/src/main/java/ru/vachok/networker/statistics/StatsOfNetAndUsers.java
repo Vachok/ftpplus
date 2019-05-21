@@ -9,5 +9,6 @@ public interface StatsOfNetAndUsers {
     
     
     String getPCStats();
+    
     String getInetStats();
 }

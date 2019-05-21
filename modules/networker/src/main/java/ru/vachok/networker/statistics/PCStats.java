@@ -3,7 +3,6 @@
 package ru.vachok.networker.statistics;
 
 
-import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
@@ -12,7 +11,10 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
 
 import java.io.*;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 
 
@@ -41,18 +43,6 @@ public class PCStats implements DataBaseRegSQL {
     public String getPCStats() {
         System.out.println(statsOfNetAndUsers.getPCStats());
         return countStat();
-    }
-    
-    @Override public void setSavepoint(Connection connection) {
-    
-    }
-    
-    @Override public MysqlDataSource getDataSource() {
-        return null;
-    }
-    
-    @Override public Savepoint getSavepoint(Connection connection) {
-        return null;
     }
     
     @Override public int selectFrom() {

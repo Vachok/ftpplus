@@ -4,9 +4,11 @@ package ru.vachok.networker.statistics;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.DataBaseRegSQL;
 import ru.vachok.networker.accesscontrol.inetstats.InetStatSorter;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -32,54 +34,81 @@ public class InetStats implements Runnable, DataBaseRegSQL {
     
     private StatsOfNetAndUsers statsOfNetAndUsers = new WeekStats();
     
+    private DataConnectTo dataConnectTo = new RegRuMysql();
+    
+    private Connection connectionF;
+    
+    private Savepoint savepoint;
+    
     private String fileName;
     
     private String sql;
     
     private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
     
+    @Override public String toString() {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(FileSystemWorker.readFile(FILENAME_INETSTATSIPCSV));
+        return stringBuilder.toString();
+    }
+    
     @Override public void run() {
-        messageToUser.info(getClass().getSimpleName() + "in kbytes. ", new File(FILENAME_INETSTATSIPCSV).getAbsolutePath(), " = " + readInetStats());
+        long iPsWithInet = readIPsWithInet();
+        messageToUser.info(getClass().getSimpleName() + "in kbytes. ", new File(FILENAME_INETSTATSIPCSV).getAbsolutePath(), " = " + iPsWithInet);
+        if (iPsWithInet > 0) {
+            readInetStatsRSetToCSV();
+        }
+        else {
+            throw new IllegalStateException("File " + FILENAME_INETSTATSIPCSV + " have size: " + iPsWithInet);
+        }
         AppComponents.threadConfig().execByThreadConfig(new InetStatSorter());
     }
     
-    @Override public void setSavepoint(Connection connection) {
-        throw new IllegalComponentStateException("20.05.2019 (9:54)");
-    }
-    
-    @Override public MysqlDataSource getDataSource() {
-        return new RegRuMysql().getDataSource();
-    }
-    
-    @Override public Savepoint getSavepoint(Connection connection) {
-        throw new IllegalComponentStateException("20.05.2019 (9:55)");
-    }
-    
     @Override public int selectFrom() {
-        try (Connection connection = getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
-             PreparedStatement p = connection.prepareStatement(SQL_DISTINCTIPSWITHINET);
-             ResultSet r = p.executeQuery();
-             OutputStream outputStream = new FileOutputStream(fileName);
-             PrintStream printStream = new PrintStream(outputStream, true)
-        ) {
-            if (sql.contains("SELECT * FROM `inetstats` WHERE `ip` LIKE")) {
-                printStream.print(new java.util.Date(Long.parseLong(r.getString("Date"))));
-                printStream.print(",");
-                printStream.print(r.getString(ConstantsFor.DBFIELB_RESPONSE));
-                printStream.print(",");
-                printStream.print(r.getString("bytes"));
-                printStream.print(",");
-                printStream.print(r.getString(ConstantsFor.DBFIELD_METHOD));
-                printStream.print(",");
-                printStream.print(r.getString("site"));
-                printStream.println();
-            }
-            if (sql.equals(SQL_DISTINCTIPSWITHINET)) {
-                printStream.println(r.getString("ip"));
+        try (Connection connection = getSavepointConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
+            try (PreparedStatement p = connection.prepareStatement(sql)) {
+                try (ResultSet r = p.executeQuery()) {
+                    try (OutputStream outputStream = new FileOutputStream(fileName)) {
+                        try (PrintStream printStream = new PrintStream(outputStream, true)) {
+                            while (r.next()) {
+                                if (sql.contains("SELECT * FROM `inetstats` WHERE `ip` LIKE")) {
+                                    printStream.print(new java.util.Date(Long.parseLong(r.getString("Date"))));
+                                    printStream.print(",");
+                                    printStream.print(r.getString(ConstantsFor.DBFIELB_RESPONSE));
+                                    printStream.print(",");
+                                    printStream.print(r.getString("bytes"));
+                                    printStream.print(",");
+                                    printStream.print(r.getString(ConstantsFor.DBFIELD_METHOD));
+                                    printStream.print(",");
+                                    printStream.print(r.getString("site"));
+                                    printStream.println();
+                                }
+                                if (sql.equals(SQL_DISTINCTIPSWITHINET)) {
+                                    printStream.println(r.getString("ip"));
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
         catch (SQLException | IOException e) {
             messageToUser.error(e.getMessage());
+    
+        }
+        return -1;
+    }
+    
+    @Override public int deleteFrom() {
+        try (Connection connection = getSavepointConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
+            try (PreparedStatement p = connection.prepareStatement(sql)) {
+                int executeUpdate = p.executeUpdate();
+                return executeUpdate;
+            }
+        }
+        catch (SQLException e) {
+            messageToUser.error(e.getMessage());
+            releaseSavepoint();
         }
         return -1;
     }
@@ -88,22 +117,37 @@ public class InetStats implements Runnable, DataBaseRegSQL {
         throw new IllegalComponentStateException("20.05.2019 (10:03)");
     }
     
-    @Override public int deleteFrom() {
-        this.sql = "";
-        try (Connection connection = getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
-        
+    private Connection getSavepointConnection(String dbName) {
+        MysqlDataSource sourceSchema = new RegRuMysql().getDataSourceSchema(ConstantsFor.DBBASENAME_U0466446_VELKOM);
+        sourceSchema.setRelaxAutoCommit(true);
+        sourceSchema.setDatabaseName(dbName);
+        try {
+            this.connectionF = sourceSchema.getConnection();
+            this.savepoint = connectionF.setSavepoint("befdel");
+            return connectionF;
         }
         catch (SQLException e) {
             messageToUser.error(e.getMessage());
+            throw new IllegalStateException("Connection ***WITH SAVEPOINT*** to SQL cannot be established\nNO " + getClass().getSimpleName() + ".deleteFrom!");
         }
-        return -1;
+    }
+    
+    private void releaseSavepoint() {
+        try {
+            String savepointName = savepoint.getSavepointName();
+            connectionF.releaseSavepoint(savepoint);
+            messageToUser.error(savepointName + " " + "released.");
+        }
+        catch (SQLException e) {
+            messageToUser.error(e.getMessage() + "\n" + new TForms().fromArray(e, false));
+        }
     }
     
     @Override public int updateTable() {
         throw new IllegalComponentStateException("20.05.2019 (10:02)");
     }
     
-    long readInetStats() {
+    private long readIPsWithInet() {
         this.fileName = FILENAME_INETSTATSIPCSV;
         this.sql = SQL_DISTINCTIPSWITHINET;
         selectFrom();
@@ -123,11 +167,9 @@ public class InetStats implements Runnable, DataBaseRegSQL {
                 .info(fileName, file.length() / ConstantsFor.KBYTE + " kb", "total kb: " + totalBytes / ConstantsFor.KBYTE);
             if (file.length() > 10) {
                 this.sql = new StringBuilder().append("DELETE FROM `inetstats` WHERE `ip` LIKE '").append(ip).append("'").toString();
-                selectFrom();
+                System.out.println(deleteFrom() + " rows deleted.");
             }
         }
         new MessageSwing().infoTimer(ConstantsFor.ONE_DAY_HOURS * 3, "ALL STATS SAVED\n" + totalBytes / ConstantsFor.KBYTE + " Kbytes");
     }
-    
-    
 }

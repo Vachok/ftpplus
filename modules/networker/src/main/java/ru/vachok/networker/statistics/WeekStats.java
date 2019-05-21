@@ -11,7 +11,6 @@ import ru.vachok.networker.abstr.DataBaseRegSQL;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.systray.MessageToTray;
 
-import java.awt.*;
 import java.util.List;
 
 
@@ -66,7 +65,9 @@ public class WeekStats implements Runnable, StatsOfNetAndUsers {
     }
     
     @Override public String getInetStats() {
-        throw new IllegalComponentStateException("20.05.2019 (9:45)");
+        DataBaseRegSQL dataBaseRegSQL = new InetStats();
+        ((InetStats) dataBaseRegSQL).run();
+        return dataBaseRegSQL.toString();
     }
     
     @Override

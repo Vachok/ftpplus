@@ -18,7 +18,7 @@ public class OstToPstStart {
         }
         else {
             UserMenu userMenu = new MenuConsoleLocal();
-            System.out.println("Hello. This is ost to pst converter.");
+            System.out.println("Hello. I will help you to work with MS Outlook mail databases.");
             userMenu.showMenu();
         }
     }
@@ -40,8 +40,6 @@ public class OstToPstStart {
                 UserMenu userMenu = new MenuConsoleLocal();
                 userMenu.showMenu();
             }
-        }
-        {
         }
     }
 }
