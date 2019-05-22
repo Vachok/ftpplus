@@ -54,7 +54,7 @@ public class PhotoConverterSRV {
         try {
             boolean write = ImageIO.write(resizedImage(rawImage), fName, outFile);
             if (write) {
-                String msg = outFile.getAbsolutePath() + " written";
+                String msg = outFile.getAbsolutePath() + ConstantsFor.STR_WRITTEN;
                 messageToUser.info(msg);
                 msg = "Import-RecipientDataProperty -Identity " +
                     rawFileName + " -Picture -FileData ([Byte[]] $(Get-Content -Path “C:\\newmailboxes\\foto\\" +

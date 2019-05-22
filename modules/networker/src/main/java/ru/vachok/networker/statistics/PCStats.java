@@ -41,7 +41,7 @@ public class PCStats implements DataBaseRegSQL {
     }
     
     public String getPCStats() {
-        System.out.println(statsOfNetAndUsers.getPCStats());
+        statsOfNetAndUsers.getPCStats();
         return countStat();
     }
     
@@ -121,4 +121,10 @@ public class PCStats implements DataBaseRegSQL {
         }
     }
     
+    @Override public String toString() {
+        final StringBuilder sb = new StringBuilder("PCStats{");
+        sb.append(countStat());
+        sb.append('}');
+        return sb.toString();
+    }
 }
