@@ -141,6 +141,8 @@ public class PhotoConverterSRV {
     private BufferedImage resizedImage(BufferedImage bufferedImage) {
         int newW = 113;
         int newH = 154;
+    
+        newH = (newW * bufferedImage.getHeight()) / bufferedImage.getWidth();
         
         Image scaledImageTMP = bufferedImage.getScaledInstance(newW, newH, Image.SCALE_SMOOTH);
         BufferedImage scaledImage = new BufferedImage(newW, newH, BufferedImage.TYPE_INT_RGB);
