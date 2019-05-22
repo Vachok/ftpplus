@@ -6,12 +6,15 @@ package ru.vachok.ostpst.fileworks;
 import com.pff.PSTException;
 import com.pff.PSTFile;
 import com.pff.PSTFolder;
+import com.pff.PSTObject;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.ostpst.ConstantsOst;
-import ru.vachok.ostpst.usermenu.MenuConsoleLocal;
+import ru.vachok.ostpst.utils.CharsetEncoding;
 import ru.vachok.ostpst.utils.FileSystemWorkerOST;
+import ru.vachok.ostpst.utils.TFormsOST;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Deque;
 import java.util.Iterator;
@@ -37,6 +40,19 @@ class ParserFoldersWithAttachments {
     
     private int totalCounter;
     
+    private String thing;
+    
+    public ParserFoldersWithAttachments(String fileName, String thing) throws PSTException, IOException {
+        this.thing = thing;
+        try {
+            this.pstFile = new PSTFile(fileName);
+        }
+        catch (FileNotFoundException e) {
+            fileName = new CharsetEncoding("windows-1251", "UTF-8").getStrInAnotherCharset(fileName);
+            this.pstFile = new PSTFile(fileName);
+        }
+    }
+    
     ParserFoldersWithAttachments(PSTFolder folder) {
         this.rootFolder = folder;
     }
@@ -50,8 +66,9 @@ class ParserFoldersWithAttachments {
             this.pstFile = new PSTFile(fileName);
         }
         catch (PSTException | IOException e) {
-            messageToUser.error(FileSystemWorkerOST.error(getClass().getSimpleName() + ".PSTContentToFoldersWithAttachments", e));
-            new MenuConsoleLocal(fileName).showMenu();
+            this.pstFile = getPSTFile(fileName);
+            int fileType = pstFile.getPSTFileType();
+            messageToUser.info(getClass().getSimpleName() + ".ParserFoldersWithAttachments", "fileType", " = " + fileType);
         }
     }
     
@@ -82,6 +99,33 @@ class ParserFoldersWithAttachments {
         return retDeq;
     }
     
+    protected String showFoldersIerarchy(String name) {
+        long folderId = Long.parseLong(name.split(" id ")[1]);
+        StringBuilder stringBuilder = new StringBuilder();
+        try {
+            PSTFolder pstFolder = (PSTFolder) PSTObject.detectAndLoadPSTObject(pstFile, folderId);
+            String parseFolderStr = parseFolder(pstFolder, stringBuilder);
+            if (parseFolderStr.contains(thing)) {
+                stringBuilder.append(parseFolderStr);
+            }
+        }
+        catch (IOException | PSTException e) {
+            stringBuilder.append(e.getMessage()).append("\n").append(new TFormsOST().fromArray(e));
+        }
+        return stringBuilder.toString();
+    }
+    
+    protected PSTFile getPSTFile(String fileName) {
+        try {
+            String anotherCharset = new CharsetEncoding("windows-1251", "UTF-8").getStrInAnotherCharset(fileName);
+            return new PSTFile(anotherCharset);
+        }
+        catch (PSTException | IOException e) {
+            e.printStackTrace();
+        }
+        throw new IllegalArgumentException("Cant load PST: " + fileName);
+    }
+    
     private String getLevelCounterStr(int counter) {
         StringBuilder stringBuilder = new StringBuilder();
         for (int i = 0; i < counter; i++) {
@@ -90,7 +134,7 @@ class ParserFoldersWithAttachments {
         return stringBuilder.toString();
     }
     
-    private String parseFolder(PSTFolder folder, final StringBuilder stringBuilder) throws PSTException, IOException, NullPointerException {
+    protected String parseFolder(PSTFolder folder, final StringBuilder stringBuilder) throws PSTException, IOException, NullPointerException {
         Vector<PSTFolder> rootSubFolders = folder.getSubFolders();
         Iterator<PSTFolder> iteratorFolder = rootSubFolders.iterator();
         

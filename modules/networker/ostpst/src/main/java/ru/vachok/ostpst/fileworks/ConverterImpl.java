@@ -160,6 +160,11 @@ public class ConverterImpl implements MakeConvertOrCopy {
         }
     }
     
+    @Override public String searchMessages(String someThing) throws PSTException, IOException {
+        ParserPSTMessages pstMessages = new ParserPSTMessages(fileName, someThing);
+        return pstMessages.searchMessage();
+    }
+    
     private File createCSV(String csvFileName) {
         try {
             Path path = Files.createFile(Paths.get(csvFileName));

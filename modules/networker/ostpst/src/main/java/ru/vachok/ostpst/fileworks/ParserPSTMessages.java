@@ -16,7 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.*;
 
 
 /**
@@ -32,6 +32,16 @@ class ParserPSTMessages extends ParserFoldersWithAttachments {
     
     private String fileName;
     
+    private String thing;
+    
+    private PSTFile pstFile;
+    
+    ParserPSTMessages(String fileName, String thing) throws PSTException, IOException {
+        super(fileName, thing);
+        this.thing = thing;
+        this.fileName = fileName;
+    }
+    
     ParserPSTMessages(String fileName, long folderID) {
         super(fileName);
         this.fileName = fileName;
@@ -46,10 +56,29 @@ class ParserPSTMessages extends ParserFoldersWithAttachments {
     
     private ParserPSTMessages(PSTFile pstFile) {
         super(pstFile);
+        this.pstFile = pstFile;
     }
     
     private ParserPSTMessages(String fileName) {
         super(fileName);
+    }
+    
+    public String searchMessage() {
+        StringBuilder stringBuilder = new StringBuilder();
+        if (thing == null) {
+            throw new IllegalArgumentException("Sorry, parameter to search is null. (c) Vachok 22.05.2019 (13:17)");
+        }
+        else {
+            Future<String> stringFuture = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(new SearcherByEverything());
+            try {
+                String getFutureStr = stringFuture.get(600, TimeUnit.SECONDS);
+                stringBuilder.append(getFutureStr);
+            }
+            catch (InterruptedException | ExecutionException | TimeoutException e) {
+                stringBuilder.append(e.getMessage()).append("\n").append(new TFormsOST().fromArray(e));
+            }
+        }
+        return stringBuilder.toString();
     }
     
     void saveMessageToDisk(Vector<PSTObject> pstObjs, String name, Path fldPath) {
@@ -179,6 +208,46 @@ class ParserPSTMessages extends ParserFoldersWithAttachments {
             }
         }
         return stringBuilder.toString();
+    }
+    
+    class SearcherByEverything implements Callable<String> {
+        
+        
+        @Override public String call() {
+            return searchByThing();
+        }
+        
+        private String searchByThing() {
+            StringBuilder stringBuilder = new StringBuilder();
+            ParserFoldersWithAttachments parserFoldersWithAttachments = new ParserFoldersWithAttachments(fileName);
+            pstFile = getPSTFile(fileName);
+            try {
+                Deque<String> folderNamesWithIDAndWriteToDisk = parserFoldersWithAttachments.getDeqFolderNamesWithIDAndWriteToDisk();
+                for (String folderName : folderNamesWithIDAndWriteToDisk) {
+                    if (folderName.contains(thing)) {
+                        stringBuilder.append(folderName).append("\n");
+                    }
+                    folderID = Long.parseLong(folderName.split(" id ")[1]);
+                    stringBuilder.append(foldersSearch(folderName.split("\\Q (item\\E")[0], folderID));
+                }
+            }
+            catch (IOException | PSTException e) {
+                stringBuilder.append(e.getMessage()).append("\n").append(new TFormsOST().fromArray(e));
+            }
+            return stringBuilder.toString();
+        }
+        
+        private String foldersSearch(String folderName, long folderID) throws IOException, PSTException {
+            StringBuilder stringBuilder = new StringBuilder();
+            pstFolder = (PSTFolder) PSTObject.detectAndLoadPSTObject(pstFile, folderID);
+            if (pstFolder instanceof PSTFolder) {
+                throw new IllegalAccessError(getClass().getSimpleName() + ".foldersSearch");
+            }
+            else {
+                stringBuilder.append(pstFolder.getDescriptorNodeId());
+            }
+            return stringBuilder.toString();
+        }
     }
     
 }

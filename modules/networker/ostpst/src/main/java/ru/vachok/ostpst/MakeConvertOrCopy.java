@@ -3,6 +3,8 @@
 package ru.vachok.ostpst;
 
 
+import com.pff.PSTException;
+
 import java.io.IOException;
 import java.util.Deque;
 import java.util.List;
@@ -46,4 +48,6 @@ public interface MakeConvertOrCopy {
     String searchMessages(long folderID, long msgID);
     
     String searchMessages(long folderID, String msgSubject);
+    
+    String searchMessages(String someThing) throws PSTException, IOException;
 }

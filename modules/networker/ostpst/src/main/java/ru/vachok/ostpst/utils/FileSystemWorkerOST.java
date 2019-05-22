@@ -31,7 +31,7 @@ public abstract class FileSystemWorkerOST {
         rootPath = Paths.get(toString + ConstantsOst.SYSTEM_SEPARATOR + fileName);
         String fromArray = new TFormsOST().fromArray(e);
         writeStringToFile(rootPath.toString(), fromArray);
-        return rootPath.toAbsolutePath().toString();
+        return e.getMessage() + " details: " + rootPath.toAbsolutePath();
     }
     
     public static String writeFile(String fileName, Stream<String> stream) {
