@@ -66,7 +66,7 @@ class ParserFolders {
             this.pstFile = new PSTFile(fileName);
         }
         catch (PSTException | IOException e) {
-            this.pstFile = getPSTFile(fileName);
+            this.pstFile = new PSTFileNameConverter().getPSTFile(fileName);
             int fileType = pstFile.getPSTFileType();
             messageToUser.info(getClass().getSimpleName() + ".ParserFoldersWithAttachments", "fileType", " = " + fileType);
         }
@@ -115,10 +115,9 @@ class ParserFolders {
         return stringBuilder.toString();
     }
     
-    protected PSTFile getPSTFile(String fileName) {
+    private PSTFile getPSTFileNoException(String fileName) {
         try {
-            String anotherCharset = new CharsetEncoding("windows-1251", "UTF-8").getStrInAnotherCharset(fileName);
-            return new PSTFile(anotherCharset);
+            return new PSTFile(fileName);
         }
         catch (PSTException | IOException e) {
             e.printStackTrace();

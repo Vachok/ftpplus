@@ -3,6 +3,7 @@
 package ru.vachok.ostpst.usermenu;
 
 
+import com.pff.PSTException;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.ostpst.ConstantsOst;
@@ -17,6 +18,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
+import java.util.concurrent.Executors;
 
 
 /**
@@ -156,7 +158,12 @@ public class MenuItemsConsoleImpl implements MenuItems {
         }
         else if (scanner.hasNextLine()) {
             String subj = scanner.nextLine();
-            System.out.println(makeConvertOrCopy.searchMessages(folderID, subj));
+            try {
+                System.out.println(makeConvertOrCopy.searchMessages(subj));
+            }
+            catch (PSTException | IOException e) {
+                messageToUser.error(FileSystemWorkerOST.error(getClass().getSimpleName() + ".ansEightSearchSecondStage", e));
+            }
             this.ansEightSearchSecondStage(scanner, folderID);
         }
         else {
@@ -184,32 +191,47 @@ public class MenuItemsConsoleImpl implements MenuItems {
     }
     
     private void ansEightSearch(long id) {
-        System.out.println("Enter folder ID or 0 to return :");
+        System.out.println("Enter folder ID, 10 to search EVERYWHERE or 0 to return :");
         try (Scanner scanner = new Scanner(System.in)) {
             if (id > 0) {
                 ansEightSearchSecondStage(scanner, id);
             }
-            long folderID = -1;
+            id = -1;
             try {
-                folderID = Long.parseLong(scanner.nextLine());
+                id = Long.parseLong(scanner.nextLine());
             }
             catch (NumberFormatException e) {
                 System.out.println("NumberFormat incorrect:\n");
                 System.out.println(e.getMessage());
                 new MenuConsoleLocal(fileName).showMenu();
             }
-            if (folderID == 0) {
+            if (id == 0) {
                 new MenuConsoleLocal(fileName).showMenu();
             }
-            System.out.println("...and message ID or Subject:");
-            while (scanner.hasNextLine()) {
-                ansEightSearchSecondStage(scanner, folderID);
+            else if (id == 10) {
+                ansEightSearchEverywhere();
+            }
+            else {
+                System.out.println("...and message ID or Subject:");
+                while (scanner.hasNextLine()) {
+                    ansEightSearchSecondStage(scanner, id);
+                }
             }
         }
         catch (NumberFormatException e) {
             System.out.println(e);
             System.out.println(new TFormsOST().fromArray(e));
             new MenuConsoleLocal(fileName).showMenu();
+        }
+        askUser();
+    }
+    
+    private void ansEightSearchEverywhere() {
+        try (Scanner scanner = new Scanner(System.in)) {
+            System.out.println("Enter what are U wanna find:");
+            String whatFind = scanner.nextLine();
+            System.out.println("Started Search. It takes about 8-10 minutes. After all, see results in " + Paths.get(".").toAbsolutePath().normalize());
+            Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(()->makeConvertOrCopy.searchMessages(whatFind));
         }
     }
     

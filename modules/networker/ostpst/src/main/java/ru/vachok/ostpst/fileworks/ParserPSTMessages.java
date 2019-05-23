@@ -48,7 +48,7 @@ class ParserPSTMessages extends ParserFolders {
         super(fileName);
         this.fileName = fileName;
         try {
-            this.pstFolder = (PSTFolder) PSTObject.detectAndLoadPSTObject(new PSTFile(fileName), folderID);
+            this.pstFolder = (PSTFolder) PSTObject.detectAndLoadPSTObject(new PSTFile(this.fileName), folderID);
         }
         catch (IOException | PSTException e) {
             e.printStackTrace();
@@ -156,7 +156,7 @@ class ParserPSTMessages extends ParserFolders {
     
         PSTObject objectLoaded = null;
         try {
-            objectLoaded = PSTObject.detectAndLoadPSTObject(getPSTFile(fileName), messageID);
+            objectLoaded = PSTObject.detectAndLoadPSTObject(new PSTFileNameConverter().getPSTFile(fileName), messageID);
         }
         catch (IOException | PSTException e) {
             stringBuilder.append(e.getMessage()).append("\n").append(new TFormsOST().fromArray(e));
@@ -240,7 +240,12 @@ class ParserPSTMessages extends ParserFolders {
         private String searchByThing() {
             StringBuilder stringBuilder = new StringBuilder();
             ParserFolders parserFolders = new ParserFolders(fileName);
-            pstFile = getPSTFile(fileName);
+            try {
+                pstFile = new PSTFileNameConverter().getPSTFile(fileName);
+            }
+            catch (Exception e) {
+                pstFile = getPstFileNoException(fileName);
+            }
             try {
                 Deque<String> folderNamesWithIDAndWriteToDisk = parserFolders.getDeqFolderNamesWithIDAndWriteToDisk();
                 for (String folderName : folderNamesWithIDAndWriteToDisk) {
@@ -257,7 +262,18 @@ class ParserPSTMessages extends ParserFolders {
             }
             return stringBuilder.toString();
         }
-        
+    
+        private PSTFile getPstFileNoException(String fileName) {
+            PSTFile file = null;
+            try {
+                file = new PSTFile(fileName);
+            }
+            catch (PSTException | IOException e) {
+                messageToUser.error(FileSystemWorkerOST.error(getClass().getSimpleName() + ".getPstFileNoException", e));
+            }
+            return file;
+        }
+    
         private String foldersSearch(String folderName, long folderID) throws IOException, PSTException {
             StringBuilder stringBuilder = new StringBuilder();
             pstFolder = (PSTFolder) PSTObject.detectAndLoadPSTObject(pstFile, folderID);
