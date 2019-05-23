@@ -11,8 +11,10 @@ import ru.vachok.ostpst.usermenu.MenuConsoleLocal;
 import ru.vachok.ostpst.utils.FileSystemWorkerOST;
 import ru.vachok.ostpst.utils.TFormsOST;
 
-import java.io.*;
-import java.nio.file.Files;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -21,7 +23,7 @@ import java.util.concurrent.*;
 
 /**
  @since 14.05.2019 (14:16) */
-class ParserPSTMessages extends ParserFoldersWithAttachments {
+class ParserPSTMessages extends ParserFolders {
     
     
     private MessageToUser messageToUser = new MessageCons(getClass().getSimpleName());
@@ -38,7 +40,7 @@ class ParserPSTMessages extends ParserFoldersWithAttachments {
     
     ParserPSTMessages(String fileName, String thing) throws PSTException, IOException {
         super(fileName, thing);
-        this.thing = thing;
+        this.thing = thing.toLowerCase();
         this.fileName = fileName;
     }
     
@@ -77,16 +79,9 @@ class ParserPSTMessages extends ParserFoldersWithAttachments {
             catch (InterruptedException | ExecutionException | TimeoutException e) {
                 stringBuilder.append(e.getMessage()).append("\n").append(new TFormsOST().fromArray(e));
             }
-            catch (ArrayIndexOutOfBoundsException ignore) {
-                //
+            catch (ArrayIndexOutOfBoundsException a) {
+                stringBuilder.append(a.getMessage() + "\n" + new TFormsOST().fromArray(a));
             }
-        }
-        Path writeStringToFile = FileSystemWorkerOST.writeStringToFile("search_" + (System.currentTimeMillis() / 1000) + ".txt", stringBuilder.toString());
-        try {
-            Runtime.getRuntime().exec(writeStringToFile.toString());
-        }
-        catch (IOException e) {
-            stringBuilder.append(e.getMessage()).append("\n").append(new TFormsOST().fromArray(e));
         }
         return stringBuilder.toString();
     }
@@ -102,12 +97,12 @@ class ParserPSTMessages extends ParserFoldersWithAttachments {
                     StringBuilder stringBuilder = new StringBuilder();
                     stringBuilder.append(message.getItemsString());
                     if (message.hasAttachments()) {
-                        saveAttachment(fileOutPath, message, stringBuilder);
+                        new ParserAttachment().saveAttachment(fileOutPath, message, stringBuilder);
                     }
                     outputStream.write(stringBuilder.toString().getBytes());
                 }
             }
-            catch (IOException | PSTException e) {
+            catch (IOException e) {
                 messageToUser.error(e.getMessage());
             }
         }
@@ -123,7 +118,6 @@ class ParserPSTMessages extends ParserFoldersWithAttachments {
         }
         ;
         Path mapToFile = FileSystemWorkerOST.writeMapToFile(pstFolder.getDisplayName() + ".txt", retMap);
-        mapToFile.toFile().deleteOnExit();
         return retMap;
     }
     
@@ -158,50 +152,33 @@ class ParserPSTMessages extends ParserFoldersWithAttachments {
         
         stringBuilder.append("\n***");
         stringBuilder.append("Searching by message ID: ").append(messageID).append("\n");
+        PSTMessage pstMessage = null;
+    
+        PSTObject objectLoaded = null;
         try {
-            PSTObject objectLoaded = PSTObject.detectAndLoadPSTObject(new PSTFile(fileName), messageID);
-            PSTMessage pstMessage = (PSTMessage) objectLoaded;
-            stringBuilder.append(pstMessage.getTransportMessageHeaders());
-            stringBuilder.append(pstMessage.hasAttachments()).append(" attached files");
-            try (OutputStream outputStream = new FileOutputStream(pathStr + pstMessage.getDescriptorNodeId() + "_message.txt");
-                 PrintStream printStream = new PrintStream(outputStream, true, "Windows-1251")
-            ) {
-                outputStream.write(pstMessage.toString().getBytes());
-            }
-            catch (Exception e) {
-                stringBuilder.append(e.getMessage()).append("\n");
-                stringBuilder.append(new TFormsOST().fromArray(e));
-            }
-            saveAttachment(pathStr, pstMessage, stringBuilder);
+            objectLoaded = PSTObject.detectAndLoadPSTObject(getPSTFile(fileName), messageID);
         }
         catch (IOException | PSTException e) {
             stringBuilder.append(e.getMessage()).append("\n").append(new TFormsOST().fromArray(e));
         }
-        return stringBuilder.toString();
-    }
-    
-    private void saveAttachment(String path, PSTMessage message, StringBuilder stringBuilder) throws PSTException, IOException {
-        Files.createDirectories(Paths.get(path));
-        for (int i = 0; i < message.getNumberOfAttachments(); i++) {
-            stringBuilder.append(i);
-            stringBuilder.append(" attachment\n");
-            PSTAttachment attachment = message.getAttachment(i);
-            String nameAtt = path + message.getDescriptorNodeId() + "_" + attachment.getFilename();
-            try (InputStream attStream = attachment.getFileInputStream();
-                 InputStreamReader inputStreamReader = new InputStreamReader(attStream);
-                 BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-                 OutputStream attOut = new FileOutputStream(nameAtt);
-            ) {
-                byte[] bytes = new byte[attachment.getSize()];
-                int readB = attStream.read(bytes);
-                stringBuilder.append(readB).append(" bytes ").append(attachment.getMimeTag()).append(" ");
-                attOut.write(bytes);
-                stringBuilder.append(nameAtt);
-            }
-            catch (IOException e) {
-                messageToUser.error(FileSystemWorkerOST.error(getClass().getSimpleName() + ".saveMessageToDisk", e));
+        if (objectLoaded instanceof PSTMessage) {
+            pstMessage = (PSTMessage) objectLoaded;
+            stringBuilder.append(pstMessage.getTransportMessageHeaders());
+            stringBuilder.append(pstMessage.hasAttachments()).append(" attached files");
+        }
+        String nameOut = pathStr + pstMessage.getDescriptorNodeId() + ConstantsOst.SYSTEM_SEPARATOR + "message.txt";
+        try (OutputStream outputStream = new FileOutputStream(nameOut)) {
+            System.out.println("outputStream = " + nameOut);
+            try (PrintStream printStream = new PrintStream(outputStream, true, "Windows-1251")) {
+                printStream.println(pstMessage);
             }
         }
+        catch (IOException e) {
+            stringBuilder.append(e.getMessage()).append("\n");
+            stringBuilder.append(new TFormsOST().fromArray(e));
+        }
+        new ParserAttachment().saveAttachment(pathStr, pstMessage, stringBuilder);
+        return stringBuilder.toString();
     }
     
     private String showMessage(long msgID) throws PSTException, IOException {
@@ -230,7 +207,7 @@ class ParserPSTMessages extends ParserFoldersWithAttachments {
             Map<Long, String> messagesSubject = getMessagesSubject();
             Set<Map.Entry<Long, String>> stringEntry = messagesSubject.entrySet();
             stringEntry.stream().forEach((entry)->{
-                if (entry.getValue().contains(thing)) {
+                if (entry.getValue().toLowerCase().contains(thing)) {
                     stringBuilder.append(searchMessage(entry.getKey()));
                 }
             });
@@ -241,29 +218,41 @@ class ParserPSTMessages extends ParserFoldersWithAttachments {
         return stringBuilder.toString();
     }
     
-    
     class SearcherEverywhere implements Callable<String> {
         
         
         @Override public String call() {
-            return searchByThing();
+            String searchByThing = searchByThing();
+            openPath(searchByThing);
+            return searchByThing;
+        }
+    
+        private void openPath(String searchByThing) {
+            Path writeStringToFile = FileSystemWorkerOST.writeStringToFile("search_" + (System.currentTimeMillis() / 1000) + ".txt", searchByThing);
+            try {
+                Runtime.getRuntime().exec(writeStringToFile.toString());
+            }
+            catch (IOException e) {
+                System.err.println(e.getMessage() + "\n" + new TFormsOST().fromArray(e));
+            }
         }
         
         private String searchByThing() {
             StringBuilder stringBuilder = new StringBuilder();
-            ParserFoldersWithAttachments parserFoldersWithAttachments = new ParserFoldersWithAttachments(fileName);
+            ParserFolders parserFolders = new ParserFolders(fileName);
             pstFile = getPSTFile(fileName);
             try {
-                Deque<String> folderNamesWithIDAndWriteToDisk = parserFoldersWithAttachments.getDeqFolderNamesWithIDAndWriteToDisk();
+                Deque<String> folderNamesWithIDAndWriteToDisk = parserFolders.getDeqFolderNamesWithIDAndWriteToDisk();
                 for (String folderName : folderNamesWithIDAndWriteToDisk) {
-                    if (folderName.contains(thing)) {
+                    if (folderName.toLowerCase().contains(thing)) {
                         stringBuilder.append(folderName).append("\n");
                     }
                     folderID = Long.parseLong(folderName.split(" id ")[1]);
+                    System.out.println(folderID + " = " + folderName);
                     stringBuilder.append(foldersSearch(folderName.split("\\Q (item\\E")[0], folderID));
                 }
             }
-            catch (IOException | PSTException e) {
+            catch (IOException | PSTException | ArrayIndexOutOfBoundsException e) {
                 stringBuilder.append(e.getMessage()).append("\n").append(new TFormsOST().fromArray(e));
             }
             return stringBuilder.toString();

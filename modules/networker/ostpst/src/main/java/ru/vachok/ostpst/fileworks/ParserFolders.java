@@ -25,7 +25,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 
 /**
  @since 30.04.2019 (15:04) */
-class ParserFoldersWithAttachments {
+class ParserFolders {
     
     
     private static final String CONTENT = ".inboxFolder";
@@ -42,7 +42,7 @@ class ParserFoldersWithAttachments {
     
     private String thing;
     
-    public ParserFoldersWithAttachments(String fileName, String thing) throws PSTException, IOException {
+    public ParserFolders(String fileName, String thing) throws PSTException, IOException {
         this.thing = thing;
         try {
             this.pstFile = new PSTFile(fileName);
@@ -53,15 +53,15 @@ class ParserFoldersWithAttachments {
         }
     }
     
-    ParserFoldersWithAttachments(PSTFolder folder) {
+    ParserFolders(PSTFolder folder) {
         this.rootFolder = folder;
     }
     
-    ParserFoldersWithAttachments(PSTFile pstFile) {
+    ParserFolders(PSTFile pstFile) {
         this.pstFile = pstFile;
     }
     
-    ParserFoldersWithAttachments(String fileName) {
+    ParserFolders(String fileName) {
         try {
             this.pstFile = new PSTFile(fileName);
         }

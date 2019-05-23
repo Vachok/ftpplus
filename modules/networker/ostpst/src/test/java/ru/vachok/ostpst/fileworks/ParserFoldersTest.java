@@ -12,7 +12,7 @@ import java.util.Deque;
 import java.util.Properties;
 
 
-public class ParserFoldersWithAttachmentsTest {
+public class ParserFoldersTest {
     
     
     @Test

@@ -38,8 +38,8 @@ public class ConverterImpl implements MakeConvertOrCopy {
     }
     
     @Override public String saveFolders() throws IOException {
-        ParserFoldersWithAttachments parserFoldersWithAttachments = new ParserFoldersWithAttachments(fileName);
-        Deque<String> deqFolderNamesWithIDAndWriteToDisk = parserFoldersWithAttachments.getDeqFolderNamesWithIDAndWriteToDisk();
+        ParserFolders parserFolders = new ParserFolders(fileName);
+        Deque<String> deqFolderNamesWithIDAndWriteToDisk = parserFolders.getDeqFolderNamesWithIDAndWriteToDisk();
         File file = new File(ConstantsOst.FILENAME_FOLDERSTXT);
         if (file.exists()) {
             return file.getAbsolutePath();
@@ -92,9 +92,9 @@ public class ConverterImpl implements MakeConvertOrCopy {
     }
     
     @Override public String showListFolders() {
-        ParserFoldersWithAttachments parserFoldersWithAttachments = new ParserFoldersWithAttachments(fileName);
+        ParserFolders parserFolders = new ParserFolders(fileName);
         try {
-            return parserFoldersWithAttachments.showFoldersIerarchy();
+            return parserFolders.showFoldersIerarchy();
         }
         catch (IOException e) {
             return e.getMessage();
@@ -102,8 +102,8 @@ public class ConverterImpl implements MakeConvertOrCopy {
     }
     
     @Override public Deque<String> getDequeFolderNamesAndWriteToDisk() throws IOException {
-        ParserFoldersWithAttachments parserFoldersWithAttachments = new ParserFoldersWithAttachments(fileName);
-        return parserFoldersWithAttachments.getDeqFolderNamesWithIDAndWriteToDisk();
+        ParserFolders parserFolders = new ParserFolders(fileName);
+        return parserFolders.getDeqFolderNamesWithIDAndWriteToDisk();
     }
     
     @Override public String showContacts() {

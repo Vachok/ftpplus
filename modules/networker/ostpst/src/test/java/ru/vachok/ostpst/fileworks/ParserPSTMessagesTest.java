@@ -7,11 +7,13 @@ import com.pff.PSTException;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import ru.vachok.ostpst.utils.CharsetEncoding;
+import ru.vachok.ostpst.utils.TFormsOST;
 
 import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
+import java.util.concurrent.TimeUnit;
 
 
 @SuppressWarnings("ALL") public class ParserPSTMessagesTest {
@@ -38,16 +40,18 @@ import java.lang.management.ThreadMXBean;
     @Test
     public void searchEverywhere() {
         ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
-        String thingStr = new CharsetEncoding("windows-1251").getStrInAnotherCharset("MEGUSTRO");
+        final long start = System.currentTimeMillis();
+        String thingStr = new CharsetEncoding("windows-1251").getStrInAnotherCharset("");
         String fileName = "c:\\Users\\ikudryashov\\OneDrive\\Документы\\Файлы Outlook\\ksamarchenko.ost";
         try {
             ParserPSTMessages pstMessages = new ParserPSTMessages(fileName, thingStr);
             String searchMessage = pstMessages.searchMessage();
             System.out.println(searchMessage);
+            final long stop = System.currentTimeMillis();
+            System.out.println(TimeUnit.NANOSECONDS.toMillis(threadMXBean.getCurrentThreadCpuTime()) + " cpu time, total time: " + TimeUnit.MILLISECONDS.toSeconds(stop - start));
         }
-        catch (PSTException | IOException e) {
-            e.printStackTrace();
+        catch (PSTException | IOException | ArrayIndexOutOfBoundsException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TFormsOST().fromArray(e));
         }
-        System.out.println(threadMXBean.getCurrentThreadCpuTime());
     }
 }

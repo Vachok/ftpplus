@@ -80,7 +80,7 @@ class ParserContacts implements Callable<String> {
         try {
             String contStr = new String("онтакт".getBytes(), "UTF-8");
             this.pstFile = new PSTFile(fileName);
-            ParserFoldersWithAttachments rootFolder = new ParserFoldersWithAttachments(pstFile);
+            ParserFolders rootFolder = new ParserFolders(pstFile);
             Deque<String> folderNamesAndWriteToDisk = rootFolder.getDeqFolderNamesWithIDAndWriteToDisk();
             for (String s : folderNamesAndWriteToDisk) {
                 String folderNameFromDeq = s.toLowerCase();
