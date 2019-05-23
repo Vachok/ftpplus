@@ -40,7 +40,7 @@ public class MenuConsoleLocal implements UserMenu {
                         exitProgram(fileName);
                     }
                     if (nextLine.equals("yesterday")) {
-                        System.out.println(new CharsetEncoding("default", "UTF-32").getStrInAnotherCharset("I'm leaving yesterday, and you? Жду в среду на конец Игры."));
+                        System.out.println(new CharsetEncoding("default", "UTF-8").getStrInAnotherCharset("I'm leaving yesterday, and you? Жду в среду на конец Игры."));
                     }
                     else {
                         startMenu(nextLine);

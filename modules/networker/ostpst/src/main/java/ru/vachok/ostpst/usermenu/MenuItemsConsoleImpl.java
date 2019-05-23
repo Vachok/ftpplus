@@ -18,7 +18,6 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
-import java.util.concurrent.Executors;
 
 
 /**
@@ -231,7 +230,14 @@ public class MenuItemsConsoleImpl implements MenuItems {
             System.out.println("Enter what are U wanna find:");
             String whatFind = scanner.nextLine();
             System.out.println("Started Search. It takes about 8-10 minutes. After all, see results in " + Paths.get(".").toAbsolutePath().normalize());
-            Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(()->makeConvertOrCopy.searchMessages(whatFind));
+            System.out.println(System.getProperties().getProperty("encoding"));
+            Thread.sleep(2000);
+            makeConvertOrCopy.searchMessages(whatFind);
+            askUser();
+        }
+        catch (InterruptedException | PSTException | IOException e) {
+            messageToUser.error(FileSystemWorkerOST.error(getClass().getSimpleName() + ".ansEightSearchEverywhere", e));
+            askUser();
         }
     }
     

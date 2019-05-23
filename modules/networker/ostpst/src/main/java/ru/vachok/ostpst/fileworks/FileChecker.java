@@ -67,11 +67,12 @@ public class FileChecker implements FileWorker {
         }
         catch (IOException | InvalidPathException e) {
             System.err.println(e.getMessage() + ": " + fileName);
-            String anotherCharset = new CharsetEncoding("windows-1251", "utf-8").getStrInAnotherCharset(fileName);
+            String anotherCharset = new CharsetEncoding("windows-1251", "UTF-8").getStrInAnotherCharset(fileName);
             this.file = new File(anotherCharset);
             this.fileName = anotherCharset;
             size = file.length();
             System.out.println("Trying to decode name CP1251-UTF8: " + anotherCharset);
+            System.out.println(System.getProperties().getProperty("encoding"));
         }
         BigDecimal valueOf = BigDecimal.valueOf((float) size).divide(BigDecimal.valueOf(1024 * 1024 * 1024)).setScale(2, HALF_EVEN);
         return valueOf.doubleValue();

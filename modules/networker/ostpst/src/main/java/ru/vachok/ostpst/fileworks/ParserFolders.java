@@ -10,7 +10,6 @@ import com.pff.PSTObject;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.ostpst.ConstantsOst;
-import ru.vachok.ostpst.utils.CharsetEncoding;
 import ru.vachok.ostpst.utils.FileSystemWorkerOST;
 import ru.vachok.ostpst.utils.TFormsOST;
 
@@ -48,8 +47,7 @@ class ParserFolders {
             this.pstFile = new PSTFile(fileName);
         }
         catch (FileNotFoundException e) {
-            fileName = new CharsetEncoding("windows-1251", "UTF-8").getStrInAnotherCharset(fileName);
-            this.pstFile = new PSTFile(fileName);
+            this.pstFile = new PSTFileNameConverter().getPSTFile(fileName);
         }
     }
     

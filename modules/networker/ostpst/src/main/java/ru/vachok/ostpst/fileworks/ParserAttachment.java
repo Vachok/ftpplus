@@ -38,11 +38,11 @@ class ParserAttachment {
         Path directories = null;
         try {
             Path dir = Paths.get(path + ConstantsOst.SYSTEM_SEPARATOR + message.getDescriptorNodeId());
-            if (!(dir.toFile().exists() & dir.toFile().isDirectory())) {
-                directories = Files.createDirectories(dir);
+            if (dir.toFile().exists() && dir.toFile().isDirectory()) {
+                directories = dir;
             }
             else {
-                directories = dir;
+                directories = Files.createDirectories(dir);
             }
         }
         catch (IOException e) {

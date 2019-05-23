@@ -12,7 +12,7 @@ public class OstToPstStart {
     
     
     public static void main(String[] args) {
-    
+        System.setProperty("encoding", "UTF8");
         if (args != null && args.length > 0) {
             readArgs(args);
         }

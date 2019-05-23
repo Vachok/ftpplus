@@ -73,11 +73,11 @@ class ParserPSTMessages extends ParserFolders {
         else {
             Future<String> stringFuture = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(new SearcherEverywhere());
             try {
-                String getFutureStr = stringFuture.get(600, TimeUnit.SECONDS);
+                String getFutureStr = stringFuture.get();
                 stringBuilder.append(getFutureStr);
             }
-            catch (InterruptedException | ExecutionException | TimeoutException e) {
-                stringBuilder.append(e.getMessage()).append("\n").append(new TFormsOST().fromArray(e));
+            catch (InterruptedException | ExecutionException e) {
+                messageToUser.error(FileSystemWorkerOST.error(getClass().getSimpleName() + ".searchMessage", e));
             }
             catch (ArrayIndexOutOfBoundsException a) {
                 stringBuilder.append(a.getMessage() + "\n" + new TFormsOST().fromArray(a));

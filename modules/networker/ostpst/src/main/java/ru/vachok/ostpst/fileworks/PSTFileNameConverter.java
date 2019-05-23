@@ -19,6 +19,7 @@ public class PSTFileNameConverter {
     private MessageToUser messageToUser = new MessageCons(getClass().getSimpleName());
     
     PSTFile getPSTFile(String fileName) {
+        System.setProperty("encoding", "UTF8");
         try {
             String anotherCharset = new CharsetEncoding("windows-1251", "UTF-8").getStrInAnotherCharset(fileName);
             return new PSTFile(anotherCharset);
@@ -38,5 +39,4 @@ public class PSTFileNameConverter {
         }
         return pstFile;
     }
-    
 }

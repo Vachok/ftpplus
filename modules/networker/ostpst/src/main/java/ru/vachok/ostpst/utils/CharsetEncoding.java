@@ -30,7 +30,7 @@ public class CharsetEncoding {
     }
     
     
-    public String getStrInAnotherCharset(String strToConvert) {
+    public String getStrInAnotherCharset(String strToConvert) throws RuntimeException {
         Charset inputChars;
         if (charsetOnInput.equals("default")) {
             inputChars = Charset.defaultCharset();
