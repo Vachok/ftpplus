@@ -55,7 +55,7 @@ public abstract class FileSystemWorkerOST {
         return stringBuilder.toString();
     }
     
-    public static String writeMapToFile(String fileName, Map<?, ?> map) {
+    public static Path writeMapToFile(String fileName, Map<?, ?> map) {
         Path pathWrite = Paths.get(fileName).toAbsolutePath();
         StringBuilder stringBuilder = new StringBuilder();
         try (OutputStream outputStream = new FileOutputStream(pathWrite.toFile())) {
@@ -73,7 +73,7 @@ public abstract class FileSystemWorkerOST {
         catch (IOException e) {
             stringBuilder.append(e.getMessage()).append("\n").append(new TFormsOST().fromArray(e));
         }
-        return stringBuilder.toString();
+        return pathWrite.toAbsolutePath();
     }
     
     private static String getDelimiter() {
@@ -85,15 +85,15 @@ public abstract class FileSystemWorkerOST {
         }
     }
     
-    public static String writeStringToFile(String fileName, String stringToWrite) {
+    public static Path writeStringToFile(String fileName, String stringToWrite) {
         Path pathToWrite = Paths.get(fileName);
         try {
             pathToWrite = Files.write(pathToWrite, stringToWrite.getBytes(), StandardOpenOption.CREATE);
-            return pathToWrite.normalize().toAbsolutePath().toString();
+            return pathToWrite.normalize().toAbsolutePath();
         }
         catch (IOException e) {
             e.printStackTrace();
-            return e.getMessage();
+            return Paths.get(".").toAbsolutePath().normalize();
         }
     }
 }

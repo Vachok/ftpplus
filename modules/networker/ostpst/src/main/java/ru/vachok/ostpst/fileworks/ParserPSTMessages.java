@@ -69,7 +69,7 @@ class ParserPSTMessages extends ParserFoldersWithAttachments {
             throw new IllegalArgumentException("Sorry, parameter to search is null. (c) Vachok 22.05.2019 (13:17)");
         }
         else {
-            Future<String> stringFuture = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(new SearcherByEverything());
+            Future<String> stringFuture = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(new SearcherEverywhere());
             try {
                 String getFutureStr = stringFuture.get(600, TimeUnit.SECONDS);
                 stringBuilder.append(getFutureStr);
@@ -77,6 +77,16 @@ class ParserPSTMessages extends ParserFoldersWithAttachments {
             catch (InterruptedException | ExecutionException | TimeoutException e) {
                 stringBuilder.append(e.getMessage()).append("\n").append(new TFormsOST().fromArray(e));
             }
+            catch (ArrayIndexOutOfBoundsException ignore) {
+                //
+            }
+        }
+        Path writeStringToFile = FileSystemWorkerOST.writeStringToFile("search_" + (System.currentTimeMillis() / 1000) + ".txt", stringBuilder.toString());
+        try {
+            Runtime.getRuntime().exec(writeStringToFile.toString());
+        }
+        catch (IOException e) {
+            stringBuilder.append(e.getMessage()).append("\n").append(new TFormsOST().fromArray(e));
         }
         return stringBuilder.toString();
     }
@@ -106,11 +116,14 @@ class ParserPSTMessages extends ParserFoldersWithAttachments {
     Map<Long, String> getMessagesSubject() throws PSTException, IOException {
         Map<Long, String> retMap = new ConcurrentHashMap<>();
         for (PSTObject folderChild : pstFolder.getChildren(pstFolder.getContentCount())) {
-            PSTMessage pstMessage = (PSTMessage) folderChild;
-            retMap.put(pstMessage.getDescriptorNodeId(), pstMessage.getSubject() + " (from: " + pstMessage.getSenderName() + " sent: " + pstMessage.getMessageDeliveryTime() + ")");
+            if (folderChild instanceof PSTMessage) {
+                PSTMessage pstMessage = (PSTMessage) folderChild;
+                retMap.put(pstMessage.getDescriptorNodeId(), pstMessage.getSubject() + " (from: " + pstMessage.getSenderName() + " sent: " + pstMessage.getMessageDeliveryTime() + ")");
+            }
         }
         ;
-        FileSystemWorkerOST.writeMapToFile(pstFolder.getDisplayName() + ".txt", retMap);
+        Path mapToFile = FileSystemWorkerOST.writeMapToFile(pstFolder.getDisplayName() + ".txt", retMap);
+        mapToFile.toFile().deleteOnExit();
         return retMap;
     }
     
@@ -210,7 +223,26 @@ class ParserPSTMessages extends ParserFoldersWithAttachments {
         return stringBuilder.toString();
     }
     
-    class SearcherByEverything implements Callable<String> {
+    private String parseFolder(PSTFolder folder, String thing) {
+        StringBuilder stringBuilder = new StringBuilder();
+        this.pstFolder = folder;
+        try {
+            Map<Long, String> messagesSubject = getMessagesSubject();
+            Set<Map.Entry<Long, String>> stringEntry = messagesSubject.entrySet();
+            stringEntry.stream().forEach((entry)->{
+                if (entry.getValue().contains(thing)) {
+                    stringBuilder.append(searchMessage(entry.getKey()));
+                }
+            });
+        }
+        catch (PSTException | IOException e) {
+            stringBuilder.append(e.getMessage()).append("\n").append(new TFormsOST().fromArray(e));
+        }
+        return stringBuilder.toString();
+    }
+    
+    
+    class SearcherEverywhere implements Callable<String> {
         
         
         @Override public String call() {
@@ -241,10 +273,10 @@ class ParserPSTMessages extends ParserFoldersWithAttachments {
             StringBuilder stringBuilder = new StringBuilder();
             pstFolder = (PSTFolder) PSTObject.detectAndLoadPSTObject(pstFile, folderID);
             if (pstFolder instanceof PSTFolder) {
-                throw new IllegalAccessError(getClass().getSimpleName() + ".foldersSearch");
+                stringBuilder.append(parseFolder(pstFolder, thing));
             }
             else {
-                stringBuilder.append(pstFolder.getDescriptorNodeId());
+                System.out.println(pstFolder.getDisplayName() + " isn't a PSTFolder");
             }
             return stringBuilder.toString();
         }

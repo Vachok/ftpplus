@@ -95,7 +95,7 @@ class ParserFoldersWithAttachments {
         for (String s : split) {
             retDeq.add(s.replaceAll("(\\Q|\\E)*(\\d\\Q: \\E)", ""));
         }
-        messageToUser.info(FileSystemWorkerOST.writeStringToFile(ConstantsOst.FILENAME_FOLDERSTXT, showFoldersIerarchy));
+        messageToUser.info(String.valueOf(FileSystemWorkerOST.writeStringToFile(ConstantsOst.FILENAME_FOLDERSTXT, showFoldersIerarchy)));
         return retDeq;
     }
     

@@ -10,6 +10,8 @@ import ru.vachok.ostpst.utils.CharsetEncoding;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadMXBean;
 
 
 @SuppressWarnings("ALL") public class ParserPSTMessagesTest {
@@ -35,7 +37,8 @@ import java.io.IOException;
     
     @Test
     public void searchEverywhere() {
-        String thingStr = new CharsetEncoding("windows-1251").getStrInAnotherCharset("Входящие");
+        ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
+        String thingStr = new CharsetEncoding("windows-1251").getStrInAnotherCharset("MEGUSTRO");
         String fileName = "c:\\Users\\ikudryashov\\OneDrive\\Документы\\Файлы Outlook\\ksamarchenko.ost";
         try {
             ParserPSTMessages pstMessages = new ParserPSTMessages(fileName, thingStr);
@@ -45,5 +48,6 @@ import java.io.IOException;
         catch (PSTException | IOException e) {
             e.printStackTrace();
         }
+        System.out.println(threadMXBean.getCurrentThreadCpuTime());
     }
 }
