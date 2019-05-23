@@ -106,6 +106,7 @@ public class PhotoConverterSRV {
             messageToUser.errorAlert(getClass().getSimpleName(), "psCommands", e.getMessage());
             stringBuilder.append(e.getMessage()).append("<p>").append(new TForms().fromArray(e, true));
         }
+        stringBuilder.append("ImportSystemModules").append("<br>");
         for (String s : psCommands) {
             stringBuilder.append(s);
             stringBuilder.append("<br>");
