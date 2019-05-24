@@ -37,7 +37,7 @@ import java.util.concurrent.RejectedExecutionException;
 /**
  Ssh factory.
  <p>
- Фабрика, для ssh-комманд.
+ Фабрика, для sshactions-комманд.
  */
 @SuppressWarnings("unused")
 public class SSHFactory implements Callable<String> {
@@ -105,9 +105,9 @@ public class SSHFactory implements Callable<String> {
     }
     
     /**
-     Gets command ssh.
-     
-     @return the command ssh
+     Gets command sshactions.
+ 
+     @return the command sshactions
      */
     public String getCommandSSH() {
         return commandSSH;
@@ -134,7 +134,7 @@ public class SSHFactory implements Callable<String> {
         byte[] bytes = new byte[ConstantsFor.KBYTE];
         int readBytes;
         try {
-            this.tempFile = Files.createTempFile(classCaller, "ssh");
+            this.tempFile = Files.createTempFile(classCaller, "sshactions");
             InputStream connect = connect();
             OutputStream outputStream = new FileOutputStream(tempFile.toFile());
             while (true) {
@@ -301,19 +301,19 @@ public class SSHFactory implements Callable<String> {
         }
     
         /**
-         Gets command ssh.
-     
-         @return the command ssh
+         Gets command sshactions.
+ 
+         @return the command sshactions
          */
         public String getCommandSSH() {
             return commandSSH;
         }
         
         /**
-         Sets command ssh.
-         
-         @param commandSSH the command ssh
-         @return the command ssh
+         Sets command sshactions.
+ 
+         @param commandSSH the command sshactions
+         @return the command sshactions
          */
         public SSHFactory.Builder setCommandSSH(String commandSSH) {
             this.commandSSH = commandSSH;
@@ -401,9 +401,9 @@ public class SSHFactory implements Callable<String> {
         }
     
         /**
-         Build ssh factory.
-     
-         @return the ssh factory
+         Build sshactions factory.
+ 
+         @return the sshactions factory
          */
         public SSHFactory build() {
             return sshFactory;

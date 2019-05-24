@@ -17,7 +17,8 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.accesscontrol.MatrixSRV;
-import ru.vachok.networker.accesscontrol.SshActs;
+import ru.vachok.networker.accesscontrol.sshactions.SshActs;
+import ru.vachok.networker.accesscontrol.sshactions.Tracerouting;
 import ru.vachok.networker.ad.user.MoreInfoWorker;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.VersionInfo;
@@ -34,9 +35,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.stream.Stream;
 
 
@@ -124,9 +123,9 @@ public class MatrixCtr {
     public void setCurrentProvider() {
         SshActs sshActs = new AppComponents().sshActs();
         try {
-            this.currentProvider = sshActs.getProviderTraceStr();
+            this.currentProvider = new Tracerouting().call();
         }
-        catch (InterruptedException | ExecutionException | TimeoutException e) {
+        catch (Exception e) {
             this.currentProvider = "<br><a href=\"/makeok\">" + e.getMessage() + "</a><br>";
             Thread.currentThread().interrupt();
         }

@@ -9,6 +9,7 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.*;
 import ru.vachok.networker.abstr.ConnectToMe;
 import ru.vachok.networker.abstr.MakeConvert;
+import ru.vachok.networker.accesscontrol.sshactions.Tracerouting;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.mailserver.OstLoader;
 import ru.vachok.networker.services.MessageLocal;
@@ -18,9 +19,7 @@ import java.io.*;
 import java.net.*;
 import java.util.Enumeration;
 import java.util.Scanner;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 
 /**
@@ -142,19 +141,19 @@ public class TestServer implements ConnectToMe {
             System.setOut(System.err);
             accepSoc();
         }
-        else if (scannerLine.equals("ssh")) {
+        else if (scannerLine.equals("sshactions")) {
             try {
                 System.setOut(System.err);
-                printStreamF.println(new AppComponents().sshActs().getProviderTraceStr());
+                printStreamF.println(new Tracerouting().call());
                 accepSoc();
             }
-            catch (InterruptedException | TimeoutException | ExecutionException e) {
+            catch (Exception e) {
                 System.setOut(System.err);
                 messageToUser.error(e.getMessage());
                 socket.close();
             }
         }
-        else if (scannerLine.contains("ssh:")) {
+        else if (scannerLine.contains("sshactions:")) {
             System.setOut(System.err);
             String sshCom = scannerLine.split(":")[1];
             SSHFactory buildSSH = new SSHFactory.Builder(ConstantsFor.IPADDR_SRVGIT, sshCom, getClass().getSimpleName()).build();
@@ -182,7 +181,7 @@ public class TestServer implements ConnectToMe {
             accepSoc();
         }
         else if (line.equalsIgnoreCase("thr")) {
-            printStreamF.println(AppComponents.threadConfig().toString());
+            printStreamF.println(AppComponents.threadConfig());
             accepSoc();
         }
         else if (line.equalsIgnoreCase("exitapp")) {

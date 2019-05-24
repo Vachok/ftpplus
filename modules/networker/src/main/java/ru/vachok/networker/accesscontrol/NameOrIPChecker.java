@@ -56,11 +56,11 @@ public class NameOrIPChecker {
      Резолвинг имени компа, или допись {@link ConstantsFor#DOMAIN_EATMEATRU}
      <p>
      {@link #resolveName(String)}
-
-     @param userIn пользовательский ввод
+ 
      @return имя ПК
+     @param userIn пользовательский ввод
      */
-    String checkPat(String userIn) {
+    public String checkPat(String userIn) {
         StringBuilder stringBuilder = new StringBuilder();
         this.userIn = userIn;
         Matcher mName = PATTERN_NAME.matcher(userIn);
