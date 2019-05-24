@@ -7,6 +7,7 @@ import com.pff.PSTMessage;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.ostpst.ConstantsOst;
+import ru.vachok.ostpst.utils.FileSystemWorkerOST;
 import ru.vachok.ostpst.utils.TFormsOST;
 
 import java.io.*;
@@ -17,7 +18,7 @@ import java.nio.file.Paths;
 
 /**
  @since 23.05.2019 (12:41) */
-class ParserAttachment {
+class WriterMessageAndAttachments {
     
     
     private MessageToUser messageToUser = new MessageCons(getClass().getSimpleName());
@@ -29,25 +30,27 @@ class ParserAttachment {
             }
         }
         else {
-            stringBuilder.append(message.getSubject() + " has no attachments");
+            Path dirS = getDirectories(path, message.getDescriptorNodeId());
+            stringBuilder.append(writeMessageNoAtt(dirS, message));
         }
         return stringBuilder.toString();
     }
     
-    private void hasAtt(StringBuilder stringBuilder, int i, String path, PSTMessage message) {
-        Path directories = null;
-        try {
-            Path dir = Paths.get(path + ConstantsOst.SYSTEM_SEPARATOR + message.getDescriptorNodeId());
-            if (dir.toFile().exists() && dir.toFile().isDirectory()) {
-                directories = dir;
-            }
-            else {
-                directories = Files.createDirectories(dir);
-            }
+    private String writeMessageNoAtt(Path directories, PSTMessage message) {
+        String pathDirStr = directories.toAbsolutePath() + ConstantsOst.SYSTEM_SEPARATOR + "message.txt";
+        try (OutputStream outputStream = new FileOutputStream(pathDirStr);
+             PrintStream printStream = new PrintStream(outputStream, true, "Windows-1251")
+        ) {
+            printStream.println(message);
         }
         catch (IOException e) {
-            stringBuilder.append(e.getMessage()).append("\n").append(new TFormsOST().fromArray(e));
+            return e.getMessage() + "\n" + new TFormsOST().fromArray(e);
         }
+        return pathDirStr;
+    }
+    
+    private void hasAtt(StringBuilder stringBuilder, int i, String path, PSTMessage message) {
+        Path directories = getDirectories(path, message.getDescriptorNodeId());
         stringBuilder.append(i);
         stringBuilder.append(" attachment:\n");
         PSTAttachment attachment = null;
@@ -61,6 +64,14 @@ class ParserAttachment {
         if (attachment.getSize() > 1024 * 10 & attachment.getFilename().contains(".jpg")) {
             writeAttachment(attachment, nameAtt, stringBuilder);
         }
+        else {
+            try {
+                Files.deleteIfExists(directories);
+            }
+            catch (IOException e) {
+                messageToUser.error(FileSystemWorkerOST.error(getClass().getSimpleName() + ".hasAtt", e));
+            }
+        }
     }
     
     private void writeAttachment(PSTAttachment attachment, String nameAtt, StringBuilder stringBuilder) {
@@ -72,7 +83,6 @@ class ParserAttachment {
                     stringBuilder.append(readB).append(" bytes ").append(attachment.getMimeTag()).append(" ");
                     try (OutputStream attOut = new FileOutputStream(nameAtt)) {
                         attOut.write(bytes);
-                        System.out.println("Attachment saved to: " + nameAtt);
                     }
                 }
             }
@@ -81,5 +91,22 @@ class ParserAttachment {
             stringBuilder.append(e.getMessage()).append("\n").append(new TFormsOST().fromArray(e));
         }
         
+    }
+    
+    private Path getDirectories(String path, long id) {
+        Path directories = null;
+        try {
+            Path dir = Paths.get(path + ConstantsOst.SYSTEM_SEPARATOR + id);
+            if (dir.toFile().exists() && dir.toFile().isDirectory()) {
+                directories = dir;
+            }
+            else {
+                directories = Files.createDirectories(dir);
+            }
+        }
+        catch (IOException e) {
+            messageToUser.info(getClass().getSimpleName() + ".getDirectories", "e", " = " + e);
+        }
+        return directories;
     }
 }

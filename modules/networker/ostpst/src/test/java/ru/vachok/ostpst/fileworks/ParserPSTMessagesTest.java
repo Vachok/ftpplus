@@ -13,7 +13,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
-import java.util.concurrent.TimeUnit;
 
 
 @SuppressWarnings("ALL") public class ParserPSTMessagesTest {
@@ -41,14 +40,13 @@ import java.util.concurrent.TimeUnit;
     public void searchEverywhere() {
         ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
         final long start = System.currentTimeMillis();
-        String thingStr = new CharsetEncoding("windows-1251").getStrInAnotherCharset("");
+        String thingStr = new CharsetEncoding("windows-1251").getStrInAnotherCharset("еее");
         String fileName = "c:\\Users\\ikudryashov\\OneDrive\\Документы\\Файлы Outlook\\ksamarchenko.ost";
         try {
             ParserPSTMessages pstMessages = new ParserPSTMessages(fileName, thingStr);
             String searchMessage = pstMessages.searchMessage();
             System.out.println(searchMessage);
             final long stop = System.currentTimeMillis();
-            System.out.println(TimeUnit.NANOSECONDS.toMillis(threadMXBean.getCurrentThreadCpuTime()) + " cpu time, total time: " + TimeUnit.MILLISECONDS.toSeconds(stop - start));
         }
         catch (PSTException | IOException | ArrayIndexOutOfBoundsException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TFormsOST().fromArray(e));

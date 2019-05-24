@@ -240,9 +240,11 @@ public class MenuItemsConsoleImpl implements MenuItems {
         }
         try {
             makeConvertOrCopy.searchMessages(whatFind);
+            askUser();
         }
         catch (PSTException | IOException e) {
             messageToUser.error(FileSystemWorkerOST.error(getClass().getSimpleName() + ".ansEightSearchEverywhere.makeConvert", e));
+            new MenuConsoleLocal().showMenu();
         }
     }
     
