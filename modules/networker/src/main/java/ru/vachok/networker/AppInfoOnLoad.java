@@ -11,6 +11,7 @@ import ru.vachok.networker.abstr.InternetUse;
 import ru.vachok.networker.accesscontrol.TemporaryFullInternet;
 import ru.vachok.networker.accesscontrol.common.CommonSRV;
 import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
+import ru.vachok.networker.accesscontrol.sshactions.SquidChecker;
 import ru.vachok.networker.componentsrepo.VersionInfo;
 import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -233,7 +234,6 @@ public class AppInfoOnLoad implements Runnable {
         messageToUser.warn(osName);
         final long stArt = System.currentTimeMillis();
         ScheduledThreadPoolExecutor scheduledExecutorService = AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor();
-        
         String thisPC = ConstantsFor.thisPC();
         AppInfoOnLoad.miniLogger.add(thisPC);
     
@@ -279,6 +279,8 @@ public class AppInfoOnLoad implements Runnable {
             InternetUse internetUse = new InetUserPCName();
             int cleanInetstatDB = internetUse.cleanTrash();
         }, 4, ConstantsFor.DELAY, TimeUnit.MINUTES);
+        scheduledExecutorService.scheduleWithFixedDelay(new SquidChecker(), 5, ConstantsFor.DELAY * 2, TimeUnit.MINUTES);
+        
         String msg = new StringBuilder()
             .append(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(AppInfoOnLoad.thisDelay)))
             .append(DiapazonedScan.getInstance().getClass().getSimpleName())
