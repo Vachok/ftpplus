@@ -180,11 +180,12 @@ class ParserPSTMessages extends ParserFolders {
     }
     
     private String showMessage(long msgID) throws PSTException, IOException {
-        PSTMessage pstMessage = (PSTMessage) PSTObject.detectAndLoadPSTObject(new PSTFileNameConverter().getPSTFile(fileName), msgID);
+        PSTObject pstObject = PSTObject.detectAndLoadPSTObject(new PSTFileNameConverter().getPSTFile(fileName), msgID);
         StringBuilder stringBuilder = new StringBuilder();
-        System.out.println(pstMessage.getBodyPrefix());
-        System.out.println(pstMessage.getTransportMessageHeaders());
-        if (pstMessage.hasAttachments()) {
+        if (pstObject instanceof PSTMessage) {
+            PSTMessage pstMessage = (PSTMessage) pstObject;
+            System.out.println(pstMessage.getBodyPrefix());
+            System.out.println(pstMessage.getTransportMessageHeaders());
             new WriterMessageAndAttachments().saveAttachment(Paths.get(".").toAbsolutePath().normalize() + ConstantsOst.SYSTEM_SEPARATOR + "attachments", pstMessage, stringBuilder);
         }
         return stringBuilder.toString();

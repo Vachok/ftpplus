@@ -7,7 +7,6 @@ import com.pff.PSTMessage;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.ostpst.ConstantsOst;
-import ru.vachok.ostpst.utils.FileSystemWorkerOST;
 import ru.vachok.ostpst.utils.TFormsOST;
 
 import java.io.*;
@@ -69,7 +68,7 @@ class WriterMessageAndAttachments {
                 Files.deleteIfExists(directories);
             }
             catch (IOException e) {
-                messageToUser.error(FileSystemWorkerOST.error(getClass().getSimpleName() + ".hasAtt", e));
+                System.err.println(e.getMessage());
             }
         }
     }
