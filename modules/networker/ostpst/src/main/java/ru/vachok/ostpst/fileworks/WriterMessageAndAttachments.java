@@ -23,13 +23,14 @@ class WriterMessageAndAttachments {
     private MessageToUser messageToUser = new MessageCons(getClass().getSimpleName());
     
     String saveAttachment(String path, PSTMessage message, StringBuilder stringBuilder) {
+        Path dirS = getDirectories(path, message.getDescriptorNodeId());
         if (message.hasAttachments()) {
             for (int i = 0; i < message.getNumberOfAttachments(); i++) {
                 hasAtt(stringBuilder, i, path, message);
+                writeMessageNoAtt(dirS, message);
             }
         }
         else {
-            Path dirS = getDirectories(path, message.getDescriptorNodeId());
             stringBuilder.append(writeMessageNoAtt(dirS, message));
         }
         return stringBuilder.toString();
