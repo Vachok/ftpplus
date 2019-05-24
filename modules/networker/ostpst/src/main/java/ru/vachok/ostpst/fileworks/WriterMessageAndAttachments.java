@@ -64,12 +64,7 @@ class WriterMessageAndAttachments {
             writeAttachment(attachment, nameAtt, stringBuilder);
         }
         else {
-            try {
-                Files.deleteIfExists(directories);
-            }
-            catch (IOException e) {
-                System.err.println(e.getMessage());
-            }
+            directories.toFile().delete();
         }
     }
     
