@@ -226,18 +226,23 @@ public class MenuItemsConsoleImpl implements MenuItems {
     }
     
     private void ansEightSearchEverywhere() {
+        String whatFind = null;
         try (Scanner scanner = new Scanner(System.in)) {
             System.out.println("Enter what are U wanna find:");
-            String whatFind = scanner.nextLine();
+            whatFind = scanner.nextLine();
             System.out.println("Started Search. It takes about 8-10 minutes. After all, see results in " + Paths.get(".").toAbsolutePath().normalize());
             System.out.println(System.getProperties().getProperty("encoding"));
-            Thread.sleep(2000);
-            makeConvertOrCopy.searchMessages(whatFind);
+            Thread.sleep(1500);
+        }
+        catch (InterruptedException e) {
+            messageToUser.error(FileSystemWorkerOST.error(getClass().getSimpleName() + ".ansEightSearchEverywhere.scanner", e));
             askUser();
         }
-        catch (InterruptedException | PSTException | IOException e) {
-            messageToUser.error(FileSystemWorkerOST.error(getClass().getSimpleName() + ".ansEightSearchEverywhere", e));
-            askUser();
+        try {
+            makeConvertOrCopy.searchMessages(whatFind);
+        }
+        catch (PSTException | IOException e) {
+            messageToUser.error(FileSystemWorkerOST.error(getClass().getSimpleName() + ".ansEightSearchEverywhere.makeConvert", e));
         }
     }
     

@@ -15,6 +15,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadMXBean;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -29,8 +31,6 @@ class ParserPSTMessages extends ParserFolders {
     private MessageToUser messageToUser = new MessageCons(getClass().getSimpleName());
     
     private PSTFolder pstFolder;
-    
-    private long folderID;
     
     private String fileName;
     
@@ -218,10 +218,14 @@ class ParserPSTMessages extends ParserFolders {
         return stringBuilder.toString();
     }
     
+    
     class SearcherEverywhere implements Callable<String> {
         
         
+        private ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
+        
         @Override public String call() {
+            threadMXBean.resetPeakThreadCount();
             String searchByThing = searchByThing();
             openPath(searchByThing);
             return searchByThing;
@@ -230,7 +234,7 @@ class ParserPSTMessages extends ParserFolders {
         private void openPath(String searchByThing) {
             Path writeStringToFile = FileSystemWorkerOST.writeStringToFile("search_" + (System.currentTimeMillis() / 1000) + ".txt", searchByThing);
             try {
-                Runtime.getRuntime().exec(writeStringToFile.toString());
+                Runtime.getRuntime().exec("notepad \"" + writeStringToFile.getParent() + "\"");
             }
             catch (IOException e) {
                 System.err.println(e.getMessage() + "\n" + new TFormsOST().fromArray(e));
@@ -238,6 +242,7 @@ class ParserPSTMessages extends ParserFolders {
         }
         
         private String searchByThing() {
+            final long start = System.currentTimeMillis();
             StringBuilder stringBuilder = new StringBuilder();
             ParserFolders parserFolders = new ParserFolders(fileName);
             try {
@@ -252,14 +257,23 @@ class ParserPSTMessages extends ParserFolders {
                     if (folderName.toLowerCase().contains(thing)) {
                         stringBuilder.append(folderName).append("\n");
                     }
-                    folderID = Long.parseLong(folderName.split(" id ")[1]);
+                    long folderID = Long.parseLong(folderName.split(" id ")[1]);
                     System.out.println(folderID + " = " + folderName);
                     stringBuilder.append(foldersSearch(folderName.split("\\Q (item\\E")[0], folderID));
                 }
             }
-            catch (IOException | PSTException | ArrayIndexOutOfBoundsException e) {
+            catch (IOException | PSTException e) {
                 stringBuilder.append(e.getMessage()).append("\n").append(new TFormsOST().fromArray(e));
             }
+            catch (ArrayIndexOutOfBoundsException ignore) {
+                //
+            }
+            final long stop = System.currentTimeMillis();
+    
+            System.out.println(getClass().getSimpleName() + ".searchByThing is end work");
+            System.out.println("Search complete. It taken " + TimeUnit.MILLISECONDS.toSeconds(stop - start) + " seconds of human time, and " +
+                TimeUnit.NANOSECONDS.toMillis(threadMXBean.getCurrentThreadCpuTime()) + " millis of cpu time.");
+            
             return stringBuilder.toString();
         }
     
