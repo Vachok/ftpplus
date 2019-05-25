@@ -266,6 +266,7 @@ public class MenuItemsConsoleImpl implements MenuItems {
             this.fileName = properties.getProperty(ConstantsOst.PR_TMPFILE);
             System.out.println("Your last copy: " + fileName);
             System.out.println("c - continue last");
+            new MenuItemsConsoleImpl(fileName).askUser();
         }
         catch (IOException e) {
             messageToUser.error(e.getMessage());
