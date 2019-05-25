@@ -67,6 +67,7 @@ public class TestServer implements ConnectToMe {
         }
         catch (Exception e) {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ConstantsFor.METHNAME_RUNSOCKET, e));
+            runSocket();
         }
     }
     
@@ -102,14 +103,15 @@ public class TestServer implements ConnectToMe {
             printStreamF.println("Press ENTER. \nOr press something else for quit...");
             printStreamF.println(TimeUnit.MILLISECONDS.toSeconds(timeout) + " socket timeout in second");
             while (socket.isConnected()) {
-                if (scanner.hasNextLine()) {
                     System.setIn(socket.getInputStream());
                     System.setOut(printStreamF);
+                if (socket.isConnected()) {
                     scanInput(scanner.nextLine());
                     printStream.print(iStream.read());
                 }
-                if (!socket.isConnected()) {
+                else {
                     System.setOut(System.err);
+                    scanner.close();
                 }
             }
         }
