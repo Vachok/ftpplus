@@ -11,7 +11,7 @@ import java.util.Set;
 
 /**
  @since 14.05.2019 (10:17) */
-public class TForms {
+public class TFormsOST {
     
     
     public String fromArray(Exception e) {

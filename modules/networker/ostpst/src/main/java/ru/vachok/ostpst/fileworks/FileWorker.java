@@ -6,7 +6,7 @@ package ru.vachok.ostpst.fileworks;
 public interface FileWorker {
     
     
-    boolean chkFile(String fileName);
+    String chkFile();
     
     String clearCopy();
 }

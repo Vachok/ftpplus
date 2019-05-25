@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Savepoint;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -53,7 +52,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
      */
     private Properties propsToSave = new Properties();
     
-    private boolean isForced = false;
+    private boolean isForced;
     
     private AtomicBoolean retBool = new AtomicBoolean(false);
     
@@ -114,39 +113,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
     }
     
     
-    @Override public void setSavepoint(Connection connection) {
-        throw in_progress;
-    }
-    
-    
-    @Override public MysqlDataSource getDataSource() {
-        MysqlDataSource dataSource = new RegRuMysql().getDataSource();
-        dataSource.setRelaxAutoCommit(true);
-        return dataSource;
-    }
-    
-    
-    @Override public Savepoint getSavepoint(Connection connection) {
-        Savepoint before = null;
-        try {
-        
-            before = connection.setSavepoint("before");
-        }
-        catch (SQLException e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".getSavepoint", e));
-        }
-        return Objects.requireNonNull(before, "NO SAVEPOINT");
-    }
-    
-    
     @SuppressWarnings("DuplicateStringLiteralInspection") private boolean upProps() {
         String methName = ".upProps";
         final String sql = "insert into ru_vachok_networker (property, valueofproperty, javaid) values (?,?,?)";
         miniLogger.add("2. " + sql);
         FileSystemWorker.writeFile(getClass().getSimpleName() + ".mini", miniLogger.stream());
-        Savepoint savepoint = null;
         try (Connection c = mysqlDataSource.getConnection()) {
-            savepoint = getSavepoint(c);
             Objects.requireNonNull(propsToSave)
                 .store(new FileOutputStream(ConstantsFor.class.getSimpleName() + ConstantsFor.FILEEXT_PROPERTIES), getClass().getSimpleName() + ".upProps");
             int executeUpdateInt = 0;
@@ -167,20 +139,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
         }
         catch (SQLException e) {
             messageToUser.error(e.getMessage());
-            rollbackSavepoint(Objects.requireNonNull(savepoint, "NO SAVEPOINT"));
         }
         return false;
     }
-    
-    private void rollbackSavepoint(Savepoint savepoint) {
-        try {
-            messageToUser.info(getClass().getSimpleName() + ".rollbackSavepoint", "savepoint", " = " + savepoint.getSavepointName());
-        }
-        catch (SQLException e) {
-            System.err.println(e.getMessage());
-        }
-    }
-    
     
     private Properties findRightProps() {
         File prFile = new File(ConstantsFor.class.getSimpleName() + ConstantsFor.FILEEXT_PROPERTIES);

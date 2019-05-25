@@ -12,6 +12,7 @@ import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
+import ru.vachok.networker.services.SystemRuntime;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -78,7 +79,12 @@ public class PfListsSrv {
     }
     
     public String runCom() {
-        return new SSHFactory.Builder(DEFAULT_CONNECT_SRV, commandForNatStr, getClass().getSimpleName()).build().call();
+        if (System.getProperty("os.name").toLowerCase().contains(ConstantsFor.PR_WINDOWSOS)) {
+            return new SSHFactory.Builder(DEFAULT_CONNECT_SRV, commandForNatStr, getClass().getSimpleName()).build().call();
+        }
+        else {
+            return new SystemRuntime(commandForNatStr).call();
+        }
     }
     
     /**

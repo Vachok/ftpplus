@@ -17,7 +17,6 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.actions.ActionCloseMsg;
-import ru.vachok.networker.statistics.PCStats;
 import ru.vachok.networker.systray.MessageToTray;
 
 import java.io.File;
@@ -72,25 +71,6 @@ public class NetScannerSvc {
     
     private static final Set<String> PC_NAMES_SET = new HashSet<>();
     
-    private String thrInformation;
-    
-    public String getThrInformation() {
-        return thrInformation;
-    }
-    
-    public void setThrInformation(String thrInformation) {
-        this.thrInformation = thrInformation;
-        try (OutputStream outputStream = new FileOutputStream("thrInformation", true)) {
-            outputStream.write(new Date().toString().getBytes());
-            outputStream.write("\n".getBytes());
-            outputStream.write(thrInformation.getBytes());
-            outputStream.write("\n\n\n".getBytes());
-        }
-        catch (IOException e) {
-            messageToUser.error(e.getMessage());
-        }
-    }
-    
     private static final String METH_GETPCSASYNC = ".getPCsAsync";
     
     /**
@@ -116,6 +96,8 @@ public class NetScannerSvc {
     
     private static String inputWithInfoFromDB = "";
     
+    private String thrInformation;
+    
     /**
      Компьютеры онлайн
      */
@@ -138,6 +120,7 @@ public class NetScannerSvc {
         this.netWorkMap = LastNetScan.getLastNetScan().getNetWork();
     }
     
+    
     static {
         try {
             connection = new AppComponents().connection(ConstantsNet.DB_NAME);
@@ -148,6 +131,23 @@ public class NetScannerSvc {
         }
     }
     
+    
+    public String getThrInformation() {
+        return thrInformation;
+    }
+    
+    public void setThrInformation(String thrInformation) {
+        this.thrInformation = thrInformation;
+        try (OutputStream outputStream = new FileOutputStream("thrInformation", true)) {
+            outputStream.write(new Date().toString().getBytes());
+            outputStream.write("\n".getBytes());
+            outputStream.write(thrInformation.getBytes());
+            outputStream.write("\n\n\n".getBytes());
+        }
+        catch (IOException e) {
+            messageToUser.error(e.getMessage());
+        }
+    }
     
     /**
      @return {@link #netScannerSvcInst}
@@ -254,7 +254,7 @@ public class NetScannerSvc {
     }
     
     public Set<String> getPcNames() {
-        fileCreate(true);
+        fileScanTMPCreate(true);
         getPCsAsync();
         return PC_NAMES_SET;
     }
@@ -330,6 +330,7 @@ public class NetScannerSvc {
         try {
             byName = InetAddress.getByName(pcName);
             reachable = byName.isReachable(ConstantsFor.TIMEOUT_650);
+            //noinspection CastCanBeRemovedNarrowingVariableType
             ((MoreInfoWorker) infoWorker).setOnline(reachable);
     
             String someMore = infoWorker.getInfoAbout();
@@ -363,7 +364,7 @@ public class NetScannerSvc {
     /**
      Основной скан-метод.
      <p>
-     1. {@link #fileCreate(boolean)}. Убедимся, что файл создан. <br>
+     1. {@link #fileScanTMPCreate(boolean)}. Убедимся, что файл создан. <br>
      2. {@link ActionCloseMsg} , 3. {@link MessageToTray}. Создаём взаимодействие с юзером. <br>
      3. {@link ConstantsFor#getUpTime()} - uptime приложения в 4. {@link MessageToTray#info(java.lang.String, java.lang.String, java.lang.String)}. <br>
      5. {@link NetScannerSvc#getPCNamesPref(java.lang.String)} - скан сегмента. <br>
@@ -413,8 +414,6 @@ public class NetScannerSvc {
     
         LastNetScan.getLastNetScan().setTimeLastScan(new Date());
     
-        System.out.println(new PCStats().getStats());
-    
         boolean isLastModSet = new File(ConstantsFor.class.getSimpleName() + ConstantsFor.FILEEXT_PROPERTIES).setLastModified(ConstantsFor.DELAY);
         boolean isForceSaved = new AppComponents().updateProps(LOCAL_PROPS);
     
@@ -423,20 +422,19 @@ public class NetScannerSvc {
         FileSystemWorker.writeFile("unused.ips", unusedNamesTree.stream());
     
         boolean ownObject = new ExitApp(ConstantsFor.FILENAME_ALLDEVMAP, ConstantsNet.getAllDevices()).writeOwnObject();
-        boolean isFile = fileCreate(false);
+        boolean isFile = fileScanTMPCreate(false);
         File file = new File(ConstantsFor.FILENAME_ALLDEVMAP);
         String bodyMsg = "Online: " + onLinePCsNum + ".\n"
             + upTime + " min uptime. \n" + "AppProps database updated: " + isForceSaved + " ; " + isFile + " = scan.tmp\n" +
             this.thrInformation;
         try {
-            new MessageSwing().infoTimer(50, bodyMsg);
+            new MessageSwing().infoTimer(40, bodyMsg);
         }
         catch (Exception e) {
             LOGGER.warn(bodyMsg);
         }
         this.onLinePCsNum = 0;
     }
-    
     
     /**
      Если ПК не пингуется
@@ -457,9 +455,6 @@ public class NetScannerSvc {
         LOGGER.warn(byName.toString(), onLines, someMore);
     }
     
-    
-    
-    
     /**
      Создание lock-файла
      <p>
@@ -469,7 +464,7 @@ public class NetScannerSvc {
      
      @see #getPCsAsync()
      */
-    private boolean fileCreate(boolean create) {
+    private boolean fileScanTMPCreate(boolean create) {
         File file = new File("scan.tmp");
         try {
             if (create) {
@@ -480,7 +475,7 @@ public class NetScannerSvc {
             }
         }
         catch (IOException e) {
-            FileSystemWorker.error("NetScannerSvc.fileCreate", e);
+            FileSystemWorker.error("NetScannerSvc.fileScanTMPCreate", e);
         }
         boolean exists = file.exists();
         if (exists) {

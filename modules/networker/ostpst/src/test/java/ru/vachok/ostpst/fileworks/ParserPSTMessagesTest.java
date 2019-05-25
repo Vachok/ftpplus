@@ -6,15 +6,19 @@ package ru.vachok.ostpst.fileworks;
 import com.pff.PSTException;
 import org.testng.Assert;
 import org.testng.annotations.Test;
+import ru.vachok.ostpst.utils.CharsetEncoding;
+import ru.vachok.ostpst.utils.TFormsOST;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadMXBean;
 
 
 @SuppressWarnings("ALL") public class ParserPSTMessagesTest {
     
     
-    @Test()
+    @Test(enabled = false)
     public void searchTest() {
         if (!new File("tmp_t.p.magdich.pst").exists()) {
             RNDFileCopy rndFileCopy = new RNDFileCopy("\\\\192.168.14.10\\IT-Backup\\Mailboxes_users\\t.p.magdich.pst");
@@ -29,6 +33,23 @@ import java.io.IOException;
         }
         catch (PSTException | IOException e) {
             e.printStackTrace();
+        }
+    }
+    
+    @Test
+    public void searchEverywhere() {
+        ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
+        final long start = System.currentTimeMillis();
+        String thingStr = new CharsetEncoding("windows-1251").getStrInAnotherCharset("еее");
+        String fileName = "c:\\Users\\ikudryashov\\OneDrive\\Документы\\Файлы Outlook\\ksamarchenko.ost";
+        try {
+            ParserPSTMessages pstMessages = new ParserPSTMessages(fileName, thingStr);
+            String searchMessage = pstMessages.searchMessage();
+            System.out.println(searchMessage);
+            final long stop = System.currentTimeMillis();
+        }
+        catch (PSTException | IOException | ArrayIndexOutOfBoundsException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TFormsOST().fromArray(e));
         }
     }
 }

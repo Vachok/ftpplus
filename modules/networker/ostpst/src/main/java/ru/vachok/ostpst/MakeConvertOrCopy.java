@@ -3,6 +3,8 @@
 package ru.vachok.ostpst;
 
 
+import com.pff.PSTException;
+
 import java.io.IOException;
 import java.util.Deque;
 import java.util.List;
@@ -10,7 +12,7 @@ import java.util.List;
 
 /**
  @since 30.04.2019 (9:19) */
-public interface MakeConvert {
+public interface MakeConvertOrCopy {
     
     
     String convertToPST();
@@ -46,4 +48,6 @@ public interface MakeConvert {
     String searchMessages(long folderID, long msgID);
     
     String searchMessages(long folderID, String msgSubject);
+    
+    String searchMessages(String someThing) throws PSTException, IOException;
 }

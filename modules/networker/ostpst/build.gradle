@@ -7,7 +7,7 @@ plugins {
 }
 
 group 'ru.vachok.ostpst'
-version '8.0.1920'
+version '8.0.1921'
 
 sourceCompatibility = 1.8
 
@@ -50,7 +50,7 @@ jar {
     version = project.version
     manifest {
         attributes(
-            'Main-Class': 'ru.vachok.ostpst.OstToPst',
+            'Main-Class': 'ru.vachok.ostpst.OstToPstStart',
             'Class-Path': configurations.runtime.collect() { 'lib/' + it.name }.join('')
         )
     }

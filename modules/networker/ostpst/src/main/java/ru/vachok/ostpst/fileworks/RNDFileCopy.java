@@ -6,9 +6,9 @@ package ru.vachok.ostpst.fileworks;
 import com.pff.PSTRAFileContent;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.ostpst.ConstantsFor;
+import ru.vachok.ostpst.ConstantsOst;
 import ru.vachok.ostpst.utils.CharsetEncoding;
-import ru.vachok.ostpst.utils.TForms;
+import ru.vachok.ostpst.utils.TFormsOST;
 
 import java.awt.*;
 import java.io.*;
@@ -52,9 +52,9 @@ class RNDFileCopy implements Serializable {
         threadMXBean.setThreadContentionMonitoringEnabled(true);
         try {
             this.properties = new Properties();
-            this.properties.load(new FileInputStream(ru.vachok.ostpst.ConstantsFor.FILENAME_PROPERTIES));
-            this.lastFileCaretPosition = Long.parseLong(properties.getProperty(ru.vachok.ostpst.ConstantsFor.PR_READING));
-            this.lastWritePosition = Long.parseLong(properties.getProperty(ru.vachok.ostpst.ConstantsFor.PR_WRITING));
+            this.properties.load(new FileInputStream(ConstantsOst.FILENAME_PROPERTIES));
+            this.lastFileCaretPosition = Long.parseLong(properties.getProperty(ConstantsOst.PR_READING));
+            this.lastWritePosition = Long.parseLong(properties.getProperty(ConstantsOst.PR_WRITING));
         }
         catch (NullPointerException | NumberFormatException e) {
             this.lastFileCaretPosition = 0;
@@ -78,7 +78,7 @@ class RNDFileCopy implements Serializable {
             filePath = new File(fileName);
         }
         catch (NullPointerException e) {
-            stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e));
+            stringBuilder.append(e.getMessage()).append("\n").append(new TFormsOST().fromArray(e));
         }
         String fileNameLocal = filePath.getName();
         try {
@@ -86,13 +86,13 @@ class RNDFileCopy implements Serializable {
             this.lastWritePosition = 0;
             Path absPath = Paths.get("tmp_" + fileNameLocal).toAbsolutePath();
             boolean tmpDel = Files.deleteIfExists(absPath);
-            Object read = properties.setProperty(ConstantsFor.PR_READING, "0");
-            Object write = properties.setProperty(ConstantsFor.PR_WRITING, "0");
-            properties.store(new FileOutputStream(ConstantsFor.FILENAME_PROPERTIES), "clearPositions");
+            Object read = properties.setProperty(ConstantsOst.PR_READING, "0");
+            Object write = properties.setProperty(ConstantsOst.PR_WRITING, "0");
+            properties.store(new FileOutputStream(ConstantsOst.FILENAME_PROPERTIES), "clearPositions");
             stringBuilder.append(tmpDel).append(" deleting post file: ").append(absPath).append(". ").append(read).append(" read, ").append(write).append(" write.");
         }
         catch (IOException e) {
-            stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e));
+            stringBuilder.append(e.getMessage()).append("\n").append(new TFormsOST().fromArray(e));
         }
         stringBuilder.append("\n\n").append(threadMXBean.getThreadInfo(Thread.currentThread().getId()));
         return stringBuilder.toString();
@@ -106,26 +106,26 @@ class RNDFileCopy implements Serializable {
             return "NO COPY!";
         }
         else if (newCP.equals("c")) {
-            return ConstantsFor.STR_NOT_READY_YET + "\n" + threadMXBean.getThreadInfo(Thread.currentThread().getId());
+            return ConstantsOst.STR_NOT_READY_YET + "\n" + threadMXBean.getThreadInfo(Thread.currentThread().getId());
         }
-        int megaByte = ConstantsFor.KBYTE_BYTES * ConstantsFor.KBYTE_BYTES;
+        int megaByte = ConstantsOst.KBYTE_BYTES * ConstantsOst.KBYTE_BYTES;
         StringBuilder stringBuilder = new StringBuilder();
         long tmpFileLen;
         try {
             tmpFileLen = new File("tmp_" + Paths.get(fileName).getFileName()).length();
             stringBuilder.append(tmpFileLen).append(" bytes copied\n");
             final long lengthOfCopy = new File(fileName).length();
-            int mb30 = (ConstantsFor.KBYTE_BYTES * ConstantsFor.KBYTE_BYTES) * 30;
+            int mb30 = (ConstantsOst.KBYTE_BYTES * ConstantsOst.KBYTE_BYTES) * 30;
             if (lengthOfCopy < mb30) {
-                properties.setProperty(ConstantsFor.PR_CAPACITY, String.valueOf(lengthOfCopy));
+                properties.setProperty(ConstantsOst.PR_CAPACITY, String.valueOf(lengthOfCopy));
             }
             else {
                 BigDecimal capLong = BigDecimal.valueOf((float) lengthOfCopy).divide(BigDecimal.valueOf((float) mb30), RoundingMode.HALF_DOWN);
                 BigDecimal bufLen = BigDecimal.valueOf(lengthOfCopy).divide(capLong, RoundingMode.HALF_DOWN);
         
                 long floor = lengthOfCopy - bufLen.longValue() * capLong.longValue();
-                properties.setProperty(ConstantsFor.PR_CAPACITY, String.valueOf(bufLen));
-                properties.setProperty(ConstantsFor.PR_CAPFLOOR, String.valueOf(floor));
+                properties.setProperty(ConstantsOst.PR_CAPACITY, String.valueOf(bufLen));
+                properties.setProperty(ConstantsOst.PR_CAPFLOOR, String.valueOf(floor));
             }
             long totalMegaBytesToCopy = lengthOfCopy / megaByte;
             while (true) {
@@ -139,21 +139,21 @@ class RNDFileCopy implements Serializable {
             }
         }
         catch (NullPointerException e) {
-            stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e));
+            stringBuilder.append(e.getMessage()).append("\n").append(new TFormsOST().fromArray(e));
         }
-        stringBuilder.append(Paths.get(properties.getProperty(ConstantsFor.PR_TMPFILE)).toAbsolutePath()).append("\n\n");
+        stringBuilder.append(Paths.get(properties.getProperty(ConstantsOst.PR_TMPFILE)).toAbsolutePath()).append("\n\n");
         stringBuilder.append(threadMXBean.getThreadInfo(Thread.currentThread().getId()));
         return stringBuilder.toString();
     }
     
     private long readRNDFileContentFromPosition() {
-        int capacity = ConstantsFor.KBYTE_BYTES * ConstantsFor.KBYTE_BYTES;
+        int capacity = ConstantsOst.KBYTE_BYTES * ConstantsOst.KBYTE_BYTES;
         byte[] bytes;
         try {
-            capacity = Integer.parseInt(properties.getProperty(ru.vachok.ostpst.ConstantsFor.PR_CAPACITY));
+            capacity = Integer.parseInt(properties.getProperty(ConstantsOst.PR_CAPACITY));
         }
         catch (Exception e) {
-            properties.setProperty(ru.vachok.ostpst.ConstantsFor.PR_CAPACITY, String.valueOf(ConstantsFor.KBYTE_BYTES * ConstantsFor.KBYTE_BYTES));
+            properties.setProperty(ConstantsOst.PR_CAPACITY, String.valueOf(ConstantsOst.KBYTE_BYTES * ConstantsOst.KBYTE_BYTES));
         }
         bytes = new byte[capacity];
         try {
@@ -170,7 +170,7 @@ class RNDFileCopy implements Serializable {
                 content = new PSTRAFileContent(file);
             }
             catch (FileNotFoundException e) {
-                content = new PSTRAFileContent(new File(new CharsetEncoding(ConstantsFor.CP_WINDOWS_1251).getStrInAnotherCharset(fileName)));
+                content = new PSTRAFileContent(new File(new CharsetEncoding(ConstantsOst.CP_WINDOWS_1251).getStrInAnotherCharset(fileName)));
             }
             if (lastWritePosition > lastFileCaretPosition) {
                 return lastWritePosition;
@@ -180,15 +180,15 @@ class RNDFileCopy implements Serializable {
             }
             int read = content.read(bytes);
             this.lastFileCaretPosition += read;
-            properties.setProperty(ru.vachok.ostpst.ConstantsFor.PR_READING, String.valueOf(lastFileCaretPosition));
-            properties.setProperty(ru.vachok.ostpst.ConstantsFor.PR_WRITING, String.valueOf(writeReaded(bytes, "tmp_" + file.getName())));
+            properties.setProperty(ConstantsOst.PR_READING, String.valueOf(lastFileCaretPosition));
+            properties.setProperty(ConstantsOst.PR_WRITING, String.valueOf(writeReaded(bytes, "tmp_" + file.getName())));
             properties.setProperty("file", file.getAbsolutePath());
-            properties.setProperty(ConstantsFor.PR_TMPFILE, "tmp_" + file.getName());
-            properties.store(new FileOutputStream(ru.vachok.ostpst.ConstantsFor.FILENAME_PROPERTIES), "readRNDFileContentFromPosition");
+            properties.setProperty(ConstantsOst.PR_TMPFILE, "tmp_" + file.getName());
+            properties.store(new FileOutputStream(ConstantsOst.FILENAME_PROPERTIES), "readRNDFileContentFromPosition");
             return lastFileCaretPosition;
         }
         catch (IOException e) {
-            messageToUser.error(getClass().getSimpleName(), e.getMessage(), new TForms().fromArray(e));
+            messageToUser.error(getClass().getSimpleName(), e.getMessage(), new TFormsOST().fromArray(e));
             return -1;
         }
     }

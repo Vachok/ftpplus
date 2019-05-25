@@ -172,7 +172,7 @@ public class CommonSRV {
         catch (IOException e) {
             LOGGER.warn(e.getMessage(), e);
         }
-        @SuppressWarnings("DuplicateStringLiteralInspection") String msg = file.getAbsolutePath() + " written";
+        @SuppressWarnings("DuplicateStringLiteralInspection") String msg = file.getAbsolutePath() + ConstantsFor.STR_WRITTEN;
         LOGGER.info(msg);
     }
     

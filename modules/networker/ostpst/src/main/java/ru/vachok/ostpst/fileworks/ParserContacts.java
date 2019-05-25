@@ -6,12 +6,16 @@ package ru.vachok.ostpst.fileworks;
 import com.pff.*;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.ostpst.ConstantsFor;
+import ru.vachok.ostpst.ConstantsOst;
 import ru.vachok.ostpst.utils.CharsetEncoding;
-import ru.vachok.ostpst.utils.FileSystemWorker;
+import ru.vachok.ostpst.utils.FileSystemWorkerOST;
 
-import java.io.*;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Deque;
 import java.util.Iterator;
@@ -47,19 +51,20 @@ class ParserContacts implements Callable<String> {
     }
     
     ParserContacts(String fileName, String fileContactsName) {
+        this.fileContactsName = fileContactsName;
         try {
-            new File(fileName).setWritable(true);
             this.pstFile = new PSTFile(fileName);
+            Files.createFile(Paths.get(fileContactsName));
         }
         catch (PSTException | IOException e) {
             messageToUser.error(e.getMessage());
+    
         }
-        this.fileContactsName = fileContactsName;
     }
     
     @Override public String call() {
         if (fileContactsName.isEmpty()) {
-            this.fileContactsName = ConstantsFor.FILENAME_CONTACTSCSV;
+            this.fileContactsName = ConstantsOst.FILENAME_CONTACTSCSV;
             return getPathAndWriteHeaderToDisk();
         }
         else if (fileContactsName.equals("showContacts")) {
@@ -75,23 +80,22 @@ class ParserContacts implements Callable<String> {
         try {
             String contStr = new String("онтакт".getBytes(), "UTF-8");
             this.pstFile = new PSTFile(fileName);
-            ParserFoldersWithAttachments rootFolder = new ParserFoldersWithAttachments(pstFile);
+            ParserFolders rootFolder = new ParserFolders(pstFile);
             Deque<String> folderNamesAndWriteToDisk = rootFolder.getDeqFolderNamesWithIDAndWriteToDisk();
             for (String s : folderNamesAndWriteToDisk) {
                 String folderNameFromDeq = s.toLowerCase();
-                folderNameFromDeq = new CharsetEncoding(ConstantsFor.CP_WINDOWS_1251).getStrInAnotherCharset(folderNameFromDeq);
+                folderNameFromDeq = new CharsetEncoding(ConstantsOst.CP_WINDOWS_1251).getStrInAnotherCharset(folderNameFromDeq);
     
                 if (folderNameFromDeq.contains(contStr)) {
                     s = s.split("id ")[1];
                     long parseLong = Long.parseLong(s);
                     PSTFolder pstFolder = (PSTFolder) PSTObject.detectAndLoadPSTObject(pstFile, parseLong);
                     stringBuilder.append(folderRead(pstFolder));
-                    System.out.println("s = " + s);
                 }
             }
         }
         catch (PSTException | IOException e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".showContacts", e));
+            messageToUser.error(FileSystemWorkerOST.error(getClass().getSimpleName() + ".showContacts", e));
             stringBuilder.append(e.getMessage());
         }
         return stringBuilder.toString();
@@ -101,7 +105,9 @@ class ParserContacts implements Callable<String> {
         StringBuilder stringBuilder = new StringBuilder();
         for (PSTObject folderChild : folder.getChildren(folder.getContentCount())) {
             PSTContact pstContact = (PSTContact) folderChild;
-            System.out.println(pstContact.getEmail1EmailAddress() + " (" + pstContact.getDisplayName() + ") id " + pstContact.getDescriptorNodeId());
+            String emailAddress = pstContact.getEmail1EmailAddress();
+            String printStr = emailAddress.replace("'", "") + " (" + pstContact.getDisplayName() + ") id " + pstContact.getDescriptorNodeId();
+            stringBuilder.append(printStr).append("\n");
         }
         
         return stringBuilder.toString();
@@ -120,12 +126,11 @@ class ParserContacts implements Callable<String> {
         
         while (pstFolderIterator.hasNext()) {
             PSTFolder folder = pstFolderIterator.next();
-            String folderDisplayName = new String(folder.getDisplayName().getBytes(), Charset.forName(ConstantsFor.CP_WINDOWS_1251));
-            String strCont = new String("онтакты".getBytes(), Charset.forName(ConstantsFor.CP_WINDOWS_1251));
+            String folderDisplayName = new String(folder.getDisplayName().getBytes(), Charset.forName(ConstantsOst.CP_WINDOWS_1251));
+            String strCont = new String("онтакт".getBytes(), "UTF-8");
             boolean nameContacts = folderDisplayName.contains(strCont);
             boolean hasSubs = folder.hasSubfolders();
     
-            System.out.println("folder = " + folderDisplayName + " has no contacts.");
             if (hasSubs && !nameContacts) {
                 foldersRead(folder, printStream);
             }
@@ -134,30 +139,9 @@ class ParserContacts implements Callable<String> {
                     writeContactsToFile(folder, printStream);
                 }
                 catch (PSTException e) {
-                    messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + METHNAME_FOLDERSREAD, e));
+                    messageToUser.error(FileSystemWorkerOST.error(getClass().getSimpleName() + METHNAME_FOLDERSREAD, e));
                 }
             }
-        }
-    }
-    
-    private void showBytes(byte[] bytesEthanol, byte[] bytes1) throws Exception {
-        try (OutputStream outputStream = new FileOutputStream("bytes.txt");
-             PrintStream printStream = new PrintStream(outputStream, true)
-        ) {
-            for (int i = 0; i < bytesEthanol.length; i++) {
-                String x = "byteEthanol = " + i + ") " + bytesEthanol[i];
-                printStream.println(x);
-                
-            }
-            printStream.println(" (strEthanol = " + new String(bytesEthanol) + ")");
-            for (int i = 0; i < bytes1.length; i++) {
-                String x = "byte = " + i + ") " + bytesEthanol[i];
-                printStream.println(x);
-            }
-            printStream.println(" (str1 = " + new String(bytes1) + ")");
-        }
-        catch (Exception e) {
-            e.printStackTrace();
         }
     }
     
@@ -191,9 +175,9 @@ class ParserContacts implements Callable<String> {
         printStream.print("\"\",\"");
         printStream.print(pstContact
             .getDisplayName() + "\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",,,\"\",\"\",\"\",\"\",\"\",,,\"\",\"\",\"\",\"\",\"\",,,\"\",\"\",\"\",\"\",\"\",,\"\",\"\",\"\",\"\",\"\",,\"\",\"\",\"\",\"\",,\"\",\"\",\"\",\"\",\"\",\"\",\"Обычная\",\"\",\"0.0.00\",\"0.0.00\",,,\"\",\"\",,,,,,\"Не определен\",,,,,\"Обычная\",,,,,,\"\",,\"\",,,,,,,\"Ложь\",\"" + pstContact
-            .getEmail1EmailAddress() + "\",");
+            .getEmail1EmailAddress().replace("'", "") + "\",");
         printStream.print("\"SMTP\",");
-        printStream.print("\"" + pstContact.getEmail1EmailAddress() + "\"");
+        printStream.print("\"" + pstContact.getEmail1EmailAddress().replace("'", "") + "\"");
         printStream.println();
     }
     
@@ -214,7 +198,7 @@ class ParserContacts implements Callable<String> {
         try (OutputStream outputStream = new FileOutputStream(fileContactsName);
              PrintStream printStream = new PrintStream(outputStream, true, "Windows-1251")
         ) {
-            printStream.println(new CharsetEncoding("UTF-8").getStrInAnotherCharset(csvHeader));
+            printStream.println(new CharsetEncoding("UTF-8", "windows-1251").getStrInAnotherCharset(csvHeader));
             foldersRead(rootFolder, printStream);
         }
         catch (IOException e) {

@@ -2,12 +2,12 @@
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
-import ru.vachok.ostpst.ConstantsFor;
-import ru.vachok.ostpst.MakeConvert;
-import ru.vachok.ostpst.OstToPst;
+import ru.vachok.ostpst.ConstantsOst;
+import ru.vachok.ostpst.MakeConvertOrCopy;
+import ru.vachok.ostpst.OstToPstStart;
 import ru.vachok.ostpst.fileworks.ConverterImpl;
 import ru.vachok.ostpst.utils.CharsetEncoding;
-import ru.vachok.ostpst.utils.TForms;
+import ru.vachok.ostpst.utils.TFormsOST;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,9 +23,9 @@ import java.util.List;
     @Test(enabled = true)
     public void launchProg() {
         File file = new File(new String("c:\\Users\\ikudryashov\\OneDrive\\Документы\\Файлы Outlook\\ksamarchenko@velkomfood.ru.ost".getBytes(), Charset.forName("UTF-8")));
-        OstToPst ostToPst = new OstToPst();
+        OstToPstStart ostToPstStart = new OstToPstStart();
         try {
-            OstToPst.main(new String[]{"-t"});
+            OstToPstStart.main(new String[]{"-t"});
         }
         catch (Exception e) {
             Assert.assertNotNull(e);
@@ -35,44 +35,44 @@ import java.util.List;
     @Test(enabled = false)
     public void complexTest() {
         String fileName = getFileName();
-        MakeConvert makeConvert = new ConverterImpl(fileName);
-        String listFolders = makeConvert.showListFolders();
+        MakeConvertOrCopy makeConvertOrCopy = new ConverterImpl(fileName);
+        String listFolders = makeConvertOrCopy.showListFolders();
         Assert.assertNotNull(listFolders);
         boolean totalC = listFolders.contains("totalCounter =");
         Assert.assertTrue(totalC, "List folders incorrect");
         
         String csvFileName = Paths.get(fileName).getParent().toAbsolutePath() + "\\cnt.csv";
-        String saveContacts = makeConvert.saveContacts(csvFileName);
+        String saveContacts = makeConvertOrCopy.saveContacts(csvFileName);
         Assert.assertNotNull(saveContacts);
         Assert.assertTrue(new File(csvFileName).exists());
         
         String saveFolders = null;
         try {
-            saveFolders = makeConvert.saveFolders();
+            saveFolders = makeConvertOrCopy.saveFolders();
         }
         catch (IOException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            Assert.assertNull(e, e.getMessage() + "\n" + new TFormsOST().fromArray(e));
         }
-        boolean foldersTxt = saveFolders.contains(ConstantsFor.FILENAME_FOLDERSTXT);
+        boolean foldersTxt = saveFolders.contains(ConstantsOst.FILENAME_FOLDERSTXT);
         Assert.assertTrue(foldersTxt);
-        
-        String showContacts = makeConvert.showContacts();
+    
+        String showContacts = makeConvertOrCopy.showContacts();
         Assert.assertNotNull(showContacts);
-        
-        String cleanPreviousCopy = makeConvert.cleanPreviousCopy();
+    
+        String cleanPreviousCopy = makeConvertOrCopy.cleanPreviousCopy();
         Assert.assertNotNull(cleanPreviousCopy);
     
-        String parseObject = makeConvert.getObjectItemsByID(35906);
+        String parseObject = makeConvertOrCopy.getObjectItemsByID(35906);
         Assert.assertFalse(parseObject.contains("null (null)"));
     
-        List<String> subjList = makeConvert.getListMessagesSubjectWithID(8578);
+        List<String> subjList = makeConvertOrCopy.getListMessagesSubjectWithID(8578);
     
         System.out.println(listFolders);
         System.out.println(saveContacts);
         System.out.println(showContacts);
         System.out.println(cleanPreviousCopy);
         System.out.println(parseObject);
-        System.out.println(new TForms().fromArray(subjList));
+        System.out.println(new TFormsOST().fromArray(subjList));
     }
     
     private void showBytes() {
@@ -85,8 +85,8 @@ import java.util.List;
             }
             System.out.println(str8);
     
-            String str1251 = new String("И".getBytes(), ConstantsFor.CP_WINDOWS_1251);
-            str1251 = new CharsetEncoding(ConstantsFor.CP_WINDOWS_1251).getStrInAnotherCharset(str1251);
+            String str1251 = new String("И".getBytes(), ConstantsOst.CP_WINDOWS_1251);
+            str1251 = new CharsetEncoding(ConstantsOst.CP_WINDOWS_1251).getStrInAnotherCharset(str1251);
             byte[] str1251Bytes = str1251.getBytes();
             for (int i = 0; i < str1251Bytes.length; i++) {
                 System.out.println("bytes1251 = " + str1251Bytes[i]);

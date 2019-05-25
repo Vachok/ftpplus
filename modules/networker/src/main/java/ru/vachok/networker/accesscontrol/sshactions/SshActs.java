@@ -1,6 +1,6 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.accesscontrol;
+package ru.vachok.networker.accesscontrol.sshactions;
 
 
 import org.slf4j.Logger;
@@ -10,6 +10,7 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.accesscontrol.NameOrIPChecker;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.WhoIsWithSRV;
 
@@ -22,7 +23,7 @@ import java.nio.charset.Charset;
 import java.time.LocalTime;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.*;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -37,12 +38,12 @@ public class SshActs {
     /**
      SSH-command
      */
-    static final String SUDO_ECHO = "sudo echo ";
+    public static final String SUDO_ECHO = "sudo echo ";
 
     /**
      SSH-command
      */
-    static final String SSH_SUDO_GREP_V = "sudo grep -v '";
+    public static final String SSH_SUDO_GREP_V = "sudo grep -v '";
 
     /**
      {@link AppComponents#getLogger(String)}
@@ -61,8 +62,8 @@ public class SshActs {
     private static final String SSH_PING5_200_1 = "ping -c 5 10.200.200.1;";
     
     private static final String SSH_INITPF = "sudo /etc/initpf.fw && exit;";
-
-    private static final String DEFAULT_SERVER_TO_SSH = whatSrvNeed();
+    
+    static final String DEFAULT_SERVER_TO_SSH = whatSrvNeed();
 
     /**
      Имя ПК для разрешения
@@ -183,24 +184,6 @@ public class SshActs {
     }
     
     /**
-     Лог переключений инета.
-
-     @return {@code "sudo cat /home/kudr/inet.log"} or {@link InterruptedException}, {@link ExecutionException}, {@link TimeoutException}
-     */
-    private String getInetLog() {
-        AppComponents.threadConfig().thrNameSet("iLog");
-        SSHFactory sshFactory = new SSHFactory.Builder(ConstantsFor.IPADDR_SRVNAT, "sudo cat /home/kudr/inet.log", getClass().getSimpleName()).build();
-        Future<String> submit = AppComponents.threadConfig().getTaskExecutor().submit(sshFactory);
-        try {
-            return submit.get(10, TimeUnit.SECONDS);
-        } catch (InterruptedException | ExecutionException | TimeoutException e) {
-            LOGGER.error("SshActs .getInetLog: {}", e.getMessage());
-            FileSystemWorker.error("SshActs.getInetLog", e);
-            return e.getMessage();
-        }
-    }
-
-    /**
      Определяет, где запущен.
 
      @return адрес нужного сервака
@@ -213,50 +196,7 @@ public class SshActs {
             return ConstantsFor.IPADDR_SRVNAT;
         } else { return ConstantsFor.IPADDR_SRVGIT; }
     }
-
-    /**
-     Traceroute
-     <p>
-     Соберём {@link SSHFactory} - {@link SSHFactory.Builder#build()} ({@link ConstantsFor#IPADDR_SRVGIT}, "traceroute ya.ru;exit") <br>
-     Вызовем в строку {@code callForRoute} - {@link SSHFactory#call()}
-     <p>
-     Переопределим {@link SSHFactory} - {@link SSHFactory.Builder#build()} ({@link ConstantsFor#IPADDR_SRVNAT}, "sudo cat /home/kudr/inet.log") <br>
-     Переобределим {@code callForRoute} - {@code callForRoute} + {@code "LOG: "} + {@link SSHFactory#call()}
-     <p>
-     Если {@code callForRoute.contains("91.210.85.")} : добавим в {@link StringBuilder} - {@code "FORTEX"} <br>
-     Else if {@code callForRoute.contains("176.62.185.129")} : добавим {@code "ISTRANET"} <br>
-     Если {@code callForRoute.contains("LOG: ")} добавим {@link String#split(java.lang.String)}[1] по {@code "LOG: "}
-
-     @return {@link StringBuilder#toString()} собравший инфо из строки с сервера.
-     @throws ArrayIndexOutOfBoundsException при разборе строки
-     */
-    public String getProviderTraceStr() throws ArrayIndexOutOfBoundsException, InterruptedException, ExecutionException, TimeoutException {
-        StringBuilder stringBuilder = new StringBuilder();
-        SSHFactory sshFactory = new SSHFactory.Builder(DEFAULT_SERVER_TO_SSH, "traceroute velkomfood.ru && exit", getClass().getSimpleName()).build();
-        Future<String> curProvFuture = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(sshFactory);
-        String callForRoute = curProvFuture.get(ConstantsFor.DELAY, TimeUnit.SECONDS);
-        stringBuilder.append("<br><a href=\"/makeok\">");
-        if (callForRoute.contains("91.210.85.")) {
-            stringBuilder.append("<h3>FORTEX</h3>");
-        }
-        else {
-            if (callForRoute.contains("176.62.185.129")) {
-                stringBuilder.append("<h3>ISTRANET</h3>");
-            }
-        }
-        stringBuilder.append("</a></br>");
-        String logStr = "LOG: ";
-        callForRoute = callForRoute + "<br>LOG: " + getInetLog();
-        if (callForRoute.contains(logStr)) {
-            try {
-                stringBuilder.append("<br><font color=\"gray\">").append(callForRoute.split(logStr)[1].replaceAll(";", "<br>")).append("</font>");
-            } catch (ArrayIndexOutOfBoundsException e) {
-                stringBuilder.append(FileSystemWorker.error("SshActs.getProviderTraceStr", e));
-            }
-        }
-        return stringBuilder.toString();
-    }
-
+    
     /**
      Добавить домен в разрешенные
 

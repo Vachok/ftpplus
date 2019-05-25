@@ -44,6 +44,13 @@
     <p th:utext="${transport}"/>
     <p th:utext="${file}"/>
 </center>
+<p>
+    <details title="exchKB">
+        <summary>ШПАРГАЛКА. Часто используемые команды MSExchange</summary>
+        <b>Get-MailboxDatabase | Get-MailboxStatistics | where {$_.DisconnectReason -ne $null} | ft displayname,database,disconnectreason -auto</b> - поиск и просмотр отключенных
+        п/я.<br>
+        <b>New-MailboxRestoreRequest -SourceDatabase имя_базы -SourceStoreMailbox "имя ящика" -TargetMailbox "целевой ящик"</b> - восстановление отключенного п/я.<br>
+    </details>
 </body>
 <footer>
     <a href="/pages/excangeKB.html">Small knowledge base. Exchange 2010</a>

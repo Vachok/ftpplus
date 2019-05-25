@@ -9,6 +9,7 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.accesscontrol.sshactions.SshActs;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetListKeeper;
 import ru.vachok.networker.net.enums.ConstantsNet;
@@ -53,7 +54,6 @@ public class TemporaryFullInternet implements Runnable {
     
     private long initStamp = System.currentTimeMillis();
     
-    
     public TemporaryFullInternet() {
         this.userInput = "10.200.213.254";
         this.delStamp = System.currentTimeMillis();
@@ -70,7 +70,6 @@ public class TemporaryFullInternet implements Runnable {
         this.userInput = "10.200.213.85";
         this.delStamp = timeStampOff;
     }
-    
     
     TemporaryFullInternet(String userInput, String numOfHoursStr) {
         this.userInput = userInput;
@@ -119,31 +118,6 @@ public class TemporaryFullInternet implements Runnable {
         return retBuilder.toString();
     }
     
-    private String addFromExistList(String sshIP, String listWhere) {
-        String etcPf = " /etc/pf/";
-        listWhere = listWhere.replace(".list", "");
-        
-        StringBuilder comSSHBuilder = new StringBuilder();
-        comSSHBuilder.append(SshActs.SSH_SUDO_GREP_V);
-        comSSHBuilder.append(sshIP).append("'");
-        comSSHBuilder.append(etcPf).append(listWhere).append(" >").append(etcPf).append(listWhere).append("_tmp;");
-        
-        SSH_FACTORY.setCommandSSH(comSSHBuilder.toString());
-        messageToUser.info(getClass().getSimpleName() + ".addFromExistList", "comSSHBuilder", " = " + SSH_FACTORY.call());
-        
-        comSSHBuilder = new StringBuilder();
-        comSSHBuilder.append("sudo cp /etc/pf/").append(listWhere).append("_tmp /etc/pf/").append(listWhere).append(";");
-        
-        SSH_FACTORY.setCommandSSH(comSSHBuilder.toString());
-        SSH_FACTORY.call();
-        
-        comSSHBuilder = new StringBuilder();
-        comSSHBuilder.append(SshActs.SUDO_ECHO).append("\"").append(sshIP).append(" #").append(delStamp).append(" #").append(listWhere).append("\"").append(" >> /etc/pf/24hrs;")
-            .append(ConstantsNet.COM_INITPF);
-        SSH_FACTORY.setCommandSSH(comSSHBuilder.toString());
-        return SSH_FACTORY.call();
-    }
-    
     @Override
     public void run() {
         execOldMeth();
@@ -177,6 +151,31 @@ public class TemporaryFullInternet implements Runnable {
         return sb.toString();
     }
     
+    private String addFromExistList(String sshIP, String listWhere) {
+        String etcPf = " /etc/pf/";
+        listWhere = listWhere.replace(".list", "");
+        
+        StringBuilder comSSHBuilder = new StringBuilder();
+        comSSHBuilder.append(SshActs.SSH_SUDO_GREP_V);
+        comSSHBuilder.append(sshIP).append("'");
+        comSSHBuilder.append(etcPf).append(listWhere).append(" >").append(etcPf).append(listWhere).append("_tmp;");
+        
+        SSH_FACTORY.setCommandSSH(comSSHBuilder.toString());
+        messageToUser.info(getClass().getSimpleName() + ".addFromExistList", "comSSHBuilder", " = " + SSH_FACTORY.call());
+        
+        comSSHBuilder = new StringBuilder();
+        comSSHBuilder.append("sudo cp /etc/pf/").append(listWhere).append("_tmp /etc/pf/").append(listWhere).append(";");
+        
+        SSH_FACTORY.setCommandSSH(comSSHBuilder.toString());
+        SSH_FACTORY.call();
+        
+        comSSHBuilder = new StringBuilder();
+        comSSHBuilder.append(SshActs.SUDO_ECHO).append("\"").append(sshIP).append(" #").append(delStamp).append(" #").append(listWhere).append("\"").append(" >> /etc/pf/24hrs;")
+            .append(ConstantsNet.COM_INITPF);
+        SSH_FACTORY.setCommandSSH(comSSHBuilder.toString());
+        return SSH_FACTORY.call();
+    }
+    
     private static String whatServerNow() {
         if (ConstantsFor.thisPC().toLowerCase().contains("rups")) {
             return ConstantsFor.IPADDR_SRVNAT;
@@ -195,7 +194,7 @@ public class TemporaryFullInternet implements Runnable {
         Date nextStart = new Date(ConstantsFor.getAtomicTime() + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY));
         MINI_LOGGER.add(nextStart.toString());
         boolean writeFile = FileSystemWorker.writeFile(miniLog.getName(), MINI_LOGGER.stream());
-        FileSystemWorker.copyOrDelFile(miniLog, ".\\ssh\\" + miniLog.getName(), true);
+        FileSystemWorker.copyOrDelFile(miniLog, ".\\sshactions\\" + miniLog.getName(), true);
         if (writeFile) {
             MINI_LOGGER.clear();
         }
@@ -260,7 +259,6 @@ public class TemporaryFullInternet implements Runnable {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".sshChecker is interrupted.\n", e));
             Thread.currentThread().interrupt();
         }
-        messageToUser.warn(getClass().getSimpleName() + ".execOldMeth", "squidCheck()", " = " + squidCheck());
     }
     
     private void chkWithList(String[] x) {
@@ -291,18 +289,6 @@ public class TemporaryFullInternet implements Runnable {
         }
         else {
             MINI_LOGGER.add("IP" + " = " + x + " time: " + y + " (" + new Date(y) + ")");
-        }
-    }
-    
-    private String squidCheck() {
-        SSH_FACTORY.setCommandSSH("sudo ps ax | grep squid && exit");
-        String callChk = SSH_FACTORY.call();
-        if (callChk.contains("ssl_crtd")) {
-            return callChk;
-        }
-        else {
-            SSH_FACTORY.setCommandSSH("sudo squid && sudo ps ax | grep squid && exit");
-            return SSH_FACTORY.call();
         }
     }
     

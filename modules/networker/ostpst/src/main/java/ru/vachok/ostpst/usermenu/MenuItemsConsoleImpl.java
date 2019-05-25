@@ -3,13 +3,14 @@
 package ru.vachok.ostpst.usermenu;
 
 
+import com.pff.PSTException;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.ostpst.ConstantsFor;
-import ru.vachok.ostpst.MakeConvert;
+import ru.vachok.ostpst.ConstantsOst;
+import ru.vachok.ostpst.MakeConvertOrCopy;
 import ru.vachok.ostpst.fileworks.ConverterImpl;
-import ru.vachok.ostpst.utils.FileSystemWorker;
-import ru.vachok.ostpst.utils.TForms;
+import ru.vachok.ostpst.utils.FileSystemWorkerOST;
+import ru.vachok.ostpst.utils.TFormsOST;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -21,14 +22,14 @@ import java.util.Scanner;
 
 /**
  @since 16.05.2019 (12:06) */
-class MenuItemsConsoleImpl implements MenuItems {
+public class MenuItemsConsoleImpl implements MenuItems {
     
     
     private static UserMenu userMenu = new MenuConsoleLocal();
     
-    private static MakeConvert makeConvert = null;
+    private static MakeConvertOrCopy makeConvertOrCopy;
     
-    private static long folderID = 0L;
+    private static long folderID;
     
     private MessageToUser messageToUser = new MessageCons(getClass().getSimpleName());
     
@@ -44,7 +45,7 @@ class MenuItemsConsoleImpl implements MenuItems {
             askUser(scanner, fileName);
         }
         catch (Exception e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".askUser", e));
+            messageToUser.error(FileSystemWorkerOST.error(getClass().getSimpleName() + ".askUser", e));
             new MenuConsoleLocal(null).showMenu();
         }
     }
@@ -65,11 +66,10 @@ class MenuItemsConsoleImpl implements MenuItems {
     
     private void ansIsOneSaveContToCSV() {
         System.out.println("Enter name of csv, for contacts save:");
-        
         try (Scanner scanner = new Scanner(System.in)) {
             while (scanner.hasNextLine()) {
                 String csvFileName = scanner.nextLine();
-                MakeConvert converter = new ConverterImpl(fileName);
+                MakeConvertOrCopy converter = new ConverterImpl(fileName);
                 String saveContacts = converter.saveContacts(csvFileName);
                 messageToUser.warn(saveContacts);
                 new MenuConsoleLocal(fileName).showMenu();
@@ -81,26 +81,20 @@ class MenuItemsConsoleImpl implements MenuItems {
     }
     
     private static void askUser(Scanner scanner, String fileName) throws IOException {
-        makeConvert = new ConverterImpl(fileName);
+        makeConvertOrCopy = new ConverterImpl(fileName);
         while (scanner.hasNextInt()) {
             int userAns = scanner.nextInt();
             if (userAns == 1) {
                 new MenuItemsConsoleImpl(fileName).ansIsOneSaveContToCSV();
             }
             else if (userAns == 2) {
-                MakeConvert makeConvert = new ConverterImpl(fileName);
-                makeConvert.showContacts();
-                new MenuConsoleLocal(fileName).showMenu();
+                new MenuItemsConsoleImpl(fileName).ansTwo();
             }
             else if (userAns == 3) {
-                MakeConvert makeConvert = new ConverterImpl(fileName);
-                System.out.println(makeConvert.showListFolders());
-                new MenuConsoleLocal(fileName).showMenu();
+                new MenuItemsConsoleImpl(fileName).ansThree();
             }
             else if (userAns == 4) {
-                MakeConvert makeConvert = new ConverterImpl(fileName);
-                makeConvert.getDequeFolderNamesAndWriteToDisk();
-                new MenuConsoleLocal(fileName).showMenu();
+                new MenuItemsConsoleImpl(fileName).ansIsFour();
             }
             else if (userAns == 5) {
                 new MenuItemsConsoleImpl(fileName).ansIsFiveParseByID();
@@ -128,6 +122,21 @@ class MenuItemsConsoleImpl implements MenuItems {
         userMenu.showMenu();
     }
     
+    private void ansTwo() {
+        makeConvertOrCopy.showContacts();
+        askUser();
+    }
+    
+    private void ansThree() {
+        System.out.println(makeConvertOrCopy.showListFolders());
+        askUser();
+    }
+    
+    private void ansIsFour() throws IOException {
+        makeConvertOrCopy.getDequeFolderNamesAndWriteToDisk();
+        askUser();
+    }
+    
     private void ansEightSearch() {
         ansEightSearch(0);
     }
@@ -143,12 +152,17 @@ class MenuItemsConsoleImpl implements MenuItems {
             if (messageID == 6) {
                 new MenuItemsConsoleImpl(fileName).ansIsSixGetListMSGSubj(folderID);
             }
-            System.out.println(makeConvert.searchMessages(folderID, messageID));
+            System.out.println(makeConvertOrCopy.searchMessages(folderID, messageID));
             this.ansEightSearchSecondStage(scanner, folderID);
         }
         else if (scanner.hasNextLine()) {
             String subj = scanner.nextLine();
-            System.out.println(makeConvert.searchMessages(folderID, subj));
+            try {
+                System.out.println(makeConvertOrCopy.searchMessages(subj));
+            }
+            catch (PSTException | IOException e) {
+                messageToUser.error(FileSystemWorkerOST.error(getClass().getSimpleName() + ".ansEightSearchSecondStage", e));
+            }
             this.ansEightSearchSecondStage(scanner, folderID);
         }
         else {
@@ -157,51 +171,80 @@ class MenuItemsConsoleImpl implements MenuItems {
     }
     
     private void ansIsSixGetListMSGSubj(long folderID) {
-        System.out.println("Enter folder id: ");
         if (folderID == 0) {
+            System.out.println("Enter folder id: ");
             try (Scanner scanner = new Scanner(System.in)) {
                 folderID = scanner.nextLong();
-                List<String> subjectWithID = makeConvert.getListMessagesSubjectWithID(folderID);
-                System.out.println(new TForms().fromArray(subjectWithID));
+                List<String> subjectWithID = makeConvertOrCopy.getListMessagesSubjectWithID(folderID);
+                System.out.println(new TFormsOST().fromArray(subjectWithID));
                 new MenuItemsConsoleImpl(fileName).askUser();
             }
             catch (Exception e) {
-                System.out.println(e.getMessage() + "\n\n" + new TForms().fromArray(e));
+                System.out.println(e.getMessage() + "\n\n" + new TFormsOST().fromArray(e));
                 new MenuItemsConsoleImpl(fileName).askUser();
             }
         }
-        List<String> subjectWithID = makeConvert.getListMessagesSubjectWithID(folderID);
-        System.out.println(new TForms().fromArray(subjectWithID));
+        List<String> subjectWithID = makeConvertOrCopy.getListMessagesSubjectWithID(folderID);
+        System.out.println(new TFormsOST().fromArray(subjectWithID));
         this.ansEightSearch(folderID);
     }
     
     private void ansEightSearch(long id) {
-        System.out.println("Enter folder ID or 0 to return :");
+        System.out.println("Enter folder ID, 10 to search EVERYWHERE or 0 to return :");
         try (Scanner scanner = new Scanner(System.in)) {
             if (id > 0) {
                 ansEightSearchSecondStage(scanner, id);
             }
-            long folderID = -1;
+            id = -1;
             try {
-                folderID = Long.parseLong(scanner.nextLine());
+                id = Long.parseLong(scanner.nextLine());
             }
             catch (NumberFormatException e) {
                 System.out.println("NumberFormat incorrect:\n");
                 System.out.println(e.getMessage());
                 new MenuConsoleLocal(fileName).showMenu();
             }
-            if (folderID == 0) {
+            if (id == 0) {
                 new MenuConsoleLocal(fileName).showMenu();
             }
-            System.out.println("...and message ID or Subject:");
-            while (scanner.hasNextLine()) {
-                ansEightSearchSecondStage(scanner, folderID);
+            else if (id == 10) {
+                ansEightSearchEverywhere();
+            }
+            else {
+                System.out.println("...and message ID or Subject:");
+                while (scanner.hasNextLine()) {
+                    ansEightSearchSecondStage(scanner, id);
+                }
             }
         }
         catch (NumberFormatException e) {
             System.out.println(e);
-            System.out.println(new TForms().fromArray(e));
+            System.out.println(new TFormsOST().fromArray(e));
             new MenuConsoleLocal(fileName).showMenu();
+        }
+        askUser();
+    }
+    
+    private void ansEightSearchEverywhere() {
+        String whatFind = null;
+        try (Scanner scanner = new Scanner(System.in)) {
+            System.out.println("Enter what are U wanna find:");
+            whatFind = scanner.nextLine();
+            System.out.println("Started Search. It takes about 8-10 minutes. After all, see results in " + Paths.get(".").toAbsolutePath().normalize());
+            System.out.println(System.getProperties().getProperty("encoding"));
+            Thread.sleep(1500);
+        }
+        catch (InterruptedException e) {
+            messageToUser.error(FileSystemWorkerOST.error(getClass().getSimpleName() + ".ansEightSearchEverywhere.scanner", e));
+            askUser();
+        }
+        try {
+            makeConvertOrCopy.searchMessages(whatFind);
+            askUser();
+        }
+        catch (PSTException | IOException e) {
+            messageToUser.error(FileSystemWorkerOST.error(getClass().getSimpleName() + ".ansEightSearchEverywhere.makeConvert", e));
+            new MenuConsoleLocal().showMenu();
         }
     }
     
@@ -210,7 +253,7 @@ class MenuItemsConsoleImpl implements MenuItems {
         try (Scanner scanner = new Scanner(System.in)) {
             while (scanner.hasNextLong()) {
                 long objID = scanner.nextLong();
-                MakeConvert converter = new ConverterImpl(fileName);
+                MakeConvertOrCopy converter = new ConverterImpl(fileName);
                 String itemsByID = converter.getObjectItemsByID(objID);
                 System.out.println(itemsByID);
                 new MenuConsoleLocal(fileName).showMenu();
@@ -222,8 +265,8 @@ class MenuItemsConsoleImpl implements MenuItems {
         System.out.println("New copy? (y/n) (e - exit)");
         Properties properties = new Properties();
         try {
-            properties.load(new FileInputStream(ConstantsFor.FILENAME_PROPERTIES));
-            this.fileName = properties.getProperty(ConstantsFor.PR_TMPFILE);
+            properties.load(new FileInputStream(ConstantsOst.FILENAME_PROPERTIES));
+            this.fileName = properties.getProperty(ConstantsOst.PR_TMPFILE);
             System.out.println("Your last copy: " + fileName);
             System.out.println("c - continue last");
         }
@@ -234,13 +277,13 @@ class MenuItemsConsoleImpl implements MenuItems {
         try (Scanner scanner = new Scanner(System.in)) {
             while (scanner.hasNextLine()) {
                 String newCP = scanner.nextLine();
-                System.out.println(makeConvert.copyierWithSave(newCP));
-                this.fileName = Paths.get(".").normalize().toAbsolutePath() + ConstantsFor.SYSTEM_SEPARATOR + "tmp_" + fileName;
+                System.out.println(makeConvertOrCopy.copyierWithSave(newCP));
+                this.fileName = Paths.get(".").normalize().toAbsolutePath() + ConstantsOst.SYSTEM_SEPARATOR + "tmp_" + fileName;
                 new MenuItemsConsoleImpl(fileName).askUser();
             }
         }
         catch (Exception e) {
-            System.out.println(e.getMessage() + "\n" + new TForms().fromArray(e));
+            System.out.println(e.getMessage() + "\n" + new TFormsOST().fromArray(e));
             new MenuConsoleLocal(fileName).showMenu();
         }
     }
