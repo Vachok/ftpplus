@@ -437,6 +437,8 @@ public enum ConstantsFor {
      */
     public static final String FILENAME_PCAUTODISTXT = "pcautodis.txt";
     
+    public static final String STR_ENCODING = "encoding";
+    
     static final String STR_FINISH = " is finish";
     
     private static final String[] STRINGS_TODELONSTART = {"visit_", ".tmp", ".log", ".tv"};

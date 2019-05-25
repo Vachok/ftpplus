@@ -12,8 +12,6 @@ import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 
 import java.io.*;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.BlockingDeque;
@@ -229,19 +227,6 @@ public class ExitApp implements Runnable {
             messageToUser.info("No app.log");
         }
         writeObj();
-    }
-    
-    private void libCopy() {
-        Path path = Paths.get(".");
-        List<File> myLibs = Arrays.asList(Objects
-            .requireNonNull(new File(path + ConstantsFor.FILESYSTEM_SEPARATOR + ConstantsOst.PROGNAME_OSTPST + ConstantsFor.FILESYSTEM_SEPARATOR + "build" + ConstantsFor.FILESYSTEM_SEPARATOR + "libs" + ConstantsFor.FILESYSTEM_SEPARATOR)
-                .listFiles()));
-        myLibs.addAll(Arrays.asList(Objects.requireNonNull(new File("g:\\My_Proj\\libs\\messenger\\build\\libs\\").listFiles())));
-        myLibs.forEach(x->{
-            if (x.exists() && x.getName().toLowerCase().contains(".jar")) {
-                FileSystemWorker.copyOrDelFile(x, ConstantsFor.FILESYSTEM_SEPARATOR + "lib" + ConstantsFor.FILESYSTEM_SEPARATOR + x.getName(), false);
-            }
-        });
     }
     
 }
