@@ -269,7 +269,10 @@ public class MenuItemsConsoleImpl implements MenuItems {
         }
         catch (IOException e) {
             messageToUser.error(e.getMessage());
-            System.err.println("NO PREVIOUS COPY!");
+            System.err.println("NO PREVIOUS COPY!\nStaring new: \n");
+            System.out.println(makeConvertOrCopy.copyierWithSave("y"));
+            this.fileName = Paths.get(".").toAbsolutePath().normalize() + ConstantsOst.SYSTEM_SEPARATOR + fileName;
+            new MenuItemsConsoleImpl(fileName).askUser();
         }
         try (Scanner scanner = new Scanner(System.in)) {
             System.out.println("New copy? (y/n) (e - exit)");
