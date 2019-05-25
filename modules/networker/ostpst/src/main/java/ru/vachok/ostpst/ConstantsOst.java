@@ -40,6 +40,8 @@ public enum ConstantsOst {
     
     public static final String PROGNAME_OSTPST = "ostpst";
     
+    public static final String STR_ENCODING = "encoding";
+    
     private static String getSeparator() {
         if (System.getProperty("os.name").contains("indows")) {
             return "\\";

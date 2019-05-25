@@ -248,7 +248,7 @@ public class IntoApplication {
         stringBuilder.append(LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault()));
         stringBuilder.append(AppComponents.ipFlushDNS());
         messageToUser.info("IntoApplication.beforeSt", "stringBuilder", stringBuilder.toString());
-        System.setProperty("encoding", "UTF8");
+        System.setProperty(ConstantsOst.STR_ENCODING, "UTF8");
         FileSystemWorker.writeFile("system", new TForms().fromArray(System.getProperties()));
         SCHEDULED_THREAD_POOL_EXECUTOR.schedule(()->messageToUser.info(new TForms().fromArray(LOCAL_PROPS, false)), ConstantsFor.DELAY + 10, TimeUnit.MINUTES);
     }

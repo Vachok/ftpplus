@@ -229,7 +229,7 @@ public class MenuItemsConsoleImpl implements MenuItems {
             System.out.println("Enter what are U wanna find:");
             whatFind = scanner.nextLine();
             System.out.println("Started Search. It takes about 8-10 minutes. After all, see results in " + Paths.get(".").toAbsolutePath().normalize());
-            System.out.println(System.getProperties().getProperty("encoding"));
+            System.out.println(System.getProperties().getProperty(ConstantsOst.STR_ENCODING));
             Thread.sleep(1500);
         }
         catch (InterruptedException e) {
@@ -276,7 +276,7 @@ public class MenuItemsConsoleImpl implements MenuItems {
             while (scanner.hasNextLine()) {
                 String newCP = scanner.nextLine();
                 System.out.println(makeConvertOrCopy.copyierWithSave(newCP));
-                this.fileName = Paths.get(".").normalize().toAbsolutePath() + ConstantsOst.SYSTEM_SEPARATOR + "tmp_" + fileName;
+                this.fileName = Paths.get(".").normalize().toAbsolutePath() + ConstantsOst.SYSTEM_SEPARATOR + fileName;
                 new MenuItemsConsoleImpl(fileName).askUser();
             }
         }

@@ -1,6 +1,9 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.ostpst.fileworks;
 
 
+import ru.vachok.ostpst.ConstantsOst;
 import ru.vachok.ostpst.utils.CharsetEncoding;
 import ru.vachok.ostpst.utils.TFormsOST;
 
@@ -38,21 +41,20 @@ public class FileChecker implements FileWorker {
         }
         boolean isOst = fileName.toLowerCase().contains(".ost") || fileName.toLowerCase().contains(".pst");
         if (fileSize == 666 || !isOst) {
-            stringBuilder.append("MenuConsoleLocal.chkFile ERROR!" + " No file, or file is corrupted".toUpperCase());
+            stringBuilder.append("MenuConsoleLocal.chkFile ERROR!").append(" No file, or file is corrupted".toUpperCase());
             stringBuilder.append("Enter another file, or type exit for exit");
         }
         else {
-            stringBuilder.append("Checking file size... Filename is: " + fileName).append("\n");
-            stringBuilder.append(fileName + " = " + fileSize + " GB");
+            stringBuilder.append("Checking file size... Filename is: ").append(fileName).append("\n");
+            stringBuilder.append(fileName).append(" = ").append(fileSize).append(" GB");
             boolean isLock = lockFile(fileName);
-            stringBuilder.append("is readonly = " + isLock);
+            stringBuilder.append("is readonly = ").append(isLock);
         }
         return stringBuilder.toString();
     }
     
     @Override public String clearCopy() {
-        String clearPositions = new RNDFileCopy(fileName).clearPositions();
-        return clearPositions;
+        return new RNDFileCopy(fileName).clearPositions();
     }
     
     private boolean lockFile(String fileName) {
@@ -67,12 +69,12 @@ public class FileChecker implements FileWorker {
         }
         catch (IOException | InvalidPathException e) {
             System.err.println(e.getMessage() + ": " + fileName);
-            String anotherCharset = new CharsetEncoding("windows-1251", "UTF-8").getStrInAnotherCharset(fileName);
+            String anotherCharset = new CharsetEncoding(ConstantsOst.CP_WINDOWS_1251, "UTF-8").getStrInAnotherCharset(fileName);
             this.file = new File(anotherCharset);
             this.fileName = anotherCharset;
             size = file.length();
             System.out.println("Trying to decode name CP1251-UTF8: " + anotherCharset);
-            System.out.println(System.getProperties().getProperty("encoding"));
+            System.out.println(System.getProperties().getProperty(ConstantsOst.STR_ENCODING));
         }
         BigDecimal valueOf = BigDecimal.valueOf((float) size).divide(BigDecimal.valueOf(1024 * 1024 * 1024)).setScale(2, HALF_EVEN);
         return valueOf.doubleValue();

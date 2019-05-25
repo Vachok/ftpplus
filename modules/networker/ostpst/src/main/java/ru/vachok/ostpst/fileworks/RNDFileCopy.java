@@ -82,10 +82,12 @@ class RNDFileCopy implements Serializable {
             stringBuilder.append(e.getMessage()).append("\n").append(new TFormsOST().fromArray(e));
         }
         String fileNameLocal = filePath.getName();
+        boolean copyWritable = true;
         try {
             this.lastFileCaretPosition = 0;
             this.lastWritePosition = 0;
             Path absPath = Paths.get("tmp_" + fileNameLocal).toAbsolutePath();
+            copyWritable = absPath.toFile().setWritable(true);
             boolean tmpDel = Files.deleteIfExists(absPath);
             Object read = properties.setProperty(ConstantsOst.PR_READING, "0");
             Object write = properties.setProperty(ConstantsOst.PR_WRITING, "0");
@@ -95,7 +97,7 @@ class RNDFileCopy implements Serializable {
         catch (IOException e) {
             stringBuilder.append(e.getMessage()).append("\n").append(new TFormsOST().fromArray(e));
         }
-        stringBuilder.append("\n\n").append(threadMXBean.getThreadInfo(Thread.currentThread().getId()));
+        stringBuilder.append("\n\n").append(threadMXBean.getThreadInfo(Thread.currentThread().getId())).append("\nCopy writtable is ").append(copyWritable);
         return stringBuilder.toString();
     }
     
@@ -114,8 +116,10 @@ class RNDFileCopy implements Serializable {
         StringBuilder stringBuilder = new StringBuilder();
         long tmpFileLen;
         try {
-            tmpFileLen = new File("tmp_" + Paths.get(fileName).getFileName()).length();
-            stringBuilder.append(tmpFileLen).append(" bytes copied\n");
+            File fileCopy = new File("tmp_" + Paths.get(fileName).getFileName());
+            boolean copyWritable = fileCopy.setWritable(true);
+            tmpFileLen = fileCopy.length();
+            stringBuilder.append(tmpFileLen).append(" bytes copied\n").append(copyWritable);
             final long lengthOfCopy = new File(fileName).length();
             int mb50 = (ConstantsOst.KBYTE_BYTES * ConstantsOst.KBYTE_BYTES) * 50;
             if (lengthOfCopy < mb50) {
@@ -134,8 +138,16 @@ class RNDFileCopy implements Serializable {
                 long positionOfCopy = readRNDFileContentFromPosition();
                 long mBytesCopied = positionOfCopy / megaByte;
                 String copiedStr = mBytesCopied + "/" + totalMegaBytesToCopy + " mb readied";
+                long timeSpend = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - start);
+                if (timeSpend == 0) {
+                    timeSpend = 1;
+                }
+                BigDecimal mbInSec = BigDecimal.valueOf((float) mBytesCopied / (float) timeSpend).setScale(2, RoundingMode.HALF_EVEN);
+                float mbTot = (float) lengthOfCopy / ConstantsOst.KBYTE_BYTES / ConstantsOst.KBYTE_BYTES;
+                BigDecimal tLeft = BigDecimal.valueOf(mbTot).divide(mbInSec, RoundingMode.HALF_UP).divide(BigDecimal.valueOf((float) 60), RoundingMode.HALF_UP);
                 System.out.println(copiedStr + " " + TimeUnit.NANOSECONDS.toSeconds(threadMXBean.getCurrentThreadCpuTime()) +
-                    " cpu time (msec) / " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - start) + " total time (sec)\nBlock = " + mb50 / ConstantsOst.KBYTE_BYTES + " kbytes");
+                    " cpu time (msec) / " + timeSpend + " total time (sec)\nBlock = " + mb50 / ConstantsOst.KBYTE_BYTES + " kbytes, speed mb/sec = " + mbInSec +
+                    " ~ min left: " + tLeft);
                 if (positionOfCopy >= lengthOfCopy) {
                     break;
                 }
