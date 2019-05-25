@@ -38,6 +38,8 @@ public enum ConstantsOst {
     
     public static final String STR_ATTACHMENTS = "attachments";
     
+    public static final String PROGNAME_OSTPST = "ostpst";
+    
     private static String getSeparator() {
         if (System.getProperty("os.name").contains("indows")) {
             return "\\";

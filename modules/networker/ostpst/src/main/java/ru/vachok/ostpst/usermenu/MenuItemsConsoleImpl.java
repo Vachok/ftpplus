@@ -260,7 +260,6 @@ public class MenuItemsConsoleImpl implements MenuItems {
     }
     
     private void ansSevenCopy() {
-        System.out.println("New copy? (y/n) (e - exit)");
         Properties properties = new Properties();
         try {
             properties.load(new FileInputStream(ConstantsOst.FILENAME_PROPERTIES));
@@ -270,9 +269,10 @@ public class MenuItemsConsoleImpl implements MenuItems {
         }
         catch (IOException e) {
             messageToUser.error(e.getMessage());
-            new MenuItemsConsoleImpl(fileName).askUser();
+            System.err.println("NO PREVIOUS COPY!");
         }
         try (Scanner scanner = new Scanner(System.in)) {
+            System.out.println("New copy? (y/n) (e - exit)");
             while (scanner.hasNextLine()) {
                 String newCP = scanner.nextLine();
                 System.out.println(makeConvertOrCopy.copyierWithSave(newCP));

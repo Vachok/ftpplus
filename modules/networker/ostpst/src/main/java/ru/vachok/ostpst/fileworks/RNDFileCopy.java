@@ -21,6 +21,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -99,6 +100,7 @@ class RNDFileCopy implements Serializable {
     }
     
     String copyFile(String newCP) {
+        final long start = System.currentTimeMillis();
         if (newCP.equalsIgnoreCase("y")) {
             System.out.println(clearPositions());
         }
@@ -106,7 +108,7 @@ class RNDFileCopy implements Serializable {
             return "NO COPY!";
         }
         else if (newCP.equals("c")) {
-            return ConstantsOst.STR_NOT_READY_YET + "\n" + threadMXBean.getThreadInfo(Thread.currentThread().getId());
+            return contLastCopy();
         }
         int megaByte = ConstantsOst.KBYTE_BYTES * ConstantsOst.KBYTE_BYTES;
         StringBuilder stringBuilder = new StringBuilder();
@@ -115,12 +117,12 @@ class RNDFileCopy implements Serializable {
             tmpFileLen = new File("tmp_" + Paths.get(fileName).getFileName()).length();
             stringBuilder.append(tmpFileLen).append(" bytes copied\n");
             final long lengthOfCopy = new File(fileName).length();
-            int mb30 = (ConstantsOst.KBYTE_BYTES * ConstantsOst.KBYTE_BYTES) * 30;
-            if (lengthOfCopy < mb30) {
+            int mb50 = (ConstantsOst.KBYTE_BYTES * ConstantsOst.KBYTE_BYTES) * 50;
+            if (lengthOfCopy < mb50) {
                 properties.setProperty(ConstantsOst.PR_CAPACITY, String.valueOf(lengthOfCopy));
             }
             else {
-                BigDecimal capLong = BigDecimal.valueOf((float) lengthOfCopy).divide(BigDecimal.valueOf((float) mb30), RoundingMode.HALF_DOWN);
+                BigDecimal capLong = BigDecimal.valueOf((float) lengthOfCopy).divide(BigDecimal.valueOf((float) mb50), RoundingMode.HALF_DOWN);
                 BigDecimal bufLen = BigDecimal.valueOf(lengthOfCopy).divide(capLong, RoundingMode.HALF_DOWN);
         
                 long floor = lengthOfCopy - bufLen.longValue() * capLong.longValue();
@@ -132,7 +134,8 @@ class RNDFileCopy implements Serializable {
                 long positionOfCopy = readRNDFileContentFromPosition();
                 long mBytesCopied = positionOfCopy / megaByte;
                 String copiedStr = mBytesCopied + "/" + totalMegaBytesToCopy + " mb readied";
-                System.out.println(copiedStr);
+                System.out.println(copiedStr + " " + TimeUnit.NANOSECONDS.toSeconds(threadMXBean.getCurrentThreadCpuTime()) +
+                    " cpu time (msec) / " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - start) + " total time (sec)\nBlock = " + mb50 / ConstantsOst.KBYTE_BYTES + " kbytes");
                 if (positionOfCopy >= lengthOfCopy) {
                     break;
                 }
@@ -144,6 +147,11 @@ class RNDFileCopy implements Serializable {
         stringBuilder.append(Paths.get(properties.getProperty(ConstantsOst.PR_TMPFILE)).toAbsolutePath()).append("\n\n");
         stringBuilder.append(threadMXBean.getThreadInfo(Thread.currentThread().getId()));
         return stringBuilder.toString();
+    }
+    
+    private String contLastCopy() {
+        this.fileName = properties.getProperty("file");
+        return copyFile("n");
     }
     
     private long readRNDFileContentFromPosition() {
