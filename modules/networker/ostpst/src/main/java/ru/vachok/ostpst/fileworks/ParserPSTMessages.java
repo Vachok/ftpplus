@@ -8,17 +8,19 @@ import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.ostpst.ConstantsOst;
 import ru.vachok.ostpst.usermenu.MenuConsoleLocal;
+import ru.vachok.ostpst.usermenu.MenuItemsConsoleImpl;
 import ru.vachok.ostpst.utils.FileSystemWorkerOST;
 import ru.vachok.ostpst.utils.TFormsOST;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.ThreadMXBean;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -153,7 +155,7 @@ class ParserPSTMessages extends ParserFolders {
     String searchMessage(long messageID) {
         Path pathRoot = Paths.get(".").normalize().toAbsolutePath();
         StringBuilder stringBuilder = new StringBuilder();
-        String pathStr = pathRoot + ConstantsOst.SYSTEM_SEPARATOR + "attachments" + ConstantsOst.SYSTEM_SEPARATOR;
+        String pathStr = pathRoot + ConstantsOst.SYSTEM_SEPARATOR + ConstantsOst.STR_ATTACHMENTS + ConstantsOst.SYSTEM_SEPARATOR;
         PSTMessage pstMessage = null;
         PSTObject objectLoaded = null;
     
@@ -186,7 +188,8 @@ class ParserPSTMessages extends ParserFolders {
             PSTMessage pstMessage = (PSTMessage) pstObject;
             System.out.println(pstMessage.getBodyPrefix());
             System.out.println(pstMessage.getTransportMessageHeaders());
-            new WriterMessageAndAttachments().saveAttachment(Paths.get(".").toAbsolutePath().normalize() + ConstantsOst.SYSTEM_SEPARATOR + "attachments", pstMessage, stringBuilder);
+            new WriterMessageAndAttachments()
+                .saveAttachment(Paths.get(".").toAbsolutePath().normalize() + ConstantsOst.SYSTEM_SEPARATOR + ConstantsOst.STR_ATTACHMENTS, pstMessage, stringBuilder);
         }
         return stringBuilder.toString();
     }
@@ -214,6 +217,8 @@ class ParserPSTMessages extends ParserFolders {
         
         
         private ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
+    
+        private String attachFolder = Paths.get(".").toAbsolutePath().normalize() + ConstantsOst.SYSTEM_SEPARATOR + ConstantsOst.STR_ATTACHMENTS;
         
         @Override public String call() {
             threadMXBean.resetPeakThreadCount();
@@ -222,10 +227,22 @@ class ParserPSTMessages extends ParserFolders {
             return searchByThing;
         }
     
-        private void openPath(String searchByThing) {
-            Path writeStringToFile = FileSystemWorkerOST.writeStringToFile("search_" + (System.currentTimeMillis() / 1000) + ".txt", searchByThing);
+        private void delAttachments() {
             try {
-                Runtime.getRuntime().exec("explorer \"" + writeStringToFile.getParent() + "\"");
+                Files.walkFileTree(new File(attachFolder).toPath(), new DeleterAttachments());
+            }
+            catch (IOException e) {
+                messageToUser.error(e.getMessage());
+            }
+        }
+    
+        private void openPath(String searchByThing) {
+            String fileNameSrch = ConstantsOst.FILE_PREFIX_SEARCH_ + (System.currentTimeMillis() / 1000) + ".txt";
+            Path writeStringToFile = FileSystemWorkerOST.writeStringToFile(fileNameSrch, searchByThing);
+            this.attachFolder = writeStringToFile.getParent() + ConstantsOst.SYSTEM_SEPARATOR + ConstantsOst.STR_ATTACHMENTS;
+            try {
+                Runtime.getRuntime().exec("notepad \"" + fileNameSrch + "\"");
+                Runtime.getRuntime().exec("explorer \"" + attachFolder);
             }
             catch (IOException e) {
                 System.err.println(e.getMessage() + "\n" + new TFormsOST().fromArray(e));
@@ -255,9 +272,11 @@ class ParserPSTMessages extends ParserFolders {
             }
             catch (IOException | PSTException e) {
                 stringBuilder.append(e.getMessage()).append("\n").append(new TFormsOST().fromArray(e));
+                Thread.currentThread().interrupt();
+                new MenuItemsConsoleImpl(fileName).askUser();
             }
-            catch (ArrayIndexOutOfBoundsException ignore) {
-                //
+            catch (ArrayIndexOutOfBoundsException arr) {
+                System.err.println(arr.toString());
             }
             final long stop = System.currentTimeMillis();
     
@@ -274,11 +293,23 @@ class ParserPSTMessages extends ParserFolders {
             if (pstFolder instanceof PSTFolder) {
                 stringBuilder.append(parseFolder(pstFolder, thing));
             }
-            else {
-                System.out.println(pstFolder.getDisplayName() + " isn't a PSTFolder");
-            }
             return stringBuilder.toString();
         }
     }
     
+    
+    
+    class DeleterAttachments extends SimpleFileVisitor<Path> {
+        
+        
+        @Override public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+            file.toFile().delete();
+            return FileVisitResult.CONTINUE;
+        }
+        
+        @Override public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+            dir.toFile().delete();
+            return FileVisitResult.CONTINUE;
+        }
+    }
 }

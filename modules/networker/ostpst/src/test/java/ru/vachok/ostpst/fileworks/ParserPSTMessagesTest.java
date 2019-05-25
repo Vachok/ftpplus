@@ -6,6 +6,7 @@ package ru.vachok.ostpst.fileworks;
 import com.pff.PSTException;
 import org.testng.Assert;
 import org.testng.annotations.Test;
+import ru.vachok.ostpst.ConstantsOst;
 import ru.vachok.ostpst.utils.CharsetEncoding;
 import ru.vachok.ostpst.utils.TFormsOST;
 
@@ -20,16 +21,16 @@ import java.lang.management.ThreadMXBean;
     
     @Test(enabled = false)
     public void searchTest() {
-        if (!new File("tmp_t.p.magdich.pst").exists()) {
+        if (!new File(ConstantsOst.FILENAME_TESTPST).exists()) {
             RNDFileCopy rndFileCopy = new RNDFileCopy("\\\\192.168.14.10\\IT-Backup\\Mailboxes_users\\t.p.magdich.pst");
             String copyStat = rndFileCopy.copyFile("n");
             System.out.println(copyStat);
         }
-        ParserPSTMessages pstMessages = new ParserPSTMessages("tmp_t.p.magdich.pst", 32962);
+        ParserPSTMessages pstMessages = new ParserPSTMessages(ConstantsOst.FILENAME_TESTPST, 32962);
         try {
             System.out.println(pstMessages.searchMessage("Работа SAP (from: Подковыров, Евгений)"));
             System.out.println(pstMessages.searchMessage(2108836));
-            Assert.assertTrue(new File("attachments").isDirectory());
+            Assert.assertTrue(new File(ConstantsOst.STR_ATTACHMENTS).isDirectory());
         }
         catch (PSTException | IOException e) {
             e.printStackTrace();

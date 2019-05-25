@@ -60,14 +60,7 @@ class ParserFolders {
     }
     
     ParserFolders(String fileName) {
-        try {
-            this.pstFile = new PSTFile(fileName);
-        }
-        catch (PSTException | IOException e) {
-            this.pstFile = new PSTFileNameConverter().getPSTFile(fileName);
-            int fileType = pstFile.getPSTFileType();
-            messageToUser.info(getClass().getSimpleName() + ".ParserFoldersWithAttachments", "fileType", " = " + fileType);
-        }
+        this.pstFile = new PSTFileNameConverter().getPSTFile(fileName);
     }
     
     String showFoldersIerarchy() throws IOException, NullPointerException {

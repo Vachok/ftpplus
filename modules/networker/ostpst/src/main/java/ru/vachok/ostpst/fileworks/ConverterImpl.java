@@ -30,7 +30,7 @@ public class ConverterImpl implements MakeConvertOrCopy {
     private String fileName;
     
     public ConverterImpl(String fileName) {
-        this.fileName = new CharsetEncoding(ConstantsOst.CP_WINDOWS_1251).getStrInAnotherCharset(fileName);
+        this.fileName = fileName;
     }
     
     @Override public String convertToPST() {

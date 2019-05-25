@@ -22,7 +22,7 @@ import java.util.Collections;
 /**
  /common сервис
  <p>
- 
+
  @since 05.12.2018 (9:07) */
 @Service(ConstantsFor.ATT_COMMON)
 public class CommonSRV {
@@ -151,7 +151,7 @@ public class CommonSRV {
     private String getFromFile() {
         StringBuilder stringBuilder = new StringBuilder();
         for (File file : new File(".").listFiles()) {
-            if (file.getName().toLowerCase().contains("search_")) {
+            if (file.getName().toLowerCase().contains(ConstantsOst.FILE_PREFIX_SEARCH_)) {
                 stringBuilder.append(FileSystemWorker.readFile(file.getAbsolutePath()));
             }
         }

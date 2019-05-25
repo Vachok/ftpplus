@@ -119,7 +119,6 @@ public class MenuItemsConsoleImpl implements MenuItems {
                 new MenuItemsConsoleImpl(fileName).askUser();
             }
         }
-        userMenu.showMenu();
     }
     
     private void ansTwo() {
@@ -222,7 +221,6 @@ public class MenuItemsConsoleImpl implements MenuItems {
             System.out.println(new TFormsOST().fromArray(e));
             new MenuConsoleLocal(fileName).showMenu();
         }
-        askUser();
     }
     
     private void ansEightSearchEverywhere() {
@@ -240,7 +238,7 @@ public class MenuItemsConsoleImpl implements MenuItems {
         }
         try {
             makeConvertOrCopy.searchMessages(whatFind);
-            askUser();
+            new MenuItemsConsoleImpl(fileName).askUser();
         }
         catch (PSTException | IOException e) {
             messageToUser.error(FileSystemWorkerOST.error(getClass().getSimpleName() + ".ansEightSearchEverywhere.makeConvert", e));

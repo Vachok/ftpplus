@@ -32,6 +32,12 @@ public enum ConstantsOst {
     
     public static final String STR_NOT_READY_YET = "Not ready yet";
     
+    public static final String FILENAME_TESTPST = "tmp_t.p.magdich.pst";
+    
+    public static final String FILE_PREFIX_SEARCH_ = "search_";
+    
+    public static final String STR_ATTACHMENTS = "attachments";
+    
     private static String getSeparator() {
         if (System.getProperty("os.name").contains("indows")) {
             return "\\";
