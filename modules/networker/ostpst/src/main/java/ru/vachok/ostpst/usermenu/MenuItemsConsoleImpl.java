@@ -287,5 +287,6 @@ public class MenuItemsConsoleImpl implements MenuItems {
             System.out.println(e.getMessage() + "\n" + new TFormsOST().fromArray(e));
             new MenuConsoleLocal(fileName).showMenu();
         }
+        new MenuItemsConsoleImpl(fileName).askUser();
     }
 }

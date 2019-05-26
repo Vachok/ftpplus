@@ -74,7 +74,7 @@ class ParserFolders {
         catch (PSTException | IOException | NullPointerException e) {
             stringBuilder.append(e.getMessage());
         }
-        stringBuilder.append("totalCounter = " + totalCounter);
+        stringBuilder.append("totalCounter = ").append(totalCounter);
         return stringBuilder.toString();
     }
     
