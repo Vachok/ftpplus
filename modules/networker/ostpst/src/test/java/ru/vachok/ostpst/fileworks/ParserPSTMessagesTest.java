@@ -42,7 +42,7 @@ import java.lang.management.ThreadMXBean;
         ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
         final long start = System.currentTimeMillis();
         String thingStr = new CharsetEncoding("windows-1251").getStrInAnotherCharset("еее");
-        String fileName = "c:\\Users\\ikudryashov\\OneDrive\\Документы\\Файлы Outlook\\ksamarchenko.ost";
+        String fileName = "G:\\My_Proj\\FtpClientPlus\\modules\\networker\\ostpst\\tmp_t.p.magdich.pst";
         try {
             ParserPSTMessages pstMessages = new ParserPSTMessages(fileName, thingStr);
             String searchMessage = pstMessages.searchMessage();

@@ -30,11 +30,13 @@ public class PCStats implements DataBaseRegSQL {
     
     private StatsOfNetAndUsers statsOfNetAndUsers = new WeekStats();
     
-    private String fileName;
+    private String fileName = ConstantsFor.FILENAME_VELKOMPCUSERAUTOTXT;
     
     private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
     
     private String sql;
+    
+    private int totalResInDB = 0;
     
     public static List<String> getPcNamesInTable() {
         return PC_NAMES_IN_TABLE;
@@ -42,12 +44,14 @@ public class PCStats implements DataBaseRegSQL {
     
     public String getPCStats() {
         statsOfNetAndUsers.getPCStats();
-        return countStat();
+        System.out.println(countStat());
+        return toString();
     }
     
     @Override public int selectFrom() {
         final long stArt = System.currentTimeMillis();
         int retInt = 0;
+        this.sql = ConstantsFor.SQL_SELECTFROM_PCUSERAUTO;
         File file = new File(fileName);
         try (Connection c = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
             try (PreparedStatement p = c.prepareStatement(sql)) {
@@ -73,6 +77,7 @@ public class PCStats implements DataBaseRegSQL {
         }
         FileSystemWorker.copyOrDelFile(file, toCopy, false);
         file.deleteOnExit();
+        this.totalResInDB = PC_NAMES_IN_TABLE.size();
         return PC_NAMES_IN_TABLE.size();
     }
     
@@ -121,9 +126,13 @@ public class PCStats implements DataBaseRegSQL {
         }
     }
     
+    
     @Override public String toString() {
         final StringBuilder sb = new StringBuilder("PCStats{");
-        sb.append(countStat());
+        sb.append(ConstantsFor.TOSTRING_NAME).append(fileName).append('\'');
+        sb.append(", sql='").append(sql).append('\'');
+        sb.append(", statsOfNetAndUsers=").append(statsOfNetAndUsers);
+        sb.append(", totalResInDB=").append(totalResInDB);
         sb.append('}');
         return sb.toString();
     }

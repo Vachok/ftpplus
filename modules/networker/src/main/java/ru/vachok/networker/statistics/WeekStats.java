@@ -72,5 +72,7 @@ public class WeekStats implements Runnable, StatsOfNetAndUsers {
     public void run() {
         AppComponents.threadConfig().thrNameSet("week");
         final long stArt = System.currentTimeMillis();
+        System.out.println(getPCStats());
+        System.out.println(getInetStats());
     }
 }

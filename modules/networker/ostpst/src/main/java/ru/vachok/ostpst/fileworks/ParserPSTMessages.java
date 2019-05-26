@@ -5,6 +5,7 @@ package ru.vachok.ostpst.fileworks;
 
 import com.pff.*;
 import ru.vachok.messenger.MessageCons;
+import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.ostpst.ConstantsOst;
 import ru.vachok.ostpst.usermenu.MenuConsoleLocal;
@@ -213,20 +214,25 @@ class ParserPSTMessages extends ParserFolders {
     }
     
     
+    /**
+     @since 26.05.2019 (8:54)
+     */
     class SearcherEverywhere implements Callable<String> {
         
         
         private ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
-    
+        
         private String attachFolder = Paths.get(".").toAbsolutePath().normalize() + ConstantsOst.SYSTEM_SEPARATOR + ConstantsOst.STR_ATTACHMENTS;
         
         @Override public String call() {
             threadMXBean.resetPeakThreadCount();
             String searchByThing = searchByThing();
-            openPath(searchByThing);
+            if (System.getProperty("os.name").toLowerCase().contains("windows")) {
+                openPath(searchByThing);
+            }
             return searchByThing;
         }
-    
+        
         private void delAttachments() {
             try {
                 Files.walkFileTree(new File(attachFolder).toPath(), new DeleterAttachments());
@@ -235,8 +241,10 @@ class ParserPSTMessages extends ParserFolders {
                 messageToUser.error(e.getMessage());
             }
         }
-    
+        
         private void openPath(String searchByThing) {
+            MessageToUser messageToUser = new MessageSwing();
+            messageToUser.confirm(getClass().getSimpleName(), "Search complete", "Open folders?");
             String fileNameSrch = ConstantsOst.FILE_PREFIX_SEARCH_ + (System.currentTimeMillis() / 1000) + ".txt";
             Path writeStringToFile = FileSystemWorkerOST.writeStringToFile(fileNameSrch, searchByThing);
             this.attachFolder = writeStringToFile.getParent() + ConstantsOst.SYSTEM_SEPARATOR + ConstantsOst.STR_ATTACHMENTS;
@@ -279,14 +287,14 @@ class ParserPSTMessages extends ParserFolders {
                 System.err.println(arr.toString());
             }
             final long stop = System.currentTimeMillis();
-    
+            
             System.out.println(getClass().getSimpleName() + ".searchByThing is end work");
             System.out.println("Search complete. It taken " + TimeUnit.MILLISECONDS.toSeconds(stop - start) + " seconds of human time, and " +
                 TimeUnit.NANOSECONDS.toMillis(threadMXBean.getCurrentThreadCpuTime()) + " millis of cpu time.");
             
             return stringBuilder.toString();
         }
-    
+        
         private String foldersSearch(String folderName, long folderID) throws IOException, PSTException {
             StringBuilder stringBuilder = new StringBuilder();
             pstFolder = (PSTFolder) PSTObject.detectAndLoadPSTObject(pstFile, folderID);

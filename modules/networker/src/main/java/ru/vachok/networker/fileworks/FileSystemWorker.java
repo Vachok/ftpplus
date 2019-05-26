@@ -87,7 +87,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         fileSearcherResList.add("Searched: " + new Date() + "\n");
         String resTo = new TForms().fromArray(fileSearcherResList, true);
         if (fileSearcherResList.size() > 0) {
-            writeFile(ConstantsOst.FILE_PREFIX_SEARCH_ + LocalTime.now().toSecondOfDay() + ".res", fileSearcherResList.stream());
+            writeFile("search_" + LocalTime.now().toSecondOfDay() + ".res", fileSearcherResList.stream());
         }
         return resTo;
     }

@@ -483,6 +483,8 @@ public enum ConstantsFor {
     
     public static final String STR_WRITTEN = " written";
     
+    public static final String TOSTRING_NAME = "fileName='";
+    
     /**
      @return {@link #MAIL_RULES}
      */

@@ -151,7 +151,7 @@ public class CommonSRV {
     private String getFromFile() {
         StringBuilder stringBuilder = new StringBuilder();
         for (File file : new File(".").listFiles()) {
-            if (file.getName().toLowerCase().contains(ConstantsOst.FILE_PREFIX_SEARCH_)) {
+            if (file.getName().toLowerCase().contains("search_")) {
                 stringBuilder.append(FileSystemWorker.readFile(file.getAbsolutePath()));
             }
         }
