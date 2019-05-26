@@ -5,6 +5,7 @@ package ru.vachok.ostpst.fileworks;
 
 import com.pff.*;
 import ru.vachok.messenger.MessageCons;
+import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.ostpst.ConstantsOst;
 import ru.vachok.ostpst.usermenu.MenuConsoleLocal;
@@ -22,9 +23,7 @@ import java.lang.management.ThreadMXBean;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 
 /**
@@ -77,8 +76,9 @@ class ParserPSTMessages extends ParserFolders {
             throw new IllegalArgumentException("Sorry, parameter to search is null. (c) Vachok 22.05.2019 (13:17)");
         }
         else {
+            Future<String> callForSearch = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(new SearcherEverywhere());
             try {
-                String getFutureStr = new SearcherEverywhere().call();
+                String getFutureStr = callForSearch.get();
                 stringBuilder.append(getFutureStr);
             }
             catch (ArrayIndexOutOfBoundsException arr) {
@@ -86,6 +86,9 @@ class ParserPSTMessages extends ParserFolders {
             }
             catch (OutOfMemoryError o) {
                 stringBuilder.append(o.getMessage()).append("\n").append(new TFormsOST().fromArray(Collections.singleton(o)));
+            }
+            catch (InterruptedException | ExecutionException e) {
+                messageToUser.error(e.getMessage());
             }
         }
         return stringBuilder.toString();
@@ -243,12 +246,19 @@ class ParserPSTMessages extends ParserFolders {
             String fileNameSrch = ConstantsOst.FILE_PREFIX_SEARCH_ + (System.currentTimeMillis() / 1000) + ".txt";
             Path writeStringToFile = FileSystemWorkerOST.writeStringToFile(fileNameSrch, searchByThing);
             this.attachFolder = writeStringToFile.getParent() + ConstantsOst.SYSTEM_SEPARATOR + ConstantsOst.STR_ATTACHMENTS;
-            try {
-                Runtime.getRuntime().exec("notepad \"" + fileNameSrch + "\"");
-                Runtime.getRuntime().exec("explorer \"" + attachFolder);
+            MessageToUser messageToUser = new MessageSwing();
+            String confirm = messageToUser.confirm(getClass().getSimpleName(), "Search complete!", "Open folders?");
+            if (confirm.equals("ok")) {
+                try {
+                    Runtime.getRuntime().exec("notepad \"" + fileNameSrch + "\"");
+                    Runtime.getRuntime().exec("explorer \"" + attachFolder);
+                }
+                catch (IOException e) {
+                    System.err.println(e.getMessage() + "\n" + new TFormsOST().fromArray(e));
+                }
             }
-            catch (IOException e) {
-                System.err.println(e.getMessage() + "\n" + new TFormsOST().fromArray(e));
+            else {
+                System.out.println(fileNameSrch);
             }
         }
         
