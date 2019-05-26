@@ -84,8 +84,8 @@ class ParserPSTMessages extends ParserFolders {
             catch (InterruptedException | ExecutionException e) {
                 stringBuilder.append(FileSystemWorkerOST.error(getClass().getSimpleName() + ".searchMessage", e));
             }
-            catch (ArrayIndexOutOfBoundsException ignore) {
-                //
+            catch (ArrayIndexOutOfBoundsException arr) {
+                stringBuilder.append(arr.getMessage()).append("\n").append(new TFormsOST().fromArray(arr));
             }
             catch (OutOfMemoryError o) {
                 stringBuilder.append(o.getMessage()).append("\n").append(new TFormsOST().fromArray(Collections.singleton(o)));

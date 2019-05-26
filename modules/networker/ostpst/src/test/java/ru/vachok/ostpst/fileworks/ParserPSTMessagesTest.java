@@ -7,7 +7,6 @@ import com.pff.PSTException;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import ru.vachok.ostpst.ConstantsOst;
-import ru.vachok.ostpst.utils.CharsetEncoding;
 import ru.vachok.ostpst.utils.TFormsOST;
 
 import java.io.File;
@@ -41,7 +40,7 @@ import java.lang.management.ThreadMXBean;
     public void searchEverywhere() {
         ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
         final long start = System.currentTimeMillis();
-        String thingStr = new CharsetEncoding("windows-1251").getStrInAnotherCharset("еее");
+        String thingStr = "еее";
         String fileName = "G:\\My_Proj\\FtpClientPlus\\modules\\networker\\ostpst\\tmp_t.p.magdich.pst";
         try {
             ParserPSTMessages pstMessages = new ParserPSTMessages(fileName, thingStr);
