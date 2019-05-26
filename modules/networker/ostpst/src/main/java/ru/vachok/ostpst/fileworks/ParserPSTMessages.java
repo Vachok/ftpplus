@@ -5,7 +5,6 @@ package ru.vachok.ostpst.fileworks;
 
 import com.pff.*;
 import ru.vachok.messenger.MessageCons;
-import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.ostpst.ConstantsOst;
 import ru.vachok.ostpst.usermenu.MenuConsoleLocal;
@@ -23,7 +22,9 @@ import java.lang.management.ThreadMXBean;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -76,13 +77,9 @@ class ParserPSTMessages extends ParserFolders {
             throw new IllegalArgumentException("Sorry, parameter to search is null. (c) Vachok 22.05.2019 (13:17)");
         }
         else {
-            Future<String> stringFuture = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(new SearcherEverywhere());
             try {
-                String getFutureStr = stringFuture.get();
+                String getFutureStr = new SearcherEverywhere().call();
                 stringBuilder.append(getFutureStr);
-            }
-            catch (InterruptedException | ExecutionException e) {
-                stringBuilder.append(FileSystemWorkerOST.error(getClass().getSimpleName() + ".searchMessage", e));
             }
             catch (ArrayIndexOutOfBoundsException arr) {
                 stringBuilder.append(arr.getMessage()).append("\n").append(new TFormsOST().fromArray(arr));
@@ -243,8 +240,6 @@ class ParserPSTMessages extends ParserFolders {
         }
         
         private void openPath(String searchByThing) {
-            MessageToUser messageToUser = new MessageSwing();
-            messageToUser.confirm(getClass().getSimpleName(), "Search complete", "Open folders?");
             String fileNameSrch = ConstantsOst.FILE_PREFIX_SEARCH_ + (System.currentTimeMillis() / 1000) + ".txt";
             Path writeStringToFile = FileSystemWorkerOST.writeStringToFile(fileNameSrch, searchByThing);
             this.attachFolder = writeStringToFile.getParent() + ConstantsOst.SYSTEM_SEPARATOR + ConstantsOst.STR_ATTACHMENTS;

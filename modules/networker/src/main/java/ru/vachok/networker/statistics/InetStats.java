@@ -124,7 +124,8 @@ public class InetStats implements Runnable, DataBaseRegSQL {
         }
         catch (SQLException e) {
             messageToUser.error(e.getMessage());
-            throw new IllegalStateException("Connection ***WITH SAVEPOINT*** to SQL cannot be established\nNO " + getClass().getSimpleName() + ".deleteFrom!");
+            System.err.println("Connection ***WITH SAVEPOINT*** to SQL cannot be established\nNO " + getClass().getSimpleName() + ".deleteFrom!");
+            return new RegRuMysql().getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
         }
     }
     

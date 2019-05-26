@@ -238,7 +238,7 @@ public class MenuItemsConsoleImpl implements MenuItems {
         }
         try {
             makeConvertOrCopy.searchMessages(whatFind);
-            new MenuItemsConsoleImpl(fileName).askUser();
+            askUser();
         }
         catch (PSTException | IOException e) {
             messageToUser.error(FileSystemWorkerOST.error(getClass().getSimpleName() + ".ansEightSearchEverywhere.makeConvert", e));
@@ -272,21 +272,21 @@ public class MenuItemsConsoleImpl implements MenuItems {
             System.err.println("NO PREVIOUS COPY!\nStaring new: \n");
             System.out.println(makeConvertOrCopy.copyierWithSave("y"));
             this.fileName = Paths.get(".").toAbsolutePath().normalize() + ConstantsOst.SYSTEM_SEPARATOR + fileName;
-            new MenuItemsConsoleImpl(fileName).askUser();
+            askUser();
         }
         try (Scanner scanner = new Scanner(System.in)) {
             System.out.println("New copy? (y/n) (e - exit)");
             while (scanner.hasNextLine()) {
                 String newCP = scanner.nextLine();
                 System.out.println(makeConvertOrCopy.copyierWithSave(newCP));
-                this.fileName = Paths.get(".").normalize().toAbsolutePath() + ConstantsOst.SYSTEM_SEPARATOR + fileName;
-                new MenuItemsConsoleImpl(fileName).askUser();
+                this.fileName = new StringBuilder().append(Paths.get(".").normalize().toAbsolutePath()).append(ConstantsOst.SYSTEM_SEPARATOR).append(fileName).toString();
+                askUser();
             }
         }
         catch (Exception e) {
             System.out.println(e.getMessage() + "\n" + new TFormsOST().fromArray(e));
             new MenuConsoleLocal(fileName).showMenu();
         }
-        new MenuItemsConsoleImpl(fileName).askUser();
+        askUser();
     }
 }

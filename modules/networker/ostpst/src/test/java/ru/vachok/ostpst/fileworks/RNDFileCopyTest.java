@@ -14,6 +14,6 @@ public class RNDFileCopyTest {
     public void copyTest() {
         String fileName = "\\\\192.168.14.10\\IT-Backup\\Mailboxes_users\\t.p.magdich.pst";
         MakeConvertOrCopy makeConvertOrCopy = new ConverterImpl(fileName);
-        makeConvertOrCopy.copyierWithSave("n");
+        makeConvertOrCopy.copyierWithSave("c");
     }
 }
