@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.statistics;
 
 
@@ -55,17 +57,12 @@ public class InetStats implements Runnable, DataBaseRegSQL {
     @Override public void run() {
         long iPsWithInet = readIPsWithInet();
         messageToUser.info(getClass().getSimpleName() + "in kbytes. ", new File(FILENAME_INETSTATSIPCSV).getAbsolutePath(), " = " + iPsWithInet);
-        if (iPsWithInet > 0) {
-            readInetStatsRSetToCSV();
-        }
-        else {
-            throw new IllegalStateException("File " + FILENAME_INETSTATSIPCSV + " have size: " + iPsWithInet);
-        }
+        readInetStatsRSetToCSV();
         AppComponents.threadConfig().execByThreadConfig(new InetStatSorter());
     }
     
     @Override public int selectFrom() {
-        try (Connection connection = getSavepointConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
+        try (Connection connection = getSavepointConnection()) {
             try (PreparedStatement p = connection.prepareStatement(sql)) {
                 try (ResultSet r = p.executeQuery()) {
                     try (OutputStream outputStream = new FileOutputStream(fileName)) {
@@ -100,10 +97,9 @@ public class InetStats implements Runnable, DataBaseRegSQL {
     }
     
     @Override public int deleteFrom() {
-        try (Connection connection = getSavepointConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
+        try (Connection connection = getSavepointConnection()) {
             try (PreparedStatement p = connection.prepareStatement(sql)) {
-                int executeUpdate = p.executeUpdate();
-                return executeUpdate;
+                return p.executeUpdate();
             }
         }
         catch (SQLException e) {
@@ -117,10 +113,10 @@ public class InetStats implements Runnable, DataBaseRegSQL {
         throw new IllegalComponentStateException("20.05.2019 (10:03)");
     }
     
-    private Connection getSavepointConnection(String dbName) {
+    private Connection getSavepointConnection() {
         MysqlDataSource sourceSchema = new RegRuMysql().getDataSourceSchema(ConstantsFor.DBBASENAME_U0466446_VELKOM);
         sourceSchema.setRelaxAutoCommit(true);
-        sourceSchema.setDatabaseName(dbName);
+        sourceSchema.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_VELKOM);
         try {
             this.connectionF = sourceSchema.getConnection();
             this.savepoint = connectionF.setSavepoint("befdel");

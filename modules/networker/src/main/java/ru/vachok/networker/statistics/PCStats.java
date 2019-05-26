@@ -16,6 +16,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.Callable;
 
 
 /**
@@ -23,7 +24,7 @@ import java.util.*;
  <p>
  
  @since 19.05.2019 (23:13) */
-public class PCStats implements DataBaseRegSQL {
+public class PCStats implements DataBaseRegSQL, Callable<String> {
     
     
     private static final List<String> PC_NAMES_IN_TABLE = new ArrayList<>();
@@ -36,15 +37,17 @@ public class PCStats implements DataBaseRegSQL {
     
     private String sql;
     
-    private int totalResInDB = 0;
+    private String inetStats;
+    
+    private String countUni;
     
     public static List<String> getPcNamesInTable() {
         return PC_NAMES_IN_TABLE;
     }
     
-    public String getPCStats() {
-        statsOfNetAndUsers.getPCStats();
-        System.out.println(countStat());
+    @Override public String call() {
+        this.inetStats = statsOfNetAndUsers.getPCStats();
+        this.countUni = countStat();
         return toString();
     }
     
@@ -76,8 +79,6 @@ public class PCStats implements DataBaseRegSQL {
             toCopy = file.getName() + "_cp";
         }
         FileSystemWorker.copyOrDelFile(file, toCopy, false);
-        file.deleteOnExit();
-        this.totalResInDB = PC_NAMES_IN_TABLE.size();
         return PC_NAMES_IN_TABLE.size();
     }
     
@@ -109,6 +110,14 @@ public class PCStats implements DataBaseRegSQL {
         return countFreqOfUsers();
     }
     
+    @Override public String toString() {
+        final StringBuilder sb = new StringBuilder("PCStats{");
+        sb.append("countUni='").append(countUni).append('\'');
+        sb.append(", inetStats='").append(inetStats).append('\'');
+        sb.append('}');
+        return sb.toString();
+    }
+    
     private String countFreqOfUsers() {
         List<String> pcAutoThisList = FileSystemWorker.readFileToList(new File(ConstantsFor.FILENAME_PCAUTODISTXT).getAbsolutePath());
         Collections.sort(pcAutoThisList);
@@ -119,21 +128,10 @@ public class PCStats implements DataBaseRegSQL {
         String absolutePath = new File("possible_users.txt").getAbsolutePath();
         boolean fileWritten = FileSystemWorker.writeFile(absolutePath, stringCollect.stream());
         if (fileWritten) {
-            return absolutePath;
+            return stringCollect.size() + " unique records.";
         }
         else {
             return "Error. File not written!\n\n\n\n" + absolutePath;
         }
-    }
-    
-    
-    @Override public String toString() {
-        final StringBuilder sb = new StringBuilder("PCStats{");
-        sb.append(ConstantsFor.TOSTRING_NAME).append(fileName).append('\'');
-        sb.append(", sql='").append(sql).append('\'');
-        sb.append(", statsOfNetAndUsers=").append(statsOfNetAndUsers);
-        sb.append(", totalResInDB=").append(totalResInDB);
-        sb.append('}');
-        return sb.toString();
     }
 }

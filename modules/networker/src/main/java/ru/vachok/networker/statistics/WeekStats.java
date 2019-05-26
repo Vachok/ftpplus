@@ -59,7 +59,9 @@ public class WeekStats implements Runnable, StatsOfNetAndUsers {
     @Override public String getPCStats() {
         DataBaseRegSQL dataBaseRegSQL = new PCStats();
         int selectFrom = dataBaseRegSQL.selectFrom();
-        return dataBaseRegSQL.toString();
+        String retStr = "total pc: " + selectFrom;
+        messageToUser.info(getClass().getSimpleName(), "pc stats: ", retStr);
+        return retStr;
     }
     
     @Override public String getInetStats() {
@@ -72,7 +74,7 @@ public class WeekStats implements Runnable, StatsOfNetAndUsers {
     public void run() {
         AppComponents.threadConfig().thrNameSet("week");
         final long stArt = System.currentTimeMillis();
-        System.out.println(getPCStats());
-        System.out.println(getInetStats());
+        getPCStats();
+        getInetStats();
     }
 }
