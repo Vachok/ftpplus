@@ -10,7 +10,10 @@ import ru.vachok.ostpst.usermenu.MenuItemsConsoleImpl;
 import ru.vachok.ostpst.utils.FileSystemWorkerOST;
 import ru.vachok.ostpst.utils.TFormsOST;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 import java.nio.file.Path;
@@ -49,14 +52,17 @@ class PSTMsgSearcher {
         }
         else {
             Future<String> callForSearch = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(new SearcherEverywhere());
-            try {
+            try (OutputStream outputStream = new FileOutputStream("search_" + (System.currentTimeMillis() / 1000) + ".txt")) {
                 String getFutureStr = callForSearch.get();
                 stringBuilder.append(getFutureStr);
+                try (PrintStream printStream = new PrintStream(outputStream, true, "UTF-8")) {
+                    printStream.println(getFutureStr);
+                }
             }
             catch (OutOfMemoryError | ArrayIndexOutOfBoundsException o) {
                 stringBuilder.append(o.getMessage()).append("\n").append(new TFormsOST().fromArray(Collections.singleton(o)));
             }
-            catch (InterruptedException | ExecutionException e) {
+            catch (InterruptedException | ExecutionException | IOException e) {
                 System.err.println(e.getMessage() + "\n" + new TFormsOST().fromArray(e));
                 Thread.currentThread().checkAccess();
                 Thread.currentThread().interrupt();
