@@ -106,16 +106,6 @@ class ParserFolders {
         return stringBuilder.toString();
     }
     
-    private PSTFile getPSTFileNoException(String fileName) {
-        try {
-            return new PSTFile(fileName);
-        }
-        catch (PSTException | IOException e) {
-            e.printStackTrace();
-        }
-        throw new IllegalArgumentException("Cant load PST: " + fileName);
-    }
-    
     private String getLevelCounterStr(int counter) {
         StringBuilder stringBuilder = new StringBuilder();
         for (int i = 0; i < counter; i++) {
@@ -124,27 +114,37 @@ class ParserFolders {
         return stringBuilder.toString();
     }
     
-    protected String parseFolder(PSTFolder folder, final StringBuilder stringBuilder) throws PSTException, IOException, NullPointerException {
-        Vector<PSTFolder> rootSubFolders = folder.getSubFolders();
-        Iterator<PSTFolder> iteratorFolder = rootSubFolders.iterator();
-        
-        while (iteratorFolder.hasNext()) {
-            PSTFolder nextFold = iteratorFolder.next();
-            levelCounter++;
-            totalCounter++;
-            String nextFoldDisplayName = nextFold.getDisplayName();
-            String levelCounterStr = getLevelCounterStr(levelCounter);
-    
-            stringBuilder.append(levelCounterStr).append(levelCounter).append(": ").append(nextFoldDisplayName);
-            stringBuilder.append(" (items: ").append(nextFold.getUnreadCount()).append("/").append(nextFold.getContentCount()).append(")")
-                .append(" id ").append(nextFold.getDescriptorNodeId())
-                .append("\n");
-            if (nextFold.hasSubfolders()) {
-                parseFolder(Objects.requireNonNull(nextFold, "No folder"), stringBuilder);
+    protected String parseFolder(PSTFolder folder, final StringBuilder stringBuilder) throws IOException {
+        Vector<PSTFolder> rootSubFolders = null;
+        try {
+            rootSubFolders = folder.getSubFolders();
+        }
+        catch (PSTException e) {
+            System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".parseFolder");
+        }
+        try {
+            Iterator<PSTFolder> iteratorFolder = rootSubFolders.iterator();
+            while (iteratorFolder.hasNext()) {
+                PSTFolder nextFold = iteratorFolder.next();
+                levelCounter++;
+                totalCounter++;
+                String nextFoldDisplayName = nextFold.getDisplayName();
+                String levelCounterStr = getLevelCounterStr(levelCounter);
+                
+                stringBuilder.append(levelCounterStr).append(levelCounter).append(": ").append(nextFoldDisplayName);
+                stringBuilder.append(" (items: ").append(nextFold.getUnreadCount()).append("/").append(nextFold.getContentCount()).append(")")
+                    .append(" id ").append(nextFold.getDescriptorNodeId())
+                    .append("\n");
+                if (nextFold.hasSubfolders()) {
+                    parseFolder(Objects.requireNonNull(nextFold, "No folder"), stringBuilder);
+                }
+                else {
+                    levelCounter--;
+                }
             }
-            else {
-                levelCounter--;
-            }
+        }
+        catch (NullPointerException e) {
+            System.err.println("rootSubFolders " + e.getMessage());
         }
         levelCounter--;
         return stringBuilder.toString();

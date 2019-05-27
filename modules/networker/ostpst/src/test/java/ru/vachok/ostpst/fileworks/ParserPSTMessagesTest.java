@@ -7,6 +7,7 @@ import com.pff.PSTException;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import ru.vachok.ostpst.ConstantsOst;
+import ru.vachok.ostpst.utils.CharsetEncoding;
 import ru.vachok.ostpst.utils.TFormsOST;
 
 import java.io.File;
@@ -23,10 +24,10 @@ import java.io.IOException;
             String copyStat = rndFileCopy.copyFile("n");
             System.out.println(copyStat);
         }
-        ParserPSTMessages pstMessages = new ParserPSTMessages(ConstantsOst.FILENAME_TESTPST, 32962);
+        PSTMsgSearcher pstMsgSearcher = new PSTMsgSearcher(ConstantsOst.FILENAME_TESTPST, 32962);
         try {
-            System.out.println(pstMessages.searchMessage("Работа SAP (from: Подковыров, Евгений)"));
-            System.out.println(pstMessages.searchMessage(2108836));
+            System.out.println(pstMsgSearcher.searchMessage("Работа SAP (from: Подковыров, Евгений)"));
+            System.out.println(pstMsgSearcher.searchMessage(2108836));
             Assert.assertTrue(new File(ConstantsOst.STR_ATTACHMENTS).isDirectory());
         }
         catch (PSTException | IOException e) {
@@ -36,14 +37,14 @@ import java.io.IOException;
     
     @Test
     public void searchEverywhere() {
-        String thingStr = "fw:";
-        String fileName = "G:\\My_Proj\\FtpClientPlus\\modules\\networker\\ostpst\\tmp_t.p.magdich.pst";
+        String thingStr = new CharsetEncoding("windows-1251").getStrInAnotherCharset("вход");
+        String fileName = "\\\\192.168.14.10\\IT-Backup\\Mailboxes_users\\t.p.magdich.pst";
         try {
-            ParserPSTMessages pstMessages = new ParserPSTMessages(fileName, thingStr);
-            String searchMessage = pstMessages.searchMessage();
+            PSTMsgSearcher pstMessages = new PSTMsgSearcher(fileName, thingStr);
+            String searchMessage = pstMessages.everywhereSearch();
             System.out.println(searchMessage);
         }
-        catch (PSTException | IOException | ArrayIndexOutOfBoundsException e) {
+        catch (ArrayIndexOutOfBoundsException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TFormsOST().fromArray(e));
         }
     }

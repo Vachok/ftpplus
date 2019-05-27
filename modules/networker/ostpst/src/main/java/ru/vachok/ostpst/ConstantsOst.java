@@ -3,6 +3,9 @@
 package ru.vachok.ostpst;
 
 
+import ru.vachok.ostpst.utils.FileSystemWorkerOST;
+
+
 /**
  @since 02.05.2019 (19:52) */
 public enum ConstantsOst {
@@ -18,7 +21,7 @@ public enum ConstantsOst {
     
     public static final int KBYTE_BYTES = 1024;
     
-    public static final String SYSTEM_SEPARATOR = getSeparator();
+    public static final String SYSTEM_SEPARATOR = FileSystemWorkerOST.getSeparator();
     
     public static final String CP_WINDOWS_1251 = "windows-1251";
     
@@ -42,12 +45,4 @@ public enum ConstantsOst {
     
     public static final String STR_ENCODING = "encoding";
     
-    private static String getSeparator() {
-        if (System.getProperty("os.name").contains("indows")) {
-            return "\\";
-        }
-        else {
-            return "/";
-        }
-    }
 }

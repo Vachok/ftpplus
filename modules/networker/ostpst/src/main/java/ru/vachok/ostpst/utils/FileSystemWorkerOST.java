@@ -96,4 +96,13 @@ public abstract class FileSystemWorkerOST {
             return Paths.get(".").toAbsolutePath().normalize();
         }
     }
+    
+    public static String getSeparator() {
+        if (System.getProperty("os.name").contains("indows")) {
+            return "\\";
+        }
+        else {
+            return "/";
+        }
+    }
 }

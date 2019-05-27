@@ -146,14 +146,14 @@ public class ConverterImpl implements MakeConvertOrCopy {
     }
     
     @Override public String searchMessages(long folderID, long msgID) {
-        ParserPSTMessages pstMessages = new ParserPSTMessages(fileName, folderID);
-        return pstMessages.searchMessage(msgID);
+        PSTMsgSearcher pstMsgSearcher = new PSTMsgSearcher(fileName, folderID);
+        return pstMsgSearcher.searchMessage(msgID);
     }
     
     @Override public String searchMessages(long folderID, String msgSubject) {
-        ParserPSTMessages pstMessages = new ParserPSTMessages(fileName, folderID);
+        PSTMsgSearcher pstMsgSearcher = new PSTMsgSearcher(fileName, folderID);
         try {
-            return pstMessages.searchMessage(msgSubject);
+            return pstMsgSearcher.searchMessage(msgSubject);
         }
         catch (PSTException | IOException e) {
             return e.getMessage() + " \n" + new TFormsOST().fromArray(e);
@@ -161,8 +161,8 @@ public class ConverterImpl implements MakeConvertOrCopy {
     }
     
     @Override public String searchMessages(String someThing) throws PSTException, IOException {
-        ParserPSTMessages pstMessages = new ParserPSTMessages(fileName, someThing);
-        return pstMessages.searchMessage();
+        PSTMsgSearcher pstMsgSearcher = new PSTMsgSearcher(fileName, someThing);
+        return pstMsgSearcher.everywhereSearch();
     }
     
     private File createCSV(String csvFileName) {
