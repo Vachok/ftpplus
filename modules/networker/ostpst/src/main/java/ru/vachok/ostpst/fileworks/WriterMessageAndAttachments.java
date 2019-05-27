@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.ostpst.fileworks;
 
 
@@ -25,6 +27,7 @@ class WriterMessageAndAttachments {
     String saveAttachment(String path, PSTMessage message, StringBuilder stringBuilder) {
         Path dirS = getDirectories(path, message.getDescriptorNodeId());
         if (message.hasAttachments()) {
+            stringBuilder.append(message.getNumberOfAttachments()).append(" attachments:\n");
             for (int i = 0; i < message.getNumberOfAttachments(); i++) {
                 hasAtt(stringBuilder, i, path, message);
                 writeMessageNoAtt(dirS, message);
@@ -33,6 +36,7 @@ class WriterMessageAndAttachments {
         else {
             stringBuilder.append(writeMessageNoAtt(dirS, message));
         }
+        stringBuilder.append("\n");
         return stringBuilder.toString();
     }
     
@@ -51,16 +55,16 @@ class WriterMessageAndAttachments {
     
     private void hasAtt(StringBuilder stringBuilder, int i, String path, PSTMessage message) {
         Path directories = getDirectories(path, message.getDescriptorNodeId());
-        stringBuilder.append(i);
-        stringBuilder.append(" attachment:\n");
         PSTAttachment attachment = null;
         try {
             attachment = message.getAttachment(i);
         }
         catch (PSTException | IOException e) {
-            stringBuilder.append(e.getMessage()).append("\n").append(new TFormsOST().fromArray(e));
+            System.err.println(e.getMessage());
+            System.err.println(new TFormsOST().fromArray(e));
         }
         String nameAtt = directories.toAbsolutePath() + ConstantsOst.SYSTEM_SEPARATOR + message.getDescriptorNodeId() + "_" + attachment.getFilename();
+        stringBuilder.append(nameAtt).append("\n");
         if (attachment.getSize() > 1024 * 10 & attachment.getFilename().contains(".jpg")) {
             writeAttachment(attachment, nameAtt, stringBuilder);
         }
@@ -75,7 +79,6 @@ class WriterMessageAndAttachments {
                 try (BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
                     byte[] bytes = new byte[attachment.getSize()];
                     int readB = attStream.read(bytes);
-                    stringBuilder.append(readB).append(" bytes ").append(attachment.getMimeTag()).append(" ");
                     try (OutputStream attOut = new FileOutputStream(nameAtt)) {
                         attOut.write(bytes);
                     }
@@ -83,7 +86,8 @@ class WriterMessageAndAttachments {
             }
         }
         catch (IOException | PSTException e) {
-            stringBuilder.append(e.getMessage()).append("\n").append(new TFormsOST().fromArray(e));
+            System.err.println(e.getMessage());
+            System.err.println(new TFormsOST().fromArray(e));
         }
         
     }

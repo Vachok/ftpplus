@@ -35,7 +35,7 @@ public enum ConstantsOst {
     
     public static final String STR_NOT_READY_YET = "Not ready yet";
     
-    public static final String FILENAME_TESTPST = "tmp_t.p.magdich.pst";
+    public static final String FILENAME_TESTPST = FileSystemWorkerOST.getTestPST();
     
     public static final String FILE_PREFIX_SEARCH_ = "search_";
     

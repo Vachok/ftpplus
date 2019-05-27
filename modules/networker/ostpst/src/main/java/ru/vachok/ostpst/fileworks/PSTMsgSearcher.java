@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.ostpst.fileworks;
 
 
@@ -177,12 +179,12 @@ class PSTMsgSearcher {
                     }
                 }
                 while (!folderNamesWithIDAndWriteToDisk.isEmpty()) {
-                    ForkJoinTask<?> forkJoinTask = ForkJoinTask.adapt(()->foldersSearch(folderNamesWithIDAndWriteToDisk.poll()));
-                    ForkJoinTask<?> joinTask = forkJoinTask.fork();
-                    joinTask.quietlyInvoke();
+                    ForkJoinTask<String> forkJoinTask = ForkJoinTask.adapt(()->foldersSearch(Objects.requireNonNull(folderNamesWithIDAndWriteToDisk.poll())));
+                    ForkJoinTask<String> joinTask = forkJoinTask.fork();
+                    stringBuilder.append(joinTask.get());
                 }
             }
-            catch (IOException e) {
+            catch (IOException | InterruptedException | ExecutionException e) {
                 stringBuilder.append(e.getMessage()).append("\n").append(new TFormsOST().fromArray(e));
                 Thread.currentThread().interrupt();
                 new MenuItemsConsoleImpl(fileName).askUser();
@@ -224,8 +226,8 @@ class PSTMsgSearcher {
             catch (PSTException e) {
                 stringBuilder.append(e.getMessage()).append("\n").append(new TFormsOST().fromArray(e));
             }
-            Set<Map.Entry<Long, String>> entrySet = messagesSubject.entrySet();
-            entrySet.stream().forEach(x->{
+            Set<Map.Entry<Long, String>> entrySet = Objects.requireNonNull(messagesSubject).entrySet();
+            entrySet.forEach(x->{
                 if (x.getValue().toLowerCase().contains(srcThing)) {
                     try {
                         String showMessage = pstMessages.showMessage(x.getKey());

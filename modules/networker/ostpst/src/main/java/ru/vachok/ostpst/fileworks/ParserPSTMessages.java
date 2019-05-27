@@ -37,7 +37,7 @@ class ParserPSTMessages extends ParserFolders {
     
     private String fileName;
     
-    ParserPSTMessages(String fileName, String thing) throws PSTException, IOException {
+    protected ParserPSTMessages(String fileName, String thing) throws PSTException, IOException {
         super(fileName, thing);
         String thing1 = thing.toLowerCase();
         this.fileName = fileName;
@@ -105,6 +105,8 @@ class ParserPSTMessages extends ParserFolders {
             PSTMessage pstMessage = (PSTMessage) pstObject;
             new WriterMessageAndAttachments()
                 .saveAttachment(Paths.get(".").toAbsolutePath().normalize() + ConstantsOst.SYSTEM_SEPARATOR + ConstantsOst.STR_ATTACHMENTS, pstMessage, stringBuilder);
+            stringBuilder.append("\n").append(pstMessage.getSubject()).append(", from:").append(pstMessage.getSenderName())
+                .append(", sent:").append(pstMessage.getMessageDeliveryTime()).append(", id = ").append(pstMessage.getDescriptorNodeId()).append("\n");
         }
         return stringBuilder.toString();
     }

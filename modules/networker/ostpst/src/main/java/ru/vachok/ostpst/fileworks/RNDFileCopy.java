@@ -26,7 +26,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  @since 30.04.2019 (9:36) */
-class RNDFileCopy implements Serializable {
+public class RNDFileCopy implements Serializable {
     
     
     private static final long serialVersionUID = 42L;
@@ -46,7 +46,7 @@ class RNDFileCopy implements Serializable {
     /**
      @param fileName may be null
      */
-    RNDFileCopy(String fileName) {
+    public RNDFileCopy(String fileName) {
         this.fileName = fileName;
         this.threadMXBean = ManagementFactory.getThreadMXBean();
         threadMXBean.setThreadCpuTimeEnabled(true);
@@ -101,7 +101,7 @@ class RNDFileCopy implements Serializable {
         return stringBuilder.toString();
     }
     
-    String copyFile(String newCP) {
+    public String copyFile(String newCP) {
         final long start = System.currentTimeMillis();
         if (newCP.equalsIgnoreCase("y")) {
             System.out.println(clearPositions());
