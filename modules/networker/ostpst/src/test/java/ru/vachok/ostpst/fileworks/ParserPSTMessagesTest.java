@@ -37,7 +37,7 @@ import java.io.IOException;
     
     @Test
     public void searchEverywhere() {
-        String thingStr = new CharsetEncoding("windows-1251").getStrInAnotherCharset("вход");
+        String thingStr = new CharsetEncoding("windows-1251").getStrInAnotherCharset("fw:");
         String fileName = "\\\\192.168.14.10\\IT-Backup\\Mailboxes_users\\t.p.magdich.pst";
         try {
             PSTMsgSearcher pstMessages = new PSTMsgSearcher(fileName, thingStr);

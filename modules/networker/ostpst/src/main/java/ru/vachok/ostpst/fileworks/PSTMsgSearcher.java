@@ -53,10 +53,7 @@ class PSTMsgSearcher {
                 String getFutureStr = callForSearch.get();
                 stringBuilder.append(getFutureStr);
             }
-            catch (ArrayIndexOutOfBoundsException arr) {
-                stringBuilder.append(arr.getMessage()).append("\n").append(new TFormsOST().fromArray(arr));
-            }
-            catch (OutOfMemoryError o) {
+            catch (OutOfMemoryError | ArrayIndexOutOfBoundsException o) {
                 stringBuilder.append(o.getMessage()).append("\n").append(new TFormsOST().fromArray(Collections.singleton(o)));
             }
             catch (InterruptedException | ExecutionException e) {
@@ -215,14 +212,18 @@ class PSTMsgSearcher {
             }
             return stringBuilder.toString();
         }
-        
-        private String searchMessage(PSTFolder pstFolder) {
+    
+        private String searchMessage(PSTFolder pstFolder) throws IOException {
             StringBuilder stringBuilder = new StringBuilder();
-            
+            ParserPSTMessages pstMessages = new ParserPSTMessages(fileName, folderID);
+            Map<Long, String> messagesSubject = null;
             try {
-                ParserPSTMessages pstMessages = new ParserPSTMessages(fileName, srcThing);
-                Map<Long, String> messagesSubject = pstMessages.getMessagesSubject();
-                Set<Map.Entry<Long, String>> entrySet = messagesSubject.entrySet();
+                messagesSubject = pstMessages.getMessagesSubject();
+            }
+            catch (PSTException e) {
+                stringBuilder.append(e.getMessage()).append("\n").append(new TFormsOST().fromArray(e));
+            }
+            Set<Map.Entry<Long, String>> entrySet = messagesSubject.entrySet();
                 entrySet.stream().forEach(x->{
                     if (x.getValue().toLowerCase().contains(srcThing)) {
                         try {
@@ -234,11 +235,6 @@ class PSTMsgSearcher {
                         }
                     }
                 });
-            }
-            catch (PSTException | IOException e) {
-                System.err.println(e.getMessage());
-            }
-            
             return stringBuilder.toString();
         }
     }

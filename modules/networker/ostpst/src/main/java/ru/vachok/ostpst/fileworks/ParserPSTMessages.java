@@ -8,7 +8,6 @@ import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.ostpst.ConstantsOst;
 import ru.vachok.ostpst.usermenu.MenuConsoleLocal;
-import ru.vachok.ostpst.utils.TFormsOST;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -21,7 +20,6 @@ import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Map;
-import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -105,28 +103,8 @@ class ParserPSTMessages extends ParserFolders {
         StringBuilder stringBuilder = new StringBuilder();
         if (pstObject instanceof PSTMessage) {
             PSTMessage pstMessage = (PSTMessage) pstObject;
-            System.out.println(pstMessage.getBodyPrefix());
-            System.out.println(pstMessage.getTransportMessageHeaders());
             new WriterMessageAndAttachments()
                 .saveAttachment(Paths.get(".").toAbsolutePath().normalize() + ConstantsOst.SYSTEM_SEPARATOR + ConstantsOst.STR_ATTACHMENTS, pstMessage, stringBuilder);
-        }
-        return stringBuilder.toString();
-    }
-    
-    private String parseFolder(PSTFolder folder, String thing) {
-        StringBuilder stringBuilder = new StringBuilder();
-        this.pstFolder = folder;
-        try {
-            Map<Long, String> messagesSubject = getMessagesSubject();
-            Set<Map.Entry<Long, String>> stringEntry = messagesSubject.entrySet();
-            stringEntry.stream().forEach((entry)->{
-                if (entry.getValue().toLowerCase().contains(thing)) {
-                    stringBuilder.append(new PSTMsgSearcher(fileName, thing).searchMessage(entry.getKey()));
-                }
-            });
-        }
-        catch (PSTException | IOException e) {
-            stringBuilder.append(e.getMessage()).append("\n").append(new TFormsOST().fromArray(e));
         }
         return stringBuilder.toString();
     }
