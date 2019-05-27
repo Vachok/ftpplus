@@ -10,10 +10,7 @@ import ru.vachok.ostpst.usermenu.MenuItemsConsoleImpl;
 import ru.vachok.ostpst.utils.FileSystemWorkerOST;
 import ru.vachok.ostpst.utils.TFormsOST;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 import java.nio.file.Path;
@@ -52,35 +49,33 @@ class PSTMsgSearcher {
         }
         else {
             Future<String> callForSearch = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(new SearcherEverywhere());
-            try (OutputStream outputStream = new FileOutputStream("search_" + (System.currentTimeMillis() / 1000) + ".txt")) {
-                String getFutureStr = callForSearch.get();
-                stringBuilder.append(getFutureStr);
-                try (PrintStream printStream = new PrintStream(outputStream, true, "UTF-8")) {
-                    printStream.println(getFutureStr);
+//            ForkJoinTask<String> stringForkJoinTask = ForkJoinTask.adapt(new SearcherEverywhere());
+//            ForkJoinTask<String> fork = stringForkJoinTask.fork();
+            String getFutureStr = null;
+            try {
+                getFutureStr = callForSearch.get();
+                if (System.getProperty("os.name").toLowerCase().contains("windows")) {
+                    openPath(getFutureStr);
                 }
+        
             }
-            catch (OutOfMemoryError | ArrayIndexOutOfBoundsException o) {
-                stringBuilder.append(o.getMessage()).append("\n").append(new TFormsOST().fromArray(Collections.singleton(o)));
+            catch (InterruptedException | ExecutionException e) {
+                stringBuilder.append(e.getMessage()).append("\n").append(new TFormsOST().fromArray(e));
             }
-            catch (InterruptedException | ExecutionException | IOException e) {
-                System.err.println(e.getMessage() + "\n" + new TFormsOST().fromArray(e));
-                Thread.currentThread().checkAccess();
-                Thread.currentThread().interrupt();
-                new MenuItemsConsoleImpl(fileName).askUser();
-            }
+            stringBuilder.append(getFutureStr);
         }
         return stringBuilder.toString();
     }
     
     String searchMessage(String searchKey) throws PSTException, IOException {
         StringBuilder stringBuilder = new StringBuilder();
-        int indexSrch = 0;
+        int indexSch = 0;
         try {
             Map<Long, String> subjectsMap = new ParserPSTMessages(fileName, srcThing).getMessagesSubject();
             List<String> subjectsList = new ArrayList<>(subjectsMap.values());
             Collections.sort(subjectsList);
-            indexSrch = Collections.binarySearch(subjectsList, searchKey);
-            String foundStr = subjectsList.get(indexSrch);
+            indexSch = Collections.binarySearch(subjectsList, searchKey);
+            String foundStr = subjectsList.get(indexSch);
             stringBuilder.append(foundStr);
             long msgID = 0;
             for (Map.Entry<Long, String> entry : subjectsMap.entrySet()) {
@@ -91,7 +86,7 @@ class PSTMsgSearcher {
             new ParserPSTMessages(fileName, srcThing).showMessage(msgID);
         }
         catch (NullPointerException | IndexOutOfBoundsException e) {
-            stringBuilder.append("Key: ").append(searchKey).append(" not found... Index =").append(indexSrch).append("\n").append(new TFormsOST().fromArray(e));
+            stringBuilder.append("Key: ").append(searchKey).append(" not found... Index =").append(indexSch).append("\n").append(new TFormsOST().fromArray(e));
         }
         return stringBuilder.toString();
     }
@@ -125,6 +120,27 @@ class PSTMsgSearcher {
         return stringBuilder.toString();
     }
     
+    private void openPath(String searchByThing) {
+        String fileNameSrch = ConstantsOst.FILE_PREFIX_SEARCH_ + (System.currentTimeMillis() / 1000) + ".txt";
+        Path writeStringToFile = FileSystemWorkerOST.writeStringToFile(fileNameSrch, searchByThing);
+        String attachFolder = writeStringToFile.getParent() + ConstantsOst.SYSTEM_SEPARATOR + ConstantsOst.STR_ATTACHMENTS;
+        messageToUser = new MessageSwing();
+        String confirm = messageToUser.confirm(getClass().getSimpleName(), "Search complete!", "Open folders?");
+        if (confirm.equals("ok")) {
+            try {
+                Runtime.getRuntime().exec("notepad \"" + fileNameSrch + "\"");
+                Runtime.getRuntime().exec("explorer \"" + attachFolder);
+            }
+            catch (IOException e) {
+                System.err.println(e.getMessage() + "\n" + new TFormsOST().fromArray(e));
+            }
+        }
+        else {
+            messageToUser = new MessageCons(getClass().getSimpleName());
+            System.out.println(fileNameSrch);
+        }
+    }
+    
     
     /**
      @since 26.05.2019 (8:54)
@@ -140,32 +156,7 @@ class PSTMsgSearcher {
         
         @Override public String call() {
             threadMXBean.resetPeakThreadCount();
-            String searchByThing = searchByThing();
-            if (System.getProperty("os.name").toLowerCase().contains("windows")) {
-                openPath(searchByThing);
-            }
-            return searchByThing;
-        }
-        
-        private void openPath(String searchByThing) {
-            String fileNameSrch = ConstantsOst.FILE_PREFIX_SEARCH_ + (System.currentTimeMillis() / 1000) + ".txt";
-            Path writeStringToFile = FileSystemWorkerOST.writeStringToFile(fileNameSrch, searchByThing);
-            String attachFolder = writeStringToFile.getParent() + ConstantsOst.SYSTEM_SEPARATOR + ConstantsOst.STR_ATTACHMENTS;
-            messageToUser = new MessageSwing();
-            String confirm = messageToUser.confirm(getClass().getSimpleName(), "Search complete!", "Open folders?");
-            if (confirm.equals("ok")) {
-                try {
-                    Runtime.getRuntime().exec("notepad \"" + fileNameSrch + "\"");
-                    Runtime.getRuntime().exec("explorer \"" + attachFolder);
-                }
-                catch (IOException e) {
-                    System.err.println(e.getMessage() + "\n" + new TFormsOST().fromArray(e));
-                }
-            }
-            else {
-                messageToUser = new MessageCons(getClass().getSimpleName());
-                System.out.println(fileNameSrch);
-            }
+            return searchByThing();
         }
         
         private String searchByThing() {
@@ -185,7 +176,9 @@ class PSTMsgSearcher {
                         stringBuilder.append(folderName).append("\n");
                     }
                     folderID = Long.parseLong(folderName.split(" id ")[1]);
-                    foldersSearch(folderName.split("\\Q (item\\E")[0]);
+                    ForkJoinTask<?> forkJoinTask = ForkJoinTask.adapt(()->foldersSearch(folderName.split("\\Q (item\\E")[0], folderID));
+                    ForkJoinTask<?> joinTask = forkJoinTask.fork();
+                    joinTask.fork();
                 }
             }
             catch (IOException e) {
@@ -203,8 +196,8 @@ class PSTMsgSearcher {
             
             return stringBuilder.toString();
         }
-        
-        private String foldersSearch(String folderName) throws IOException {
+    
+        private String foldersSearch(String folderName, long folderID) throws IOException {
             StringBuilder stringBuilder = new StringBuilder();
             PSTFolder pstFolder = null;
             try {
@@ -230,17 +223,17 @@ class PSTMsgSearcher {
                 stringBuilder.append(e.getMessage()).append("\n").append(new TFormsOST().fromArray(e));
             }
             Set<Map.Entry<Long, String>> entrySet = messagesSubject.entrySet();
-                entrySet.stream().forEach(x->{
-                    if (x.getValue().toLowerCase().contains(srcThing)) {
-                        try {
-                            String showMessage = pstMessages.showMessage(x.getKey());
-                            stringBuilder.append(showMessage);
-                        }
-                        catch (PSTException | IOException e) {
-                            System.err.println(e.getMessage());
-                        }
+            entrySet.stream().forEach(x->{
+                if (x.getValue().toLowerCase().contains(srcThing)) {
+                    try {
+                        String showMessage = pstMessages.showMessage(x.getKey());
+                        stringBuilder.append(showMessage);
                     }
-                });
+                    catch (PSTException | IOException e) {
+                        System.err.println(e.getMessage());
+                    }
+                }
+            });
             return stringBuilder.toString();
         }
     }
