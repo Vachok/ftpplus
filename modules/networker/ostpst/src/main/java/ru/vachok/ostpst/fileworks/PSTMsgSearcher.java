@@ -57,7 +57,7 @@ class PSTMsgSearcher {
                 if (System.getProperty("os.name").toLowerCase().contains("windows")) {
                     openPath(getFutureStr);
                 }
-        
+    
             }
             catch (InterruptedException | ExecutionException e) {
                 stringBuilder.append(e.getMessage()).append("\n").append(new TFormsOST().fromArray(e));
@@ -175,10 +175,11 @@ class PSTMsgSearcher {
                     if (folderName.toLowerCase().contains(srcThing)) {
                         stringBuilder.append(folderName).append("\n");
                     }
-                    folderID = Long.parseLong(folderName.split(" id ")[1]);
-                    ForkJoinTask<?> forkJoinTask = ForkJoinTask.adapt(()->foldersSearch(folderName.split("\\Q (item\\E")[0], folderID));
+                }
+                while (!folderNamesWithIDAndWriteToDisk.isEmpty()) {
+                    ForkJoinTask<?> forkJoinTask = ForkJoinTask.adapt(()->foldersSearch(folderNamesWithIDAndWriteToDisk.poll()));
                     ForkJoinTask<?> joinTask = forkJoinTask.fork();
-                    joinTask.fork();
+                    joinTask.quietlyInvoke();
                 }
             }
             catch (IOException e) {
@@ -197,9 +198,10 @@ class PSTMsgSearcher {
             return stringBuilder.toString();
         }
     
-        private String foldersSearch(String folderName, long folderID) throws IOException {
+        private String foldersSearch(String folderName) throws IOException {
             StringBuilder stringBuilder = new StringBuilder();
             PSTFolder pstFolder = null;
+            folderID = Long.parseLong(folderName.split(" id ")[1]);
             try {
                 pstFolder = (PSTFolder) PSTObject.detectAndLoadPSTObject(pstFile, folderID);
             }
