@@ -119,9 +119,11 @@ public class HardCopy implements FileWorker {
         prefMap.put(ConstantsOst.PR_POSREAD, String.valueOf(readPos));
         
         do {
-            readPos = Long.parseLong(prefMap.get(ConstantsOst.PR_POSREAD));
-            writePos = continuousCopyProc();
+            writePos = new File(writeFileName).length();
+            readPos = continuousCopyProc();
+            showCurrentResult();
         } while (readPos != writePos);
+        saveAndExit();
         return readPos;
     }
     
@@ -130,12 +132,12 @@ public class HardCopy implements FileWorker {
         long totalMB = new File(readFileName).length();
         readMB /= (ConstantsOst.KBYTE_BYTES * ConstantsOst.KBYTE_BYTES);
         totalMB /= (ConstantsOst.KBYTE_BYTES * ConstantsOst.KBYTE_BYTES);
-        System.out.println("Read/Total: " + readMB + "/" + totalMB);
         long toSecondsDura = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startStamp);
         if (toSecondsDura == 0) {
             toSecondsDura = 1;
         }
-        System.out.println("Time: " + toSecondsDura + " speed: " + (float) totalMB / (float) toSecondsDura + " mb/sec");
+        System.out
+            .println("Read/Total: " + readMB + "/" + totalMB + ". Time: " + toSecondsDura + " speed: " + (float) readMB / (float) toSecondsDura + " mb/sec. Buffer = " + bufLen / ConstantsOst.KBYTE_BYTES);
     }
     
     @Override public String saveAndExit() {
@@ -143,7 +145,6 @@ public class HardCopy implements FileWorker {
         if (pr) {
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
-            System.out.println(toString());
         }
         return toString() + " is ok: " + pr;
     }
@@ -162,27 +163,37 @@ public class HardCopy implements FileWorker {
         sb.append(", startStamp=").append(new Date(startStamp));
         sb.append(", writeFileName='").append(writeFileName).append('\'');
         sb.append("\n").append(showMe).append('\'');
+        sb.append("\nBuffer = ").append(bufLen / ConstantsOst.KBYTE_BYTES).append('\'');
+        Preferences preferences = Preferences.userRoot();
+        sb.append("\n").append(new TFormsOST().fromArray(prefMap)).append('\'');
         sb.append('}');
         return sb.toString();
     }
     
     private long continuousCopyProc() {
-    
         long writePos = Long.parseLong(prefMap.getOrDefault(ConstantsOst.PR_POSWRITE, "0"));
-        long readPos = Long.parseLong(prefMap.getOrDefault(ConstantsOst.PR_POSREAD, "0"));
-    
+        long readPos = Long.parseLong(prefMap.getOrDefault(ConstantsOst.PR_POSREAD, String.valueOf(new File(readFileName).length())));
+        long toEnd = new File(readFileName).length() - new File(writeFileName).length();
+        if (bufLen >= toEnd & toEnd != 0) {
+            this.bufLen = (int) (toEnd);
+        }
+        
         try (RandomAccessFile randomAccessFile = new RandomAccessFile(readFileName, "r");
              RandomAccessFile outFile = new RandomAccessFile(writeFileName, "rw")
         ) {
             randomAccessFile.seek(readPos);
-            byte[] bufBytes = new byte[bufLen];
+            byte[] bufBytes = new byte[this.bufLen];
             randomAccessFile.read(bufBytes);
+    
             prefMap.put(ConstantsOst.PR_POSREAD, String.valueOf(randomAccessFile.getFilePointer()));
+            System.out.println(toEnd / ConstantsOst.KBYTE_BYTES + " left. new byte[" + (bufBytes.length / ConstantsOst.KBYTE_BYTES) + "]");
             outFile.seek(writePos);
-            outFile.write(bufBytes);
-            prefMap.put(ConstantsOst.PR_POSWRITE, String.valueOf(outFile.getFilePointer()));
+            if (new File(writeFileName).length() != new File(readFileName).length()) {
+                outFile.write(bufBytes);
+            }
+            prefMap.put(ConstantsOst.PR_POSWRITE, String.valueOf(new File(writeFileName).length()));
             savePr();
-            return outFile.getFilePointer();
+            return randomAccessFile.getFilePointer();
             
         }
         catch (IOException e) {
@@ -203,6 +214,7 @@ public class HardCopy implements FileWorker {
             preferences.putLong(ConstantsOst.PR_POSREAD, pRead);
             preferences.put(ConstantsOst.PR_READFILENAME, readFileName);
             preferences.put(PR_WRITEFILENAME, writeFileName);
+            preferences.put("crc32" + bufLen, prefMap.getOrDefault("crc32" + bufLen, "-1"));
             if (pRead == pWrite) {
                 retBool = true;
             }
@@ -237,9 +249,10 @@ public class HardCopy implements FileWorker {
             prefMap.putIfAbsent(ConstantsOst.PR_POSWRITE, properties.getProperty(ConstantsOst.PR_POSWRITE, String.valueOf(0)));
             prefMap.putIfAbsent(ConstantsOst.PR_POSREAD, properties.getProperty(ConstantsOst.PR_POSREAD, String.valueOf(0)));
         }
-        if (!(prefMap.get(ConstantsOst.PR_POSWRITE).equals(prefMap.get(ConstantsOst.PR_POSREAD)))) {
-            throw new IllegalStateException("ConstantsOst.PR_POSREAD (" + prefMap.get(ConstantsOst.PR_POSREAD) + ") != ConstantsOst.PR_POSWRITE (" + prefMap
-                .get(ConstantsOst.PR_POSWRITE) + ")");
+        String poRead = prefMap.get(ConstantsOst.PR_POSREAD);
+        String poWrite = prefMap.get(ConstantsOst.PR_POSWRITE);
+        if (!(poRead.equals(poWrite))) {
+            throw new IllegalStateException("ConstantsOst.PR_POSREAD (" + poRead + ") != ConstantsOst.PR_POSWRITE (" + poWrite + ")");
         }
     }
 }

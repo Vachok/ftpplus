@@ -7,9 +7,6 @@ import org.testng.annotations.Test;
 import ru.vachok.ostpst.ConstantsOst;
 import ru.vachok.ostpst.fileworks.FileWorker;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-
 
 public class HardCopyTest {
     
@@ -17,18 +14,10 @@ public class HardCopyTest {
     @Test
     public void hardCPTester() {
         final long stLong = System.currentTimeMillis();
-        FileWorker fileWorker = new HardCopy("\\\\192.168.14.10\\IT-Backup\\Mailboxes_users\\oratnikova.pst", "orat.pst");
-        Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(fileWorker::continuousCopy);
-        while ((stLong + TimeUnit.SECONDS.toMillis(16) > System.currentTimeMillis())) {
-            ((HardCopy) fileWorker).setBufLen((ConstantsOst.KBYTE_BYTES * ConstantsOst.KBYTE_BYTES) * 30);
-            fileWorker.showCurrentResult();
-            try {
-                Thread.sleep(4000);
-            }
-            catch (InterruptedException e) {
-                fileWorker.saveAndExit();
-            }
-        }
+        FileWorker fileWorker = new HardCopy("\\\\192.168.14.10\\IT-Backup\\Mailboxes_users\\a.v.komarov.pst", "a.v.komarov.pst");
+        ((HardCopy) fileWorker).setBufLen((ConstantsOst.KBYTE_BYTES * ConstantsOst.KBYTE_BYTES) * 42);
+    
+        fileWorker.continuousCopy();
         System.out.println(fileWorker.saveAndExit());
     }
 }
