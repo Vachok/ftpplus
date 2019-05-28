@@ -127,15 +127,15 @@ public class HardCopy implements FileWorker {
     
     @Override public void showCurrentResult() {
         long readMB = Long.parseLong(prefMap.getOrDefault(ConstantsOst.PR_POSREAD, "0"));
-        long writeMB = Long.parseLong(prefMap.getOrDefault(ConstantsOst.PR_POSWRITE, "0"));
+        long totalMB = new File(readFileName).length();
         readMB /= (ConstantsOst.KBYTE_BYTES * ConstantsOst.KBYTE_BYTES);
-        writeMB /= (ConstantsOst.KBYTE_BYTES * ConstantsOst.KBYTE_BYTES);
-        System.out.println("Read/Write: " + readMB + "/" + writeMB);
+        totalMB /= (ConstantsOst.KBYTE_BYTES * ConstantsOst.KBYTE_BYTES);
+        System.out.println("Read/Total: " + readMB + "/" + totalMB);
         long toSecondsDura = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startStamp);
         if (toSecondsDura == 0) {
             toSecondsDura = 1;
         }
-        System.out.println("Time: " + toSecondsDura + " speed: " + (float) writeMB / (float) toSecondsDura + " mb/sec");
+        System.out.println("Time: " + toSecondsDura + " speed: " + (float) totalMB / (float) toSecondsDura + " mb/sec");
     }
     
     @Override public String saveAndExit() {

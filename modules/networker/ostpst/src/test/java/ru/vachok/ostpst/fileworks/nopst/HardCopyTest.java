@@ -19,8 +19,8 @@ public class HardCopyTest {
         final long stLong = System.currentTimeMillis();
         FileWorker fileWorker = new HardCopy("\\\\192.168.14.10\\IT-Backup\\Mailboxes_users\\oratnikova.pst", "orat.pst");
         Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(fileWorker::continuousCopy);
-        while ((stLong + TimeUnit.SECONDS.toMillis(100) > System.currentTimeMillis())) {
-            ((HardCopy) fileWorker).setBufLen((ConstantsOst.KBYTE_BYTES * ConstantsOst.KBYTE_BYTES) * 35);
+        while ((stLong + TimeUnit.SECONDS.toMillis(16) > System.currentTimeMillis())) {
+            ((HardCopy) fileWorker).setBufLen((ConstantsOst.KBYTE_BYTES * ConstantsOst.KBYTE_BYTES) * 30);
             fileWorker.showCurrentResult();
             try {
                 Thread.sleep(4000);
