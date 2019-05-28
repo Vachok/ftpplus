@@ -7,7 +7,7 @@ import org.testng.annotations.Test;
 import ru.vachok.ostpst.MakeConvertOrCopy;
 
 
-public class RNDFileCopyTest {
+public class RNDPSTFileCopyTest {
     
     
     @Test

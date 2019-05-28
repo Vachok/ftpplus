@@ -9,4 +9,12 @@ public interface FileWorker {
     String chkFile();
     
     String clearCopy();
+    
+    long continuousCopy();
+    
+    void showCurrentResult();
+    
+    String saveAndExit();
+    
+    boolean processNewCopy();
 }

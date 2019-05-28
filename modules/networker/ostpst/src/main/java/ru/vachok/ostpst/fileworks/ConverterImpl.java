@@ -78,8 +78,8 @@ public class ConverterImpl implements MakeConvertOrCopy {
     }
     
     @Override public String cleanPreviousCopy() {
-        RNDFileCopy rndFileCopy = new RNDFileCopy(fileName);
-        return rndFileCopy.clearPositions();
+        RNDPSTFileCopy RNDPSTFileCopy = new RNDPSTFileCopy(fileName);
+        return RNDPSTFileCopy.clearPositions();
     }
     
     @Override public void setFileName(String fileName) {
@@ -87,8 +87,8 @@ public class ConverterImpl implements MakeConvertOrCopy {
     }
     
     @Override public String copyierWithSave(String newCP) {
-        RNDFileCopy rndFileCopy = new RNDFileCopy(fileName);
-        return rndFileCopy.copyFile(newCP);
+        RNDPSTFileCopy RNDPSTFileCopy = new RNDPSTFileCopy(fileName);
+        return RNDPSTFileCopy.copyFile(newCP);
     }
     
     @Override public String showListFolders() {

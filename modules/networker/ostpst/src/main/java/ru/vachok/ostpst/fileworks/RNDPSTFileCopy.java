@@ -26,7 +26,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  @since 30.04.2019 (9:36) */
-public class RNDFileCopy implements Serializable {
+public class RNDPSTFileCopy implements Serializable {
     
     
     private static final long serialVersionUID = 42L;
@@ -46,7 +46,7 @@ public class RNDFileCopy implements Serializable {
     /**
      @param fileName may be null
      */
-    public RNDFileCopy(String fileName) {
+    public RNDPSTFileCopy(String fileName) {
         this.fileName = fileName;
         this.threadMXBean = ManagementFactory.getThreadMXBean();
         threadMXBean.setThreadCpuTimeEnabled(true);

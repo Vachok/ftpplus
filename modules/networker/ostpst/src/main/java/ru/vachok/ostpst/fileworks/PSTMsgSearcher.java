@@ -8,7 +8,6 @@ import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.ostpst.ConstantsOst;
-import ru.vachok.ostpst.usermenu.MenuItemsConsoleImpl;
 import ru.vachok.ostpst.utils.FileSystemWorkerOST;
 import ru.vachok.ostpst.utils.TFormsOST;
 
@@ -179,15 +178,14 @@ class PSTMsgSearcher {
                     }
                 }
                 while (!folderNamesWithIDAndWriteToDisk.isEmpty()) {
-                    ForkJoinTask<String> forkJoinTask = ForkJoinTask.adapt(()->foldersSearch(Objects.requireNonNull(folderNamesWithIDAndWriteToDisk.poll())));
-                    ForkJoinTask<String> joinTask = forkJoinTask.fork();
-                    stringBuilder.append(joinTask.get());
+                    ForkJoinTask<String> forkJoinTask = ForkJoinTask.adapt(()->foldersSearch(folderNamesWithIDAndWriteToDisk.poll()));
+                    forkJoinTask = forkJoinTask.fork();
+                    stringBuilder.append(forkJoinTask.get());
                 }
             }
             catch (IOException | InterruptedException | ExecutionException e) {
                 stringBuilder.append(e.getMessage()).append("\n").append(new TFormsOST().fromArray(e));
                 Thread.currentThread().interrupt();
-                new MenuItemsConsoleImpl(fileName).askUser();
             }
             catch (ArrayIndexOutOfBoundsException arr) {
                 System.err.println(arr);

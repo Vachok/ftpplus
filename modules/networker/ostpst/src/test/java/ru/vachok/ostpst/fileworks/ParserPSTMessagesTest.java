@@ -6,6 +6,7 @@ package ru.vachok.ostpst.fileworks;
 import com.pff.PSTException;
 import org.testng.Assert;
 import org.testng.annotations.Test;
+import ru.vachok.ostpst.utils.FileSystemWorkerOST;
 
 import java.io.IOException;
 import java.util.Map;
@@ -16,8 +17,9 @@ import java.util.Map;
     
     @Test
     public void msgSubjectsTest() {
+        String testPST = FileSystemWorkerOST.getTestPST();
         try {
-            ParserPSTMessages pstMessages = new ParserPSTMessages("G:\\My_Proj\\FtpClientPlus\\modules\\networker\\ostpst\\tmp_t.p.magdich.pst", 32962);
+            ParserPSTMessages pstMessages = new ParserPSTMessages(testPST, 32962);
             Map<Long, String> subjects = pstMessages.getMessagesSubject();
             Assert.assertTrue(subjects.size() > 0);
         }

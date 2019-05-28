@@ -230,15 +230,15 @@ public class MenuItemsConsoleImpl implements MenuItems {
             whatFind = scanner.nextLine();
             System.out.println("Started Search. It takes about 8-10 minutes. After all, see results in " + Paths.get(".").toAbsolutePath().normalize());
             System.out.println(System.getProperties().getProperty(ConstantsOst.STR_ENCODING));
-            Thread.sleep(1500);
+            Thread.sleep(1200);
         }
         catch (InterruptedException e) {
             messageToUser.error(FileSystemWorkerOST.error(getClass().getSimpleName() + ".ansEightSearchEverywhere.scanner", e));
-            askUser();
+            new MenuItemsConsoleImpl(fileName).askUser();
         }
         try {
             makeConvertOrCopy.searchMessages(whatFind);
-            askUser();
+            new MenuItemsConsoleImpl(fileName).askUser();
         }
         catch (PSTException | IOException e) {
             messageToUser.error(FileSystemWorkerOST.error(getClass().getSimpleName() + ".ansEightSearchEverywhere.makeConvert", e));

@@ -6,7 +6,7 @@ package ru.vachok.ostpst.utils;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.ostpst.ConstantsOst;
-import ru.vachok.ostpst.fileworks.RNDFileCopy;
+import ru.vachok.ostpst.fileworks.RNDPSTFileCopy;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -81,8 +81,8 @@ public abstract class FileSystemWorkerOST {
     public static String getTestPST() {
         String tmpFileName = "tmp_t.p.magdich.pst";
         if (!new File(tmpFileName).exists()) {
-            RNDFileCopy rndFileCopy = new RNDFileCopy("\\\\192.168.14.10\\IT-Backup\\Mailboxes_users\\t.p.magdich.pst");
-            String copyStat = rndFileCopy.copyFile("n");
+            RNDPSTFileCopy RNDPSTFileCopy = new RNDPSTFileCopy("\\\\192.168.14.10\\IT-Backup\\Mailboxes_users\\t.p.magdich.pst");
+            String copyStat = RNDPSTFileCopy.copyFile("n");
             System.out.println(copyStat);
         }
         return tmpFileName;
