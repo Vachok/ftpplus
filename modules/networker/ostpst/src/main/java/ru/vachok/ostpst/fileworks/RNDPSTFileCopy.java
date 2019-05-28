@@ -92,7 +92,7 @@ public class RNDPSTFileCopy implements Serializable {
             Object read = properties.setProperty(ConstantsOst.PR_READING, "0");
             Object write = properties.setProperty(ConstantsOst.PR_WRITING, "0");
             properties.store(new FileOutputStream(ConstantsOst.FILENAME_PROPERTIES), "clearPositions");
-            stringBuilder.append(tmpDel).append(" deleting post file: ").append(absPath).append(". ").append(read).append(" read, ").append(write).append(" write.");
+            stringBuilder.append(tmpDel).append(" deleting post file: ").append(absPath).append(". ").append(read).append(" read, ").append(write).append(ConstantsOst.STR_WRITE);
         }
         catch (IOException e) {
             stringBuilder.append(e.getMessage()).append("\n").append(new TFormsOST().fromArray(e));

@@ -1,7 +1,10 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.ostpst.fileworks.nopst;
 
 
 import org.testng.annotations.Test;
+import ru.vachok.ostpst.ConstantsOst;
 import ru.vachok.ostpst.fileworks.FileWorker;
 
 import java.util.concurrent.Executors;
@@ -16,14 +19,16 @@ public class HardCopyTest {
         final long stLong = System.currentTimeMillis();
         FileWorker fileWorker = new HardCopy("\\\\192.168.14.10\\IT-Backup\\Mailboxes_users\\oratnikova.pst", "orat.pst");
         Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(fileWorker::continuousCopy);
-        while ((stLong + TimeUnit.SECONDS.toMillis(15) > System.currentTimeMillis())) {
+        while ((stLong + TimeUnit.SECONDS.toMillis(100) > System.currentTimeMillis())) {
+            ((HardCopy) fileWorker).setBufLen((ConstantsOst.KBYTE_BYTES * ConstantsOst.KBYTE_BYTES) * 35);
             fileWorker.showCurrentResult();
             try {
-                Thread.sleep(5000);
+                Thread.sleep(4000);
             }
             catch (InterruptedException e) {
-                e.printStackTrace();
+                fileWorker.saveAndExit();
             }
         }
+        System.out.println(fileWorker.saveAndExit());
     }
 }

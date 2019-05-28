@@ -45,4 +45,15 @@ public enum ConstantsOst {
     
     public static final String STR_ENCODING = "encoding";
     
+    public static final String PR_POSWRITE = "positionOfWrite";
+    
+    public static final String PR_POSREAD = "positionOfRead";
+    
+    public static final String PR_READFILENAME = "readFileName";
+    
+    public static final String APPNAME_OSTPST = "ostpst-";
+    
+    public static final String STR_WRITE = " write.";
+    
+    public static final int STATUS_OK = 222;
 }
