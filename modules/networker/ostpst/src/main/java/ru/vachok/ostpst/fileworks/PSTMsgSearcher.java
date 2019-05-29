@@ -11,13 +11,11 @@ import ru.vachok.ostpst.ConstantsOst;
 import ru.vachok.ostpst.utils.FileSystemWorkerOST;
 import ru.vachok.ostpst.utils.TFormsOST;
 
-import java.awt.*;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -256,6 +254,7 @@ class PSTMsgSearcher {
     }
     
     
+    
     /**
      @since 29.05.2019 (13:16)
      */
@@ -283,7 +282,7 @@ class PSTMsgSearcher {
         }
         
         private String searchEmail() throws PSTException, IOException {
-            throw new IllegalComponentStateException("29.05.2019 (15:40)");
+            return userEmail;
         }
     }
     

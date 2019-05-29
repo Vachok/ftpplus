@@ -42,12 +42,6 @@ class ParserPSTMessages extends ParserFolders {
         this.pstFolder = pstObject;
     }
     
-    protected ParserPSTMessages(String fileName, String thing) throws PSTException, IOException {
-        super(fileName, thing);
-        String thing1 = thing.toLowerCase();
-        this.fileName = fileName;
-    }
-    
     ParserPSTMessages(String fileName, long folderID) {
         super(fileName);
         this.fileName = fileName;
@@ -58,6 +52,12 @@ class ParserPSTMessages extends ParserFolders {
             e.printStackTrace();
             new MenuConsoleLocal(fileName).showMenu();
         }
+    }
+    
+    protected ParserPSTMessages(String fileName, String thing) throws PSTException, IOException {
+        super(fileName, thing);
+        String thing1 = thing.toLowerCase();
+        this.fileName = fileName;
     }
     
     private ParserPSTMessages(PSTFile pstFile) {
