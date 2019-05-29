@@ -256,7 +256,6 @@ class PSTMsgSearcher {
     }
     
     
-    
     /**
      @since 29.05.2019 (13:16)
      */

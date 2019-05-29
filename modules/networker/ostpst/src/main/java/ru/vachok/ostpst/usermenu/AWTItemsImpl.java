@@ -69,12 +69,7 @@ public class AWTItemsImpl implements MenuItems {
     
     private void searchEverywhere() {
         try {
-            if (userInput.contains("@")) {
-                makeConvertOrCopy.searchMessagesByEmails(userInput);
-            }
-            else {
-                makeConvertOrCopy.searchMessages(userInput);
-            }
+            makeConvertOrCopy.searchMessages(userInput);
             trayMenu.setSearching();
         }
         catch (PSTException | IOException e) {
