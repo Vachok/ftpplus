@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.ostpst.usermenu;
 
 
@@ -82,6 +84,7 @@ public class MenuAWT implements UserMenu, Runnable {
         JPanel jPanel = new JPanel();
         JTextArea searchArea = new JTextArea("Search query");
         JButton okButton = new JButton("Search");
+        JButton copyButton = new JButton("Copy to TMP");
         JButton cancelButton = new JButton("Cancel");
         jFrame.setTitle(Paths.get(fileName).toFile().getName());
         
@@ -99,7 +102,19 @@ public class MenuAWT implements UserMenu, Runnable {
                 AWTItemsImpl awtItems = new AWTItemsImpl(fileName, trayMenu);
                 String areaText = searchArea.getText();
                 userInput = areaText;
-                awtItems.setUserInput(areaText);
+                awtItems.setUserInput(areaText, 1);
+                Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(trayMenu);
+                trayMenu.setSearching();
+                jFrame.removeNotify();
+            }
+        });
+        copyButton.addMouseListener(new MouseAdapter() {
+            @Override public void mouseClicked(MouseEvent e) {
+                TrayMenu trayMenu = new TrayMenu(getFileName());
+                AWTItemsImpl awtItems = new AWTItemsImpl(fileName, trayMenu);
+                String areaText = searchArea.getText();
+                userInput = areaText;
+                awtItems.setUserInput(areaText, 2);
                 Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(trayMenu);
                 trayMenu.setSearching();
                 jFrame.removeNotify();
@@ -114,6 +129,7 @@ public class MenuAWT implements UserMenu, Runnable {
         
         jPanel.add(searchArea);
         jPanel.add(okButton);
+        jPanel.add(copyButton);
         jPanel.add(cancelButton);
         jFrame.add(jPanel);
         jFrame.revalidate();

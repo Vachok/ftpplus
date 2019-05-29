@@ -12,7 +12,7 @@ import ru.vachok.ostpst.utils.FileSystemWorkerOST;
 public class HardCopyTest {
     
     
-    @Test
+    @Test(enabled = false)
     public void hardCPTester() {
         System.setProperty("encoding", "UTF8");
         final long stLong = System.currentTimeMillis();

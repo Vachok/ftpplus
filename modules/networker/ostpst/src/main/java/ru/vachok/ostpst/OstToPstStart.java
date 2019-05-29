@@ -5,6 +5,8 @@ package ru.vachok.ostpst;
 
 import ru.vachok.ostpst.usermenu.*;
 
+import java.util.Arrays;
+
 
 /**
  @since 29.04.2019 (11:24) */
@@ -26,18 +28,24 @@ public class OstToPstStart {
     private static void readArgs(String[] args) {
         String argF = "";
         MenuItems menuItems = new MenuItemsConsoleImpl(argF);
+        final boolean isGraph = Arrays.toString(args).contains("-g");
         for (int i = 0; i < args.length; i++) {
             String arg = args[i];
             try {
                 if (arg.toLowerCase().contains("-t")) {
                     new MenuTelnet().showMenu();
                 }
+                else {
+                    if (isGraph) {
+                        menuItems = new AWTItemsImpl(argF);
+                    }
+                }
                 if (arg.toLowerCase().contains("-f")) {
                     argF = args[i + 1];
                     System.out.println("File: " + argF);
-                }
-                if (arg.toLowerCase().contains("-g")) {
-                    menuItems = new AWTItemsImpl(argF);
+                    if (isGraph) {
+                        menuItems = new AWTItemsImpl(argF);
+                    }
                 }
             }
             catch (ArrayIndexOutOfBoundsException e) {

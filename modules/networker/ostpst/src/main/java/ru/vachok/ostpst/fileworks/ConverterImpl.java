@@ -7,6 +7,7 @@ import com.pff.PSTException;
 import com.pff.PSTFile;
 import ru.vachok.ostpst.ConstantsOst;
 import ru.vachok.ostpst.MakeConvertOrCopy;
+import ru.vachok.ostpst.usermenu.MenuItemsConsoleImpl;
 import ru.vachok.ostpst.utils.CharsetEncoding;
 import ru.vachok.ostpst.utils.FileSystemWorkerOST;
 import ru.vachok.ostpst.utils.TFormsOST;
@@ -120,7 +121,10 @@ public class ConverterImpl implements MakeConvertOrCopy {
             return parserObjects.getObjectDescriptorID();
         }
         catch (PSTException | IOException | NullPointerException e) {
-            return e.getMessage() + "\n" + new TFormsOST().fromArray(e);
+            String errStr = e.getMessage();
+            System.err.println(errStr);
+            new MenuItemsConsoleImpl(fileName).askUser();
+            return errStr;
         }
         
     }

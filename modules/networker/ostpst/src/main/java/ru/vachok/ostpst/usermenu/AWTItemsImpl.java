@@ -1,14 +1,20 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.ostpst.usermenu;
 
 
 import com.pff.PSTException;
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.ostpst.ConstantsOst;
 import ru.vachok.ostpst.MakeConvertOrCopy;
 import ru.vachok.ostpst.fileworks.ConverterImpl;
+import ru.vachok.ostpst.fileworks.nopst.HardCopy;
 import ru.vachok.ostpst.usermenu.traymenu.TrayMenu;
 
+import java.awt.*;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.concurrent.Executors;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
@@ -42,17 +48,28 @@ public class AWTItemsImpl implements MenuItems {
         this.trayMenu = trayMenu;
     }
     
-    public void setUserInput(String text) {
+    public void setUserInput(String text, int methodToLaunch) {
         this.userInput = text;
-        showSecondStage();
+        if (methodToLaunch == 1) {
+            Executors.newSingleThreadExecutor().execute(this::searchEverywhere);
+        }
+        if (methodToLaunch == 2) {
+            Executors.newSingleThreadExecutor().execute(this::copyFile);
+        }
+    }
+    
+    @Override public void showSecondStage() {
+        throw new IllegalComponentStateException("29.05.2019 (21:27)");
     }
     
     @Override public void askUser() {
         new MenuAWT().showMenu();
     }
     
-    @Override public void showSecondStage() {
-        Executors.newSingleThreadExecutor().execute(this::searchEverywhere);
+    private void copyFile() {
+        HardCopy hardCopy = new HardCopy(fileName, "tmp_" + Paths.get(fileName).toAbsolutePath().normalize().getFileName().toString());
+        hardCopy.setBufLen(ConstantsOst.KBYTE_BYTES * ConstantsOst.KBYTE_BYTES * 42);
+        hardCopy.continuousCopy();
     }
     
     private void initIcon() {
