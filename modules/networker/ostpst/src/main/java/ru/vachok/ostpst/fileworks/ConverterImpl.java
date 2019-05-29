@@ -165,6 +165,11 @@ public class ConverterImpl implements MakeConvertOrCopy {
         return pstMsgSearcher.everywhereSearch();
     }
     
+    @Override public String searchMessagesByEmails(String userInput) {
+        PSTMsgSearcher pstMsgSearcher = new PSTMsgSearcher(fileName, userInput);
+        return pstMsgSearcher.byEmail();
+    }
+    
     private File createCSV(String csvFileName) {
         try {
             Path path = Files.createFile(Paths.get(csvFileName));

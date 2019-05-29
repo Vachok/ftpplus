@@ -68,6 +68,19 @@ class PSTMsgSearcher {
         return stringBuilder.toString();
     }
     
+    public String byEmail() {
+        PSTMsgSearcher.SearcherByEmail searcherByEmail = new PSTMsgSearcher.SearcherByEmail(srcThing);
+        StringBuilder stringBuilder = new StringBuilder();
+        Future<String> stringFuture = Executors.newSingleThreadExecutor().submit(searcherByEmail);
+        try {
+            stringBuilder.append(stringFuture.get());
+        }
+        catch (InterruptedException | ExecutionException | ArrayIndexOutOfBoundsException e) {
+            stringBuilder.append(e.getMessage());
+        }
+        return stringBuilder.toString();
+    }
+    
     String searchMessage(String searchKey) throws PSTException, IOException {
         StringBuilder stringBuilder = new StringBuilder();
         int indexSch = 0;
@@ -236,6 +249,48 @@ class PSTMsgSearcher {
                     }
                 }
             });
+            return stringBuilder.toString();
+        }
+    }
+    
+    
+    
+    /**
+     @since 29.05.2019 (13:16)
+     */
+    class SearcherByEmail implements Callable<String> {
+        
+        
+        private ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
+        
+        private String userEmail;
+        
+        public SearcherByEmail(String userEmail) {
+            this.userEmail = userEmail;
+        }
+        
+        @Override public String call() {
+            threadMXBean.resetPeakThreadCount();
+            String searchEmail = null;
+            try {
+                searchEmail = searchEmail();
+            }
+            catch (PSTException | IOException e) {
+                return new TFormsOST().fromArray(e);
+            }
+            return searchEmail;
+        }
+        
+        private String searchEmail() throws PSTException, IOException {
+            StringBuilder stringBuilder = new StringBuilder();
+            ParserPSTMessages pstMessages = new ParserPSTMessages(fileName, userEmail);
+            Deque<String> folderNamesWithIDAndWriteToDisk = pstMessages.getDeqFolderNamesWithIDAndWriteToDisk();
+            
+            while (!folderNamesWithIDAndWriteToDisk.isEmpty()) {
+                long objID = Long.parseLong(folderNamesWithIDAndWriteToDisk.poll().split(" id ")[1]);
+                ParserObjects parserObjects = new ParserObjects(fileName, objID);
+                stringBuilder.append(parserObjects.getObjectDescriptorID());
+            }
             return stringBuilder.toString();
         }
     }

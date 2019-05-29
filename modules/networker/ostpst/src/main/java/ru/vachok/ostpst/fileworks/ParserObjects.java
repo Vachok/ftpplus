@@ -14,6 +14,14 @@ import java.nio.file.Path;
 class ParserObjects {
     
     
+    private String fileName;
+    
+    public ParserObjects(String fileName, long objID) {
+        this.fileName = fileName;
+        this.objID = objID;
+        this.pstFile = new PSTFileNameConverter().getPSTFile(fileName);
+    }
+    
     private Path recordPath;
     
     private PSTObject object;
@@ -30,6 +38,7 @@ class ParserObjects {
     ParserObjects(PSTObject object) {
         this.object = object;
     }
+    
     
     String getObjectDescriptorID() {
         StringBuilder stringBuilder = new StringBuilder();

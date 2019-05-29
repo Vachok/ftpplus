@@ -50,4 +50,6 @@ public interface MakeConvertOrCopy {
     String searchMessages(long folderID, String msgSubject);
     
     String searchMessages(String someThing) throws PSTException, IOException;
+    
+    String searchMessagesByEmails(String userInput);
 }

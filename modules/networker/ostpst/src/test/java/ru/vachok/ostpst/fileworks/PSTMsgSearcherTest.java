@@ -8,6 +8,7 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 import ru.vachok.ostpst.ConstantsOst;
 import ru.vachok.ostpst.utils.CharsetEncoding;
+import ru.vachok.ostpst.utils.FileSystemWorkerOST;
 import ru.vachok.ostpst.utils.TFormsOST;
 
 import java.io.File;
@@ -43,5 +44,11 @@ public class PSTMsgSearcherTest {
         catch (ArrayIndexOutOfBoundsException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TFormsOST().fromArray(e));
         }
+    }
+    
+    @Test
+    public void searchEmails() {
+        PSTMsgSearcher pstMsgSearcher = new PSTMsgSearcher(FileSystemWorkerOST.getTestPST(), "143500@gmail.com");
+        System.out.println(pstMsgSearcher.byEmail());
     }
 }
