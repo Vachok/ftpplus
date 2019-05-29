@@ -43,7 +43,7 @@ public class HardCopy implements FileWorker {
     
     private MessageToUser messageToUser = new MessageCons(getClass().getSimpleName());
     
-    private int bufLen = 8192;
+    private int bufLen = 8192 * ConstantsOst.KBYTE_BYTES;
     
     public HardCopy(String readFileName, String writeFileName) {
         this.readFileName = readFileName;
@@ -146,7 +146,7 @@ public class HardCopy implements FileWorker {
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
         }
-        return toString() + " is ok: " + pr;
+        return this + " is ok: " + pr;
     }
     
     @Override public boolean processNewCopy() {

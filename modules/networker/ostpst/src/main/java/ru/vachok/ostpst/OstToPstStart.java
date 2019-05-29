@@ -24,6 +24,8 @@ public class OstToPstStart {
     }
     
     private static void readArgs(String[] args) {
+        String argF = "";
+        MenuItems menuItems = new MenuItemsConsoleImpl(argF);
         for (int i = 0; i < args.length; i++) {
             String arg = args[i];
             try {
@@ -31,9 +33,11 @@ public class OstToPstStart {
                     new MenuTelnet().showMenu();
                 }
                 if (arg.toLowerCase().contains("-f")) {
-                    System.out.println("File: " + args[i + 1]);
-                    MenuItems menuItems = new MenuItemsConsoleImpl(args[i + 1]);
-                    menuItems.askUser();
+                    argF = args[i + 1];
+                    System.out.println("File: " + argF);
+                }
+                if (arg.toLowerCase().contains("-g")) {
+                    menuItems = new AWTItemsImpl(argF);
                 }
             }
             catch (ArrayIndexOutOfBoundsException e) {
@@ -41,5 +45,6 @@ public class OstToPstStart {
                 userMenu.showMenu();
             }
         }
+        menuItems.askUser();
     }
 }
