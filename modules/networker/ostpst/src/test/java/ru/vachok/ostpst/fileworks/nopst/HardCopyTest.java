@@ -6,6 +6,7 @@ package ru.vachok.ostpst.fileworks.nopst;
 import org.testng.annotations.Test;
 import ru.vachok.ostpst.ConstantsOst;
 import ru.vachok.ostpst.fileworks.FileWorker;
+import ru.vachok.ostpst.utils.FileSystemWorkerOST;
 
 
 public class HardCopyTest {
@@ -13,8 +14,9 @@ public class HardCopyTest {
     
     @Test
     public void hardCPTester() {
+        System.setProperty("encoding", "UTF8");
         final long stLong = System.currentTimeMillis();
-        FileWorker fileWorker = new HardCopy("\\\\192.168.14.10\\IT-Backup\\Mailboxes_users\\a.v.komarov.pst", "a.v.komarov.pst");
+        FileWorker fileWorker = new HardCopy(FileSystemWorkerOST.getTestPST());
         ((HardCopy) fileWorker).setBufLen((ConstantsOst.KBYTE_BYTES * ConstantsOst.KBYTE_BYTES) * 42);
     
         fileWorker.continuousCopy();

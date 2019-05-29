@@ -37,6 +37,11 @@ class ParserPSTMessages extends ParserFolders {
     
     private String fileName;
     
+    public ParserPSTMessages(PSTFolder pstObject) {
+        super(pstObject);
+        this.pstFolder = pstObject;
+    }
+    
     protected ParserPSTMessages(String fileName, String thing) throws PSTException, IOException {
         super(fileName, thing);
         String thing1 = thing.toLowerCase();

@@ -79,7 +79,7 @@ public abstract class FileSystemWorkerOST {
     }
     
     public static String getTestPST() {
-        String tmpFileName = "tmp_t.p.magdich.pst";
+        String tmpFileName = Paths.get("tmp_t.p.magdich.pst").toAbsolutePath().normalize().toString();
         if (!new File(tmpFileName).exists()) {
             RNDPSTFileCopy RNDPSTFileCopy = new RNDPSTFileCopy("\\\\192.168.14.10\\IT-Backup\\Mailboxes_users\\t.p.magdich.pst");
             String copyStat = RNDPSTFileCopy.copyFile("n");

@@ -119,9 +119,8 @@ public class HardCopy implements FileWorker {
         prefMap.put(ConstantsOst.PR_POSREAD, String.valueOf(readPos));
         
         do {
-            writePos = new File(writeFileName).length();
+            writePos = Long.parseLong(prefMap.getOrDefault(ConstantsOst.PR_WRITING, String.valueOf(writePos)));
             readPos = continuousCopyProc();
-            showCurrentResult();
         } while (readPos != writePos);
         saveAndExit();
         return readPos;
@@ -136,8 +135,7 @@ public class HardCopy implements FileWorker {
         if (toSecondsDura == 0) {
             toSecondsDura = 1;
         }
-        System.out
-            .println("Read/Total: " + readMB + "/" + totalMB + ". Time: " + toSecondsDura + " speed: " + (float) readMB / (float) toSecondsDura + " mb/sec. Buffer = " + bufLen / ConstantsOst.KBYTE_BYTES);
+        System.out.println("Read/Total: " + readMB + "/" + totalMB + ". Time: " + toSecondsDura + " speed: " + (float) readMB / (float) toSecondsDura + " mb/sec.");
     }
     
     @Override public String saveAndExit() {
@@ -177,24 +175,26 @@ public class HardCopy implements FileWorker {
         if (bufLen >= toEnd & toEnd != 0) {
             this.bufLen = (int) (toEnd);
         }
-        
-        try (RandomAccessFile randomAccessFile = new RandomAccessFile(readFileName, "r");
-             RandomAccessFile outFile = new RandomAccessFile(writeFileName, "rw")
-        ) {
+    
+        try (RandomAccessFile randomAccessFile = new RandomAccessFile(readFileName, "r")) {
             randomAccessFile.seek(readPos);
             byte[] bufBytes = new byte[this.bufLen];
-            randomAccessFile.read(bufBytes);
-    
-            prefMap.put(ConstantsOst.PR_POSREAD, String.valueOf(randomAccessFile.getFilePointer()));
             System.out.println(toEnd / ConstantsOst.KBYTE_BYTES + " left. new byte[" + (bufBytes.length / ConstantsOst.KBYTE_BYTES) + "]");
-            outFile.seek(writePos);
-            if (new File(writeFileName).length() != new File(readFileName).length()) {
-                outFile.write(bufBytes);
-            }
-            prefMap.put(ConstantsOst.PR_POSWRITE, String.valueOf(new File(writeFileName).length()));
-            savePr();
-            return randomAccessFile.getFilePointer();
+            try (RandomAccessFile outFile = new RandomAccessFile(writeFileName, "rwd")) {
+                outFile.seek(writePos);
+                randomAccessFile.read(bufBytes);
+                if (new File(writeFileName).length() != new File(readFileName).length()) {
+                    outFile.write(bufBytes);
+                }
+                prefMap.put(ConstantsOst.PR_POSREAD, String.valueOf(randomAccessFile.getFilePointer()));
+                prefMap.put(ConstantsOst.PR_POSWRITE, String.valueOf(outFile.getFilePointer()));
+                boolean isSavePr = savePr();
+                if (isSavePr) {
+                    showCurrentResult();
+                }
+                return randomAccessFile.getFilePointer();
             
+            }
         }
         catch (IOException e) {
             System.err.println(e.getMessage());
