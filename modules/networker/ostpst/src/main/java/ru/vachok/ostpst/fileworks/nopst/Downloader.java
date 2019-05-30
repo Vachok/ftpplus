@@ -69,7 +69,7 @@ public class Downloader implements FileWorker {
     
     @Override public String chkFile() {
         String readFileNamePref = PREF_MAP.getOrDefault(ConstantsOst.PR_READFILENAME, "");
-        String writeFileNamePref = PREF_MAP.getOrDefault(PR_WRITEFILENAME, "");
+        String writeFileNamePref = PREF_MAP.getOrDefault(ConstantsOst.PR_WRITEFILENAME, "");
         
         if (readFileNamePref.equalsIgnoreCase(readFileName) || (writeFileName.contains(readFileName))) {
             long positionOfWrite = Long.parseLong(PREF_MAP.getOrDefault(ConstantsOst.PR_POSWRITE, String.valueOf(0)));
@@ -206,7 +206,7 @@ public class Downloader implements FileWorker {
             long pRead = Long.parseLong(PREF_MAP.getOrDefault(ConstantsOst.PR_POSREAD, String.valueOf(0)));
             preferences.putLong(ConstantsOst.PR_POSREAD, pRead);
             preferences.put(ConstantsOst.PR_READFILENAME, readFileName);
-            preferences.put(PR_WRITEFILENAME, writeFileName);
+            preferences.put(ConstantsOst.PR_WRITEFILENAME, writeFileName);
             preferences.put("crc32" + bufLen, PREF_MAP.getOrDefault("crc32" + bufLen, "-1"));
             if (pRead == pWrite) {
                 retBool = true;

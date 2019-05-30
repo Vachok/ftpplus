@@ -918,7 +918,6 @@ modules/networker/lan_213220.txt
 modules/networker/ostpst/build/
 modules/networker/unused.ips
 *.list
-ostpst/lib
 *.pstObjStr
 *.res
 *.fldr
@@ -1848,7 +1847,6 @@ modules/networker/lan_213220.txt
 modules/networker/ostpst/build/
 modules/networker/unused.ips
 *.list
-ostpst/lib
 *.log.*
 src/main/java/ru/vachok/networker/services/diskwork/
 users.set

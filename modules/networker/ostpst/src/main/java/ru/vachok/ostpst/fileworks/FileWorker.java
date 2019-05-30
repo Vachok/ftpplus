@@ -20,8 +20,6 @@ public interface FileWorker {
     
     static final Map<String, String> PREF_MAP = new HashMap<>();
     
-    static final String PR_WRITEFILENAME = "writeFileName";
-    
     static final Preferences PREFERENCES_USER_ROOT = Preferences.userRoot();
     
     /**
@@ -55,10 +53,11 @@ public interface FileWorker {
         try {
             PREFERENCES_USER_ROOT.sync();
             PREF_MAP.putIfAbsent(ConstantsOst.PR_READFILENAME, PREFERENCES_USER_ROOT.get(ConstantsOst.PR_READFILENAME, ""));
-            PREF_MAP.putIfAbsent(PR_WRITEFILENAME, PREFERENCES_USER_ROOT.get(PR_WRITEFILENAME, ""));
-            
-            PREF_MAP.putIfAbsent(ConstantsOst.PR_POSWRITE, String.valueOf(new File(writeFileName).length()));
-            PREF_MAP.putIfAbsent(ConstantsOst.PR_POSREAD, PREFERENCES_USER_ROOT.get(ConstantsOst.PR_POSREAD, String.valueOf(0)));
+            PREF_MAP.putIfAbsent(ConstantsOst.PR_WRITEFILENAME, PREFERENCES_USER_ROOT.get(ConstantsOst.PR_WRITEFILENAME, ""));
+    
+            long writeLen = new File(writeFileName).length();
+            PREF_MAP.putIfAbsent(ConstantsOst.PR_POSWRITE, String.valueOf(writeLen));
+            PREF_MAP.putIfAbsent(ConstantsOst.PR_POSREAD, String.valueOf(writeLen));
         }
         catch (BackingStoreException e) {
             tryingProperties(writeFileName);
@@ -67,7 +66,8 @@ public interface FileWorker {
         String poRead = PREF_MAP.get(ConstantsOst.PR_POSREAD);
         String poWrite = PREF_MAP.get(ConstantsOst.PR_POSWRITE);
         if (!(poRead.equals(poWrite))) {
-            throw new IllegalStateException("ConstantsOst.PR_POSREAD (" + poRead + ") != ConstantsOst.PR_POSWRITE (" + poWrite + ")");
+            String clearCopy = clearCopy();
+            System.err.println("!(" + poRead + ".equals(" + poWrite + ")) " + clearCopy);
         }
     }
     default void tryingProperties(String writeFileName) {
@@ -75,7 +75,7 @@ public interface FileWorker {
         Properties properties = initProperties.getProps();
         
         PREF_MAP.putIfAbsent(ConstantsOst.PR_READFILENAME, properties.getProperty(ConstantsOst.PR_READFILENAME, ""));
-        PREF_MAP.putIfAbsent(PR_WRITEFILENAME, String.valueOf(new File(writeFileName).length()));
+        PREF_MAP.putIfAbsent(ConstantsOst.PR_WRITEFILENAME, String.valueOf(new File(writeFileName).length()));
         PREF_MAP.putIfAbsent(ConstantsOst.PR_POSWRITE, properties.getProperty(ConstantsOst.PR_POSWRITE, String.valueOf(0)));
         PREF_MAP.putIfAbsent(ConstantsOst.PR_POSREAD, properties.getProperty(ConstantsOst.PR_POSREAD, String.valueOf(0)));
     }
