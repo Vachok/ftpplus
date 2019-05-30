@@ -33,10 +33,6 @@ public interface MakeConvertOrCopy {
     
     String showListFolders();
     
-    default void testMe() {
-        System.out.println("true = " + true);
-    }
-    
     Deque<String> getDequeFolderNamesAndWriteToDisk() throws IOException;
     
     String showContacts();

@@ -16,8 +16,6 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.file.Paths;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.prefs.BackingStoreException;
@@ -26,16 +24,11 @@ import java.util.prefs.Preferences;
 
 /**
  @since 28.05.2019 (9:48) */
-public class HardCopy implements FileWorker {
-    
-    
-    public static final String PR_WRITEFILENAME = "writeFileName";
+public class Downloader implements FileWorker {
     
     private static final String STR_RESPREFS = " resetting prefs: ";
     
     private final long startStamp = System.currentTimeMillis();
-    
-    private Map<String, String> prefMap = new HashMap<>();
     
     private String readFileName;
     
@@ -45,25 +38,25 @@ public class HardCopy implements FileWorker {
     
     private int bufLen = 8192 * ConstantsOst.KBYTE_BYTES;
     
-    public HardCopy(String readFileName, String writeFileName) {
+    public Downloader(String readFileName, String writeFileName) {
         this.readFileName = readFileName;
         this.writeFileName = writeFileName;
         try {
-            initMethod();
+            initMethod(writeFileName);
         }
         catch (IllegalStateException e) {
             System.err.println(e.getMessage() + STR_RESPREFS + clearCopy());
         }
     }
     
-    public HardCopy(String readFileName) {
+    public Downloader(String readFileName) {
         this.readFileName = readFileName;
         this.writeFileName = new StringBuilder()
             .append(Paths.get(".").normalize().toAbsolutePath())
             .append("tmp_")
             .append(Paths.get(readFileName).toFile().getName()).toString();
         try {
-            initMethod();
+            initMethod(writeFileName);
         }
         catch (IllegalStateException e) {
             System.err.println(e.getMessage() + STR_RESPREFS + clearCopy());
@@ -75,12 +68,12 @@ public class HardCopy implements FileWorker {
     }
     
     @Override public String chkFile() {
-        String readFileNamePref = prefMap.getOrDefault(ConstantsOst.PR_READFILENAME, "");
-        String writeFileNamePref = prefMap.getOrDefault(PR_WRITEFILENAME, "");
+        String readFileNamePref = PREF_MAP.getOrDefault(ConstantsOst.PR_READFILENAME, "");
+        String writeFileNamePref = PREF_MAP.getOrDefault(PR_WRITEFILENAME, "");
         
         if (readFileNamePref.equalsIgnoreCase(readFileName) || (writeFileName.contains(readFileName))) {
-            long positionOfWrite = Long.parseLong(prefMap.getOrDefault(ConstantsOst.PR_POSWRITE, String.valueOf(0)));
-            long positionOfRead = Long.parseLong(prefMap.getOrDefault(ConstantsOst.PR_POSREAD, String.valueOf(0)));
+            long positionOfWrite = Long.parseLong(PREF_MAP.getOrDefault(ConstantsOst.PR_POSWRITE, String.valueOf(0)));
+            long positionOfRead = Long.parseLong(PREF_MAP.getOrDefault(ConstantsOst.PR_POSREAD, String.valueOf(0)));
             if (positionOfWrite > 0) {
                 continuousCopy();
             }
@@ -89,7 +82,7 @@ public class HardCopy implements FileWorker {
             }
         }
         else {
-            prefMap.put(ConstantsOst.PR_READFILENAME, readFileName);
+            PREF_MAP.put(ConstantsOst.PR_READFILENAME, readFileName);
             processNewCopy();
         }
         return "Read from: " + readFileName + "\nWrite to: " + writeFileName;
@@ -99,27 +92,27 @@ public class HardCopy implements FileWorker {
         Preferences preferences = Preferences.userRoot();
         try {
             preferences.clear();
-            prefMap.clear();
+            PREF_MAP.clear();
             new File(writeFileName).delete();
-            return "Using preferences - true";
+            return "Using PREFERENCES_USER_ROOT - true";
         }
         catch (BackingStoreException e) {
             InitProperties initProperties = new DBRegProperties(ConstantsOst.APPNAME_OSTPST + getClass().getSimpleName());
             initProperties.delProps();
             new File(writeFileName).deleteOnExit();
-            return "Using preferences - false";
+            return "Using PREFERENCES_USER_ROOT - false";
         }
     }
     
     @Override public long continuousCopy() {
     
         long writePos = new File(writeFileName).length();
-        long readPos = Long.parseLong(prefMap.getOrDefault(ConstantsOst.PR_POSREAD, "0"));
+        long readPos = Long.parseLong(PREF_MAP.getOrDefault(ConstantsOst.PR_POSREAD, "0"));
     
-        prefMap.put(ConstantsOst.PR_POSREAD, String.valueOf(readPos));
+        PREF_MAP.put(ConstantsOst.PR_POSREAD, String.valueOf(readPos));
         
         do {
-            writePos = Long.parseLong(prefMap.getOrDefault(ConstantsOst.PR_WRITING, String.valueOf(writePos)));
+            writePos = Long.parseLong(PREF_MAP.getOrDefault(ConstantsOst.PR_WRITING, String.valueOf(writePos)));
             readPos = continuousCopyProc();
         } while (readPos != writePos);
         saveAndExit();
@@ -127,7 +120,7 @@ public class HardCopy implements FileWorker {
     }
     
     @Override public void showCurrentResult() {
-        long readMB = Long.parseLong(prefMap.getOrDefault(ConstantsOst.PR_POSREAD, "0"));
+        long readMB = Long.parseLong(PREF_MAP.getOrDefault(ConstantsOst.PR_POSREAD, "0"));
         long totalMB = new File(readFileName).length();
         readMB /= (ConstantsOst.KBYTE_BYTES * ConstantsOst.KBYTE_BYTES);
         totalMB /= (ConstantsOst.KBYTE_BYTES * ConstantsOst.KBYTE_BYTES);
@@ -154,7 +147,7 @@ public class HardCopy implements FileWorker {
     }
     
     @Override public String toString() {
-        String showMe = prefMap.get(ConstantsOst.PR_POSREAD) + " read, " + prefMap.get(ConstantsOst.PR_POSWRITE) + ConstantsOst.STR_WRITE;
+        String showMe = PREF_MAP.get(ConstantsOst.PR_POSREAD) + " read, " + PREF_MAP.get(ConstantsOst.PR_POSWRITE) + ConstantsOst.STR_WRITE;
         final StringBuilder sb = new StringBuilder("HardCopy{");
         sb.append("bufLen=").append(bufLen);
         sb.append(", readFileName='").append(readFileName).append('\'');
@@ -163,14 +156,14 @@ public class HardCopy implements FileWorker {
         sb.append("\n").append(showMe).append('\'');
         sb.append("\nBuffer = ").append(bufLen / ConstantsOst.KBYTE_BYTES).append('\'');
         Preferences preferences = Preferences.userRoot();
-        sb.append("\n").append(new TFormsOST().fromArray(prefMap)).append('\'');
+        sb.append("\n").append(new TFormsOST().fromArray(PREF_MAP)).append('\'');
         sb.append('}');
         return sb.toString();
     }
     
     private long continuousCopyProc() {
-        long writePos = Long.parseLong(prefMap.getOrDefault(ConstantsOst.PR_POSWRITE, "0"));
-        long readPos = Long.parseLong(prefMap.getOrDefault(ConstantsOst.PR_POSREAD, String.valueOf(new File(readFileName).length())));
+        long writePos = Long.parseLong(PREF_MAP.getOrDefault(ConstantsOst.PR_POSWRITE, "0"));
+        long readPos = Long.parseLong(PREF_MAP.getOrDefault(ConstantsOst.PR_POSREAD, String.valueOf(new File(readFileName).length())));
         long toEnd = new File(readFileName).length() - new File(writeFileName).length();
         if (bufLen >= toEnd & toEnd != 0) {
             this.bufLen = (int) (toEnd);
@@ -186,8 +179,8 @@ public class HardCopy implements FileWorker {
                 if (new File(writeFileName).length() != new File(readFileName).length()) {
                     outFile.write(bufBytes);
                 }
-                prefMap.put(ConstantsOst.PR_POSREAD, String.valueOf(randomAccessFile.getFilePointer()));
-                prefMap.put(ConstantsOst.PR_POSWRITE, String.valueOf(outFile.getFilePointer()));
+                PREF_MAP.put(ConstantsOst.PR_POSREAD, String.valueOf(randomAccessFile.getFilePointer()));
+                PREF_MAP.put(ConstantsOst.PR_POSWRITE, String.valueOf(outFile.getFilePointer()));
                 boolean isSavePr = savePr();
                 if (isSavePr) {
                     showCurrentResult();
@@ -208,13 +201,13 @@ public class HardCopy implements FileWorker {
         Preferences preferences = Preferences.userRoot();
         try {
             preferences.sync();
-            long pWrite = Long.parseLong(prefMap.getOrDefault(ConstantsOst.PR_POSWRITE, String.valueOf(0)));
+            long pWrite = Long.parseLong(PREF_MAP.getOrDefault(ConstantsOst.PR_POSWRITE, String.valueOf(0)));
             preferences.putLong(ConstantsOst.PR_POSWRITE, pWrite);
-            long pRead = Long.parseLong(prefMap.getOrDefault(ConstantsOst.PR_POSREAD, String.valueOf(0)));
+            long pRead = Long.parseLong(PREF_MAP.getOrDefault(ConstantsOst.PR_POSREAD, String.valueOf(0)));
             preferences.putLong(ConstantsOst.PR_POSREAD, pRead);
             preferences.put(ConstantsOst.PR_READFILENAME, readFileName);
             preferences.put(PR_WRITEFILENAME, writeFileName);
-            preferences.put("crc32" + bufLen, prefMap.getOrDefault("crc32" + bufLen, "-1"));
+            preferences.put("crc32" + bufLen, PREF_MAP.getOrDefault("crc32" + bufLen, "-1"));
             if (pRead == pWrite) {
                 retBool = true;
             }
@@ -222,37 +215,11 @@ public class HardCopy implements FileWorker {
         catch (BackingStoreException e) {
             InitProperties initProperties = new DBRegProperties(ConstantsOst.APPNAME_OSTPST + getClass().getSimpleName());
             Properties properties = new Properties();
-            properties.putAll(prefMap);
+            properties.putAll(PREF_MAP);
             initProperties.setProps(properties);
             retBool = true;
         }
         return retBool;
     }
     
-    private void initMethod() throws IllegalStateException {
-        Preferences preferences = Preferences.userRoot();
-        try {
-            preferences.sync();
-            prefMap.putIfAbsent(ConstantsOst.PR_READFILENAME, preferences.get(ConstantsOst.PR_READFILENAME, ""));
-            prefMap.putIfAbsent(PR_WRITEFILENAME, preferences.get(PR_WRITEFILENAME, ""));
-    
-            prefMap.putIfAbsent(ConstantsOst.PR_POSWRITE, String.valueOf(new File(writeFileName).length()));
-            prefMap.putIfAbsent(ConstantsOst.PR_POSREAD, preferences.get(ConstantsOst.PR_POSREAD, String.valueOf(0)));
-        }
-        catch (BackingStoreException e) {
-            InitProperties initProperties = new DBRegProperties(ConstantsOst.APPNAME_OSTPST + getClass().getSimpleName());
-            Properties properties = initProperties.getProps();
-    
-            prefMap.putIfAbsent(ConstantsOst.PR_READFILENAME, properties.getProperty(ConstantsOst.PR_READFILENAME, ""));
-            prefMap.putIfAbsent(PR_WRITEFILENAME, String.valueOf(new File(writeFileName).length()));
-    
-            prefMap.putIfAbsent(ConstantsOst.PR_POSWRITE, properties.getProperty(ConstantsOst.PR_POSWRITE, String.valueOf(0)));
-            prefMap.putIfAbsent(ConstantsOst.PR_POSREAD, properties.getProperty(ConstantsOst.PR_POSREAD, String.valueOf(0)));
-        }
-        String poRead = prefMap.get(ConstantsOst.PR_POSREAD);
-        String poWrite = prefMap.get(ConstantsOst.PR_POSWRITE);
-        if (!(poRead.equals(poWrite))) {
-            throw new IllegalStateException("ConstantsOst.PR_POSREAD (" + poRead + ") != ConstantsOst.PR_POSWRITE (" + poWrite + ")");
-        }
-    }
 }

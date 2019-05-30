@@ -16,8 +16,8 @@ public class HardCopyTest {
     public void hardCPTester() {
         System.setProperty("encoding", "UTF8");
         final long stLong = System.currentTimeMillis();
-        FileWorker fileWorker = new HardCopy(FileSystemWorkerOST.getTestPST());
-        ((HardCopy) fileWorker).setBufLen((ConstantsOst.KBYTE_BYTES * ConstantsOst.KBYTE_BYTES) * 42);
+        FileWorker fileWorker = new Downloader(FileSystemWorkerOST.getTestPST());
+        ((Downloader) fileWorker).setBufLen((ConstantsOst.KBYTE_BYTES * ConstantsOst.KBYTE_BYTES) * 42);
     
         fileWorker.continuousCopy();
         System.out.println(fileWorker.saveAndExit());

@@ -17,7 +17,9 @@ public interface UserMenu {
         String ANSI_CLEAR_SEQ = "\u001b[2J";
         System.out.println(ANSI_CLEAR_SEQ);
         File workingFile = new File(fileName);
-        System.out.println(workingFile.getAbsolutePath() + " setWritable = " + workingFile.setWritable(true));
+        if (workingFile.isFile()) {
+            System.out.println(workingFile.getAbsolutePath() + " setWritable = " + workingFile.setWritable(true));
+        }
         System.exit(222);
     }
 }

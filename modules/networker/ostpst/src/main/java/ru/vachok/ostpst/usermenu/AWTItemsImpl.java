@@ -9,7 +9,7 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.ostpst.ConstantsOst;
 import ru.vachok.ostpst.MakeConvertOrCopy;
 import ru.vachok.ostpst.fileworks.ConverterImpl;
-import ru.vachok.ostpst.fileworks.nopst.HardCopy;
+import ru.vachok.ostpst.fileworks.nopst.Downloader;
 import ru.vachok.ostpst.usermenu.traymenu.TrayMenu;
 
 import java.awt.*;
@@ -67,9 +67,9 @@ public class AWTItemsImpl implements MenuItems {
     }
     
     private void copyFile() {
-        HardCopy hardCopy = new HardCopy(fileName, "tmp_" + Paths.get(fileName).toAbsolutePath().normalize().getFileName().toString());
-        hardCopy.setBufLen(ConstantsOst.KBYTE_BYTES * ConstantsOst.KBYTE_BYTES * 42);
-        hardCopy.continuousCopy();
+        Downloader downloader = new Downloader(fileName, "tmp_" + Paths.get(fileName).toAbsolutePath().normalize().getFileName());
+        downloader.setBufLen(ConstantsOst.KBYTE_BYTES * ConstantsOst.KBYTE_BYTES * 42);
+        downloader.continuousCopy();
     }
     
     private void initIcon() {
