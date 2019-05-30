@@ -149,6 +149,8 @@ public class Uploader implements FileWorker {
                 .append(PREF_MAP.get(ConstantsOst.PR_WRITEFILENAME)).append(", speed = ")
                 .append(getSpeed(writeKB)).append("\n")
                 .append(leftKB).append(" kb left ")
+            .append(TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()-startStamp)).append(" sec elapsed, ")
+            .append(bytesBuffer).append(" bytes per one block.")
             /*.append(getProc(leftKB)).append(" %")*/);
         try {
             PREF_MAP.forEach(PREFERENCES_USER_ROOT::put);
