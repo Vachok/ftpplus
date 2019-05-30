@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.ostpst.fileworks.nopst;
 
 
@@ -16,7 +18,6 @@ import java.math.RoundingMode;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Properties;
-import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.prefs.BackingStoreException;
 import java.util.zip.CRC32;
@@ -124,7 +125,9 @@ public class Uploader implements FileWorker {
             readPos = getRead();
             writePos = getWrite(readPos);
             if (writePos != readPos) {
-                throw new RejectedExecutionException(readPos - writePos + " difference. Rejected.");
+                long l = readPos - writePos;
+                System.out.println(l + " difference. Rejected.");
+                return l;
             }
             else {
                 writePos = new File(writeFileName).length();
@@ -189,6 +192,10 @@ public class Uploader implements FileWorker {
     private long getRead() {
         try (RandomAccessFile readFile = new RandomAccessFile(readFileName, "r")) {
             long readPosition = Long.parseLong(PREF_MAP.get(ConstantsOst.PR_POSREAD));
+            int lenMinusBuf = (int) (new File(readFileName).length() - readPosition);
+            if (bytesBuffer > lenMinusBuf && lenMinusBuf > 0) {
+                this.bytesBuffer = lenMinusBuf;
+            }
             this.bytes = new byte[bytesBuffer];
             readFile.seek(readPosition);
             int read = readFile.read(bytes);
