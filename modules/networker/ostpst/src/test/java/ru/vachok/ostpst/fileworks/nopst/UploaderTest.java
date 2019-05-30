@@ -9,7 +9,7 @@ import ru.vachok.ostpst.fileworks.FileWorker;
 public class UploaderTest {
     
     
-    @Test
+    @Test(enabled = false)
     public void testUpload() {
         FileWorker fileWorker = new Uploader("c:\\Users\\ikudryashov\\OneDrive\\Документы\\Файлы Outlook\\ksamarchenko.ost", "\\\\192.168.14.10\\IT-Backup\\Mailboxes_users\\ksamarchenko.ost");
         ((Uploader) fileWorker).setBytesBuffer(ConstantsOst.KBYTE_BYTES * ConstantsOst.KBYTE_BYTES * 42);
