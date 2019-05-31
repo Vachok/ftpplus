@@ -15,6 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.RejectedExecutionException;
 
 
 public class UploaderTest {
@@ -34,14 +35,18 @@ public class UploaderTest {
         }
         ;
         while (!fileNames.isEmpty()) {
-            FileSystemWorkerOST.appendStringToFile("dn.list", parseQueue(fileNames));
+            String toAppend = parseQueue(fileNames);
+            FileSystemWorkerOST.appendStringToFile("dn.list", toAppend);
+            if (toAppend.equalsIgnoreCase("copy completed")) {
+                throw new RejectedExecutionException(FileSystemWorkerOST.readFileToString("dn.list"));
+            }
         }
         ;
     }
     
     private String parseQueue(Queue<String> fileNames) {
         String x = fileNames.poll();
-        if (x.equalsIgnoreCase("Copy completed\n")) {
+        if (x.equalsIgnoreCase("Copy completed")) {
             return FileSystemWorkerOST.readFileToString("dn.list");
         }
         System.setProperty("encoding", "UTF8");

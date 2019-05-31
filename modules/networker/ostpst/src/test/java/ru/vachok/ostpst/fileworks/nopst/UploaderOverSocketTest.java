@@ -8,7 +8,7 @@ import ru.vachok.ostpst.fileworks.FileWorker;
 public class UploaderOverSocketTest {
     
     
-    @Test
+    @Test(enabled = false)
     public void testSocket() {
         FileWorker fileWorker = new UploaderOverSocket();
         fileWorker.continuousCopy();

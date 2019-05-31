@@ -4,6 +4,7 @@ package ru.vachok.ostpst.utils;
 
 
 import java.util.*;
+import java.util.stream.Stream;
 
 
 /**
@@ -57,8 +58,14 @@ public class TFormsOST {
     public String fromArray(Map<?, ?> map) {
         StringBuilder stringBuilder = new StringBuilder();
         map.forEach((k, v)->{
-            stringBuilder.append("key: ").append(k.toString()).append(" value: ").append(v.toString()).append("\n");
+            stringBuilder.append("key: ").append(k).append(" value: ").append(v).append("\n");
         });
+        return stringBuilder.toString();
+    }
+    
+    public String fromArray(Stream<?> stream) {
+        StringBuilder stringBuilder = new StringBuilder();
+        stream.forEach(x->stringBuilder.append(x).append("\n"));
         return stringBuilder.toString();
     }
 }
