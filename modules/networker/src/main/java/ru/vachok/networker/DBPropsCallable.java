@@ -135,7 +135,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
             }
         }
         catch (IOException e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".upProps", e));
+            messageToUser.error(e.getMessage() + " " + e.getClass() + ".upProps");
         }
         catch (SQLException e) {
             messageToUser.error(e.getMessage());
@@ -184,7 +184,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
             pDeleted = preparedStatement.executeUpdate();
         }
         catch (SQLException e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".delFromDataBase" , e));
+            messageToUser.error(e.getMessage() + " " + e.getClass() + ".delFromDataBase");
         }
         retBool.set(pDeleted > 0);
         return pDeleted;
