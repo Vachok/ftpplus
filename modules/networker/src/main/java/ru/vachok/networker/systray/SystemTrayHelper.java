@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.systray;
 
 
@@ -7,7 +9,6 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.services.actions.ActionExit;
-import ru.vachok.networker.services.actions.ActionGITStart;
 import ru.vachok.networker.services.actions.ActionSomeInfo;
 import ru.vachok.networker.services.actions.ActionTests;
 
@@ -109,9 +110,9 @@ import java.util.concurrent.Executors;
         defItem.setLabel("Exit");
         defItem.addActionListener(new ActionExit(classMeth));
         popupMenu.add(defItem);
-
-        gitStartWeb.addActionListener(new ActionGITStart());
-        gitStartWeb.setLabel("GIT WEB ON");
+    
+        gitStartWeb.addActionListener(new ActionDefault());
+        gitStartWeb.setLabel("Open site");
         popupMenu.add(gitStartWeb);
 
         toConsole.setLabel("Console Back");

@@ -7,9 +7,9 @@ plugins {
 }
 
 group 'ru.vachok.ostpst'
-version '8.0.1921'
+version '8.0.1922'
 
-sourceCompatibility = 1.8
+sourceCompatibility = 1.12
 
 repositories {
     maven {
@@ -42,7 +42,7 @@ dependencies {
     compile fileTree('lib/')
     // https://mvnrepository.com/artifact/com.pff/java-libpst
     compile group: 'com.pff', name: 'java-libpst', version: '0.9.3'
-    // https://mvnrepository.com/artifact/org.testng/testng
+// https://mvnrepository.com/artifact/org.testng/testng
     testCompile group: 'org.testng', name: 'testng', version: '7.0.0-beta3'
 }
 jar {

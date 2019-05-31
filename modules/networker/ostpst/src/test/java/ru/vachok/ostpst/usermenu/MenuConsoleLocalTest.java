@@ -21,7 +21,7 @@ public class MenuConsoleLocalTest {
     @Test(enabled = false)
     public void checkCons() {
         UserMenu userMenu = new MenuConsoleLocal(new CharsetEncoding(ConstantsOst.CP_WINDOWS_1251)
-            .getStrInAnotherCharset("tmp_t.p.magdich.pst"));
+            .getStrInAnotherCharset(ConstantsOst.FILENAME_TESTPST));
         try (InputStream inputStream = new FileInputStream("scanner");
              Scanner scanner = new Scanner(inputStream);
              OutputStream outputStream = System.out

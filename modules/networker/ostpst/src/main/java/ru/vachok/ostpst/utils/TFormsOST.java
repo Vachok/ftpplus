@@ -3,10 +3,8 @@
 package ru.vachok.ostpst.utils;
 
 
-import java.util.Date;
-import java.util.Deque;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Stream;
 
 
 /**
@@ -54,6 +52,20 @@ public class TFormsOST {
         for (int i = 0; i < list.size(); i++) {
             stringBuilder.append(list.get(i)).append("\n");
         }
+        return stringBuilder.toString();
+    }
+    
+    public String fromArray(Map<?, ?> map) {
+        StringBuilder stringBuilder = new StringBuilder();
+        map.forEach((k, v)->{
+            stringBuilder.append("key: ").append(k).append(" value: ").append(v).append("\n");
+        });
+        return stringBuilder.toString();
+    }
+    
+    public String fromArray(Stream<?> stream) {
+        StringBuilder stringBuilder = new StringBuilder();
+        stream.forEach(x->stringBuilder.append(x).append("\n"));
         return stringBuilder.toString();
     }
 }

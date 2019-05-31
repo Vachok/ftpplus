@@ -119,7 +119,6 @@ public class MenuItemsConsoleImpl implements MenuItems {
                 new MenuItemsConsoleImpl(fileName).askUser();
             }
         }
-        userMenu.showMenu();
     }
     
     private void ansTwo() {
@@ -222,7 +221,6 @@ public class MenuItemsConsoleImpl implements MenuItems {
             System.out.println(new TFormsOST().fromArray(e));
             new MenuConsoleLocal(fileName).showMenu();
         }
-        askUser();
     }
     
     private void ansEightSearchEverywhere() {
@@ -231,16 +229,16 @@ public class MenuItemsConsoleImpl implements MenuItems {
             System.out.println("Enter what are U wanna find:");
             whatFind = scanner.nextLine();
             System.out.println("Started Search. It takes about 8-10 minutes. After all, see results in " + Paths.get(".").toAbsolutePath().normalize());
-            System.out.println(System.getProperties().getProperty("encoding"));
-            Thread.sleep(1500);
+            System.out.println(System.getProperties().getProperty(ConstantsOst.STR_ENCODING));
+            Thread.sleep(1200);
         }
         catch (InterruptedException e) {
             messageToUser.error(FileSystemWorkerOST.error(getClass().getSimpleName() + ".ansEightSearchEverywhere.scanner", e));
-            askUser();
+            new MenuItemsConsoleImpl(fileName).askUser();
         }
         try {
             makeConvertOrCopy.searchMessages(whatFind);
-            askUser();
+            new MenuItemsConsoleImpl(fileName).askUser();
         }
         catch (PSTException | IOException e) {
             messageToUser.error(FileSystemWorkerOST.error(getClass().getSimpleName() + ".ansEightSearchEverywhere.makeConvert", e));
@@ -262,7 +260,6 @@ public class MenuItemsConsoleImpl implements MenuItems {
     }
     
     private void ansSevenCopy() {
-        System.out.println("New copy? (y/n) (e - exit)");
         Properties properties = new Properties();
         try {
             properties.load(new FileInputStream(ConstantsOst.FILENAME_PROPERTIES));
@@ -272,19 +269,24 @@ public class MenuItemsConsoleImpl implements MenuItems {
         }
         catch (IOException e) {
             messageToUser.error(e.getMessage());
-            new MenuItemsConsoleImpl(fileName).askUser();
+            System.err.println("NO PREVIOUS COPY!\nStaring new: \n");
+            System.out.println(makeConvertOrCopy.copyierWithSave("y"));
+            this.fileName = Paths.get(".").toAbsolutePath().normalize() + ConstantsOst.SYSTEM_SEPARATOR + fileName;
+            askUser();
         }
         try (Scanner scanner = new Scanner(System.in)) {
+            System.out.println("New copy? (y/n) (e - exit)");
             while (scanner.hasNextLine()) {
                 String newCP = scanner.nextLine();
                 System.out.println(makeConvertOrCopy.copyierWithSave(newCP));
-                this.fileName = Paths.get(".").normalize().toAbsolutePath() + ConstantsOst.SYSTEM_SEPARATOR + "tmp_" + fileName;
-                new MenuItemsConsoleImpl(fileName).askUser();
+                this.fileName = new StringBuilder().append(Paths.get(".").normalize().toAbsolutePath()).append(ConstantsOst.SYSTEM_SEPARATOR).append(fileName).toString();
+                askUser();
             }
         }
         catch (Exception e) {
             System.out.println(e.getMessage() + "\n" + new TFormsOST().fromArray(e));
             new MenuConsoleLocal(fileName).showMenu();
         }
+        askUser();
     }
 }

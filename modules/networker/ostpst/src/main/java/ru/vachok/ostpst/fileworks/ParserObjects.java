@@ -4,15 +4,29 @@ package ru.vachok.ostpst.fileworks;
 import com.pff.PSTException;
 import com.pff.PSTFile;
 import com.pff.PSTObject;
+import ru.vachok.messenger.MessageCons;
+import ru.vachok.messenger.MessageToUser;
+import ru.vachok.ostpst.utils.FileSystemWorkerOST;
 import ru.vachok.ostpst.utils.TFormsOST;
 
 import java.awt.*;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Optional;
 
 
 class ParserObjects {
     
+    
+    private String fileName;
+    
+    private MessageToUser messageToUser = new MessageCons(getClass().getSimpleName());
+    
+    public ParserObjects(String fileName, long objID) {
+        this.fileName = fileName;
+        this.objID = objID;
+        this.pstFile = new PSTFileNameConverter().getPSTFile(fileName);
+    }
     
     private Path recordPath;
     
@@ -30,6 +44,18 @@ class ParserObjects {
     ParserObjects(PSTObject object) {
         this.object = object;
     }
+    
+    public Optional<PSTObject> getObject() {
+        Optional<PSTObject> pstObject = null;
+        try {
+            pstObject = Optional.ofNullable(PSTObject.detectAndLoadPSTObject(pstFile, objID));
+        }
+        catch (IOException | PSTException e) {
+            messageToUser.error(FileSystemWorkerOST.error(getClass().getSimpleName() + ".getObject", e));
+        }
+        return pstObject;
+    }
+    
     
     String getObjectDescriptorID() {
         StringBuilder stringBuilder = new StringBuilder();

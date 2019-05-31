@@ -38,7 +38,6 @@ import java.util.concurrent.*;
  {@link ru.vachok.networker} - 5 : {@link AppComponents}, {@link AppInfoOnLoad}, {@link ConstantsFor}, {@link ExitApp}, {@link TForms}<br>
  {@link ru.vachok.networker.config} - 1 : {@link ThreadConfig} <br>
  {@link ru.vachok.networker.fileworks} - 1 : {@link FileSystemWorker} <br>
- {@link ru.vachok.networker.net} - 1 : {@link MyServer} <br>
  {@link ru.vachok.networker.services} - 2 : {@link MessageLocal}, {@link WeekStats} <br>
  {@link ru.vachok.networker.systray} - 1 : {@link SystemTrayHelper}
  <p>
@@ -248,7 +247,7 @@ public class IntoApplication {
         stringBuilder.append(LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault()));
         stringBuilder.append(AppComponents.ipFlushDNS());
         messageToUser.info("IntoApplication.beforeSt", "stringBuilder", stringBuilder.toString());
-        System.setProperty("encoding", "UTF8");
+        System.setProperty(ConstantsFor.STR_ENCODING, "UTF8");
         FileSystemWorker.writeFile("system", new TForms().fromArray(System.getProperties()));
         SCHEDULED_THREAD_POOL_EXECUTOR.schedule(()->messageToUser.info(new TForms().fromArray(LOCAL_PROPS, false)), ConstantsFor.DELAY + 10, TimeUnit.MINUTES);
     }

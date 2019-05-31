@@ -16,7 +16,10 @@ public interface UserMenu {
     default void exitProgram(String fileName) {
         String ANSI_CLEAR_SEQ = "\u001b[2J";
         System.out.println(ANSI_CLEAR_SEQ);
-        System.out.println("setWritable = " + new File(fileName).setWritable(true));
+        File workingFile = new File(fileName);
+        if (workingFile.isFile()) {
+            System.out.println(workingFile.getAbsolutePath() + " setWritable = " + workingFile.setWritable(true));
+        }
         System.exit(222);
     }
 }

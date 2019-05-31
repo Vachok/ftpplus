@@ -14,9 +14,7 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
 
 import java.awt.*;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -135,7 +133,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
             }
         }
         catch (IOException e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".upProps", e));
+            messageToUser.error(e.getMessage() + " " + e.getClass() + ".upProps");
         }
         catch (SQLException e) {
             messageToUser.error(e.getMessage());
@@ -159,9 +157,34 @@ import java.util.concurrent.atomic.AtomicBoolean;
             retProps.setProperty("file", "false");
         }
         retProps.setProperty(ConstantsFor.PR_FORCE , "false");
+        retProps.putAll(getApplicationProperties());
         return retProps;
     }
     
+    private Map<?, ?> getApplicationProperties() {
+        Map pMap = new HashMap();
+        try (InputStream inputStream = getClass().getResourceAsStream("/application.properties");
+             InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+             BufferedReader bufferedReader = new BufferedReader(inputStreamReader)
+        ) {
+            bufferedReader.lines().forEach(x->{
+                if (!x.contains("#")) {
+                    try {
+                        String[] split = x.split("=");
+                        pMap.put(split[0], split[1]);
+                    }
+                    catch (IndexOutOfBoundsException ignore) {
+                        //
+                    }
+                }
+            });
+        }
+        catch (IOException e) {
+            messageToUser.error(e.getMessage() + " " + e.getClass() + ".getApplicationProperties");
+        }
+        ;
+        return pMap;
+    }
     
     private boolean forceUpdate() {
         InitProperties initProperties = new FileProps(ConstantsFor.class.getSimpleName());
@@ -173,7 +196,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
         return retBool.get();
     }
     
-    
     private int delFromDataBase() {
         final String sql = "delete FROM `ru_vachok_networker` where `javaid` =  'ConstantsFor'";
         miniLogger.add("4. Starting DELETE: " + sql);
@@ -184,7 +206,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
             pDeleted = preparedStatement.executeUpdate();
         }
         catch (SQLException e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".delFromDataBase" , e));
+            messageToUser.error(e.getMessage() + " " + e.getClass() + ".delFromDataBase");
         }
         retBool.set(pDeleted > 0);
         return pDeleted;

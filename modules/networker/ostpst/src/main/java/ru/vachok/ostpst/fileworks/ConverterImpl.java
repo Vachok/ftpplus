@@ -7,6 +7,7 @@ import com.pff.PSTException;
 import com.pff.PSTFile;
 import ru.vachok.ostpst.ConstantsOst;
 import ru.vachok.ostpst.MakeConvertOrCopy;
+import ru.vachok.ostpst.usermenu.MenuItemsConsoleImpl;
 import ru.vachok.ostpst.utils.CharsetEncoding;
 import ru.vachok.ostpst.utils.FileSystemWorkerOST;
 import ru.vachok.ostpst.utils.TFormsOST;
@@ -30,7 +31,7 @@ public class ConverterImpl implements MakeConvertOrCopy {
     private String fileName;
     
     public ConverterImpl(String fileName) {
-        this.fileName = new CharsetEncoding(ConstantsOst.CP_WINDOWS_1251).getStrInAnotherCharset(fileName);
+        this.fileName = fileName;
     }
     
     @Override public String convertToPST() {
@@ -78,8 +79,8 @@ public class ConverterImpl implements MakeConvertOrCopy {
     }
     
     @Override public String cleanPreviousCopy() {
-        RNDFileCopy rndFileCopy = new RNDFileCopy(fileName);
-        return rndFileCopy.clearPositions();
+        RNDPSTFileCopy RNDPSTFileCopy = new RNDPSTFileCopy(fileName);
+        return RNDPSTFileCopy.clearPositions();
     }
     
     @Override public void setFileName(String fileName) {
@@ -87,8 +88,8 @@ public class ConverterImpl implements MakeConvertOrCopy {
     }
     
     @Override public String copyierWithSave(String newCP) {
-        RNDFileCopy rndFileCopy = new RNDFileCopy(fileName);
-        return rndFileCopy.copyFile(newCP);
+        RNDPSTFileCopy RNDPSTFileCopy = new RNDPSTFileCopy(fileName);
+        return RNDPSTFileCopy.copyFile(newCP);
     }
     
     @Override public String showListFolders() {
@@ -120,7 +121,10 @@ public class ConverterImpl implements MakeConvertOrCopy {
             return parserObjects.getObjectDescriptorID();
         }
         catch (PSTException | IOException | NullPointerException e) {
-            return e.getMessage() + "\n" + new TFormsOST().fromArray(e);
+            String errStr = e.getMessage();
+            System.err.println(errStr);
+            new MenuItemsConsoleImpl(fileName).askUser();
+            return errStr;
         }
         
     }
@@ -146,14 +150,14 @@ public class ConverterImpl implements MakeConvertOrCopy {
     }
     
     @Override public String searchMessages(long folderID, long msgID) {
-        ParserPSTMessages pstMessages = new ParserPSTMessages(fileName, folderID);
-        return pstMessages.searchMessage(msgID);
+        PSTMsgSearcher pstMsgSearcher = new PSTMsgSearcher(fileName, folderID);
+        return pstMsgSearcher.searchMessage(msgID);
     }
     
     @Override public String searchMessages(long folderID, String msgSubject) {
-        ParserPSTMessages pstMessages = new ParserPSTMessages(fileName, folderID);
+        PSTMsgSearcher pstMsgSearcher = new PSTMsgSearcher(fileName, folderID);
         try {
-            return pstMessages.searchMessage(msgSubject);
+            return pstMsgSearcher.searchMessage(msgSubject);
         }
         catch (PSTException | IOException e) {
             return e.getMessage() + " \n" + new TFormsOST().fromArray(e);
@@ -161,8 +165,13 @@ public class ConverterImpl implements MakeConvertOrCopy {
     }
     
     @Override public String searchMessages(String someThing) throws PSTException, IOException {
-        ParserPSTMessages pstMessages = new ParserPSTMessages(fileName, someThing);
-        return pstMessages.searchMessage();
+        PSTMsgSearcher pstMsgSearcher = new PSTMsgSearcher(fileName, someThing);
+        return pstMsgSearcher.everywhereSearch();
+    }
+    
+    @Override public String searchMessagesByEmails(String userInput) {
+        PSTMsgSearcher pstMsgSearcher = new PSTMsgSearcher(fileName, userInput);
+        return pstMsgSearcher.byEmail();
     }
     
     private File createCSV(String csvFileName) {

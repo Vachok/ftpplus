@@ -918,7 +918,6 @@ modules/networker/lan_213220.txt
 modules/networker/ostpst/build/
 modules/networker/unused.ips
 *.list
-ostpst/lib
 *.pstObjStr
 *.res
 *.fldr
@@ -1848,7 +1847,6 @@ modules/networker/lan_213220.txt
 modules/networker/ostpst/build/
 modules/networker/unused.ips
 *.list
-ostpst/lib
 *.log.*
 src/main/java/ru/vachok/networker/services/diskwork/
 users.set
@@ -1905,3 +1903,12 @@ ostpst/ParserPSTMessages.searchMessage
 ostpst/WriterMessageAndAttachments.hasAtt
 ostpst/search_1558699934.txt
 ostpst/search_1558703668.txt
+inet/
+ostpst/PSTFileNameConverter.getPSTFileNoException
+ostpst/search_1558818395.txt
+ostpst/search_1558818462.txt
+ostpst/search_1558822890.txt
+ostpst/search_1558822961.txt
+"ostpst/\320\243\320\264\320\260\320\273\320\265\320\275\320\275\321\213\320\265.txt"
+search_*
+inet.192.168.14.194.rar

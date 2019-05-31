@@ -42,4 +42,6 @@ public enum OtherKnownDevices {
     public static final String IP_BANKOMAT_OUTSIDE = "192.168.14.20";
     
     public static final String IP_FEMTOSOTA = "192.168.13.122";
+    
+    public static final String IP_GAYPIDR = "192.168.14.194";
 }

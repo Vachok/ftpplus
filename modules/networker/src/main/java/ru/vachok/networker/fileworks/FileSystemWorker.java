@@ -21,13 +21,13 @@ import static ru.vachok.networker.ConstantsFor.FILEEXT_LOG;
 
 /**
  Вспомогательная работа с файлами.
- 
+
  @since 19.12.2018 (9:57) */
 public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     
     
     private static final String CLASS_NAME = FileSystemWorker.class.getSimpleName();
-    
+
     private static MessageToUser messageToUser = new MessageCons(FileSystemWorker.class.getSimpleName());
     
     
@@ -61,10 +61,10 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     /**
      Поиск в \\srv-fs\common_new
      <p>
-     
+
      @param folderPath папка, откуда начать искать
      @return список файлов или {@link Exception}
-     
+
      @see FileSearcher
      */
     public static String searchInCommon(String[] folderPath) {
@@ -95,7 +95,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     
     /**
      Простое копирование файла.
-     
+
      @param origFile файл, для копирования
      @param pathToCopyWithFileName строка путь
      @param needDel удалить или нет исходник
@@ -258,7 +258,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     
     public static String error(String classMeth, Exception e) {
         File f = new File(classMeth + "_" + LocalTime.now().toSecondOfDay() + FILEEXT_LOG);
-    
+        
         try (OutputStream outputStream = new FileOutputStream(f)) {
             boolean printTo = printTo(outputStream, e);
             messageToUser.info(f.getAbsolutePath(), "print", String.valueOf(printTo));

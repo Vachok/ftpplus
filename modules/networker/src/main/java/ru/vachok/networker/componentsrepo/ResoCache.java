@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.componentsrepo;
 
 
@@ -152,7 +154,7 @@ public class ResoCache implements org.springframework.core.io.Resource {
                 .add("descr='" + descr + "\n")
                 .add("description='" + getDescription() + "\n")
                 .add("exists=" + exists())
-                .add("fileName='" + fileName + "\n")
+                .add(ConstantsFor.TOSTRING_NAME + fileName + "\n")
                 .add("filename='" + getFilename() + "\n")
                 .add("filePath='" + filePath + "\n")
                 .add("lastModif=" + lastModif)

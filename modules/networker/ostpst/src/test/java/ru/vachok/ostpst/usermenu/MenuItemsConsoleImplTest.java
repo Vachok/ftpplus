@@ -5,6 +5,7 @@ package ru.vachok.ostpst.usermenu;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
+import ru.vachok.ostpst.ConstantsOst;
 import ru.vachok.ostpst.MakeConvertOrCopy;
 import ru.vachok.ostpst.fileworks.ConverterImpl;
 import ru.vachok.ostpst.utils.TFormsOST;
@@ -18,7 +19,7 @@ import java.util.Scanner;
     
     @Test
     public void eigthTest() {
-        String fileName = "tmp_t.p.magdich.pst";
+        String fileName = ConstantsOst.FILENAME_TESTPST;
         MakeConvertOrCopy makeConvertOrCopy = new ConverterImpl(fileName);
         System.out.println("Enter folder ID:");
         try (Scanner scanner = new Scanner(new FileInputStream("MenuItemsConsoleImplTest.8"))) {
