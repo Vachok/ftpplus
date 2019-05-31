@@ -17,6 +17,7 @@ import java.io.RandomAccessFile;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
@@ -45,7 +46,7 @@ public class Uploader implements FileWorker {
     
     private int bytesBuffer = ConstantsOst.KBYTE_BYTES * ConstantsOst.KBYTE_BYTES * 42;
     
-    public Uploader(String readFileName, String writeFileName) throws FileNotFoundException {
+    public Uploader(String readFileName, String writeFileName) throws FileNotFoundException, InvalidPathException {
         this.readFileName = readFileName;
         boolean isFile = Paths.get(readFileName).toAbsolutePath().normalize().toFile().isFile();
         if (!isFile) {

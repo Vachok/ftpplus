@@ -12,7 +12,9 @@ import ru.vachok.ostpst.utils.FileSystemWorkerOST;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.RejectedExecutionException;
@@ -23,6 +25,32 @@ public class UploaderTest {
     
     @Test(enabled = true)
     public void testUpload() {
+        Queue<String> fileNames = getFileNames();
+        while (!fileNames.isEmpty()) {
+            String toAppend = parseQueue(fileNames);
+            FileSystemWorkerOST.appendStringToFile("dn.list", toAppend);
+            if (toAppend.equalsIgnoreCase("copy completed")) {
+                throw new RejectedExecutionException(FileSystemWorkerOST.readFileToString("dn.list"));
+            }
+        }
+        ;
+    }
+    
+    @Test(enabled = true)
+    public void chkFiles() {
+        var names = getFileNames();
+        names.forEach((x)->{
+            try {
+                var split = x.split(" to: ");
+                System.out.println(chkMissed(Paths.get(split[0].replaceFirst("From: ", "")), Paths.get(split[1].trim())));
+            }
+            catch (IndexOutOfBoundsException e) {
+                Assert.assertNull(e, e.getMessage());
+            }
+        });
+    }
+    
+    private Queue<String> getFileNames() {
         Queue<String> fileNames = new ConcurrentLinkedQueue<>();
         try (InputStream inputStream = new FileInputStream("dn.list");
              InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
@@ -34,17 +62,22 @@ public class UploaderTest {
             Assert.assertNull(e, e.getMessage());
         }
         ;
-        while (!fileNames.isEmpty()) {
-            String toAppend = parseQueue(fileNames);
-            FileSystemWorkerOST.appendStringToFile("dn.list", toAppend);
-            if (toAppend.equalsIgnoreCase("copy completed")) {
-                throw new RejectedExecutionException(FileSystemWorkerOST.readFileToString("dn.list"));
-            }
-        }
-        ;
+        return fileNames;
     }
     
-    private String parseQueue(Queue<String> fileNames) {
+    
+    private long chkMissed(Path fileCopy, Path fileOrig) {
+        try {
+            
+            return Files.mismatch(fileCopy, fileOrig);
+        }
+        catch (IOException e) {
+            Assert.assertNull(e, e.getMessage());
+            throw new AssertionFailedException(e);
+        }
+    }
+    
+    private String parseQueue(Queue<String> fileNames) throws InvalidPathException, IndexOutOfBoundsException {
         String x = fileNames.poll();
         if (x != null && x.equalsIgnoreCase("Copy completed")) {
             return FileSystemWorkerOST.readFileToString("dn.list");
@@ -89,18 +122,6 @@ public class UploaderTest {
         }
         FileSystemWorkerOST.writeFile("dn.list", fileNames.stream());
         return retStatus;
-    }
-    
-    
-    private long chkMissed(Path fileCopy, Path fileOrig) {
-        try {
-            
-            return Files.mismatch(fileCopy, fileOrig);
-        }
-        catch (IOException e) {
-            Assert.assertNull(e, e.getMessage());
-            throw new AssertionFailedException(e);
-        }
     }
     
 }
