@@ -3,7 +3,10 @@
 package ru.vachok.ostpst;
 
 
+import ru.vachok.ostpst.fileworks.txtparse.InReader;
 import ru.vachok.ostpst.usermenu.*;
+
+import java.util.Arrays;
 
 
 /**
@@ -24,16 +27,29 @@ public class OstToPstStart {
     }
     
     private static void readArgs(String[] args) {
+        String argF = "";
+        MenuItems menuItems = new MenuItemsConsoleImpl(argF);
+        final boolean isGraph = Arrays.toString(args).contains("-g");
         for (int i = 0; i < args.length; i++) {
             String arg = args[i];
             try {
                 if (arg.toLowerCase().contains("-t")) {
                     new MenuTelnet().showMenu();
                 }
+                else {
+                    if (isGraph) {
+                        menuItems = AWTItemsImpl.getAwtItems(argF);
+                    }
+                }
                 if (arg.toLowerCase().contains("-f")) {
-                    System.out.println("File: " + args[i + 1]);
-                    MenuItems menuItems = new MenuItemsConsoleImpl(args[i + 1]);
-                    menuItems.askUser();
+                    argF = args[i + 1];
+                    System.out.println("File: " + argF);
+                    if (isGraph) {
+                        menuItems = AWTItemsImpl.getAwtItems(argF);
+                    }
+                }
+                if (arg.toLowerCase().contains("-t")) {
+                    new InReader(0).dozenReadFile();
                 }
             }
             catch (ArrayIndexOutOfBoundsException e) {
@@ -41,5 +57,6 @@ public class OstToPstStart {
                 userMenu.showMenu();
             }
         }
+        menuItems.askUser();
     }
 }

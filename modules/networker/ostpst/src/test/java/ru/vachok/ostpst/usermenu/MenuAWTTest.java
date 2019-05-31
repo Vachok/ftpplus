@@ -9,7 +9,7 @@ import org.testng.annotations.Test;
 public class MenuAWTTest {
     
     
-    @Test(enabled = false)
+    @Test
     public void graphMenu() {
         UserMenu userMenu = new MenuAWT();
         userMenu.showMenu();

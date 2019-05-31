@@ -7,6 +7,7 @@ import ru.vachok.ostpst.ConstantsOst;
 import ru.vachok.ostpst.utils.CharsetEncoding;
 import ru.vachok.ostpst.utils.TFormsOST;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -54,7 +55,23 @@ public class FileChecker implements FileWorker {
     }
     
     @Override public String clearCopy() {
-        return new RNDFileCopy(fileName).clearPositions();
+        return new RNDPSTFileCopy(fileName).clearPositions();
+    }
+    
+    @Override public long continuousCopy() {
+        throw new IllegalComponentStateException("28.05.2019 (10:01)");
+    }
+    
+    @Override public String showCurrentResult() {
+        throw new IllegalComponentStateException("28.05.2019 (13:45)");
+    }
+    
+    @Override public String saveAndExit() {
+        throw new IllegalComponentStateException("28.05.2019 (10:01)");
+    }
+    
+    @Override public boolean processNewCopy() {
+        throw new IllegalComponentStateException("28.05.2019 (10:28)");
     }
     
     private boolean lockFile(String fileName) {

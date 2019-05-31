@@ -3,6 +3,9 @@
 package ru.vachok.ostpst;
 
 
+import ru.vachok.ostpst.utils.FileSystemWorkerOST;
+
+
 /**
  @since 02.05.2019 (19:52) */
 public enum ConstantsOst {
@@ -18,7 +21,7 @@ public enum ConstantsOst {
     
     public static final int KBYTE_BYTES = 1024;
     
-    public static final String SYSTEM_SEPARATOR = getSeparator();
+    public static final String SYSTEM_SEPARATOR = FileSystemWorkerOST.getSeparator();
     
     public static final String CP_WINDOWS_1251 = "windows-1251";
     
@@ -32,7 +35,7 @@ public enum ConstantsOst {
     
     public static final String STR_NOT_READY_YET = "Not ready yet";
     
-    public static final String FILENAME_TESTPST = "tmp_t.p.magdich.pst";
+    public static final String FILENAME_TESTPST = FileSystemWorkerOST.getTestPST();
     
     public static final String FILE_PREFIX_SEARCH_ = "search_";
     
@@ -42,12 +45,17 @@ public enum ConstantsOst {
     
     public static final String STR_ENCODING = "encoding";
     
-    private static String getSeparator() {
-        if (System.getProperty("os.name").contains("indows")) {
-            return "\\";
-        }
-        else {
-            return "/";
-        }
-    }
+    public static final String PR_POSWRITE = "positionOfWrite";
+    
+    public static final String PR_POSREAD = "positionOfRead";
+    
+    public static final String PR_READFILENAME = "readFileName";
+    
+    public static final String APPNAME_OSTPST = "ostpst-";
+    
+    public static final String STR_WRITE = " write.";
+    
+    public static final int STATUS_OK = 222;
+    
+    public static final String PR_WRITEFILENAME = "writeFileName";
 }

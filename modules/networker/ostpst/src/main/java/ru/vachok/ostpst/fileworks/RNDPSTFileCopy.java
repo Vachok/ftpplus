@@ -26,7 +26,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  @since 30.04.2019 (9:36) */
-class RNDFileCopy implements Serializable {
+public class RNDPSTFileCopy implements Serializable {
     
     
     private static final long serialVersionUID = 42L;
@@ -46,7 +46,7 @@ class RNDFileCopy implements Serializable {
     /**
      @param fileName may be null
      */
-    RNDFileCopy(String fileName) {
+    public RNDPSTFileCopy(String fileName) {
         this.fileName = fileName;
         this.threadMXBean = ManagementFactory.getThreadMXBean();
         threadMXBean.setThreadCpuTimeEnabled(true);
@@ -92,7 +92,7 @@ class RNDFileCopy implements Serializable {
             Object read = properties.setProperty(ConstantsOst.PR_READING, "0");
             Object write = properties.setProperty(ConstantsOst.PR_WRITING, "0");
             properties.store(new FileOutputStream(ConstantsOst.FILENAME_PROPERTIES), "clearPositions");
-            stringBuilder.append(tmpDel).append(" deleting post file: ").append(absPath).append(". ").append(read).append(" read, ").append(write).append(" write.");
+            stringBuilder.append(tmpDel).append(" deleting post file: ").append(absPath).append(". ").append(read).append(" read, ").append(write).append(ConstantsOst.STR_WRITE);
         }
         catch (IOException e) {
             stringBuilder.append(e.getMessage()).append("\n").append(new TFormsOST().fromArray(e));
@@ -101,7 +101,7 @@ class RNDFileCopy implements Serializable {
         return stringBuilder.toString();
     }
     
-    String copyFile(String newCP) {
+    public String copyFile(String newCP) {
         final long start = System.currentTimeMillis();
         if (newCP.equalsIgnoreCase("y")) {
             System.out.println(clearPositions());

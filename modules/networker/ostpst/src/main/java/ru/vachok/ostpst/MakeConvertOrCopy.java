@@ -33,10 +33,6 @@ public interface MakeConvertOrCopy {
     
     String showListFolders();
     
-    default void testMe() {
-        System.out.println("true = " + true);
-    }
-    
     Deque<String> getDequeFolderNamesAndWriteToDisk() throws IOException;
     
     String showContacts();
@@ -50,4 +46,6 @@ public interface MakeConvertOrCopy {
     String searchMessages(long folderID, String msgSubject);
     
     String searchMessages(String someThing) throws PSTException, IOException;
+    
+    String searchMessagesByEmails(String userInput);
 }

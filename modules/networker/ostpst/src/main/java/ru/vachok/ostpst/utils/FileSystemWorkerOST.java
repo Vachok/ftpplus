@@ -6,10 +6,9 @@ package ru.vachok.ostpst.utils;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.ostpst.ConstantsOst;
+import ru.vachok.ostpst.fileworks.RNDPSTFileCopy;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -76,6 +75,44 @@ public abstract class FileSystemWorkerOST {
         return pathWrite.toAbsolutePath();
     }
     
+    public static String getTestPST() {
+        String tmpFileName = Paths.get("tmp_t.p.magdich.pst").toAbsolutePath().normalize().toString();
+        if (!new File(tmpFileName).exists()) {
+            RNDPSTFileCopy RNDPSTFileCopy = new RNDPSTFileCopy("\\\\192.168.14.10\\IT-Backup\\Mailboxes_users\\t.p.magdich.pst");
+            String copyStat = RNDPSTFileCopy.copyFile("n");
+            System.out.println(copyStat);
+        }
+        return tmpFileName;
+    }
+    
+    public static String appendStringToFile(String fileName, String toAppend) {
+        try (OutputStream outputStream = new FileOutputStream(fileName, true);
+             PrintStream printStream = new PrintStream(outputStream, true, "UTF-8")
+        ) {
+            printStream.println(toAppend);
+            return "Check err: " + printStream.checkError();
+        }
+        catch (IOException e) {
+            return e.getMessage() + "\n" + new TFormsOST().fromArray(e);
+        }
+    }
+    
+    public static String readFileToString(String fileName) {
+        StringBuilder stringBuilder = new StringBuilder();
+        try (InputStream inputStream = new FileInputStream(fileName);
+             InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+             BufferedReader bufferedReader = new BufferedReader(inputStreamReader)
+        ) {
+            while (inputStreamReader.ready()) {
+                stringBuilder.append(bufferedReader.readLine());
+            }
+        }
+        catch (IOException e) {
+            stringBuilder.append(e.getMessage() + " " + FileSystemWorkerOST.class.getSimpleName());
+        }
+        return stringBuilder.toString();
+    }
+    
     private static String getDelimiter() {
         if (System.getProperty("os.name").toLowerCase().contains("windows")) {
             return "\\";
@@ -94,6 +131,15 @@ public abstract class FileSystemWorkerOST {
         catch (IOException e) {
             e.printStackTrace();
             return Paths.get(".").toAbsolutePath().normalize();
+        }
+    }
+    
+    public static String getSeparator() {
+        if (System.getProperty("os.name").contains("indows")) {
+            return "\\";
+        }
+        else {
+            return "/";
         }
     }
 }
