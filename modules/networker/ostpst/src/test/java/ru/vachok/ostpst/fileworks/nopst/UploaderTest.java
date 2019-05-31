@@ -21,7 +21,7 @@ import java.util.concurrent.RejectedExecutionException;
 public class UploaderTest {
     
     
-    @Test(enabled = false)
+    @Test(enabled = true)
     public void testUpload() {
         Queue<String> fileNames = new ConcurrentLinkedQueue<>();
         try (InputStream inputStream = new FileInputStream("dn.list");
@@ -46,10 +46,10 @@ public class UploaderTest {
     
     private String parseQueue(Queue<String> fileNames) {
         String x = fileNames.poll();
-        if (x.equalsIgnoreCase("Copy completed")) {
+        if (x != null && x.equalsIgnoreCase("Copy completed")) {
             return FileSystemWorkerOST.readFileToString("dn.list");
         }
-        System.setProperty("encoding", "UTF8");
+        System.setProperty(ConstantsOst.STR_ENCODING, "UTF8");
         String[] copyPaths = new String[2];
         try {
             copyPaths[0] = x.split(" cpto: ")[0];
