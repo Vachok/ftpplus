@@ -21,7 +21,7 @@ import java.util.concurrent.RejectedExecutionException;
 public class UploaderTest {
     
     
-    @Test(enabled = true)
+    @Test(enabled = false)
     public void testUpload() {
         Queue<String> fileNames = new ConcurrentLinkedQueue<>();
         try (InputStream inputStream = new FileInputStream("dn.list");
