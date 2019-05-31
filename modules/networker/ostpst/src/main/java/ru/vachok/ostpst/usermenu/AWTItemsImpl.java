@@ -9,9 +9,7 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.ostpst.ConstantsOst;
 import ru.vachok.ostpst.MakeConvertOrCopy;
 import ru.vachok.ostpst.fileworks.ConverterImpl;
-import ru.vachok.ostpst.fileworks.FileWorker;
 import ru.vachok.ostpst.fileworks.nopst.Downloader;
-import ru.vachok.ostpst.fileworks.nopst.Uploader;
 import ru.vachok.ostpst.usermenu.traymenu.TrayMenu;
 
 import java.awt.*;
@@ -64,8 +62,7 @@ public class AWTItemsImpl implements MenuItems {
     
     public String getCopyStats(String readFileName) {
         AWTItemsImpl items = AWTItemsImpl.getAwtItems(readFileName);
-        FileWorker upl = new Uploader(AWTItemsImpl.getFileName());
-        return upl.toString();
+        return items.toString();
     }
     
     public void setTrayMenu(TrayMenu trayMenu) {

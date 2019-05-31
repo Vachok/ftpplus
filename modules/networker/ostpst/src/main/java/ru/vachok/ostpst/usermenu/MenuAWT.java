@@ -100,6 +100,7 @@ public class MenuAWT implements UserMenu, Runnable {
         jPanel.add(okButton);
         jPanel.add(copyButton);
         jPanel.add(cancelButton);
+    
         jFrame.add(jPanel);
         jFrame.revalidate();
         return jPanel;

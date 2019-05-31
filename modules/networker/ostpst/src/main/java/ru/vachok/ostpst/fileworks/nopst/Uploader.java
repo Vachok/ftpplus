@@ -7,11 +7,11 @@ import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.ostpst.ConstantsOst;
 import ru.vachok.ostpst.fileworks.FileWorker;
-import ru.vachok.ostpst.usermenu.AWTItemsImpl;
 import ru.vachok.ostpst.utils.CharsetEncoding;
 
 import java.awt.*;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.math.BigDecimal;
@@ -45,23 +45,26 @@ public class Uploader implements FileWorker {
     
     private int bytesBuffer = ConstantsOst.KBYTE_BYTES * ConstantsOst.KBYTE_BYTES * 42;
     
-    public Uploader(String readFileName) {
-        this.readFileName = readFileName;
-        this.writeFileName = "tmp_" + new File(readFileName).getName();
-        PREFERENCES_USER_ROOT.put(ConstantsOst.PR_WRITEFILENAME, writeFileName);
-        PREFERENCES_USER_ROOT.put(ConstantsOst.PR_READFILENAME, readFileName);
-        initMethod(writeFileName);
-    }
-    
-    protected Uploader(String readFileName, String writeFileName) {
+    public Uploader(String readFileName, String writeFileName) throws FileNotFoundException {
         this.readFileName = readFileName;
         boolean isFile = Paths.get(readFileName).toAbsolutePath().normalize().toFile().isFile();
         if (!isFile) {
             this.readFileName = new CharsetEncoding("windows-1251", "UTF8").getStrInAnotherCharset(readFileName);
+            if (!Paths.get(this.readFileName).toAbsolutePath().normalize().toFile().isFile()) {
+                throw new FileNotFoundException("\"" + readFileName + "\" is not found...");
+            }
         }
         this.writeFileName = writeFileName;
         PREFERENCES_USER_ROOT.put(ConstantsOst.PR_WRITEFILENAME, this.writeFileName);
         PREFERENCES_USER_ROOT.put(ConstantsOst.PR_READFILENAME, this.readFileName);
+        initMethod(writeFileName);
+    }
+    
+    protected Uploader(String readFileName) {
+        this.readFileName = readFileName;
+        this.writeFileName = "tmp_" + new File(readFileName).getName();
+        PREFERENCES_USER_ROOT.put(ConstantsOst.PR_WRITEFILENAME, writeFileName);
+        PREFERENCES_USER_ROOT.put(ConstantsOst.PR_READFILENAME, readFileName);
         initMethod(writeFileName);
     }
     
@@ -79,14 +82,6 @@ public class Uploader implements FileWorker {
     
     public void setBytesBuffer(int bytesBuffer) {
         this.bytesBuffer = bytesBuffer;
-    }
-    
-    @Override public String toString() {
-        AWTItemsImpl awtItems = AWTItemsImpl.getAwtItems(readFileName);
-        final StringBuilder sb = new StringBuilder("Uploader{");
-        sb.append(showCurrentResult()).append("\n");
-        sb.append('}');
-        return sb.toString();
     }
     
     @Override public String chkFile() {
@@ -141,6 +136,9 @@ public class Uploader implements FileWorker {
         do {
             readPos = getRead();
             writePos = getWrite(readPos);
+            if (writePos == -10) {
+                return writePos;
+            }
             if (writePos != readPos) {
                 long l = readPos - writePos;
                 System.out.println(l + " difference. Rejected.");
@@ -152,6 +150,17 @@ public class Uploader implements FileWorker {
         } while (readPos == writePos);
     
         return readPos - writePos;
+    }
+    
+    @Override public String toString() {
+        final StringBuilder sb = new StringBuilder("Uploader{");
+        sb.append("startStamp=").append(startStamp);
+        sb.append(", readFileName='").append(readFileName).append('\'');
+        sb.append(", writeFileName='").append(writeFileName).append('\'');
+        sb.append(", readingCRC=").append(readingCRC);
+        sb.append(", bytesBuffer=").append(bytesBuffer);
+        sb.append('}');
+        return sb.toString();
     }
     
     @Override public String showCurrentResult() {
@@ -259,7 +268,7 @@ public class Uploader implements FileWorker {
                 clearCopy();
             }
             else if (writePosition == readPosition) {
-                return 0;
+                return -10;
             }
             else {
                 writeFile.seek(writePosition);
