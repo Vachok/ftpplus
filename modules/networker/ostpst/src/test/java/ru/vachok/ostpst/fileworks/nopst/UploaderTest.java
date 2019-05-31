@@ -9,6 +9,7 @@ import org.testng.annotations.Test;
 import ru.vachok.ostpst.ConstantsOst;
 import ru.vachok.ostpst.fileworks.FileWorker;
 import ru.vachok.ostpst.utils.FileSystemWorkerOST;
+import ru.vachok.ostpst.utils.TFormsOST;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -23,7 +24,7 @@ import java.util.concurrent.RejectedExecutionException;
 public class UploaderTest {
     
     
-    @Test(enabled = true)
+    @Test(enabled = false)
     public void testUpload() {
         Queue<String> fileNames = getFileNames();
         while (!fileNames.isEmpty()) {
@@ -39,10 +40,13 @@ public class UploaderTest {
     @Test(enabled = true)
     public void chkFiles() {
         var names = getFileNames();
+        System.out.println(new TFormsOST().fromArray(names.stream()));
         names.forEach((x)->{
             try {
                 var split = x.split(" to: ");
-                System.out.println(chkMissed(Paths.get(split[0].replaceFirst("From: ", "")), Paths.get(split[1].trim())));
+                var fileCopy = split[1].trim();
+                System.out.println(fileCopy + " size GB =  " + new File(fileCopy).length() / ConstantsOst.KBYTE_BYTES / ConstantsOst.KBYTE_BYTES);
+                System.out.println(x + " is " + chkMissed(Paths.get(split[0].replaceFirst("From: ", "")), Paths.get(fileCopy)));
             }
             catch (IndexOutOfBoundsException e) {
                 Assert.assertNull(e, e.getMessage());
