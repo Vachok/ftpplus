@@ -89,8 +89,9 @@ public abstract class FileSystemWorkerOST {
         try (OutputStream outputStream = new FileOutputStream(fileName, true);
              PrintStream printStream = new PrintStream(outputStream, true, "UTF-8")
         ) {
+            printStream.println();
             printStream.println(toAppend);
-            return "Check err: " + printStream.checkError();
+            return "Check err: " + printStream.checkError() + ". File: " + fileName + ", string appended: " + toAppend;
         }
         catch (IOException e) {
             return e.getMessage() + "\n" + new TFormsOST().fromArray(e);

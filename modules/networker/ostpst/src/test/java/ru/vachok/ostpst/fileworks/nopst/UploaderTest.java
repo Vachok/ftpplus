@@ -16,9 +16,11 @@ import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Date;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.TimeUnit;
 
 
 public class UploaderTest {
@@ -43,10 +45,15 @@ public class UploaderTest {
         System.out.println(new TFormsOST().fromArray(names.stream()));
         names.forEach((x)->{
             try {
+                long start = System.currentTimeMillis();
+                System.out.println(new Date(start));
                 var split = x.split(" to: ");
                 var fileCopy = split[1].trim();
                 System.out.println(fileCopy + " size GB =  " + new File(fileCopy).length() / ConstantsOst.KBYTE_BYTES / ConstantsOst.KBYTE_BYTES);
-                System.out.println(x + " is " + chkMissed(Paths.get(split[0].replaceFirst("From: ", "")), Paths.get(fileCopy)));
+                var toAppend = x + " is " + chkMissed(Paths.get(split[0].replaceFirst("From: ", "")), Paths.get(fileCopy));
+                System.out.println(toAppend);
+                System.out.println(((float) TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - start) / (float) 60) + " min");
+                System.out.println(FileSystemWorkerOST.appendStringToFile("dn.list", toAppend));
             }
             catch (IndexOutOfBoundsException e) {
                 Assert.assertNull(e, e.getMessage());
