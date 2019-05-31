@@ -37,14 +37,14 @@ public class OstToPstStart {
                 }
                 else {
                     if (isGraph) {
-                        menuItems = new AWTItemsImpl(argF);
+                        menuItems = AWTItemsImpl.getAwtItems(argF);
                     }
                 }
                 if (arg.toLowerCase().contains("-f")) {
                     argF = args[i + 1];
                     System.out.println("File: " + argF);
                     if (isGraph) {
-                        menuItems = new AWTItemsImpl(argF);
+                        menuItems = AWTItemsImpl.getAwtItems(argF);
                     }
                 }
             }

@@ -62,7 +62,7 @@ public class FileChecker implements FileWorker {
         throw new IllegalComponentStateException("28.05.2019 (10:01)");
     }
     
-    @Override public void showCurrentResult() {
+    @Override public String showCurrentResult() {
         throw new IllegalComponentStateException("28.05.2019 (13:45)");
     }
     

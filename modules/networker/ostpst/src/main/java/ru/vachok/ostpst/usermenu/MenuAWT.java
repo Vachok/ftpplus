@@ -11,6 +11,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.lang.management.ManagementFactory;
 import java.nio.file.Paths;
 import java.util.concurrent.Executors;
 import java.util.prefs.BackingStoreException;
@@ -55,11 +56,11 @@ public class MenuAWT implements UserMenu, Runnable {
     
     @Override public void run() {
         showMenu();
-        Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(new TrayMenu(getFileName()));
     }
     
     @Override public void showMenu() {
         getAWTMenu();
+        Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(new TrayMenu(getFileName()));
     }
     
     private void getAWTMenu() {
@@ -90,43 +91,11 @@ public class MenuAWT implements UserMenu, Runnable {
         
         searchArea.setLineWrap(true);
         searchArea.setColumns(30);
-        searchArea.addMouseListener(new MouseAdapter() {
-            @Override public void mousePressed(MouseEvent e) {
-                searchArea.setText("");
-            }
-        });
-        
-        okButton.addMouseListener(new MouseAdapter() {
-            @Override public void mouseClicked(MouseEvent e) {
-                TrayMenu trayMenu = new TrayMenu(getFileName());
-                AWTItemsImpl awtItems = new AWTItemsImpl(fileName, trayMenu);
-                String areaText = searchArea.getText();
-                userInput = areaText;
-                awtItems.setUserInput(areaText, 1);
-                Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(trayMenu);
-                trayMenu.setSearching();
-                jFrame.removeNotify();
-            }
-        });
-        copyButton.addMouseListener(new MouseAdapter() {
-            @Override public void mouseClicked(MouseEvent e) {
-                TrayMenu trayMenu = new TrayMenu(getFileName());
-                AWTItemsImpl awtItems = new AWTItemsImpl(fileName, trayMenu);
-                String areaText = searchArea.getText();
-                userInput = areaText;
-                awtItems.setUserInput(areaText, 2);
-                Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(trayMenu);
-                trayMenu.setSearching();
-                jFrame.removeNotify();
-            }
-        });
-        
-        cancelButton.addMouseListener(new MouseAdapter() {
-            @Override public void mouseClicked(MouseEvent e) {
-                exitProgram(fileName);
-            }
-        });
-        
+        searchArea.addMouseListener(new MenuAWT.SetTextToNull(searchArea));
+        okButton.addMouseListener(new OkButtonClick(searchArea, jFrame, okButton));
+        copyButton.addMouseListener(new CopyButtonClick(searchArea, jFrame, copyButton));
+        cancelButton.addMouseListener(new ExitButtonClick(cancelButton));
+    
         jPanel.add(searchArea);
         jPanel.add(okButton);
         jPanel.add(copyButton);
@@ -134,5 +103,108 @@ public class MenuAWT implements UserMenu, Runnable {
         jFrame.add(jPanel);
         jFrame.revalidate();
         return jPanel;
+    }
+    
+    private class SetTextToNull extends MouseAdapter {
+        
+        
+        private final JTextArea searchArea;
+        
+        public SetTextToNull(JTextArea searchArea) {
+            this.searchArea = searchArea;
+        }
+        
+        @Override public void mouseExited(MouseEvent e) {
+            searchArea.setText(String.valueOf(ManagementFactory.getMemoryMXBean().getHeapMemoryUsage()));
+        }
+        
+        @Override public void mousePressed(MouseEvent e) {
+            searchArea.setText("");
+        }
+    }
+    
+    
+    
+    private class OkButtonClick extends MouseAdapter {
+        
+        
+        private final JTextArea searchArea;
+        
+        private final JFrame jFrame;
+        
+        private JButton okButton;
+        
+        public OkButtonClick(JTextArea searchArea, JFrame jFrame, JButton okButton) {
+            this.searchArea = searchArea;
+            this.jFrame = jFrame;
+            this.okButton = okButton;
+        }
+        
+        @Override public void mouseClicked(MouseEvent e) {
+            TrayMenu trayMenu = new TrayMenu(getFileName());
+            AWTItemsImpl awtItems = AWTItemsImpl.getAwtItems(fileName);
+            awtItems.setTrayMenu(trayMenu);
+            String areaText = searchArea.getText();
+            userInput = areaText;
+            awtItems.setUserInput(areaText, 1);
+            Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(trayMenu);
+            trayMenu.setSearching();
+            jFrame.removeNotify();
+        }
+    }
+    
+    
+    
+    private class CopyButtonClick extends MouseAdapter {
+        
+        
+        private final JTextArea searchArea;
+        
+        private final JFrame jFrame;
+        
+        private JButton jButton;
+        
+        public CopyButtonClick(JTextArea searchArea, JFrame jFrame, JButton jButton) {
+            this.searchArea = searchArea;
+            this.jFrame = jFrame;
+            this.jButton = jButton;
+        }
+        
+        @Override public void mouseClicked(MouseEvent e) {
+            TrayMenu trayMenu = new TrayMenu(getFileName());
+            AWTItemsImpl awtItems = AWTItemsImpl.getAwtItems(fileName);
+            awtItems.setTrayMenu(trayMenu);
+            String areaText = searchArea.getText();
+            userInput = areaText;
+            awtItems.setUserInput(areaText, 2);
+            Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(trayMenu);
+            trayMenu.setSearching();
+            jFrame.removeNotify();
+        }
+        
+        @Override public void mouseExited(MouseEvent e) {
+            jButton.setBackground(Color.darkGray);
+        }
+        
+        @Override public void mouseEntered(MouseEvent e) {
+            jButton.setBackground(Color.GREEN);
+        }
+    }
+    
+    
+    
+    private class ExitButtonClick extends MouseAdapter {
+        
+        
+        private JButton button;
+        
+        public ExitButtonClick(JButton button) {
+            
+            this.button = button;
+        }
+        
+        @Override public void mouseClicked(MouseEvent e) {
+            exitProgram(fileName);
+        }
     }
 }

@@ -9,7 +9,9 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.ostpst.ConstantsOst;
 import ru.vachok.ostpst.MakeConvertOrCopy;
 import ru.vachok.ostpst.fileworks.ConverterImpl;
+import ru.vachok.ostpst.fileworks.FileWorker;
 import ru.vachok.ostpst.fileworks.nopst.Downloader;
+import ru.vachok.ostpst.fileworks.nopst.Uploader;
 import ru.vachok.ostpst.usermenu.traymenu.TrayMenu;
 
 import java.awt.*;
@@ -25,23 +27,45 @@ public class AWTItemsImpl implements MenuItems {
     
     private final MessageToUser messageToUser = new MessageSwing();
     
-    private String fileName;
+    private static String fileName;
     
-    private String userInput;
+    private static String userInput;
     
-    private TrayMenu trayMenu;
+    private static AWTItemsImpl awtItems = new AWTItemsImpl();
     
-    private MakeConvertOrCopy makeConvertOrCopy;
-    
-    public AWTItemsImpl(String fileName, TrayMenu trayMenu) {
-        this.fileName = fileName;
-        this.trayMenu = trayMenu;
+    private AWTItemsImpl() {
         initIcon();
     }
     
-    public AWTItemsImpl(String fileName) {
-        this.fileName = fileName;
-        initIcon();
+    public static String getFileName() {
+        return fileName;
+    }
+    
+    private TrayMenu trayMenu;
+    
+    public static String getUserInput() {
+        return userInput;
+    }
+    
+    public static void setUserInput(String userInput) {
+        AWTItemsImpl.userInput = userInput;
+    }
+    
+    public static AWTItemsImpl getAwtItems(String fileName) {
+        AWTItemsImpl.fileName = fileName;
+        return awtItems;
+    }
+    
+    private MakeConvertOrCopy makeConvertOrCopy;
+    
+    public static AWTItemsImpl getI() {
+        return getAwtItems(fileName);
+    }
+    
+    public String getCopyStats(String readFileName) {
+        AWTItemsImpl items = AWTItemsImpl.getAwtItems(readFileName);
+        FileWorker upl = new Uploader(AWTItemsImpl.getFileName());
+        return upl.toString();
     }
     
     public void setTrayMenu(TrayMenu trayMenu) {
@@ -49,13 +73,21 @@ public class AWTItemsImpl implements MenuItems {
     }
     
     public void setUserInput(String text, int methodToLaunch) {
-        this.userInput = text;
         if (methodToLaunch == 1) {
             Executors.newSingleThreadExecutor().execute(this::searchEverywhere);
         }
         if (methodToLaunch == 2) {
             Executors.newSingleThreadExecutor().execute(this::copyFile);
         }
+    }
+    
+    @Override public String toString() {
+        final StringBuilder sb = new StringBuilder("AWTItemsImpl{");
+        sb.append(", fileName='").append(fileName).append('\'');
+        sb.append(", userInput='").append(userInput).append('\'');
+        sb.append(", makeConvertOrCopy=").append(makeConvertOrCopy.getClass().getSimpleName());
+        sb.append('}');
+        return sb.toString();
     }
     
     @Override public void showSecondStage() {

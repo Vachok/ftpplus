@@ -119,7 +119,7 @@ public class Downloader implements FileWorker {
         return readPos;
     }
     
-    @Override public void showCurrentResult() {
+    @Override public String showCurrentResult() {
         long readMB = Long.parseLong(PREF_MAP.getOrDefault(ConstantsOst.PR_POSREAD, "0"));
         long totalMB = new File(readFileName).length();
         readMB /= (ConstantsOst.KBYTE_BYTES * ConstantsOst.KBYTE_BYTES);
@@ -129,6 +129,7 @@ public class Downloader implements FileWorker {
             toSecondsDura = 1;
         }
         System.out.println("Read/Total: " + readMB + "/" + totalMB + ". Time: " + toSecondsDura + " speed: " + (float) readMB / (float) toSecondsDura + " mb/sec.");
+        return null;
     }
     
     @Override public String saveAndExit() {

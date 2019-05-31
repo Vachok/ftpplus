@@ -7,6 +7,7 @@ import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.ostpst.ConstantsOst;
 import ru.vachok.ostpst.fileworks.FileWorker;
+import ru.vachok.ostpst.usermenu.AWTItemsImpl;
 import ru.vachok.ostpst.utils.CharsetEncoding;
 
 import java.awt.*;
@@ -16,6 +17,7 @@ import java.io.RandomAccessFile;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
@@ -29,6 +31,8 @@ import java.util.zip.Checksum;
 public class Uploader implements FileWorker {
     
     
+    private final long startStamp = System.currentTimeMillis();
+    
     private String readFileName;
     
     private String writeFileName;
@@ -37,11 +41,9 @@ public class Uploader implements FileWorker {
     
     private byte[] bytes;
     
-    private final long startStamp = System.currentTimeMillis();
-    
     private boolean isVerbose;
     
-    private int bytesBuffer = ConstantsOst.KBYTE_BYTES;
+    private int bytesBuffer = ConstantsOst.KBYTE_BYTES * ConstantsOst.KBYTE_BYTES * 42;
     
     public Uploader(String readFileName) {
         this.readFileName = readFileName;
@@ -63,6 +65,10 @@ public class Uploader implements FileWorker {
         initMethod(writeFileName);
     }
     
+    public String getReadFileName() {
+        return readFileName;
+    }
+    
     public void setVerbose(boolean verbose) {
         isVerbose = verbose;
     }
@@ -75,9 +81,20 @@ public class Uploader implements FileWorker {
         this.bytesBuffer = bytesBuffer;
     }
     
+    @Override public String toString() {
+        AWTItemsImpl awtItems = AWTItemsImpl.getAwtItems(readFileName);
+        final StringBuilder sb = new StringBuilder("Uploader{");
+        sb.append(showCurrentResult()).append("\n");
+        sb.append('}');
+        return sb.toString();
+    }
+    
     @Override public String chkFile() {
-        if (bytes == null) {
-            throw new UnsupportedOperationException("Unsupported for " + getClass().getSimpleName());
+        try {
+            chkFilesExists();
+        }
+        catch (IOException e) {
+            throw new IllegalArgumentException("Read or write file problems! " + e.getMessage() + " (" + getClass().getSimpleName() + ")");
         }
         String valueOf = "false";
         Checksum readCRC32 = new CRC32();
@@ -137,21 +154,21 @@ public class Uploader implements FileWorker {
         return readPos - writePos;
     }
     
-    @Override public void showCurrentResult() {
+    @Override public String showCurrentResult() {
         long writeKB = Long.parseLong(PREF_MAP.get(ConstantsOst.PR_POSWRITE)) / ConstantsOst.KBYTE_BYTES;
         long readKB = Long.parseLong(PREF_MAP.get(ConstantsOst.PR_POSREAD)) / ConstantsOst.KBYTE_BYTES;
         
         long leftKB = (new File(readFileName).length() / ConstantsOst.KBYTE_BYTES) - writeKB;
-        System.out.println(new StringBuilder()
-                .append(readKB).append(" kb read from: ")
-                .append(PREF_MAP.get(ConstantsOst.PR_READFILENAME)).append(", ")
-                .append(writeKB).append(" kb write to: ")
-                .append(PREF_MAP.get(ConstantsOst.PR_WRITEFILENAME)).append(", speed = ")
-                .append(getSpeed(writeKB)).append("\n")
-                .append(leftKB).append(" kb left ")
-            .append(TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()-startStamp)).append(" sec elapsed, ")
-            .append(bytesBuffer).append(" bytes per one block.")
-            /*.append(getProc(leftKB)).append(" %")*/);
+        String retStr = new StringBuilder()
+            .append(readKB).append(" kb read from: ")
+            .append(PREF_MAP.get(ConstantsOst.PR_READFILENAME)).append(", ")
+            .append(writeKB).append(" kb write to: ")
+            .append(PREF_MAP.get(ConstantsOst.PR_WRITEFILENAME)).append(", speed = ")
+            .append(getSpeed(writeKB)).append("\n")
+            .append(leftKB).append(" kb left ")
+            .append(TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startStamp)).append(" sec elapsed, ")
+            .append(bytesBuffer).append(" bytes per one block.").toString();
+        System.out.println(retStr /*.append(getProc(leftKB)).append(" %")*/);
         try {
             PREF_MAP.forEach(PREFERENCES_USER_ROOT::put);
             PREFERENCES_USER_ROOT.sync();
@@ -163,10 +180,36 @@ public class Uploader implements FileWorker {
             boolean setProps = initProperties.setProps(properties);
             System.out.println("properties = " + setProps);
         }
+        return retStr;
     }
     
     @Override public String saveAndExit() {
         throw new IllegalComponentStateException("30.05.2019 (13:27)");
+    }
+    
+    @Override public boolean processNewCopy() {
+        String clearCopy = clearCopy();
+        long continuousCopy = continuousCopy();
+        return clearCopy.equalsIgnoreCase("ok") && continuousCopy > 0;
+    }
+    
+    private void chkFilesExists() throws IOException {
+        File writeFile = new File(Paths.get(writeFileName).toAbsolutePath().normalize().toString());
+        File readFile = new File(Paths.get(readFileName).toAbsolutePath().normalize().toString());
+        readFile.setReadOnly();
+        if (!readFile.isFile()) {
+            this.readFileName = new CharsetEncoding("windows-1251", "UTF8").getStrInAnotherCharset(readFileName);
+            readFile = new File(readFileName);
+            if (readFile.isFile()) {
+                readFile.setWritable(true);
+            }
+        }
+        if (!writeFile.exists()) {
+            Path path = Files.createFile(writeFile.toPath());
+            if (!path.toAbsolutePath().normalize().toFile().isFile()) {
+                this.writeFileName = new CharsetEncoding(System.getProperty("encoding"), "UTF8").getStrInAnotherCharset(writeFileName);
+            }
+        }
     }
     
     private int getProc(long kb) {
@@ -183,12 +226,6 @@ public class Uploader implements FileWorker {
         }
         long kbSec = writeKB / secondsToWork;
         return kbSec + " kb/sec (" + kbSec / ConstantsOst.KBYTE_BYTES + " mb)";
-    }
-    
-    @Override public boolean processNewCopy() {
-        String clearCopy = clearCopy();
-        long continuousCopy = continuousCopy();
-        return clearCopy.equalsIgnoreCase("ok") && continuousCopy > 0;
     }
     
     private long getRead() {

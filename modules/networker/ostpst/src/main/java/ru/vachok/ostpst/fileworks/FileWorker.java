@@ -35,7 +35,7 @@ public interface FileWorker {
     
     long continuousCopy();
     
-    void showCurrentResult();
+    String showCurrentResult();
     
     String saveAndExit();
     

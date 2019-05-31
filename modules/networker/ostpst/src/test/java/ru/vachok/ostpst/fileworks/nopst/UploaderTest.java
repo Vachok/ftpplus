@@ -3,6 +3,7 @@
 package ru.vachok.ostpst.fileworks.nopst;
 
 
+import com.mysql.jdbc.AssertionFailedException;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import ru.vachok.ostpst.ConstantsOst;
@@ -10,6 +11,8 @@ import ru.vachok.ostpst.fileworks.FileWorker;
 import ru.vachok.ostpst.utils.FileSystemWorkerOST;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,10 +20,10 @@ import java.util.List;
 public class UploaderTest {
     
     
-    @Test(enabled = false)
+    @Test(enabled = true)
     public void testUpload() {
         List<String> fileNames = new ArrayList<>();
-        try (InputStream inputStream = new FileInputStream("d:\\dn.list");
+        try (InputStream inputStream = new FileInputStream("dn.list");
              InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
              BufferedReader bufferedReader = new BufferedReader(inputStreamReader)
         ) {
@@ -31,11 +34,11 @@ public class UploaderTest {
         }
         ;
         fileNames.stream().forEach(x->{
-            String cpFilePathStr = /*PATH AS STRING HERE +*/  new File(x).getName();
-            FileWorker fileWorker = new Uploader(x, cpFilePathStr);
+            String[] copyPaths = x.split(" cpto: ");
+            FileWorker fileWorker = new Uploader(copyPaths[0], copyPaths[1]);
             ((Uploader) fileWorker).setBytesBuffer(ConstantsOst.KBYTE_BYTES * ConstantsOst.KBYTE_BYTES * 30);
-            File fileCopy = new File(cpFilePathStr);
-            File fileOrig = new File(x);
+            File fileCopy = new File(copyPaths[1]);
+            File fileOrig = new File(copyPaths[0]);
             if (fileCopy.exists()) {
                 System.out.println("fileWorker = " + fileWorker.continuousCopy());
             }
@@ -43,19 +46,17 @@ public class UploaderTest {
                 fileWorker.processNewCopy();
             }
             Assert.assertTrue(fileCopy.isFile());
-            Assert.assertTrue(fileCopy.length() != fileOrig.length());
-/*
             if (fileCopy.length() != fileOrig.length()) {
                 var missLong = chkMissed(fileCopy.toPath(), fileOrig.toPath());
                 Assert.assertTrue(missLong < 0, missLong + " error from byte");
             }
-*/
+
             fileNames.remove(x);
         });
-        FileSystemWorkerOST.writeFile("d:\\dn.list", fileNames.stream());
+        FileSystemWorkerOST.writeFile("dn.list", fileNames.stream());
     }
     
-/*
+    
     private long chkMissed(Path fileCopy, Path fileOrig) {
         try {
             
@@ -66,5 +67,5 @@ public class UploaderTest {
             throw new AssertionFailedException(e);
         }
     }
-*/
+    
 }
