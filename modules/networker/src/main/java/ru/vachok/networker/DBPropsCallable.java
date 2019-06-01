@@ -41,6 +41,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
      */
     private final Collection<String> miniLogger = new PriorityQueue<>();
     
+    private boolean isForced = false;
+    
     private IllegalComponentStateException in_progress = new IllegalComponentStateException("In progress");
     
     private MysqlDataSource mysqlDataSource = new RegRuMysql().getDataSourceSchema(ConstantsFor.DBPREFIX + ConstantsFor.STR_PROPERTIES);
@@ -50,7 +52,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
      */
     private Properties propsToSave = new Properties();
     
-    private boolean isForced;
+    private Properties retProps = new Properties();
     
     private AtomicBoolean retBool = new AtomicBoolean(false);
     
@@ -69,18 +71,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
         this.isForced = isForced;
     }
     
-    private DBPropsCallable() {
+    protected DBPropsCallable() {
     }
     
     
     @Override
     public Properties call() {
         if (isForced) {
-            propsToSave.setProperty(ConstantsFor.PR_FORCE , String.valueOf(forceUpdate()));
             return propsToSave;
         }
         else {
-            
             return findRightProps();
         }
     }
@@ -143,22 +143,30 @@ import java.util.concurrent.atomic.AtomicBoolean;
     
     private Properties findRightProps() {
         File prFile = new File(ConstantsFor.class.getSimpleName() + ConstantsFor.FILEEXT_PROPERTIES);
-        InitProperties initProperties;
-        Properties retProps;
+        InitProperties initProperties = new FileProps(ConstantsFor.class.getSimpleName() + ConstantsFor.FILEEXT_PROPERTIES);
+    
         if (prFile.exists() & !prFile.canWrite()) {
-            initProperties = new FileProps(prFile.getName().replace(ConstantsFor.FILEEXT_PROPERTIES, ""));
-            retProps = initProperties.getProps();
-            retProps.setProperty("file", "true");
-            new AppComponents().updateProps(retProps);
+            readOnlyFileReturnFile(prFile);
         }
         else {
-            initProperties = new DBRegProperties(ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName());
-            retProps = initProperties.getProps();
-            retProps.setProperty("file", "false");
+            fileIsWritableOrNotExists();
         }
-        retProps.setProperty(ConstantsFor.PR_FORCE , "false");
         retProps.putAll(getApplicationProperties());
         return retProps;
+    }
+    
+    private void fileIsWritableOrNotExists() {
+        InitProperties initProperties = new DBRegProperties(ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName());
+        retProps.putAll(initProperties.getProps());
+        retProps.setProperty("loadedFromFile", "false");
+        new AppComponents().updateProps(retProps);
+    }
+    
+    private void readOnlyFileReturnFile(File prFile) {
+        InitProperties initProperties = new FileProps(prFile.getName().replace(ConstantsFor.FILEEXT_PROPERTIES, ""));
+        retProps.putAll(initProperties.getProps());
+        retProps.setProperty("loadedFromFile", "true");
+        new AppComponents().updateProps(retProps);
     }
     
     private Map<?, ?> getApplicationProperties() {
