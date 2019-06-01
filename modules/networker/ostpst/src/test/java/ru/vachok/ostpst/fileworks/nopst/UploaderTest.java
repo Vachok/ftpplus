@@ -39,7 +39,7 @@ public class UploaderTest {
         ;
     }
     
-    @Test(enabled = true)
+    @Test(enabled = false)
     public void chkFiles() {
         var names = getFileNames();
         System.out.println(new TFormsOST().fromArray(names.stream()));
