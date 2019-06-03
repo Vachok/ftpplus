@@ -25,6 +25,7 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetPinger;
 import ru.vachok.networker.net.NetScannerSvc;
 import ru.vachok.networker.net.enums.ConstantsNet;
+import ru.vachok.networker.net.ftp.RegRuFTPLibsUploader;
 import ru.vachok.networker.services.ADSrv;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.SimpleCalculator;
@@ -246,5 +247,11 @@ public class AppComponents {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".getAppProps", e));
         }
         return APP_PR;
+    }
+    
+    public boolean isRegRuFTPLibsUploader() {
+        Runnable regRuFTPLibsUploader = new RegRuFTPLibsUploader();
+        threadConfig().execByThreadConfig(regRuFTPLibsUploader);
+        return false;
     }
 }

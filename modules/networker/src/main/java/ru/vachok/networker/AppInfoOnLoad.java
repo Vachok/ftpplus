@@ -236,6 +236,7 @@ public class AppInfoOnLoad implements Runnable {
         ScheduledThreadPoolExecutor scheduledExecutorService = AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor();
         String thisPC = ConstantsFor.thisPC();
         AppInfoOnLoad.miniLogger.add(thisPC);
+        new AppComponents().isRegRuFTPLibsUploader();
     
         if (!thisPC.toLowerCase().contains("home")) {
             scheduledExecutorService.scheduleWithFixedDelay(CommonSRV::runCommonScan, ConstantsFor.INIT_DELAY, TimeUnit.DAYS.toSeconds(1),
