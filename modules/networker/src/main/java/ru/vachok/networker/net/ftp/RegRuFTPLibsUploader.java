@@ -12,7 +12,6 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import sun.net.ftp.FtpClient;
 
-import java.awt.*;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -73,7 +72,7 @@ public class RegRuFTPLibsUploader implements FTPHelper, Runnable {
         else {
             throw new AccessDeniedException("Wrong Password");
         }
-        throw new IllegalComponentStateException("03.06.2019 (21:47)");
+    
     }
     
     @Override public Queue<String> getContentsQueue() {
