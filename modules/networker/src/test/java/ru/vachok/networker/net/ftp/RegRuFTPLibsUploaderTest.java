@@ -12,7 +12,7 @@ import java.nio.file.AccessDeniedException;
 public class RegRuFTPLibsUploaderTest {
     
     
-    @Test()
+    @Test(enabled = false)
     public void ftpTest() {
         FTPHelper ftpHelper = new RegRuFTPLibsUploader();
         try {
