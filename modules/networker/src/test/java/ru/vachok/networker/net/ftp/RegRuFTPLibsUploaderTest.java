@@ -25,6 +25,8 @@ public class RegRuFTPLibsUploaderTest {
     
     @Test
     public void chkPassTest() {
-        Assert.assertNotNull(new RegRuFTPLibsUploader().chkPass());
+        String ftpPass = new RegRuFTPLibsUploader().chkPass();
+        Assert.assertNotNull(ftpPass);
+        System.out.println("ftpPass = " + ftpPass);
     }
 }
