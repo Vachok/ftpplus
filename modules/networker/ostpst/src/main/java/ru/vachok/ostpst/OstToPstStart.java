@@ -3,7 +3,6 @@
 package ru.vachok.ostpst;
 
 
-import ru.vachok.ostpst.fileworks.txtparse.InReader;
 import ru.vachok.ostpst.usermenu.*;
 
 import java.util.Arrays;
@@ -47,9 +46,6 @@ public class OstToPstStart {
                     if (isGraph) {
                         menuItems = AWTItemsImpl.getAwtItems(argF);
                     }
-                }
-                if (arg.toLowerCase().contains("-t")) {
-                    new InReader(0).dozenReadFile();
                 }
             }
             catch (ArrayIndexOutOfBoundsException e) {
