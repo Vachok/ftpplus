@@ -112,7 +112,6 @@ public class RegRuFTPLibsUploader implements FTPHelper, Runnable {
         StringBuilder stringBuilder = new StringBuilder();
         ftpClient.login("u0466446_java", ftpPass);
         ftpClient.setDefaultTimeout((int) ConstantsFor.DELAY);
-        stringBuilder.append(ftpClient.getStatus()).append("\n");
         ftpClient.changeWorkingDirectory("/lib");
         File[] libsToStore = getLibFiles();
         for (File file : libsToStore) {
@@ -127,6 +126,8 @@ public class RegRuFTPLibsUploader implements FTPHelper, Runnable {
                 ftpClient.setFileTransferMode(FTP.BINARY_FILE_TYPE);
                 ftpClient.enterLocalPassiveMode();
                 boolean storeFile = ftpClient.storeFile(nameFTPFile, inputStream);
+                SimpleDateFormat timeValFormat = new SimpleDateFormat("YYYYMMDDhhmmss");
+                ftpClient.mfmt(nameFTPFile, timeValFormat.format(new Date()));
                 stringBuilder.append(nameFTPFile).append(" ").append(storeFile).append(" ").append(ftpClient.getStatus(nameFTPFile)).append("\n");
             }
             catch (IOException e) {
