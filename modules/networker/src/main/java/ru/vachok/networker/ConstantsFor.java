@@ -495,12 +495,7 @@ public enum ConstantsFor {
     public static final String FILESYSTEM_SEPARATOR = getSeparator();
     
     private static String getSeparator() {
-        if (PR_OSNAME_LOWERCASE.contains(PR_WINDOWSOS)) {
-            return "\\";
-        }
-        else {
-            return "/";
-        }
+        return System.getProperty("file.separator");
     }
     
     /**

@@ -6,6 +6,8 @@ package ru.vachok.networker.net.ftp;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import javax.naming.AuthenticationException;
+import java.net.ConnectException;
 import java.nio.file.AccessDeniedException;
 
 
@@ -18,14 +20,20 @@ public class RegRuFTPLibsUploaderTest {
         try {
             ftpHelper.connectTo();
         }
-        catch (AccessDeniedException e) {
+        catch (AccessDeniedException | ConnectException e) {
             System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".ftpTest");
         }
     }
     
     @Test
     public void chkPassTest() {
-        String ftpPass = new RegRuFTPLibsUploader().chkPass();
+        String ftpPass = null;
+        try {
+            ftpPass = new RegRuFTPLibsUploader().chkPass();
+        }
+        catch (AuthenticationException e) {
+            Assert.assertNull(e, e.getMessage());
+        }
         Assert.assertNotNull(ftpPass);
         System.out.println("ftpPass = " + ftpPass);
     }

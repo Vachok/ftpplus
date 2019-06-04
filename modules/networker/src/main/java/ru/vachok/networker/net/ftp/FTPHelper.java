@@ -3,6 +3,7 @@
 package ru.vachok.networker.net.ftp;
 
 
+import java.net.ConnectException;
 import java.nio.file.AccessDeniedException;
 import java.util.Queue;
 
@@ -15,7 +16,7 @@ import java.util.Queue;
 public interface FTPHelper {
     
     
-    void connectTo() throws AccessDeniedException;
+    String connectTo() throws AccessDeniedException, ConnectException;
     
     Queue<String> getContentsQueue();
 }
