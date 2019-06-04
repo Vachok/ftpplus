@@ -75,9 +75,6 @@ public class RegRuFTPLibsUploader implements FTPHelper, Runnable {
                 ftpClient.connect(getHost(), 21);
                 FTPClientConfig config = getConf(ftpClient);
                 config.setServerTimeZoneId("Europe/Moscow");
-                ftpClient.setFileTransferMode(FTP.STREAM_TRANSFER_MODE);
-                ftpClient.type(FTP.ASCII_FILE_TYPE);
-                ftpClient.stru(FTP.FILE_STRUCTURE);
                 ftpClient.configure(config);
     
                 return makeConnectionAndStoreLibs(ftpClient);
@@ -123,7 +120,7 @@ public class RegRuFTPLibsUploader implements FTPHelper, Runnable {
                 else {
                     nameFTPFile = "ost.jar";
                 }
-                ftpClient.setFileTransferMode(FTP.BINARY_FILE_TYPE);
+                ftpClient.setFileTransferMode(FTP.STREAM_TRANSFER_MODE);
                 ftpClient.enterLocalPassiveMode();
                 boolean storeFile = ftpClient.storeFile(nameFTPFile, inputStream);
                 SimpleDateFormat timeValFormat = new SimpleDateFormat("YYYYMMDDhhmmss");
