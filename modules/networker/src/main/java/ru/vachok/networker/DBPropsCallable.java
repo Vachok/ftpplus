@@ -71,18 +71,24 @@ import java.util.concurrent.atomic.AtomicBoolean;
         this.isForced = isForced;
     }
     
-    protected DBPropsCallable() {
+    DBPropsCallable() {
     }
-    
     
     @Override
     public Properties call() {
+        Properties props = new Properties();
         if (isForced) {
             return propsToSave;
         }
         else {
-            return findRightProps();
+            try {
+                props = findRightProps();
+            }
+            catch (IOException e) {
+                messageToUser.error(e.getMessage());
+            }
         }
+        return props;
     }
     
     
@@ -141,7 +147,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
         return false;
     }
     
-    private Properties findRightProps() {
+    private Properties findRightProps() throws IOException {
         File prFile = new File(ConstantsFor.class.getSimpleName() + ConstantsFor.FILEEXT_PROPERTIES);
         InitProperties initProperties = new FileProps(ConstantsFor.class.getSimpleName() + ConstantsFor.FILEEXT_PROPERTIES);
     
@@ -155,14 +161,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
         return retProps;
     }
     
-    private void fileIsWritableOrNotExists() {
+    private void fileIsWritableOrNotExists() throws IOException {
         InitProperties initProperties = new DBRegProperties(ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName());
         retProps.putAll(initProperties.getProps());
         retProps.setProperty("loadedFromFile", "false");
         new AppComponents().updateProps(retProps);
     }
     
-    private void readOnlyFileReturnFile(File prFile) {
+    private void readOnlyFileReturnFile(File prFile) throws IOException {
         InitProperties initProperties = new FileProps(prFile.getName().replace(ConstantsFor.FILEEXT_PROPERTIES, ""));
         retProps.putAll(initProperties.getProps());
         retProps.setProperty("loadedFromFile", "true");

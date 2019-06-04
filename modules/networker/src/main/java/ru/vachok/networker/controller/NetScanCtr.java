@@ -32,6 +32,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.*;
 import java.io.File;
+import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 import java.time.LocalDateTime;
@@ -151,7 +152,8 @@ public class NetScanCtr {
             model.addAttribute(ATT_PCS, e.getMessage());
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
-        } catch (ExecutionException e) {
+        }
+        catch (ExecutionException | IOException e) {
             model.addAttribute(ATT_PCS, new TForms().fromArray(e, true));
         } catch (TimeoutException e) {
             model.addAttribute(ATT_PCS, "TIMEOUT!<p>" + e.getMessage());
@@ -255,7 +257,7 @@ public class NetScanCtr {
         return sb.toString();
     }
     
-    private void mapSizeBigger(Model model, HttpServletRequest request, long lastSt, int thisTotpc) throws ExecutionException, InterruptedException, TimeoutException {
+    private void mapSizeBigger(Model model, HttpServletRequest request, long lastSt, int thisTotpc) throws ExecutionException, InterruptedException, TimeoutException, IOException {
         long timeLeft = TimeUnit.MILLISECONDS.toSeconds(lastSt - System.currentTimeMillis());
         int pcWas = Integer.parseInt(PROPERTIES.getProperty(ConstantsFor.PR_ONLINEPC, "0"));
         int remainPC = thisTotpc - lastScanMAP.size();
@@ -373,7 +375,7 @@ public class NetScanCtr {
      @throws TimeoutException     mapSizeBigger, submitScan
      @see #netScan(HttpServletRequest, HttpServletResponse, Model)
      */
-    private void checkMapSizeAndDoAction(Model model, HttpServletRequest request, long lastSt) throws ExecutionException, InterruptedException, TimeoutException {
+    private void checkMapSizeAndDoAction(Model model, HttpServletRequest request, long lastSt) throws ExecutionException, InterruptedException, TimeoutException, IOException {
         Runnable scanRun = ()->{
             ThreadMXBean threadMXBean = getTHRBeanMX();
             String threadsInfoInit = getInformationForThreads(threadMXBean);

@@ -14,6 +14,7 @@ import org.springframework.context.annotation.Scope;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
+import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.accesscontrol.TemporaryFullInternet;
 import ru.vachok.networker.accesscontrol.sshactions.SshActs;
 import ru.vachok.networker.ad.ADComputer;
@@ -196,10 +197,12 @@ public class AppComponents {
         throw new IllegalComponentStateException("Moved to: " + IntoApplication.class.getSimpleName());
     }
     
-    public boolean updateProps(Properties propertiesToUpdate) {
-        MysqlDataSource source = new DBRegProperties(ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName()).getRegSourceForProperties();
-        DBPropsCallable dbPropsCallable = new DBPropsCallable(source, propertiesToUpdate, true);
-        return dbPropsCallable.call().getProperty(ConstantsFor.PR_FORCE).equals("true");
+    public boolean updateProps(Properties propertiesToUpdate) throws IOException {
+        InitProperties initProperties = new DBRegProperties(ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName());
+        boolean isDel = initProperties.delProps();
+        boolean isSet = initProperties.setProps(propertiesToUpdate);
+        propertiesToUpdate.store(new FileOutputStream(ConstantsFor.class.getSimpleName() + ConstantsFor.FILEEXT_PROPERTIES), getClass().getSimpleName() + ".updateProps");
+        return isDel & isSet;
     }
     
     
@@ -219,7 +222,7 @@ public class AppComponents {
         }
     }
     
-    public void updateProps() {
+    public void updateProps() throws IOException {
         if (APP_PR.size() > 3) {
             updateProps(APP_PR);
         }
@@ -227,7 +230,6 @@ public class AppComponents {
             throw new IllegalComponentStateException("Properties to small : " + APP_PR.size());
         }
     }
-    
     
     private static boolean saveAppPropsForce() {
         DBPropsCallable saveDBPropsCallable = new DBPropsCallable(new DBRegProperties(DB_JAVA_ID).getRegSourceForProperties(), APP_PR, true);
@@ -249,9 +251,8 @@ public class AppComponents {
         return APP_PR;
     }
     
-    public boolean isRegRuFTPLibsUploader() {
+    public boolean launchRegRuFTPLibsUploader() {
         Runnable regRuFTPLibsUploader = new RegRuFTPLibsUploader();
-        threadConfig().execByThreadConfig(regRuFTPLibsUploader);
-        return false;
+        return threadConfig().execByThreadConfig(regRuFTPLibsUploader);
     }
 }

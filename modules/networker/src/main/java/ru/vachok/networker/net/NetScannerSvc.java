@@ -41,7 +41,7 @@ import java.util.concurrent.TimeUnit;
  <p>
  
  @since 21.08.2018 (14:40) */
-@SuppressWarnings({"StaticMethodOnlyUsedInOneClass", "ClassWithMultipleLoggers"})
+@SuppressWarnings("ALL")
 @Service(ConstantsNet.BEANNAME_NETSCANNERSVC)
 @Scope(ConstantsFor.SINGLETON)
 public class NetScannerSvc {
@@ -96,12 +96,13 @@ public class NetScannerSvc {
     
     private static String inputWithInfoFromDB = "";
     
-    private String thrInformation;
+    private String thrInformation = "null";
+    
     
     /**
      Компьютеры онлайн
      */
-    private int onLinePCsNum;
+    @SuppressWarnings("InstanceVariableMayNotBeInitialized") private int onLinePCsNum;
     
     private String thePc = "PC";
     
@@ -415,7 +416,6 @@ public class NetScannerSvc {
         LastNetScan.getLastNetScan().setTimeLastScan(new Date());
     
         boolean isLastModSet = new File(ConstantsFor.class.getSimpleName() + ConstantsFor.FILEEXT_PROPERTIES).setLastModified(ConstantsFor.DELAY);
-        boolean isForceSaved = new AppComponents().updateProps(LOCAL_PROPS);
     
         FileSystemWorker.writeFile(ConstantsNet.BEANNAME_LASTNETSCAN, new TForms().fromArray(LastNetScan.getLastNetScan().getNetWork(), false));
         FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".mini", miniLogger);
@@ -425,9 +425,10 @@ public class NetScannerSvc {
         boolean isFile = fileScanTMPCreate(false);
         File file = new File(ConstantsFor.FILENAME_ALLDEVMAP);
         String bodyMsg = "Online: " + onLinePCsNum + ".\n"
-            + upTime + " min uptime. \n" + "AppProps database updated: " + isForceSaved + " ; " + isFile + " = scan.tmp\n" +
+            + upTime + " min uptime. \n" + isFile + " = scan.tmp\n" +
             this.thrInformation;
         try {
+            new AppComponents().updateProps(LOCAL_PROPS);
             new MessageSwing().infoTimer(40, bodyMsg);
         }
         catch (Exception e) {

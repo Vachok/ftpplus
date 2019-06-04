@@ -177,7 +177,12 @@ public class ExitApp implements Runnable {
         } else {
             miniLoggerLast.add("No object");
         }
-        exitAppDO();
+        try {
+            exitAppDO();
+        }
+        catch (IOException e) {
+            messageToUser.error(e.getMessage());
+        }
     }
 
     /**
@@ -190,7 +195,7 @@ public class ExitApp implements Runnable {
      {@link ThreadConfig#killAll()} закрытие {@link java.util.concurrent.ExecutorService} и {@link java.util.concurrent.ScheduledExecutorService} <br>
      {@link System#exit(int)} int = <i>uptime</i> в минутах.
      */
-    private void exitAppDO() {
+    private void exitAppDO() throws IOException {
         BlockingDeque<String> devices = ConstantsNet.getAllDevices();
         Properties properties = AppComponents.getProps();
         miniLoggerLast.add("Devices " + "iterator next: " + " = " + devices.iterator().next());

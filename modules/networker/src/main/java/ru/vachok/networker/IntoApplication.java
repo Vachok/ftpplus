@@ -23,6 +23,7 @@ import ru.vachok.networker.systray.SystemTrayHelper;
 import ru.vachok.stats.SaveLogsToDB;
 
 import java.awt.*;
+import java.io.IOException;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.TextStyle;
@@ -85,7 +86,7 @@ public class IntoApplication {
      @param args аргументы запуска
      @see SystemTrayHelper
      */
-    public static void main(@Nullable String[] args) {
+    public static void main(@Nullable String[] args) throws IOException {
         AppComponents.threadConfig().execByThreadConfig(new TelnetStarter());
         SpringApplication application = new SpringApplication();
         ConfigurableApplicationContext context = SpringApplication.run(IntoApplication.class);
@@ -151,7 +152,7 @@ public class IntoApplication {
      
      @param args аргументы запуска.
      */
-    private static void readArgs(ConfigurableApplicationContext context, @NotNull String... args) {
+    private static void readArgs(ConfigurableApplicationContext context, @NotNull String... args) throws IOException {
         boolean isTray = true;
         Runnable exitApp = new ExitApp(IntoApplication.class.getSimpleName());
         List<@NotNull String> argsList = Arrays.asList(args);
@@ -236,7 +237,7 @@ public class IntoApplication {
  
      @param isTrayNeed нужен трэй или нет.
      */
-    private static void beforeSt(boolean isTrayNeed) {
+    private static void beforeSt(boolean isTrayNeed) throws IOException {
         if (isTrayNeed) {
             trayAdd(SystemTrayHelper.getI());
         }

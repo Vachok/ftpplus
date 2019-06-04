@@ -122,37 +122,54 @@ import java.util.Scanner;
     }
     
     private String makeConnectionAndStoreLibs(FTPClient ftpClient) throws IOException {
-        //noinspection MismatchedQueryAndUpdateOfStringBuilder
         StringBuilder stringBuilder = new StringBuilder();
+    
         ftpClient.login("u0466446_java", ftpPass);
-        ftpClient.setDefaultTimeout((int) ConstantsFor.DELAY);
+        System.out.println(ftpClient.getReplyString());
+    
+        ftpClient.setAutodetectUTF8(true);
+        System.out.println(ftpClient.getReplyString());
+        
         ftpClient.changeWorkingDirectory("/lib");
+        System.out.println(ftpClient.getReplyString());
+        
         File[] libsToStore = getLibFiles();
         for (File file : libsToStore) {
             stringBuilder.append(uploadFile(file, ftpClient));
         }
-
-        throw new IllegalComponentStateException("04.06.2019 (19:21) FILE TRANSFER MODES");
-//        return stringBuilder.toString();
+        return stringBuilder.toString();
     }
     
     private String uploadFile(File file, FTPClient ftpClient) {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(file.getAbsolutePath()).append(" local file. ");
         try (InputStream inputStream = new FileInputStream(file)) {
-            String nameFTPFile = file.getName();
-            if (nameFTPFile.contains("networker")) {
-                nameFTPFile = "n.jar";
-            }
-            else {
-                nameFTPFile = "ost.jar";
-            }
+            String nameFTPFile = getName(file);
+            stringBuilder.append(nameFTPFile).append(" remote name.\n");
             ftpClient.setFileTransferMode(FTP.BINARY_FILE_TYPE);
+            stringBuilder.append(ftpClient.getReplyString()).append(" file transfer mode, ");
             ftpClient.enterLocalPassiveMode();
-            ftpClient.storeFile(nameFTPFile, inputStream);
+            stringBuilder.append(ftpClient.getReplyString()).append("PassiveMode".toLowerCase()).append(".\n");
+    
+            stringBuilder.append("Is file stored to server: ");
+            boolean isStrore = ftpClient.storeFile(nameFTPFile, inputStream);
+            stringBuilder.append(isStrore).append(", reply: ").append(ftpClient.getReplyString()).append("\n");
         }
         catch (IOException e) {
-            System.err.println(e.getMessage());
+            return e.getMessage();
         }
-        throw new IllegalComponentStateException("04.06.2019 (22:20)"); //fixme
+        return stringBuilder.toString();
+    }
+    
+    private String getName(File file) {
+        String nameFTPFile = file.getName();
+        if (nameFTPFile.contains("networker")) {
+            nameFTPFile = "n.jar";
+        }
+        else {
+            nameFTPFile = "ost.jar";
+        }
+        return nameFTPFile;
     }
     
     private FTPClientConfig getConf(FTPClient ftpClient) {

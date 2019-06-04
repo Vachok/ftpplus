@@ -25,6 +25,7 @@ import ru.vachok.networker.services.MyCalen;
 import ru.vachok.networker.statistics.WeekStats;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
 import java.lang.management.ThreadMXBean;
@@ -132,7 +133,12 @@ public class AppInfoOnLoad implements Runnable {
      */
     @Override
     public void run() {
-        infoForU(AppCtx.scanForBeansAndRefreshContext());
+        try {
+            infoForU(AppCtx.scanForBeansAndRefreshContext());
+        }
+        catch (IOException e) {
+            messageToUser.error(e.getMessage());
+        }
     }
     
     @Override public String toString() {
@@ -211,8 +217,7 @@ public class AppInfoOnLoad implements Runnable {
      
      @param appCtx {@link ApplicationContext}
      */
-    @SuppressWarnings("DuplicateStringLiteralInspection")
-    private void infoForU(ApplicationContext appCtx) {
+    private void infoForU(ApplicationContext appCtx) throws IOException {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(AppComponents.versionInfo()).append("\n");
         stringBuilder.append(ConstantsFor.getBuildStamp());
@@ -236,7 +241,7 @@ public class AppInfoOnLoad implements Runnable {
         ScheduledThreadPoolExecutor scheduledExecutorService = AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor();
         String thisPC = ConstantsFor.thisPC();
         AppInfoOnLoad.miniLogger.add(thisPC);
-        new AppComponents().isRegRuFTPLibsUploader();
+        new AppComponents().launchRegRuFTPLibsUploader();
     
         if (!thisPC.toLowerCase().contains("home")) {
             scheduledExecutorService.scheduleWithFixedDelay(CommonSRV::runCommonScan, ConstantsFor.INIT_DELAY, TimeUnit.DAYS.toSeconds(1),

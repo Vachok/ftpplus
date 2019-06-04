@@ -538,7 +538,7 @@ public enum ConstantsFor {
     /**
      @return время билда
      */
-    public static long getBuildStamp() {
+    public static long getBuildStamp() throws IOException {
         long retLong = 1L;
         Properties appPr = AppComponents.getProps();
 

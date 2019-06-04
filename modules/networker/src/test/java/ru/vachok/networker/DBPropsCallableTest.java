@@ -33,4 +33,10 @@ public class DBPropsCallableTest {
         System.out.println("rowsDel = " + rowsDel);
     }
     
+    @Test
+    public void tryUpd() {
+        DataBaseRegSQL dbPropsCallable = new DBPropsCallable();
+        int orNot = dbPropsCallable.updateTable();
+        Assert.assertTrue(orNot != 0);
+    }
 }
