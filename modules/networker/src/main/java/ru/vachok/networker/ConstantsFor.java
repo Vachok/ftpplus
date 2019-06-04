@@ -439,6 +439,8 @@ public enum ConstantsFor {
     
     public static final String STR_ENCODING = "encoding";
     
+    public static final String PROGNAME_OSTPST = "ostpst-";
+    
     static final String STR_FINISH = " is finish";
     
     private static final String[] STRINGS_TODELONSTART = {"visit_", ".tmp", ".log", ".tv"};
@@ -485,6 +487,10 @@ public enum ConstantsFor {
     
     public static final String TOSTRING_NAME = "fileName='";
     
+    public static final int FTP_PORT = 21;
+    
+    public static final String PRSYS_SEPARATOR = "file.separator";
+    
     /**
      @return {@link #MAIL_RULES}
      */
@@ -495,7 +501,7 @@ public enum ConstantsFor {
     public static final String FILESYSTEM_SEPARATOR = getSeparator();
     
     private static String getSeparator() {
-        return System.getProperty("file.separator");
+        return System.getProperty(PRSYS_SEPARATOR);
     }
     
     /**
