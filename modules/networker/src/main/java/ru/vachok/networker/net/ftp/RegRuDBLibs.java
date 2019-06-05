@@ -4,6 +4,7 @@ package ru.vachok.networker.net.ftp;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import ru.vachok.mysqlandprops.RegRuMysql;
 
+import java.awt.*;
 import java.io.File;
 import java.net.ConnectException;
 import java.nio.file.AccessDeniedException;
@@ -34,7 +35,7 @@ public class RegRuDBLibs implements LibsHelp {
             File[] libFiles = new RegRuFTPLibsUploader().getLibFiles();
             for (File file : libFiles) {
                 preparedStatement.setString(1, file.getName());
-                preparedStatement.setString(2, getVersion(file.getName()));
+                preparedStatement.setString(2, getVersion());
             }
             
         }
@@ -45,6 +46,6 @@ public class RegRuDBLibs implements LibsHelp {
     }
     
     @Override public Queue<String> getContentsQueue() {
-        return null;
+        throw new IllegalComponentStateException("05.06.2019 (12:46)");
     }
 }

@@ -14,7 +14,7 @@ public class RegRuDBLibsTest {
     @Test
     public void testConnectTo() {
         RegRuDBLibs regRuDBLibs = new RegRuDBLibs();
-        System.out.println(regRuDBLibs.getVersion("C:\\Users\\ikudryashov\\IdeaProjects\\ftpplus\\modules\\networker\\build\\libs\\networker-8.0.1923.jar"));
+        System.out.println(regRuDBLibs.getVersion());
         try {
             System.out.println(regRuDBLibs.uploadLibs());
         }
