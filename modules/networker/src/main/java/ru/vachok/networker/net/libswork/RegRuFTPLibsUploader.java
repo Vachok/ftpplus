@@ -49,9 +49,9 @@ import java.util.regex.Pattern;
     
     private static MessageToUser messageToUser = new MessageSwing();
     
-    private String ftpPass;
+    private static FTPClient ftpClient = new FTPClient();
     
-    private FTPClient ftpClient = new FTPClient();
+    private String ftpPass;
     
     
     {
@@ -96,35 +96,6 @@ import java.util.regex.Pattern;
         throw new IllegalComponentStateException("04.06.2019 (17:25)");
     }
     
-    String makeConnectionAndStoreLibs() {
-        StringBuilder stringBuilder = new StringBuilder();
-        
-        try {
-            ftpClient.login("u0466446_java", ftpPass);
-            System.out.println(ftpClient.getReplyString());
-        }
-        catch (IOException e) {
-            messageToUser.error(RegRuFTPLibsUploader.class.getSimpleName(), "LOGIN ERROR", e.getMessage());
-        }
-        
-        ftpClient.setAutodetectUTF8(true);
-        System.out.println(ftpClient.getReplyString());
-        
-        try {
-            ftpClient.changeWorkingDirectory("/lib");
-            System.out.println(ftpClient.getReplyString());
-        }
-        catch (IOException e) {
-            messageToUser.error(RegRuFTPLibsUploader.class.getSimpleName(), "CWD ERROR", e.getMessage());
-        }
-        
-        File[] libsToStore = getLibFiles();
-        for (File file : libsToStore) {
-            stringBuilder.append(uploadFile(file, ftpClient));
-        }
-        return stringBuilder.toString();
-    }
-    
     File[] getLibFiles() {
         File[] retMassive = new File[2];
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyw");
@@ -140,15 +111,15 @@ import java.util.regex.Pattern;
     
     FTPClient getFtpClient() {
         try {
-            ftpClient.connect(getHost(), ConstantsFor.FTP_PORT);
+            RegRuFTPLibsUploader.ftpClient.connect(getHost(), ConstantsFor.FTP_PORT);
             FTPClientConfig config = new FTPClientConfig();
             config.setServerTimeZoneId("Europe/Moscow");
-            ftpClient.configure(config);
+            RegRuFTPLibsUploader.ftpClient.configure(config);
         }
         catch (IOException e) {
             messageToUser.error(getClass().getSimpleName(), "getFtpClient", e.getMessage());
         }
-        return ftpClient;
+        return RegRuFTPLibsUploader.ftpClient;
     }
     
     protected void setFtpPass(String ftpPass) {
@@ -178,15 +149,44 @@ import java.util.regex.Pattern;
         return ftpAddress;
     }
     
-    private static String uploadFile(File file, FTPClient ftpClient) {
+    private String makeConnectionAndStoreLibs() {
+        StringBuilder stringBuilder = new StringBuilder();
+        
+        try {
+            ftpClient.login("u0466446_java", ftpPass);
+            System.out.println(ftpClient.getReplyString());
+        }
+        catch (IOException e) {
+            messageToUser.error(RegRuFTPLibsUploader.class.getSimpleName(), "LOGIN ERROR", e.getMessage());
+        }
+        
+        ftpClient.setAutodetectUTF8(true);
+        System.out.println(ftpClient.getReplyString());
+        
+        try {
+            ftpClient.changeWorkingDirectory("/lib");
+            System.out.println(ftpClient.getReplyString());
+        }
+        catch (IOException e) {
+            messageToUser.error(RegRuFTPLibsUploader.class.getSimpleName(), "CWD ERROR", e.getMessage());
+        }
+        
+        File[] libsToStore = getLibFiles();
+        for (File file : libsToStore) {
+            stringBuilder.append(uploadFile(file));
+        }
+        return stringBuilder.toString();
+    }
+    
+    private static String uploadFile(File file) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(file.getAbsolutePath()).append(" local file. ");
+        String nameFTPFile = getName(file);
         
         try (InputStream inputStream = new FileInputStream(file)) {
             ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
             System.out.println(ftpClient.getReplyString());
             
-            String nameFTPFile = getName(file);
             stringBuilder.append(nameFTPFile).append(" remote name.\n");
             
             ftpClient.enterLocalPassiveMode();
@@ -205,10 +205,10 @@ import java.util.regex.Pattern;
     
     private static String getName(File file) {
         String nameFTPFile = file.getName();
-        if (nameFTPFile.contains("networker")) {
+        if (nameFTPFile.contains("networker") & nameFTPFile.toLowerCase().contains(".jar")) {
             nameFTPFile = "n.jar";
         }
-        else {
+        else if (nameFTPFile.toLowerCase().contains("ostpst-")) {
             nameFTPFile = "ost.jar";
         }
         return nameFTPFile;

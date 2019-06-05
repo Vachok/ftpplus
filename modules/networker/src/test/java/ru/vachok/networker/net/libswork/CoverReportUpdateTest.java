@@ -9,6 +9,7 @@ public class CoverReportUpdateTest {
     
     @Test
     public void uploadCover() {
-    
+        CoverReportUpdate coverReportUpdate = new CoverReportUpdate();
+        coverReportUpdate.run();
     }
 }
