@@ -3,6 +3,7 @@
 package ru.vachok.networker.controller;
 
 
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,6 +16,7 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.fileworks.ProgrammFilesReader;
 import ru.vachok.networker.fileworks.ReadFileTo;
 import ru.vachok.networker.net.DiapazonedScan;
+import ru.vachok.networker.net.NetPinger;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.net.enums.OtherKnownDevices;
 import ru.vachok.networker.services.DBMessenger;
@@ -83,7 +85,7 @@ public class ServiceInfoCtrl {
     @GetMapping("/serviceinfo")
     public String infoMapping(Model model, HttpServletRequest request, HttpServletResponse response) throws AccessDeniedException, ExecutionException, InterruptedException {
         AppComponents.threadConfig().thrNameSet("info");
-        messageToUser.warn(getClass().getSimpleName(), "netPinger minutes", " = " + AppComponents.netPinger());
+        messageToUser.warn(getClass().getSimpleName(), "netPinger minutes", " = " + netPinger());
         visitor = new AppComponents().visitor(request);
         AppComponents.threadConfig().execByThreadConfig(new SpeedChecker());
         this.authReq = Stream.of("0:0:0:0", "127.0.0.1", "10.10.111", "10.200.213.85", "172.16.20", "10.200.214.80", "192.168.13.143").anyMatch(sP->request.getRemoteAddr().contains(sP));
@@ -135,7 +137,7 @@ public class ServiceInfoCtrl {
      @param amountH - сколько часов до конца
      @return время до 17:30 в процентах от 8:30
      */
-    public static String percToEnd(Date timeStart, long amountH) {
+    private static String percToEnd(Date timeStart, long amountH) {
         StringBuilder stringBuilder = new StringBuilder();
         LocalDateTime startDayTime = LocalDateTime.ofEpochSecond(timeStart.getTime() / 1000, 0, ZoneOffset.ofHours(3));
         LocalTime startDay = startDayTime.toLocalTime();
@@ -164,6 +166,11 @@ public class ServiceInfoCtrl {
         }
         stringBuilder.append(localTime);
         return stringBuilder.toString();
+    }
+    
+    @Scope(ConstantsFor.SINGLETON)
+    private static NetPinger netPinger() {
+        return new NetPinger();
     }
     
     @Override

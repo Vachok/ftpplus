@@ -1,6 +1,6 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.net.ftp;
+package ru.vachok.networker.net.libswork;
 
 
 import java.net.ConnectException;
@@ -15,7 +15,7 @@ import java.util.Scanner;
 
 
 /**
- Interface ru.vachok.networker.net.ftp.FTPHelper
+ Interface ru.vachok.networker.net.libswork.FTPHelper
  <p>
  
  @since 01.06.2019 (4:18) */

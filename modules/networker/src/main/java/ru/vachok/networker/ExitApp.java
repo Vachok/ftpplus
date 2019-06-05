@@ -5,6 +5,7 @@ package ru.vachok.networker;
 
 import org.springframework.context.ConfigurableApplicationContext;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetScanFileWorker;
@@ -15,10 +16,9 @@ import java.io.*;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 
 /**
@@ -27,18 +27,21 @@ import java.util.concurrent.atomic.AtomicBoolean;
  @since 21.12.2018 (12:15) */
 @SuppressWarnings("StringBufferReplaceableByString")
 public class ExitApp implements Runnable {
-
-    /**
-     {@link ConstantsFor#HTTP_LOCALHOST8880SLASH} {@code "pages/commit.html"}.
-     */
-    private static final String GO_TO = ConstantsFor.HTTP_LOCALHOST8880SLASH + "pages/commit.html";
-
-    private static final String classMeth = "ExitApp.readCommit";
-
-    private static final String RELOAD_CTX = ".reloadCTX";
     
-    private static final String METH_COPY = "ExitApp.copyAvail";
-
+    
+    private static final Map<Long, Visitor> VISITS_MAP = new ConcurrentHashMap<>();
+    
+    /**
+     {@link #copyAvail()}
+     */
+    @Override
+    public void run() {
+        AppComponents.threadConfig().thrNameSet("exit");
+        VISITS_MAP.forEach((x, y)->miniLoggerLast.add(new Date(x) + " - " + y.getRemAddr()));
+        miniLoggerLast.add(reasonExit);
+        copyAvail();
+    }
+    
     private static MessageToUser messageToUser = new MessageLocal(ExitApp.class.getSimpleName());
 
     /**
@@ -100,36 +103,6 @@ public class ExitApp implements Runnable {
     public ExitApp(String reasonExit) {
         this.reasonExit = reasonExit;
     }
-
-    public static void reloadCTX() {
-        ThreadConfig threadConfig = AppComponents.threadConfig();
-        threadConfig.thrNameSet("RelCTX");
-
-        threadConfig.killAll();
-
-        List<Runnable> runnableList = threadConfig.getTaskScheduler().getScheduledThreadPoolExecutor().shutdownNow();
-        LinkedBlockingDeque<Runnable> deqRun = new LinkedBlockingDeque<>();
-        AtomicBoolean addToDeq = new AtomicBoolean(deqRun.addAll(runnableList));
-        try {
-            if (addToDeq.get()) {
-                for (Runnable x : deqRun) {
-                    Runnable remME = (deqRun).remove();
-
-                    miniLoggerLast.add(remME.toString());
-                    messageToUser.info(ExitApp.class.getSimpleName() + RELOAD_CTX , "remME" , " = " + remME + "\n" + "LinkedBlockingDeque with runnables aize = " + deqRun.size());
-                }
-                addToDeq.set(deqRun.addAll(threadConfig.getTaskExecutor().getThreadPoolExecutor().shutdownNow()));
-                if (addToDeq.get()) {
-                    ConfigurableApplicationContext context = new IntoApplication().getConfigurableApplicationContext();
-                    context.stop();
-                    messageToUser.info(ExitApp.class.getSimpleName() + RELOAD_CTX , "ConstantsFor.class.hashCode()" , " = " + ConstantsFor.class.hashCode());
-                }
-            }
-        } catch (Exception e) {
-            messageToUser.errorAlert(ExitApp.class.getSimpleName() , "reloadCTX" , e.getMessage());
-            FileSystemWorker.error(ExitApp.class.getSimpleName() + RELOAD_CTX , e);
-        }
-    }
     
     public boolean writeOwnObject() {
         try (OutputStream fileOutputStream = new FileOutputStream(fileName);
@@ -141,18 +114,11 @@ public class ExitApp implements Runnable {
             return false;
         }
     }
-
-    /**
-     {@link #copyAvail()}
-     */
-    @Override
-    public void run() {
-        AppComponents.threadConfig().thrNameSet("exit");
-        AppComponents.getVisitsMap().forEach((x, y)->miniLoggerLast.add(new Date(x) + " - " + y.getRemAddr()));
-        miniLoggerLast.add(reasonExit);
-        copyAvail();
+    
+    @SuppressWarnings("StaticMethodOnlyUsedInOneClass") static Map<Long, Visitor> getVisitsMap() {
+        return VISITS_MAP;
     }
-
+    
     /**
      Запись {@link Externalizable}
      <p>

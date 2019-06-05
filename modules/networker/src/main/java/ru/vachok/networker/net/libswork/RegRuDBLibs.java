@@ -1,4 +1,4 @@
-package ru.vachok.networker.net.ftp;
+package ru.vachok.networker.net.libswork;
 
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;

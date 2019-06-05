@@ -23,10 +23,9 @@ import ru.vachok.networker.componentsrepo.VersionInfo;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.config.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.NetPinger;
 import ru.vachok.networker.net.NetScannerSvc;
 import ru.vachok.networker.net.enums.ConstantsNet;
-import ru.vachok.networker.net.ftp.RegRuFTPLibsUploader;
+import ru.vachok.networker.net.libswork.RegRuFTPLibsUploader;
 import ru.vachok.networker.services.ADSrv;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.SimpleCalculator;
@@ -39,43 +38,28 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
 
 /**
  Компоненты. Бины
-
+ 
  @since 02.05.2018 (22:14) */
 @ComponentScan
 public class AppComponents {
-
-
+    
+    
     /**
      <i>Boiler Plate</i>
      */
     private static final String STR_VISITOR = "visitor";
-
+    
     private static final Properties APP_PR = new Properties();
-
-    private static final ConcurrentMap<Long, Visitor> VISITS_MAP = new ConcurrentHashMap<>();
     
     private static final String DB_JAVA_ID = ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName();
     
     private static MessageToUser messageToUser = new MessageLocal(AppComponents.class.getSimpleName());
-
-    public static ConcurrentMap<Long, Visitor> getVisitsMap() {
-        return VISITS_MAP;
-    }
-
-    @Bean
-    public TemporaryFullInternet temporaryFullInternet() {
-        TemporaryFullInternet temporaryFullInternet = new TemporaryFullInternet();
-        messageToUser.info("AppComponents.temporaryFullInternet", "temporaryFullInternet.hashCode()", " = " + temporaryFullInternet.hashCode());
-        return temporaryFullInternet;
-    }
-
+    
     @Bean
     public static Logger getLogger(String className) {
         return LoggerFactory.getLogger(className);
@@ -96,24 +80,25 @@ public class AppComponents {
         }
         return stringBuilder.toString();
     }
-
+    
     @Bean
     public Connection connection(String dbName) throws IOException {
-
+        
         try {
             MysqlDataSource dataSource = new RegRuMysql().getDataSourceSchema(dbName);
-            File dsVarFile = new File("datasrc." + dataSource.hashCode());
+            
             dataSource.setAutoReconnect(true);
             dataSource.setRelaxAutoCommit(true);
             dataSource.setInteractiveClient(true);
             return dataSource.getConnection();
-        } catch (SQLException e) {
+        }
+        catch (SQLException e) {
             messageToUser.errorAlert("AppComponents", ConstantsNet.STR_CONNECTION, e.getMessage());
             FileSystemWorker.error("AppComponents.connection", e);
             return new RegRuMysql().getDefaultConnection(dbName);
         }
     }
-
+    
     /**
      @return new {@link SimpleCalculator}
      */
@@ -121,12 +106,12 @@ public class AppComponents {
     public SimpleCalculator simpleCalculator() {
         return new SimpleCalculator();
     }
-
+    
     /**
      SSH-actions.
      <p>
      Через библиотеку {@link JSch}
-
+     
      @return new {@link SshActs}
      */
     @Bean
@@ -136,11 +121,11 @@ public class AppComponents {
         messageToUser.info("AppComponents.sshActs", " sshActs.hashCode()", " = " + sshActs.hashCode());
         return sshActs;
     }
-
+    
     @Bean(STR_VISITOR)
     public Visitor visitor(HttpServletRequest request) {
         Visitor visitor = new Visitor(request);
-        return VISITS_MAP.putIfAbsent(request.getSession().getCreationTime(), visitor);
+        return ExitApp.getVisitsMap().putIfAbsent(request.getSession().getCreationTime(), visitor);
     }
     
     @Bean
@@ -148,29 +133,22 @@ public class AppComponents {
     public SaveLogsToDB saveLogsToDB() {
         return new SaveLogsToDB();
     }
-
-    @Bean
-    @Scope(ConstantsFor.SINGLETON)
-    public static NetPinger netPinger() {
-        return new NetPinger();
-    }
-
+    
     @Bean
     @Scope(ConstantsFor.SINGLETON)
     public static ThreadConfig threadConfig() {
         return ThreadConfig.getI();
     }
-
+    
     @Bean
     @Scope(ConstantsFor.SINGLETON)
     public static NetScannerSvc netScannerSvc() {
         return NetScannerSvc.getInst();
     }
-
+    
     /**
      @return new {@link VersionInfo}
      */
-    @SuppressWarnings("DuplicateStringLiteralInspection")
     @Bean(ConstantsFor.STR_VERSIONINFO)
     @Scope(ConstantsFor.SINGLETON)
     public static VersionInfo versionInfo() {
@@ -180,10 +158,10 @@ public class AppComponents {
         }
         return versionInfo;
     }
-
+    
     /**
      new {@link ADComputer} + new {@link ADUser}
-
+     
      @return new {@link ADSrv}
      */
     @Bean
@@ -192,7 +170,7 @@ public class AppComponents {
         ADComputer adComputer = new ADComputer();
         return new ADSrv(adUser, adComputer);
     }
-
+    
     public static AbstractBeanFactoryBasedTargetSource configurableApplicationContext() {
         throw new IllegalComponentStateException("Moved to: " + IntoApplication.class.getSimpleName());
     }
@@ -205,8 +183,7 @@ public class AppComponents {
         return isDel & isSet;
     }
     
-    
-    public static Properties getProps() {
+    @SuppressWarnings("AssignmentOrReturnOfFieldWithMutableType") public static Properties getProps() {
         if (APP_PR.size() > 3) {
             if ((APP_PR.getProperty(ConstantsFor.PR_DBSTAMP) != null) && (Long.parseLong(APP_PR.getProperty(ConstantsFor.PR_DBSTAMP)) + TimeUnit.MINUTES.toMillis(180)) < System
                 .currentTimeMillis()) {
@@ -231,17 +208,25 @@ public class AppComponents {
         }
     }
     
-    private static boolean saveAppPropsForce() {
-        DBPropsCallable saveDBPropsCallable = new DBPropsCallable(new DBRegProperties(DB_JAVA_ID).getRegSourceForProperties(), APP_PR, true);
-        return saveDBPropsCallable.call().getProperty(ConstantsFor.PR_FORCE).equals("true");
+    @Bean
+    @Scope("singleton")
+    TemporaryFullInternet temporaryFullInternet() {
+        TemporaryFullInternet temporaryFullInternet = new TemporaryFullInternet();
+        messageToUser.info("AppComponents.temporaryFullInternet", "temporaryFullInternet.hashCode()", " = " + temporaryFullInternet.hashCode());
+        return temporaryFullInternet;
     }
-
+    
+    boolean launchRegRuFTPLibsUploader() {
+        Runnable regRuFTPLibsUploader = new RegRuFTPLibsUploader();
+        return threadConfig().execByThreadConfig(regRuFTPLibsUploader);
+    }
+    
     private Properties getAppProps() {
         threadConfig().thrNameSet("getAPr");
         MysqlDataSource mysqlDataSource = new DBRegProperties(DB_JAVA_ID).getRegSourceForProperties();
         mysqlDataSource.setRelaxAutoCommit(true);
         mysqlDataSource.setLogger("java.util.Logger");
-        Callable<Properties> theProphecy = new DBPropsCallable(mysqlDataSource , APP_PR);
+        Callable<Properties> theProphecy = new DBPropsCallable(mysqlDataSource, APP_PR);
         try {
             APP_PR.putAll(theProphecy.call());
         }
@@ -249,10 +234,5 @@ public class AppComponents {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".getAppProps", e));
         }
         return APP_PR;
-    }
-    
-    public boolean launchRegRuFTPLibsUploader() {
-        Runnable regRuFTPLibsUploader = new RegRuFTPLibsUploader();
-        return threadConfig().execByThreadConfig(regRuFTPLibsUploader);
     }
 }

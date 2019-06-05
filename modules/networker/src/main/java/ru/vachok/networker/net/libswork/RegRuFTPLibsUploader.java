@@ -1,6 +1,6 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.net.ftp;
+package ru.vachok.networker.net.libswork;
 
 
 import org.apache.commons.net.ftp.FTP;
@@ -34,7 +34,7 @@ import java.util.regex.Pattern;
 
 
 /**
- Class ru.vachok.networker.net.ftp.RegRuFTPLibsUploader
+ Class ru.vachok.networker.net.libswork.RegRuFTPLibsUploader
  <p>
  
  @since 01.06.2019 (4:19) */
@@ -51,12 +51,8 @@ import java.util.regex.Pattern;
     
     private MessageToUser messageToUser = new MessageSwing();
     
-    public void setFtpPass(String ftpPass) {
-        this.ftpPass = ftpPass;
-    }
-    
     @Override public void run() {
-        AppComponents.threadConfig().thrNameSet("ftp");
+        AppComponents.threadConfig().thrNameSet("libswork");
         try {
             String connectTo = uploadLibs();
             messageToUser.infoTimer(Math.toIntExact(ConstantsFor.DELAY * 2), connectTo);
@@ -64,6 +60,25 @@ import java.util.regex.Pattern;
         catch (AccessDeniedException e) {
             messageToUser.error(e.getMessage() + " " + getClass().getSimpleName() + ".run");
         }
+    }
+    
+    String makeConnectionAndStoreLibs(FTPClient ftpClient) throws IOException {
+        StringBuilder stringBuilder = new StringBuilder();
+        
+        ftpClient.login("u0466446_java", ftpPass);
+        System.out.println(ftpClient.getReplyString());
+        
+        ftpClient.setAutodetectUTF8(true);
+        System.out.println(ftpClient.getReplyString());
+        
+        ftpClient.changeWorkingDirectory("/lib");
+        System.out.println(ftpClient.getReplyString());
+        
+        File[] libsToStore = getLibFiles();
+        for (File file : libsToStore) {
+            stringBuilder.append(uploadFile(file, ftpClient));
+        }
+        return stringBuilder.toString();
     }
     
     @Override public String uploadLibs() throws AccessDeniedException {
@@ -87,27 +102,11 @@ import java.util.regex.Pattern;
         throw new IllegalComponentStateException("04.06.2019 (17:25)");
     }
     
-    
-    String makeConnectionAndStoreLibs(FTPClient ftpClient) throws IOException {
-        StringBuilder stringBuilder = new StringBuilder();
-    
-        ftpClient.login("u0466446_java", ftpPass);
-        System.out.println(ftpClient.getReplyString());
-    
-        ftpClient.setAutodetectUTF8(true);
-        System.out.println(ftpClient.getReplyString());
-        
-        ftpClient.changeWorkingDirectory("/lib");
-        System.out.println(ftpClient.getReplyString());
-        
-        File[] libsToStore = getLibFiles();
-        for (File file : libsToStore) {
-            stringBuilder.append(uploadFile(file, ftpClient));
-        }
-        return stringBuilder.toString();
+    protected void setFtpPass(String ftpPass) {
+        this.ftpPass = ftpPass;
     }
     
-    static String uploadFile(File file, FTPClient ftpClient) {
+    private static String uploadFile(File file, FTPClient ftpClient) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(file.getAbsolutePath()).append(" local file. ");
         
