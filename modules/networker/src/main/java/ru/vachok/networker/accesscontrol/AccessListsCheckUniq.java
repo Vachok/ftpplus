@@ -26,7 +26,7 @@ public class AccessListsCheckUniq implements SSHWorker, Runnable {
     private List<String> fileNames = new ArrayList<>();
     
     @Override public void run() {
-        messageToUser.info(getClass().getSimpleName() + ".run", "connectTo()", " = " + connectTo());
+        messageToUser.info(getClass().getSimpleName() + ".run", "uploadLibs()", " = " + connectTo());
     }
     
     @Override public String connectTo() {

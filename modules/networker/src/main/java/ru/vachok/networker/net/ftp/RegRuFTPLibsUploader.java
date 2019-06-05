@@ -3,7 +3,6 @@
 package ru.vachok.networker.net.ftp;
 
 
-import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPClientConfig;
 import ru.vachok.messenger.MessageSwing;
@@ -37,10 +36,14 @@ import java.util.Scanner;
  <p>
  
  @since 01.06.2019 (4:19) */
-@SuppressWarnings("ClassUnconnectedToPackage") public class RegRuFTPLibsUploader implements FTPHelper, Runnable {
+@SuppressWarnings("ClassUnconnectedToPackage") public class RegRuFTPLibsUploader implements LibsHelp, Runnable {
     
     
     private static final String FTP_SERVER = "31.31.196.85";
+    
+    public void setFtpPass(String ftpPass) {
+        this.ftpPass = ftpPass;
+    }
     
     private String ftpPass = "null";
     
@@ -51,7 +54,7 @@ import java.util.Scanner;
     @Override public void run() {
         AppComponents.threadConfig().thrNameSet("ftp");
         try {
-            String connectTo = connectTo();
+            String connectTo = uploadLibs();
             messageToUser.infoTimer(Math.toIntExact(ConstantsFor.DELAY * 2), connectTo);
         }
         catch (AccessDeniedException e) {
@@ -59,7 +62,7 @@ import java.util.Scanner;
         }
     }
     
-    @Override public String connectTo() throws AccessDeniedException {
+    @Override public String uploadLibs() throws AccessDeniedException {
         FTPClient ftpClient = new FTPClient();
         String dbPass = null;
         try {
@@ -113,7 +116,6 @@ import java.util.Scanner;
             FTPClientConfig config = new FTPClientConfig();
             config.setServerTimeZoneId("Europe/Moscow");
             ftpClient.configure(config);
-            ftpClient.setFileTransferMode(FTP.BINARY_FILE_TYPE);
             return makeConnectionAndStoreLibs(ftpClient);
         }
         catch (IOException e) {
@@ -121,7 +123,7 @@ import java.util.Scanner;
         }
     }
     
-    private String makeConnectionAndStoreLibs(FTPClient ftpClient) throws IOException {
+    String makeConnectionAndStoreLibs(FTPClient ftpClient) throws IOException {
         StringBuilder stringBuilder = new StringBuilder();
     
         ftpClient.login("u0466446_java", ftpPass);
@@ -140,24 +142,25 @@ import java.util.Scanner;
         return stringBuilder.toString();
     }
     
-    private String uploadFile(File file, FTPClient ftpClient) {
+    String uploadFile(File file, FTPClient ftpClient) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(file.getAbsolutePath()).append(" local file. ");
         try (InputStream inputStream = new FileInputStream(file)) {
+    
             String nameFTPFile = getName(file);
             stringBuilder.append(nameFTPFile).append(" remote name.\n");
-            ftpClient.setFileTransferMode(FTP.BINARY_FILE_TYPE);
-            stringBuilder.append(ftpClient.getReplyString()).append(" file transfer mode, ");
+    
             ftpClient.enterLocalPassiveMode();
             stringBuilder.append(ftpClient.getReplyString()).append("PassiveMode".toLowerCase()).append(".\n");
     
             stringBuilder.append("Is file stored to server: ");
-            boolean isStrore = ftpClient.storeFile(nameFTPFile, inputStream);
-            stringBuilder.append(isStrore).append(", reply: ").append(ftpClient.getReplyString()).append("\n");
+            boolean isStore = ftpClient.storeFile(nameFTPFile, inputStream);
+            stringBuilder.append(isStore).append(", reply: ").append(ftpClient.getReplyString()).append("\n");
         }
         catch (IOException e) {
             return e.getMessage();
         }
+        System.out.println("stringBuilder = " + stringBuilder);
         return stringBuilder.toString();
     }
     
@@ -178,19 +181,7 @@ import java.util.Scanner;
         return ftpClientConfig;
     }
     
-    private InetAddress getHost() {
-        InetAddress ftpAddr = InetAddress.getLoopbackAddress();
-        try {
-            byte[] addressBytes = InetAddress.getByName(FTP_SERVER).getAddress();
-            ftpAddr = InetAddress.getByAddress(addressBytes);
-        }
-        catch (UnknownHostException e) {
-            System.err.println(e.getMessage());
-        }
-        return ftpAddr;
-    }
-    
-    private File[] getLibFiles() {
+    File[] getLibFiles() {
         File[] retMassive = new File[2];
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyw");
         String format = simpleDateFormat.format(new Date());
@@ -201,6 +192,18 @@ import java.util.Scanner;
         retMassive[1] = new File(pathRoot + fileSeparator + ConstantsFor.PROGNAME_OSTPST
             .replace("-", "") + fileSeparator + ConstantsFor.PR_APP_BUILD + fileSeparator + "libs" + fileSeparator + ConstantsFor.PROGNAME_OSTPST + appVersion + ".jar");
         return retMassive;
+    }
+    
+    protected InetAddress getHost() {
+        InetAddress ftpAddr = InetAddress.getLoopbackAddress();
+        try {
+            byte[] addressBytes = InetAddress.getByName(FTP_SERVER).getAddress();
+            ftpAddr = InetAddress.getByAddress(addressBytes);
+        }
+        catch (UnknownHostException e) {
+            System.err.println(e.getMessage());
+        }
+        return ftpAddr;
     }
     
     private String getDigest(String chkStr) {
