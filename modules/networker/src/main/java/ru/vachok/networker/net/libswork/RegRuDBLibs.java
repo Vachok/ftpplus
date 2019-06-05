@@ -37,7 +37,6 @@ public class RegRuDBLibs implements LibsHelp {
                 preparedStatement.setString(1, file.getName());
                 preparedStatement.setString(2, getVersion());
             }
-            
         }
         catch (SQLException e) {
             stringBuilder.append(e.getMessage()).append(" ").append(getClass().getSimpleName()).append("\n");

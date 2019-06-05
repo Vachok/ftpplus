@@ -3,7 +3,6 @@
 package ru.vachok.networker;
 
 
-import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
@@ -13,7 +12,6 @@ import ru.vachok.networker.accesscontrol.common.CommonSRV;
 import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
 import ru.vachok.networker.accesscontrol.sshactions.SquidChecker;
 import ru.vachok.networker.componentsrepo.VersionInfo;
-import ru.vachok.networker.config.AppCtx;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.mailserver.MailIISLogsCleaner;
 import ru.vachok.networker.net.DiapazonedScan;
@@ -114,7 +112,6 @@ public class AppInfoOnLoad implements Runnable {
  
      @return размер папки логов IIS в мегабайтах
      */
-    @SuppressWarnings("StaticMethodOnlyUsedInOneClass")
     public static String iisLogSize() {
         Path iisLogsDir = Paths.get(APP_PROPS.getProperty("iispath", "\\\\srv-mail3.eatmeat.ru\\c$\\inetpub\\logs\\LogFiles\\W3SVC1\\"));
         long totalSize = 0L;
@@ -129,12 +126,12 @@ public class AppInfoOnLoad implements Runnable {
     /**
      Старт
      <p>
-     {@link #infoForU(ApplicationContext)}
+     {@link #infoForU()}
      */
     @Override
     public void run() {
         try {
-            infoForU(AppCtx.scanForBeansAndRefreshContext());
+            infoForU();
         }
         catch (IOException e) {
             messageToUser.error(e.getMessage());
@@ -214,10 +211,9 @@ public class AppInfoOnLoad implements Runnable {
     
     /**
      Немного инфомации о приложении.
-     
-     @param appCtx {@link ApplicationContext}
+ 
      */
-    private void infoForU(ApplicationContext appCtx) throws IOException {
+    private void infoForU() throws IOException {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(AppComponents.versionInfo()).append("\n");
         stringBuilder.append(ConstantsFor.getBuildStamp());
@@ -231,17 +227,17 @@ public class AppInfoOnLoad implements Runnable {
     /**
      Запуск заданий по-расписанию
      <p>
-     Usages: {@link #infoForU(ApplicationContext)} <br>
+     Usages: {@link #infoForU()} <br>
      Uses: 1.1 {@link #dateSchedulers(ScheduledExecutorService)}, 1.2 {@link ConstantsFor#thisPC()}, 1.3 {@link ConstantsFor#thisPC()}.
      */
     private void schedStarter() {
         String osName = ConstantsFor.PR_OSNAME_LOWERCASE;
         messageToUser.warn(osName);
-        final long stArt = System.currentTimeMillis();
         ScheduledThreadPoolExecutor scheduledExecutorService = AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor();
         String thisPC = ConstantsFor.thisPC();
         AppInfoOnLoad.miniLogger.add(thisPC);
-        new AppComponents().launchRegRuFTPLibsUploader();
+    
+        System.out.println("new AppComponents().launchRegRuFTPLibsUploader() = " + new AppComponents().launchRegRuFTPLibsUploader());
     
         if (!thisPC.toLowerCase().contains("home")) {
             scheduledExecutorService.scheduleWithFixedDelay(CommonSRV::runCommonScan, ConstantsFor.INIT_DELAY, TimeUnit.DAYS.toSeconds(1),

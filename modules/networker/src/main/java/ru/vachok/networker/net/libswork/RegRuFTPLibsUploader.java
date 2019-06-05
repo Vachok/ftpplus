@@ -151,13 +151,18 @@ import java.util.regex.Pattern;
     
     private String makeConnectionAndStoreLibs() {
         StringBuilder stringBuilder = new StringBuilder();
-        
+        try {
+            ftpClient.connect(getHost());
+        }
+        catch (IOException e) {
+            messageToUser.error(getClass().getSimpleName(), "CONNECT ERROR", e.getMessage());
+        }
         try {
             ftpClient.login("u0466446_java", ftpPass);
             System.out.println(ftpClient.getReplyString());
         }
         catch (IOException e) {
-            messageToUser.error(RegRuFTPLibsUploader.class.getSimpleName(), "LOGIN ERROR", e.getMessage());
+            messageToUser.error(getClass().getSimpleName(), "LOGIN ERROR", e.getMessage());
         }
         
         ftpClient.setAutodetectUTF8(true);
@@ -168,7 +173,7 @@ import java.util.regex.Pattern;
             System.out.println(ftpClient.getReplyString());
         }
         catch (IOException e) {
-            messageToUser.error(RegRuFTPLibsUploader.class.getSimpleName(), "CWD ERROR", e.getMessage());
+            messageToUser.error(getClass().getSimpleName(), "CWD ERROR", e.getMessage());
         }
         
         File[] libsToStore = getLibFiles();
