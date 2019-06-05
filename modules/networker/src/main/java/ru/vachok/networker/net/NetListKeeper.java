@@ -8,7 +8,6 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ExitApp;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.accesscontrol.AccessListsCheckUniq;
 import ru.vachok.networker.net.enums.OtherKnownDevices;
 import ru.vachok.networker.services.MessageLocal;
 
@@ -28,7 +27,7 @@ import java.util.concurrent.TimeUnit;
  <p>
  
  @since 30.01.2019 (17:02) */
-@SuppressWarnings("StaticMethodOnlyUsedInOneClass") public class NetListKeeper {
+public final class NetListKeeper {
     
     
     /**
@@ -59,7 +58,7 @@ import java.util.concurrent.TimeUnit;
         return inetUniqMap;
     }
     
-    public void setInetUniqMap(Map<String, String> inetUniqMap) {
+    void setInetUniqMap(Map<String, String> inetUniqMap) {
         this.inetUniqMap = inetUniqMap;
     }
     
@@ -71,14 +70,8 @@ import java.util.concurrent.TimeUnit;
         return ptvTime;
     }
     
-    public static void setPtvTime(String ptvTime) {
+    static void setPtvTime(String ptvTime) {
         NetListKeeper.ptvTime = ptvTime;
-    }
-    
-    public ConcurrentMap<String, String> getOnLinesResolve() {
-        readMap();
-        AppComponents.threadConfig().getTaskScheduler().scheduleAtFixedRate(new ChkOnlinesSizeChange(), TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY));
-        return this.onLinesResolve;
     }
     
     /**
@@ -138,8 +131,18 @@ import java.util.concurrent.TimeUnit;
         return sb.toString();
     }
     
-    void readMap() {
+    ConcurrentMap<String, String> getOnLinesResolve() {
+        readMap();
+        AppComponents.threadConfig().getTaskScheduler().scheduleAtFixedRate(new ChkOnlinePCsSizeChange(), TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY));
+        return this.onLinesResolve;
+    }
     
+    ConcurrentMap<String, String> getOffLines() {
+        return this.offLines;
+    }
+    
+    private void readMap() {
+        
         try (InputStream inputStream = new FileInputStream(nameOfExtObject);
              ObjectInputStream objectInputStream = new ObjectInputStream(inputStream)
         ) {
@@ -151,18 +154,15 @@ import java.util.concurrent.TimeUnit;
         }
     }
     
-    ConcurrentMap<String, String> getOffLines() {
-        return this.offLines;
-    }
     
-    private class ChkOnlinesSizeChange implements Runnable {
-    
-    
+    private class ChkOnlinePCsSizeChange implements Runnable {
+        
+        
         private int currentSize = onLinesResolve.size();
         
         private int wasSize;
         
-        public ChkOnlinesSizeChange() {
+        ChkOnlinePCsSizeChange() {
             Properties properties = AppComponents.getProps();
             this.wasSize = Integer.parseInt(properties.getProperty("onsize", "0"));
         }
