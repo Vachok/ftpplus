@@ -47,12 +47,25 @@ import java.util.regex.Pattern;
     
     private static final Pattern COMPILE = Pattern.compile("-", Pattern.LITERAL);
     
-    private String ftpPass = "null";
+    private static MessageToUser messageToUser = new MessageSwing();
     
-    private MessageToUser messageToUser = new MessageSwing();
+    private String ftpPass;
+    
+    private FTPClient ftpClient = new FTPClient();
+    
+    
+    {
+        try {
+            ftpPass = chkPass();
+        }
+        catch (AuthenticationException e) {
+            messageToUser.error(getClass().getSimpleName(), "INITIALIZE AUTH ERROR", e.getMessage());
+        }
+    }
+    
     
     @Override public void run() {
-        AppComponents.threadConfig().thrNameSet("libswork");
+        AppComponents.threadConfig().thrNameSet("ftp");
         try {
             String connectTo = uploadLibs();
             messageToUser.infoTimer(Math.toIntExact(ConstantsFor.DELAY * 2), connectTo);
@@ -62,28 +75,8 @@ import java.util.regex.Pattern;
         }
     }
     
-    String makeConnectionAndStoreLibs(FTPClient ftpClient) throws IOException {
-        StringBuilder stringBuilder = new StringBuilder();
-        
-        ftpClient.login("u0466446_java", ftpPass);
-        System.out.println(ftpClient.getReplyString());
-        
-        ftpClient.setAutodetectUTF8(true);
-        System.out.println(ftpClient.getReplyString());
-        
-        ftpClient.changeWorkingDirectory("/lib");
-        System.out.println(ftpClient.getReplyString());
-        
-        File[] libsToStore = getLibFiles();
-        for (File file : libsToStore) {
-            stringBuilder.append(uploadFile(file, ftpClient));
-        }
-        return stringBuilder.toString();
-    }
-    
     @Override public String uploadLibs() throws AccessDeniedException {
-        FTPClient ftpClient = new FTPClient();
-        String dbPass = null;
+        String dbPass = "Wrong pass";
         try {
             dbPass = chkPass();
         }
@@ -91,7 +84,8 @@ import java.util.regex.Pattern;
             messageToUser.error(e.getMessage());
         }
         if (ConstantsFor.thisPC().toLowerCase().contains("home") | ConstantsFor.thisPC().toLowerCase().contains(ConstantsFor.HOSTNAME_DO213) && dbPass != null) {
-            return continueConnect(dbPass, ftpClient);
+            this.ftpPass = dbPass;
+            return makeConnectionAndStoreLibs();
         }
         else {
             throw new AccessDeniedException("Wrong Password");
@@ -102,8 +96,86 @@ import java.util.regex.Pattern;
         throw new IllegalComponentStateException("04.06.2019 (17:25)");
     }
     
+    String makeConnectionAndStoreLibs() {
+        StringBuilder stringBuilder = new StringBuilder();
+        
+        try {
+            ftpClient.login("u0466446_java", ftpPass);
+            System.out.println(ftpClient.getReplyString());
+        }
+        catch (IOException e) {
+            messageToUser.error(RegRuFTPLibsUploader.class.getSimpleName(), "LOGIN ERROR", e.getMessage());
+        }
+        
+        ftpClient.setAutodetectUTF8(true);
+        System.out.println(ftpClient.getReplyString());
+        
+        try {
+            ftpClient.changeWorkingDirectory("/lib");
+            System.out.println(ftpClient.getReplyString());
+        }
+        catch (IOException e) {
+            messageToUser.error(RegRuFTPLibsUploader.class.getSimpleName(), "CWD ERROR", e.getMessage());
+        }
+        
+        File[] libsToStore = getLibFiles();
+        for (File file : libsToStore) {
+            stringBuilder.append(uploadFile(file, ftpClient));
+        }
+        return stringBuilder.toString();
+    }
+    
+    File[] getLibFiles() {
+        File[] retMassive = new File[2];
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyw");
+        String format = simpleDateFormat.format(new Date());
+        String appVersion = "8.0." + format;
+        Path pathRoot = Paths.get(".").toAbsolutePath().normalize();
+        String fileSeparator = System.getProperty(ConstantsFor.PRSYS_SEPARATOR);
+        retMassive[0] = new File(pathRoot + fileSeparator + ConstantsFor.PR_APP_BUILD + fileSeparator + "libs" + fileSeparator + "networker-" + appVersion + ".jar");
+        retMassive[1] = new File(pathRoot + fileSeparator + COMPILE.matcher(ConstantsFor.PROGNAME_OSTPST).replaceAll(Matcher
+            .quoteReplacement("")) + fileSeparator + ConstantsFor.PR_APP_BUILD + fileSeparator + "libs" + fileSeparator + ConstantsFor.PROGNAME_OSTPST + appVersion + ".jar");
+        return retMassive;
+    }
+    
+    FTPClient getFtpClient() {
+        try {
+            ftpClient.connect(getHost(), ConstantsFor.FTP_PORT);
+            FTPClientConfig config = new FTPClientConfig();
+            config.setServerTimeZoneId("Europe/Moscow");
+            ftpClient.configure(config);
+        }
+        catch (IOException e) {
+            messageToUser.error(getClass().getSimpleName(), "getFtpClient", e.getMessage());
+        }
+        return ftpClient;
+    }
+    
     protected void setFtpPass(String ftpPass) {
         this.ftpPass = ftpPass;
+    }
+    
+    protected String chkPass() throws AuthenticationException {
+        Properties properties = new DBRegProperties("general-pass").getProps();
+        String passDB = properties.getProperty("defpassftpmd5hash");
+        if (!getDigest(passDB).equals(PASSWORD_HASH)) {
+            return properties.getProperty("realftppass");
+        }
+        else {
+            throw new AuthenticationException("WRONG PASSWORD");
+        }
+    }
+    
+    protected InetAddress getHost() {
+        InetAddress ftpAddress = InetAddress.getLoopbackAddress();
+        try {
+            byte[] addressBytes = InetAddress.getByName(FTP_SERVER).getAddress();
+            ftpAddress = InetAddress.getByAddress(addressBytes);
+        }
+        catch (UnknownHostException e) {
+            messageToUser.error(RegRuFTPLibsUploader.class.getSimpleName(), "getHost", e.getMessage());
+        }
+        return ftpAddress;
     }
     
     private static String uploadFile(File file, FTPClient ftpClient) {
@@ -126,59 +198,9 @@ import java.util.regex.Pattern;
             stringBuilder.append(isStore).append(", reply: ").append(ftpClient.getReplyString()).append("\n");
         }
         catch (IOException e) {
-            return e.getMessage();
+            messageToUser.error(RegRuFTPLibsUploader.class.getSimpleName(), "uploadFile", e.getMessage());
         }
         return stringBuilder.toString();
-    }
-    
-    File[] getLibFiles() {
-        File[] retMassive = new File[2];
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyw");
-        String format = simpleDateFormat.format(new Date());
-        String appVersion = "8.0." + format;
-        Path pathRoot = Paths.get(".").toAbsolutePath().normalize();
-        String fileSeparator = System.getProperty(ConstantsFor.PRSYS_SEPARATOR);
-        retMassive[0] = new File(pathRoot + fileSeparator + ConstantsFor.PR_APP_BUILD + fileSeparator + "libs" + fileSeparator + "networker-" + appVersion + ".jar");
-        retMassive[1] = new File(pathRoot + fileSeparator + COMPILE.matcher(ConstantsFor.PROGNAME_OSTPST).replaceAll(Matcher
-            .quoteReplacement("")) + fileSeparator + ConstantsFor.PR_APP_BUILD + fileSeparator + "libs" + fileSeparator + ConstantsFor.PROGNAME_OSTPST + appVersion + ".jar");
-        return retMassive;
-    }
-    
-    protected String chkPass() throws AuthenticationException {
-        Properties properties = new DBRegProperties("general-pass").getProps();
-        String passDB = properties.getProperty("defpassftpmd5hash");
-        if (!getDigest(passDB).equals(PASSWORD_HASH)) {
-            return properties.getProperty("realftppass");
-        }
-        else {
-            throw new AuthenticationException("WRONG PASSWORD");
-        }
-    }
-    
-    protected InetAddress getHost() {
-        InetAddress ftpAddress = InetAddress.getLoopbackAddress();
-        try {
-            byte[] addressBytes = InetAddress.getByName(FTP_SERVER).getAddress();
-            ftpAddress = InetAddress.getByAddress(addressBytes);
-        }
-        catch (UnknownHostException e) {
-            System.err.println(e.getMessage());
-        }
-        return ftpAddress;
-    }
-    
-    private String continueConnect(String dbPass, FTPClient ftpClient) {
-        this.ftpPass = dbPass;
-        try {
-            ftpClient.connect(getHost(), ConstantsFor.FTP_PORT);
-            FTPClientConfig config = new FTPClientConfig();
-            config.setServerTimeZoneId("Europe/Moscow");
-            ftpClient.configure(config);
-            return makeConnectionAndStoreLibs(ftpClient);
-        }
-        catch (IOException e) {
-            return e.getMessage();
-        }
     }
     
     private static String getName(File file) {
@@ -202,7 +224,7 @@ import java.util.regex.Pattern;
             dBytes = messageDigest.digest(dBytes);
         }
         catch (NoSuchAlgorithmException e) {
-            System.err.println(e.getMessage());
+            messageToUser.error(RegRuFTPLibsUploader.class.getSimpleName(), "getDigest", e.getMessage());
         }
         return new String(dBytes);
     }
