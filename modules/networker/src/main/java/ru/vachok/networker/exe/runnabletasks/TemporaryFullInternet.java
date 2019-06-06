@@ -36,15 +36,13 @@ public class TemporaryFullInternet implements Runnable {
     
     private static final MessageToUser messageToUser = new MessageLocal(TemporaryFullInternet.class.getSimpleName());
     
-    private static final String SERVER_TO_CONNECT = whatServerNow();
-    
     private static final String STR_SSH_COMMAND = "sshCommand";
     
     private static final Queue<String> MINI_LOGGER = new ArrayDeque<>();
     
     private static final Map<String, Long> SSH_CHECKER_MAP = new ConcurrentHashMap<>();
     
-    private static final SSHFactory SSH_FACTORY = new SSHFactory.Builder(SERVER_TO_CONNECT, "ls", TemporaryFullInternet.class.getSimpleName()).build();
+    private static final SSHFactory SSH_FACTORY = new SSHFactory.Builder("192.168.13.42", "ls", TemporaryFullInternet.class.getSimpleName()).build();
     
     private static final String TEMPORARY_FULL_INTERNET_RUN = "TemporaryFullInternet.run";
     
@@ -58,13 +56,13 @@ public class TemporaryFullInternet implements Runnable {
     public TemporaryFullInternet() {
         this.userInput = "10.200.213.254";
         this.delStamp = System.currentTimeMillis();
-        MINI_LOGGER.add("TemporaryFullInternet(): " + this.userInput + " " + delStamp + "(" + new Date(delStamp) + ")");
+        MINI_LOGGER.add(this.getClass().getSimpleName() + "(): " + this.userInput + " " + delStamp + "(" + new Date(delStamp) + ")");
     }
     
     public TemporaryFullInternet(String userInput, long timeToApply) {
         this.userInput = userInput;
         this.delStamp = ConstantsFor.getAtomicTime() + TimeUnit.HOURS.toMillis(timeToApply);
-        MINI_LOGGER.add("TemporaryFullInternet: " + userInput + " " + delStamp + "(" + new Date(delStamp) + ")");
+        MINI_LOGGER.add(this.getClass().getSimpleName() + ": " + userInput + " " + delStamp + "(" + new Date(delStamp) + ")");
     }
     
     public TemporaryFullInternet(long timeStampOff) {
@@ -75,10 +73,11 @@ public class TemporaryFullInternet implements Runnable {
     TemporaryFullInternet(String userInput, String numOfHoursStr) {
         this.userInput = userInput;
         this.delStamp = ConstantsFor.getAtomicTime() + TimeUnit.HOURS.toMillis(Long.parseLong(numOfHoursStr));
-        MINI_LOGGER.add("TemporaryFullInternet: " + userInput + " " + delStamp + "(" + new Date(delStamp) + ")");
+        MINI_LOGGER.add(this.getClass().getSimpleName() + ": " + userInput + " " + delStamp + "(" + new Date(delStamp) + ")");
     }
     
     public String doAdd() {
+        SSH_FACTORY.setConnectToSrv(new AppComponents().sshActs().whatSrvNeed());
         NameOrIPChecker nameOrIPChecker = new NameOrIPChecker(userInput);
         StringBuilder retBuilder = new StringBuilder();
         String tempString24HRSFile;
@@ -90,7 +89,6 @@ public class TemporaryFullInternet implements Runnable {
         }
         catch (ArrayIndexOutOfBoundsException | UnknownFormatConversionException e) {
             sshIP = new TForms().fromArray(e, true);
-            tempString24HRSFile = null;
             return sshIP;
         }
         if (tempString24HRSFile.contains(sshIP)) {
@@ -121,24 +119,8 @@ public class TemporaryFullInternet implements Runnable {
     
     @Override
     public void run() {
+        SSH_FACTORY.setConnectToSrv(new AppComponents().sshActs().whatSrvNeed());
         execOldMeth();
-    }
-    
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        TemporaryFullInternet that = (TemporaryFullInternet) o;
-        return Objects.equals(userInput, that.userInput);
-    }
-    
-    @Override
-    public int hashCode() {
-        return Objects.hash(userInput);
     }
     
     @Override
@@ -146,7 +128,6 @@ public class TemporaryFullInternet implements Runnable {
         final StringBuilder sb = new StringBuilder("TemporaryFullInternet{");
         sb.append("delStamp=").append(delStamp);
         sb.append(", initStamp=").append(initStamp);
-        sb.append(", userInput='").append(userInput).append('\'');
         sb.append('}');
         sb.append("<p>\n").append(new TForms().fromArray(MINI_LOGGER, true));
         return sb.toString();
@@ -175,15 +156,6 @@ public class TemporaryFullInternet implements Runnable {
             .append(ConstantsNet.COM_INITPF);
         SSH_FACTORY.setCommandSSH(comSSHBuilder.toString());
         return SSH_FACTORY.call();
-    }
-    
-    private static String whatServerNow() {
-        if (ConstantsFor.thisPC().toLowerCase().contains("rups")) {
-            return ConstantsFor.IPADDR_SRVNAT;
-        }
-        else {
-            return ConstantsFor.IPADDR_SRVGIT;
-        }
     }
     
     private void execOldMeth() {
@@ -271,7 +243,7 @@ public class TemporaryFullInternet implements Runnable {
         this.delStamp = Long.parseLong(x[1]);
         if (delStamp < ConstantsFor.getAtomicTime()) {
             doDelete(x[0]);
-            addBackToList(x[0], x[2]);
+            System.out.println(addBackToList(x[0], x[2]));
         }
     }
     

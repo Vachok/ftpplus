@@ -53,7 +53,7 @@ public class VersionInfo {
     /**
      Время сборки
      */
-    private String buildTime = "1";
+    private String buildTime = getBuildTime();
     
     private String propertiesFrom = ConstantsFor.DBPREFIX + ConstantsFor.STR_PROPERTIES;
     
@@ -107,7 +107,14 @@ public class VersionInfo {
      @return {@link #buildTime}
      */
     public String getBuildTime() {
-        return buildTime;
+        String timeStr = String.valueOf(ConstantsFor.START_STAMP);
+        if (ConstantsFor.thisPC().toLowerCase().contains("home") || ConstantsFor.thisPC().toLowerCase().contains("do0")) {
+            AppComponents.getProps().setProperty(ConstantsFor.PR_APP_BUILDTIME, timeStr);
+            return timeStr;
+        }
+        else {
+            return "1";
+        }
     }
 
 

@@ -226,18 +226,24 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     
     public static List<String> readFileToList(String absolutePath) {
         List<String> retList = new ArrayList<>();
-        try (InputStream inputStream = new FileInputStream(absolutePath);
-             InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-             BufferedReader reader = new BufferedReader(inputStreamReader)
-        ) {
-            while (reader.ready()) {
-                retList.add(reader.readLine());
-            }
+    
+        if (!new File(absolutePath).exists()) {
+            System.err.println(absolutePath + " does not exists...");
         }
-        catch (IOException e) {
-            messageToUser.errorAlert(CLASS_NAME, "readFileToList", e.getMessage());
-            retList.add(e.getMessage());
-            retList.add(new TForms().fromArray(e, true));
+        else {
+            try (InputStream inputStream = new FileInputStream(absolutePath);
+                 InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+                 BufferedReader reader = new BufferedReader(inputStreamReader)
+            ) {
+                while (reader.ready()) {
+                    retList.add(reader.readLine());
+                }
+            }
+            catch (IOException e) {
+                messageToUser.errorAlert(CLASS_NAME, "readFileToList", e.getMessage());
+                retList.add(e.getMessage());
+                retList.add(new TForms().fromArray(e, true));
+            }
         }
         return retList;
     }

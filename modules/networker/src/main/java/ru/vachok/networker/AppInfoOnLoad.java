@@ -257,19 +257,15 @@ public class AppInfoOnLoad implements Runnable {
                 TimeUnit.SECONDS);
             AppInfoOnLoad.miniLogger.add("runCommonScan init delay " + ConstantsFor.INIT_DELAY + ", delay " + TimeUnit.DAYS.toSeconds(1) + ". SECONDS");
         }
-        if (osName.contains(ConstantsFor.PR_WINDOWSOS)) {
-            schedWithService(scheduledExecutorService);
-        }
-        else {
-            startUnixWithBeans();
-        }
+    
+        schedWithService(scheduledExecutorService);
     }
     
-    private void startUnixWithBeans() {
+/*    private void startUnixWithBeans() {
         Thread unixThread = new UnixThread(this);
         unixThread.setName("unix");
         unixThread.start();
-    }
+    }*/
     
     private void schedWithService(ScheduledExecutorService scheduledExecutorService) {
         scheduledExecutorService.scheduleWithFixedDelay(new NetMonitorPTV(), 0, 10, TimeUnit.SECONDS);

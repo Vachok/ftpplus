@@ -76,7 +76,7 @@ public class IntoApplication {
     public void setConfigurableApplicationContext(ConfigurableApplicationContext configurableApplicationContext) {
         synchronized(SPRING_APPLICATION) {
             if (configurableApplicationContext == null) {
-                setCtx(SPRING_APPLICATION.run(IntoApplication.class));
+                setCtx(SpringApplication.run(IntoApplication.class));
             }
         }
     }
@@ -96,14 +96,19 @@ public class IntoApplication {
     public static void main(@Nullable String[] args) throws IOException {
         AppComponents.threadConfig().execByThreadConfig(new TelnetStarter());
         if (configurableApplicationContext == null) {
-            setCtx(SPRING_APPLICATION.run(IntoApplication.class));
+            setCtx(SpringApplication.run(IntoApplication.class));
         }
         FileSystemWorker.delFilePatterns(ConstantsFor.getStringsVisit());
         if (args != null && args.length > 0) {
             readArgs(configurableApplicationContext, args);
         }
         else {
-            beforeSt(true);
+            try {
+                beforeSt(true);
+            }
+            catch (NullPointerException e) {
+                messageToUser.error(FileSystemWorker.error(IntoApplication.class.getSimpleName() + ".main", e));
+            }
             afterSt();
         }
     }
@@ -226,7 +231,12 @@ public class IntoApplication {
                 systemTrayHelper.addTray("icons8-house-26.png");
             }
             else {
-                systemTrayHelper.addTray(ConstantsFor.FILENAME_ICON);
+                try {
+                    systemTrayHelper.addTray(ConstantsFor.FILENAME_ICON);
+                }
+                catch (Exception ignore) {
+                    //
+                }
             }
         }
     }
@@ -243,15 +253,15 @@ public class IntoApplication {
      @param isTrayNeed нужен трэй или нет.
      */
     private static void beforeSt(boolean isTrayNeed) throws IOException {
+        @NotNull StringBuilder stringBuilder = new StringBuilder();
         if (isTrayNeed) {
             trayAdd(SystemTrayHelper.getI());
+            stringBuilder.append(AppComponents.ipFlushDNS());
         }
-        @NotNull StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("updateProps = ").append(new AppComponents().updateProps(LOCAL_PROPS));
         stringBuilder.append(LocalDate.now().getDayOfWeek().getValue());
         stringBuilder.append(" - day of week\n");
         stringBuilder.append(LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault()));
-        stringBuilder.append(AppComponents.ipFlushDNS());
         messageToUser.info("IntoApplication.beforeSt", "stringBuilder", stringBuilder.toString());
         System.setProperty(ConstantsFor.STR_ENCODING, "UTF8");
         FileSystemWorker.writeFile("system", new TForms().fromArray(System.getProperties()));

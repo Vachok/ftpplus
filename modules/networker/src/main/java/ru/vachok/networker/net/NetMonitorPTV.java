@@ -20,6 +20,7 @@ import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Objects;
 
+
 /**
  Периодический мониторинг телевизоров и WiFi.
  <p>
@@ -40,33 +41,33 @@ public class NetMonitorPTV implements Runnable {
     
     private MessageToUser messageToUser = new MessageLocal(NetMonitorPTV.class.getSimpleName());
     
-    public NetMonitorPTV() {
-        File ptvFile = new File(FILENAME_PINGTV);
-        NetListKeeper.setPtvTime(new Date().toString());
-        try {
-            if (!ptvFile.exists()) {
-                Files.createFile(ptvFile.toPath());
-            }
-    
-            this.outputStream = new FileOutputStream(ptvFile);
-            this.printStream = new PrintStream(Objects.requireNonNull(outputStream), true);
-        }
-        catch (IOException e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".NetMonitorPTV", e));
-        }
-    }
-    
     private String pingResultLast = "No pings yet.";
-    
-    private static final String FILENAME_PINGTV = "ping.tv";
     
     @Override
     public void run() {
+        createFile();
         try {
             pingIPTV();
         }
         catch (IOException e) {
             messageToUser.errorAlert(CLASS_NAME, "run", e.getMessage() + "\n" + new TForms().fromArray(e, false));
+        }
+    }
+    
+    private void createFile() {
+        File ptvFile = new File(ConstantsFor.FILENAME_PTV);
+        
+        NetListKeeper.setPtvTime(new Date().toString());
+        
+        try {
+            if (!ptvFile.exists()) {
+                Files.createFile(ptvFile.toPath());
+            }
+            this.outputStream = new FileOutputStream(ptvFile);
+            this.printStream = new PrintStream(Objects.requireNonNull(outputStream), true);
+        }
+        catch (IOException e) {
+            System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".createFile");
         }
     }
     
@@ -95,7 +96,7 @@ public class NetMonitorPTV implements Runnable {
             this.printStream = new PrintStream(outputStream, true);
         }
         else {
-            messageToUser.info(FILENAME_PINGTV, "creating", NetListKeeper.getPtvTime());
+            messageToUser.info(ConstantsFor.FILENAME_PTV, "creating", NetListKeeper.getPtvTime());
         }
     }
     

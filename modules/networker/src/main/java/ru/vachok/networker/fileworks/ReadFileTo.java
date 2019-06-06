@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.fileworks;
 
 
@@ -14,6 +16,7 @@ import java.util.List;
  Запись в файл
 
  @since 27.12.2018 (13:27) */
+@Deprecated
 public class ReadFileTo implements ProgrammFilesReader {
 
     private File fileToReadNameStr = null;

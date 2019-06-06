@@ -66,7 +66,7 @@ public class AppComponents {
         return LoggerFactory.getLogger(className);
     }
     
-    public static String ipFlushDNS() {
+    public static String ipFlushDNS() throws UnsupportedOperationException {
         StringBuilder stringBuilder = new StringBuilder();
         try {
             Process processFlushDNS = Runtime.getRuntime().exec("ipconfig /flushdns");
@@ -118,9 +118,7 @@ public class AppComponents {
     @Bean
     @Scope(ConstantsFor.SINGLETON)
     public SshActs sshActs() {
-        SshActs sshActs = new SshActs();
-        messageToUser.info("AppComponents.sshActs", " sshActs.hashCode()", " = " + sshActs.hashCode());
-        return sshActs;
+        return new SshActs();
     }
     
     @Bean(STR_VISITOR)
@@ -224,11 +222,9 @@ public class AppComponents {
     }
     
     @Bean
-    @Scope("singleton")
+    @Scope(ConstantsFor.SINGLETON)
     TemporaryFullInternet temporaryFullInternet() {
-        TemporaryFullInternet temporaryFullInternet = new TemporaryFullInternet();
-        messageToUser.info("AppComponents.temporaryFullInternet", "temporaryFullInternet.hashCode()", " = " + temporaryFullInternet.hashCode());
-        return temporaryFullInternet;
+        return new TemporaryFullInternet();
     }
     
     boolean launchRegRuFTPLibsUploader() {

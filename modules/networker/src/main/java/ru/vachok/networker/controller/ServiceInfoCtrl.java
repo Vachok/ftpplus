@@ -197,7 +197,7 @@ public class ServiceInfoCtrl {
             .append(new AppInfoOnLoad()).append(" ").append(AppInfoOnLoad.class.getSimpleName()).append("<p>")
             .append(new TForms().fromArray(AppComponents.getProps(), true))
             .append("<p>")
-            .append(filesReader.readFile(new File("exit.last"))).append("<p>")
+            .append(FileSystemWorker.readFile(new File("exit.last").getAbsolutePath())).append("<p>")
             .append("<p><font color=\"grey\">").append(listFilesToReadStr()).append("</font>")
             .toString();
     
