@@ -21,12 +21,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CustomizableThreadCreator;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.TForms;
 import ru.vachok.networker.config.DeadLockMonitor;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
 
-import java.util.concurrent.*;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadPoolExecutor;
 
 
 /**
@@ -43,12 +45,12 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
     /**
      {@link ThreadPoolTaskScheduler}
      */
-    private static final ThreadPoolTaskScheduler TASK_SCHEDULER;
+    private static ThreadPoolTaskScheduler TASK_SCHEDULER = new ThreadPoolTaskScheduler();
     
     /**
      {@link ThreadPoolTaskExecutor}
      */
-    private static final ThreadPoolTaskExecutor TASK_EXECUTOR;
+    private static ThreadPoolTaskExecutor TASK_EXECUTOR = new ThreadPoolTaskExecutor();
     
     /**
      Instance
@@ -67,16 +69,9 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
     
     private Runnable r;
     
+    private static final String AEXECUTOR = "asyncExecutor = ";
+    
     private ThreadConfig() {
-        thrNameSet("tc_" + hashCode());
-    }
-    
-    static {
-        TASK_SCHEDULER = new ThreadPoolTaskScheduler();
-        TASK_SCHEDULER.initialize();
-    
-        TASK_EXECUTOR = new ThreadPoolTaskExecutor();
-        TASK_EXECUTOR.initialize();
     }
     
     
@@ -84,6 +79,7 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
      @return {@link #TASK_EXECUTOR}
      */
     public ThreadPoolTaskExecutor getTaskExecutor() {
+        TASK_EXECUTOR.initialize();
         boolean prestartCoreThread = TASK_EXECUTOR.getThreadPoolExecutor().prestartCoreThread();
         TASK_EXECUTOR.getThreadPoolExecutor().setCorePoolSize(900);
         TASK_EXECUTOR.setQueueCapacity(1800);
@@ -92,16 +88,8 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
         TASK_EXECUTOR.setThreadPriority(4);
         TASK_EXECUTOR.setThreadNamePrefix("EX");
         TASK_EXECUTOR.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardPolicy());
-        
-        BlockingQueue<Runnable> poolExecutor = TASK_EXECUTOR.getThreadPoolExecutor().getQueue();
-        StringBuilder bodyMsgB = new StringBuilder();
-        bodyMsgB.append("BlockingQueue<Runnable> poolExecutor:\n");
-        bodyMsgB.append(" = ").append(prestartCoreThread).append(new TForms().fromArray(poolExecutor, false));
-        bodyMsgB.append("\nthis: ").append(this);
-        FileSystemWorker.writeFile("getTaskExecutor.txt", bodyMsgB.toString());
         return TASK_EXECUTOR;
     }
-    
     
     public static ThreadConfig getI() {
         return THREAD_CONFIG_INST;
@@ -109,10 +97,10 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
     
     
     public ThreadPoolTaskScheduler getTaskScheduler() {
+        TASK_SCHEDULER.initialize();
         ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = TASK_SCHEDULER.getScheduledThreadPoolExecutor();
         scheduledThreadPoolExecutor.setCorePoolSize(20);
         scheduledThreadPoolExecutor.setMaximumPoolSize(50);
-        scheduledThreadPoolExecutor.setRemoveOnCancelPolicy(true);
         TASK_SCHEDULER.setThreadNamePrefix("TS");
         TASK_SCHEDULER.setThreadPriority(4);
         TASK_SCHEDULER.setWaitForTasksToCompleteOnShutdown(false);
@@ -154,14 +142,6 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
     }
     
     
-    /**
-     Запуск {@link Runnable}, как {@link Thread}@param r {@link Runnable}
-     <p>
-     1. {@link ThreadConfig#getTaskExecutor()} - управление запуском.
-     <p>
-     
-     @param r {@link Runnable}
-     */
     public boolean execByThreadConfig(Runnable runnable) {
         this.r = runnable;
         try {
@@ -186,22 +166,25 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
         return sb.toString();
     }
     
-    private boolean execByThreadConfig() throws Exception {
+    private boolean execByThreadConfig() {
         CustomizableThreadCreator customizableThreadCreator = new CustomizableThreadCreator("AsThread: ");
-        customizableThreadCreator.setThreadPriority(9);
+        customizableThreadCreator.setThreadPriority(8);
         Thread thread = customizableThreadCreator.createThread(r);
         Executor asyncExecutor = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor());
         if (new ASExec().getAsyncExecutor() != null) {
             asyncExecutor = new ASExec().getAsyncExecutor();
+            System.out.println(AEXECUTOR + (asyncExecutor != null ? asyncExecutor.getClass().getSimpleName() : null));
         }
         else {
             messageToUser.errorAlert(getClass().getSimpleName(), "asyncExecutor is " + null, thread.getName());
         }
         if (asyncExecutor != null) {
+            System.out.println(AEXECUTOR + asyncExecutor.getClass().getSimpleName());
             asyncExecutor.execute(r);
             return true;
         }
         else {
+            thread.setName("ALONG...");
             thread.start();
             messageToUser.error(EXECUTE_AS_THREAD_METH_NAME, "thread.isAlive()", " = " + thread.isAlive());
             return false;
@@ -217,19 +200,20 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
      @since <a href="https://github.com/Vachok/ftpplus/commit/f40030246ec6f28cc9c484b9c56a3879da1162af" target=_blank>21.02.2019 (22:49)</a>
      */
     private class ASExec extends AsyncConfigurerSupport {
-        
-        
-        private ExecutorServiceAdapter threadPoolTaskExecutor;
-        
-        ASExec() {
-            this.threadPoolTaskExecutor = new ExecutorServiceAdapter(new SimpleAsyncTaskExecutor());
-        }
+    
+    
+        private SimpleAsyncTaskExecutor simpleAsyncExecutor = new SimpleAsyncTaskExecutor();
         
         @Override
         public Executor getAsyncExecutor() {
             thrNameSet("ESA");
-            return threadPoolTaskExecutor;
+            simpleAsyncExecutor.setConcurrencyLimit(50);
+            simpleAsyncExecutor.setThreadPriority(8);
+            simpleAsyncExecutor.setTaskDecorator(runnable->r);
+            return new ExecutorServiceAdapter(simpleAsyncExecutor);
         }
+    
+    
     }
     
     

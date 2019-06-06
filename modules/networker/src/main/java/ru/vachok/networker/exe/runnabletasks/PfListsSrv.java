@@ -142,8 +142,8 @@ public class PfListsSrv {
     private void buildFactory() throws FileNotFoundException, NullPointerException {
         SSHFactory.Builder builderInst = new SSHFactory.Builder(DEFAULT_CONNECT_SRV, commandForNatStr, getClass().getSimpleName());
         SSHFactory build = builderInst.build();
-        if (!new File(builderInst.pem()).exists()) {
-            throw new FileNotFoundException("NO CERTIFICATE a161.pem...");
+        if (!new File(builderInst.getPem()).exists()) {
+            throw new FileNotFoundException("NO CERTIFICATE a161.getPem...");
         }
         if (pfListsInstAW == null) {
             new IntoApplication();

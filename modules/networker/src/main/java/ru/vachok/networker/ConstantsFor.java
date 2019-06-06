@@ -441,6 +441,8 @@ public enum ConstantsFor {
     
     public static final String PROGNAME_OSTPST = "ostpst-";
     
+    public static final String FILESUF_SSHACTIONS = "sshactions";
+    
     static final String STR_FINISH = " is finish";
     
     private static final String[] STRINGS_TODELONSTART = {"visit_", ".tmp", ".log", ".tv"};

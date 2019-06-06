@@ -143,7 +143,7 @@ public class TestServer implements ConnectToMe {
             System.setOut(System.err);
             accepSoc();
         }
-        else if (scannerLine.equals("sshactions")) {
+        else if (scannerLine.equals(ConstantsFor.FILESUF_SSHACTIONS)) {
             try {
                 System.setOut(System.err);
                 printStreamF.println(new Tracerouting().call());

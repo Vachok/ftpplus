@@ -10,6 +10,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import ru.vachok.messenger.MessageToUser;
@@ -50,6 +51,8 @@ import java.util.concurrent.*;
 public class IntoApplication {
     
     
+    private static ConfigurableApplicationContext configurableApplicationContext;
+    
     public static final boolean TRAY_SUPPORTED = SystemTray.isSupported();
     
     private static final Properties LOCAL_PROPS = AppComponents.getProps();
@@ -65,11 +68,16 @@ public class IntoApplication {
     
     private static final ScheduledThreadPoolExecutor SCHEDULED_THREAD_POOL_EXECUTOR = AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor();
     
-    private static ConfigurableApplicationContext configurableApplicationContext;
-    
     public static ConfigurableApplicationContext getConfigurableApplicationContext() {
         synchronized(SPRING_APPLICATION) {
-            return configurableApplicationContext;
+            if (configurableApplicationContext == null) {
+                ConfigurableApplicationContext newCtx = SpringApplication.run(IntoApplication.class);
+                setCtx(newCtx);
+                return newCtx;
+            }
+            else {
+                return new AnnotationConfigApplicationContext();
+            }
         }
     }
     
@@ -151,7 +159,6 @@ public class IntoApplication {
         }
     }
     
-    
     /**
      Чтение аргументов {@link #main(String[])}
      <p>
@@ -220,7 +227,6 @@ public class IntoApplication {
         
         return isTray;
     }
-    
     
     private static void trayAdd(SystemTrayHelper systemTrayHelper) {
         if (ConstantsFor.thisPC().toLowerCase().contains(ConstantsFor.HOSTNAME_DO213)) {
