@@ -3,7 +3,6 @@
 package ru.vachok.networker.net;
 
 
-import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.*;
@@ -134,7 +133,7 @@ public class TestServer implements ConnectToMe {
             ConfigurableApplicationContext context = IntoApplication.getConfigurableApplicationContext();
             context.stop();
             context.close();
-            context = SpringApplication.run(IntoApplication.class);
+            context = null;
             new IntoApplication().setConfigurableApplicationContext(context);
             context.start();
             accepSoc();

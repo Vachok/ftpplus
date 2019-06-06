@@ -55,6 +55,8 @@ public class IntoApplication {
     
     private static final Properties LOCAL_PROPS = AppComponents.getProps();
     
+    private static final SpringApplication SPRING_APPLICATION = new SpringApplication();
+    
     /**
      {@link MessageLocal}
      */
@@ -67,11 +69,17 @@ public class IntoApplication {
     private static ConfigurableApplicationContext configurableApplicationContext;
     
     public static ConfigurableApplicationContext getConfigurableApplicationContext() {
-        return configurableApplicationContext;
+        synchronized(SPRING_APPLICATION) {
+            return configurableApplicationContext;
+        }
     }
     
     public void setConfigurableApplicationContext(ConfigurableApplicationContext configurableApplicationContext) {
-        IntoApplication.configurableApplicationContext = configurableApplicationContext;
+        synchronized(SPRING_APPLICATION) {
+            if (configurableApplicationContext == null) {
+                setCtx(SPRING_APPLICATION.run(IntoApplication.class));
+            }
+        }
     }
     
     /**
@@ -88,17 +96,22 @@ public class IntoApplication {
      */
     public static void main(@Nullable String[] args) throws IOException {
         AppComponents.threadConfig().execByThreadConfig(new TelnetStarter());
-        SpringApplication application = new SpringApplication();
-        ConfigurableApplicationContext context = SpringApplication.run(IntoApplication.class);
-        configurableApplicationContext = context;
+        if (configurableApplicationContext == null) {
+            setCtx(SPRING_APPLICATION.run(IntoApplication.class));
+        }
         FileSystemWorker.delFilePatterns(ConstantsFor.getStringsVisit());
         if (args != null && args.length > 0) {
-            readArgs(context, args);
+            readArgs(configurableApplicationContext, args);
         }
         else {
             beforeSt(true);
-            context.start();
             afterSt();
+        }
+    }
+    
+    private static void setCtx(ConfigurableApplicationContext cAc) {
+        synchronized(SPRING_APPLICATION) {
+            cAc = configurableApplicationContext;
         }
     }
     
