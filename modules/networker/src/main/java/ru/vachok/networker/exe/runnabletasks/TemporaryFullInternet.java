@@ -1,6 +1,6 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.accesscontrol;
+package ru.vachok.networker.exe.runnabletasks;
 
 
 import org.springframework.stereotype.Service;
@@ -9,6 +9,7 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.accesscontrol.NameOrIPChecker;
 import ru.vachok.networker.accesscontrol.sshactions.SshActs;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetListKeeper;
@@ -186,7 +187,12 @@ public class TemporaryFullInternet implements Runnable {
     }
     
     private void execOldMeth() {
-        AppComponents.threadConfig().execByThreadConfig(this::sshChecker);
+        try {
+            AppComponents.threadConfig().execByThreadConfig(this::sshChecker);
+        }
+        catch (Exception e) {
+            messageToUser.error(e.getMessage());
+        }
         Map<String, Long> stringLongMap = SSH_CHECKER_MAP;
         File miniLog = new File(getClass().getSimpleName() + ".mini");
         String fromArray = new TForms().fromArray(stringLongMap, false);

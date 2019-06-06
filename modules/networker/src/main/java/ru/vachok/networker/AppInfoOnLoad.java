@@ -7,16 +7,17 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.abstr.InternetUse;
-import ru.vachok.networker.accesscontrol.TemporaryFullInternet;
+import ru.vachok.networker.accesscontrol.common.CommonRightsChecker;
 import ru.vachok.networker.accesscontrol.common.CommonSRV;
 import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
 import ru.vachok.networker.accesscontrol.sshactions.SquidChecker;
 import ru.vachok.networker.componentsrepo.VersionInfo;
+import ru.vachok.networker.exe.runnabletasks.ScanOnline;
+import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
+import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.mailserver.MailIISLogsCleaner;
-import ru.vachok.networker.net.DiapazonedScan;
 import ru.vachok.networker.net.NetMonitorPTV;
-import ru.vachok.networker.net.ScanOnline;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.MyCalen;
@@ -24,15 +25,16 @@ import ru.vachok.networker.statistics.WeekStats;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.management.ManagementFactory;
-import java.lang.management.OperatingSystemMXBean;
-import java.lang.management.ThreadMXBean;
+import java.nio.file.FileVisitor;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -55,11 +57,6 @@ public class AppInfoOnLoad implements Runnable {
     private static final Properties APP_PROPS = AppComponents.getProps();
     
     /**
-     " uptime."
-     */
-    private static final String STR_UPTIME = " uptime.";
-    
-    /**
      {@link MessageCons}
      */
     private static final MessageToUser messageToUser = new MessageLocal(AppInfoOnLoad.class.getSimpleName());
@@ -76,27 +73,12 @@ public class AppInfoOnLoad implements Runnable {
      */
     private final TemporaryFullInternet temporaryFullInternet = new AppComponents().temporaryFullInternet();
     
-    private static int thisDelay;
+    static String unixThreadInfo = System.getProperty("os.name");
     
-    private static String unixThreadInfo = System.getProperty("os.name");
-    
-    static {
-        int scansDelay = Integer.parseInt(APP_PROPS.getProperty(ConstantsFor.PR_SCANSINMIN, "111"));
-        if (scansDelay <= 0) {
-            scansDelay = 1;
-        }
-        thisDelay = ConstantsNet.IPS_IN_VELKOM_VLAN / scansDelay;
-        if (thisDelay < 80 | thisDelay > 112) {
-            thisDelay = 85;
-        }
-    }
+    private static int thisDelay = ConstantsNet.IPS_IN_VELKOM_VLAN / getScansDelay();
     
     public static String getUnixThreadInfo() {
         return unixThreadInfo;
-    }
-    
-    public static void setUnixThreadInfo(String unixThreadInfo) {
-        AppInfoOnLoad.unixThreadInfo = unixThreadInfo;
     }
     
     public static int getThisDelay() {
@@ -147,25 +129,6 @@ public class AppInfoOnLoad implements Runnable {
     }
     
     /**
-     Метрика метода
-     <p>
-     Считает время выполнения.
-     
-     @param stArt таймстэмп начала работы
-     @param methName имя метода
-     @return float {@link System#currentTimeMillis()} - таймстэмп из параметра, делённый на 1000.
-     */
-    private static String methMetr(long stArt, String methName) {
-        String msgTimeSp = new StringBuilder()
-            .append(methName)
-            .append((float) (System.currentTimeMillis() - stArt) / 1000)
-            .append(ConstantsFor.STR_SEC_SPEND)
-            .toString();
-        messageToUser.infoNoTitles(msgTimeSp);
-        return msgTimeSp;
-    }
-    
-    /**
      Стата за неделю по-ПК
      <p>
      1. {@link MyCalen#getNextDayofWeek(int, int, java.time.DayOfWeek)}. Получим {@link Date}, след. воскресенье 23:57.<br>
@@ -179,7 +142,7 @@ public class AppInfoOnLoad implements Runnable {
      @param scheduledExecutorService {@link ScheduledExecutorService}.
      */
     @SuppressWarnings("MagicNumber")
-    private static void dateSchedulers(ScheduledExecutorService scheduledExecutorService) {
+    static void dateSchedulers(ScheduledExecutorService scheduledExecutorService) {
         long stArt = System.currentTimeMillis();
         long delay = TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY_HOURS * 7);
     
@@ -209,9 +172,59 @@ public class AppInfoOnLoad implements Runnable {
         messageToUser.info(CLASS_NAME + " = " + isWrite);
     }
     
+    private static int getScansDelay() {
+        int parseInt = Integer.parseInt(APP_PROPS.getProperty(ConstantsFor.PR_SCANSINMIN, "111"));
+        if (parseInt <= 0) {
+            parseInt = 1;
+        }
+        if (parseInt < 80 | parseInt > 112) {
+            parseInt = 85;
+        }
+        return parseInt;
+    }
+    
+    /**
+     Сборщик прав \\srv-fs.eatmeat.ru\common_new
+     <p>
+     {@link Files#walkFileTree(Path, java.nio.file.FileVisitor)}, где {@link Path} = \\srv-fs.eatmeat.ru\common_new и {@link FileVisitor}
+     = new {@link CommonRightsChecker}.
+     <p>
+     <b>{@link IOException}:</b><br>
+     {@link MessageToUser#errorAlert(String, String, String)},
+     {@link FileSystemWorker#error(String, Exception)}
+     */
+    private static void runCommonScan() {
+        try {
+            FileVisitor<Path> commonRightsChecker = new CommonRightsChecker();
+            Files.walkFileTree(Paths.get("\\\\srv-fs.eatmeat.ru\\common_new"), commonRightsChecker);
+        }
+        catch (IOException e) {
+            MessageToUser messageToUser = new MessageLocal(CommonSRV.class.getSimpleName());
+            messageToUser.error(FileSystemWorker.error(CommonSRV.class.getSimpleName() + ".runCommonScan", e));
+        }
+    }
+    
+    /**
+     Метрика метода
+     <p>
+     Считает время выполнения.
+     
+     @param stArt таймстэмп начала работы
+     @param methName имя метода
+     @return float {@link System#currentTimeMillis()} - таймстэмп из параметра, делённый на 1000.
+     */
+    private static String methMetr(long stArt, String methName) {
+        String msgTimeSp = new StringBuilder()
+            .append(methName)
+            .append((float) (System.currentTimeMillis() - stArt) / 1000)
+            .append(ConstantsFor.STR_SEC_SPEND)
+            .toString();
+        messageToUser.infoNoTitles(msgTimeSp);
+        return msgTimeSp;
+    }
+    
     /**
      Немного инфомации о приложении.
- 
      */
     private void infoForU() throws IOException {
         StringBuilder stringBuilder = new StringBuilder();
@@ -236,11 +249,11 @@ public class AppInfoOnLoad implements Runnable {
         ScheduledThreadPoolExecutor scheduledExecutorService = AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor();
         String thisPC = ConstantsFor.thisPC();
         AppInfoOnLoad.miniLogger.add(thisPC);
-    
+        
         System.out.println("new AppComponents().launchRegRuFTPLibsUploader() = " + new AppComponents().launchRegRuFTPLibsUploader());
-    
+        
         if (!thisPC.toLowerCase().contains("home")) {
-            scheduledExecutorService.scheduleWithFixedDelay(CommonSRV::runCommonScan, ConstantsFor.INIT_DELAY, TimeUnit.DAYS.toSeconds(1),
+            scheduledExecutorService.scheduleWithFixedDelay(AppInfoOnLoad::runCommonScan, ConstantsFor.INIT_DELAY, TimeUnit.DAYS.toSeconds(1),
                 TimeUnit.SECONDS);
             AppInfoOnLoad.miniLogger.add("runCommonScan init delay " + ConstantsFor.INIT_DELAY + ", delay " + TimeUnit.DAYS.toSeconds(1) + ". SECONDS");
         }
@@ -253,88 +266,37 @@ public class AppInfoOnLoad implements Runnable {
     }
     
     private void startUnixWithBeans() {
-        OperatingSystemMXBean operatingSystemMXBean = ManagementFactory.getOperatingSystemMXBean();
-        messageToUser.warn(operatingSystemMXBean.getName(), operatingSystemMXBean.getVersion() + " proc = " + operatingSystemMXBean
-            .getAvailableProcessors(), ConstantsFor.thisPC() + " (av load: " + operatingSystemMXBean.getSystemLoadAverage() + ")");
-        Thread unixThread = new Thread() {
-            public void run() {
-                try {
-                    messageToUser.warn(unixTrySched());
-                }
-                catch (Exception e) {
-                    messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".schedStarter", e));
-                }
-            }
-        };
+        Thread unixThread = new UnixThread(this);
         unixThread.setName("unix");
         unixThread.start();
-        setUnixThreadInfo(ManagementFactory.getThreadMXBean().getThreadInfo(unixThread.getId()).toString());
     }
     
     private void schedWithService(ScheduledExecutorService scheduledExecutorService) {
         scheduledExecutorService.scheduleWithFixedDelay(new NetMonitorPTV(), 0, 10, TimeUnit.SECONDS);
         scheduledExecutorService.scheduleWithFixedDelay(temporaryFullInternet, 1, ConstantsFor.DELAY, TimeUnit.MINUTES);
-        scheduledExecutorService.scheduleWithFixedDelay(DiapazonedScan.getInstance(), 2, AppInfoOnLoad.thisDelay, TimeUnit.MINUTES);
+        scheduledExecutorService.scheduleWithFixedDelay(DiapazonScan.getInstance(), 2, AppInfoOnLoad.thisDelay, TimeUnit.MINUTES);
         scheduledExecutorService.scheduleWithFixedDelay(new ScanOnline(), 3, 1, TimeUnit.MINUTES);
         scheduledExecutorService.scheduleWithFixedDelay(()->{
-            new AppComponents().saveLogsToDB().startScheduled();
+            new AppComponents().saveLogsToDB();
             InternetUse internetUse = new InetUserPCName();
-            int cleanInetstatDB = internetUse.cleanTrash();
+            System.out.println("internetUse.cleanTrash() = " + internetUse.cleanTrash());
         }, 4, ConstantsFor.DELAY, TimeUnit.MINUTES);
         scheduledExecutorService.scheduleWithFixedDelay(new SquidChecker(), 5, ConstantsFor.DELAY * 2, TimeUnit.MINUTES);
         
         String msg = new StringBuilder()
             .append(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(AppInfoOnLoad.thisDelay)))
-            .append(DiapazonedScan.getInstance().getClass().getSimpleName())
+            .append(DiapazonScan.getInstance().getClass().getSimpleName())
             .append(" is starts next time.\n")
             .toString();
         AppInfoOnLoad.miniLogger.add(msg + ". Trying start dateSchedulers***| Local time: " + LocalTime.now());
         AppInfoOnLoad.miniLogger.add(NetMonitorPTV.class.getSimpleName() + " init delay 0, delay 10. SECONDS");
         final String minutesStr = ". MINUTES";
         AppInfoOnLoad.miniLogger.add(TemporaryFullInternet.class.getSimpleName() + " init delay 1, delay " + ConstantsFor.DELAY + minutesStr);
-        AppInfoOnLoad.miniLogger.add(DiapazonedScan.getInstance().getClass().getSimpleName() + " init delay 2, delay " + AppInfoOnLoad.thisDelay + minutesStr);
+        AppInfoOnLoad.miniLogger.add(DiapazonScan.getInstance().getClass().getSimpleName() + " init delay 2, delay " + AppInfoOnLoad.thisDelay + minutesStr);
         AppInfoOnLoad.miniLogger.add(ScanOnline.class.getSimpleName() + " init delay 3, delay 1. MINUTES");
         AppInfoOnLoad.miniLogger.add(AppComponents.class.getSimpleName() + ".getProps(true) 4, ConstantsFor.DELAY, TimeUnit.MINUTES");
         messageToUser.info(AppInfoOnLoad.class.getSimpleName() + ".schedStarter()" + ConstantsFor.STR_FINISH);
         AppInfoOnLoad.dateSchedulers(scheduledExecutorService);
     }
     
-    private String unixTrySched() throws RuntimeException {
-        StringBuilder stringBuilder = new StringBuilder();
-        ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
-        threadMXBean.setThreadContentionMonitoringEnabled(true);
-        threadMXBean.setThreadCpuTimeEnabled(true);
-        
-        ScheduledExecutorService executorService = Executors.unconfigurableScheduledExecutorService(Executors.newScheduledThreadPool(ConstantsFor.ONE_DAY_HOURS));
-        stringBuilder.append(executorService);
-        
-        ScheduledFuture<?> ptvPing = executorService.scheduleWithFixedDelay(new NetMonitorPTV(), 0, ConstantsFor.ONE_DAY_HOURS, TimeUnit.SECONDS);
-        ScheduledFuture<?> tmpInet = executorService.scheduleWithFixedDelay(new TemporaryFullInternet(), 0, ConstantsFor.ONE_DAY_HOURS, TimeUnit.SECONDS);
-        ScheduledFuture<?> diapScan = executorService.scheduleWithFixedDelay(DiapazonedScan.getInstance(), 2, ConstantsFor.DELAY, TimeUnit.MINUTES);
-        ScheduledFuture<?> scanOnline = executorService.scheduleWithFixedDelay(new ScanOnline(), 3, 3, TimeUnit.MINUTES);
-        try {
-            if (ptvPing.get() != null) {
-                stringBuilder.append("ptvPing");
-            }
-            if (tmpInet.get() != null) {
-                stringBuilder.append("tmpInet");
-            }
-            if (diapScan.get() != null) {
-                stringBuilder.append("diapScan");
-            }
-            if (scanOnline.get() != null) {
-                stringBuilder.append("scanOnline");
-            }
-        }
-        catch (InterruptedException | ExecutionException e) {
-            stringBuilder.append(FileSystemWorker.error(getClass().getSimpleName() + ".unixTrySched", e));
-        }
-        for (long id : threadMXBean.getAllThreadIds()) {
-            FileSystemWorker.writeFile("scheduler.stack", Arrays.toString(threadMXBean.getThreadInfo(id).getStackTrace()));
-            stringBuilder.append(threadMXBean.getThreadInfo(Thread.currentThread().getId()));
-        }
-        setUnixThreadInfo(stringBuilder.toString());
-        dateSchedulers(executorService);
-        return stringBuilder.toString();
-    }
 }

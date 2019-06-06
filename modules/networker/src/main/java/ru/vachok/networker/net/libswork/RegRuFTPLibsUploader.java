@@ -63,7 +63,7 @@ import java.util.regex.Pattern;
             }
         }
         else {
-            throw new UnsupportedOperationException(ConstantsFor.thisPC() + " this PC is not develop PC!");
+            System.out.println(ConstantsFor.thisPC() + " this PC is not develop PC!");
         }
     }
     

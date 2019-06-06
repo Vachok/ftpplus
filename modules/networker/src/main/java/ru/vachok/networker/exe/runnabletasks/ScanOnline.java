@@ -1,6 +1,6 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.net;
+package ru.vachok.networker.exe.runnabletasks;
 
 
 import org.springframework.stereotype.Service;
@@ -11,7 +11,12 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.Pinger;
 import ru.vachok.networker.ad.user.MoreInfoWorker;
+import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.InfoWorker;
+import ru.vachok.networker.net.NetListKeeper;
+import ru.vachok.networker.net.NetScanFileWorker;
+import ru.vachok.networker.net.SwitchesAvailability;
 import ru.vachok.networker.services.MessageLocal;
 
 import java.io.*;
@@ -27,7 +32,7 @@ import java.util.concurrent.*;
  Сканирование только тех, что он-лайн
  <p>
  
- @see DiapazonedScan
+ @see DiapazonScan
  @since 26.01.2019 (11:18) */
 @Service
 public class ScanOnline implements Runnable, Pinger {

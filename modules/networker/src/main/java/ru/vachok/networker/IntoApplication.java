@@ -13,14 +13,13 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.config.ThreadConfig;
+import ru.vachok.networker.exe.ThreadConfig;
+import ru.vachok.networker.exe.runnabletasks.SpeedChecker;
+import ru.vachok.networker.exe.runnabletasks.TelnetStarter;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.TelnetStarter;
 import ru.vachok.networker.services.MessageLocal;
-import ru.vachok.networker.services.SpeedChecker;
 import ru.vachok.networker.statistics.WeekStats;
 import ru.vachok.networker.systray.SystemTrayHelper;
-import ru.vachok.stats.SaveLogsToDB;
 
 import java.awt.*;
 import java.io.IOException;
@@ -132,13 +131,6 @@ public class IntoApplication {
         @NotNull Runnable infoAndSched = new AppInfoOnLoad();
         EXECUTOR.submit(infoAndSched);
         EXECUTOR.submit(IntoApplication::getWeekPCStats);
-        SaveLogsToDB saveLogsToDB = new AppComponents().saveLogsToDB();
-        if (!ConstantsFor.thisPC().toLowerCase().contains("home")) {
-            AppComponents.threadConfig().execByThreadConfig(saveLogsToDB::startScheduled);
-        }
-        else {
-            AppComponents.threadConfig().execByThreadConfig(saveLogsToDB::showInfo);
-        }
     }
     
     /**

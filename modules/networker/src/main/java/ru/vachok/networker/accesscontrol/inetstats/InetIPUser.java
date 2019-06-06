@@ -11,7 +11,6 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.fileworks.ProgrammFilesWriter;
 import ru.vachok.networker.fileworks.WriteFilesTo;
 import ru.vachok.networker.services.MessageLocal;
-import ru.vachok.stats.SaveLogsToDB;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -65,8 +64,7 @@ public class InetIPUser implements InternetUse {
     }
     
     @Override public void showLog() {
-        SaveLogsToDB saveLogsToDB = new AppComponents().saveLogsToDB();
-        saveLogsToDB.showInfo();
+        new AppComponents().saveLogsToDB();
     }
 
     private void resultSetWhileNext(Map<String, String> siteResponseMap , ResultSet r) throws SQLException {

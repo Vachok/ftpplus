@@ -4,6 +4,7 @@ package ru.vachok.networker.net;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
@@ -32,29 +33,28 @@ public class SwitchesAvailability implements Runnable {
      */
     @SuppressWarnings ("CanBeFinal")
     private List<String> swAddr;
-
-    private String okStr = null;
+    
+    private String okStr;
 
     private MessageToUser messageToUser = new MessageLocal(CLASS_SWITCHESAVAILABILITY);
+    
+    private String badStr;
 
     public SwitchesAvailability() {
         AppComponents.threadConfig().thrNameSet("SWin");
         List<String> stringList = new ArrayList<>();
         try {
-            stringList = DiapazonedScan.pingSwitch();
+            stringList = DiapazonScan.pingSwitch();
         } catch (IllegalAccessException ignore) {
             //
         }
         Collections.sort(stringList);
         this.swAddr = Collections.unmodifiableList(stringList);
     }
-
-    Set<String> getOkIP() {
+    
+    public Set<String> getOkIP() {
         return okIP;
     }
-
-
-    private String badStr = null;
 
     private final Set<String> okIP = new HashSet<>();
 

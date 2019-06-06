@@ -1,6 +1,6 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.accesscontrol;
+package ru.vachok.networker.exe.runnabletasks;
 
 
 import org.jetbrains.annotations.NotNull;
@@ -10,6 +10,7 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.SSHFactory;
+import ru.vachok.networker.accesscontrol.PfLists;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.AccessListsCheckUniq;
 import ru.vachok.networker.services.MessageLocal;
@@ -17,6 +18,8 @@ import ru.vachok.networker.services.SystemRuntime;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+
+import static ru.vachok.networker.IntoApplication.getConfigurableApplicationContext;
 
 
 /**
@@ -40,8 +43,8 @@ public class PfListsSrv {
      SSH-команда.
      <p>
      При инициализации: {@code uname -a && exit}.
-     
-     @see PfListsCtr#runCommand(org.springframework.ui.Model, ru.vachok.networker.accesscontrol.PfListsSrv)
+ 
+     @see PfListsCtr#runCommand(org.springframework.ui.Model, PfListsSrv)
      @see #runCom()
      */
     private @NotNull String commandForNatStr = "sudo cat /etc/pf/allowdomain && exit";
@@ -65,7 +68,6 @@ public class PfListsSrv {
     /**
      @return {@link #commandForNatStr}
      */
-    @SuppressWarnings("WeakerAccess")
     public @NotNull String getCommandForNatStr() {
         return commandForNatStr;
     }
@@ -145,7 +147,7 @@ public class PfListsSrv {
         }
         if (pfListsInstAW == null) {
             new IntoApplication();
-            pfListsInstAW = (PfLists) IntoApplication.getConfigurableApplicationContext().getBeanFactory().getBean(ConstantsFor.BEANNAME_PFLISTS);
+            pfListsInstAW = (PfLists) getConfigurableApplicationContext().getBeanFactory().getBean(ConstantsFor.BEANNAME_PFLISTS);
         }
         pfListsInstAW.setGitStatsUpdatedStampLong(System.currentTimeMillis());
     

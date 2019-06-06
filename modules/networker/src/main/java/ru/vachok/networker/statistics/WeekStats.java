@@ -65,8 +65,8 @@ public class WeekStats implements Runnable, StatsOfNetAndUsers {
     }
     
     @Override public String getInetStats() {
-        DataBaseRegSQL dataBaseRegSQL = new InetStats();
-        ((InetStats) dataBaseRegSQL).run();
+        DataBaseRegSQL dataBaseRegSQL = new InteretStats();
+        ((InteretStats) dataBaseRegSQL).run();
         return dataBaseRegSQL.toString();
     }
     

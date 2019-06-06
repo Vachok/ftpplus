@@ -131,13 +131,13 @@ public final class NetListKeeper {
         return sb.toString();
     }
     
-    ConcurrentMap<String, String> getOnLinesResolve() {
+    public ConcurrentMap<String, String> getOnLinesResolve() {
         readMap();
         AppComponents.threadConfig().getTaskScheduler().scheduleAtFixedRate(new ChkOnlinePCsSizeChange(), TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY));
         return this.onLinesResolve;
     }
     
-    ConcurrentMap<String, String> getOffLines() {
+    public ConcurrentMap<String, String> getOffLines() {
         return this.offLines;
     }
     

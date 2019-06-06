@@ -5,17 +5,16 @@ package ru.vachok.networker.accesscontrol.common;
 
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
-import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.services.MessageLocal;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.file.*;
+import java.nio.file.FileVisitOption;
+import java.nio.file.Files;
 import java.util.Collections;
 
 
@@ -176,25 +175,4 @@ public class CommonSRV {
         LOGGER.info(msg);
     }
     
-    /**
-     Сборщик прав \\srv-fs.eatmeat.ru\common_new
-     <p>
-     {@link Files#walkFileTree(java.nio.file.Path, java.nio.file.FileVisitor)}, где {@link Path} = \\srv-fs.eatmeat.ru\common_new и {@link FileVisitor}
-     = new {@link CommonRightsChecker}.
-     <p>
-     <b>{@link IOException}:</b><br>
-     {@link MessageToUser#errorAlert(String, String, String)},
-     {@link FileSystemWorker#error(String, Exception)}
-     */
-    public static void runCommonScan() {
-        final long stMeth = System.currentTimeMillis();
-        try {
-            FileVisitor<Path> commonRightsChecker = new CommonRightsChecker();
-            Files.walkFileTree(Paths.get("\\\\srv-fs.eatmeat.ru\\common_new"), commonRightsChecker);
-        }
-        catch (IOException e) {
-            MessageToUser messageToUser = new MessageLocal(CommonSRV.class.getSimpleName());
-            messageToUser.error(FileSystemWorker.error(CommonSRV.class.getSimpleName() + ".runCommonScan", e));
-        }
-    }
 }

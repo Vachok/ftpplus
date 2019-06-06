@@ -15,21 +15,22 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.InitProperties;
-import ru.vachok.networker.accesscontrol.TemporaryFullInternet;
 import ru.vachok.networker.accesscontrol.sshactions.SshActs;
 import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.componentsrepo.VersionInfo;
 import ru.vachok.networker.componentsrepo.Visitor;
-import ru.vachok.networker.config.ThreadConfig;
+import ru.vachok.networker.exe.ThreadConfig;
+import ru.vachok.networker.exe.runnabletasks.NetScannerSvc;
+import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
+import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
+import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.NetScannerSvc;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.net.libswork.RegRuFTPLibsUploader;
 import ru.vachok.networker.services.ADSrv;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.SimpleCalculator;
-import ru.vachok.stats.SaveLogsToDB;
 
 import javax.servlet.http.HttpServletRequest;
 import java.awt.*;
@@ -130,14 +131,24 @@ public class AppComponents {
     
     @Bean
     @Scope(ConstantsFor.SINGLETON)
-    public SaveLogsToDB saveLogsToDB() {
-        return new SaveLogsToDB();
+    public String saveLogsToDB() {
+        SaveLogsToDB.startScheduled();
+        return SaveLogsToDB.showInfo();
     }
     
     @Bean
     @Scope(ConstantsFor.SINGLETON)
     public static ThreadConfig threadConfig() {
-        return ThreadConfig.getI();
+        ThreadConfig threadConfig = null;
+        try {
+        
+            threadConfig = ThreadConfig.getI();
+        
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        return threadConfig;
     }
     
     @Bean
@@ -153,7 +164,7 @@ public class AppComponents {
     @Scope(ConstantsFor.SINGLETON)
     public static VersionInfo versionInfo() {
         VersionInfo versionInfo = new VersionInfo();
-        if (ConstantsFor.thisPC().toLowerCase().contains("home") && ConstantsFor.thisPC().toLowerCase().contains("do00213")) {
+        if (ConstantsFor.thisPC().toLowerCase().contains("home") || ConstantsFor.thisPC().toLowerCase().contains("do00213")) {
             versionInfo.setParams();
         }
         return versionInfo;
@@ -208,6 +219,10 @@ public class AppComponents {
         }
     }
     
+    public static String diapazonedScan() {
+        return DiapazonScan.getInstance().theInfoToString();
+    }
+    
     @Bean
     @Scope("singleton")
     TemporaryFullInternet temporaryFullInternet() {
@@ -218,7 +233,13 @@ public class AppComponents {
     
     boolean launchRegRuFTPLibsUploader() {
         Runnable regRuFTPLibsUploader = new RegRuFTPLibsUploader();
-        return threadConfig().execByThreadConfig(regRuFTPLibsUploader);
+        try {
+            return threadConfig().execByThreadConfig(regRuFTPLibsUploader);
+        }
+        catch (Exception e) {
+            messageToUser.error(e.getMessage());
+            return false;
+        }
     }
     
     private Properties getAppProps() {

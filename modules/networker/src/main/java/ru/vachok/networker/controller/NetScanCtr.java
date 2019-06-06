@@ -22,9 +22,12 @@ import ru.vachok.networker.ad.user.MoreInfoWorker;
 import ru.vachok.networker.componentsrepo.LastNetScan;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
-import ru.vachok.networker.config.ThreadConfig;
+import ru.vachok.networker.exe.ThreadConfig;
+import ru.vachok.networker.exe.runnabletasks.NetScannerSvc;
+import ru.vachok.networker.exe.runnabletasks.ScanOnline;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.*;
+import ru.vachok.networker.net.NetListKeeper;
+import ru.vachok.networker.net.NetPinger;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 
@@ -101,7 +104,6 @@ public class NetScanCtr {
     private NetPinger netPingerInst;
 
 
-    @SuppressWarnings("WeakerAccess")
     @Autowired
     public NetScanCtr(NetScannerSvc netScannerSvc, NetPinger netPingerInst, ScanOnline scanOnline) {
         this.netScannerSvcInstAW = netScannerSvc;
@@ -233,7 +235,7 @@ public class NetScanCtr {
             qerNotNullScanAllDevices(model, response);
         }
         model.addAttribute("head", new PageFooter().getHeaderUtext() + "<center><p><a href=\"/showalldev?needsopen\"><h2>Show All IPs in file</h2></a></center>");
-        model.addAttribute("ok", DiapazonedScan.getInstance().toString());
+        model.addAttribute("ok", AppComponents.diapazonedScan());
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + ". Left: " + ConstantsNet.getAllDevices().remainingCapacity() + " " +
             "IPs.");
         return "ok";

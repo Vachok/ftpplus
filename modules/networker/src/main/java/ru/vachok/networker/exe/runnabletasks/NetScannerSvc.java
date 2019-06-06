@@ -1,6 +1,6 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.net;
+package ru.vachok.networker.exe.runnabletasks;
 
 
 import org.springframework.context.annotation.Scope;
@@ -14,6 +14,7 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.user.MoreInfoWorker;
 import ru.vachok.networker.componentsrepo.LastNetScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.InfoWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.actions.ActionCloseMsg;
@@ -384,17 +385,7 @@ public class NetScannerSvc {
         catch (Exception e) {
             LOGGER.error(FileSystemWorker.error(getClass().getSimpleName() + METH_GETPCSASYNC, e));
         }
-        AppComponents.threadConfig().execByThreadConfig(()->{
-            for (String s : ConstantsNet.getPcPrefixes()) {
-                this.thrName = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime) + "-sec";
-                PC_NAMES_SET.clear();
-                PC_NAMES_SET.addAll(getPCNamesPref(s));
-                AppComponents.threadConfig().thrNameSet("pcGET");
-            }
-            String elapsedTime = "Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime) + " sec.";
-            PC_NAMES_SET.add(elapsedTime);
-            AppComponents.threadConfig().execByThreadConfig(this::runAfterAllScan);
-        });
+        AppComponents.threadConfig().execByThreadConfig(this::scanPCPrefix);
     }
     
     @SuppressWarnings("MagicNumber")
@@ -638,5 +629,17 @@ public class NetScannerSvc {
         }
         LOGGER.warn(getClass().getSimpleName() + ".writeDB", "executeUpdate: ", " = " + exUpInt);
         return new TForms().fromArray(list, true);
+    }
+    
+    private void scanPCPrefix() {
+        for (String s : ConstantsNet.getPcPrefixes()) {
+            this.thrName = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime) + "-sec";
+            PC_NAMES_SET.clear();
+            PC_NAMES_SET.addAll(getPCNamesPref(s));
+            AppComponents.threadConfig().thrNameSet("pcGET");
+        }
+        String elapsedTime = "Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime) + " sec.";
+        PC_NAMES_SET.add(elapsedTime);
+        AppComponents.threadConfig().execByThreadConfig(this::runAfterAllScan);
     }
 }

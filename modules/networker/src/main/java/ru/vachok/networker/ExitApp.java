@@ -6,9 +6,9 @@ package ru.vachok.networker;
 import org.springframework.context.ConfigurableApplicationContext;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.componentsrepo.Visitor;
-import ru.vachok.networker.config.ThreadConfig;
+import ru.vachok.networker.exe.ThreadConfig;
+import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.NetScanFileWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 
@@ -17,7 +17,6 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
 
@@ -115,8 +114,12 @@ public class ExitApp implements Runnable {
         }
     }
     
-    @SuppressWarnings("StaticMethodOnlyUsedInOneClass") static Map<Long, Visitor> getVisitsMap() {
+    static Map<Long, Visitor> getVisitsMap() {
         return VISITS_MAP;
+    }
+    
+    static Map<String, File> scanFiles() {
+        return DiapazonScan.getInstance().getScanFiles();
     }
     
     /**
@@ -187,7 +190,7 @@ public class ExitApp implements Runnable {
         File filePingTv = new File(ConstantsFor.FILENAME_PTV);
         FileSystemWorker.copyOrDelFile(filePingTv, new StringBuilder().append(ConstantsFor.FILESYSTEM_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + "ptv_")
             .append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
-        ConcurrentMap<String, File> srvFiles = NetScanFileWorker.getI().getScanFiles();
+        Map<String, File> srvFiles = scanFiles();
         srvFiles.forEach((id, file)->FileSystemWorker
             .copyOrDelFile(file, file.getAbsolutePath().replace(file.getName(), "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + file.getName()), true));
         if (appLog.exists() && appLog.canRead()) {

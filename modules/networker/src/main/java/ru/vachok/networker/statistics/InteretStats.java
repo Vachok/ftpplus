@@ -6,7 +6,6 @@ package ru.vachok.networker.statistics;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
@@ -25,7 +24,7 @@ import java.util.List;
 
 /**
  @since 20.05.2019 (9:36) */
-public class InetStats implements Runnable, DataBaseRegSQL {
+public class InteretStats implements Runnable, DataBaseRegSQL {
     
     
     private static final String FILENAME_INETSTATSIPCSV = "inetstatsIP.csv";
@@ -33,10 +32,6 @@ public class InetStats implements Runnable, DataBaseRegSQL {
     private static final String FILENAME_INETSTATSCSV = "inetstats.csv";
     
     private static final String SQL_DISTINCTIPSWITHINET = "SELECT DISTINCT `ip` FROM `inetstats`";
-    
-    private StatsOfNetAndUsers statsOfNetAndUsers = new WeekStats();
-    
-    private DataConnectTo dataConnectTo = new RegRuMysql();
     
     private Connection connectionF;
     

@@ -1,12 +1,14 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.net;
+package ru.vachok.networker.exe.runnabletasks;
 
 
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.abstr.ConnectToMe;
+import ru.vachok.networker.net.MyConsoleServer;
+import ru.vachok.networker.net.TestServer;
 import ru.vachok.networker.services.MessageLocal;
 
 import java.util.Properties;

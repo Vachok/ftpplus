@@ -3,7 +3,7 @@ package ru.vachok.networker.services.actions;
 
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.AppInfoOnLoad;
-import ru.vachok.networker.services.SpeedChecker;
+import ru.vachok.networker.exe.runnabletasks.SpeedChecker;
 import ru.vachok.networker.systray.MessageToTray;
 import ru.vachok.networker.systray.SystemTrayHelper;
 

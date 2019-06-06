@@ -6,7 +6,7 @@ import org.testng.annotations.Test;
 import static org.testng.Assert.assertFalse;
 
 
-public class InetStatsTest {
+public class InteretStatsTest {
     
     
     @Test

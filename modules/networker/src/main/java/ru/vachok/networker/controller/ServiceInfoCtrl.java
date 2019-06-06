@@ -11,18 +11,17 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.*;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.exe.runnabletasks.SpeedChecker;
 import ru.vachok.networker.fileworks.CountSizeOfWorkDir;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.fileworks.ProgrammFilesReader;
 import ru.vachok.networker.fileworks.ReadFileTo;
-import ru.vachok.networker.net.DiapazonedScan;
 import ru.vachok.networker.net.NetPinger;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.net.enums.OtherKnownDevices;
 import ru.vachok.networker.services.DBMessenger;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.MyCalen;
-import ru.vachok.networker.services.SpeedChecker;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -184,6 +183,7 @@ public class ServiceInfoCtrl {
     
     private void modModMaker( Model model , HttpServletRequest request , Visitor visitor ) throws ExecutionException, InterruptedException {
         this.visitor = ConstantsFor.getVis(request);
+        this.visitor = visitor;
         Callable<String> sizeOfDir = new CountSizeOfWorkDir("sizeofdir");
         Callable<Long> callWhenCome = new SpeedChecker();
         Callable<String> filesWithSize;
@@ -215,7 +215,7 @@ public class ServiceInfoCtrl {
             .append(".<br> Состояние памяти (МБ): <font color=\"#82caff\">")
             .append(ConstantsFor.getMemoryInfo()).append("<details><summary> disk usage by program: </summary>").append(filesSizeFuture.get()).append("</details><br>")
             .append("</font><br>")
-            .append(DiapazonedScan.getInstance())
+            .append(AppComponents.diapazonedScan())
             .append("<br>")
             .append(AppComponents.threadConfig())
             .toString());
@@ -224,7 +224,6 @@ public class ServiceInfoCtrl {
         model.addAttribute("res", resValue);
         model.addAttribute("back", request.getHeader(ConstantsFor.ATT_REFERER.toLowerCase()));
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<br><a href=\"/nohup\">" + getJREVers() + "</a>");
-        AppComponents.threadConfig().execByThreadConfig(() -> new AppComponents().saveLogsToDB().showInfo());
     }
     
     private BigDecimal getLast() {

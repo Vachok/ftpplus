@@ -103,7 +103,7 @@ public class NameOrIPChecker {
      @return {@link InetAddress}
      @throws UnknownFormatConversionException если не удалось опознать строку-ввод.
      */
-    InetAddress resolveIP() throws UnknownFormatConversionException, UnknownFormatConversionException {
+    public InetAddress resolveIP() throws UnknownFormatConversionException, UnknownFormatConversionException {
         InetAddress inetAddress;
         Matcher mName = PATTERN_NAME.matcher(userIn);
         Matcher mIP = PATTERN_IP.matcher(userIn);
