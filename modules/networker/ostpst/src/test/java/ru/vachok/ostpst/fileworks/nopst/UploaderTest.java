@@ -19,7 +19,6 @@ import java.nio.file.Paths;
 import java.util.Date;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 
 
@@ -33,7 +32,7 @@ public class UploaderTest {
             String toAppend = parseQueue(fileNames);
             FileSystemWorkerOST.appendStringToFile("dn.list", toAppend);
             if (toAppend.equalsIgnoreCase("copy completed")) {
-                throw new RejectedExecutionException(FileSystemWorkerOST.readFileToString("dn.list"));
+                throw new UnsupportedOperationException(FileSystemWorkerOST.readFileToString("dn.list"));
             }
         }
         ;

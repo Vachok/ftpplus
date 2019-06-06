@@ -53,16 +53,19 @@ import java.util.regex.Pattern;
     
     private String ftpPass;
     
-    
     {
-        try {
-            ftpPass = chkPass();
+        if (ConstantsFor.thisPC().toLowerCase().contains("home") || ConstantsFor.thisPC().toLowerCase().contains("do00213")) {
+            try {
+                ftpPass = chkPass();
+            }
+            catch (AuthenticationException e) {
+                messageToUser.error(getClass().getSimpleName(), "INITIALIZE AUTH ERROR", e.getMessage());
+            }
         }
-        catch (AuthenticationException e) {
-            messageToUser.error(getClass().getSimpleName(), "INITIALIZE AUTH ERROR", e.getMessage());
+        else {
+            throw new UnsupportedOperationException(ConstantsFor.thisPC() + " this PC is not develop PC!");
         }
     }
-    
     
     @Override public void run() {
         AppComponents.threadConfig().thrNameSet("ftp");

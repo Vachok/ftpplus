@@ -20,7 +20,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
-import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 
 
@@ -191,7 +190,7 @@ public class RNDPSTFileCopy implements Serializable {
             }
             catch (NullPointerException e) {
                 messageToUser.error("NO FILE GIVEN! Please, set the file...");
-                throw new RejectedExecutionException("No File");
+                throw new UnsupportedOperationException("No File");
             }
             PSTRAFileContent content;
             try {

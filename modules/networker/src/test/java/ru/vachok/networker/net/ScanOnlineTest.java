@@ -4,6 +4,4 @@ package ru.vachok.networker.net;
 
 
 public class ScanOnlineTest {
-
-
 }

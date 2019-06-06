@@ -31,7 +31,6 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Queue;
 import java.util.concurrent.Callable;
-import java.util.concurrent.RejectedExecutionException;
 
 
 /**
@@ -174,7 +173,7 @@ public class SSHFactory implements Callable<String> {
             return respChannel.getInputStream();
         }
         respChannel.disconnect();
-        throw new RejectedExecutionException("ХУЙ FOR YOU!");
+        throw new UnsupportedOperationException("ХУЙ FOR YOU!");
     }
     
     private void chanRespChannel() throws ConnectException {
