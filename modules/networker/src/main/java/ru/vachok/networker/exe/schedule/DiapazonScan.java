@@ -40,9 +40,13 @@ import static ru.vachok.networker.net.enums.ConstantsNet.*;
  Скан диапазона адресов
  
  @since 19.12.2018 (11:35) */
-@SuppressWarnings({"MagicNumber"})
+@SuppressWarnings("MagicNumber")
 public class DiapazonScan implements Runnable {
     
+    
+    protected List<String> executionProcessLog = new ArrayList<>();
+    
+    private long stopClassStampLong = NetScanFileWorker.getI().getLastStamp();
     
     /**
      Корень директории.
@@ -64,10 +68,6 @@ public class DiapazonScan implements Runnable {
      {@link ConstantsNet#getAllDevices()}
      */
     protected static final BlockingDeque<String> ALL_DEVICES_LOCAL_DEQUE = getAllDevices();
-    
-    protected List<String> executionProcessLog = new ArrayList<>();
-    
-    private long stopClassStampLong = NetScanFileWorker.getI().getLastStamp();
     
     public Map<String, File> getScanFiles() {
         return Collections.unmodifiableMap(SCAN_FILES);
@@ -162,27 +162,24 @@ public class DiapazonScan implements Runnable {
         Path absolutePath = Paths.get("").toAbsolutePath();
         Map<String, File> scanMap = new ConcurrentHashMap<>();
         try {
-            for (File f : new File(absolutePath.toString()).listFiles()) {
+            for (File f : Objects.requireNonNull(new File(absolutePath.toString()).listFiles())) {
                 if (f.getName().contains("lan_")) {
-                    SCAN_FILES.putIfAbsent(f.getName(), f);
+                    Objects.requireNonNull(SCAN_FILES).putIfAbsent(f.getName(), f);
                 }
             }
         }
         catch (NullPointerException e) {
             messageToUser.error(e.getMessage());
         }
-        
-        if (scanMap.size() != 8) {
-            scanMap.clear();
-            scanMap.putIfAbsent(FILENAME_NEWLAN220, new File(FILENAME_NEWLAN220));
-            scanMap.putIfAbsent(FILENAME_NEWLAN210, new File(FILENAME_NEWLAN210));
-            scanMap.putIfAbsent(FILENAME_NEWLAN213, new File(FILENAME_NEWLAN213));
-            scanMap.putIfAbsent(FILENAME_OLDLANTXT0, new File(FILENAME_OLDLANTXT0));
-            scanMap.putIfAbsent(FILENAME_OLDLANTXT1, new File(FILENAME_OLDLANTXT1));
-            scanMap.putIfAbsent(FILENAME_SERVTXT_10SRVTXT, new File(FILENAME_SERVTXT_10SRVTXT));
-            scanMap.putIfAbsent(FILENAME_SERVTXT_21SRVTXT, new File(FILENAME_SERVTXT_21SRVTXT));
-            scanMap.putIfAbsent(FILENAME_SERVTXT_31SRVTXT, new File(FILENAME_SERVTXT_31SRVTXT));
-        }
+    
+        scanMap.putIfAbsent(FILENAME_NEWLAN220, new File(FILENAME_NEWLAN220));
+        scanMap.putIfAbsent(FILENAME_NEWLAN210, new File(FILENAME_NEWLAN210));
+        scanMap.putIfAbsent(FILENAME_NEWLAN213, new File(FILENAME_NEWLAN213));
+        scanMap.putIfAbsent(FILENAME_OLDLANTXT0, new File(FILENAME_OLDLANTXT0));
+        scanMap.putIfAbsent(FILENAME_OLDLANTXT1, new File(FILENAME_OLDLANTXT1));
+        scanMap.putIfAbsent(FILENAME_SERVTXT_10SRVTXT, new File(FILENAME_SERVTXT_10SRVTXT));
+        scanMap.putIfAbsent(FILENAME_SERVTXT_21SRVTXT, new File(FILENAME_SERVTXT_21SRVTXT));
+        scanMap.putIfAbsent(FILENAME_SERVTXT_31SRVTXT, new File(FILENAME_SERVTXT_31SRVTXT));
         return scanMap;
     }
     

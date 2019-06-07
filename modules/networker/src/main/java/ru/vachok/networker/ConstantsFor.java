@@ -13,6 +13,7 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.controller.ExCTRL;
 import ru.vachok.networker.exe.runnabletasks.PfListsSrv;
+import ru.vachok.networker.exe.runnabletasks.ScanOnline;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.mailserver.ExSRV;
 import ru.vachok.networker.mailserver.MailRule;
@@ -472,6 +473,12 @@ public enum ConstantsFor {
      {@link ExCTRL#uplFile(MultipartFile, Model)}, {@link ExSRV#getOFields()},
      */
     private static final ConcurrentMap<Integer, MailRule> MAIL_RULES = new ConcurrentHashMap<>();
+    
+    public static final String FILENAME_MAXONLINE = "max.online";
+    
+    public static final String FILEEXT_ONLIST = ".onList";
+    
+    public static final String FILENAME_ONSCAN = ScanOnline.class.getSimpleName() + FILEEXT_ONLIST;
     
     /**
      @return {@link #MAIL_RULES}

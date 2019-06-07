@@ -39,14 +39,14 @@ import java.util.concurrent.*;
 public class ScanOnline implements Runnable, Pinger {
     
     
+    private FileOutputStream fileOutStream = null;
+    
+    private File onlinesFile;
+    
     /**
      {@link NetListKeeper#getI()}
      */
     private static final NetListKeeper NET_LIST_KEEPER = NetListKeeper.getI();
-    
-    private static final String FILEEXT_ONLIST = ".onList";
-    
-    private static final String FILENAME_ON = ScanOnline.class.getSimpleName() + FILEEXT_ONLIST;
     
     private final String sep = ConstantsFor.FILESYSTEM_SEPARATOR;
     
@@ -64,30 +64,30 @@ public class ScanOnline implements Runnable, Pinger {
     
     private InfoWorker tvInfo = new MoreInfoWorker("tv");
     
-    private PrintStream printStream;
+    private PrintStream printStream = null;
     
-    private List<String> maxOnList;
+    private List<String> maxOnList = new ArrayList<>();
+    
+    public ScanOnline(File onlinesFile) {
+        this.onlinesFile = onlinesFile;
+        try {
+            fileOutStream = new FileOutputStream(onlinesFile);
+        }
+        catch (FileNotFoundException e) {
+            messageToUser.error(e.getMessage());
+        }
+    }
     
     public ScanOnline() {
-        try {
-            this.maxOnList = FileSystemWorker.readFileToList(new File(FILENAME_ON).getAbsolutePath().replace(FILENAME_ON, sep + "lan" + sep + "max.online"));
-        }
-        catch (NullPointerException e) {
-            this.maxOnList = new ArrayList<>();
-        }
+        this.onlinesFile = new File(ConstantsFor.FILENAME_ONSCAN);
     }
     
     @Override public String getTimeToEndStr() {
         return new AppInfoOnLoad().toString();
     }
     
-    /**
-     Активируется при обновлении <a href="http://localhost:8880/showalldev?needsopen" target=_blank>showalldev?needsopen</a>
-     
-     @return файл {@link #FILENAME_ON} из корня.
-     */
     @Override public String getPingResultStr() {
-        return FileSystemWorker.readFile(FILENAME_ON);
+        return FileSystemWorker.readFile(ConstantsFor.FILENAME_ONSCAN);
     }
     
     @Override public boolean isReach(String inetAddrStr) {
@@ -123,14 +123,24 @@ public class ScanOnline implements Runnable, Pinger {
     
     @Override
     public void run() {
+        setLists();
         threadConfig.execByThreadConfig(this::offlineNotEmptyActions);
-        File onlinesFile = new File(FILENAME_ON);
-        File fileMAX = new File(onlinesFile.toPath().toAbsolutePath().toString().replace(FILENAME_ON, sep + "lan" + sep + "max.online"));
+        File fileMAX = new File(onlinesFile.toPath().toAbsolutePath().toString().replace(ConstantsFor.FILENAME_ONSCAN, sep + "lan" + sep + ConstantsFor.FILENAME_MAXONLINE));
     
         if (onlinesFile.exists()) {
             onlineFileExists(onlinesFile, fileMAX);
         }
-        messageToUser.info(getClass().getSimpleName() + ".run", "writeOnLineFile()", " = " + writeOnLineFile(onlinesFile));
+        messageToUser.info(getClass().getSimpleName() + ".run", "writeOnLineFile()", " = " + writeOnLineFile());
+    }
+    
+    private void setLists() {
+        try {
+            this.maxOnList = FileSystemWorker
+                .readFileToList(new File(ConstantsFor.FILENAME_ONSCAN).getAbsolutePath().replace(ConstantsFor.FILENAME_ONSCAN, sep + "lan" + sep + ConstantsFor.FILENAME_MAXONLINE));
+        }
+        catch (NullPointerException e) {
+            this.maxOnList = new ArrayList<>();
+        }
     }
     
     @Override
@@ -146,8 +156,8 @@ public class ScanOnline implements Runnable, Pinger {
         return sb.toString();
     }
     
-    private boolean writeOnLineFile(File onlinesFile) {
-        try (OutputStream outputStream = new FileOutputStream(onlinesFile)) {
+    private boolean writeOnLineFile() {
+        try (OutputStream outputStream = fileOutStream) {
             this.printStream = new PrintStream(outputStream);
             Deque<String> onDeq = NetScanFileWorker.getI().getListOfOnlineDev();
             printStream.println("Checked: " + new Date());
@@ -163,7 +173,7 @@ public class ScanOnline implements Runnable, Pinger {
     }
     
     private void onlineFileExists(File onlinesFile, File fileMAX) {
-        String replaceStr = onlinesFile.getAbsolutePath().replace(FILEEXT_ONLIST, ".last");
+        String replaceStr = onlinesFile.getAbsolutePath().replace(ConstantsFor.FILEEXT_ONLIST, ".last");
         File repFile = new File(replaceStr);
         List<String> stringsLastScan = FileSystemWorker.readFileToList(repFile.getAbsolutePath());
         Collections.sort(stringsLastScan);
