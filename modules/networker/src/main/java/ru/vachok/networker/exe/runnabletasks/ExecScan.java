@@ -112,18 +112,16 @@ public class ExecScan extends DiapazonScan implements Runnable {
     
     private long setSpend() throws IOException {
         long spendMS = System.currentTimeMillis() - stArt;
-        synchronized(preferences) {
-            try {
-                preferences.sync();
-                preferences.putLong(getClass().getSimpleName(), spendMS);
-                preferences.sync();
-            }
-            catch (BackingStoreException e) {
-                InitProperties initProperties = new FileProps(ConstantsFor.PROPS_FILE_JAVA_ID);
-                Properties fileProps = initProperties.getProps();
-                fileProps.setProperty(getClass().getSimpleName(), String.valueOf(spendMS));
-                fileProps.store(new FileOutputStream(ConstantsFor.PROPS_FILE_JAVA_ID), getClass().getSimpleName() + ".setSpend");
-            }
+        try {
+            preferences.sync();
+            preferences.putLong(getClass().getSimpleName(), spendMS);
+            preferences.sync();
+        }
+        catch (BackingStoreException e) {
+            InitProperties initProperties = new FileProps(ConstantsFor.PROPS_FILE_JAVA_ID);
+            Properties fileProps = initProperties.getProps();
+            fileProps.setProperty(getClass().getSimpleName(), String.valueOf(spendMS));
+            fileProps.store(new FileOutputStream(ConstantsFor.PROPS_FILE_JAVA_ID), getClass().getSimpleName() + ".setSpend");
         }
         return spendMS;
     }
