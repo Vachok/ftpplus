@@ -83,30 +83,28 @@ public class ExecScan extends DiapazonScan implements Runnable {
     
     @Override
     public void run() {
-        synchronized(vlanFile) {
-            if (vlanFile.exists()) {
-                String newFileName = vlanFile.getAbsolutePath()
-                    .replace(vlanFile.getName(), "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + COMPILE.matcher(vlanFile.getName())
-                        .replaceAll(Matcher.quoteReplacement("_" + (System.currentTimeMillis() / 1000))) + ".scan");
-                boolean copyFile = FileSystemWorker.copyOrDelFile(vlanFile, newFileName, true);
-                messageToUser.info(vlanFile.getName() + " copied to ", newFileName, " = " + copyFile);
-            }
-            OutputStream outputStream = null;
-            try {
-                //noinspection resource,IOResourceOpenedButNotSafelyClosed
-                outputStream = new FileOutputStream(vlanFile);
-            }
-            catch (FileNotFoundException e) {
-                messageToUser.errorAlert(getClass().getSimpleName(), ".ExecScan", e.getMessage());
-            }
-            this.printStream = new PrintStream(Objects.requireNonNull(outputStream), true);
-            if (ALL_DEVICES_LOCAL_DEQUE.remainingCapacity() > 0) {
-                boolean execScanB = execScan();
-                messageToUser.info("ALL_DEV", "Scan from " + from + " to " + to + " is " + execScanB, "ALL_DEVICES_LOCAL_DEQUE = " + ALL_DEVICES_LOCAL_DEQUE.size());
-            }
-            else {
-                messageToUser.error(getClass().getSimpleName(), String.valueOf(ALL_DEVICES_LOCAL_DEQUE.remainingCapacity()), " ALL_DEVICES_LOCAL_DEQUE remainingCapacity!");
-            }
+        if (vlanFile.exists()) {
+            String newFileName = vlanFile.getAbsolutePath()
+                .replace(vlanFile.getName(), "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + COMPILE.matcher(vlanFile.getName())
+                    .replaceAll(Matcher.quoteReplacement("_" + (System.currentTimeMillis() / 1000))) + ".scan");
+            boolean copyFile = FileSystemWorker.copyOrDelFile(vlanFile, newFileName, true);
+            messageToUser.info(vlanFile.getName() + " copied to ", newFileName, " = " + copyFile);
+        }
+        OutputStream outputStream = null;
+        try {
+            //noinspection resource,IOResourceOpenedButNotSafelyClosed
+            outputStream = new FileOutputStream(vlanFile);
+        }
+        catch (FileNotFoundException e) {
+            messageToUser.errorAlert(getClass().getSimpleName(), ".ExecScan", e.getMessage());
+        }
+        this.printStream = new PrintStream(Objects.requireNonNull(outputStream), true);
+        if (ALL_DEVICES_LOCAL_DEQUE.remainingCapacity() > 0) {
+            boolean execScanB = execScan();
+            messageToUser.info("ALL_DEV", "Scan from " + from + " to " + to + " is " + execScanB, "ALL_DEVICES_LOCAL_DEQUE = " + ALL_DEVICES_LOCAL_DEQUE.size());
+        }
+        else {
+            messageToUser.error(getClass().getSimpleName(), String.valueOf(ALL_DEVICES_LOCAL_DEQUE.remainingCapacity()), " ALL_DEVICES_LOCAL_DEQUE remainingCapacity!");
         }
     }
     
