@@ -131,17 +131,17 @@ public class MoreInfoWorker implements InfoWorker {
     }
     
     private static String getTVNetInfo() {
-        File ptvFile = new File("ping.tv");
+        File ptvFile = new File(ConstantsFor.FILENAME_PTV);
     
         List<String> readFileToList = FileSystemWorker.readFileToList(ptvFile.getAbsolutePath());
         List<String> onList = new ArrayList<>();
         List<String> offList = new ArrayList<>();
-        readFileToList.stream().flatMap((String x) -> Arrays.stream(x.split(", "))).forEach((String s) -> {
+        readFileToList.stream().flatMap(x->Arrays.stream(x.split(", "))).forEach(s->{
             if (s.contains("true")) onList.add(s.split("/")[0]);
             else offList.add(s.split("/")[0]);
         });
-        String ptv1Str = OtherKnownDevices.PTV1_EATMEAT_RU;
     
+        String ptv1Str = OtherKnownDevices.PTV1_EATMEAT_RU;
         String ptv2Str = OtherKnownDevices.PTV2_EATMEAT_RU;
 
 //        String ptv3Str = OtherKnownDevices.PTV3_EATMEAT_RU;

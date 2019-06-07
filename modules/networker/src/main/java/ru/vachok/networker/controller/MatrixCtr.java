@@ -22,7 +22,6 @@ import ru.vachok.networker.ad.user.MoreInfoWorker;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.VersionInfo;
 import ru.vachok.networker.componentsrepo.Visitor;
-import ru.vachok.networker.exe.runnabletasks.NetMonitorPTV;
 import ru.vachok.networker.net.InfoWorker;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.SimpleCalculator;
@@ -137,7 +136,7 @@ public class MatrixCtr {
         qIsNull(model, request);
         model.addAttribute(ConstantsFor.ATT_HEAD, new PageFooter().getHeaderUtext());
         model.addAttribute(ConstantsFor.ATT_DEVSCAN,
-            "Since " + AppComponents.getProps().getProperty(NetMonitorPTV.class.getSimpleName()) + infoWorker.getInfoAbout() + currentProvider);
+            "Since: " + AppComponents.getUserPref().get(ConstantsFor.FILENAME_PTV, "No date") + infoWorker.getInfoAbout() + currentProvider);
         response.addHeader(ConstantsFor.HEAD_REFRESH, "120");
         return "starting";
     }

@@ -40,6 +40,8 @@ import java.sql.SQLException;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 
 
 /**
@@ -250,5 +252,16 @@ public class AppComponents {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".getAppProps", e));
         }
         return APP_PR;
+    }
+    
+    public static Preferences getUserPref() {
+        Preferences preferences = Preferences.userRoot();
+        try {
+            preferences.sync();
+        }
+        catch (BackingStoreException e) {
+            messageToUser.error(FileSystemWorker.error(AppComponents.class.getSimpleName() + ".getUserPref", e));
+        }
+        return preferences;
     }
 }

@@ -15,9 +15,12 @@ import ru.vachok.networker.services.MessageLocal;
 import java.io.*;
 import java.net.InetAddress;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Objects;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 
 
 /**
@@ -62,16 +65,31 @@ public class NetMonitorPTV implements Runnable {
     
     private void createFile() {
         File ptvFile = new File(ConstantsFor.FILENAME_PTV);
+        Path filePath = ptvFile.toPath();
+        Preferences preferences = Preferences.userRoot();
         try {
+            preferences.sync();
             if (!ptvFile.exists()) {
-                AppComponents.getProps().setProperty(this.getClass().getSimpleName(), new Date().toString());
                 Files.createFile(ptvFile.toPath());
+                preferences.put(ConstantsFor.FILENAME_PTV, new Date().toString());
+            }
+            else if (filePath.toAbsolutePath().normalize().toFile().isFile()) {
+                String dateLastModFile = new Date(filePath.toFile().lastModified()).toString();
+                preferences.put(ConstantsFor.FILENAME_PTV, dateLastModFile);
+            }
+            else {
+                System.err.println(filePath);
+                preferences.put(ConstantsFor.FILENAME_PTV, "7-JAN-1984 )");
             }
             this.outputStream = new FileOutputStream(ptvFile, true);
             this.printStream = new PrintStream(Objects.requireNonNull(outputStream), true);
+            preferences.sync();
         }
         catch (IOException e) {
             System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".createFile");
+        }
+        catch (BackingStoreException e) {
+            AppComponents.getProps().setProperty(ConstantsFor.FILENAME_PTV, new Date().toString());
         }
     }
     
