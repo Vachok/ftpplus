@@ -74,8 +74,7 @@ public class NetMonitorPTV implements Runnable {
                 preferences.put(ConstantsFor.FILENAME_PTV, new Date().toString());
             }
             else if (filePath.toAbsolutePath().normalize().toFile().isFile()) {
-                String dateLastModFile = new Date(filePath.toFile().lastModified()).toString();
-                preferences.put(ConstantsFor.FILENAME_PTV, dateLastModFile);
+                preferences.sync();
             }
             else {
                 System.err.println(filePath);
@@ -83,7 +82,7 @@ public class NetMonitorPTV implements Runnable {
             }
             this.outputStream = new FileOutputStream(ptvFile, true);
             this.printStream = new PrintStream(Objects.requireNonNull(outputStream), true);
-            preferences.sync();
+    
         }
         catch (IOException e) {
             System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".createFile");
