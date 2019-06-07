@@ -229,7 +229,7 @@ public class NetScanCtr {
             model.addAttribute(ATT_PCS, scanOnline.toString());
         }
         catch (Exception e) {
-            FileSystemWorker.error("NetScanCtr.allDevices", e);
+            messageToUser.error(e.getMessage());
         }
         if (request.getQueryString() != null) {
             qerNotNullScanAllDevices(model, response);

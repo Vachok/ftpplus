@@ -35,7 +35,6 @@ public class ExitApp implements Runnable {
      */
     @Override
     public void run() {
-        AppComponents.threadConfig().thrNameSet("exit");
         VISITS_MAP.forEach((x, y)->miniLoggerLast.add(new Date(x) + " - " + y.getRemAddr()));
         miniLoggerLast.add(reasonExit);
         copyAvail();

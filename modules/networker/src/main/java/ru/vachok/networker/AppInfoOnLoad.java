@@ -8,20 +8,20 @@ import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.abstr.InternetUse;
 import ru.vachok.networker.accesscontrol.common.CommonRightsChecker;
-import ru.vachok.networker.accesscontrol.common.CommonSRV;
 import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
-import ru.vachok.networker.accesscontrol.sshactions.SquidChecker;
 import ru.vachok.networker.componentsrepo.VersionInfo;
+import ru.vachok.networker.exe.runnabletasks.NetMonitorPTV;
 import ru.vachok.networker.exe.runnabletasks.ScanOnline;
+import ru.vachok.networker.exe.runnabletasks.SpeedChecker;
 import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
+import ru.vachok.networker.exe.schedule.MailIISLogsCleaner;
+import ru.vachok.networker.exe.schedule.SquidAvaliblityChecker;
+import ru.vachok.networker.exe.schedule.WeekStats;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.mailserver.MailIISLogsCleaner;
-import ru.vachok.networker.net.NetMonitorPTV;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.MyCalen;
-import ru.vachok.networker.statistics.WeekStats;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,8 +30,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -59,27 +61,14 @@ public class AppInfoOnLoad implements Runnable {
     /**
      {@link MessageCons}
      */
-    private static final MessageToUser messageToUser = new MessageLocal(AppInfoOnLoad.class.getSimpleName());
+    private static final MessageToUser MESSAGE_LOCAL = new MessageLocal(AppInfoOnLoad.class.getSimpleName());
     
     /**
      Для записи результата работы класса.
      */
-    private static final List<String> miniLogger = new ArrayList<>();
-    
-    /**
-     {@link AppComponents#temporaryFullInternet()}
-     
-     @see TemporaryFullInternet
-     */
-    private final TemporaryFullInternet temporaryFullInternet = new AppComponents().temporaryFullInternet();
-    
-    static String unixThreadInfo = System.getProperty("os.name");
+    private static final List<String> MINI_LOGGER = new ArrayList<>();
     
     private static int thisDelay = ConstantsNet.IPS_IN_VELKOM_VLAN / getScansDelay();
-    
-    public static String getUnixThreadInfo() {
-        return unixThreadInfo;
-    }
     
     public static int getThisDelay() {
         return thisDelay;
@@ -101,7 +90,7 @@ public class AppInfoOnLoad implements Runnable {
             totalSize += x.length();
         }
         String s = totalSize / ConstantsFor.MBYTE + " MB IIS Logs\n";
-        miniLogger.add(s);
+        MINI_LOGGER.add(s);
         return s;
     }
     
@@ -114,16 +103,17 @@ public class AppInfoOnLoad implements Runnable {
     public void run() {
         try {
             infoForU();
+            getWeekPCStats();
         }
         catch (IOException e) {
-            messageToUser.error(e.getMessage());
+            MESSAGE_LOCAL.error(e.getMessage());
         }
     }
     
     @Override public String toString() {
         final StringBuilder sb = new StringBuilder("AppInfoOnLoad{");
         sb.append(", thisDelay=").append(thisDelay);
-        sb.append("<br>").append(new TForms().fromArray(miniLogger, true));
+        sb.append("<br>").append(new TForms().fromArray(MINI_LOGGER, true));
         sb.append('}');
         return sb.toString();
     }
@@ -143,10 +133,8 @@ public class AppInfoOnLoad implements Runnable {
      */
     @SuppressWarnings("MagicNumber")
     static void dateSchedulers(ScheduledExecutorService scheduledExecutorService) {
-        long stArt = System.currentTimeMillis();
         long delay = TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY_HOURS * 7);
     
-        String classMeth = "AppInfoOnLoad.dateSchedulers";
         String exitLast = "No file";
         AppComponents.threadConfig().thrNameSet("dateSch");
         Date nextStartDay = MyCalen.getNextDayofWeek(23, 57, DayOfWeek.SUNDAY);
@@ -164,12 +152,11 @@ public class AppInfoOnLoad implements Runnable {
             exitLast = new TForms().fromArray(FileSystemWorker.readFileToList("exit.last"), false);
         }
     
-        stringBuilder.append("\n").append(methMetr(stArt, classMeth));
         exitLast = exitLast + "\n" + MyCalen.checkDay(scheduledExecutorService) + "\n" + stringBuilder;
-        miniLogger.add(exitLast);
-        messageToUser.info(AppInfoOnLoad.class.getSimpleName() + ConstantsFor.STR_FINISH);
-        boolean isWrite = FileSystemWorker.writeFile(CLASS_NAME + ".mini", miniLogger.stream());
-        messageToUser.info(CLASS_NAME + " = " + isWrite);
+        MINI_LOGGER.add(exitLast);
+        MESSAGE_LOCAL.info(AppInfoOnLoad.class.getSimpleName() + ConstantsFor.STR_FINISH);
+        boolean isWrite = FileSystemWorker.writeFile(CLASS_NAME + ".mini", MINI_LOGGER.stream());
+        MESSAGE_LOCAL.info(CLASS_NAME + " = " + isWrite);
     }
     
     private static int getScansDelay() {
@@ -199,28 +186,8 @@ public class AppInfoOnLoad implements Runnable {
             Files.walkFileTree(Paths.get("\\\\srv-fs.eatmeat.ru\\common_new"), commonRightsChecker);
         }
         catch (IOException e) {
-            MessageToUser messageToUser = new MessageLocal(CommonSRV.class.getSimpleName());
-            messageToUser.error(FileSystemWorker.error(CommonSRV.class.getSimpleName() + ".runCommonScan", e));
+            MESSAGE_LOCAL.error(e.getMessage());
         }
-    }
-    
-    /**
-     Метрика метода
-     <p>
-     Считает время выполнения.
-     
-     @param stArt таймстэмп начала работы
-     @param methName имя метода
-     @return float {@link System#currentTimeMillis()} - таймстэмп из параметра, делённый на 1000.
-     */
-    private static String methMetr(long stArt, String methName) {
-        String msgTimeSp = new StringBuilder()
-            .append(methName)
-            .append((float) (System.currentTimeMillis() - stArt) / 1000)
-            .append(ConstantsFor.STR_SEC_SPEND)
-            .toString();
-        messageToUser.infoNoTitles(msgTimeSp);
-        return msgTimeSp;
     }
     
     /**
@@ -230,10 +197,10 @@ public class AppInfoOnLoad implements Runnable {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(AppComponents.versionInfo()).append("\n");
         stringBuilder.append(ConstantsFor.getBuildStamp());
-        messageToUser.info("AppInfoOnLoad.infoForU", ConstantsFor.STR_FINISH, " = " + stringBuilder);
-        miniLogger.add("infoForU ends. now schedStarter(). Result: " + stringBuilder);
+        MESSAGE_LOCAL.info("AppInfoOnLoad.infoForU", ConstantsFor.STR_FINISH, " = " + stringBuilder);
+        MINI_LOGGER.add("infoForU ends. now schedStarter(). Result: " + stringBuilder);
         VersionInfo versionInfo = AppComponents.versionInfo();
-        messageToUser.info(getClass().getSimpleName() + ".run", versionInfo.toString(), " = " + iisLogSize());
+        MESSAGE_LOCAL.info(getClass().getSimpleName() + ".run", versionInfo.toString(), " = " + iisLogSize());
         schedStarter();
     }
     
@@ -245,54 +212,64 @@ public class AppInfoOnLoad implements Runnable {
      */
     private void schedStarter() {
         String osName = ConstantsFor.PR_OSNAME_LOWERCASE;
-        messageToUser.warn(osName);
+        MESSAGE_LOCAL.warn(osName);
         ScheduledThreadPoolExecutor scheduledExecutorService = AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor();
         String thisPC = ConstantsFor.thisPC();
-        AppInfoOnLoad.miniLogger.add(thisPC);
+        AppInfoOnLoad.MINI_LOGGER.add(thisPC);
         
         System.out.println("new AppComponents().launchRegRuFTPLibsUploader() = " + new AppComponents().launchRegRuFTPLibsUploader());
         
         if (!thisPC.toLowerCase().contains("home")) {
             scheduledExecutorService.scheduleWithFixedDelay(AppInfoOnLoad::runCommonScan, ConstantsFor.INIT_DELAY, TimeUnit.DAYS.toSeconds(1),
                 TimeUnit.SECONDS);
-            AppInfoOnLoad.miniLogger.add("runCommonScan init delay " + ConstantsFor.INIT_DELAY + ", delay " + TimeUnit.DAYS.toSeconds(1) + ". SECONDS");
+            AppInfoOnLoad.MINI_LOGGER.add("runCommonScan init delay " + ConstantsFor.INIT_DELAY + ", delay " + TimeUnit.DAYS.toSeconds(1) + ". SECONDS");
         }
     
         schedWithService(scheduledExecutorService);
     }
     
-/*    private void startUnixWithBeans() {
-        Thread unixThread = new UnixThread(this);
-        unixThread.setName("unix");
-        unixThread.start();
-    }*/
-    
     private void schedWithService(ScheduledExecutorService scheduledExecutorService) {
+        final String minutesStr = ". MINUTES";
+        
         scheduledExecutorService.scheduleWithFixedDelay(new NetMonitorPTV(), 0, 10, TimeUnit.SECONDS);
-        scheduledExecutorService.scheduleWithFixedDelay(temporaryFullInternet, 1, ConstantsFor.DELAY, TimeUnit.MINUTES);
+        scheduledExecutorService.scheduleWithFixedDelay(new AppComponents().temporaryFullInternet(), 1, ConstantsFor.DELAY, TimeUnit.MINUTES);
         scheduledExecutorService.scheduleWithFixedDelay(DiapazonScan.getInstance(), 2, AppInfoOnLoad.thisDelay, TimeUnit.MINUTES);
         scheduledExecutorService.scheduleWithFixedDelay(new ScanOnline(), 3, 1, TimeUnit.MINUTES);
-        scheduledExecutorService.scheduleWithFixedDelay(()->{
-            new AppComponents().saveLogsToDB();
-            InternetUse internetUse = new InetUserPCName();
-            System.out.println("internetUse.cleanTrash() = " + internetUse.cleanTrash());
-        }, 4, ConstantsFor.DELAY, TimeUnit.MINUTES);
-        scheduledExecutorService.scheduleWithFixedDelay(new SquidChecker(), 5, ConstantsFor.DELAY * 2, TimeUnit.MINUTES);
+        scheduledExecutorService.scheduleWithFixedDelay(AppInfoOnLoad::squidLogsSave, 4, ConstantsFor.DELAY, TimeUnit.MINUTES);
+        scheduledExecutorService.scheduleWithFixedDelay(new SquidAvaliblityChecker(), 5, ConstantsFor.DELAY * 2, TimeUnit.MINUTES);
+        scheduledExecutorService.schedule(()->MESSAGE_LOCAL.info(new TForms().fromArray(APP_PROPS, false)), ConstantsFor.DELAY + 10, TimeUnit.MINUTES);
         
         String msg = new StringBuilder()
             .append(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(AppInfoOnLoad.thisDelay)))
             .append(DiapazonScan.getInstance().getClass().getSimpleName())
             .append(" is starts next time.\n")
             .toString();
-        AppInfoOnLoad.miniLogger.add(msg + ". Trying start dateSchedulers***| Local time: " + LocalTime.now());
-        AppInfoOnLoad.miniLogger.add(NetMonitorPTV.class.getSimpleName() + " init delay 0, delay 10. SECONDS");
-        final String minutesStr = ". MINUTES";
-        AppInfoOnLoad.miniLogger.add(TemporaryFullInternet.class.getSimpleName() + " init delay 1, delay " + ConstantsFor.DELAY + minutesStr);
-        AppInfoOnLoad.miniLogger.add(DiapazonScan.getInstance().getClass().getSimpleName() + " init delay 2, delay " + AppInfoOnLoad.thisDelay + minutesStr);
-        AppInfoOnLoad.miniLogger.add(ScanOnline.class.getSimpleName() + " init delay 3, delay 1. MINUTES");
-        AppInfoOnLoad.miniLogger.add(AppComponents.class.getSimpleName() + ".getProps(true) 4, ConstantsFor.DELAY, TimeUnit.MINUTES");
-        messageToUser.info(AppInfoOnLoad.class.getSimpleName() + ".schedStarter()" + ConstantsFor.STR_FINISH);
+        AppInfoOnLoad.MINI_LOGGER.add(msg + ". Trying start dateSchedulers***| Local time: " + LocalTime.now());
+        AppInfoOnLoad.MINI_LOGGER.add(NetMonitorPTV.class.getSimpleName() + " init delay 0, delay 10. SECONDS");
+        AppInfoOnLoad.MINI_LOGGER.add(TemporaryFullInternet.class.getSimpleName() + " init delay 1, delay " + ConstantsFor.DELAY + minutesStr);
+        AppInfoOnLoad.MINI_LOGGER.add(DiapazonScan.getInstance().getClass().getSimpleName() + " init delay 2, delay " + AppInfoOnLoad.thisDelay + minutesStr);
+        AppInfoOnLoad.MINI_LOGGER.add(ScanOnline.class.getSimpleName() + " init delay 3, delay 1. MINUTES");
+        AppInfoOnLoad.MINI_LOGGER.add(AppComponents.class.getSimpleName() + ".getProps(true) 4, ConstantsFor.DELAY, TimeUnit.MINUTES");
+        
         AppInfoOnLoad.dateSchedulers(scheduledExecutorService);
     }
     
+    /**
+     Статистика по-пользователям за неделю.
+     <p>
+     Запуск new {@link SpeedChecker.ChkMailAndUpdateDB}, через {@link Executors#unconfigurableExecutorService(java.util.concurrent.ExecutorService)}
+     <p>
+     Если {@link LocalDate#getDayOfWeek()} equals {@link DayOfWeek#SUNDAY}, запуск new {@link WeekStats}
+     */
+    private static void getWeekPCStats() {
+        if (LocalDate.now().getDayOfWeek().equals(DayOfWeek.SUNDAY)) {
+            AppComponents.threadConfig().execByThreadConfig(new WeekStats(ConstantsFor.SQL_SELECTFROM_PCUSERAUTO));
+        }
+    }
+    
+    private static void squidLogsSave() {
+        new AppComponents().saveLogsToDB().run();
+        InternetUse internetUse = new InetUserPCName();
+        System.out.println("internetUse.cleanTrash() = " + internetUse.cleanTrash());
+    }
 }

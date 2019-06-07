@@ -2,10 +2,13 @@ package ru.vachok.networker.exe.runnabletasks;
 
 
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.mysqlandprops.props.FileProps;
+import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ExitApp;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetListKeeper;
@@ -21,10 +24,15 @@ import java.net.InetAddress;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Collections;
-import java.util.Date;
 import java.util.Objects;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static ru.vachok.networker.net.enums.ConstantsNet.MAX_IN_ONE_VLAN;
 
@@ -40,9 +48,15 @@ public class ExecScan extends DiapazonScan implements Runnable {
     
     private static final String FONT_BR_CLOSE = "</font><br>";
     
-    private final long timeStart = System.currentTimeMillis();
+    private static final Pattern COMPILE = Pattern.compile("\\Q.txt\\E", Pattern.LITERAL);
     
     private final MessageToUser messageToUser = new MessageLocal(ExecScan.class.getSimpleName());
+    
+    private final Preferences preferences = Preferences.userRoot();
+    
+    private final File vlanFile;
+    
+    private final ThreadConfig threadConfig = AppComponents.threadConfig();
     
     private long stArt;
     
@@ -54,12 +68,6 @@ public class ExecScan extends DiapazonScan implements Runnable {
     
     private PrintStream printStream;
     
-    private ThreadMXBean threadMXBean;
-    
-    private RuntimeMXBean runtimeMXBean;
-    
-    private File vlanFile;
-    
     public ExecScan(int from, int to, String whatVlan, File vlanFile) {
         
         this.from = from;
@@ -69,64 +77,74 @@ public class ExecScan extends DiapazonScan implements Runnable {
         this.whatVlan = whatVlan;
         
         this.vlanFile = vlanFile;
-        
-        stArt = LocalDateTime.of(1984, 1, 7, 2, 0).toEpochSecond(ZoneOffset.ofHours(3)) * 1000;
-    }
     
-    public long getSpend() {
-        messageToUser.info(getClass().getSimpleName() + ".getSpend", "new Date(stArt)", " = " + new Date(stArt));
-        return System.currentTimeMillis() - stArt;
+        this.stArt = LocalDateTime.of(1984, 1, 7, 2, 0).toEpochSecond(ZoneOffset.ofHours(3)) * 1000;
     }
     
     @Override
     public void run() {
-        this.threadMXBean = ManagementFactory.getThreadMXBean();
-        
-        this.runtimeMXBean = ManagementFactory.getRuntimeMXBean();
-        
-        if (vlanFile.exists()) {
-            String newFileName = vlanFile.getAbsolutePath()
-                .replace(vlanFile.getName(), "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + vlanFile.getName().replace(".txt", "_" + (System.currentTimeMillis() / 1000)) + ".scan");
-            boolean copyFile = FileSystemWorker.copyOrDelFile(vlanFile, newFileName, true);
-            messageToUser.info(vlanFile.getName() + " copied to ", newFileName, " = " + copyFile);
+        synchronized(vlanFile) {
+            if (vlanFile.exists()) {
+                String newFileName = vlanFile.getAbsolutePath()
+                    .replace(vlanFile.getName(), "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + COMPILE.matcher(vlanFile.getName())
+                        .replaceAll(Matcher.quoteReplacement("_" + (System.currentTimeMillis() / 1000))) + ".scan");
+                boolean copyFile = FileSystemWorker.copyOrDelFile(vlanFile, newFileName, true);
+                messageToUser.info(vlanFile.getName() + " copied to ", newFileName, " = " + copyFile);
+            }
+            OutputStream outputStream = null;
+            try {
+                //noinspection resource,IOResourceOpenedButNotSafelyClosed
+                outputStream = new FileOutputStream(vlanFile);
+            }
+            catch (FileNotFoundException e) {
+                messageToUser.errorAlert(getClass().getSimpleName(), ".ExecScan", e.getMessage());
+            }
+            this.printStream = new PrintStream(Objects.requireNonNull(outputStream), true);
+            if (ALL_DEVICES_LOCAL_DEQUE.remainingCapacity() > 0) {
+                boolean execScanB = execScan();
+                messageToUser.info("ALL_DEV", "Scan from " + from + " to " + to + " is " + execScanB, "ALL_DEVICES_LOCAL_DEQUE = " + ALL_DEVICES_LOCAL_DEQUE.size());
+            }
+            else {
+                messageToUser.error(getClass().getSimpleName(), String.valueOf(ALL_DEVICES_LOCAL_DEQUE.remainingCapacity()), " ALL_DEVICES_LOCAL_DEQUE remainingCapacity!");
+            }
         }
-        OutputStream outputStream = null;
-        try {
-            outputStream = new FileOutputStream(vlanFile);
+    }
+    
+    private long setSpend() throws IOException {
+        long spendMS = System.currentTimeMillis() - stArt;
+        synchronized(preferences) {
+            try {
+                preferences.sync();
+                preferences.putLong(getClass().getSimpleName(), spendMS);
+                preferences.sync();
+            }
+            catch (BackingStoreException e) {
+                InitProperties initProperties = new FileProps(ConstantsFor.PROPS_FILE_JAVA_ID);
+                Properties fileProps = initProperties.getProps();
+                fileProps.setProperty(getClass().getSimpleName(), String.valueOf(spendMS));
+                fileProps.store(new FileOutputStream(ConstantsFor.PROPS_FILE_JAVA_ID), getClass().getSimpleName() + ".setSpend");
+            }
         }
-        catch (IOException e) {
-            messageToUser.errorAlert(getClass().getSimpleName(), ".ExecScan", e.getMessage());
-        }
-        this.printStream = new PrintStream(Objects.requireNonNull(outputStream), true);
-        if (ALL_DEVICES_LOCAL_DEQUE.remainingCapacity() > 0) {
-            boolean execScanB = execScan();
-            messageToUser.info("ALL_DEV", "Scan from " + from + " to " + to + " is " + execScanB, "ALL_DEVICES_LOCAL_DEQUE = " + ALL_DEVICES_LOCAL_DEQUE.size());
-        }
-        else {
-            messageToUser.error(getClass().getSimpleName(), String.valueOf(ALL_DEVICES_LOCAL_DEQUE.remainingCapacity()), " ALL_DEVICES_LOCAL_DEQUE remainingCapacity!");
-        }
-        
+        return spendMS;
     }
     
     private String getBeansInfo() {
         final StringBuilder sb = new StringBuilder();
+        ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
+        RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
         
         sb.append("<br>");
         sb.append(runtimeMXBean.getName()).append(" Name. ");
         sb.append(runtimeMXBean.getUptime()).append(" Time. ");
-        sb.append(runtimeMXBean.getInputArguments()).append(" InputArguments. ");
-        sb.append(runtimeMXBean.getClassPath()).append(" ClassPath. ");
-        sb.append(runtimeMXBean.getLibraryPath()).append(" LibraryPath. ");
-        sb.append(runtimeMXBean.getVmVersion()).append(" VmVersion. ");
-        
         sb.append("<br>");
         sb.append("<br>");
         
         ThreadInfo infoThisThr = threadMXBean.getThreadInfo(Thread.currentThread().getId());
         sb.append(infoThisThr).append(" String. ");
-        sb.append(infoThisThr.isSuspended()).append(" Suspended. ");
         sb.append(infoThisThr.getThreadName()).append(" ThreadName. ");
         sb.append(infoThisThr.getWaitedTime()).append(" WaitedTime (millis). ");
+        sb.append(infoThisThr.getThreadState()).append(" current state. ");
+        sb.append(TimeUnit.NANOSECONDS.toMillis(threadMXBean.getCurrentThreadCpuTime())).append(" current thread CPU time in millis. ");
         
         return sb.toString();
     }
@@ -134,7 +152,7 @@ public class ExecScan extends DiapazonScan implements Runnable {
     private boolean execScan() {
         this.stArt = System.currentTimeMillis();
         try {
-            ConcurrentMap<String, String> stringStringConcurrentMap = scanLanSegment(from, to, whatVlan, printStream);
+            ConcurrentMap<String, String> stringStringConcurrentMap = scanLanSegment(from, to);
             NetScanFileWorker.getI().setLastStamp(System.currentTimeMillis());
             new ExitApp(from + "-" + to + ".map", stringStringConcurrentMap).writeOwnObject();
             return true;
@@ -153,7 +171,7 @@ public class ExecScan extends DiapazonScan implements Runnable {
      @throws IOException при записи файла
      */
     private String oneIpScanAndPrintToFile(int iThree, int jFour) throws IOException {
-        AppComponents.threadConfig().thrNameSet(String.valueOf(iThree));
+        threadConfig.thrNameSet(String.valueOf(iThree));
         
         int timeOutMSec = (int) ConstantsFor.DELAY;
         byte[] aBytes = InetAddress.getByName(whatVlan + iThree + "." + jFour).getAddress();
@@ -190,12 +208,11 @@ public class ExecScan extends DiapazonScan implements Runnable {
     /**
      Сканер локальной сети@param stStMap Запись в лог@param fromVlan начало с 3 октета IP@param toVlan   конец с 3 октета IP@param whatVlan первый 2 октета, с точкоё в конце.
      */
-    private ConcurrentMap<String, String> scanLanSegment(int fromVlan, int toVlan, String whatVlan, PrintStream printStream) {
+    private ConcurrentMap<String, String> scanLanSegment(int fromVlan, int toVlan) throws IOException {
         ConcurrentMap<String, String> stStMap = new ConcurrentHashMap<>(MAX_IN_ONE_VLAN * (toVlan - fromVlan));
         String theScannedIPHost = "No scan yet. MAP Capacity: ";
         
         for (int i = fromVlan; i < toVlan; i++) {
-            StringBuilder msgBuild = new StringBuilder();
             for (int j = 0; j < 255; j++) {
                 AppComponents.threadConfig().thrNameSet(i + "." + j);
                 try {
@@ -211,6 +228,7 @@ public class ExecScan extends DiapazonScan implements Runnable {
             }
             executionProcessLog.add(getBeansInfo());
             Collections.sort(executionProcessLog);
+            setSpend();
             if (executionProcessLog.size() >= 8) {
                 String fileName = this.from + "_vlan-to_" + this.to + ".log";
                 boolean fileOk = FileSystemWorker.writeFile(fileName, executionProcessLog.stream());
@@ -218,7 +236,6 @@ public class ExecScan extends DiapazonScan implements Runnable {
                 messageToUser.info(fileName, "fileOk", " = " + fileOk);
             }
         }
-        
         return stStMap;
     }
 }

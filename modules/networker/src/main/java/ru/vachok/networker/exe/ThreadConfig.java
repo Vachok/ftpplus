@@ -21,10 +21,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CustomizableThreadCreator;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.config.DeadLockMonitor;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
 
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadInfo;
+import java.lang.management.ThreadMXBean;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -45,22 +48,26 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
     /**
      {@link ThreadPoolTaskScheduler}
      */
-    private static ThreadPoolTaskScheduler TASK_SCHEDULER = new ThreadPoolTaskScheduler();
+    private static final ThreadPoolTaskScheduler TASK_SCHEDULER = new ThreadPoolTaskScheduler();
     
     /**
      {@link ThreadPoolTaskExecutor}
      */
-    private static ThreadPoolTaskExecutor TASK_EXECUTOR = new ThreadPoolTaskExecutor();
+    private static final ThreadPoolTaskExecutor TASK_EXECUTOR = new ThreadPoolTaskExecutor();
     
     /**
      Instance
      */
     private static final ThreadConfig THREAD_CONFIG_INST = new ThreadConfig();
     
+    private static final ThreadMXBean MX_BEAN_THREAD = ManagementFactory.getThreadMXBean();
+    
     /**
      Название метода
      */
     private static final String EXECUTE_AS_THREAD_METH_NAME = "ThreadConfig.executeAsThread";
+    
+    private static final String AEXECUTOR = "asyncExecutor = ";
     
     /**
      {@link MessageLocal}
@@ -69,18 +76,20 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
     
     private Runnable r;
     
-    private static final String AEXECUTOR = "asyncExecutor = ";
-    
     private ThreadConfig() {
     }
     
+    public String dumpToFile() {
+        ThreadInfo[] threadInfos = MX_BEAN_THREAD.dumpAllThreads(true, true);
+        String fromArray = new TForms().fromArray(threadInfos, false);
+        return FileSystemWorker.writeFile("stack.txt", fromArray);
+    }
     
     /**
      @return {@link #TASK_EXECUTOR}
      */
     public ThreadPoolTaskExecutor getTaskExecutor() {
         TASK_EXECUTOR.initialize();
-        boolean prestartCoreThread = TASK_EXECUTOR.getThreadPoolExecutor().prestartCoreThread();
         TASK_EXECUTOR.getThreadPoolExecutor().setCorePoolSize(900);
         TASK_EXECUTOR.setQueueCapacity(1800);
         TASK_EXECUTOR.setWaitForTasksToCompleteOnShutdown(true);
@@ -95,7 +104,6 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
         return THREAD_CONFIG_INST;
     }
     
-    
     public ThreadPoolTaskScheduler getTaskScheduler() {
         TASK_SCHEDULER.initialize();
         ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = TASK_SCHEDULER.getScheduledThreadPoolExecutor();
@@ -107,7 +115,6 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
         TASK_SCHEDULER.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardPolicy());
         return TASK_SCHEDULER;
     }
-    
     
     /**
      Killer
@@ -125,7 +132,6 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
         messageToUser.warn(builder.toString());
     }
     
-    
     public void thrNameSet(String className) {
         float localUptimer = (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN;
         String delaysCount = String.format("%.01f", (localUptimer / ConstantsFor.DELAY));
@@ -141,7 +147,6 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
         Thread.currentThread().setName(thrName);
     }
     
-    
     public boolean execByThreadConfig(Runnable runnable) {
         this.r = runnable;
         try {
@@ -155,14 +160,12 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
         }
     }
     
-    @Override
-    public String toString() {
+    @Override public String toString() {
         final StringBuilder sb = new StringBuilder("ThreadConfig{");
-        sb.append("\n");
-        sb.append(", <br><font color=\"#fcf594\">TASK_SCHEDULER=").append(TASK_SCHEDULER.getScheduledThreadPoolExecutor().toString().split("\\Q@\\E")[1]);
-        sb.append(", <br>TASK_EXECUTOR=").append(TASK_EXECUTOR.getThreadPoolExecutor().toString().split("\\Q@\\E")[1]);
-        sb.append(", <br>Locks: ").append(new DeadLockMonitor()).append("<p>");
-        sb.append("</font>}");
+        sb.append(MX_BEAN_THREAD.getTotalStartedThreadCount()).append(" total threads started, ");
+        sb.append(MX_BEAN_THREAD.getThreadCount()).append(" current threads live, ");
+        sb.append(MX_BEAN_THREAD.getPeakThreadCount()).append(" peak live. ");
+        sb.append('}');
         return sb.toString();
     }
     

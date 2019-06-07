@@ -3,7 +3,6 @@ package ru.vachok.networker.accesscontrol.common;
 
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 
 import java.awt.*;
@@ -37,7 +36,6 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
     }
     
     private String isDelete() throws IOException {
-        AppComponents.threadConfig().thrNameSet("com.rgh");
         boolean b1 = Files.deleteIfExists(new File("common.own").toPath());
         boolean b = Files.deleteIfExists(new File("common.rgh").toPath());
         String msg = new StringBuilder()

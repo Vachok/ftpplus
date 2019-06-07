@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.PfLists;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
@@ -89,6 +88,8 @@ public class PfListsCtr {
      */
     private long timeOutLong = 1L;
     
+    private final ThreadConfig threadConfig = AppComponents.threadConfig();
+    
     
     /**
      Public-консттруктор.
@@ -129,7 +130,7 @@ public class PfListsCtr {
     @GetMapping("/pflists")
     public String pfBean(@NotNull Model model, @NotNull HttpServletRequest request, @NotNull HttpServletResponse response) throws UnknownHostException {
         ConstantsFor.getVis(request);
-        AppComponents.threadConfig().thrNameSet("pfget");
+        threadConfig.thrNameSet("pfget");
     
         long lastScan = Long.parseLong(properties.getProperty(ConstantsFor.PR_PFSCAN, "1"));
         @NotNull String refreshRate = String.valueOf(TimeUnit.MILLISECONDS.toMinutes(delayRefInt) * ConstantsFor.ONE_HOUR_IN_MIN);
@@ -142,13 +143,13 @@ public class PfListsCtr {
             modSet(model);
         }
         if (request.getQueryString() != null) {
-            AppComponents.threadConfig().execByThreadConfig(pfListsSrvInstAW::makeListRunner);
+            threadConfig.execByThreadConfig(pfListsSrvInstAW::makeListRunner);
             model.addAttribute(ATT_METRIC, refreshRate);
         }
         long nextUpd = pfListsInstAW.getGitStatsUpdatedStampLong() + TimeUnit.MINUTES.toMillis(DELAY_LOCAL_INT);
         pfListsInstAW.setTimeStampToNextUpdLong(nextUpd);
         if (nextUpd < System.currentTimeMillis()) {
-            AppComponents.threadConfig().execByThreadConfig(pfListsSrvInstAW::makeListRunner);
+            threadConfig.execByThreadConfig(pfListsSrvInstAW::makeListRunner);
             model.addAttribute(ATT_METRIC, "Запущено обновление");
             model.addAttribute(ConstantsFor.ATT_GITSTATS, toString());
         }
@@ -166,7 +167,7 @@ public class PfListsCtr {
     @PostMapping("/runcom")
     public @NotNull String runCommand(@NotNull Model model, @NotNull @ModelAttribute PfListsSrv pfListsSrv) throws UnsupportedOperationException {
         this.pfListsSrvInstAW = pfListsSrv;
-        AppComponents.threadConfig().thrNameSet("com.pst");
+        threadConfig.thrNameSet("com.pst");
         
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
         model.addAttribute(ConstantsFor.ATT_HEAD, new PageFooter().getHeaderUtext());
@@ -197,13 +198,6 @@ public class PfListsCtr {
         throw new UnknownHostException(PfListsSrv.getDefaultConnectSrv() + ". <font color=\"red\"> NO PING!!!</font>");
     }
     
-    private void propUpd(Properties properties) {
-        properties.setProperty(ConstantsFor.PR_PFSCAN, pfListsInstAW.getGitStatsUpdatedStampLong() + "");
-        messageToUser.info("PfListsCtr.propUpd", "new TForms().fromArray(properties, false)", new TForms().fromArray(properties, false));
-        properties.setProperty("meminfo", ConstantsFor.getMemoryInfo());
-        properties.setProperty("thr", Thread.activeCount() + "");
-    }
-    
     /**
      Установка аттрибутов модели.
      <p>
@@ -231,7 +225,7 @@ public class PfListsCtr {
                 " thr, active\nChange: " +
                 (Thread.activeCount() - Long.parseLong(properties.getProperty("thr", "1"))) + "\n" +
                 ConstantsFor.getMemoryInfo() + "\n" +
-                AppComponents.threadConfig();
+                threadConfig;
     
         model.addAttribute("PfListsSrv", pfListsSrvInstAW);
         model.addAttribute(ATT_METRIC, metricValue);

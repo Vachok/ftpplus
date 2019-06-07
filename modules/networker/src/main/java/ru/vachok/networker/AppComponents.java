@@ -46,7 +46,7 @@ import java.util.concurrent.TimeUnit;
  Компоненты. Бины
  
  @since 02.05.2018 (22:14) */
-@ComponentScan
+@SuppressWarnings("OverlyCoupledClass") @ComponentScan
 public class AppComponents {
     
     
@@ -59,25 +59,24 @@ public class AppComponents {
     
     private static final String DB_JAVA_ID = ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName();
     
-    private static MessageToUser messageToUser = new MessageLocal(AppComponents.class.getSimpleName());
+    private static final ThreadConfig THREAD_CONFIG = ThreadConfig.getI();
     
-    @Bean
-    public static Logger getLogger(String className) {
-        return LoggerFactory.getLogger(className);
-    }
+    private static MessageToUser messageToUser = new MessageLocal(AppComponents.class.getSimpleName());
     
     public static String ipFlushDNS() throws UnsupportedOperationException {
         StringBuilder stringBuilder = new StringBuilder();
-        try {
-            Process processFlushDNS = Runtime.getRuntime().exec("ipconfig /flushdns");
-            InputStream flushDNSInputStream = processFlushDNS.getInputStream();
-            InputStreamReader reader = new InputStreamReader(flushDNSInputStream);
-            try (BufferedReader bufferedReader = new BufferedReader(reader)) {
-                bufferedReader.lines().forEach(stringBuilder::append);
+        if (System.getProperty("os.name").toLowerCase().contains(ConstantsFor.PR_WINDOWSOS)) {
+            try {
+                Process processFlushDNS = Runtime.getRuntime().exec("ipconfig /flushdns");
+                InputStream flushDNSInputStream = processFlushDNS.getInputStream();
+                InputStreamReader reader = new InputStreamReader(flushDNSInputStream);
+                try (BufferedReader bufferedReader = new BufferedReader(reader)) {
+                    bufferedReader.lines().forEach(stringBuilder::append);
+                }
             }
-        }
-        catch (IOException e) {
-            messageToUser.error(e.getMessage());
+            catch (IOException e) {
+                messageToUser.error(e.getMessage());
+            }
         }
         return stringBuilder.toString();
     }
@@ -129,24 +128,15 @@ public class AppComponents {
     
     @Bean
     @Scope(ConstantsFor.SINGLETON)
-    public String saveLogsToDB() {
+    public SaveLogsToDB saveLogsToDB() {
         SaveLogsToDB.startScheduled();
-        return SaveLogsToDB.showInfo();
+        return SaveLogsToDB.getI();
     }
     
     @Bean
     @Scope(ConstantsFor.SINGLETON)
     public static ThreadConfig threadConfig() {
-        ThreadConfig threadConfig = null;
-        try {
-        
-            threadConfig = ThreadConfig.getI();
-        
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-        return threadConfig;
+        return THREAD_CONFIG;
     }
     
     @Bean
@@ -162,7 +152,7 @@ public class AppComponents {
     @Scope(ConstantsFor.SINGLETON)
     public static VersionInfo versionInfo() {
         VersionInfo versionInfo = new VersionInfo();
-        if (ConstantsFor.thisPC().toLowerCase().contains("home") || ConstantsFor.thisPC().toLowerCase().contains("do00213")) {
+        if (ConstantsFor.thisPC().toLowerCase().contains("home") | ConstantsFor.thisPC().toLowerCase().contains("do00213")) {
             versionInfo.setParams();
         }
         return versionInfo;
@@ -219,6 +209,10 @@ public class AppComponents {
     
     public static String diapazonedScan() {
         return DiapazonScan.getInstance().theInfoToString();
+    }
+    
+    public static Logger getLogger(String name) {
+        return LoggerFactory.getLogger(name);
     }
     
     @Bean

@@ -1,6 +1,6 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.statistics;
+package ru.vachok.networker.exe.schedule;
 
 
 import ru.vachok.messenger.MessageToUser;
@@ -8,6 +8,9 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.abstr.DataBaseRegSQL;
 import ru.vachok.networker.services.MessageLocal;
+import ru.vachok.networker.statistics.InteretStats;
+import ru.vachok.networker.statistics.PCStats;
+import ru.vachok.networker.statistics.StatsOfNetAndUsers;
 import ru.vachok.networker.systray.MessageToTray;
 
 import java.util.List;
@@ -65,8 +68,8 @@ public class WeekStats implements Runnable, StatsOfNetAndUsers {
     }
     
     @Override public String getInetStats() {
-        DataBaseRegSQL dataBaseRegSQL = new InteretStats();
-        ((InteretStats) dataBaseRegSQL).run();
+        InteretStats dataBaseRegSQL = new InteretStats();
+        dataBaseRegSQL.run();
         return dataBaseRegSQL.toString();
     }
     

@@ -1,4 +1,4 @@
-package ru.vachok.networker.config;
+package ru.vachok.networker.exe.schedule;
 
 
 import ru.vachok.messenger.MessageToUser;

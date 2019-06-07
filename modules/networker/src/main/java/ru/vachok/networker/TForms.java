@@ -433,6 +433,37 @@ public class TForms {
         return nStringBuilder.toString();
     }
     
+    public String fromArray(ThreadInfo[] infos, boolean isHTML) {
+        this.brStringBuilder = new StringBuilder();
+        this.nStringBuilder = new StringBuilder();
+        
+        for (ThreadInfo threadInfo : infos) {
+            brStringBuilder.append(threadInfo.getThreadName()).append(" ").append(threadInfo.getThreadState()).append(BR_STR);
+            brStringBuilder.append(threadInfo.getThreadName()).append(" ").append(threadInfo.getThreadState()).append(N_STR);
+            for (StackTraceElement element : threadInfo.getStackTrace()) {
+                parseTrace(element);
+            }
+            brStringBuilder.append(BR_STR);
+            nStringBuilder.append(N_STR);
+            try {
+                String lockInfoStr = threadInfo.getLockInfo().toString();
+                
+                brStringBuilder.append(lockInfoStr).append(BR_STR);
+                nStringBuilder.append(lockInfoStr).append(N_STR);
+            }
+            catch (RuntimeException e) {
+                nStringBuilder.append(new TForms().fromArray(e, false));
+            }
+        }
+    
+        if (isHTML) {
+            return brStringBuilder.toString();
+        }
+        else {
+            return nStringBuilder.toString();
+        }
+    }
+    
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("TForms{");

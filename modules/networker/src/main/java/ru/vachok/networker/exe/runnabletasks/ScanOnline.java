@@ -11,6 +11,7 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.Pinger;
 import ru.vachok.networker.ad.user.MoreInfoWorker;
+import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.InfoWorker;
@@ -48,6 +49,8 @@ public class ScanOnline implements Runnable, Pinger {
     private static final String FILENAME_ON = ScanOnline.class.getSimpleName() + FILEEXT_ONLIST;
     
     private final String sep = ConstantsFor.FILESYSTEM_SEPARATOR;
+    
+    private final ThreadConfig threadConfig = AppComponents.threadConfig();
     
     /**
      {@link NetListKeeper#getOnLinesResolve()}
@@ -120,13 +123,27 @@ public class ScanOnline implements Runnable, Pinger {
     
     @Override
     public void run() {
-        AppComponents.threadConfig().execByThreadConfig(this::offlineNotEmptyActions);
+        threadConfig.execByThreadConfig(this::offlineNotEmptyActions);
         File onlinesFile = new File(FILENAME_ON);
         File fileMAX = new File(onlinesFile.toPath().toAbsolutePath().toString().replace(FILENAME_ON, sep + "lan" + sep + "max.online"));
+    
         if (onlinesFile.exists()) {
             onlineFileExists(onlinesFile, fileMAX);
         }
         messageToUser.info(getClass().getSimpleName() + ".run", "writeOnLineFile()", " = " + writeOnLineFile(onlinesFile));
+    }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("<b>Since ").append("<i>").append(new Date(NetScanFileWorker.getI().getLastStamp())).append("</i>").append(tvInfo.getInfoAbout()).append("</b><br><br>");
+        sb.append("<details><summary>Максимальное кол-во онлайн адресов: ").append(maxOnList.size()).append("</summary>").append(new TForms().fromArray(maxOnList, true))
+            .append(ConstantsFor.HTMLTAG_DETAILSCLOSE);
+        sb.append("<b>ipconfig /flushdns = </b>").append(new String(AppComponents.ipFlushDNS().getBytes(), Charset.forName("IBM866"))).append("<br>");
+        sb.append("Offline pc is <font color=\"red\"><b>").append(NET_LIST_KEEPER.getOffLines().size()).append(":</b></font><br>");
+        sb.append("Online  pc is<font color=\"#00ff69\"> <b>").append(onLinesResolve.size()).append(":</b><br>");
+        sb.append(new TForms().fromArray(onLinesResolve, true)).append("</font><br>");
+        return sb.toString();
     }
     
     private boolean writeOnLineFile(File onlinesFile) {
@@ -143,19 +160,6 @@ public class ScanOnline implements Runnable, Pinger {
             e.printStackTrace();
             return false;
         }
-    }
-    
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder();
-        sb.append("<b>Since ").append("<i>").append(new Date(NetScanFileWorker.getI().getLastStamp())).append("</i>").append(tvInfo.getInfoAbout()).append("</b><br><br>");
-        sb.append("<details><summary>Максимальное кол-во онлайн адресов: ").append(maxOnList.size()).append("</summary>").append(new TForms().fromArray(maxOnList, true))
-            .append(ConstantsFor.HTMLTAG_DETAILSCLOSE);
-        sb.append("<b>ipconfig /flushdns = </b>").append(new String(AppComponents.ipFlushDNS().getBytes(), Charset.forName("IBM866"))).append("<br>");
-        sb.append("Offline pc is <font color=\"red\"><b>").append(NET_LIST_KEEPER.getOffLines().size()).append(":</b></font><br>");
-        sb.append("Online  pc is<font color=\"#00ff69\"> <b>").append(onLinesResolve.size()).append(":</b><br>");
-        sb.append(new TForms().fromArray(onLinesResolve, true)).append("</font><br>");
-        return sb.toString();
     }
     
     private void onlineFileExists(File onlinesFile, File fileMAX) {

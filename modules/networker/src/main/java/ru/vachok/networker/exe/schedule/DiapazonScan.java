@@ -4,9 +4,12 @@ package ru.vachok.networker.exe.schedule;
 
 
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.mysqlandprops.props.FileProps;
+import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.controller.ServiceInfoCtrl;
 import ru.vachok.networker.exe.runnabletasks.ExecScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetScanFileWorker;
@@ -21,13 +24,14 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static ru.vachok.networker.net.enums.ConstantsNet.*;
 
@@ -53,6 +57,8 @@ public class DiapazonScan implements Runnable {
     private static final DiapazonScan OUR_INSTANCE = new DiapazonScan();
     
     private static final Map<String, File> SCAN_FILES = makeFilesMap();
+    
+    private static final Pattern COMPILE = Pattern.compile(".txt", Pattern.LITERAL);
     
     /**
      {@link ConstantsNet#getAllDevices()}
@@ -102,8 +108,8 @@ public class DiapazonScan implements Runnable {
     /**
      Чтобы случайно не уничтожить Overridden {@link #toString()}
      <p>
-     
-     @return информация о состоянии файлов {@code DiapazonScan. Start at} ...для {@link ru.vachok.networker.controller.ServiceInfoCtrl} .
+ 
+     @return информация о состоянии файлов {@code DiapazonScan. Start at} ...для {@link ServiceInfoCtrl} .
      */
     public String theInfoToString() {
         StringBuilder fileTimes = new StringBuilder();
@@ -144,7 +150,7 @@ public class DiapazonScan implements Runnable {
         startDo();
     }
     
-    private ExecScan[] getRunnables() {
+    private static ExecScan[] getRunnables() {
         return new ExecScan[]{
             new ExecScan(10, 20, "10.10.", SCAN_FILES.get(FILENAME_SERVTXT_10SRVTXT)),
             new ExecScan(21, 31, "10.10.", SCAN_FILES.get(FILENAME_SERVTXT_21SRVTXT)),
@@ -193,8 +199,8 @@ public class DiapazonScan implements Runnable {
     private void startDo() {
         if (ALL_DEVICES_LOCAL_DEQUE.remainingCapacity() == 0) {
             SCAN_FILES.values().stream().forEach(x->{
-                String newName = ROOT_PATH_STR + ConstantsFor.FILESYSTEM_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + x.getName()
-                    .replace(".txt", "_" + (System.currentTimeMillis() / 1000)) + ".scan";
+                String newName = ROOT_PATH_STR + ConstantsFor.FILESYSTEM_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + COMPILE.matcher(x.getName())
+                    .replaceAll(Matcher.quoteReplacement("_" + (System.currentTimeMillis() / 1000))) + ".scan";
                 File newFile = new File(newName);
                 FileSystemWorker.copyOrDelFile(x, newFile.getAbsolutePath(), true);
                 messageToUser.info(getClass().getSimpleName() + ".startDo", "newFile", " = " + newFile.getAbsolutePath());
@@ -202,14 +208,16 @@ public class DiapazonScan implements Runnable {
             ALL_DEVICES_LOCAL_DEQUE.clear();
         }
         AppComponents.threadConfig().execByThreadConfig(this::theNewLan);
-        AppComponents.threadConfig().execByThreadConfig(this::scanServers);
+        AppComponents.threadConfig().execByThreadConfig(DiapazonScan::scanServers);
         AppComponents.threadConfig().execByThreadConfig(DiapazonScan::scanOldLan);
         AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor().scheduleAtFixedRate(this::setScanInMin, 3, 5, TimeUnit.MINUTES);
     }
     
     private void setScanInMin() {
         if (ALL_DEVICES_LOCAL_DEQUE.remainingCapacity() > 0 && TimeUnit.MILLISECONDS.toMinutes(getRunMin()) > 0 && ALL_DEVICES_LOCAL_DEQUE.size() > 0) {
+    
             long scansItMin = ALL_DEVICES_LOCAL_DEQUE.size() / TimeUnit.MILLISECONDS.toMinutes(getRunMin());
+    
             AppComponents.getProps().setProperty(ConstantsFor.PR_SCANSINMIN, String.valueOf(scansItMin));
             messageToUser.warn(getClass().getSimpleName(), "scansItMin", " = " + scansItMin);
             try {
@@ -224,7 +232,7 @@ public class DiapazonScan implements Runnable {
     /**
      Скан подсетей 10.10.xx.xxx
      */
-    private void scanServers() {
+    private static void scanServers() {
         for (ExecScan r : getRunnables()) {
             AppComponents.threadConfig().execByThreadConfig(r);
         }
@@ -234,11 +242,16 @@ public class DiapazonScan implements Runnable {
      @return {@link ExecScan} (from [10,21,31,41] to [20,31,41,51]) запрос из {@link #theInfoToString()}
      */
     private long getRunMin() {
-        List<Long> timeSpend = new ArrayList<>();
-        for (ExecScan e : getRunnables()) {
-            timeSpend.add(e.getSpend());
+        Preferences preferences = Preferences.userRoot();
+        try {
+            preferences.sync();
+            return preferences.getLong(ExecScan.class.getSimpleName(), 1);
         }
-        return Collections.max(timeSpend);
+        catch (BackingStoreException e) {
+            InitProperties initProperties = new FileProps(ConstantsFor.PROPS_FILE_JAVA_ID);
+            Properties props = initProperties.getProps();
+            return Long.parseLong(props.getProperty(ExecScan.class.getSimpleName()));
+        }
     }
     
     /**

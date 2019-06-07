@@ -3,11 +3,11 @@ package ru.vachok.networker;
 
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.exe.runnabletasks.NetMonitorPTV;
 import ru.vachok.networker.exe.runnabletasks.ScanOnline;
 import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.NetMonitorPTV;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
@@ -71,15 +71,8 @@ class UnixThread extends Thread {
             stringBuilder.append(threadMXBean.getThreadInfo(Thread.currentThread().getId()));
         }
         
-        setUnixThreadInfo(stringBuilder.toString());
         dateSchedulers(executorService);
-        
         return stringBuilder.toString();
     }
-    
-    private static void setUnixThreadInfo(String unixThreadInfo) {
-        AppInfoOnLoad.unixThreadInfo = unixThreadInfo;
-    }
-    
     
 }

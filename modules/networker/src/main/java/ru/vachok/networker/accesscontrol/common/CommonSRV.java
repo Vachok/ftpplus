@@ -21,7 +21,7 @@ import java.util.Collections;
 /**
  /common сервис
  <p>
-
+ 
  @since 05.12.2018 (9:07) */
 @Service(ConstantsFor.ATT_COMMON)
 public class CommonSRV {
@@ -42,14 +42,6 @@ public class CommonSRV {
     private String perionDays;
     
     private String searchPat;
-    
-    public String getPerionDays() {
-        return perionDays;
-    }
-    
-    public void setPerionDays(String perionDays) {
-        this.perionDays = perionDays;
-    }
     
     /**
      @return {@link #delFolderPath}
@@ -85,6 +77,14 @@ public class CommonSRV {
         sb.append(", perionDays='").append(perionDays).append('\'');
         sb.append('}');
         return sb.toString();
+    }
+    
+    String getPerionDays() {
+        return perionDays;
+    }
+    
+    public void setPerionDays(String perionDays) {
+        this.perionDays = perionDays;
     }
     
     String searchByPat() {

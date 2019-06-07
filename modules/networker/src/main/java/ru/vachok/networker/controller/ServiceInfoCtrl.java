@@ -11,11 +11,10 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.*;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.SpeedChecker;
 import ru.vachok.networker.fileworks.CountSizeOfWorkDir;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.fileworks.ProgrammFilesReader;
-import ru.vachok.networker.fileworks.ReadFileTo;
 import ru.vachok.networker.net.NetPinger;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.net.enums.OtherKnownDevices;
@@ -52,11 +51,9 @@ import static java.time.temporal.ChronoUnit.HOURS;
 public class ServiceInfoCtrl {
     
     
-    private static final String SERVICE_INFO_CTRL_CLOSE_APP = "ServiceInfoCtrl.closeApp";
-    
     private static final MessageToUser messageToUser = new MessageLocal(ServiceInfoCtrl.class.getSimpleName());
     
-    private ProgrammFilesReader filesReader = new ReadFileTo();
+    private final ThreadConfig threadConfig = AppComponents.threadConfig();
     
     private boolean authReq;
     
@@ -83,11 +80,12 @@ public class ServiceInfoCtrl {
      */
     @GetMapping("/serviceinfo")
     public String infoMapping(Model model, HttpServletRequest request, HttpServletResponse response) throws AccessDeniedException, ExecutionException, InterruptedException {
-        AppComponents.threadConfig().thrNameSet("info");
+        threadConfig.thrNameSet("info");
         messageToUser.warn(getClass().getSimpleName(), "netPinger minutes", " = " + netPinger());
         visitor = new AppComponents().visitor(request);
-        AppComponents.threadConfig().execByThreadConfig(new SpeedChecker());
-        this.authReq = Stream.of("0:0:0:0", "127.0.0.1", "10.10.111", "10.200.213.85", "172.16.20", "10.200.214.80", "192.168.13.143").anyMatch(sP->request.getRemoteAddr().contains(sP));
+        threadConfig.execByThreadConfig(new SpeedChecker());
+        this.authReq = Stream.of("0:0:0:0", "127.0.0.1", "10.10.111", "10.200.213.85", "172.16.20", "10.200.214.80", "192.168.13.143")
+            .anyMatch(sP->request.getRemoteAddr().contains(sP));
         if (authReq) {
             modModMaker(model, request, visitor);
             response.addHeader(ConstantsFor.HEAD_REFRESH, "90");
@@ -97,7 +95,6 @@ public class ServiceInfoCtrl {
             throw new AccessDeniedException("Sorry. Denied, for you: " + request.getRemoteAddr());
         }
     }
-    
     
     @GetMapping("/pcoff")
     public void offPC(Model model) throws IOException {
@@ -127,6 +124,14 @@ public class ServiceInfoCtrl {
         return "ok";
     }
     
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("ServiceInfoCtrl{");
+        sb.append("authReq=").append(authReq);
+        sb.append(", visitor=").append(visitor);
+        sb.append('}');
+        return sb.toString();
+    }
     
     /**
      Считает время до конца дня.
@@ -141,9 +146,11 @@ public class ServiceInfoCtrl {
         LocalDateTime startDayTime = LocalDateTime.ofEpochSecond(timeStart.getTime() / 1000, 0, ZoneOffset.ofHours(3));
         LocalTime startDay = startDayTime.toLocalTime();
         LocalTime endDay = startDay.plus(amountH, HOURS);
+    
         final int secDayEnd = endDay.toSecondOfDay();
         final int startSec = startDay.toSecondOfDay();
         final int allDaySec = secDayEnd - startSec;
+    
         LocalTime localTime = endDay.minusHours(LocalTime.now().getHour());
         localTime = localTime.minusMinutes(LocalTime.now().getMinute());
         localTime = localTime.minusSeconds(LocalTime.now().getSecond());
@@ -172,18 +179,10 @@ public class ServiceInfoCtrl {
         return new NetPinger();
     }
     
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("ServiceInfoCtrl{");
-        sb.append("authReq=").append(authReq);
-        sb.append(", visitor=").append(visitor);
-        sb.append('}');
-        return sb.toString();
-    }
-    
-    private void modModMaker( Model model , HttpServletRequest request , Visitor visitor ) throws ExecutionException, InterruptedException {
+    private void modModMaker(Model model, HttpServletRequest request, Visitor visitorParam) throws ExecutionException, InterruptedException {
         this.visitor = ConstantsFor.getVis(request);
-        this.visitor = visitor;
+        this.visitor = visitorParam;
+        
         Callable<String> sizeOfDir = new CountSizeOfWorkDir("sizeofdir");
         Callable<Long> callWhenCome = new SpeedChecker();
         Callable<String> filesWithSize;
@@ -197,12 +196,11 @@ public class ServiceInfoCtrl {
             .append(new AppInfoOnLoad()).append(" ").append(AppInfoOnLoad.class.getSimpleName()).append("<p>")
             .append(new TForms().fromArray(AppComponents.getProps(), true))
             .append("<p>")
-            .append(FileSystemWorker.readFile(new File("exit.last").getAbsolutePath())).append("<p>")
+            .append("<center>").append(FileSystemWorker.readFile(new File("exit.last").getAbsolutePath())).append("</center>").append("<p>")
             .append("<p><font color=\"grey\">").append(listFilesToReadStr()).append("</font>")
             .toString();
-    
-        model.addAttribute(ConstantsFor.ATT_TITLE, getLast() + " " + pingDO0213());
         
+        model.addAttribute(ConstantsFor.ATT_TITLE, getLast() + " " + pingDO0213());
         model.addAttribute("mail", percToEnd(comeD, 9));
         model.addAttribute("ping", pingGit());
         model.addAttribute("urls", new StringBuilder()
@@ -220,7 +218,7 @@ public class ServiceInfoCtrl {
             .append(AppComponents.threadConfig())
             .toString());
         model.addAttribute("request", prepareRequest(request));
-        model.addAttribute(ConstantsFor.ATT_VISIT, visitor.toString());
+        model.addAttribute(ConstantsFor.ATT_VISIT, visitorParam.toString());
         model.addAttribute("res", resValue);
         model.addAttribute("back", request.getHeader(ConstantsFor.ATT_REFERER.toLowerCase()));
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<br><a href=\"/nohup\">" + getJREVers() + "</a>");

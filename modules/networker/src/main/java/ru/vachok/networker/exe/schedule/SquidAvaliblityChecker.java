@@ -1,4 +1,4 @@
-package ru.vachok.networker.accesscontrol.sshactions;
+package ru.vachok.networker.exe.schedule;
 
 
 import ru.vachok.messenger.MessageToUser;
@@ -9,7 +9,7 @@ import ru.vachok.networker.services.MessageLocal;
 import java.util.concurrent.Callable;
 
 
-public class SquidChecker implements Callable<String>, Runnable {
+public class SquidAvaliblityChecker implements Callable<String>, Runnable {
     
     
     private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());

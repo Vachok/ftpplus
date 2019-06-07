@@ -8,6 +8,10 @@ public class SaveLogsToDB implements Runnable {
     
     private static final ru.vachok.stats.SaveLogsToDB LOGS_TO_DB_EXT = new ru.vachok.stats.SaveLogsToDB();
     
+    public static SaveLogsToDB getI() {
+        return new SaveLogsToDB();
+    }
+    
     public static void startScheduled() {
         LOGS_TO_DB_EXT.startScheduled();
     }

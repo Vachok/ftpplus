@@ -37,8 +37,6 @@ public final class NetListKeeper {
     
     private static NetListKeeper netListKeeper = new NetListKeeper();
     
-    private static String ptvTime;
-    
     private ConcurrentMap<String, String> onLinesResolve = new ConcurrentHashMap<>();
     
     private ConcurrentMap<String, String> offLines = new ConcurrentHashMap<>();
@@ -48,7 +46,6 @@ public final class NetListKeeper {
     private String nameOfExtObject = getClass().getSimpleName() + "onLinesResolve.map";
     
     private NetListKeeper() {
-        AppComponents.threadConfig().getTaskScheduler().submitListenable(new ExitApp("on.map", this.onLinesResolve));
     }
     
     public Map<String, String> getInetUniqMap() {
@@ -64,14 +61,6 @@ public final class NetListKeeper {
     
     public static NetListKeeper getI() {
         return netListKeeper;
-    }
-    
-    public static String getPtvTime() {
-        return ptvTime;
-    }
-    
-    static void setPtvTime(String ptvTime) {
-        NetListKeeper.ptvTime = ptvTime;
     }
     
     /**
@@ -100,25 +89,14 @@ public final class NetListKeeper {
         return retDeq;
     }
     
-    @Override
-    public int hashCode() {
-        int result = getOnLinesResolve().hashCode();
-        result = 31 * result + getOffLines().hashCode();
-        return result;
+    public ConcurrentMap<String, String> getOnLinesResolve() {
+        readMap();
+        AppComponents.threadConfig().getTaskScheduler().scheduleAtFixedRate(new ChkOnlinePCsSizeChange(), TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY));
+        return this.onLinesResolve;
     }
     
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof NetListKeeper)) {
-            return false;
-        }
-        
-        NetListKeeper that = (NetListKeeper) o;
-        
-        return getOnLinesResolve().equals(that.getOnLinesResolve()) && getOffLines().equals(that.getOffLines());
+    public ConcurrentMap<String, String> getOffLines() {
+        return this.offLines;
     }
     
     @Override
@@ -131,18 +109,7 @@ public final class NetListKeeper {
         return sb.toString();
     }
     
-    public ConcurrentMap<String, String> getOnLinesResolve() {
-        readMap();
-        AppComponents.threadConfig().getTaskScheduler().scheduleAtFixedRate(new ChkOnlinePCsSizeChange(), TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY));
-        return this.onLinesResolve;
-    }
-    
-    public ConcurrentMap<String, String> getOffLines() {
-        return this.offLines;
-    }
-    
     private void readMap() {
-        
         try (InputStream inputStream = new FileInputStream(nameOfExtObject);
              ObjectInputStream objectInputStream = new ObjectInputStream(inputStream)
         ) {
@@ -153,7 +120,6 @@ public final class NetListKeeper {
             //
         }
     }
-    
     
     private class ChkOnlinePCsSizeChange implements Runnable {
         

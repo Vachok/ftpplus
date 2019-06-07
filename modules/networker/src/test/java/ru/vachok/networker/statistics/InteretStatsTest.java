@@ -2,6 +2,7 @@ package ru.vachok.networker.statistics;
 
 
 import org.testng.annotations.Test;
+import ru.vachok.networker.exe.schedule.WeekStats;
 
 import static org.testng.Assert.assertFalse;
 

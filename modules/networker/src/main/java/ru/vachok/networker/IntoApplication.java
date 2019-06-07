@@ -12,24 +12,22 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.exe.ThreadConfig;
-import ru.vachok.networker.exe.runnabletasks.SpeedChecker;
 import ru.vachok.networker.exe.runnabletasks.TelnetStarter;
+import ru.vachok.networker.exe.schedule.WeekStats;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
-import ru.vachok.networker.statistics.WeekStats;
 import ru.vachok.networker.systray.SystemTrayHelper;
 
 import java.awt.*;
 import java.io.IOException;
-import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.TextStyle;
 import java.util.List;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 
 /**
@@ -62,11 +60,7 @@ public class IntoApplication {
     /**
      {@link MessageLocal}
      */
-    private static final MessageToUser messageToUser = new MessageLocal(IntoApplication.class.getSimpleName());
-    
-    private static final ThreadPoolTaskExecutor EXECUTOR = AppComponents.threadConfig().getTaskExecutor();
-    
-    private static final ScheduledThreadPoolExecutor SCHEDULED_THREAD_POOL_EXECUTOR = AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor();
+    private static final MessageToUser MESSAGE_LOCAL = new MessageLocal(IntoApplication.class.getSimpleName());
     
     public static ConfigurableApplicationContext getConfigurableApplicationContext() {
         synchronized(SPRING_APPLICATION) {
@@ -115,7 +109,7 @@ public class IntoApplication {
                 beforeSt(true);
             }
             catch (NullPointerException e) {
-                messageToUser.error(FileSystemWorker.error(IntoApplication.class.getSimpleName() + ".main", e));
+                MESSAGE_LOCAL.error(FileSystemWorker.error(IntoApplication.class.getSimpleName() + ".main", e));
             }
             afterSt();
         }
@@ -132,7 +126,7 @@ public class IntoApplication {
      <p>
      1. {@link AppComponents#threadConfig()}. Управление запуском и трэдами. <br><br>
      <b>Runnable</b><br>
-     2. {@link IntoApplication#getWeekPCStats()} собирает инфо о скорости в файл. Если воскресенье, запускает {@link WeekStats} <br><br>
+     2. {@link AppInfoOnLoad#getWeekPCStats()} собирает инфо о скорости в файл. Если воскресенье, запускает {@link WeekStats} <br><br>
      <b>Далее:</b><br>
      3. {@link AppComponents#threadConfig()} (4. {@link ThreadConfig#getTaskExecutor()}) - запуск <b>Runnable</b> <br>
      5. {@link ThreadConfig#getTaskExecutor()} - запуск {@link AppInfoOnLoad}. <br><br>
@@ -142,21 +136,7 @@ public class IntoApplication {
      */
     private static void afterSt() {
         @NotNull Runnable infoAndSched = new AppInfoOnLoad();
-        EXECUTOR.submit(infoAndSched);
-        EXECUTOR.submit(IntoApplication::getWeekPCStats);
-    }
-    
-    /**
-     Статистика по-пользователям за неделю.
-     <p>
-     Запуск new {@link SpeedChecker.ChkMailAndUpdateDB}, через {@link Executors#unconfigurableExecutorService(java.util.concurrent.ExecutorService)}
-     <p>
-     Если {@link LocalDate#getDayOfWeek()} equals {@link DayOfWeek#SUNDAY}, запуск new {@link WeekStats}
-     */
-    private static void getWeekPCStats() {
-        if (LocalDate.now().getDayOfWeek().equals(DayOfWeek.SUNDAY)) {
-            AppComponents.threadConfig().execByThreadConfig(new WeekStats(ConstantsFor.SQL_SELECTFROM_PCUSERAUTO));
-        }
+        AppComponents.threadConfig().getTaskExecutor().execute(infoAndSched);
     }
     
     /**
@@ -213,7 +193,7 @@ public class IntoApplication {
             AppComponents.threadConfig().execByThreadConfig(exitApp);
         }
         if (stringStringEntry.getKey().contains("notray")) {
-            messageToUser.info("IntoApplication.readArgs", "key", " = " + stringStringEntry.getKey());
+            MESSAGE_LOCAL.info("IntoApplication.readArgs", "key", " = " + stringStringEntry.getKey());
             isTray = false;
         }
         if (stringStringEntry.getKey().contains("ff")) {
@@ -268,9 +248,8 @@ public class IntoApplication {
         stringBuilder.append(LocalDate.now().getDayOfWeek().getValue());
         stringBuilder.append(" - day of week\n");
         stringBuilder.append(LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault()));
-        messageToUser.info("IntoApplication.beforeSt", "stringBuilder", stringBuilder.toString());
+        MESSAGE_LOCAL.info("IntoApplication.beforeSt", "stringBuilder", stringBuilder.toString());
         System.setProperty(ConstantsFor.STR_ENCODING, "UTF8");
         FileSystemWorker.writeFile("system", new TForms().fromArray(System.getProperties()));
-        SCHEDULED_THREAD_POOL_EXECUTOR.schedule(()->messageToUser.info(new TForms().fromArray(LOCAL_PROPS, false)), ConstantsFor.DELAY + 10, TimeUnit.MINUTES);
     }
 }

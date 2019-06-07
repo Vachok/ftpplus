@@ -1,4 +1,4 @@
-package ru.vachok.networker.mailserver;
+package ru.vachok.networker.exe.schedule;
 
 
 import org.slf4j.Logger;

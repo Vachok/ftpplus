@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,8 +22,8 @@ import ru.vachok.networker.ad.user.MoreInfoWorker;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.VersionInfo;
 import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.exe.runnabletasks.NetMonitorPTV;
 import ru.vachok.networker.net.InfoWorker;
-import ru.vachok.networker.net.NetListKeeper;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.SimpleCalculator;
 import ru.vachok.networker.services.WhoIsWithSRV;
@@ -102,7 +101,6 @@ public class MatrixCtr {
 
      @param versionInfo {@link AppComponents#versionInfo()}
      */
-    @SuppressWarnings("WeakerAccess")
     @Autowired
     public MatrixCtr(VersionInfo versionInfo) {
         this.versionInfoInst = versionInfo;
@@ -139,14 +137,14 @@ public class MatrixCtr {
         qIsNull(model, request);
         model.addAttribute(ConstantsFor.ATT_HEAD, new PageFooter().getHeaderUtext());
         model.addAttribute(ConstantsFor.ATT_DEVSCAN,
-            "Since " + NetListKeeper.getPtvTime() + infoWorker.getInfoAbout() + currentProvider);
+            "Since " + AppComponents.getProps().getProperty(NetMonitorPTV.class.getSimpleName()) + infoWorker.getInfoAbout() + currentProvider);
         response.addHeader(ConstantsFor.HEAD_REFRESH, "120");
         return "starting";
     }
     
     @SuppressWarnings("MethodWithMultipleReturnPoints")
     @PostMapping(GET_MATRIX)
-    public String getWorkPosition(@ModelAttribute(ConstantsFor.BEANNAME_MATRIX) MatrixSRV matrixSRV, BindingResult result, Model model) {
+    public String getWorkPosition(@ModelAttribute(ConstantsFor.BEANNAME_MATRIX) MatrixSRV matrixSRV, Model model) {
         this.matrixSRV = matrixSRV;
         String workPos = matrixSRV.getWorkPos();
         if (workPos.toLowerCase().contains("whois:")) {
