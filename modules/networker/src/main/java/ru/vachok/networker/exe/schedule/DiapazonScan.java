@@ -79,11 +79,13 @@ public class DiapazonScan implements Runnable {
     
     /**
      SINGLETON
-     
+ 
      @return single.
      */
     public static DiapazonScan getInstance() {
-        return OUR_INSTANCE;
+        synchronized(SCAN_FILES) {
+            return OUR_INSTANCE;
+        } //?
     }
     
     /**
