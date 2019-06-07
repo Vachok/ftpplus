@@ -130,12 +130,14 @@ import java.util.regex.Pattern;
     
     String uploadToServer(Queue<Path> pathQueue) {
         StringBuilder stringBuilder = new StringBuilder();
+    
         while (!pathQueue.isEmpty()) {
             uploadFile(pathQueue.poll().toFile());
         }
         for (File file : getLibFiles()) {
-            uploadFile(file);
+            stringBuilder.append(uploadFile(file));
         }
+    
         return stringBuilder.toString();
     }
     
