@@ -194,9 +194,9 @@ public class ServiceInfoCtrl {
             .append("<b><i>").append(AppComponents.versionInfo()).append("</i></b><p><font color=\"orange\">")
             .append(ConstantsNet.getSshMapStr()).append("</font><p>")
             .append(new AppInfoOnLoad()).append(" ").append(AppInfoOnLoad.class.getSimpleName()).append("<p>")
-            .append(new TForms().fromArray(AppComponents.getProps(), true))
+            .append(new TForms().fromArray(AppComponents.getProps(), true)).append("<br>Prefs: ").append(new TForms().fromArray(AppComponents.getUserPref(), true))
             .append("<p>")
-            .append("<center>").append(FileSystemWorker.readFile(new File("exit.last").getAbsolutePath())).append("</center>").append("<p>")
+            .append(ConstantsFor.HTMLTAG_CENTER).append(FileSystemWorker.readFile(new File("exit.last").getAbsolutePath())).append(ConstantsFor.HTML_CENTER_CLOSE).append("<p>")
             .append("<p><font color=\"grey\">").append(listFilesToReadStr()).append("</font>")
             .toString();
         
