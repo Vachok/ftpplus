@@ -155,9 +155,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
     }
     
     private void readOnlyFileReturnFile(File prFile) throws IOException {
-        InitProperties initProperties = new FileProps(ConstantsFor.PROPS_FILE_JAVA_ID);
+        InitProperties initProperties = new FileProps(ConstantsFor.class.getSimpleName());
         retProps.putAll(initProperties.getProps());
-        retProps.setProperty("loadedFromFile", "true");
         new AppComponents().updateProps(retProps);
     }
     

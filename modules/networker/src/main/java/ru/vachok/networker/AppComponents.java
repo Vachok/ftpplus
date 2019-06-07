@@ -175,10 +175,15 @@ public class AppComponents {
     }
     
     public boolean updateProps(Properties propertiesToUpdate) throws IOException {
+        if (propertiesToUpdate.size() > 5) {
+            File pFile = new File(ConstantsFor.PROPS_FILE_JAVA_ID);
+            pFile.setWritable(true);
+            pFile.delete();
+            propertiesToUpdate.store(new FileOutputStream(ConstantsFor.PROPS_FILE_JAVA_ID), getClass().getSimpleName() + ".updateProps");
+        }
         InitProperties initProperties = new DBRegProperties(ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName());
         boolean isDel = initProperties.delProps();
         boolean isSet = initProperties.setProps(propertiesToUpdate);
-        propertiesToUpdate.store(new FileOutputStream(ConstantsFor.class.getSimpleName() + ConstantsFor.FILEEXT_PROPERTIES), getClass().getSimpleName() + ".updateProps");
         return isDel & isSet;
     }
     
