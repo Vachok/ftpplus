@@ -13,37 +13,37 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 import java.util.Arrays;
 import java.util.Objects;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 
 
 /**
  @since 07.05.2019 (12:40) */
-public class DeadLockMonitor implements Runnable {
+public class DeadLockMonitor implements Callable<String> {
     
     
     private String message = "No deadlocks, good!";
     
     private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
     
-    @Override public void run() {
+    @Override public String call() {
+        StringBuilder stringBuilder = new StringBuilder();
         ScheduledFuture<?> scheduledFuture = AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor()
             .scheduleWithFixedDelay(this::monitoringStart, 0, ConstantsFor.DELAY, TimeUnit.SECONDS);
         try {
-            scheduledFuture.get(ConstantsFor.DELAY, TimeUnit.SECONDS);
+            stringBuilder.append(scheduledFuture.get(ConstantsFor.DELAY, TimeUnit.SECONDS));
         }
         catch (InterruptedException e) {
+            stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false));
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
         }
         catch (ExecutionException | TimeoutException e) {
-            messageToUser.error(e.getMessage());
+            stringBuilder.append(e.getMessage());
         }
         catch (NullPointerException e) {
-            messageToUser.info(message + " " + true);
+            stringBuilder.append(message).append(" ").append(true);
         }
+        return stringBuilder.toString();
     }
     
     @Override public String toString() {

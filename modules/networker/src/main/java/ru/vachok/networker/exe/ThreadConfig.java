@@ -22,16 +22,14 @@ import org.springframework.util.CustomizableThreadCreator;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.exe.schedule.DeadLockMonitor;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.*;
 
 
 /**
@@ -160,11 +158,22 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
         }
     }
     
+    private String getDLMon(){
+        Future<String> dlMon = TASK_EXECUTOR.submit(new DeadLockMonitor());
+        try {
+            return dlMon.get(ConstantsFor.DELAY, TimeUnit.SECONDS);
+        }
+        catch (InterruptedException | ExecutionException | TimeoutException e) {
+            return e.getMessage();
+        }
+    }
+    
     @Override public String toString() {
         final StringBuilder sb = new StringBuilder("ThreadConfig{");
         sb.append(MX_BEAN_THREAD.getTotalStartedThreadCount()).append(" total threads started, ");
         sb.append(MX_BEAN_THREAD.getThreadCount()).append(" current threads live, ");
-        sb.append(MX_BEAN_THREAD.getPeakThreadCount()).append(" peak live. ");
+        sb.append(MX_BEAN_THREAD.getPeakThreadCount()).append(" peak live. <br>");
+        sb.append(getDLMon());
         sb.append('}');
         return sb.toString();
     }
