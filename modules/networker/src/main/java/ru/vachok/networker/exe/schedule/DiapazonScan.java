@@ -83,9 +83,7 @@ public class DiapazonScan implements Runnable {
      @return single.
      */
     public static DiapazonScan getInstance() {
-        synchronized(SCAN_FILES) {
-            return OUR_INSTANCE;
-        } //?
+         return OUR_INSTANCE; //todo
     }
     
     /**
