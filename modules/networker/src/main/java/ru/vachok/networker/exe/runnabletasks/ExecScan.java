@@ -66,7 +66,7 @@ public class ExecScan extends DiapazonScan implements Runnable {
     
     private String whatVlan;
     
-    private PrintStream printStream;
+    private PrintStream printStream; //fixme
     
     public ExecScan(int from, int to, String whatVlan, File vlanFile) {
         
@@ -90,7 +90,7 @@ public class ExecScan extends DiapazonScan implements Runnable {
             boolean copyFile = FileSystemWorker.copyOrDelFile(vlanFile, newFileName, true);
             messageToUser.info(vlanFile.getName() + " copied to ", newFileName, " = " + copyFile);
         }
-        OutputStream outputStream = null;
+        OutputStream outputStream = null; //fixme
         try {
             //noinspection resource,IOResourceOpenedButNotSafelyClosed
             outputStream = new FileOutputStream(vlanFile);
@@ -98,7 +98,7 @@ public class ExecScan extends DiapazonScan implements Runnable {
         catch (FileNotFoundException e) {
             messageToUser.errorAlert(getClass().getSimpleName(), ".ExecScan", e.getMessage());
         }
-        this.printStream = new PrintStream(Objects.requireNonNull(outputStream), true);
+        this.printStream = new PrintStream(Objects.requireNonNull(outputStream), true); //fixme
         if (ALL_DEVICES_LOCAL_DEQUE.remainingCapacity() > 0) {
             boolean execScanB = execScan();
             messageToUser.info("ALL_DEV", "Scan from " + from + " to " + to + " is " + execScanB, "ALL_DEVICES_LOCAL_DEQUE = " + ALL_DEVICES_LOCAL_DEQUE.size());
