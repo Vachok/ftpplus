@@ -214,8 +214,12 @@ public class AppComponents {
         }
     }
     
-    public static String diapazonedScan() {
+    public static String diapazonedScanInfo() {
         return DiapazonScan.getInstance().theInfoToString();
+    }
+    
+    public static DiapazonScan diapazonScan() {
+        return DiapazonScan.getInstance();
     }
     
     public static Logger getLogger(String name) {

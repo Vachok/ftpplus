@@ -238,7 +238,7 @@ public class NetScanCtr {
             qerNotNullScanAllDevices(model, response);
         }
         model.addAttribute("head", new PageFooter().getHeaderUtext() + "<center><p><a href=\"/showalldev?needsopen\"><h2>Show All IPs in file</h2></a></center>");
-        model.addAttribute("ok", AppComponents.diapazonedScan());
+        model.addAttribute("ok", AppComponents.diapazonedScanInfo());
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + ". Left: " + ConstantsNet.getAllDevices().remainingCapacity() + " " +
             "IPs.");
         return "ok";

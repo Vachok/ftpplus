@@ -213,7 +213,7 @@ public class ServiceInfoCtrl {
             .append(".<br> Состояние памяти (МБ): <font color=\"#82caff\">")
             .append(ConstantsFor.getMemoryInfo()).append("<details><summary> disk usage by program: </summary>").append(filesSizeFuture.get()).append("</details><br>")
             .append("</font><br>")
-            .append(AppComponents.diapazonedScan())
+            .append(AppComponents.diapazonedScanInfo())
             .append("<br>")
             .append(AppComponents.threadConfig())
             .toString());

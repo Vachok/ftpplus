@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.exe.schedule;
 
 
@@ -9,6 +11,7 @@ import ru.vachok.networker.services.MessageLocal;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledFuture;
@@ -46,7 +49,7 @@ public class DeadLockMonitor implements Runnable {
     @Override public String toString() {
         final StringBuilder sb = new StringBuilder("DeadLockMonitor{");
         try {
-            sb.append(Objects.requireNonNull(monitoringStart(), "No Locks"));
+            sb.append(Arrays.toString(Objects.requireNonNull(monitoringStart(), "No Locks")));
             sb.append('}');
         }
         catch (NullPointerException e) {
