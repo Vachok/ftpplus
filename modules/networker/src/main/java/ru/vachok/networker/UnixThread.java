@@ -18,7 +18,9 @@ import static ru.vachok.networker.AppInfoOnLoad.dateSchedulers;
 
 
 /**
+@deprecated since 07.06.2019 (23:43)
  @since 06.06.2019 (16:58) */
+@Deprecated
 class UnixThread extends Thread {
     
     
