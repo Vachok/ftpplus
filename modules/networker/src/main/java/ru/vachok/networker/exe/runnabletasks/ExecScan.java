@@ -207,8 +207,8 @@ public class ExecScan extends DiapazonScan implements Runnable {
     private ConcurrentMap<String, String> scanLanSegment(int fromVlan, int toVlan) throws IOException {
         ConcurrentMap<String, String> stStMap = new ConcurrentHashMap<>(MAX_IN_ONE_VLAN * (toVlan - fromVlan));
         String theScannedIPHost = "No scan yet. MAP Capacity: ";
-        
         for (int i = fromVlan; i < toVlan; i++) {
+            setSpend();
             for (int j = 0; j < 255; j++) {
                 AppComponents.threadConfig().thrNameSet(i + "." + j);
                 try {
@@ -224,7 +224,6 @@ public class ExecScan extends DiapazonScan implements Runnable {
             }
             executionProcessLog.add(getBeansInfo());
             Collections.sort(executionProcessLog);
-            setSpend();
             if (executionProcessLog.size() >= 8) {
                 String fileName = this.from + "_vlan-to_" + this.to + ".log";
                 boolean fileOk = FileSystemWorker.writeFile(fileName, executionProcessLog.stream());
