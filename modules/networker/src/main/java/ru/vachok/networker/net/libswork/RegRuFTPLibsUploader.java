@@ -6,13 +6,13 @@ package ru.vachok.networker.net.libswork;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPClientConfig;
+import org.apache.commons.net.ftp.FTPFile;
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 
-import javax.naming.AuthenticationException;
 import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
@@ -27,6 +27,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.Properties;
 import java.util.Queue;
 import java.util.regex.Matcher;
@@ -47,47 +48,35 @@ import java.util.regex.Pattern;
     
     private static final Pattern COMPILE = Pattern.compile("-", Pattern.LITERAL);
     
+    private static final Pattern PATTERN = Pattern.compile("\\Q\\\\E");
+    
+    private final FTPClient ftpClient = getFtpClient();
+    
     private static MessageToUser messageToUser = new MessageSwing();
     
-    private static FTPClient ftpClient = new FTPClient();
+    private String uploadDirectoryStr;
     
-    private String ftpPass;
-    
-    {
-        if (ConstantsFor.thisPC().toLowerCase().contains("home") || ConstantsFor.thisPC().toLowerCase().contains("do00213")) {
-            try {
-                ftpPass = chkPass();
-            }
-            catch (AuthenticationException e) {
-                messageToUser.error(getClass().getSimpleName(), "INITIALIZE AUTH ERROR", e.getMessage());
-            }
-        }
-        else {
-            System.out.println(ConstantsFor.thisPC() + " this PC is not develop PC!");
-        }
-    }
+    private String ftpPass = chkPass();
     
     @Override public void run() {
         AppComponents.threadConfig().thrNameSet("ftp");
-        try {
-            String connectTo = uploadLibs();
-            messageToUser.infoTimer(Math.toIntExact(ConstantsFor.DELAY * 2), connectTo);
+        if (chkPC()) {
+            try {
+                String connectTo = uploadLibs();
+                messageToUser.infoTimer(Math.toIntExact(ConstantsFor.DELAY * 2), connectTo);
+            }
+            catch (AccessDeniedException e) {
+                messageToUser.error(e.getMessage() + " " + getClass().getSimpleName() + ".run");
+            }
         }
-        catch (AccessDeniedException e) {
-            messageToUser.error(e.getMessage() + " " + getClass().getSimpleName() + ".run");
+        else {
+            System.err.println(ConstantsFor.thisPC() + " this PC is not develop PC!");
         }
     }
     
     @Override public String uploadLibs() throws AccessDeniedException {
-        String dbPass = "Wrong pass";
-        try {
-            dbPass = chkPass();
-        }
-        catch (AuthenticationException e) {
-            messageToUser.error(e.getMessage());
-        }
-        if (ConstantsFor.thisPC().toLowerCase().contains("home") | ConstantsFor.thisPC().toLowerCase().contains(ConstantsFor.HOSTNAME_DO213) && dbPass != null) {
-            this.ftpPass = dbPass;
+        String pc = ConstantsFor.thisPC();
+        if (pc.toLowerCase().contains("home") | pc.toLowerCase().contains(ConstantsFor.HOSTNAME_DO213) && ftpPass != null) {
             return makeConnectionAndStoreLibs();
         }
         else {
@@ -97,6 +86,16 @@ import java.util.regex.Pattern;
     
     @Override public Queue<String> getContentsQueue() {
         throw new IllegalComponentStateException("04.06.2019 (17:25)");
+    }
+    
+    void setUploadDirectoryStr() {
+        Path rootPath = Paths.get(".").toAbsolutePath().normalize();
+        String fSep = System.getProperty("file.separator");
+        this.uploadDirectoryStr = rootPath + fSep + "src" + fSep + "main" + fSep + "resources" + fSep + "static" + fSep + "cover";
+    }
+    
+    String getUploadDirectoryStr() {
+        return uploadDirectoryStr;
     }
     
     File[] getLibFiles() {
@@ -112,32 +111,32 @@ import java.util.regex.Pattern;
         return retMassive;
     }
     
-    FTPClient getFtpClient() {
-        try {
-            RegRuFTPLibsUploader.ftpClient.connect(getHost(), ConstantsFor.FTP_PORT);
-            FTPClientConfig config = new FTPClientConfig();
-            config.setServerTimeZoneId("Europe/Moscow");
-            RegRuFTPLibsUploader.ftpClient.configure(config);
+    String uploadToServer(Queue<Path> pathQueue, boolean isDirectory) throws IOException {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(makeConnectionAndStoreLibs());
+        
+        while (!pathQueue.isEmpty()) {
+            Path upPath = pathQueue.poll();
+            if (isDirectory) {
+                String relativeStr = PATTERN.matcher(upPath.normalize().toAbsolutePath().toString().replace(uploadDirectoryStr, "")).replaceAll("/");
+                stringBuilder.append(checkDir(relativeStr));
+            }
+            else {
+                return pathQueue.size() + " files.";
+            }
         }
-        catch (IOException e) {
-            messageToUser.error(getClass().getSimpleName(), "getFtpClient", e.getMessage());
-        }
-        return RegRuFTPLibsUploader.ftpClient;
+        return stringBuilder.toString();
     }
     
-    protected void setFtpPass(String ftpPass) {
-        this.ftpPass = ftpPass;
-    }
-    
-    protected String chkPass() throws AuthenticationException {
-        Properties properties = new DBRegProperties("general-pass").getProps();
-        String passDB = properties.getProperty("defpassftpmd5hash");
-        if (!getDigest(passDB).equals(PASSWORD_HASH)) {
-            return properties.getProperty("realftppass");
+    String uploadToServer(Queue<Path> pathQueue) {
+        StringBuilder stringBuilder = new StringBuilder();
+        while (!pathQueue.isEmpty()) {
+            uploadFile(pathQueue.poll().toFile());
         }
-        else {
-            throw new AuthenticationException("WRONG PASSWORD");
+        for (File file : getLibFiles()) {
+            uploadFile(file);
         }
+        return stringBuilder.toString();
     }
     
     protected InetAddress getHost() {
@@ -150,6 +149,36 @@ import java.util.regex.Pattern;
             messageToUser.error(RegRuFTPLibsUploader.class.getSimpleName(), "getHost", e.getMessage());
         }
         return ftpAddress;
+    }
+    
+    private String chkPass() {
+        Properties properties = new DBRegProperties("general-pass").getProps();
+        String passDB = properties.getProperty("defpassftpmd5hash");
+        if (!getDigest(passDB).equals(PASSWORD_HASH)) {
+            return properties.getProperty("realftppass");
+        }
+        else {
+            return "WRONG RASS";
+        }
+    }
+    
+    private FTPClient getFtpClient() {
+        FTPClient client = new FTPClient();
+        
+        try {
+            client.connect(getHost(), ConstantsFor.FTP_PORT);
+        }
+        catch (IOException e) {
+            System.err.println(e.getMessage());
+        }
+        FTPClientConfig config = new FTPClientConfig();
+        config.setServerTimeZoneId("Europe/Moscow");
+        client.configure(config);
+        return client;
+    }
+    
+    private boolean chkPC() {
+        return ConstantsFor.thisPC().toLowerCase().contains("home") || ConstantsFor.thisPC().toLowerCase().contains("do0213");
     }
     
     private String makeConnectionAndStoreLibs() {
@@ -178,15 +207,41 @@ import java.util.regex.Pattern;
         catch (IOException e) {
             messageToUser.error(getClass().getSimpleName(), "CWD ERROR", e.getMessage());
         }
-        
-        File[] libsToStore = getLibFiles();
-        for (File file : libsToStore) {
-            stringBuilder.append(uploadFile(file));
+        stringBuilder.append(uploadToServer(new LinkedList<>()));
+        return stringBuilder.toString();
+    }
+    
+    private String checkDir(final String dirRelative) throws IOException {
+        StringBuilder stringBuilder = new StringBuilder();
+        boolean changeWorkingDirectory = ftpClient.changeWorkingDirectory("/cover");
+        stringBuilder.append(ftpClient.getReplyString());
+        if (changeWorkingDirectory) {
+            boolean removeDirectory = ftpClient.removeDirectory(dirRelative);
+            if (dirRelative.isEmpty() && !removeDirectory) {
+                checkDirContent(dirRelative);
+            }
+            ftpClient.makeDirectory(dirRelative);
+            stringBuilder.append(ftpClient.getReplyString());
         }
         return stringBuilder.toString();
     }
     
-    private static String uploadFile(File file) {
+    private void checkDirContent(String dirRelative) throws IOException {
+        ftpClient.changeWorkingDirectory(dirRelative);
+        System.out.println(ftpClient.getReplyString());
+        
+        for (FTPFile ftpFile : ftpClient.listFiles()) {
+            boolean deleteFile = ftpClient.deleteFile(ftpFile.getLink());
+            System.out.println(ftpClient.getReplyString());
+            String isDel = ftpFile.getName() + " is deleted: " + deleteFile;
+            System.out.println("isDel = " + isDel);
+        }
+        for (FTPFile ftpDir : ftpClient.listDirectories()) {
+            System.out.println(checkDir(ftpDir.getLink()));
+        }
+    }
+    
+    private String uploadFile(File file) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(file.getAbsolutePath()).append(" local file. ");
         String nameFTPFile = getName(file);
@@ -219,6 +274,10 @@ import java.util.regex.Pattern;
         else if (nameFTPFile.toLowerCase().contains("ostpst-")) {
             nameFTPFile = "ost.jar";
         }
+        else {
+            nameFTPFile = file.getName();
+        }
+        
         return nameFTPFile;
     }
     
