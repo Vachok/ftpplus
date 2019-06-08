@@ -74,7 +74,7 @@ public class DBMessenger implements MessageToUser {
 
     @Override
     public void warn(String s, String s1, String s2) {
-        throw new UnsupportedOperationException();
+        info(s, s1, s2);
     }
 
     @Override

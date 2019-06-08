@@ -78,7 +78,7 @@ public class TestServer implements ConnectToMe {
         }
         catch (IOException e) {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".reconSock", e));
-            reconSock();
+            accepSoc();
         }
     }
     
