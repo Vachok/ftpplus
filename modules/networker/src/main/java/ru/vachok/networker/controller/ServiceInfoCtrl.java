@@ -59,7 +59,7 @@ public class ServiceInfoCtrl {
     /**
      {@link Visitor}
      */
-    private Visitor visitor;
+    @SuppressWarnings("InstanceVariableMayNotBeInitialized") private Visitor visitor;
     
     /**
      GetMapping /serviceinfo
@@ -80,7 +80,8 @@ public class ServiceInfoCtrl {
     @GetMapping("/serviceinfo")
     public String infoMapping(Model model, HttpServletRequest request, HttpServletResponse response) throws AccessDeniedException, ExecutionException, InterruptedException {
         threadConfig.thrNameSet("info");
-        messageToUser.warn(getClass().getSimpleName(), "netPinger minutes", " = " + netPinger());
+        NetPinger pinger = netPinger();
+        System.out.println(pinger.toString());
         visitor = new AppComponents().visitor(request);
         threadConfig.execByThreadConfig(new SpeedChecker());
         this.authReq = Stream.of("0:0:0:0", "127.0.0.1", "10.10.111", "10.200.213.85", "172.16.20", "10.200.214.80", "192.168.13.143")
