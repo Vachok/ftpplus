@@ -153,7 +153,7 @@ public class ScanOnline implements Runnable, Pinger {
     
     private boolean writeOnLineFile() {
         try (OutputStream outputStream = new FileOutputStream(onlinesFile, true);
-             PrintStream printStream = new PrintStream(outputStream, true)) {
+             PrintStream printStream = new PrintStream(outputStream, true)) { //todo TEST IT
             Deque<String> onDeq = NetScanFileWorker.getI().getListOfOnlineDev();
             printStream.println("Checked: " + new Date());
             while (!onDeq.isEmpty()) {
