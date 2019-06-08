@@ -13,7 +13,12 @@ public class TelnetStarterTest {
     @Test
     public void startServer() {
         ConnectToMe connectToMe = new TestServer();
-        connectToMe.runSocket();
+        try {
+            connectToMe.runSocket();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
     }
     
     

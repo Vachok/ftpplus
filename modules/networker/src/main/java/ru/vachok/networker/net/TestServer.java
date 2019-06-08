@@ -30,39 +30,30 @@ import java.util.concurrent.TimeUnit;
 public class TestServer implements ConnectToMe {
     
     
+    private ServerSocket serverSocket;
+    
+    private Socket socket;
+    
+    private PrintStream printStreamF;
+    
+    private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
+    
+    private int listenPort;
+    
     private static final String JAR = "file:///G:/My_Proj/FtpClientPlus/modules/networker/ostpst/build/libs/";
     
     private static final String METHNAME_ACCEPTSOC = ".accepSoc";
     
-    private ServerSocket serverSocket;
-    
-    private PrintStream printStreamF;
-    
-    private Socket socket;
-    
-    private int listenPort;
-    
     public TestServer(int listenPort) {
         this.listenPort = listenPort;
-        try {
-            this.serverSocket = new ServerSocket(listenPort);
-        }
-        catch (IOException e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".TestServer", e));
-        }
     }
-    
-    private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
     
     public TestServer() {
         this.listenPort = Integer.parseInt(AppComponents.getProps().getProperty("lport", "9990"));
     }
     
-    @Override public Socket getSocket() {
-        throw new IllegalComponentStateException("14.05.2019 (20:30)");
-    }
-    
     @Override public void runSocket() {
+        initSrvSock();
         try {
             this.socket = serverSocket.accept();
             do {
@@ -71,8 +62,12 @@ public class TestServer implements ConnectToMe {
         }
         catch (Exception e) {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ConstantsFor.METHNAME_RUNSOCKET, e));
-            runSocket();
+            accepSoc();
         }
+    }
+    
+    @Override public Socket getSocket() {
+        throw new IllegalComponentStateException("14.05.2019 (20:30)");
     }
     
     @Override public void reconSock() {
@@ -83,12 +78,23 @@ public class TestServer implements ConnectToMe {
         }
         catch (IOException e) {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".reconSock", e));
+            reconSock();
+        }
+    }
+    
+    private void initSrvSock() {
+        try {
+            this.serverSocket = new ServerSocket(listenPort);
+        }
+        catch (IOException e) {
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".TestServer", e));
         }
     }
     
     private void accepSoc() {
         int timeout = 0;
         try {
+            this.socket = new Socket();
             socket.setTcpNoDelay(true);
             timeout = (int) (ConstantsFor.DELAY * ConstantsFor.DELAY) * 100;
             socket.setSoTimeout(timeout);
@@ -107,8 +113,8 @@ public class TestServer implements ConnectToMe {
             printStreamF.println("Press ENTER. \nOr press something else for quit...");
             printStreamF.println(TimeUnit.MILLISECONDS.toSeconds(timeout) + " socket timeout in second");
             while (socket.isConnected()) {
-                    System.setIn(socket.getInputStream());
-                    System.setOut(printStreamF);
+                System.setIn(socket.getInputStream());
+                System.setOut(printStreamF);
                 if (socket.isConnected()) {
                     scanInput(scanner.nextLine());
                     printStream.print(iStream.read());
@@ -138,7 +144,6 @@ public class TestServer implements ConnectToMe {
             ConfigurableApplicationContext context = IntoApplication.getConfigurableApplicationContext();
             context.stop();
             context.close();
-            context = null;
             new IntoApplication().setConfigurableApplicationContext(context);
             context.start();
             accepSoc();
