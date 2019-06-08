@@ -189,7 +189,6 @@
 10.200.213.81 tempfull.list NOT UNIQUE
 10.200.213.83 vipnet.list
 10.200.213.84 squid.list
-10.200.213.85 24hrs.list
 10.200.213.86 vipnet.list
 10.200.213.90 vipnet.list
 10.200.213.91 vipnet.list
@@ -246,7 +245,7 @@
 10.200.214.91 vipnet.list
 10.200.214.92 vipnet.list
 10.200.214.93 vipnet.list
-10.200.214.94 24hrs.list
+10.200.214.94 vipnet.list
 10.200.214.95 tempfull.list
 10.200.214.96 vipnet.list
 10.200.214.97 vipnet.list
@@ -284,7 +283,6 @@
 10.200.217.89 tempfull.list
 10.200.217.90 squid.list
 10.200.217.92 vipnet.list
-10.200.218.55 24hrs.list
 172.16.200.10  squidlimited.list
 172.16.200.10  tempfull.list NOT UNIQUE
 172.16.201.6 squid.list
@@ -338,7 +336,6 @@
 192.168.13.69 squidlimited.list
 192.168.13.70 squid.list
 192.168.13.70 tempfull.list NOT UNIQUE
-192.168.13.82 24hrs.list
 192.168.13.85 vipnet.list
 192.168.13.85 squid.list NOT UNIQUE
 192.168.13.99 vipnet.list

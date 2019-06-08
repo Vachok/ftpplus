@@ -6,10 +6,13 @@ package ru.vachok.networker.services;
 import org.apache.commons.net.ntp.TimeInfo;
 import org.slf4j.Logger;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.net.PCUserResolver;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
@@ -121,6 +124,20 @@ public abstract class MyCalen {
     }
     
     /**
+     Очистка pcuserauto
+     */
+    public static void trunkTableUsers() {
+        try (Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
+             PreparedStatement preparedStatement = c.prepareStatement("TRUNCATE TABLE pcuserauto")
+        ) {
+            preparedStatement.executeUpdate();
+        }
+        catch (SQLException e) {
+            System.err.println(e.getMessage());
+        }
+    }
+    
+    /**
      Дата запуска common scanner
      <p>
      Usage: {@link #toStringS()}
@@ -192,7 +209,7 @@ public abstract class MyCalen {
         DateFormat dateFormat = new SimpleDateFormat("MM.dd, hh:mm", Locale.getDefault());
         long delayMs = dateStart.getTime() - System.currentTimeMillis();
         String msg = dateFormat.format(dateStart) + " pcuserauto (" + TimeUnit.MILLISECONDS.toHours(delayMs) + " delay hours)";
-        scheduledExecutorService.scheduleWithFixedDelay(PCUserResolver::trunkTableUsers, delayMs, ConstantsFor.ONE_WEEK_MILLIS, TimeUnit.MILLISECONDS);
+        scheduledExecutorService.scheduleWithFixedDelay(MyCalen::trunkTableUsers, delayMs, ConstantsFor.ONE_WEEK_MILLIS, TimeUnit.MILLISECONDS);
         messageToUser.infoNoTitles("msg = " + msg);
         return msg;
     }
