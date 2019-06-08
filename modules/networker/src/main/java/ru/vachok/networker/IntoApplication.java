@@ -96,7 +96,9 @@ public class IntoApplication {
      @see SystemTrayHelper
      */
     public static void main(@Nullable String[] args) throws IOException {
-        AppComponents.threadConfig().execByThreadConfig(new TelnetStarter());
+        final Thread telnetThread = new Thread(new TelnetStarter());
+        telnetThread.setDaemon(true);
+        telnetThread.start();
         if (configurableApplicationContext == null) {
             setCtx(SpringApplication.run(IntoApplication.class));
         }

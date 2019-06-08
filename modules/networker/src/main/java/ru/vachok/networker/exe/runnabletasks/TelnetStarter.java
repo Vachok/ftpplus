@@ -14,7 +14,9 @@ import ru.vachok.networker.services.MessageLocal;
 import java.util.Properties;
 
 
-public class TelnetStarter implements Runnable {
+/**
+ @since 08.06.2019 (4:36) */
+public class TelnetStarter extends Thread {
     
     
     private static final Properties APP_PROPS = AppComponents.getProps();

@@ -12,6 +12,8 @@ public interface ConnectToMe {
     
     
     void runSocket();
+    
     void reconSock();
+    
     Socket getSocket();
 }
