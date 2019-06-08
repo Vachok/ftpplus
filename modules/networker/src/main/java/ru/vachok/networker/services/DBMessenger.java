@@ -72,7 +72,7 @@ public class DBMessenger implements MessageToUser {
     
     @Override
     public void infoTimer(int i, String s) {
-        throw new UnsupportedOperationException("07.09.2018 (0:11)");
+        info(s, getClass().getSimpleName(), String.valueOf(i));
     }
 
     private void dbSend(String headerMsg, String titleMsg, String bodyMsg) {
@@ -92,22 +92,23 @@ public class DBMessenger implements MessageToUser {
 
     @Override
     public void warn(String s) {
-        throw new UnsupportedOperationException();
+        info(s);
     }
 
     @Override
     public void warning(String s, String s1, String s2) {
-        throw new UnsupportedOperationException();
+        info(s, s1, s2);
     }
 
     @Override
     public void warning(String s) {
-        throw new UnsupportedOperationException();
+        info(s);
     }
 
 
     @Override
     public String confirm( String s , String s1 , String s2 ) {
-        throw new UnsupportedOperationException("07.09.2018 (0:11)");
+        info(s, s1, s2);
+        return "08.06.2019 (16:22)";
     }
 }
