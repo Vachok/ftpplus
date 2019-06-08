@@ -6,7 +6,6 @@ package ru.vachok.networker.services;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -58,12 +57,17 @@ public class DBMessenger implements MessageToUser {
     }
     
     private void dbSend(String headerMsg, String titleMsg, String bodyMsg) {
-        String sql = "insert into ru_vachok_networker (classname, msgtype, msgvalue) values (?,?,?)"; try (Connection c = new AppComponents().connection(ConstantsFor.DBPREFIX + "webapp");
-                                                                                                           PreparedStatement p = c.prepareStatement(sql)) {
-            p.setString(1, headerMsg); p.setString(2, titleMsg); p.setString(3, bodyMsg); p.executeUpdate();
+        final String sql = "insert into ru_vachok_networker (classname, msgtype, msgvalue, pc) values (?,?,?,?)";
+        try (Connection c = new AppComponents().connection(ConstantsFor.DBPREFIX + "webapp");
+             PreparedStatement p = c.prepareStatement(sql)) {
+            p.setString(1, headerMsg);
+            p.setString(2, titleMsg);
+            p.setString(3, bodyMsg);
+            p.setString(4, ConstantsFor.thisPC() + " up: " + ConstantsFor.getUpTime());
+            p.executeUpdate();
         }
         catch (SQLException | IOException e) {
-            FileSystemWorker.error("DBMessenger.dbSend", e);
+            System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".dbSend");
         }
     }
 
