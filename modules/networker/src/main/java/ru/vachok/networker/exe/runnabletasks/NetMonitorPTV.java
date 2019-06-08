@@ -10,7 +10,7 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.OtherKnownDevices;
 import ru.vachok.networker.net.enums.SwitchesWiFi;
-import ru.vachok.networker.services.MessageLocal;
+import ru.vachok.networker.services.DBMessenger;
 
 import java.io.*;
 import java.net.InetAddress;
@@ -36,11 +36,11 @@ public class NetMonitorPTV implements Runnable {
     
     private static final String CLASS_NAME = NetMonitorPTV.class.getSimpleName();
     
-    private OutputStream outputStream;
+    @SuppressWarnings("InstanceVariableMayNotBeInitialized") private OutputStream outputStream;
     
-    private PrintStream printStream;
+    @SuppressWarnings("InstanceVariableMayNotBeInitialized") private PrintStream printStream;
     
-    private MessageToUser messageToUser = new MessageLocal(NetMonitorPTV.class.getSimpleName());
+    private MessageToUser messageToUser = new DBMessenger(NetMonitorPTV.class.getSimpleName());
     
     private String pingResultLast = "No pings yet.";
     
@@ -80,7 +80,7 @@ public class NetMonitorPTV implements Runnable {
                 System.err.println(filePath);
                 preferences.put(ConstantsFor.FILENAME_PTV, "7-JAN-1984 )");
             }
-            this.outputStream = new FileOutputStream(ptvFile, true);
+            this.outputStream = new FileOutputStream(ptvFile);
             this.printStream = new PrintStream(Objects.requireNonNull(outputStream), true);
     
         }
@@ -92,7 +92,7 @@ public class NetMonitorPTV implements Runnable {
         }
     }
     
-    private void checkSize() throws IOException {
+    private void writeStatAndCheckSize() throws IOException {
         File pingTv = new File(ConstantsFor.FILENAME_PTV);
         printStream.print(pingResultLast + " " + LocalDateTime.now());
         printStream.println();
@@ -155,6 +155,6 @@ public class NetMonitorPTV implements Runnable {
         stringBuilder.append(upakCisco2043).append(" is ").append(upakCisco2043Reachable).append(", ");
         stringBuilder.append(gpCisco20410).append(" is ").append(gpCisco2042Reachable).append("<br>***");
         this.pingResultLast = stringBuilder.toString();
-        checkSize();
+        writeStatAndCheckSize();
     }
 }

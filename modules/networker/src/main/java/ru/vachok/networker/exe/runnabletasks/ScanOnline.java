@@ -39,8 +39,6 @@ import java.util.concurrent.*;
 public class ScanOnline implements Runnable, Pinger {
     
     
-    private FileOutputStream fileOutStream = null;
-    
     private File onlinesFile;
     
     /**
@@ -70,12 +68,6 @@ public class ScanOnline implements Runnable, Pinger {
     
     public ScanOnline(File onlinesFile) {
         this.onlinesFile = onlinesFile;
-        try {
-            fileOutStream = new FileOutputStream(onlinesFile);
-        }
-        catch (FileNotFoundException e) {
-            messageToUser.error(e.getMessage());
-        }
     }
     
     public ScanOnline() {
@@ -157,14 +149,14 @@ public class ScanOnline implements Runnable, Pinger {
     }
     
     private boolean writeOnLineFile() {
-        try (OutputStream outputStream = fileOutStream) {
+        try (OutputStream outputStream = new FileOutputStream(onlinesFile)) {
             this.printStream = new PrintStream(outputStream);
             Deque<String> onDeq = NetScanFileWorker.getI().getListOfOnlineDev();
             printStream.println("Checked: " + new Date());
             while (!onDeq.isEmpty()) {
                 isReach(onDeq.poll());
             }
-            return true;
+            return onlinesFile.setLastModified(System.currentTimeMillis());
         }
         catch (IOException e) {
             e.printStackTrace();
