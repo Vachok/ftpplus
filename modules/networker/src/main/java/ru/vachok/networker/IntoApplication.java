@@ -17,6 +17,7 @@ import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.TelnetStarter;
 import ru.vachok.networker.exe.schedule.WeekStats;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.TestServer;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.systray.SystemTrayHelper;
 
@@ -203,8 +204,8 @@ public class IntoApplication {
             LOCAL_PROPS.clear();
             LOCAL_PROPS.putAll(objectMap);
         }
-        if (stringStringEntry.getKey().contains(ConstantsFor.PR_LPORT)) {
-            LOCAL_PROPS.setProperty(ConstantsFor.PR_LPORT, stringStringEntry.getValue());
+        if (stringStringEntry.getKey().contains(TestServer.PR_LPORT)) {
+            LOCAL_PROPS.setProperty(TestServer.PR_LPORT, stringStringEntry.getValue());
         }
         
         return isTray;

@@ -72,8 +72,8 @@ public class ServiceInfoCtrl {
      @param request {@link HttpServletRequest}
      @param response {@link HttpServletResponse}
      @return vir.html
-     
-     @throws AccessDeniedException если не {@link ConstantsFor#getPcAuth(HttpServletRequest)}
+ 
+     @throws AccessDeniedException если не {@link ErrCtr#getPcAuth(HttpServletRequest)}
      @throws ExecutionException запуск {@link #modModMaker(Model, HttpServletRequest, Visitor)}
      @throws InterruptedException запуск {@link #modModMaker(Model, HttpServletRequest, Visitor)}
      */

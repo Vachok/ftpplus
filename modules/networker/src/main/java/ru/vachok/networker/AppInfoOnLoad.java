@@ -25,6 +25,8 @@ import ru.vachok.networker.services.MyCalen;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -92,6 +94,30 @@ public class AppInfoOnLoad implements Runnable {
         String s = totalSize / ConstantsFor.MBYTE + " MB IIS Logs\n";
         MINI_LOGGER.add(s);
         return s;
+    }
+    
+    /**
+     @return время билда
+     */
+    public static long getBuildStamp() throws IOException {
+        long retLong = 1L;
+        Properties appPr = AppComponents.getProps();
+        
+        try {
+            String hostName = InetAddress.getLocalHost().getHostName();
+            if (hostName.equalsIgnoreCase(ConstantsFor.HOSTNAME_DO213) || hostName.toLowerCase().contains(ConstantsFor.HOSTNAME_HOME)) {
+                appPr.setProperty(ConstantsFor.PR_APP_BUILD, System.currentTimeMillis() + "");
+                retLong = System.currentTimeMillis();
+            }
+            else {
+                retLong = Long.parseLong(appPr.getProperty(ConstantsFor.PR_APP_BUILD, "1"));
+            }
+        }
+        catch (UnknownHostException e) {
+            System.err.println(e.getMessage() + " " + AppInfoOnLoad.class.getSimpleName() + ".getBuildStamp");
+        }
+        new AppComponents().updateProps(appPr);
+        return retLong;
     }
     
     /**
@@ -196,7 +222,7 @@ public class AppInfoOnLoad implements Runnable {
     private void infoForU() throws IOException {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(AppComponents.versionInfo()).append("\n");
-        stringBuilder.append(ConstantsFor.getBuildStamp());
+        stringBuilder.append(getBuildStamp());
         MESSAGE_LOCAL.info("AppInfoOnLoad.infoForU", ConstantsFor.STR_FINISH, " = " + stringBuilder);
         MINI_LOGGER.add("infoForU ends. now schedStarter(). Result: " + stringBuilder);
         VersionInfo versionInfo = AppComponents.versionInfo();

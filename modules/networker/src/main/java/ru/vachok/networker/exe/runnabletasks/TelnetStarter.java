@@ -24,7 +24,7 @@ public class TelnetStarter implements Runnable {
     private MessageToUser messageToUser = new MessageLocal(TelnetStarter.class.getSimpleName());
     
     @Override public void run() {
-        int lPort = Integer.parseInt(AppComponents.getProps().getProperty(ConstantsFor.PR_LPORT, "9990"));
+        int lPort = Integer.parseInt(AppComponents.getProps().getProperty(TestServer.PR_LPORT, "9990"));
         ConnectToMe connectToMe;
         if (ConstantsFor.PR_OSNAME_LOWERCASE.contains("free")) {
     

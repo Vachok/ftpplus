@@ -3,6 +3,7 @@
 package ru.vachok.networker.net;
 
 
+import org.jetbrains.annotations.NonNls;
 import org.springframework.context.ConfigurableApplicationContext;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.*;
@@ -30,15 +31,17 @@ import java.util.concurrent.TimeUnit;
 public class TestServer implements ConnectToMe {
     
     
-    private ServerSocket serverSocket;
+    @SuppressWarnings("InstanceVariableMayNotBeInitialized") private ServerSocket serverSocket;
     
-    private Socket socket;
+    @SuppressWarnings("InstanceVariableMayNotBeInitialized") private Socket socket;
     
-    private PrintStream printStreamF;
+    @SuppressWarnings("InstanceVariableMayNotBeInitialized") private PrintStream printStreamF;
     
     private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
     
     private int listenPort;
+    
+    public static final String PR_LPORT = "lport";
     
     private static final String JAR = "file:///G:/My_Proj/FtpClientPlus/modules/networker/ostpst/build/libs/";
     
@@ -49,7 +52,7 @@ public class TestServer implements ConnectToMe {
     }
     
     public TestServer() {
-        this.listenPort = Integer.parseInt(AppComponents.getProps().getProperty("lport", "9990"));
+        this.listenPort = Integer.parseInt(AppComponents.getProps().getProperty(PR_LPORT, "9990"));
     }
     
     @Override public void runSocket() {
@@ -62,7 +65,7 @@ public class TestServer implements ConnectToMe {
         }
         catch (Exception e) {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ConstantsFor.METHNAME_RUNSOCKET, e));
-            accepSoc(); //todo test 08.06.2019 (8:34)
+            runSocket();
         }
     }
     
@@ -105,6 +108,7 @@ public class TestServer implements ConnectToMe {
         
         try {
             InputStream iStream = socket.getInputStream();
+            //noinspection resource,IOResourceOpenedButNotSafelyClosed
             Scanner scanner = new Scanner(iStream);
             OutputStream outputStream = socket.getOutputStream();
             PrintStream printStream = new PrintStream(outputStream);
@@ -135,7 +139,7 @@ public class TestServer implements ConnectToMe {
         reconSock();
     }
     
-    private void scanInput(String scannerLine) throws IOException {
+    private void scanInput(@NonNls String scannerLine) throws IOException {
         if (scannerLine.contains("test")) {
             printStreamF.println("test OK");
             accepSoc();
@@ -176,7 +180,7 @@ public class TestServer implements ConnectToMe {
         }
     }
     
-    private void scanMore(String line) throws IOException {
+    private void scanMore(@NonNls String line) throws IOException {
         if (line.equals("ost")) {
             String fileName = "\\\\192.168.14.10\\IT-Backup\\Mailboxes_users\\a.a.zavadskaya.pst";
             printStreamF.println("OSTTOPST: ");
@@ -207,7 +211,7 @@ public class TestServer implements ConnectToMe {
         }
     }
     
-    private String loadLib() throws IOException {
+    @SuppressWarnings("ObjectAllocationInLoop") private String loadLib() throws IOException {
         File ostJar = new File("ost.jar");
         StringBuilder stringBuilder = new StringBuilder();
         try (URLClassLoader urlClassLoader = URLClassLoader.newInstance(new URL[]{new URL(JAR)});
@@ -215,9 +219,11 @@ public class TestServer implements ConnectToMe {
         ) {
             String libName = "ostpst-8.0.1919.jar";
             Enumeration<URL> resources = urlClassLoader.getResources(libName);
+            File fileLib = new File(JAR + libName);
+    
             while (resources.hasMoreElements()) {
                 URL url = resources.nextElement();
-                stringBuilder.append(new File(JAR + libName).length() / 1024).append("/");
+                stringBuilder.append(fileLib.length() / ConstantsFor.KBYTE).append("/");
                 try (InputStream inputStream = url.openStream();
                      InputStreamReader reader = new InputStreamReader(inputStream);
                      BufferedReader bufferedReader = new BufferedReader(reader)
@@ -229,7 +235,7 @@ public class TestServer implements ConnectToMe {
                 }
             }
         }
-        stringBuilder.append(ostJar.length() / 1024);
+        stringBuilder.append(ostJar.length() / ConstantsFor.KBYTE);
         ostJar.deleteOnExit();
         return stringBuilder.toString();
     }
