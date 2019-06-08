@@ -36,10 +36,6 @@ public class NetMonitorPTV implements Runnable {
     
     private static final String CLASS_NAME = NetMonitorPTV.class.getSimpleName();
     
-    private OutputStream outputStream;
-    
-    private PrintStream printStream;
-    
     private MessageToUser messageToUser = new MessageLocal(NetMonitorPTV.class.getSimpleName());
     
     private String pingResultLast = "No pings yet.";
@@ -47,8 +43,11 @@ public class NetMonitorPTV implements Runnable {
     @Override
     public void run() {
         createFile();
-        try {
-            pingIPTV();
+        try (OutputStream outputStream = new FileOutputStream(ConstantsFor.FILENAME_PTV, true);
+             PrintStream printStream = new PrintStream(outputStream, true)) {
+            printStream.println(pingIPTV());
+            printStream.println();
+        
         }
         catch (IOException e) {
             messageToUser.errorAlert(CLASS_NAME, "run", e.getMessage() + "\n" + new TForms().fromArray(e, false));
@@ -80,9 +79,7 @@ public class NetMonitorPTV implements Runnable {
                 System.err.println(filePath);
                 preferences.put(ConstantsFor.FILENAME_PTV, "7-JAN-1984 )");
             }
-            this.outputStream = new FileOutputStream(ptvFile, true);
-            this.printStream = new PrintStream(Objects.requireNonNull(outputStream), true);
-    
+            AppComponents.getProps().setProperty(ConstantsFor.FILENAME_PTV, new Date().toString());
         }
         catch (IOException e) {
             System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".createFile");
@@ -92,35 +89,39 @@ public class NetMonitorPTV implements Runnable {
         }
     }
     
-    private void checkSize() throws IOException {
+    private String checkSize() throws IOException {
         File pingTv = new File(ConstantsFor.FILENAME_PTV);
-        printStream.print(pingResultLast + " " + LocalDateTime.now());
-        printStream.println();
-        
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(pingResultLast).append(" ").append(LocalDateTime.now());
         if (pingTv.length() > ConstantsFor.MBYTE) {
-            printStream.close();
             ifPingTVIsBig(pingTv);
         }
         else {
             this.pingResultLast = pingResultLast + " (" + pingTv.length() / ConstantsFor.KBYTE + " KBytes)";
         }
+        return stringBuilder.toString();
     }
     
     private void ifPingTVIsBig(File pingTv) throws IOException {
         boolean isPingTvCopied = FileSystemWorker
             .copyOrDelFile(pingTv, ConstantsFor.FILESYSTEM_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + "tv_" + System.currentTimeMillis() / 1000 + ".ping", true);
         if (isPingTvCopied) {
-            AppComponents.threadConfig().thrNameSet(getClass().getSimpleName());
-            this.outputStream = new FileOutputStream(pingTv);
-            this.printStream = new PrintStream(outputStream, true);
             AppComponents.getProps().setProperty(this.getClass().getSimpleName(), new Date().toString());
+            AppComponents.threadConfig().thrNameSet(getClass().getSimpleName());
+            try (OutputStream outputStream = new FileOutputStream(ConstantsFor.FILENAME_PTV, true);
+                 PrintStream printStream = new PrintStream(Objects.requireNonNull(outputStream), true);) {
+                printStream.println(new File(ConstantsFor.FILENAME_PTV).getAbsolutePath() + " as at : " + new Date());
+            }
+            catch (IOException e) {
+                messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".ifPingTVIsBig", e));
+            }
         }
         else {
             messageToUser.info(ConstantsFor.FILENAME_PTV, "creating", AppComponents.getProps().getProperty(this.getClass().getSimpleName(), new Date().toString()));
         }
     }
     
-    private void pingIPTV() throws IOException {
+    private String pingIPTV() throws IOException {
         StringBuilder stringBuilder = new StringBuilder();
     
         byte[] upakCisco2042b = InetAddress.getByName(SwitchesWiFi.C_204_2_UPAK).getAddress();
@@ -155,6 +156,6 @@ public class NetMonitorPTV implements Runnable {
         stringBuilder.append(upakCisco2043).append(" is ").append(upakCisco2043Reachable).append(", ");
         stringBuilder.append(gpCisco20410).append(" is ").append(gpCisco2042Reachable).append("<br>***");
         this.pingResultLast = stringBuilder.toString();
-        checkSize();
+        return checkSize();
     }
 }

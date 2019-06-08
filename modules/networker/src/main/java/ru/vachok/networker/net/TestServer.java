@@ -54,6 +54,10 @@ public class TestServer implements ConnectToMe {
     
     private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
     
+    public TestServer() {
+        this.listenPort = Integer.parseInt(AppComponents.getProps().getProperty("lport", "9990"));
+    }
+    
     @Override public Socket getSocket() {
         throw new IllegalComponentStateException("14.05.2019 (20:30)");
     }

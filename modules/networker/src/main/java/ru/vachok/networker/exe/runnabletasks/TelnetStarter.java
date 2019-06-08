@@ -31,7 +31,7 @@ public class TelnetStarter extends Thread {
             connectToMe = MyConsoleServer.getI(L_PORT);
         }
         else {
-            connectToMe = new TestServer(L_PORT);
+            connectToMe = new TestServer();
         }
     
         messageToUser.warn(connectToMe.getClass().getSimpleName() + " *** PORT IS: " + L_PORT);

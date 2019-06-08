@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.net;
 
 
@@ -10,7 +12,7 @@ public class TelnetStarterTest {
     
     @Test
     public void startServer() {
-        ConnectToMe connectToMe = new TestServer(9990);
+        ConnectToMe connectToMe = new TestServer();
         connectToMe.runSocket();
     }
     
