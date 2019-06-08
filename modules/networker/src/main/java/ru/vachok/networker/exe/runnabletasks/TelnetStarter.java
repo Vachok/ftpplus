@@ -31,7 +31,7 @@ public class TelnetStarter implements Runnable {
             connectToMe = MyConsoleServer.getI(lPort);
         }
         else {
-            connectToMe = new TestServer();
+            connectToMe = new TestServer(Integer.parseInt(TestServer.PR_LPORT));
         }
     
         messageToUser.warn(connectToMe.getClass().getSimpleName() + " *** PORT IS: " + lPort);

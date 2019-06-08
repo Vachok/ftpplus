@@ -12,7 +12,7 @@ public class TelnetStarterTest {
     
     @Test
     public void startServer() {
-        ConnectToMe connectToMe = new TestServer();
+        ConnectToMe connectToMe = new TestServer(9990);
         try {
             connectToMe.runSocket();
         }

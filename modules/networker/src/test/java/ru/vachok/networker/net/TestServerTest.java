@@ -13,7 +13,7 @@ public class TestServerTest {
     @Test(enabled = false)
     public void testServerStart() {
         int lport = 9990;
-        ConnectToMe connectToMe = new TestServer();
+        ConnectToMe connectToMe = new TestServer(lport);
         System.out.println("Starting new Socket. Port: " + lport + "\n" + connectToMe.getClass().getSimpleName());
         connectToMe.runSocket();
     }
