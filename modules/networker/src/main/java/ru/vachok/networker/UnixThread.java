@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker;
 
 
@@ -13,8 +15,6 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 import java.util.Arrays;
 import java.util.concurrent.*;
-
-import static ru.vachok.networker.AppInfoOnLoad.dateSchedulers;
 
 
 /**
@@ -73,7 +73,6 @@ class UnixThread extends Thread {
             stringBuilder.append(threadMXBean.getThreadInfo(Thread.currentThread().getId()));
         }
         
-        dateSchedulers(executorService);
         return stringBuilder.toString();
     }
     
