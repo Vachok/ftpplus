@@ -22,6 +22,7 @@ import ru.vachok.networker.componentsrepo.VersionInfo;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.NetScannerSvc;
+import ru.vachok.networker.exe.runnabletasks.ScanOnline;
 import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
 import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
@@ -154,7 +155,7 @@ public class AppComponents {
     @Scope(ConstantsFor.SINGLETON)
     public static VersionInfo versionInfo() {
         VersionInfo versionInfo = new VersionInfo();
-        if (ConstantsFor.thisPC().toLowerCase().contains("home") || ConstantsFor.thisPC().toLowerCase().contains("do0213")) {
+        if (ConstantsFor.thisPC().toLowerCase().contains("home") || ConstantsFor.thisPC().toLowerCase().contains(ConstantsFor.HOSTNAME_DO213)) {
             versionInfo.setParams();
         }
         return versionInfo;
@@ -224,6 +225,10 @@ public class AppComponents {
     
     public static Logger getLogger(String name) {
         return LoggerFactory.getLogger(name);
+    }
+    
+    public Runnable scanOline() {
+        return new ScanOnline();
     }
     
     @Bean

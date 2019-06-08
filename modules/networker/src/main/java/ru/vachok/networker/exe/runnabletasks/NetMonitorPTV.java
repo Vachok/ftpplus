@@ -6,7 +6,6 @@ package ru.vachok.networker.exe.runnabletasks;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.TForms;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.OtherKnownDevices;
 import ru.vachok.networker.net.enums.SwitchesWiFi;
@@ -19,6 +18,7 @@ import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Objects;
+import java.util.Properties;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -34,8 +34,6 @@ import java.util.prefs.Preferences;
 public class NetMonitorPTV implements Runnable {
     
     
-    private static final String CLASS_NAME = NetMonitorPTV.class.getSimpleName();
-    
     @SuppressWarnings("InstanceVariableMayNotBeInitialized") private OutputStream outputStream;
     
     @SuppressWarnings("InstanceVariableMayNotBeInitialized") private PrintStream printStream;
@@ -44,14 +42,21 @@ public class NetMonitorPTV implements Runnable {
     
     private String pingResultLast = "No pings yet.";
     
+    private static final String CLASS_NAME = NetMonitorPTV.class.getSimpleName();
+    
     @Override
     public void run() {
-        createFile();
+    
         try {
+            createFile();
             pingIPTV();
         }
         catch (IOException e) {
-            messageToUser.errorAlert(CLASS_NAME, "run", e.getMessage() + "\n" + new TForms().fromArray(e, false));
+            System.err.println(e.getMessage());
+        }
+        catch (BackingStoreException e) {
+            Properties props = AppComponents.getProps();
+            props.put(ConstantsFor.FILENAME_PTV, new Date().toString());
         }
     }
     
@@ -63,33 +68,25 @@ public class NetMonitorPTV implements Runnable {
         return sb.toString();
     }
     
-    private void createFile() {
+    private void createFile() throws IOException, BackingStoreException {
         File ptvFile = new File(ConstantsFor.FILENAME_PTV);
         Path filePath = ptvFile.toPath();
-        Preferences preferences = Preferences.userRoot();
-        try {
-            preferences.sync();
-            if (!ptvFile.exists()) {
+        Preferences preferences = AppComponents.getUserPref();
+        preferences.sync();
+        
+        if (!ptvFile.exists()) {
                 Files.createFile(ptvFile.toPath());
                 preferences.put(ConstantsFor.FILENAME_PTV, new Date().toString());
             }
-            else if (filePath.toAbsolutePath().normalize().toFile().isFile()) {
+        else if (filePath.toAbsolutePath().normalize().toFile().isFile()) {
                 preferences.sync();
             }
-            else {
+        else {
                 System.err.println(filePath);
                 preferences.put(ConstantsFor.FILENAME_PTV, "7-JAN-1984 )");
             }
-            this.outputStream = new FileOutputStream(ptvFile);
-            this.printStream = new PrintStream(Objects.requireNonNull(outputStream), true);
-    
-        }
-        catch (IOException e) {
-            System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".createFile");
-        }
-        catch (BackingStoreException e) {
-            AppComponents.getProps().setProperty(ConstantsFor.FILENAME_PTV, new Date().toString());
-        }
+        this.outputStream = new FileOutputStream(ptvFile);
+        this.printStream = new PrintStream(Objects.requireNonNull(outputStream), true);
     }
     
     private void writeStatAndCheckSize() throws IOException {
