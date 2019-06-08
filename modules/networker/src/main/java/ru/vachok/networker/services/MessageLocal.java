@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.services;
 
 
@@ -87,7 +89,8 @@ public class MessageLocal implements MessageToUser {
 
     @Override
     public void error(String headerMsg, String titmeMsg, String bodyMsg) {
-        errorAlert(headerMsg, titmeMsg, bodyMsg);
+        new DBMessenger(headerMsg).error(headerMsg, titmeMsg, bodyMsg);
+        errorAlert(headerMsg, titleMsg, bodyMsg);
     }
 
     @Override

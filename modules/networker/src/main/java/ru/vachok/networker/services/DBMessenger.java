@@ -36,6 +36,7 @@ public class DBMessenger implements MessageToUser {
         this.headerMsg = headerMsg;
         this.titleMsg = titleMsg;
         this.bodyMsg = bodyMsg;
+    
         Runnable errSend = ()->dbSend(headerMsg, titleMsg, bodyMsg);
         thrConfig.execByThreadConfig(errSend);
     }
@@ -62,7 +63,10 @@ public class DBMessenger implements MessageToUser {
     }
 
     @Override public void error(String headerMsg, String s1, String s2) {
-        this.headerMsg = headerMsg; this.titleMsg = s1; this.bodyMsg = s2; errorAlert(headerMsg, s1, s2);
+        this.headerMsg = headerMsg;
+        this.titleMsg = s1;
+        this.bodyMsg = s2;
+        errorAlert(headerMsg, s1, s2);
     }
     
     @Override

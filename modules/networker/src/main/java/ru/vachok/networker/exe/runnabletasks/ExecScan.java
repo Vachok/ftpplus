@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.exe.runnabletasks;
 
 
@@ -41,7 +43,7 @@ import static ru.vachok.networker.net.enums.ConstantsNet.MAX_IN_ONE_VLAN;
  Да запуска скана из {@link DiapazonScan}
  
  @since 24.03.2019 (16:01) */
-public class ExecScan extends DiapazonScan implements Runnable {
+public class ExecScan extends DiapazonScan {
     
     
     private static final String PAT_IS_ONLINE = " is online";
@@ -66,7 +68,7 @@ public class ExecScan extends DiapazonScan implements Runnable {
     
     private String whatVlan;
     
-    private PrintStream printStream; //fixme
+    private PrintStream printStream;
     
     public ExecScan(int from, int to, String whatVlan, File vlanFile) {
         
@@ -84,21 +86,18 @@ public class ExecScan extends DiapazonScan implements Runnable {
     @Override
     public void run() {
         if (vlanFile.exists()) {
-            String newFileName = vlanFile.getAbsolutePath()
-                .replace(vlanFile.getName(), "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + COMPILE.matcher(vlanFile.getName())
-                    .replaceAll(Matcher.quoteReplacement("_" + (System.currentTimeMillis() / 1000))) + ".scan");
-            boolean copyFile = FileSystemWorker.copyOrDelFile(vlanFile, newFileName, true);
-            messageToUser.info(vlanFile.getName() + " copied to ", newFileName, " = " + copyFile);
+            fileExist();
         }
-        OutputStream outputStream = null; //fixme
+        
         try {
             //noinspection resource,IOResourceOpenedButNotSafelyClosed
-            outputStream = new FileOutputStream(vlanFile);
+            final OutputStream outputStream = new FileOutputStream(vlanFile);
+            this.printStream = new PrintStream(Objects.requireNonNull(outputStream), true);
         }
         catch (FileNotFoundException e) {
             messageToUser.errorAlert(getClass().getSimpleName(), ".ExecScan", e.getMessage());
         }
-        this.printStream = new PrintStream(Objects.requireNonNull(outputStream), true); //fixme
+    
         if (ALL_DEVICES_LOCAL_DEQUE.remainingCapacity() > 0) {
             boolean execScanB = execScan();
             messageToUser.info("ALL_DEV", "Scan from " + from + " to " + to + " is " + execScanB, "ALL_DEVICES_LOCAL_DEQUE = " + ALL_DEVICES_LOCAL_DEQUE.size());
@@ -108,7 +107,15 @@ public class ExecScan extends DiapazonScan implements Runnable {
         }
     }
     
-    private long setSpend() throws IOException {
+    private void fileExist() {
+        String newFileName = vlanFile.getAbsolutePath()
+            .replace(vlanFile.getName(), "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + COMPILE.matcher(vlanFile.getName())
+                .replaceAll(Matcher.quoteReplacement("_" + (System.currentTimeMillis() / 1000))) + ".scan");
+        boolean copyFile = FileSystemWorker.copyOrDelFile(vlanFile, newFileName, true);
+        messageToUser.info(vlanFile.getName() + " copied to ", newFileName, " = " + copyFile);
+    }
+    
+    private void setSpend() throws IOException {
         long spendMS = System.currentTimeMillis() - stArt;
         try {
             preferences.sync();
@@ -121,7 +128,6 @@ public class ExecScan extends DiapazonScan implements Runnable {
             fileProps.setProperty(getClass().getSimpleName(), String.valueOf(spendMS));
             fileProps.store(new FileOutputStream(ConstantsFor.PROPS_FILE_JAVA_ID), getClass().getSimpleName() + ".setSpend");
         }
-        return spendMS;
     }
     
     private String getBeansInfo() {

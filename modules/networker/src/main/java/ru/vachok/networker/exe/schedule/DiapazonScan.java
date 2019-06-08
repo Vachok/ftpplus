@@ -83,7 +83,7 @@ public class DiapazonScan implements Runnable {
      @return single.
      */
     public static DiapazonScan getInstance() {
-         return OUR_INSTANCE; //todo
+        return OUR_INSTANCE;
     }
     
     /**
