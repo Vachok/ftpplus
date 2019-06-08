@@ -189,7 +189,7 @@ public class ExecScan extends DiapazonScan {
             try (OutputStream outputStream = new FileOutputStream(vlanFile, true);
                  PrintStream printStream = new PrintStream(Objects.requireNonNull(outputStream), true);
             ) {
-                printStream.println(hostAddress + " " + hostName); //fixme
+                printStream.println(hostAddress + " " + hostName);
                 messageToUser.info(getClass().getSimpleName() + ".oneIpScanAndPrintToFile ip online " + whatVlan + iThree + "." + jFour, vlanFile.getName(), " = " + vlanFile
                     .length() + ConstantsFor.STR_BYTES);
         

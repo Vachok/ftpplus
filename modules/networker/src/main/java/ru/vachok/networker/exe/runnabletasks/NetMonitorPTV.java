@@ -6,11 +6,10 @@ package ru.vachok.networker.exe.runnabletasks;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.TForms;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.OtherKnownDevices;
 import ru.vachok.networker.net.enums.SwitchesWiFi;
-import ru.vachok.networker.services.MessageLocal;
+import ru.vachok.networker.services.DBMessenger;
 
 import java.io.*;
 import java.net.InetAddress;
@@ -18,7 +17,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.Date;
-import java.util.Objects;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -34,24 +32,32 @@ import java.util.prefs.Preferences;
 public class NetMonitorPTV implements Runnable {
     
     
+    private PrintStream printStream;
+    
     private static final String CLASS_NAME = NetMonitorPTV.class.getSimpleName();
     
-    private MessageToUser messageToUser = new MessageLocal(NetMonitorPTV.class.getSimpleName());
+    private MessageToUser messageToUser = new DBMessenger(NetMonitorPTV.class.getSimpleName());
     
     private String pingResultLast = "No pings yet.";
+    
+    public NetMonitorPTV() {
+        
+        try (OutputStream outputStream = new FileOutputStream(ConstantsFor.FILENAME_PTV)) {
+            this.printStream = new PrintStream(outputStream, true);
+        }
+        catch (IOException e) {
+            messageToUser.error(e.getMessage());
+        }
+    }
     
     @Override
     public void run() {
         createFile();
-        //fixme
-        try (OutputStream outputStream = new FileOutputStream(ConstantsFor.FILENAME_PTV, true);
-             PrintStream printStream = new PrintStream(outputStream, true)) {
-            printStream.println(pingIPTV());
-            printStream.println();
-        
+        try {
+            pingIPTV();
         }
         catch (IOException e) {
-            messageToUser.errorAlert(CLASS_NAME, "run", e.getMessage() + "\n" + new TForms().fromArray(e, false));
+            messageToUser.error(e.getMessage());
         }
     }
     
@@ -109,21 +115,14 @@ public class NetMonitorPTV implements Runnable {
         if (isPingTvCopied) {
             AppComponents.getProps().setProperty(this.getClass().getSimpleName(), new Date().toString());
             AppComponents.threadConfig().thrNameSet(getClass().getSimpleName());
-            //fixme
-            try (OutputStream outputStream = new FileOutputStream(ConstantsFor.FILENAME_PTV, true);
-                 PrintStream printStream = new PrintStream(Objects.requireNonNull(outputStream), true);) {
-                printStream.println(new File(ConstantsFor.FILENAME_PTV).getAbsolutePath() + " as at : " + new Date());
-            }
-            catch (IOException e) {
-                messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".ifPingTVIsBig", e));
-            }
+            printStream.println(new File(ConstantsFor.FILENAME_PTV).getAbsolutePath() + " as at : " + new Date());
         }
         else {
             messageToUser.info(ConstantsFor.FILENAME_PTV, "creating", AppComponents.getProps().getProperty(this.getClass().getSimpleName(), new Date().toString()));
         }
     }
     
-    private String pingIPTV() throws IOException {
+    private void pingIPTV() throws IOException {
         StringBuilder stringBuilder = new StringBuilder();
     
         byte[] upakCisco2042b = InetAddress.getByName(SwitchesWiFi.C_204_2_UPAK).getAddress();
@@ -158,6 +157,6 @@ public class NetMonitorPTV implements Runnable {
         stringBuilder.append(upakCisco2043).append(" is ").append(upakCisco2043Reachable).append(", ");
         stringBuilder.append(gpCisco20410).append(" is ").append(gpCisco2042Reachable).append("<br>***");
         this.pingResultLast = stringBuilder.toString();
-        return checkSize();
+        checkSize();
     }
 }

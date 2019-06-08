@@ -62,7 +62,7 @@ public class TestServer implements ConnectToMe {
         }
         catch (Exception e) {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ConstantsFor.METHNAME_RUNSOCKET, e));
-            accepSoc(); //todo test
+            accepSoc(); //todo test 08.06.2019 (8:34)
         }
     }
     

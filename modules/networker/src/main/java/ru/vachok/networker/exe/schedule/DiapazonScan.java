@@ -74,7 +74,7 @@ public class DiapazonScan implements Runnable {
     }
     
     public Map<String, File> getScanFiles() {
-        return Collections.unmodifiableMap(scanFiles); //todo test
+        return Collections.unmodifiableMap(scanFiles); //todo 08.06.2019 (8:25)
     }
     
     /**
@@ -150,7 +150,7 @@ public class DiapazonScan implements Runnable {
     
     @Override public String toString() {
         final StringBuilder sb = new StringBuilder("DiapazonScan{");
-        sb.append(theInfoToString()).append("<p>").append(new AppComponents().scanOline().toString()); //todo test
+        sb.append(theInfoToString()).append("<p>").append(new AppComponents().scanOline().toString()); //todo 08.06.2019 (8:25)
         sb.append('}');
         return sb.toString();
     }
