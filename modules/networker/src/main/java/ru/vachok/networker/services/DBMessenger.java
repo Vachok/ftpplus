@@ -6,6 +6,7 @@ package ru.vachok.networker.services;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.exe.ThreadConfig;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -19,6 +20,8 @@ import java.sql.SQLException;
 public class DBMessenger implements MessageToUser {
     
     
+    private final ThreadConfig thrConfig = AppComponents.threadConfig();
+    
     private String headerMsg;
     
     private String titleMsg;
@@ -30,17 +33,23 @@ public class DBMessenger implements MessageToUser {
     }
     
     @Override public void errorAlert(String headerMsg, String titleMsg, String bodyMsg) {
-        this.headerMsg = headerMsg; this.titleMsg = titleMsg; this.bodyMsg = bodyMsg; dbSend(headerMsg, titleMsg, bodyMsg);
+        this.headerMsg = headerMsg;
+        this.titleMsg = titleMsg;
+        this.bodyMsg = bodyMsg;
+        Runnable errSend = ()->dbSend(headerMsg, titleMsg, bodyMsg);
+        thrConfig.execByThreadConfig(errSend);
     }
     
     @Override public void infoNoTitles(String s) {
-        dbSend(headerMsg, "INFO", s);
+        Runnable info = ()->dbSend(headerMsg, "INFO", s);
+        thrConfig.execByThreadConfig(info);
     }
 
 
     @Override
     public void info( String s , String s1 , String s2 ) {
-        dbSend(s,s1,s2);
+        final Runnable dbSendRun = ()->dbSend(s, s1, s2);
+        thrConfig.execByThreadConfig(dbSendRun);
     }
 
     @Override public void error(String s) {
