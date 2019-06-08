@@ -38,9 +38,6 @@ import java.util.concurrent.*;
 @Service
 public class ScanOnline implements Runnable, Pinger {
     
-    
-    private FileOutputStream fileOutStream = null;
-    
     private File onlinesFile;
     
     /**
@@ -64,18 +61,10 @@ public class ScanOnline implements Runnable, Pinger {
     
     private InfoWorker tvInfo = new MoreInfoWorker("tv");
     
-    private PrintStream printStream = null;
-    
     private List<String> maxOnList = new ArrayList<>();
     
     public ScanOnline(File onlinesFile) {
         this.onlinesFile = onlinesFile;
-        try {
-            fileOutStream = new FileOutputStream(onlinesFile);
-        }
-        catch (FileNotFoundException e) {
-            messageToUser.error(e.getMessage());
-        }
     }
     
     public ScanOnline() {
@@ -93,7 +82,8 @@ public class ScanOnline implements Runnable, Pinger {
     @Override public boolean isReach(String inetAddrStr) {
         ConcurrentMap<String, String> offLines = NET_LIST_KEEPER.getOffLines();
         boolean xReachable = true;
-        try {
+        try (OutputStream outputStream = new FileOutputStream(onlinesFile, true);
+             PrintStream printStream = new PrintStream(outputStream)) {
             byte[] addressBytes = InetAddress.getByName(inetAddrStr.split(" ")[0]).getAddress();
             InetAddress inetAddress = InetAddress.getByAddress(addressBytes);
             xReachable = inetAddress.isReachable(300);
@@ -120,7 +110,6 @@ public class ScanOnline implements Runnable, Pinger {
         return xReachable;
     }
     
-    
     @Override
     public void run() {
         setLists();
@@ -144,12 +133,12 @@ public class ScanOnline implements Runnable, Pinger {
     }
     
     @Override
-    public String toString() {
+    public String toString() { // fixme
         final StringBuilder sb = new StringBuilder();
         sb.append("<b>Since ");
         sb.append("<i>");
         sb.append(new Date(AppComponents.getUserPref().getLong(ExecScan.class.getSimpleName(), ConstantsFor.getMyTime())));
-        sb.append(" last ExecScan");
+        sb.append(" last ExecScan: ");
         sb.append("</i>");
         sb.append(tvInfo.getInfoAbout());
         sb.append("</b><br><br>");
@@ -163,8 +152,8 @@ public class ScanOnline implements Runnable, Pinger {
     }
     
     private boolean writeOnLineFile() {
-        try (OutputStream outputStream = fileOutStream) {
-            this.printStream = new PrintStream(outputStream);
+        try (OutputStream outputStream = new FileOutputStream(onlinesFile, true);
+             PrintStream printStream = new PrintStream(outputStream, true)) {
             Deque<String> onDeq = NetScanFileWorker.getI().getListOfOnlineDev();
             printStream.println("Checked: " + new Date());
             while (!onDeq.isEmpty()) {
