@@ -60,8 +60,8 @@ public class NetMonitorPTV implements Runnable {
             File filePTV = new File(ConstantsFor.FILENAME_PTV);
             if (filePTV.exists()) {
                 filePTV.deleteOnExit();
+            
             }
-            System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".run");
         }
     }
     
