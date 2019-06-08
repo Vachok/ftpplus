@@ -480,6 +480,8 @@ public enum ConstantsFor {
     
     public static final String FILENAME_ONSCAN = ScanOnline.class.getSimpleName() + FILEEXT_ONLIST;
     
+    public static final String FILENAME_BUILDGRADLE = "build.gradle";
+    
     /**
      @return {@link #MAIL_RULES}
      */
