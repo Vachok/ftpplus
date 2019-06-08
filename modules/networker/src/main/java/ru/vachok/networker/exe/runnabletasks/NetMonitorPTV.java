@@ -43,6 +43,7 @@ public class NetMonitorPTV implements Runnable {
     @Override
     public void run() {
         createFile();
+        //fixme
         try (OutputStream outputStream = new FileOutputStream(ConstantsFor.FILENAME_PTV, true);
              PrintStream printStream = new PrintStream(outputStream, true)) {
             printStream.println(pingIPTV());
@@ -108,6 +109,7 @@ public class NetMonitorPTV implements Runnable {
         if (isPingTvCopied) {
             AppComponents.getProps().setProperty(this.getClass().getSimpleName(), new Date().toString());
             AppComponents.threadConfig().thrNameSet(getClass().getSimpleName());
+            //fixme
             try (OutputStream outputStream = new FileOutputStream(ConstantsFor.FILENAME_PTV, true);
                  PrintStream printStream = new PrintStream(Objects.requireNonNull(outputStream), true);) {
                 printStream.println(new File(ConstantsFor.FILENAME_PTV).getAbsolutePath() + " as at : " + new Date());
