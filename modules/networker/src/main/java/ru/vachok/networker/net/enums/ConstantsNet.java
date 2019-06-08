@@ -139,6 +139,8 @@ public enum ConstantsNet { ;
     
     private static MessageToUser messageToUser = new MessageLocal(ConstantsNet.class.getSimpleName());
     
+    public static final int VLAN_MASK24_MAX = 255;
+    
     public static void setSshMapStr(String sshMapStr) {
         ConstantsNet.sshMapStr = sshMapStr;
     }

@@ -22,6 +22,7 @@ import ru.vachok.networker.componentsrepo.VersionInfo;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.NetScannerSvc;
+import ru.vachok.networker.exe.runnabletasks.ScanOnline;
 import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
 import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
@@ -224,6 +225,10 @@ public class AppComponents {
     
     public static Logger getLogger(String name) {
         return LoggerFactory.getLogger(name);
+    }
+    
+    public Runnable scanOline() {
+        return new ScanOnline();
     }
     
     @Bean

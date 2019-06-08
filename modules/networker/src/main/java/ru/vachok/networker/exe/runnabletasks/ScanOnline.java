@@ -146,7 +146,13 @@ public class ScanOnline implements Runnable, Pinger {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder();
-        sb.append("<b>Since ").append("<i>").append(new Date(NetScanFileWorker.getI().getLastStamp())).append("</i>").append(tvInfo.getInfoAbout()).append("</b><br><br>");
+        sb.append("<b>Since ");
+        sb.append("<i>");
+        sb.append(new Date(AppComponents.getUserPref().getLong(ExecScan.class.getSimpleName(), ConstantsFor.getMyTime())));
+        sb.append(" last ExecScan");
+        sb.append("</i>");
+        sb.append(tvInfo.getInfoAbout());
+        sb.append("</b><br><br>");
         sb.append("<details><summary>Максимальное кол-во онлайн адресов: ").append(maxOnList.size()).append("</summary>").append(new TForms().fromArray(maxOnList, true))
             .append(ConstantsFor.HTMLTAG_DETAILSCLOSE);
         sb.append("<b>ipconfig /flushdns = </b>").append(new String(AppComponents.ipFlushDNS().getBytes(), Charset.forName("IBM866"))).append("<br>");
