@@ -6,6 +6,7 @@ package ru.vachok.networker.net;
 import org.jetbrains.annotations.NonNls;
 import org.springframework.context.ConfigurableApplicationContext;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.messenger.email.MessageDB;
 import ru.vachok.networker.*;
 import ru.vachok.networker.abstr.ConnectToMe;
 import ru.vachok.networker.abstr.MakeConvert;
@@ -13,7 +14,6 @@ import ru.vachok.networker.accesscontrol.sshactions.Tracerouting;
 import ru.vachok.networker.exe.runnabletasks.NetScannerSvc;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.mailserver.OstLoader;
-import ru.vachok.networker.services.MessageLocal;
 
 import java.awt.*;
 import java.io.*;
@@ -37,7 +37,7 @@ public class TestServer implements ConnectToMe {
     
     @SuppressWarnings("InstanceVariableMayNotBeInitialized") private PrintStream printStreamF;
     
-    private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
+    private MessageToUser messageToUser = new MessageDB();
     
     private int listenPort;
     
@@ -56,8 +56,9 @@ public class TestServer implements ConnectToMe {
     }
     
     @Override public void runSocket() {
-        initSrvSock();
+    
         try {
+            initSrvSock();
             this.socket = serverSocket.accept();
             do {
                 accepSoc();
@@ -65,7 +66,7 @@ public class TestServer implements ConnectToMe {
         }
         catch (Exception e) {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ConstantsFor.METHNAME_RUNSOCKET, e));
-            runSocket();
+            accepSoc();
         }
     }
     
@@ -85,13 +86,8 @@ public class TestServer implements ConnectToMe {
         }
     }
     
-    private void initSrvSock() {
-        try {
-            this.serverSocket = new ServerSocket(listenPort);
-        }
-        catch (IOException e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".TestServer", e));
-        }
+    private void initSrvSock() throws IOException {
+        this.serverSocket = new ServerSocket(listenPort);
     }
     
     private void accepSoc() {

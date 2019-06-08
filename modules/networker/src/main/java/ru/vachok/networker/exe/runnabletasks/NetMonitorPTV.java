@@ -14,11 +14,9 @@ import ru.vachok.networker.services.DBMessenger;
 import java.io.*;
 import java.net.InetAddress;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.Date;
-import java.util.prefs.BackingStoreException;
-import java.util.prefs.Preferences;
+import java.util.Objects;
 
 
 /**
@@ -52,17 +50,7 @@ public class NetMonitorPTV implements Runnable {
     
     @Override
     public void run() {
-        try {
-            createFile();
-            pingIPTV();
-        }
-        catch (IOException e) {
-            File filePTV = new File(ConstantsFor.FILENAME_PTV);
-            if (filePTV.exists()) {
-                filePTV.deleteOnExit();
-            
-            }
-        }
+        createFile();
     }
     
     @Override
@@ -73,33 +61,20 @@ public class NetMonitorPTV implements Runnable {
         return sb.toString();
     }
     
-    private void createFile() throws IOException {
+    private void createFile() {
         File ptvFile = new File(ConstantsFor.FILENAME_PTV);
-        Path filePath = ptvFile.toPath();
-        if (ptvFile.exists()) {
-            Files.deleteIfExists(filePath);
-        }
-        Preferences preferences = Preferences.userRoot();
         try {
-            preferences.sync();
             if (!ptvFile.exists()) {
-                preferences.put(ConstantsFor.FILENAME_PTV, new Date().toString());
+                AppComponents.getUserPref().put(ConstantsFor.FILENAME_PTV, new Date().toString());
                 Files.createFile(ptvFile.toPath());
             }
-            else if (filePath.toAbsolutePath().normalize().toFile().isFile()) {
-                preferences.sync();
+            try (OutputStream outputStream = new FileOutputStream(ConstantsFor.FILENAME_PTV)) {
+                this.printStream = new PrintStream(Objects.requireNonNull(outputStream), true);
+                pingIPTV();
             }
-            else {
-                System.err.println(filePath);
-                preferences.put(ConstantsFor.FILENAME_PTV, "7-JAN-1984 )");
-            }
-            AppComponents.getProps().setProperty(ConstantsFor.FILENAME_PTV, new Date().toString());
         }
         catch (IOException e) {
             System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".createFile");
-        }
-        catch (BackingStoreException e) {
-            AppComponents.getProps().setProperty(ConstantsFor.FILENAME_PTV, new Date().toString());
         }
     }
     
@@ -120,7 +95,7 @@ public class NetMonitorPTV implements Runnable {
             .copyOrDelFile(pingTv, ConstantsFor.FILESYSTEM_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + "tv_" + System.currentTimeMillis() / 1000 + ".ping", true);
         if (isPingTvCopied) {
             this.printStream.close();
-            AppComponents.getProps().setProperty(this.getClass().getSimpleName(), new Date().toString());
+            AppComponents.getUserPref().put(ConstantsFor.FILENAME_PTV, new Date().toString());
             AppComponents.threadConfig().thrNameSet(getClass().getSimpleName());
             OutputStream outputStream = new FileOutputStream(ConstantsFor.FILENAME_PTV);
             this.printStream = new PrintStream(outputStream, true);
