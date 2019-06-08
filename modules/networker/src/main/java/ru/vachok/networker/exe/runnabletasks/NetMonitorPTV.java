@@ -32,7 +32,7 @@ import java.util.prefs.Preferences;
 public class NetMonitorPTV implements Runnable {
     
     
-    private PrintStream printStream;
+    @SuppressWarnings("InstanceVariableMayNotBeInitialized") private PrintStream printStream;
     
     private MessageToUser messageToUser = new DBMessenger(NetMonitorPTV.class.getSimpleName());
     
@@ -52,12 +52,16 @@ public class NetMonitorPTV implements Runnable {
     
     @Override
     public void run() {
-        createFile();
         try {
+            createFile();
             pingIPTV();
         }
         catch (IOException e) {
-            messageToUser.error(e.getMessage());
+            File filePTV = new File(ConstantsFor.FILENAME_PTV);
+            if (filePTV.exists()) {
+                filePTV.deleteOnExit();
+            }
+            System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".run");
         }
     }
     
@@ -69,9 +73,12 @@ public class NetMonitorPTV implements Runnable {
         return sb.toString();
     }
     
-    private void createFile() {
+    private void createFile() throws IOException {
         File ptvFile = new File(ConstantsFor.FILENAME_PTV);
         Path filePath = ptvFile.toPath();
+        if (ptvFile.exists()) {
+            Files.deleteIfExists(filePath);
+        }
         Preferences preferences = Preferences.userRoot();
         try {
             preferences.sync();
@@ -104,7 +111,7 @@ public class NetMonitorPTV implements Runnable {
             ifPingTVIsBig(pingTv);
         }
         else {
-            this.pingResultLast = pingResultLast + " (" + pingTv.length() / ConstantsFor.KBYTE + " KBytes)";
+            this.pingResultLast = pingResultLast + " (" + pingTv.length() / ConstantsFor.KBYTE + " KB)";
         }
     }
     
@@ -120,7 +127,7 @@ public class NetMonitorPTV implements Runnable {
             printStream.println(new File(ConstantsFor.FILENAME_PTV).getAbsolutePath() + " as at : " + new Date());
         }
         else {
-            messageToUser.info(ConstantsFor.FILENAME_PTV, "creating", AppComponents.getProps().getProperty(this.getClass().getSimpleName(), new Date().toString()));
+            messageToUser.info(ConstantsFor.FILENAME_PTV, "creating ", AppComponents.getProps().getProperty(this.getClass().getSimpleName(), new Date().toString()));
         }
     }
     

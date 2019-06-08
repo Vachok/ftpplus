@@ -3,6 +3,7 @@
 package ru.vachok.networker.exe.runnabletasks;
 
 
+import org.testng.Assert;
 import org.testng.annotations.Test;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
@@ -37,7 +38,7 @@ import java.util.prefs.Preferences;
     
     private MessageToUser messageToUser = new DBMessenger(NetMonitorPTVTEST.class.getSimpleName());
     
-    private String pingResultLast = "No pings yet.";
+    private String pingResultLast = "TEST";
     
     private static final String CLASS_NAME = NetMonitorPTVTEST.class.getSimpleName();
     
@@ -70,7 +71,7 @@ import java.util.prefs.Preferences;
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("NetMonitorPTVTEST{");
-        sb.append("pingResultLast='").append(pingResultLast).append('\'');
+        sb.append(pingResultLast).append('\'');
         sb.append('}');
         return sb.toString();
     }
@@ -95,7 +96,7 @@ import java.util.prefs.Preferences;
             AppComponents.getProps().setProperty(ConstantsFor.FILENAME_PTV, new Date().toString());
         }
         catch (IOException e) {
-            System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".createFile");
+            Assert.assertNull(e, e.getMessage());
         }
         catch (BackingStoreException e) {
             AppComponents.getProps().setProperty(ConstantsFor.FILENAME_PTV, new Date().toString());
@@ -110,7 +111,7 @@ import java.util.prefs.Preferences;
             ifPingTVIsBig(pingTv);
         }
         else {
-            this.pingResultLast = pingResultLast + " (" + pingTv.length() / ConstantsFor.KBYTE + " KBytes)";
+            this.pingResultLast = pingResultLast + " (" + pingTv.length() / ConstantsFor.KBYTE + " KB)";
         }
     }
     
