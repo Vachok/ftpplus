@@ -6,11 +6,10 @@ package ru.vachok.networker.exe.runnabletasks;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.TForms;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.OtherKnownDevices;
 import ru.vachok.networker.net.enums.SwitchesWiFi;
-import ru.vachok.networker.services.MessageLocal;
+import ru.vachok.networker.services.DBMessenger;
 
 import java.io.*;
 import java.net.InetAddress;
@@ -18,7 +17,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.Date;
-import java.util.Objects;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -34,15 +32,23 @@ import java.util.prefs.Preferences;
 public class NetMonitorPTV implements Runnable {
     
     
-    private static final String CLASS_NAME = NetMonitorPTV.class.getSimpleName();
-    
-    private OutputStream outputStream;
-    
     private PrintStream printStream;
     
-    private MessageToUser messageToUser = new MessageLocal(NetMonitorPTV.class.getSimpleName());
+    private static final String CLASS_NAME = NetMonitorPTV.class.getSimpleName();
+    
+    private MessageToUser messageToUser = new DBMessenger(NetMonitorPTV.class.getSimpleName());
     
     private String pingResultLast = "No pings yet.";
+    
+    public NetMonitorPTV() {
+        
+        try (OutputStream outputStream = new FileOutputStream(ConstantsFor.FILENAME_PTV)) {
+            this.printStream = new PrintStream(outputStream, true);
+        }
+        catch (IOException e) {
+            messageToUser.error(e.getMessage());
+        }
+    }
     
     @Override
     public void run() {
@@ -51,7 +57,7 @@ public class NetMonitorPTV implements Runnable {
             pingIPTV();
         }
         catch (IOException e) {
-            messageToUser.errorAlert(CLASS_NAME, "run", e.getMessage() + "\n" + new TForms().fromArray(e, false));
+            messageToUser.error(e.getMessage());
         }
     }
     
@@ -80,9 +86,7 @@ public class NetMonitorPTV implements Runnable {
                 System.err.println(filePath);
                 preferences.put(ConstantsFor.FILENAME_PTV, "7-JAN-1984 )");
             }
-            this.outputStream = new FileOutputStream(ptvFile, true);
-            this.printStream = new PrintStream(Objects.requireNonNull(outputStream), true);
-    
+            AppComponents.getProps().setProperty(ConstantsFor.FILENAME_PTV, new Date().toString());
         }
         catch (IOException e) {
             System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".createFile");
@@ -92,28 +96,26 @@ public class NetMonitorPTV implements Runnable {
         }
     }
     
-    private void checkSize() throws IOException {
+    private String checkSize() throws IOException {
         File pingTv = new File(ConstantsFor.FILENAME_PTV);
-        printStream.print(pingResultLast + " " + LocalDateTime.now());
-        printStream.println();
-        
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(pingResultLast).append(" ").append(LocalDateTime.now());
         if (pingTv.length() > ConstantsFor.MBYTE) {
-            printStream.close();
             ifPingTVIsBig(pingTv);
         }
         else {
             this.pingResultLast = pingResultLast + " (" + pingTv.length() / ConstantsFor.KBYTE + " KBytes)";
         }
+        return stringBuilder.toString();
     }
     
     private void ifPingTVIsBig(File pingTv) throws IOException {
         boolean isPingTvCopied = FileSystemWorker
             .copyOrDelFile(pingTv, ConstantsFor.FILESYSTEM_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + "tv_" + System.currentTimeMillis() / 1000 + ".ping", true);
         if (isPingTvCopied) {
-            AppComponents.threadConfig().thrNameSet(getClass().getSimpleName());
-            this.outputStream = new FileOutputStream(pingTv);
-            this.printStream = new PrintStream(outputStream, true);
             AppComponents.getProps().setProperty(this.getClass().getSimpleName(), new Date().toString());
+            AppComponents.threadConfig().thrNameSet(getClass().getSimpleName());
+            printStream.println(new File(ConstantsFor.FILENAME_PTV).getAbsolutePath() + " as at : " + new Date());
         }
         else {
             messageToUser.info(ConstantsFor.FILENAME_PTV, "creating", AppComponents.getProps().getProperty(this.getClass().getSimpleName(), new Date().toString()));

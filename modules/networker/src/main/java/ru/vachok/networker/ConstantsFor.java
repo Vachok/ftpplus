@@ -30,7 +30,9 @@ import java.lang.management.MemoryMXBean;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.SecureRandom;
+import java.time.LocalDateTime;
 import java.time.Year;
+import java.time.ZoneOffset;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
@@ -221,10 +223,12 @@ public enum ConstantsFor {
      */
     public static final String DBPREFIX = "u0466446_";
     
+    public static final int YEAR_OF_MY_B = 1984;
+    
     /**
      Число, для Secure Random
      */
-    public static final long MY_AGE = (long) Year.now().getValue() - 1984;
+    public static final long MY_AGE = (long) Year.now().getValue() - YEAR_OF_MY_B;
     
     /**
      {@link Model} имя атрибута
@@ -602,6 +606,10 @@ public enum ConstantsFor {
     
     public static Visitor getVis(HttpServletRequest request) {
         return new AppComponents().visitor(request);
+    }
+    
+    public static long getMyTime() {
+        return LocalDateTime.of(YEAR_OF_MY_B, 1, 7, 2, 0).toEpochSecond(ZoneOffset.ofHours(3)) * 1000;
     }
     
     private static String getSeparator() {

@@ -19,7 +19,6 @@ import ru.vachok.networker.net.NetPinger;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.net.enums.OtherKnownDevices;
 import ru.vachok.networker.services.DBMessenger;
-import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.MyCalen;
 
 import javax.servlet.http.HttpServletRequest;
@@ -51,7 +50,7 @@ import static java.time.temporal.ChronoUnit.HOURS;
 public class ServiceInfoCtrl {
     
     
-    private static final MessageToUser messageToUser = new MessageLocal(ServiceInfoCtrl.class.getSimpleName());
+    private static final MessageToUser messageToUser = new DBMessenger(ServiceInfoCtrl.class.getSimpleName());
     
     private final ThreadConfig threadConfig = AppComponents.threadConfig();
     
@@ -136,16 +135,15 @@ public class ServiceInfoCtrl {
     /**
      Считает время до конца дня.
      <p>
-     
-     @param timeStart - время старта
-     @param amountH - сколько часов до конца
+ 
      @return время до 17:30 в процентах от 8:30
+     @param timeStart - время старта
      */
-    private static String percToEnd(Date timeStart, long amountH) {
+    private static String percToEnd(Date timeStart) {
         StringBuilder stringBuilder = new StringBuilder();
         LocalDateTime startDayTime = LocalDateTime.ofEpochSecond(timeStart.getTime() / 1000, 0, ZoneOffset.ofHours(3));
         LocalTime startDay = startDayTime.toLocalTime();
-        LocalTime endDay = startDay.plus(amountH, HOURS);
+        LocalTime endDay = startDay.plus((long) 9, HOURS);
     
         final int secDayEnd = endDay.toSecondOfDay();
         final int startSec = startDay.toSecondOfDay();
@@ -201,7 +199,7 @@ public class ServiceInfoCtrl {
             .toString();
         
         model.addAttribute(ConstantsFor.ATT_TITLE, getLast() + " " + pingDO0213());
-        model.addAttribute("mail", percToEnd(comeD, 9));
+        model.addAttribute("mail", percToEnd(comeD));
         model.addAttribute("ping", pingGit());
         model.addAttribute("urls", new StringBuilder()
             .append("Запущено - ")

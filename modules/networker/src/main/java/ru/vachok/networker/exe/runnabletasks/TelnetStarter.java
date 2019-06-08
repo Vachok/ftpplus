@@ -14,6 +14,8 @@ import ru.vachok.networker.services.MessageLocal;
 import java.util.Properties;
 
 
+/**
+ @since 08.06.2019 (4:36) */
 public class TelnetStarter implements Runnable {
     
     
@@ -21,18 +23,18 @@ public class TelnetStarter implements Runnable {
     
     private MessageToUser messageToUser = new MessageLocal(TelnetStarter.class.getSimpleName());
     
-    private static final int L_PORT = Integer.parseInt(AppComponents.getProps().getProperty(ConstantsFor.PR_LPORT, "9990"));
-    
     @Override public void run() {
+        int lPort = Integer.parseInt(AppComponents.getProps().getProperty(ConstantsFor.PR_LPORT, "9990"));
         ConnectToMe connectToMe;
         if (ConstantsFor.PR_OSNAME_LOWERCASE.contains("free")) {
-            connectToMe = MyConsoleServer.getI(L_PORT);
+    
+            connectToMe = MyConsoleServer.getI(lPort);
         }
         else {
-            connectToMe = new TestServer(L_PORT);
+            connectToMe = new TestServer();
         }
     
-        messageToUser.warn(connectToMe.getClass().getSimpleName() + " *** PORT IS: " + L_PORT);
+        messageToUser.warn(connectToMe.getClass().getSimpleName() + " *** PORT IS: " + lPort);
         connectToMe.runSocket();
     }
 }

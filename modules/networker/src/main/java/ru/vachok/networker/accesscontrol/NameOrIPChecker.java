@@ -129,7 +129,7 @@ public class NameOrIPChecker {
         catch(UnknownHostException e){
             messageToUser.errorAlert("NameOrIPChecker", "resolveIP", e.getMessage());
             FileSystemWorker.error("NameOrIPChecker.resolveIP", e);
-            throw new IllegalArgumentException(userIn + " if shit!");
+            throw new IllegalArgumentException(userIn + " if shit!"); //fixme 405 err
         }
         return inetAddress;
     }

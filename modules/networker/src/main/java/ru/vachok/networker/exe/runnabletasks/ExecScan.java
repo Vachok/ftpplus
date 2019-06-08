@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.exe.runnabletasks;
 
 
@@ -13,6 +15,7 @@ import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetListKeeper;
 import ru.vachok.networker.net.NetScanFileWorker;
+import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 
 import java.io.*;
@@ -21,9 +24,8 @@ import java.lang.management.RuntimeMXBean;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.net.InetAddress;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
@@ -41,7 +43,7 @@ import static ru.vachok.networker.net.enums.ConstantsNet.MAX_IN_ONE_VLAN;
  Да запуска скана из {@link DiapazonScan}
  
  @since 24.03.2019 (16:01) */
-public class ExecScan extends DiapazonScan implements Runnable {
+public class ExecScan extends DiapazonScan {
     
     
     private static final String PAT_IS_ONLINE = " is online";
@@ -66,8 +68,6 @@ public class ExecScan extends DiapazonScan implements Runnable {
     
     private String whatVlan;
     
-    private PrintStream printStream; //fixme
-    
     public ExecScan(int from, int to, String whatVlan, File vlanFile) {
         
         this.from = from;
@@ -78,37 +78,31 @@ public class ExecScan extends DiapazonScan implements Runnable {
         
         this.vlanFile = vlanFile;
     
-        this.stArt = LocalDateTime.of(1984, 1, 7, 2, 0).toEpochSecond(ZoneOffset.ofHours(3)) * 1000;
+        this.stArt = ConstantsFor.getMyTime();
     }
     
     @Override
     public void run() {
         if (vlanFile.exists()) {
-            String newFileName = vlanFile.getAbsolutePath()
-                .replace(vlanFile.getName(), "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + COMPILE.matcher(vlanFile.getName())
-                    .replaceAll(Matcher.quoteReplacement("_" + (System.currentTimeMillis() / 1000))) + ".scan");
-            boolean copyFile = FileSystemWorker.copyOrDelFile(vlanFile, newFileName, true);
-            messageToUser.info(vlanFile.getName() + " copied to ", newFileName, " = " + copyFile);
+            System.out.println("Copy " + vlanFile.getAbsolutePath() + " is: " + cpOldFile());
         }
-        OutputStream outputStream = null; //fixme
-        try {
-            //noinspection resource,IOResourceOpenedButNotSafelyClosed
-            outputStream = new FileOutputStream(vlanFile);
-        }
-        catch (FileNotFoundException e) {
-            messageToUser.errorAlert(getClass().getSimpleName(), ".ExecScan", e.getMessage());
-        }
-        this.printStream = new PrintStream(Objects.requireNonNull(outputStream), true); //fixme
-        if (ALL_DEVICES_LOCAL_DEQUE.remainingCapacity() > 0) {
+        if (getAllDevLocalDeq().remainingCapacity() > 0) {
             boolean execScanB = execScan();
-            messageToUser.info("ALL_DEV", "Scan from " + from + " to " + to + " is " + execScanB, "ALL_DEVICES_LOCAL_DEQUE = " + ALL_DEVICES_LOCAL_DEQUE.size());
+            messageToUser.info("ALL_DEV", "Scan from " + from + " to " + to + " is " + execScanB, "allDevLocalDeq = " + getAllDevLocalDeq().size());
         }
         else {
-            messageToUser.error(getClass().getSimpleName(), String.valueOf(ALL_DEVICES_LOCAL_DEQUE.remainingCapacity()), " ALL_DEVICES_LOCAL_DEQUE remainingCapacity!");
+            messageToUser.error(getClass().getSimpleName(), String.valueOf(getAllDevLocalDeq().remainingCapacity()), " allDevLocalDeq remainingCapacity!");
         }
     }
     
-    private long setSpend() throws IOException {
+    private boolean cpOldFile() {
+        String newFileName = vlanFile.getAbsolutePath()
+            .replace(vlanFile.getName(), "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + COMPILE.matcher(vlanFile.getName())
+                .replaceAll(Matcher.quoteReplacement("_" + (System.currentTimeMillis() / 1000))) + ".scan");
+        return FileSystemWorker.copyOrDelFile(vlanFile, newFileName, true);
+    }
+    
+    private void setSpend() throws IOException {
         long spendMS = System.currentTimeMillis() - stArt;
         try {
             preferences.sync();
@@ -121,7 +115,6 @@ public class ExecScan extends DiapazonScan implements Runnable {
             fileProps.setProperty(getClass().getSimpleName(), String.valueOf(spendMS));
             fileProps.store(new FileOutputStream(ConstantsFor.PROPS_FILE_JAVA_ID), getClass().getSimpleName() + ".setSpend");
         }
-        return spendMS;
     }
     
     private String getBeansInfo() {
@@ -180,23 +173,27 @@ public class ExecScan extends DiapazonScan implements Runnable {
             timeOutMSec = (int) (ConstantsFor.DELAY * 2);
             NetScanFileWorker.getI().setLastStamp(System.currentTimeMillis());
         }
-        
         if (byAddress.isReachable(timeOutMSec)) {
             NetListKeeper.getI().getOnLinesResolve().put(hostAddress, hostName);
-            
-            ALL_DEVICES_LOCAL_DEQUE.add("<font color=\"green\">" + hostName + FONT_BR_CLOSE);
+    
+            getAllDevLocalDeq().add("<font color=\"green\">" + hostName + FONT_BR_CLOSE);
             stringBuilder.append(hostAddress).append(" ").append(hostName).append(PAT_IS_ONLINE);
         }
+
         else {
             NetListKeeper.getI().getOffLines().put(byAddress.getHostAddress(), hostName);
-            
-            ALL_DEVICES_LOCAL_DEQUE.add("<font color=\"red\">" + hostName + FONT_BR_CLOSE);
+            getAllDevLocalDeq().add("<font color=\"red\">" + hostName + FONT_BR_CLOSE);
             stringBuilder.append(hostAddress).append(" ").append(hostName);
         }
         if (stringBuilder.toString().contains(PAT_IS_ONLINE)) {
-            printStream.println(hostAddress + " " + hostName);
-            messageToUser.info(getClass().getSimpleName() + ".oneIpScanAndPrintToFile ip online " + whatVlan + iThree + "." + jFour, vlanFile.getName(), " = " + vlanFile
-                .length() + ConstantsFor.STR_BYTES);
+            try (OutputStream outputStream = new FileOutputStream(vlanFile, true);
+                 PrintStream printStream = new PrintStream(Objects.requireNonNull(outputStream), true);
+            ) {
+                printStream.println(hostAddress + " " + hostName);
+                messageToUser.info(getClass().getSimpleName() + ".oneIpScanAndPrintToFile ip online " + whatVlan + iThree + "." + jFour, vlanFile.getName(), " = " + vlanFile
+                    .length() + ConstantsFor.STR_BYTES);
+        
+            }
         }
         return stringBuilder.toString();
     }
@@ -205,17 +202,19 @@ public class ExecScan extends DiapazonScan implements Runnable {
      Сканер локальной сети@param stStMap Запись в лог@param fromVlan начало с 3 октета IP@param toVlan   конец с 3 октета IP@param whatVlan первый 2 октета, с точкоё в конце.
      */
     private ConcurrentMap<String, String> scanLanSegment(int fromVlan, int toVlan) throws IOException {
+        List<String> executionProcessLog = getExecutionProcessLog();
         ConcurrentMap<String, String> stStMap = new ConcurrentHashMap<>(MAX_IN_ONE_VLAN * (toVlan - fromVlan));
         String theScannedIPHost = "No scan yet. MAP Capacity: ";
         for (int i = fromVlan; i < toVlan; i++) {
             setSpend();
-            for (int j = 0; j < 255; j++) {
+            for (int j = 0; j < ConstantsNet.VLAN_MASK24_MAX; j++) {
                 AppComponents.threadConfig().thrNameSet(i + "." + j);
                 try {
                     theScannedIPHost = oneIpScanAndPrintToFile(i, j);
                     stStMap.put(theScannedIPHost.split(" ")[0], theScannedIPHost.split(" ")[1]);
                 }
                 catch (IOException e) {
+                    //noinspection ObjectAllocationInLoop
                     stStMap.put(e.getMessage(), new TForms().fromArray(e, false));
                 }
                 catch (ArrayIndexOutOfBoundsException e) {
