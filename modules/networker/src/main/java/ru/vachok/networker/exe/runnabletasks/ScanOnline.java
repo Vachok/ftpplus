@@ -39,7 +39,7 @@ import java.util.concurrent.*;
 public class ScanOnline implements Runnable, Pinger {
     
     
-    private File onlinesFile;
+    private File onlinesFile = new File(ConstantsFor.FILENAME_ONSCAN);
     
     /**
      {@link NetListKeeper#getI()}
@@ -47,6 +47,8 @@ public class ScanOnline implements Runnable, Pinger {
     private static final NetListKeeper NET_LIST_KEEPER = NetListKeeper.getI();
     
     private final String sep = ConstantsFor.FILESYSTEM_SEPARATOR;
+    
+    private static final String FILENAME_ON = ScanOnline.class.getSimpleName() + ConstantsFor.FILEEXT_ONLIST;
     
     private final ThreadConfig threadConfig = AppComponents.threadConfig();
     
@@ -65,14 +67,6 @@ public class ScanOnline implements Runnable, Pinger {
     private PrintStream printStream = null;
     
     private List<String> maxOnList = new ArrayList<>();
-    
-    public ScanOnline(File onlinesFile) {
-        this.onlinesFile = onlinesFile;
-    }
-    
-    public ScanOnline() {
-        this.onlinesFile = new File(ConstantsFor.FILENAME_ONSCAN);
-    }
     
     @Override public String getTimeToEndStr() {
         return new AppInfoOnLoad().toString();
@@ -126,6 +120,7 @@ public class ScanOnline implements Runnable, Pinger {
     }
     
     private void setLists() {
+        maxOnList.addAll(FileSystemWorker.readFileToList(new File(FILENAME_ON).getAbsolutePath().replace(FILENAME_ON, sep + "lan" + sep + ConstantsFor.FILENAME_MAXONLINE)));
         try {
             this.maxOnList = FileSystemWorker
                 .readFileToList(new File(ConstantsFor.FILENAME_ONSCAN).getAbsolutePath().replace(ConstantsFor.FILENAME_ONSCAN, sep + "lan" + sep + ConstantsFor.FILENAME_MAXONLINE));

@@ -46,9 +46,10 @@ public class NetMonitorPTV implements Runnable {
     
     @Override
     public void run() {
-    
         try {
-            createFile();
+            if (outputStream == null || printStream == null) {
+                createFile();
+            }
             pingIPTV();
         }
         catch (IOException e) {
