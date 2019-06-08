@@ -74,7 +74,7 @@ public class DiapazonScan implements Runnable {
     }
     
     public Map<String, File> getScanFiles() {
-        return Collections.unmodifiableMap(scanFiles);
+        return Collections.unmodifiableMap(scanFiles); //todo test
     }
     
     /**
