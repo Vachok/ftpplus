@@ -8,6 +8,7 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.ConnectToMe;
+import ru.vachok.networker.exe.runnabletasks.NetScannerSvc;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.DBMessenger;

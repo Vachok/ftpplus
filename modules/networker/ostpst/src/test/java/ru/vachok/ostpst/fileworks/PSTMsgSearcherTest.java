@@ -15,7 +15,7 @@ import java.io.File;
 import java.io.IOException;
 
 
-public class PSTMsgSearcherTest {
+@SuppressWarnings("ALL") public class PSTMsgSearcherTest {
     
     
     @Test

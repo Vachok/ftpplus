@@ -8,6 +8,8 @@ import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.IntoApplication;
+import ru.vachok.networker.TForms;
+import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.actions.ActionExit;
 import ru.vachok.networker.services.actions.ActionSomeInfo;
 import ru.vachok.networker.services.actions.ActionTests;
@@ -35,22 +37,39 @@ import java.util.concurrent.Executors;
     private static final @NotNull String IMG_FOLDER_NAME = "/static/images/";
 
     private static final String CLASS_NAME = SystemTrayHelper.class.getSimpleName();
-
-    private static final SystemTrayHelper SYSTEM_TRAY_HELPER = new SystemTrayHelper();
-
+    
+    private static SystemTrayHelper SYSTEM_TRAY_HELPER;
+    
+    private static final MessageToUser messageToUser = new MessageCons(SystemTrayHelper.class.getSimpleName());
+    
     private @NotNull TrayIcon trayIcon;
-
-    private static MessageToUser messageToUser = new MessageCons(SystemTrayHelper.class.getSimpleName());
-
-    public static SystemTrayHelper getI() {
-        return SYSTEM_TRAY_HELPER;
-    }
-
+    
     /**
      Конструктор по-умолчанию
      */
     private SystemTrayHelper() {
-        if (!IntoApplication.TRAY_SUPPORTED) throw new UnsupportedOperationException(System.getProperty("os.name"));
+        if (!IntoApplication.TRAY_SUPPORTED) {
+            System.err.println(System.getProperty("os.name"));
+        }
+    }
+    
+    static {
+        try {
+            SYSTEM_TRAY_HELPER = new SystemTrayHelper();
+        }
+        catch (Exception e) {
+            messageToUser.error(FileSystemWorker.error(SystemTrayHelper.class.getSimpleName() + ".static initializer", e));
+        }
+    }
+
+    public static SystemTrayHelper getI() {
+        if (IntoApplication.TRAY_SUPPORTED) {
+            return SYSTEM_TRAY_HELPER;
+        }
+        else {
+            System.err.println(new TForms().fromArray(System.getProperties(), false));
+        }
+        return null;
     }
     
     public TrayIcon getTrayIcon() throws ExceptionInInitializerError {
@@ -62,7 +81,6 @@ import java.util.concurrent.Executors;
         }
     }
 
-    @SuppressWarnings ("StaticMethodOnlyUsedInOneClass")
     public void addTray(String iconFileName) {
         addTray(iconFileName, true);
     }

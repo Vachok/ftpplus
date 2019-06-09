@@ -8,7 +8,6 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ExitApp;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.accesscontrol.AccessListsCheckUniq;
 import ru.vachok.networker.net.enums.OtherKnownDevices;
 import ru.vachok.networker.services.MessageLocal;
 
@@ -28,7 +27,7 @@ import java.util.concurrent.TimeUnit;
  <p>
  
  @since 30.01.2019 (17:02) */
-@SuppressWarnings("StaticMethodOnlyUsedInOneClass") public class NetListKeeper {
+public final class NetListKeeper {
     
     
     /**
@@ -37,8 +36,6 @@ import java.util.concurrent.TimeUnit;
     private static final MessageToUser messageToUser = new MessageLocal(NetListKeeper.class.getSimpleName());
     
     private static NetListKeeper netListKeeper = new NetListKeeper();
-    
-    private static String ptvTime;
     
     private ConcurrentMap<String, String> onLinesResolve = new ConcurrentHashMap<>();
     
@@ -49,7 +46,6 @@ import java.util.concurrent.TimeUnit;
     private String nameOfExtObject = getClass().getSimpleName() + "onLinesResolve.map";
     
     private NetListKeeper() {
-        AppComponents.threadConfig().getTaskScheduler().submitListenable(new ExitApp("on.map", this.onLinesResolve));
     }
     
     public Map<String, String> getInetUniqMap() {
@@ -59,26 +55,12 @@ import java.util.concurrent.TimeUnit;
         return inetUniqMap;
     }
     
-    public void setInetUniqMap(Map<String, String> inetUniqMap) {
+    void setInetUniqMap(Map<String, String> inetUniqMap) {
         this.inetUniqMap = inetUniqMap;
     }
     
     public static NetListKeeper getI() {
         return netListKeeper;
-    }
-    
-    public static String getPtvTime() {
-        return ptvTime;
-    }
-    
-    public static void setPtvTime(String ptvTime) {
-        NetListKeeper.ptvTime = ptvTime;
-    }
-    
-    public ConcurrentMap<String, String> getOnLinesResolve() {
-        readMap();
-        AppComponents.threadConfig().getTaskScheduler().scheduleAtFixedRate(new ChkOnlinesSizeChange(), TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY));
-        return this.onLinesResolve;
     }
     
     /**
@@ -107,25 +89,14 @@ import java.util.concurrent.TimeUnit;
         return retDeq;
     }
     
-    @Override
-    public int hashCode() {
-        int result = getOnLinesResolve().hashCode();
-        result = 31 * result + getOffLines().hashCode();
-        return result;
+    public ConcurrentMap<String, String> getOnLinesResolve() {
+        readMap();
+        AppComponents.threadConfig().getTaskScheduler().scheduleAtFixedRate(new ChkOnlinePCsSizeChange(), TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY));
+        return this.onLinesResolve;
     }
     
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof NetListKeeper)) {
-            return false;
-        }
-        
-        NetListKeeper that = (NetListKeeper) o;
-        
-        return getOnLinesResolve().equals(that.getOnLinesResolve()) && getOffLines().equals(that.getOffLines());
+    public ConcurrentMap<String, String> getOffLines() {
+        return this.offLines;
     }
     
     @Override
@@ -138,8 +109,7 @@ import java.util.concurrent.TimeUnit;
         return sb.toString();
     }
     
-    void readMap() {
-    
+    private void readMap() {
         try (InputStream inputStream = new FileInputStream(nameOfExtObject);
              ObjectInputStream objectInputStream = new ObjectInputStream(inputStream)
         ) {
@@ -151,18 +121,14 @@ import java.util.concurrent.TimeUnit;
         }
     }
     
-    ConcurrentMap<String, String> getOffLines() {
-        return this.offLines;
-    }
-    
-    private class ChkOnlinesSizeChange implements Runnable {
-    
-    
+    private class ChkOnlinePCsSizeChange implements Runnable {
+        
+        
         private int currentSize = onLinesResolve.size();
         
         private int wasSize;
         
-        public ChkOnlinesSizeChange() {
+        ChkOnlinePCsSizeChange() {
             Properties properties = AppComponents.getProps();
             this.wasSize = Integer.parseInt(properties.getProperty("onsize", "0"));
         }

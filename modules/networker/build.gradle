@@ -24,7 +24,7 @@ group = 'ru.vachok.networker'
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
 //noinspection SpellCheckingInspection
-version = '8.0.1922'
+version = '8.0.1923-rc1'
 sourceCompatibility = 1.8
 
 repositories {

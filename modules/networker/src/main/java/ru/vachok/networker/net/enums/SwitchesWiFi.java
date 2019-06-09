@@ -4,7 +4,7 @@ package ru.vachok.networker.net.enums;
 
 
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.net.DiapazonedScan;
+import ru.vachok.networker.exe.schedule.DiapazonScan;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -102,7 +102,7 @@ public enum SwitchesWiFi {
         StringBuilder stringBuilder = new StringBuilder();
 
         try {
-            List<String> swListAsStr = DiapazonedScan.pingSwitch();
+            List<String> swListAsStr = DiapazonScan.pingSwitch();
             Collections.sort(swListAsStr);
             for (String s : swListAsStr) {
                 s = s.replaceAll("\n", "");

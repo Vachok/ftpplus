@@ -1,21 +1,18 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.accesscontrol;
 
 
 import org.springframework.stereotype.Component;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.services.MessageLocal;
-
-import java.io.*;
+import ru.vachok.networker.services.DBMessenger;
 
 
 /**
  @since 10.09.2018 (11:35) */
-@Component(ConstantsFor.BEANNAME_PFLISTS)
-public class PfLists implements Serializable {
-    
-    
-    private static final long serialVersionUID = 1984L;
+@SuppressWarnings({"ClassWithTooManyFields", "InstanceVariableMayNotBeInitialized"}) @Component(ConstantsFor.BEANNAME_PFLISTS)
+public class PfLists {
     
     private String vipNet;
     
@@ -37,18 +34,7 @@ public class PfLists implements Serializable {
     
     private String uName;
     
-    private transient MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
-    
-    public PfLists() {
-        try (InputStream inputStream = new FileInputStream(getClass().getSimpleName() + ".ser");
-             ObjectInputStream objectInputStream = new ObjectInputStream(inputStream)
-        ) {
-            readObject(objectInputStream);
-        }
-        catch (IOException | ClassNotFoundException e) {
-            messageToUser.error(e.getMessage());
-        }
-    }
+    private transient MessageToUser messageToUser = new DBMessenger(getClass().getSimpleName());
     
     public String getInetLog() {
         return inetLog;
@@ -58,7 +44,7 @@ public class PfLists implements Serializable {
         this.inetLog = inetLog;
     }
     
-    public void setuName(String uName) {
+    @SuppressWarnings("SpellCheckingInspection") public void setuName(String uName) {
         this.uName = uName;
     }
     
@@ -100,15 +86,6 @@ public class PfLists implements Serializable {
     
     public void setTimeStampToNextUpdLong(long timeToNextUpd) {
         this.timeStampToNextUpdLong = timeToNextUpd;
-        
-        try (OutputStream outputStream = new FileOutputStream(getClass().getSimpleName() + ".ser");
-             ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream)
-        ) {
-            writeObject(objectOutputStream);
-        }
-        catch (IOException e) {
-            messageToUser.error(e.getMessage());
-        }
     }
     
     public long getGitStatsUpdatedStampLong() {
@@ -127,7 +104,7 @@ public class PfLists implements Serializable {
         this.pfRules = pfRules;
     }
     
-    public String getUname() {
+    @SuppressWarnings("SpellCheckingInspection") public String getUname() {
         return uName;
     }
     
@@ -154,17 +131,5 @@ public class PfLists implements Serializable {
         sb.append(", vipNet='").append(vipNet).append('\'');
         sb.append('}');
         return sb.toString();
-    }
-    
-    private void writeObject(java.io.ObjectOutputStream out) throws IOException {
-        out.writeObject(this);
-    }
-    
-    private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
-        in.readObject();
-    }
-    
-    private void readObjectNoData() throws ObjectStreamException {
-    
     }
 }

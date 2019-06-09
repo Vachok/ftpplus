@@ -6,8 +6,8 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.DiapazonedScan;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.systray.SystemTrayHelper;
 
@@ -34,7 +34,7 @@ public class ActionSomeInfo extends AbstractAction {
         if (IntoApplication.TRAY_SUPPORTED) {
             messageToUser = new MessageSwing();
         }
-        Date newScan = new Date(DiapazonedScan.getInstance().getStopClassStampLong() + TimeUnit.MINUTES.toMillis(111));
+        Date newScan = new Date(DiapazonScan.getInstance().getStopClassStampLong() + TimeUnit.MINUTES.toMillis(111));
         new Thread(ConstantsFor.INFO_MSG_RUNNABLE).start();
         messageToUser.info("ActionSomeInfo.actionPerformed", "newScan = ", newScan + "\nCharsets: \n" + FileSystemWorker
             .writeFile("charsets.info", new TForms().fromArray(Charset.availableCharsets().values(), false)));

@@ -8,7 +8,6 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.InternetUse;
 import ru.vachok.networker.services.MessageLocal;
-import ru.vachok.stats.SaveLogsToDB;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -35,7 +34,6 @@ public class InetUserPCName implements InternetUse {
     
     
     @Override public void showLog() {
-        SaveLogsToDB saveLogsToDB = new AppComponents().saveLogsToDB();
-        saveLogsToDB.showInfo();
+        new AppComponents().saveLogsToDB();
     }
 }

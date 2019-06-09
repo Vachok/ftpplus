@@ -499,8 +499,7 @@ public class ADSrv implements Runnable {
      @see PhotoConverterSRV
      */
     private void psComm() {
-        Properties p = AppComponents.getProps();
-        PhotoConverterSRV photoConverterSRV = new PhotoConverterSRV(p);
+        PhotoConverterSRV photoConverterSRV = new PhotoConverterSRV();
         photoConverterSRV.psCommands();
     }
     

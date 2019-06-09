@@ -11,7 +11,7 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.Pinger;
-import ru.vachok.networker.config.ThreadConfig;
+import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
@@ -37,12 +37,8 @@ import java.util.stream.Stream;
 @SuppressWarnings("unused")
 @Service(ConstantsFor.ATT_NETPINGER)
 public class NetPinger implements Runnable, Pinger {
-
-    /**
-     NetPinger
-     */
-    private static final String STR_CLASSNAME = "NetPinger";
-
+    
+    
     /**
      NetPinger.pingSW
      */
@@ -160,8 +156,7 @@ public class NetPinger implements Runnable, Pinger {
                 bufferedReader.lines().forEach(this::parseAddr);
             }
         } catch (IOException e) {
-            messageToUser.errorAlert(STR_CLASSNAME, "parseFile", e.getMessage());
-            FileSystemWorker.error("NetPinger.parseFile", e);
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".parseFile", e));
         }
     }
 
@@ -217,18 +212,6 @@ public class NetPinger implements Runnable, Pinger {
             messageToUser.error(e.getMessage());
             return false;
         }
-    }
-    
-    @Override public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        NetPinger pinger = (NetPinger) o;
-        return pingSleepMsec == pinger.pingSleepMsec && Objects.equals(timeForScanStr, pinger.timeForScanStr) && Objects.equals(timeToEndStr, pinger.timeToEndStr) && Objects
-            .equals(multipartFile, pinger.multipartFile);
-    }
-    
-    @Override public int hashCode() {
-        return Objects.hash(pingSleepMsec, timeForScanStr, timeToEndStr, multipartFile);
     }
     
     /**

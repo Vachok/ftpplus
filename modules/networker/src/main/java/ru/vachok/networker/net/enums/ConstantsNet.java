@@ -7,8 +7,8 @@ import org.springframework.ui.Model;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.net.DiapazonedScan;
-import ru.vachok.networker.net.NetScannerSvc;
+import ru.vachok.networker.exe.runnabletasks.NetScannerSvc;
+import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.services.MessageLocal;
 
 import java.io.File;
@@ -139,6 +139,8 @@ public enum ConstantsNet { ;
     
     private static MessageToUser messageToUser = new MessageLocal(ConstantsNet.class.getSimpleName());
     
+    public static final int VLAN_MASK24_MAX = 255;
+    
     public static void setSshMapStr(String sshMapStr) {
         ConstantsNet.sshMapStr = sshMapStr;
     }
@@ -170,7 +172,7 @@ public enum ConstantsNet { ;
     }
 
     /**
-     Все возможные IP из диапазонов {@link DiapazonedScan}
+     Все возможные IP из диапазонов {@link DiapazonScan}
 
      @return {@link #ALL_DEVICES}
      */

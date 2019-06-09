@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.accesscontrol.sshactions;
 
 
@@ -10,13 +12,13 @@ import ru.vachok.networker.services.MessageLocal;
 
 import java.util.concurrent.*;
 
-import static ru.vachok.networker.accesscontrol.sshactions.SshActs.DEFAULT_SERVER_TO_SSH;
-
 
 /**
  @since 24.05.2019 (9:30) */
 public class Tracerouting implements Callable<String> {
     
+    
+    private final String SRV_NEEDED = new AppComponents().sshActs().whatSrvNeed();
     
     private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
     
@@ -43,7 +45,7 @@ public class Tracerouting implements Callable<String> {
      */
     private String getProviderTraceStr() throws ArrayIndexOutOfBoundsException, InterruptedException, ExecutionException, TimeoutException {
         StringBuilder stringBuilder = new StringBuilder();
-        SSHFactory sshFactory = new SSHFactory.Builder(DEFAULT_SERVER_TO_SSH, "traceroute velkomfood.ru && exit", getClass().getSimpleName()).build();
+        SSHFactory sshFactory = new SSHFactory.Builder(SRV_NEEDED, "traceroute velkomfood.ru && exit", getClass().getSimpleName()).build();
         Future<String> curProvFuture = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(sshFactory);
         String callForRoute = curProvFuture.get(ConstantsFor.DELAY, TimeUnit.SECONDS);
         stringBuilder.append("<br><a href=\"/makeok\">");

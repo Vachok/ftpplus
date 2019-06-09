@@ -10,25 +10,25 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.config.ThreadConfig;
+import ru.vachok.networker.exe.ThreadConfig;
+import ru.vachok.networker.exe.runnabletasks.TelnetStarter;
+import ru.vachok.networker.exe.schedule.WeekStats;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.TelnetStarter;
+import ru.vachok.networker.net.TestServer;
 import ru.vachok.networker.services.MessageLocal;
-import ru.vachok.networker.services.SpeedChecker;
-import ru.vachok.networker.statistics.WeekStats;
 import ru.vachok.networker.systray.SystemTrayHelper;
-import ru.vachok.stats.SaveLogsToDB;
 
 import java.awt.*;
-import java.time.DayOfWeek;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.TextStyle;
 import java.util.List;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 
 /**
@@ -50,27 +50,38 @@ import java.util.concurrent.*;
 public class IntoApplication {
     
     
+    private static ConfigurableApplicationContext configurableApplicationContext;
+    
     public static final boolean TRAY_SUPPORTED = SystemTray.isSupported();
     
     private static final Properties LOCAL_PROPS = AppComponents.getProps();
     
+    private static final SpringApplication SPRING_APPLICATION = new SpringApplication();
+    
     /**
      {@link MessageLocal}
      */
-    private static final MessageToUser messageToUser = new MessageLocal(IntoApplication.class.getSimpleName());
-    
-    private static final ThreadPoolTaskExecutor EXECUTOR = AppComponents.threadConfig().getTaskExecutor();
-    
-    private static final ScheduledThreadPoolExecutor SCHEDULED_THREAD_POOL_EXECUTOR = AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor();
-    
-    private static ConfigurableApplicationContext configurableApplicationContext;
+    private static final MessageToUser MESSAGE_LOCAL = new MessageLocal(IntoApplication.class.getSimpleName());
     
     public static ConfigurableApplicationContext getConfigurableApplicationContext() {
-        return configurableApplicationContext;
+        synchronized(SPRING_APPLICATION) {
+            if (configurableApplicationContext == null) {
+                ConfigurableApplicationContext newCtx = SpringApplication.run(IntoApplication.class);
+                setCtx(newCtx);
+                return newCtx;
+            }
+            else {
+                return new AnnotationConfigApplicationContext();
+            }
+        }
     }
     
     public void setConfigurableApplicationContext(ConfigurableApplicationContext configurableApplicationContext) {
-        IntoApplication.configurableApplicationContext = configurableApplicationContext;
+        synchronized(SPRING_APPLICATION) {
+            if (configurableApplicationContext == null) {
+                setCtx(SpringApplication.run(IntoApplication.class));
+            }
+        }
     }
     
     /**
@@ -85,19 +96,31 @@ public class IntoApplication {
      @param args аргументы запуска
      @see SystemTrayHelper
      */
-    public static void main(@Nullable String[] args) {
-        AppComponents.threadConfig().execByThreadConfig(new TelnetStarter());
-        SpringApplication application = new SpringApplication();
-        ConfigurableApplicationContext context = SpringApplication.run(IntoApplication.class);
-        configurableApplicationContext = context;
+    public static void main(@Nullable String[] args) throws IOException {
+        final Thread telnetThread = new Thread(new TelnetStarter());
+        telnetThread.setDaemon(true);
+        telnetThread.start();
+        if (configurableApplicationContext == null) {
+            setCtx(SpringApplication.run(IntoApplication.class));
+        }
         FileSystemWorker.delFilePatterns(ConstantsFor.getStringsVisit());
         if (args != null && args.length > 0) {
-            readArgs(context, args);
+            readArgs(configurableApplicationContext, args);
         }
         else {
-            beforeSt(true);
-            context.start();
+            try {
+                beforeSt(true);
+            }
+            catch (NullPointerException e) {
+                MESSAGE_LOCAL.error(FileSystemWorker.error(IntoApplication.class.getSimpleName() + ".main", e));
+            }
             afterSt();
+        }
+    }
+    
+    private static void setCtx(ConfigurableApplicationContext cAc) {
+        synchronized(SPRING_APPLICATION) {
+            cAc = configurableApplicationContext;
         }
     }
     
@@ -106,7 +129,7 @@ public class IntoApplication {
      <p>
      1. {@link AppComponents#threadConfig()}. Управление запуском и трэдами. <br><br>
      <b>Runnable</b><br>
-     2. {@link IntoApplication#getWeekPCStats()} собирает инфо о скорости в файл. Если воскресенье, запускает {@link WeekStats} <br><br>
+     2. {@link AppInfoOnLoad#getWeekPCStats()} собирает инфо о скорости в файл. Если воскресенье, запускает {@link WeekStats} <br><br>
      <b>Далее:</b><br>
      3. {@link AppComponents#threadConfig()} (4. {@link ThreadConfig#getTaskExecutor()}) - запуск <b>Runnable</b> <br>
      5. {@link ThreadConfig#getTaskExecutor()} - запуск {@link AppInfoOnLoad}. <br><br>
@@ -116,30 +139,8 @@ public class IntoApplication {
      */
     private static void afterSt() {
         @NotNull Runnable infoAndSched = new AppInfoOnLoad();
-        EXECUTOR.submit(infoAndSched);
-        EXECUTOR.submit(IntoApplication::getWeekPCStats);
-        SaveLogsToDB saveLogsToDB = new AppComponents().saveLogsToDB();
-        if (!ConstantsFor.thisPC().toLowerCase().contains("home")) {
-            AppComponents.threadConfig().execByThreadConfig(saveLogsToDB::startScheduled);
-        }
-        else {
-            AppComponents.threadConfig().execByThreadConfig(saveLogsToDB::showInfo);
-        }
+        AppComponents.threadConfig().getTaskExecutor().execute(infoAndSched);
     }
-    
-    /**
-     Статистика по-пользователям за неделю.
-     <p>
-     Запуск new {@link SpeedChecker.ChkMailAndUpdateDB}, через {@link Executors#unconfigurableExecutorService(java.util.concurrent.ExecutorService)}
-     <p>
-     Если {@link LocalDate#getDayOfWeek()} equals {@link DayOfWeek#SUNDAY}, запуск new {@link WeekStats}
-     */
-    private static void getWeekPCStats() {
-        if (LocalDate.now().getDayOfWeek().equals(DayOfWeek.SUNDAY)) {
-            AppComponents.threadConfig().execByThreadConfig(new WeekStats(ConstantsFor.SQL_SELECTFROM_PCUSERAUTO));
-        }
-    }
-    
     
     /**
      Чтение аргументов {@link #main(String[])}
@@ -151,7 +152,7 @@ public class IntoApplication {
      
      @param args аргументы запуска.
      */
-    private static void readArgs(ConfigurableApplicationContext context, @NotNull String... args) {
+    private static void readArgs(ConfigurableApplicationContext context, @NotNull String... args) throws IOException {
         boolean isTray = true;
         Runnable exitApp = new ExitApp(IntoApplication.class.getSimpleName());
         List<@NotNull String> argsList = Arrays.asList(args);
@@ -195,7 +196,7 @@ public class IntoApplication {
             AppComponents.threadConfig().execByThreadConfig(exitApp);
         }
         if (stringStringEntry.getKey().contains("notray")) {
-            messageToUser.info("IntoApplication.readArgs", "key", " = " + stringStringEntry.getKey());
+            MESSAGE_LOCAL.info("IntoApplication.readArgs", "key", " = " + stringStringEntry.getKey());
             isTray = false;
         }
         if (stringStringEntry.getKey().contains("ff")) {
@@ -203,13 +204,12 @@ public class IntoApplication {
             LOCAL_PROPS.clear();
             LOCAL_PROPS.putAll(objectMap);
         }
-        if (stringStringEntry.getKey().contains(ConstantsFor.PR_LPORT)) {
-            LOCAL_PROPS.setProperty(ConstantsFor.PR_LPORT, stringStringEntry.getValue());
+        if (stringStringEntry.getKey().contains(TestServer.PR_LPORT)) {
+            LOCAL_PROPS.setProperty(TestServer.PR_LPORT, stringStringEntry.getValue());
         }
         
         return isTray;
     }
-    
     
     private static void trayAdd(SystemTrayHelper systemTrayHelper) {
         if (ConstantsFor.thisPC().toLowerCase().contains(ConstantsFor.HOSTNAME_DO213)) {
@@ -220,7 +220,12 @@ public class IntoApplication {
                 systemTrayHelper.addTray("icons8-house-26.png");
             }
             else {
-                systemTrayHelper.addTray(ConstantsFor.FILENAME_ICON);
+                try {
+                    systemTrayHelper.addTray(ConstantsFor.FILENAME_ICON);
+                }
+                catch (Exception ignore) {
+                    //
+                }
             }
         }
     }
@@ -236,19 +241,18 @@ public class IntoApplication {
  
      @param isTrayNeed нужен трэй или нет.
      */
-    private static void beforeSt(boolean isTrayNeed) {
+    private static void beforeSt(boolean isTrayNeed) throws IOException {
+        @NotNull StringBuilder stringBuilder = new StringBuilder();
         if (isTrayNeed) {
             trayAdd(SystemTrayHelper.getI());
+            stringBuilder.append(AppComponents.ipFlushDNS());
         }
-        @NotNull StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("updateProps = ").append(new AppComponents().updateProps(LOCAL_PROPS));
         stringBuilder.append(LocalDate.now().getDayOfWeek().getValue());
         stringBuilder.append(" - day of week\n");
         stringBuilder.append(LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault()));
-        stringBuilder.append(AppComponents.ipFlushDNS());
-        messageToUser.info("IntoApplication.beforeSt", "stringBuilder", stringBuilder.toString());
+        MESSAGE_LOCAL.info("IntoApplication.beforeSt", "stringBuilder", stringBuilder.toString());
         System.setProperty(ConstantsFor.STR_ENCODING, "UTF8");
         FileSystemWorker.writeFile("system", new TForms().fromArray(System.getProperties()));
-        SCHEDULED_THREAD_POOL_EXECUTOR.schedule(()->messageToUser.info(new TForms().fromArray(LOCAL_PROPS, false)), ConstantsFor.DELAY + 10, TimeUnit.MINUTES);
     }
 }

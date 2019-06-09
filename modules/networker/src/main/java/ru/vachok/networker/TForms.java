@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker;
 
 
@@ -21,6 +23,8 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentMap;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 import java.util.stream.Stream;
 
 
@@ -431,6 +435,62 @@ public class TForms {
             nStringBuilder.append(lockInfo.toString());
         }
         return nStringBuilder.toString();
+    }
+    
+    public String fromArray(ThreadInfo[] infos, boolean isHTML) {
+        this.brStringBuilder = new StringBuilder();
+        this.nStringBuilder = new StringBuilder();
+        
+        for (ThreadInfo threadInfo : infos) {
+            brStringBuilder.append(threadInfo.getThreadName()).append(" ").append(threadInfo.getThreadState()).append(BR_STR);
+            brStringBuilder.append(threadInfo.getThreadName()).append(" ").append(threadInfo.getThreadState()).append(N_STR);
+            for (StackTraceElement element : threadInfo.getStackTrace()) {
+                parseTrace(element);
+            }
+            brStringBuilder.append(BR_STR);
+            nStringBuilder.append(N_STR);
+            try {
+                String lockInfoStr = threadInfo.getLockInfo().toString();
+                
+                brStringBuilder.append(lockInfoStr).append(BR_STR);
+                nStringBuilder.append(lockInfoStr).append(N_STR);
+            }
+            catch (RuntimeException e) {
+                nStringBuilder.append(new TForms().fromArray(e, false));
+            }
+        }
+    
+        if (isHTML) {
+            return brStringBuilder.toString();
+        }
+        else {
+            return nStringBuilder.toString();
+        }
+    }
+    
+    public String fromArray(Preferences pref, boolean isHTML) {
+        this.brStringBuilder = new StringBuilder();
+        this.nStringBuilder = new StringBuilder();
+    
+        brStringBuilder.append("USER PREFS").append(BR_STR);
+        nStringBuilder.append("USER PREFS").append(N_STR);
+        try {
+            String[] keys = pref.userRoot().keys();
+            for (String key : keys) {
+                brStringBuilder.append(key).append(" value: ").append(pref.get(key, "")).append(BR_STR);
+                nStringBuilder.append(key).append(" value: ").append(pref.get(key, "")).append(N_STR);
+            }
+        }
+        catch (BackingStoreException e) {
+            brStringBuilder.append(new TForms().fromArray(e, true));
+            nStringBuilder.append(new TForms().fromArray(e, false));
+        }
+        if (isHTML) {
+            return brStringBuilder.toString();
+        }
+        else {
+            return nStringBuilder.toString();
+        }
     }
     
     @Override

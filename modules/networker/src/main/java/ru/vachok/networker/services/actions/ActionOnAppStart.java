@@ -1,9 +1,11 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.services.actions;
 
 
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.AppInfoOnLoad;
-import ru.vachok.networker.services.SpeedChecker;
+import ru.vachok.networker.exe.runnabletasks.SpeedChecker;
 import ru.vachok.networker.systray.MessageToTray;
 import ru.vachok.networker.systray.SystemTrayHelper;
 
@@ -12,6 +14,7 @@ import java.awt.event.ActionEvent;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -38,7 +41,7 @@ public class ActionOnAppStart extends AbstractAction {
         catch (InterruptedException | ExecutionException ignore) {
             Thread.currentThread().interrupt();
         }
-        new MessageToTray(new ActionCloseMsg(SystemTrayHelper.getI().getTrayIcon())).info(getClass().getSimpleName(), AppInfoOnLoad.iisLogSize(),
+        new MessageToTray(new ActionCloseMsg(Objects.requireNonNull(SystemTrayHelper.getI()).getTrayIcon())).info(getClass().getSimpleName(), new AppInfoOnLoad().getIISLogSize(),
             messageSW);
     }
 }
