@@ -1,4 +1,6 @@
-package ru.vachok.networker.services.actions;
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
+package ru.vachok.networker.systray.actions;
 
 
 import ru.vachok.messenger.MessageSwing;

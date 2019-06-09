@@ -19,7 +19,7 @@ import ru.vachok.networker.services.SystemRuntime;
 import java.io.File;
 import java.io.FileNotFoundException;
 
-import static ru.vachok.networker.IntoApplication.getConfigurableApplicationContext;
+import static ru.vachok.networker.IntoApplication.reloadConfigurableApplicationContext;
 
 
 /**
@@ -147,7 +147,7 @@ public class PfListsSrv {
         }
         if (pfListsInstAW == null) {
             new IntoApplication();
-            pfListsInstAW = (PfLists) getConfigurableApplicationContext().getBeanFactory().getBean(ConstantsFor.BEANNAME_PFLISTS);
+            pfListsInstAW = (PfLists) reloadConfigurableApplicationContext().getBeanFactory().getBean(ConstantsFor.BEANNAME_PFLISTS);
         }
         pfListsInstAW.setGitStatsUpdatedStampLong(System.currentTimeMillis());
     

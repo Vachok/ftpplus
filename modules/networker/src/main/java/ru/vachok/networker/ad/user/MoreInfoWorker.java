@@ -16,8 +16,8 @@ import ru.vachok.networker.net.InfoWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.net.enums.OtherKnownDevices;
 import ru.vachok.networker.services.MessageLocal;
-import ru.vachok.networker.services.actions.ActionCloseMsg;
 import ru.vachok.networker.systray.MessageToTray;
+import ru.vachok.networker.systray.actions.ActionCloseMsg;
 
 import java.io.File;
 import java.io.IOException;
@@ -45,7 +45,6 @@ public class MoreInfoWorker implements InfoWorker {
 
     private MessageToUser messageToUser = new MessageCons(getClass().getSimpleName());
     
-    
     public MoreInfoWorker(String aboutWhat) {
         this.aboutWhat = aboutWhat;
     }
@@ -66,7 +65,7 @@ public class MoreInfoWorker implements InfoWorker {
         String sql = "select * from pcuserauto where userName like ? ORDER BY whenQueried DESC LIMIT 0, 20";
         List<String> userPCName = new ArrayList<>();
         String mostFreqName = "No Name";
-        
+    
         try {
             userInputRaw = userInputRaw.split(": ")[1].trim();
         }
@@ -82,7 +81,7 @@ public class MoreInfoWorker implements InfoWorker {
                 StringBuilder stringBuilder = new StringBuilder();
                 String headER = "<h3><center>LAST 20 USER PCs</center></h3>";
                 stringBuilder.append(headER);
-                
+    
                 while (r.next()) {
                     String pcName = r.getString(ConstantsFor.DBFIELD_PCNAME);
                     userPCName.add(pcName);
@@ -131,7 +130,7 @@ public class MoreInfoWorker implements InfoWorker {
     
     private static String getTVNetInfo() {
         File ptvFile = new File(ConstantsFor.FILENAME_PTV);
-    
+        
         List<String> readFileToList = FileSystemWorker.readFileToList(ptvFile.getAbsolutePath());
         List<String> onList = new ArrayList<>();
         List<String> offList = new ArrayList<>();
@@ -139,23 +138,23 @@ public class MoreInfoWorker implements InfoWorker {
             if (s.contains("true")) onList.add(s.split("/")[0]);
             else offList.add(s.split("/")[0]);
         });
-    
+        
         String ptv1Str = OtherKnownDevices.PTV1_EATMEAT_RU;
         String ptv2Str = OtherKnownDevices.PTV2_EATMEAT_RU;
 
 //        String ptv3Str = OtherKnownDevices.PTV3_EATMEAT_RU;
-    
+        
         int frequencyOffPTV1 = Collections.frequency(offList, ptv1Str);
         int frequencyOnPTV1 = Collections.frequency(onList, ptv1Str);
         int frequencyOnPTV2 = Collections.frequency(onList, ptv2Str);
         int frequencyOffPTV2 = Collections.frequency(offList, ptv2Str);
 //        int frequencyOnPTV3 = Collections.frequency(onList, ptv3Str);
 //        int frequencyOffPTV3 = Collections.frequency(offList, ptv3Str);
-    
+        
         String ptv1Stats = "<br><font color=\"#00ff69\">" + frequencyOnPTV1 + " on " + ptv1Str + "</font> | <font color=\"red\">" + frequencyOffPTV1 + " off " + ptv1Str + "</font>";
         String ptv2Stats = "<font color=\"#00ff69\">" + frequencyOnPTV2 + " on " + ptv2Str + "</font> | <font color=\"red\">" + frequencyOffPTV2 + " off " + ptv2Str + "</font>";
 //        String ptv3Stats = "<font color=\"#00ff69\">" + frequencyOnPTV3 + " on " + ptv3Str + "</font> | <font color=\"red\">" + frequencyOffPTV3 + " off " + ptv3Str + "</font>";
-    
+        
         return String.join("<br>\n", ptv1Stats, ptv2Stats);
     }
     

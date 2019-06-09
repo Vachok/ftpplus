@@ -3,6 +3,7 @@
 package ru.vachok.networker;
 
 
+import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -11,9 +12,11 @@ import org.testng.annotations.Test;
 public class IntoApplicationTest {
     
     
-    @Test(enabled = false)
+    @Test()
     public void testGetConfigurableApplicationContext() {
-        ConfigurableApplicationContext ctx = IntoApplication.getConfigurableApplicationContext();
+        ConfigurableApplicationContext ctx = IntoApplication.reloadConfigurableApplicationContext();
         Assert.assertNotNull(ctx);
+        ctx.close();
+        new IntoApplication().setConfigurableApplicationContext(SpringApplication.run(IntoApplication.class));
     }
 }

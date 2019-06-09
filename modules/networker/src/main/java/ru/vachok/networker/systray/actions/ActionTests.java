@@ -1,6 +1,6 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.services.actions;
+package ru.vachok.networker.systray.actions;
 
 
 import ru.vachok.messenger.MessageToUser;

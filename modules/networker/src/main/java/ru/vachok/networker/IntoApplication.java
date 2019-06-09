@@ -50,7 +50,7 @@ import java.util.concurrent.ConcurrentMap;
 public class IntoApplication {
     
     
-    private static ConfigurableApplicationContext configurableApplicationContext;
+    private static ConfigurableApplicationContext configurableApplicationContext = null;
     
     public static final boolean TRAY_SUPPORTED = SystemTray.isSupported();
     
@@ -63,12 +63,11 @@ public class IntoApplication {
      */
     private static final MessageToUser MESSAGE_LOCAL = new MessageLocal(IntoApplication.class.getSimpleName());
     
-    public static ConfigurableApplicationContext getConfigurableApplicationContext() {
+    public static ConfigurableApplicationContext reloadConfigurableApplicationContext() {
+        configurableApplicationContext = null;
         synchronized(SPRING_APPLICATION) {
             if (configurableApplicationContext == null) {
-                ConfigurableApplicationContext newCtx = SpringApplication.run(IntoApplication.class);
-                setCtx(newCtx);
-                return newCtx;
+                return setCtx(SpringApplication.run(IntoApplication.class));
             }
             else {
                 return new AnnotationConfigApplicationContext();
@@ -79,7 +78,7 @@ public class IntoApplication {
     public void setConfigurableApplicationContext(ConfigurableApplicationContext configurableApplicationContext) {
         synchronized(SPRING_APPLICATION) {
             if (configurableApplicationContext == null) {
-                setCtx(SpringApplication.run(IntoApplication.class));
+                IntoApplication.configurableApplicationContext = setCtx(SpringApplication.run(IntoApplication.class));
             }
         }
     }
@@ -101,7 +100,7 @@ public class IntoApplication {
         telnetThread.setDaemon(true);
         telnetThread.start();
         if (configurableApplicationContext == null) {
-            setCtx(SpringApplication.run(IntoApplication.class));
+            IntoApplication.configurableApplicationContext = setCtx(SpringApplication.run(IntoApplication.class));
         }
         FileSystemWorker.delFilePatterns(ConstantsFor.getStringsVisit());
         if (args != null && args.length > 0) {
@@ -118,10 +117,11 @@ public class IntoApplication {
         }
     }
     
-    private static void setCtx(ConfigurableApplicationContext cAc) {
+    private static ConfigurableApplicationContext setCtx(ConfigurableApplicationContext cAc) {
         synchronized(SPRING_APPLICATION) {
             cAc = configurableApplicationContext;
         }
+        return cAc;
     }
     
     /**

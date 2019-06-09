@@ -1,7 +1,12 @@
-package ru.vachok.networker.services.actions;
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
+package ru.vachok.networker.systray.actions;
 
 
+import org.springframework.boot.SpringApplication;
+import org.springframework.context.ConfigurableApplicationContext;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.services.MessageLocal;
 
 import javax.swing.*;
@@ -15,10 +20,8 @@ import java.util.Arrays;
  
  @see ru.vachok.networker.IntoApplication
  @since 25.01.2019 (13:30)
- @deprecated 05.06.2019 (15:29) */
-@Deprecated
-class ActionReloadCTX extends AbstractAction {
-    
+ */
+public class ActionReloadCTX extends AbstractAction {
     
     private static final String[] ARGS = new String[0];
     
@@ -29,7 +32,9 @@ class ActionReloadCTX extends AbstractAction {
     
     @Override
     public void actionPerformed(ActionEvent e) {
-        throw new UnsupportedOperationException("05.06.2019 (15:29) DEPRECATED");
+        ConfigurableApplicationContext context = IntoApplication.reloadConfigurableApplicationContext();
+        context.close();
+        new IntoApplication().setConfigurableApplicationContext(SpringApplication.run(IntoApplication.class));
     }
     
     @Override

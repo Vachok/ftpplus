@@ -10,12 +10,12 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.services.actions.ActionExit;
-import ru.vachok.networker.services.actions.ActionSomeInfo;
-import ru.vachok.networker.services.actions.ActionTests;
+import ru.vachok.networker.systray.actions.ActionExit;
+import ru.vachok.networker.systray.actions.ActionReloadCTX;
+import ru.vachok.networker.systray.actions.ActionSomeInfo;
+import ru.vachok.networker.systray.actions.ActionTests;
 
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -124,6 +124,7 @@ import java.util.concurrent.Executors;
         MenuItem toConsole = new MenuItem();
         MenuItem delFiles = new MenuItem();
         MenuItem logToFilesystem = new MenuItem();
+        MenuItem reloadCtx = new MenuItem();
 
         defItem.setLabel("Exit");
         defItem.addActionListener(new ActionExit(classMeth));
@@ -134,14 +135,14 @@ import java.util.concurrent.Executors;
         popupMenu.add(gitStartWeb);
 
         toConsole.setLabel("Console Back");
-        toConsole.addActionListener((ActionEvent e) -> System.setOut(System.err));
+        toConsole.addActionListener(e->System.setOut(System.err));
         popupMenu.add(toConsole);
 
         if (ConstantsFor.thisPC().toLowerCase().contains("home")) {
-            MenuItem reloadContext = new MenuItem();
-            reloadContext.addActionListener(new ActionTests());
-            reloadContext.setLabel("Run tests");
-            popupMenu.add(reloadContext);
+            MenuItem testActions = new MenuItem();
+            testActions.addActionListener(new ActionTests());
+            testActions.setLabel("Run tests");
+            popupMenu.add(testActions);
         }
 
         delFiles.addActionListener(new ActionDelTMP(Executors.newSingleThreadExecutor(), delFiles, popupMenu));
@@ -151,6 +152,11 @@ import java.util.concurrent.Executors;
         logToFilesystem.setLabel("Get some info");
         logToFilesystem.addActionListener(new ActionSomeInfo());
         popupMenu.add(logToFilesystem);
+    
+        reloadCtx.addActionListener(new ActionReloadCTX());
+        reloadCtx.setLabel("Reload String APP");
+//  fixme      popupMenu.add(reloadCtx);
+        
         return popupMenu;
     }
 

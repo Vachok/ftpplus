@@ -1,4 +1,6 @@
-package ru.vachok.networker.services.actions;
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
+package ru.vachok.networker.systray.actions;
 
 
 import ru.vachok.messenger.MessageToUser;
@@ -11,12 +13,6 @@ import java.awt.event.ActionListener;
 import java.util.Date;
 
 
-/**
- Убивает из {@link #trayIcon} все экшн-листенеры.
- <p>
- {@link MoreInfoWorker}, {@link NetScannerSvc}, {@link ActionOnAppStart}
-
- @since 29.01.2019 (12:21) */
 public class ActionCloseMsg extends AbstractAction {
 
     /**

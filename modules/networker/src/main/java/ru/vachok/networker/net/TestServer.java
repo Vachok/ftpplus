@@ -133,7 +133,7 @@ public class TestServer implements ConnectToMe {
             accepSoc();
         }
         else if (scannerLine.contains("refresh")) {
-            ConfigurableApplicationContext context = IntoApplication.getConfigurableApplicationContext();
+            ConfigurableApplicationContext context = IntoApplication.reloadConfigurableApplicationContext();
             context.stop();
             context.close();
             context = null;
