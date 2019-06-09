@@ -4,9 +4,7 @@ package ru.vachok.networker.net;
 
 
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.AppInfoOnLoad;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.ad.user.DataBaseADUsersSRV;
@@ -82,7 +80,7 @@ public class PCUserResolver extends ADSrv implements InfoWorker {
     
     private void namesToFile() {
         File[] files;
-        File pcNameFile = null;
+        File pcNameFile = new File("null");
         try {
             pcNameFile = Files.createTempFile(pcName, ".tmp").toFile();
             pcNameFile.deleteOnExit();
@@ -90,17 +88,18 @@ public class PCUserResolver extends ADSrv implements InfoWorker {
         catch (IOException e) {
             e.printStackTrace();
         }
-        try (OutputStream outputStream = new FileOutputStream(pcNameFile);
-             PrintWriter writer = new PrintWriter(outputStream, true)
-        ) {
     
-            String pathAsStr = new StringBuilder().append("\\\\").append(pcName).append("\\c$\\Users\\").toString();
-            lastFileUse = getLastTimeUse(pathAsStr).split("Users")[1];
-            files = new File(pathAsStr).listFiles();
-            writer
-                .append(Arrays.toString(files).replace(", ", "\n"))
-                .append("\n\n\n")
-                .append(lastFileUse);
+        try (OutputStream outputStream = new FileOutputStream(pcNameFile)) {
+            try (PrintWriter writer = new PrintWriter(outputStream, true)) {
+            
+                String pathAsStr = new StringBuilder().append("\\\\").append(pcName).append("\\c$\\Users\\").toString();
+                lastFileUse = getLastTimeUse(pathAsStr).split("Users")[1];
+                files = new File(pathAsStr).listFiles();
+                writer
+                    .append(Arrays.toString(files).replace(", ", "\n"))
+                    .append("\n\n\n")
+                    .append(lastFileUse);
+            }
         }
         catch (IOException | ArrayIndexOutOfBoundsException | NullPointerException ignored) {
             //
@@ -135,11 +134,11 @@ public class PCUserResolver extends ADSrv implements InfoWorker {
                 preparedStatement.executeUpdate();
             }
             catch (SQLException e) {
-                messageToUser.error(e.getMessage());
+                System.err.println(e.getMessage() + " " + getClass().getSimpleName());
             }
         }
         catch (SQLException | ArrayIndexOutOfBoundsException | NullPointerException | IOException e) {
-            messageToUser.error(e.getMessage());
+            System.err.println(e.getMessage() + " " + getClass().getSimpleName());
         }
     }
     
@@ -168,27 +167,11 @@ public class PCUserResolver extends ADSrv implements InfoWorker {
     }
     
     /**
-     Очистка pcuserauto
-     */
-    public static void trunkTableUsers() {
-        try (Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
-             PreparedStatement preparedStatement = c.prepareStatement("TRUNCATE TABLE pcuserauto")
-        ) {
-            preparedStatement.executeUpdate();
-        }
-        catch (SQLException e) {
-            messageToUser.error(FileSystemWorker.error(AppInfoOnLoad.class.getSimpleName() + ".trunkTableUsers", e));
-        }
-    }
-    
-    
-    /**
      Поиск файлов в папках {@code c-users}.
      
      @see #getLastTimeUse(String)
      @since 22.11.2018 (14:46)
      */
-    @SuppressWarnings("ClassHasNoToStringMethod")
     static class WalkerToUserFolder extends SimpleFileVisitor<Path> {
         
         

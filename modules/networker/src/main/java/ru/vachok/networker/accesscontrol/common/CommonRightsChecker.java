@@ -1,9 +1,8 @@
 package ru.vachok.networker.accesscontrol.common;
 
 
-
-import org.slf4j.Logger;
-import ru.vachok.networker.AppComponents;
+import ru.vachok.messenger.MessageCons;
+import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.TForms;
 
 import java.awt.*;
@@ -22,18 +21,21 @@ import java.util.List;
 
 @SuppressWarnings ("DuplicateStringLiteralInspection")
 @Deprecated
-public class CommonRightsChecker extends SimpleFileVisitor<Path> {
-
-    /**
-     {@link AppComponents#getLogger(String)}
-     */
-    private static final Logger LOGGER = AppComponents.getLogger(CommonRightsChecker.class.getSimpleName());
-
-    /**
-     @throws IOException deleteIfExists старые файлы.
-     */
-    public CommonRightsChecker() throws IOException {
-        AppComponents.threadConfig().thrNameSet("com.rgh");
+public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runnable {
+    
+    
+    private MessageToUser messageToUser = new MessageCons(getClass().getSimpleName());
+    
+    @Override public void run() {
+        try {
+            messageToUser.info(getClass().getSimpleName() + ".run", "true", " = " + isDelete());
+        }
+        catch (IOException e) {
+            System.err.println(e.getMessage());
+        }
+    }
+    
+    private String isDelete() throws IOException {
         boolean b1 = Files.deleteIfExists(new File("common.own").toPath());
         boolean b = Files.deleteIfExists(new File("common.rgh").toPath());
         String msg = new StringBuilder()
@@ -44,10 +46,9 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> {
             .append(b)
             .append(" ")
             .append(b1).toString();
-        LOGGER.warn(msg);
+        return msg;
     }
-
-
+    
     @Override
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
         if(attrs.isDirectory()){

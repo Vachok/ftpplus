@@ -23,12 +23,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 
-/**
- Сохранение {@link Properties} в базу
- <p>
- 
- @see AppComponents#saveAppPropsForce()
- @since 25.02.2019 (10:12) */
 @SuppressWarnings("DuplicateStringLiteralInspection") public class DBPropsCallable implements Callable<Properties>, DataBaseRegSQL {
     
     
@@ -41,6 +35,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
      */
     private final Collection<String> miniLogger = new PriorityQueue<>();
     
+    private boolean isForced;
+    
     private IllegalComponentStateException in_progress = new IllegalComponentStateException("In progress");
     
     private MysqlDataSource mysqlDataSource = new RegRuMysql().getDataSourceSchema(ConstantsFor.DBPREFIX + ConstantsFor.STR_PROPERTIES);
@@ -50,7 +46,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
      */
     private Properties propsToSave = new Properties();
     
-    private boolean isForced;
+    private Properties retProps = new Properties();
     
     private AtomicBoolean retBool = new AtomicBoolean(false);
     
@@ -63,26 +59,19 @@ import java.util.concurrent.atomic.AtomicBoolean;
         this.propsToSave = propsToSave;
     }
     
-    DBPropsCallable(MysqlDataSource mysqlDataSource, Properties propsToSave, boolean isForced) {
-        this.mysqlDataSource = mysqlDataSource;
-        this.propsToSave = propsToSave;
-        this.isForced = isForced;
+    DBPropsCallable() {
     }
-    
-    private DBPropsCallable() {
-    }
-    
     
     @Override
     public Properties call() {
-        if (isForced) {
-            propsToSave.setProperty(ConstantsFor.PR_FORCE , String.valueOf(forceUpdate()));
-            return propsToSave;
+        Properties props = new Properties();
+        try {
+            props = findRightProps();
         }
-        else {
-            
-            return findRightProps();
+        catch (IOException e) {
+            messageToUser.error(e.getMessage());
         }
+        return props;
     }
     
     
@@ -112,7 +101,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
     
     
     @SuppressWarnings("DuplicateStringLiteralInspection") private boolean upProps() {
-        String methName = ".upProps";
         final String sql = "insert into ru_vachok_networker (property, valueofproperty, javaid) values (?,?,?)";
         miniLogger.add("2. " + sql);
         FileSystemWorker.writeFile(getClass().getSimpleName() + ".mini", miniLogger.stream());
@@ -141,24 +129,29 @@ import java.util.concurrent.atomic.AtomicBoolean;
         return false;
     }
     
-    private Properties findRightProps() {
+    private Properties findRightProps() throws IOException {
         File prFile = new File(ConstantsFor.class.getSimpleName() + ConstantsFor.FILEEXT_PROPERTIES);
-        InitProperties initProperties;
-        Properties retProps;
         if (prFile.exists() & !prFile.canWrite()) {
-            initProperties = new FileProps(prFile.getName().replace(ConstantsFor.FILEEXT_PROPERTIES, ""));
-            retProps = initProperties.getProps();
-            retProps.setProperty("file", "true");
-            new AppComponents().updateProps(retProps);
+            readOnlyFileReturnFile(prFile);
         }
         else {
-            initProperties = new DBRegProperties(ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName());
-            retProps = initProperties.getProps();
-            retProps.setProperty("file", "false");
+            fileIsWritableOrNotExists();
         }
-        retProps.setProperty(ConstantsFor.PR_FORCE , "false");
         retProps.putAll(getApplicationProperties());
         return retProps;
+    }
+    
+    private void fileIsWritableOrNotExists() throws IOException {
+        InitProperties initProperties = new DBRegProperties(ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName());
+        retProps.putAll(initProperties.getProps());
+        retProps.setProperty("loadedFromFile", "false");
+        new AppComponents().updateProps(retProps);
+    }
+    
+    private void readOnlyFileReturnFile(File prFile) throws IOException {
+        InitProperties initProperties = new FileProps(ConstantsFor.class.getSimpleName());
+        retProps.putAll(initProperties.getProps());
+        new AppComponents().updateProps(retProps);
     }
     
     private Map<?, ?> getApplicationProperties() {
@@ -191,7 +184,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
         Properties updateProps = this.propsToSave;
         initProperties.delProps();
         initProperties.setProps(updateProps);
-        messageToUser.info(getClass().getSimpleName() + ".forceUpdate" , "delFromDataBase()" , " = " + delFromDataBase());
+        messageToUser.info(getClass().getSimpleName() + ".forceUpdate", "delFromDataBase()", " = " + delFromDataBase());
         retBool.set(upProps());
         return retBool.get();
     }

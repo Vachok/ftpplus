@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.services;
 
 
@@ -12,7 +14,10 @@ import ru.vachok.networker.ConstantsFor;
 
  @since 30.01.2019 (17:05) */
 public class MessageLocal implements MessageToUser {
-
+    
+    
+    private final MessageToUser messageToDB = new DBMessenger(getClass().getSimpleName());
+    
     private String bodyMsg = "NO BODY";
 
     private String titleMsg = ConstantsFor.getUpTime();
@@ -53,6 +58,7 @@ public class MessageLocal implements MessageToUser {
     public void errorAlert(String s) {
         this.bodyMsg = s;
         errorAlert(headerMsg, titleMsg, s);
+        messageToDB.error(headerMsg, titleMsg, s);
     }
 
     @Override
@@ -62,6 +68,7 @@ public class MessageLocal implements MessageToUser {
         this.titleMsg = titleMsg;
         this.bodyMsg = bodyMsg; String logRec = String.join(", ", headerMsg, titleMsg, bodyMsg);
         logger.error(logRec);
+        messageToDB.error(headerMsg, titleMsg, bodyMsg);
     }
 
     @Override
@@ -82,12 +89,14 @@ public class MessageLocal implements MessageToUser {
 
     @Override
     public void error(String bodyMsg) {
+        messageToDB.info(bodyMsg);
         errorAlert(bodyMsg);
     }
 
     @Override
     public void error(String headerMsg, String titmeMsg, String bodyMsg) {
-        errorAlert(headerMsg, titmeMsg, bodyMsg);
+        messageToDB.error(headerMsg, titmeMsg, bodyMsg);
+        errorAlert(headerMsg, titleMsg, bodyMsg);
     }
 
     @Override

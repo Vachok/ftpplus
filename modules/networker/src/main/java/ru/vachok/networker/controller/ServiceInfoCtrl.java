@@ -3,6 +3,7 @@
 package ru.vachok.networker.controller;
 
 
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,17 +11,15 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.*;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.exe.ThreadConfig;
+import ru.vachok.networker.exe.runnabletasks.SpeedChecker;
 import ru.vachok.networker.fileworks.CountSizeOfWorkDir;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.fileworks.ProgrammFilesReader;
-import ru.vachok.networker.fileworks.ReadFileTo;
-import ru.vachok.networker.net.DiapazonedScan;
+import ru.vachok.networker.net.NetPinger;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.net.enums.OtherKnownDevices;
 import ru.vachok.networker.services.DBMessenger;
-import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.MyCalen;
-import ru.vachok.networker.services.SpeedChecker;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -51,18 +50,16 @@ import static java.time.temporal.ChronoUnit.HOURS;
 public class ServiceInfoCtrl {
     
     
-    private static final String SERVICE_INFO_CTRL_CLOSE_APP = "ServiceInfoCtrl.closeApp";
+    private static final MessageToUser messageToUser = new DBMessenger(ServiceInfoCtrl.class.getSimpleName());
     
-    private static final MessageToUser messageToUser = new MessageLocal(ServiceInfoCtrl.class.getSimpleName());
-    
-    private ProgrammFilesReader filesReader = new ReadFileTo();
+    private final ThreadConfig threadConfig = AppComponents.threadConfig();
     
     private boolean authReq;
     
     /**
      {@link Visitor}
      */
-    private Visitor visitor;
+    @SuppressWarnings("InstanceVariableMayNotBeInitialized") private Visitor visitor;
     
     /**
      GetMapping /serviceinfo
@@ -75,18 +72,20 @@ public class ServiceInfoCtrl {
      @param request {@link HttpServletRequest}
      @param response {@link HttpServletResponse}
      @return vir.html
-     
-     @throws AccessDeniedException если не {@link ConstantsFor#getPcAuth(HttpServletRequest)}
+ 
+     @throws AccessDeniedException если не {@link ErrCtr#getPcAuth(HttpServletRequest)}
      @throws ExecutionException запуск {@link #modModMaker(Model, HttpServletRequest, Visitor)}
      @throws InterruptedException запуск {@link #modModMaker(Model, HttpServletRequest, Visitor)}
      */
     @GetMapping("/serviceinfo")
     public String infoMapping(Model model, HttpServletRequest request, HttpServletResponse response) throws AccessDeniedException, ExecutionException, InterruptedException {
-        AppComponents.threadConfig().thrNameSet("info");
-        messageToUser.warn(getClass().getSimpleName(), "netPinger minutes", " = " + AppComponents.netPinger());
+        threadConfig.thrNameSet("info");
+        NetPinger pinger = netPinger();
+        System.out.println(pinger.toString());
         visitor = new AppComponents().visitor(request);
-        AppComponents.threadConfig().execByThreadConfig(new SpeedChecker());
-        this.authReq = Stream.of("0:0:0:0", "127.0.0.1", "10.10.111", "10.200.213.85", "172.16.20", "10.200.214.80", "192.168.13.143").anyMatch(sP->request.getRemoteAddr().contains(sP));
+        threadConfig.execByThreadConfig(new SpeedChecker());
+        this.authReq = Stream.of("0:0:0:0", "127.0.0.1", "10.10.111", "10.200.213.85", "172.16.20", "10.200.214.80", "192.168.13.143")
+            .anyMatch(sP->request.getRemoteAddr().contains(sP));
         if (authReq) {
             modModMaker(model, request, visitor);
             response.addHeader(ConstantsFor.HEAD_REFRESH, "90");
@@ -96,7 +95,6 @@ public class ServiceInfoCtrl {
             throw new AccessDeniedException("Sorry. Denied, for you: " + request.getRemoteAddr());
         }
     }
-    
     
     @GetMapping("/pcoff")
     public void offPC(Model model) throws IOException {
@@ -126,23 +124,32 @@ public class ServiceInfoCtrl {
         return "ok";
     }
     
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("ServiceInfoCtrl{");
+        sb.append("authReq=").append(authReq);
+        sb.append(", visitor=").append(visitor);
+        sb.append('}');
+        return sb.toString();
+    }
     
     /**
      Считает время до конца дня.
      <p>
-     
-     @param timeStart - время старта
-     @param amountH - сколько часов до конца
+ 
      @return время до 17:30 в процентах от 8:30
+     @param timeStart - время старта
      */
-    public static String percToEnd(Date timeStart, long amountH) {
+    private static String percToEnd(Date timeStart) {
         StringBuilder stringBuilder = new StringBuilder();
         LocalDateTime startDayTime = LocalDateTime.ofEpochSecond(timeStart.getTime() / 1000, 0, ZoneOffset.ofHours(3));
         LocalTime startDay = startDayTime.toLocalTime();
-        LocalTime endDay = startDay.plus(amountH, HOURS);
+        LocalTime endDay = startDay.plus((long) 9, HOURS);
+    
         final int secDayEnd = endDay.toSecondOfDay();
         final int startSec = startDay.toSecondOfDay();
         final int allDaySec = secDayEnd - startSec;
+    
         LocalTime localTime = endDay.minusHours(LocalTime.now().getHour());
         localTime = localTime.minusMinutes(LocalTime.now().getMinute());
         localTime = localTime.minusSeconds(LocalTime.now().getSecond());
@@ -166,17 +173,15 @@ public class ServiceInfoCtrl {
         return stringBuilder.toString();
     }
     
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("ServiceInfoCtrl{");
-        sb.append("authReq=").append(authReq);
-        sb.append(", visitor=").append(visitor);
-        sb.append('}');
-        return sb.toString();
+    @Scope(ConstantsFor.SINGLETON)
+    private static NetPinger netPinger() {
+        return new NetPinger();
     }
     
-    private void modModMaker( Model model , HttpServletRequest request , Visitor visitor ) throws ExecutionException, InterruptedException {
+    private void modModMaker(Model model, HttpServletRequest request, Visitor visitorParam) throws ExecutionException, InterruptedException {
         this.visitor = ConstantsFor.getVis(request);
+        this.visitor = visitorParam;
+        
         Callable<String> sizeOfDir = new CountSizeOfWorkDir("sizeofdir");
         Callable<Long> callWhenCome = new SpeedChecker();
         Callable<String> filesWithSize;
@@ -188,15 +193,14 @@ public class ServiceInfoCtrl {
             .append("<b><i>").append(AppComponents.versionInfo()).append("</i></b><p><font color=\"orange\">")
             .append(ConstantsNet.getSshMapStr()).append("</font><p>")
             .append(new AppInfoOnLoad()).append(" ").append(AppInfoOnLoad.class.getSimpleName()).append("<p>")
-            .append(new TForms().fromArray(AppComponents.getProps(), true))
+            .append(new TForms().fromArray(AppComponents.getProps(), true)).append("<br>Prefs: ").append(new TForms().fromArray(AppComponents.getUserPref(), true))
             .append("<p>")
-            .append(filesReader.readFile(new File("exit.last"))).append("<p>")
+            .append(ConstantsFor.HTMLTAG_CENTER).append(FileSystemWorker.readFile(new File("exit.last").getAbsolutePath())).append(ConstantsFor.HTML_CENTER_CLOSE).append("<p>")
             .append("<p><font color=\"grey\">").append(listFilesToReadStr()).append("</font>")
             .toString();
-    
-        model.addAttribute(ConstantsFor.ATT_TITLE, getLast() + " " + pingDO0213());
         
-        model.addAttribute("mail", percToEnd(comeD, 9));
+        model.addAttribute(ConstantsFor.ATT_TITLE, getLast() + " " + pingDO0213());
+        model.addAttribute("mail", percToEnd(comeD));
         model.addAttribute("ping", pingGit());
         model.addAttribute("urls", new StringBuilder()
             .append("Запущено - ")
@@ -208,16 +212,15 @@ public class ServiceInfoCtrl {
             .append(".<br> Состояние памяти (МБ): <font color=\"#82caff\">")
             .append(ConstantsFor.getMemoryInfo()).append("<details><summary> disk usage by program: </summary>").append(filesSizeFuture.get()).append("</details><br>")
             .append("</font><br>")
-            .append(DiapazonedScan.getInstance())
+            .append(AppComponents.diapazonedScanInfo())
             .append("<br>")
             .append(AppComponents.threadConfig())
             .toString());
         model.addAttribute("request", prepareRequest(request));
-        model.addAttribute(ConstantsFor.ATT_VISIT, visitor.toString());
+        model.addAttribute(ConstantsFor.ATT_VISIT, visitorParam.toString());
         model.addAttribute("res", resValue);
         model.addAttribute("back", request.getHeader(ConstantsFor.ATT_REFERER.toLowerCase()));
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<br><a href=\"/nohup\">" + getJREVers() + "</a>");
-        AppComponents.threadConfig().execByThreadConfig(() -> new AppComponents().saveLogsToDB().showInfo());
     }
     
     private BigDecimal getLast() {

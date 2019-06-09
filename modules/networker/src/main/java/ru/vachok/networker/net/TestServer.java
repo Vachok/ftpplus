@@ -3,13 +3,13 @@
 package ru.vachok.networker.net;
 
 
-import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.*;
 import ru.vachok.networker.abstr.ConnectToMe;
 import ru.vachok.networker.abstr.MakeConvert;
 import ru.vachok.networker.accesscontrol.sshactions.Tracerouting;
+import ru.vachok.networker.exe.runnabletasks.NetScannerSvc;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.mailserver.OstLoader;
 import ru.vachok.networker.services.MessageLocal;
@@ -30,17 +30,21 @@ import java.util.concurrent.TimeUnit;
 public class TestServer implements ConnectToMe {
     
     
+    private ServerSocket serverSocket;
+    
     private static final String JAR = "file:///G:/My_Proj/FtpClientPlus/modules/networker/ostpst/build/libs/";
     
     private static final String METHNAME_ACCEPTSOC = ".accepSoc";
-    
-    private ServerSocket serverSocket;
     
     private PrintStream printStreamF;
     
     private Socket socket;
     
     private int listenPort;
+    
+    private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
+    
+    public static final String PR_LPORT = String.valueOf(9990);
     
     public TestServer(int listenPort) {
         this.listenPort = listenPort;
@@ -51,8 +55,6 @@ public class TestServer implements ConnectToMe {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".TestServer", e));
         }
     }
-    
-    private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
     
     @Override public Socket getSocket() {
         throw new IllegalComponentStateException("14.05.2019 (20:30)");
@@ -103,8 +105,8 @@ public class TestServer implements ConnectToMe {
             printStreamF.println("Press ENTER. \nOr press something else for quit...");
             printStreamF.println(TimeUnit.MILLISECONDS.toSeconds(timeout) + " socket timeout in second");
             while (socket.isConnected()) {
-                    System.setIn(socket.getInputStream());
-                    System.setOut(printStreamF);
+                System.setIn(socket.getInputStream());
+                System.setOut(printStreamF);
                 if (socket.isConnected()) {
                     scanInput(scanner.nextLine());
                     printStream.print(iStream.read());
@@ -134,7 +136,7 @@ public class TestServer implements ConnectToMe {
             ConfigurableApplicationContext context = IntoApplication.getConfigurableApplicationContext();
             context.stop();
             context.close();
-            context = SpringApplication.run(IntoApplication.class);
+            context = null;
             new IntoApplication().setConfigurableApplicationContext(context);
             context.start();
             accepSoc();
@@ -143,7 +145,7 @@ public class TestServer implements ConnectToMe {
             System.setOut(System.err);
             accepSoc();
         }
-        else if (scannerLine.equals("sshactions")) {
+        else if (scannerLine.equals(ConstantsFor.FILESUF_SSHACTIONS)) {
             try {
                 System.setOut(System.err);
                 printStreamF.println(new Tracerouting().call());

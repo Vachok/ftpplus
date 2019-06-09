@@ -40,45 +40,7 @@ public class PhotoConverterSRV {
      */
     private File adFotoFile;
     
-    private Properties properties;
-    
-    /**
-     <b>Преобразование в JPG</b>
-     Подготавливает фотографии для импорта в ActiveDirectory. Преобразует любой понимаемый {@link BufferedImage} формат в jpg.
-     */
-    @SuppressWarnings("OverlyLongLambda")
-    private BiConsumer<String, BufferedImage> imageBiConsumer = (String rawFileName, BufferedImage rawImage)->{
-        String pathName = properties.getOrDefault("pathName", "\\\\srv-mail3.eatmeat.ru\\c$\\newmailboxes\\foto\\").toString();
-        File outFile = new File(pathName + rawFileName + ".jpg");
-        String fName = "jpg";
-        try {
-            boolean write = ImageIO.write(resizedImage(rawImage), fName, outFile);
-            if (write) {
-                String msg = outFile.getAbsolutePath() + ConstantsFor.STR_WRITTEN;
-                messageToUser.info(msg);
-                msg = "Import-RecipientDataProperty -Identity " +
-                    rawFileName + " -Picture -FileData ([Byte[]] $(Get-Content -Path “C:\\newmailboxes\\foto\\" +
-                    outFile.getName() +
-                    "\" -Encoding Byte -ReadCount 0))";
-                messageToUser.warn(msg);
-                psCommands.add(msg);
-            }
-        }
-        catch (Exception e) {
-            messageToUser.error(FileSystemWorker.error(outFile.getName().replace(".jpg", ".err"), e));
-        }
-    };
-    
-    public PhotoConverterSRV(Properties properties) {
-        this.properties = properties;
-        if (properties == null || properties.size() < 3) {
-            this.properties = AppComponents.getProps();
-        }
-    }
-    
-    public PhotoConverterSRV() {
-        this.properties = AppComponents.getProps();
-    }
+    private Properties properties = AppComponents.getProps();
     
     @SuppressWarnings("unused")
     public File getAdFotoFile() {
@@ -118,7 +80,8 @@ public class PhotoConverterSRV {
         String adPhotosPath = properties.getProperty("adphotopath", "\\\\srv-mail3.eatmeat.ru\\c$\\newmailboxes\\fotoraw\\");
         Map<String, BufferedImage> filesList = new HashMap<>();
         File[] fotoFiles = new File(adPhotosPath).listFiles();
-        if (fotoFiles != null && !adPhotosPath.isEmpty()) {
+        BiConsumer<String, BufferedImage> imageBiConsumer = this::imgWorker;
+        if ((fotoFiles != null & fotoFiles.length > 0) && !adPhotosPath.isEmpty()) {
             for (File f : fotoFiles) {
                 for (String format : ImageIO.getWriterFormatNames()) {
                     String key = f.getName();
@@ -151,5 +114,27 @@ public class PhotoConverterSRV {
         boolean drawImage = g2d.drawImage(scaledImageTMP, 0, 0, Color.WHITE, null);
         g2d.dispose();
         return scaledImage;
+    }
+    
+    private void imgWorker(String rawFileName, BufferedImage rawImage) {
+        String pathName = properties.getOrDefault("pathName", "\\\\srv-mail3.eatmeat.ru\\c$\\newmailboxes\\foto\\").toString();
+        File outFile = new File(pathName + rawFileName + ".jpg");
+        String fName = "jpg";
+        try {
+            boolean write = ImageIO.write(resizedImage(rawImage), fName, outFile);
+            if (write) {
+                String msg = outFile.getAbsolutePath() + ConstantsFor.STR_WRITTEN;
+                messageToUser.info(msg);
+                msg = "Import-RecipientDataProperty -Identity " +
+                    rawFileName + " -Picture -FileData ([Byte[]] $(Get-Content -Path “C:\\newmailboxes\\foto\\" +
+                    outFile.getName() +
+                    "\" -Encoding Byte -ReadCount 0))";
+                messageToUser.warn(msg);
+                psCommands.add(msg);
+            }
+        }
+        catch (Exception e) {
+            messageToUser.error(FileSystemWorker.error(outFile.getName().replace(".jpg", ".err"), e));
+        }
     }
 }

@@ -51,7 +51,6 @@ gradlew.bat
 /settings.jar
 /StartMeFX.prn
 /Test Results - test.html
-/src/test/
 /logs/
 /libtest/
 /cover/
@@ -90,7 +89,6 @@ putty.exe
 /modules/money/profiles.xml
 /modules/networker/DataSourceSelectorReg.log
 /modules/networker/MailMessages.properties
-modules/networker/src/test/
 /SpeedRunActualize.prn
 /app.log
 /chess.properties
@@ -980,7 +978,6 @@ gradlew.bat
 /settings.jar
 /StartMeFX.prn
 /Test Results - test.html
-/src/test/
 /logs/
 /libtest/
 /cover/
@@ -1019,7 +1016,6 @@ putty.exe
 /modules/money/profiles.xml
 /modules/networker/DataSourceSelectorReg.log
 /modules/networker/MailMessages.properties
-modules/networker/src/test/
 /SpeedRunActualize.prn
 /app.log
 /chess.properties
@@ -1912,3 +1908,6 @@ ostpst/search_1558822961.txt
 "ostpst/\320\243\320\264\320\260\320\273\320\265\320\275\320\275\321\213\320\265.txt"
 search_*
 inet.192.168.14.194.rar
+*pass
+networker.ipr.gml
+networker.ipr.graphml

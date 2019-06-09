@@ -9,13 +9,17 @@ import org.testng.annotations.Test;
 import ru.vachok.ostpst.ConstantsOst;
 import ru.vachok.ostpst.fileworks.FileWorker;
 import ru.vachok.ostpst.utils.FileSystemWorkerOST;
+import ru.vachok.ostpst.utils.TFormsOST;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Date;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.TimeUnit;
 
 
 public class UploaderTest {
@@ -23,6 +27,40 @@ public class UploaderTest {
     
     @Test(enabled = false)
     public void testUpload() {
+        Queue<String> fileNames = getFileNames();
+        while (!fileNames.isEmpty()) {
+            String toAppend = parseQueue(fileNames);
+            FileSystemWorkerOST.appendStringToFile("dn.list", toAppend);
+            if (toAppend.equalsIgnoreCase("copy completed")) {
+                throw new UnsupportedOperationException(FileSystemWorkerOST.readFileToString("dn.list"));
+            }
+        }
+        ;
+    }
+    
+    @Test(enabled = false)
+    public void chkFiles() {
+        var names = getFileNames();
+        System.out.println(new TFormsOST().fromArray(names.stream()));
+        names.forEach((x)->{
+            try {
+                long start = System.currentTimeMillis();
+                System.out.println(new Date(start));
+                var split = x.split(" to: ");
+                var fileCopy = split[1].trim();
+                System.out.println(fileCopy + " size GB =  " + new File(fileCopy).length() / ConstantsOst.KBYTE_BYTES / ConstantsOst.KBYTE_BYTES);
+                var toAppend = x + " is " + chkMissed(Paths.get(split[0].replaceFirst("From: ", "")), Paths.get(fileCopy));
+                System.out.println(toAppend);
+                System.out.println(((float) TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - start) / (float) 60) + " min");
+                System.out.println(FileSystemWorkerOST.appendStringToFile("dn.list", toAppend));
+            }
+            catch (IndexOutOfBoundsException e) {
+                Assert.assertNull(e, e.getMessage());
+            }
+        });
+    }
+    
+    private Queue<String> getFileNames() {
         Queue<String> fileNames = new ConcurrentLinkedQueue<>();
         try (InputStream inputStream = new FileInputStream("dn.list");
              InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
@@ -34,22 +72,27 @@ public class UploaderTest {
             Assert.assertNull(e, e.getMessage());
         }
         ;
-        while (!fileNames.isEmpty()) {
-            String toAppend = parseQueue(fileNames);
-            FileSystemWorkerOST.appendStringToFile("dn.list", toAppend);
-            if (toAppend.equalsIgnoreCase("copy completed")) {
-                throw new RejectedExecutionException(FileSystemWorkerOST.readFileToString("dn.list"));
-            }
-        }
-        ;
+        return fileNames;
     }
     
-    private String parseQueue(Queue<String> fileNames) {
+    
+    private long chkMissed(Path fileCopy, Path fileOrig) {
+        try {
+            
+            return Files.mismatch(fileCopy, fileOrig);
+        }
+        catch (IOException e) {
+            Assert.assertNull(e, e.getMessage());
+            throw new AssertionFailedException(e);
+        }
+    }
+    
+    private String parseQueue(Queue<String> fileNames) throws InvalidPathException, IndexOutOfBoundsException {
         String x = fileNames.poll();
-        if (x.equalsIgnoreCase("Copy completed")) {
+        if (x != null && x.equalsIgnoreCase("Copy completed")) {
             return FileSystemWorkerOST.readFileToString("dn.list");
         }
-        System.setProperty("encoding", "UTF8");
+        System.setProperty(ConstantsOst.STR_ENCODING, "UTF8");
         String[] copyPaths = new String[2];
         try {
             copyPaths[0] = x.split(" cpto: ")[0];
@@ -89,18 +132,6 @@ public class UploaderTest {
         }
         FileSystemWorkerOST.writeFile("dn.list", fileNames.stream());
         return retStatus;
-    }
-    
-    
-    private long chkMissed(Path fileCopy, Path fileOrig) {
-        try {
-            
-            return Files.mismatch(fileCopy, fileOrig);
-        }
-        catch (IOException e) {
-            Assert.assertNull(e, e.getMessage());
-            throw new AssertionFailedException(e);
-        }
     }
     
 }

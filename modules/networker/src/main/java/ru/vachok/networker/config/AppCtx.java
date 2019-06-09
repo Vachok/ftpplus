@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.config;
 
 
@@ -19,8 +21,11 @@ import java.util.Queue;
 
 
 /**
- @since 30.08.2018 (13:22) */
-@EnableAutoConfiguration
+ @deprecated 08.06.2019 (11:47)
+ @since 30.08.2018 (13:22)
+ */
+@SuppressWarnings("ALL") @EnableAutoConfiguration
+@Deprecated
 public class AppCtx extends AnnotationConfigApplicationContext {
 
     @SuppressWarnings("resource")

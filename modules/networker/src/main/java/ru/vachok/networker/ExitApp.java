@@ -5,9 +5,10 @@ package ru.vachok.networker;
 
 import org.springframework.context.ConfigurableApplicationContext;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.config.ThreadConfig;
+import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.exe.ThreadConfig;
+import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.NetScanFileWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 
@@ -15,10 +16,8 @@ import java.io.*;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.BlockingDeque;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 
 /**
@@ -27,18 +26,20 @@ import java.util.concurrent.atomic.AtomicBoolean;
  @since 21.12.2018 (12:15) */
 @SuppressWarnings("StringBufferReplaceableByString")
 public class ExitApp implements Runnable {
-
-    /**
-     {@link ConstantsFor#HTTP_LOCALHOST8880SLASH} {@code "pages/commit.html"}.
-     */
-    private static final String GO_TO = ConstantsFor.HTTP_LOCALHOST8880SLASH + "pages/commit.html";
-
-    private static final String classMeth = "ExitApp.readCommit";
-
-    private static final String RELOAD_CTX = ".reloadCTX";
     
-    private static final String METH_COPY = "ExitApp.copyAvail";
-
+    
+    private static final Map<Long, Visitor> VISITS_MAP = new ConcurrentHashMap<>();
+    
+    /**
+     {@link #copyAvail()}
+     */
+    @Override
+    public void run() {
+        VISITS_MAP.forEach((x, y)->miniLoggerLast.add(new Date(x) + " - " + y.getRemAddr()));
+        miniLoggerLast.add(reasonExit);
+        copyAvail();
+    }
+    
     private static MessageToUser messageToUser = new MessageLocal(ExitApp.class.getSimpleName());
 
     /**
@@ -61,7 +62,7 @@ public class ExitApp implements Runnable {
     /**
      Объект для записи, {@link Externalizable}
      */
-    private Object toWriteObj = this;
+    private Object toWriteObj = null;
 
     /**
      Для записи {@link #toWriteObj}
@@ -100,36 +101,6 @@ public class ExitApp implements Runnable {
     public ExitApp(String reasonExit) {
         this.reasonExit = reasonExit;
     }
-
-    public static void reloadCTX() {
-        ThreadConfig threadConfig = AppComponents.threadConfig();
-        threadConfig.thrNameSet("RelCTX");
-
-        threadConfig.killAll();
-
-        List<Runnable> runnableList = threadConfig.getTaskScheduler().getScheduledThreadPoolExecutor().shutdownNow();
-        LinkedBlockingDeque<Runnable> deqRun = new LinkedBlockingDeque<>();
-        AtomicBoolean addToDeq = new AtomicBoolean(deqRun.addAll(runnableList));
-        try {
-            if (addToDeq.get()) {
-                for (Runnable x : deqRun) {
-                    Runnable remME = (deqRun).remove();
-
-                    miniLoggerLast.add(remME.toString());
-                    messageToUser.info(ExitApp.class.getSimpleName() + RELOAD_CTX , "remME" , " = " + remME + "\n" + "LinkedBlockingDeque with runnables aize = " + deqRun.size());
-                }
-                addToDeq.set(deqRun.addAll(threadConfig.getTaskExecutor().getThreadPoolExecutor().shutdownNow()));
-                if (addToDeq.get()) {
-                    ConfigurableApplicationContext context = new IntoApplication().getConfigurableApplicationContext();
-                    context.stop();
-                    messageToUser.info(ExitApp.class.getSimpleName() + RELOAD_CTX , "ConstantsFor.class.hashCode()" , " = " + ConstantsFor.class.hashCode());
-                }
-            }
-        } catch (Exception e) {
-            messageToUser.errorAlert(ExitApp.class.getSimpleName() , "reloadCTX" , e.getMessage());
-            FileSystemWorker.error(ExitApp.class.getSimpleName() + RELOAD_CTX , e);
-        }
-    }
     
     public boolean writeOwnObject() {
         try (OutputStream fileOutputStream = new FileOutputStream(fileName);
@@ -141,18 +112,15 @@ public class ExitApp implements Runnable {
             return false;
         }
     }
-
-    /**
-     {@link #copyAvail()}
-     */
-    @Override
-    public void run() {
-        AppComponents.threadConfig().thrNameSet("exit");
-        AppComponents.getVisitsMap().forEach((x, y)->miniLoggerLast.add(new Date(x) + " - " + y.getRemAddr()));
-        miniLoggerLast.add(reasonExit);
-        copyAvail();
+    
+    static Map<Long, Visitor> getVisitsMap() {
+        return VISITS_MAP;
     }
-
+    
+    static Map<String, File> scanFiles() {
+        return DiapazonScan.getInstance().getScanFiles();
+    }
+    
     /**
      Запись {@link Externalizable}
      <p>
@@ -177,7 +145,12 @@ public class ExitApp implements Runnable {
         } else {
             miniLoggerLast.add("No object");
         }
-        exitAppDO();
+        try {
+            exitAppDO();
+        }
+        catch (IOException e) {
+            messageToUser.error(e.getMessage());
+        }
     }
 
     /**
@@ -190,18 +163,24 @@ public class ExitApp implements Runnable {
      {@link ThreadConfig#killAll()} закрытие {@link java.util.concurrent.ExecutorService} и {@link java.util.concurrent.ScheduledExecutorService} <br>
      {@link System#exit(int)} int = <i>uptime</i> в минутах.
      */
-    private void exitAppDO() {
+    private void exitAppDO() throws IOException {
         BlockingDeque<String> devices = ConstantsNet.getAllDevices();
         Properties properties = AppComponents.getProps();
-        miniLoggerLast.add("Devices " + "iterator next: " + " = " + devices.iterator().next());
-        miniLoggerLast.add("Last" + " = " + devices.getLast());
-        miniLoggerLast.add("BlockingDeque " + "size/remainingCapacity/total" + " = " + devices.size() + "/" + devices.remainingCapacity() + "/" + ConstantsNet.IPS_IN_VELKOM_VLAN);
+        if (devices.size() > 0) {
+            miniLoggerLast.add("Devices " + "iterator next: " + " = " + devices.iterator().next());
+            miniLoggerLast.add("Last" + " = " + devices.getLast());
+            miniLoggerLast.add("BlockingDeque " + "size/remainingCapacity/total" + " = " + devices.size() + "/" + devices.remainingCapacity() + "/" + ConstantsNet.IPS_IN_VELKOM_VLAN);
+        }
         miniLoggerLast.add("exit at " + LocalDateTime.now() + ConstantsFor.getUpTime());
         miniLoggerLast.add("Properties in DATABASE : " + new AppComponents().updateProps(properties));
         miniLoggerLast.add("\n" + new TForms().fromArray(properties, false));
         FileSystemWorker.writeFile("exit.last", miniLoggerLast.stream());
         miniLoggerLast.add(FileSystemWorker.delTemp());
-        AppComponents.threadConfig().killAll();
+        try{
+            AppComponents.threadConfig().killAll();
+        }catch (IllegalStateException e){
+            System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".exitAppDO");
+        }
         System.exit(Math.toIntExact(toMinutes));
     }
     
@@ -216,7 +195,7 @@ public class ExitApp implements Runnable {
         File filePingTv = new File(ConstantsFor.FILENAME_PTV);
         FileSystemWorker.copyOrDelFile(filePingTv, new StringBuilder().append(ConstantsFor.FILESYSTEM_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + "ptv_")
             .append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
-        ConcurrentMap<String, File> srvFiles = NetScanFileWorker.getI().getScanFiles();
+        Map<String, File> srvFiles = scanFiles();
         srvFiles.forEach((id, file)->FileSystemWorker
             .copyOrDelFile(file, file.getAbsolutePath().replace(file.getName(), "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + file.getName()), true));
         if (appLog.exists() && appLog.canRead()) {

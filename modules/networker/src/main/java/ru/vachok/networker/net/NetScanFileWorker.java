@@ -5,8 +5,8 @@ package ru.vachok.networker.net;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 
 import java.io.File;
@@ -15,12 +15,7 @@ import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayDeque;
-import java.util.Collection;
-import java.util.Deque;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.*;
 
 
 /**
@@ -29,65 +24,37 @@ import java.util.concurrent.ConcurrentMap;
  @since 25.12.2018 (10:43) */
 public class NetScanFileWorker implements Serializable {
     
-    
-    private static final ConcurrentMap<String, File> SCAN_FILES = new ConcurrentHashMap<>();
-    
     private static final NetScanFileWorker NET_SCAN_FILE_WORKER = new NetScanFileWorker();
     
     private static MessageToUser messageToUser = new MessageLocal(NetScanFileWorker.class.getSimpleName());
     
     private long lastStamp = System.currentTimeMillis();
     
-    
     public long getLastStamp() {
         return lastStamp;
     }
     
-    void setLastStamp(long lastStamp) {
+    public void setLastStamp(long lastStamp) {
         this.lastStamp = lastStamp;
-    }
-    
-    public ConcurrentMap<String, File> getScanFiles() {
-        Path absolutePath = Paths.get("").toAbsolutePath();
-        try {
-            for (File f : new File(absolutePath.toString()).listFiles()) {
-                if (f.getName().contains("lan_")) {
-                    SCAN_FILES.putIfAbsent(f.getName(), f);
-                }
-            }
-        }
-        catch (NullPointerException e) {
-            messageToUser.error(e.getMessage());
-        }
-    
-        if (!(SCAN_FILES.size() == 8)) {
-            SCAN_FILES.clear();
-            SCAN_FILES.putIfAbsent(ConstantsNet.FILENAME_NEWLAN220, new File(ConstantsNet.FILENAME_NEWLAN220));
-            SCAN_FILES.putIfAbsent(ConstantsNet.FILENAME_NEWLAN210, new File(ConstantsNet.FILENAME_NEWLAN210));
-            SCAN_FILES.putIfAbsent(ConstantsNet.FILENAME_NEWLAN213, new File(ConstantsNet.FILENAME_NEWLAN213));
-            SCAN_FILES.putIfAbsent(ConstantsNet.FILENAME_OLDLANTXT0, new File(ConstantsNet.FILENAME_OLDLANTXT0));
-            SCAN_FILES.putIfAbsent(ConstantsNet.FILENAME_OLDLANTXT1, new File(ConstantsNet.FILENAME_OLDLANTXT1));
-            SCAN_FILES.putIfAbsent(ConstantsNet.FILENAME_SERVTXT_10SRVTXT, new File(ConstantsNet.FILENAME_SERVTXT_10SRVTXT));
-            SCAN_FILES.putIfAbsent(ConstantsNet.FILENAME_SERVTXT_21SRVTXT, new File(ConstantsNet.FILENAME_SERVTXT_21SRVTXT));
-            SCAN_FILES.putIfAbsent(ConstantsNet.FILENAME_SERVTXT_31SRVTXT, new File(ConstantsNet.FILENAME_SERVTXT_31SRVTXT));
-        }
-        return SCAN_FILES;
     }
     
     public static NetScanFileWorker getI() {
         return NET_SCAN_FILE_WORKER;
     }
     
-    
     /**
      @return {@link Deque} of {@link String}, с именами девайсов онлайн.
      */
-    Deque<String> getListOfOnlineDev() {
+    public Deque<String> getListOfOnlineDev() {
         AppComponents.threadConfig().thrNameSet("ON");
         Deque<String> retDeque = new ArrayDeque<>();
-        Set<String> fileNameSet = SCAN_FILES.keySet();
-        SCAN_FILES.forEach((fileName, srvFileX)->fileWrk(srvFileX, retDeque));
+        Set<String> fileNameSet = getScanFiles().keySet();
+        getScanFiles().forEach((fileName, srvFileX)->fileWrk(srvFileX, retDeque));
         return retDeque;
+    }
+    
+    private static Map<String, File> getScanFiles() {
+        return DiapazonScan.getInstance().getScanFiles();
     }
     
     

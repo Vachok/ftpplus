@@ -3,7 +3,6 @@
 package ru.vachok.networker.componentsrepo;
 
 
-
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import ru.vachok.messenger.MessageToUser;
@@ -12,7 +11,9 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
 
-import java.io.*;
+import java.io.File;
+import java.nio.file.Paths;
+import java.util.Date;
 import java.util.Objects;
 import java.util.Properties;
 
@@ -53,9 +54,13 @@ public class VersionInfo {
     /**
      Время сборки
      */
-    private String buildTime = "1";
+    private String buildTime = getBuildTime();
     
     private String propertiesFrom = ConstantsFor.DBPREFIX + ConstantsFor.STR_PROPERTIES;
+    
+    private static final String ALERT_DNE = "Property does not exists";
+    
+    private static final String REPLACEPAT_VERSION = "version = '";
     
     public String getPropertiesFrom() {
         return propertiesFrom;
@@ -80,15 +85,7 @@ public class VersionInfo {
             appBuild.equals(that.appBuild) &&
             Objects.equals(buildTime , that.buildTime);
     }
-
-    /**
-     Конструктор по-умолчанию.
-     <p>
-     Если имя ПК содержит "home" или "no0" {@link #setParams()}
-     */
-    public VersionInfo() {
-    }
-
+    
     /**
      @return {@link #appBuild}
      */
@@ -107,61 +104,58 @@ public class VersionInfo {
      @return {@link #buildTime}
      */
     public String getBuildTime() {
-        return buildTime;
+        String timeStr = String.valueOf(ConstantsFor.START_STAMP);
+        if (ConstantsFor.thisPC().toLowerCase().contains("home") || ConstantsFor.thisPC().toLowerCase().contains("do0")) {
+            AppComponents.getProps().setProperty(ConstantsFor.PR_APP_BUILDTIME, timeStr);
+            return timeStr;
+        }
+        else {
+            return "1";
+        }
     }
-
-
-
+    
     /**
      *
      */
     public void setParams() {
-        File file = new File("G:\\My_Proj\\FtpClientPlus\\modules\\networker\\build.gradle");
+        String rootPathStr = Paths.get(".").toAbsolutePath().normalize().toString();
+        File file = new File(rootPathStr + ConstantsFor.FILENAME_BUILDGRADLE);
 
         if (file.exists()) {
             setterVersionFromFiles(file);
         } else {
-            file = new File("C:\\Users\\ikudryashov\\IdeaProjects\\spring\\modules\\networker\\build.gradle");
-            if (file.exists()) {
-                setterVersionFromFiles(file);
-            } else {
-                try {
-                    getParams();
-                } catch (Exception e) {
-                    messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".setParams" , e));
-                }
+            try {
+                getParams();
+            }
+            catch (Exception e) {
+                messageToUser.error(e.getMessage() + " " + getClass().getSimpleName() + ".setParams");
             }
         }
     }
-
-
+    
     /**
      Usages: {@link #setParams()} <br> Uses: - <br>
 
      @param file gradle.build
      */
     private void setterVersionFromFiles( File file ) {
-        try (InputStream inputStream = new FileInputStream(file);
-             InputStreamReader reader = new InputStreamReader(inputStream);
-             BufferedReader bufferedReader = new BufferedReader(reader)
-        )
-        {
-            bufferedReader.lines().forEach(x -> {
-                if (x.contains("version = '8.")) {
-                    PROPERTIES.setProperty(ConstantsFor.PR_APP_VERSION , x.split("'")[1]);
-                }
-            });
-        } catch (IOException e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".setterVersionFromFiles" , e));
+        for (String s : FileSystemWorker.readFileToList(file.getAbsolutePath())) {
+            if (s.toLowerCase().contains(REPLACEPAT_VERSION)) {
+                this.appVersion = s.replace(REPLACEPAT_VERSION, "").trim();
+            }
+            this.appBuild = String.valueOf(ConstantsFor.DELAY);
+            this.buildTime = new Date().toString();
         }
+        AppComponents.getProps().setProperty(ConstantsFor.PR_APP_BUILDTIME, this.buildTime);
+        AppComponents.getProps().setProperty(ConstantsFor.PR_APP_BUILD, this.appBuild);
+        AppComponents.getProps().setProperty(ConstantsFor.PR_APP_VERSION, this.appVersion);
     }
-
-
-    private void getParams() throws Exception {
+    
+    private void getParams() {
         Properties properties = AppComponents.getProps();
-        this.appBuild = properties.getProperty(ConstantsFor.PR_APP_BUILD , "Property does not exists");
-        this.appVersion = properties.getProperty(ConstantsFor.PR_APP_VERSION , "Property does not exists");
-        this.buildTime = properties.getProperty(ConstantsFor.PR_APP_BUILDTIME , "Property does not exists");
+        this.appBuild = properties.getProperty(ConstantsFor.PR_APP_BUILD, ALERT_DNE);
+        this.appVersion = properties.getProperty(ConstantsFor.PR_APP_VERSION, ALERT_DNE);
+        this.buildTime = properties.getProperty(ConstantsFor.PR_APP_BUILDTIME, ALERT_DNE);
     }
 
     @Override public String toString() {

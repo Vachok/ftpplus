@@ -1,8 +1,13 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.systray;
 
 
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.IntoApplication;
+import ru.vachok.networker.services.DBMessenger;
 
 import java.awt.*;
 import java.awt.event.ActionListener;
@@ -23,7 +28,7 @@ public class MessageToTray implements MessageToUser {
     /**
      {@link SystemTrayHelper#getTrayIcon()}
      */
-    private TrayIcon trayIcon = SYSTEM_TRAY_HELPER.getTrayIcon();
+    private TrayIcon trayIcon;
     
     private String headerMsg = getClass().getPackage().getName();
     
@@ -34,6 +39,13 @@ public class MessageToTray implements MessageToUser {
     private MessageToUser messageToUser = new MessageCons(MessageToTray.class.getSimpleName());
     
     public MessageToTray() {
+        if (IntoApplication.TRAY_SUPPORTED) {
+            trayIcon = SYSTEM_TRAY_HELPER.getTrayIcon();
+        }
+        else {
+            new DBMessenger(getClass().getSimpleName()).info(ConstantsFor.thisPC() + " is not support tray...");
+        }
+    
     }
 
     public MessageToTray(ActionListener aListener) throws HeadlessException, IllegalStateException {
@@ -44,12 +56,14 @@ public class MessageToTray implements MessageToUser {
         else{
             throw new UnsupportedOperationException("***System Tray not Available!***");
         }
+        trayIcon = SYSTEM_TRAY_HELPER.getTrayIcon();
     }
 
 
     public MessageToTray( String simpleName ) throws UnsupportedOperationException {
         this.headerMsg = simpleName;
         if (!SystemTray.isSupported()) throw new UnsupportedOperationException();
+        trayIcon = SYSTEM_TRAY_HELPER.getTrayIcon();
     }
 
 
