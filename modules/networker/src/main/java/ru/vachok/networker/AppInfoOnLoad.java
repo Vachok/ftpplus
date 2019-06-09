@@ -85,7 +85,7 @@ public class AppInfoOnLoad implements Runnable {
  
      @return размер папки логов IIS в мегабайтах
      */
-    public static String iisLogSize() {
+    public static String getIISLogSize() {
         Path iisLogsDir = Paths.get(APP_PROPS.getProperty("iispath", "\\\\srv-mail3.eatmeat.ru\\c$\\inetpub\\logs\\LogFiles\\W3SVC1\\"));
         long totalSize = 0L;
         for (File x : Objects.requireNonNull(iisLogsDir.toFile().listFiles())) {
@@ -226,7 +226,7 @@ public class AppInfoOnLoad implements Runnable {
         MESSAGE_LOCAL.info("AppInfoOnLoad.infoForU", ConstantsFor.STR_FINISH, " = " + stringBuilder);
         MINI_LOGGER.add("infoForU ends. now schedStarter(). Result: " + stringBuilder);
         VersionInfo versionInfo = AppComponents.versionInfo();
-        MESSAGE_LOCAL.info(getClass().getSimpleName() + ".run", versionInfo.toString(), " = " + iisLogSize());
+        MESSAGE_LOCAL.info(getClass().getSimpleName() + ".run", versionInfo.toString(), " = " + getIISLogSize());
         schedStarter();
     }
     

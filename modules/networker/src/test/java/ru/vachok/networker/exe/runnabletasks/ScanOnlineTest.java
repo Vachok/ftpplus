@@ -3,13 +3,30 @@
 package ru.vachok.networker.exe.runnabletasks;
 
 
-import org.testng.Assert;
-import org.testng.annotations.Test;
+import org.springframework.stereotype.Service;
+import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.AppInfoOnLoad;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
+import ru.vachok.networker.abstr.Pinger;
+import ru.vachok.networker.ad.user.MoreInfoWorker;
+import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
+import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.InfoWorker;
+import ru.vachok.networker.net.NetListKeeper;
+import ru.vachok.networker.net.NetScanFileWorker;
+import ru.vachok.networker.net.SwitchesAvailability;
+import ru.vachok.networker.services.MessageLocal;
 
-import java.io.File;
-import java.util.concurrent.TimeUnit;
+import java.io.*;
+import java.net.InetAddress;
+import java.nio.charset.Charset;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.*;
+import java.util.concurrent.*;
 
 
 /**
@@ -18,15 +35,170 @@ import java.util.concurrent.TimeUnit;
  
  @see DiapazonScan
  @since 26.01.2019 (11:18) */
-public class ScanOnlineTest {
+@Service
+public class ScanOnlineTEST implements Runnable, Pinger {
     
     
-    @Test
-    public void runAway() {
-        ScanOnline scanOnline = new ScanOnline();
-        scanOnline.run();
-        File fileScan = new File(ConstantsFor.FILENAME_ONSCAN);
-        Assert.assertTrue(fileScan.exists(), fileScan.getAbsolutePath());
-        Assert.assertTrue(fileScan.lastModified() > TimeUnit.SECONDS.toMillis(5));
+    private final String sep = ConstantsFor.FILESYSTEM_SEPARATOR;
+    
+    private final ThreadConfig threadConfig = AppComponents.threadConfig();
+    
+    private File onlinesFile;
+    
+    /**
+     {@link NetListKeeper#getOnLinesResolve()}
+     */
+    private ConcurrentMap<String, String> onLinesResolve = NET_LIST_KEEPER.getOnLinesResolve();
+    
+    /**
+     {@link MessageLocal}
+     */
+    private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
+    
+    private InfoWorker tvInfo = new MoreInfoWorker("tv");
+    
+    private List<String> maxOnList = new ArrayList<>();
+    
+    /**
+     {@link NetListKeeper#getI()}
+     */
+    private static final NetListKeeper NET_LIST_KEEPER = NetListKeeper.getI();
+    
+    public ScanOnlineTEST(File onlinesFile) {
+        this.onlinesFile = onlinesFile;
+    }
+    
+    public ScanOnlineTEST() {
+        this.onlinesFile = new File(ConstantsFor.FILENAME_ONSCAN);
+    }
+    
+    @Override public String getTimeToEndStr() {
+        return new AppInfoOnLoad().toString();
+    }
+    
+    @Override public String getPingResultStr() {
+        return FileSystemWorker.readFile(ConstantsFor.FILENAME_ONSCAN);
+    }
+    
+    @Override public boolean isReach(String inetAddrStr) {
+        ConcurrentMap<String, String> offLines = NET_LIST_KEEPER.getOffLines();
+        boolean xReachable = true;
+        try (OutputStream outputStream = new FileOutputStream(onlinesFile, true);
+             PrintStream printStream = new PrintStream(outputStream)) {
+            byte[] addressBytes = InetAddress.getByName(inetAddrStr.split(" ")[0]).getAddress();
+            InetAddress inetAddress = InetAddress.getByAddress(addressBytes);
+            xReachable = inetAddress.isReachable(300);
+            if (!xReachable) {
+                printStream.println(inetAddrStr + " <font color=\"red\">offline</font>.");
+                String removeOnline = onLinesResolve.remove(inetAddress.toString());
+                if (!(removeOnline == null)) {
+                    offLines.putIfAbsent(inetAddress.toString(), new Date().toString());
+                    messageToUser.warn(inetAddrStr, " offline", " = " + removeOnline);
+                }
+            }
+            else {
+                printStream.println(inetAddrStr + " <font color=\"green\">online</font>.");
+                String ifAbsent = onLinesResolve.putIfAbsent(inetAddress.toString(), LocalTime.now().toString());
+                String removeOffline = offLines.remove(inetAddress.toString());
+                if (!(removeOffline == null)) {
+                    messageToUser.info(inetAddrStr, "online", " = " + removeOffline);
+                }
+            }
+        }
+        catch (IOException | ArrayIndexOutOfBoundsException e) {
+            messageToUser.error(e.getMessage());
+        }
+        return xReachable;
+    }
+    
+    @Override
+    public void run() {
+        setLists();
+        threadConfig.execByThreadConfig(this::offlineNotEmptyActions);
+        File fileMAX = new File(onlinesFile.toPath().toAbsolutePath().toString().replace(ConstantsFor.FILENAME_ONSCAN, sep + "lan" + sep + ConstantsFor.FILENAME_MAXONLINE));
+        
+        if (onlinesFile.exists()) {
+            onlineFileExists(onlinesFile, fileMAX);
+        }
+        messageToUser.info(getClass().getSimpleName() + ".run", "writeOnLineFile()", " = " + writeOnLineFile());
+    }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("<b>Since ");
+        sb.append("<i>");
+        sb.append(new Date(AppComponents.getUserPref().getLong(ExecScan.class.getSimpleName(), ConstantsFor.getMyTime())));
+        sb.append(" last ExecScan: ");
+        sb.append("</i>");
+        sb.append(tvInfo.getInfoAbout());
+        sb.append("</b><br><br>");
+        sb.append("<details><summary>Максимальное кол-во онлайн адресов: ").append(maxOnList.size()).append("</summary>").append(new TForms().fromArray(maxOnList, true))
+            .append(ConstantsFor.HTMLTAG_DETAILSCLOSE);
+        sb.append("<b>ipconfig /flushdns = </b>").append(new String(AppComponents.ipFlushDNS().getBytes(), Charset.forName("IBM866"))).append("<br>");
+        sb.append("Offline pc is <font color=\"red\"><b>").append(NET_LIST_KEEPER.getOffLines().size()).append(":</b></font><br>");
+        sb.append("Online  pc is<font color=\"#00ff69\"> <b>").append(onLinesResolve.size()).append(":</b><br>");
+        sb.append(new TForms().fromArray(onLinesResolve, true)).append("</font><br>");
+        return sb.toString();
+    }
+    
+    private void setLists() {
+        try {
+            this.maxOnList = FileSystemWorker
+                .readFileToList(new File(ConstantsFor.FILENAME_ONSCAN).getAbsolutePath().replace(ConstantsFor.FILENAME_ONSCAN, sep + "lan" + sep + ConstantsFor.FILENAME_MAXONLINE));
+        }
+        catch (NullPointerException e) {
+            this.maxOnList = new ArrayList<>();
+        }
+    }
+    
+    private boolean writeOnLineFile() {
+        try (OutputStream outputStream = new FileOutputStream(onlinesFile);
+             PrintStream printStream = new PrintStream(outputStream, true)) {
+            Deque<String> onDeq = NetScanFileWorker.getI().getListOfOnlineDev();
+            printStream.println("Checked: " + new Date());
+            while (!onDeq.isEmpty()) {
+                isReach(onDeq.poll());
+            }
+            return true;
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
+    private void onlineFileExists(File onlinesFile, File fileMAX) {
+        String replaceStr = onlinesFile.getAbsolutePath().replace(ConstantsFor.FILEEXT_ONLIST, ".last");
+        File repFile = new File(replaceStr);
+        List<String> stringsLastScan = FileSystemWorker.readFileToList(repFile.getAbsolutePath());
+        Collections.sort(stringsLastScan);
+        Set<String> setLastScan = new TreeSet<>(stringsLastScan);
+        if (setLastScan.size() < NetScanFileWorker.getI().getListOfOnlineDev().size()) {
+            FileSystemWorker.copyOrDelFile(onlinesFile, replaceStr, false);
+        }
+        if (repFile.length() > fileMAX.length()) {
+            messageToUser.warn(repFile.getName(), fileMAX.getName() + " size difference", " = " + (repFile.length() - fileMAX.length()));
+            List<String> readFileToList = FileSystemWorker.readFileToList(fileMAX.getAbsolutePath());
+            maxOnList.addAll(readFileToList);
+            FileSystemWorker.copyOrDelFile(repFile, fileMAX.getAbsolutePath(), false);
+        }
+        repFile.deleteOnExit();
+    }
+    
+    private void offlineNotEmptyActions() {
+        SwitchesAvailability switchesAvailability = new SwitchesAvailability();
+        Future<?> submit = AppComponents.threadConfig().getTaskExecutor().submit(switchesAvailability);
+        try {
+            submit.get(ConstantsFor.DELAY * 2, TimeUnit.SECONDS);
+        }
+        catch (InterruptedException | ExecutionException | TimeoutException e) {
+            messageToUser.error(e.getMessage());
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+        }
+        
+        Set<String> availabilityOkIP = switchesAvailability.getOkIP();
+        availabilityOkIP.forEach(x->onLinesResolve.put(x, LocalDateTime.now().toString()));
     }
 }

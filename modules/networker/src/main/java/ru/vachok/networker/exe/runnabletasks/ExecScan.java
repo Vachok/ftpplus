@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.exe.runnabletasks;
 
 
@@ -13,6 +15,7 @@ import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetListKeeper;
 import ru.vachok.networker.net.NetScanFileWorker;
+import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 
 import java.io.*;
@@ -23,7 +26,7 @@ import java.lang.management.ThreadMXBean;
 import java.net.InetAddress;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.Collections;
+import java.util.Deque;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
@@ -41,7 +44,7 @@ import static ru.vachok.networker.net.enums.ConstantsNet.MAX_IN_ONE_VLAN;
  Да запуска скана из {@link DiapazonScan}
  
  @since 24.03.2019 (16:01) */
-public class ExecScan extends DiapazonScan implements Runnable {
+public class ExecScan extends DiapazonScan {
     
     
     private static final String PAT_IS_ONLINE = " is online";
@@ -66,7 +69,9 @@ public class ExecScan extends DiapazonScan implements Runnable {
     
     private String whatVlan;
     
-    private PrintStream printStream; //fixme
+    private PrintStream printStream;
+    
+    private static final Deque<String> ALL_DEVICES_LOCAL_DEQUE = ConstantsNet.getAllDevices();
     
     public ExecScan(int from, int to, String whatVlan, File vlanFile) {
         
@@ -115,7 +120,6 @@ public class ExecScan extends DiapazonScan implements Runnable {
             fileProps.setProperty(getClass().getSimpleName(), String.valueOf(spendMS));
             fileProps.store(new FileOutputStream(ConstantsFor.PROPS_FILE_JAVA_ID), getClass().getSimpleName() + ".setSpend");
         }
-        return spendMS;
     }
     
     private String getBeansInfo() {
@@ -220,14 +224,6 @@ public class ExecScan extends DiapazonScan implements Runnable {
                 catch (ArrayIndexOutOfBoundsException e) {
                     stStMap.put(theScannedIPHost, e.getMessage());
                 }
-            }
-            executionProcessLog.add(getBeansInfo());
-            Collections.sort(executionProcessLog);
-            if (executionProcessLog.size() >= 8) {
-                String fileName = this.from + "_vlan-to_" + this.to + ".log";
-                boolean fileOk = FileSystemWorker.writeFile(fileName, executionProcessLog.stream());
-                executionProcessLog.clear();
-                messageToUser.info(fileName, "fileOk", " = " + fileOk);
             }
         }
         return stStMap;
