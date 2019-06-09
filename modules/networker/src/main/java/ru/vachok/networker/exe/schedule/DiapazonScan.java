@@ -48,7 +48,7 @@ public class DiapazonScan implements Runnable {
      */
     private final BlockingDeque<String> allDevLocalDeq = getAllDevices();
     
-    private List<String> executionProcessLog;
+    private List<String> executionProcessLog= new ArrayList<>();
     
     private long stopClassStampLong = NetScanFileWorker.getI().getLastStamp();
     
@@ -69,8 +69,6 @@ public class DiapazonScan implements Runnable {
     private static final Pattern COMPILE = Pattern.compile(".txt", Pattern.LITERAL);
     
     protected DiapazonScan() {
-        
-        executionProcessLog = new ArrayList<>();
     }
     
     public Map<String, File> getScanFiles() {

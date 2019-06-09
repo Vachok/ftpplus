@@ -68,7 +68,7 @@ public class AppInfoOnLoad implements Runnable {
     /**
      Для записи результата работы класса.
      */
-    private static final List<String> MINI_LOGGER = new ArrayList<>();
+    protected static final List<String> MINI_LOGGER = new ArrayList<>();
     
     private static int thisDelay = ConstantsNet.IPS_IN_VELKOM_VLAN / getScansDelay();
     

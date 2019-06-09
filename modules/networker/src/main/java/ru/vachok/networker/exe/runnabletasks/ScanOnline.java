@@ -23,6 +23,7 @@ import ru.vachok.networker.services.MessageLocal;
 import java.io.*;
 import java.net.InetAddress;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
@@ -152,6 +153,12 @@ public class ScanOnline implements Runnable, Pinger {
     }
     
     private boolean writeOnLineFile() {
+        try {
+            Files.deleteIfExists(onlinesFile.toPath());
+        }
+        catch (IOException e) {
+            messageToUser.error(e.getMessage());
+        }
         try (OutputStream outputStream = new FileOutputStream(onlinesFile);
              PrintStream printStream = new PrintStream(outputStream, true)) {
             Deque<String> onDeq = NetScanFileWorker.getI().getListOfOnlineDev();
@@ -186,6 +193,7 @@ public class ScanOnline implements Runnable, Pinger {
     }
     
     private void offlineNotEmptyActions() {
+//        messageToUser.info("ПИНГ СВИЧЕЙ");
         SwitchesAvailability switchesAvailability = new SwitchesAvailability();
         Future<?> submit = AppComponents.threadConfig().getTaskExecutor().submit(switchesAvailability);
         try {

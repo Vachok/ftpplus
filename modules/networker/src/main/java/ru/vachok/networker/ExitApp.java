@@ -62,7 +62,7 @@ public class ExitApp implements Runnable {
     /**
      Объект для записи, {@link Externalizable}
      */
-    private Object toWriteObj = this;
+    private Object toWriteObj = null;
 
     /**
      Для записи {@link #toWriteObj}
@@ -166,15 +166,21 @@ public class ExitApp implements Runnable {
     private void exitAppDO() throws IOException {
         BlockingDeque<String> devices = ConstantsNet.getAllDevices();
         Properties properties = AppComponents.getProps();
-        miniLoggerLast.add("Devices " + "iterator next: " + " = " + devices.iterator().next());
-        miniLoggerLast.add("Last" + " = " + devices.getLast());
-        miniLoggerLast.add("BlockingDeque " + "size/remainingCapacity/total" + " = " + devices.size() + "/" + devices.remainingCapacity() + "/" + ConstantsNet.IPS_IN_VELKOM_VLAN);
+        if (devices.size() > 0) {
+            miniLoggerLast.add("Devices " + "iterator next: " + " = " + devices.iterator().next());
+            miniLoggerLast.add("Last" + " = " + devices.getLast());
+            miniLoggerLast.add("BlockingDeque " + "size/remainingCapacity/total" + " = " + devices.size() + "/" + devices.remainingCapacity() + "/" + ConstantsNet.IPS_IN_VELKOM_VLAN);
+        }
         miniLoggerLast.add("exit at " + LocalDateTime.now() + ConstantsFor.getUpTime());
         miniLoggerLast.add("Properties in DATABASE : " + new AppComponents().updateProps(properties));
         miniLoggerLast.add("\n" + new TForms().fromArray(properties, false));
         FileSystemWorker.writeFile("exit.last", miniLoggerLast.stream());
         miniLoggerLast.add(FileSystemWorker.delTemp());
-        AppComponents.threadConfig().killAll();
+        try{
+            AppComponents.threadConfig().killAll();
+        }catch (IllegalStateException e){
+            System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".exitAppDO");
+        }
         System.exit(Math.toIntExact(toMinutes));
     }
     

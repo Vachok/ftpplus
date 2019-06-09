@@ -23,12 +23,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 
-/**
- Сохранение {@link Properties} в базу
- <p>
- 
- @see AppComponents#saveAppPropsForce()
- @since 25.02.2019 (10:12) */
 @SuppressWarnings("DuplicateStringLiteralInspection") public class DBPropsCallable implements Callable<Properties>, DataBaseRegSQL {
     
     

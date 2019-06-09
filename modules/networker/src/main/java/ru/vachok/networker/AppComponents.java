@@ -185,8 +185,8 @@ public class AppComponents {
             propertiesToUpdate.store(new FileOutputStream(ConstantsFor.PROPS_FILE_JAVA_ID), getClass().getSimpleName() + ".updateProps");
         }
         InitProperties initProperties = new DBRegProperties(ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName());
-        boolean isDel = initProperties.delProps();
-        boolean isSet = initProperties.setProps(propertiesToUpdate);
+        boolean isDel = initProperties.delProps(); //fixme 09.06.2019 (21:07)
+        boolean isSet = initProperties.setProps(propertiesToUpdate); //fixme 09.06.2019 (21:07)
         return isDel & isSet;
     }
     
