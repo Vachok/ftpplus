@@ -1,0 +1,1 @@
+UPDATE  common SET  user =  'BUILTIN\\Администратор' WHERE  dir is like '%dir%';

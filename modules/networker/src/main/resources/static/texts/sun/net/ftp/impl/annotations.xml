@@ -1,0 +1,5 @@
+<root>
+    <item name='sun.net.ftp.impl.FtpClient'>
+        <annotation name='java.lang.Deprecated'/>
+    </item>
+</root>

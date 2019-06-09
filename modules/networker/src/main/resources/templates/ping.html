@@ -1,0 +1,38 @@
+<!-- Copyright (c) all rights. http://networker.vachok.ru 2019. -->
+
+<!--
+  ~ Copyright (c) 2019.
+  -->
+
+<!--
+  ~ Copyright (c) 2019.
+  -->
+
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${title}">ХЗ</title>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type"/>
+    <link href="css/main.css" media="all" rel="stylesheet" th:href="@{css/main.css}" type="text/css"/>
+</head>
+<body>
+<center><p th:utext="${head}"/></center>
+<center>
+    <p>
+    <form enctype="multipart/form-data" method="POST" th:action="@{/ping}" th:object="${netPinger}">
+        Выберите файл<br><br>
+        <input required th:field="*{multipartFile}" type="file"/>
+        <br><br>
+        <input placeholder="Кол-во минут, сколько нужно пинговать" required th:field="*{timeForScanStr}" type="number"/>
+        <br>
+        <input type="submit" value="Запрос"/>
+        <br><br>
+    </form>
+</center>
+<p th:utext="*{pingResult}"/>
+<p th:utext="*{pingTest}"/>
+</body>
+<footer>
+    <p th:utext="${footer}"/>
+</footer>
+</html>

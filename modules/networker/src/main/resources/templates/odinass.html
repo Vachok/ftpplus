@@ -1,0 +1,39 @@
+<!-- Copyright (c) all rights. http://networker.vachok.ru 2019. -->
+
+<!--
+  ~ Copyright (c) 2019.
+  -->
+
+<!--
+  ~ Copyright (c) 2019.
+  -->
+
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${title}">ХЗ</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link rel="stylesheet" type="text/css" media="all" href="css/main.css" th:href="@{css/main.css}"/>
+</head>
+<body>
+<center><p th:utext="${head}"/></center>
+<main th:utext="${mapfiles}"/>
+<form th:action="@{/odinass}" th:object="${CsvTxt}" method="POST" enctype="multipart/form-data">
+    <font color="orange">Выберите файлы:</font>
+    <p>
+        <font color="yellow"><b>Выберите файл</b></font>
+        <br>
+        <input type="file" th:field="*{file}"/>
+        <br><br>
+        <font color="yellow"><b>srv-mail3 (Get-Mailbox -ResultSize unlimited | fl > c:\newmailboxes\allmailbox.txt)</b></font>
+        <br>
+    <center><input type="submit" value="Отправить"/> <input type="reset" value="Сброс"></center>
+    <p>
+</form>
+<p th:utext="${csvparse}">
+<p th:utext="${result}"/>
+</body>
+<footer>
+    <p th:utext="${footer}"/>
+</footer>
+</html>
