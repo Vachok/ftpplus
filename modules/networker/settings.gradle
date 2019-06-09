@@ -1,0 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
+rootProject.name = 'networker'
+include('ostpst')
+

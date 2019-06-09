@@ -1,0 +1,25 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Small knowledge base. Exchange2010</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link href="main.css" media="all" rel="stylesheet" th:href="@{main.css}" type="text/css"/>
+</head>
+<body>
+<img src="manage_schell.png">
+<center>
+    <h5>Права</h5>
+    <code>Set-Mailbox demina@velkomfood.ru -GrantSendOnBehalfTo efilistova</code> Выдать права Филистовой, отправить как Дёмина.
+    <h5>Отключенные П/Я</h5>
+    <code>Get-MailboxDatabase | Get-MailboxStatistics | where {$_.DisconnectReason -ne $null} | ft displayname,database,disconnectreason -auto</code> - поиск и просмотр отключенных п/я.<br>
+    <code>New-MailboxRestoreRequest -SourceDatabase <i>имя_базы</i> -SourceStoreMailbox "<i>имя ящика</i>>" -TargetMailbox "<i>целевой ящик</i>"</code> - восстановление отключенного
+    п/я.<br>
+    <code>Get-MailboxRestoreRequest | fl</code> - посмотреть состояние восстановления<br>
+    <h5>Массовая работа с ящиками</h5>
+    <code>get-mailbox | Search-Mailbox -SearchQuery 'subject:<i>тема письма</i>' -DeleteContent -Force</code> - массовое удаление. По всем ящиками<br>
+</center>
+</body>
+<footer>
+    <a href="/">Main</a>
+</footer>
+</html>

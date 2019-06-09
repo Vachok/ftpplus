@@ -1,0 +1,52 @@
+<!-- Copyright (c) all rights. http://networker.vachok.ru 2019. -->
+
+<!--
+  ~ Copyright (c) 2019.
+  -->
+
+<!--
+  ~ Copyright (c) 2019.
+  -->
+
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${title}">ХЗ</title>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type"/>
+    <link href="css/style.css" media="all" rel="stylesheet" th:href="@{css/style.css}" type="text/css"/>
+</head>
+<body>
+<center><p th:utext="${head}"/></center>
+<center><h1>Анкета-конфета</h1></center>
+<center><p th:utext="${anketahead}"></center>
+<form method="POST" th:action="@{/anketaok}" th:object="${anketaKonfeta}"><br>
+    <input placeholder="Введите ваш e-mail" th:field="*{userMail}" type="email"/> <br>
+    <p align="center" class="formradio" title="Выберите подходящий вариант">
+        <b>Как вы относитесь к ИТ?</b> <br>
+
+        <label>Отлично</label>
+        <input name="q1" th:field="*{q1Ans}" th:value="1-otlichno" type="radio"/><br>
+        <label>Прекрасно</label>
+        <input name="q1" th:field="*{q1Ans}" th:value="2-prekrasno" type="radio"/><br>
+        <label>Восхитительно</label>
+        <input name="q1" th:field="*{q1Ans}" th:value="3-voshititelno" type="radio"/><br>
+        <label>Великолепно</label>
+        <input name="q1" th:field="*{q1Ans}" th:value="4-velikolepno" type="radio"/><br><br>
+
+        <b>А в целом к жизни?</b> <br>
+
+        <label>Плохо</label>
+        <input name="q2" th:field="*{q2Ans}" th:value="1-otlichno" type="radio"/><br>
+        <label>Ужасно</label>
+        <input name="q2" th:field="*{q2Ans}" th:value="2-prekrasno" type="radio"/><br>
+        <label>Отстой</label>
+        <input name="q2" th:field="*{q2Ans}" th:value="3-voshititelno" type="radio"/><br>
+        <label>Я <b><font color="#green">хиппи</font></b></label>
+        <input name="q2" th:field="*{q2Ans}" th:value="4-velikolepno" type="radio"/><br><br>
+    </p>
+    <input type="submit" value="С моих слов записано верно"/><br></form>
+</body>
+<footer>
+    <p th:utext="${footer}"/>
+</footer>
+</html>

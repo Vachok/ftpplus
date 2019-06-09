@@ -1,0 +1,43 @@
+<!-- Copyright (c) all rights. http://networker.vachok.ru 2019. -->
+
+<!--
+  ~ Copyright (c) 2019.
+  -->
+
+<!--
+  ~ Copyright (c) 2019.
+  -->
+
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${title}">ХЗ</title>
+    <meta http-equiv="Content-Type" content="text/html"/>
+    <link rel="stylesheet" type="text/css" media="all" href="css/main.css" th:href="@{css/main.css}"/>
+</head>
+<body>
+<center><p th:utext="${head}"/></center>
+<p th:utext="${users}"/>
+<p th:utext="${pcs}"/>
+<form th:action="@{/ad}" th:object="${photoConverter}" method="POST">
+    Путь до папки с фото:
+    <input type="text" th:field="*{adPhotosPath}"/>
+    <br>
+    <input type="submit" value="Set path"/>
+    <br>
+</form>
+<p>Укажите в форме путь до папки с фотографиями. Это могут быть фото, формата <i>jpg, png, tiff, gif</i><br>
+    При нажатии <i>Set path</i>, фотки автоматически будут переделаны в формат <i>jpeg</i>, понятный в Active Directory, <br>
+    произойдёт копирование их на <a href="https://srv-mail3.eatmeat.ru/owa">SRV-MAIL3</a>, <br>
+    и сверка с AD, посредством файлика allusers.txt, который должен быть в папке программы (допилим, чтобы не было такого)<br>.
+    Фотофайлы должны соотв. <i>SamAccountName</i>, не точно, но хотя бы включать pattern. <br>
+    Например, чтобы добавить фото юзеру ikudryashov, назовите файл kudr.png и т.п.<br>
+    Чем больше соответствие, тем меньше вероятность ошибок.</p>
+<p>На выходе мы получим <b>список комманд для <i>Power Shell</i></b>,
+    которые надо скормить <a href="https://srv-mail3.eatmeat.ru/owa">SRV-MAIL3</a>.
+<ul th:utext="${pscommands}"/>
+</body>
+<footer>
+    <p th:utext="${footer}"/>
+</footer>
+</html>

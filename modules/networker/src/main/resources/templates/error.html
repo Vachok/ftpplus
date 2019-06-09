@@ -1,0 +1,34 @@
+<!-- Copyright (c) all rights. http://networker.vachok.ru 2019. -->
+
+<!--
+  ~ Copyright (c) 2019.
+  -->
+
+<!--
+  ~ Copyright (c) 2019.
+  -->
+
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link rel="stylesheet" type="text/css" media="all" href="red/main.css" th:href="@{css/main.css}"/>
+    <title th:text="${title}"></title>
+</head>
+<body bgcolor="#B63E3F"/>
+<center><p th:utext="${head}"/></center>
+<p th:utext="${eMessage}"/>
+<details>
+    <summary>Посмотреть Stack Trace</summary>
+    <p th:utext="${stackTrace}"/></details>
+<p th:utext="${statcode}"/>
+<p>
+<center>
+    <a th:href="@{ref}"><img th:src="@{images/banner.jpg}"/></a><br>
+</center>
+</p>
+</body>
+<footer>
+    <p th:utext="${footer}"/>
+</footer>
+</html>

@@ -1,0 +1,114 @@
+before load:
+-------------------------------
+this = {DiapazonScan@2021} 
+ ALL_DEVICES_LOCAL_DEQUE = null
+ executionProcessLog = null
+ messageToUser = {MessageLocal@2029} 
+ OUR_INSTANCE = null
+ ROOT_PATH_STR = {String@2030} "C:\Users\ikudryashov\IdeaProjects\ftpplus\modules\networker"
+ SCAN_FILES = null
+ stopClassStampLong = 0
+ 
+ 
+Step 1:
+-
+this = {DiapazonScan@2021} 
+ ALL_DEVICES_LOCAL_DEQUE = null
+ executionProcessLog = null
+ messageToUser = {MessageLocal@2029} 
+ OUR_INSTANCE = null
+ ROOT_PATH_STR = {String@2030} "C:\Users\ikudryashov\IdeaProjects\ftpplus\modules\networker"
+ SCAN_FILES = null
+ stopClassStampLong = 0
+ 
+ -
+ Step 2:
+ --
+this = {DiapazonScan@2021} 
+ ALL_DEVICES_LOCAL_DEQUE = null
+ *** executionProcessLog = {ArrayList@2036}  size = 0
+  messageToUser = {MessageLocal@2029} 
+ OUR_INSTANCE = null
+ ROOT_PATH_STR = {String@2030} "C:\Users\ikudryashov\IdeaProjects\ftpplus\modules\networker"
+ SCAN_FILES = null
+ stopClassStampLong = 0
+ 
+ -
+ Step 3:
+ ---
+  ALL_DEVICES_LOCAL_DEQUE = null
+ messageToUser = {MessageLocal@2029} 
+ OUR_INSTANCE = null
+ ROOT_PATH_STR = {String@2030} "C:\Users\ikudryashov\IdeaProjects\ftpplus\modules\networker"
+ SCAN_FILES = null
+NetScanFileWorker.getLastStamp() = 1559825039509
+
+-
+Step 4:
+----
+ALL_DEVICES_LOCAL_DEQUE = null
+messageToUser = {MessageLocal@2029} 
+OUR_INSTANCE = {DiapazonScan@2021} 
+ROOT_PATH_STR = {String@2030} "C:\Users\ikudryashov\IdeaProjects\ftpplus\modules\networker"
+SCAN_FILES = null
+ 
+-
+Step 5:
+-----
+ ALL_DEVICES_LOCAL_DEQUE = null
+ messageToUser = {MessageLocal@2029} 
+ OUR_INSTANCE = {DiapazonScan@2021} 
+ ROOT_PATH_STR = {String@2030} "C:\Users\ikudryashov\IdeaProjects\ftpplus\modules\networker"
+ SCAN_FILES = {ConcurrentHashMap@2221}  size = 8
+DiapazonScan.makeFilesMap() = {ConcurrentHashMap@2221}  size = 8
+ {String@2232} "lan_old0.txt" -> {File@2233} ""
+ {String@2234} "lan_210213.txt" -> {File@2235} ""
+ {String@2236} "lan_213220.txt" -> {File@2237} ""
+ {String@2238} "lan_200210.txt" -> {File@2239} ""
+ {String@2240} "lan_21vsrv.txt" -> {File@2241} ""
+ {String@2242} "lan_old1.txt" -> {File@2243} ""
+ {String@2244} "lan_11vsrv.txt" -> {File@2245} ""
+ {String@2246} "lan_31vsrv.txt" -> {File@2247} ""
+ 
+ -
+ Step 6:
+ ------
+  ALL_DEVICES_LOCAL_DEQUE = {LinkedBlockingDeque@2722}  size = 0
+ messageToUser = {MessageLocal@2029} 
+  bodyMsg = null
+  headerMsg = {String@2723} "DiapazonScan"
+  titleMsg = {String@2724} "(0,000 h up)"
+  TOSTRING_BODY_MSG = {String@2725} ", bodyMsg='"
+  TOSTRING_HEADER_MSG = {String@2726} ", headerMsg='"
+  TOSTRING_TITLE_MSG = {String@2727} ", titleMsg='"
+ OUR_INSTANCE = {DiapazonScan@2021} 
+  ALL_DEVICES_LOCAL_DEQUE = {LinkedBlockingDeque@2722}  size = 0
+  executionProcessLog = {ArrayList@2036}  size = 0
+  messageToUser = {MessageLocal@2029} 
+  OUR_INSTANCE = {DiapazonScan@2021} 
+  ROOT_PATH_STR = {String@2030} "C:\Users\ikudryashov\IdeaProjects\ftpplus\modules\networker"
+  SCAN_FILES = {ConcurrentHashMap@2221}  size = 8
+  stopClassStampLong = 1559825039509
+ ROOT_PATH_STR = {String@2030} "C:\Users\ikudryashov\IdeaProjects\ftpplus\modules\networker"
+  CASE_INSENSITIVE_ORDER = {String$CaseInsensitiveComparator@2728} 
+  coder = 0
+  COMPACT_STRINGS = true
+  hash = 0
+  LATIN1 = 0
+  serialPersistentFields = {ObjectStreamField[0]@2729} 
+  serialVersionUID = -6849794470754667710
+  UTF16 = 1
+  value = {byte[59]@2730} 
+ SCAN_FILES = {ConcurrentHashMap@2221}  size = 8
+  {String@2232} "lan_old0.txt" -> {File@2233} ""
+  {String@2234} "lan_210213.txt" -> {File@2235} ""
+  {String@2236} "lan_213220.txt" -> {File@2237} ""
+  {String@2238} "lan_200210.txt" -> {File@2239} ""
+  {String@2240} "lan_21vsrv.txt" -> {File@2241} ""
+  {String@2242} "lan_old1.txt" -> {File@2243} ""
+  {String@2244} "lan_11vsrv.txt" -> {File@2245} ""
+  {String@2246} "lan_31vsrv.txt" -> {File@2247} ""
+ConstantsNet.getAllDevices() = {LinkedBlockingDeque@2722}  size = 0
+
+-----
+END

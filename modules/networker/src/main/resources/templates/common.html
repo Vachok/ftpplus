@@ -1,0 +1,51 @@
+<!-- Copyright (c) all rights. http://networker.vachok.ru 2019. -->
+
+<!--
+  ~ Copyright (c) 2019.
+  -->
+
+<!--
+  ~ Copyright (c) 2019.
+  -->
+
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${title}">ХЗ</title>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type"/>
+    <link href="css/main.css" media="all" rel="stylesheet" th:href="@{css/main.css}" type="text/css"/>
+</head>
+<body>
+<center><p th:utext="${head}"/></center>
+<center><br>
+    <p th:utext="${input}"/>
+    <h4><p th:utext="${result}"/></h4>
+</center>
+<p>
+<form method="POST" th:action="@{/commonarch}" th:object="${common}"><br>
+    Укажите путь, где была папка или файл :<br>
+    <input placeholder="Пример: 14_ИТ_служба\Общая" required th:field="*{delFolderPath}" type="text"/>
+    <br>
+    <input max="365" min="1" placeholder="Число дней, за которые восстановить" required size="1" th:field="*{perionDays}" type="number" value="10"/>
+    <br>
+    <input type="submit" value="Восстановить"/><br>
+</form>
+<form method="POST" th:action="@{/commonsearch}" th:object="${common}"><br>
+    Укажите путь, где была папка или файл :<br>
+    <input placeholder="Введите что ищем и папку в common_new через двоеточие. Пример .avi:13_Служба_персонала" required th:field="*{searchPat}" type="text"/>
+    <br>
+    Результат этого поиска будет отправлен на netvisor@velkomfood.ru
+    <input type="submit" value="Найти"/><br>
+</form>
+<p>
+    Работа в тестовом режиме. <br>
+    Укажите путь до файла, в виде (пример) : <code>14_ИТ_служба\Общая\График отпусков 2019г. IT.xlsx</code> <br>
+    Если копии есть в архиве, файлы восстановятся за введённое число дней.
+<p>
+    Для просмотра / сравнения папок можно указать путь в виде (пример): <code>14_ИТ_служба\Общая</code> <br>
+    На выходе будет 2 текстовых поля. Контент папки в архиве и контент в реале на <b>common_new</b>
+</body>
+<footer>
+    <p th:utext="${footer}"/>
+</footer>
+</html>

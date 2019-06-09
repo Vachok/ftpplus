@@ -1,0 +1,88 @@
+<!-- Copyright (c) all rights. http://networker.vachok.ru 2019. -->
+
+<!--
+  ~ Copyright (c) 2019.
+  -->
+
+<!--
+  ~ Copyright (c) 2019.
+  -->
+
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${title}">ХЗ</title>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type"/>
+    <link href="css/main.css" media="all" rel="stylesheet" th:href="@{css/main.css}" type="text/css"/>
+    <style type="text/css">
+   .formradio {
+    opacity: 0.9;
+    width: 720px;
+    background: #0033cc;
+    text-align: center;
+    font-size: 1.1em;
+    border: 4px double black;
+    input[type="radio"]{
+        opacity: 1;
+        width: 20px;
+        height: 20px;
+        background: #00ff00;
+        border: 1px solid #000;
+        outline: none;
+        }
+   }
+
+
+    </style>
+</head>
+<body>
+<center>
+    <center>
+        <comment th:utext="${head}"></comment>
+    </center>
+    <br>
+    <p th:utext="${sshdetail}"/>
+    <form method="POST" th:action="@{/tmpfullnet}" th:object="${sshActs}"><br>
+        Введите имя ПК: <br>
+        <input placeholder="no0027 или 10.200.213.85" required th:field="*{userInput}" type="text"/><br>
+        Введите кол-во часов, на которое открыть <b>полный прямой</b> доступ:
+        <input placeholder="12 часов" required th:field="*{numOfHours}" type="number"/> <br>
+        <input type="submit" value="Установить"/><br></form>
+    <!--
+        <form>
+            <form method="POST" th:action="@{/sshacts}" th:object="${sshActs}"><br>
+                Internet:<br><br>
+                Разрешить инет для : <input placeholder="Введите имя или IP компьютера" required size="26" th:field="*{pcName}" type="text"/> <br>
+                <div align="center" class="formradio" title="Выберите уровень доступа">
+                    <label>Полный, через proxy (<a href="http://srv-git.eatmeat.ru/fsa/">запись статистики</a>):</label>
+                    <input name="inet" size="1" th:field="*{inet}" th:value="full" type="radio"/><br>
+                    <label>Органиченный, через proxy (<a href="http://srv-git.eatmeat.ru/fsa/">запись статистики</a>):</label>
+                    <input name="inet" th:field="*{inet}" th:value="std" type="radio"/><br>
+                    <label>Только определённые сайты, через proxy (<a href="http://srv-git.eatmeat.ru/fsa/">запись статистики</a>):</label>
+                    <input name="inet" th:field="*{inet}" th:value="limit" type="radio"/><br>
+                    <label>NAT, <b>без proxy</b> (<b>без статистики</b>):</label>
+                    <input name="inet" th:field="*{inet}" th:value="nat" type="radio"/><br><br>
+                </div>
+                <input type="submit" value="Установить"/><br>
+            </form>
+        </form>
+    -->
+    <p>
+    <form method="POST" th:action="@{/allowdomain}" th:object="${sshActs}"><br>
+        Разрешить домен (должно начинаться с <b>http</b>) :<br>
+        <input pattern="^http{1,}[(s)(:)][\w\d:/.\-]{1,}"
+               placeholder="Введите имя домена. (http(s)://www.velkomfood.ru)" required size="55"
+               th:field="*{allowDomain}" type="text"/>
+        <input type="submit" value="Разрешить"/>
+    </form>
+    <form method="POST" th:action="@{/deldomain}" th:object="${sshActs}"><br>
+        Удалить домен (должно начинаться с <b>http</b>) :<br>
+        <input pattern="^http{1,}[(s)(:)][\w\d:/.\-]{1,}" placeholder="Введите имя домена." required size="55" th:field="*{delDomain}" type="text"/>
+        <input type="submit" value="Удалить"/>
+    </form>
+</center>
+</body>
+<footer>
+    <p th:utext="${footer}"/>
+</footer>
+</html>
