@@ -208,9 +208,6 @@ public class NetScanCtr {
     @PostMapping(STR_NETSCAN)
     public static String pcNameForInfo(@ModelAttribute NetScannerSvc netScannerSvc, BindingResult result, Model model) {
         String thePc = netScannerSvc.getThePc();
-/*Comment out 10.04.2019 (9:40)
-        AppComponents.adSrv().setUserInputRaw(thePc);
-*/
         if (thePc.toLowerCase().contains("user: ")) {
             model.addAttribute("ok", MoreInfoWorker.getUserFromDB(thePc).trim());
             model.addAttribute(ConstantsFor.ATT_TITLE, thePc);
@@ -218,9 +215,6 @@ public class NetScanCtr {
             return "ok";
         }
         model.addAttribute(ATT_THEPC, thePc);
-/*Comment out 10.04.2019 (9:41)
-        AppComponents.adSrv().setUserInputRaw(netScannerSvc.getThePc());
-*/
         netScannerSvc.setThePc("");
         return "redirect:/ad?" + thePc;
     }

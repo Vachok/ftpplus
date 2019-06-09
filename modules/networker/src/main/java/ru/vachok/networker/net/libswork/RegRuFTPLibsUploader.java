@@ -90,7 +90,7 @@ import java.util.regex.Pattern;
     
     void setUploadDirectoryStr() {
         Path rootPath = Paths.get(".").toAbsolutePath().normalize();
-        String fSep = System.getProperty("file.separator");
+        String fSep = System.getProperty(ConstantsFor.PRSYS_SEPARATOR);
         this.uploadDirectoryStr = rootPath + fSep + "src" + fSep + "main" + fSep + "resources" + fSep + "static" + fSep + "cover";
     }
     
@@ -180,7 +180,7 @@ import java.util.regex.Pattern;
     }
     
     private boolean chkPC() {
-        return ConstantsFor.thisPC().toLowerCase().contains("home") || ConstantsFor.thisPC().toLowerCase().contains("do0213");
+        return ConstantsFor.thisPC().toLowerCase().contains("home") || ConstantsFor.thisPC().toLowerCase().contains(ConstantsFor.HOSTNAME_DO213);
     }
     
     private String makeConnectionAndStoreLibs() {

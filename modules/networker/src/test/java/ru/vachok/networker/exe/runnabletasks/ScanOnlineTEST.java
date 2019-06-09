@@ -36,18 +36,14 @@ import java.util.concurrent.*;
  @see DiapazonScan
  @since 26.01.2019 (11:18) */
 @Service
-public class ScanOnline implements Runnable, Pinger {
+public class ScanOnlineTEST implements Runnable, Pinger {
     
-    private File onlinesFile;
-    
-    /**
-     {@link NetListKeeper#getI()}
-     */
-    private static final NetListKeeper NET_LIST_KEEPER = NetListKeeper.getI();
     
     private final String sep = ConstantsFor.FILESYSTEM_SEPARATOR;
     
     private final ThreadConfig threadConfig = AppComponents.threadConfig();
+    
+    private File onlinesFile;
     
     /**
      {@link NetListKeeper#getOnLinesResolve()}
@@ -63,11 +59,16 @@ public class ScanOnline implements Runnable, Pinger {
     
     private List<String> maxOnList = new ArrayList<>();
     
-    public ScanOnline(File onlinesFile) {
+    /**
+     {@link NetListKeeper#getI()}
+     */
+    private static final NetListKeeper NET_LIST_KEEPER = NetListKeeper.getI();
+    
+    public ScanOnlineTEST(File onlinesFile) {
         this.onlinesFile = onlinesFile;
     }
     
-    public ScanOnline() {
+    public ScanOnlineTEST() {
         this.onlinesFile = new File(ConstantsFor.FILENAME_ONSCAN);
     }
     
@@ -115,25 +116,15 @@ public class ScanOnline implements Runnable, Pinger {
         setLists();
         threadConfig.execByThreadConfig(this::offlineNotEmptyActions);
         File fileMAX = new File(onlinesFile.toPath().toAbsolutePath().toString().replace(ConstantsFor.FILENAME_ONSCAN, sep + "lan" + sep + ConstantsFor.FILENAME_MAXONLINE));
-    
+        
         if (onlinesFile.exists()) {
             onlineFileExists(onlinesFile, fileMAX);
         }
         messageToUser.info(getClass().getSimpleName() + ".run", "writeOnLineFile()", " = " + writeOnLineFile());
     }
     
-    private void setLists() {
-        try {
-            this.maxOnList = FileSystemWorker
-                .readFileToList(new File(ConstantsFor.FILENAME_ONSCAN).getAbsolutePath().replace(ConstantsFor.FILENAME_ONSCAN, sep + "lan" + sep + ConstantsFor.FILENAME_MAXONLINE));
-        }
-        catch (NullPointerException e) {
-            this.maxOnList = new ArrayList<>();
-        }
-    }
-    
     @Override
-    public String toString() { // fixme 08.06.2019 (8:34)
+    public String toString() {
         final StringBuilder sb = new StringBuilder();
         sb.append("<b>Since ");
         sb.append("<i>");
@@ -149,6 +140,16 @@ public class ScanOnline implements Runnable, Pinger {
         sb.append("Online  pc is<font color=\"#00ff69\"> <b>").append(onLinesResolve.size()).append(":</b><br>");
         sb.append(new TForms().fromArray(onLinesResolve, true)).append("</font><br>");
         return sb.toString();
+    }
+    
+    private void setLists() {
+        try {
+            this.maxOnList = FileSystemWorker
+                .readFileToList(new File(ConstantsFor.FILENAME_ONSCAN).getAbsolutePath().replace(ConstantsFor.FILENAME_ONSCAN, sep + "lan" + sep + ConstantsFor.FILENAME_MAXONLINE));
+        }
+        catch (NullPointerException e) {
+            this.maxOnList = new ArrayList<>();
+        }
     }
     
     private boolean writeOnLineFile() {

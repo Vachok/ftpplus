@@ -30,10 +30,11 @@ import java.lang.management.MemoryMXBean;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.SecureRandom;
+import java.time.LocalDateTime;
 import java.time.Year;
+import java.time.ZoneOffset;
 import java.util.Collections;
 import java.util.List;
-import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
@@ -221,10 +222,12 @@ public enum ConstantsFor {
      */
     public static final String DBPREFIX = "u0466446_";
     
+    public static final int YEAR_OF_MY_B = 1984;
+    
     /**
      Число, для Secure Random
      */
-    public static final long MY_AGE = (long) Year.now().getValue() - 1984;
+    public static final long MY_AGE = (long) Year.now().getValue() - YEAR_OF_MY_B;
     
     /**
      {@link Model} имя атрибута
@@ -274,6 +277,8 @@ public enum ConstantsFor {
      Имя для БД с настройками
      */
     public static final String APPNAME_WITHMINUS = "ru_vachok_networker-";
+    
+    public static final int HOURS_IN_DAY = 24;
     
     /**
      Кол-во часов в сутках
@@ -413,8 +418,6 @@ public enum ConstantsFor {
     
     public static final int EXIT_USEREXIT = 222;
     
-    public static final String PR_LPORT = "lport";
-    
     /**
      Файл уникальных записей из БД velkom-pcuserauto
      */
@@ -458,6 +461,12 @@ public enum ConstantsFor {
     
     public static final String FILESYSTEM_SEPARATOR = getSeparator();
     
+    public static final String FILENAME_MAXONLINE = "max.online";
+    
+    public static final String FILEEXT_ONLIST = ".onList";
+    
+    public static final String FILENAME_ONSCAN = ScanOnline.class.getSimpleName() + FILEEXT_ONLIST;
+    
     static final String STR_FINISH = " is finish";
     
     private static final String[] STRINGS_TODELONSTART = {"visit_", ".tmp", ".log", ".tv"};
@@ -474,11 +483,7 @@ public enum ConstantsFor {
      */
     private static final ConcurrentMap<Integer, MailRule> MAIL_RULES = new ConcurrentHashMap<>();
     
-    public static final String FILENAME_MAXONLINE = "max.online";
-    
-    public static final String FILEEXT_ONLIST = ".onList";
-    
-    public static final String FILENAME_ONSCAN = ScanOnline.class.getSimpleName() + FILEEXT_ONLIST;
+    public static final String RETURN_ERROR = "error";
     
     public static final String FILENAME_BUILDGRADLE = "build.gradle";
     
@@ -496,7 +501,7 @@ public enum ConstantsFor {
      */
     public static boolean isPingOK() {
         try {
-            return InetAddress.getByName(PfListsSrv.getDefaultConnectSrv()).isReachable(500);
+            return InetAddress.getByName(PfListsSrv.getDefaultConnectSrv()).isReachable((int) (ConstantsFor.DELAY * 5));
         }
         catch (IOException e) {
             LoggerFactory.getLogger(ConstantsFor.class.getSimpleName()).error(e.getMessage(), e);
@@ -511,36 +516,11 @@ public enum ConstantsFor {
         String tUnit = " h";
         float hrsOn = (float)
             (System.currentTimeMillis() - START_STAMP) / 1000 / ONE_HOUR_IN_MIN / ONE_HOUR_IN_MIN;
-        if (hrsOn > 24) {
+        if (hrsOn > ONE_DAY_HOURS) {
             hrsOn /= ONE_DAY_HOURS;
             tUnit = " d";
         }
         return "(" + String.format("%.03f", hrsOn) + tUnit + " up)";
-    }
-    
-    /**
-     @return время билда
-     */
-    public static long getBuildStamp() throws IOException {
-        long retLong = 1L;
-        Properties appPr = AppComponents.getProps();
-    
-        try {
-            String hostName = InetAddress.getLocalHost().getHostName();
-            if (hostName.equalsIgnoreCase(HOSTNAME_DO213) || hostName.toLowerCase().contains(HOSTNAME_HOME)) {
-                appPr.setProperty(PR_APP_BUILD, System.currentTimeMillis() + "");
-                retLong = System.currentTimeMillis();
-            }
-            else {
-                retLong = Long.parseLong(appPr.getProperty(PR_APP_BUILD, "1"));
-            }
-        }
-        catch (UnknownHostException e) {
-            messageToUser.errorAlert("ConstantsFor", "getBuildStamp", e.getMessage());
-            FileSystemWorker.error("ConstantsFor.getBuildStamp", e);
-        }
-        new AppComponents().updateProps(appPr);
-        return retLong;
     }
     
     /**
@@ -591,19 +571,12 @@ public enum ConstantsFor {
         }
     }
     
-    /**
-     @param request для получения IP
-     @return boolean авторизован или нет
-     */
-    public static boolean getPcAuth(HttpServletRequest request) {
-        return request.getRemoteAddr().toLowerCase().contains("0:0:0:0") ||
-            request.getRemoteAddr().contains("10.200.213") ||
-            request.getRemoteAddr().contains("10.10.111") ||
-            request.getRemoteAddr().contains("172.16.200");
-    }
-    
     public static Visitor getVis(HttpServletRequest request) {
         return new AppComponents().visitor(request);
+    }
+    
+    public static long getMyTime() {
+        return LocalDateTime.of(YEAR_OF_MY_B, 1, 7, 2, 0).toEpochSecond(ZoneOffset.ofHours(3)) * 1000;
     }
     
     private static String getSeparator() {

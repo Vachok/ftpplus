@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.controller;
 
 
@@ -50,7 +52,7 @@ public class ErrCtr implements ErrorController {
      @return error.html
      @see TForms
      */
-    @GetMapping(MAPPING_ERROR)
+    @SuppressWarnings("SameReturnValue") @GetMapping(MAPPING_ERROR)
     public static String errHandle(HttpServletRequest httpServletRequest, Model model) {
         Visitor visitor = ConstantsFor.getVis(httpServletRequest);
         Integer statCode = (Integer) httpServletRequest.getAttribute("javax.servlet.error.status_code");
@@ -73,7 +75,36 @@ public class ErrCtr implements ErrorController {
             }
             setExcept(model, exception, statCode, httpServletRequest);
         }
-        return "error";
+        return ConstantsFor.RETURN_ERROR;
+    }
+    
+    /**
+     @return путь к ошибке для броузера
+     */
+    @SuppressWarnings("SuspiciousGetterSetter") @Override
+    public String getErrorPath() {
+        return MAPPING_ERROR;
+    }
+    
+    /**
+     @param request для получения IP
+     @return boolean авторизован или нет
+     */
+    private static boolean getPcAuth(HttpServletRequest request) {
+        return request.getRemoteAddr().toLowerCase().contains("0:0:0:0") ||
+            request.getRemoteAddr().contains("10.200.213") ||
+            request.getRemoteAddr().contains("10.10.111") ||
+            request.getRemoteAddr().contains("172.16.200");
+    }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("ErrCtr{");
+        sb.append("H_2_CENTER='").append(H_2_CENTER).append('\'');
+        sb.append(", H_2_CENTER_CLOSE='").append(H_2_CENTER_CLOSE).append('\'');
+        sb.append(", MAPPING_ERROR='").append(MAPPING_ERROR).append('\'');
+        sb.append('}');
+        return sb.toString();
     }
 
     /**
@@ -91,36 +122,15 @@ public class ErrCtr implements ErrorController {
         String eLocalizedMessage = H_2_CENTER + exception.getMessage() + H_2_CENTER_CLOSE;
         String err = statCode + " Научно-Исследовательский Институт Химии Удобрений и Ядов";
         String traceStr = new TForms().fromArray(exception, true);
-
-        if (!exception.getMessage().equals(exception.getLocalizedMessage())) {
-            eMessage = eMessage + eLocalizedMessage;
-        }
-        if (ConstantsFor.getPcAuth(httpServletRequest)) {
+    
+        if (getPcAuth(httpServletRequest)) {
             model.addAttribute("stackTrace", traceStr);
         }
-
+    
         model.addAttribute(ConstantsFor.ATT_E_MESSAGE, eMessage);
         model.addAttribute(ConstantsFor.ATT_STATCODE, H_2_CENTER + statCode + H_2_CENTER_CLOSE);
         model.addAttribute(ConstantsFor.ATT_TITLE, err);
         model.addAttribute("ref", httpServletRequest.getHeader(ConstantsFor.HEAD_REFERER));
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
-    }
-
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("ErrCtr{");
-        sb.append("H_2_CENTER='").append(H_2_CENTER).append('\'');
-        sb.append(", H_2_CENTER_CLOSE='").append(H_2_CENTER_CLOSE).append('\'');
-        sb.append(", MAPPING_ERROR='").append(MAPPING_ERROR).append('\'');
-        sb.append('}');
-        return sb.toString();
-    }
-
-    /**
-     @return путь к ошибке для броузера
-     */
-    @Override
-    public String getErrorPath() {
-        return MAPPING_ERROR;
     }
 }

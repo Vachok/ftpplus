@@ -30,17 +30,21 @@ import java.util.concurrent.TimeUnit;
 public class TestServer implements ConnectToMe {
     
     
+    private ServerSocket serverSocket;
+    
     private static final String JAR = "file:///G:/My_Proj/FtpClientPlus/modules/networker/ostpst/build/libs/";
     
     private static final String METHNAME_ACCEPTSOC = ".accepSoc";
-    
-    private ServerSocket serverSocket;
     
     private PrintStream printStreamF;
     
     private Socket socket;
     
     private int listenPort;
+    
+    private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
+    
+    public static final String PR_LPORT = String.valueOf(9990);
     
     public TestServer(int listenPort) {
         this.listenPort = listenPort;
@@ -51,8 +55,6 @@ public class TestServer implements ConnectToMe {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".TestServer", e));
         }
     }
-    
-    private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
     
     @Override public Socket getSocket() {
         throw new IllegalComponentStateException("14.05.2019 (20:30)");
@@ -103,8 +105,8 @@ public class TestServer implements ConnectToMe {
             printStreamF.println("Press ENTER. \nOr press something else for quit...");
             printStreamF.println(TimeUnit.MILLISECONDS.toSeconds(timeout) + " socket timeout in second");
             while (socket.isConnected()) {
-                    System.setIn(socket.getInputStream());
-                    System.setOut(printStreamF);
+                System.setIn(socket.getInputStream());
+                System.setOut(printStreamF);
                 if (socket.isConnected()) {
                     scanInput(scanner.nextLine());
                     printStream.print(iStream.read());

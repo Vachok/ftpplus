@@ -49,8 +49,7 @@ public class MoreInfoWorker implements InfoWorker {
     public MoreInfoWorker(String aboutWhat) {
         this.aboutWhat = aboutWhat;
     }
-
-
+    
     public void setOnline(boolean online) {
         isOnline = online;
     }

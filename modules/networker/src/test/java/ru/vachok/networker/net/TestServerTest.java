@@ -10,7 +10,7 @@ import ru.vachok.networker.abstr.ConnectToMe;
 public class TestServerTest {
     
     
-    @Test
+    @Test(enabled = false)
     public void testServerStart() {
         int lport = 9990;
         ConnectToMe connectToMe = new TestServer(lport);
