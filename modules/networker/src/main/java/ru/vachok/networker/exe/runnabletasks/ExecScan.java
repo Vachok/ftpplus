@@ -26,7 +26,6 @@ import java.lang.management.ThreadMXBean;
 import java.net.InetAddress;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.Deque;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
@@ -71,8 +70,6 @@ public class ExecScan extends DiapazonScan {
     
     private PrintStream printStream;
     
-    private static final Deque<String> ALL_DEVICES_LOCAL_DEQUE = ConstantsNet.getAllDevices();
-    
     public ExecScan(int from, int to, String whatVlan, File vlanFile) {
         
         this.from = from;
@@ -83,7 +80,7 @@ public class ExecScan extends DiapazonScan {
         
         this.vlanFile = vlanFile;
     
-        this.stArt = LocalDateTime.of(1984, 1, 7, 2, 0).toEpochSecond(ZoneOffset.ofHours(3)) * 1000;
+        this.stArt = LocalDateTime.of(ConstantsFor.YEAR_OF_MY_B, 1, 7, 2, 0).toEpochSecond(ZoneOffset.ofHours(3)) * 1000;
     }
     
     @Override
@@ -182,13 +179,13 @@ public class ExecScan extends DiapazonScan {
         if (byAddress.isReachable(timeOutMSec)) {
             NetListKeeper.getI().getOnLinesResolve().put(hostAddress, hostName);
             
-            ALL_DEVICES_LOCAL_DEQUE.add("<font color=\"green\">" + hostName + FONT_BR_CLOSE);
+            getAllDevLocalDeq().add("<font color=\"green\">" + hostName + FONT_BR_CLOSE);
             stringBuilder.append(hostAddress).append(" ").append(hostName).append(PAT_IS_ONLINE);
         }
         else {
             NetListKeeper.getI().getOffLines().put(byAddress.getHostAddress(), hostName);
             
-            ALL_DEVICES_LOCAL_DEQUE.add("<font color=\"red\">" + hostName + FONT_BR_CLOSE);
+            getAllDevLocalDeq().add("<font color=\"red\">" + hostName + FONT_BR_CLOSE);
             stringBuilder.append(hostAddress).append(" ").append(hostName);
         }
         if (stringBuilder.toString().contains(PAT_IS_ONLINE)) {

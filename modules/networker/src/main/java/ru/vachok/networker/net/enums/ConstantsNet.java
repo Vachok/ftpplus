@@ -177,7 +177,8 @@ public enum ConstantsNet { ;
      @return {@link #ALL_DEVICES}
      */
     public static BlockingDeque<String> getAllDevices() {
-        AppComponents.getProps().setProperty(ConstantsFor.PR_VLANNUM, String.valueOf((IPS_IN_VELKOM_VLAN / MAX_IN_ONE_VLAN)));
+        int vlanNum = IPS_IN_VELKOM_VLAN / MAX_IN_ONE_VLAN;
+        AppComponents.getProps().setProperty(ConstantsFor.PR_VLANNUM, String.valueOf(vlanNum));
         return ALL_DEVICES;
     }
 
