@@ -89,24 +89,14 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
     }
     
     @Override public String call() {
-        try {
-            return doAdd();
-        }
-        catch (UnknownHostException e) {
-            return e.getMessage();
-        }
+        return doAdd();
     }
     
     @Override
     public void run() {
         SSH_FACTORY.setConnectToSrv(new AppComponents().sshActs().whatSrvNeed());
         if (optionToDo != null & optionToDo.equals("add")) {
-            try {
-                System.out.println("doAdd() = " + doAdd());
-            }
-            catch (UnknownHostException e) {
-                messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".run", e));
-            }
+            System.out.println("doAdd() = " + doAdd());
         }
         execOldMeth();
         
@@ -122,7 +112,7 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
         return sb.toString();
     }
     
-    @SuppressWarnings("FeatureEnvy") private String doAdd() throws UnknownHostException {
+    @SuppressWarnings("FeatureEnvy") private String doAdd() {
         SSH_FACTORY.setConnectToSrv(new AppComponents().sshActs().whatSrvNeed());
         NameOrIPChecker nameOrIPChecker = new NameOrIPChecker(userInput);
         StringBuilder retBuilder = new StringBuilder();
@@ -135,11 +125,11 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
             SSH_FACTORY.setCommandSSH(ConstantsNet.COM_CAT24HRSLIST);
             tempString24HRSFile = SSH_FACTORY.call();
         }
-        catch (ArrayIndexOutOfBoundsException | UnknownFormatConversionException e) {
+        catch (ArrayIndexOutOfBoundsException | UnknownFormatConversionException | UnknownHostException e) {
             sshIP = new TForms().fromArray(e, true);
             return sshIP;
         }
-    
+        
         if (tempString24HRSFile.contains(sshIP)) {
             retBuilder.append("<h2>")
                 .append(getClass().getSimpleName())
