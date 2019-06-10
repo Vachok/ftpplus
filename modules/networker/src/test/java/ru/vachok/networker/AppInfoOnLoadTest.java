@@ -52,9 +52,9 @@ public class AppInfoOnLoadTest {
     }
     
     private static int getScansDelay() {
-        final Properties APP_PROPS = AppComponents.getProps();
-        
-        int parseInt = Integer.parseInt(APP_PROPS.getProperty(ConstantsFor.PR_SCANSINMIN, "111"));
+        final Properties appProps = AppComponents.getProps();
+    
+        int parseInt = Integer.parseInt(appProps.getProperty(ConstantsFor.PR_SCANSINMIN, "111"));
         if (parseInt <= 0) {
             parseInt = 1;
         }
