@@ -32,10 +32,7 @@ import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Stream;
 
@@ -122,6 +119,16 @@ public class ServiceInfoCtrl {
             throw new AccessDeniedException("DENY for " + request.getRemoteAddr());
         }
         return "ok";
+    }
+    
+    public static ConcurrentMap<String, String> readFiles(List<File> filesToRead) {
+        Collections.sort(filesToRead);
+        ConcurrentMap<String, String> readiedStrings = new ConcurrentHashMap<>();
+        for (File f : filesToRead) {
+            String s = FileSystemWorker.readFile(f.getAbsolutePath());
+            readiedStrings.put(f.getAbsolutePath(), s);
+        }
+        return readiedStrings;
     }
     
     @Override
@@ -280,7 +287,7 @@ public class ServiceInfoCtrl {
                 f.deleteOnExit();
             }
         }
-        ConcurrentMap<String, String> stringStringConcurrentMap = FileSystemWorker.readFiles(readUs);
+        ConcurrentMap<String, String> stringStringConcurrentMap = readFiles(readUs);
         List<String> retListStr = new ArrayList<>();
         stringStringConcurrentMap.forEach((String x, String y)->{
             try {

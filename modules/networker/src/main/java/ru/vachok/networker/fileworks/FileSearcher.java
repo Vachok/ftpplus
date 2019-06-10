@@ -1,8 +1,11 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.fileworks;
 
 
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.accesscontrol.common.CommonSRV;
 import ru.vachok.networker.services.MessageLocal;
 
 import java.io.IOException;
@@ -27,7 +30,7 @@ public class FileSearcher extends FileSystemWorker {
     /**
      * Паттерн для поиска
      *
-     * @see FileSystemWorker#searchInCommon(String[])
+     * @see CommonSRV#searchInCommon(String[])
      */
     private String patternToSearch;
 
@@ -95,7 +98,7 @@ public class FileSearcher extends FileSystemWorker {
     /**
      @return {@link #resList}
      */
-    List<String> getResList() {
+    public List<String> getResList() {
         return resList;
     }
 }

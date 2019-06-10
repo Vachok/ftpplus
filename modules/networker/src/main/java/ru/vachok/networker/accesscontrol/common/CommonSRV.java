@@ -7,6 +7,8 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
+import ru.vachok.networker.fileworks.FileSearcher;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.io.File;
@@ -15,7 +17,11 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.time.LocalTime;
 import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 
 
 /**
@@ -70,6 +76,40 @@ public class CommonSRV {
         this.searchPat = searchPat;
     }
     
+    /**
+     Поиск в \\srv-fs\common_new
+     <p>
+     
+     @param folderPath папка, откуда начать искать
+     @return список файлов или {@link Exception}
+     
+     @see FileSearcher
+     */
+    public static String searchInCommon(String[] folderPath) {
+        FileSearcher fileSearcher = new FileSearcher(folderPath[0]);
+        String folderToSearch = "";
+        try {
+            folderToSearch = folderPath[1];
+        }
+        catch (ArrayIndexOutOfBoundsException e) {
+            folderToSearch = "";
+        }
+        folderToSearch = "\\\\srv-fs.eatmeat.ru\\common_new\\" + folderToSearch;
+        try {
+            Files.walkFileTree(Paths.get(folderToSearch), fileSearcher);
+        }
+        catch (IOException e) {
+            System.err.println(e.getMessage());
+        }
+        List<String> fileSearcherResList = fileSearcher.getResList();
+        fileSearcherResList.add("Searched: " + new Date() + "\n");
+        String resTo = new TForms().fromArray(fileSearcherResList, true);
+        if (fileSearcherResList.size() > 0) {
+            FileSystemWorker.writeFile("search_" + LocalTime.now().toSecondOfDay() + ".res", fileSearcherResList.stream());
+        }
+        return resTo;
+    }
+    
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("CommonSRV{");
@@ -95,7 +135,7 @@ public class CommonSRV {
         String[] toSearch = new String[2];
         try {
             toSearch = searchPat.split("\\Q:\\E");
-            String searchInCommon = FileSystemWorker.searchInCommon(toSearch);
+            String searchInCommon = searchInCommon(toSearch);
             stringBuilder.append(searchInCommon);
         }
         catch (ArrayIndexOutOfBoundsException | NullPointerException e) {
