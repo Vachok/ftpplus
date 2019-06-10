@@ -26,21 +26,22 @@ import java.util.concurrent.Executors;
  Добавляет иконку приложения в System Tray
  <p>
  Если трэй доступен.
-
+ 
  @since 29.09.2018 (22:33) */
-@SuppressWarnings ("InjectedReferences") public class SystemTrayHelper {
-
+@SuppressWarnings("InjectedReferences") public class SystemTrayHelper {
+    
+    
     /**
      Путь к папке со значками
      */
-    @SuppressWarnings ("InjectedReferences")
+    @SuppressWarnings("InjectedReferences")
     private static final @NotNull String IMG_FOLDER_NAME = "/static/images/";
-
+    
     private static final String CLASS_NAME = SystemTrayHelper.class.getSimpleName();
     
-    private static SystemTrayHelper SYSTEM_TRAY_HELPER;
-    
     private static final MessageToUser messageToUser = new MessageCons(SystemTrayHelper.class.getSimpleName());
+    
+    private static SystemTrayHelper SYSTEM_TRAY_HELPER;
     
     private @NotNull TrayIcon trayIcon;
     
@@ -61,7 +62,8 @@ import java.util.concurrent.Executors;
             messageToUser.error(FileSystemWorker.error(SystemTrayHelper.class.getSimpleName() + ".static initializer", e));
         }
     }
-
+    
+    
     public static SystemTrayHelper getI() {
         if (IntoApplication.TRAY_SUPPORTED) {
             return SYSTEM_TRAY_HELPER;
@@ -76,16 +78,25 @@ import java.util.concurrent.Executors;
         if (SystemTray.isSupported()) {
             return trayIcon;
         }
-        else{
+        else {
             throw new UnsupportedOperationException("System tray unavailable");
         }
     }
-
+    
     public void addTray(String iconFileName) {
         addTray(iconFileName, true);
     }
-
-
+    
+    public void delOldActions() {
+        ActionListener[] actionListeners;
+        if (trayIcon.getActionListeners() != null) {
+            actionListeners = trayIcon.getActionListeners();
+            for (ActionListener actionListener : actionListeners) {
+                trayIcon.removeActionListener(actionListener);
+            }
+        }
+    }
+    
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("SystemTrayHelper{");
@@ -95,27 +106,27 @@ import java.util.concurrent.Executors;
         sb.append('}');
         return sb.toString();
     }
-
+    
     private static Image getImage(String iconFileName) {
-        if(!isSrvGitOK()){
+        if (!isSrvGitOK()) {
             iconFileName = "icons8-disconnected-24.png";
         }
-        try{
+        try {
             return Toolkit.getDefaultToolkit().getImage(SystemTrayHelper.class.getResource(IMG_FOLDER_NAME + iconFileName));
         }
-        catch(Exception e){
+        catch (Exception e) {
             messageToUser.errorAlert(CLASS_NAME, "getImage", e.getMessage());
         }
         throw new IllegalArgumentException();
     }
-
-
+    
     /**
      Добавление компонентов в меню
      <p>
+     
      @return {@link PopupMenu}
      */
-    @SuppressWarnings ("OverlyLongMethod")
+    @SuppressWarnings("OverlyLongMethod")
     private static PopupMenu getMenu() {
         PopupMenu popupMenu = new PopupMenu();
         String classMeth = CLASS_NAME + ".getMenu";
@@ -125,99 +136,88 @@ import java.util.concurrent.Executors;
         MenuItem delFiles = new MenuItem();
         MenuItem logToFilesystem = new MenuItem();
         MenuItem reloadCtx = new MenuItem();
-
+        
         defItem.setLabel("Exit");
         defItem.addActionListener(new ActionExit(classMeth));
         popupMenu.add(defItem);
-    
+        
         gitStartWeb.addActionListener(new ActionDefault());
         gitStartWeb.setLabel("Open site");
         popupMenu.add(gitStartWeb);
-
+        
         toConsole.setLabel("Console Back");
         toConsole.addActionListener(e->System.setOut(System.err));
         popupMenu.add(toConsole);
-
+        
         if (ConstantsFor.thisPC().toLowerCase().contains("home")) {
             MenuItem testActions = new MenuItem();
             testActions.addActionListener(new ActionTests());
             testActions.setLabel("Run tests");
             popupMenu.add(testActions);
         }
-
+        
         delFiles.addActionListener(new ActionDelTMP(Executors.newSingleThreadExecutor(), delFiles, popupMenu));
         delFiles.setLabel("Clean last year");
         popupMenu.add(delFiles);
-
+        
         logToFilesystem.setLabel("Get some info");
         logToFilesystem.addActionListener(new ActionSomeInfo());
         popupMenu.add(logToFilesystem);
-    
+        
         reloadCtx.addActionListener(new ActionReloadCTX());
         reloadCtx.setLabel("Reload String APP");
-//  fixme      popupMenu.add(reloadCtx);
+        popupMenu.add(reloadCtx);
         
         return popupMenu;
     }
-
+    
     private boolean addTrayToSys(boolean isNeedTray) {
-        try{
+        try {
             if (isNeedTray && SystemTray.isSupported()) {
                 SystemTray systemTray = SystemTray.getSystemTray();
                 systemTray.add(trayIcon);
                 isNeedTray = systemTray.getTrayIcons().length > 0;
             }
-            else{
+            else {
                 messageToUser.warn("Tray not supported!");
                 isNeedTray = false;
             }
         }
-        catch(AWTException e){
+        catch (AWTException e) {
             messageToUser.errorAlert(CLASS_NAME, "addTrayToSys", e.getMessage());
             isNeedTray = false;
         }
         return isNeedTray;
     }
-
+    
     /**
      Проверка доступности <a href="http://srv-git.eatmeat.ru:1234">srv-git.eatmeat.ru</a>
      <p>
-
+     
      @return srv-git online
      */
     private static boolean isSrvGitOK() {
-        try{
+        try {
             return InetAddress.getByName(ConstantsFor.HOSTNAME_SRVGITEATMEATRU).isReachable(1000);
         }
-        catch(IOException e){
+        catch (IOException e) {
             throw new IllegalStateException("***Network Problems Detected***");
         }
     }
     
-    public void delOldActions() {
-        ActionListener[] actionListeners;
-        if(trayIcon.getActionListeners()!=null){
-            actionListeners = trayIcon.getActionListeners();
-            for(ActionListener actionListener : actionListeners){
-                trayIcon.removeActionListener(actionListener);
-            }
-        }
-    }
-
-
     /**
-     * Создаёт System Tray Icon
-     *
-     * @param imageFileName имя файла-картинки
-     * @param isNeedTray    если трэй не нужен.
+     Создаёт System Tray Icon
+ 
+     @param imageFileName имя файла-картинки
+     @param isNeedTray если трэй не нужен.
      */
-    private void addTray( String imageFileName , boolean isNeedTray ) {
-        trayIcon = new TrayIcon(getImage(imageFileName) , ConstantsFor.DELAY + " delay" , getMenu());
+    private void addTray(String imageFileName, boolean isNeedTray) {
+        trayIcon = new TrayIcon(getImage(imageFileName), ConstantsFor.DELAY + " delay", getMenu());
         trayIcon.setImage(getImage(imageFileName));
         trayIcon.setImageAutoSize(true);
         trayIcon.addActionListener(new ActionDefault());
-
+    
         boolean isTrayAdded = addTrayToSys(isNeedTray);
-        messageToUser.info("SystemTrayHelper.addTray" , "isTrayAdded" , String.valueOf(isTrayAdded));
+        messageToUser.info("SystemTrayHelper.addTray", "isTrayAdded", String.valueOf(isTrayAdded));
     }
 }

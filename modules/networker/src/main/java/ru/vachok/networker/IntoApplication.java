@@ -10,7 +10,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.exe.ThreadConfig;
@@ -50,8 +49,6 @@ import java.util.concurrent.ConcurrentMap;
 public class IntoApplication {
     
     
-    private static ConfigurableApplicationContext configurableApplicationContext = null;
-    
     public static final boolean TRAY_SUPPORTED = SystemTray.isSupported();
     
     private static final Properties LOCAL_PROPS = AppComponents.getProps();
@@ -63,22 +60,21 @@ public class IntoApplication {
      */
     private static final MessageToUser MESSAGE_LOCAL = new MessageLocal(IntoApplication.class.getSimpleName());
     
-    public static ConfigurableApplicationContext reloadConfigurableApplicationContext() {
-        configurableApplicationContext = null;
+    private static ConfigurableApplicationContext configurableApplicationContext = null;
+    
+    public static void reloadConfigurableApplicationContext() {
+        AppComponents.threadConfig().killAll();
         synchronized(SPRING_APPLICATION) {
+            if (configurableApplicationContext != null && configurableApplicationContext.isActive()) {
+                configurableApplicationContext.stop();
+                configurableApplicationContext.close();
+            }
+            configurableApplicationContext = null;
             if (configurableApplicationContext == null) {
-                return setCtx(SpringApplication.run(IntoApplication.class));
+                configurableApplicationContext = SPRING_APPLICATION.run(IntoApplication.class);
             }
             else {
-                return new AnnotationConfigApplicationContext();
-            }
-        }
-    }
-    
-    public void setConfigurableApplicationContext(ConfigurableApplicationContext configurableApplicationContext) {
-        synchronized(SPRING_APPLICATION) {
-            if (configurableApplicationContext == null) {
-                IntoApplication.configurableApplicationContext = setCtx(SpringApplication.run(IntoApplication.class));
+                configurableApplicationContext.refresh();
             }
         }
     }
@@ -99,29 +95,25 @@ public class IntoApplication {
         final Thread telnetThread = new Thread(new TelnetStarter());
         telnetThread.setDaemon(true);
         telnetThread.start();
-        if (configurableApplicationContext == null) {
-            IntoApplication.configurableApplicationContext = setCtx(SpringApplication.run(IntoApplication.class));
-        }
-        FileSystemWorker.delFilePatterns(ConstantsFor.getStringsVisit());
-        if (args != null && args.length > 0) {
-            readArgs(configurableApplicationContext, args);
-        }
-        else {
-            try {
-                beforeSt(true);
-            }
-            catch (NullPointerException e) {
-                MESSAGE_LOCAL.error(FileSystemWorker.error(IntoApplication.class.getSimpleName() + ".main", e));
-            }
-            afterSt();
-        }
-    }
-    
-    private static ConfigurableApplicationContext setCtx(ConfigurableApplicationContext cAc) {
         synchronized(SPRING_APPLICATION) {
-            cAc = configurableApplicationContext;
+            if (configurableApplicationContext == null) {
+                configurableApplicationContext = SPRING_APPLICATION.run(IntoApplication.class);
+            }
+        
+            FileSystemWorker.delFilePatterns(ConstantsFor.getStringsVisit());
+            if (args != null && args.length > 0) {
+                readArgs(configurableApplicationContext, args);
+            }
+            else {
+                try {
+                    beforeSt(true);
+                }
+                catch (NullPointerException e) {
+                    MESSAGE_LOCAL.error(FileSystemWorker.error(IntoApplication.class.getSimpleName() + ".main", e));
+                }
+                afterSt();
+            }
         }
-        return cAc;
     }
     
     /**

@@ -18,7 +18,6 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CustomizableThreadCreator;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
@@ -104,9 +103,9 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
     
     public ThreadPoolTaskScheduler getTaskScheduler() {
         TASK_SCHEDULER.initialize();
-        ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = TASK_SCHEDULER.getScheduledThreadPoolExecutor();
-        scheduledThreadPoolExecutor.setCorePoolSize(20);
-        scheduledThreadPoolExecutor.setMaximumPoolSize(50);
+        ScheduledThreadPoolExecutor scThreadPoolExecutor = TASK_SCHEDULER.getScheduledThreadPoolExecutor();
+        scThreadPoolExecutor.setCorePoolSize(20);
+        scThreadPoolExecutor.setMaximumPoolSize(50);
         TASK_SCHEDULER.setThreadNamePrefix("TS");
         TASK_SCHEDULER.setThreadPriority(4);
         TASK_SCHEDULER.setWaitForTasksToCompleteOnShutdown(false);
@@ -128,6 +127,10 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
             builder.append(runnable).append("\n");
         }
         messageToUser.warn(builder.toString());
+        ThreadGroup threadGroup = new ASExec().getSimpleAsyncExecutor().getThreadGroup();
+        if (threadGroup != null) {
+            threadGroup.destroy();
+        }
     }
     
     public void thrNameSet(String className) {
@@ -153,18 +156,8 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
             return execByThreadConfig;
         }
         catch (Exception e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".execByThreadConfig", e));
+            TASK_EXECUTOR.execute(r);
             return false;
-        }
-    }
-    
-    private String getDLMon(){
-        Future<String> dlMon = TASK_EXECUTOR.submit(new DeadLockMonitor());
-        try {
-            return dlMon.get(ConstantsFor.DELAY, TimeUnit.SECONDS);
-        }
-        catch (InterruptedException | ExecutionException | TimeoutException e) {
-            return e.getMessage();
         }
     }
     
@@ -178,21 +171,24 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
         return sb.toString();
     }
     
+    private static String getDLMon() {
+        Future<String> dlMon = TASK_EXECUTOR.submit(new DeadLockMonitor());
+        try {
+            return dlMon.get(ConstantsFor.DELAY, TimeUnit.SECONDS);
+        }
+        catch (InterruptedException | ExecutionException | TimeoutException e) {
+            return e.getMessage();
+        }
+    }
+    
     private boolean execByThreadConfig() {
-        CustomizableThreadCreator customizableThreadCreator = new CustomizableThreadCreator("AsThread: ");
-        customizableThreadCreator.setThreadPriority(8);
-        Thread thread = customizableThreadCreator.createThread(r);
-        Executor asyncExecutor = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor());
-        if (new ASExec().getAsyncExecutor() != null) {
-            asyncExecutor = new ASExec().getAsyncExecutor();
-            System.out.println(AEXECUTOR + (asyncExecutor != null ? asyncExecutor.getClass().getSimpleName() : null));
-        }
-        else {
-            messageToUser.errorAlert(getClass().getSimpleName(), "asyncExecutor is " + null, thread.getName());
-        }
-        if (asyncExecutor != null) {
-            System.out.println(AEXECUTOR + asyncExecutor.getClass().getSimpleName());
-            asyncExecutor.execute(r);
+        SimpleAsyncTaskExecutor simpleAsyncExecutor = new ASExec().getSimpleAsyncExecutor();
+        Thread thread = simpleAsyncExecutor.getThreadFactory().newThread(r);
+        messageToUser.errorAlert(getClass().getSimpleName(), "asyncExecutor is " + null, thread.getName());
+    
+        if (simpleAsyncExecutor != null) {
+            System.out.println(AEXECUTOR + simpleAsyncExecutor.getClass().getSimpleName());
+            simpleAsyncExecutor.execute(r);
             return true;
         }
         else {
@@ -225,7 +221,15 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
             return new ExecutorServiceAdapter(simpleAsyncExecutor);
         }
     
+        private SimpleAsyncTaskExecutor getSimpleAsyncExecutor() {
+            return simpleAsyncExecutor;
+        }
     
+        private void setSimpleAsyncExecutor(SimpleAsyncTaskExecutor simpleAsyncExecutor) {
+            this.simpleAsyncExecutor = simpleAsyncExecutor;
+        }
+        
+        
     }
     
     

@@ -7,8 +7,8 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.accesscontrol.PfLists;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -18,8 +18,6 @@ import ru.vachok.networker.services.SystemRuntime;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-
-import static ru.vachok.networker.IntoApplication.reloadConfigurableApplicationContext;
 
 
 /**
@@ -146,8 +144,7 @@ public class PfListsSrv {
             throw new FileNotFoundException("NO CERTIFICATE a161.getPem...");
         }
         if (pfListsInstAW == null) {
-            new IntoApplication();
-            pfListsInstAW = (PfLists) reloadConfigurableApplicationContext().getBeanFactory().getBean(ConstantsFor.BEANNAME_PFLISTS);
+            pfListsInstAW = new AppComponents().getPFLists();
         }
         pfListsInstAW.setGitStatsUpdatedStampLong(System.currentTimeMillis());
     

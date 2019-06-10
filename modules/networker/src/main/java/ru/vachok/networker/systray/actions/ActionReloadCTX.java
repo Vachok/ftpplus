@@ -3,8 +3,6 @@
 package ru.vachok.networker.systray.actions;
 
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.context.ConfigurableApplicationContext;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.services.MessageLocal;
@@ -32,9 +30,7 @@ public class ActionReloadCTX extends AbstractAction {
     
     @Override
     public void actionPerformed(ActionEvent e) {
-        ConfigurableApplicationContext context = IntoApplication.reloadConfigurableApplicationContext();
-        context.close();
-        new IntoApplication().setConfigurableApplicationContext(SpringApplication.run(IntoApplication.class));
+        IntoApplication.reloadConfigurableApplicationContext();
     }
     
     @Override
