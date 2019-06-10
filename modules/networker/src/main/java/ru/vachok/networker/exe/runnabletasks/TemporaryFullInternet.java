@@ -34,7 +34,7 @@ import java.util.regex.Pattern;
  
  @since 28.02.2019 (11:52) */
 @Service
-public class TemporaryFullInternet implements Runnable {
+public class TemporaryFullInternet implements Runnable, Callable<String> {
     
     
     private static final MessageToUser messageToUser = new MessageLocal(TemporaryFullInternet.class.getSimpleName());
@@ -79,13 +79,22 @@ public class TemporaryFullInternet implements Runnable {
     
     public TemporaryFullInternet(String input, long apply, String option) {
         this.userInput = input;
-        this.delStamp = apply;
+        this.delStamp = System.currentTimeMillis() + TimeUnit.HOURS.toMillis(apply);
         this.optionToDo = option;
     }
     
     TemporaryFullInternet(long timeStampOff) {
         this.userInput = "10.200.213.85";
         this.delStamp = timeStampOff;
+    }
+    
+    @Override public String call() {
+        try {
+            return doAdd();
+        }
+        catch (UnknownHostException e) {
+            return e.getMessage();
+        }
     }
     
     @Override
@@ -99,9 +108,8 @@ public class TemporaryFullInternet implements Runnable {
                 messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".run", e));
             }
         }
-        else {
-            execOldMeth();
-        }
+        execOldMeth();
+        
     }
     
     @Override
@@ -131,6 +139,7 @@ public class TemporaryFullInternet implements Runnable {
             sshIP = new TForms().fromArray(e, true);
             return sshIP;
         }
+    
         if (tempString24HRSFile.contains(sshIP)) {
             retBuilder.append("<h2>")
                 .append(getClass().getSimpleName())
@@ -142,7 +151,7 @@ public class TemporaryFullInternet implements Runnable {
         else {
             if (inetUniqMap.containsKey(sshIP) && !inetUniqMap.get(sshIP).equalsIgnoreCase("10.200.213.85")) {
                 String listWhere = inetUniqMap.get(COMPILE.matcher(sshIP).replaceAll(Matcher.quoteReplacement("")));
-        
+    
                 retBuilder.append("<h2>").append(sshIP).append(" in regular list: ").append(listWhere).append("</h2>");
                 retBuilder.append(addFromExistList(sshIP, listWhere));
             }
@@ -187,7 +196,8 @@ public class TemporaryFullInternet implements Runnable {
     
     private void execOldMeth() {
         try {
-            AppComponents.threadConfig().execByThreadConfig(this::sshChecker);
+            boolean threadConfig = AppComponents.threadConfig().execByThreadConfig(this::sshChecker);
+            messageToUser.info(getClass().getSimpleName() + ".execOldMeth", "threadConfig", " = " + threadConfig);
         }
         catch (Exception e) {
             messageToUser.error(e.getMessage());

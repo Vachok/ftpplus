@@ -116,7 +116,7 @@ import java.util.stream.Stream;
         long timeToApply = Long.parseLong(sshActsL.getNumOfHours());
         model.addAttribute(ConstantsFor.ATT_SSH_ACTS, sshActsL);
         model.addAttribute(ConstantsFor.ATT_TITLE, ConstantsFor.getMemoryInfo());
-        model.addAttribute("ok", new TemporaryFullInternet(sshActsL.getUserInput(), timeToApply, "add"));
+        model.addAttribute("ok", new TemporaryFullInternet(sshActsL.getUserInput(), timeToApply, "add").call());
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
         return "ok";
     }
