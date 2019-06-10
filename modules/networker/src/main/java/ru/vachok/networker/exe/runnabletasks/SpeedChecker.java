@@ -13,7 +13,7 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
-import ru.vachok.networker.services.actions.ActionOnAppStart;
+import ru.vachok.networker.systray.actions.ActionOnAppStart;
 
 import javax.mail.Flags;
 import javax.mail.Folder;
@@ -38,7 +38,7 @@ import static java.time.DayOfWeek.SUNDAY;
 
 /**
  Обновление инфо о скорости и дороге.
- 
+
  @see ru.vachok.networker.controller.ServiceInfoCtrl#infoMapping(Model, HttpServletRequest, HttpServletResponse)
  @see ActionOnAppStart#actionPerformed(ActionEvent)
  @since 22.08.2018 (9:36) */
@@ -49,7 +49,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
      Логер. {@link LoggerFactory}
      */
     private static final MessageToUser LOGGER = new MessageLocal(SpeedChecker.class.getSimpleName());
-    
+
     /**
      Выходной день
      */
@@ -142,7 +142,6 @@ public class SpeedChecker implements Callable<Long>, Runnable {
         }
         methMetr(stArt);
     }
-    
     
     /**
      Проверка и обновление БД, при необходимости.
@@ -316,8 +315,8 @@ public class SpeedChecker implements Callable<Long>, Runnable {
     
                     int dayOfWeek = of.getDayOfWeek().getValue();
                     long timeSt = calendar.getTimeInMillis();
-                    AppComponents.threadConfig().execByThreadConfig(()->new TemporaryFullInternet(timeSt + TimeUnit.HOURS.toMillis(9)).doAdd());
-                    
+                    AppComponents.threadConfig().execByThreadConfig(()->new TemporaryFullInternet(timeSt + TimeUnit.HOURS.toMillis(9)));
+    
                     if (writeDB(m.getSubject().toLowerCase().split("speed:")[1], dayOfWeek, timeSt)) {
                         delMessage(m);
                     }

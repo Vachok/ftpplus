@@ -42,6 +42,7 @@ public class NetPinger implements Runnable, Pinger {
     /**
      NetPinger.pingSW
      */
+
     private static final String STR_METH_PINGSW = "NetPinger.pingSW";
 
     /**
@@ -106,7 +107,6 @@ public class NetPinger implements Runnable, Pinger {
     /**
      @return {@link #multipartFile}
      */
-    @SuppressWarnings("WeakerAccess")
     public MultipartFile getMultipartFile() {
         return multipartFile;
     }
@@ -133,7 +133,6 @@ public class NetPinger implements Runnable, Pinger {
                 resList.add(inetAddress + " is " + inetAddress.isReachable(ConstantsFor.TIMEOUT_650));
                 Thread.sleep(pingSleepMsec);
             } catch (IOException | InterruptedException e) {
-                messageToUser.error(e.getMessage());
                 Thread.currentThread().checkAccess();
                 Thread.currentThread().interrupt();
             }

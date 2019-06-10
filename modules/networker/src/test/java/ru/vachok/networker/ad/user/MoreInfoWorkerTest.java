@@ -1,24 +1,19 @@
-// Copyright (c) all rights. http://networker.vachok.ru 2019.
-
 package ru.vachok.networker.ad.user;
 
 
+import org.testng.Assert;
+import org.testng.annotations.Test;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.InternetUse;
 import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
-import ru.vachok.networker.exe.runnabletasks.NetScannerSvc;
-import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.InfoWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
-import ru.vachok.networker.net.enums.OtherKnownDevices;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.systray.MessageToTray;
 import ru.vachok.networker.systray.actions.ActionCloseMsg;
 
-import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -30,42 +25,43 @@ import java.util.stream.Collectors;
 
 
 /**
- Получение более детальной информации о ПК
- <p>
- 
- @since 25.01.2019 (11:06) */
-public class MoreInfoWorker implements InfoWorker {
+ @since 10.06.2019 (16:05) */
+@SuppressWarnings("ALL") public class MoreInfoWorkerTest {
     
     
-    private static final String TV = "tv";
-    
-    private static final Pattern COMPILE = Pattern.compile(": ");
-    
-    private String aboutWhat;
-    
-    private boolean isOnline;
-    
-    public MoreInfoWorker(String aboutWhat) {
-        this.aboutWhat = aboutWhat;
+    @Test
+    public void testSetOnline() {
     }
     
-    public void setOnline(boolean online) {
-        isOnline = online;
+    @Test
+    public void testGetUserFromDB() {
+        String userFromDB = MoreInfoWorker.getUserFromDB("user: kudr");
+        Assert.assertTrue(userFromDB.contains("do0213"));
+    }
+    
+    @Test
+    public void testGetInfoAbout() {
+    }
+    
+    @Test
+    public void testSetInfo() {
     }
     
     public static String getUserFromDB(String userInputRaw) {
+        final Pattern COMPILE = Pattern.compile(": ");
+        
         StringBuilder retBuilder = new StringBuilder();
         final String sql = "select * from pcuserauto where userName like ? ORDER BY whenQueried DESC LIMIT 0, 20";
         List<String> userPCName = new ArrayList<>();
         String mostFreqName = "No Name";
-    
+        
         try {
             userInputRaw = COMPILE.split(userInputRaw)[1].trim();
         }
         catch (ArrayIndexOutOfBoundsException e) {
             userInputRaw = userInputRaw.split(":")[1].trim();
         }
-    
+        
         try (Connection c = new AppComponents().connection(ConstantsFor.DBPREFIX + ConstantsFor.STR_VELKOM);
              PreparedStatement p = c.prepareStatement(sql)
         ) {
@@ -88,7 +84,7 @@ public class MoreInfoWorker implements InfoWorker {
                 if (r.last()) {
                     rLast(r);
                 }
-    
+                
                 countCollection(collectedNames, mostFreqName, stringBuilder, freqName);
                 return stringBuilder.toString();
             }
@@ -131,77 +127,5 @@ public class MoreInfoWorker implements InfoWorker {
         String returnER = "<br><center><a href=\"/ad?" + pcName.split("\\Q.\\E")[0] + "\">" + pcName + "</a> set: " + r
             .getString(ConstantsNet.DB_FIELD_WHENQUERIED) + ConstantsFor.HTML_CENTER_CLOSE;
         stringBuilder.append(returnER);
-    }
-    
-    @Override public String getInfoAbout() {
-        if (aboutWhat.equalsIgnoreCase(TV)) {
-            return getTVNetInfo();
-        }
-        else {
-            return getSomeMore(isOnline);
-        }
-    }
-    
-    @Override public void setInfo() {
-    
-    }
-    
-    private static String getTVNetInfo() {
-        File ptvFile = new File(ConstantsFor.FILENAME_PTV);
-        
-        List<String> readFileToList = FileSystemWorker.readFileToList(ptvFile.getAbsolutePath());
-        List<String> onList = new ArrayList<>();
-        List<String> offList = new ArrayList<>();
-        readFileToList.stream().flatMap(x->Arrays.stream(x.split(", "))).forEach(s->{
-            if (s.contains("true")) {
-                onList.add(s.split("/")[0]);
-            }
-            else {
-                offList.add(s.split("/")[0]);
-            }
-        });
-        
-        String ptv1Str = OtherKnownDevices.PTV1_EATMEAT_RU;
-        String ptv2Str = OtherKnownDevices.PTV2_EATMEAT_RU;
-
-//        String ptv3Str = OtherKnownDevices.PTV3_EATMEAT_RU;
-        
-        int frequencyOffPTV1 = Collections.frequency(offList, ptv1Str);
-        int frequencyOnPTV1 = Collections.frequency(onList, ptv1Str);
-        int frequencyOnPTV2 = Collections.frequency(onList, ptv2Str);
-        int frequencyOffPTV2 = Collections.frequency(offList, ptv2Str);
-//        int frequencyOnPTV3 = Collections.frequency(onList, ptv3Str);
-//        int frequencyOffPTV3 = Collections.frequency(offList, ptv3Str);
-        
-        String ptv1Stats = "<br><font color=\"#00ff69\">" + frequencyOnPTV1 + " on " + ptv1Str + "</font> | <font color=\"red\">" + frequencyOffPTV1 + " off " + ptv1Str + "</font>";
-        String ptv2Stats = "<font color=\"#00ff69\">" + frequencyOnPTV2 + " on " + ptv2Str + "</font> | <font color=\"red\">" + frequencyOffPTV2 + " off " + ptv2Str + "</font>";
-//        String ptv3Stats = "<font color=\"#00ff69\">" + frequencyOnPTV3 + " on " + ptv3Str + "</font> | <font color=\"red\">" + frequencyOffPTV3 + " off " + ptv3Str + "</font>";
-        
-        return String.join("<br>\n", ptv1Stats, ptv2Stats);
-    }
-    
-    /**
-     Поиск имён пользователей компьютера
-     <p>
- 
-     @param isOnlineNow онлайн = true
-     @return выдержка из БД (когда последний раз был онлайн + кол-во проверок) либо хранимый в БД юзернейм (для offlines)
- 
-     @see NetScannerSvc#getPCNamesPref(String)
-     */
-    private String getSomeMore(boolean isOnlineNow) {
-        StringBuilder buildEr = new StringBuilder();
-        if (isOnlineNow) {
-            buildEr.append("<font color=\"yellow\">last name is ");
-            InfoWorker infoWorker = new ConditionChecker("select * from velkompc where NamePP like ?", aboutWhat + ":true");
-            AppComponents.netScannerSvc().setOnLinePCsNum(AppComponents.netScannerSvc().getOnLinePCsNum() + 1);
-            buildEr.append(infoWorker.getInfoAbout());
-            buildEr.append("</font> ");
-        }
-        else {
-            InfoWorker infoWorker = new ConditionChecker("select * from pcuser where pcName like ?", aboutWhat + ":false");
-            buildEr.append(infoWorker.getInfoAbout());
-        }
-        return buildEr.toString();
     }
 }

@@ -7,7 +7,6 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
-import java.util.Properties;
 
 
 /**
@@ -52,9 +51,7 @@ public class AppInfoOnLoadTest {
     }
     
     private static int getScansDelay() {
-        final Properties APP_PROPS = AppComponents.getProps();
-        
-        int parseInt = Integer.parseInt(APP_PROPS.getProperty(ConstantsFor.PR_SCANSINMIN, "111"));
+        int parseInt = Integer.parseInt(AppComponents.getUserPref().get(ConstantsFor.PR_SCANSINMIN, "111"));
         if (parseInt <= 0) {
             parseInt = 1;
         }

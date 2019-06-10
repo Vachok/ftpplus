@@ -215,6 +215,8 @@ public class DiapazonScan implements Runnable {
             long scansItMin = allDevLocalDeq.size() / TimeUnit.MILLISECONDS.toMinutes(getRunMin());
             
             AppComponents.getProps().setProperty(ConstantsFor.PR_SCANSINMIN, String.valueOf(scansItMin));
+            AppComponents.getUserPref().put(ConstantsFor.PR_SCANSINMIN, String.valueOf(scansItMin));
+            
             messageToUser.warn(getClass().getSimpleName(), "scansItMin", " = " + scansItMin);
             try {
                 new AppComponents().updateProps();
@@ -245,7 +247,7 @@ public class DiapazonScan implements Runnable {
     /**
      @return {@link ExecScan} (from [10,21,31,41] to [20,31,41,51]) запрос из {@link #theInfoToString()}
      */
-    private long getRunMin() {
+    private static long getRunMin() {
         Preferences preferences = Preferences.userRoot();
         try {
             preferences.sync();

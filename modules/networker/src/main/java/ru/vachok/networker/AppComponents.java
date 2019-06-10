@@ -15,6 +15,7 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.InitProperties;
+import ru.vachok.networker.accesscontrol.PfLists;
 import ru.vachok.networker.accesscontrol.sshactions.SshActs;
 import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.user.ADUser;
@@ -229,6 +230,10 @@ public class AppComponents {
     
     public Runnable scanOline() {
         return new ScanOnline();
+    }
+    
+    public PfLists getPFLists() {
+        return new PfLists();
     }
     
     @Bean

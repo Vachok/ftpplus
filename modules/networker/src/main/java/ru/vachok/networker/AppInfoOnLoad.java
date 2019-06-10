@@ -19,7 +19,6 @@ import ru.vachok.networker.exe.schedule.MailIISLogsCleaner;
 import ru.vachok.networker.exe.schedule.SquidAvaliblityChecker;
 import ru.vachok.networker.exe.schedule.WeekStats;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.MyCalen;
 
@@ -70,7 +69,7 @@ public class AppInfoOnLoad implements Runnable {
      */
     protected static final List<String> MINI_LOGGER = new ArrayList<>();
     
-    private static int thisDelay = ConstantsNet.IPS_IN_VELKOM_VLAN / getScansDelay();
+    private static int thisDelay = getScansDelay();
     
     public static int getThisDelay() {
         return thisDelay;
@@ -158,7 +157,7 @@ public class AppInfoOnLoad implements Runnable {
      @param scheduledExecutorService {@link ScheduledExecutorService}.
      */
     @SuppressWarnings("MagicNumber")
-    static void dateSchedulers(ScheduledExecutorService scheduledExecutorService) {
+    private static void dateSchedulers(ScheduledExecutorService scheduledExecutorService) {
         long delay = TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY_HOURS * 7);
     
         String exitLast = "No file";
@@ -186,7 +185,7 @@ public class AppInfoOnLoad implements Runnable {
     }
     
     private static int getScansDelay() {
-        int parseInt = Integer.parseInt(APP_PROPS.getProperty(ConstantsFor.PR_SCANSINMIN, "111"));
+        int parseInt = Integer.parseInt(AppComponents.getUserPref().get(ConstantsFor.PR_SCANSINMIN, "111"));
         if (parseInt <= 0) {
             parseInt = 1;
         }
