@@ -102,7 +102,7 @@ public class MoreInfoWorker implements InfoWorker {
                 }
                 Collections.sort(collectedNames);
                 Set<Integer> integers = freqName.keySet();
-                mostFreqName = freqName.get(Collections.max(integers));
+                mostFreqName = freqName.get(Collections.max(integers)); //todo действие, когда лист ноль - пользователь не найден. 10.06.2019 (3:06)
                 InternetUse internetUse = new InetUserPCName();
                 stringBuilder.append("<br>");
                 stringBuilder.append(internetUse.getUsage(mostFreqName));
