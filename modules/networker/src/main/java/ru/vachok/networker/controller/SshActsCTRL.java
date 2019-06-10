@@ -3,6 +3,7 @@
 package ru.vachok.networker.controller;
 
 
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -17,6 +18,7 @@ import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
 
 import javax.servlet.http.HttpServletRequest;
+import java.net.UnknownHostException;
 import java.nio.file.AccessDeniedException;
 import java.time.LocalTime;
 import java.util.Objects;
@@ -46,13 +48,13 @@ import java.util.stream.Stream;
     }
     
     @PostMapping(URL_SSHACTS)
-    public String sshActsPOST(@ModelAttribute SshActs sshActs, Model model, HttpServletRequest request) throws AccessDeniedException {
-        this.sshActs = sshActs;
+    public String sshActsPOST(@ModelAttribute SshActs sshActsL, Model model, HttpServletRequest request) throws AccessDeniedException {
+        this.sshActs = sshActsL;
         String pcReq = request.getRemoteAddr().toLowerCase();
         if (getAuthentic(pcReq)) {
             model.addAttribute("head", new PageFooter().getHeaderUtext());
-            model.addAttribute(ConstantsFor.ATT_SSH_ACTS, sshActs);
-            model.addAttribute(ConstantsFor.ATT_SSHDETAIL, sshActs.getPcName());
+            model.addAttribute(ConstantsFor.ATT_SSH_ACTS, sshActsL);
+            model.addAttribute(ConstantsFor.ATT_SSHDETAIL, sshActsL.getPcName());
             return "sshworks";
         }
         else {
@@ -91,30 +93,30 @@ import java.util.stream.Stream;
         }
     }
     
-    @PostMapping("/allowdomain") public String allowPOST(@ModelAttribute SshActs sshActs, Model model) throws NullPointerException {
-        this.sshActs = sshActs;
-        model.addAttribute(ConstantsFor.ATT_TITLE, sshActs.getAllowDomain() + " добавлен");
-        model.addAttribute(ConstantsFor.ATT_SSH_ACTS, sshActs);
-        model.addAttribute("ok", Objects.requireNonNull(sshActs.allowDomainAdd(), "No address: " + sshActs.getAllowDomain()));
+    @PostMapping("/allowdomain") public String allowPOST(@NotNull @ModelAttribute SshActs sshActsL, Model model) throws NullPointerException {
+        this.sshActs = sshActsL;
+        model.addAttribute(ConstantsFor.ATT_TITLE, sshActsL.getAllowDomain() + " добавлен");
+        model.addAttribute(ConstantsFor.ATT_SSH_ACTS, sshActsL);
+        model.addAttribute("ok", Objects.requireNonNull(sshActsL.allowDomainAdd(), "No address: " + sshActsL.getAllowDomain()));
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
         return "ok";
     }
     
-    @PostMapping("/deldomain") public String delDomPOST(@ModelAttribute SshActs sshActs, Model model) throws NullPointerException {
-        this.sshActs = sshActs;
-        model.addAttribute(ConstantsFor.ATT_TITLE, sshActs.getDelDomain() + " удалён");
-        model.addAttribute(ConstantsFor.ATT_SSH_ACTS, sshActs);
-        model.addAttribute("ok", Objects.requireNonNull(sshActs.allowDomainDel(), "Error. No address: " + sshActs.getDelDomain()));
+    @PostMapping("/deldomain") public String delDomPOST(@NotNull @ModelAttribute SshActs sshActsL, Model model) throws NullPointerException {
+        this.sshActs = sshActsL;
+        model.addAttribute(ConstantsFor.ATT_TITLE, sshActsL.getDelDomain() + " удалён");
+        model.addAttribute(ConstantsFor.ATT_SSH_ACTS, sshActsL);
+        model.addAttribute("ok", Objects.requireNonNull(sshActsL.allowDomainDel(), "Error. No address: " + sshActsL.getDelDomain()));
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
         return "ok";
     }
     
-    @PostMapping("/tmpfullnet") public String tempFullInetAccess(@ModelAttribute SshActs sshActs, Model model) {
-        this.sshActs = sshActs;
-        long timeToApply = Long.parseLong(sshActs.getNumOfHours());
-        model.addAttribute(ConstantsFor.ATT_SSH_ACTS, sshActs);
+    @PostMapping("/tmpfullnet") public String tempFullInetAccess(@NotNull @ModelAttribute SshActs sshActsL, Model model) throws UnknownHostException {
+        this.sshActs = sshActsL;
+        long timeToApply = Long.parseLong(sshActsL.getNumOfHours());
+        model.addAttribute(ConstantsFor.ATT_SSH_ACTS, sshActsL);
         model.addAttribute(ConstantsFor.ATT_TITLE, ConstantsFor.getMemoryInfo());
-        model.addAttribute("ok", new TemporaryFullInternet(sshActs.getUserInput(), timeToApply).doAdd());
+        model.addAttribute("ok", new TemporaryFullInternet(sshActsL.getUserInput(), timeToApply, "add"));
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
         return "ok";
     }

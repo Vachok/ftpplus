@@ -18,12 +18,15 @@ import ru.vachok.networker.services.MessageLocal;
 
 import java.awt.*;
 import java.io.File;
+import java.net.UnknownHostException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Queue;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 /**
@@ -36,20 +39,34 @@ public class TemporaryFullInternet implements Runnable {
     
     private static final MessageToUser messageToUser = new MessageLocal(TemporaryFullInternet.class.getSimpleName());
     
-    private static final String STR_SSH_COMMAND = "sshCommand";
-    
     private static final Queue<String> MINI_LOGGER = new ArrayDeque<>();
     
     private static final Map<String, Long> SSH_CHECKER_MAP = new ConcurrentHashMap<>();
     
     private static final SSHFactory SSH_FACTORY = new SSHFactory.Builder("192.168.13.42", "ls", TemporaryFullInternet.class.getSimpleName()).build();
     
-    private static final String TEMPORARY_FULL_INTERNET_RUN = "TemporaryFullInternet.run";
+    private static final Pattern COMPILE = Pattern.compile(".list", Pattern.LITERAL);
+    
+    private static final Pattern PATTERN = Pattern.compile(".list", Pattern.LITERAL);
+    
+    private static final Pattern COMPILE1 = Pattern.compile("<br>\n");
+    
+    private static final Pattern COMPILE2 = Pattern.compile(" #");
+    
+    private static final Pattern COMPILE3 = Pattern.compile(" #");
+    
+    private static final Pattern COMPILE4 = Pattern.compile(" #");
+    
+    private static final Pattern COMPILE5 = Pattern.compile(" #");
     
     @SuppressWarnings("CanBeFinal")
     private String userInput;
     
+    private NetListKeeper listKeeper = NetListKeeper.getI();
+    
     private long delStamp;
+    
+    private String optionToDo;
     
     private long initStamp = System.currentTimeMillis();
     
@@ -57,31 +74,54 @@ public class TemporaryFullInternet implements Runnable {
         this.userInput = "10.200.213.254";
         this.delStamp = System.currentTimeMillis();
         MINI_LOGGER.add(this.getClass().getSimpleName() + "(): " + this.userInput + " " + delStamp + "(" + new Date(delStamp) + ")");
+        this.optionToDo = "check";
     }
     
-    public TemporaryFullInternet(String userInput, long timeToApply) {
-        this.userInput = userInput;
-        this.delStamp = ConstantsFor.getAtomicTime() + TimeUnit.HOURS.toMillis(timeToApply);
-        MINI_LOGGER.add(this.getClass().getSimpleName() + ": " + userInput + " " + delStamp + "(" + new Date(delStamp) + ")");
+    public TemporaryFullInternet(String input, long apply, String option) {
+        this.userInput = input;
+        this.delStamp = apply;
+        this.optionToDo = option;
     }
     
-    public TemporaryFullInternet(long timeStampOff) {
+    TemporaryFullInternet(long timeStampOff) {
         this.userInput = "10.200.213.85";
         this.delStamp = timeStampOff;
     }
     
-    TemporaryFullInternet(String userInput, String numOfHoursStr) {
-        this.userInput = userInput;
-        this.delStamp = ConstantsFor.getAtomicTime() + TimeUnit.HOURS.toMillis(Long.parseLong(numOfHoursStr));
-        MINI_LOGGER.add(this.getClass().getSimpleName() + ": " + userInput + " " + delStamp + "(" + new Date(delStamp) + ")");
+    @Override
+    public void run() {
+        SSH_FACTORY.setConnectToSrv(new AppComponents().sshActs().whatSrvNeed());
+        if (optionToDo != null & optionToDo.equals("add")) {
+            try {
+                System.out.println("doAdd() = " + doAdd());
+            }
+            catch (UnknownHostException e) {
+                messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".run", e));
+            }
+        }
+        else {
+            execOldMeth();
+        }
     }
     
-    public String doAdd() {
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("TemporaryFullInternet{");
+        sb.append("delStamp=").append(delStamp);
+        sb.append(", initStamp=").append(initStamp);
+        sb.append('}');
+        sb.append("<p>\n").append(new TForms().fromArray(MINI_LOGGER, true));
+        return sb.toString();
+    }
+    
+    @SuppressWarnings("FeatureEnvy") private String doAdd() throws UnknownHostException {
         SSH_FACTORY.setConnectToSrv(new AppComponents().sshActs().whatSrvNeed());
         NameOrIPChecker nameOrIPChecker = new NameOrIPChecker(userInput);
         StringBuilder retBuilder = new StringBuilder();
         String tempString24HRSFile;
         String sshIP;
+        Map<String, String> inetUniqMap = listKeeper.getInetUniqMap();
+        
         try {
             sshIP = String.valueOf(nameOrIPChecker.resolveIP()).split("/")[1];
             SSH_FACTORY.setCommandSSH(ConstantsNet.COM_CAT24HRSLIST);
@@ -99,43 +139,30 @@ public class TemporaryFullInternet implements Runnable {
                 .append(" is exist!</h2><br>")
                 .append(new TForms().fromArray(SSH_CHECKER_MAP, true));
         }
-        else if (NetListKeeper.getI().getInetUniqMap().containsKey(sshIP) && !NetListKeeper.getI().getInetUniqMap().get(sshIP).equalsIgnoreCase("10.200.213.85")) {
-            String listWhere = NetListKeeper.getI().getInetUniqMap().get(sshIP.replace(".list", ""));
-    
-            retBuilder.append("<h2>").append(sshIP).append(" in regular list: ").append(listWhere).append("</h2>");
-            retBuilder.append(addFromExistList(sshIP, listWhere));
-        }
         else {
-            String sshCommand = new StringBuilder()
-                .append(SshActs.SUDO_ECHO)
-                .append("\"").append(sshIP).append(" #")
-                .append(delStamp).append("\"").append(" >> /etc/pf/24hrs;").append(ConstantsNet.COM_INITPF).toString();
-            SSH_FACTORY.setCommandSSH(sshCommand);
-            retBuilder.append(SSH_FACTORY.call());
+            if (inetUniqMap.containsKey(sshIP) && !inetUniqMap.get(sshIP).equalsIgnoreCase("10.200.213.85")) {
+                String listWhere = inetUniqMap.get(COMPILE.matcher(sshIP).replaceAll(Matcher.quoteReplacement("")));
+        
+                retBuilder.append("<h2>").append(sshIP).append(" in regular list: ").append(listWhere).append("</h2>");
+                retBuilder.append(addFromExistList(sshIP, listWhere));
+            }
+            else {
+                String sshCommand = new StringBuilder()
+                    .append(SshActs.SUDO_ECHO)
+                    .append("\"").append(sshIP).append(" #")
+                    .append(delStamp).append("\"").append(" >> /etc/pf/24hrs;").append(ConstantsNet.COM_INITPF).toString();
+                SSH_FACTORY.setCommandSSH(sshCommand);
+                retBuilder.append(SSH_FACTORY.call());
+            }
         }
+        listKeeper.setInetUniqMap(inetUniqMap);
         MINI_LOGGER.add("doAdd(): " + retBuilder);
         return retBuilder.toString();
     }
     
-    @Override
-    public void run() {
-        SSH_FACTORY.setConnectToSrv(new AppComponents().sshActs().whatSrvNeed());
-        execOldMeth();
-    }
-    
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("TemporaryFullInternet{");
-        sb.append("delStamp=").append(delStamp);
-        sb.append(", initStamp=").append(initStamp);
-        sb.append('}');
-        sb.append("<p>\n").append(new TForms().fromArray(MINI_LOGGER, true));
-        return sb.toString();
-    }
-    
-    private String addFromExistList(String sshIP, String listWhere) {
+    @SuppressWarnings("FeatureEnvy") private String addFromExistList(String sshIP, String listWhere) {
         String etcPf = " /etc/pf/";
-        listWhere = listWhere.replace(".list", "");
+        listWhere = PATTERN.matcher(listWhere).replaceAll(Matcher.quoteReplacement(""));
         
         StringBuilder comSSHBuilder = new StringBuilder();
         comSSHBuilder.append(SshActs.SSH_SUDO_GREP_V);
@@ -178,9 +205,9 @@ public class TemporaryFullInternet implements Runnable {
         }
     }
     
-    private boolean doDelete(String x) {
+    private static boolean doDelete(String x) {
         AppComponents.threadConfig().thrNameSet("delSSH");
-    
+        
         String sshC = new StringBuilder()
             .append(SshActs.SSH_SUDO_GREP_V).append(x)
             .append("' /etc/pf/24hrs > /etc/pf/24hrs_tmp;").append("sudo cp /etc/pf/24hrs_tmp /etc/pf/24hrs;")
@@ -198,21 +225,20 @@ public class TemporaryFullInternet implements Runnable {
         SSH_FACTORY.setCommandSSH(ConstantsNet.COM_CAT24HRSLIST);
         String tempFile = SSH_FACTORY.call();
         MINI_LOGGER.add(tempFile);
-        String classMeth = "TemporaryFullInternet.sshChecker";
         Map<String, Long> sshCheckerMap = SSH_CHECKER_MAP;
         
         if (tempFile.isEmpty()) {
             throw new IllegalComponentStateException("File is empty");
         }
         else {
-            String[] strings = tempFile.split("<br>\n");
+            String[] strings = COMPILE1.split(tempFile);
             List<String> stringList = Arrays.asList(strings);
             stringList.forEach(x->{
-                if (x.split(" #").length > 2) {
-                    chkWithList(x.split(" #"));
+                if (COMPILE2.split(x).length > 2) {
+                    chkWithList(COMPILE3.split(x));
                 }
                 try {
-                    Long ifAbsent = sshCheckerMap.putIfAbsent(x.split(" #")[0].trim(), Long.valueOf(x.split(" #")[1]));
+                    Long ifAbsent = sshCheckerMap.putIfAbsent(COMPILE4.split(x)[0].trim(), Long.valueOf(COMPILE5.split(x)[1]));
                     MINI_LOGGER.add("Added to map = " + x + " " + ifAbsent);
                 }
                 catch (ArrayIndexOutOfBoundsException e) {
@@ -227,10 +253,10 @@ public class TemporaryFullInternet implements Runnable {
             Long y = entry.getValue();
             mapEntryParse(x, y, atomicTimeLong);
         }
-        Future<?> setMapAsStringHTMLFuture = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor()
+        Future<?> setMapAsStringHTML = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor()
             .submit(()->ConstantsNet.setSshMapStr(new TForms().sshCheckerMapWithDates(sshCheckerMap, true)));
         try {
-            setMapAsStringHTMLFuture.get(ConstantsFor.DELAY, TimeUnit.SECONDS);
+            setMapAsStringHTML.get(ConstantsFor.DELAY, TimeUnit.SECONDS);
             messageToUser.info(getClass().getSimpleName() + ".sshChecker", "ConstantsNet.getSshMapStr()", " = " + ConstantsNet.getSshMapStr());
         }
         catch (InterruptedException | TimeoutException | ExecutionException e) {
@@ -247,9 +273,9 @@ public class TemporaryFullInternet implements Runnable {
         }
     }
     
-    private String addBackToList(String ip, String accList) {
+    private static String addBackToList(String ip, String accList) {
         StringBuilder sshBuilder = new StringBuilder();
-        sshBuilder.append(SshActs.SUDO_ECHO).append("\"").append(ip).append(" #").append(new java.util.Date()).append("\"")
+        sshBuilder.append(SshActs.SUDO_ECHO).append("\"").append(ip).append(" #").append(new Date()).append("\"")
             .append(" >> /etc/pf/").append(accList).append(";").append(ConstantsNet.COM_INITPF);
         SSH_FACTORY.setCommandSSH(sshBuilder.toString());
         return SSH_FACTORY.call();
@@ -261,7 +287,7 @@ public class TemporaryFullInternet implements Runnable {
         this.delStamp = y;
         if (delStamp < atomicTimeLong) {
             boolean isDelete = doDelete(x);
-            MINI_LOGGER.add("sshChecker(SSH_CHECKER_MAP.forEach): time is" + true + "\n" + x + " is delete = " + isDelete);
+            MINI_LOGGER.add("sshChecker(SSH_CHECKER_MAP.forEach): time is " + true + "\n" + x + " is delete = " + isDelete);
             MINI_LOGGER.add("delStamp = " + delStamp);
             MINI_LOGGER.add("ConstantsFor.getAtomicTime()-delStamp = " + (atomicTimeLong - delStamp));
         }

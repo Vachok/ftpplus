@@ -315,7 +315,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
     
                     int dayOfWeek = of.getDayOfWeek().getValue();
                     long timeSt = calendar.getTimeInMillis();
-                    AppComponents.threadConfig().execByThreadConfig(()->new TemporaryFullInternet(timeSt + TimeUnit.HOURS.toMillis(9)).doAdd());
+                    AppComponents.threadConfig().execByThreadConfig(()->new TemporaryFullInternet(timeSt + TimeUnit.HOURS.toMillis(9)));
     
                     if (writeDB(m.getSubject().toLowerCase().split("speed:")[1], dayOfWeek, timeSt)) {
                         delMessage(m);
