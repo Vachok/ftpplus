@@ -3,7 +3,6 @@
 package ru.vachok.networker.ad.user;
 
 
-import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
@@ -45,8 +44,6 @@ public class MoreInfoWorker implements InfoWorker {
     private String aboutWhat;
     
     private boolean isOnline;
-    
-    private MessageToUser messageToUser = new MessageCons(getClass().getSimpleName());
     
     public MoreInfoWorker(String aboutWhat) {
         this.aboutWhat = aboutWhat;
@@ -175,14 +172,14 @@ public class MoreInfoWorker implements InfoWorker {
      Поиск имён пользователей компьютера
      <p>
  
-     @param isOnline онлайн = true
+     @param isOnlineNow онлайн = true
      @return выдержка из БД (когда последний раз был онлайн + кол-во проверок) либо хранимый в БД юзернейм (для offlines)
  
      @see NetScannerSvc#getPCNamesPref(String)
      */
-    private String getSomeMore(boolean isOnline) {
+    private String getSomeMore(boolean isOnlineNow) {
         StringBuilder buildEr = new StringBuilder();
-        if (isOnline) {
+        if (isOnlineNow) {
             buildEr.append("<font color=\"yellow\">last name is ");
             InfoWorker infoWorker = new ConditionChecker("select * from velkompc where NamePP like ?", aboutWhat + ":true");
             AppComponents.netScannerSvc().setOnLinePCsNum(AppComponents.netScannerSvc().getOnLinePCsNum() + 1);
