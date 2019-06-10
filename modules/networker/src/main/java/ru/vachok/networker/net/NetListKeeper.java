@@ -55,7 +55,7 @@ public final class NetListKeeper {
         return inetUniqMap;
     }
     
-    void setInetUniqMap(Map<String, String> inetUniqMap) {
+    public void setInetUniqMap(Map<String, String> inetUniqMap) {
         this.inetUniqMap = inetUniqMap;
     }
     
