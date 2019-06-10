@@ -26,23 +26,26 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 
 /**
  Получение более детальной информации о ПК
  <p>
-
+ 
  @since 25.01.2019 (11:06) */
 public class MoreInfoWorker implements InfoWorker {
-
-
+    
+    
     private static final String TV = "tv";
-
+    
+    private static final Pattern COMPILE = Pattern.compile(": ");
+    
     private String aboutWhat;
-
+    
     private boolean isOnline;
-
+    
     private MessageToUser messageToUser = new MessageCons(getClass().getSimpleName());
     
     public MoreInfoWorker(String aboutWhat) {
@@ -52,22 +55,22 @@ public class MoreInfoWorker implements InfoWorker {
     public void setOnline(boolean online) {
         isOnline = online;
     }
-
+    
     /**
      Достаёт инфо о пользователе из БД
      <p>
- 
-     @return LAST 20 USER PCs
+     
      @param userInputRaw {@link NetScannerSvc#getThePc()}
+     @return LAST 20 USER PCs
      */
     public static String getUserFromDB(String userInputRaw) {
         StringBuilder retBuilder = new StringBuilder();
-        String sql = "select * from pcuserauto where userName like ? ORDER BY whenQueried DESC LIMIT 0, 20";
+        final String sql = "select * from pcuserauto where userName like ? ORDER BY whenQueried DESC LIMIT 0, 20";
         List<String> userPCName = new ArrayList<>();
         String mostFreqName = "No Name";
     
         try {
-            userInputRaw = userInputRaw.split(": ")[1].trim();
+            userInputRaw = COMPILE.split(userInputRaw)[1].trim();
         }
         catch (ArrayIndexOutOfBoundsException e) {
             retBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false));
@@ -97,19 +100,25 @@ public class MoreInfoWorker implements InfoWorker {
                     freqName.putIfAbsent(frequency, x);
                 }
                 if (r.last()) {
-                    MessageToUser messageToUser = new MessageToTray(new ActionCloseMsg(new MessageLocal("NetScanCtr")));
-                    messageToUser.info(r.getString(ConstantsFor.DBFIELD_PCNAME), r.getString(ConstantsNet.DB_FIELD_WHENQUERIED), r.getString(ConstantsFor.DB_FIELD_USER));
+                    try {
+                        MessageToUser messageToUser = new MessageToTray(new ActionCloseMsg(new MessageLocal("NetScanCtr")));
+                        messageToUser.info(r.getString(ConstantsFor.DBFIELD_PCNAME), r.getString(ConstantsNet.DB_FIELD_WHENQUERIED), r.getString(ConstantsFor.DB_FIELD_USER));
+                    }
+                    catch (UnsupportedOperationException e) {
+                        new MessageLocal(MoreInfoWorker.class.getSimpleName())
+                            .info(r.getString(ConstantsFor.DBFIELD_PCNAME), r.getString(ConstantsNet.DB_FIELD_WHENQUERIED), r.getString(ConstantsFor.DB_FIELD_USER));
+                    }
                 }
                 Collections.sort(collectedNames);
                 Set<Integer> integers = freqName.keySet();
-                mostFreqName = freqName.get(Collections.max(integers)); //todo действие, когда лист ноль - пользователь не найден. 10.06.2019 (3:06)
+                mostFreqName = freqName.get(Collections.max(integers));
                 InternetUse internetUse = new InetUserPCName();
                 stringBuilder.append("<br>");
                 stringBuilder.append(internetUse.getUsage(mostFreqName));
                 return stringBuilder.toString();
             }
         }
-        catch (SQLException | IOException e) {
+        catch (SQLException | IOException | NoSuchElementException e) {
             retBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false));
         }
         return retBuilder.toString();
@@ -135,8 +144,12 @@ public class MoreInfoWorker implements InfoWorker {
         List<String> onList = new ArrayList<>();
         List<String> offList = new ArrayList<>();
         readFileToList.stream().flatMap(x->Arrays.stream(x.split(", "))).forEach(s->{
-            if (s.contains("true")) onList.add(s.split("/")[0]);
-            else offList.add(s.split("/")[0]);
+            if (s.contains("true")) {
+                onList.add(s.split("/")[0]);
+            }
+            else {
+                offList.add(s.split("/")[0]);
+            }
         });
         
         String ptv1Str = OtherKnownDevices.PTV1_EATMEAT_RU;
@@ -161,8 +174,10 @@ public class MoreInfoWorker implements InfoWorker {
     /**
      Поиск имён пользователей компьютера
      <p>
+ 
      @param isOnline онлайн = true
      @return выдержка из БД (когда последний раз был онлайн + кол-во проверок) либо хранимый в БД юзернейм (для offlines)
+ 
      @see NetScannerSvc#getPCNamesPref(String)
      */
     private String getSomeMore(boolean isOnline) {

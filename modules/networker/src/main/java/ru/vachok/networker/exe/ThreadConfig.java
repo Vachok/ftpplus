@@ -156,6 +156,7 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
             return execByThreadConfig;
         }
         catch (Exception e) {
+            TASK_EXECUTOR.initialize();
             TASK_EXECUTOR.execute(r);
             return false;
         }
