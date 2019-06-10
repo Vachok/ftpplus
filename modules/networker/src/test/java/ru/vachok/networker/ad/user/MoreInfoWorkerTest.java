@@ -1,6 +1,7 @@
 package ru.vachok.networker.ad.user;
 
 
+import org.testng.Assert;
 import org.testng.annotations.Test;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
@@ -34,7 +35,8 @@ import java.util.stream.Collectors;
     
     @Test
     public void testGetUserFromDB() {
-        System.out.println(getUserFromDB("user: kudr"));
+        String userFromDB = MoreInfoWorker.getUserFromDB("user: kudr");
+        Assert.assertTrue(userFromDB.contains("do0213"));
     }
     
     @Test

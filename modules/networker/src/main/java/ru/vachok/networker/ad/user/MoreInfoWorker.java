@@ -53,13 +53,6 @@ public class MoreInfoWorker implements InfoWorker {
         isOnline = online;
     }
     
-    /**
-     Достаёт инфо о пользователе из БД
-     <p>
-     
-     @param userInputRaw {@link NetScannerSvc#getThePc()}
-     @return LAST 20 USER PCs
-     */
     public static String getUserFromDB(String userInputRaw) {
         StringBuilder retBuilder = new StringBuilder();
         final String sql = "select * from pcuserauto where userName like ? ORDER BY whenQueried DESC LIMIT 0, 20";
@@ -70,9 +63,9 @@ public class MoreInfoWorker implements InfoWorker {
             userInputRaw = COMPILE.split(userInputRaw)[1].trim();
         }
         catch (ArrayIndexOutOfBoundsException e) {
-            retBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false));
             userInputRaw = userInputRaw.split(":")[1].trim();
         }
+    
         try (Connection c = new AppComponents().connection(ConstantsFor.DBPREFIX + ConstantsFor.STR_VELKOM);
              PreparedStatement p = c.prepareStatement(sql)
         ) {
@@ -83,35 +76,20 @@ public class MoreInfoWorker implements InfoWorker {
                 stringBuilder.append(headER);
     
                 while (r.next()) {
-                    String pcName = r.getString(ConstantsFor.DBFIELD_PCNAME);
-                    userPCName.add(pcName);
-                    String returnER = "<br><center><a href=\"/ad?" + pcName.split("\\Q.\\E")[0] + "\">" + pcName + "</a> set: " + r
-                        .getString(ConstantsNet.DB_FIELD_WHENQUERIED) + ConstantsFor.HTML_CENTER_CLOSE;
-                    stringBuilder.append(returnER);
+                    rNext(r, userPCName, stringBuilder);
                 }
+                
                 List<String> collectedNames = userPCName.stream().distinct().collect(Collectors.toList());
                 Map<Integer, String> freqName = new HashMap<>();
+    
                 for (String x : collectedNames) {
-                    int frequency = Collections.frequency(userPCName, x);
-                    stringBuilder.append(frequency).append(") ").append(x).append("<br>");
-                    freqName.putIfAbsent(frequency, x);
+                    collectFreq(userPCName, x, stringBuilder, freqName);
                 }
                 if (r.last()) {
-                    try {
-                        MessageToUser messageToUser = new MessageToTray(new ActionCloseMsg(new MessageLocal("NetScanCtr")));
-                        messageToUser.info(r.getString(ConstantsFor.DBFIELD_PCNAME), r.getString(ConstantsNet.DB_FIELD_WHENQUERIED), r.getString(ConstantsFor.DB_FIELD_USER));
-                    }
-                    catch (UnsupportedOperationException e) {
-                        new MessageLocal(MoreInfoWorker.class.getSimpleName())
-                            .info(r.getString(ConstantsFor.DBFIELD_PCNAME), r.getString(ConstantsNet.DB_FIELD_WHENQUERIED), r.getString(ConstantsFor.DB_FIELD_USER));
-                    }
+                    rLast(r);
                 }
-                Collections.sort(collectedNames);
-                Set<Integer> integers = freqName.keySet();
-                mostFreqName = freqName.get(Collections.max(integers));
-                InternetUse internetUse = new InetUserPCName();
-                stringBuilder.append("<br>");
-                stringBuilder.append(internetUse.getUsage(mostFreqName));
+    
+                countCollection(collectedNames, mostFreqName, stringBuilder, freqName);
                 return stringBuilder.toString();
             }
         }
@@ -119,6 +97,40 @@ public class MoreInfoWorker implements InfoWorker {
             retBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false));
         }
         return retBuilder.toString();
+    }
+    
+    private static void countCollection(List<String> collectedNames, String mostFreqName, StringBuilder stringBuilder, Map<Integer, String> freqName) {
+        Collections.sort(collectedNames);
+        Set<Integer> integers = freqName.keySet();
+        mostFreqName = freqName.get(Collections.max(integers));
+        InternetUse internetUse = new InetUserPCName();
+        stringBuilder.append("<br>");
+        stringBuilder.append(internetUse.getUsage(mostFreqName));
+    }
+    
+    private static void collectFreq(List<String> userPCName, String x, StringBuilder stringBuilder, Map<Integer, String> freqName) {
+        int frequency = Collections.frequency(userPCName, x);
+        stringBuilder.append(frequency).append(") ").append(x).append("<br>");
+        freqName.putIfAbsent(frequency, x);
+    }
+    
+    private static void rLast(ResultSet r) throws SQLException {
+        try {
+            MessageToUser messageToUser = new MessageToTray(new ActionCloseMsg(new MessageLocal("NetScanCtr")));
+            messageToUser.info(r.getString(ConstantsFor.DBFIELD_PCNAME), r.getString(ConstantsNet.DB_FIELD_WHENQUERIED), r.getString(ConstantsFor.DB_FIELD_USER));
+        }
+        catch (UnsupportedOperationException e) {
+            new MessageLocal(MoreInfoWorker.class.getSimpleName())
+                .info(r.getString(ConstantsFor.DBFIELD_PCNAME), r.getString(ConstantsNet.DB_FIELD_WHENQUERIED), r.getString(ConstantsFor.DB_FIELD_USER));
+        }
+    }
+    
+    private static void rNext(ResultSet r, List<String> userPCName, StringBuilder stringBuilder) throws SQLException {
+        String pcName = r.getString(ConstantsFor.DBFIELD_PCNAME);
+        userPCName.add(pcName);
+        String returnER = "<br><center><a href=\"/ad?" + pcName.split("\\Q.\\E")[0] + "\">" + pcName + "</a> set: " + r
+            .getString(ConstantsNet.DB_FIELD_WHENQUERIED) + ConstantsFor.HTML_CENTER_CLOSE;
+        stringBuilder.append(returnER);
     }
     
     @Override public String getInfoAbout() {
