@@ -37,7 +37,7 @@ public enum OtherKnownDevices {
     
     public static final String NO0027_KUDROLD = "no0027.eatmeat.ru";
     
-    public static final String IP_BANKOMAT_INSIDE = "192.168.14.246";
+    public static final String IP_BANKOMAT_INSIDE = "10.200.217.250"; //ip source-binding on 10.200.200.1
     
     public static final String IP_BANKOMAT_OUTSIDE = "192.168.14.20";
     
