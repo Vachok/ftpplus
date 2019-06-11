@@ -39,7 +39,11 @@ public final class NetListKeeper {
     
     private ConcurrentMap<String, String> onLinesResolve = new ConcurrentHashMap<>();
     
-    private ConcurrentMap<String, String> offLines = new ConcurrentHashMap<>();
+    private Map<String, String> offLines = new ConcurrentHashMap<>();
+    
+    public Map<String, String> getOffLines() {
+        return offLines;
+    }
     
     private Map<String, String> inetUniqMap = new ConcurrentHashMap<>();
     
@@ -95,8 +99,8 @@ public final class NetListKeeper {
         return this.onLinesResolve;
     }
     
-    public ConcurrentMap<String, String> getOffLines() {
-        return this.offLines;
+    public void setOffLines(Map<String, String> offLines) {
+        this.offLines = offLines;
     }
     
     @Override

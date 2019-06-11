@@ -15,7 +15,10 @@ import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.Collection;
+import java.util.Deque;
+import java.util.Map;
 
 
 /**
@@ -43,26 +46,30 @@ public class NetScanFileWorker implements Serializable {
     }
     
     /**
+     Читает файлы из {@link DiapazonScan#getScanFiles()} в {@link Deque}
+     <p>
      @return {@link Deque} of {@link String}, с именами девайсов онлайн.
      */
-    public Deque<String> getListOfOnlineDev() {
+    public static Deque<String> getDequeOfOnlineDev() {
         AppComponents.threadConfig().thrNameSet("ON");
         Deque<String> retDeque = new ArrayDeque<>();
-        Set<String> fileNameSet = getScanFiles().keySet();
-        getScanFiles().forEach((fileName, srvFileX)->fileWrk(srvFileX, retDeque));
+        getMapOfScanFiles().forEach((fileName, srvFileX)->readFilesLANToCollection(srvFileX, retDeque));
         return retDeque;
     }
     
-    private static Map<String, File> getScanFiles() {
+    private static Map<String, File> getMapOfScanFiles() {
         return DiapazonScan.getInstance().getScanFiles();
     }
     
     
     /**
+     Чтение файлов {@code lan_*} и заполнение {@link Deque} строками <br>
+     {@code retPath} = C:\Users\ikudryashov\IdeaProjects\ftpplus\modules\networker\lan_*.txt
+     <p>
      @param srvFileX файл lan_* из корневой папки.
      @param retDeque обратная очередь, для наполнения.
      */
-    private Path fileWrk(File srvFileX, Collection<String> retDeque) {
+    private static Path readFilesLANToCollection(File srvFileX, Collection<String> retDeque) {
         Path retPath = Paths.get("");
         retPath = Paths.get(retPath.toAbsolutePath() + ConstantsFor.FILESYSTEM_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR);
         

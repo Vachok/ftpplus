@@ -1,0 +1,15 @@
+@startuml
+ScanOnLine.onListFileCopyToLastAndMax ->  String:replaceFileNamePattern
+ScanOnLine.onListFileCopyToLastAndMax <-- String: new "C:\Users\ikudryashov\IdeaProjects\ftpplus\modules\networker\ScanOnline.last"
+
+ScanOnLine.onListFileCopyToLastAndMax -> File: scanOnlineLast
+ScanOnLine.onListFileCopyToLastAndMax <-- File: new "ScanOnline.last"
+
+ScanOnLine.onListFileCopyToLastAndMax -> FileSystemWorker.readFileToList: ScanOnline.last
+ScanOnLine.onListFileCopyToLastAndMax <-- FileSystemWorker.readFileToList: List<String> onlineLastStrings
+
+ScanOnLine.onListFileCopyToLastAndMax -> Collections.sort: onlineLastStrings
+
+ScanOnLine.onListFileCopyToLastAndMax -> Collection: TreeSet: onlineLastStrings
+ScanOnLine.onListFileCopyToLastAndMax <-- TreeSet: onlineLastStrings
+@enduml

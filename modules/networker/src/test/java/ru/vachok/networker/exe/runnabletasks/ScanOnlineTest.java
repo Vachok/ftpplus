@@ -8,24 +8,24 @@ import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.ad.user.MoreInfoWorker;
+import ru.vachok.networker.net.InfoWorker;
 import ru.vachok.networker.net.NetListKeeper;
 import ru.vachok.networker.net.NetScanFileWorker;
 import ru.vachok.networker.net.SwitchesAvailability;
 
 import java.io.*;
 import java.net.InetAddress;
+import java.nio.charset.Charset;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.Date;
-import java.util.Deque;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.*;
 
 
 /**
- * @since 09.06.2019 (21:38)
- */
-public class ScanOnlineTest {
+ @since 09.06.2019 (21:38) */
+@SuppressWarnings("ALL") public class ScanOnlineTest {
     
     
     @Test
@@ -38,14 +38,14 @@ public class ScanOnlineTest {
     
     @Test
     public void testIsReach() {
-        Deque<String> dev = NetScanFileWorker.getI().getListOfOnlineDev();
+        Deque<String> dev = NetScanFileWorker.getI().getDequeOfOnlineDev();
         dev.add("10.200.200.1 core");
         ScanOnline scanOnline = new ScanOnline();
         boolean reachableIP = scanOnline.isReach(dev.poll());
         Assert.assertTrue(reachableIP);
     }
     
-    @Test(enabled = false)
+    @Test(enabled = true)
     public void testRun() {
         ScanOnline scanOnline = new ScanOnline();
         scanOnline.run();
@@ -74,16 +74,41 @@ public class ScanOnlineTest {
     public void testToString1() {
     }
     
+    @Test
+    public void testToString2() {
+        List<String> maxOnList = new ArrayList<>();
+        InfoWorker tvInfo = new MoreInfoWorker("tv");
+        final NetListKeeper NET_LIST_KEEPER = NetListKeeper.getI();
+        ConcurrentMap<String, String> onLinesResolve = NET_LIST_KEEPER.getOnLinesResolve();
+        
+        final StringBuilder sb = new StringBuilder();
+        sb.append("<b>Since ");
+        sb.append("<i>");
+        sb.append(new Date(AppComponents.getUserPref().getLong(ExecScan.class.getSimpleName(), ConstantsFor.getMyTime())));
+        sb.append(" last ExecScan: ");
+        sb.append("</i>");
+        sb.append(tvInfo.getInfoAbout());
+        sb.append("</b><br><br>");
+        sb.append("<details><summary>Максимальное кол-во онлайн адресов: ").append(maxOnList.size()).append("</summary>").append(new TForms().fromArray(maxOnList, true))
+            .append(ConstantsFor.HTMLTAG_DETAILSCLOSE);
+        sb.append("<b>ipconfig /flushdns = </b>").append(new String(AppComponents.ipFlushDNS().getBytes(), Charset.forName("IBM866"))).append("<br>");
+        sb.append("Offline pc is <font color=\"red\"><b>").append(NET_LIST_KEEPER.getOffLines().size()).append(":</b></font><br>");
+        sb.append("Online  pc is<font color=\"#00ff69\"> <b>").append(onLinesResolve.size()).append(":</b><br>");
+        sb.append(new TForms().fromArray(onLinesResolve, true)).append("</font><br>");
+        
+    }
+    
     private void copyOfIsReach() {
         NetListKeeper NET_LIST_KEEPER = NetListKeeper.getI();
         File onlinesFile = new File(ConstantsFor.FILENAME_ONSCAN);
         String inetAddrStr = "";
         ConcurrentMap<String, String> onLinesResolve = NET_LIST_KEEPER.getOnLinesResolve();
-        ConcurrentMap<String, String> offLines = NET_LIST_KEEPER.getOffLines();
+        Map<String, String> offLines = NET_LIST_KEEPER.getOffLines();
         boolean xReachable = true;
         
         try (OutputStream outputStream = new FileOutputStream(onlinesFile, true);
-             PrintStream printStream = new PrintStream(outputStream)) {
+             PrintStream printStream = new PrintStream(outputStream)
+        ) {
             byte[] addressBytes = InetAddress.getByName(inetAddrStr.split(" ")[0]).getAddress();
             InetAddress inetAddress = InetAddress.getByAddress(addressBytes);
             xReachable = inetAddress.isReachable(300);

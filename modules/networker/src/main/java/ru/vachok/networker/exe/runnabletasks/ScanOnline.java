@@ -28,6 +28,8 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 /**
@@ -38,6 +40,9 @@ import java.util.concurrent.*;
  @since 26.01.2019 (11:18) */
 @Service
 public class ScanOnline implements Runnable, Pinger {
+    
+    
+    private static final Pattern COMPILE = Pattern.compile(ConstantsFor.FILEEXT_ONLIST, Pattern.LITERAL);
     
     private File onlinesFile;
     
@@ -62,11 +67,8 @@ public class ScanOnline implements Runnable, Pinger {
     
     private InfoWorker tvInfo = new MoreInfoWorker("tv");
     
-    private List<String> maxOnList = new ArrayList<>();
-    
-    public ScanOnline(File onlinesFile) {
-        this.onlinesFile = onlinesFile;
-    }
+    private List<String> maxOnList = FileSystemWorker.readFileToList(new File(new File(ConstantsFor.FILENAME_ONSCAN).getAbsolutePath()
+        .replace(ConstantsFor.FILENAME_ONSCAN, "lan" + sep + ConstantsFor.FILENAME_MAXONLINE)).getAbsolutePath());
     
     public ScanOnline() {
         this.onlinesFile = new File(ConstantsFor.FILENAME_ONSCAN);
@@ -81,7 +83,7 @@ public class ScanOnline implements Runnable, Pinger {
     }
     
     @Override public boolean isReach(String inetAddrStr) {
-        ConcurrentMap<String, String> offLines = NET_LIST_KEEPER.getOffLines();
+        Map<String, String> offLines = NET_LIST_KEEPER.getOffLines();
         boolean xReachable = true;
         try (OutputStream outputStream = new FileOutputStream(onlinesFile, true);
              PrintStream printStream = new PrintStream(outputStream)) {
@@ -108,33 +110,24 @@ public class ScanOnline implements Runnable, Pinger {
         catch (IOException | ArrayIndexOutOfBoundsException e) {
             messageToUser.error(e.getMessage());
         }
+        NET_LIST_KEEPER.setOffLines(offLines);
         return xReachable;
     }
     
     @Override
     public void run() {
         setLists();
-        threadConfig.execByThreadConfig(this::offlineNotEmptyActions);
+        threadConfig.execByThreadConfig(this::checkSwitchesAvail);
         File fileMAX = new File(onlinesFile.toPath().toAbsolutePath().toString().replace(ConstantsFor.FILENAME_ONSCAN, sep + "lan" + sep + ConstantsFor.FILENAME_MAXONLINE));
     
         if (onlinesFile.exists()) {
-            onlineFileExists(onlinesFile, fileMAX);
+            onListFileCopyToLastAndMax(onlinesFile, fileMAX);
         }
-        messageToUser.info(getClass().getSimpleName() + ".run", "writeOnLineFile()", " = " + writeOnLineFile());
-    }
-    
-    private void setLists() {
-        try {
-            this.maxOnList = FileSystemWorker
-                .readFileToList(new File(ConstantsFor.FILENAME_ONSCAN).getAbsolutePath().replace(ConstantsFor.FILENAME_ONSCAN, sep + "lan" + sep + ConstantsFor.FILENAME_MAXONLINE));
-        }
-        catch (NullPointerException e) {
-            this.maxOnList = new ArrayList<>();
-        }
+        messageToUser.info(String.valueOf(writeOnLineFile()), "writeOnLineFile: ", " = " + onlinesFile.getAbsolutePath());
     }
     
     @Override
-    public String toString() { // fixme 08.06.2019 (8:34)
+    public String toString() {
         final StringBuilder sb = new StringBuilder();
         sb.append("<b>Since ");
         sb.append("<i>");
@@ -152,50 +145,92 @@ public class ScanOnline implements Runnable, Pinger {
         return sb.toString();
     }
     
-    private boolean writeOnLineFile() {
+    /**
+     Задолнение {@link #maxOnList} данными из файла C:\Users\ikudryashov\IdeaProjects\ftpplus\modules\networker\lan\max.online
+     */
+    private void setLists() {
         try {
-            Files.deleteIfExists(onlinesFile.toPath());
+            File onFile = new File(ConstantsFor.FILENAME_ONSCAN);
+            String newPath = onFile.getAbsolutePath().replace(ConstantsFor.FILENAME_ONSCAN, "lan" + sep + ConstantsFor.FILENAME_MAXONLINE);
+            
+            this.maxOnList = FileSystemWorker.readFileToList(newPath);
+        }
+        catch (NullPointerException e) {
+            this.maxOnList = new ArrayList<>();
+        }
+    }
+    
+    /**
+     Пишет {@code ScanOnline.onList} из {@link NetScanFileWorker#getDequeOfOnlineDev()}, проверяя на доступность.
+     <p>
+     
+     @return записано успешно.
+     
+     @see ScanOnline#isReach(java.lang.String)
+     */
+    private boolean writeOnLineFile() {
+        boolean retBool = false;
+        try {
+            retBool = Files.deleteIfExists(onlinesFile.toPath());//ScanOnline.onList
         }
         catch (IOException e) {
             messageToUser.error(e.getMessage());
         }
         try (OutputStream outputStream = new FileOutputStream(onlinesFile);
              PrintStream printStream = new PrintStream(outputStream, true)) {
-            Deque<String> onDeq = NetScanFileWorker.getI().getListOfOnlineDev();
+            Deque<String> onDeq = NetScanFileWorker.getI().getDequeOfOnlineDev();
             printStream.println("Checked: " + new Date());
             while (!onDeq.isEmpty()) {
                 isReach(onDeq.poll());
             }
-            return true;
+            retBool = true;
         }
         catch (IOException e) {
-            e.printStackTrace();
-            return false;
+            messageToUser.error(e.getMessage());
+            retBool = false;
         }
+        return retBool;
     }
     
-    private void onlineFileExists(File onlinesFile, File fileMAX) {
-        String replaceStr = onlinesFile.getAbsolutePath().replace(ConstantsFor.FILEEXT_ONLIST, ".last");
-        File repFile = new File(replaceStr);
-        List<String> stringsLastScan = FileSystemWorker.readFileToList(repFile.getAbsolutePath());
-        Collections.sort(stringsLastScan);
-        Set<String> setLastScan = new TreeSet<>(stringsLastScan);
-        if (setLastScan.size() < NetScanFileWorker.getI().getListOfOnlineDev().size()) {
-            FileSystemWorker.copyOrDelFile(onlinesFile, replaceStr, false);
+    /**
+     Анализ файла {@code ScanOnline.last} и его копирование в {@code ScanOnline.last} или {@code \lan\max.online}, при необходимости.
+     <p>
+     {@code replaceStr} = C:\Users\ikudryashov\IdeaProjects\ftpplus\modules\networker\ScanOnline.last <br>
+     {@code scanOnlineLast} = C:\Users\ikudryashov\IdeaProjects\ftpplus\modules\networker\ScanOnline.last (stringsLastScan) <br>
+     {@code lastScanTreeSet} = {@code repFile}, отсортированный как {@link TreeSet} <br>
+     <p>
+     @param onlinesFileLoc ScanOnline.onList
+     @param fileMAX C:\Users\ikudryashov\IdeaProjects\ftpplus\modules\networker\lan\max.online
+     */
+    private void onListFileCopyToLastAndMax(File onlinesFileLoc, File fileMAX) {
+        String replaceFileNamePattern = COMPILE.matcher(onlinesFileLoc.getAbsolutePath()).replaceAll(Matcher.quoteReplacement(".last"));
+        File scanOnlineLast = new File(replaceFileNamePattern);
+        List<String> onlineLastStrings = FileSystemWorker.readFileToList(scanOnlineLast.getAbsolutePath());
+        Collections.sort(onlineLastStrings);
+        Collection<String> onLastAsTreeSet = new TreeSet<>(onlineLastStrings);
+        Deque<String> lanFilesDeque = NetScanFileWorker.getI().getDequeOfOnlineDev();
+    
+        if (onLastAsTreeSet.size() < lanFilesDeque.size()) { //скопировать ScanOnline.onList в ScanOnline.last
+            FileSystemWorker.copyOrDelFile(onlinesFileLoc, replaceFileNamePattern, false);
         }
-        if (repFile.length() > fileMAX.length()) {
-            messageToUser.warn(repFile.getName(), fileMAX.getName() + " size difference", " = " + (repFile.length() - fileMAX.length()));
+        if (scanOnlineLast.length() > fileMAX.length()) { //когда размер в байтах файла ScanOnline.last, больше чем \lan\max.online, добавить содержание max.online в список maxOnList
+            messageToUser.warn(scanOnlineLast.getName(), fileMAX.getName() + " size difference", " = " + (scanOnlineLast.length() - fileMAX.length()));
+        
             List<String> readFileToList = FileSystemWorker.readFileToList(fileMAX.getAbsolutePath());
-            maxOnList.addAll(readFileToList);
-            FileSystemWorker.copyOrDelFile(repFile, fileMAX.getAbsolutePath(), false);
+            this.maxOnList.addAll(readFileToList);
+            Collections.sort(maxOnList);
+            FileSystemWorker.copyOrDelFile(scanOnlineLast, fileMAX.getAbsolutePath(), false); //скопировать ScanOnline.last в \lan\max.online
         }
-        repFile.deleteOnExit();
+        scanOnlineLast.deleteOnExit(); //удалить ScanOnline.last при выходе.
     }
     
-    private void offlineNotEmptyActions() {
+    /**
+     * Проверка доступности свичей.
+     */
+    private void checkSwitchesAvail() {
 //        messageToUser.info("ПИНГ СВИЧЕЙ");
         SwitchesAvailability switchesAvailability = new SwitchesAvailability();
-        Future<?> submit = AppComponents.threadConfig().getTaskExecutor().submit(switchesAvailability);
+        Future<?> submit = threadConfig.getTaskExecutor().submit(switchesAvailability);
         try {
             submit.get(ConstantsFor.DELAY * 2, TimeUnit.SECONDS);
         }

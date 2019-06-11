@@ -220,7 +220,7 @@ public class AppComponents {
         return DiapazonScan.getInstance().theInfoToString();
     }
     
-    public static DiapazonScan diapazonScan() {
+    static DiapazonScan diapazonScan() {
         return DiapazonScan.getInstance();
     }
     

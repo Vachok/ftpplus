@@ -19,18 +19,14 @@ import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 
 import java.io.*;
-import java.lang.management.ManagementFactory;
-import java.lang.management.RuntimeMXBean;
-import java.lang.management.ThreadInfo;
-import java.lang.management.ThreadMXBean;
 import java.net.InetAddress;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.TimeUnit;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
@@ -69,6 +65,8 @@ public class ExecScan extends DiapazonScan {
     private String whatVlan;
     
     private PrintStream printStream;
+    
+    private Map<String, String> offLines = NetListKeeper.getI().getOffLines();
     
     public ExecScan(int from, int to, String whatVlan, File vlanFile) {
         
@@ -119,27 +117,6 @@ public class ExecScan extends DiapazonScan {
         }
     }
     
-    private String getBeansInfo() {
-        final StringBuilder sb = new StringBuilder();
-        ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
-        RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
-        
-        sb.append("<br>");
-        sb.append(runtimeMXBean.getName()).append(" Name. ");
-        sb.append(runtimeMXBean.getUptime()).append(" Time. ");
-        sb.append("<br>");
-        sb.append("<br>");
-        
-        ThreadInfo infoThisThr = threadMXBean.getThreadInfo(Thread.currentThread().getId());
-        sb.append(infoThisThr).append(" String. ");
-        sb.append(infoThisThr.getThreadName()).append(" ThreadName. ");
-        sb.append(infoThisThr.getWaitedTime()).append(" WaitedTime (millis). ");
-        sb.append(infoThisThr.getThreadState()).append(" current state. ");
-        sb.append(TimeUnit.NANOSECONDS.toMillis(threadMXBean.getCurrentThreadCpuTime())).append(" current thread CPU time in millis. ");
-        
-        return sb.toString();
-    }
-    
     private boolean execScan() {
         this.stArt = System.currentTimeMillis();
         try {
@@ -163,7 +140,6 @@ public class ExecScan extends DiapazonScan {
      */
     private String oneIpScanAndPrintToFile(int iThree, int jFour) throws IOException {
         threadConfig.thrNameSet(String.valueOf(iThree));
-        
         int timeOutMSec = (int) ConstantsFor.DELAY;
         byte[] aBytes = InetAddress.getByName(whatVlan + iThree + "." + jFour).getAddress();
         StringBuilder stringBuilder = new StringBuilder();
@@ -183,21 +159,20 @@ public class ExecScan extends DiapazonScan {
             stringBuilder.append(hostAddress).append(" ").append(hostName).append(PAT_IS_ONLINE);
         }
         else {
-            NetListKeeper.getI().getOffLines().put(byAddress.getHostAddress(), hostName);
-            
+            offLines.put(byAddress.getHostAddress(), hostName);
             getAllDevLocalDeq().add("<font color=\"red\">" + hostName + FONT_BR_CLOSE);
             stringBuilder.append(hostAddress).append(" ").append(hostName);
         }
         if (stringBuilder.toString().contains(PAT_IS_ONLINE)) {
-            try (OutputStream outputStream = new FileOutputStream(vlanFile, true);
-                 PrintStream printStream = new PrintStream(Objects.requireNonNull(outputStream), true);
-            ) {
+            try (OutputStream outputStream = new FileOutputStream(vlanFile, true)) {
+                this.printStream = new PrintStream(Objects.requireNonNull(outputStream), true);
                 printStream.println(hostAddress + " " + hostName);
                 messageToUser.info(getClass().getSimpleName() + ".oneIpScanAndPrintToFile ip online " + whatVlan + iThree + "." + jFour, vlanFile.getName(), " = " + vlanFile
                     .length() + ConstantsFor.STR_BYTES);
         
             }
         }
+        NetListKeeper.getI().setOffLines(offLines);
         return stringBuilder.toString();
     }
     

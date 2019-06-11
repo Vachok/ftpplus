@@ -1,0 +1,10 @@
+@startuml
+ScanOnLine.run->ScanOnline.setLists
+
+ScanOnLine.run->ThreadConfig.execByThreadConfig(java.lang.Runnable)
+
+ScanOnLine.run-->File.exists: ScanOnLine.run ScanOnline.onListFileCopyToLastAndMax
+
+ScanOnLine.run->messageToUser.info
+
+@enduml
