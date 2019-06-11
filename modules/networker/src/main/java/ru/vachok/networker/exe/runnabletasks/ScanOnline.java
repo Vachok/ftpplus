@@ -215,7 +215,6 @@ public class ScanOnline implements Runnable, Pinger {
         }
         if (scanOnlineLast.length() > fileMAX.length()) { //когда размер в байтах файла ScanOnline.last, больше чем \lan\max.online, добавить содержание max.online в список maxOnList
             messageToUser.warn(scanOnlineLast.getName(), fileMAX.getName() + " size difference", " = " + (scanOnlineLast.length() - fileMAX.length()));
-        
             List<String> readFileToList = FileSystemWorker.readFileToList(fileMAX.getAbsolutePath());
             this.maxOnList.addAll(readFileToList);
             Collections.sort(maxOnList);

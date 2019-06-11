@@ -27,6 +27,7 @@ import java.util.Map;
  @since 25.12.2018 (10:43) */
 public class NetScanFileWorker implements Serializable {
     
+    
     private static final NetScanFileWorker NET_SCAN_FILE_WORKER = new NetScanFileWorker();
     
     private static MessageToUser messageToUser = new MessageLocal(NetScanFileWorker.class.getSimpleName());
@@ -48,6 +49,7 @@ public class NetScanFileWorker implements Serializable {
     /**
      Читает файлы из {@link DiapazonScan#getScanFiles()} в {@link Deque}
      <p>
+ 
      @return {@link Deque} of {@link String}, с именами девайсов онлайн.
      */
     public static Deque<String> getDequeOfOnlineDev() {
@@ -66,6 +68,7 @@ public class NetScanFileWorker implements Serializable {
      Чтение файлов {@code lan_*} и заполнение {@link Deque} строками <br>
      {@code retPath} = C:\Users\ikudryashov\IdeaProjects\ftpplus\modules\networker\lan_*.txt
      <p>
+ 
      @param srvFileX файл lan_* из корневой папки.
      @param retDeque обратная очередь, для наполнения.
      */

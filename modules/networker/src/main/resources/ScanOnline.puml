@@ -1,20 +1,16 @@
 @startuml
-ScanOnLine.onListFileCopyToLastAndMax ->  String:replaceFileNamePattern
-ScanOnLine.onListFileCopyToLastAndMax <-- String: new "C:\Users\ikudryashov\IdeaProjects\ftpplus\modules\networker\ScanOnline.last"
+class ru.vachok.networker.exe.runnabletasks.ScanOnline{
+-onListFileCopyToLastAndMax
+}
+abstract class ru.vachok.networker.fileworks.FileSystemWorker{
++readFileToList
+}
+class ru.vachok.networker.TForms
+class ru.vachok.networker.net.NetScanFileWorker{
++getDequeOfOnlineDev
+}
+class ru.vachok.networker.AppComponents
+class ru.vachok.networker.exe.ThreadConfig
+class ru.vachok.networker.exe.schedule.DiapazonScan
 
-ScanOnLine.onListFileCopyToLastAndMax -> File: scanOnlineLast
-ScanOnLine.onListFileCopyToLastAndMax <-- File: new "ScanOnline.last"
-
-ScanOnLine.onListFileCopyToLastAndMax -> FileSystemWorker.readFileToList: ScanOnline.last
-ScanOnLine.onListFileCopyToLastAndMax <-- FileSystemWorker.readFileToList: List<String> onlineLastStrings
-
-ScanOnLine.onListFileCopyToLastAndMax -> Collections.sort: onLastAsTreeSet
-
-ScanOnLine.onListFileCopyToLastAndMax -> Collection: TreeSet: onLastAsTreeSet
-ScanOnLine.onListFileCopyToLastAndMax <-- TreeSet: onlineLastStrings
-
-ScanOnLine.onListFileCopyToLastAndMax -> NetScanFileWorker.getDequeOfOnlineDev
-ScanOnLine.onListFileCopyToLastAndMax <-- NetScanFileWorker.getMapOfScanFiles: NetScanFileWorker.readFilesLANToCollection: FileSystemWorker.readFileToSet: Deque <String> lanFilesDeque
-
-ScanOnLine.onListFileCopyToLastAndMax: onLastAsTreeSet.size < readFileToList.size ->
 @enduml
