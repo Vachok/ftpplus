@@ -8,8 +8,13 @@ ScanOnLine.onListFileCopyToLastAndMax <-- File: new "ScanOnline.last"
 ScanOnLine.onListFileCopyToLastAndMax -> FileSystemWorker.readFileToList: ScanOnline.last
 ScanOnLine.onListFileCopyToLastAndMax <-- FileSystemWorker.readFileToList: List<String> onlineLastStrings
 
-ScanOnLine.onListFileCopyToLastAndMax -> Collections.sort: onlineLastStrings
+ScanOnLine.onListFileCopyToLastAndMax -> Collections.sort: onLastAsTreeSet
 
-ScanOnLine.onListFileCopyToLastAndMax -> Collection: TreeSet: onlineLastStrings
+ScanOnLine.onListFileCopyToLastAndMax -> Collection: TreeSet: onLastAsTreeSet
 ScanOnLine.onListFileCopyToLastAndMax <-- TreeSet: onlineLastStrings
+
+ScanOnLine.onListFileCopyToLastAndMax -> NetScanFileWorker.getDequeOfOnlineDev
+ScanOnLine.onListFileCopyToLastAndMax <-- NetScanFileWorker.getMapOfScanFiles: NetScanFileWorker.readFilesLANToCollection: FileSystemWorker.readFileToSet: Deque <String> lanFilesDeque
+
+ScanOnLine.onListFileCopyToLastAndMax: onLastAsTreeSet.size < readFileToList.size ->
 @enduml
