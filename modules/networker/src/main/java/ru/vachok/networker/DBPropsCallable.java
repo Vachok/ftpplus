@@ -130,9 +130,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
     }
     
     private Properties findRightProps() throws IOException {
-        File prFile = new File(ConstantsFor.class.getSimpleName() + ConstantsFor.FILEEXT_PROPERTIES);
-        if (prFile.exists() & !prFile.canWrite()) {
-            readOnlyFileReturnFile(prFile);
+        File constForProps = new File(ConstantsFor.class.getSimpleName() + ConstantsFor.FILEEXT_PROPERTIES);
+        if (constForProps.exists() & !constForProps.canWrite()) {
+            readOnlyFileReturnFile(constForProps);
         }
         else {
             fileIsWritableOrNotExists();

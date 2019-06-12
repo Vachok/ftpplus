@@ -181,9 +181,9 @@ public class AppComponents {
     
     public boolean updateProps(Properties propertiesToUpdate) throws IOException {
         if (propertiesToUpdate.size() > 5) {
-            File pFile = new File(ConstantsFor.PROPS_FILE_JAVA_ID);
-            pFile.setWritable(true);
-            pFile.delete();
+            File constantsForProps = new File(ConstantsFor.PROPS_FILE_JAVA_ID);
+            System.out.println("constantsForProps.setWritable(true) = " + constantsForProps.setWritable(true));
+            System.out.println("constantsForProps.delete() = " + constantsForProps.delete());
             propertiesToUpdate.store(new FileOutputStream(ConstantsFor.PROPS_FILE_JAVA_ID), getClass().getSimpleName() + ".updateProps");
         }
         InitProperties initProperties = new DBRegProperties(ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName());
@@ -200,7 +200,7 @@ public class AppComponents {
                 .currentTimeMillis()) {
                 APP_PR.putAll(new AppComponents().getAppProps());
             }
-            if (fileProps.exists() & !fileProps.canWrite()) {
+            if (!fileProps.canWrite()) {
                 new AppComponents().filePropsNoWritable(fileProps);
             }
         }
@@ -269,22 +269,20 @@ public class AppComponents {
         }
     }
     
-    private void filePropsNoWritable(File fileProps) {
+    private void filePropsNoWritable(File constForProps) {
         InitProperties initProperties = new FileProps(ConstantsFor.class.getSimpleName());
         AppComponents.APP_PR.clear();
         AppComponents.APP_PR.putAll(initProperties.getProps());
-        AppComponents.APP_PR.setProperty(ConstantsFor.PR_DBSTAMP, String.valueOf(System.currentTimeMillis()));
+        System.out.println("constForProps.setWritable(true) = " + constForProps.setWritable(true));
         initProperties = new DBRegProperties(ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName());
         initProperties.delProps();
         initProperties.setProps(AppComponents.APP_PR);
-        messageToUser.warn("fileProps.setWritable(true) = " + fileProps.setWritable(true));
     }
     
     private Properties getAppProps() {
-        threadConfig().thrNameSet("getAPr");
+    
         MysqlDataSource mysqlDataSource = new DBRegProperties(DB_JAVA_ID).getRegSourceForProperties();
         mysqlDataSource.setRelaxAutoCommit(true);
-        mysqlDataSource.setLogger("java.util.Logger");
         Callable<Properties> theProphecy = new DBPropsCallable(mysqlDataSource, APP_PR);
         try {
             APP_PR.putAll(theProphecy.call());
