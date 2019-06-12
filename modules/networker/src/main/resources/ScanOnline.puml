@@ -1,0 +1,16 @@
+@startuml
+class ru.vachok.networker.exe.runnabletasks.ScanOnline{
+-onListFileCopyToLastAndMax
+}
+abstract class ru.vachok.networker.fileworks.FileSystemWorker{
++readFileToList
+}
+class ru.vachok.networker.TForms
+class ru.vachok.networker.net.NetScanFileWorker{
++getDequeOfOnlineDev
+}
+class ru.vachok.networker.AppComponents
+class ru.vachok.networker.exe.ThreadConfig
+class ru.vachok.networker.exe.schedule.DiapazonScan
+
+@enduml

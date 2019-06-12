@@ -22,8 +22,7 @@ import java.util.List;
  Удаление временных файлов.
 
  @since 19.12.2018 (11:05) */
-@SuppressWarnings("ClassWithoutmessageToUser")
-class DeleterTemp extends FileSystemWorker implements Runnable {
+@SuppressWarnings("ClassWithoutmessageToUser") public class DeleterTemp extends FileSystemWorker implements Runnable {
     
     
     private static final MessageToUser messageToUser = new MessageLocal(DeleterTemp.class.getSimpleName());
@@ -54,8 +53,9 @@ class DeleterTemp extends FileSystemWorker implements Runnable {
             messageToUser.error(e.getMessage());
         }
     }
-
-    DeleterTemp(String patToDel) {
+    
+    
+    public DeleterTemp(String patToDel) {
         this.patToDel = patToDel;
         this.fromFile.add(patToDel);
     }

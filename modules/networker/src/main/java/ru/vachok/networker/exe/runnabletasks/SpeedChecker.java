@@ -55,12 +55,14 @@ public class SpeedChecker implements Callable<Long>, Runnable {
      */
     private static boolean isWeekEnd = (LocalDate.now().getDayOfWeek().equals(SUNDAY) || LocalDate.now().getDayOfWeek().equals(SATURDAY));
     
+    private final Properties APP_PR = AppComponents.getProps();
+    
     /**
      Time as long
      <p>
      Время из Базы. Берется из {@link AppComponents#getProps()}
      */
-    private Long rtLong = Long.valueOf(AppComponents.getProps().getProperty(ConstantsFor.PR_LASTWORKSTART, "2"));
+    private Long rtLong = Long.valueOf(APP_PR.getProperty(ConstantsFor.PR_LASTWORKSTART, "2"));
     
     /**
      Запуск.
@@ -76,7 +78,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
             AppComponents.threadConfig().execByThreadConfig(this::setRtLong);
         }
         else {
-            this.rtLong = Long.valueOf(AppComponents.getProps().getProperty(ConstantsFor.PR_LASTWORKSTART));
+            this.rtLong = Long.valueOf(APP_PR.getProperty(ConstantsFor.PR_LASTWORKSTART));
         }
     }
     
@@ -118,7 +120,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
     private void setRtLong() {
         String classMeth = "SpeedChecker.chkForLast";
         final String sql = ConstantsFor.DBQUERY_SELECTFROMSPEED;
-        Properties properties = AppComponents.getProps();
+        Properties properties = APP_PR;
         final long stArt = System.currentTimeMillis();
         new SpeedChecker.ChkMailAndUpdateDB().run();
     

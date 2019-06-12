@@ -4,24 +4,29 @@ package ru.vachok.networker;
 
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.Lifecycle;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.TelnetStarter;
 import ru.vachok.networker.exe.schedule.WeekStats;
+import ru.vachok.networker.fileworks.DeleterTemp;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.TestServer;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.systray.SystemTrayHelper;
 
 import java.awt.*;
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileVisitor;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.format.TextStyle;
 import java.util.List;
@@ -43,7 +48,7 @@ import java.util.concurrent.ConcurrentMap;
  
  @see AppInfoOnLoad
  @since 02.05.2018 (10:36) */
-@SpringBootApplication
+@SuppressWarnings("AccessStaticViaInstance") @SpringBootApplication
 @EnableScheduling
 @EnableAutoConfiguration
 public class IntoApplication {
@@ -51,7 +56,7 @@ public class IntoApplication {
     
     public static final boolean TRAY_SUPPORTED = SystemTray.isSupported();
     
-    private static final Properties LOCAL_PROPS = AppComponents.getProps();
+    @SuppressWarnings("StaticCollection") private static final Properties LOCAL_PROPS = AppComponents.getProps();
     
     private static final SpringApplication SPRING_APPLICATION = new SpringApplication();
     
@@ -70,28 +75,11 @@ public class IntoApplication {
                 configurableApplicationContext.close();
             }
             configurableApplicationContext = null;
-            if (configurableApplicationContext == null) {
-                configurableApplicationContext = SPRING_APPLICATION.run(IntoApplication.class);
-            }
-            else {
-                configurableApplicationContext.refresh();
-            }
+            configurableApplicationContext = SpringApplication.run(IntoApplication.class);
         }
     }
     
-    /**
-     Точка входа в Spring Boot Application
-     <p>
-     Создает новый объект {@link SpringApplication}. <br>
-     Далее создается {@link ConfigurableApplicationContext}, из {@link SpringApplication}.run({@link IntoApplication}.class).
-     {@link FileSystemWorker#delFilePatterns(java.lang.String[])}. Удаление останков от предидущего запуска. <br>
-     Пытается читать аргументы {@link #readArgs(ConfigurableApplicationContext, String...)}, если они не null и их больше 0. <br>
-     В другом случае - {@link #beforeSt(boolean)} до запуска контекста, {@link ConfigurableApplicationContext}.start(), {@link #afterSt()}.
-     
-     @param args аргументы запуска
-     @see SystemTrayHelper
-     */
-    public static void main(@Nullable String[] args) throws IOException {
+    public static void main(String[] args) throws IOException {
         final Thread telnetThread = new Thread(new TelnetStarter());
         telnetThread.setDaemon(true);
         telnetThread.start();
@@ -99,8 +87,8 @@ public class IntoApplication {
             if (configurableApplicationContext == null) {
                 configurableApplicationContext = SPRING_APPLICATION.run(IntoApplication.class);
             }
-        
-            FileSystemWorker.delFilePatterns(ConstantsFor.getStringsVisit());
+    
+            delFilePatterns(ConstantsFor.getStringsVisit());
             if (args != null && args.length > 0) {
                 readArgs(configurableApplicationContext, args);
             }
@@ -112,6 +100,20 @@ public class IntoApplication {
                     MESSAGE_LOCAL.error(FileSystemWorker.error(IntoApplication.class.getSimpleName() + ".main", e));
                 }
                 afterSt();
+            }
+        }
+    }
+    
+    private static void delFilePatterns(String[] patToDelArr) {
+        File file = new File(".");
+        for (String patToDel : patToDelArr) {
+            FileVisitor<Path> deleterTemp = new DeleterTemp(patToDel);
+            try {
+                Path walkFileTree = Files.walkFileTree(file.toPath(), deleterTemp);
+                System.out.println("walkFileTree = " + walkFileTree);
+            }
+            catch (IOException e) {
+                System.err.println(e.getMessage());
             }
         }
     }
@@ -144,7 +146,7 @@ public class IntoApplication {
      
      @param args аргументы запуска.
      */
-    private static void readArgs(ConfigurableApplicationContext context, @NotNull String... args) throws IOException {
+    private static void readArgs(Lifecycle context, @NotNull String... args) throws IOException {
         boolean isTray = true;
         Runnable exitApp = new ExitApp(IntoApplication.class.getSimpleName());
         List<@NotNull String> argsList = Arrays.asList(args);
@@ -184,7 +186,7 @@ public class IntoApplication {
         if (stringStringEntry.getKey().contains(ConstantsFor.PR_TOTPC)) {
             LOCAL_PROPS.setProperty(ConstantsFor.PR_TOTPC, stringStringEntry.getValue());
         }
-        if (stringStringEntry.getKey().equalsIgnoreCase("off")) {
+        if (stringStringEntry.getKey().equals("off")) {
             AppComponents.threadConfig().execByThreadConfig(exitApp);
         }
         if (stringStringEntry.getKey().contains("notray")) {
@@ -203,25 +205,6 @@ public class IntoApplication {
         return isTray;
     }
     
-    private static void trayAdd(SystemTrayHelper systemTrayHelper) {
-        if (ConstantsFor.thisPC().toLowerCase().contains(ConstantsFor.HOSTNAME_DO213)) {
-            systemTrayHelper.addTray("icons8-плохие-поросята-32.png");
-        }
-        else {
-            if (ConstantsFor.thisPC().toLowerCase().contains("home")) {
-                systemTrayHelper.addTray("icons8-house-26.png");
-            }
-            else {
-                try {
-                    systemTrayHelper.addTray(ConstantsFor.FILENAME_ICON);
-                }
-                catch (Exception ignore) {
-                    //
-                }
-            }
-        }
-    }
-    
     /**
      Запуск до старта Spring boot app <br> Usages: {@link #main(String[])}
      <p>
@@ -236,7 +219,7 @@ public class IntoApplication {
     private static void beforeSt(boolean isTrayNeed) throws IOException {
         @NotNull StringBuilder stringBuilder = new StringBuilder();
         if (isTrayNeed) {
-            trayAdd(SystemTrayHelper.getI());
+            SystemTrayHelper.trayAdd(SystemTrayHelper.getI());
             stringBuilder.append(AppComponents.ipFlushDNS());
         }
         stringBuilder.append("updateProps = ").append(new AppComponents().updateProps(LOCAL_PROPS));

@@ -32,10 +32,7 @@ import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Stream;
 
@@ -60,6 +57,8 @@ public class ServiceInfoCtrl {
      {@link Visitor}
      */
     @SuppressWarnings("InstanceVariableMayNotBeInitialized") private Visitor visitor;
+    
+    private static final Properties APP_PR = AppComponents.getProps();
     
     /**
      GetMapping /serviceinfo
@@ -122,6 +121,16 @@ public class ServiceInfoCtrl {
             throw new AccessDeniedException("DENY for " + request.getRemoteAddr());
         }
         return "ok";
+    }
+    
+    public static ConcurrentMap<String, String> readFiles(List<File> filesToRead) {
+        Collections.sort(filesToRead);
+        ConcurrentMap<String, String> readiedStrings = new ConcurrentHashMap<>();
+        for (File f : filesToRead) {
+            String s = FileSystemWorker.readFile(f.getAbsolutePath());
+            readiedStrings.put(f.getAbsolutePath(), s);
+        }
+        return readiedStrings;
     }
     
     @Override
@@ -193,7 +202,7 @@ public class ServiceInfoCtrl {
             .append("<b><i>").append(AppComponents.versionInfo()).append("</i></b><p><font color=\"orange\">")
             .append(ConstantsNet.getSshMapStr()).append("</font><p>")
             .append(new AppInfoOnLoad()).append(" ").append(AppInfoOnLoad.class.getSimpleName()).append("<p>")
-            .append(new TForms().fromArray(AppComponents.getProps(), true)).append("<br>Prefs: ").append(new TForms().fromArray(AppComponents.getUserPref(), true))
+            .append(new TForms().fromArray(APP_PR, true)).append("<br>Prefs: ").append(new TForms().fromArray(AppComponents.getUserPref(), true))
             .append("<p>")
             .append(ConstantsFor.HTMLTAG_CENTER).append(FileSystemWorker.readFile(new File("exit.last").getAbsolutePath())).append(ConstantsFor.HTML_CENTER_CLOSE).append("<p>")
             .append("<p><font color=\"grey\">").append(listFilesToReadStr()).append("</font>")
@@ -280,7 +289,7 @@ public class ServiceInfoCtrl {
                 f.deleteOnExit();
             }
         }
-        ConcurrentMap<String, String> stringStringConcurrentMap = FileSystemWorker.readFiles(readUs);
+        ConcurrentMap<String, String> stringStringConcurrentMap = readFiles(readUs);
         List<String> retListStr = new ArrayList<>();
         stringStringConcurrentMap.forEach((String x, String y)->{
             try {

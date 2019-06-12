@@ -14,6 +14,7 @@ import org.springframework.context.annotation.Scope;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
+import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.accesscontrol.PfLists;
 import ru.vachok.networker.accesscontrol.sshactions.SshActs;
@@ -54,6 +55,8 @@ import java.util.prefs.Preferences;
 public class AppComponents {
     
     
+    private static MessageToUser messageToUser = new MessageLocal(AppComponents.class.getSimpleName());
+    
     /**
      <i>Boiler Plate</i>
      */
@@ -64,8 +67,6 @@ public class AppComponents {
     private static final String DB_JAVA_ID = ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName();
     
     private static final ThreadConfig THREAD_CONFIG = ThreadConfig.getI();
-    
-    private static MessageToUser messageToUser = new MessageLocal(AppComponents.class.getSimpleName());
     
     public static String ipFlushDNS() throws UnsupportedOperationException {
         StringBuilder stringBuilder = new StringBuilder();
@@ -192,19 +193,23 @@ public class AppComponents {
     }
     
     @SuppressWarnings("AssignmentOrReturnOfFieldWithMutableType") public static Properties getProps() {
+        File fileProps = new File(ConstantsFor.class.getSimpleName() + ConstantsFor.FILEEXT_PROPERTIES);
+        
         if (APP_PR.size() > 3) {
             if ((APP_PR.getProperty(ConstantsFor.PR_DBSTAMP) != null) && (Long.parseLong(APP_PR.getProperty(ConstantsFor.PR_DBSTAMP)) + TimeUnit.MINUTES.toMillis(180)) < System
                 .currentTimeMillis()) {
                 APP_PR.putAll(new AppComponents().getAppProps());
             }
-            return APP_PR;
+            if (fileProps.exists() & !fileProps.canWrite()) {
+                new AppComponents().filePropsNoWritable(fileProps);
+            }
         }
         else {
-            Properties appProps = new AppComponents().getAppProps();
-            appProps.setProperty(ConstantsFor.PR_DBSTAMP, String.valueOf(System.currentTimeMillis()));
-            appProps.setProperty(ConstantsFor.PR_THISPC, ConstantsFor.thisPC());
-            return appProps;
+            APP_PR.putAll(new AppComponents().getAppProps());
+            APP_PR.setProperty(ConstantsFor.PR_DBSTAMP, String.valueOf(System.currentTimeMillis()));
+            APP_PR.setProperty(ConstantsFor.PR_THISPC, ConstantsFor.thisPC());
         }
+        return APP_PR;
     }
     
     public void updateProps() throws IOException {
@@ -220,10 +225,6 @@ public class AppComponents {
         return DiapazonScan.getInstance().theInfoToString();
     }
     
-    public static DiapazonScan diapazonScan() {
-        return DiapazonScan.getInstance();
-    }
-    
     public static Logger getLogger(String name) {
         return LoggerFactory.getLogger(name);
     }
@@ -234,6 +235,21 @@ public class AppComponents {
     
     public PfLists getPFLists() {
         return new PfLists();
+    }
+    
+    public static Preferences getUserPref() {
+        Preferences preferences = Preferences.userRoot();
+        try {
+            preferences.sync();
+        }
+        catch (BackingStoreException e) {
+            messageToUser.error(FileSystemWorker.error(AppComponents.class.getSimpleName() + ".getUserPref", e));
+        }
+        return preferences;
+    }
+    
+    static DiapazonScan diapazonScan() {
+        return DiapazonScan.getInstance();
     }
     
     @Bean
@@ -253,6 +269,17 @@ public class AppComponents {
         }
     }
     
+    private void filePropsNoWritable(File fileProps) {
+        InitProperties initProperties = new FileProps(ConstantsFor.class.getSimpleName());
+        AppComponents.APP_PR.clear();
+        AppComponents.APP_PR.putAll(initProperties.getProps());
+        AppComponents.APP_PR.setProperty(ConstantsFor.PR_DBSTAMP, String.valueOf(System.currentTimeMillis()));
+        initProperties = new DBRegProperties(ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName());
+        initProperties.delProps();
+        initProperties.setProps(AppComponents.APP_PR);
+        messageToUser.warn("fileProps.setWritable(true) = " + fileProps.setWritable(true));
+    }
+    
     private Properties getAppProps() {
         threadConfig().thrNameSet("getAPr");
         MysqlDataSource mysqlDataSource = new DBRegProperties(DB_JAVA_ID).getRegSourceForProperties();
@@ -266,16 +293,5 @@ public class AppComponents {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".getAppProps", e));
         }
         return APP_PR;
-    }
-    
-    public static Preferences getUserPref() {
-        Preferences preferences = Preferences.userRoot();
-        try {
-            preferences.sync();
-        }
-        catch (BackingStoreException e) {
-            messageToUser.error(FileSystemWorker.error(AppComponents.class.getSimpleName() + ".getUserPref", e));
-        }
-        return preferences;
     }
 }

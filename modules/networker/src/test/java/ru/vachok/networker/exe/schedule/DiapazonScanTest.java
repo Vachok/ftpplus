@@ -49,6 +49,39 @@ public class DiapazonScanTest {
         setScanInMin();
     }
     
+    @Test
+    public void testGetScanFiles() {
+    }
+    
+    @Test
+    public void testGetInstance() {
+    }
+    
+    @Test
+    public void testGetStopClassStampLong() {
+    }
+    
+    @Test
+    public void testPingSwitch() {
+    }
+    
+    @Test
+    public void testTheInfoToString() {
+        System.out.println(new DiapazonScan().theInfoToString());
+    }
+    
+    @Test
+    public void testToString1() {
+    }
+    
+    @Test
+    public void testGetAllDevLocalDeq() {
+    }
+    
+    @Test
+    public void testGetExecutionProcessLog() {
+    }
+    
     private Map<String, File> copyOfMakeMap() {
         Path absolutePath = Paths.get("").toAbsolutePath();
         Map<String, File> scanMap = new ConcurrentHashMap<>();

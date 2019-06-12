@@ -43,7 +43,7 @@ import java.util.concurrent.Executors;
     
     private static SystemTrayHelper SYSTEM_TRAY_HELPER;
     
-    private @NotNull TrayIcon trayIcon;
+    private TrayIcon trayIcon;
     
     /**
      Конструктор по-умолчанию
@@ -219,5 +219,24 @@ import java.util.concurrent.Executors;
     
         boolean isTrayAdded = addTrayToSys(isNeedTray);
         messageToUser.info("SystemTrayHelper.addTray", "isTrayAdded", String.valueOf(isTrayAdded));
+    }
+    
+    public static void trayAdd(SystemTrayHelper systemTrayHelper) {
+        if (ConstantsFor.thisPC().toLowerCase().contains(ConstantsFor.HOSTNAME_DO213)) {
+            systemTrayHelper.addTray("icons8-плохие-поросята-32.png");
+        }
+        else {
+            if (ConstantsFor.thisPC().toLowerCase().contains("home")) {
+                systemTrayHelper.addTray("icons8-house-26.png");
+            }
+            else {
+                try {
+                    systemTrayHelper.addTray(ConstantsFor.FILENAME_ICON);
+                }
+                catch (Exception ignore) {
+                    //
+                }
+            }
+        }
     }
 }
