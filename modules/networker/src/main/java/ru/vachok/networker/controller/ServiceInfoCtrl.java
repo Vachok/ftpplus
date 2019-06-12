@@ -126,9 +126,9 @@ public class ServiceInfoCtrl {
     public static ConcurrentMap<String, String> readFiles(List<File> filesToRead) {
         Collections.sort(filesToRead);
         ConcurrentMap<String, String> readiedStrings = new ConcurrentHashMap<>();
-        for (File f : filesToRead) { //todo Поменять имя с f, на хотябы file
-            String s = FileSystemWorker.readFile(f.getAbsolutePath());
-            readiedStrings.put(f.getAbsolutePath(), s);
+        for (File fileRead : filesToRead) {
+            String fileReadAsStr = FileSystemWorker.readFile(fileRead.getAbsolutePath());
+            readiedStrings.put(fileRead.getAbsolutePath(), fileReadAsStr);
         }
         return readiedStrings;
     }
@@ -205,7 +205,7 @@ public class ServiceInfoCtrl {
             .append(new TForms().fromArray(APP_PR, true)).append("<br>Prefs: ").append(new TForms().fromArray(AppComponents.getUserPref(), true))
             .append("<p>")
             .append(ConstantsFor.HTMLTAG_CENTER).append(FileSystemWorker.readFile(new File("exit.last").getAbsolutePath())).append(ConstantsFor.HTML_CENTER_CLOSE).append("<p>")
-            .append("<p><font color=\"grey\">").append(listFilesToReadStr()).append("</font>")
+            .append("<p><font color=\"grey\">").append(visitsPrevSessionRead()).append("</font>")
             .toString();
         
         model.addAttribute(ConstantsFor.ATT_TITLE, getLast() + " " + pingDO0213());
@@ -281,20 +281,20 @@ public class ServiceInfoCtrl {
         return stringBuilder.toString();
     }
     
-    private static String listFilesToReadStr() {
-        List<File> readUs = new ArrayList<>();
-        for (File f : Objects.requireNonNull(new File(".").listFiles())) {
-            if (f.getName().toLowerCase().contains(ConstantsFor.getStringsVisit()[0])) {
-                readUs.add(f);
-                f.deleteOnExit();
+    private static String visitsPrevSessionRead() {
+        List<File> listVisitFiles = new ArrayList<>();
+        for (File fileFromList : Objects.requireNonNull(new File(".").listFiles())) {
+            if (fileFromList.getName().toLowerCase().contains(ConstantsFor.getStringsVisit()[0])) {
+                listVisitFiles.add(fileFromList);
+                fileFromList.deleteOnExit();
             }
         }
-        ConcurrentMap<String, String> stringStringConcurrentMap = readFiles(readUs);
+        ConcurrentMap<String, String> pathFileAsStrMap = readFiles(listVisitFiles);
         List<String> retListStr = new ArrayList<>();
-        stringStringConcurrentMap.forEach((String x, String y)->{
+        pathFileAsStrMap.forEach((pathAsStr, fileAsStr)->{
             try {
-                retListStr.add(y.split("userId")[0]);
-                retListStr.add("<b>" + x.split("FtpClientPlus")[1] + "</b>");
+                retListStr.add(fileAsStr.split("userId")[0]);
+                retListStr.add("<b>" + pathAsStr.split("FtpClientPlus")[1] + "</b>");
             }
             catch (Exception e) {
                 retListStr.add(e.getMessage());
