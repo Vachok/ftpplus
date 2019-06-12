@@ -126,7 +126,7 @@ public class ServiceInfoCtrl {
     public static ConcurrentMap<String, String> readFiles(List<File> filesToRead) {
         Collections.sort(filesToRead);
         ConcurrentMap<String, String> readiedStrings = new ConcurrentHashMap<>();
-        for (File f : filesToRead) {
+        for (File f : filesToRead) { //todo Поменять имя с f, на хотябы file
             String s = FileSystemWorker.readFile(f.getAbsolutePath());
             readiedStrings.put(f.getAbsolutePath(), s);
         }
