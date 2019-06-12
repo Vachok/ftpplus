@@ -22,6 +22,7 @@ import java.time.LocalTime;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 
 /**
@@ -43,11 +44,11 @@ public class CommonSRV {
      
      @see CommonCTRL
      */
-    private String delFolderPath;
+    private String delFolderPath = "null";
     
-    private String perionDays;
+    private String perionDays = "1";
     
-    private String searchPat;
+    private String searchPat = "null";
     
     /**
      @return {@link #delFolderPath}
@@ -105,7 +106,7 @@ public class CommonSRV {
         fileSearcherResList.add("Searched: " + new Date() + "\n");
         String resTo = new TForms().fromArray(fileSearcherResList, true);
         if (fileSearcherResList.size() > 0) {
-            FileSystemWorker.writeFile("search_" + LocalTime.now().toSecondOfDay() + ".res", fileSearcherResList.stream());
+            FileSystemWorker.writeFile(ConstantsFor.FILE_PREFIX_SEARCH_ + LocalTime.now().toSecondOfDay() + ".res", fileSearcherResList.stream());
         }
         return resTo;
     }
@@ -119,7 +120,7 @@ public class CommonSRV {
         return sb.toString();
     }
     
-    String getPerionDays() {
+    public String getPerionDays() {
         return perionDays;
     }
     
@@ -189,8 +190,8 @@ public class CommonSRV {
     
     private String getFromFile() {
         StringBuilder stringBuilder = new StringBuilder();
-        for (File file : new File(".").listFiles()) {
-            if (file.getName().toLowerCase().contains("search_")) {
+        for (File file : Objects.requireNonNull(new File(".").listFiles(), "No Files in root...")) {
+            if (file.getName().toLowerCase().contains(ConstantsFor.FILE_PREFIX_SEARCH_)) {
                 stringBuilder.append(FileSystemWorker.readFile(file.getAbsolutePath()));
             }
         }
@@ -211,7 +212,7 @@ public class CommonSRV {
         catch (IOException e) {
             LOGGER.warn(e.getMessage(), e);
         }
-        @SuppressWarnings("DuplicateStringLiteralInspection") String msg = file.getAbsolutePath() + ConstantsFor.STR_WRITTEN;
+        String msg = file.getAbsolutePath() + ConstantsFor.STR_WRITTEN;
         LOGGER.info(msg);
     }
     
