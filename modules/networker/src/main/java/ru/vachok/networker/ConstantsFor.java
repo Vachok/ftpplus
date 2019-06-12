@@ -48,6 +48,8 @@ import java.util.concurrent.TimeUnit;
 public enum ConstantsFor {
     ;
     
+    public static String FILE_PREFIX_SEARCH_ = "search_";
+    
     public static final String METHNAME_STATIC_INITIALIZER = "static initializer";
     
     public static final String HEAD_REFERER = "referer";
