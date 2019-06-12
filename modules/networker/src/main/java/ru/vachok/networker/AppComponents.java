@@ -99,7 +99,6 @@ public class AppComponents {
         }
         catch (SQLException e) {
             messageToUser.errorAlert("AppComponents", ConstantsNet.STR_CONNECTION, e.getMessage());
-            FileSystemWorker.error("AppComponents.connection", e);
             return new RegRuMysql().getDefaultConnection(dbName);
         }
     }
