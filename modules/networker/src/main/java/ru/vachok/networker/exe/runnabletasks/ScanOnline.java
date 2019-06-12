@@ -49,7 +49,7 @@ public class ScanOnline implements Runnable, Pinger {
     /**
      {@link NetListKeeper#getI()}
      */
-    private static final NetListKeeper NET_LIST_KEEPER = NetListKeeper.getI();
+    private static final NetListKeeper NET_LIST_KEEPER = NetListKeeper.getI(); //todo 12.06.2019 (13:31) По-возможности убрать в AppComponents
     
     private final String sep = ConstantsFor.FILESYSTEM_SEPARATOR;
     
@@ -89,7 +89,7 @@ public class ScanOnline implements Runnable, Pinger {
              PrintStream printStream = new PrintStream(outputStream)) {
             byte[] addressBytes = InetAddress.getByName(inetAddrStr.split(" ")[0]).getAddress();
             InetAddress inetAddress = InetAddress.getByAddress(addressBytes);
-            xReachable = inetAddress.isReachable(300);
+            xReachable = inetAddress.isReachable(ConstantsFor.TIMEOUT_650 / 2);
             if (!xReachable) {
                 printStream.println(inetAddrStr + " <font color=\"red\">offline</font>.");
                 String removeOnline = onLinesResolve.remove(inetAddress.toString());
@@ -116,7 +116,7 @@ public class ScanOnline implements Runnable, Pinger {
     
     @Override
     public void run() {
-        setLists();
+        setMaxOnlineListFromFile();
         threadConfig.execByThreadConfig(this::checkSwitchesAvail);
         File fileMAX = new File(onlinesFile.toPath().toAbsolutePath().toString().replace(ConstantsFor.FILENAME_ONSCAN, sep + "lan" + sep + ConstantsFor.FILENAME_MAXONLINE));
     
@@ -146,9 +146,9 @@ public class ScanOnline implements Runnable, Pinger {
     }
     
     /**
-     Задолнение {@link #maxOnList} данными из файла C:\Users\ikudryashov\IdeaProjects\ftpplus\modules\networker\lan\max.online
+     Заполнение {@link #maxOnList} данными из файла C:\Users\ikudryashov\IdeaProjects\ftpplus\modules\networker\lan\max.online
      */
-    private void setLists() {
+    private void setMaxOnlineListFromFile() {
         try {
             File onFile = new File(ConstantsFor.FILENAME_ONSCAN);
             String newPath = onFile.getAbsolutePath().replace(ConstantsFor.FILENAME_ONSCAN, "lan" + sep + ConstantsFor.FILENAME_MAXONLINE);
@@ -169,16 +169,16 @@ public class ScanOnline implements Runnable, Pinger {
      @see ScanOnline#isReach(java.lang.String)
      */
     private boolean writeOnLineFile() {
-        boolean retBool = false;
+        boolean retBool;
         try {
-            retBool = Files.deleteIfExists(onlinesFile.toPath());//ScanOnline.onList
+            Files.deleteIfExists(onlinesFile.toPath());
         }
         catch (IOException e) {
             messageToUser.error(e.getMessage());
         }
         try (OutputStream outputStream = new FileOutputStream(onlinesFile);
              PrintStream printStream = new PrintStream(outputStream, true)) {
-            Deque<String> onDeq = NetScanFileWorker.getI().getDequeOfOnlineDev();
+            Deque<String> onDeq = NetScanFileWorker.getDequeOfOnlineDev();
             printStream.println("Checked: " + new Date());
             while (!onDeq.isEmpty()) {
                 isReach(onDeq.poll());
@@ -208,7 +208,7 @@ public class ScanOnline implements Runnable, Pinger {
         List<String> onlineLastStrings = FileSystemWorker.readFileToList(scanOnlineLast.getAbsolutePath());
         Collections.sort(onlineLastStrings);
         Collection<String> onLastAsTreeSet = new TreeSet<>(onlineLastStrings);
-        Deque<String> lanFilesDeque = NetScanFileWorker.getI().getDequeOfOnlineDev();
+        Deque<String> lanFilesDeque = NetScanFileWorker.getDequeOfOnlineDev();
     
         if (onLastAsTreeSet.size() < lanFilesDeque.size()) { //скопировать ScanOnline.onList в ScanOnline.last
             FileSystemWorker.copyOrDelFile(onlinesFileLoc, replaceFileNamePattern, false);
@@ -228,8 +228,8 @@ public class ScanOnline implements Runnable, Pinger {
      */
     private void checkSwitchesAvail() {
 //        messageToUser.info("ПИНГ СВИЧЕЙ");
-        SwitchesAvailability switchesAvailability = new SwitchesAvailability();
-        Future<?> submit = threadConfig.getTaskExecutor().submit(switchesAvailability);
+        Pinger switchesAvailability = new SwitchesAvailability();
+        Future<?> submit = threadConfig.getTaskExecutor().submit((Runnable) switchesAvailability);
         try {
             submit.get(ConstantsFor.DELAY * 2, TimeUnit.SECONDS);
         }
@@ -238,8 +238,8 @@ public class ScanOnline implements Runnable, Pinger {
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
         }
-        
-        Set<String> availabilityOkIP = switchesAvailability.getOkIP();
+    
+        Set<String> availabilityOkIP = ((SwitchesAvailability) switchesAvailability).getOkIP();
         availabilityOkIP.forEach(x->onLinesResolve.put(x, LocalDateTime.now().toString()));
     }
 }
