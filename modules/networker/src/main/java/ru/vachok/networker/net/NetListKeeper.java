@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 
 
@@ -95,7 +96,12 @@ public final class NetListKeeper {
     
     public ConcurrentMap<String, String> getOnLinesResolve() {
         readMap();
-        AppComponents.threadConfig().getTaskScheduler().scheduleAtFixedRate(new ChkOnlinePCsSizeChange(), TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY));
+        try {
+            AppComponents.threadConfig().getTaskScheduler().scheduleAtFixedRate(new ChkOnlinePCsSizeChange(), TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY));
+        }
+        catch (RejectedExecutionException e) {
+            System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".getOnLinesResolve");
+        }
         return this.onLinesResolve;
     }
     

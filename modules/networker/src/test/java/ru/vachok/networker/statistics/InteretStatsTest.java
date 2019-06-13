@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.statistics;
 
 
@@ -10,7 +12,7 @@ import static org.testng.Assert.assertFalse;
 public class InteretStatsTest {
     
     
-    @Test
+    @Test(enabled = false)
     public void testInetStat() {
         StatsOfNetAndUsers statsOfNetAndUsers = new WeekStats();
         String inetStats = statsOfNetAndUsers.getInetStats();

@@ -18,9 +18,9 @@ public class InetIPUserTest {
     public void testGetUsage() {
     }
     
-    @Test
+    @Test(enabled = false)
     public void testShowLog() {
-        new AppComponents().saveLogsToDB();
+        SaveLogsToDB dbSaver = new AppComponents().saveLogsToDB();
         String showLog = SaveLogsToDB.showInfo();
         Assert.assertNotNull(showLog);
         Assert.assertTrue(showLog.contains("LOGS_TO_DB_EXT.showInfo"));

@@ -34,6 +34,7 @@ public class InetUserPCName implements InternetUse {
     
     
     @Override public void showLog() {
-        new AppComponents().saveLogsToDB();
+        Runnable dbSaver = new AppComponents().saveLogsToDB();
+        AppComponents.threadConfig().execByThreadConfig(dbSaver);
     }
 }

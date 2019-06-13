@@ -28,7 +28,7 @@ import java.util.Properties;
         System.out.println("rowsDel = " + rowsDel);
     }
     
-    @Test
+    @Test(enabled = false)
     public void tryUpd() {
         DataBaseRegSQL dbPropsCallable = new DBPropsCallable();
         int orNot = dbPropsCallable.updateTable();
