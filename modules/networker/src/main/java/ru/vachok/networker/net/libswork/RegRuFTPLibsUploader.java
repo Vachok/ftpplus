@@ -260,14 +260,21 @@ import java.util.regex.Pattern;
         try (InputStream inputStream = new FileInputStream(file)) {
             ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
             System.out.println(ftpClient.getReplyString());
-            
+    
             stringBuilder.append(nameFTPFile).append(" remote name.\n");
-            
+    
             ftpClient.enterLocalPassiveMode();
             System.out.println(ftpClient.getReplyString());
-            
+    
             stringBuilder.append("Is file stored to server: ");
-            boolean isStore = ftpClient.storeFile(nameFTPFile, inputStream);
+            boolean isStore = false;
+            try {
+                isStore = ftpClient.storeFile(nameFTPFile, inputStream);
+            }
+            catch (Exception e) {
+                ftpClient.enterLocalActiveMode();
+                isStore = ftpClient.storeFile(nameFTPFile, inputStream);
+            }
             System.out.println(ftpClient.getReplyString());
             stringBuilder.append(isStore).append(", reply: ").append(ftpClient.getReplyString()).append("\n");
         }
