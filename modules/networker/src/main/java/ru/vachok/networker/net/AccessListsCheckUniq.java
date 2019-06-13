@@ -4,6 +4,7 @@ package ru.vachok.networker.net;
 
 
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.TForms;
@@ -75,6 +76,6 @@ public class AccessListsCheckUniq implements SSHWorker, Runnable {
         String fromArray = new TForms().fromArray(mapInternetUsageLog, false);
         messageToUser.info(getClass().getSimpleName(), ".parseListFiles", " = \n" + fromArray);
         FileSystemWorker.writeFile(ConstantsFor.FILENAME_INETUNIQ, fromArray);
-        NetListKeeper.getI().setInetUniqMap(mapInternetUsageLog);
+        AppComponents.netKeeper().setInetUniqMap(mapInternetUsageLog);
     }
 }

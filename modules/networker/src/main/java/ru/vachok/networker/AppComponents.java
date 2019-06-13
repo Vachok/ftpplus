@@ -29,6 +29,7 @@ import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
 import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.NetListKeeper;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.net.libswork.RegRuFTPLibsUploader;
 import ru.vachok.networker.services.ADSrv;
@@ -228,7 +229,7 @@ public class AppComponents {
         return LoggerFactory.getLogger(name);
     }
     
-    public Runnable scanOline() {
+    public Runnable scanOnline() {
         return new ScanOnline();
     }
     
@@ -245,6 +246,10 @@ public class AppComponents {
             messageToUser.error(FileSystemWorker.error(AppComponents.class.getSimpleName() + ".getUserPref", e));
         }
         return preferences;
+    }
+    
+    public static NetListKeeper netKeeper() {
+        return NetListKeeper.getI();
     }
     
     static DiapazonScan diapazonScan() {
