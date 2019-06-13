@@ -14,6 +14,7 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.ResoCache;
 import ru.vachok.networker.config.ResLoader;
+import ru.vachok.networker.controller.MatrixCtr;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.io.File;
@@ -113,8 +114,7 @@ public class MatrixSRV {
     public String getWorkPosition(final String sql) {
         Map<String, String> doljAndAccess = new ConcurrentHashMap<>();
         DataConnectTo dataConnectTo = new RegRuMysql();
-        MysqlDataSource connectToDataSource = dataConnectTo.getDataSource(); //fixme ru.vachok.mysqlandprops.RegRuMysql.getDataSource 13.06.2019 (15:26) dataSource.setPassword(userPass[1])
-        
+        MysqlDataSource connectToDataSource = dataConnectTo.getDataSource();
         connectToDataSource.setUser("u0466446_default");
         connectToDataSource.setPassword("5xN_QlJG");
         connectToDataSource.setDatabaseName("u0466446_velkom");
