@@ -51,7 +51,7 @@ import java.util.prefs.Preferences;
  Компоненты. Бины
  
  @since 02.05.2018 (22:14) */
-@SuppressWarnings("OverlyCoupledClass") @ComponentScan
+@SuppressWarnings({"OverlyCoupledClass", "ClassWithTooManyMethods"}) @ComponentScan
 public class AppComponents {
     
     
