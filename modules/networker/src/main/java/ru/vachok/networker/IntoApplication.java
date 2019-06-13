@@ -5,6 +5,7 @@ package ru.vachok.networker;
 
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -85,7 +86,12 @@ public class IntoApplication {
         telnetThread.start();
         synchronized(SPRING_APPLICATION) {
             if (configurableApplicationContext == null) {
-                configurableApplicationContext = SPRING_APPLICATION.run(IntoApplication.class);
+                try {
+                    configurableApplicationContext = SPRING_APPLICATION.run(IntoApplication.class);
+                }
+                catch (BeanCreationException e) {
+                    MESSAGE_LOCAL.error(FileSystemWorker.error(IntoApplication.class.getSimpleName() + ".main", e));
+                }
             }
     
             delFilePatterns(ConstantsFor.getStringsVisit());

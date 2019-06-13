@@ -44,11 +44,11 @@ public class CommonSRV {
      
      @see CommonCTRL
      */
-    private String delFolderPath = "null";
+    private String delFolderPath = "";
     
-    private String perionDays = "1";
+    private String perionDays = "";
     
-    private String searchPat = "null";
+    private String searchPat = "";
     
     /**
      @return {@link #delFolderPath}

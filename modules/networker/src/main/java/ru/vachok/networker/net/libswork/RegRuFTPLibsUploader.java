@@ -12,6 +12,7 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.awt.*;
 import java.io.File;
@@ -54,7 +55,7 @@ import java.util.regex.Pattern;
     
     private static MessageToUser messageToUser = new MessageSwing();
     
-    private String uploadDirectoryStr;
+    private String uploadDirectoryStr = "null";
     
     private String ftpPass = chkPass();
     
@@ -77,7 +78,12 @@ import java.util.regex.Pattern;
     @Override public String uploadLibs() throws AccessDeniedException {
         String pc = ConstantsFor.thisPC();
         if (pc.toLowerCase().contains("home") | pc.toLowerCase().contains(ConstantsFor.HOSTNAME_DO213) && ftpPass != null) {
-            return makeConnectionAndStoreLibs();
+            try {
+                return makeConnectionAndStoreLibs();
+            }
+            catch (IOException e) {
+                return FileSystemWorker.error(getClass().getSimpleName() + ".uploadLibs", e);
+            }
         }
         else {
             throw new AccessDeniedException("Wrong Password");
@@ -171,7 +177,7 @@ import java.util.regex.Pattern;
             client.connect(getHost(), ConstantsFor.FTP_PORT);
         }
         catch (IOException e) {
-            System.err.println(e.getMessage());
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".getFtpClient", e));
         }
         FTPClientConfig config = new FTPClientConfig();
         config.setServerTimeZoneId("Europe/Moscow");
@@ -183,20 +189,23 @@ import java.util.regex.Pattern;
         return ConstantsFor.thisPC().toLowerCase().contains("home") || ConstantsFor.thisPC().toLowerCase().contains(ConstantsFor.HOSTNAME_DO213);
     }
     
-    private String makeConnectionAndStoreLibs() {
+    private String makeConnectionAndStoreLibs() throws IOException {
         StringBuilder stringBuilder = new StringBuilder();
         try {
             ftpClient.connect(getHost());
+            ftpClient.enterLocalPassiveMode();
         }
         catch (IOException e) {
-            messageToUser.error(getClass().getSimpleName(), "CONNECT ERROR", e.getMessage());
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".makeConnectionAndStoreLibs:ftpClient.connect", e));
+            ftpClient.connect(getHost());
+            ftpClient.enterLocalActiveMode();
         }
         try {
             ftpClient.login("u0466446_java", ftpPass);
             System.out.println(ftpClient.getReplyString());
         }
         catch (IOException e) {
-            messageToUser.error(getClass().getSimpleName(), "LOGIN ERROR", e.getMessage());
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + "LOGIN ERROR", e));
         }
         
         ftpClient.setAutodetectUTF8(true);
@@ -207,7 +216,7 @@ import java.util.regex.Pattern;
             System.out.println(ftpClient.getReplyString());
         }
         catch (IOException e) {
-            messageToUser.error(getClass().getSimpleName(), "CWD ERROR", e.getMessage());
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + "CWD ERROR", e));
         }
         stringBuilder.append(uploadToServer(new LinkedList<>()));
         return stringBuilder.toString();
@@ -251,14 +260,21 @@ import java.util.regex.Pattern;
         try (InputStream inputStream = new FileInputStream(file)) {
             ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
             System.out.println(ftpClient.getReplyString());
-            
+    
             stringBuilder.append(nameFTPFile).append(" remote name.\n");
-            
+    
             ftpClient.enterLocalPassiveMode();
             System.out.println(ftpClient.getReplyString());
-            
+    
             stringBuilder.append("Is file stored to server: ");
-            boolean isStore = ftpClient.storeFile(nameFTPFile, inputStream);
+            boolean isStore = false;
+            try {
+                isStore = ftpClient.storeFile(nameFTPFile, inputStream);
+            }
+            catch (Exception e) {
+                ftpClient.enterLocalActiveMode();
+                isStore = ftpClient.storeFile(nameFTPFile, inputStream);
+            }
             System.out.println(ftpClient.getReplyString());
             stringBuilder.append(isStore).append(", reply: ").append(ftpClient.getReplyString()).append("\n");
         }

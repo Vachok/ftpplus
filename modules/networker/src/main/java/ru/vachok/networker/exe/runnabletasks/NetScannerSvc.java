@@ -128,8 +128,7 @@ public class NetScannerSvc {
             connection = new AppComponents().connection(ConstantsNet.DB_NAME);
         }
         catch (IOException e) {
-            LOGGER.error(CLASS_NAME, ConstantsFor.METHNAME_STATIC_INITIALIZER, e.getMessage());
-            FileSystemWorker.error("NetScannerSvc.static initializer", e);
+            System.err.println(e.getMessage() + " " + NetScannerSvc.class.getSimpleName() + ".static initializer");
         }
     }
     

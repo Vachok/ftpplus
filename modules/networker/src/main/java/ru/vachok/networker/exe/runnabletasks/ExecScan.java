@@ -66,7 +66,9 @@ public class ExecScan extends DiapazonScan {
     
     private PrintStream printStream;
     
-    private Map<String, String> offLines = NetListKeeper.getI().getOffLines();
+    private Map<String, String> offLines = AppComponents.netKeeper().getOffLines();
+    
+    private NetListKeeper netListKeeper = AppComponents.netKeeper();
     
     public ExecScan(int from, int to, String whatVlan, File vlanFile) {
         
@@ -153,8 +155,7 @@ public class ExecScan extends DiapazonScan {
         }
         
         if (byAddress.isReachable(timeOutMSec)) {
-            NetListKeeper.getI().getOnLinesResolve().put(hostAddress, hostName);
-            
+            netListKeeper.getOnLinesResolve().put(hostAddress, hostName);
             getAllDevLocalDeq().add("<font color=\"green\">" + hostName + FONT_BR_CLOSE);
             stringBuilder.append(hostAddress).append(" ").append(hostName).append(PAT_IS_ONLINE);
         }
@@ -172,7 +173,7 @@ public class ExecScan extends DiapazonScan {
         
             }
         }
-        NetListKeeper.getI().setOffLines(offLines);
+        netListKeeper.setOffLines(offLines);
         return stringBuilder.toString();
     }
     

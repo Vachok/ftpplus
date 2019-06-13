@@ -62,7 +62,7 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
     @SuppressWarnings("CanBeFinal")
     private String userInput;
     
-    private NetListKeeper listKeeper = NetListKeeper.getI();
+    private NetListKeeper listKeeper = AppComponents.netKeeper();
     
     private long delStamp;
     

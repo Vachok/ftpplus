@@ -29,6 +29,7 @@ import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
 import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.NetListKeeper;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.net.libswork.RegRuFTPLibsUploader;
 import ru.vachok.networker.services.ADSrv;
@@ -51,7 +52,7 @@ import java.util.prefs.Preferences;
  Компоненты. Бины
  
  @since 02.05.2018 (22:14) */
-@SuppressWarnings("OverlyCoupledClass") @ComponentScan
+@SuppressWarnings({"OverlyCoupledClass", "ClassWithTooManyMethods"}) @ComponentScan
 public class AppComponents {
     
     
@@ -99,7 +100,6 @@ public class AppComponents {
         }
         catch (SQLException e) {
             messageToUser.errorAlert("AppComponents", ConstantsNet.STR_CONNECTION, e.getMessage());
-            FileSystemWorker.error("AppComponents.connection", e);
             return new RegRuMysql().getDefaultConnection(dbName);
         }
     }
@@ -134,7 +134,6 @@ public class AppComponents {
     @Bean
     @Scope(ConstantsFor.SINGLETON)
     public SaveLogsToDB saveLogsToDB() {
-        SaveLogsToDB.startScheduled();
         return SaveLogsToDB.getI();
     }
     
@@ -181,14 +180,14 @@ public class AppComponents {
     
     public boolean updateProps(Properties propertiesToUpdate) throws IOException {
         if (propertiesToUpdate.size() > 5) {
-            File pFile = new File(ConstantsFor.PROPS_FILE_JAVA_ID);
-            pFile.setWritable(true);
-            pFile.delete();
+            File constantsForProps = new File(ConstantsFor.PROPS_FILE_JAVA_ID);
+            System.out.println("constantsForProps.setWritable(true) = " + constantsForProps.setWritable(true));
+            System.out.println("constantsForProps.delete() = " + constantsForProps.delete());
             propertiesToUpdate.store(new FileOutputStream(ConstantsFor.PROPS_FILE_JAVA_ID), getClass().getSimpleName() + ".updateProps");
         }
         InitProperties initProperties = new DBRegProperties(ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName());
-        boolean isDel = initProperties.delProps(); //fixme 09.06.2019 (21:07)
-        boolean isSet = initProperties.setProps(propertiesToUpdate); //fixme 09.06.2019 (21:07)
+        boolean isDel = initProperties.delProps();
+        boolean isSet = initProperties.setProps(propertiesToUpdate);
         return isDel & isSet;
     }
     
@@ -200,7 +199,7 @@ public class AppComponents {
                 .currentTimeMillis()) {
                 APP_PR.putAll(new AppComponents().getAppProps());
             }
-            if (fileProps.exists() & !fileProps.canWrite()) {
+            if (!fileProps.canWrite()) {
                 new AppComponents().filePropsNoWritable(fileProps);
             }
         }
@@ -229,7 +228,7 @@ public class AppComponents {
         return LoggerFactory.getLogger(name);
     }
     
-    public Runnable scanOline() {
+    public ScanOnline scanOnline() {
         return new ScanOnline();
     }
     
@@ -246,6 +245,10 @@ public class AppComponents {
             messageToUser.error(FileSystemWorker.error(AppComponents.class.getSimpleName() + ".getUserPref", e));
         }
         return preferences;
+    }
+    
+    public static NetListKeeper netKeeper() {
+        return NetListKeeper.getI();
     }
     
     static DiapazonScan diapazonScan() {
@@ -269,22 +272,20 @@ public class AppComponents {
         }
     }
     
-    private void filePropsNoWritable(File fileProps) {
+    private void filePropsNoWritable(File constForProps) {
         InitProperties initProperties = new FileProps(ConstantsFor.class.getSimpleName());
         AppComponents.APP_PR.clear();
         AppComponents.APP_PR.putAll(initProperties.getProps());
-        AppComponents.APP_PR.setProperty(ConstantsFor.PR_DBSTAMP, String.valueOf(System.currentTimeMillis()));
+        System.out.println("constForProps.setWritable(true) = " + constForProps.setWritable(true));
         initProperties = new DBRegProperties(ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName());
         initProperties.delProps();
         initProperties.setProps(AppComponents.APP_PR);
-        messageToUser.warn("fileProps.setWritable(true) = " + fileProps.setWritable(true));
     }
     
     private Properties getAppProps() {
-        threadConfig().thrNameSet("getAPr");
+    
         MysqlDataSource mysqlDataSource = new DBRegProperties(DB_JAVA_ID).getRegSourceForProperties();
         mysqlDataSource.setRelaxAutoCommit(true);
-        mysqlDataSource.setLogger("java.util.Logger");
         Callable<Properties> theProphecy = new DBPropsCallable(mysqlDataSource, APP_PR);
         try {
             APP_PR.putAll(theProphecy.call());

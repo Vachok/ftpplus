@@ -51,7 +51,7 @@ import java.util.concurrent.*;
         scanOnline.run();
     }
     
-    @Test
+    @Test(enabled = false)
     public void offlineNotEmptTEST() {
         NetListKeeper NET_LIST_KEEPER = NetListKeeper.getI();
         ConcurrentMap<String, String> onLinesResolve = NET_LIST_KEEPER.getOnLinesResolve();

@@ -25,9 +25,4 @@ public class TraceroutingTest {
             Assert.assertNull(e, e.getMessage());
         }
     }
-    
-    @Test
-    public void getProviderTraceStrTest() {
-    
-    }
 }

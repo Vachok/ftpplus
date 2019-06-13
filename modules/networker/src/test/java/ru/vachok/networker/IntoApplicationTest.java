@@ -3,14 +3,21 @@
 package ru.vachok.networker;
 
 
+import org.springframework.beans.factory.BeanCreationException;
+import org.testng.Assert;
 import org.testng.annotations.Test;
 
 
 public class IntoApplicationTest {
     
     
-    @Test()
+    @Test
     public void testGetConfigurableApplicationContext() {
-        IntoApplication.reloadConfigurableApplicationContext();
+        try {
+            IntoApplication.reloadConfigurableApplicationContext();
+        }
+        catch (BeanCreationException e) {
+            Assert.assertNotNull(e, e.getMessage());
+        }
     }
 }

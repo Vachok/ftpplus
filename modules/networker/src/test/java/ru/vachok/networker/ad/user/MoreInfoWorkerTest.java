@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.ad.user;
 
 
@@ -47,7 +49,7 @@ import java.util.stream.Collectors;
     public void testSetInfo() {
     }
     
-    public static String getUserFromDB(String userInputRaw) {
+    private static String getUserFromDB(String userInputRaw) {
         final Pattern COMPILE = Pattern.compile(": ");
         
         StringBuilder retBuilder = new StringBuilder();

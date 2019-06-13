@@ -28,7 +28,7 @@ import java.util.concurrent.TimeUnit;
     @Test
     public void testGetProps() {
         Properties appProps = AppComponentsTest.getPropsTESTCOPY();
-        Assert.assertTrue(appProps.size() > 10);
+        Assert.assertTrue(appProps.size() > 10, "AppProps size = " + appProps.size());
     }
     
     @Test

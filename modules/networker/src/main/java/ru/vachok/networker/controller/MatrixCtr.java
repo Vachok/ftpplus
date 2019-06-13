@@ -73,7 +73,11 @@ public class MatrixCtr {
     private final VersionInfo versionInfoInst;
 
     private String currentProvider = "Unknown yet";
-
+    
+    public void setMatrixSRV(MatrixSRV matrixSRV) {
+        this.matrixSRV = matrixSRV;
+    }
+    
     /**
      {@link MatrixSRV}
      */
@@ -118,7 +122,6 @@ public class MatrixCtr {
      @see AppComponents#sshActs()
      */
     public void setCurrentProvider() {
-        SshActs sshActs = new AppComponents().sshActs();
         try {
             this.currentProvider = new Tracerouting().call();
         }

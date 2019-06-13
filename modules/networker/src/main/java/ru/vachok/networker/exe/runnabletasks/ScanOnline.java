@@ -49,7 +49,7 @@ public class ScanOnline implements Runnable, Pinger {
     /**
      {@link NetListKeeper#getI()}
      */
-    private static final NetListKeeper NET_LIST_KEEPER = NetListKeeper.getI(); //todo 12.06.2019 (13:31) По-возможности убрать в AppComponents
+    private static final NetListKeeper NET_LIST_KEEPER = AppComponents.netKeeper();
     
     private final String sep = ConstantsFor.FILESYSTEM_SEPARATOR;
     
