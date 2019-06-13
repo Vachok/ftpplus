@@ -9,7 +9,7 @@ import org.testng.annotations.Test;
 public class IntoApplicationTest {
     
     
-    @Test()
+    @Test
     public void testGetConfigurableApplicationContext() {
         IntoApplication.reloadConfigurableApplicationContext();
     }

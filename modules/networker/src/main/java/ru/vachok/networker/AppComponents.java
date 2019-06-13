@@ -229,7 +229,7 @@ public class AppComponents {
         return LoggerFactory.getLogger(name);
     }
     
-    public Runnable scanOnline() {
+    public ScanOnline scanOnline() {
         return new ScanOnline();
     }
     

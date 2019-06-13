@@ -137,9 +137,9 @@ public class NetScanCtr {
             STR_REQUEST + request + "], response = [" + response + STR_MODEL + model + "]",
             ConstantsFor.STR_INPUT_PARAMETERS_RETURNS,
             ConstantsFor.JAVA_LANG_STRING_NAME);
-    
+        
         AppComponents.threadConfig().thrNameSet("scan");
-    
+        
         ConstantsFor.getVis(request);
         model.addAttribute("serviceinfo", (float) TimeUnit.MILLISECONDS.toSeconds(lastSt - System.currentTimeMillis()) / ConstantsFor.ONE_HOUR_IN_MIN);
         netScannerSvcInstAW.setThePc("");
@@ -266,17 +266,17 @@ public class NetScanCtr {
         int pcWas = Integer.parseInt(PROPERTIES.getProperty(ConstantsFor.PR_ONLINEPC, "0"));
         int remainPC = thisTotpc - lastScanMAP.size();
         boolean newPSs = 0 > remainPC;
-    
+        
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(timeLeft);
         stringBuilder.append(" seconds (");
         stringBuilder.append((float) timeLeft / ConstantsFor.ONE_HOUR_IN_MIN);
         stringBuilder.append(" min) left<br>Delay period is ");
         stringBuilder.append(DURATION_MIN);
-    
+        
         String msg = stringBuilder.toString();
         LOGGER.info(msg);
-    
+        
         StringBuilder titleBuilder = new StringBuilder();
         titleBuilder.append(remainPC);
         titleBuilder.append("/");
@@ -287,14 +287,14 @@ public class NetScanCtr {
         titleBuilder.append(pcWas);
         titleBuilder.append(") Next run ");
         titleBuilder.append(LocalDateTime.ofEpochSecond(lastSt / 1000, 0, ZoneOffset.ofHours(3)).toLocalTime());
-    
+        
         model
             .addAttribute("left", msg)
             .addAttribute("pc", new TForms().fromArray(lastScanMAP, false))
             .addAttribute(ConstantsFor.ATT_TITLE, titleBuilder.toString());
         if (newPSs) {
             FileSystemWorker.writeFile(ConstantsNet.BEANNAME_LASTNETSCAN, new TForms().fromArray(lastScanMAP, false));
-    
+            
             model.addAttribute(ConstantsFor.PR_AND_ATT_NEWPC, "Добавлены компы! " + Math.abs(remainPC) + " шт.");
             PROPERTIES.setProperty(ConstantsFor.PR_TOTPC, String.valueOf(lastScanMAP.size()));
             PROPERTIES.setProperty(ConstantsFor.PR_AND_ATT_NEWPC, String.valueOf(remainPC));
@@ -316,7 +316,7 @@ public class NetScanCtr {
      {@link #scanIt(HttpServletRequest, Model, Date)}. <br> Иначе выдать
      сообщение в консоль, с временем след. запуска.
      <p>
- 
+     
      @param remainPC осталось ПК
      @param lastScanEpoch последнее сканирование Timestamp как <b>EPOCH Seconds</b>
      @param request {@link HttpServletRequest}
@@ -336,7 +336,7 @@ public class NetScanCtr {
         };
         LocalTime lastScanLocalTime = LocalDateTime.ofEpochSecond(lastScanEpoch, 0, ZoneOffset.ofHours(3)).toLocalTime();
         boolean isSystemTimeBigger = (System.currentTimeMillis() > lastScanEpoch * 1000);
-        synchronized(scanTemp) {
+       
             if (!(scanTemp.exists())) {
                 model.addAttribute(ConstantsFor.PR_AND_ATT_NEWPC, lastScanLocalTime);
                 if (isSystemTimeBigger) {
@@ -348,7 +348,7 @@ public class NetScanCtr {
             else {
                 messageToUser.warn(getClass().getSimpleName() + ".timeCheck", "lastScanLocalTime", " = " + lastScanLocalTime);
             }
-        }
+        
     }
     
     private ThreadMXBean getTHRBeanMX() {
@@ -373,7 +373,7 @@ public class NetScanCtr {
      Если он существует - запускаем {@link
     #mapSizeBigger(Model, HttpServletRequest, long, int)}, иначе отправляем <b>Runnable</b> в {@link ThreadConfig#getTaskExecutor()} (1)
      <p>
- 
+     
      @param model {@link Model}
      @param request {@link HttpServletRequest}
      @param lastSt timestamp из {@link #PROPERTIES}
@@ -391,14 +391,14 @@ public class NetScanCtr {
             netScannerSvcInstAW.setThrInformation(getInformationForThreads(threadMXBean));
         };
         int thisTotpc = Integer.parseInt(PROPERTIES.getProperty(ConstantsFor.PR_TOTPC, "259"));
-        synchronized(scanTemp) {
-            if ((scanTemp.isFile() && scanTemp.exists())) {
-                mapSizeBigger(model, request, lastSt, thisTotpc);
-            }
-            else {
-                timeCheck(thisTotpc - lastScanMAP.size(), lastSt / 1000, request, model);
-            }
+        
+        if ((scanTemp.isFile() && scanTemp.exists())) {
+            mapSizeBigger(model, request, lastSt, thisTotpc);
         }
+        else {
+            timeCheck(thisTotpc - lastScanMAP.size(), lastSt / 1000, request, model);
+        }
+        
     }
     
     /**
@@ -413,7 +413,7 @@ public class NetScanCtr {
      Иначе: <br> Очищаем {@link #lastScanMAP} <br> Запускаем {@link NetScannerSvc#getPcNames()} <br> В {@link Model} добавим {@code lastScanDate} как
      {@code title}, и {@link Set} {@link
     NetScannerSvc#getPcNames()}.@param request      {@link HttpServletRequest}
- 
+     
      @param model {@link Model}
      @param lastScanDate дата последнего скана
      */
@@ -476,7 +476,7 @@ public class NetScanCtr {
     private void allDevNotNull(Model model, HttpServletResponse response) {
         final float scansInMin = Float.parseFloat(AppComponents.getProps().getProperty(ConstantsFor.PR_SCANSINMIN, "200"));
         float minLeft = ConstantsNet.getAllDevices().remainingCapacity() / scansInMin;
-    
+        
         StringBuilder attTit = new StringBuilder().append(minLeft).append(" ~minLeft. ").append(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis((long) minLeft)));
         model.addAttribute(ConstantsFor.ATT_TITLE, attTit.toString());
         model.addAttribute("pcs", new ScanOnline().getPingResultStr());

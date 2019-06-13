@@ -10,7 +10,7 @@ import ru.vachok.networker.abstr.ConnectToMe;
 public class TelnetStarterTest {
     
     
-    @Test
+    @Test(enabled = false)
     public void startServer() {
         ConnectToMe connectToMe = new TestServer(9990);
         try {
