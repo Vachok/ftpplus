@@ -33,8 +33,8 @@ public class VersionInfo {
      {@link AppComponents#getProps()}
      */
     private static final Properties PROPERTIES = AppComponents.getProps();
-
-    private static final String PR_APP_BUILD = "appBuild";
+    
+    private static final String PR_APP_BUILD = "APP_BUILD";
 
     /**
      {@link ConstantsFor#thisPC()}
@@ -49,7 +49,7 @@ public class VersionInfo {
     /**
      Билд
      */
-    private String appBuild = String.valueOf(this.hashCode());
+    private static final String APP_BUILD = "fri";
     /**
      Время сборки
      */
@@ -70,10 +70,10 @@ public class VersionInfo {
     }
     
     /**
-     @return {@link #appBuild}
+     @return {@link #APP_BUILD}
      */
     public String getAppBuild() {
-        return appBuild;
+        return APP_BUILD;
     }
 
     /**
@@ -116,6 +116,23 @@ public class VersionInfo {
         }
     }
     
+    @Override public String toString() {
+        final StringBuilder sb = new StringBuilder("VersionInfo{");
+        sb.append("APP_BUILD='").append(APP_BUILD).append('\'');
+        sb.append(", appVersion='").append(appVersion).append('\'');
+        sb.append(", buildTime='").append(buildTime).append('\'');
+        sb.append(", propertiesFrom='").append(propertiesFrom).append('\'');
+        sb.append(", thisPCNameStr='").append(thisPCNameStr).append('\'');
+        sb.append('}');
+        return sb.toString();
+    }
+    
+    private void getParams() {
+        Properties properties = AppComponents.getProps();
+        this.appVersion = properties.getProperty(ConstantsFor.PR_APP_VERSION, ALERT_DNE);
+        this.buildTime = properties.getProperty(ConstantsFor.PR_APP_BUILDTIME, ALERT_DNE);
+    }
+
     /**
      Usages: {@link #setParams()} <br> Uses: - <br>
 
@@ -126,29 +143,10 @@ public class VersionInfo {
             if (s.toLowerCase().contains(REPLACEPAT_VERSION)) {
                 this.appVersion = s.replace(REPLACEPAT_VERSION, "").trim();
             }
-            this.appBuild = String.valueOf(ConstantsFor.DELAY);
             this.buildTime = new Date().toString();
         }
         AppComponents.getProps().setProperty(ConstantsFor.PR_APP_BUILDTIME, this.buildTime);
-        AppComponents.getProps().setProperty(ConstantsFor.PR_APP_BUILD, this.appBuild);
+        AppComponents.getProps().setProperty(ConstantsFor.PR_APP_BUILD, APP_BUILD);
         AppComponents.getProps().setProperty(ConstantsFor.PR_APP_VERSION, this.appVersion);
-    }
-    
-    private void getParams() {
-        Properties properties = AppComponents.getProps();
-        this.appBuild = properties.getProperty(ConstantsFor.PR_APP_BUILD, ALERT_DNE);
-        this.appVersion = properties.getProperty(ConstantsFor.PR_APP_VERSION, ALERT_DNE);
-        this.buildTime = properties.getProperty(ConstantsFor.PR_APP_BUILDTIME, ALERT_DNE);
-    }
-
-    @Override public String toString() {
-        final StringBuilder sb = new StringBuilder("VersionInfo{");
-        sb.append("appBuild='").append(appBuild).append('\'');
-        sb.append(", appVersion='").append(appVersion).append('\'');
-        sb.append(", buildTime='").append(buildTime).append('\'');
-        sb.append(", propertiesFrom='").append(propertiesFrom).append('\'');
-        sb.append(", thisPCNameStr='").append(thisPCNameStr).append('\'');
-        sb.append('}');
-        return sb.toString();
     }
 }
