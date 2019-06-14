@@ -6,10 +6,15 @@ package ru.vachok.networker.statistics;
 import org.testng.annotations.Test;
 import ru.vachok.networker.exe.schedule.WeekStats;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.concurrent.TimeUnit;
+
 import static org.testng.Assert.assertFalse;
 
 
-public class InteretStatsTest {
+@SuppressWarnings("ALL") public class InteretStatsTest {
     
     
     @Test(enabled = false)
@@ -19,5 +24,32 @@ public class InteretStatsTest {
         assertFalse(inetStats.contains("does not exists!"), inetStats);
     }
     
+    @Test
+    public void dayOfWeekTesting() {
+        DateFormat format = new SimpleDateFormat("E");
+        String weekDay = format.format(new Date(System.currentTimeMillis() + TimeUnit.DAYS.toMillis(2)));
+        System.out.println(weekDay);
+    }
     
+    @Test
+    public void testRun() {
+        InteretStats interetStats = new InteretStats();
+        interetStats.run();
+    }
+    
+    @Test
+    public void testSelectFrom() {
+    }
+    
+    @Test
+    public void testDeleteFrom() {
+    }
+    
+    @Test
+    public void testInsertTo() {
+    }
+    
+    @Test
+    public void testUpdateTable() {
+    }
 }
