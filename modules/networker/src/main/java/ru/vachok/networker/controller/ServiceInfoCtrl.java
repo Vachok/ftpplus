@@ -53,7 +53,11 @@ public class ServiceInfoCtrl {
     
     private boolean authReq;
     
-    public ServiceInfoCtrl(Visitor visitor) {
+    public ServiceInfoCtrl() {
+    
+    }
+    
+    protected ServiceInfoCtrl(Visitor visitor) {
         this.visitor = visitor;
     }
     
