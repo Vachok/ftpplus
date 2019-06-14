@@ -493,6 +493,22 @@ public class TForms {
         }
     }
     
+    public String fromArray(Enumeration<?> enumOf, boolean isHtml) {
+        this.nStringBuilder = new StringBuilder();
+        this.brStringBuilder = new StringBuilder();
+        while (enumOf.hasMoreElements()) {
+            Object nextElement = enumOf.nextElement();
+            brStringBuilder.append(nextElement).append(BR_STR);
+            nStringBuilder.append(nextElement).append(N_STR);
+        }
+        if (isHtml) {
+            return brStringBuilder.toString();
+        }
+        else {
+            return nStringBuilder.toString();
+        }
+    }
+    
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("TForms{");

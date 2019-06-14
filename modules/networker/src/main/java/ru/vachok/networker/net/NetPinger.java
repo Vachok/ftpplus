@@ -289,7 +289,7 @@ public class NetPinger implements Runnable, Pinger {
         final StringBuilder sb = new StringBuilder("NetPinger{");
         sb.append("pingResultStr='").append(pingResultStr).append('\'');
         sb.append(", pingSleepMsec=").append(pingSleepMsec);
-        sb.append(", timeToEndStr='").append(timeToEndStr).append('\'').append("\n");
+        sb.append(", timeToEndStr='").append(timeToEndStr).append('\'');
         sb.append(TimeUnit.SECONDS.toMinutes(LocalTime.now().toSecondOfDay())).append("-")
             .append(TimeUnit.SECONDS.toMinutes(LocalTime.parse("08:30").toSecondOfDay())).append(" (08:30)")
             .append(String.valueOf((LocalTime.now().toSecondOfDay() - LocalTime.parse("08:30").toSecondOfDay())))

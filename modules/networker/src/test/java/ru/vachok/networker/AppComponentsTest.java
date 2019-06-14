@@ -29,6 +29,8 @@ import java.util.concurrent.TimeUnit;
     public void testGetProps() {
         Properties appProps = AppComponentsTest.getPropsTESTCOPY();
         Assert.assertTrue(appProps.size() > 10, "AppProps size = " + appProps.size());
+        Assert.assertTrue(appProps.getProperty("server.port").equals("8880"));
+        Assert.assertTrue(appProps.getProperty("application.name").equals("ru.vachok.networker-"));
     }
     
     @Test
@@ -156,6 +158,7 @@ import java.util.concurrent.TimeUnit;
             Properties appProps = new AppComponentsTest().getAppPropsTESTCOPY();
             APP_PR.setProperty(ConstantsFor.PR_DBSTAMP, String.valueOf(System.currentTimeMillis()));
             APP_PR.setProperty(ConstantsFor.PR_THISPC, ConstantsFor.thisPC());
+            APP_PR.putAll(appProps);
         }
         return APP_PR;
     }
