@@ -13,7 +13,10 @@ import ru.vachok.networker.services.MessageLocal;
 
 import java.io.File;
 import java.nio.file.Paths;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 import java.util.Properties;
 
 
@@ -23,7 +26,13 @@ import java.util.Properties;
 @Component(ConstantsFor.STR_VERSIONINFO)
 @Scope(ConstantsFor.SINGLETON)
 public class VersionInfo {
-
+    
+    
+    /**
+     Билд
+     */
+    private String appBuild = "null";
+    
     /**
      Ссылка на /doc/index.html
      */
@@ -34,8 +43,8 @@ public class VersionInfo {
      */
     private static final Properties PROPERTIES = AppComponents.getProps();
     
-    private static final String PR_APP_BUILD = "APP_BUILD";
-
+    private static final Properties APP_PROPS = AppComponents.getProps();
+    
     /**
      {@link ConstantsFor#thisPC()}
      */
@@ -46,10 +55,9 @@ public class VersionInfo {
      Версия
      */
     private String appVersion = "No version";
-    /**
-     Билд
-     */
-    private static final String APP_BUILD = "fri";
+    
+    private static final String PR_APP_BUILD = "appBuild";
+    
     /**
      Время сборки
      */
@@ -59,7 +67,7 @@ public class VersionInfo {
     
     private static final String ALERT_DNE = "Property does not exists";
     
-    private static final String REPLACEPAT_VERSION = "version = '";
+    private static final String REPLACEPATTERN_VERSION = "version = '";
     
     public String getPropertiesFrom() {
         return propertiesFrom;
@@ -70,10 +78,10 @@ public class VersionInfo {
     }
     
     /**
-     @return {@link #APP_BUILD}
+     @return {@link #appBuild}
      */
     public String getAppBuild() {
-        return APP_BUILD;
+        return appBuild;
     }
 
     /**
@@ -89,36 +97,34 @@ public class VersionInfo {
     public String getBuildTime() {
         String timeStr = String.valueOf(ConstantsFor.START_STAMP);
         if (ConstantsFor.thisPC().toLowerCase().contains("home") || ConstantsFor.thisPC().toLowerCase().contains("do0")) {
-            AppComponents.getProps().setProperty(ConstantsFor.PR_APP_BUILDTIME, timeStr);
+            APP_PROPS.setProperty(ConstantsFor.PR_APP_BUILDTIME, timeStr);
             return timeStr;
         }
         else {
-            return "1";
+            return APP_PROPS.getProperty(ConstantsFor.PR_APP_BUILDTIME, "1");
         }
     }
     
-    /**
-     *
-     */
-    public void setParams() {
+    public String setParams() {
         String rootPathStr = Paths.get(".").toAbsolutePath().normalize().toString();
-        File file = new File(rootPathStr + ConstantsFor.FILENAME_BUILDGRADLE);
-
+        StringBuilder stringBuilder = new StringBuilder();
+        File file = new File(rootPathStr + ConstantsFor.FILESYSTEM_SEPARATOR + ConstantsFor.FILENAME_BUILDGRADLE);
         if (file.exists()) {
-            setterVersionFromFiles(file);
+            stringBuilder.append(setterVersionFromFiles(file)).append(" is SET");
         } else {
             try {
-                getParams();
+                stringBuilder.append(getParams()).append(" is GET");
             }
             catch (Exception e) {
-                messageToUser.error(e.getMessage() + " " + getClass().getSimpleName() + ".setParams");
+                stringBuilder.append(e.getMessage()).append(" ").append(getClass().getSimpleName()).append(".setParams ERROR");
             }
         }
+        return stringBuilder.toString();
     }
     
     @Override public String toString() {
         final StringBuilder sb = new StringBuilder("VersionInfo{");
-        sb.append("APP_BUILD='").append(APP_BUILD).append('\'');
+        sb.append("appBuild='").append(appBuild).append('\'');
         sb.append(", appVersion='").append(appVersion).append('\'');
         sb.append(", buildTime='").append(buildTime).append('\'');
         sb.append(", propertiesFrom='").append(propertiesFrom).append('\'');
@@ -127,10 +133,12 @@ public class VersionInfo {
         return sb.toString();
     }
     
-    private void getParams() {
-        Properties properties = AppComponents.getProps();
+    private String getParams() {
+        Properties properties = APP_PROPS;
         this.appVersion = properties.getProperty(ConstantsFor.PR_APP_VERSION, ALERT_DNE);
+        this.appBuild = properties.getProperty(ConstantsFor.PR_APP_BUILD, ALERT_DNE);
         this.buildTime = properties.getProperty(ConstantsFor.PR_APP_BUILDTIME, ALERT_DNE);
+        return this.appVersion + " version from props, " + this.buildTime + " " + this.appBuild;
     }
 
     /**
@@ -138,15 +146,18 @@ public class VersionInfo {
 
      @param file gradle.build
      */
-    private void setterVersionFromFiles( File file ) {
+    private String setterVersionFromFiles(File file) {
+        DateFormat dateFormat = new SimpleDateFormat("E", Locale.ENGLISH);
         for (String s : FileSystemWorker.readFileToList(file.getAbsolutePath())) {
-            if (s.toLowerCase().contains(REPLACEPAT_VERSION)) {
-                this.appVersion = s.replace(REPLACEPAT_VERSION, "").trim();
+            if (s.toLowerCase().contains(REPLACEPATTERN_VERSION)) {
+                this.appVersion = s.replace(REPLACEPATTERN_VERSION, "").trim();
             }
             this.buildTime = new Date().toString();
         }
-        AppComponents.getProps().setProperty(ConstantsFor.PR_APP_BUILDTIME, this.buildTime);
-        AppComponents.getProps().setProperty(ConstantsFor.PR_APP_BUILD, APP_BUILD);
-        AppComponents.getProps().setProperty(ConstantsFor.PR_APP_VERSION, this.appVersion);
+        this.appBuild = ConstantsFor.thisPC() + dateFormat.format(new Date());
+        APP_PROPS.setProperty(ConstantsFor.PR_APP_BUILDTIME, this.buildTime);
+        APP_PROPS.setProperty(ConstantsFor.PR_APP_BUILD, appBuild);
+        APP_PROPS.setProperty(ConstantsFor.PR_APP_VERSION, this.appVersion);
+        return this.appBuild + " build, " + this.buildTime + " time, " + this.appVersion + " version";
     }
 }
