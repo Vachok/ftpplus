@@ -54,7 +54,6 @@ public class Visitor {
         List<String> visitList = new ArrayList<>();
         this.request = request;
         this.session = request.getSession();
-        this.visitPlace = request.getHeader(ConstantsFor.ATT_REFERER.toLowerCase());
         this.remAddr = request.getRemoteAddr();
         this.userId = session.getId();
         visitList.add(new Date(System.currentTimeMillis()).toString());
@@ -134,7 +133,6 @@ public class Visitor {
         sb.append(", ST_ART=").append(ST_ART);
         sb.append(", timeSpend='").append(timeSpend).append('\'');
         sb.append(", userId='").append(userId).append('\'');
-        sb.append(", visitPlace='").append(visitPlace).append('\'');
         sb.append('}');
         return sb.toString();
     }
