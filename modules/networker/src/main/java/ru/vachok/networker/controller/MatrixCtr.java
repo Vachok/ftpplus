@@ -131,7 +131,6 @@ public class MatrixCtr {
     @GetMapping("/")
     public String getFirst(final HttpServletRequest request, Model model, HttpServletResponse response) {
         this.visitorInst = ConstantsFor.getVis(request);
-        setCurrentProvider();
         InfoWorker infoWorker = new MoreInfoWorker("tv");
         qIsNull(model, request);
         model.addAttribute(ConstantsFor.ATT_HEAD, new PageFooter().getHeaderUtext());
