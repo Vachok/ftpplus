@@ -49,8 +49,11 @@ public class ServiceInfoCtrlTest {
             assertTrue(urls.contains("Состояние памяти"));
             assertTrue(urls.contains("disk usage by program"));
         }
-        catch (AccessDeniedException | ExecutionException | InterruptedException e) {
+        catch (AccessDeniedException | ExecutionException e) {
             assertNull(e, e.getMessage());
+        }
+        catch (InterruptedException e) {
+            System.err.println("Date comeD = new Date(whenCome.get()) in ru.vachok.networker.controller.ServiceInfoCtrl.modModMaker was interrupted");
         }
     }
     

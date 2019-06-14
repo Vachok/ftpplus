@@ -68,7 +68,6 @@ public class MatrixSRV {
     /**
      @return {@link #countDB}
      */
-    @SuppressWarnings("WeakerAccess")
     public int getCountDB() {
         return countDB;
     }
@@ -114,7 +113,7 @@ public class MatrixSRV {
     public String getWorkPosition(final String sql) {
         Map<String, String> doljAndAccess = new ConcurrentHashMap<>();
         DataConnectTo dataConnectTo = new RegRuMysql();
-        MysqlDataSource connectToDataSource = dataConnectTo.getDataSource();
+        MysqlDataSource connectToDataSource = dataConnectTo.getDataSource(); //fixme 14.06.2019 (15:06).
         connectToDataSource.setUser("u0466446_default");
         connectToDataSource.setPassword("5xN_QlJG");
         connectToDataSource.setDatabaseName("u0466446_velkom");

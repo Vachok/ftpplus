@@ -19,7 +19,7 @@ public class Tracerouting implements Callable<String> {
     
     private static final Pattern COMPILE = Pattern.compile(";");
     
-    private final String SRV_NEEDED = new AppComponents().sshActs().whatSrvNeed();
+    private final String whatSrvNeed = new AppComponents().sshActs().whatSrvNeed();
     
     @Override public String call() throws Exception {
         return getProviderTraceStr();
@@ -44,7 +44,7 @@ public class Tracerouting implements Callable<String> {
      */
     private String getProviderTraceStr() throws ArrayIndexOutOfBoundsException, InterruptedException, ExecutionException, TimeoutException {
         StringBuilder stringBuilder = new StringBuilder();
-        SSHFactory sshFactory = new SSHFactory.Builder(SRV_NEEDED, "traceroute velkomfood.ru && exit", getClass().getSimpleName()).build();
+        SSHFactory sshFactory = new SSHFactory.Builder(whatSrvNeed, "traceroute velkomfood.ru && exit", getClass().getSimpleName()).build();
         Future<String> curProvFuture = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(sshFactory);
         String callForRoute = curProvFuture.get(ConstantsFor.DELAY, TimeUnit.SECONDS);
         stringBuilder.append("<br><a href=\"/makeok\">");

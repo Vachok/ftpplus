@@ -222,7 +222,6 @@ public class TForms {
     public String fromArray(Map<?, ?> mapDefObj, boolean br) {
         brStringBuilder = new StringBuilder();
         nStringBuilder = new StringBuilder();
-        
         brStringBuilder.append(P_STR);
         Set<?> keySet = mapDefObj.keySet();
         List<String> list = new ArrayList<>(keySet.size());

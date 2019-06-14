@@ -14,7 +14,6 @@ import ru.vachok.networker.services.MessageLocal;
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.Date;
-import java.util.Objects;
 import java.util.Properties;
 
 
@@ -68,22 +67,6 @@ public class VersionInfo {
     
     public void setPropertiesFrom(String propertiesFrom) {
         this.propertiesFrom = propertiesFrom;
-    }
-
-
-    @Override public int hashCode() {
-        return Objects.hash(thisPCNameStr , appVersion , appBuild , buildTime);
-    }
-
-
-    @Override public boolean equals( Object o ) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        VersionInfo that = (VersionInfo) o;
-        return Objects.equals(thisPCNameStr , that.thisPCNameStr) &&
-            appVersion.equals(that.appVersion) &&
-            appBuild.equals(that.appBuild) &&
-            Objects.equals(buildTime , that.buildTime);
     }
     
     /**

@@ -15,6 +15,7 @@ import ru.vachok.networker.net.enums.ConstantsNet;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Map;
 import java.util.concurrent.RejectedExecutionException;
 
 import static org.testng.Assert.assertTrue;
@@ -39,8 +40,16 @@ public class NetScanCtrTest {
         String netScanStr = netScanCtr.netScan(request, response, model);
         Assert.assertNotNull(netScanStr);
         assertTrue(netScanStr.equals(ConstantsNet.ATT_NETSCAN));
-        assertTrue(model.asMap().size() == 7);
-        assertTrue(model.asMap().get("pc").toString().contains("<p>"));
+        assertTrue(model.asMap().size() >= 7, showModel(model.asMap()));
+        assertTrue(model.asMap().get("pc").toString().contains("<p>"), showModel(model.asMap()));
+    }
+    
+    private String showModel(Map<String, Object> map) {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
+            stringBuilder.append(entry.getKey()).append(" : ").append(entry.getValue()).append("\n");
+        }
+        return stringBuilder.toString();
     }
     
     @Test

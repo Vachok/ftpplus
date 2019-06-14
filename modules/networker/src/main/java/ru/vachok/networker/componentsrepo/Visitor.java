@@ -92,37 +92,6 @@ public class Visitor {
         return visitPlace;
     }
 
-
-    @Override
-    public int hashCode() {
-        int result = userId != null ? userId.hashCode() : 0;
-        result = 31 * result + getTimeSpend().hashCode();
-        result = 31 * result + (getVisitPlace() != null ? getVisitPlace().hashCode() : 0);
-        result = 31 * result + (getRemAddr() != null ? getRemAddr().hashCode() : 0);
-        result = 31 * result + (getSession() != null ? getSession().hashCode() : 0);
-        result = 31 * result + getRequest().hashCode();
-        result = 31 * result + getClickCounter();
-        return result;
-    }
-
-
-    @Override
-    public boolean equals( Object o ) {
-        if (this == o) return true;
-        if (!(o instanceof Visitor)) return false;
-
-        Visitor visitor = (Visitor) o;
-
-        if (getClickCounter() != visitor.getClickCounter()) return false;
-        if (userId != null ? !userId.equals(visitor.userId) : visitor.userId != null) return false;
-        if (!getTimeSpend().equals(visitor.getTimeSpend())) return false;
-        if (getVisitPlace() != null ? !getVisitPlace().equals(visitor.getVisitPlace()) : visitor.getVisitPlace() != null) return false;
-        if (getRemAddr() != null ? !getRemAddr().equals(visitor.getRemAddr()) : visitor.getRemAddr() != null) return false;
-        if (getSession() != null ? !getSession().equals(visitor.getSession()) : visitor.getSession() != null) return false;
-        return getRequest().equals(visitor.getRequest());
-    }
-
-
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("Visitor{");
