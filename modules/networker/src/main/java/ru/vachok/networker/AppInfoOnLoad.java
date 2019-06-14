@@ -10,9 +10,9 @@ import ru.vachok.networker.abstr.InternetUse;
 import ru.vachok.networker.accesscontrol.common.CommonRightsChecker;
 import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
 import ru.vachok.networker.componentsrepo.VersionInfo;
+import ru.vachok.networker.controller.MatrixCtr;
 import ru.vachok.networker.exe.runnabletasks.NetMonitorPTV;
 import ru.vachok.networker.exe.runnabletasks.ScanOnline;
-import ru.vachok.networker.exe.runnabletasks.SpeedChecker;
 import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.exe.schedule.MailIISLogsCleaner;
@@ -34,7 +34,6 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -257,13 +256,14 @@ public class AppInfoOnLoad implements Runnable {
         final String minutesStr = ". MINUTES";
         
         scheduledExecutorService.scheduleWithFixedDelay(new NetMonitorPTV(), 0, 10, TimeUnit.SECONDS);
+        scheduledExecutorService.scheduleWithFixedDelay(MatrixCtr::setCurrentProvider, ConstantsFor.DELAY, ConstantsFor.DELAY * 10, TimeUnit.SECONDS);
         scheduledExecutorService.scheduleWithFixedDelay(new AppComponents().temporaryFullInternet(), 1, ConstantsFor.DELAY, TimeUnit.MINUTES);
         scheduledExecutorService.scheduleWithFixedDelay(AppComponents.diapazonScan(), 2, AppInfoOnLoad.thisDelay, TimeUnit.MINUTES); //уходим от прямого использования
         scheduledExecutorService.scheduleWithFixedDelay(new AppComponents().scanOnline(), 3, 1, TimeUnit.MINUTES);
         scheduledExecutorService.scheduleWithFixedDelay(AppInfoOnLoad::squidLogsSave, 4, ConstantsFor.DELAY, TimeUnit.MINUTES);
         scheduledExecutorService.scheduleWithFixedDelay(new SquidAvaliblityChecker(), 5, ConstantsFor.DELAY * 2, TimeUnit.MINUTES);
         scheduledExecutorService.schedule(()->MESSAGE_LOCAL.info(new TForms().fromArray(APP_PROPS, false)), ConstantsFor.DELAY + 10, TimeUnit.MINUTES);
-        
+    
         String msg = new StringBuilder()
             .append(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(AppInfoOnLoad.thisDelay)))
             .append(DiapazonScan.getInstance().getClass().getSimpleName())
@@ -275,17 +275,11 @@ public class AppInfoOnLoad implements Runnable {
         AppInfoOnLoad.MINI_LOGGER.add(DiapazonScan.getInstance().getClass().getSimpleName() + " init delay 2, delay " + AppInfoOnLoad.thisDelay + minutesStr);
         AppInfoOnLoad.MINI_LOGGER.add(ScanOnline.class.getSimpleName() + " init delay 3, delay 1. MINUTES");
         AppInfoOnLoad.MINI_LOGGER.add(AppComponents.class.getSimpleName() + ".getProps(true) 4, ConstantsFor.DELAY, TimeUnit.MINUTES");
+        AppInfoOnLoad.MINI_LOGGER.add("MatrixCtr::setCurrentProvider, ConstantsFor.DELAY, ConstantsFor.DELAY*10, TimeUnit.SECONDS");
         
         AppInfoOnLoad.dateSchedulers(scheduledExecutorService);
     }
     
-    /**
-     Статистика по-пользователям за неделю.
-     <p>
-     Запуск new {@link SpeedChecker.ChkMailAndUpdateDB}, через {@link Executors#unconfigurableExecutorService(java.util.concurrent.ExecutorService)}
-     <p>
-     Если {@link LocalDate#getDayOfWeek()} equals {@link DayOfWeek#SUNDAY}, запуск new {@link WeekStats}
-     */
     private static void getWeekPCStats() {
         if (LocalDate.now().getDayOfWeek().equals(DayOfWeek.SUNDAY)) {
             AppComponents.threadConfig().execByThreadConfig(new WeekStats(ConstantsFor.SQL_SELECTFROM_PCUSERAUTO));

@@ -20,6 +20,7 @@ import ru.vachok.networker.ad.user.MoreInfoWorker;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.VersionInfo;
 import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.net.InfoWorker;
 import ru.vachok.networker.services.SimpleCalculator;
 import ru.vachok.networker.services.WhoIsWithSRV;
@@ -41,6 +42,8 @@ import java.util.stream.Stream;
 @Controller
 public class MatrixCtr {
     
+    
+    private final ThreadConfig config = AppComponents.threadConfig();
     
     /**
      Логгер
@@ -69,7 +72,7 @@ public class MatrixCtr {
      */
     private final VersionInfo versionInfoInst;
     
-    private String currentProvider = "Unknown yet";
+    private static String currentProvider = "Unknown yet";
     
     /**
      {@link MatrixSRV}
@@ -114,17 +117,12 @@ public class MatrixCtr {
  
      @see AppComponents#sshActs()
      */
-    public void setCurrentProvider() {
+    public static void setCurrentProvider() {
         try {
-            this.currentProvider = new Tracerouting().call();
-            AppComponents.threadConfig().getTaskScheduler()
-                .scheduleAtFixedRate(
-                    this::setCurrentProvider,
-                    TimeUnit.MINUTES.toMillis(Long.parseLong(AppComponents.getProps().getProperty("trace", String.valueOf(ConstantsFor.DELAY)))));
-    
+            MatrixCtr.currentProvider = new Tracerouting().call();
         }
         catch (Exception e) {
-            this.currentProvider = "<br><a href=\"/makeok\">" + e.getMessage() + "</a><br>";
+            MatrixCtr.currentProvider = "<br><a href=\"/makeok\">" + e.getMessage() + "</a><br>";
             Thread.currentThread().interrupt();
         }
     }
