@@ -21,9 +21,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.nio.file.AccessDeniedException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
@@ -31,7 +30,6 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.Properties;
 import java.util.Queue;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
@@ -54,6 +52,8 @@ import java.util.regex.Pattern;
     private final FTPClient ftpClient = getFtpClient();
     
     private static MessageToUser messageToUser = new MessageSwing();
+    
+    private static File[] retMassive = new File[2];
     
     private String uploadDirectoryStr = "null";
     
@@ -105,15 +105,23 @@ import java.util.regex.Pattern;
     }
     
     File[] getLibFiles() {
-        File[] retMassive = new File[2];
+    
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyw");
         String format = simpleDateFormat.format(new Date());
         String appVersion = "8.0." + format;
         Path pathRoot = Paths.get(".").toAbsolutePath().normalize();
+/* 15.06.2019 (8:31)
         String fileSeparator = System.getProperty(ConstantsFor.PRSYS_SEPARATOR);
         retMassive[0] = new File(pathRoot + fileSeparator + ConstantsFor.PR_APP_BUILD + fileSeparator + "libs" + fileSeparator + "networker-" + appVersion + ".jar");
         retMassive[1] = new File(pathRoot + fileSeparator + COMPILE.matcher(ConstantsFor.PROGNAME_OSTPST).replaceAll(Matcher
             .quoteReplacement("")) + fileSeparator + ConstantsFor.PR_APP_BUILD + fileSeparator + "libs" + fileSeparator + ConstantsFor.PROGNAME_OSTPST + appVersion + ".jar");
+*/
+        try {
+            Files.walkFileTree(pathRoot, new SearchLibs());
+        }
+        catch (IOException e) {
+            messageToUser.error(e.getMessage());
+        }
         return retMassive;
     }
     
@@ -312,6 +320,35 @@ import java.util.regex.Pattern;
             messageToUser.error(RegRuFTPLibsUploader.class.getSimpleName(), "getDigest", e.getMessage());
         }
         return new String(dBytes);
+    }
+    
+    private class SearchLibs extends SimpleFileVisitor<Path> {
+        
+        
+        @Override public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+            return FileVisitResult.CONTINUE;
+        }
+        
+        @Override public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyw");
+            String format = simpleDateFormat.format(new Date());
+            String appVersion = "8.0." + format;
+            if (file.toFile().getName().contains("networker-" + appVersion + ".jar")) {
+                retMassive[0] = file.toFile();
+            }
+            if (file.toFile().getName().contains(ConstantsFor.PROGNAME_OSTPST + appVersion + ".jar")) {
+                retMassive[1] = file.toFile();
+            }
+            return FileVisitResult.CONTINUE;
+        }
+        
+        @Override public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+            return FileVisitResult.CONTINUE;
+        }
+        
+        @Override public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+            return FileVisitResult.CONTINUE;
+        }
     }
     
 }
