@@ -117,7 +117,7 @@ import java.util.regex.Pattern;
             .quoteReplacement("")) + fileSeparator + ConstantsFor.PR_APP_BUILD + fileSeparator + "libs" + fileSeparator + ConstantsFor.PROGNAME_OSTPST + appVersion + ".jar");
 */
         try {
-            Files.walkFileTree(pathRoot, new SearchLibs());
+            Files.walkFileTree(pathRoot, new SearchLibs()); //fixme 15.06.2019 (8:56)
         }
         catch (IOException e) {
             messageToUser.error(e.getMessage());
