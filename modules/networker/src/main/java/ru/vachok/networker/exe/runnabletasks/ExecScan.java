@@ -15,7 +15,6 @@ import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetListKeeper;
 import ru.vachok.networker.net.NetScanFileWorker;
-import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 
 import java.io.*;
@@ -54,6 +53,8 @@ public class ExecScan extends DiapazonScan {
     
     private final File vlanFile;
     
+    private boolean isTest;
+    
     private final ThreadConfig threadConfig = AppComponents.threadConfig();
     
     private long stArt;
@@ -80,6 +81,20 @@ public class ExecScan extends DiapazonScan {
         
         this.vlanFile = vlanFile;
     
+        this.stArt = LocalDateTime.of(ConstantsFor.YEAR_OF_MY_B, 1, 7, 2, 0).toEpochSecond(ZoneOffset.ofHours(3)) * 1000;
+    }
+    
+    public ExecScan(int from, int to, String whatVlan, File vlanFile, boolean isTest) {
+        
+        this.from = from;
+        
+        this.to = to;
+        
+        this.whatVlan = whatVlan;
+        
+        this.vlanFile = vlanFile;
+        this.isTest = isTest;
+        
         this.stArt = LocalDateTime.of(ConstantsFor.YEAR_OF_MY_B, 1, 7, 2, 0).toEpochSecond(ZoneOffset.ofHours(3)) * 1000;
     }
     
@@ -181,24 +196,28 @@ public class ExecScan extends DiapazonScan {
      Сканер локальной сети@param stStMap Запись в лог@param fromVlan начало с 3 октета IP@param toVlan   конец с 3 октета IP@param whatVlan первый 2 октета, с точкоё в конце.
      */
     private ConcurrentMap<String, String> scanLanSegment(int fromVlan, int toVlan) throws IOException {
-        ConcurrentMap<String, String> stStMap = new ConcurrentHashMap<>(MAX_IN_ONE_VLAN * (toVlan - fromVlan));
+        ConcurrentMap<String, String> scannedHostsMap = new ConcurrentHashMap<>(MAX_IN_ONE_VLAN * (toVlan - fromVlan));
         String theScannedIPHost = "No scan yet. MAP Capacity: ";
         for (int i = fromVlan; i < toVlan; i++) {
             setSpend();
-            for (int j = 0; j < ConstantsNet.VLAN_MASK24_MAX; j++) {
-                AppComponents.threadConfig().thrNameSet(i + "." + j);
+            int maxIPs = MAX_IN_ONE_VLAN;
+            if (isTest) {
+                maxIPs = (int) ConstantsFor.DELAY;
+            }
+            for (int j = 0; j < maxIPs; j++) {
+                threadConfig.thrNameSet(i + "." + j);
                 try {
                     theScannedIPHost = oneIpScanAndPrintToFile(i, j);
-                    stStMap.put(theScannedIPHost.split(" ")[0], theScannedIPHost.split(" ")[1]);
+                    scannedHostsMap.put(theScannedIPHost.split(" ")[0], theScannedIPHost.split(" ")[1]);
                 }
                 catch (IOException e) {
-                    stStMap.put(e.getMessage(), new TForms().fromArray(e, false));
+                    scannedHostsMap.put(e.getMessage(), new TForms().fromArray(e, false));
                 }
                 catch (ArrayIndexOutOfBoundsException e) {
-                    stStMap.put(theScannedIPHost, e.getMessage());
+                    scannedHostsMap.put(theScannedIPHost, e.getMessage());
                 }
             }
         }
-        return stStMap;
+        return scannedHostsMap;
     }
 }

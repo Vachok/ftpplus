@@ -15,10 +15,9 @@ import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayDeque;
-import java.util.Collection;
-import java.util.Deque;
-import java.util.Map;
+import java.util.*;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 
 
 /**
@@ -40,6 +39,14 @@ public class NetScanFileWorker implements Serializable {
     
     public void setLastStamp(long lastStamp) {
         this.lastStamp = lastStamp;
+        Preferences pref = AppComponents.getUserPref();
+        pref.put("NetScanFileWorker.lastStamp", new Date(lastStamp).toString());
+        try {
+            pref.sync();
+        }
+        catch (BackingStoreException e) {
+            messageToUser.error(e.getMessage());
+        }
     }
     
     public static NetScanFileWorker getI() {

@@ -16,9 +16,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -45,41 +43,22 @@ public class DiapazonScanTest {
     }
     
     @Test
-    public void setScansMinTEST() {
-        setScanInMin();
-    }
-    
-    @Test
-    public void testGetScanFiles() {
-    }
-    
-    @Test
-    public void testGetInstance() {
-    }
-    
-    @Test
-    public void testGetStopClassStampLong() {
-    }
-    
-    @Test
     public void testPingSwitch() {
+        try {
+            List<String> pingSWList = DiapazonScan.pingSwitch();
+            Assert.assertNotNull(pingSWList);
+            Assert.assertTrue(pingSWList.size() == 40);
+            Collections.sort(pingSWList);
+            Assert.assertTrue(pingSWList.get(1).equals("10.200.200.253"));
+        }
+        catch (IllegalAccessException e) {
+            Assert.assertNull(e, e.getMessage());
+        }
     }
     
     @Test
     public void testTheInfoToString() {
         System.out.println(new DiapazonScan().theInfoToString());
-    }
-    
-    @Test
-    public void testToString1() {
-    }
-    
-    @Test
-    public void testGetAllDevLocalDeq() {
-    }
-    
-    @Test
-    public void testGetExecutionProcessLog() {
     }
     
     private Map<String, File> copyOfMakeMap() {

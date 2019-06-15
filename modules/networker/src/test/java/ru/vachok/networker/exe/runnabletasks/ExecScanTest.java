@@ -8,10 +8,10 @@ import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.exe.ThreadConfig;
+import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetListKeeper;
 import ru.vachok.networker.net.NetScanFileWorker;
 
-import java.awt.*;
 import java.io.*;
 import java.net.InetAddress;
 import java.util.Collection;
@@ -26,7 +26,13 @@ import java.util.concurrent.LinkedBlockingDeque;
     
     @Test
     public void testRun() {
-        throw new IllegalComponentStateException("15.06.2019 (17:36)");
+        File fileTestVlan = new File("test-213.scan");
+        ExecScan scan = new ExecScan(213, 214, "10.200.", fileTestVlan, true);
+        scan.run();
+        Assert.assertTrue(fileTestVlan.exists());
+        String fileAsString = FileSystemWorker.readFile(fileTestVlan.getAbsolutePath());
+        Assert.assertTrue(fileAsString.contains("10.200.213.1"), fileAsString);
+        fileTestVlan.deleteOnExit();
     }
     
     @Test

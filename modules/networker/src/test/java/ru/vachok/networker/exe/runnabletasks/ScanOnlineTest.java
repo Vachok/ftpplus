@@ -6,21 +6,21 @@ package ru.vachok.networker.exe.runnabletasks;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.AppInfoOnLoad;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.user.MoreInfoWorker;
+import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.InfoWorker;
 import ru.vachok.networker.net.NetListKeeper;
 import ru.vachok.networker.net.NetScanFileWorker;
 import ru.vachok.networker.net.SwitchesAvailability;
 
-import java.awt.*;
 import java.io.*;
 import java.net.InetAddress;
 import java.nio.charset.Charset;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.List;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -32,12 +32,18 @@ import java.util.concurrent.*;
     
     @Test
     public void testGetTimeToEndStr() {
-        throw new IllegalComponentStateException("15.06.2019 (17:36)");
+        String timeToEnd = new AppInfoOnLoad().toString();
+        Assert.assertTrue(timeToEnd.contains("thisDelay="), timeToEnd);
     }
     
     @Test
     public void testGetPingResultStr() {
-        throw new IllegalComponentStateException("15.06.2019 (17:36)");
+        List<String> toSortFileList = FileSystemWorker.readFileToList(new File(ConstantsFor.FILENAME_ONSCAN).getAbsolutePath());
+        Collections.sort(toSortFileList);
+        FileSystemWorker.writeFile(ConstantsFor.FILENAME_ONSCAN, toSortFileList.stream());
+        String fileOnScanSortedAsString = FileSystemWorker.readFile(ConstantsFor.FILENAME_ONSCAN);
+        Assert.assertTrue(fileOnScanSortedAsString.contains("online"));
+        Assert.assertTrue(fileOnScanSortedAsString.contains("Checked:"));
     }
     
     @Test
@@ -72,11 +78,6 @@ import java.util.concurrent.*;
         Set<String> availabilityOkIP = switchesAvailability.getOkIP();
         availabilityOkIP.forEach(x->onLinesResolve.put(x, LocalDateTime.now().toString()));
         Assert.assertTrue(new TForms().fromArray(availabilityOkIP, false).contains("10.200.200.1"));
-    }
-    
-    @Test
-    public void testToString1() {
-        throw new IllegalComponentStateException("15.06.2019 (17:36)");
     }
     
     @Test
