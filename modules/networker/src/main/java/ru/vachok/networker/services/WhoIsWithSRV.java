@@ -56,9 +56,7 @@ public class WhoIsWithSRV {
         } catch (IOException | ArrayIndexOutOfBoundsException | NullPointerException e) {
             geoLocation.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false));
         }
-
-        messageToUser.info(WhoIsWithSRV.class.getSimpleName(), ".whoIs", geoLocation.toString());
-
+        messageToUser.warn(inetAddr + " WHOISED )");
         return geoLocation.toString();
     }
     
