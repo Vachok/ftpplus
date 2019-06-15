@@ -66,6 +66,18 @@ public class NetScanFileWorker implements Serializable {
         return retDeque;
     }
     
+    public void setLastStamp(long millis, String address) {
+        setLastStamp(millis);
+        Preferences pref = AppComponents.getUserPref();
+        pref.put("lastIP", address);
+        try {
+            pref.sync();
+        }
+        catch (BackingStoreException e) {
+            messageToUser.error(e.getMessage());
+        }
+    }
+    
     private static Map<String, File> getMapOfScanFiles() {
         return DiapazonScan.getInstance().getScanFiles();
     }

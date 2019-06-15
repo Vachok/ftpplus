@@ -166,7 +166,7 @@ public class ExecScan extends DiapazonScan {
         
         if (ConstantsFor.thisPC().equalsIgnoreCase("HOME")) {
             timeOutMSec = (int) (ConstantsFor.DELAY * 2);
-            NetScanFileWorker.getI().setLastStamp(System.currentTimeMillis());
+            NetScanFileWorker.getI().setLastStamp(System.currentTimeMillis(), hostAddress);
         }
         
         if (byAddress.isReachable(timeOutMSec)) {
