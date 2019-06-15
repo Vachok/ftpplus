@@ -32,7 +32,7 @@ public class RegRuFTPLibsUploaderTest extends RegRuFTPLibsUploader {
     public void continueConnect() {
         FTPClient ftpClient = new FTPClient();
         try {
-            ftpClient.connect(super.getHost(), ConstantsFor.FTP_PORT);
+            ftpClient.connect(getHost(), ConstantsFor.FTP_PORT);
             FTPClientConfig config = new FTPClientConfig();
             config.setServerTimeZoneId("Europe/Moscow");
             ftpClient.configure(config);
@@ -40,5 +40,41 @@ public class RegRuFTPLibsUploaderTest extends RegRuFTPLibsUploader {
         catch (IOException e) {
             Assert.assertNull(e, e.getMessage());
         }
+    }
+    
+    @Test
+    public void testRun1() {
+    }
+    
+    @Test
+    public void testUploadLibs1() {
+    }
+    
+    @Test
+    public void testGetContentsQueue1() {
+    }
+    
+    @Test
+    public void testSetUploadDirectoryStr1() {
+    }
+    
+    @Test
+    public void testGetUploadDirectoryStr1() {
+    }
+    
+    @Test
+    public void testGetLibFiles1() {
+    }
+    
+    @Test
+    public void testUploadToServer1() {
+    }
+    
+    @Test
+    public void testUploadToServer2() {
+    }
+    
+    @Test
+    public void testGetHost1() {
     }
 }

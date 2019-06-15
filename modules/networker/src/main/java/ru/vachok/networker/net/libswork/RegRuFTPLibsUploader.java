@@ -109,7 +109,7 @@ import java.util.regex.Pattern;
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyw");
         String format = simpleDateFormat.format(new Date());
         String appVersion = "8.0." + format;
-        Path pathRoot = Paths.get(System.getProperty("user.dir"), ".").toAbsolutePath().normalize();
+        Path pathRoot = Paths.get(".").toAbsolutePath().normalize();
 /* 15.06.2019 (8:31)
         String fileSeparator = System.getProperty(ConstantsFor.PRSYS_SEPARATOR);
         retMassive[0] = new File(pathRoot + fileSeparator + ConstantsFor.PR_APP_BUILD + fileSeparator + "libs" + fileSeparator + "networker-" + appVersion + ".jar");
@@ -117,7 +117,8 @@ import java.util.regex.Pattern;
             .quoteReplacement("")) + fileSeparator + ConstantsFor.PR_APP_BUILD + fileSeparator + "libs" + fileSeparator + ConstantsFor.PROGNAME_OSTPST + appVersion + ".jar");
 */
         try {
-            Files.walkFileTree(pathRoot, new SearchLibs()); //fixme 15.06.2019 (8:56)
+            pathRoot = pathRoot.getRoot();
+            Files.walkFileTree(pathRoot, new SearchLibs());
         }
         catch (IOException e) {
             messageToUser.error(e.getMessage());
@@ -275,7 +276,7 @@ import java.util.regex.Pattern;
             System.out.println(ftpClient.getReplyString());
     
             stringBuilder.append("Is file stored to server: ");
-            boolean isStore = false;
+            boolean isStore;
             try {
                 isStore = ftpClient.storeFile(nameFTPFile, inputStream);
             }
