@@ -159,6 +159,9 @@ public class AppComponents {
         if (ConstantsFor.thisPC().toLowerCase().contains("home") || ConstantsFor.thisPC().toLowerCase().contains(ConstantsFor.HOSTNAME_DO213)) {
             versionInfo.setParams();
         }
+        else {
+            throw new IllegalComponentStateException("15.06.2019 (14:03)");
+        }
         return versionInfo;
     }
     

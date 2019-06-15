@@ -12,6 +12,7 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -42,8 +43,6 @@ public class VersionInfo {
      {@link AppComponents#getProps()}
      */
     private static final Properties PROPERTIES = AppComponents.getProps();
-    
-    private static final Properties APP_PROPS = AppComponents.getProps();
     
     /**
      {@link ConstantsFor#thisPC()}
@@ -97,11 +96,11 @@ public class VersionInfo {
     public String getBuildTime() {
         String timeStr = String.valueOf(ConstantsFor.START_STAMP);
         if (ConstantsFor.thisPC().toLowerCase().contains("home") || ConstantsFor.thisPC().toLowerCase().contains("do0")) {
-            APP_PROPS.setProperty(ConstantsFor.PR_APP_BUILDTIME, timeStr);
+            PROPERTIES.setProperty(ConstantsFor.PR_APP_BUILDTIME, timeStr);
             return timeStr;
         }
         else {
-            return APP_PROPS.getProperty(ConstantsFor.PR_APP_BUILDTIME, "1");
+            return PROPERTIES.getProperty(ConstantsFor.PR_APP_BUILDTIME, "1");
         }
     }
     
@@ -110,14 +109,14 @@ public class VersionInfo {
         StringBuilder stringBuilder = new StringBuilder();
         File file = new File(rootPathStr + ConstantsFor.FILESYSTEM_SEPARATOR + ConstantsFor.FILENAME_BUILDGRADLE);
         if (file.exists()) {
-            stringBuilder.append(setterVersionFromFiles(file)).append(" is SET");
-        } else {
             try {
+                stringBuilder.append(setterVersionFromFiles(file)).append(" is SET");
+            }
+            catch (IOException e) {
+                messageToUser.error(e.getMessage());
+            }
+        } else {
                 stringBuilder.append(getParams()).append(" is GET");
-            }
-            catch (Exception e) {
-                stringBuilder.append(e.getMessage()).append(" ").append(getClass().getSimpleName()).append(".setParams ERROR");
-            }
         }
         return stringBuilder.toString();
     }
@@ -133,12 +132,13 @@ public class VersionInfo {
         return sb.toString();
     }
     
-    private String getParams() {
-        Properties properties = APP_PROPS;
+    protected String getParams() {
+        Properties properties = new Properties();
         this.appVersion = properties.getProperty(ConstantsFor.PR_APP_VERSION, ALERT_DNE);
         this.appBuild = properties.getProperty(ConstantsFor.PR_APP_BUILD, ALERT_DNE);
         this.buildTime = properties.getProperty(ConstantsFor.PR_APP_BUILDTIME, ALERT_DNE);
-        return this.appVersion + " version from props, " + this.buildTime + " " + this.appBuild;
+        PROPERTIES.putAll(properties);
+        return this.appVersion + " version from props, " + this.buildTime + " " + this.appBuild + " is GET";
     }
 
     /**
@@ -146,7 +146,7 @@ public class VersionInfo {
 
      @param file gradle.build
      */
-    private String setterVersionFromFiles(File file) {
+    private String setterVersionFromFiles(File file) throws IOException {
         DateFormat dateFormat = new SimpleDateFormat("E", Locale.ENGLISH);
         for (String s : FileSystemWorker.readFileToList(file.getAbsolutePath())) {
             if (s.toLowerCase().contains(REPLACEPATTERN_VERSION)) {
@@ -155,9 +155,10 @@ public class VersionInfo {
             this.buildTime = new Date().toString();
         }
         this.appBuild = ConstantsFor.thisPC() + dateFormat.format(new Date());
-        APP_PROPS.setProperty(ConstantsFor.PR_APP_BUILDTIME, this.buildTime);
-        APP_PROPS.setProperty(ConstantsFor.PR_APP_BUILD, appBuild);
-        APP_PROPS.setProperty(ConstantsFor.PR_APP_VERSION, this.appVersion);
-        return this.appBuild + " build, " + this.buildTime + " time, " + this.appVersion + " version";
+        PROPERTIES.setProperty(ConstantsFor.PR_APP_BUILDTIME, this.buildTime);
+        PROPERTIES.setProperty(ConstantsFor.PR_APP_BUILD, appBuild);
+        PROPERTIES.setProperty(ConstantsFor.PR_APP_VERSION, this.appVersion);
+        boolean isUpdate = new AppComponents().updateProps(PROPERTIES);
+        return this.appBuild + " build, " + this.buildTime + " time, " + this.appVersion + " version, props saved: " + isUpdate;
     }
 }

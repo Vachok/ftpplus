@@ -1,1 +1,3 @@
-192.168.11.6 SERVER3
+192.168.11.6 server3.eatmeat.ru
+192.168.11.6 server3.eatmeat.ru
+192.168.11.6 server3.eatmeat.ru
