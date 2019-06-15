@@ -109,7 +109,7 @@ import java.util.regex.Pattern;
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyw");
         String format = simpleDateFormat.format(new Date());
         String appVersion = "8.0." + format;
-        Path pathRoot = Paths.get(".").toAbsolutePath().normalize();
+        Path pathRoot = Paths.get(System.getProperty("user.dir"), ".").toAbsolutePath().normalize();
 /* 15.06.2019 (8:31)
         String fileSeparator = System.getProperty(ConstantsFor.PRSYS_SEPARATOR);
         retMassive[0] = new File(pathRoot + fileSeparator + ConstantsFor.PR_APP_BUILD + fileSeparator + "libs" + fileSeparator + "networker-" + appVersion + ".jar");
