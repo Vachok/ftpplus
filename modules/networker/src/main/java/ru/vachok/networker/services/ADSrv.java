@@ -255,7 +255,7 @@ public class ADSrv implements Runnable {
         }
     }
     
-    public static String adPCMap(List<ADComputer> adComputers, boolean br) {
+    public static String showADPCList(List<ADComputer> adComputers, boolean br) {
         StringBuilder brStringBuilder = new StringBuilder();
         StringBuilder nStringBuilder = new StringBuilder();
         brStringBuilder.append("<p>");
