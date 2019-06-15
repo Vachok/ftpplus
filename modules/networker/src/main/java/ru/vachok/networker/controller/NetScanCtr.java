@@ -143,7 +143,7 @@ public class NetScanCtr {
         ConstantsFor.getVis(request);
         model.addAttribute("serviceinfo", (float) TimeUnit.MILLISECONDS.toSeconds(lastSt - System.currentTimeMillis()) / ConstantsFor.ONE_HOUR_IN_MIN);
         netScannerSvcInstAW.setThePc("");
-        model.addAttribute("pc", FileSystemWorker.readFile(ConstantsNet.BEANNAME_LASTNETSCAN));
+        model.addAttribute("pc", FileSystemWorker.readFile(ConstantsNet.BEANNAME_LASTNETSCAN) + "<p>");
         model.addAttribute(ConstantsFor.ATT_TITLE, netScannerSvcInstAW.getOnLinePCsNum() + " pc at " + new Date(lastSt));
         model.addAttribute(ConstantsNet.BEANNAME_NETSCANNERSVC, netScannerSvcInstAW);
         model.addAttribute(ATT_THEPC, netScannerSvcInstAW.getThePc());
