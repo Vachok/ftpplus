@@ -36,7 +36,7 @@ import java.util.Properties;
         Assert.assertTrue(orNot != 0);
     }
     
-    @Test
+    @Test(enabled = false)
     public void testCall() {
         DBPropsCallable dbPropsCallable = new DBPropsCallable();
         Properties calledProps = dbPropsCallable.call();
@@ -46,22 +46,34 @@ import java.util.Properties;
     
     @Test
     public void testSelectFrom() {
-        throw new IllegalComponentStateException("15.06.2019 (17:36)");
+        try {
+            int selectedFrom = new DBPropsCallable().selectFrom();
+        }
+        catch (IllegalComponentStateException e) {
+            Assert.assertNotNull(e, e.getMessage());
+        }
     }
     
     @Test
     public void testInsertTo() {
-        throw new IllegalComponentStateException("15.06.2019 (17:36)");
+        try {
+            int insertTo = new DBPropsCallable().insertTo();
+        }
+        catch (IllegalComponentStateException e) {
+            Assert.assertNotNull(e);
+        }
     }
     
-    @Test
+    @Test(enabled = false)
     public void testDeleteFrom() {
-        throw new IllegalComponentStateException("15.06.2019 (17:36)");
+        int deleteFromRows = new DBPropsCallable().deleteFrom();
+        Assert.assertTrue(deleteFromRows > 5);
     }
     
-    @Test
+    @Test(enabled = false)
     public void testUpdateTable() {
-        throw new IllegalComponentStateException("15.06.2019 (17:36)");
+        int updateTable = new DBPropsCallable(new FileProps(ConstantsFor.class.getSimpleName()).getProps()).updateTable();
+        Assert.assertTrue(updateTable > 5, String.valueOf(updateTable));
     }
     
     @Test(enabled = false)

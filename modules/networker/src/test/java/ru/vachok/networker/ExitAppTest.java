@@ -3,14 +3,16 @@
 package ru.vachok.networker;
 
 
+import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import java.awt.*;
+import java.io.File;
+import java.io.Serializable;
 
 
 /**
  @since 09.06.2019 (21:10) */
-public class ExitAppTest {
+public class ExitAppTest implements Serializable {
     
     
     @Test(enabled = false)
@@ -20,16 +22,10 @@ public class ExitAppTest {
     
     @Test
     public void testWriteOwnObject() {
-        throw new IllegalComponentStateException("15.06.2019 (17:36)");
-    }
-    
-    @Test
-    public void testGetVisitsMap() {
-        throw new IllegalComponentStateException("15.06.2019 (17:36)");
-    }
-    
-    @Test
-    public void testScanFiles() {
-        throw new IllegalComponentStateException("15.06.2019 (17:36)");
+        boolean isWritten = new ExitApp("test", this).writeOwnObject();
+        Assert.assertTrue(isWritten);
+        File fileWritten = new File("test");
+        Assert.assertTrue(fileWritten.exists());
+        fileWritten.deleteOnExit();
     }
 }

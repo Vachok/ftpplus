@@ -10,6 +10,7 @@ import org.springframework.ui.Model;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.net.NetPinger;
 import ru.vachok.networker.net.enums.ConstantsNet;
 
@@ -42,7 +43,7 @@ public class NetScanCtrTest {
         Assert.assertNotNull(netScanStr);
         assertTrue(netScanStr.equals(ConstantsNet.ATT_NETSCAN));
         assertTrue(model.asMap().size() >= 7, showModel(model.asMap()));
-        assertTrue(model.asMap().get("pc").toString().contains("<p>"), showModel(model.asMap()));
+        assertTrue(model.asMap().get(ConstantsFor.ATT_FOOTER).toString().contains("Only Allow Domains"), showModel(model.asMap()));
     }
     
     private String showModel(Map<String, Object> map) {

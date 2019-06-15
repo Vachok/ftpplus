@@ -6,8 +6,8 @@ package ru.vachok.networker;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import java.awt.*;
 import java.io.IOException;
+import java.util.List;
 
 
 /**
@@ -17,41 +17,39 @@ public class AppInfoOnLoadTest {
     
     @Test
     public void testGetThisDelay() {
-        System.out.println(getScansDelay());
+        int scansDelayOnline = getScansDelay();
+        Assert.assertFalse(scansDelayOnline == 0);
+        Assert.assertTrue(scansDelayOnline > 80, String.valueOf(scansDelayOnline));
+        Assert.assertTrue(scansDelayOnline < 112, String.valueOf(scansDelayOnline));
     }
     
     @Test
     public void testGetIISLogSize() {
-        throw new IllegalComponentStateException("15.06.2019 (17:36)");
+        String logsSize = AppInfoOnLoad.getIISLogSize();
+        Assert.assertTrue(logsSize.contains("MB IIS Logs"), logsSize);
     }
     
     @Test
     public void testGetBuildStamp() {
         try {
             long stampBuild = AppInfoOnLoad.getBuildStamp();
-            Assert.assertTrue(System.currentTimeMillis() > stampBuild);
-            System.out.println("stampBuild = " + stampBuild);
+            long currentTimeMS = System.currentTimeMillis();
+            Assert.assertTrue(currentTimeMS > stampBuild);
+            System.out.println("\n\n" + (currentTimeMS - stampBuild) + " MS diff between build and test\n\n\n");
         }
         catch (IOException e) {
             Assert.assertNull(e, e.getMessage());
         }
     }
     
-    @Test(enabled = false)
+    @Test()
     public void testRun() {
+        AppInfoOnLoad.MINI_LOGGER.clear();
         Runnable apOnLoad = new AppInfoOnLoad();
         apOnLoad.run();
-        Assert.assertNotNull(AppInfoOnLoad.MINI_LOGGER);
-    }
-    
-    @Test
-    public void testToString1() {
-        throw new IllegalComponentStateException("15.06.2019 (17:36)");
-    }
-    
-    @Test
-    public void testDateSchedulers() {
-        throw new IllegalComponentStateException("15.06.2019 (17:36)");
+        List<String> loggerAppInfo = AppInfoOnLoad.MINI_LOGGER;
+        Assert.assertNotNull(loggerAppInfo);
+        Assert.assertTrue(loggerAppInfo.size() == 11, loggerAppInfo.size() + " is loggerAppInfo.size()");
     }
     
     private static int getScansDelay() {

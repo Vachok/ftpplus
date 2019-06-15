@@ -133,11 +133,9 @@ public class VersionInfo {
     }
     
     protected String getParams() {
-        Properties properties = new Properties();
-        this.appVersion = properties.getProperty(ConstantsFor.PR_APP_VERSION, ALERT_DNE);
-        this.appBuild = properties.getProperty(ConstantsFor.PR_APP_BUILD, ALERT_DNE);
-        this.buildTime = properties.getProperty(ConstantsFor.PR_APP_BUILDTIME, ALERT_DNE);
-        PROPERTIES.putAll(properties);
+        this.appVersion = PROPERTIES.getProperty(ConstantsFor.PR_APP_VERSION, ALERT_DNE);
+        this.appBuild = PROPERTIES.getProperty(ConstantsFor.PR_APP_BUILD, ALERT_DNE);
+        this.buildTime = PROPERTIES.getProperty(ConstantsFor.PR_APP_BUILDTIME, ALERT_DNE);
         return this.appVersion + " version from props, " + this.buildTime + " " + this.appBuild + " is GET";
     }
 
@@ -150,7 +148,7 @@ public class VersionInfo {
         DateFormat dateFormat = new SimpleDateFormat("E", Locale.ENGLISH);
         for (String s : FileSystemWorker.readFileToList(file.getAbsolutePath())) {
             if (s.toLowerCase().contains(REPLACEPATTERN_VERSION)) {
-                this.appVersion = s.replace(REPLACEPATTERN_VERSION, "").trim();
+                this.appVersion = s.replace(REPLACEPATTERN_VERSION, "").replace("\'", "").trim();
             }
             this.buildTime = new Date().toString();
         }
