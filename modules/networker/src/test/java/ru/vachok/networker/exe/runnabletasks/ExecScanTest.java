@@ -11,6 +11,7 @@ import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.net.NetListKeeper;
 import ru.vachok.networker.net.NetScanFileWorker;
 
+import java.awt.*;
 import java.io.*;
 import java.net.InetAddress;
 import java.util.Collection;
@@ -25,6 +26,7 @@ import java.util.concurrent.LinkedBlockingDeque;
     
     @Test
     public void testRun() {
+        throw new IllegalComponentStateException("15.06.2019 (17:36)");
     }
     
     @Test

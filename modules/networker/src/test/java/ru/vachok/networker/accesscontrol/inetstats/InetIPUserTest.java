@@ -8,6 +8,8 @@ import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
 
+import java.awt.*;
+
 
 /**
  @since 09.06.2019 (21:24) */
@@ -16,6 +18,7 @@ public class InetIPUserTest {
     
     @Test
     public void testGetUsage() {
+        throw new IllegalComponentStateException("15.06.2019 (17:36)");
     }
     
     @Test(enabled = false)

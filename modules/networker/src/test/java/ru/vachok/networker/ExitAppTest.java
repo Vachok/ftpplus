@@ -5,6 +5,8 @@ package ru.vachok.networker;
 
 import org.testng.annotations.Test;
 
+import java.awt.*;
+
 
 /**
  @since 09.06.2019 (21:10) */
@@ -18,13 +20,16 @@ public class ExitAppTest {
     
     @Test
     public void testWriteOwnObject() {
+        throw new IllegalComponentStateException("15.06.2019 (17:36)");
     }
     
     @Test
     public void testGetVisitsMap() {
+        throw new IllegalComponentStateException("15.06.2019 (17:36)");
     }
     
     @Test
     public void testScanFiles() {
+        throw new IllegalComponentStateException("15.06.2019 (17:36)");
     }
 }

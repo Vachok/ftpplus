@@ -14,6 +14,7 @@ import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.sysinfo.VersionInfo;
 
 import javax.servlet.http.HttpServletRequest;
+import java.awt.*;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.util.Map;
@@ -47,14 +48,17 @@ import java.util.concurrent.TimeUnit;
     
     @Test
     public void testConnection() {
+        throw new IllegalComponentStateException("15.06.2019 (17:36)");
     }
     
     @Test
     public void testSimpleCalculator() {
+        throw new IllegalComponentStateException("15.06.2019 (17:36)");
     }
     
     @Test
     public void testSshActs() {
+        throw new IllegalComponentStateException("15.06.2019 (17:36)");
     }
     
     @Test
@@ -69,14 +73,17 @@ import java.util.concurrent.TimeUnit;
     
     @Test
     public void testSaveLogsToDB() {
+        throw new IllegalComponentStateException("15.06.2019 (17:36)");
     }
     
     @Test
     public void testThreadConfig() {
+        throw new IllegalComponentStateException("15.06.2019 (17:36)");
     }
     
     @Test
     public void testNetScannerSvc() {
+        throw new IllegalComponentStateException("15.06.2019 (17:36)");
     }
     
     @Test
@@ -88,46 +95,57 @@ import java.util.concurrent.TimeUnit;
     
     @Test
     public void testAdSrv() {
+        throw new IllegalComponentStateException("15.06.2019 (17:36)");
     }
     
     @Test
     public void testConfigurableApplicationContext() {
+        throw new IllegalComponentStateException("15.06.2019 (17:36)");
     }
     
     @Test
     public void testUpdateProps() {
+        throw new IllegalComponentStateException("15.06.2019 (17:36)");
     }
     
     @Test
     public void testUpdateProps1() {
+        throw new IllegalComponentStateException("15.06.2019 (17:36)");
     }
     
     @Test
     public void testDiapazonedScanInfo() {
+        throw new IllegalComponentStateException("15.06.2019 (17:36)");
     }
     
     @Test
     public void testDiapazonScan() {
+        throw new IllegalComponentStateException("15.06.2019 (17:36)");
     }
     
     @Test
     public void testGetLogger() {
+        throw new IllegalComponentStateException("15.06.2019 (17:36)");
     }
     
     @Test
     public void testScanOline() {
+        throw new IllegalComponentStateException("15.06.2019 (17:36)");
     }
     
     @Test
     public void testTemporaryFullInternet() {
+        throw new IllegalComponentStateException("15.06.2019 (17:36)");
     }
     
     @Test
     public void testLaunchRegRuFTPLibsUploader() {
+        throw new IllegalComponentStateException("15.06.2019 (17:36)");
     }
     
     @Test
     public void testGetUserPref() {
+        throw new IllegalComponentStateException("15.06.2019 (17:36)");
     }
     
     private static Properties getPropsTESTCOPY() {

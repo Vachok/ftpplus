@@ -16,11 +16,13 @@ import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.systray.MessageToTray;
 import ru.vachok.networker.systray.actions.ActionCloseMsg;
 
+import java.awt.*;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -33,6 +35,7 @@ import java.util.stream.Collectors;
     
     @Test
     public void testSetOnline() {
+        throw new IllegalComponentStateException("15.06.2019 (17:36)");
     }
     
     @Test
@@ -43,10 +46,12 @@ import java.util.stream.Collectors;
     
     @Test
     public void testGetInfoAbout() {
+        throw new IllegalComponentStateException("15.06.2019 (17:36)");
     }
     
     @Test
     public void testSetInfo() {
+        throw new IllegalComponentStateException("15.06.2019 (17:36)");
     }
     
     private static String getUserFromDB(String userInputRaw) {

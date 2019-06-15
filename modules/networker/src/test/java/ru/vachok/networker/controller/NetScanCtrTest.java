@@ -15,6 +15,7 @@ import ru.vachok.networker.net.enums.ConstantsNet;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.awt.*;
 import java.util.Map;
 import java.util.concurrent.RejectedExecutionException;
 
@@ -54,21 +55,26 @@ public class NetScanCtrTest {
     
     @Test
     public void testPingAddr() {
+        throw new IllegalComponentStateException("15.06.2019 (17:36)");
     }
     
     @Test
     public void testPingPost() {
+        throw new IllegalComponentStateException("15.06.2019 (17:36)");
     }
     
     @Test
     public void testPcNameForInfo() {
+        throw new IllegalComponentStateException("15.06.2019 (17:36)");
     }
     
     @Test
     public void testAllDevices() {
+        throw new IllegalComponentStateException("15.06.2019 (17:36)");
     }
     
     @Test
     public void testScanIt() {
+        throw new IllegalComponentStateException("15.06.2019 (17:36)");
     }
 }

@@ -6,6 +6,7 @@ package ru.vachok.networker;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import java.awt.*;
 import java.io.IOException;
 
 
@@ -21,6 +22,7 @@ public class AppInfoOnLoadTest {
     
     @Test
     public void testGetIISLogSize() {
+        throw new IllegalComponentStateException("15.06.2019 (17:36)");
     }
     
     @Test
@@ -44,10 +46,12 @@ public class AppInfoOnLoadTest {
     
     @Test
     public void testToString1() {
+        throw new IllegalComponentStateException("15.06.2019 (17:36)");
     }
     
     @Test
     public void testDateSchedulers() {
+        throw new IllegalComponentStateException("15.06.2019 (17:36)");
     }
     
     private static int getScansDelay() {

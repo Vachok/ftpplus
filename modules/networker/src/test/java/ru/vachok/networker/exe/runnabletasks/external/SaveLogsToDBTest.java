@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.exe.runnabletasks.external;
 
 
@@ -5,6 +7,8 @@ import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.testng.annotations.Test;
 import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.RegRuMysql;
+
+import java.awt.*;
 
 
 /**
@@ -14,14 +18,17 @@ import ru.vachok.mysqlandprops.RegRuMysql;
     
     @Test
     public void testGetI() {
+        throw new IllegalComponentStateException("15.06.2019 (17:36)");
     }
     
     @Test
     public void testStartScheduled() {
+        throw new IllegalComponentStateException("15.06.2019 (17:36)");
     }
     
     @Test
     public void testShowInfo() {
+        throw new IllegalComponentStateException("15.06.2019 (17:36)");
     }
     
     @Test

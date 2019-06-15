@@ -14,11 +14,13 @@ import ru.vachok.networker.net.NetListKeeper;
 import ru.vachok.networker.net.NetScanFileWorker;
 import ru.vachok.networker.net.SwitchesAvailability;
 
+import java.awt.*;
 import java.io.*;
 import java.net.InetAddress;
 import java.nio.charset.Charset;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.List;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -30,10 +32,12 @@ import java.util.concurrent.*;
     
     @Test
     public void testGetTimeToEndStr() {
+        throw new IllegalComponentStateException("15.06.2019 (17:36)");
     }
     
     @Test
     public void testGetPingResultStr() {
+        throw new IllegalComponentStateException("15.06.2019 (17:36)");
     }
     
     @Test
@@ -72,6 +76,7 @@ import java.util.concurrent.*;
     
     @Test
     public void testToString1() {
+        throw new IllegalComponentStateException("15.06.2019 (17:36)");
     }
     
     @Test

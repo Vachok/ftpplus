@@ -10,6 +10,7 @@ import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.abstr.DataBaseRegSQL;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
@@ -45,18 +46,22 @@ import java.util.Properties;
     
     @Test
     public void testSelectFrom() {
+        throw new IllegalComponentStateException("15.06.2019 (17:36)");
     }
     
     @Test
     public void testInsertTo() {
+        throw new IllegalComponentStateException("15.06.2019 (17:36)");
     }
     
     @Test
     public void testDeleteFrom() {
+        throw new IllegalComponentStateException("15.06.2019 (17:36)");
     }
     
     @Test
     public void testUpdateTable() {
+        throw new IllegalComponentStateException("15.06.2019 (17:36)");
     }
     
     @Test(enabled = false)

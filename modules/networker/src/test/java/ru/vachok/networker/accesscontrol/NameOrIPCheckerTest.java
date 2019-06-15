@@ -1,8 +1,11 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.accesscontrol;
 
 
 import org.testng.annotations.Test;
 
+import java.awt.*;
 import java.net.UnknownHostException;
 
 import static org.testng.Assert.assertNull;
@@ -15,6 +18,7 @@ public class NameOrIPCheckerTest {
     
     @Test
     public void testCheckPat() {
+        throw new IllegalComponentStateException("15.06.2019 (17:36)");
     }
     
     @Test
