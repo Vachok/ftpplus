@@ -11,16 +11,22 @@ import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.sysinfo.VersionInfo;
 
 import javax.servlet.http.HttpServletRequest;
 import java.awt.*;
 import java.io.File;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 
 
 @SuppressWarnings("ALL") public class AppComponentsTest {
@@ -48,17 +54,16 @@ import java.util.concurrent.TimeUnit;
     
     @Test
     public void testConnection() {
-        throw new IllegalComponentStateException("15.06.2019 (17:36)");
-    }
-    
-    @Test
-    public void testSimpleCalculator() {
-        throw new IllegalComponentStateException("15.06.2019 (17:36)");
-    }
-    
-    @Test
-    public void testSshActs() {
-        throw new IllegalComponentStateException("15.06.2019 (17:36)");
+        try {
+            Connection webapp = new AppComponents().connection("u0466446_webapp");
+            boolean isValid = webapp.isValid(1000);
+            Assert.assertTrue(isValid);
+            webapp.close();
+            Assert.assertTrue(webapp.isClosed());
+        }
+        catch (IOException | SQLException e) {
+            Assert.assertNull(e, e.getMessage());
+        }
     }
     
     @Test
@@ -72,21 +77,6 @@ import java.util.concurrent.TimeUnit;
     }
     
     @Test
-    public void testSaveLogsToDB() {
-        throw new IllegalComponentStateException("15.06.2019 (17:36)");
-    }
-    
-    @Test
-    public void testThreadConfig() {
-        throw new IllegalComponentStateException("15.06.2019 (17:36)");
-    }
-    
-    @Test
-    public void testNetScannerSvc() {
-        throw new IllegalComponentStateException("15.06.2019 (17:36)");
-    }
-    
-    @Test
     public void testVersionInfo() {
         VersionInfo versionInfo = AppComponents.versionInfo();
         Assert.assertNotNull(versionInfo);
@@ -94,58 +84,78 @@ import java.util.concurrent.TimeUnit;
     }
     
     @Test
-    public void testAdSrv() {
-        throw new IllegalComponentStateException("15.06.2019 (17:36)");
-    }
-    
-    @Test
     public void testConfigurableApplicationContext() {
-        throw new IllegalComponentStateException("15.06.2019 (17:36)");
+        try {
+            AppComponents.configurableApplicationContext();
+        }
+        catch (IllegalComponentStateException e) {
+            Assert.assertNotNull(e);
+        }
     }
     
     @Test
     public void testUpdateProps() {
-        throw new IllegalComponentStateException("15.06.2019 (17:36)");
+        InitProperties initProperties = new FileProps(ConstantsFor.class.getSimpleName());
+        Properties props = initProperties.getProps();
+        Assert.assertTrue(props.size() > 5, new TForms().fromArray(props, false));
+        try {
+            boolean isUpdate = new AppComponents().updateProps(props);
+            Assert.assertTrue(isUpdate);
+        }
+        catch (IOException e) {
+            Assert.assertNull(e, e.getMessage());
+        }
     }
     
     @Test
     public void testUpdateProps1() {
-        throw new IllegalComponentStateException("15.06.2019 (17:36)");
+        try {
+            new AppComponents().updateProps();
+        }
+        catch (IllegalStateException e) {
+            Assert.assertNotNull(e);
+        }
+        catch (IOException e) {
+            Assert.assertNull(e, e.getMessage());
+        }
+        InitProperties initProperties = new FileProps(ConstantsFor.class.getSimpleName());
+        try {
+            new AppComponents().updateProps(initProperties.getProps());
+        }
+        catch (IOException e) {
+            Assert.assertNull(e, e.getMessage());
+        }
     }
     
     @Test
     public void testDiapazonedScanInfo() {
-        throw new IllegalComponentStateException("15.06.2019 (17:36)");
-    }
-    
-    @Test
-    public void testDiapazonScan() {
-        throw new IllegalComponentStateException("15.06.2019 (17:36)");
-    }
-    
-    @Test
-    public void testGetLogger() {
-        throw new IllegalComponentStateException("15.06.2019 (17:36)");
-    }
-    
-    @Test
-    public void testScanOline() {
-        throw new IllegalComponentStateException("15.06.2019 (17:36)");
-    }
-    
-    @Test
-    public void testTemporaryFullInternet() {
-        throw new IllegalComponentStateException("15.06.2019 (17:36)");
+        try {
+            String diapazonInfo = DiapazonScan.getInstance().theInfoToString();
+            System.out.println(diapazonInfo);
+            Assert.assertTrue(diapazonInfo.contains("a href=\"/showalldev\""), diapazonInfo);
+        }
+        catch (Exception e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
+        }
+        
     }
     
     @Test
     public void testLaunchRegRuFTPLibsUploader() {
-        throw new IllegalComponentStateException("15.06.2019 (17:36)");
+        String ftpLibUplString = new AppComponents().launchRegRuFTPLibsUploader();
+        Assert.assertTrue(ftpLibUplString.contains("true"));
     }
     
     @Test
     public void testGetUserPref() {
-        throw new IllegalComponentStateException("15.06.2019 (17:36)");
+        Preferences pref = AppComponents.getUserPref();
+        try {
+            Assert.assertNotNull(pref.keys());
+            Assert.assertTrue(pref.keys().length > 2);
+        }
+        catch (BackingStoreException e) {
+            Assert.assertNull(e, e.getMessage());
+        }
     }
     
     private static Properties getPropsTESTCOPY() {

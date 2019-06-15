@@ -120,7 +120,6 @@ public class DiapazonScan implements Runnable {
             for (Map.Entry<String, File> entry : scanFiles.entrySet()) {
                 fileTimes.append(entry.getKey()).append(atStr).append(Paths.get(entry.getValue().getName()).toFile().length()).append("<br>\n");
             }
-            ;
         }
         catch (NullPointerException e) {
             messageToUser.info("NO FILES!");

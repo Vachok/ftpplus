@@ -191,6 +191,7 @@ public class AppComponents {
         InitProperties initProperties = new DBRegProperties(ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName());
         boolean isDel = initProperties.delProps();
         boolean isSet = initProperties.setProps(propertiesToUpdate);
+        System.out.println("Props from DB DEL = " + isDel + "\nProps in DB update = " + isSet);
         return isDel & isSet;
     }
     

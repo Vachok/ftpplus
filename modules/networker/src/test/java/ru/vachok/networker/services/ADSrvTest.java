@@ -9,7 +9,6 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.user.ADUser;
 
-import java.awt.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,27 +17,6 @@ import java.util.List;
 /**
  @since 15.06.2019 (17:17) */
 @SuppressWarnings("ALL") public class ADSrvTest {
-    
-    
-    @Test
-    public void testGetAdComputer() {
-        throw new IllegalComponentStateException("15.06.2019 (17:34)");
-    }
-    
-    @Test
-    public void testGetUserInputRaw() {
-        throw new IllegalComponentStateException("15.06.2019 (17:34)");
-    }
-    
-    @Test
-    public void testSetUserInputRaw() {
-        throw new IllegalComponentStateException("15.06.2019 (17:34)");
-    }
-    
-    @Test
-    public void testGetAdUser() {
-        throw new IllegalComponentStateException("15.06.2019 (17:34)");
-    }
     
     @Test
     public void testCheckCommonRightsForUserName() {

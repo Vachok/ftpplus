@@ -1,2 +1,0 @@
-192.168.11.3 core11-3.eatmeat.ru
-192.168.11.6 server3.eatmeat.ru
