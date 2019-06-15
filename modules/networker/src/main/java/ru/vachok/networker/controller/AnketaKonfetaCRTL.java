@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.services.AnketaKonfeta;
 
 import javax.servlet.http.HttpServletRequest;
@@ -40,9 +39,8 @@ public class AnketaKonfetaCRTL {
 
     @GetMapping("/anketa")
     public String getMapForAnketa(HttpServletRequest request, Model model) {
-        anketaKonfeta.setAll();
-        Visitor visitor = ConstantsFor.getVis(request);
-        LOGGER.info(visitor.toString());
+        anketaKonfeta.setAllAsEmptyString();
+    
         if (request.getQueryString() != null) {
             LOGGER.warn(request.getQueryString());
         }
@@ -54,13 +52,11 @@ public class AnketaKonfetaCRTL {
 
     @PostMapping("/anketaok")
     public String postAnketa(@ModelAttribute AnketaKonfeta anketaKonfeta, Model model, HttpServletRequest request) {
-        Visitor visitor = ConstantsFor.getVis(request);
         this.anketaKonfeta = anketaKonfeta;
         anketaKonfeta.setUserIp(request.getRemoteAddr());
         model.addAttribute("anketaKonfeta", anketaKonfeta);
         model.addAttribute("ok", "СПАСИБО!");
         LOGGER.warn(request.getQueryString());
-        anketaKonfeta.sendKonfeta(visitor.toString());
         return "ok";
     }
 }

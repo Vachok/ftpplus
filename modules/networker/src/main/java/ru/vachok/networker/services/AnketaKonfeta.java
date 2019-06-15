@@ -66,7 +66,7 @@ public class AnketaKonfeta {
         messageToUser.info(classMeth, "toString()", " = " + toString());
     }
     
-    public void setAll() {
+    public void setAllAsEmptyString() {
         setQ1Ans("");
         setUserMail("");
         setAdditionalString("");

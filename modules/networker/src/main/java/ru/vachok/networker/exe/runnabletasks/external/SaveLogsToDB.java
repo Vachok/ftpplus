@@ -1,15 +1,19 @@
 package ru.vachok.networker.exe.runnabletasks.external;
 
 
+import ru.vachok.mysqlandprops.RegRuMysql;
+import ru.vachok.networker.ConstantsFor;
+
+
 /**
  @since 06.06.2019 (13:40) */
 public class SaveLogsToDB implements Runnable {
     
     
-    private static final ru.vachok.stats.SaveLogsToDB LOGS_TO_DB_EXT = new ru.vachok.stats.SaveLogsToDB();
+    private static final ru.vachok.stats.SaveLogsToDB LOGS_TO_DB_EXT = ru.vachok.stats.SaveLogsToDB.getI(new RegRuMysql().getDataSourceSchema(ConstantsFor.DBBASENAME_U0466446_VELKOM));
     
-    public static SaveLogsToDB getI() {
-        return new SaveLogsToDB();
+    public SaveLogsToDB getI() {
+        return this;
     }
     
     public static void startScheduled() {

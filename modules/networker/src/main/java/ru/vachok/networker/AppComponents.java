@@ -134,7 +134,7 @@ public class AppComponents {
     @Bean
     @Scope(ConstantsFor.SINGLETON)
     public SaveLogsToDB saveLogsToDB() {
-        return SaveLogsToDB.getI();
+        return new SaveLogsToDB().getI();
     }
     
     @Bean

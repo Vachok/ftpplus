@@ -222,7 +222,6 @@ public class TForms {
     public String fromArray(Map<?, ?> mapDefObj, boolean br) {
         brStringBuilder = new StringBuilder();
         nStringBuilder = new StringBuilder();
-        
         brStringBuilder.append(P_STR);
         Set<?> keySet = mapDefObj.keySet();
         List<String> list = new ArrayList<>(keySet.size());
@@ -486,6 +485,22 @@ public class TForms {
             nStringBuilder.append(new TForms().fromArray(e, false));
         }
         if (isHTML) {
+            return brStringBuilder.toString();
+        }
+        else {
+            return nStringBuilder.toString();
+        }
+    }
+    
+    public String fromArray(Enumeration<?> enumOf, boolean isHtml) {
+        this.nStringBuilder = new StringBuilder();
+        this.brStringBuilder = new StringBuilder();
+        while (enumOf.hasMoreElements()) {
+            Object nextElement = enumOf.nextElement();
+            brStringBuilder.append(nextElement).append(BR_STR);
+            nStringBuilder.append(nextElement).append(N_STR);
+        }
+        if (isHtml) {
             return brStringBuilder.toString();
         }
         else {

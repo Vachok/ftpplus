@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.PageFooter;
-import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.services.SimpleCalculator;
 
 import javax.servlet.http.HttpServletRequest;
@@ -31,18 +30,17 @@ public class CalculateCTRL {
 
     @GetMapping("/calculate")
     public String getM(Model model, HttpServletRequest request) {
-        Visitor visitor = ConstantsFor.getVis(request);
         model.addAttribute(ConstantsFor.ATT_TITLE, "Calculator");
         model.addAttribute(ConstantsFor.BEANNAME_CALCULATOR, simpleCalculator);
-        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<p>" + visitor.toString());
-        if (request != null) {
+        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<p>");
+        if (request != null & request.getQueryString() != null) {
             model.addAttribute(ConstantsFor.ATT_RESULT, simpleCalculator.getStampFromDate(request.getQueryString()));
         }
         return "calculate";
     }
 
     @PostMapping("/calculate")
-    private String timeStamp(@ModelAttribute SimpleCalculator simpleCalculator, Model model, String workPos) {
+    public String timeStamp(@ModelAttribute SimpleCalculator simpleCalculator, Model model, String workPos) {
         model.addAttribute(ConstantsFor.ATT_TITLE, "Calculator-POS");
         model.addAttribute(ConstantsFor.BEANNAME_CALCULATOR, simpleCalculator);
         model.addAttribute(ConstantsFor.ATT_RESULT, simpleCalculator.getStampFromDate(workPos));

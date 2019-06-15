@@ -53,6 +53,14 @@ public class ServiceInfoCtrl {
     
     private boolean authReq;
     
+    public ServiceInfoCtrl() {
+    
+    }
+    
+    protected ServiceInfoCtrl(Visitor visitor) {
+        this.visitor = visitor;
+    }
+    
     /**
      {@link Visitor}
      */
@@ -78,13 +86,12 @@ public class ServiceInfoCtrl {
      */
     @GetMapping("/serviceinfo")
     public String infoMapping(Model model, HttpServletRequest request, HttpServletResponse response) throws AccessDeniedException, ExecutionException, InterruptedException {
-        threadConfig.thrNameSet("info");
         NetPinger pinger = netPinger();
         System.out.println(pinger.toString());
-        visitor = new AppComponents().visitor(request);
-        threadConfig.execByThreadConfig(new SpeedChecker());
         this.authReq = Stream.of("0:0:0:0", "127.0.0.1", "10.10.111", "10.200.213.85", "172.16.20", "10.200.214.80", "192.168.13.143")
             .anyMatch(sP->request.getRemoteAddr().contains(sP));
+        visitor = new AppComponents().visitor(request);
+        threadConfig.execByThreadConfig(new SpeedChecker());
         if (authReq) {
             modModMaker(model, request, visitor);
             response.addHeader(ConstantsFor.HEAD_REFRESH, "90");
@@ -123,7 +130,7 @@ public class ServiceInfoCtrl {
         return "ok";
     }
     
-    public static ConcurrentMap<String, String> readFiles(List<File> filesToRead) {
+    private static ConcurrentMap<String, String> readFiles(List<File> filesToRead) {
         Collections.sort(filesToRead);
         ConcurrentMap<String, String> readiedStrings = new ConcurrentHashMap<>();
         for (File fileRead : filesToRead) {
@@ -193,7 +200,6 @@ public class ServiceInfoCtrl {
         
         Callable<String> sizeOfDir = new CountSizeOfWorkDir("sizeofdir");
         Callable<Long> callWhenCome = new SpeedChecker();
-        Callable<String> filesWithSize;
         Future<Long> whenCome = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(callWhenCome);
         Future<String> filesSizeFuture = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(sizeOfDir);
         Date comeD = new Date(whenCome.get());
