@@ -207,9 +207,11 @@ public class AppComponents {
             }
         }
         else {
-            APP_PR.putAll(new AppComponents().getAppProps());
-            APP_PR.setProperty(ConstantsFor.PR_DBSTAMP, String.valueOf(System.currentTimeMillis()));
-            APP_PR.setProperty(ConstantsFor.PR_THISPC, ConstantsFor.thisPC());
+            threadConfig().execByThreadConfig(()->{
+                APP_PR.putAll(new AppComponents().getAppProps());
+                APP_PR.setProperty(ConstantsFor.PR_DBSTAMP, String.valueOf(System.currentTimeMillis()));
+                APP_PR.setProperty(ConstantsFor.PR_THISPC, ConstantsFor.thisPC());
+            });
         }
         return APP_PR;
     }

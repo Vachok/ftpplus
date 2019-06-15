@@ -7,6 +7,7 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 import ru.vachok.networker.exe.runnabletasks.SpeedChecker;
 
+import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 
@@ -17,7 +18,7 @@ public class SpeedCheckerTest {
     public void testCall() {
         try {
             Long aLong = new SpeedChecker().call();
-            Assert.assertTrue(aLong + TimeUnit.DAYS.toMillis(14) > System.currentTimeMillis());
+            Assert.assertTrue(aLong + TimeUnit.DAYS.toMillis(14) > System.currentTimeMillis(), new Date(aLong).toString());
         }
         catch (Exception e) {
             Assert.assertNull(e, e.getMessage());
