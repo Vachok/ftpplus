@@ -4,6 +4,7 @@ package ru.vachok.networker.componentsrepo;
 
 
 import org.testng.annotations.Test;
+import ru.vachok.networker.sysinfo.VersionInfo;
 
 
 /**

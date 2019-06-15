@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.controller;
 
 
@@ -10,7 +12,7 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.MatrixSRV;
-import ru.vachok.networker.componentsrepo.VersionInfo;
+import ru.vachok.networker.sysinfo.VersionInfo;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -29,7 +31,7 @@ public class MatrixCtrTest {
         VersionInfo versionInfo = new VersionInfo();
         MatrixSRV matrixSRV = new MatrixSRV();
         MatrixCtr matrixCtr = new MatrixCtr(versionInfo, matrixSRV);
-        matrixCtr.setCurrentProvider();
+        MatrixCtr.setCurrentProvider();
         String currentProvider = matrixCtr.getCurrentProvider();
         assertFalse(currentProvider.isEmpty());
         assertNotNull(matrixCtr.toString());
