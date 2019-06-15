@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.net.libswork;
 
 
@@ -52,7 +54,7 @@ public class CoverReportUpdate extends RegRuFTPLibsUploader implements Callable<
     
         System.out.println("filesList.size() = " + filesList.size());
         String upFileToServer = uploadToServer(filesList);
-        System.out.println(upFileToServer);
+        stringBuilder.append(upDirToServer);
         
         return stringBuilder.toString();
     }

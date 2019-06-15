@@ -11,6 +11,7 @@ import ru.vachok.networker.accesscontrol.common.CommonRightsChecker;
 import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
 import ru.vachok.networker.componentsrepo.VersionInfo;
 import ru.vachok.networker.controller.MatrixCtr;
+import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.NetMonitorPTV;
 import ru.vachok.networker.exe.runnabletasks.ScanOnline;
 import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
@@ -62,6 +63,8 @@ public class AppInfoOnLoad implements Runnable {
      {@link MessageCons}
      */
     private static final MessageToUser MESSAGE_LOCAL = new MessageLocal(AppInfoOnLoad.class.getSimpleName());
+    
+    private static final ThreadConfig thrConfig = AppComponents.threadConfig();
     
     /**
      Для записи результата работы класса.
@@ -160,10 +163,10 @@ public class AppInfoOnLoad implements Runnable {
         long delay = TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY_HOURS * 7);
     
         String exitLast = "No file";
-        AppComponents.threadConfig().thrNameSet("dateSch");
+        thrConfig.thrNameSet("dateSch");
         Date nextStartDay = MyCalen.getNextDayofWeek(23, 57, DayOfWeek.SUNDAY);
         StringBuilder stringBuilder = new StringBuilder();
-        ThreadPoolTaskScheduler threadPoolTaskScheduler = AppComponents.threadConfig().getTaskScheduler();
+        ThreadPoolTaskScheduler threadPoolTaskScheduler = thrConfig.getTaskScheduler();
     
         threadPoolTaskScheduler.scheduleWithFixedDelay(new WeekStats(ConstantsFor.SQL_SELECTFROM_PCUSERAUTO), nextStartDay, delay);
         stringBuilder.append(nextStartDay).append(" WeekPCStats() start\n");
@@ -237,7 +240,7 @@ public class AppInfoOnLoad implements Runnable {
     private void schedStarter() {
         String osName = ConstantsFor.PR_OSNAME_LOWERCASE;
         MESSAGE_LOCAL.warn(osName);
-        ScheduledThreadPoolExecutor scheduledExecutorService = AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor();
+        ScheduledThreadPoolExecutor scheduledExecutorService = thrConfig.getTaskScheduler().getScheduledThreadPoolExecutor();
         String thisPC = ConstantsFor.thisPC();
         AppInfoOnLoad.MINI_LOGGER.add(thisPC);
         
@@ -282,7 +285,7 @@ public class AppInfoOnLoad implements Runnable {
     
     private static void getWeekPCStats() {
         if (LocalDate.now().getDayOfWeek().equals(DayOfWeek.SUNDAY)) {
-            AppComponents.threadConfig().execByThreadConfig(new WeekStats(ConstantsFor.SQL_SELECTFROM_PCUSERAUTO));
+            thrConfig.execByThreadConfig(new WeekStats(ConstantsFor.SQL_SELECTFROM_PCUSERAUTO));
         }
     }
     

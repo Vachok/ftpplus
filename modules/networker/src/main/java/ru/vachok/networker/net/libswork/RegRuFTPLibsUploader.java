@@ -12,6 +12,7 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.awt.*;
@@ -30,6 +31,7 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.Properties;
 import java.util.Queue;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 
@@ -118,7 +120,9 @@ import java.util.regex.Pattern;
 */
         try {
             pathRoot = pathRoot.getRoot();
-            Files.walkFileTree(pathRoot, new SearchLibs());
+            for (Path path : Files.walkFileTree(pathRoot, new SearchLibs())) {
+                System.out.println(path.toAbsolutePath());
+            }
         }
         catch (IOException e) {
             messageToUser.error(e.getMessage());
@@ -134,6 +138,7 @@ import java.util.regex.Pattern;
             Path upPath = pathQueue.poll();
             if (isDirectory) {
                 String relativeStr = PATTERN.matcher(upPath.normalize().toAbsolutePath().toString().replace(uploadDirectoryStr, "")).replaceAll("/");
+                relativeStr = "/cover" + relativeStr;
                 stringBuilder.append(checkDir(relativeStr));
             }
             else {
@@ -203,26 +208,29 @@ import java.util.regex.Pattern;
         try {
             ftpClient.connect(getHost());
             ftpClient.enterLocalPassiveMode();
+            stringBuilder.append(ftpClient.getReplyString());
         }
         catch (IOException e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".makeConnectionAndStoreLibs:ftpClient.connect", e));
+            System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".makeConnectionAndStoreLibs");
             ftpClient.connect(getHost());
+            stringBuilder.append(ftpClient.getReplyString());
             ftpClient.enterLocalActiveMode();
+            stringBuilder.append(ftpClient.getReplyString());
         }
         try {
             ftpClient.login("u0466446_java", ftpPass);
-            System.out.println(ftpClient.getReplyString());
+            stringBuilder.append(ftpClient.getReplyString());
         }
         catch (IOException e) {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + "LOGIN ERROR", e));
         }
         
         ftpClient.setAutodetectUTF8(true);
-        System.out.println(ftpClient.getReplyString());
+        stringBuilder.append(ftpClient.getReplyString());
         
         try {
             ftpClient.changeWorkingDirectory("/lib");
-            System.out.println(ftpClient.getReplyString());
+            stringBuilder.append(ftpClient.getReplyString());
         }
         catch (IOException e) {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + "CWD ERROR", e));
@@ -237,7 +245,7 @@ import java.util.regex.Pattern;
         stringBuilder.append(ftpClient.getReplyString());
         if (changeWorkingDirectory) {
             boolean removeDirectory = ftpClient.removeDirectory(dirRelative);
-            if (dirRelative.isEmpty() && !removeDirectory) {
+            if (dirRelative != null && dirRelative.isEmpty() && !removeDirectory) {
                 checkDirContent(dirRelative);
             }
             ftpClient.makeDirectory(dirRelative);
@@ -265,30 +273,38 @@ import java.util.regex.Pattern;
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(file.getAbsolutePath()).append(" local file. ");
         String nameFTPFile = getName(file);
+        ftpClient.setConnectTimeout((int) TimeUnit.SECONDS.toMillis(5));
+        stringBuilder.append(ftpClient.getReplyString());
         
         try (InputStream inputStream = new FileInputStream(file)) {
             ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
             System.out.println(ftpClient.getReplyString());
-    
             stringBuilder.append(nameFTPFile).append(" remote name.\n");
     
             ftpClient.enterLocalPassiveMode();
-            System.out.println(ftpClient.getReplyString());
+            stringBuilder.append(ftpClient.getReplyString());
     
             stringBuilder.append("Is file stored to server: ");
             boolean isStore;
             try {
                 isStore = ftpClient.storeFile(nameFTPFile, inputStream);
+                String stringReply = ftpClient.getReplyString();
+                stringBuilder.append(stringReply);
+                System.out.println(stringReply + " file: " + nameFTPFile);
             }
             catch (Exception e) {
+    
                 ftpClient.enterLocalActiveMode();
+                stringBuilder.append(ftpClient.getReplyString());
                 isStore = ftpClient.storeFile(nameFTPFile, inputStream);
+                String replyStr = ftpClient.getReplyString();
+                stringBuilder.append(replyStr).append(" Exception: ").append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false));
+                System.out.println(replyStr);
             }
-            System.out.println(ftpClient.getReplyString());
-            stringBuilder.append(isStore).append(", reply: ").append(ftpClient.getReplyString()).append("\n");
+            stringBuilder.append(isStore).append(": ").append(nameFTPFile).append("\n");
         }
         catch (IOException e) {
-            messageToUser.error(RegRuFTPLibsUploader.class.getSimpleName(), "uploadFile", e.getMessage());
+            stringBuilder.append(RegRuFTPLibsUploader.class.getSimpleName()).append(" uploadFile : ").append(e.getMessage());
         }
         return stringBuilder.toString();
     }
