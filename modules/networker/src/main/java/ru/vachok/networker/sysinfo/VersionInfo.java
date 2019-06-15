@@ -132,7 +132,7 @@ public class VersionInfo {
         return sb.toString();
     }
     
-    protected String getParams() {
+    public String getParams() {
         this.appVersion = PROPERTIES.getProperty(ConstantsFor.PR_APP_VERSION, ALERT_DNE);
         this.appBuild = PROPERTIES.getProperty(ConstantsFor.PR_APP_BUILD, ALERT_DNE);
         this.buildTime = PROPERTIES.getProperty(ConstantsFor.PR_APP_BUILDTIME, ALERT_DNE);

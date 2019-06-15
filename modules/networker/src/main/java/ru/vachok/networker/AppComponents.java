@@ -160,7 +160,7 @@ public class AppComponents {
             versionInfo.setParams();
         }
         else {
-            throw new IllegalComponentStateException("15.06.2019 (14:03)");
+            versionInfo.getParams();
         }
         return versionInfo;
     }
