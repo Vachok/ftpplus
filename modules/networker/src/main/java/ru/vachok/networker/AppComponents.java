@@ -31,7 +31,6 @@ import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetListKeeper;
 import ru.vachok.networker.net.enums.ConstantsNet;
-import ru.vachok.networker.net.libswork.CoverReportUpdate;
 import ru.vachok.networker.net.libswork.RegRuFTPLibsUploader;
 import ru.vachok.networker.services.ADSrv;
 import ru.vachok.networker.services.MessageLocal;
@@ -44,7 +43,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
 import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
@@ -265,12 +263,12 @@ public class AppComponents {
     
     String launchRegRuFTPLibsUploader() {
         Runnable regRuFTPLibsUploader = new RegRuFTPLibsUploader();
-        Callable<String> coverReportUpdate = new CoverReportUpdate();
+//        Callable<String> coverReportUpdate = new CoverReportUpdate();
         try {
             boolean isExec = threadConfig().execByThreadConfig(regRuFTPLibsUploader);
-            Future<String> submit = threadConfig().getTaskExecutor().submit(coverReportUpdate);
-            String coverReportUpdateFutureStr = submit.get();
-            return true + " " + coverReportUpdate;
+//            Future<String> submit = threadConfig().getTaskExecutor().submit(coverReportUpdate);
+//            String coverReportUpdateFutureStr = submit.get();
+            return String.valueOf(true);
         }
         catch (Exception e) {
             return e.getMessage();
