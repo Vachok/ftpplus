@@ -184,7 +184,12 @@ public class NetScanCtr {
     @PostMapping("/ping")
     public String pingPost(Model model, HttpServletRequest request, @ModelAttribute NetPinger netPinger, HttpServletResponse response) {
         this.netPingerInst = netPinger;
-        netPinger.run();
+        try {
+            netPinger.run();
+        }
+        catch (IllegalComponentStateException e) {
+            System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".pingPost");
+        }
         model.addAttribute(ConstantsFor.ATT_NETPINGER, netPinger);
         String npEq = "Netpinger equals is " + netPinger.equals(this.netPingerInst);
         model.addAttribute(ConstantsFor.ATT_TITLE, npEq);

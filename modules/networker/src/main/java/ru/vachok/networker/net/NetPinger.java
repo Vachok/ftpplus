@@ -16,6 +16,7 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 
+import java.awt.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,6 +24,7 @@ import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.LocalTime;
+import java.util.List;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
@@ -266,10 +268,13 @@ public class NetPinger implements Runnable, Pinger {
     #messageToUser}, после окончания пинга, вывести в консоль {@link #pingResultStr} <br> {@link #timeToEndStr} - переписываем значение.
      */
     @Override
-    public void run() {
+    public void run() throws IllegalComponentStateException {
         final long startSt = System.currentTimeMillis();
         if (multipartFile != null) {
             parseFile();
+        }
+        else {
+            throw new IllegalComponentStateException("multipartFile is null: " + getClass().getSimpleName());
         }
         long userIn = TimeUnit.MINUTES.toMillis(Long.parseLong(getTimeForScanStr()));
         long totalMillis = startSt + userIn;

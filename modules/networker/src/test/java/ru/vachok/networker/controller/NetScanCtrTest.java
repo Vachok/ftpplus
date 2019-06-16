@@ -20,10 +20,11 @@ import java.awt.*;
 import java.util.Map;
 import java.util.concurrent.RejectedExecutionException;
 
+import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
 
-public class NetScanCtrTest {
+@SuppressWarnings("ALL") public class NetScanCtrTest {
     
     
     @Test
@@ -71,7 +72,13 @@ public class NetScanCtrTest {
     
     @Test
     public void testPingPost() {
-        throw new IllegalComponentStateException("15.06.2019 (17:36)");
+        Model model = new ExtendedModelMap();
+        HttpServletRequest request = new MockHttpServletRequest();
+        HttpServletResponse response = new MockHttpServletResponse();
+        NetPinger instPinger = new NetPinger();
+        String pingPostStr = new NetScanCtr(AppComponents.netScannerSvc(), instPinger, new AppComponents().scanOnline()).pingPost(model, request, instPinger, response);
+        Assert.assertTrue(pingPostStr.equals("ok"));
+        Assert.assertNotNull(model.asMap().get("netPinger"));
     }
     
     @Test
@@ -81,7 +88,7 @@ public class NetScanCtrTest {
         HttpServletResponse response = new MockHttpServletResponse();
         try {
             String pcNameInfoStr = NetScanCtr.pcNameForInfo(AppComponents.netScannerSvc(), model);
-            Assert.assertTrue(pcNameInfoStr.equals("redirect:/ad?PC"));
+            Assert.assertTrue(pcNameInfoStr.contains("redirect:/ad"));
         
         }
         catch (RejectedExecutionException e) {
@@ -91,11 +98,21 @@ public class NetScanCtrTest {
     
     @Test
     public void testAllDevices() {
-        throw new IllegalComponentStateException("15.06.2019 (17:36)");
+        Model model = new ExtendedModelMap();
+        HttpServletRequest request = new MockHttpServletRequest();
+        HttpServletResponse response = new MockHttpServletResponse();
+        String allDevStr = new NetScanCtr(AppComponents.netScannerSvc(), new NetPinger(), new AppComponents().scanOnline()).allDevices(model, request, response);
+        Assert.assertTrue(allDevStr.equals("ok"), allDevStr);
+        Assert.assertTrue(model.asMap().get("ok").toString().contains("DiapazonScan"));
     }
     
     @Test
     public void testScanIt() {
-        throw new IllegalComponentStateException("15.06.2019 (17:36)");
+        try {
+            new NetScanCtr(AppComponents.netScannerSvc(), new NetPinger(), new AppComponents().scanOnline()).scanIt();
+        }
+        catch (IllegalComponentStateException e) {
+            assertNotNull(e, e.getMessage());
+        }
     }
 }
