@@ -15,23 +15,17 @@ import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetListKeeper;
 import ru.vachok.networker.net.NetScanFileWorker;
-import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 
 import java.io.*;
-import java.lang.management.ManagementFactory;
-import java.lang.management.RuntimeMXBean;
-import java.lang.management.ThreadInfo;
-import java.lang.management.ThreadMXBean;
 import java.net.InetAddress;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.Deque;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.TimeUnit;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
@@ -59,6 +53,8 @@ public class ExecScan extends DiapazonScan {
     
     private final File vlanFile;
     
+    private boolean isTest;
+    
     private final ThreadConfig threadConfig = AppComponents.threadConfig();
     
     private long stArt;
@@ -71,7 +67,9 @@ public class ExecScan extends DiapazonScan {
     
     private PrintStream printStream;
     
-    private static final Deque<String> ALL_DEVICES_LOCAL_DEQUE = ConstantsNet.getAllDevices();
+    private Map<String, String> offLines = AppComponents.netKeeper().getOffLines();
+    
+    private NetListKeeper netListKeeper = AppComponents.netKeeper();
     
     public ExecScan(int from, int to, String whatVlan, File vlanFile) {
         
@@ -83,7 +81,21 @@ public class ExecScan extends DiapazonScan {
         
         this.vlanFile = vlanFile;
     
-        this.stArt = LocalDateTime.of(1984, 1, 7, 2, 0).toEpochSecond(ZoneOffset.ofHours(3)) * 1000;
+        this.stArt = LocalDateTime.of(ConstantsFor.YEAR_OF_MY_B, 1, 7, 2, 0).toEpochSecond(ZoneOffset.ofHours(3)) * 1000;
+    }
+    
+    public ExecScan(int from, int to, String whatVlan, File vlanFile, boolean isTest) {
+        
+        this.from = from;
+        
+        this.to = to;
+        
+        this.whatVlan = whatVlan;
+        
+        this.vlanFile = vlanFile;
+        this.isTest = isTest;
+        
+        this.stArt = LocalDateTime.of(ConstantsFor.YEAR_OF_MY_B, 1, 7, 2, 0).toEpochSecond(ZoneOffset.ofHours(3)) * 1000;
     }
     
     @Override
@@ -122,27 +134,6 @@ public class ExecScan extends DiapazonScan {
         }
     }
     
-    private String getBeansInfo() {
-        final StringBuilder sb = new StringBuilder();
-        ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
-        RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
-        
-        sb.append("<br>");
-        sb.append(runtimeMXBean.getName()).append(" Name. ");
-        sb.append(runtimeMXBean.getUptime()).append(" Time. ");
-        sb.append("<br>");
-        sb.append("<br>");
-        
-        ThreadInfo infoThisThr = threadMXBean.getThreadInfo(Thread.currentThread().getId());
-        sb.append(infoThisThr).append(" String. ");
-        sb.append(infoThisThr.getThreadName()).append(" ThreadName. ");
-        sb.append(infoThisThr.getWaitedTime()).append(" WaitedTime (millis). ");
-        sb.append(infoThisThr.getThreadState()).append(" current state. ");
-        sb.append(TimeUnit.NANOSECONDS.toMillis(threadMXBean.getCurrentThreadCpuTime())).append(" current thread CPU time in millis. ");
-        
-        return sb.toString();
-    }
-    
     private boolean execScan() {
         this.stArt = System.currentTimeMillis();
         try {
@@ -166,7 +157,6 @@ public class ExecScan extends DiapazonScan {
      */
     private String oneIpScanAndPrintToFile(int iThree, int jFour) throws IOException {
         threadConfig.thrNameSet(String.valueOf(iThree));
-        
         int timeOutMSec = (int) ConstantsFor.DELAY;
         byte[] aBytes = InetAddress.getByName(whatVlan + iThree + "." + jFour).getAddress();
         StringBuilder stringBuilder = new StringBuilder();
@@ -176,31 +166,29 @@ public class ExecScan extends DiapazonScan {
         
         if (ConstantsFor.thisPC().equalsIgnoreCase("HOME")) {
             timeOutMSec = (int) (ConstantsFor.DELAY * 2);
-            NetScanFileWorker.getI().setLastStamp(System.currentTimeMillis());
+            NetScanFileWorker.getI().setLastStamp(System.currentTimeMillis(), hostAddress);
         }
         
         if (byAddress.isReachable(timeOutMSec)) {
-            NetListKeeper.getI().getOnLinesResolve().put(hostAddress, hostName);
-            
-            ALL_DEVICES_LOCAL_DEQUE.add("<font color=\"green\">" + hostName + FONT_BR_CLOSE);
+            netListKeeper.getOnLinesResolve().put(hostAddress, hostName);
+            getAllDevLocalDeq().add("<font color=\"green\">" + hostName + FONT_BR_CLOSE);
             stringBuilder.append(hostAddress).append(" ").append(hostName).append(PAT_IS_ONLINE);
         }
         else {
-            NetListKeeper.getI().getOffLines().put(byAddress.getHostAddress(), hostName);
-            
-            ALL_DEVICES_LOCAL_DEQUE.add("<font color=\"red\">" + hostName + FONT_BR_CLOSE);
+            offLines.put(byAddress.getHostAddress(), hostName);
+            getAllDevLocalDeq().add("<font color=\"red\">" + hostName + FONT_BR_CLOSE);
             stringBuilder.append(hostAddress).append(" ").append(hostName);
         }
         if (stringBuilder.toString().contains(PAT_IS_ONLINE)) {
-            try (OutputStream outputStream = new FileOutputStream(vlanFile, true);
-                 PrintStream printStream = new PrintStream(Objects.requireNonNull(outputStream), true);
-            ) {
+            try (OutputStream outputStream = new FileOutputStream(vlanFile, true)) {
+                this.printStream = new PrintStream(Objects.requireNonNull(outputStream), true);
                 printStream.println(hostAddress + " " + hostName);
                 messageToUser.info(getClass().getSimpleName() + ".oneIpScanAndPrintToFile ip online " + whatVlan + iThree + "." + jFour, vlanFile.getName(), " = " + vlanFile
                     .length() + ConstantsFor.STR_BYTES);
         
             }
         }
+        netListKeeper.setOffLines(offLines);
         return stringBuilder.toString();
     }
     
@@ -208,24 +196,28 @@ public class ExecScan extends DiapazonScan {
      Сканер локальной сети@param stStMap Запись в лог@param fromVlan начало с 3 октета IP@param toVlan   конец с 3 октета IP@param whatVlan первый 2 октета, с точкоё в конце.
      */
     private ConcurrentMap<String, String> scanLanSegment(int fromVlan, int toVlan) throws IOException {
-        ConcurrentMap<String, String> stStMap = new ConcurrentHashMap<>(MAX_IN_ONE_VLAN * (toVlan - fromVlan));
+        ConcurrentMap<String, String> scannedHostsMap = new ConcurrentHashMap<>(MAX_IN_ONE_VLAN * (toVlan - fromVlan));
         String theScannedIPHost = "No scan yet. MAP Capacity: ";
         for (int i = fromVlan; i < toVlan; i++) {
             setSpend();
-            for (int j = 0; j < ConstantsNet.VLAN_MASK24_MAX; j++) {
-                AppComponents.threadConfig().thrNameSet(i + "." + j);
+            int maxIPs = MAX_IN_ONE_VLAN;
+            if (isTest) {
+                maxIPs = (int) ConstantsFor.DELAY;
+            }
+            for (int j = 0; j < maxIPs; j++) {
+                threadConfig.thrNameSet(i + "." + j);
                 try {
                     theScannedIPHost = oneIpScanAndPrintToFile(i, j);
-                    stStMap.put(theScannedIPHost.split(" ")[0], theScannedIPHost.split(" ")[1]);
+                    scannedHostsMap.put(theScannedIPHost.split(" ")[0], theScannedIPHost.split(" ")[1]);
                 }
                 catch (IOException e) {
-                    stStMap.put(e.getMessage(), new TForms().fromArray(e, false));
+                    scannedHostsMap.put(e.getMessage(), new TForms().fromArray(e, false));
                 }
                 catch (ArrayIndexOutOfBoundsException e) {
-                    stStMap.put(theScannedIPHost, e.getMessage());
+                    scannedHostsMap.put(theScannedIPHost, e.getMessage());
                 }
             }
         }
-        return stStMap;
+        return scannedHostsMap;
     }
 }

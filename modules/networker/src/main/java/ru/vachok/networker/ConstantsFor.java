@@ -48,6 +48,8 @@ import java.util.concurrent.TimeUnit;
 public enum ConstantsFor {
     ;
     
+    public static String FILE_PREFIX_SEARCH_ = "search_";
+    
     public static final String METHNAME_STATIC_INITIALIZER = "static initializer";
     
     public static final String HEAD_REFERER = "referer";
@@ -486,6 +488,8 @@ public enum ConstantsFor {
     public static final String RETURN_ERROR = "error";
     
     public static final String FILENAME_BUILDGRADLE = "build.gradle";
+    
+    public static final String SQL_SELECTINETSTATS = "SELECT DISTINCT `ip` FROM `inetstats`";
     
     /**
      @return {@link #MAIL_RULES}

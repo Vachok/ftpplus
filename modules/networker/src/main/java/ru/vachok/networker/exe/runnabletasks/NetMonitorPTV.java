@@ -42,8 +42,6 @@ public class NetMonitorPTV implements Runnable {
     
     private String pingResultLast = "No pings yet.";
     
-    private static final String CLASS_NAME = NetMonitorPTV.class.getSimpleName();
-    
     @Override
     public void run() {
         try {
@@ -90,7 +88,7 @@ public class NetMonitorPTV implements Runnable {
         this.printStream = new PrintStream(Objects.requireNonNull(outputStream), true);
     }
     
-    private void writeStatAndCheckSize() throws IOException {
+    private void writeStatAndCheckSize() throws IOException, BackingStoreException {
         File pingTv = new File(ConstantsFor.FILENAME_PTV);
         printStream.print(pingResultLast + " " + LocalDateTime.now());
         printStream.println();
@@ -104,7 +102,7 @@ public class NetMonitorPTV implements Runnable {
         }
     }
     
-    private void ifPingTVIsBig(File pingTv) throws IOException {
+    private void ifPingTVIsBig(File pingTv) throws IOException, BackingStoreException {
         boolean isPingTvCopied = FileSystemWorker
             .copyOrDelFile(pingTv, ConstantsFor.FILESYSTEM_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + "tv_" + System.currentTimeMillis() / 1000 + ".ping", true);
         if (isPingTvCopied) {
@@ -112,13 +110,16 @@ public class NetMonitorPTV implements Runnable {
             this.outputStream = new FileOutputStream(pingTv);
             this.printStream = new PrintStream(outputStream, true);
             AppComponents.getProps().setProperty(this.getClass().getSimpleName(), new Date().toString());
+            Preferences userPref = AppComponents.getUserPref();
+            userPref.put(ConstantsFor.FILENAME_PTV, new Date().toString());
+            userPref.sync();
         }
         else {
-            messageToUser.info(ConstantsFor.FILENAME_PTV, "creating", AppComponents.getProps().getProperty(this.getClass().getSimpleName(), new Date().toString()));
+            System.out.println(pingTv.getAbsolutePath() + " size in kb = " + pingTv.length() / ConstantsFor.KBYTE);
         }
     }
     
-    private void pingIPTV() throws IOException {
+    private void pingIPTV() throws IOException, BackingStoreException {
         StringBuilder stringBuilder = new StringBuilder();
     
         byte[] upakCisco2042b = InetAddress.getByName(SwitchesWiFi.C_204_2_UPAK).getAddress();

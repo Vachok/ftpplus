@@ -139,7 +139,7 @@ public enum ConstantsNet { ;
     
     private static MessageToUser messageToUser = new MessageLocal(ConstantsNet.class.getSimpleName());
     
-    public static final int VLAN_MASK24_MAX = 255;
+    public static final int VLAN_WITH_MASK24_MAX = 255;
     
     public static void setSshMapStr(String sshMapStr) {
         ConstantsNet.sshMapStr = sshMapStr;
@@ -177,7 +177,8 @@ public enum ConstantsNet { ;
      @return {@link #ALL_DEVICES}
      */
     public static BlockingDeque<String> getAllDevices() {
-        AppComponents.getProps().setProperty(ConstantsFor.PR_VLANNUM, String.valueOf((IPS_IN_VELKOM_VLAN / MAX_IN_ONE_VLAN)));
+        int vlanNum = IPS_IN_VELKOM_VLAN / MAX_IN_ONE_VLAN;
+        AppComponents.getProps().setProperty(ConstantsFor.PR_VLANNUM, String.valueOf(vlanNum));
         return ALL_DEVICES;
     }
 

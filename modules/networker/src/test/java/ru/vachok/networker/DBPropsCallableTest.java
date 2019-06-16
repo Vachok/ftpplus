@@ -10,6 +10,7 @@ import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.abstr.DataBaseRegSQL;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
@@ -28,14 +29,14 @@ import java.util.Properties;
         System.out.println("rowsDel = " + rowsDel);
     }
     
-    @Test
+    @Test(enabled = false)
     public void tryUpd() {
         DataBaseRegSQL dbPropsCallable = new DBPropsCallable();
         int orNot = dbPropsCallable.updateTable();
         Assert.assertTrue(orNot != 0);
     }
     
-    @Test
+    @Test(enabled = false)
     public void testCall() {
         DBPropsCallable dbPropsCallable = new DBPropsCallable();
         Properties calledProps = dbPropsCallable.call();
@@ -45,18 +46,34 @@ import java.util.Properties;
     
     @Test
     public void testSelectFrom() {
+        try {
+            int selectedFrom = new DBPropsCallable().selectFrom();
+        }
+        catch (IllegalComponentStateException e) {
+            Assert.assertNotNull(e, e.getMessage());
+        }
     }
     
     @Test
     public void testInsertTo() {
+        try {
+            int insertTo = new DBPropsCallable().insertTo();
+        }
+        catch (IllegalComponentStateException e) {
+            Assert.assertNotNull(e);
+        }
     }
     
-    @Test
+    @Test(enabled = false)
     public void testDeleteFrom() {
+        int deleteFromRows = new DBPropsCallable().deleteFrom();
+        Assert.assertTrue(deleteFromRows > 5);
     }
     
-    @Test
+    @Test(enabled = false)
     public void testUpdateTable() {
+        int updateTable = new DBPropsCallable(new FileProps(ConstantsFor.class.getSimpleName()).getProps()).updateTable();
+        Assert.assertTrue(updateTable > 5, String.valueOf(updateTable));
     }
     
     @Test(enabled = false)

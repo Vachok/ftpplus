@@ -7,7 +7,6 @@ import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.DataBaseRegSQL;
@@ -18,8 +17,12 @@ import ru.vachok.networker.services.MessageLocal;
 import java.awt.*;
 import java.io.*;
 import java.sql.*;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.LocalTime;
+import java.util.Date;
 import java.util.List;
+import java.util.concurrent.Executors;
 
 
 /**
@@ -31,15 +34,54 @@ public class InteretStats implements Runnable, DataBaseRegSQL {
     
     private static final String FILENAME_INETSTATSCSV = "inetstats.csv";
     
-    private static final String SQL_DISTINCTIPSWITHINET = "SELECT DISTINCT `ip` FROM `inetstats`";
+    private String fileName = "null";
     
     private Connection connectionF;
     
     private Savepoint savepoint;
     
-    private String fileName;
+    private String sql = "null";
     
-    private String sql;
+    private static final String SQL_DISTINCTIPSWITHINET = ConstantsFor.SQL_SELECTINETSTATS;
+    
+    /**
+     Для тестов
+     <p>
+     
+     @return {@link #fileName}
+     */
+    protected String getFileName() {
+        return fileName;
+    }
+    
+    /**
+     Для тестов
+     <p>
+     
+     @param fileName имя csv-файла
+     */
+    protected void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
+    
+    /**
+     For tests
+     
+     @return {@link #sql}
+     */
+    protected String getSql() {
+        return sql;
+    }
+    
+    /**
+     Для тестов
+     <p>
+     
+     @param sql sql-запрос
+     */
+    protected void setSql(String sql) {
+        this.sql = sql;
+    }
     
     private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
     
@@ -53,7 +95,7 @@ public class InteretStats implements Runnable, DataBaseRegSQL {
         long iPsWithInet = readIPsWithInet();
         messageToUser.info(getClass().getSimpleName() + "in kbytes. ", new File(FILENAME_INETSTATSIPCSV).getAbsolutePath(), " = " + iPsWithInet);
         readInetStatsRSetToCSV();
-        AppComponents.threadConfig().execByThreadConfig(new InetStatSorter());
+        Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(new InetStatSorter());
     }
     
     @Override public int selectFrom() {
@@ -148,6 +190,8 @@ public class InteretStats implements Runnable, DataBaseRegSQL {
     
     private void readInetStatsRSetToCSV() {
         List<String> chkIps = FileSystemWorker.readFileToList(new File(FILENAME_INETSTATSIPCSV).getPath());
+        DateFormat format = new SimpleDateFormat("E");
+        String weekDay = format.format(new Date());
         long totalBytes = 0;
         for (String ip : chkIps) {
             this.fileName = FILENAME_INETSTATSCSV.replace("inetstats", ip).replace(".csv", "_" + LocalTime.now().toSecondOfDay() + ".csv");
@@ -157,7 +201,7 @@ public class InteretStats implements Runnable, DataBaseRegSQL {
             totalBytes += file.length();
             new MessageLocal(getClass().getSimpleName())
                 .info(fileName, file.length() / ConstantsFor.KBYTE + " kb", "total kb: " + totalBytes / ConstantsFor.KBYTE);
-            if (file.length() > 10) {
+            if (weekDay.equals("вс") && file.length() > 10) {
                 this.sql = new StringBuilder().append("DELETE FROM `inetstats` WHERE `ip` LIKE '").append(ip).append("'").toString();
                 System.out.println(deleteFrom() + " rows deleted.");
             }

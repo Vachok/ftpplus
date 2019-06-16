@@ -12,8 +12,6 @@ import java.io.*;
 import java.nio.file.*;
 import java.time.LocalTime;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Stream;
 
 import static ru.vachok.networker.ConstantsFor.FILEEXT_LOG;
@@ -57,42 +55,6 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         return new TForms().fromArray(deleterTemp.getEventList(), false);
     }
     
-    
-    /**
-     Поиск в \\srv-fs\common_new
-     <p>
-
-     @param folderPath папка, откуда начать искать
-     @return список файлов или {@link Exception}
-
-     @see FileSearcher
-     */
-    public static String searchInCommon(String[] folderPath) {
-        FileSearcher fileSearcher = new FileSearcher(folderPath[0]);
-        String folderToSearch = "";
-        try {
-            folderToSearch = folderPath[1];
-        }
-        catch (ArrayIndexOutOfBoundsException e) {
-            folderToSearch = "";
-        }
-        folderToSearch = "\\\\srv-fs.eatmeat.ru\\common_new\\" + folderToSearch;
-        try {
-            Files.walkFileTree(Paths.get(folderToSearch), fileSearcher);
-        }
-        catch (IOException e) {
-            messageToUser.error(e.getMessage());
-        }
-        List<String> fileSearcherResList = fileSearcher.getResList();
-        fileSearcherResList.add("Searched: " + new Date() + "\n");
-        String resTo = new TForms().fromArray(fileSearcherResList, true);
-        if (fileSearcherResList.size() > 0) {
-            writeFile("search_" + LocalTime.now().toSecondOfDay() + ".res", fileSearcherResList.stream());
-        }
-        return resTo;
-    }
-    
-    
     /**
      Простое копирование файла.
 
@@ -123,18 +85,6 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         return toCpFile.exists();
     }
     
-    
-    public static ConcurrentMap<String, String> readFiles(List<File> filesToRead) {
-        Collections.sort(filesToRead);
-        ConcurrentMap<String, String> readiedStrings = new ConcurrentHashMap<>();
-        for (File f : filesToRead) {
-            String s = readFile(f.getAbsolutePath());
-            readiedStrings.put(f.getAbsolutePath(), s);
-        }
-        return readiedStrings;
-    }
-    
-    
     /**
      Чтение файла из файловой системы.
      <p>
@@ -155,7 +105,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
                 stringBuilder
                     .append("Bytes in stream: ")
                     .append(avaBytes)
-                    .append("<br\n>");
+                    .append("<p>\n");
                 while (bufferedReader.ready()) {
                     stringBuilder
                         .append(bufferedReader.readLine())
@@ -180,22 +130,6 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         messageToUser.info(msgTimeSp);
         return stringBuilder.toString();
     }
-    
-    
-    public static void delFilePatterns(String[] patToDelArr) {
-        File file = new File(".");
-        for (String patToDel : patToDelArr) {
-            FileVisitor<Path> deleterTemp = new DeleterTemp(patToDel);
-            try {
-                Path walkFileTree = Files.walkFileTree(file.toPath(), deleterTemp);
-                messageToUser.infoNoTitles("walkFileTree = " + walkFileTree);
-            }
-            catch (IOException e) {
-                messageToUser.errorAlert(CLASS_NAME, "delFilePatterns", e.getMessage());
-            }
-        }
-    }
-    
     
     public static String writeFile(String fileName, String toWriteStr) {
         if (writeFile(fileName, Collections.singletonList(toWriteStr))) {
@@ -263,16 +197,16 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     }
     
     public static String error(String classMeth, Exception e) {
-        File f = new File(classMeth + "_" + LocalTime.now().toSecondOfDay() + FILEEXT_LOG);
-        
-        try (OutputStream outputStream = new FileOutputStream(f)) {
+        File fileClassMeth = new File(classMeth + "_" + LocalTime.now().toSecondOfDay() + FILEEXT_LOG);
+    
+        try (OutputStream outputStream = new FileOutputStream(fileClassMeth)) {
             boolean printTo = printTo(outputStream, e);
-            messageToUser.info(f.getAbsolutePath(), "print", String.valueOf(printTo));
+            messageToUser.info(fileClassMeth.getAbsolutePath(), "print", String.valueOf(printTo));
         }
         catch (IOException exIO) {
             messageToUser.errorAlert(CLASS_NAME, ConstantsFor.RETURN_ERROR, exIO.getMessage());
         }
-        boolean isCp = copyOrDelFile(f, ".\\err\\" + f.getName(), true);
+        boolean isCp = copyOrDelFile(fileClassMeth, ".\\err\\" + fileClassMeth.getName(), true);
         return classMeth + " threw Exception: " + e.getMessage() + ": <p>\n\n" + new TForms().fromArray(e, true);
     }
     

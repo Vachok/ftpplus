@@ -3,14 +3,13 @@
 package ru.vachok.networker.accesscontrol.sshactions;
 
 
-import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.services.MessageLocal;
 
 import java.util.concurrent.*;
+import java.util.regex.Pattern;
 
 
 /**
@@ -18,9 +17,7 @@ import java.util.concurrent.*;
 public class Tracerouting implements Callable<String> {
     
     
-    private final String SRV_NEEDED = new AppComponents().sshActs().whatSrvNeed();
-    
-    private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
+    private static final Pattern COMPILE = Pattern.compile(";");
     
     @Override public String call() throws Exception {
         return getProviderTraceStr();
@@ -37,7 +34,7 @@ public class Tracerouting implements Callable<String> {
      <p>
      Если {@code callForRoute.contains("91.210.85.")} : добавим в {@link StringBuilder} - {@code "FORTEX"} <br>
      Else if {@code callForRoute.contains("176.62.185.129")} : добавим {@code "ISTRANET"} <br>
-     Если {@code callForRoute.contains("LOG: ")} добавим {@link String#split(java.lang.String)}[1] по {@code "LOG: "}
+     Если {@code callForRoute.contains("LOG: ")} добавим {@link String#split(String)}[1] по {@code "LOG: "}
      
      @return {@link StringBuilder#toString()} собравший инфо из строки с сервера.
      
@@ -45,7 +42,7 @@ public class Tracerouting implements Callable<String> {
      */
     private String getProviderTraceStr() throws ArrayIndexOutOfBoundsException, InterruptedException, ExecutionException, TimeoutException {
         StringBuilder stringBuilder = new StringBuilder();
-        SSHFactory sshFactory = new SSHFactory.Builder(SRV_NEEDED, "traceroute velkomfood.ru && exit", getClass().getSimpleName()).build();
+        SSHFactory sshFactory = new SSHFactory.Builder(ConstantsFor.IPADDR_SRVGIT, "traceroute velkomfood.ru && exit", getClass().getSimpleName()).build();
         Future<String> curProvFuture = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(sshFactory);
         String callForRoute = curProvFuture.get(ConstantsFor.DELAY, TimeUnit.SECONDS);
         stringBuilder.append("<br><a href=\"/makeok\">");
@@ -62,7 +59,7 @@ public class Tracerouting implements Callable<String> {
         callForRoute = callForRoute + "<br>LOG: " + getInetLog();
         if (callForRoute.contains(logStr)) {
             try {
-                stringBuilder.append("<br><font color=\"gray\">").append(callForRoute.split(logStr)[1].replaceAll(";", "<br>")).append("</font>");
+                stringBuilder.append("<br><font color=\"gray\">").append(COMPILE.matcher(callForRoute.split(logStr)[1]).replaceAll("<br>")).append("</font>");
             }
             catch (ArrayIndexOutOfBoundsException e) {
                 stringBuilder.append(FileSystemWorker.error("SshActs.getProviderTraceStr", e));
@@ -84,8 +81,7 @@ public class Tracerouting implements Callable<String> {
             return submit.get(10, TimeUnit.SECONDS);
         }
         catch (InterruptedException | ExecutionException | TimeoutException e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".getInetLog", e));
-            return e.getMessage() + " inet switch";
+            return e.getMessage() + " inet switching log. May be connection error. Keep calm - it's ok";
         }
     }
     

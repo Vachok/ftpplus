@@ -26,46 +26,48 @@ public class InetStatSorter implements Runnable {
     @Override public void run() {
         sortFiles();
     }
-
-
+    
+    /**
+     Поиск файлов .csv в папке запуска.
+     */
     private void sortFiles() {
         File[] rootFiles = new File(".").listFiles();
-        List<String> ipsFromFiles = new ArrayList<>();
-
-        for(File fCSV : Objects.requireNonNull(rootFiles)){
-            if(fCSV.getName().toLowerCase().contains(".csv")) {
+        Map<String, File> ipsFromFiles = new HashMap<>();
+        Set<String> fileAsSet = new LinkedHashSet<>();
+    
+        for (File fileFromRoot : Objects.requireNonNull(rootFiles)) {
+            if (fileFromRoot.getName().toLowerCase().contains(".csv")) {
                 try{
-                    String[] nameSplit = fCSV.getName().split("_");
-                    ipsFromFiles.add(nameSplit[0].replace(".csv" , ""));
+                    String[] nameSplit = fileFromRoot.getName().split("net.");
+                    ipsFromFiles.put(nameSplit[1].replace(".csv", ""), fileFromRoot);
                 }catch(ArrayIndexOutOfBoundsException ignore){
                     //
                 }
             }
         }
-        for (File ipF : rootFiles) {
-            Set<String> fileAsSet = new LinkedHashSet<>();
-            ipsFromFiles.forEach(x->{
-                if(ipF.getName().contains(x + "_")) {
-                    fileAsSet.add(FileSystemWorker.readFile(ipF.getAbsolutePath()));
-                    File f = new File("inet." + ipF.getName().split("_")[0] + ".csv");
-                    makeCSV(f, fileAsSet);
-                    ipF.deleteOnExit();
-                }
-            });
+        if (ipsFromFiles.size() == 0) {
+            FileSystemWorker.writeFile("no.csv", new Date().toString());
         }
+        else
+            for (String ipKey : ipsFromFiles.keySet()) {
+                File fileInetIPCsv = ipsFromFiles.get(ipKey);
+                fileAsSet.add(FileSystemWorker.readFile(fileInetIPCsv.getAbsolutePath()));
+                File finalFile = new File(ipKey + ".csv");
+                makeCSV(finalFile, fileAsSet);
+                fileInetIPCsv.deleteOnExit();
+            }
     }
     
-    
-    private void makeCSV(File f, Collection<String> fileAsSet) {
-        if(!f.exists()) {
-            messageToUser.info(f.getAbsolutePath(), "is exist: " + false, " Queue to write =  " + fileAsSet.size() + " items.");
-            FileSystemWorker.writeFile(f.getName(), fileAsSet.stream());
+    private void makeCSV(File tmpInetStatFile, Collection<String> fileAsSet) {
+        if (!tmpInetStatFile.exists()) {
+            messageToUser.info(tmpInetStatFile.getAbsolutePath(), "is exist: " + false, " Written =  " + fileAsSet.size() + " files");
+            FileSystemWorker.writeFile(tmpInetStatFile.getName(), fileAsSet.stream());
         }
         else {
-            List<String> stringsFromFile = FileSystemWorker.readFileToList(f.getAbsolutePath());
+            List<String> stringsFromFile = FileSystemWorker.readFileToList(tmpInetStatFile.getAbsolutePath());
             fileAsSet.addAll(stringsFromFile);
-            messageToUser.info(f.getAbsolutePath(), "exist: " + true, " To write =  " + fileAsSet.size() + " strings");
-            FileSystemWorker.writeFile(f.getName(), fileAsSet.stream());
+            messageToUser.info(tmpInetStatFile.getAbsolutePath(), "exist: " + true, " To write =  " + fileAsSet.size() + " strings");
+            FileSystemWorker.writeFile(tmpInetStatFile.getName(), fileAsSet.stream());
         }
     }
 }

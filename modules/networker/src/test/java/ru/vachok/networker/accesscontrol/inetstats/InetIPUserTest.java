@@ -6,7 +6,9 @@ package ru.vachok.networker.accesscontrol.inetstats;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.abstr.InternetUse;
 import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
+import ru.vachok.networker.net.enums.OtherKnownDevices;
 
 
 /**
@@ -16,11 +18,14 @@ public class InetIPUserTest {
     
     @Test
     public void testGetUsage() {
+        InternetUse internetUse = new InetIPUser();
+        String usageInet = internetUse.getUsage(OtherKnownDevices.DO0213_KUDR);
+        Assert.assertTrue(usageInet.contains("DENIED SITES:"), usageInet);
     }
     
-    @Test
+    @Test(enabled = false)
     public void testShowLog() {
-        new AppComponents().saveLogsToDB();
+        SaveLogsToDB dbSaver = new AppComponents().saveLogsToDB();
         String showLog = SaveLogsToDB.showInfo();
         Assert.assertNotNull(showLog);
         Assert.assertTrue(showLog.contains("LOGS_TO_DB_EXT.showInfo"));

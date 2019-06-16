@@ -6,6 +6,7 @@ package ru.vachok.networker.net;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.abstr.Pinger;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -14,11 +15,8 @@ import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.TimeChecker;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.InetAddress;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -30,7 +28,7 @@ import static java.net.InetAddress.getByAddress;
  <p>
 
  @since 04.12.2018 (9:23) */
-public class SwitchesAvailability implements Runnable {
+public class SwitchesAvailability implements Runnable, Pinger {
     
     
     private final ThreadConfig thrCfg = AppComponents.threadConfig();
@@ -53,21 +51,34 @@ public class SwitchesAvailability implements Runnable {
     }
 
     private final Set<String> okIP = new HashSet<>();
-
-    @Override
-    public void run() {
-        thrCfg.thrNameSet("swAv");
-        diapazonPingSwitches();
-        try {
-            makeAddrQ();
-        } catch (IOException e) {
-            messageToUser.errorAlert(CLASS_SWITCHESAVAILABILITY , "run" , e.getMessage());
-            FileSystemWorker.error("SwitchesAvailability.run" , e);
-        }
+    
+    @Override public String getTimeToEndStr() {
+        return null;
     }
     
-    private void diapazonPingSwitches() {
-        thrCfg.thrNameSet("SWin");
+    @Override public String getPingResultStr() {
+        StringBuilder stringBuilder = new StringBuilder();
+        
+        stringBuilder.append(diapazonPingSwitches()).append(" size of DiapazonScan.pingSwitch()\n");
+        try {
+            stringBuilder.append(makeAddrQ());
+        }
+        catch (IOException e) {
+            stringBuilder.append(e.getMessage()).append(" ").append(getClass().getSimpleName()).append(".run");
+        }
+        return stringBuilder.toString();
+    }
+    
+    @Override public boolean isReach(String inetAddrStr) {
+        return false;
+    }
+    
+    @Override
+    public void run() {
+        System.out.println(getPingResultStr());
+    }
+    
+    private int diapazonPingSwitches() {
         
         List<String> stringList = new ArrayList<>();
         try {
@@ -78,6 +89,7 @@ public class SwitchesAvailability implements Runnable {
         }
         Collections.sort(stringList);
         this.swAddr = Collections.unmodifiableList(stringList);
+        return swAddr.size();
     }
     
     /**
@@ -89,8 +101,9 @@ public class SwitchesAvailability implements Runnable {
      <p>
      @throws IOException если адрес недоступен.
      @param inetAddressQueue преобразованный лист строк в ИП. {@link #makeAddrQ()}
+     @return File, with results
      */
-    private void testAddresses(Queue<InetAddress> inetAddressQueue) throws IOException {
+    private String testAddresses(Queue<InetAddress> inetAddressQueue) throws IOException {
         thrCfg.thrNameSet("badIP");
         List<String> badIP = new ArrayList<>();
         while (inetAddressQueue.iterator().hasNext()) {
@@ -104,7 +117,7 @@ public class SwitchesAvailability implements Runnable {
         }
         okStr = new TForms().fromArray(okIP , false).replaceAll("/" , "");
         badStr = new TForms().fromArray(badIP , false).replaceAll("/" , "");
-        writeToFile(okStr, badStr);
+        return writeToFile(okStr, badStr);
     }
 
 
@@ -115,16 +128,16 @@ public class SwitchesAvailability implements Runnable {
      <p>
 
      @throws IOException если хост unknown.
+     @return File, with results
      */
-    private void makeAddrQ() throws IOException {
-        thrCfg.thrNameSet("makeQu");
+    private String makeAddrQ() throws IOException {
         Queue<InetAddress> inetAddressesQ = new ConcurrentLinkedQueue<>();
         for (String s : swAddr) {
             byte[] addressBytes = InetAddress.getByName(s).getAddress();
             @SuppressWarnings("ObjectAllocationInLoop") InetAddress byAddress = getByAddress(addressBytes);
             inetAddressesQ.add(byAddress);
         }
-        testAddresses(inetAddressesQ);
+        return testAddresses(inetAddressesQ);
     }
 
 
@@ -136,40 +149,17 @@ public class SwitchesAvailability implements Runnable {
      @param okIP  лист он-лайн адресов
      @param badIP лист офлайн адресов
      */
-    private void writeToFile(String okIP, String badIP) {
-        thrCfg.thrNameSet("SW.file");
+    private String writeToFile(String okIP, String badIP) {
+    
         File file = new File("sw.list.log");
-        try (OutputStream outputStream = new FileOutputStream(file)) {
-            String toWrite = new StringBuilder()
+        String toWrite = new StringBuilder()
                 .append(new TimeChecker().call().getMessage())
                 .append("\n\n")
                 .append("Online SwitchesWiFi: \n")
                 .append(okIP)
                 .append("\nOffline SwitchesWiFi: \n")
                 .append(badIP).toString();
-            outputStream.write(new String(toWrite.getBytes(), StandardCharsets.UTF_8).getBytes());
-        } catch (IOException e) {
-            messageToUser.errorAlert(CLASS_SWITCHESAVAILABILITY , "writeToFile" , e.getMessage());
-            FileSystemWorker.error("SwitchesAvailability.writeToFile", e);
-        }
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(swAddr, okIP);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if(this==o){
-            return true;
-        }
-        if(o==null || getClass()!=o.getClass()){
-            return false;
-        }
-        SwitchesAvailability that = ( SwitchesAvailability ) o;
-        return Objects.equals(swAddr, that.swAddr) &&
-            okIP.equals(that.okIP);
+        return FileSystemWorker.writeFile(file.getAbsolutePath(), toWrite);
     }
 
     @Override

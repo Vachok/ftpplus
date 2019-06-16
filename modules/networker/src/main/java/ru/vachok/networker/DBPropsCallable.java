@@ -105,10 +105,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
         miniLogger.add("2. " + sql);
         FileSystemWorker.writeFile(getClass().getSimpleName() + ".mini", miniLogger.stream());
         try (Connection c = mysqlDataSource.getConnection()) {
-            Objects.requireNonNull(propsToSave)
-                .store(new FileOutputStream(ConstantsFor.class.getSimpleName() + ConstantsFor.FILEEXT_PROPERTIES), getClass().getSimpleName() + ".upProps");
+            if (propsToSave.size() > 5)
+                Objects.requireNonNull(propsToSave)
+                    .store(new FileOutputStream(ConstantsFor.class.getSimpleName() + ConstantsFor.FILEEXT_PROPERTIES), getClass().getSimpleName() + ".upProps");
+            else {
+                propsToSave.putAll(new FileProps(ConstantsFor.class.getSimpleName()).getProps());
+            }
             int executeUpdateInt = 0;
             try (PreparedStatement preparedStatement = c.prepareStatement(sql)) {
+                mysqlDataSource.setContinueBatchOnError(true);
                 for (Map.Entry<Object, Object> entry : propsToSave.entrySet()) {
                     Object x = entry.getKey();
                     Object y = entry.getValue();
@@ -125,14 +130,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
         }
         catch (SQLException e) {
             messageToUser.error(e.getMessage());
+            deleteFrom();
+            new DBPropsCallable(this.propsToSave).updateTable();
         }
         return false;
     }
     
     private Properties findRightProps() throws IOException {
-        File prFile = new File(ConstantsFor.class.getSimpleName() + ConstantsFor.FILEEXT_PROPERTIES);
-        if (prFile.exists() & !prFile.canWrite()) {
-            readOnlyFileReturnFile(prFile);
+        File constForProps = new File(ConstantsFor.class.getSimpleName() + ConstantsFor.FILEEXT_PROPERTIES);
+        if (constForProps.exists() & !constForProps.canWrite()) {
+            readOnlyFileReturnFile(constForProps);
         }
         else {
             fileIsWritableOrNotExists();

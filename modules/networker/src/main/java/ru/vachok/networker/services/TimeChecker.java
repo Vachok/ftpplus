@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.services;
 
 
@@ -28,10 +30,18 @@ public class TimeChecker implements Callable<TimeInfo> {
     @Override
     public TimeInfo call() {
         AppComponents.threadConfig().thrNameSet("ntp");
-        return ntpCheck();
+        TimeInfo info = null;
+        try {
+            info = ntpCheck();
+        
+        }
+        catch (IOException e) {
+            messageToUser.error(e.getMessage());
+        }
+        return info;
     }
-
-    private static TimeInfo ntpCheck() {
+    
+    private static TimeInfo ntpCheck() throws IOException {
         NTPUDPClient ntpudpClient = new NTPUDPClient();
         try {
             ntpudpClient.open();
@@ -43,7 +53,7 @@ public class TimeChecker implements Callable<TimeInfo> {
         try {
             ntpudpClientTime = ntpudpClient.getTime(InetAddress.getByName("rups00.eatmeat.ru"));
         } catch (IOException e) {
-            messageToUser.errorAlert("TimeChecker", "ntpCheck", e.getMessage());
+            ntpudpClientTime = ntpudpClient.getTime(InetAddress.getByName("time.windows.com"));
         }
         Objects.requireNonNull(ntpudpClientTime).computeDetails();
         ntpudpClient.close();

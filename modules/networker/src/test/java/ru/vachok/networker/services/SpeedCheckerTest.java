@@ -3,24 +3,30 @@
 package ru.vachok.networker.services;
 
 
-import ru.vachok.messenger.MessageCons;
-import ru.vachok.messenger.MessageToUser;
+import org.testng.Assert;
+import org.testng.annotations.Test;
 import ru.vachok.networker.exe.runnabletasks.SpeedChecker;
 
-import java.util.concurrent.*;
+import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 
 public class SpeedCheckerTest {
     
     
-    private static final MessageToUser LOGGER = new MessageCons();
-    
-    public void rutClass() throws ExecutionException, InterruptedException {
-        Callable<Long> speedChecker = new SpeedChecker();
-        ExecutorService executorService = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor());
-        Future<Long> submit = executorService.submit(speedChecker);
-        LOGGER.infoNoTitles(speedChecker.toString());
-        LOGGER.infoNoTitles(executorService.toString() + submit.get());
+    @Test
+    public void testCall() {
+        try {
+            Long aLong = new SpeedChecker().call();
+            Assert.assertTrue(aLong + TimeUnit.DAYS.toMillis(14) > System.currentTimeMillis(), new Date(aLong).toString());
+        }
+        catch (Exception e) {
+            Assert.assertNull(e, e.getMessage());
+        }
     }
     
+    @Test
+    public void testRun() {
+        new SpeedChecker().run();
+    }
 }

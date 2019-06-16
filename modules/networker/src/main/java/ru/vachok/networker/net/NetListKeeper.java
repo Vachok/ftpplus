@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 
 
@@ -39,7 +40,11 @@ public final class NetListKeeper {
     
     private ConcurrentMap<String, String> onLinesResolve = new ConcurrentHashMap<>();
     
-    private ConcurrentMap<String, String> offLines = new ConcurrentHashMap<>();
+    private Map<String, String> offLines = new ConcurrentHashMap<>();
+    
+    public Map<String, String> getOffLines() {
+        return offLines;
+    }
     
     private Map<String, String> inetUniqMap = new ConcurrentHashMap<>();
     
@@ -55,7 +60,7 @@ public final class NetListKeeper {
         return inetUniqMap;
     }
     
-    void setInetUniqMap(Map<String, String> inetUniqMap) {
+    public void setInetUniqMap(Map<String, String> inetUniqMap) {
         this.inetUniqMap = inetUniqMap;
     }
     
@@ -91,12 +96,17 @@ public final class NetListKeeper {
     
     public ConcurrentMap<String, String> getOnLinesResolve() {
         readMap();
-        AppComponents.threadConfig().getTaskScheduler().scheduleAtFixedRate(new ChkOnlinePCsSizeChange(), TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY));
+        try {
+            AppComponents.threadConfig().getTaskScheduler().scheduleAtFixedRate(new ChkOnlinePCsSizeChange(), TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY));
+        }
+        catch (RejectedExecutionException e) {
+            System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".getOnLinesResolve");
+        }
         return this.onLinesResolve;
     }
     
-    public ConcurrentMap<String, String> getOffLines() {
-        return this.offLines;
+    public void setOffLines(Map<String, String> offLines) {
+        this.offLines = offLines;
     }
     
     @Override

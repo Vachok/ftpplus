@@ -19,6 +19,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -36,6 +38,12 @@ public class PCUserResolver extends ADSrv implements InfoWorker {
     
     private static final MessageToUser messageToUser = new MessageLocal(PCUserResolver.class.getSimpleName());
     
+    private static final Pattern COMPILE = Pattern.compile(ConstantsFor.DBFIELD_PCUSER);
+    
+    private static final Pattern PATTERN = Pattern.compile(", ", Pattern.LITERAL);
+    
+    private static final Pattern USERS = Pattern.compile("Users");
+    
     /**
      Последний измененный файл.
      
@@ -50,8 +58,18 @@ public class PCUserResolver extends ADSrv implements InfoWorker {
         this.pcName = pcName;
     }
     
+    @Override public String getInfoAbout() {
+        namesToFile();
+        File file = new File(pcName);
+        return file.getAbsolutePath() + " " + file.length() + ConstantsFor.STR_BYTES;
+    }
     
-    public void searchForUser() {
+    @Override public void setInfo() {
+        searchForUser();
+        System.out.println("Setting info for: " + pcName);
+    }
+    
+    private void searchForUser() {
         ADUser adUser = new ADUser();
         DataBaseADUsersSRV adUsersSRV = new DataBaseADUsersSRV(adUser);
         Map<String, String> fileParser = adUsersSRV
@@ -65,19 +83,6 @@ public class PCUserResolver extends ADSrv implements InfoWorker {
         });
     }
     
-    
-    @Override public String getInfoAbout() {
-        namesToFile();
-        File file = new File(pcName);
-        return file.getAbsolutePath() + " " + file.length() + ConstantsFor.STR_BYTES;
-    }
-    
-    
-    @Override public void setInfo() {
-        searchForUser();
-        messageToUser.infoNoTitles("PCUserResolver.setInfo");
-    }
-    
     private void namesToFile() {
         File[] files;
         File pcNameFile = new File("null");
@@ -86,17 +91,17 @@ public class PCUserResolver extends ADSrv implements InfoWorker {
             pcNameFile.deleteOnExit();
         }
         catch (IOException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
     
         try (OutputStream outputStream = new FileOutputStream(pcNameFile)) {
             try (PrintWriter writer = new PrintWriter(outputStream, true)) {
-            
+    
                 String pathAsStr = new StringBuilder().append("\\\\").append(pcName).append("\\c$\\Users\\").toString();
-                lastFileUse = getLastTimeUse(pathAsStr).split("Users")[1];
+                lastFileUse = USERS.split(getLastTimeUse(pathAsStr))[1];
                 files = new File(pathAsStr).listFiles();
                 writer
-                    .append(Arrays.toString(files).replace(", ", "\n"))
+                    .append(PATTERN.matcher(Arrays.toString(files)).replaceAll(Matcher.quoteReplacement("\n")))
                     .append("\n\n\n")
                     .append(lastFileUse);
             }
@@ -116,16 +121,19 @@ public class PCUserResolver extends ADSrv implements InfoWorker {
      Записи добавляются к уже имеющимся.
      <p>
      <b>{@link SQLException}, {@link ArrayIndexOutOfBoundsException}, {@link NullPointerException}: </b>
-     1. {@link FileSystemWorker#error(java.lang.String, java.lang.Exception)} <br>
+     1. {@link FileSystemWorker#error(String, Exception)} <br>
      
      @param pcName имя ПК
      @param lastFileUse строка - имя последнего измененного файла в папке пользователя.
      */
     private void recAutoDB(String pcName, String lastFileUse) {
+        this.pcName = pcName;
+        this.lastFileUse = lastFileUse;
+        final String sql = "insert into pcuser (pcName, userName, lastmod, stamp) values(?,?,?,?)";
         
-        String sql = "insert into pcuser (pcName, userName, lastmod, stamp) values(?,?,?,?)";
         try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
-            try (PreparedStatement preparedStatement = connection.prepareStatement(sql.replaceAll(ConstantsFor.DBFIELD_PCUSER, ConstantsFor.DBFIELD_PCUSERAUTO))) {
+            final String sqlReplaced = COMPILE.matcher(sql).replaceAll(ConstantsFor.DBFIELD_PCUSERAUTO);
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sqlReplaced)) {
                 String[] split = lastFileUse.split(" ");
                 preparedStatement.setString(1, pcName);
                 preparedStatement.setString(2, split[0]);
@@ -145,7 +153,7 @@ public class PCUserResolver extends ADSrv implements InfoWorker {
     /**
      Ищет в подпапках папки Users, файлы.
      <p>
-     Работа в new {@link PCUserResolver.WalkerToUserFolder}. <br> В {@link Files#walkFileTree(java.nio.file.Path, java.util.Set, int, java.nio.file.FileVisitor)}, отправляем параметры: <br> 1. Путь<br>
+     Работа в new {@link PCUserResolver.WalkerToUserFolder}. <br> В {@link Files#walkFileTree(Path, Set, int, FileVisitor)}, отправляем параметры: <br> 1. Путь<br>
      2. {@link FileVisitOption#FOLLOW_LINKS} <br> 3. Макс. глубина 2 <br> 4. {@link PCUserResolver.WalkerToUserFolder}
      <p>
      Сортируем {@link PCUserResolver.WalkerToUserFolder#getTimePath()} по Timestamp. От меньшего к большему.
@@ -153,7 +161,7 @@ public class PCUserResolver extends ADSrv implements InfoWorker {
      @param pathAsStr путь, который нужно пролистать.
      @return {@link PCUserResolver.WalkerToUserFolder#getTimePath()} последняя запись из списка.
      */
-    private String getLastTimeUse(String pathAsStr) {
+    private static String getLastTimeUse(String pathAsStr) {
         PCUserResolver.WalkerToUserFolder walkerToUserFolder = new PCUserResolver.WalkerToUserFolder();
         try {
             Files.walkFileTree(Paths.get(pathAsStr), Collections.singleton(FOLLOW_LINKS), 2, walkerToUserFolder);
@@ -172,7 +180,7 @@ public class PCUserResolver extends ADSrv implements InfoWorker {
      @see #getLastTimeUse(String)
      @since 22.11.2018 (14:46)
      */
-    static class WalkerToUserFolder extends SimpleFileVisitor<Path> {
+    private static class WalkerToUserFolder extends SimpleFileVisitor<Path> {
         
         
         /**
@@ -247,7 +255,7 @@ public class PCUserResolver extends ADSrv implements InfoWorker {
         /**
          @return {@link #timePath}
          */
-        List<String> getTimePath() {
+        private List<String> getTimePath() {
             return timePath;
         }
     }

@@ -16,6 +16,7 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 
+import java.awt.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,6 +24,7 @@ import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.LocalTime;
+import java.util.List;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
@@ -42,6 +44,7 @@ public class NetPinger implements Runnable, Pinger {
     /**
      NetPinger.pingSW
      */
+
     private static final String STR_METH_PINGSW = "NetPinger.pingSW";
 
     /**
@@ -106,7 +109,6 @@ public class NetPinger implements Runnable, Pinger {
     /**
      @return {@link #multipartFile}
      */
-    @SuppressWarnings("WeakerAccess")
     public MultipartFile getMultipartFile() {
         return multipartFile;
     }
@@ -133,7 +135,6 @@ public class NetPinger implements Runnable, Pinger {
                 resList.add(inetAddress + " is " + inetAddress.isReachable(ConstantsFor.TIMEOUT_650));
                 Thread.sleep(pingSleepMsec);
             } catch (IOException | InterruptedException e) {
-                messageToUser.error(e.getMessage());
                 Thread.currentThread().checkAccess();
                 Thread.currentThread().interrupt();
             }
@@ -267,10 +268,13 @@ public class NetPinger implements Runnable, Pinger {
     #messageToUser}, после окончания пинга, вывести в консоль {@link #pingResultStr} <br> {@link #timeToEndStr} - переписываем значение.
      */
     @Override
-    public void run() {
+    public void run() throws IllegalComponentStateException {
         final long startSt = System.currentTimeMillis();
         if (multipartFile != null) {
             parseFile();
+        }
+        else {
+            throw new IllegalComponentStateException("multipartFile is null: " + getClass().getSimpleName());
         }
         long userIn = TimeUnit.MINUTES.toMillis(Long.parseLong(getTimeForScanStr()));
         long totalMillis = startSt + userIn;
@@ -290,7 +294,7 @@ public class NetPinger implements Runnable, Pinger {
         final StringBuilder sb = new StringBuilder("NetPinger{");
         sb.append("pingResultStr='").append(pingResultStr).append('\'');
         sb.append(", pingSleepMsec=").append(pingSleepMsec);
-        sb.append(", timeToEndStr='").append(timeToEndStr).append('\'').append("\n");
+        sb.append(", timeToEndStr='").append(timeToEndStr).append('\'');
         sb.append(TimeUnit.SECONDS.toMinutes(LocalTime.now().toSecondOfDay())).append("-")
             .append(TimeUnit.SECONDS.toMinutes(LocalTime.parse("08:30").toSecondOfDay())).append(" (08:30)")
             .append(String.valueOf((LocalTime.now().toSecondOfDay() - LocalTime.parse("08:30").toSecondOfDay())))

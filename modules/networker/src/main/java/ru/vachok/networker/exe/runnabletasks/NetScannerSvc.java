@@ -17,8 +17,8 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.InfoWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
-import ru.vachok.networker.services.actions.ActionCloseMsg;
 import ru.vachok.networker.systray.MessageToTray;
+import ru.vachok.networker.systray.actions.ActionCloseMsg;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -128,8 +128,7 @@ public class NetScannerSvc {
             connection = new AppComponents().connection(ConstantsNet.DB_NAME);
         }
         catch (IOException e) {
-            LOGGER.error(CLASS_NAME, ConstantsFor.METHNAME_STATIC_INITIALIZER, e.getMessage());
-            FileSystemWorker.error("NetScannerSvc.static initializer", e);
+            System.err.println(e.getMessage() + " " + NetScannerSvc.class.getSimpleName() + ".static initializer");
         }
     }
     

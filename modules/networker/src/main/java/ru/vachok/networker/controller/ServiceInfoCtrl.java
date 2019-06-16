@@ -32,10 +32,7 @@ import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Stream;
 
@@ -56,10 +53,20 @@ public class ServiceInfoCtrl {
     
     private boolean authReq;
     
+    public ServiceInfoCtrl() {
+    
+    }
+    
+    protected ServiceInfoCtrl(Visitor visitor) {
+        this.visitor = visitor;
+    }
+    
     /**
      {@link Visitor}
      */
     @SuppressWarnings("InstanceVariableMayNotBeInitialized") private Visitor visitor;
+    
+    private static final Properties APP_PR = AppComponents.getProps();
     
     /**
      GetMapping /serviceinfo
@@ -79,13 +86,12 @@ public class ServiceInfoCtrl {
      */
     @GetMapping("/serviceinfo")
     public String infoMapping(Model model, HttpServletRequest request, HttpServletResponse response) throws AccessDeniedException, ExecutionException, InterruptedException {
-        threadConfig.thrNameSet("info");
         NetPinger pinger = netPinger();
         System.out.println(pinger.toString());
-        visitor = new AppComponents().visitor(request);
-        threadConfig.execByThreadConfig(new SpeedChecker());
         this.authReq = Stream.of("0:0:0:0", "127.0.0.1", "10.10.111", "10.200.213.85", "172.16.20", "10.200.214.80", "192.168.13.143")
             .anyMatch(sP->request.getRemoteAddr().contains(sP));
+        visitor = new AppComponents().visitor(request);
+        threadConfig.execByThreadConfig(new SpeedChecker());
         if (authReq) {
             modModMaker(model, request, visitor);
             response.addHeader(ConstantsFor.HEAD_REFRESH, "90");
@@ -122,6 +128,16 @@ public class ServiceInfoCtrl {
             throw new AccessDeniedException("DENY for " + request.getRemoteAddr());
         }
         return "ok";
+    }
+    
+    private static ConcurrentMap<String, String> readFiles(List<File> filesToRead) {
+        Collections.sort(filesToRead);
+        ConcurrentMap<String, String> readiedStrings = new ConcurrentHashMap<>();
+        for (File fileRead : filesToRead) {
+            String fileReadAsStr = FileSystemWorker.readFile(fileRead.getAbsolutePath());
+            readiedStrings.put(fileRead.getAbsolutePath(), fileReadAsStr);
+        }
+        return readiedStrings;
     }
     
     @Override
@@ -184,7 +200,6 @@ public class ServiceInfoCtrl {
         
         Callable<String> sizeOfDir = new CountSizeOfWorkDir("sizeofdir");
         Callable<Long> callWhenCome = new SpeedChecker();
-        Callable<String> filesWithSize;
         Future<Long> whenCome = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(callWhenCome);
         Future<String> filesSizeFuture = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(sizeOfDir);
         Date comeD = new Date(whenCome.get());
@@ -193,10 +208,10 @@ public class ServiceInfoCtrl {
             .append("<b><i>").append(AppComponents.versionInfo()).append("</i></b><p><font color=\"orange\">")
             .append(ConstantsNet.getSshMapStr()).append("</font><p>")
             .append(new AppInfoOnLoad()).append(" ").append(AppInfoOnLoad.class.getSimpleName()).append("<p>")
-            .append(new TForms().fromArray(AppComponents.getProps(), true)).append("<br>Prefs: ").append(new TForms().fromArray(AppComponents.getUserPref(), true))
+            .append(new TForms().fromArray(APP_PR, true)).append("<br>Prefs: ").append(new TForms().fromArray(AppComponents.getUserPref(), true))
             .append("<p>")
             .append(ConstantsFor.HTMLTAG_CENTER).append(FileSystemWorker.readFile(new File("exit.last").getAbsolutePath())).append(ConstantsFor.HTML_CENTER_CLOSE).append("<p>")
-            .append("<p><font color=\"grey\">").append(listFilesToReadStr()).append("</font>")
+            .append("<p><font color=\"grey\">").append(visitsPrevSessionRead()).append("</font>")
             .toString();
         
         model.addAttribute(ConstantsFor.ATT_TITLE, getLast() + " " + pingDO0213());
@@ -272,20 +287,20 @@ public class ServiceInfoCtrl {
         return stringBuilder.toString();
     }
     
-    private static String listFilesToReadStr() {
-        List<File> readUs = new ArrayList<>();
-        for (File f : Objects.requireNonNull(new File(".").listFiles())) {
-            if (f.getName().toLowerCase().contains(ConstantsFor.getStringsVisit()[0])) {
-                readUs.add(f);
-                f.deleteOnExit();
+    private static String visitsPrevSessionRead() {
+        List<File> listVisitFiles = new ArrayList<>();
+        for (File fileFromList : Objects.requireNonNull(new File(".").listFiles())) {
+            if (fileFromList.getName().toLowerCase().contains(ConstantsFor.getStringsVisit()[0])) {
+                listVisitFiles.add(fileFromList);
+                fileFromList.deleteOnExit();
             }
         }
-        ConcurrentMap<String, String> stringStringConcurrentMap = FileSystemWorker.readFiles(readUs);
+        ConcurrentMap<String, String> pathFileAsStrMap = readFiles(listVisitFiles);
         List<String> retListStr = new ArrayList<>();
-        stringStringConcurrentMap.forEach((String x, String y)->{
+        pathFileAsStrMap.forEach((pathAsStr, fileAsStr)->{
             try {
-                retListStr.add(y.split("userId")[0]);
-                retListStr.add("<b>" + x.split("FtpClientPlus")[1] + "</b>");
+                retListStr.add(fileAsStr.split("userId")[0]);
+                retListStr.add("<b>" + pathAsStr.split("FtpClientPlus")[1] + "</b>");
             }
             catch (Exception e) {
                 retListStr.add(e.getMessage());

@@ -6,7 +6,7 @@ package ru.vachok.networker;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import java.io.IOException;
+import java.util.List;
 
 
 /**
@@ -16,36 +16,44 @@ public class AppInfoOnLoadTest {
     
     @Test
     public void testGetThisDelay() {
+        int scansDelayOnline = getScansDelay();
+        Assert.assertFalse(scansDelayOnline == 0);
+        Assert.assertTrue(scansDelayOnline > 80, String.valueOf(scansDelayOnline));
+        Assert.assertTrue(scansDelayOnline < 112, String.valueOf(scansDelayOnline));
     }
     
     @Test
     public void testGetIISLogSize() {
+        String logsSize = AppInfoOnLoad.getIISLogSize();
+        Assert.assertTrue(logsSize.contains("MB IIS Logs"), logsSize);
     }
     
     @Test
     public void testGetBuildStamp() {
-        try {
-            long stampBuild = AppInfoOnLoad.getBuildStamp();
-            Assert.assertTrue(System.currentTimeMillis() > stampBuild);
-            System.out.println("stampBuild = " + stampBuild);
-        }
-        catch (IOException e) {
-            Assert.assertNull(e, e.getMessage());
-        }
+        long stampBuild = AppInfoOnLoad.getBuildStamp();
+        long currentTimeMS = System.currentTimeMillis();
+        Assert.assertTrue(currentTimeMS > stampBuild);
+        System.out.println("\n\n" + (currentTimeMS - stampBuild) + " MS diff between build and test\n\n\n");
     }
     
-    @Test(enabled = false)
+    @Test()
     public void testRun() {
+        AppInfoOnLoad.MINI_LOGGER.clear();
         Runnable apOnLoad = new AppInfoOnLoad();
         apOnLoad.run();
-        Assert.assertNotNull(AppInfoOnLoad.MINI_LOGGER);
+        List<String> loggerAppInfo = AppInfoOnLoad.MINI_LOGGER;
+        Assert.assertNotNull(loggerAppInfo);
+        Assert.assertTrue(loggerAppInfo.size() == 11, loggerAppInfo.size() + " is loggerAppInfo.size()");
     }
     
-    @Test
-    public void testToString1() {
-    }
-    
-    @Test
-    public void testDateSchedulers() {
+    private static int getScansDelay() {
+        int parseInt = Integer.parseInt(AppComponents.getUserPref().get(ConstantsFor.PR_SCANSINMIN, "111"));
+        if (parseInt <= 0) {
+            parseInt = 1;
+        }
+        if (parseInt < 80 | parseInt > 112) {
+            parseInt = 85;
+        }
+        return parseInt;
     }
 }

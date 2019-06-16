@@ -91,7 +91,7 @@ public class ActDirectoryCTRL {
             ADComputer adComputer = adSrv.getAdComputer();
             model.addAttribute(ConstantsFor.ATT_PHOTO_CONVERTER, photoConverterSRV);
             model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<p>" + visitor);
-            model.addAttribute("pcs", ADSrv.adPCMap(adComputer.getAdComputers(), true));
+            model.addAttribute("pcs", ADSrv.showADPCList(adComputer.getAdComputers(), true));
             model.addAttribute(ConstantsFor.ATT_USERS, ADSrv.fromADUsersList(adUsers));
         }
         return "ad";

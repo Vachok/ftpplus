@@ -3,7 +3,6 @@
 package ru.vachok.networker.componentsrepo;
 
 
-
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -55,7 +54,6 @@ public class Visitor {
         List<String> visitList = new ArrayList<>();
         this.request = request;
         this.session = request.getSession();
-        this.visitPlace = request.getHeader(ConstantsFor.ATT_REFERER.toLowerCase());
         this.remAddr = request.getRemoteAddr();
         this.userId = session.getId();
         visitList.add(new Date(System.currentTimeMillis()).toString());
@@ -94,37 +92,6 @@ public class Visitor {
         return visitPlace;
     }
 
-
-    @Override
-    public int hashCode() {
-        int result = userId != null ? userId.hashCode() : 0;
-        result = 31 * result + getTimeSpend().hashCode();
-        result = 31 * result + (getVisitPlace() != null ? getVisitPlace().hashCode() : 0);
-        result = 31 * result + (getRemAddr() != null ? getRemAddr().hashCode() : 0);
-        result = 31 * result + (getSession() != null ? getSession().hashCode() : 0);
-        result = 31 * result + getRequest().hashCode();
-        result = 31 * result + getClickCounter();
-        return result;
-    }
-
-
-    @Override
-    public boolean equals( Object o ) {
-        if (this == o) return true;
-        if (!(o instanceof Visitor)) return false;
-
-        Visitor visitor = (Visitor) o;
-
-        if (getClickCounter() != visitor.getClickCounter()) return false;
-        if (userId != null ? !userId.equals(visitor.userId) : visitor.userId != null) return false;
-        if (!getTimeSpend().equals(visitor.getTimeSpend())) return false;
-        if (getVisitPlace() != null ? !getVisitPlace().equals(visitor.getVisitPlace()) : visitor.getVisitPlace() != null) return false;
-        if (getRemAddr() != null ? !getRemAddr().equals(visitor.getRemAddr()) : visitor.getRemAddr() != null) return false;
-        if (getSession() != null ? !getSession().equals(visitor.getSession()) : visitor.getSession() != null) return false;
-        return getRequest().equals(visitor.getRequest());
-    }
-
-
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("Visitor{");
@@ -135,7 +102,6 @@ public class Visitor {
         sb.append(", ST_ART=").append(ST_ART);
         sb.append(", timeSpend='").append(timeSpend).append('\'');
         sb.append(", userId='").append(userId).append('\'');
-        sb.append(", visitPlace='").append(visitPlace).append('\'');
         sb.append('}');
         return sb.toString();
     }

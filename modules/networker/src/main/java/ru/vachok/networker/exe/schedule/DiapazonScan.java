@@ -9,6 +9,7 @@ import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.controller.ServiceInfoCtrl;
+import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.ExecScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetScanFileWorker;
@@ -52,6 +53,8 @@ public class DiapazonScan implements Runnable {
     
     private long stopClassStampLong = NetScanFileWorker.getI().getLastStamp();
     
+    private final ThreadConfig thrConfig = AppComponents.threadConfig();
+    
     /**
      Корень директории.
      */
@@ -72,7 +75,7 @@ public class DiapazonScan implements Runnable {
     }
     
     public Map<String, File> getScanFiles() {
-        return Collections.unmodifiableMap(scanFiles); //todo 08.06.2019 (8:25)
+        return Collections.unmodifiableMap(scanFiles);
     }
     
     /**
@@ -120,7 +123,6 @@ public class DiapazonScan implements Runnable {
             for (Map.Entry<String, File> entry : scanFiles.entrySet()) {
                 fileTimes.append(entry.getKey()).append(atStr).append(Paths.get(entry.getValue().getName()).toFile().length()).append("<br>\n");
             }
-            ;
         }
         catch (NullPointerException e) {
             messageToUser.info("NO FILES!");
@@ -148,7 +150,7 @@ public class DiapazonScan implements Runnable {
     
     @Override public String toString() {
         final StringBuilder sb = new StringBuilder("DiapazonScan{");
-        sb.append(theInfoToString()).append("<p>").append(new AppComponents().scanOline().toString()); //todo 08.06.2019 (8:25)
+        sb.append(theInfoToString()).append("<p>").append(new AppComponents().scanOnline().toString());
         sb.append('}');
         return sb.toString();
     }
@@ -204,9 +206,9 @@ public class DiapazonScan implements Runnable {
         Runnable execScan210220 = new ExecScan(210, 213, "10.200.", scanFiles.get(FILENAME_NEWLAN213));
         Runnable execScan213220 = new ExecScan(213, 219, "10.200.", scanFiles.get(FILENAME_NEWLAN220));
     
-        AppComponents.threadConfig().execByThreadConfig(execScan200210);
-        AppComponents.threadConfig().execByThreadConfig(execScan210220);
-        AppComponents.threadConfig().execByThreadConfig(execScan213220);
+        thrConfig.execByThreadConfig(execScan200210);
+        thrConfig.execByThreadConfig(execScan210220);
+        thrConfig.execByThreadConfig(execScan213220);
     }
     
     private void setScanInMin() {
@@ -215,11 +217,15 @@ public class DiapazonScan implements Runnable {
             long scansItMin = allDevLocalDeq.size() / TimeUnit.MILLISECONDS.toMinutes(getRunMin());
             
             AppComponents.getProps().setProperty(ConstantsFor.PR_SCANSINMIN, String.valueOf(scansItMin));
+            Preferences pref = AppComponents.getUserPref();
+            pref.put(ConstantsFor.PR_SCANSINMIN, String.valueOf(scansItMin));
+            
             messageToUser.warn(getClass().getSimpleName(), "scansItMin", " = " + scansItMin);
             try {
                 new AppComponents().updateProps();
+                pref.sync();
             }
-            catch (IOException e) {
+            catch (IOException | BackingStoreException e) {
                 messageToUser.error(e.getMessage());
             }
         }
@@ -236,16 +242,16 @@ public class DiapazonScan implements Runnable {
             });
             allDevLocalDeq.clear();
         }
-        AppComponents.threadConfig().execByThreadConfig(this::theNewLan);
-        AppComponents.threadConfig().execByThreadConfig(this::scanServers);
-        AppComponents.threadConfig().execByThreadConfig(DiapazonScan::scanOldLan);
-        AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor().scheduleAtFixedRate(this::setScanInMin, 3, 5, TimeUnit.MINUTES);
+        thrConfig.execByThreadConfig(this::theNewLan);
+        thrConfig.execByThreadConfig(this::scanServers);
+        thrConfig.execByThreadConfig(DiapazonScan::scanOldLan);
+        thrConfig.getTaskScheduler().getScheduledThreadPoolExecutor().scheduleAtFixedRate(this::setScanInMin, 3, 5, TimeUnit.MINUTES);
     }
     
     /**
      @return {@link ExecScan} (from [10,21,31,41] to [20,31,41,51]) запрос из {@link #theInfoToString()}
      */
-    private long getRunMin() {
+    private static long getRunMin() {
         Preferences preferences = Preferences.userRoot();
         try {
             preferences.sync();
@@ -275,7 +281,7 @@ public class DiapazonScan implements Runnable {
      */
     private void scanServers() {
         for (ExecScan r : getRunnables()) {
-            AppComponents.threadConfig().execByThreadConfig(r);
+            thrConfig.execByThreadConfig(r);
         }
     }
 }
