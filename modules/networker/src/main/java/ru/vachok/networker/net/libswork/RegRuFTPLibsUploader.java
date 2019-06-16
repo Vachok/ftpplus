@@ -27,10 +27,8 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.Properties;
 import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
@@ -271,7 +269,7 @@ import java.util.regex.Pattern;
     
     private String uploadFile(File file) {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(file.getAbsolutePath()).append(" local file. ");
+        stringBuilder.append(Objects.requireNonNull(file).getAbsolutePath()).append(" local file. ");
         String nameFTPFile = getName(file);
         ftpClient.setConnectTimeout((int) TimeUnit.SECONDS.toMillis(5));
         stringBuilder.append(ftpClient.getReplyString());

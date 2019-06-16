@@ -3,8 +3,6 @@
 package ru.vachok.networker.sysinfo;
 
 
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
@@ -24,8 +22,6 @@ import java.util.Properties;
 /**
 
  @since 24.09.2018 (9:44) */
-@Component(ConstantsFor.STR_VERSIONINFO)
-@Scope(ConstantsFor.SINGLETON)
 public class VersionInfo {
     
     

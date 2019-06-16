@@ -31,18 +31,18 @@ import java.util.prefs.Preferences;
  {@link SwitchesWiFi#C_204_10_GP} ; {@link OtherKnownDevices}
  
  @since 05.02.2019 (9:00) */
-@SuppressWarnings("ALL") public class NetMonitorPTVTEST implements Runnable {
+@SuppressWarnings("ALL") public class NetMonitorPTVTest implements Runnable {
     
     
     private PrintStream printStream;
     
-    private MessageToUser messageToUser = new DBMessenger(NetMonitorPTVTEST.class.getSimpleName());
+    private MessageToUser messageToUser = new DBMessenger(NetMonitorPTVTest.class.getSimpleName());
     
     private String pingResultLast = "TEST";
     
-    private static final String CLASS_NAME = NetMonitorPTVTEST.class.getSimpleName();
+    private static final String CLASS_NAME = NetMonitorPTVTest.class.getSimpleName();
     
-    public NetMonitorPTVTEST() {
+    public NetMonitorPTVTest() {
         
         try (OutputStream outputStream = new FileOutputStream(ConstantsFor.FILENAME_PTV)) {
             this.printStream = new PrintStream(outputStream, true);

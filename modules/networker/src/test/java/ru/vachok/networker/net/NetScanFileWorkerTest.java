@@ -3,33 +3,23 @@
 package ru.vachok.networker.net;
 
 
+import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import java.awt.*;
+import java.util.Deque;
 
 
 /**
  @since 15.06.2019 (21:11) */
 public class NetScanFileWorkerTest {
     
-    
-    @Test
-    public void testGetLastStamp() {
-        throw new IllegalComponentStateException("15.06.2019 (21:12)");
-    }
-    
-    @Test
-    public void testSetLastStamp() {
-        throw new IllegalComponentStateException("15.06.2019 (21:12)");
-    }
-    
-    @Test
-    public void testGetI() {
-        throw new IllegalComponentStateException("15.06.2019 (21:12)");
-    }
-    
     @Test
     public void testGetDequeOfOnlineDev() {
-        throw new IllegalComponentStateException("15.06.2019 (21:12)");
+        try {
+            Deque<String> devOnline = NetScanFileWorker.getDequeOfOnlineDev();
+        }
+        catch (Exception e) {
+            Assert.assertNull(e);
+        }
     }
 }

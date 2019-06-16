@@ -47,6 +47,7 @@ public class ServiceInfoCtrlTest {
             assertTrue(res.contains("SSH Temp list"));
             assertTrue(res.contains("AppInfoOnLoad"));
             assertTrue(mail.contains("Работаем"), mail);
+            System.out.println(mail);
             assertTrue(urls.contains("Запущено"));
             assertTrue(urls.contains("Состояние памяти"));
             assertTrue(urls.contains("disk usage by program"));
