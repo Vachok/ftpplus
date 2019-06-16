@@ -34,15 +34,54 @@ public class InteretStats implements Runnable, DataBaseRegSQL {
     
     private static final String FILENAME_INETSTATSCSV = "inetstats.csv";
     
-    private static final String SQL_DISTINCTIPSWITHINET = "SELECT DISTINCT `ip` FROM `inetstats`";
+    private String fileName = "null";
     
     private Connection connectionF;
     
     private Savepoint savepoint;
     
-    private String fileName;
+    private String sql = "null";
     
-    private String sql;
+    private static final String SQL_DISTINCTIPSWITHINET = ConstantsFor.SQL_SELECTINETSTATS;
+    
+    /**
+     Для тестов
+     <p>
+     
+     @return {@link #fileName}
+     */
+    protected String getFileName() {
+        return fileName;
+    }
+    
+    /**
+     Для тестов
+     <p>
+     
+     @param fileName имя csv-файла
+     */
+    protected void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
+    
+    /**
+     For tests
+     
+     @return {@link #sql}
+     */
+    protected String getSql() {
+        return sql;
+    }
+    
+    /**
+     Для тестов
+     <p>
+     
+     @param sql sql-запрос
+     */
+    protected void setSql(String sql) {
+        this.sql = sql;
+    }
     
     private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
     

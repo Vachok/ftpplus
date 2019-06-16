@@ -3,25 +3,28 @@
 package ru.vachok.networker.accesscontrol.inetstats;
 
 
+import org.testng.Assert;
 import org.testng.annotations.Test;
 import ru.vachok.networker.abstr.InternetUse;
-
-import java.awt.*;
+import ru.vachok.networker.net.enums.OtherKnownDevices;
 
 
 /**
  @since 09.06.2019 (21:30) */
-public class InetUserPCNameTest {
+@SuppressWarnings("ALL") public class InetUserPCNameTest {
     
     
     @Test
     public void testGetUsage() {
-        throw new IllegalComponentStateException("15.06.2019 (17:36)");
+        InternetUse internetUse = new InetUserPCName();
+        String usageInet = internetUse.getUsage(OtherKnownDevices.DO0213_KUDR);
+        Assert.assertTrue(usageInet.contains("DENIED SITES:"), usageInet);
     }
     
     @Test
     public void testShowLog() {
         InternetUse internetUse = new InetUserPCName();
         internetUse.showLog();
+        Assert.assertTrue(internetUse instanceof InetUserPCName);
     }
 }

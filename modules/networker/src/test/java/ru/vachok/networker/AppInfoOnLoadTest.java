@@ -6,7 +6,6 @@ package ru.vachok.networker;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import java.io.IOException;
 import java.util.List;
 
 
@@ -31,15 +30,10 @@ public class AppInfoOnLoadTest {
     
     @Test
     public void testGetBuildStamp() {
-        try {
-            long stampBuild = AppInfoOnLoad.getBuildStamp();
-            long currentTimeMS = System.currentTimeMillis();
-            Assert.assertTrue(currentTimeMS > stampBuild);
-            System.out.println("\n\n" + (currentTimeMS - stampBuild) + " MS diff between build and test\n\n\n");
-        }
-        catch (IOException e) {
-            Assert.assertNull(e, e.getMessage());
-        }
+        long stampBuild = AppInfoOnLoad.getBuildStamp();
+        long currentTimeMS = System.currentTimeMillis();
+        Assert.assertTrue(currentTimeMS > stampBuild);
+        System.out.println("\n\n" + (currentTimeMS - stampBuild) + " MS diff between build and test\n\n\n");
     }
     
     @Test()

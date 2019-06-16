@@ -489,6 +489,8 @@ public enum ConstantsFor {
     
     public static final String FILENAME_BUILDGRADLE = "build.gradle";
     
+    public static final String SQL_SELECTINETSTATS = "SELECT DISTINCT `ip` FROM `inetstats`";
+    
     /**
      @return {@link #MAIL_RULES}
      */

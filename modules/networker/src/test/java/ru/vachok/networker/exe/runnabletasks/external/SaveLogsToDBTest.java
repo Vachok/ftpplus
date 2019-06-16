@@ -4,11 +4,13 @@ package ru.vachok.networker.exe.runnabletasks.external;
 
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
+import org.testng.Assert;
 import org.testng.annotations.Test;
 import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.RegRuMysql;
-
-import java.awt.*;
+import ru.vachok.mysqlandprops.props.DBRegProperties;
+import ru.vachok.mysqlandprops.props.InitProperties;
+import ru.vachok.networker.TForms;
 
 
 /**
@@ -18,25 +20,43 @@ import java.awt.*;
     
     @Test
     public void testGetI() {
-        throw new IllegalComponentStateException("15.06.2019 (17:36)");
+        SaveLogsToDB saveLogsToDB = new SaveLogsToDB();
+        try {
+            Assert.assertTrue(saveLogsToDB.getI() instanceof ru.vachok.stats.SaveLogsToDB);
+        }
+        catch (Exception e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
+        }
     }
     
     @Test
     public void testStartScheduled() {
-        throw new IllegalComponentStateException("15.06.2019 (17:36)");
+        try {
+            SaveLogsToDB.startScheduled();
+        }
+        catch (Exception e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
+        }
     }
     
     @Test
     public void testShowInfo() {
-        throw new IllegalComponentStateException("15.06.2019 (17:36)");
+        try {
+            String showInfoStr = SaveLogsToDB.showInfo();
+        }
+        catch (Exception e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
+        }
     }
     
     @Test
     public void testRun() {
         DataConnectTo dataConnectTo = new RegRuMysql();
         MysqlDataSource dataSource = dataConnectTo.getDataSource();
-        final ru.vachok.stats.SaveLogsToDB LOGS_TO_DB_EXT = ru.vachok.stats.SaveLogsToDB.getI(dataSource);
-        LOGS_TO_DB_EXT.startScheduled();
-        
+        InitProperties initProperties = new DBRegProperties("general-pass");
+        dataSource.setUser("u0466446_kudr");
+        dataSource.setPassword(initProperties.getProps().getProperty("realftppass"));
+        SaveLogsToDB saveLogsToDB = new SaveLogsToDB();
+        saveLogsToDB.run();
     }
 }

@@ -1,8 +1,6 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.exe.runnabletasks.external;
-
-
-import ru.vachok.mysqlandprops.RegRuMysql;
-import ru.vachok.networker.ConstantsFor;
 
 
 /**
@@ -10,10 +8,10 @@ import ru.vachok.networker.ConstantsFor;
 public class SaveLogsToDB implements Runnable {
     
     
-    private static final ru.vachok.stats.SaveLogsToDB LOGS_TO_DB_EXT = ru.vachok.stats.SaveLogsToDB.getI(new RegRuMysql().getDataSourceSchema(ConstantsFor.DBBASENAME_U0466446_VELKOM));
+    private static final ru.vachok.stats.SaveLogsToDB LOGS_TO_DB_EXT = new ru.vachok.stats.SaveLogsToDB();
     
-    public SaveLogsToDB getI() {
-        return this;
+    public ru.vachok.stats.SaveLogsToDB getI() {
+        return LOGS_TO_DB_EXT;
     }
     
     public static void startScheduled() {

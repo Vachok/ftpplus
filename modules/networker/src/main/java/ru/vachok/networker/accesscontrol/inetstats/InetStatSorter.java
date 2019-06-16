@@ -10,7 +10,6 @@ import ru.vachok.networker.services.MessageLocal;
 
 import java.io.File;
 import java.util.*;
-import java.util.concurrent.ForkJoinPool;
 
 
 /**
@@ -27,30 +26,36 @@ public class InetStatSorter implements Runnable {
     @Override public void run() {
         sortFiles();
     }
-
-
+    
+    /**
+     Поиск файлов .csv в папке запуска.
+     */
     private void sortFiles() {
         File[] rootFiles = new File(".").listFiles();
         Map<String, File> ipsFromFiles = new HashMap<>();
-        ForkJoinPool forkJoinPool = new ForkJoinPool(3);
-        for(File fCSV : Objects.requireNonNull(rootFiles)){
-            if(fCSV.getName().toLowerCase().contains(".csv")) {
+        Set<String> fileAsSet = new LinkedHashSet<>();
+    
+        for (File fileFromRoot : Objects.requireNonNull(rootFiles)) {
+            if (fileFromRoot.getName().toLowerCase().contains(".csv")) {
                 try{
-                    String[] nameSplit = fCSV.getName().split("net.");
-                    ipsFromFiles.put(nameSplit[1].replace(".csv", ""), fCSV);
+                    String[] nameSplit = fileFromRoot.getName().split("net.");
+                    ipsFromFiles.put(nameSplit[1].replace(".csv", ""), fileFromRoot);
                 }catch(ArrayIndexOutOfBoundsException ignore){
                     //
                 }
             }
         }
-        Set<String> fileAsSet = new LinkedHashSet<>();
-        for (String s : ipsFromFiles.keySet()) {
-            File ipF = ipsFromFiles.get(s);
-            fileAsSet.add(FileSystemWorker.readFile(ipF.getAbsolutePath()));
-            File f = new File(s + ".csv");
-            forkJoinPool.execute(()->makeCSV(f, fileAsSet));
-            ipF.deleteOnExit();
+        if (ipsFromFiles.size() == 0) {
+            FileSystemWorker.writeFile("no.csv", new Date().toString());
         }
+        else
+            for (String ipKey : ipsFromFiles.keySet()) {
+                File fileInetIPCsv = ipsFromFiles.get(ipKey);
+                fileAsSet.add(FileSystemWorker.readFile(fileInetIPCsv.getAbsolutePath()));
+                File finalFile = new File(ipKey + ".csv");
+                makeCSV(finalFile, fileAsSet);
+                fileInetIPCsv.deleteOnExit();
+            }
     }
     
     private void makeCSV(File tmpInetStatFile, Collection<String> fileAsSet) {

@@ -98,26 +98,34 @@ public class AppInfoOnLoad implements Runnable {
     }
     
     /**
+ 
      @return время билда
      */
-    public static long getBuildStamp() throws IOException {
+    public static long getBuildStamp() {
         long retLong = 1L;
         Properties appPr = AppComponents.getProps();
         
         try {
             String hostName = InetAddress.getLocalHost().getHostName();
             if (hostName.equalsIgnoreCase(ConstantsFor.HOSTNAME_DO213) || hostName.toLowerCase().contains(ConstantsFor.HOSTNAME_HOME)) {
-                appPr.setProperty(ConstantsFor.PR_APP_BUILD, System.currentTimeMillis() + "");
+                appPr.setProperty(ConstantsFor.PR_APP_BUILDTIME, String.valueOf(System.currentTimeMillis()));
                 retLong = System.currentTimeMillis();
             }
             else {
-                retLong = Long.parseLong(appPr.getProperty(ConstantsFor.PR_APP_BUILD, "1"));
+                retLong = Long.parseLong(appPr.getProperty(ConstantsFor.PR_APP_BUILDTIME, "1"));
             }
         }
-        catch (UnknownHostException e) {
+        catch (UnknownHostException | NumberFormatException e) {
             System.err.println(e.getMessage() + " " + AppInfoOnLoad.class.getSimpleName() + ".getBuildStamp");
         }
-        new AppComponents().updateProps(appPr);
+        thrConfig.getTaskExecutor().execute(()->{
+            try {
+                new AppComponents().updateProps(appPr);
+            }
+            catch (IOException e) {
+                System.err.println(e.getMessage() + " " + AppInfoOnLoad.class.getSimpleName() + ".getBuildStamp");
+            }
+        });
         return retLong;
     }
     
@@ -290,7 +298,7 @@ public class AppInfoOnLoad implements Runnable {
     }
     
     private static void squidLogsSave() {
-        new AppComponents().saveLogsToDB().run();
+        new AppComponents().saveLogsToDB().startScheduled();
         InternetUse internetUse = new InetUserPCName();
         System.out.println("internetUse.cleanTrash() = " + internetUse.cleanTrash());
     }
