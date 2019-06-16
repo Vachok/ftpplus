@@ -9,7 +9,6 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 import ru.vachok.networker.ConstantsFor;
 
-import java.awt.*;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.nio.file.AccessDeniedException;
@@ -41,50 +40,5 @@ public class RegRuFTPLibsUploaderTest extends RegRuFTPLibsUploader {
         catch (IOException e) {
             Assert.assertNull(e, e.getMessage());
         }
-    }
-    
-    @Test
-    public void testRun1() {
-        throw new IllegalComponentStateException("15.06.2019 (17:36)");
-    }
-    
-    @Test
-    public void testUploadLibs1() {
-        throw new IllegalComponentStateException("15.06.2019 (17:36)");
-    }
-    
-    @Test
-    public void testGetContentsQueue1() {
-        throw new IllegalComponentStateException("15.06.2019 (17:36)");
-    }
-    
-    @Test
-    public void testSetUploadDirectoryStr1() {
-        throw new IllegalComponentStateException("15.06.2019 (17:36)");
-    }
-    
-    @Test
-    public void testGetUploadDirectoryStr1() {
-        throw new IllegalComponentStateException("15.06.2019 (17:36)");
-    }
-    
-    @Test
-    public void testGetLibFiles1() {
-        throw new IllegalComponentStateException("15.06.2019 (17:36)");
-    }
-    
-    @Test
-    public void testUploadToServer1() {
-        throw new IllegalComponentStateException("15.06.2019 (17:36)");
-    }
-    
-    @Test
-    public void testUploadToServer2() {
-        throw new IllegalComponentStateException("15.06.2019 (17:36)");
-    }
-    
-    @Test
-    public void testGetHost1() {
-        throw new IllegalComponentStateException("15.06.2019 (17:36)");
     }
 }

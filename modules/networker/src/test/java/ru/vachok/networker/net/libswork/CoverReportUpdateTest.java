@@ -17,7 +17,7 @@ import ru.vachok.networker.TForms;
         coverReportUpdate.run();
     }
     
-    @Test
+    @Test(enabled = false)
     public void testCall() {
         CoverReportUpdate coverReportUpdate = new CoverReportUpdate();
         try {

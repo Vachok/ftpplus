@@ -60,7 +60,6 @@ public class NetScanFileWorker implements Serializable {
      @return {@link Deque} of {@link String}, с именами девайсов онлайн.
      */
     public static Deque<String> getDequeOfOnlineDev() {
-        AppComponents.threadConfig().thrNameSet("ON");
         Deque<String> retDeque = new ArrayDeque<>();
         getMapOfScanFiles().forEach((fileName, srvFileX)->readFilesLANToCollection(srvFileX, retDeque));
         return retDeque;
