@@ -18,12 +18,14 @@ import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.systray.MessageToTray;
 import ru.vachok.networker.systray.actions.ActionCloseMsg;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -45,8 +47,18 @@ public class MoreInfoWorker implements InfoWorker {
     
     private boolean isOnline;
     
+    /**
+     @param aboutWhat TV or pc-name (do0213.eatmeat.ru)
+     */
     public MoreInfoWorker(String aboutWhat) {
         this.aboutWhat = aboutWhat;
+    }
+    
+    /**
+     Tests
+     */
+    protected MoreInfoWorker() {
+        this.aboutWhat = TV;
     }
     
     public void setOnline(boolean online) {
@@ -143,7 +155,7 @@ public class MoreInfoWorker implements InfoWorker {
     }
     
     @Override public void setInfo() {
-    
+        throw new IllegalComponentStateException("16.06.2019 (12:20)");
     }
     
     private static String getTVNetInfo() {

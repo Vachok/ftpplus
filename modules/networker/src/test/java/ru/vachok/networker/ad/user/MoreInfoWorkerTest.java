@@ -32,12 +32,6 @@ import java.util.stream.Collectors;
  @since 10.06.2019 (16:05) */
 @SuppressWarnings("ALL") public class MoreInfoWorkerTest {
     
-    
-    @Test
-    public void testSetOnline() {
-        throw new IllegalComponentStateException("15.06.2019 (17:36)");
-    }
-    
     @Test
     public void testGetUserFromDB() {
         String userFromDB = MoreInfoWorker.getUserFromDB("user: kudr");
@@ -46,12 +40,21 @@ import java.util.stream.Collectors;
     
     @Test
     public void testGetInfoAbout() {
-        throw new IllegalComponentStateException("15.06.2019 (17:36)");
+        String aboutTV = new MoreInfoWorker().getInfoAbout();
+        Assert.assertTrue(aboutTV.contains("ptv1.eatmeat.ru"), aboutTV);
+    
+        aboutTV = new MoreInfoWorker("do0213.eatmeat.ru").getInfoAbout();
+        Assert.assertTrue(aboutTV.contains("ikudryashov"), aboutTV);
     }
     
     @Test
     public void testSetInfo() {
-        throw new IllegalComponentStateException("15.06.2019 (17:36)");
+        try {
+            new MoreInfoWorker().setInfo();
+        }
+        catch (IllegalComponentStateException e) {
+            Assert.assertNotNull(e, e.getMessage());
+        }
     }
     
     private static String getUserFromDB(String userInputRaw) {
