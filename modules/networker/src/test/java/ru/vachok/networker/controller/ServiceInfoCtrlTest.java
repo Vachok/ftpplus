@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
+import java.time.LocalTime;
 import java.util.concurrent.ExecutionException;
 
 import static org.testng.Assert.*;
@@ -46,7 +47,12 @@ public class ServiceInfoCtrlTest {
             assertTrue(res.contains("VersionInfo"));
             assertTrue(res.contains("SSH Temp list"));
             assertTrue(res.contains("AppInfoOnLoad"));
-            assertTrue(mail.contains("Работаем"), mail);
+            if (LocalTime.now().getHour() > 9 && LocalTime.now().getHour() < 18) {
+                assertTrue(mail.contains("Работаем"), mail);
+            }
+            else {
+                assertTrue(mail.contains("GO HOME!"), mail);
+            }
             System.out.println(mail);
             assertTrue(urls.contains("Запущено"));
             assertTrue(urls.contains("Состояние памяти"));
