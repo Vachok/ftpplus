@@ -66,7 +66,7 @@ import java.util.regex.Pattern;
                 String connectTo = uploadLibs();
                 messageToUser.infoTimer(Math.toIntExact(ConstantsFor.DELAY * 2), connectTo);
             }
-            catch (AccessDeniedException e) {
+            catch (AccessDeniedException | NullPointerException e) {
                 messageToUser.error(e.getMessage() + " " + getClass().getSimpleName() + ".run");
             }
         }
@@ -75,7 +75,7 @@ import java.util.regex.Pattern;
         }
     }
     
-    @Override public String uploadLibs() throws AccessDeniedException {
+    @Override public String uploadLibs() throws AccessDeniedException, NullPointerException {
         String pc = ConstantsFor.thisPC();
         if (pc.toLowerCase().contains("home") | pc.toLowerCase().contains(ConstantsFor.HOSTNAME_DO213) && ftpPass != null) {
             try {
