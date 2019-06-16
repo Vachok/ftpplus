@@ -235,7 +235,12 @@ public class AppInfoOnLoad implements Runnable {
         MESSAGE_LOCAL.info("AppInfoOnLoad.infoForU", ConstantsFor.STR_FINISH, " = " + stringBuilder);
         MINI_LOGGER.add("infoForU ends. now schedStarter(). Result: " + stringBuilder);
         VersionInfo versionInfo = AppComponents.versionInfo();
-        MESSAGE_LOCAL.info(getClass().getSimpleName() + ".run", versionInfo.toString(), " = " + getIISLogSize());
+        try {
+            MESSAGE_LOCAL.info(getClass().getSimpleName() + ".run", versionInfo.toString(), " = " + getIISLogSize());
+        }
+        catch (NullPointerException e) {
+            System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".infoForU");
+        }
         schedStarter();
     }
     
