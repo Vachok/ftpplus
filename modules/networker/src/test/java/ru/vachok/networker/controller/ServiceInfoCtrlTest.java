@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.controller;
 
 
@@ -44,7 +46,7 @@ public class ServiceInfoCtrlTest {
             assertTrue(res.contains("VersionInfo"));
             assertTrue(res.contains("SSH Temp list"));
             assertTrue(res.contains("AppInfoOnLoad"));
-            assertTrue(mail.contains("Работаем"));
+            assertTrue(mail.contains("Работаем"), mail);
             assertTrue(urls.contains("Запущено"));
             assertTrue(urls.contains("Состояние памяти"));
             assertTrue(urls.contains("disk usage by program"));
