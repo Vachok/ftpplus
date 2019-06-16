@@ -37,12 +37,11 @@ public interface Pinger {
         try {
             pingSleep = Long.parseLong(properties.getProperty(ConstantsNet.PROP_PINGSLEEP));
         } catch (Exception e) {
-            messageToUser.warn(pingSleep + " is " + ConstantsFor.TIMEOUT_650 + "\n" + e.getMessage());
+            System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".pingDev");
         }
         List<String> resList = new ArrayList<>();
         properties.setProperty(ConstantsNet.PROP_PINGSLEEP, String.valueOf(pingSleep));
         long finalPingSleep = pingSleep;
-        messageToUser.info(getClass().getSimpleName() + ".pingDev", "AppComponents.ipFlushDNS()", " = " + AppComponents.ipFlushDNS());
         devicesDeq.forEach((devAdr, devName)->{
             try {
                 boolean reachable = devAdr.isReachable(ConstantsFor.TIMEOUT_650);

@@ -56,7 +56,17 @@ public class NetScanCtrTest {
     
     @Test
     public void testPingAddr() {
-        throw new IllegalComponentStateException("15.06.2019 (17:36)");
+        Model model = new ExtendedModelMap();
+        HttpServletRequest request = new MockHttpServletRequest();
+        HttpServletResponse response = new MockHttpServletResponse();
+        try {
+            String pingAddrString = new NetScanCtr(AppComponents.netScannerSvc(), new NetPinger(), new AppComponents().scanOnline()).pingAddr(model, request, response);
+            Assert.assertTrue(pingAddrString.contains("ping"));
+            Assert.assertTrue(model.asMap().get("pingResult").toString().contains("Pinger is start at"));
+        }
+        catch (RejectedExecutionException e) {
+            Assert.assertNotNull(e, e.getMessage());
+        }
     }
     
     @Test
@@ -66,7 +76,17 @@ public class NetScanCtrTest {
     
     @Test
     public void testPcNameForInfo() {
-        throw new IllegalComponentStateException("15.06.2019 (17:36)");
+        Model model = new ExtendedModelMap();
+        HttpServletRequest request = new MockHttpServletRequest();
+        HttpServletResponse response = new MockHttpServletResponse();
+        try {
+            String pcNameInfoStr = NetScanCtr.pcNameForInfo(AppComponents.netScannerSvc(), model);
+            Assert.assertTrue(pcNameInfoStr.equals("redirect:/ad?PC"));
+        
+        }
+        catch (RejectedExecutionException e) {
+            Assert.assertNotNull(e, e.getMessage());
+        }
     }
     
     @Test

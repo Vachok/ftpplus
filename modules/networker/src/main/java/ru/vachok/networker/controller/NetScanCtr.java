@@ -10,7 +10,6 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -201,12 +200,11 @@ public class NetScanCtr {
      <p>
      
      @param netScannerSvc {@link NetScannerSvc}
-     @param result {@link BindingResult}
      @param model {@link Model}
      @return redirect:/ad? + {@link NetScannerSvc#getThePc()}
      */
     @PostMapping(STR_NETSCAN)
-    public static String pcNameForInfo(@ModelAttribute NetScannerSvc netScannerSvc, BindingResult result, Model model) {
+    public static String pcNameForInfo(@ModelAttribute NetScannerSvc netScannerSvc, Model model) {
         String thePc = netScannerSvc.getThePc();
         if (thePc.toLowerCase().contains("user: ")) {
             model.addAttribute("ok", MoreInfoWorker.getUserFromDB(thePc).trim());
