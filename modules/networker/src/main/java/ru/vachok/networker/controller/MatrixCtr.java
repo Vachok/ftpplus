@@ -67,11 +67,6 @@ public class MatrixCtr {
      */
     private static final String ATT_DINNER = "dinner";
     
-    /**
-     {@link VersionInfo}
-     */
-    private final VersionInfo versionInfoInst;
-    
     private static String currentProvider = "Unknown yet";
     
     /**
@@ -89,16 +84,8 @@ public class MatrixCtr {
      */
     private long metricMatrixStartLong = System.currentTimeMillis();
     
-    /**
-     Конструктор autowired
-     <p>
-     () = {@link #setCurrentProvider()}
- 
-     @param versionInfo {@link AppComponents#versionInfo()}
-     */
     @Autowired
-    public MatrixCtr(VersionInfo versionInfo, MatrixSRV matrixSRV) {
-        this.versionInfoInst = versionInfo;
+    public MatrixCtr(MatrixSRV matrixSRV) {
         this.matrixSRV = matrixSRV;
     }
     
@@ -286,7 +273,7 @@ public class MatrixCtr {
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
         if (getUserPC(request).toLowerCase().contains(ConstantsFor.HOSTNAME_DO213) ||
             getUserPC(request).toLowerCase().contains("0:0:0:0")) {
-            model.addAttribute(ConstantsFor.ATT_VISIT, versionInfoInst.toString());
+            model.addAttribute(ConstantsFor.ATT_VISIT, new VersionInfo().toString());
         }
     }
     

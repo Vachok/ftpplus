@@ -8,7 +8,6 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
 import org.testng.annotations.Test;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.MatrixSRV;
@@ -30,7 +29,7 @@ public class MatrixCtrTest {
     public void testSetCurrentProvider() {
         VersionInfo versionInfo = new VersionInfo();
         MatrixSRV matrixSRV = new MatrixSRV();
-        MatrixCtr matrixCtr = new MatrixCtr(versionInfo, matrixSRV);
+        MatrixCtr matrixCtr = new MatrixCtr(matrixSRV);
         MatrixCtr.setCurrentProvider();
         String currentProvider = matrixCtr.getCurrentProvider();
         assertFalse(currentProvider.isEmpty());
@@ -40,7 +39,7 @@ public class MatrixCtrTest {
     @Test
     public void testGetFirst() {
         MatrixSRV matrixSRV = new MatrixSRV();
-        MatrixCtr matrixCtr = new MatrixCtr(AppComponents.versionInfo(), matrixSRV);
+        MatrixCtr matrixCtr = new MatrixCtr(matrixSRV);
         HttpServletRequest httpServletRequest = new MockHttpServletRequest();
         Model model = new ExtendedModelMap();
         HttpServletResponse response = new MockHttpServletResponse();
@@ -53,7 +52,7 @@ public class MatrixCtrTest {
     @Test
     public void testGetWorkPosition() {
         MatrixSRV matrixSRV = new MatrixSRV();
-        MatrixCtr matrixCtr = new MatrixCtr(AppComponents.versionInfo(), matrixSRV);
+        MatrixCtr matrixCtr = new MatrixCtr(matrixSRV);
         HttpServletRequest httpServletRequest = new MockHttpServletRequest();
         Model model = new ExtendedModelMap();
         HttpServletResponse response = new MockHttpServletResponse();
@@ -65,7 +64,7 @@ public class MatrixCtrTest {
     @Test
     public void testGitOn() {
         MatrixSRV matrixSRV = new MatrixSRV();
-        MatrixCtr matrixCtr = new MatrixCtr(AppComponents.versionInfo(), matrixSRV);
+        MatrixCtr matrixCtr = new MatrixCtr(matrixSRV);
         Model model = new ExtendedModelMap();
         HttpServletRequest httpServletRequest = new MockHttpServletRequest();
         
@@ -77,7 +76,7 @@ public class MatrixCtrTest {
     @Test
     public void testShowResults() {
         MatrixSRV matrixSRV = new MatrixSRV();
-        MatrixCtr matrixCtr = new MatrixCtr(AppComponents.versionInfo(), matrixSRV);
+        MatrixCtr matrixCtr = new MatrixCtr(matrixSRV);
         HttpServletRequest httpServletRequest = new MockHttpServletRequest();
         Model model = new ExtendedModelMap();
         HttpServletResponse response = new MockHttpServletResponse();

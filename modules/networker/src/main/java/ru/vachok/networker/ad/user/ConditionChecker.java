@@ -61,9 +61,8 @@ class ConditionChecker implements InfoWorker {
         this.sql = sql;
         this.pcName = pcName;
     }
-
-
-    ConditionChecker(String sql, String pcName) {
+    
+    public ConditionChecker(String sql, String pcName) {
         AppComponents.threadConfig().thrNameSet(pcName.substring(0, 6));
         this.javaID = ConstantsFor.FILE_RU_VACHOK_NETWORKER_CONSTANTS_FOR;
         this.sql = sql;
