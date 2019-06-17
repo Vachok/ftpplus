@@ -103,12 +103,8 @@ import java.util.prefs.Preferences;
         Path libsPath = Paths.get("lib/stats-8.0.1920.jar").toAbsolutePath().normalize();
         try {
             boolean isUpdate = new AppComponents().updateProps(props);
-            if (new File(libsPath.toString()).exists()) {
-                Assert.assertFalse(isUpdate);
-            }
-            else {
-                Assert.assertTrue(isUpdate);
-            }
+            Assert.assertTrue(isUpdate);
+            
         }
         catch (IOException e) {
             Assert.assertNull(e, e.getMessage());
