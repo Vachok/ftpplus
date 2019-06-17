@@ -4,6 +4,7 @@ package ru.vachok.networker.accesscontrol.common;
 
 
 import org.slf4j.Logger;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
@@ -15,6 +16,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -44,28 +46,28 @@ public class CommonSRV {
      
      @see CommonCTRL
      */
-    private String delFolderPath = "";
+    @NonNull private String pathToRestoreAsStr;
     
-    private String perionDays = "";
+    private String perionDays;
     
-    private String searchPat = "";
+    private String searchPat;
     
     /**
-     @return {@link #delFolderPath}
+     @return {@link #pathToRestoreAsStr}
      */
     @SuppressWarnings("WeakerAccess")
-    public String getDelFolderPath() {
-        return delFolderPath;
+    public String getPathToRestoreAsStr() {
+        return pathToRestoreAsStr;
     }
     
     /**
      common.html форма
      <p>
-     
-     @param delFolderPath {@link #delFolderPath}
+ 
+     @param pathToRestoreAsStr {@link #pathToRestoreAsStr}
      */
-    public void setDelFolderPath(String delFolderPath) {
-        this.delFolderPath = delFolderPath;
+    public void setPathToRestoreAsStr(String pathToRestoreAsStr) {
+        this.pathToRestoreAsStr = pathToRestoreAsStr;
     }
     
     @SuppressWarnings("WeakerAccess")
@@ -114,7 +116,7 @@ public class CommonSRV {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("CommonSRV{");
-        sb.append("delFolderPath='").append(delFolderPath).append('\'');
+        sb.append("pathToRestoreAsStr='").append(pathToRestoreAsStr).append('\'');
         sb.append(", perionDays='").append(perionDays).append('\'');
         sb.append('}');
         return sb.toString();
@@ -130,6 +132,9 @@ public class CommonSRV {
     
     String searchByPat() {
         StringBuilder stringBuilder = new StringBuilder();
+        if (searchPat == null) {
+            this.searchPat = ":";
+        }
         if (searchPat.equals(":")) {
             stringBuilder.append(getFromFile());
         }
@@ -149,15 +154,21 @@ public class CommonSRV {
      @return {@link RestoreFromArchives#toString()}
      */
     String reStoreDir() {
-        RestoreFromArchives restoreFromArchives = new RestoreFromArchives(delFolderPath, perionDays);
         StringBuilder stringBuilder = new StringBuilder();
+        RestoreFromArchives restoreFromArchives = null;
+        try {
+            restoreFromArchives = new RestoreFromArchives(pathToRestoreAsStr, perionDays);
+        }
+        catch (InvocationTargetException | ArrayIndexOutOfBoundsException e) {
+            stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, true));
+        }
         stringBuilder
             .append("User inputs: ")
-            .append(delFolderPath)
+            .append(pathToRestoreAsStr)
             .append("\n");
         int followInt;
         try {
-            String[] foldersInPath = delFolderPath.split("\\Q\\\\E");
+            String[] foldersInPath = pathToRestoreAsStr.split("\\Q\\\\E");
             followInt = foldersInPath.length;
         }
         catch (ArrayIndexOutOfBoundsException e) {
@@ -184,7 +195,7 @@ public class CommonSRV {
     }
     
     void setNullToAllFields() {
-        this.delFolderPath = "";
+        this.pathToRestoreAsStr = "";
         this.perionDays = "";
     }
     
@@ -207,7 +218,7 @@ public class CommonSRV {
     private void writeResult(String resultToFile) {
         File file = new File(getClass().getSimpleName() + ".reStoreDir.results.txt");
         try (OutputStream outputStream = new FileOutputStream(file)) {
-            outputStream.write(resultToFile.getBytes());
+            outputStream.write(resultToFile.toLowerCase().getBytes());
         }
         catch (IOException e) {
             LOGGER.warn(e.getMessage(), e);

@@ -2,11 +2,13 @@ package ru.vachok.networker.accesscontrol.common;
 
 
 import org.slf4j.Logger;
+import org.springframework.lang.NonNull;
 import ru.vachok.networker.AppComponents;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -14,6 +16,7 @@ import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.FileTime;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 
 /**
@@ -38,7 +41,12 @@ public class RestoreFromArchives extends SimpleFileVisitor<Path> {
      {@link AppComponents#getLogger(String)}
      */
     private static final Logger LOGGER = AppComponents.getLogger(RestoreFromArchives.class.getSimpleName());
-
+    
+    /**
+     Important!
+     */
+    private static final Pattern COMPILE = Pattern.compile("\\Qcommon_new\\\\E", Pattern.CASE_INSENSITIVE);
+    
     /**
      Папка первого уровня.
      <p>
@@ -69,10 +77,16 @@ public class RestoreFromArchives extends SimpleFileVisitor<Path> {
      @param pDays              период (дни)
      @see CommonSRV#reStoreDir()
      */
-    RestoreFromArchives(String pathToRestoreAsStr, String pDays) {
-        this.perionDays = Integer.parseInt(pDays);
+    RestoreFromArchives(@NonNull String pathToRestoreAsStr, String pDays) throws InvocationTargetException {
+        try {
+            this.perionDays = Integer.parseInt(pDays);
+        }
+        catch (NumberFormatException e) {
+            this.perionDays = 0;
+        }
+    
         if(pathToRestoreAsStr.toLowerCase().contains("common_new")){
-            pathToRestoreAsStr = pathToRestoreAsStr.split("\\Qcommon_new\\\\E")[1];
+            pathToRestoreAsStr = COMPILE.split(pathToRestoreAsStr)[1];
         }
         else{
             if(pathToRestoreAsStr.toLowerCase().contains("archives")){

@@ -16,7 +16,7 @@
 <p>
 <form method="POST" th:action="@{/commonarch}" th:object="${common}"><br>
     Укажите путь, где была папка или файл :<br>
-    <input placeholder="Пример: 14_ИТ_служба\Общая" required th:field="*{delFolderPath}" type="text"/>
+    <input placeholder="Пример: 14_ИТ_служба\Общая" required th:field="*{pathToRestoreAsStr}" type="text"/>
     <br>
     <input max="365" min="1" placeholder="Число дней, за которые восстановить" required size="1" th:field="*{perionDays}" type="number" value="10"/>
     <br>
