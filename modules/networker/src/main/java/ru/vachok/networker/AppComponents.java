@@ -2,7 +2,6 @@
 
 package ru.vachok.networker;
 
-
 import com.jcraft.jsch.JSch;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.slf4j.Logger;

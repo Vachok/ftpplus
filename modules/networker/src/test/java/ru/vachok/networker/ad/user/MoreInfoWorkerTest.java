@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
     @Test
     public void testGetUserFromDB() {
         String userFromDB = MoreInfoWorker.getUserFromDB("user: kudr");
-        Assert.assertTrue(userFromDB.contains("do0213"));
+        Assert.assertTrue(userFromDB.contains("do0213"), userFromDB);
     }
     
     @Test

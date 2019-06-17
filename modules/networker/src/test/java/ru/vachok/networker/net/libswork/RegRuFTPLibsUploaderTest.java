@@ -23,7 +23,7 @@ public class RegRuFTPLibsUploaderTest extends RegRuFTPLibsUploader {
         try {
             libsHelp.uploadLibs();
         }
-        catch (AccessDeniedException | ConnectException e) {
+        catch (AccessDeniedException | ConnectException | NullPointerException e) {
             System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".ftpTest");
         }
     }

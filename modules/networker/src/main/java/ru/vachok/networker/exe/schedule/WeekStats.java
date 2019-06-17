@@ -13,6 +13,7 @@ import ru.vachok.networker.statistics.PCStats;
 import ru.vachok.networker.statistics.StatsOfNetAndUsers;
 import ru.vachok.networker.systray.MessageToTray;
 
+import java.time.LocalDate;
 import java.util.List;
 
 
@@ -43,6 +44,13 @@ public class WeekStats implements Runnable, StatsOfNetAndUsers {
     public WeekStats(String sql) {
         this.sql = sql;
         this.fileName = ConstantsFor.FILENAME_VELKOMPCUSERAUTOTXT;
+    }
+    
+    @Override public String toString() {
+        final StringBuilder sb = new StringBuilder("WeekStats{");
+        sb.append(LocalDate.now().getDayOfWeek().toString());
+        sb.append('}');
+        return sb.toString();
     }
     
     public WeekStats() {

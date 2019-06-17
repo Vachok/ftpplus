@@ -9,6 +9,7 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
 
 import java.io.File;
+import java.time.LocalDate;
 import java.util.*;
 
 
@@ -56,6 +57,13 @@ public class InetStatSorter implements Runnable {
                 makeCSV(finalFile, fileAsSet);
                 fileInetIPCsv.deleteOnExit();
             }
+    }
+    
+    @Override public String toString() {
+        final StringBuilder sb = new StringBuilder("InetStatSorter{");
+        sb.append(LocalDate.now().getDayOfWeek());
+        sb.append('}');
+        return sb.toString();
     }
     
     private void makeCSV(File tmpInetStatFile, Collection<String> fileAsSet) {

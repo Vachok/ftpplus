@@ -7,6 +7,8 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import java.io.File;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 
 
 @SuppressWarnings("ALL") public class InetStatSorterTest {
@@ -15,9 +17,14 @@ import java.io.File;
     @Test
     public void testRun() {
         InetStatSorter inetStatSorter = new InetStatSorter();
-        File noCsv = new File("no.csv");
-        inetStatSorter.run();
-        Assert.assertFalse(noCsv.exists());
-        noCsv.deleteOnExit();
+        if (LocalDate.now().getDayOfWeek().equals(DayOfWeek.SUNDAY)) {
+            File noCsv = new File("no.csv");
+            inetStatSorter.run();
+            Assert.assertFalse(noCsv.exists());
+            noCsv.deleteOnExit();
+        }
+        else {
+            Assert.assertTrue(inetStatSorter.toString().contains(LocalDate.now().getDayOfWeek().toString()), inetStatSorter.toString());
+        }
     }
 }

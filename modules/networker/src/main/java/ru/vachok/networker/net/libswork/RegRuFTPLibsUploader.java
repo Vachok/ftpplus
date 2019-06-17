@@ -75,13 +75,13 @@ import java.util.regex.Pattern;
         }
     }
     
-    @Override public String uploadLibs() throws AccessDeniedException, NullPointerException {
+    @Override public String uploadLibs() throws AccessDeniedException {
         String pc = ConstantsFor.thisPC();
         if (pc.toLowerCase().contains("home") | pc.toLowerCase().contains(ConstantsFor.HOSTNAME_DO213) && ftpPass != null) {
             try {
                 return makeConnectionAndStoreLibs();
             }
-            catch (IOException e) {
+            catch (IOException | NullPointerException e) {
                 return FileSystemWorker.error(getClass().getSimpleName() + ".uploadLibs", e);
             }
         }

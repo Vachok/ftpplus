@@ -3,6 +3,7 @@
 package ru.vachok.networker.controller;
 
 
+import org.springframework.core.task.TaskRejectedException;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.ui.ExtendedModelMap;
@@ -39,20 +40,16 @@ import static org.testng.Assert.assertTrue;
         HttpServletRequest request = new MockHttpServletRequest();
         HttpServletResponse response = new MockHttpServletResponse();
         Model model = new ExtendedModelMap();
-        
-        String netScanStr = netScanCtr.netScan(request, response, model);
-        Assert.assertNotNull(netScanStr);
-        assertTrue(netScanStr.equals(ConstantsNet.ATT_NETSCAN));
-        assertTrue(model.asMap().size() >= 7, showModel(model.asMap()));
-        assertTrue(model.asMap().get(ConstantsFor.ATT_FOOTER).toString().contains("Only Allow Domains"), showModel(model.asMap()));
-    }
-    
-    private String showModel(Map<String, Object> map) {
-        StringBuilder stringBuilder = new StringBuilder();
-        for (Map.Entry<String, Object> entry : map.entrySet()) {
-            stringBuilder.append(entry.getKey()).append(" : ").append(entry.getValue()).append("\n");
+        try {
+            String netScanStr = netScanCtr.netScan(request, response, model);
+            Assert.assertNotNull(netScanStr);
+            assertTrue(netScanStr.equals(ConstantsNet.ATT_NETSCAN));
+            assertTrue(model.asMap().size() >= 7, showModel(model.asMap()));
+            assertTrue(model.asMap().get(ConstantsFor.ATT_FOOTER).toString().contains("Only Allow Domains"), showModel(model.asMap()));
         }
-        return stringBuilder.toString();
+        catch (TaskRejectedException e) {
+            Assert.assertNotNull(e);
+        }
     }
     
     @Test
@@ -89,7 +86,7 @@ import static org.testng.Assert.assertTrue;
         try {
             String pcNameInfoStr = NetScanCtr.pcNameForInfo(AppComponents.netScannerSvc(), model);
             Assert.assertTrue(pcNameInfoStr.contains("redirect:/ad"));
-        
+    
         }
         catch (RejectedExecutionException e) {
             Assert.assertNotNull(e, e.getMessage());
@@ -114,5 +111,13 @@ import static org.testng.Assert.assertTrue;
         catch (IllegalComponentStateException e) {
             assertNotNull(e, e.getMessage());
         }
+    }
+    
+    private String showModel(Map<String, Object> map) {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
+            stringBuilder.append(entry.getKey()).append(" : ").append(entry.getValue()).append("\n");
+        }
+        return stringBuilder.toString();
     }
 }

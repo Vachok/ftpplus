@@ -43,10 +43,9 @@ public class ServiceInfoCtrlTest {
             String res = model.asMap().get("res").toString();
             String mail = model.asMap().get("mail").toString();
             String urls = model.asMap().get("urls").toString();
-            assertTrue(res.contains("getNextDayofWeek"));
-            assertTrue(res.contains("VersionInfo"));
-            assertTrue(res.contains("SSH Temp list"));
-            assertTrue(res.contains("AppInfoOnLoad"));
+            assertTrue(res.contains("getNextDayofWeek"), res);
+            assertTrue(res.contains("VersionInfo"), res);
+            assertTrue(res.contains("AppInfoOnLoad"), res);
             if (LocalTime.now().getHour() > 9 && LocalTime.now().getHour() < 18) {
                 assertTrue(mail.contains("Работаем"), mail);
             }

@@ -19,6 +19,8 @@ import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Map;
@@ -98,9 +100,15 @@ import java.util.prefs.Preferences;
         InitProperties initProperties = new FileProps(ConstantsFor.class.getSimpleName());
         Properties props = initProperties.getProps();
         Assert.assertTrue(props.size() > 5, new TForms().fromArray(props, false));
+        Path libsPath = Paths.get("lib/stats-8.0.1920.jar").toAbsolutePath().normalize();
         try {
             boolean isUpdate = new AppComponents().updateProps(props);
-            Assert.assertTrue(isUpdate);
+            if (new File(libsPath.toString()).exists()) {
+                Assert.assertFalse(isUpdate);
+            }
+            else {
+                Assert.assertTrue(isUpdate);
+            }
         }
         catch (IOException e) {
             Assert.assertNull(e, e.getMessage());
