@@ -106,10 +106,10 @@ public class MatrixCtr {
      */
     public static void setCurrentProvider() {
         try {
-            MatrixCtr.currentProvider = new Tracerouting().call();
+            currentProvider = new Tracerouting().call();
         }
         catch (Exception e) {
-            MatrixCtr.currentProvider = "<br><a href=\"/makeok\">" + e.getMessage() + "</a><br>";
+            currentProvider = "<br><a href=\"/makeok\">" + e.getMessage() + "</a><br>";
             Thread.currentThread().interrupt();
         }
     }
@@ -317,7 +317,7 @@ public class MatrixCtr {
      @return {@link #REDIRECT_MATRIX}
      */
     private String matrixAccess(String workPos) {
-        String workPosition = this.matrixSRV.getWorkPosition(String.format("select * from matrix where Doljnost like '%%%s%%';", workPos));
+        String workPosition = this.matrixSRV.getWorkPosition(workPos);
         this.matrixSRV.setWorkPos(workPosition);
         LOGGER.info(workPosition);
         return REDIRECT_MATRIX;

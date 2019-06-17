@@ -110,7 +110,8 @@ public class MatrixSRV {
      
      @see MatrixCtr#matrixAccess(java.lang.String)
      */
-    public String getWorkPosition(final String sql) {
+    public String getWorkPosition(String patternToSearch) {
+        final String sql = "SELECT * FROM `matrix` WHERE `Doljnost` LIKE '%адми%'";
         Map<String, String> doljAndAccess = new ConcurrentHashMap<>();
         DataConnectTo dataConnectTo = new RegRuMysql();
         MysqlDataSource connectToDataSource = dataConnectTo.getDataSource(); //fixme 14.06.2019 (15:06).
@@ -119,13 +120,13 @@ public class MatrixSRV {
         connectToDataSource.setDatabaseName("u0466446_velkom");
         connectToDataSource.setUseSSL(false);
         connectToDataSource.setContinueBatchOnError(true);
-        
-        try (Connection c = connectToDataSource.getConnection();
-             PreparedStatement statement = c.prepareStatement(sql);
-             ResultSet r = statement.executeQuery()
-        ) {
-            while (r.next()) {
-                getInfo(r, doljAndAccess);
+        try (Connection c = connectToDataSource.getConnection()) {
+            try (PreparedStatement statement = c.prepareStatement(sql)) {
+                try (ResultSet r = statement.executeQuery()) {
+                    while (r.next()) {
+                        getInfo(r, doljAndAccess);
+                    }
+                }
             }
         }
         catch (SQLException e) {
