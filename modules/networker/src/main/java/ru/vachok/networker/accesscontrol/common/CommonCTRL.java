@@ -57,9 +57,10 @@ public class CommonCTRL {
     public String commonSearch(@ModelAttribute CommonSRV commonSRV, Model model) {
         this.commonSRV = commonSRV;
         model.addAttribute(ConstantsFor.ATT_COMMON, commonSRV);
-        model.addAttribute(ConstantsFor.ATT_TITLE, commonSRV.getSearchPat() + " - идёт поиск");
+        String patternToSearch = commonSRV.getSearchPat();
+        model.addAttribute(ConstantsFor.ATT_TITLE, patternToSearch + " - идёт поиск");
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
-        model.addAttribute(ConstantsFor.ATT_RESULT, commonSRV.searchByPat());
+        model.addAttribute(ConstantsFor.ATT_RESULT, commonSRV.searchByPat(patternToSearch));
         return ConstantsFor.ATT_COMMON;
     }
 }

@@ -32,7 +32,7 @@ public class AppInfoOnLoadTest {
     public void testGetBuildStamp() {
         long stampBuild = AppInfoOnLoad.getBuildStamp();
         long currentTimeMS = System.currentTimeMillis();
-        Assert.assertTrue((currentTimeMS > stampBuild), "\n\n" + (currentTimeMS - stampBuild) + " MS diff between build and test\n\n\n");
+        Assert.assertTrue((currentTimeMS >= stampBuild), "\n\n" + (currentTimeMS - stampBuild) + " MS diff between build and test\n\n\n");
     }
     
     @Test()

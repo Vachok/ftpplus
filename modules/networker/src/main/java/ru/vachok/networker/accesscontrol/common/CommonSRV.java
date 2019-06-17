@@ -5,6 +5,7 @@ package ru.vachok.networker.accesscontrol.common;
 
 import org.slf4j.Logger;
 import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
@@ -50,6 +51,7 @@ public class CommonSRV {
     
     private String perionDays;
     
+    @Nullable
     private String searchPat;
     
     /**
@@ -80,37 +82,12 @@ public class CommonSRV {
     }
     
     /**
-     Поиск в \\srv-fs\common_new
+     <b>MUST BE PUBLIC</b>
      <p>
-     
-     @param folderPath папка, откуда начать искать
-     @return список файлов или {@link Exception}
-     
-     @see FileSearcher
+     @return кол-во дней, за которое выполнять поиск.
      */
-    public static String searchInCommon(String[] folderPath) {
-        FileSearcher fileSearcher = new FileSearcher(folderPath[0]);
-        String folderToSearch = "";
-        try {
-            folderToSearch = folderPath[1];
-        }
-        catch (ArrayIndexOutOfBoundsException e) {
-            folderToSearch = "";
-        }
-        folderToSearch = "\\\\srv-fs.eatmeat.ru\\common_new\\" + folderToSearch;
-        try {
-            Files.walkFileTree(Paths.get(folderToSearch), fileSearcher);
-        }
-        catch (IOException e) {
-            System.err.println(e.getMessage());
-        }
-        List<String> fileSearcherResList = fileSearcher.getResList();
-        fileSearcherResList.add("Searched: " + new Date() + "\n");
-        String resTo = new TForms().fromArray(fileSearcherResList, true);
-        if (fileSearcherResList.size() > 0) {
-            FileSystemWorker.writeFile(ConstantsFor.FILE_PREFIX_SEARCH_ + LocalTime.now().toSecondOfDay() + ".res", fileSearcherResList.stream());
-        }
-        return resTo;
+    @SuppressWarnings("WeakerAccess") public String getPerionDays() {
+        return perionDays;
     }
     
     @Override
@@ -122,21 +99,14 @@ public class CommonSRV {
         return sb.toString();
     }
     
-    public String getPerionDays() {
-        return perionDays;
-    }
-    
-    public void setPerionDays(String perionDays) {
-        this.perionDays = perionDays;
-    }
-    
-    String searchByPat() {
+    String searchByPat(String searchPatParam) {
+        this.searchPat = searchPatParam;
         StringBuilder stringBuilder = new StringBuilder();
         if (searchPat == null) {
             this.searchPat = ":";
         }
         if (searchPat.equals(":")) {
-            stringBuilder.append(getFromFile());
+            stringBuilder.append(getLastSearchResultFromFile());
         }
         String[] toSearch = new String[2];
         try {
@@ -148,6 +118,10 @@ public class CommonSRV {
             stringBuilder.append(e.getMessage());
         }
         return stringBuilder.toString();
+    }
+    
+    public void setPerionDays(String perionDays) {
+        this.perionDays = perionDays;
     }
     
     /**
@@ -171,8 +145,9 @@ public class CommonSRV {
             String[] foldersInPath = pathToRestoreAsStr.split("\\Q\\\\E");
             followInt = foldersInPath.length;
         }
-        catch (ArrayIndexOutOfBoundsException e) {
+        catch (ArrayIndexOutOfBoundsException | NullPointerException e) {
             followInt = 1;
+            stringBuilder.append(e.getMessage()).append("\n");
         }
         stringBuilder
             .append(followInt)
@@ -194,17 +169,55 @@ public class CommonSRV {
         return restoreFromArchives.toString();
     }
     
+    /**
+     Поиск в \\srv-fs\common_new
+     <p>
+     
+     @param patternAndFolder [0] - поисковый паттерн, [1] - папка, откуда начать искать
+     @return список файлов или {@link Exception}
+     
+     @see FileSearcher
+     */
+    private static String searchInCommon(String[] patternAndFolder) {
+        FileSearcher fileSearcher = new FileSearcher(patternAndFolder[0]);
+        String folderToSearch = "";
+        try {
+            folderToSearch = patternAndFolder[1];
+        }
+        catch (ArrayIndexOutOfBoundsException e) {
+            folderToSearch = "";
+        }
+        folderToSearch = "\\\\srv-fs.eatmeat.ru\\common_new\\" + folderToSearch;
+        try {
+            Files.walkFileTree(Paths.get(folderToSearch), fileSearcher);
+        }
+        catch (IOException e) {
+            System.err.println(e.getMessage());
+        }
+        List<String> fileSearcherResList = fileSearcher.getResList();
+        fileSearcherResList.add("Searched: " + new Date() + "\n");
+        String resTo = new TForms().fromArray(fileSearcherResList, true);
+        if (fileSearcherResList.size() > 0) {
+            FileSystemWorker.writeFile(ConstantsFor.FILE_PREFIX_SEARCH_ + LocalTime.now().toSecondOfDay() + ".res", fileSearcherResList.stream());
+        }
+        return resTo;
+    }
+    
     void setNullToAllFields() {
         this.pathToRestoreAsStr = "";
         this.perionDays = "";
     }
     
-    private String getFromFile() {
+    private static String getLastSearchResultFromFile() {
         StringBuilder stringBuilder = new StringBuilder();
         for (File file : Objects.requireNonNull(new File(".").listFiles(), "No Files in root...")) {
             if (file.getName().toLowerCase().contains(ConstantsFor.FILE_PREFIX_SEARCH_)) {
                 stringBuilder.append(FileSystemWorker.readFile(file.getAbsolutePath()));
             }
+        }
+        stringBuilder.trimToSize();
+        if (stringBuilder.capacity() == 0) {
+            stringBuilder.append("No previous searches found ...");
         }
         return stringBuilder.toString();
     }
