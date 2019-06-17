@@ -54,7 +54,7 @@ public class MatrixSRV {
      
      @see MatrixCtr
      */
-    private String workPos = "whois: ";
+    private String workPos = "whois: ya.ru";
     
     /**
      Header
