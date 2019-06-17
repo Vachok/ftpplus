@@ -56,8 +56,6 @@ import java.util.prefs.Preferences;
 public class AppComponents {
     
     
-    private static MessageToUser messageToUser = new MessageLocal(AppComponents.class.getSimpleName());
-    
     /**
      <i>Boiler Plate</i>
      */
@@ -68,6 +66,8 @@ public class AppComponents {
     private static final String DB_JAVA_ID = ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName();
     
     private static final ThreadConfig THREAD_CONFIG = ThreadConfig.getI();
+    
+    private static MessageToUser messageToUser = new MessageLocal(AppComponents.class.getSimpleName());
     
     public static String ipFlushDNS() throws UnsupportedOperationException {
         StringBuilder stringBuilder = new StringBuilder();
@@ -208,11 +208,9 @@ public class AppComponents {
             }
         }
         else {
-            threadConfig().execByThreadConfig(()->{
-                APP_PR.putAll(new AppComponents().getAppProps());
-                APP_PR.setProperty(ConstantsFor.PR_DBSTAMP, String.valueOf(System.currentTimeMillis()));
-                APP_PR.setProperty(ConstantsFor.PR_THISPC, ConstantsFor.thisPC());
-            });
+            APP_PR.putAll(new AppComponents().getAppProps());
+            APP_PR.setProperty(ConstantsFor.PR_DBSTAMP, String.valueOf(System.currentTimeMillis()));
+            APP_PR.setProperty(ConstantsFor.PR_THISPC, ConstantsFor.thisPC());
         }
         return APP_PR;
     }

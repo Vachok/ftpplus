@@ -89,6 +89,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
      */
     @Override
     public Long call() {
+        run();
         return rtLong;
     }
     

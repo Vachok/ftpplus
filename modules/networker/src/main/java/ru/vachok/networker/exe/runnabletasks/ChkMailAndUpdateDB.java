@@ -14,6 +14,7 @@ import javax.mail.Flags;
 import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.MessagingException;
+import java.io.File;
 import java.io.IOException;
 import java.sql.*;
 import java.time.DayOfWeek;
@@ -64,7 +65,11 @@ class ChkMailAndUpdateDB {
             msg = e.getMessage();
         }
         msg = msg + "\n" + new Date(checker.getRtLong());
-        messageToUser.info(msg);
+        File chkMailFile = new File("ChkMailAndUpdateDB.chechMail");
+        if (chkMailFile.exists()) {
+            msg = msg + " see: " + chkMailFile.getAbsolutePath();
+        }
+        System.out.println(msg);
     }
     
     /**
@@ -130,11 +135,11 @@ class ChkMailAndUpdateDB {
     private String chechMail() {
         Message[] messagesBot = mailMessages.call();
         String chDB = new TForms().fromArray(checkDB(), false);
-        FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".chechMail", Collections.singletonList(chDB));
+        boolean isWriteFile = FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".chechMail", Collections.singletonList(chDB));
         for (Message m : messagesBot) {
             parseMsg(m, chDB);
         }
-        return chDB;
+        return chDB + " file written - " + isWriteFile;
     }
     
     /**
