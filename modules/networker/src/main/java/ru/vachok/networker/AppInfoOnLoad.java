@@ -12,9 +12,6 @@ import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
 import ru.vachok.networker.controller.MatrixCtr;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.NetMonitorPTV;
-import ru.vachok.networker.exe.runnabletasks.ScanOnline;
-import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
-import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.exe.schedule.MailIISLogsCleaner;
 import ru.vachok.networker.exe.schedule.SquidAvaliblityChecker;
 import ru.vachok.networker.exe.schedule.WeekStats;
@@ -33,7 +30,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -163,11 +159,11 @@ public class AppInfoOnLoad implements Runnable {
      3. {@link MyCalen#checkDay(ScheduledExecutorService)} метрика. <br>
      4. {@link MyCalen#checkDay(ScheduledExecutorService)}. Выведем сообщение, когда и что ствртует.
      <p>
-     
-     @param scheduledExecutorService {@link ScheduledExecutorService}.
+ 
+     @param scheduledExecService {@link ScheduledExecutorService}.
      */
     @SuppressWarnings("MagicNumber")
-    private static void dateSchedulers(ScheduledExecutorService scheduledExecutorService) {
+    private static void dateSchedulers(ScheduledExecutorService scheduledExecService) {
         long delay = TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY_HOURS * 7);
     
         String exitLast = "No file";
@@ -187,7 +183,7 @@ public class AppInfoOnLoad implements Runnable {
             exitLast = new TForms().fromArray(FileSystemWorker.readFileToList("exit.last"), false);
         }
     
-        exitLast = exitLast + "\n" + MyCalen.checkDay(scheduledExecutorService) + "\n" + stringBuilder;
+        exitLast = exitLast + "\n" + MyCalen.checkDay(scheduledExecService) + "\n" + stringBuilder;
         MINI_LOGGER.add(exitLast);
         MESSAGE_LOCAL.info(AppInfoOnLoad.class.getSimpleName() + ConstantsFor.STR_FINISH);
         boolean isWrite = FileSystemWorker.writeFile(CLASS_NAME + ".mini", MINI_LOGGER.stream());
@@ -268,32 +264,16 @@ public class AppInfoOnLoad implements Runnable {
         schedWithService(scheduledExecutorService);
     }
     
-    private void schedWithService(ScheduledExecutorService scheduledExecutorService) {
-        final String minutesStr = ". MINUTES";
-        
-        scheduledExecutorService.scheduleWithFixedDelay(new NetMonitorPTV(), 0, 10, TimeUnit.SECONDS);
-        scheduledExecutorService.scheduleWithFixedDelay(MatrixCtr::setCurrentProvider, ConstantsFor.DELAY, ConstantsFor.DELAY * 10, TimeUnit.SECONDS);
-        scheduledExecutorService.scheduleWithFixedDelay(new AppComponents().temporaryFullInternet(), 1, ConstantsFor.DELAY, TimeUnit.MINUTES);
-        scheduledExecutorService.scheduleWithFixedDelay(AppComponents.diapazonScan(), 2, AppInfoOnLoad.thisDelay, TimeUnit.MINUTES); //уходим от прямого использования
-        scheduledExecutorService.scheduleWithFixedDelay(new AppComponents().scanOnline(), 3, 1, TimeUnit.MINUTES);
-        scheduledExecutorService.scheduleWithFixedDelay(AppInfoOnLoad::squidLogsSave, 4, ConstantsFor.DELAY, TimeUnit.MINUTES);
-        scheduledExecutorService.scheduleWithFixedDelay(new SquidAvaliblityChecker(), 5, ConstantsFor.DELAY * 2, TimeUnit.MINUTES);
-        scheduledExecutorService.schedule(()->MESSAGE_LOCAL.info(new TForms().fromArray(APP_PROPS, false)), ConstantsFor.DELAY + 10, TimeUnit.MINUTES);
-    
-        String msg = new StringBuilder()
-            .append(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(AppInfoOnLoad.thisDelay)))
-            .append(DiapazonScan.getInstance().getClass().getSimpleName())
-            .append(" is starts next time.\n")
-            .toString();
-        AppInfoOnLoad.MINI_LOGGER.add(msg + ". Trying start dateSchedulers***| Local time: " + LocalTime.now());
-        AppInfoOnLoad.MINI_LOGGER.add(NetMonitorPTV.class.getSimpleName() + " init delay 0, delay 10. SECONDS");
-        AppInfoOnLoad.MINI_LOGGER.add(TemporaryFullInternet.class.getSimpleName() + " init delay 1, delay " + ConstantsFor.DELAY + minutesStr);
-        AppInfoOnLoad.MINI_LOGGER.add(DiapazonScan.getInstance().getClass().getSimpleName() + " init delay 2, delay " + AppInfoOnLoad.thisDelay + minutesStr);
-        AppInfoOnLoad.MINI_LOGGER.add(ScanOnline.class.getSimpleName() + " init delay 3, delay 1. MINUTES");
-        AppInfoOnLoad.MINI_LOGGER.add(AppComponents.class.getSimpleName() + ".getProps(true) 4, ConstantsFor.DELAY, TimeUnit.MINUTES");
-        AppInfoOnLoad.MINI_LOGGER.add("MatrixCtr::setCurrentProvider, ConstantsFor.DELAY, ConstantsFor.DELAY*10, TimeUnit.SECONDS");
-        
-        AppInfoOnLoad.dateSchedulers(scheduledExecutorService);
+    private void schedWithService(ScheduledExecutorService scheduledExecService) {
+        scheduledExecService.scheduleWithFixedDelay(new NetMonitorPTV(), 0, 10, TimeUnit.SECONDS);
+        scheduledExecService.scheduleWithFixedDelay(MatrixCtr::setCurrentProvider, ConstantsFor.DELAY, ConstantsFor.DELAY * 100, TimeUnit.SECONDS);
+        scheduledExecService.scheduleWithFixedDelay(new AppComponents().temporaryFullInternet(), 1, ConstantsFor.DELAY, TimeUnit.MINUTES);
+        scheduledExecService.scheduleWithFixedDelay(AppComponents.diapazonScan(), 2, AppInfoOnLoad.thisDelay, TimeUnit.MINUTES);
+        scheduledExecService.scheduleWithFixedDelay(new AppComponents().scanOnline(), 3, 1, TimeUnit.MINUTES);
+        scheduledExecService.scheduleWithFixedDelay(AppInfoOnLoad::squidLogsSave, 4, 200, TimeUnit.MINUTES);
+        scheduledExecService.scheduleWithFixedDelay(new SquidAvaliblityChecker(), 5, ConstantsFor.DELAY * 4, TimeUnit.MINUTES);
+        scheduledExecService.schedule(()->MESSAGE_LOCAL.info(new TForms().fromArray(APP_PROPS, false)), ConstantsFor.DELAY + 10, TimeUnit.MINUTES);
+        AppInfoOnLoad.dateSchedulers(scheduledExecService);
     }
     
     private static void getWeekPCStats() {
