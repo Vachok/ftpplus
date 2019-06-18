@@ -219,7 +219,6 @@ public class SshActs {
      @return результат выполнения
      */
     @SuppressWarnings("DuplicateStringLiteralInspection") public String allowDomainDel() {
-        AppComponents.threadConfig().thrNameSet("dDom");
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(delDomain).append("<p>");
         this.delDomain = checkDNameDel();
