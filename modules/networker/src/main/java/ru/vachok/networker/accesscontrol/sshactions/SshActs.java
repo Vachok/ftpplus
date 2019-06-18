@@ -28,7 +28,7 @@ import java.util.concurrent.TimeUnit;
  SSH-actions class
  
  @since 29.11.2018 (13:01) */
-@SuppressWarnings({"WeakerAccess", "ClassWithTooManyFields"})
+@SuppressWarnings({"ClassWithTooManyFields"})
 @Service(ConstantsFor.ATT_SSH_ACTS)
 @Scope("prototype")
 public class SshActs {
