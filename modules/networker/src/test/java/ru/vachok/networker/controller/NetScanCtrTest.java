@@ -60,7 +60,7 @@ import static org.testng.Assert.assertTrue;
         try {
             String pingAddrString = new NetScanCtr(AppComponents.netScannerSvc(), new NetPinger(), new AppComponents().scanOnline()).pingAddr(model, request, response);
             Assert.assertTrue(pingAddrString.contains("ping"));
-            Assert.assertTrue(model.asMap().get("pingResult").toString().contains("Bytes in stream:"), model.asMap().get("pingResult").toString());
+            Assert.assertTrue(model.asMap().get("pingTest").toString().contains("ptv"), model.asMap().get("pingTest").toString());
         }
         catch (RejectedExecutionException e) {
             Assert.assertNotNull(e, e.getMessage());

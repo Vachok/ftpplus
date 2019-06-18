@@ -42,7 +42,7 @@ public class AppInfoOnLoadTest {
         apOnLoad.run();
         List<String> loggerAppInfo = AppInfoOnLoad.MINI_LOGGER;
         Assert.assertNotNull(loggerAppInfo);
-        Assert.assertTrue(loggerAppInfo.size() >= 5, loggerAppInfo.size() + " is loggerAppInfo.size()");
+        Assert.assertTrue(loggerAppInfo.size() >= 4, loggerAppInfo.size() + " is loggerAppInfo.size()");
     }
     
     private static int getScansDelay() {
