@@ -47,7 +47,7 @@ public class DiapazonScanTest {
         try {
             List<String> pingSWList = DiapazonScan.pingSwitch();
             Assert.assertNotNull(pingSWList);
-            Assert.assertTrue(pingSWList.size() == 40);
+            Assert.assertTrue(pingSWList.size() == 42);
             Collections.sort(pingSWList);
             Assert.assertTrue(pingSWList.get(1).equals("10.200.200.253"));
         }
