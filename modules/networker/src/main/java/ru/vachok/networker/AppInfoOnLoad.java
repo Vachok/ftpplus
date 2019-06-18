@@ -272,7 +272,6 @@ public class AppInfoOnLoad implements Runnable {
         scheduledExecService.scheduleWithFixedDelay(new AppComponents().scanOnline(), 3, 1, TimeUnit.MINUTES);
         scheduledExecService.scheduleWithFixedDelay(AppInfoOnLoad::squidLogsSave, 4, 200, TimeUnit.MINUTES);
         scheduledExecService.scheduleWithFixedDelay(new SquidAvaliblityChecker(), 5, ConstantsFor.DELAY * 4, TimeUnit.MINUTES);
-        scheduledExecService.schedule(()->MESSAGE_LOCAL.info(new TForms().fromArray(APP_PROPS, false)), ConstantsFor.DELAY + 10, TimeUnit.MINUTES);
         AppInfoOnLoad.dateSchedulers(scheduledExecService);
     }
     
