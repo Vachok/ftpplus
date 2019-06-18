@@ -1,4 +1,4 @@
-!#/bin/sh
+#!/bin/sh
 
 sudo grep -v '.www.velkomfood.ru' /etc/pf/allowdomain > /etc/pf/allowdomain_tmp
 sudo grep -v '77.244.214.54 #.www.velkomfood.ru' /etc/pf/allowip > /etc/pf/allowip_tmp
