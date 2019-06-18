@@ -49,7 +49,7 @@ public class DiapazonScanTest {
             Assert.assertNotNull(pingSWList);
             Assert.assertTrue(pingSWList.size() == 42);
             Collections.sort(pingSWList);
-            Assert.assertTrue(pingSWList.get(1).equals("10.200.200.253"));
+            Assert.assertTrue(pingSWList.get(1).equals("10.1.1.228"));
         }
         catch (IllegalAccessException e) {
             Assert.assertNull(e, e.getMessage());
