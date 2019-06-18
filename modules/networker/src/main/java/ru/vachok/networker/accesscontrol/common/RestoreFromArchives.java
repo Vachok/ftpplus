@@ -2,6 +2,7 @@ package ru.vachok.networker.accesscontrol.common;
 
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
 import ru.vachok.networker.AppComponents;
 
@@ -41,7 +42,7 @@ public class RestoreFromArchives extends SimpleFileVisitor<Path> {
     /**
      {@link AppComponents#getLogger(String)}
      */
-    private static final Logger LOGGER = AppComponents.getLogger(RestoreFromArchives.class.getSimpleName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(RestoreFromArchives.class.getSimpleName());
     
     /**
      Important!
@@ -110,24 +111,6 @@ public class RestoreFromArchives extends SimpleFileVisitor<Path> {
         catch (ArrayIndexOutOfBoundsException ignore) {
             //
         }
-    }
-    
-    @Override
-    public int hashCode() {
-        return Objects.hash(pathToRestoreAsStr, perionDays);
-    }
-    
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        RestoreFromArchives that = (RestoreFromArchives) o;
-        return perionDays == that.perionDays &&
-            Objects.equals(pathToRestoreAsStr, that.pathToRestoreAsStr);
     }
     
     @Override
@@ -330,20 +313,20 @@ public class RestoreFromArchives extends SimpleFileVisitor<Path> {
      Копирование из архива.
      <p>
      Usages: {@link #fileChecker(String, Path, FileTime)}
-     
-     @param s путь до файла в архиве
+ 
+     @param fileName путь до файла в архиве
      @throws IOException {@link Files#createDirectories(Path, FileAttribute[])}, {@link Files#copy(Path, OutputStream)}
      */
-    private void copyFile(String s) throws IOException {
-        String target = s.replace("\\\\192.168.14.10\\IT-Backup\\Srv-Fs\\Archives\\",
+    private void copyFile(String fileName) throws IOException {
+        String targetFileName = fileName.replace("\\\\192.168.14.10\\IT-Backup\\Srv-Fs\\Archives\\",
             "\\\\srv-fs.eatmeat.ru\\common_new\\");
-        File tFile = new File(target);
-        String tFPath = tFile.getAbsolutePath().replace(tFile.getName(), "");
-        Files.createDirectories(Paths.get(tFPath));
-        Files.copy(Paths.get(s), tFile.toPath());
+        File targetFile = new File(targetFileName);
+        String targetFilePath = targetFile.getAbsolutePath().replace(targetFile.getName(), "");
+        Files.createDirectories(Paths.get(targetFilePath));
+        Files.copy(Paths.get(fileName), targetFile.toPath());
         resultStr
             .append("Cкопирован сюда: <font color=\"green\">")
-            .append(target)
+            .append(targetFileName)
             .append("</font><br>");
     }
 }

@@ -4,6 +4,7 @@ package ru.vachok.networker.accesscontrol.common;
 
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
@@ -40,7 +41,7 @@ public class CommonSRV {
     /**
      {@link AppComponents#getLogger(String)}
      */
-    private static final Logger LOGGER = AppComponents.getLogger(CommonSRV.class.getSimpleName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(CommonSRV.class.getSimpleName());
     
     /**
      Пользовательский ввод через форму на сайте
@@ -84,10 +85,15 @@ public class CommonSRV {
     /**
      <b>MUST BE PUBLIC</b>
      <p>
+ 
      @return кол-во дней, за которое выполнять поиск.
      */
     @SuppressWarnings("WeakerAccess") public String getPerionDays() {
         return perionDays;
+    }
+    
+    public void setPerionDays(String perionDays) {
+        this.perionDays = perionDays;
     }
     
     @Override
@@ -118,10 +124,6 @@ public class CommonSRV {
             stringBuilder.append(e.getMessage());
         }
         return stringBuilder.toString();
-    }
-    
-    public void setPerionDays(String perionDays) {
-        this.perionDays = perionDays;
     }
     
     /**
@@ -169,6 +171,11 @@ public class CommonSRV {
         return restoreFromArchives.toString();
     }
     
+    void setNullToAllFields() {
+        this.pathToRestoreAsStr = "";
+        this.perionDays = "";
+    }
+    
     /**
      Поиск в \\srv-fs\common_new
      <p>
@@ -201,11 +208,6 @@ public class CommonSRV {
             FileSystemWorker.writeFile(ConstantsFor.FILE_PREFIX_SEARCH_ + LocalTime.now().toSecondOfDay() + ".res", fileSearcherResList.stream());
         }
         return resTo;
-    }
-    
-    void setNullToAllFields() {
-        this.pathToRestoreAsStr = "";
-        this.perionDays = "";
     }
     
     private static String getLastSearchResultFromFile() {

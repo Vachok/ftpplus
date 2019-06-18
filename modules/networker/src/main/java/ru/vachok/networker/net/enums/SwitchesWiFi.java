@@ -97,6 +97,10 @@ public enum SwitchesWiFi {
     public static final String C_216_3_HOTEL = "10.200.216.3";
 
     public static final String C_216_4_HOTEL = "10.200.216.4";
+    
+    public static final String HP_3500_2_SERVERNAYA = "10.1.1.111";
+    
+    public static final String HP_2610_24_SERVERNAYA = "10.1.1.228";
 
     public static String toStringS() {
         StringBuilder stringBuilder = new StringBuilder();

@@ -20,6 +20,16 @@ import ru.vachok.networker.componentsrepo.PageFooter;
 public class CommonCTRL {
     
     
+    private CommonSRV commonSRV;
+    
+    @Autowired
+    public CommonCTRL(CommonSRV commonSRV) {
+        this.commonSRV = commonSRV;
+    }
+    
+    protected CommonCTRL() {
+    }
+    
     @GetMapping("/common")
     public String commonGET(Model model) {
         commonSRV.setNullToAllFields();
@@ -29,9 +39,6 @@ public class CommonCTRL {
 //        model.addAttribute(ConstantsFor.ATT_RESULT, "<details><summary>Last searched:</summary>"+new String(FileSystemWorker.readFile("CommonSRV.reStoreDir.results.txt").getBytes(), StandardCharsets.UTF_8)+"</details>");
         return ConstantsFor.ATT_COMMON;
     }
-    
-    @Autowired
-    private CommonSRV commonSRV;
 
     @PostMapping("/commonarch")
     public String commonArchPOST(@ModelAttribute CommonSRV commonSRV, Model model) {
