@@ -4,6 +4,7 @@ package ru.vachok.networker.accesscontrol.sshactions;
 
 
 import org.springframework.context.annotation.Scope;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
@@ -12,16 +13,14 @@ import ru.vachok.networker.accesscontrol.NameOrIPChecker;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.WhoIsWithSRV;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.nio.charset.Charset;
 import java.time.LocalTime;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 /**
@@ -33,6 +32,31 @@ import java.util.concurrent.TimeUnit;
 @Scope("prototype")
 public class SshActs {
     
+    
+    /**
+     SSH-command
+     */
+    public static final String SUDO_ECHO = "sudo echo ";
+    
+    /**
+     SSH-command
+     */
+    public static final String SSH_SUDO_GREP_V = "sudo grep -v '";
+    
+    private static final Pattern COMPILE = Pattern.compile("http://", Pattern.LITERAL);
+    
+    /**
+     sshworks.html
+     */
+    private static final String PAGE_NAME = "sshworks";
+    
+    private static final String STR_HTTPS = "https://";
+    
+    private static final String SSH_SQUID_RECONFIGURE = "sudo squid && sudo squid -k reconfigure;";
+    
+    private static final String SSH_PING5_200_1 = "ping -c 5 10.200.200.1;";
+    
+    private static final String SSH_INITPF = "sudo /etc/initpf.fw && exit;";
     
     /**
      Имя ПК для разрешения
@@ -52,7 +76,7 @@ public class SshActs {
     /**
      Разрешить адрес
      */
-    private String allowDomain;
+    @NonNull private String allowDomain;
     
     private String ipAddrOnly;
     
@@ -73,29 +97,6 @@ public class SshActs {
     private boolean tempFull;
     
     private boolean vipNet;
-    
-    /**
-     SSH-command
-     */
-    public static final String SUDO_ECHO = "sudo echo ";
-    
-    /**
-     SSH-command
-     */
-    public static final String SSH_SUDO_GREP_V = "sudo grep -v '";
-    
-    /**
-     sshworks.html
-     */
-    private static final String PAGE_NAME = "sshworks";
-    
-    private static final String STR_HTTPS = "https://";
-    
-    private static final String SSH_SQUID_RECONFIGURE = "sudo squid && sudo squid -k reconfigure;";
-    
-    private static final String SSH_PING5_200_1 = "ping -c 5 10.200.200.1;";
-    
-    private static final String SSH_INITPF = "sudo /etc/initpf.fw && exit;";
     
     public void setIpAddrOnly(String ipAddrOnly) {
         this.ipAddrOnly = ipAddrOnly;
@@ -182,9 +183,7 @@ public class SshActs {
      @return результат выполненния
      */
     public String allowDomainAdd() throws NullPointerException {
-        AppComponents.threadConfig().thrNameSet("aDom");
         this.allowDomain = checkDName();
-        Objects.requireNonNull(allowDomain, "allowdomain string is null");
         if (allowDomain.equalsIgnoreCase("Domain is exists!")) {
             return allowDomain;
         }
@@ -209,7 +208,7 @@ public class SshActs {
     
         String call = "<b>" + new SSHFactory.Builder(whatSrvNeed(), commandSSH, getClass().getSimpleName()).build().call() + "</b>";
         call = call + "<font color=\"gray\"><br><br>" + new WhoIsWithSRV().whoIs(resolvedIp) + "</font>";
-        writeToLog(new String((call + "\n\n" + this).getBytes(), Charset.defaultCharset()));
+        FileSystemWorker.writeFile(allowDomain.replaceFirst("\\Q.\\E", "") + ".log", call);
         return call.replace("\n", "<br>")
             .replace(allowDomain, "<font color=\"yellow\">" + allowDomain + "</font>").replace(resolvedIp, "<font color=\"yellow\">" + resolvedIp + "</font>");
     }
@@ -249,7 +248,7 @@ public class SshActs {
             
             stringBuilder.append(resStr.replace("\n", "<br>\n"));
         });
-        writeToLog(stringBuilder.toString());
+        FileSystemWorker.writeFile(getClass().getSimpleName() + ".log", stringBuilder.toString());
         return stringBuilder.toString();
     }
     
@@ -330,7 +329,13 @@ public class SshActs {
      @return имя домена для применения в /etc/pf/allowdomain
      */
     private String checkDName() {
-        this.allowDomain = allowDomain.replace("http://", ".");
+        try {
+            this.allowDomain = COMPILE.matcher(allowDomain).replaceAll(Matcher.quoteReplacement("."));
+        }
+        catch (NullPointerException e) {
+            this.allowDomain = "http://www.velkomfood.ru";
+            this.allowDomain = COMPILE.matcher(allowDomain).replaceAll(Matcher.quoteReplacement("."));
+        }
         if (allowDomain.contains("https")) {
             this.allowDomain = allowDomain.replace(STR_HTTPS, ".");
         }
@@ -339,12 +344,12 @@ public class SshActs {
         }
         this.allowDomain = allowDomain;
         SSHFactory.Builder allowDomainsBuilder = new SSHFactory.Builder(whatSrvNeed(), "sudo cat /etc/pf/allowdomain", getClass().getSimpleName());
-        String[] strings = allowDomainsBuilder.build().call().split("\n");
-        for (String s : strings) {
-            if (s.equalsIgnoreCase(allowDomain)) {
+        String[] domainNamesFromSSH = allowDomainsBuilder.build().call().split("\n");
+        for (String domainNameFromSSH : domainNamesFromSSH) {
+            if (domainNameFromSSH.contains(allowDomain)) {
                 return "Domain is exists!";
             }
-            else if (allowDomain.toLowerCase().contains(s)) {
+            else if (allowDomain.toLowerCase().contains(domainNameFromSSH)) {
                 allowDomain = "# " + allowDomain;
             }
         }
@@ -354,21 +359,21 @@ public class SshActs {
     /**
      Резолвит ip-адрес
      <p>
-     
-     @param s домен для проверки
+ 
+     @param domainName домен для проверки
      @return ip-адрес
      */
-    private String resolveIp(String s) throws NullPointerException {
+    private String resolveIp(String domainName) throws NullPointerException {
         InetAddress inetAddress = null;
         try {
-            s = s.replaceFirst("\\Q.\\E", "");
-            if (s.contains("/")) {
-                s = s.split("/")[0];
+            domainName = domainName.replaceFirst("\\Q.\\E", "");
+            if (domainName.contains("/")) {
+                domainName = domainName.split("/")[0];
             }
-            if (s.contains("# ")) {
-                s = s.split("# ")[1];
+            if (domainName.contains("# ")) {
+                domainName = domainName.split("# ")[1];
             }
-            inetAddress = InetAddress.getByName(s);
+            inetAddress = InetAddress.getByName(domainName);
         }
         catch (UnknownHostException e) {
             String msg = "SshActs" + ".resolveIp\n" + e.getMessage();
@@ -384,42 +389,29 @@ public class SshActs {
     }
     
     /**
-     Запись результата в лог
-     <p>
-     {@code this.getClass().getSimpleName() + ".log"}
-     
-     @param s лог, для записи
-     */
-    private void writeToLog(String s) {
-        try (OutputStream outputStream = new FileOutputStream(this.getClass().getSimpleName() + ".log")) {
-            outputStream.write(s.getBytes());
-        }
-        catch (IOException e) {
-            System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".writeToLog");
-            FileSystemWorker.error("SshActs.writeToLog", e);
-        }
-    }
-    
-    /**
      @return имя домена, для удаления.
      */
     private String checkDNameDel() {
-        this.delDomain = delDomain.replace("http://", ".");
+        try {
+            this.delDomain = delDomain.replace("http://", ".");
+        }
+        catch (NullPointerException e) {
+            this.delDomain = "http://www.velkomfood.ru";
+            this.delDomain = delDomain.replace("http://", ".");
+        }
         if (delDomain.contains(STR_HTTPS)) {
             this.delDomain = delDomain.replace(STR_HTTPS, ".");
-    
+        
         }
         if (delDomain.contains("/")) {
             this.delDomain = delDomain.split("/")[0];
         }
         SSHFactory.Builder delDomBuilder = new SSHFactory.Builder(whatSrvNeed(), "sudo cat /etc/pf/allowdomain", getClass().getSimpleName());
-        for (String s : delDomBuilder.build().call().split("\n")) {
-            if (s.toLowerCase().contains(delDomain) || delDomain.toLowerCase().contains(s)) {
+        for (String domainNameFromSSH : delDomBuilder.build().call().split("\n")) {
+            if (domainNameFromSSH.toLowerCase().contains(delDomain) || delDomain.toLowerCase().contains(domainNameFromSSH)) {
                 return delDomain;
             }
         }
-        ;
-    
         return "No domain to delete.";
     }
     

@@ -1,9 +1,8 @@
 package ru.vachok.networker.accesscontrol.sshactions;
 
 
+import org.testng.Assert;
 import org.testng.annotations.Test;
-
-import java.awt.*;
 
 
 /**
@@ -13,16 +12,22 @@ public class SshActsTest {
     
     @Test
     public void testAllowDomainAdd() {
-        throw new IllegalComponentStateException("18.06.2019 (15:36)");
+        SshActs sshActs = new SshActs();
+        String domainAddString = sshActs.allowDomainAdd();
+        Assert.assertTrue(domainAddString.contains("www.velkomfood.ru"), domainAddString);
     }
     
     @Test
     public void testAllowDomainDel() {
-        throw new IllegalComponentStateException("18.06.2019 (15:36)");
+        SshActs sshActs = new SshActs();
+        String allowDomainDelString = sshActs.allowDomainDel();
+        Assert.assertFalse(allowDomainDelString.contains("www.velkomfood.ru"));
     }
     
     @Test
     public void testWhatSrvNeed() {
-        throw new IllegalComponentStateException("18.06.2019 (15:36)");
+        SshActs sshActs = new SshActs();
+        String srvNeed = sshActs.whatSrvNeed();
+        Assert.assertEquals(srvNeed, "192.168.13.42");
     }
 }
