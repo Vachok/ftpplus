@@ -86,7 +86,7 @@ public class MatrixCtrTest {
             assertTrue(showResultsStr.equals(ConstantsFor.BEANNAME_MATRIX));
             assertTrue(response.getStatus() == 200);
             assertTrue(showResultsStr.equals("matrix"));
-            assertTrue(model.asMap().get("workPos").toString().equals("whois: "));
+            assertTrue(model.asMap().get("workPos").toString().equals("whois: ya.ru"));
         }
         catch (IOException e) {
             assertNull(e, e.getMessage());
