@@ -5,10 +5,10 @@ package ru.vachok.networker.sysinfo;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
-import java.awt.*;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -16,30 +16,20 @@ import java.nio.file.attribute.BasicFileAttributes;
 
 /**
  @since 15.06.2019 (14:00) */
-public class VersionInfoTest {
-    
-    
-    @Test
-    public void testGetPropertiesFrom() {
-        throw new IllegalComponentStateException("18.06.2019 (22:35)");
-    }
-    
-    @Test
-    public void testSetPropertiesFrom() {
-        throw new IllegalComponentStateException("18.06.2019 (22:35)");
-    }
+@SuppressWarnings("ALL") public class VersionInfoTest {
     
     @Test
     public void testSetParams() {
-        String setParamsString = new VersionInfo().setParams();
-    
+        String setParamsString = AppComponents.versionInfo().toString();
         Assert.assertTrue(setParamsString.contains(ConstantsFor.thisPC()), setParamsString);
     }
     
     @Test
     public void getParamsTEST() {
-        VersionInfo infoVers = new VersionInfo();
-        String getParamsStr = infoVers.getParams();
+        VersionInfo infoVers = AppComponents.versionInfo();
+        String versString = infoVers.toString();
+        Assert.assertFalse(versString.contains("rups00"), versString);
+        Assert.assertEquals(AppComponents.getUserPref().get(ConstantsFor.PR_APP_VERSION, ""), infoVers.getAppVersion());
         Path parentPath = Paths.get(".").toAbsolutePath().normalize().getParent();
         String buildGradleString = "NO file Build Gradle";
         try {
@@ -52,7 +42,6 @@ public class VersionInfoTest {
         catch (IOException e) {
             Assert.assertNull(e, e.getMessage() + " \n" + parentPath);
         }
-    
         Assert.assertTrue(buildGradleString.contains(infoVers.getAppVersion()), infoVers.getAppVersion() + "\n" + buildGradleString);
     }
     

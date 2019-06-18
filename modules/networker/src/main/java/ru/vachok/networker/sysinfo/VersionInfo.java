@@ -17,6 +17,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Properties;
+import java.util.prefs.Preferences;
 
 
 /**
@@ -26,9 +27,14 @@ public class VersionInfo {
     
     
     /**
+     {@link AppComponents#getProps()}
+     */
+    private final Properties PROPERTIES;
+    
+    /**
      Билд
      */
-    private String appBuild = "null";
+    private String appBuild = PREF_USER.get(ConstantsFor.PR_APP_BUILD, ALERT_DNE);
     
     /**
      Ссылка на /doc/index.html
@@ -36,33 +42,36 @@ public class VersionInfo {
     private static final String DOC_URL = "<a href=\"/doc/index.html\">DOC</a>";
 
     /**
-     {@link AppComponents#getProps()}
-     */
-    private static final Properties PROPERTIES = AppComponents.getProps();
-    
-    /**
-     {@link ConstantsFor#thisPC()}
-     */
-    private final String thisPCNameStr = ConstantsFor.thisPC();
-
-    private static final MessageToUser messageToUser = new MessageLocal(VersionInfo.class.getSimpleName());
-    /**
      Версия
      */
-    private String appVersion = "No version";
+    private String appVersion = PREF_USER.get(ConstantsFor.PR_APP_VERSION, ALERT_DNE);
     
-    private static final String PR_APP_BUILD = "appBuild";
-    
+    private static final MessageToUser messageToUser = new MessageLocal(VersionInfo.class.getSimpleName());
+
     /**
      Время сборки
      */
-    private String buildTime = getBuildTime();
+    private String buildTime = PREF_USER.get(ConstantsFor.PR_APP_BUILDTIME, ALERT_DNE);
+    
+    private static final String PR_APP_BUILD = "appBuild";
+    
+    private static final Preferences PREF_USER = AppComponents.getUserPref();
     
     private String propertiesFrom = ConstantsFor.DBPREFIX + ConstantsFor.STR_PROPERTIES;
     
     private static final String ALERT_DNE = "Property does not exists";
     
     private static final String REPLACEPATTERN_VERSION = "version = '";
+    
+    public VersionInfo(Properties properties, String thisPC) {
+        PROPERTIES = (Properties) properties.clone();
+        if (thisPC.toLowerCase().contains("home") || thisPC.toLowerCase().contains(ConstantsFor.HOSTNAME_DO213)) {
+            setParams();
+        }
+        else {
+            getParams();
+        }
+    }
     
     public String getPropertiesFrom() {
         return propertiesFrom;
@@ -123,15 +132,14 @@ public class VersionInfo {
         sb.append(", appVersion='").append(appVersion).append('\'');
         sb.append(", buildTime='").append(buildTime).append('\'');
         sb.append(", propertiesFrom='").append(propertiesFrom).append('\'');
-        sb.append(", thisPCNameStr='").append(thisPCNameStr).append('\'');
         sb.append('}');
         return sb.toString();
     }
     
     public String getParams() {
-        this.appVersion = PROPERTIES.getProperty(ConstantsFor.PR_APP_VERSION, ALERT_DNE);
-        this.appBuild = PROPERTIES.getProperty(ConstantsFor.PR_APP_BUILD, ALERT_DNE);
-        this.buildTime = PROPERTIES.getProperty(ConstantsFor.PR_APP_BUILDTIME, ALERT_DNE);
+        PREF_USER.put(ConstantsFor.PR_APP_VERSION, PROPERTIES.getProperty(ConstantsFor.PR_APP_VERSION));
+        PREF_USER.put(ConstantsFor.PR_APP_BUILDTIME, PROPERTIES.getProperty(ConstantsFor.PR_APP_BUILDTIME));
+        PREF_USER.put(ConstantsFor.PR_APP_BUILD, PROPERTIES.getProperty(ConstantsFor.PR_APP_BUILD));
         return this.appVersion + " version from props, " + this.buildTime + " " + this.appBuild + " is GET";
     }
 
@@ -142,9 +150,9 @@ public class VersionInfo {
      */
     private String setterVersionFromFiles(File file) throws IOException {
         DateFormat dateFormat = new SimpleDateFormat("E", Locale.ENGLISH);
-        for (String s : FileSystemWorker.readFileToList(file.getAbsolutePath())) {
-            if (s.toLowerCase().contains(REPLACEPATTERN_VERSION)) {
-                this.appVersion = s.replace(REPLACEPATTERN_VERSION, "").replace("\'", "").trim();
+        for (String stringFromBuildGradle : FileSystemWorker.readFileToList(file.getAbsolutePath())) {
+            if (stringFromBuildGradle.toLowerCase().contains(REPLACEPATTERN_VERSION)) {
+                this.appVersion = stringFromBuildGradle.replace(REPLACEPATTERN_VERSION, "").replace("\'", "").trim();
             }
             this.buildTime = new Date().toString();
         }

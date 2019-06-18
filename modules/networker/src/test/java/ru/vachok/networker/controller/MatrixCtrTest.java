@@ -8,6 +8,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
 import org.testng.annotations.Test;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.MatrixSRV;
@@ -27,7 +28,7 @@ public class MatrixCtrTest {
     
     @Test
     public void testSetCurrentProvider() {
-        VersionInfo versionInfo = new VersionInfo();
+        VersionInfo versionInfo = AppComponents.versionInfo();
         MatrixSRV matrixSRV = new MatrixSRV();
         MatrixCtr matrixCtr = new MatrixCtr(matrixSRV);
         MatrixCtr.setCurrentProvider();

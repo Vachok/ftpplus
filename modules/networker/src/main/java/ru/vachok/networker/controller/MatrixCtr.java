@@ -273,7 +273,7 @@ public class MatrixCtr {
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
         if (getUserPC(request).toLowerCase().contains(ConstantsFor.HOSTNAME_DO213) ||
             getUserPC(request).toLowerCase().contains("0:0:0:0")) {
-            model.addAttribute(ConstantsFor.ATT_VISIT, new VersionInfo().toString());
+            model.addAttribute(ConstantsFor.ATT_VISIT, AppComponents.versionInfo().toString());
         }
     }
     

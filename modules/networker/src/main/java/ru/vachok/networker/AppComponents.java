@@ -154,14 +154,7 @@ public class AppComponents {
     @Bean(ConstantsFor.STR_VERSIONINFO)
     @Scope(ConstantsFor.SINGLETON)
     public static VersionInfo versionInfo() {
-        VersionInfo versionInfo = new VersionInfo();
-        if (ConstantsFor.thisPC().toLowerCase().contains("home") || ConstantsFor.thisPC().toLowerCase().contains(ConstantsFor.HOSTNAME_DO213)) {
-            versionInfo.setParams();
-        }
-        else {
-            versionInfo.getParams();
-        }
-        return versionInfo;
+        return new VersionInfo(getProps(), ConstantsFor.thisPC());
     }
     
     /**
