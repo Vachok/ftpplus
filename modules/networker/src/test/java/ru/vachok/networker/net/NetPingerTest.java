@@ -39,8 +39,8 @@ public class NetPingerTest {
                 }
                 testMap.put(inetAddress, fieldName);
             }
-            catch (IllegalAccessException | UnknownHostException e) {
-                e.printStackTrace();
+            catch (IllegalAccessException | UnknownHostException ignore) {
+                //
             }
         }
         List<String> pingDevList = netPinger.pingDev(testMap);
