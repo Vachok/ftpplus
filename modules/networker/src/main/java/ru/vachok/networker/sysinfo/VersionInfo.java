@@ -137,9 +137,14 @@ public class VersionInfo {
     }
     
     public String getParams() {
-        PREF_USER.put(ConstantsFor.PR_APP_VERSION, PROPERTIES.getProperty(ConstantsFor.PR_APP_VERSION));
+        try {
+            PREF_USER.put(ConstantsFor.PR_APP_VERSION, PROPERTIES.getProperty(ConstantsFor.PR_APP_VERSION));
         PREF_USER.put(ConstantsFor.PR_APP_BUILDTIME, PROPERTIES.getProperty(ConstantsFor.PR_APP_BUILDTIME));
-        PREF_USER.put(ConstantsFor.PR_APP_BUILD, PROPERTIES.getProperty(ConstantsFor.PR_APP_BUILD));
+            PREF_USER.put(ConstantsFor.PR_APP_BUILD, PROPERTIES.getProperty(ConstantsFor.PR_APP_BUILD));
+        }
+        catch (Exception e) {
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".getParams", e));
+        }
         return this.appVersion + " version from props, " + this.buildTime + " " + this.appBuild + " is GET";
     }
 
