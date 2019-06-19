@@ -15,6 +15,7 @@ import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.controller.ErrCtr;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.SpeedChecker;
+import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.CountSizeOfWorkDir;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetPinger;
@@ -112,7 +113,6 @@ public class ServiceInfoCtrl {
             throw new AccessDeniedException("Denied for " + visitor);
         }
     }
-    
     
     @GetMapping("/stop")
     public String closeApp(HttpServletRequest request) throws AccessDeniedException {
@@ -231,6 +231,7 @@ public class ServiceInfoCtrl {
             .append(ConstantsFor.getMemoryInfo()).append("<details><summary> disk usage by program: </summary>").append(filesSizeFuture.get()).append("</details></font><br>")
             .append(threadConfig)
             .toString());
+        model.addAttribute("dipscan", DiapazonScan.getInstance().theInfoToString());
         model.addAttribute("request", prepareRequest(request));
         model.addAttribute("res", resValue);
         model.addAttribute("back", request.getHeader(ConstantsFor.ATT_REFERER.toLowerCase()));

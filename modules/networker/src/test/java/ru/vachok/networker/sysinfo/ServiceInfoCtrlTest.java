@@ -33,7 +33,7 @@ public class ServiceInfoCtrlTest {
         Model model = new ExtendedModelMap();
         ServiceInfoCtrl infoCtrl = new ServiceInfoCtrl(new AppComponents().visitor(request));
         System.out.println(new TForms().fromArray(request.getHeaderNames(), false));
-        String[] modelKeys = {"title", "mail", "ping", "urls", "request", "res", "back", "footer"};
+        String[] modelKeys = {"title", "mail", "ping", "urls", "request", "dipscan", "res", "back", "footer"};
         try {
             String infoMapping = infoCtrl.infoMapping(model, request, response);
             assertTrue(infoMapping.equals("vir"));
@@ -43,6 +43,7 @@ public class ServiceInfoCtrlTest {
             String res = model.asMap().get("res").toString();
             String mail = model.asMap().get("mail").toString();
             String urls = model.asMap().get("urls").toString();
+            String dipScan = model.asMap().get("dipscan").toString();
             assertTrue(res.contains("getNextDayofWeek"), res);
             assertTrue(res.contains("VersionInfo"), res);
             assertTrue(res.contains("AppInfoOnLoad"), res);
@@ -56,29 +57,14 @@ public class ServiceInfoCtrlTest {
             assertTrue(urls.contains("Запущено"));
             assertTrue(urls.contains("Состояние памяти"));
             assertTrue(urls.contains("disk usage by program"));
+            assertTrue(dipScan.contains("DiapazonScan"));
+            assertTrue(dipScan.contains("/showalldev"));
         }
         catch (AccessDeniedException | ExecutionException e) {
             assertNull(e, e.getMessage());
         }
         catch (InterruptedException e) {
             System.err.println("Date comeD = new Date(whenCome.get()) in ru.vachok.networker.sysinfo.ServiceInfoCtrl.modModMaker was interrupted");
-        }
-    }
-    
-    @Test
-    public void testInfoMapping() {
-        Model model = new ExtendedModelMap();
-        HttpServletRequest request = new MockHttpServletRequest();
-        HttpServletResponse response = new MockHttpServletResponse();
-        
-        ServiceInfoCtrl serviceInfoCtrl = new ServiceInfoCtrl();
-        try {
-            String infoMappingString = serviceInfoCtrl.infoMapping(model, request, response);
-            assertEquals(infoMappingString, "vir");
-            assertTrue(model.asMap().size() >= 8);
-        }
-        catch (AccessDeniedException | ExecutionException | InterruptedException e) {
-            assertNull(e, e.getMessage());
         }
     }
     
