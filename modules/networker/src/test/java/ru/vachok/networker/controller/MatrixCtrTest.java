@@ -59,7 +59,10 @@ public class MatrixCtrTest {
         HttpServletResponse response = new MockHttpServletResponse();
         
         matrixSRV.setWorkPos("адми");
-        matrixCtr.getWorkPosition(matrixSRV, model);
+        String matrixCtrWorkPosition = matrixCtr.getWorkPosition(matrixSRV, model);
+        assertEquals(matrixCtrWorkPosition, "ok");
+        assertTrue(model.asMap().size() >= 1);
+        assertTrue(model.asMap().get("ok").toString().contains("адми"));
     }
     
     @Test

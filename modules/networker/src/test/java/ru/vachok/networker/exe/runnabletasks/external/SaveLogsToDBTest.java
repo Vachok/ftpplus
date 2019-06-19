@@ -3,13 +3,8 @@
 package ru.vachok.networker.exe.runnabletasks.external;
 
 
-import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.testng.Assert;
 import org.testng.annotations.Test;
-import ru.vachok.mysqlandprops.DataConnectTo;
-import ru.vachok.mysqlandprops.RegRuMysql;
-import ru.vachok.mysqlandprops.props.DBRegProperties;
-import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.TForms;
 
 
@@ -51,11 +46,6 @@ import ru.vachok.networker.TForms;
     
     @Test
     public void testRun() {
-        DataConnectTo dataConnectTo = new RegRuMysql();
-        MysqlDataSource dataSource = dataConnectTo.getDataSource();
-        InitProperties initProperties = new DBRegProperties("general-pass");
-        dataSource.setUser("u0466446_kudr");
-        dataSource.setPassword(initProperties.getProps().getProperty("realftppass"));
         SaveLogsToDB saveLogsToDB = new SaveLogsToDB();
         saveLogsToDB.run();
     }

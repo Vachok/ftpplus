@@ -33,7 +33,7 @@ public class ServiceInfoCtrlTest {
         Model model = new ExtendedModelMap();
         ServiceInfoCtrl infoCtrl = new ServiceInfoCtrl(new AppComponents().visitor(request));
         System.out.println(new TForms().fromArray(request.getHeaderNames(), false));
-        String[] modelKeys = {"title", "mail", "ping", "urls", "request", "visit", "res", "back", "footer"};
+        String[] modelKeys = {"title", "mail", "ping", "urls", "request", "res", "back", "footer"};
         try {
             String infoMapping = infoCtrl.infoMapping(model, request, response);
             assertTrue(infoMapping.equals("vir"));

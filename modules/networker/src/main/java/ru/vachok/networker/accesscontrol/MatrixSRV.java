@@ -3,7 +3,6 @@
 package ru.vachok.networker.accesscontrol;
 
 
-import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
@@ -114,13 +113,7 @@ public class MatrixSRV {
         final String sql = "SELECT * FROM `matrix` WHERE `Doljnost` LIKE '%адми%'";
         Map<String, String> doljAndAccess = new ConcurrentHashMap<>();
         DataConnectTo dataConnectTo = new RegRuMysql();
-        MysqlDataSource connectToDataSource = dataConnectTo.getDataSource(); //fixme 14.06.2019 (15:06).
-        connectToDataSource.setUser("u0466446_default");
-        connectToDataSource.setPassword("5xN_QlJG");
-        connectToDataSource.setDatabaseName("u0466446_velkom");
-        connectToDataSource.setUseSSL(false);
-        connectToDataSource.setContinueBatchOnError(true);
-        try (Connection c = connectToDataSource.getConnection()) {
+        try (Connection c = dataConnectTo.getDefaultConnection("u0466446_velkom")) {
             try (PreparedStatement statement = c.prepareStatement(sql)) {
                 try (ResultSet r = statement.executeQuery()) {
                     while (r.next()) {
