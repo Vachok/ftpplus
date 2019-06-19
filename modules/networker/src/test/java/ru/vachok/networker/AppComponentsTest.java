@@ -37,7 +37,7 @@ import java.util.prefs.Preferences;
     @Test
     public void testGetProps() {
         Properties appProps = AppComponentsTest.getPropsTESTCOPY();
-        Assert.assertTrue(appProps.size() > 10, "AppProps size = " + appProps.size());
+        Assert.assertTrue(appProps.size() > 5, "AppProps size = " + appProps.size());
         Assert.assertTrue(appProps.getProperty("server.port").equals("8880"));
         Assert.assertTrue(appProps.getProperty("application.name").equals("ru.vachok.networker-"));
     }
