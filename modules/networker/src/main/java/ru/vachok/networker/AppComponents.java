@@ -180,11 +180,7 @@ public class AppComponents {
             System.out.println("constantsForProps.delete() = " + constantsForProps.delete());
             propertiesToUpdate.store(new FileOutputStream(ConstantsFor.PROPS_FILE_JAVA_ID), getClass().getSimpleName() + ".updateProps");
         }
-        InitProperties initProperties = new DBRegProperties(ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName());
-        boolean isDel = initProperties.delProps();
-        boolean isSet = initProperties.setProps(propertiesToUpdate);
-        System.out.println("Props from DB DEL = " + isDel + "\nProps in DB update = " + isSet);
-        return isDel & isSet;
+        return new File(ConstantsFor.class.getSimpleName() + ConstantsFor.FILEEXT_PROPERTIES).lastModified() + TimeUnit.MINUTES.toMillis(1) > System.currentTimeMillis();
     }
     
     @SuppressWarnings("AssignmentOrReturnOfFieldWithMutableType") public static Properties getProps() {
@@ -217,7 +213,7 @@ public class AppComponents {
     }
     
     public static String diapazonedScanInfo() {
-        return DiapazonScan.getInstance().theInfoToString();
+        return DiapazonScan.getInstance().toString();
     }
     
     public static Logger getLogger(String name) {
@@ -282,10 +278,7 @@ public class AppComponents {
     }
     
     private Properties getAppProps() {
-    
-        MysqlDataSource mysqlDataSource = new DBRegProperties(DB_JAVA_ID).getRegSourceForProperties();
-        mysqlDataSource.setRelaxAutoCommit(true);
-        Callable<Properties> theProphecy = new DBPropsCallable(mysqlDataSource, APP_PR);
+        Callable<Properties> theProphecy = new DBPropsCallable(APP_PR);
         try {
             APP_PR.putAll(theProphecy.call());
         }

@@ -1,6 +1,6 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.controller;
+package ru.vachok.networker.sysinfo;
 
 
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -27,7 +27,7 @@ public class ServiceInfoCtrlTest {
     
     
     @Test
-    public void testInfoMapping() {
+    public void testInfoMappingCOPY() {
         HttpServletRequest request = new MockHttpServletRequest();
         HttpServletResponse response = new MockHttpServletResponse();
         Model model = new ExtendedModelMap();
@@ -61,7 +61,24 @@ public class ServiceInfoCtrlTest {
             assertNull(e, e.getMessage());
         }
         catch (InterruptedException e) {
-            System.err.println("Date comeD = new Date(whenCome.get()) in ru.vachok.networker.controller.ServiceInfoCtrl.modModMaker was interrupted");
+            System.err.println("Date comeD = new Date(whenCome.get()) in ru.vachok.networker.sysinfo.ServiceInfoCtrl.modModMaker was interrupted");
+        }
+    }
+    
+    @Test
+    public void testInfoMapping() {
+        Model model = new ExtendedModelMap();
+        HttpServletRequest request = new MockHttpServletRequest();
+        HttpServletResponse response = new MockHttpServletResponse();
+        
+        ServiceInfoCtrl serviceInfoCtrl = new ServiceInfoCtrl();
+        try {
+            String infoMappingString = serviceInfoCtrl.infoMapping(model, request, response);
+            assertEquals(infoMappingString, "vir");
+            assertTrue(model.asMap().size() >= 8);
+        }
+        catch (AccessDeniedException | ExecutionException | InterruptedException e) {
+            assertNull(e, e.getMessage());
         }
     }
     

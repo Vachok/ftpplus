@@ -8,7 +8,6 @@ import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.controller.ServiceInfoCtrl;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.ExecScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -16,6 +15,7 @@ import ru.vachok.networker.net.NetScanFileWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.net.enums.SwitchesWiFi;
 import ru.vachok.networker.services.MessageLocal;
+import ru.vachok.networker.sysinfo.ServiceInfoCtrl;
 
 import java.io.File;
 import java.io.IOException;
@@ -150,7 +150,7 @@ public class DiapazonScan implements Runnable {
     
     @Override public String toString() {
         final StringBuilder sb = new StringBuilder("DiapazonScan{");
-        sb.append(theInfoToString()).append("<p>").append(new AppComponents().scanOnline().toString());
+        sb.append(theInfoToString()).append("<p>").append(new AppComponents().scanOnline());
         sb.append('}');
         return sb.toString();
     }

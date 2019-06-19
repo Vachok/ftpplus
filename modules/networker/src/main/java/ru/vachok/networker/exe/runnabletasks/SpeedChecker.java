@@ -3,13 +3,13 @@
 package ru.vachok.networker.exe.runnabletasks;
 
 
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ui.Model;
-import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.services.MessageLocal;
+import ru.vachok.networker.sysinfo.ServiceInfoCtrl;
 import ru.vachok.networker.systray.actions.ActionOnAppStart;
 
 import javax.servlet.http.HttpServletRequest;
@@ -33,7 +33,7 @@ import static java.time.DayOfWeek.SUNDAY;
 /**
  Обновление инфо о скорости и дороге.
  
- @see ru.vachok.networker.controller.ServiceInfoCtrl#infoMapping(Model, HttpServletRequest, HttpServletResponse)
+ @see ServiceInfoCtrl#infoMapping(Model, HttpServletRequest, HttpServletResponse)
  @see ActionOnAppStart#actionPerformed(ActionEvent)
  @since 22.08.2018 (9:36) */
 public class SpeedChecker implements Callable<Long>, Runnable {
@@ -42,7 +42,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
     /**
      Логер. {@link LoggerFactory}
      */
-    private static final MessageToUser LOGGER = new MessageLocal(SpeedChecker.class.getSimpleName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(SpeedChecker.class.getSimpleName());
     
     private final Properties APP_PR = AppComponents.getProps();
     
@@ -112,7 +112,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
     /**
      Время прихода на работу.
      <p>
-     Для рассчёта в {@link ru.vachok.networker.controller.ServiceInfoCtrl}.
+     Для рассчёта в {@link ServiceInfoCtrl}.
      <p>
      this.{@link #rtLong} = таймстэм, полученый этим методом из БД.
      <b>{@link SQLException}:</b><br>

@@ -1,9 +1,10 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.controller;
+package ru.vachok.networker.sysinfo;
 
 
 import org.springframework.context.annotation.Scope;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,6 +12,7 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.*;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.controller.ErrCtr;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.SpeedChecker;
 import ru.vachok.networker.fileworks.CountSizeOfWorkDir;
@@ -87,11 +89,10 @@ public class ServiceInfoCtrl {
     @GetMapping("/serviceinfo")
     public String infoMapping(Model model, HttpServletRequest request, HttpServletResponse response) throws AccessDeniedException, ExecutionException, InterruptedException {
         NetPinger pinger = netPinger();
-        System.out.println(pinger.toString());
+        System.out.println(pinger);
         this.authReq = Stream.of("0:0:0:0", "127.0.0.1", "10.10.111", "10.200.213.85", "172.16.20", "10.200.214.80", "192.168.13.143")
             .anyMatch(sP->request.getRemoteAddr().contains(sP));
         visitor = new AppComponents().visitor(request);
-        threadConfig.execByThreadConfig(new SpeedChecker());
         if (authReq) {
             modModMaker(model, request, visitor);
             response.addHeader(ConstantsFor.HEAD_REFRESH, "90");
@@ -197,11 +198,13 @@ public class ServiceInfoCtrl {
     private void modModMaker(Model model, HttpServletRequest request, Visitor visitorParam) throws ExecutionException, InterruptedException {
         this.visitor = ConstantsFor.getVis(request);
         this.visitor = visitorParam;
+        final ThreadPoolTaskExecutor taskExecutor = threadConfig.getTaskExecutor();
         
         Callable<String> sizeOfDir = new CountSizeOfWorkDir("sizeofdir");
         Callable<Long> callWhenCome = new SpeedChecker();
-        Future<Long> whenCome = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(callWhenCome);
-        Future<String> filesSizeFuture = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(sizeOfDir);
+        Future<Long> whenCome = taskExecutor.submit(callWhenCome);
+        Future<String> filesSizeFuture = taskExecutor.submit(sizeOfDir);
+        
         Date comeD = new Date(whenCome.get());
         String resValue = new StringBuilder()
             .append(MyCalen.toStringS()).append("<br><br>")
@@ -229,10 +232,9 @@ public class ServiceInfoCtrl {
             .append("</font><br>")
             .append(AppComponents.diapazonedScanInfo())
             .append("<br>")
-            .append(AppComponents.threadConfig())
+            .append(threadConfig)
             .toString());
         model.addAttribute("request", prepareRequest(request));
-        model.addAttribute(ConstantsFor.ATT_VISIT, visitorParam.toString());
         model.addAttribute("res", resValue);
         model.addAttribute("back", request.getHeader(ConstantsFor.ATT_REFERER.toLowerCase()));
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<br><a href=\"/nohup\">" + getJREVers() + "</a>");
