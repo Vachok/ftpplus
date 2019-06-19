@@ -229,9 +229,6 @@ public class ServiceInfoCtrl {
                 (float) (ConstantsFor.getAtomicTime() - ConstantsFor.START_STAMP) / TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY))).append(" delays)</i>")
             .append(".<br> Состояние памяти (МБ): <font color=\"#82caff\">")
             .append(ConstantsFor.getMemoryInfo()).append("<details><summary> disk usage by program: </summary>").append(filesSizeFuture.get()).append("</details><br>")
-            .append("</font><br>")
-            .append(AppComponents.diapazonedScanInfo())
-            .append("<br>")
             .append(threadConfig)
             .toString());
         model.addAttribute("request", prepareRequest(request));

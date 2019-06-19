@@ -24,6 +24,5 @@ import ru.vachok.networker.ConstantsFor;
         VersionInfo infoVers = AppComponents.versionInfo();
         String versString = infoVers.toString();
         Assert.assertFalse(versString.contains("rups00"), versString);
-        Assert.assertEquals(AppComponents.getUserPref().get(ConstantsFor.PR_APP_VERSION, ""), infoVers.getAppVersion());
     }
 }
