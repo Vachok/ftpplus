@@ -108,7 +108,7 @@ public class InteretStats implements Runnable, DataBaseRegSQL {
                                 if (sql.contains("SELECT * FROM `inetstats` WHERE `ip` LIKE")) {
                                     printStream.print(new java.util.Date(Long.parseLong(r.getString("Date"))));
                                     printStream.print(",");
-                                    printStream.print(r.getString(ConstantsFor.DBFIELB_RESPONSE));
+                                    printStream.print(r.getString(ConstantsFor.DBFIELD_RESPONSE));
                                     printStream.print(",");
                                     printStream.print(r.getString("bytes"));
                                     printStream.print(",");

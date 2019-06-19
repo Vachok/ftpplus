@@ -48,7 +48,7 @@ import java.util.concurrent.TimeUnit;
 public enum ConstantsFor {
     ;
     
-    public static String FILE_PREFIX_SEARCH_ = "search_";
+    public static final String FILE_PREFIX_SEARCH_ = "search_";
     
     public static final String METHNAME_STATIC_INITIALIZER = "static initializer";
     
@@ -404,7 +404,7 @@ public enum ConstantsFor {
     
     public static final String STR_BYTES = " bytes";
     
-    public static final String DBFIELB_RESPONSE = "response";
+    public static final String DBFIELD_RESPONSE = "response";
     
     public static final String DBFIELD_METHOD = "method";
     
@@ -469,6 +469,12 @@ public enum ConstantsFor {
     
     public static final String FILENAME_ONSCAN = ScanOnline.class.getSimpleName() + FILEEXT_ONLIST;
     
+    public static final String RETURN_ERROR = "error";
+    
+    public static final String FILENAME_BUILDGRADLE = "build.gradle";
+    
+    public static final String SQL_SELECTINETSTATS = "SELECT DISTINCT `ip` FROM `inetstats`";
+    
     static final String STR_FINISH = " is finish";
     
     private static final String[] STRINGS_TODELONSTART = {"visit_", ".tmp", ".log", ".tv"};
@@ -485,12 +491,6 @@ public enum ConstantsFor {
      */
     private static final ConcurrentMap<Integer, MailRule> MAIL_RULES = new ConcurrentHashMap<>();
     
-    public static final String RETURN_ERROR = "error";
-    
-    public static final String FILENAME_BUILDGRADLE = "build.gradle";
-    
-    public static final String SQL_SELECTINETSTATS = "SELECT DISTINCT `ip` FROM `inetstats`";
-    
     /**
      @return {@link #MAIL_RULES}
      */
@@ -505,7 +505,7 @@ public enum ConstantsFor {
      */
     public static boolean isPingOK() {
         try {
-            return InetAddress.getByName(PfListsSrv.getDefaultConnectSrv()).isReachable((int) (ConstantsFor.DELAY * 5));
+            return InetAddress.getByName(PfListsSrv.getDefaultConnectSrv()).isReachable((int) (DELAY * 5));
         }
         catch (IOException e) {
             LoggerFactory.getLogger(ConstantsFor.class.getSimpleName()).error(e.getMessage(), e);
