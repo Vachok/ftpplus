@@ -4,9 +4,9 @@ package ru.vachok.ostpst.fileworks;
 
 
 import com.pff.*;
-import ru.vachok.messenger.MessageCons;
-import ru.vachok.messenger.MessageToUser;
 import ru.vachok.ostpst.ConstantsOst;
+import ru.vachok.ostpst.api.MessageToUser;
+import ru.vachok.ostpst.api.MessengerOST;
 import ru.vachok.ostpst.utils.CharsetEncoding;
 import ru.vachok.ostpst.utils.FileSystemWorkerOST;
 
@@ -31,7 +31,7 @@ class ParserContacts implements Callable<String> {
     
     public static final String METHNAME_FOLDERSREAD = ".foldersRead";
     
-    private final MessageToUser messageToUser = new MessageCons(getClass().getSimpleName());
+    private final MessageToUser messageToUser = new MessengerOST(getClass().getSimpleName());
     
     private String fileName;
     

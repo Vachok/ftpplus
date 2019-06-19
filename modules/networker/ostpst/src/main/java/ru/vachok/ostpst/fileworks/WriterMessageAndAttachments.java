@@ -6,9 +6,9 @@ package ru.vachok.ostpst.fileworks;
 import com.pff.PSTAttachment;
 import com.pff.PSTException;
 import com.pff.PSTMessage;
-import ru.vachok.messenger.MessageCons;
-import ru.vachok.messenger.MessageToUser;
 import ru.vachok.ostpst.ConstantsOst;
+import ru.vachok.ostpst.api.MessageToUser;
+import ru.vachok.ostpst.api.MessengerOST;
 import ru.vachok.ostpst.utils.TFormsOST;
 
 import java.io.*;
@@ -22,7 +22,15 @@ import java.nio.file.Paths;
 class WriterMessageAndAttachments {
     
     
-    private MessageToUser messageToUser = new MessageCons(getClass().getSimpleName());
+    private MessageToUser messageToUser = new MessengerOST(getClass().getSimpleName());
+    
+    public MessageToUser getMessageToUser() {
+        return messageToUser;
+    }
+    
+    public void setMessageToUser(MessageToUser messageToUser) {
+        this.messageToUser = messageToUser;
+    }
     
     String saveAttachment(String path, PSTMessage message, StringBuilder stringBuilder) {
         Path dirS = getDirectories(path, message.getDescriptorNodeId());

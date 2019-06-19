@@ -4,9 +4,9 @@ package ru.vachok.ostpst.fileworks;
 
 
 import com.pff.PSTRAFileContent;
-import ru.vachok.messenger.MessageCons;
-import ru.vachok.messenger.MessageToUser;
 import ru.vachok.ostpst.ConstantsOst;
+import ru.vachok.ostpst.api.MessageToUser;
+import ru.vachok.ostpst.api.MessengerOST;
 import ru.vachok.ostpst.utils.CharsetEncoding;
 import ru.vachok.ostpst.utils.TFormsOST;
 
@@ -36,7 +36,7 @@ public class RNDPSTFileCopy implements Serializable {
     
     private long lastWritePosition;
     
-    private MessageToUser messageToUser = new MessageCons(getClass().getSimpleName());
+    private MessageToUser messageToUser = new MessengerOST(getClass().getSimpleName());
     
     private ThreadMXBean threadMXBean;
     

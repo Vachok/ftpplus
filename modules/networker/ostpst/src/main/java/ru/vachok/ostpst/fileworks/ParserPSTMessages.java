@@ -4,9 +4,9 @@ package ru.vachok.ostpst.fileworks;
 
 
 import com.pff.*;
-import ru.vachok.messenger.MessageCons;
-import ru.vachok.messenger.MessageToUser;
 import ru.vachok.ostpst.ConstantsOst;
+import ru.vachok.ostpst.api.MessageToUser;
+import ru.vachok.ostpst.api.MessengerOST;
 import ru.vachok.ostpst.usermenu.MenuConsoleLocal;
 
 import java.io.FileOutputStream;
@@ -29,7 +29,15 @@ import java.util.concurrent.ConcurrentHashMap;
 class ParserPSTMessages extends ParserFolders {
     
     
-    private MessageToUser messageToUser = new MessageCons(getClass().getSimpleName());
+    private MessageToUser messageToUser = new MessengerOST(getClass().getSimpleName());
+    
+    public MessageToUser getMessageToUser() {
+        return messageToUser;
+    }
+    
+    public void setMessageToUser(MessageToUser messageToUser) {
+        this.messageToUser = messageToUser;
+    }
     
     private MemoryMXBean mxBean = ManagementFactory.getMemoryMXBean();
     

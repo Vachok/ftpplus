@@ -3,10 +3,11 @@
 package ru.vachok.ostpst.fileworks.nopst;
 
 
-import com.mysql.jdbc.AssertionFailedException;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import ru.vachok.ostpst.ConstantsOst;
+import ru.vachok.ostpst.api.FileProperties;
+import ru.vachok.ostpst.api.InitProperties;
 import ru.vachok.ostpst.fileworks.FileWorker;
 import ru.vachok.ostpst.utils.FileSystemWorkerOST;
 import ru.vachok.ostpst.utils.TFormsOST;
@@ -28,8 +29,9 @@ public class UploaderTest {
     @Test(enabled = false)
     public void testUpload() {
         Queue<String> fileNames = getFileNames();
+        InitProperties initProperties = new FileProperties("ostpst.properties");
         while (!fileNames.isEmpty()) {
-            String toAppend = parseQueue(fileNames);
+            String toAppend = parseQueue(fileNames, initProperties);
             FileSystemWorkerOST.appendStringToFile("dn.list", toAppend);
             if (toAppend.equalsIgnoreCase("copy completed")) {
                 throw new UnsupportedOperationException(FileSystemWorkerOST.readFileToString("dn.list"));
@@ -83,11 +85,11 @@ public class UploaderTest {
         }
         catch (IOException e) {
             Assert.assertNull(e, e.getMessage());
-            throw new AssertionFailedException(e);
+            throw new UnsupportedOperationException(e.getMessage());
         }
     }
     
-    private String parseQueue(Queue<String> fileNames) throws InvalidPathException, IndexOutOfBoundsException {
+    private String parseQueue(Queue<String> fileNames, InitProperties initProperties) throws InvalidPathException, IndexOutOfBoundsException {
         String x = fileNames.poll();
         if (x != null && x.equalsIgnoreCase("Copy completed")) {
             return FileSystemWorkerOST.readFileToString("dn.list");
@@ -104,7 +106,7 @@ public class UploaderTest {
         }
         FileWorker fileWorker = null;
         try {
-            fileWorker = new Uploader(copyPaths[0], copyPaths[1]);
+            fileWorker = new Uploader(copyPaths[0], copyPaths[1], initProperties);
         }
         catch (FileNotFoundException e) {
             Assert.assertNull(e, e.getMessage() + " " + getClass().getSimpleName());

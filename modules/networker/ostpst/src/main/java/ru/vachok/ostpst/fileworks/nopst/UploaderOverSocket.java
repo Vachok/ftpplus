@@ -3,7 +3,7 @@
 package ru.vachok.ostpst.fileworks.nopst;
 
 
-import ru.vachok.mysqlandprops.props.DBRegProperties;
+import ru.vachok.ostpst.api.InitProperties;
 import ru.vachok.ostpst.fileworks.FileWorker;
 import ru.vachok.ostpst.utils.TFormsOST;
 
@@ -34,9 +34,12 @@ public class UploaderOverSocket implements FileWorker {
     
     private Socket socket;
     
-    public UploaderOverSocket() {
+    private InitProperties initProperties;
+    
+    public UploaderOverSocket(InitProperties initProperties) {
+        this.initProperties = initProperties;
         this.writeFileName = "dn.soc";
-        initMethod(writeFileName);
+        initMethod(writeFileName, initProperties);
     }
     
     @Override public String chkFile() {
@@ -49,9 +52,9 @@ public class UploaderOverSocket implements FileWorker {
             PREFERENCES_USER_ROOT.clear();
         }
         catch (BackingStoreException e) {
-            new DBRegProperties("ostpst-" + getClass().getSimpleName()).delProps();
+            initProperties.delProps();
         }
-        initMethod(writeFileName);
+        initMethod(writeFileName, initProperties);
         return "Clearing previous copy attempt...";
     }
     

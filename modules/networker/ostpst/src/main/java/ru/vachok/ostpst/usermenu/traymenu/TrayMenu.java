@@ -1,8 +1,8 @@
 package ru.vachok.ostpst.usermenu.traymenu;
 
 
-import ru.vachok.messenger.MessageSwing;
-import ru.vachok.messenger.MessageToUser;
+import ru.vachok.ostpst.api.MessageToUser;
+import ru.vachok.ostpst.api.MessengerOST;
 import ru.vachok.ostpst.usermenu.MenuAWT;
 import ru.vachok.ostpst.usermenu.UserMenu;
 
@@ -19,12 +19,18 @@ public class TrayMenu implements UserMenu, Runnable {
     
     private String fileName;
     
-    private MessageToUser messageToUser = new MessageSwing();
+    private MessageToUser messageToUser;
+    
+    public TrayMenu(String fileName, MessageToUser messageToUser) {
+        this.fileName = fileName;
+        this.messageToUser = messageToUser;
+    }
     
     private TrayIcon trayIcon;
     
     public TrayMenu(String fileName) {
         this.fileName = fileName;
+        this.messageToUser = new MessengerOST(getClass().getSimpleName());
         initDefault();
     }
     
