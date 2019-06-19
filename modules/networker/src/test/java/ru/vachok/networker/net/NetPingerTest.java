@@ -44,7 +44,7 @@ public class NetPingerTest {
             }
         }
         List<String> pingDevList = netPinger.pingDev(testMap);
-        throw new IllegalComponentStateException("19.06.2019 (17:22)");
+        Assert.assertTrue(pingDevList.size() == 13);
     }
     
     @Test
