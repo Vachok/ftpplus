@@ -49,7 +49,9 @@ public class NetPingerTest {
     
     @Test
     public void testIsReach() {
-        throw new IllegalComponentStateException("19.06.2019 (16:31)");
+        NetPinger netPinger = new NetPinger();
+        boolean pingerReach = netPinger.isReach("10.200.200.1");
+        Assert.assertTrue(pingerReach);
     }
     
     @Test
