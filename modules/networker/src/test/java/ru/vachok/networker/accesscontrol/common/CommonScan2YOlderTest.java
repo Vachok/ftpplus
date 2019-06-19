@@ -16,8 +16,8 @@ public class CommonScan2YOlderTest {
     public void testCall() {
         CommonScan2YOlder commonScan2YOlder = new CommonScan2YOlder("file.name");
         String callY2K = commonScan2YOlder.call();
-        if (!(new File("files_2.5_years_old_25mb.csv").exists())) {
-            Assert.assertFalse(callY2K.isEmpty(), callY2K);
+        if (new File("files_2.5_years_old_25mb.csv").exists()) {
+            Assert.assertTrue(callY2K.isEmpty(), callY2K);
         }
         else {
             Assert.assertEquals(callY2K, "files_2.5_years_old_25mb.csv (Не удается найти указанный файл)");
