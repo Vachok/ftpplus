@@ -475,6 +475,15 @@ public enum ConstantsFor {
     
     public static final String SQL_SELECTINETSTATS = "SELECT DISTINCT `ip` FROM `inetstats`";
     
+    /**
+     Название настройки.
+     <p>
+     pingsleep. Сколько делать перерыв в пингах. В <b>миллисекундах</b>.
+     
+     @see AppComponents#getProps()
+     */
+    public static final String PR_PINGSLEEP = "pingsleep";
+    
     static final String STR_FINISH = " is finish";
     
     private static final String[] STRINGS_TODELONSTART = {"visit_", ".tmp", ".log", ".tv"};

@@ -66,9 +66,9 @@ public class NetPinger implements Runnable, Pinger {
      <p>
      Берётся из {@link AppComponents#getProps()}. В <b>миллисекундах</b>. По-умолчанию 20 мсек.
  
-     @see ConstantsNet#PROP_PINGSLEEP
+     @see ConstantsFor#PR_PINGSLEEP
      */
-    private long pingSleepMsec = Long.parseLong(AppComponents.getProps().getProperty(ConstantsNet.PROP_PINGSLEEP, "20"));
+    private long pingSleepMsec = Long.parseLong(AppComponents.getProps().getProperty(ConstantsFor.PR_PINGSLEEP, "20"));
     
     /**
      {@link MessageLocal}. Вывод сообщений
@@ -214,7 +214,7 @@ public class NetPinger implements Runnable, Pinger {
      */
     private void pingSW() {
         Properties properties = AppComponents.getProps();
-        this.pingSleepMsec = Long.parseLong(properties.getProperty(ConstantsNet.PROP_PINGSLEEP, String.valueOf(pingSleepMsec)));
+        this.pingSleepMsec = Long.parseLong(properties.getProperty(ConstantsFor.PR_PINGSLEEP, String.valueOf(pingSleepMsec)));
         for (InetAddress inetAddress : ipAsList) {
             try {
                 resList.add(inetAddress + " is " + inetAddress.isReachable((int) pingSleepMsec));

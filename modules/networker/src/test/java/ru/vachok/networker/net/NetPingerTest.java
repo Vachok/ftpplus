@@ -5,10 +5,16 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 import org.testng.Assert;
 import org.testng.annotations.Test;
+import ru.vachok.networker.net.enums.OtherKnownDevices;
 
 import java.awt.*;
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -18,7 +24,27 @@ public class NetPingerTest {
     
     @Test
     public void testPingDev() {
-        throw new IllegalComponentStateException("19.06.2019 (16:31)");
+        NetPinger netPinger = new NetPinger();
+        Map<InetAddress, String> testMap = new HashMap<>();
+        for (Field field : OtherKnownDevices.class.getFields()) {
+            String fieldName = field.getName();
+            try {
+                InetAddress inetAddress = InetAddress.getLoopbackAddress();
+                String fieldVal = field.get(field).toString();
+                if (fieldName.contains("IP")) {
+                    inetAddress = InetAddress.getByAddress(InetAddress.getByName(fieldVal).getAddress());
+                }
+                else {
+                    inetAddress = InetAddress.getByName(fieldVal);
+                }
+                testMap.put(inetAddress, fieldName);
+            }
+            catch (IllegalAccessException | UnknownHostException e) {
+                e.printStackTrace();
+            }
+        }
+        List<String> pingDevList = netPinger.pingDev(testMap);
+        throw new IllegalComponentStateException("19.06.2019 (17:22)");
     }
     
     @Test
