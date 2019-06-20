@@ -50,7 +50,7 @@ import static org.testng.Assert.assertFalse;
             Assert.assertTrue(sql.contains(ConstantsFor.SQL_SELECTINETSTATS), sql);
         }
         else {
-            Assert.assertTrue(interetStats.toString().contains("10."));
+            Assert.assertTrue(interetStats.toString().contains("inetstatsIP.csv"), interetStats.toString());
         }
     }
     

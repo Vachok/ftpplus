@@ -95,7 +95,7 @@ import java.util.prefs.Preferences;
         }
     }
     
-    @Test
+    @Test(enabled = false)
     public void testUpdateProps() {
         InitProperties initProperties = new FileProps(ConstantsFor.class.getSimpleName());
         Properties props = initProperties.getProps();
