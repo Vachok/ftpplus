@@ -4,7 +4,6 @@ package ru.vachok.networker.exe;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import java.awt.*;
 import java.io.File;
 import java.util.concurrent.TimeUnit;
 
@@ -40,7 +39,10 @@ public class ThreadConfigTest {
      */
     @Test
     public void testThrNameSet() {
-        throw new IllegalComponentStateException("20.06.2019 (14:54)");
+        ThreadConfig threadConfig = ThreadConfig.getI();
+        String thrNewName = threadConfig.thrNameSet("test");
+        Assert.assertTrue(thrNewName.contains("test"));
+        Assert.assertTrue(Thread.currentThread().getName().contains("test"));
     }
     
     /**

@@ -132,7 +132,7 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
         return TASK_EXECUTOR.getThreadPoolExecutor().isShutdown() & TASK_SCHEDULER.getScheduledThreadPoolExecutor().isShutdown() & threadGroupDestroyed;
     }
     
-    public void thrNameSet(String className) {
+    public String thrNameSet(String className) {
         float localUptime = (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN;
         String delaysCount = String.format("%.01f", (localUptime / ConstantsFor.DELAY));
         String upStr = String.format("%.01f", localUptime);
@@ -145,6 +145,7 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
         }
         String thrName = className + ";" + upStr + ";" + delaysCount;
         Thread.currentThread().setName(thrName);
+        return thrName;
     }
     
     public boolean execByThreadConfig(Runnable runnable) {
