@@ -1,6 +1,6 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.services;
+package ru.vachok.networker.ad;
 
 
 import org.slf4j.Logger;
@@ -10,12 +10,15 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.services.MessageLocal;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.util.List;
 import java.util.*;
 import java.util.function.BiConsumer;
 
@@ -77,16 +80,16 @@ public class PhotoConverterSRV {
     }
     
     private void convertFoto() throws NullPointerException, IOException {
-        String adPhotosPath = properties.getProperty("adphotopath", "\\\\srv-mail3.eatmeat.ru\\c$\\newmailboxes\\fotoraw\\");
+        String adPhotosPath = properties.getProperty(ConstantsFor.PR_ADPHOTOPATH, "\\\\srv-mail3.eatmeat.ru\\c$\\newmailboxes\\fotoraw\\");
         Map<String, BufferedImage> filesList = new HashMap<>();
         File[] fotoFiles = new File(adPhotosPath).listFiles();
         BiConsumer<String, BufferedImage> imageBiConsumer = this::imgWorker;
-        if ((fotoFiles != null & fotoFiles.length > 0) && !adPhotosPath.isEmpty()) {
-            for (File f : fotoFiles) {
+        if ((!(fotoFiles == null) & Objects.requireNonNull(fotoFiles).length > 0) && !adPhotosPath.isEmpty()) {
+            for (File rawPhotoFile : fotoFiles) {
                 for (String format : ImageIO.getWriterFormatNames()) {
-                    String key = f.getName();
+                    String key = rawPhotoFile.getName();
                     if (key.contains(format)) {
-                        filesList.put(key.replaceFirst("\\Q.\\E" + format, ""), ImageIO.read(f));
+                        filesList.put(key.replaceFirst("\\Q.\\E" + format, ""), ImageIO.read(rawPhotoFile));
                     }
                 }
             }
@@ -102,7 +105,8 @@ public class PhotoConverterSRV {
         }
     }
     
-    private BufferedImage resizedImage(BufferedImage bufferedImage) {
+    @SuppressWarnings("MagicNumber")
+    private BufferedImage scaledImage(BufferedImage bufferedImage) {
         int newW = 113;
         int newH = 154;
     
@@ -117,11 +121,11 @@ public class PhotoConverterSRV {
     }
     
     private void imgWorker(String rawFileName, BufferedImage rawImage) {
-        String pathName = properties.getOrDefault("pathName", "\\\\srv-mail3.eatmeat.ru\\c$\\newmailboxes\\foto\\").toString();
+        @SuppressWarnings("SpellCheckingInspection") String pathName = properties.getOrDefault("pathName", "\\\\srv-mail3.eatmeat.ru\\c$\\newmailboxes\\foto\\").toString();
         File outFile = new File(pathName + rawFileName + ".jpg");
         String fName = "jpg";
         try {
-            boolean write = ImageIO.write(resizedImage(rawImage), fName, outFile);
+            boolean write = ImageIO.write(scaledImage(rawImage), fName, outFile);
             if (write) {
                 String msg = outFile.getAbsolutePath() + ConstantsFor.STR_WRITTEN;
                 messageToUser.info(msg);
@@ -136,5 +140,27 @@ public class PhotoConverterSRV {
         catch (Exception e) {
             messageToUser.error(FileSystemWorker.error(outFile.getName().replace(".jpg", ".err"), e));
         }
+        delRawFile(outFile);
+    }
+    
+    private boolean delRawFile(File outFile) {
+        String rawFilesDirName = properties.getProperty(ConstantsFor.PR_ADPHOTOPATH, "\\\\srv-mail3.eatmeat.ru\\c$\\newmailboxes\\fotoraw\\");
+        File[] rawFilesArray = new File(rawFilesDirName).listFiles();
+        List<File> filesList = Arrays.asList(Objects.requireNonNull(rawFilesArray));
+        boolean retBool = false;
+        if (outFile.exists() & outFile.isFile()) {
+            filesList.forEach(file->{
+                String outFileName = outFile.getName().split("\\Q.\\E")[0];
+                if (file.getName().contains(outFileName)) {
+                    try {
+                        Files.deleteIfExists(file.toPath());
+                    }
+                    catch (IOException e) {
+                        file.delete();
+                    }
+                }
+            });
+        }
+        return new File(rawFilesDirName).length() == 0;
     }
 }
