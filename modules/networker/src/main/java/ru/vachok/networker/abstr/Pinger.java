@@ -36,7 +36,7 @@ public interface Pinger {
         try {
             pingSleep = Long.parseLong(properties.getProperty(ConstantsFor.PR_PINGSLEEP));
         } catch (Exception e) {
-            System.err.println(e.getMessage() + " in default method \"pingDev()\" in interface " + Pinger.class.getSimpleName());
+            pingSleep = ConstantsFor.TIMEOUT_650;
         }
         List<String> resList = new ArrayList<>();
         long finalPingSleep = pingSleep;

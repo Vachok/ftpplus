@@ -5,6 +5,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 import org.testng.Assert;
 import org.testng.annotations.Test;
+import ru.vachok.networker.abstr.Pinger;
 import ru.vachok.networker.net.enums.OtherKnownDevices;
 
 import java.awt.*;
@@ -22,6 +23,9 @@ import java.util.Map;
 public class NetPingerTest {
     
     
+    /**
+     @see Pinger#pingDev(java.util.Map)
+     */
     @Test
     public void testPingDev() {
         NetPinger netPinger = new NetPinger();
