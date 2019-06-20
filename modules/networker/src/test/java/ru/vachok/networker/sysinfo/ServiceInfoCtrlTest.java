@@ -3,6 +3,7 @@
 package ru.vachok.networker.sysinfo;
 
 
+import org.springframework.core.task.TaskRejectedException;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.ui.ExtendedModelMap;
@@ -63,8 +64,10 @@ public class ServiceInfoCtrlTest {
         catch (AccessDeniedException | ExecutionException e) {
             assertNull(e, e.getMessage());
         }
-        catch (InterruptedException e) {
+        catch (InterruptedException | TaskRejectedException e) {
             System.err.println("Date comeD = new Date(whenCome.get()) in ru.vachok.networker.sysinfo.ServiceInfoCtrl.modModMaker was interrupted");
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
         }
     }
     

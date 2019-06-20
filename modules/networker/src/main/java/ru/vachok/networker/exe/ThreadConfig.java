@@ -1,4 +1,3 @@
-
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
 package ru.vachok.networker.exe;
@@ -28,6 +27,7 @@ import java.util.concurrent.*;
  Конфигуратор для {@link ThreadPoolTaskExecutor}
  <p>
  
+ @see ru.vachok.networker.exe.ThreadConfigTest
  @since 11.09.2018 (11:41) */
 @SuppressWarnings("MagicNumber")
 @EnableAsync
@@ -110,7 +110,7 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
     /**
      Killer
      */
-    @SuppressWarnings("MethodWithMultipleLoops") public void killAll() {
+    @SuppressWarnings("MethodWithMultipleLoops") public boolean killAll() {
         TASK_SCHEDULER.shutdown();
         final StringBuilder builder = new StringBuilder();
         for (Runnable runnable : TASK_SCHEDULER.getScheduledThreadPoolExecutor().shutdownNow()) {
@@ -121,10 +121,15 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
             builder.append(runnable).append("\n");
         }
         messageToUser.warn(builder.toString());
-        ThreadGroup threadGroup = new ASExec().getSimpleAsyncExecutor().getThreadGroup();
-        if (threadGroup != null) {
+        SimpleAsyncTaskExecutor simpleAsyncExecutor = new ASExec().getSimpleAsyncExecutor();
+        ThreadGroup threadGroup = null;
+        boolean threadGroupDestroyed = true;
+        if (!(simpleAsyncExecutor == null) & !(threadGroup == null)) {
+            threadGroup = simpleAsyncExecutor.getThreadGroup();
             threadGroup.destroy();
+            threadGroupDestroyed = threadGroup.isDestroyed();
         }
+        return TASK_EXECUTOR.getThreadPoolExecutor().isShutdown() & TASK_SCHEDULER.getScheduledThreadPoolExecutor().isShutdown() & threadGroupDestroyed;
     }
     
     public void thrNameSet(String className) {
@@ -145,11 +150,10 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
     public boolean execByThreadConfig(Runnable runnable) {
         this.r = runnable;
         try {
-            boolean isExecByThreadConfig = execByThreadConfig();
-            messageToUser.warn(getClass().getSimpleName(), runnable.toString(), " = " + isExecByThreadConfig);
-            return isExecByThreadConfig;
+            return execByThreadConfig();
         }
         catch (Exception e) {
+            e.printStackTrace();
             TASK_EXECUTOR.initialize();
             TASK_EXECUTOR.execute(r);
             return false;
@@ -176,25 +180,22 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
         }
     }
     
+    /**
+     @return executed or not
+     
+     @see ru.vachok.networker.exe.ThreadConfigTest#testExecByThreadConfig()
+     */
     private boolean execByThreadConfig() {
         SimpleAsyncTaskExecutor simpleAsyncExecutor = new ASExec().getSimpleAsyncExecutor();
-        Thread thread = simpleAsyncExecutor.getThreadFactory().newThread(r);
-    
-        messageToUser.errorAlert(getClass().getSimpleName(), "asyncExecutor is " + null, thread.getName());
-    
-        if (simpleAsyncExecutor != null) {
-            System.out.println(A_EXECUTOR + simpleAsyncExecutor.getClass().getSimpleName());
+        
+        if (!(simpleAsyncExecutor == null)) {
             simpleAsyncExecutor.execute(r);
             return true;
         }
         else {
-            thread.setName("ALONG...");
-            thread.start();
-            messageToUser.error(EXECUTE_AS_THREAD_METH_NAME, "thread.isAlive()", " = " + thread.isAlive());
             return false;
         }
     }
-    
     
     /**
      Асинхронный {@link ThreadPoolTaskExecutor}
@@ -217,7 +218,7 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
                 runnable = r;
                 ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
                 long threadCpuTime = threadMXBean.getCurrentThreadCpuTime();
-                System.out.println(TimeUnit.NANOSECONDS.toMillis(threadCpuTime) + " CPU time in ms");
+                System.out.println(TimeUnit.NANOSECONDS.toMillis(threadCpuTime) + " CPU time in ms of thread " + runnable.getClass().getSimpleName());
                 return runnable;
             });
             return executorServiceAdapter;
@@ -226,14 +227,6 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
         private SimpleAsyncTaskExecutor getSimpleAsyncExecutor() {
             return simpleAsyncExecutor;
         }
-
-// --Commented out by Inspection START (13.06.2019 9:30):
-//        private void setSimpleAsyncExecutor(SimpleAsyncTaskExecutor simpleAsyncExecutor) {
-//            this.simpleAsyncExecutor = simpleAsyncExecutor;
-//        }
-// --Commented out by Inspection STOP (13.06.2019 9:30)
+    
     }
-    
-    
-    
 }
