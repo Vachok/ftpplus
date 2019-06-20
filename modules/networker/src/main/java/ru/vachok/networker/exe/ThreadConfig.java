@@ -84,7 +84,7 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
         TASK_EXECUTOR.setQueueCapacity(1800);
         TASK_EXECUTOR.setWaitForTasksToCompleteOnShutdown(true);
         TASK_EXECUTOR.setAwaitTerminationSeconds(7);
-        TASK_EXECUTOR.setThreadPriority(4);
+        TASK_EXECUTOR.setThreadPriority(5);
         TASK_EXECUTOR.setThreadNamePrefix("EX");
     
         return TASK_EXECUTOR;
@@ -101,7 +101,7 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
         scThreadPoolExecutor.setCorePoolSize(20);
         scThreadPoolExecutor.setMaximumPoolSize(50);
         TASK_SCHEDULER.setThreadNamePrefix("TS");
-        TASK_SCHEDULER.setThreadPriority(4);
+        TASK_SCHEDULER.setThreadPriority(3);
         TASK_SCHEDULER.setWaitForTasksToCompleteOnShutdown(false);
         TASK_SCHEDULER.setDaemon(true);
         return TASK_SCHEDULER;
@@ -214,7 +214,7 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
         public Executor getAsyncExecutor() {
             Executor executorServiceAdapter = new ExecutorServiceAdapter(simpleAsyncExecutor);
             simpleAsyncExecutor.setConcurrencyLimit(50);
-            simpleAsyncExecutor.setThreadPriority(8);
+            simpleAsyncExecutor.setThreadPriority(6);
             simpleAsyncExecutor.setTaskDecorator(runnable->{
                 runnable = r;
                 ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
