@@ -5,6 +5,10 @@ package ru.vachok.networker.ad;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.ConstantsFor;
+
+import java.io.File;
 
 
 /**
@@ -26,5 +30,11 @@ import org.testng.annotations.Test;
         PhotoConverterSRV photoConverterSRV = new PhotoConverterSRV();
         String psCommandsStr = photoConverterSRV.psCommands();
         Assert.assertFalse(psCommandsStr.isEmpty());
+        try {
+            new File(AppComponents.getProps().getProperty(ConstantsFor.PR_ADPHOTOPATH)).listFiles();
+        }
+        catch (NullPointerException e) {
+            Assert.assertNotNull(e);
+        }
     }
 }
