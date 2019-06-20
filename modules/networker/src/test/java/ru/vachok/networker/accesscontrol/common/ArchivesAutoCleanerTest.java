@@ -12,6 +12,7 @@ import org.testng.annotations.Test;
     @Test(enabled = false)
     public void testRun() {
         ArchivesAutoCleaner autoCleaner = new ArchivesAutoCleaner();
+        autoCleaner.toString();
         autoCleaner.run();
     }
 }

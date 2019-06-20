@@ -2,14 +2,16 @@ package ru.vachok.networker.accesscontrol.common;
 
 
 import org.slf4j.Logger;
-import ru.vachok.networker.AppComponents;
+import org.slf4j.LoggerFactory;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.systray.SystemTrayHelper;
 
 import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -19,8 +21,9 @@ import java.util.concurrent.TimeUnit;
  @see SystemTrayHelper
  @since 15.11.2018 (14:09) */
 public class ArchivesAutoCleaner extends SimpleFileVisitor<Path> implements Runnable {
-
-    private static final Logger LOGGER = AppComponents.getLogger(ArchivesAutoCleaner.class.getSimpleName());
+    
+    
+    private static final Logger LOGGER = LoggerFactory.getLogger(ArchivesAutoCleaner.class.getSimpleName());
 
     /**
      Первоначальная папка
@@ -29,6 +32,8 @@ public class ArchivesAutoCleaner extends SimpleFileVisitor<Path> implements Runn
 
     @SuppressWarnings("CanBeFinal")
     private static PrintWriter printWriter;
+    
+    private List<String> copyList = new ArrayList<>();
 
     static {
         try {
@@ -102,7 +107,9 @@ public class ArchivesAutoCleaner extends SimpleFileVisitor<Path> implements Runn
         try {
             Files.walkFileTree(Paths.get(SRV_FS_ARCHIVES), archivesAutoCleaner);
         } catch (IOException e) {
-            archivesAutoCleaner.run();
+            LOGGER.error(e.getMessage());
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
         }
     }
 
