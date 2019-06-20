@@ -97,7 +97,7 @@ public class InteretStats implements Runnable, DataBaseRegSQL {
         DateFormat format = new SimpleDateFormat("E");
         String weekDay = format.format(new Date());
         long iPsWithInet = readIPsWithInet();
-        messageToUser.info(getClass().getSimpleName() + "in kbytes. ", new File(FILENAME_INETSTATSIPCSV).getAbsolutePath(), " = " + iPsWithInet);
+        messageToUser.info(getClass().getSimpleName() + "in kbytes. ", new File(FILENAME_INETSTATSIPCSV).getAbsolutePath(), " = " + iPsWithInet + " size in kb");
     
         if (weekDay.equals("вс")) {
             readStatsToCSVAndDeleteFromDB();
@@ -111,23 +111,7 @@ public class InteretStats implements Runnable, DataBaseRegSQL {
                 try (ResultSet r = p.executeQuery()) {
                     try (OutputStream outputStream = new FileOutputStream(fileName)) {
                         try (PrintStream printStream = new PrintStream(outputStream, true)) {
-                            while (r.next()) {
-                                if (sql.contains("SELECT * FROM `inetstats` WHERE `ip` LIKE")) {
-                                    printStream.print(new java.util.Date(Long.parseLong(r.getString("Date"))));
-                                    printStream.print(",");
-                                    printStream.print(r.getString(ConstantsFor.DBFIELD_RESPONSE));
-                                    printStream.print(",");
-                                    printStream.print(r.getString("bytes"));
-                                    printStream.print(",");
-                                    printStream.print(r.getString(ConstantsFor.DBFIELD_METHOD));
-                                    printStream.print(",");
-                                    printStream.print(r.getString("site"));
-                                    printStream.println();
-                                }
-                                if (sql.equals(SQL_DISTINCTIPSWITHINET)) {
-                                    printStream.println(r.getString("ip"));
-                                }
-                            }
+                            printToFile(r, printStream);
                         }
                     }
                 }
@@ -138,6 +122,26 @@ public class InteretStats implements Runnable, DataBaseRegSQL {
     
         }
         return -1;
+    }
+    
+    private void printToFile(ResultSet r, PrintStream printStream) throws SQLException {
+        while (r.next()) {
+            if (sql.contains("SELECT * FROM `inetstats` WHERE `ip` LIKE")) {
+                printStream.print(new java.util.Date(Long.parseLong(r.getString("Date"))));
+                printStream.print(",");
+                printStream.print(r.getString(ConstantsFor.DBFIELD_RESPONSE));
+                printStream.print(",");
+                printStream.print(r.getString("bytes"));
+                printStream.print(",");
+                printStream.print(r.getString(ConstantsFor.DBFIELD_METHOD));
+                printStream.print(",");
+                printStream.print(r.getString("site"));
+                printStream.println();
+            }
+            if (sql.equals(SQL_DISTINCTIPSWITHINET)) {
+                printStream.println(r.getString("ip"));
+            }
+        }
     }
     
     @Override public int deleteFrom() {
