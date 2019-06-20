@@ -285,7 +285,7 @@ public class NetScannerSvc {
         sb.append("CLASS_NAME='").append(CLASS_NAME).append('\'');
         sb.append(", LOCAL_PROPS=").append(LOCAL_PROPS.equals(AppComponents.getProps()));
         sb.append(", METH_NAME_GET_PCS_ASYNC='").append(METH_NAME_GET_PCS_ASYNC).append('\'');
-        sb.append(", FILENAME_PCAUTODISTXT='").append(ConstantsFor.FILENAME_PCAUTODISTXT).append('\'');
+        sb.append(", FILENAME_PCAUTOUSERSUNIQ='").append(ConstantsFor.FILENAME_PCAUTOUSERSUNIQ).append('\'');
         sb.append(", PC_NAMES_SET=").append(PC_NAMES_SET.size());
         sb.append(", onLinePCsNum=").append(onLinePCsNum);
         sb.append(", unusedNamesTree=").append(unusedNamesTree.size());

@@ -423,7 +423,7 @@ public enum ConstantsFor {
     /**
      Файл уникальных записей из БД velkom-pcuserauto
      */
-    public static final String FILENAME_PCAUTODISTXT = "pcautodis.txt";
+    public static final String FILENAME_PCAUTOUSERSUNIQ = "pcusersauto.uniq";
     
     public static final String STR_ENCODING = "encoding";
     

@@ -232,6 +232,15 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         return retSet;
     }
     
+    public static boolean writeFile(String path, Map<?, ?> map) {
+        List toWriteList = new ArrayList();
+        map.forEach((k, v)->{
+            String addToListString = new StringBuilder().append(k).append(" ").append(v).toString();
+            toWriteList.add(addToListString);
+        });
+        return writeFile(path, toWriteList.stream());
+    }
+    
     private static boolean printTo(OutputStream outputStream, Exception e) {
         try (PrintStream printStream = new PrintStream(outputStream, true)) {
             printStream.println(new Date());

@@ -26,7 +26,9 @@ import java.util.concurrent.Executors;
 
 
 /**
- @since 20.05.2019 (9:36) */
+ @see InetStatSorter
+ @since 20.05.2019 (9:36)
+ */
 public class InteretStats implements Runnable, DataBaseRegSQL {
     
     
@@ -92,9 +94,14 @@ public class InteretStats implements Runnable, DataBaseRegSQL {
     }
     
     @Override public void run() {
+        DateFormat format = new SimpleDateFormat("E");
+        String weekDay = format.format(new Date());
         long iPsWithInet = readIPsWithInet();
         messageToUser.info(getClass().getSimpleName() + "in kbytes. ", new File(FILENAME_INETSTATSIPCSV).getAbsolutePath(), " = " + iPsWithInet);
-        readInetStatsRSetToCSV();
+    
+        if (weekDay.equals("вс")) {
+            readStatsToCSVAndDeleteFromDB();
+        }
         Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(new InetStatSorter());
     }
     
@@ -188,10 +195,8 @@ public class InteretStats implements Runnable, DataBaseRegSQL {
         return new File(FILENAME_INETSTATSIPCSV).length() / ConstantsFor.KBYTE;
     }
     
-    private void readInetStatsRSetToCSV() {
+    private void readStatsToCSVAndDeleteFromDB() {
         List<String> chkIps = FileSystemWorker.readFileToList(new File(FILENAME_INETSTATSIPCSV).getPath());
-        DateFormat format = new SimpleDateFormat("E");
-        String weekDay = format.format(new Date());
         long totalBytes = 0;
         for (String ip : chkIps) {
             this.fileName = FILENAME_INETSTATSCSV.replace("inetstats", ip).replace(".csv", "_" + LocalTime.now().toSecondOfDay() + ".csv");
@@ -201,7 +206,7 @@ public class InteretStats implements Runnable, DataBaseRegSQL {
             totalBytes += file.length();
             new MessageLocal(getClass().getSimpleName())
                 .info(fileName, file.length() / ConstantsFor.KBYTE + " kb", "total kb: " + totalBytes / ConstantsFor.KBYTE);
-            if (weekDay.equals("вс") && file.length() > 10) {
+            if (file.length() > 10) {
                 this.sql = new StringBuilder().append("DELETE FROM `inetstats` WHERE `ip` LIKE '").append(ip).append("'").toString();
                 System.out.println(deleteFrom() + " rows deleted.");
             }
