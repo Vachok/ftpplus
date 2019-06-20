@@ -13,7 +13,7 @@ import ru.vachok.networker.controller.MatrixCtr;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.NetMonitorPTV;
 import ru.vachok.networker.exe.schedule.MailIISLogsCleaner;
-import ru.vachok.networker.exe.schedule.SquidAvaliblityChecker;
+import ru.vachok.networker.exe.schedule.SquidAvailabilityChecker;
 import ru.vachok.networker.exe.schedule.WeekStats;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
@@ -271,7 +271,7 @@ public class AppInfoOnLoad implements Runnable {
         scheduledExecService.scheduleWithFixedDelay(AppComponents.diapazonScan(), 2, AppInfoOnLoad.thisDelay, TimeUnit.MINUTES);
         scheduledExecService.scheduleWithFixedDelay(new AppComponents().scanOnline(), 3, 1, TimeUnit.MINUTES);
         scheduledExecService.scheduleWithFixedDelay(AppInfoOnLoad::squidLogsSave, 4, 200, TimeUnit.MINUTES);
-        scheduledExecService.scheduleWithFixedDelay(new SquidAvaliblityChecker(), 5, ConstantsFor.DELAY * 4, TimeUnit.MINUTES);
+        scheduledExecService.scheduleWithFixedDelay(new SquidAvailabilityChecker(), 5, ConstantsFor.DELAY * 4, TimeUnit.MINUTES);
         AppInfoOnLoad.dateSchedulers(scheduledExecService);
     }
     

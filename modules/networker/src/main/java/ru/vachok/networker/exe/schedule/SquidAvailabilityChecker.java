@@ -9,7 +9,7 @@ import ru.vachok.networker.services.MessageLocal;
 import java.util.concurrent.Callable;
 
 
-public class SquidAvaliblityChecker implements Callable<String>, Runnable {
+public class SquidAvailabilityChecker implements Callable<String>, Runnable {
     
     
     private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
@@ -32,11 +32,14 @@ public class SquidAvaliblityChecker implements Callable<String>, Runnable {
         builder.setCommandSSH("sudo ps ax | grep squid && exit");
         String callChk = builder.call();
         if (callChk.contains("ssl_crtd")) {
+            messageToUser.info(FileSystemWorker.writeFile(getClass().getSimpleName() + ".log", callChk));
             return callChk;
         }
         else {
             builder.setCommandSSH("sudo squid && sudo ps ax | grep squid && exit");
-            return builder.call();
+            callChk = builder.call();
+            messageToUser.error(FileSystemWorker.writeFile(getClass().getSimpleName() + ".log", callChk));
+            return callChk;
         }
     }
     

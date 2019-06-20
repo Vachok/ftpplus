@@ -12,7 +12,7 @@ import java.nio.file.Paths;
 
 /**
  @since 20.06.2019 (9:41) */
-public class MailIISLogsCleanerTest {
+@SuppressWarnings("ALL") public class MailIISLogsCleanerTest {
     
     
     @Test
