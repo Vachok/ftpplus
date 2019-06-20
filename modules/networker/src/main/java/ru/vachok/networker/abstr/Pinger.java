@@ -41,6 +41,7 @@ public interface Pinger {
         List<String> resList = new ArrayList<>();
         long finalPingSleep = pingSleep;
         long finalPingSleep1 = pingSleep;
+        //noinspection OverlyLongLambda
         devicesDeq.forEach((devAdr, devName)->{
             try {
                 boolean reachable = devAdr.isReachable((int) finalPingSleep1);
