@@ -66,48 +66,48 @@ public class IntoApplication {
      */
     private static final MessageToUser MESSAGE_LOCAL = new MessageLocal(IntoApplication.class.getSimpleName());
     
-    private static ConfigurableApplicationContext configurableApplicationContext = null;
+    private static ConfigurableApplicationContext configurableApplicationContext;
     
     public static void reloadConfigurableApplicationContext() {
         AppComponents.threadConfig().killAll();
-        synchronized(SPRING_APPLICATION) {
-            if (configurableApplicationContext != null && configurableApplicationContext.isActive()) {
-                configurableApplicationContext.stop();
-                configurableApplicationContext.close();
-            }
-            configurableApplicationContext = null;
-            configurableApplicationContext = SpringApplication.run(IntoApplication.class);
+    
+        if (configurableApplicationContext != null && configurableApplicationContext.isActive()) {
+            configurableApplicationContext.stop();
+            configurableApplicationContext.close();
         }
+        configurableApplicationContext = null;
+        configurableApplicationContext = SpringApplication.run(IntoApplication.class);
+        
     }
     
     public static void main(String[] args) throws IOException {
         final Thread telnetThread = new Thread(new TelnetStarter());
         telnetThread.setDaemon(true);
         telnetThread.start();
-        synchronized(SPRING_APPLICATION) {
-            if (configurableApplicationContext == null) {
-                try {
-                    configurableApplicationContext = SPRING_APPLICATION.run(IntoApplication.class);
-                }
-                catch (BeanCreationException e) {
-                    MESSAGE_LOCAL.error(FileSystemWorker.error(IntoApplication.class.getSimpleName() + ".main", e));
-                }
-            }
     
-            delFilePatterns(ConstantsFor.getStringsVisit());
-            if (args != null && args.length > 0) {
-                readArgs(configurableApplicationContext, args);
+        if (configurableApplicationContext == null) {
+            try {
+                configurableApplicationContext = SPRING_APPLICATION.run(IntoApplication.class);
             }
-            else {
-                try {
-                    beforeSt(true);
-                }
-                catch (NullPointerException e) {
-                    MESSAGE_LOCAL.error(FileSystemWorker.error(IntoApplication.class.getSimpleName() + ".main", e));
-                }
-                afterSt();
+            catch (BeanCreationException e) {
+                MESSAGE_LOCAL.error(FileSystemWorker.error(IntoApplication.class.getSimpleName() + ".main", e));
             }
         }
+    
+        delFilePatterns(ConstantsFor.getStringsVisit());
+        if (args != null && args.length > 0) {
+            readArgs(configurableApplicationContext, args);
+        }
+        else {
+            try {
+                beforeSt(true);
+            }
+            catch (NullPointerException e) {
+                MESSAGE_LOCAL.error(FileSystemWorker.error(IntoApplication.class.getSimpleName() + ".main", e));
+            }
+            afterSt();
+        }
+        
     }
     
     private static void delFilePatterns(String[] patToDelArr) {
