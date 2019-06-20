@@ -50,7 +50,13 @@ import static org.testng.Assert.assertFalse;
             Assert.assertTrue(sql.contains(ConstantsFor.SQL_SELECTINETSTATS), sql);
         }
         else {
-            Assert.assertTrue(interetStats.toString().contains("inetstatsIP.csv"), interetStats.toString());
+            try {
+                Assert.assertTrue(interetStats.toString().contains("inetstatsIP.csv"), interetStats.toString());
+            }
+            catch (AssertionError e) {
+                System.err.println(e.getMessage());
+                Assert.assertTrue(interetStats.toString().contains("Bytes in stream:"), interetStats.toString());
+            }
         }
     }
     

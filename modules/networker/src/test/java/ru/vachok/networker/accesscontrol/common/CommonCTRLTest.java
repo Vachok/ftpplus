@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.accesscontrol.common;
 
 
@@ -30,7 +32,7 @@ public class CommonCTRLTest {
         assertTrue(model.asMap().size() >= 3);
     }
     
-    @Test
+    @Test(timeOut = 350000)
     public void testCommonArchPOST() {
         Model model = new ExtendedModelMap();
         CommonSRV commonSRV = new CommonSRV();
@@ -51,7 +53,7 @@ public class CommonCTRLTest {
         assertTrue(new File("CommonSRV.reStoreDir.results.txt").lastModified() > System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1));
     }
     
-    @Test
+    @Test(timeOut = 90000)
     public void testCommonSearch() {
         Model model = new ExtendedModelMap();
         CommonSRV commonSRV = new CommonSRV();
