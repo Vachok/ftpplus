@@ -93,14 +93,24 @@ import static org.testng.Assert.assertTrue;
         }
     }
     
+    /**
+     @see NetScanCtr#allDevices(Model, HttpServletRequest, HttpServletResponse)
+     */
     @Test
     public void testAllDevices() {
         Model model = new ExtendedModelMap();
         HttpServletRequest request = new MockHttpServletRequest();
         HttpServletResponse response = new MockHttpServletResponse();
-        String allDevStr = new NetScanCtr(AppComponents.netScannerSvc(), new NetPinger(), new AppComponents().scanOnline()).allDevices(model, request, response);
+        NetScanCtr netScanCtr = new NetScanCtr(AppComponents.netScannerSvc(), new NetPinger(), new AppComponents().scanOnline());
+        String allDevStr = netScanCtr.allDevices(model, request, response);
         Assert.assertTrue(allDevStr.equals("ok"), allDevStr);
         Assert.assertTrue(model.asMap().get("ok").toString().contains("DiapazonScan"));
+        Assert.assertTrue(model.asMap().get("pcs").toString().contains("Since"));
+        ((MockHttpServletRequest) request).setQueryString("needsopen");
+        allDevStr = netScanCtr.allDevices(model, request, response);
+        Assert.assertEquals(allDevStr, "ok");
+        Assert.assertTrue(model.asMap().size() >= 5);
+        Assert.assertFalse(model.asMap().get("pcs").toString().contains("Since"));
     }
     
     @Test
