@@ -180,7 +180,8 @@ public class AppComponents {
             System.out.println("constantsForProps.delete() = " + constantsForProps.delete());
             propertiesToUpdate.store(new FileOutputStream(ConstantsFor.PROPS_FILE_JAVA_ID), getClass().getSimpleName() + ".updateProps");
         }
-        return new File(ConstantsFor.class.getSimpleName() + ConstantsFor.FILEEXT_PROPERTIES).lastModified() + TimeUnit.MINUTES.toMillis(1) > System.currentTimeMillis();
+        int updTable = new DBPropsCallable(propertiesToUpdate).updateTable();
+        return updTable > 0;
     }
     
     @SuppressWarnings("AssignmentOrReturnOfFieldWithMutableType") public static Properties getProps() {
@@ -213,7 +214,7 @@ public class AppComponents {
     }
     
     public static String diapazonedScanInfo() {
-        return DiapazonScan.getInstance().toString();
+        return DiapazonScan.getInstance().theInfoToString();
     }
     
     public static Logger getLogger(String name) {
