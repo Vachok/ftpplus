@@ -154,6 +154,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         catch (IOException e) {
             messageToUser.error(FileSystemWorker.class.getSimpleName(), e.getMessage(), new TForms().fromArray(e, false));
         }
+        messageToUser.info(FileSystemWorker.class.getSimpleName(), fileName, "is written");
         return new File(fileName).exists();
     }
     
