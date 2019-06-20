@@ -31,7 +31,7 @@ import java.util.concurrent.TimeUnit;
     public void testGetInetStats() {
         WeekStats weekStats = new WeekStats();
         String inetStats = weekStats.getInetStats();
-        Assert.assertTrue(new File("inetstatsIP.csv").lastModified() > System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(1));
+        Assert.assertTrue(inetStats.contains("Bytes in stream"), inetStats);
     }
     
     /**

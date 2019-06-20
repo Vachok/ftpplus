@@ -11,9 +11,14 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 
 
+/**
+ @see InetStatSorter */
 @SuppressWarnings("ALL") public class InetStatSorterTest {
     
     
+    /**
+     @see InetStatSorter#run()
+     */
     @Test
     public void testRun() {
         InetStatSorter inetStatSorter = new InetStatSorter();
