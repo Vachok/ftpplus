@@ -17,7 +17,8 @@ import java.util.concurrent.TimeUnit;
 
 /**
  Очистка папки \\192.168.14.10\IT-Backup\SRV-FS\Archives
-
+ 
+ @see ru.vachok.networker.accesscontrol.common.ArchivesAutoCleanerTest
  @see SystemTrayHelper
  @since 15.11.2018 (14:09) */
 public class ArchivesAutoCleaner extends SimpleFileVisitor<Path> implements Runnable {
@@ -82,7 +83,7 @@ public class ArchivesAutoCleaner extends SimpleFileVisitor<Path> implements Runn
     @Override
     public FileVisitResult visitFileFailed(Path file, IOException exc) {
         String size = exc.getMessage() + " visit failed (" + file.toAbsolutePath() + ")";
-        LOGGER.info(size);
+        LOGGER.error(size);
         return FileVisitResult.CONTINUE;
     }
 
@@ -90,7 +91,7 @@ public class ArchivesAutoCleaner extends SimpleFileVisitor<Path> implements Runn
     @Override
     public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
         try {
-            if (dir.toFile().isDirectory() && dir.getNameCount() == 0) {
+            if (dir.toFile().isDirectory() & dir.getNameCount() == 0) {
                 Files.delete(dir);
                 String msg = dir + " deleted!";
                 LOGGER.warn(msg);
@@ -100,7 +101,10 @@ public class ArchivesAutoCleaner extends SimpleFileVisitor<Path> implements Runn
             return FileVisitResult.CONTINUE;
         }
     }
-
+    
+    /**
+     @see ru.vachok.networker.accesscontrol.common.ArchivesAutoCleanerTest#testRun()
+     */
     @Override
     public void run() {
         ArchivesAutoCleaner archivesAutoCleaner = new ArchivesAutoCleaner();

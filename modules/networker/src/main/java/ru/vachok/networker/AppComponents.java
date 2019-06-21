@@ -127,7 +127,8 @@ public class AppComponents {
     @Bean(STR_VISITOR)
     public Visitor visitor(HttpServletRequest request) {
         Visitor visitor = new Visitor(request);
-        return ExitApp.getVisitsMap().putIfAbsent(request.getSession().getCreationTime(), visitor);
+        ExitApp.getVisitsMap().putIfAbsent(request.getSession().getCreationTime(), visitor);
+        return visitor;
     }
     
     @Bean

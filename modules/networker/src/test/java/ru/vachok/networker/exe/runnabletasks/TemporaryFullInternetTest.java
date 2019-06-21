@@ -3,7 +3,6 @@ package ru.vachok.networker.exe.runnabletasks;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.TForms;
@@ -16,7 +15,7 @@ import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Queue;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
 
@@ -33,6 +32,9 @@ import java.util.regex.Pattern;
         new TemporaryFullInternet("8.8.8.8", System.currentTimeMillis(), "add").run();
     }
     
+    /**
+     @see TemporaryFullInternet#sshChecker()
+     */
     @Test
     public void sshCheckerCopy() {
         final SSHFactory SSH_FACTORY = new SSHFactory.Builder("192.168.13.42", "ls", TemporaryFullInternet.class.getSimpleName()).build();
@@ -74,16 +76,9 @@ import java.util.regex.Pattern;
             Long y = entry.getValue();
             mapEntryParse(x, y, atomicTimeLong, MINI_LOGGER, SSH_CHECKER_MAP);
         }
-        Future<?> setMapAsStringHTML = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor()
-            .submit(()->ConstantsNet.setSshMapStr(new TForms().sshCheckerMapWithDates(sshCheckerMap, true)));
-        try {
-            setMapAsStringHTML.get(ConstantsFor.DELAY, TimeUnit.SECONDS);
-        }
-        catch (InterruptedException | TimeoutException | ExecutionException | RejectedExecutionException e) {
-            Assert.assertNull(e, e.getMessage());
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().interrupt();
-        }
+        ConstantsNet.setSshMapStr(new TForms().sshCheckerMapWithDates(sshCheckerMap, true));
+        String mapStr = ConstantsNet.getSshMapStr();
+        Assert.assertTrue(mapStr.contains("8.8.8.8"), mapStr);
     }
     
     private void chkWithList(String[] x, Queue<String> MINI_LOGGER, Map<String, Long> SSH_CHECKER_MAP) {
