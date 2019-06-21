@@ -304,7 +304,7 @@ public class MatrixCtr {
     }
     
     private String matrixAccess(String workPos, Model model) {
-        String workPosition = this.matrixSRV.getWorkPosition(workPos);
+        String workPosition = this.matrixSRV.searchAccessPrincipals(workPos);
         this.matrixSRV.setWorkPos(workPosition);
         model.addAttribute("ok", workPosition);
         model.addAttribute(ConstantsFor.ATT_HEAD, new PageFooter().getHeaderUtext());

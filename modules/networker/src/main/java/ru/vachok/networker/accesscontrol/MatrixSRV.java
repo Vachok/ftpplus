@@ -29,7 +29,9 @@ import java.util.concurrent.ConcurrentHashMap;
  <p>
  Сервис-класс для {@link MatrixCtr}.
  
- @since 07.09.2018 (9:45) */
+ @see ru.vachok.networker.accesscontrol.MatrixSRVTest
+ @since 07.09.2018 (9:45)
+ */
 @Service(ConstantsFor.BEANNAME_MATRIX)
 public class MatrixSRV {
     
@@ -108,9 +110,10 @@ public class MatrixSRV {
      @return {@link #workPos}
      
      @see MatrixCtr#matrixAccess(java.lang.String)
+     @see ru.vachok.networker.accesscontrol.MatrixSRVTest#testSearchAccessPrincipals()
      */
-    public String getWorkPosition(String patternToSearch) {
-        final String sql = "SELECT * FROM `matrix` WHERE `Doljnost` LIKE '%адми%'";
+    public String searchAccessPrincipals(String patternToSearch) {
+        final String sql = new StringBuilder().append("SELECT * FROM `matrix` WHERE `Doljnost` LIKE '%").append(patternToSearch).append("%'").toString();
         Map<String, String> doljAndAccess = new ConcurrentHashMap<>();
         DataConnectTo dataConnectTo = new RegRuMysql();
         try (Connection c = dataConnectTo.getDefaultConnection("u0466446_velkom")) {
@@ -123,8 +126,8 @@ public class MatrixSRV {
             }
         }
         catch (SQLException e) {
-            LOGGER.error("MatrixSRV", "getWorkPosition", e.getMessage());
-            FileSystemWorker.error("MatrixSRV.getWorkPosition", e);
+            LOGGER.error("MatrixSRV", "searchAccessPrincipals", e.getMessage());
+            FileSystemWorker.error("MatrixSRV.searchAccessPrincipals", e);
         }
         String s = new TForms().fromArray(doljAndAccess, true);
         this.workPos = s;
