@@ -15,30 +15,43 @@ import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 
 
 /**
- @since 09.10.2018 (10:35) */
+ @since 09.10.2018 (10:35)
+ @see ru.vachok.networker.ad.user.DataBaseADUsersSRVTest
+ */
 @Service
 public class DataBaseADUsersSRV {
 
     private static MessageToUser messageToUser = new MessageLocal(DataBaseADUsersSRV.class.getSimpleName());
-
+    
+    private List<ADUser> adUsers = new ArrayList<>();
+    
+    public DataBaseADUsersSRV() {
+        this.adUser = new ADUser();
+    }
+    
     private ADUser adUser;
 
     @Autowired
     public DataBaseADUsersSRV(ADUser adUser) {
         this.adUser = adUser;
     }
-
-    public DataBaseADUsersSRV() {
+    
+    public List<ADUser> getAdUsers() {
+        return adUsers;
     }
     
-    public Map<String, String> fileParser(List<String> strings) {
+    /**
+     @param adUsersFileAsQueue файл-выгрузка из AD
+     @return {@link Map} имя параметра - значение.
+     
+     @see ru.vachok.networker.ad.user.DataBaseADUsersSRVTest#testFileParser()
+     */
+    public Map<String, String> fileParser(Queue<String> adUsersFileAsQueue) {
         Map<String, String> paramNameValue = new HashMap<>();
         StringBuilder stringBuilderSQL = new StringBuilder();
         String distinguishedName = "";
@@ -51,87 +64,69 @@ public class DataBaseADUsersSRV {
         String SID = "";
         String surname = "";
         String userPrincipalName = "";
-        for (String s : strings) {
+        
+        while (adUsersFileAsQueue.iterator().hasNext()) {
+            String parameterValueString = adUsersFileAsQueue.poll();
+            if (parameterValueString.contains("IsSecurityPrincipal")) {
+                adUsers.add(adUser);
+                this.adUser = new ADUser();
+            }
             try {
-                if (s.toLowerCase().contains("distinguishedName")) {
-                    distinguishedName = s.split(" : ")[1];
+                if (parameterValueString.toLowerCase().contains("distinguishedName".toLowerCase())) {
+                    distinguishedName = parameterValueString.split(" : ")[1];
                     paramNameValue.put("distinguishedName", distinguishedName);
                     adUser.setDistinguishedName(distinguishedName);
                 }
-                if (s.toLowerCase().contains("enabled")) {
-                    enabled = s.split(" : ")[1];
+                if (parameterValueString.toLowerCase().contains("enabled".toLowerCase())) {
+                    enabled = parameterValueString.split(" : ")[1];
                     paramNameValue.put("enabled", enabled);
                     adUser.setEnabled(enabled);
                 }
-                if (s.toLowerCase().contains("givenName")) {
-                    givenName = s.split(" : ")[1];
+                if (parameterValueString.toLowerCase().contains("givenName".toLowerCase())) {
+                    givenName = parameterValueString.split(" : ")[1];
                     paramNameValue.put("givenName", givenName);
                     adUser.setGivenName(givenName);
                 }
-                if (s.toLowerCase().contains("name")) {
-                    name = s.split(" : ")[1];
+                if (parameterValueString.toLowerCase().contains("name".toLowerCase())) {
+                    name = parameterValueString.split(" : ")[1];
                     paramNameValue.put("name", name);
                     adUser.setName(name);
                 }
-                if (s.toLowerCase().contains("objectClass")) {
-                    objectClass = s.split(" : ")[1];
+                if (parameterValueString.toLowerCase().contains("objectClass".toLowerCase())) {
+                    objectClass = parameterValueString.split(" : ")[1];
                     paramNameValue.put("objectClass", objectClass);
                     adUser.setObjectClass(objectClass);
                 }
-                if (s.toLowerCase().contains("objectGUID")) {
-                    objectGUID = s.split(" : ")[1];
+                if (parameterValueString.toLowerCase().contains("objectGUID".toLowerCase())) {
+                    objectGUID = parameterValueString.split(" : ")[1];
                     paramNameValue.put("objectGUID", objectGUID);
                     adUser.setObjectGUID(objectGUID);
                 }
-                if (s.toLowerCase().contains("samAccountName")) {
-                    samAccountName = s.split(" : ")[1];
+                if (parameterValueString.toLowerCase().contains("SamAccountName".toLowerCase())) {
+                    samAccountName = parameterValueString.split(" : ")[1];
                     paramNameValue.put("samAccountName", samAccountName);
                     adUser.setSamAccountName(samAccountName);
                 }
-                if (s.toLowerCase().contains("sid")) {
-                    SID = s.split(" : ")[1];
+                if (parameterValueString.toLowerCase().contains("sid".toLowerCase())) {
+                    SID = parameterValueString.split(" : ")[1];
                     paramNameValue.put("sid", SID);
                     adUser.setSid(SID);
                 }
-                if (s.toLowerCase().contains("surname")) {
-                    surname = s.split(" : ")[1];
+                if (parameterValueString.toLowerCase().contains("surname".toLowerCase())) {
+                    surname = parameterValueString.split(" : ")[1];
                     paramNameValue.put("surname", surname);
                     adUser.setSurname(surname);
                 }
-                if (s.toLowerCase().contains("userPrincipalName")) {
-                    userPrincipalName = s.split(" : ")[1];
+                if (parameterValueString.toLowerCase().contains("userPrincipalName".toLowerCase())) {
+                    userPrincipalName = parameterValueString.split(" : ")[1];
                     paramNameValue.put("userPrincipalName", userPrincipalName);
                 }
-                stringBuilderSQL
-                    .append("insert into u0466446_velkom.adusers")
-                    .append("(userDomain, userName, userSurname, distinguishedName, userPrincipalName,")
-                    .append(" SID, samAccountName, objectClass, objectGUID, enabled)")
-                    .append(" values ")
-                    .append("(")
-                    .append("eatmeat.ru, ")
-                    .append(name)
-                    .append(", ")
-                    .append(surname)
-                    .append(", ")
-                    .append(distinguishedName)
-                    .append(", ")
-                    .append(userPrincipalName)
-                    .append(", ")
-                    .append(SID)
-                    .append(", ")
-                    .append(samAccountName)
-                    .append(", ")
-                    .append(objectClass)
-                    .append(", ")
-                    .append(objectGUID)
-                    .append(", ")
-                    .append(enabled)
-                    .append(")");
-            } catch (ArrayIndexOutOfBoundsException ignore) {
+            }
+            catch (ArrayIndexOutOfBoundsException | NullPointerException ignore) {
                 //
             }
         }
-        messageToUser.infoNoTitles(stringBuilderSQL.toString());
+        System.out.println("adUsers.size() = " + adUsers.size());
         return paramNameValue;
     }
 

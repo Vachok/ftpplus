@@ -65,15 +65,14 @@ public class PCUserResolver extends ADSrv implements InfoWorker {
     }
     
     @Override public void setInfo() {
-        searchForUser();
-        System.out.println("Setting info for: " + pcName);
+        getInfoAbout();
     }
     
     private void searchForUser() {
         ADUser adUser = new ADUser();
         DataBaseADUsersSRV adUsersSRV = new DataBaseADUsersSRV(adUser);
         Map<String, String> fileParser = adUsersSRV
-            .fileParser(FileSystemWorker.readFileToList("C:\\Users\\ikudryashov\\IdeaProjects\\spring\\modules\\networker\\src\\main\\resources\\static\\texts\\users.txt"));
+            .fileParser(FileSystemWorker.readFileToQueue(Paths.get("C:\\Users\\ikudryashov\\IdeaProjects\\spring\\modules\\networker\\src\\main\\resources\\static\\texts\\users.txt")));
         Set<String> stringSet = fileParser.keySet();
         stringSet.forEach(x->{
             String s = fileParser.get(x);
