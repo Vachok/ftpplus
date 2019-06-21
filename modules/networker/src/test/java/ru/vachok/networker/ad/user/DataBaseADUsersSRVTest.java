@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.ad.user;
 
 
@@ -18,7 +20,7 @@ public class DataBaseADUsersSRVTest {
     
     
     /**
-     @see DataBaseADUsersSRV#fileParser(List)
+     @see DataBaseADUsersSRV#fileParser(Queue)
      */
     @Test
     public void testFileParser() {
