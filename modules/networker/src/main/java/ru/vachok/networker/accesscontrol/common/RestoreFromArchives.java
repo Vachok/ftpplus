@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.accesscontrol.common;
 
 
@@ -79,7 +81,9 @@ public class RestoreFromArchives extends SimpleFileVisitor<Path> {
         }
         if (pathToRestoreAsStr == null) {
             pathToRestoreAsStr = "";
+            this.pathToRestoreAsStr = pathToRestoreAsStr;
         }
+        Path pathToRestore = Paths.get(pathToRestoreAsStr);
         if (pathToRestoreAsStr.toLowerCase().contains("common_new")) {
             pathToRestoreAsStr = COMPILE.split(pathToRestoreAsStr)[1];
         }
@@ -105,12 +109,16 @@ public class RestoreFromArchives extends SimpleFileVisitor<Path> {
             else {
                 this.pathToRestoreAsStr = new String(pathToRestoreAsStr.getBytes(), Charset.defaultCharset());
             }
-        
+            
             getFirstLevelDirs();
         }
         catch (ArrayIndexOutOfBoundsException ignore) {
             //
         }
+    }
+    
+    public String getPathToRestoreAsStr() {
+        return pathToRestoreAsStr;
     }
     
     @Override
@@ -313,7 +321,7 @@ public class RestoreFromArchives extends SimpleFileVisitor<Path> {
      Копирование из архива.
      <p>
      Usages: {@link #fileChecker(String, Path, FileTime)}
- 
+     
      @param fileName путь до файла в архиве
      @throws IOException {@link Files#createDirectories(Path, FileAttribute[])}, {@link Files#copy(Path, OutputStream)}
      */
