@@ -8,6 +8,7 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.enums.SwitchesWiFi;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.stats.connector.SSHWorker;
 
@@ -22,7 +23,7 @@ public class AccessListsCheckUniq implements SSHWorker, Runnable {
     
     
     private static final Pattern FILENAME_COMPILE = Pattern.compile("/pf/");
-    
+
     private static final Pattern FILENAME_PATTERN = Pattern.compile(" && ");
     
     private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
@@ -57,7 +58,7 @@ public class AccessListsCheckUniq implements SSHWorker, Runnable {
     
     private static String getSRVNeed() {
         if (ConstantsFor.thisPC().toLowerCase().contains("rups")) {
-            return ConstantsFor.IPADDR_SRVNAT;
+            return SwitchesWiFi.IPADDR_SRVNAT;
         }
         else {
             return ConstantsFor.IPADDR_SRVGIT;

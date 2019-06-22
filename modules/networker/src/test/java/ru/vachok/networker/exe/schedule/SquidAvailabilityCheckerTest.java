@@ -5,6 +5,7 @@ package ru.vachok.networker.exe.schedule;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
+import ru.vachok.networker.TForms;
 
 import java.io.File;
 import java.util.concurrent.TimeUnit;
@@ -18,7 +19,12 @@ import java.util.concurrent.TimeUnit;
     @Test
     public void testRun() {
         SquidAvailabilityChecker squidAvailabilityChecker = new SquidAvailabilityChecker();
-        squidAvailabilityChecker.run();
+        try {
+            squidAvailabilityChecker.call();
+        }
+        catch (Exception e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
+        }
         Assert.assertTrue(new File("SquidAvailabilityChecker.log").lastModified() > System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(1));
     }
     

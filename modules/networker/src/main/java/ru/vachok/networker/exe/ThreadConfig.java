@@ -38,12 +38,13 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
     /**
      {@link ThreadPoolTaskScheduler}
      */
-    private static final ThreadPoolTaskScheduler TASK_SCHEDULER = new ThreadPoolTaskScheduler();
+    private static final ThreadPoolTaskScheduler TASK_SCHEDULER;
     
     /**
      {@link ThreadPoolTaskExecutor}
      */
-    private static final ThreadPoolTaskExecutor TASK_EXECUTOR = new ThreadPoolTaskExecutor();
+    private static final ThreadPoolTaskExecutor TASK_EXECUTOR;
+    
     
     /**
      Instance
@@ -65,6 +66,14 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
     private static MessageToUser messageToUser = new MessageLocal(ThreadConfig.class.getSimpleName());
     
     private Runnable r;
+    
+    
+    static {
+        TASK_SCHEDULER = new ThreadPoolTaskScheduler();
+        TASK_EXECUTOR = new ThreadPoolTaskExecutor();
+        TASK_SCHEDULER.initialize();
+        TASK_EXECUTOR.initialize();
+    }
     
     private ThreadConfig() {
     }
@@ -91,8 +100,6 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
     }
     
     public static ThreadConfig getI() {
-        TASK_SCHEDULER.initialize();
-        TASK_EXECUTOR.initialize();
         return THREAD_CONFIG_INST;
     }
     
@@ -124,12 +131,7 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
         SimpleAsyncTaskExecutor simpleAsyncExecutor = new ASExec().getSimpleAsyncExecutor();
         ThreadGroup threadGroup = null;
         boolean threadGroupDestroyed = true;
-        if (!(simpleAsyncExecutor == null) & !(threadGroup == null)) {
-            threadGroup = simpleAsyncExecutor.getThreadGroup();
-            threadGroup.destroy();
-            threadGroupDestroyed = threadGroup.isDestroyed();
-        }
-        return TASK_EXECUTOR.getThreadPoolExecutor().isShutdown() & TASK_SCHEDULER.getScheduledThreadPoolExecutor().isShutdown() & threadGroupDestroyed;
+        return TASK_EXECUTOR.getThreadPoolExecutor().isShutdown() & TASK_SCHEDULER.getScheduledThreadPoolExecutor().isShutdown();
     }
     
     public String thrNameSet(String className) {
@@ -163,6 +165,9 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
     
     @Override public String toString() {
         final StringBuilder sb = new StringBuilder("ThreadConfig{");
+        sb.append(TASK_EXECUTOR.getThreadPoolExecutor().toString()).append(" TASK EXECUTOR, ");
+        sb.append(TASK_SCHEDULER.getScheduledExecutor().toString()).append(" TASK SCHEDULER.\n <p>");
+        sb.append(MX_BEAN_THREAD.getObjectName()).append(" object name, ");
         sb.append(MX_BEAN_THREAD.getTotalStartedThreadCount()).append(" total threads started, ");
         sb.append(MX_BEAN_THREAD.getThreadCount()).append(" current threads live, ");
         sb.append(MX_BEAN_THREAD.getPeakThreadCount()).append(" peak live. <br>");

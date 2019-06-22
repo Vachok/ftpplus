@@ -246,11 +246,6 @@ public enum ConstantsFor {
     public static final String HOSTNAME_DO213 = "do0213";
     
     /**
-     IP srv-nat.eatmeat.ru
-     */
-    public static final String IPADDR_SRVNAT = "192.168.13.30";
-    
-    /**
      IP stv-git.eatmeat.ru
      */
     public static final String IPADDR_SRVGIT = "192.168.13.42";

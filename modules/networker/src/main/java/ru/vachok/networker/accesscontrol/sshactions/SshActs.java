@@ -11,6 +11,7 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.accesscontrol.NameOrIPChecker;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.enums.SwitchesWiFi;
 import ru.vachok.networker.services.WhoIsWithSRV;
 
 import java.net.InetAddress;
@@ -25,7 +26,7 @@ import java.util.regex.Pattern;
 
 /**
  SSH-actions class
- 
+
  @since 29.11.2018 (13:01) */
 @SuppressWarnings({"ClassWithTooManyFields"})
 @Service(ConstantsFor.ATT_SSH_ACTS)
@@ -37,7 +38,7 @@ public class SshActs {
      SSH-command
      */
     public static final String SUDO_ECHO = "sudo echo ";
-    
+
     /**
      SSH-command
      */
@@ -179,7 +180,7 @@ public class SshActs {
     
     /**
      Добавить домен в разрешенные
- 
+     
      @return результат выполненния
      */
     public String allowDomainAdd() throws NullPointerException {
@@ -189,17 +190,17 @@ public class SshActs {
         }
     
         String resolvedIp = resolveIp(allowDomain);
-        
+    
         String commandSSH = new StringBuilder()
             .append(SSH_SUDO_GREP_V).append(Objects.requireNonNull(allowDomain, "allowdomain string is null")).append("' /etc/pf/allowdomain > /etc/pf/allowdomain_tmp;")
             .append(SSH_SUDO_GREP_V).append(Objects.requireNonNull(resolvedIp, "allowdomain string is null"))
             .append(" #")
             .append(allowDomain)
             .append("' /etc/pf/allowip > /etc/pf/allowip_tmp;")
-    
+        
             .append("sudo cp /etc/pf/allowdomain_tmp /etc/pf/allowdomain;")
             .append("sudo cp /etc/pf/allowip_tmp /etc/pf/allowip;")
-    
+        
             .append(SUDO_ECHO).append("\"").append(Objects.requireNonNull(allowDomain, "allowdomain string is null")).append("\"").append(" >> /etc/pf/allowdomain;")
             .append(SUDO_ECHO).append("\"").append(resolvedIp).append(" #").append(allowDomain).append("\"").append(" >> /etc/pf/allowip;")
             .append("sudo tail /etc/pf/allowdomain;sudo tail /etc/pf/allowip;")
@@ -242,9 +243,9 @@ public class SshActs {
                 .append("sudo tail /etc/pf/allowdomain;sudo tail /etc/pf/allowip;")
                 .append(SSH_SQUID_RECONFIGURE)
                 .append(SSH_INITPF).toString();
-            
+    
             String resStr = new SSHFactory.Builder(whatSrvNeed(), sshComBuilder.toString(), getClass().getSimpleName()).build().call();
-            
+    
             stringBuilder.append(resStr.replace("\n", "<br>\n"));
         });
         FileSystemWorker.writeFile(getClass().getSimpleName() + ".log", stringBuilder.toString());
@@ -297,10 +298,10 @@ public class SshActs {
     public String whatSrvNeed() {
         AppComponents.getProps().setProperty(ConstantsFor.PR_THISPC, ConstantsFor.thisPC());
         if (ConstantsFor.thisPC().toLowerCase().contains("rups")) {
-            return ConstantsFor.IPADDR_SRVNAT;
+            return SwitchesWiFi.IPADDR_SRVNAT;
         }
         else if (ConstantsFor.thisPC().equalsIgnoreCase("srv-inetstat.eatmeat.ru")) {
-            return ConstantsFor.IPADDR_SRVNAT;
+            return SwitchesWiFi.IPADDR_SRVNAT;
         }
         else {
             return ConstantsFor.IPADDR_SRVGIT;
@@ -358,7 +359,7 @@ public class SshActs {
     /**
      Резолвит ip-адрес
      <p>
- 
+     
      @param domainName домен для проверки
      @return ip-адрес
      */
@@ -400,7 +401,7 @@ public class SshActs {
         }
         if (delDomain.contains(STR_HTTPS)) {
             this.delDomain = delDomain.replace(STR_HTTPS, ".");
-        
+    
         }
         if (delDomain.contains("/")) {
             this.delDomain = delDomain.split("/")[0];
