@@ -245,6 +245,10 @@ public class AppComponents {
         return NetListKeeper.getI();
     }
     
+    public static VersionInfo versionInfo(String pcName) {
+        return new VersionInfo(getProps(), pcName);
+    }
+    
     static DiapazonScan diapazonScan() {
         return DiapazonScan.getInstance();
     }

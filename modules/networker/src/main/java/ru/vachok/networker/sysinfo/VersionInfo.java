@@ -21,7 +21,6 @@ import java.util.prefs.Preferences;
 
 
 /**
-
  @since 24.09.2018 (9:44) */
 public class VersionInfo {
     
@@ -37,27 +36,27 @@ public class VersionInfo {
     private String appBuild = PREF_USER.get(ConstantsFor.PR_APP_BUILD, ALERT_DNE);
     
     /**
-     Ссылка на /doc/index.html
-     */
-    private static final String DOC_URL = "<a href=\"/doc/index.html\">DOC</a>";
-
-    /**
      Версия
      */
     private String appVersion = PREF_USER.get(ConstantsFor.PR_APP_VERSION, ALERT_DNE);
     
-    private static final MessageToUser messageToUser = new MessageLocal(VersionInfo.class.getSimpleName());
-
     /**
      Время сборки
      */
     private String buildTime = PREF_USER.get(ConstantsFor.PR_APP_BUILDTIME, ALERT_DNE);
     
+    private String propertiesFrom = ConstantsFor.DBPREFIX + ConstantsFor.STR_PROPERTIES;
+    
+    /**
+     Ссылка на /doc/index.html
+     */
+    private static final String DOC_URL = "<a href=\"/doc/index.html\">DOC</a>";
+    
+    private static final MessageToUser messageToUser = new MessageLocal(VersionInfo.class.getSimpleName());
+    
     private static final String PR_APP_BUILD = "appBuild";
     
     private static final Preferences PREF_USER = AppComponents.getUserPref();
-    
-    private String propertiesFrom = ConstantsFor.DBPREFIX + ConstantsFor.STR_PROPERTIES;
     
     private static final String ALERT_DNE = "Property does not exists";
     
@@ -87,14 +86,14 @@ public class VersionInfo {
     public String getAppBuild() {
         return appBuild;
     }
-
+    
     /**
      @return {@link #appVersion}
      */
     public String getAppVersion() {
         return appVersion;
     }
-
+    
     /**
      @return {@link #buildTime}
      */
@@ -120,10 +119,30 @@ public class VersionInfo {
             catch (IOException e) {
                 messageToUser.error(e.getMessage());
             }
-        } else {
-                stringBuilder.append(getParams()).append(" is GET");
+        }
+        else {
+            stringBuilder.append(getParams()).append(" is GET");
         }
         return stringBuilder.toString();
+    }
+    
+    public String getParams() {
+        try {
+            DateFormat format = new SimpleDateFormat("yyw");
+            this.appVersion = PROPERTIES.getProperty(ConstantsFor.PR_APP_VERSION, "8.0." + format.format(new Date()));
+            this.buildTime = PROPERTIES.getProperty(ConstantsFor.PR_APP_BUILDTIME, String.valueOf(ConstantsFor.START_STAMP));
+            format = new SimpleDateFormat("E");
+            this.appBuild = PROPERTIES.getProperty(ConstantsFor.PR_APP_BUILD, format.format(new Date()));
+            
+            PREF_USER.put(ConstantsFor.PR_APP_VERSION, appVersion);
+            PREF_USER.put(ConstantsFor.PR_APP_BUILDTIME, buildTime);
+            PREF_USER.put(ConstantsFor.PR_APP_BUILD, appBuild);
+            PREF_USER.sync();
+        }
+        catch (Exception e) {
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".getParams", e));
+        }
+        return this.appVersion + " version from props, " + this.buildTime + " " + this.appBuild + " is GET";
     }
     
     @Override public String toString() {
@@ -136,21 +155,9 @@ public class VersionInfo {
         return sb.toString();
     }
     
-    public String getParams() {
-        try {
-            PREF_USER.put(ConstantsFor.PR_APP_VERSION, PROPERTIES.getProperty(ConstantsFor.PR_APP_VERSION));
-        PREF_USER.put(ConstantsFor.PR_APP_BUILDTIME, PROPERTIES.getProperty(ConstantsFor.PR_APP_BUILDTIME));
-            PREF_USER.put(ConstantsFor.PR_APP_BUILD, PROPERTIES.getProperty(ConstantsFor.PR_APP_BUILD));
-        }
-        catch (Exception e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".getParams", e));
-        }
-        return this.appVersion + " version from props, " + this.buildTime + " " + this.appBuild + " is GET";
-    }
-
     /**
      Usages: {@link #setParams()} <br> Uses: - <br>
-
+ 
      @param file gradle.build
      */
     private String setterVersionFromFiles(File file) throws IOException {
