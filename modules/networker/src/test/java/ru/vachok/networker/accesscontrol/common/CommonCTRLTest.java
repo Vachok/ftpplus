@@ -16,7 +16,9 @@ import static org.testng.Assert.assertTrue;
 
 
 /**
- @since 17.06.2019 (10:57) */
+ @since 17.06.2019 (10:57)
+ @see CommonCTRL
+ */
 @SuppressWarnings("ALL") public class CommonCTRLTest {
     
     
@@ -32,6 +34,9 @@ import static org.testng.Assert.assertTrue;
         assertTrue(model.asMap().size() >= 3);
     }
     
+    /**
+     @see CommonCTRL#commonArchPOST(CommonSRV, Model)
+     */
     @Test(timeOut = 350000)
     public void testCommonArchPOST() {
         Model model = new ExtendedModelMap();
@@ -53,6 +58,9 @@ import static org.testng.Assert.assertTrue;
         assertTrue(new File("CommonSRV.reStoreDir.results.txt").lastModified() > System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1));
     }
     
+    /**
+     @see CommonCTRL#commonSearch(CommonSRV, Model)
+     */
     @Test(timeOut = 90000)
     public void testCommonSearch() {
         Model model = new ExtendedModelMap();
