@@ -17,7 +17,7 @@ import static org.testng.Assert.assertTrue;
 
 /**
  @since 17.06.2019 (10:57) */
-public class CommonCTRLTest {
+@SuppressWarnings("ALL") public class CommonCTRLTest {
     
     
     @Test
@@ -38,7 +38,7 @@ public class CommonCTRLTest {
         CommonSRV commonSRV = new CommonSRV();
         CommonCTRL ctrl = new CommonCTRL();
         commonSRV.setPerionDays("100");
-        commonSRV.setPathToRestoreAsStr("\\\\srv-fs\\Common_new\\14_ИТ_служба\\");
+        commonSRV.setPathToRestoreAsStr("\\\\srv-fs\\Common_new\\14_ИТ_служба\\Общая\\");
         String commonArchPOSTStr = ctrl.commonArchPOST(commonSRV, model);
         assertEquals(commonArchPOSTStr, ConstantsFor.ATT_COMMON);
         assertTrue(new File("CommonSRV.reStoreDir.results.txt").lastModified() > System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1));
