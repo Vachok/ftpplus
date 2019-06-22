@@ -22,7 +22,7 @@ import java.io.IOException;
     /**
      @see ExSRV#fileAsStrings()
      */
-    @Test(enabled = false)
+    @Test()
     public void testFileAsStrings() {
         ExSRV exSRV = new ExSRV();
         try {
@@ -31,6 +31,10 @@ import java.io.IOException;
         catch (NullPointerException e) {
             Assert.assertNull(e, e.getMessage());
         }
+//        tryWithFile(exSRV);
+    }
+    
+    private void tryWithFile(ExSRV exSRV) {
         String exchSRVFileAsStrings = "null";
         try {
             MultipartFile multipartFile = new MockMultipartFile("rules.txt", new FileInputStream("rules.txt"));
@@ -42,5 +46,6 @@ import java.io.IOException;
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
         }
         System.out.println(exchSRVFileAsStrings);
+        
     }
 }
