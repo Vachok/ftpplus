@@ -5,6 +5,7 @@ package ru.vachok.networker.accesscontrol.inetstats;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.io.File;
@@ -80,7 +81,7 @@ import java.util.*;
     
     private void makeCSV(String ip, Queue<File> queueCSVFilesFromRoot) {
         String fileSepar = System.getProperty("file.separator");
-        String pathInetStats = Paths.get(".").toAbsolutePath().normalize().toString() + fileSepar + "inetstats" + fileSepar;
+        String pathInetStats = Paths.get(".").toAbsolutePath().normalize().toString() + fileSepar + ConstantsFor.STR_INETSTATS + fileSepar;
         File finalFile = new File(pathInetStats + ip + ".csv");
         
         Set<String> toWriteStatsSet = new TreeSet<>();
@@ -108,7 +109,7 @@ import java.util.*;
         String absPath = Paths.get(".").toAbsolutePath().normalize().toString();
         
         String fileSepar = System.getProperty("file.separator");
-        File inetStatsDir = new File(absPath + fileSepar + "inetstats");
+        File inetStatsDir = new File(absPath + fileSepar + ConstantsFor.STR_INETSTATS);
         boolean isDirExist = inetStatsDir.isDirectory();
         
         if (!isDirExist) {
@@ -123,7 +124,7 @@ import java.util.*;
         try {
             Path copyPath = Files.copy(Paths.get(absPath + fileSepar + file.getName()), file.toPath());
             if (file.equals(copyPath.toFile())) {
-                new File(file.getAbsolutePath().replace(fileSepar + "inetstats" + fileSepar, fileSepar)).deleteOnExit();
+                new File(file.getAbsolutePath().replace(fileSepar + ConstantsFor.STR_INETSTATS + fileSepar, fileSepar)).deleteOnExit();
             }
         }
         catch (IOException e) {
