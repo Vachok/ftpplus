@@ -31,6 +31,7 @@ public class RestoreFromArchivesTest {
         }
     }
     
+    //todo разбор uri 22.06.2019 23:06
     private void pathsWorking(String pathToRestoreAsStrFrom) {
         URI uriRestore = Paths.get(pathToRestoreAsStrFrom).toAbsolutePath().normalize().toUri();
         Assert.assertNotNull(uriRestore);
