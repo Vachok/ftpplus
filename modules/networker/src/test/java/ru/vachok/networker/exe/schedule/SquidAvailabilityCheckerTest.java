@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.exe.schedule;
 
 
@@ -20,7 +22,7 @@ import java.util.concurrent.TimeUnit;
         Assert.assertTrue(new File("SquidAvailabilityChecker.log").lastModified() > System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(1));
     }
     
-    @Test
+    @Test(timeOut = 12000)
     public void testCall() {
         SquidAvailabilityChecker squidAvailabilityChecker = new SquidAvailabilityChecker();
         try {
