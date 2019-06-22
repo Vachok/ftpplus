@@ -5,7 +5,10 @@ package ru.vachok.networker.accesscontrol.inetstats;
 
 
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.services.FilesZipPacker;
 import ru.vachok.networker.services.MessageLocal;
 
 import java.io.File;
@@ -15,6 +18,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 
 /**
@@ -31,6 +36,13 @@ public class InetStatSorter implements Runnable {
 
     @Override public void run() {
         sortFiles();
+        Future<String> submit = AppComponents.threadConfig().getTaskExecutor().submit(new FilesZipPacker());
+        try {
+            System.out.println(submit.get());
+        }
+        catch (InterruptedException | ExecutionException e) {
+            messageToUser.error(e.getMessage());
+        }
     }
     
     public void sortFiles() {
@@ -76,7 +88,7 @@ public class InetStatSorter implements Runnable {
     
     private void makeCSV(String ip, Queue<File> queueCSVFilesFromRoot) {
         String fileSepar = System.getProperty("file.separator");
-        String pathInetStats = Paths.get(".").toAbsolutePath().normalize() + fileSepar + "inetstats" + fileSepar;
+        String pathInetStats = Paths.get(".").toAbsolutePath().normalize() + fileSepar + ConstantsFor.STR_INETSTATS + fileSepar;
         File finalFile = new File(pathInetStats + ip + ".csv");
         
         Set<String> toWriteStatsSet = new TreeSet<>();
@@ -104,7 +116,7 @@ public class InetStatSorter implements Runnable {
         String absPath = Paths.get(".").toAbsolutePath().normalize().toString();
         
         String fileSepar = System.getProperty("file.separator");
-        File inetStatsDir = new File(absPath + fileSepar + "inetstats");
+        File inetStatsDir = new File(absPath + fileSepar + ConstantsFor.STR_INETSTATS);
         boolean isDirExist = inetStatsDir.isDirectory();
         
         if (!isDirExist) {
@@ -119,7 +131,7 @@ public class InetStatSorter implements Runnable {
         try {
             Path copyPath = Files.copy(Paths.get(absPath + fileSepar + file.getName()), file.toPath());
             if (file.equals(copyPath.toFile())) {
-                new File(file.getAbsolutePath().replace(fileSepar + "inetstats" + fileSepar, fileSepar)).deleteOnExit();
+                new File(file.getAbsolutePath().replace(fileSepar + ConstantsFor.STR_INETSTATS + fileSepar, fileSepar)).deleteOnExit();
             }
         }
         catch (IOException e) {
@@ -127,53 +139,4 @@ public class InetStatSorter implements Runnable {
         }
         
     }
-    
-    /* 21.06.2019 (12:07)
-    private void sortFiles() {
-        File[] rootFiles = new File(".").listFiles();
-        Map<String, File> ipsFromFiles = new HashMap<>();
-        Set<String> fileAsSet = new LinkedHashSet<>();
-    
-        for (File fileFromRoot : Objects.requireNonNull(rootFiles)) {
-            if (fileFromRoot.getName().toLowerCase().contains(".csv")) {
-                try{
-                    String[] nameSplit = fileFromRoot.getName().split("net.");
-                    ipsFromFiles.put(nameSplit[1].replace(".csv", ""), fileFromRoot);
-                }catch(ArrayIndexOutOfBoundsException ignore){
-                    //
-                }
-            }
-        }
-        if (ipsFromFiles.size() == 0) {
-            FileSystemWorker.writeFile("no.csv", new Date().toString());
-        }
-        else
-            for (String ipKey : ipsFromFiles.keySet()) {
-                File fileInetIPCsv = ipsFromFiles.get(ipKey);
-                fileAsSet.add(FileSystemWorker.readFile(fileInetIPCsv.getAbsolutePath()));
-                File finalFile = new File(ipKey + ".csv");
-                makeCSV(finalFile, fileAsSet);
-                fileInetIPCsv.deleteOnExit();
-            }
-    }
-    
-    @Override public String toString() {
-        final StringBuilder sb = new StringBuilder("InetStatSorter{");
-        sb.append(LocalDate.now().getDayOfWeek());
-        sb.append('}');
-        return sb.toString();
-    }
-    
-    private void makeCSV(File tmpInetStatFile, Collection<String> fileAsSet) {
-        if (!tmpInetStatFile.exists()) {
-            messageToUser.info(tmpInetStatFile.getAbsolutePath(), "is exist: " + false, " Written =  " + fileAsSet.size() + " files");
-            FileSystemWorker.writeFile(tmpInetStatFile.getName(), fileAsSet.stream());
-        }
-        else {
-            List<String> stringsFromFile = FileSystemWorker.readFileToList(tmpInetStatFile.getAbsolutePath());
-            fileAsSet.addAll(stringsFromFile);
-            messageToUser.info(tmpInetStatFile.getAbsolutePath(), "exist: " + true, " To write =  " + fileAsSet.size() + " strings");
-            FileSystemWorker.writeFile(tmpInetStatFile.getName(), fileAsSet.stream());
-        }
-    }*/
 }

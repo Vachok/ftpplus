@@ -14,7 +14,6 @@ import ru.vachok.networker.accesscontrol.PfLists;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.AccessListsCheckUniq;
 import ru.vachok.networker.services.MessageLocal;
-import ru.vachok.networker.services.SystemRuntime;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -84,7 +83,7 @@ public class PfListsSrv {
             return new SSHFactory.Builder(DEFAULT_CONNECT_SRV, commandForNatStr, getClass().getSimpleName()).build().call();
         }
         else {
-            return new SystemRuntime(commandForNatStr).call();
+            return "22.06.2019 (8:01)";
         }
     }
     

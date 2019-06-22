@@ -5,14 +5,11 @@ package ru.vachok.networker.accesscontrol;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.ResoCache;
-import ru.vachok.networker.config.ResLoader;
 import ru.vachok.networker.controller.MatrixCtr;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
@@ -106,10 +103,8 @@ public class MatrixSRV {
      {@link TForms#fromArray(java.util.Map, boolean)}. Переделываем из мапы с результатом в строку для возврата для WEB. <br>
      this.{@link #workPos} = returned {@link String}
      
-     @param sql запрос
      @return {@link #workPos}
      
-     @see MatrixCtr#matrixAccess(java.lang.String)
      @see ru.vachok.networker.accesscontrol.MatrixSRVTest#testSearchAccessPrincipals()
      */
     public String searchAccessPrincipals(String patternToSearch) {
@@ -143,23 +138,7 @@ public class MatrixSRV {
         catch (IOException e) {
             LOGGER.warn(e.getMessage(), e);
         }
-        ResoCache resoCache = ResoCache.getResoCache();
-        resoCache.setFilePath(file.getAbsolutePath());
-        resoCache.setBytes(bytes);
-        resoCache.setFile(file);
-        resoCache.setLastModif(System.currentTimeMillis());
-        resoCache.setFileName(file.getName());
-        
-        ResLoader resLoader = new ResLoader();
-        Map<Resource, ResoCache> resourceCache = resLoader.getResourceCache(ResoCache.class);
-        StringBuilder stringBuilder = new StringBuilder();
-        
-        resourceCache.forEach((x, y)->stringBuilder
-            .append(x)
-            .append("<br>")
-            .append(y));
-        
-        return stringBuilder.toString();
+        throw new IllegalStateException("22.06.2019 (8:00)");
     }
     
     private void getInfo(ResultSet r, Map<String, String> doljAndAccess) throws SQLException {

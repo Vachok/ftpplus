@@ -241,6 +241,16 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         return writeFile(path, toWriteList.stream());
     }
     
+    public static void appendObjToFile(File fileForAppend, Object objectToAppend) {
+        try (OutputStream outputStream = new FileOutputStream(fileForAppend, true);
+             PrintStream printStream = new PrintStream(outputStream, true)) {
+            printStream.println(objectToAppend);
+        }
+        catch (IOException e) {
+            messageToUser.error(e.getMessage());
+        }
+    }
+    
     private static boolean printTo(OutputStream outputStream, Exception e) {
         try (PrintStream printStream = new PrintStream(outputStream, true)) {
             printStream.println(new Date());

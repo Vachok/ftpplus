@@ -502,6 +502,10 @@ public enum ConstantsFor {
     
     public static final String PR_ADPHOTOPATH = "adphotopath";
     
+    public static final String STR_INETSTATS = "inetstats";
+    
+    public static final String FILENAME_STATSZIP = "stats.zip";
+    
     /**
      @return {@link #MAIL_RULES}
      */

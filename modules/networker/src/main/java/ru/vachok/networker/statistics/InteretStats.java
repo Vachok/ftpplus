@@ -203,7 +203,7 @@ public class InteretStats implements Runnable, DataBaseRegSQL {
         List<String> chkIps = FileSystemWorker.readFileToList(new File(FILENAME_INETSTATSIPCSV).getPath());
         long totalBytes = 0;
         for (String ip : chkIps) {
-            this.fileName = FILENAME_INETSTATSCSV.replace("inetstats", ip).replace(".csv", "_" + LocalTime.now().toSecondOfDay() + ".csv");
+            this.fileName = FILENAME_INETSTATSCSV.replace(ConstantsFor.STR_INETSTATS, ip).replace(".csv", "_" + LocalTime.now().toSecondOfDay() + ".csv");
             File file = new File(fileName);
             this.sql = new StringBuilder().append("SELECT * FROM `inetstats` WHERE `ip` LIKE '").append(ip).append("'").toString();
             selectFrom();
