@@ -9,6 +9,7 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.nio.file.attribute.FileTime;
 import java.util.*;
 import java.util.zip.ZipEntry;
@@ -84,18 +85,22 @@ import java.util.zip.ZipOutputStream;
     
     private String createNEWZip(List<File> toPackInZipFilesList) throws IOException {
         StringBuilder stringBuilder = new StringBuilder();
-        File zipFileRaw = new File("stats.zip");
-        boolean isExists = zipFileRaw.exists();
-        if (!isExists) {
-            writeToFile(zipFileRaw, toPackInZipFilesList, stringBuilder);
+        File fileZip = new File("stats.zip");
+        if (!fileZip.exists()) {
+            writeToFile(toPackInZipFilesList, stringBuilder);
         }
         else {
-            changeExistZip(toPackInZipFilesList, zipFileRaw);
+            changeExistZip(toPackInZipFilesList);
         }
         return stringBuilder.toString();
     }
     
-    private void writeToFile(File zipFileRaw, List<?> toPackInZipFilesList, StringBuilder stringBuilder) {
+    private void writeToFile(Collection<?> toPackInZipFilesList, StringBuilder stringBuilder) throws IOException {
+        File zipFileRaw = new File("stats.zip");
+        if (zipFileRaw.exists()) {
+            Files.deleteIfExists(zipFileRaw.toPath());
+            Files.createFile(zipFileRaw.toPath());
+        }
         try (OutputStream outputStream = new FileOutputStream(zipFileRaw);
              ZipOutputStream zipOutputStream = new ZipOutputStream(outputStream)) {
             int numFiles = toPackInZipFilesList.size();
@@ -134,34 +139,48 @@ import java.util.zip.ZipOutputStream;
         Assert.assertTrue(zipFileRaw.length() > 10);
     }
     
-    private void changeExistZip(List<File> toPackInZipFilesList, File zipFileRaw) throws IOException {
+    private void changeExistZip(List<File> toPackInZipFilesList) throws IOException {
         ZipFile zipFile = new ZipFile("stats.zip");
         Enumeration<? extends ZipEntry> inZipEntries = zipFile.entries();
-        List<String> fileNames = new ArrayList<>();
-        
-        toPackInZipFilesList.stream().forEach(x->fileNames.add(x.getPath()));
+        Set<ZipEntry> oldEntries = new HashSet<>();
+        Map<String, ZipEntry> fileNameZipEntryMap = new HashMap<>();
         List<ZipEntry> listEnt = new ArrayList<>();
-        ArrayList<? extends ZipEntry> list = Collections.list(inZipEntries);
-        list.forEach(ent->listEnt.add((ZipEntry) ent));
-        int indexEnt = 0;
-        for (ZipEntry zipEntry : listEnt) {
-            indexEnt = Collections.binarySearch(fileNames, zipEntry.getName());
-        }
         
-        if (indexEnt != 0) {
-            ZipEntry entry = listEnt.get(indexEnt);
-            System.out.println(entry.getName());
-            ZipEntry zipEntry = new ZipEntry(new File(entry.getName()).getPath());
-            listEnt.add(zipEntry);
+        while (inZipEntries.hasMoreElements()) {
+            ZipEntry entry = inZipEntries.nextElement();
+            fileNameZipEntryMap.put(entry.getName(), entry);
+        }
+        Set<String> fileNames = fileNameZipEntryMap.keySet();
+        fileNames.forEach(fileName->{
+            ZipEntry zipEntry = fileNameZipEntryMap.get(fileName);
+            long lastModFile = new File(fileName).lastModified();
+            long lastModEntry = zipEntry.getLastModifiedTime().toMillis();
+            lastModEntry = lastModEntry / 1000;
+            lastModFile = lastModFile / 1000;
+            
+            if (lastModEntry != lastModFile) {
+                oldEntries.add(zipEntry);
+            }
+        });
+        if (oldEntries.size() > 0) {
+            oldEntries.stream().forEach(entry->{
+                fileNameZipEntryMap.replace(entry.getName(), entry);
+            });
+            Collection<ZipEntry> values = fileNameZipEntryMap.values();
+            zipFile.close();
+            createNEWZipFileWithEntry(values);
         }
         else {
             System.out.println("NO CHANGES NEED!");
         }
     }
     
-    private void createNEWZipEntry(List<?> zipEntries) {
-        File zipFileRaw = new File("stats.zip");
-        zipFileRaw.delete();
-        this.writeToFile(zipFileRaw, zipEntries, new StringBuilder());
+    private void createNEWZipFileWithEntry(Collection<?> zipEntries) {
+        try {
+            this.writeToFile(zipEntries, new StringBuilder());
+        }
+        catch (IOException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
+        }
     }
 }
