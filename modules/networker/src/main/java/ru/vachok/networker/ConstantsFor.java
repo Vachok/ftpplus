@@ -29,6 +29,8 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.time.Year;
@@ -500,6 +502,16 @@ public enum ConstantsFor {
     public static final String STR_INETSTATS = "inetstats";
     
     public static final String FILENAME_STATSZIP = "stats.zip";
+    
+    /**
+     Путь к архиву
+     */
+    public static final Path ARCHIVE_DIR = Paths.get("\\\\192.168.14.10\\IT-Backup\\Srv-Fs\\Archives\\");
+    
+    /**
+     Путь к продуктиву
+     */
+    public static final Path COMMON_DIR = Paths.get("\\\\srv-fs.eatmeat.ru\\common_new");
     
     /**
      @return {@link #MAIL_RULES}

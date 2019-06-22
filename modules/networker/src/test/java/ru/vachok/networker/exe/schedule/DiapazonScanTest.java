@@ -47,7 +47,7 @@ public class DiapazonScanTest {
         try {
             List<String> pingSWList = DiapazonScan.pingSwitch();
             Assert.assertNotNull(pingSWList);
-            Assert.assertTrue(pingSWList.size() == 42);
+            Assert.assertTrue(pingSWList.size() == 43, pingSWList.size() + " devices in " + pingSWList.getClass().getSimpleName());
             Collections.sort(pingSWList);
             Assert.assertTrue(pingSWList.get(1).equals("10.1.1.228"));
         }

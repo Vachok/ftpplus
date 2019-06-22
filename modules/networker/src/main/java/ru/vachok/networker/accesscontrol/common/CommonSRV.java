@@ -21,6 +21,7 @@ import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalTime;
 import java.util.Collections;
@@ -130,6 +131,9 @@ public class CommonSRV {
      @return {@link RestoreFromArchives#toString()}
      */
     String reStoreDir() {
+        if (pathToRestoreAsStr == null) {
+            pathToRestoreAsStr = ".";
+        }
         StringBuilder stringBuilder = new StringBuilder();
         RestoreFromArchives restoreFromArchives = null;
         try {
@@ -144,8 +148,8 @@ public class CommonSRV {
             .append("\n");
         int followInt;
         try {
-            String[] foldersInPath = pathToRestoreAsStr.split("\\Q\\\\E");
-            followInt = foldersInPath.length;
+            Path pathToRestore = Paths.get(pathToRestoreAsStr).toAbsolutePath().normalize();
+            followInt = pathToRestore.toAbsolutePath().normalize().getNameCount();
         }
         catch (ArrayIndexOutOfBoundsException | NullPointerException e) {
             followInt = 1;
@@ -158,7 +162,7 @@ public class CommonSRV {
             String msg = followInt + " number of followed links" + "\n" + this;
             LOGGER.warn(msg);
             Thread.sleep(1000);
-            Files.walkFileTree(restoreFromArchives.getArchiveDir(), Collections.singleton(FileVisitOption.FOLLOW_LINKS), followInt + 1, restoreFromArchives);
+            Files.walkFileTree(ConstantsFor.ARCHIVE_DIR, Collections.singleton(FileVisitOption.FOLLOW_LINKS), followInt + 1, restoreFromArchives);
         }
         catch (IOException e) {
             return e.getMessage();
@@ -187,7 +191,7 @@ public class CommonSRV {
      */
     private static String searchInCommon(String[] patternAndFolder) {
         FileSearcher fileSearcher = new FileSearcher(patternAndFolder[0]);
-        String folderToSearch = "";
+        String folderToSearch;
         try {
             folderToSearch = patternAndFolder[1];
         }

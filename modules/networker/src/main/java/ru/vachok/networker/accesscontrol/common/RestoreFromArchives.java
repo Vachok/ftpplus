@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
 import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.ConstantsFor;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,16 +31,6 @@ import java.util.regex.Pattern;
 @SuppressWarnings({"SameReturnValue", "RedundantThrows", "MethodWithMultipleReturnPoints"})
 public class RestoreFromArchives extends SimpleFileVisitor<Path> {
     
-    
-    /**
-     Путь к архиву
-     */
-    private static final Path ARCHIVE_DIR = Paths.get("\\\\192.168.14.10\\IT-Backup\\Srv-Fs\\Archives\\");
-    
-    /**
-     Путь к продуктиву
-     */
-    private static final Path COMMON_DIR = Paths.get("\\\\srv-fs.eatmeat.ru\\common_new");
     
     /**
      {@link AppComponents#getLogger(String)}
@@ -83,7 +74,6 @@ public class RestoreFromArchives extends SimpleFileVisitor<Path> {
             pathToRestoreAsStr = "";
             this.pathToRestoreAsStr = pathToRestoreAsStr;
         }
-        Path pathToRestore = Paths.get(pathToRestoreAsStr);
         if (pathToRestoreAsStr.toLowerCase().contains("common_new")) {
             pathToRestoreAsStr = COMPILE.split(pathToRestoreAsStr)[1];
         }
@@ -109,7 +99,6 @@ public class RestoreFromArchives extends SimpleFileVisitor<Path> {
             else {
                 this.pathToRestoreAsStr = new String(pathToRestoreAsStr.getBytes(), Charset.defaultCharset());
             }
-            
             getFirstLevelDirs();
         }
         catch (ArrayIndexOutOfBoundsException ignore) {
@@ -125,8 +114,8 @@ public class RestoreFromArchives extends SimpleFileVisitor<Path> {
     public String toString() {
         final StringBuilder sb = new StringBuilder("RestoreFromArchives <br>");
         sb.append("\n ").append(resultStr);
-        sb.append("\n<p> <font color=\"grey\">ARCHIVE_DIR=").append(ARCHIVE_DIR);
-        sb.append("\n<br> COMMON_DIR=").append(COMMON_DIR);
+        sb.append("\n<p> <font color=\"grey\">ARCHIVE_DIR=").append(ConstantsFor.ARCHIVE_DIR);
+        sb.append("\n<br> COMMON_DIR=").append(ConstantsFor.COMMON_DIR);
         sb.append("\n<br> firstLeverSTR='").append(firstLeverSTR).append('\'');
         sb.append("\n<br> pathToRestoreAsStr='").append(pathToRestoreAsStr).append('\'');
         sb.append("\n<br> perionDays='").append(perionDays).append('\'');
@@ -140,7 +129,7 @@ public class RestoreFromArchives extends SimpleFileVisitor<Path> {
         String pathInArch = pathToRestoreAsStr;
         String pathInCommon = pathToRestoreAsStr;
         try {
-            if (attrs.isDirectory() && dir.toString().equals(ARCHIVE_DIR.toString())) {
+            if (attrs.isDirectory() && dir.toString().equals(ConstantsFor.ARCHIVE_DIR.toString())) {
                 pathInArch = dir.toString();
             }
             else {
@@ -178,7 +167,7 @@ public class RestoreFromArchives extends SimpleFileVisitor<Path> {
     
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-        String filePathStr = COMMON_DIR + pathToRestoreAsStr;
+        String filePathStr = ConstantsFor.COMMON_DIR + pathToRestoreAsStr;
         if (attrs.isRegularFile() && filePathStr.contains(".")) {
             return fileChecker(filePathStr, file, attrs.lastModifiedTime());
         }
@@ -193,11 +182,11 @@ public class RestoreFromArchives extends SimpleFileVisitor<Path> {
     }
     
     Path getArchiveDir() {
-        return ARCHIVE_DIR;
+        return ConstantsFor.ARCHIVE_DIR;
     }
     
     Path getCommonDir() {
-        return COMMON_DIR;
+        return ConstantsFor.COMMON_DIR;
     }
     
     /**
@@ -210,17 +199,6 @@ public class RestoreFromArchives extends SimpleFileVisitor<Path> {
         this.firstLeverSTR = dirs[0];
     }
     
-    /**
-     Проверка имени.
-     Usages: {@link #visitFile(Path, BasicFileAttributes)}
-     
-     @param filePathStr {@link #COMMON_DIR} + {@link #pathToRestoreAsStr}
-     @param file путь до файла из {@link #visitFile(Path, BasicFileAttributes)}
-     @param fileTime {@link BasicFileAttributes#lastModifiedTime()}
-     @return {@link FileVisitResult#CONTINUE}
-     
-     @throws IOException {@link Files#size(Path)}, {@link #copyFile(String)}
-     */
     private FileVisitResult fileChecker(String filePathStr, Path file, FileTime fileTime) throws IOException {
         List<String> fileNamesList = new ArrayList<>();
         File newCommonFile = new File(filePathStr);
@@ -248,12 +226,13 @@ public class RestoreFromArchives extends SimpleFileVisitor<Path> {
     }
     
     private FileVisitResult directoryMatch(String pathInArch) throws IOException {
-        String commonNeed = COMMON_DIR + pathInArch;
+        String commonNeed = ConstantsFor.COMMON_DIR + pathInArch;
         Path restInCommon = Paths.get(commonNeed);
-        commonNeed = ARCHIVE_DIR + "\\" + pathInArch;
-        Path restInArch = Paths.get(commonNeed);
+        Path restInArch = Paths.get(ConstantsFor.ARCHIVE_DIR + pathInArch);
         File[] files = restInArch.toFile().listFiles();
-        if (restInCommon.toFile().isDirectory()) {
+    
+        commonNeed = ConstantsFor.ARCHIVE_DIR + "\\" + pathInArch;
+        if (restInCommon.toAbsolutePath().toFile().isDirectory()) {
             resultStr
                 .append("Похоже что вы ищете папку - ")
                 .append(restInCommon.toAbsolutePath())

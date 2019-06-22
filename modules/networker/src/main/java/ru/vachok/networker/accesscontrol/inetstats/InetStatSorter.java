@@ -104,7 +104,8 @@ public class InetStatSorter implements Runnable {
                 toWriteStatsSet.addAll(FileSystemWorker.readFileToSet(nextFile.toPath()));
                 nextFile.deleteOnExit();
             }
-            boolean isWrite = FileSystemWorker.writeFile(finalFile.getAbsolutePath(), toWriteStatsSet.stream());
+            boolean isWrite = FileSystemWorker
+                .writeFile(finalFile.getAbsolutePath(), toWriteStatsSet.stream()); //fixme 23.06.2019 (1:22) java.io.IOException: Couldn't get lock for FileSystemWorker.log
             System.out.println(isWrite);
         }
         else {
