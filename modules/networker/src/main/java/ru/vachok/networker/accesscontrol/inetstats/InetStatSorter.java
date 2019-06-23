@@ -97,13 +97,18 @@ public class InetStatSorter implements Runnable {
         }
         if (queueCSVFilesFromRoot.size() > 0) {
             System.out.println("Adding statistics to: " + finalFile.getAbsolutePath());
+            boolean isDelete = false;
             for (File nextFile : queueCSVFilesFromRoot) {
                 toWriteStatsSet.addAll(FileSystemWorker.readFileToSet(nextFile.toPath()));
-                nextFile.deleteOnExit();
+                isDelete = nextFile.delete();
+                if (!isDelete) {
+                    nextFile.deleteOnExit();
+                }
             }
             boolean isWrite = FileSystemWorker
                 .writeFile(finalFile.getAbsolutePath(), toWriteStatsSet.stream()); //fixme 23.06.2019 (1:22) java.io.IOException: Couldn't get lock for FileSystemWorker.log
-            System.out.println(isWrite);
+            System.out.println(isWrite + " write: " + finalFile.getAbsolutePath());
+            System.out.println(isDelete + " deleted temp csv.");
         }
         else {
             System.out.println(finalFile.getAbsolutePath() + " is NOT modified.");
