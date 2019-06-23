@@ -3,7 +3,6 @@
 package ru.vachok.networker.net;
 
 
-import org.springframework.lang.Nullable;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
@@ -23,8 +22,6 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
 
@@ -50,8 +47,7 @@ public class PCUserResolver extends ADSrv implements InfoWorker {
      
      @see #getLastTimeUse(String)
      */
-    @Nullable
-    private String lastUsersDirFileUsedName;
+    private String lastUsersDirFileUsedName = null;
     
     private String pcName;
     
@@ -63,17 +59,23 @@ public class PCUserResolver extends ADSrv implements InfoWorker {
     }
     
     @Override public String getInfoAbout() {
-        return namesToFile();
+        System.out.println();
+        System.out.println();
+        System.out.println(namesToFile()); //fixme 23.06.2019 (15:56)
+        System.out.println();
+        System.out.println();
+        File file = new File(pcName);
+        return file.getAbsolutePath() + " " + file.length() + ConstantsFor.STR_BYTES;
     }
     
     @Override public void setInfo() {
         try {
             this.pcIsOnline = InetAddress.getByName(pcName).isReachable((int) (ConstantsFor.DELAY * 5));
-            getInfoAbout();
         }
         catch (IOException e) {
             messageToUser.error(e.getMessage());
         }
+        getInfoAbout();
     }
     
     private void searchForUser() {
@@ -115,17 +117,11 @@ public class PCUserResolver extends ADSrv implements InfoWorker {
         catch (IOException | ArrayIndexOutOfBoundsException | NullPointerException ignored) {
             //
         }
-        if (!(lastUsersDirFileUsedName == null)) {
-            recAutoDB(pcName, lastUsersDirFileUsedName);
+        if (lastUsersDirFileUsedName != null) {
+            recAutoDB(pcName, lastUsersDirFileUsedName); //fixme 23.06.2019 (15:56) не запускается метод
             return lastUsersDirFileUsedName;
         }
-        try {
-            Files.deleteIfExists(pcNameFile.toPath().toAbsolutePath().normalize());
-        }
-        catch (IOException e) {
-            pcNameFile.deleteOnExit();
-        }
-        
+        pcNameFile.deleteOnExit();
         return pcNameFile.toPath().toAbsolutePath().normalize().toString() + " exists " + pcNameFile.exists();
     }
     
@@ -151,9 +147,9 @@ public class PCUserResolver extends ADSrv implements InfoWorker {
                 String[] split = lastFileUse.split(" ");
                 preparedStatement.setString(1, pcName);
                 preparedStatement.setString(2, split[0]);
-                preparedStatement.setString(3, IntStream.of(2, 3, 4).mapToObj(i->split[i]).collect(Collectors.joining()));
+                preparedStatement.setString(3, ConstantsFor.thisPC());
                 preparedStatement.setString(4, split[7]);
-                preparedStatement.executeUpdate();
+                System.out.println(preparedStatement.executeUpdate() + " " + sql);
             }
             catch (SQLException e) {
                 System.err.println(e.getMessage() + " " + getClass().getSimpleName());

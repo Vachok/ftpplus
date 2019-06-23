@@ -30,7 +30,6 @@ import java.util.concurrent.TimeUnit;
  Пинги, и тп
 
  @since 31.01.2019 (0:20) */
-@SuppressWarnings("StaticMethodOnlyUsedInOneClass")
 class ConditionChecker implements InfoWorker {
 
 
