@@ -3,6 +3,7 @@
 package ru.vachok.networker.net;
 
 
+import org.springframework.lang.Nullable;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
@@ -13,6 +14,7 @@ import ru.vachok.networker.services.ADSrv;
 import ru.vachok.networker.services.MessageLocal;
 
 import java.io.*;
+import java.net.InetAddress;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.sql.Connection;
@@ -33,7 +35,6 @@ import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
  @since 02.10.2018 (17:32) */
 public class PCUserResolver extends ADSrv implements InfoWorker {
     
-    
     private static final String METHNAME_REC_AUTO_DB = "PCUserResolver.recAutoDB";
     
     private static final MessageToUser messageToUser = new MessageLocal(PCUserResolver.class.getSimpleName());
@@ -49,9 +50,12 @@ public class PCUserResolver extends ADSrv implements InfoWorker {
      
      @see #getLastTimeUse(String)
      */
-    private String lastFileUse = "null";
+    @Nullable
+    private String lastUsersDirFileUsedName;
     
     private String pcName;
+    
+    private boolean pcIsOnline;
     
     
     public PCUserResolver(String pcName) {
@@ -59,13 +63,17 @@ public class PCUserResolver extends ADSrv implements InfoWorker {
     }
     
     @Override public String getInfoAbout() {
-        namesToFile();
-        File file = new File(pcName);
-        return file.getAbsolutePath() + " " + file.length() + ConstantsFor.STR_BYTES;
+        return namesToFile();
     }
     
     @Override public void setInfo() {
-        getInfoAbout();
+        try {
+            this.pcIsOnline = InetAddress.getByName(pcName).isReachable((int) (ConstantsFor.DELAY * 5));
+            getInfoAbout();
+        }
+        catch (IOException e) {
+            messageToUser.error(e.getMessage());
+        }
     }
     
     private void searchForUser() {
@@ -82,7 +90,7 @@ public class PCUserResolver extends ADSrv implements InfoWorker {
         });
     }
     
-    private void namesToFile() {
+    private String namesToFile() {
         File[] files;
         File pcNameFile = new File("null");
         try {
@@ -95,23 +103,30 @@ public class PCUserResolver extends ADSrv implements InfoWorker {
     
         try (OutputStream outputStream = new FileOutputStream(pcNameFile)) {
             try (PrintWriter writer = new PrintWriter(outputStream, true)) {
-    
                 String pathAsStr = new StringBuilder().append("\\\\").append(pcName).append("\\c$\\Users\\").toString();
-                lastFileUse = USERS.split(getLastTimeUse(pathAsStr))[1];
+                lastUsersDirFileUsedName = USERS.split(getLastTimeUse(pathAsStr))[1];
                 files = new File(pathAsStr).listFiles();
                 writer
                     .append(PATTERN.matcher(Arrays.toString(files)).replaceAll(Matcher.quoteReplacement("\n")))
                     .append("\n\n\n")
-                    .append(lastFileUse);
+                    .append(lastUsersDirFileUsedName);
             }
         }
         catch (IOException | ArrayIndexOutOfBoundsException | NullPointerException ignored) {
             //
         }
-        if (lastFileUse != null) {
-            recAutoDB(pcName, lastFileUse);
+        if (!(lastUsersDirFileUsedName == null)) {
+            recAutoDB(pcName, lastUsersDirFileUsedName);
+            return lastUsersDirFileUsedName;
         }
-        pcNameFile.deleteOnExit();
+        try {
+            Files.deleteIfExists(pcNameFile.toPath().toAbsolutePath().normalize());
+        }
+        catch (IOException e) {
+            pcNameFile.deleteOnExit();
+        }
+        
+        return pcNameFile.toPath().toAbsolutePath().normalize().toString() + " exists " + pcNameFile.exists();
     }
     
     /**
@@ -127,7 +142,7 @@ public class PCUserResolver extends ADSrv implements InfoWorker {
      */
     private void recAutoDB(String pcName, String lastFileUse) {
         this.pcName = pcName;
-        this.lastFileUse = lastFileUse;
+        this.lastUsersDirFileUsedName = lastFileUse;
         final String sql = "insert into pcuser (pcName, userName, lastmod, stamp) values(?,?,?,?)";
         
         try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
@@ -160,16 +175,18 @@ public class PCUserResolver extends ADSrv implements InfoWorker {
      @param pathAsStr путь, который нужно пролистать.
      @return {@link PCUserResolver.WalkerToUserFolder#getTimePath()} последняя запись из списка.
      */
-    private static String getLastTimeUse(String pathAsStr) {
+    private String getLastTimeUse(String pathAsStr) {
         PCUserResolver.WalkerToUserFolder walkerToUserFolder = new PCUserResolver.WalkerToUserFolder();
         try {
-            Files.walkFileTree(Paths.get(pathAsStr), Collections.singleton(FOLLOW_LINKS), 2, walkerToUserFolder);
+            if (pcIsOnline) {
+                Files.walkFileTree(Paths.get(pathAsStr), Collections.singleton(FOLLOW_LINKS), 2, walkerToUserFolder);
+            }
             List<String> timePath = walkerToUserFolder.getTimePath();
             Collections.sort(timePath);
             return timePath.get(timePath.size() - 1);
         }
         catch (IOException | IndexOutOfBoundsException e) {
-            return e.getMessage();
+            return e.getMessage() + " " + getClass().getSimpleName() + ".getLastTimeUse";
         }
     }
     

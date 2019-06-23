@@ -12,8 +12,8 @@ import org.testng.annotations.Test;
     
     @Test
     public void testRun() {
-        PCUserResolver pcUserResolver = new PCUserResolver("do0213");
-        pcUserResolver.setInfo(); //todo 22.06.2019 (22:57) Проверка на доступность хоста.
+        PCUserResolver pcUserResolver = new PCUserResolver("do0213.eatmeat.ru");
+        pcUserResolver.setInfo();
         String resolverInfoAbout = pcUserResolver.getInfoAbout();
         Assert.assertFalse(resolverInfoAbout.isEmpty(), resolverInfoAbout);
     }
