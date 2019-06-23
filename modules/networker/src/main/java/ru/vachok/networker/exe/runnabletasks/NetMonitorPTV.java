@@ -109,7 +109,7 @@ public class NetMonitorPTV implements Runnable {
             AppComponents.threadConfig().thrNameSet(getClass().getSimpleName());
             this.outputStream = new FileOutputStream(pingTv);
             this.printStream = new PrintStream(outputStream, true);
-            AppComponents.getProps().setProperty(this.getClass().getSimpleName(), new Date().toString());
+            AppComponents.getProps().setProperty(this.getClass().getSimpleName(), new Date().toString()); //todo проверить работу и кол-во вызовов
             Preferences userPref = AppComponents.getUserPref();
             userPref.put(ConstantsFor.FILENAME_PTV, new Date().toString());
             userPref.sync();
