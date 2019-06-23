@@ -48,8 +48,7 @@ public class InetStatSorter implements Runnable {
     public void sortFiles() {
         File[] rootFiles = new File(".").listFiles();
         Map<File, String> mapFileStringIP = new TreeMap<>();
-        Set<String> ipsSet = new TreeSet<>();
-        
+    
         for (File fileFromRoot : Objects.requireNonNull(rootFiles)) {
             if (fileFromRoot.getName().toLowerCase().contains(".csv")) {
                 try {
@@ -65,9 +64,9 @@ public class InetStatSorter implements Runnable {
             FileSystemWorker.writeFile("no.csv", new Date().toString());
         }
         else {
-            mapFileStringIP.values().stream().forEach(ipAddr->ipsSet.add(ipAddr));
+            Set<String> ipsSet = new TreeSet<>(mapFileStringIP.values());
             ipsSet.forEach(ip->{
-                Queue<File> csvTMPFilesQueue = new LinkedList<>();
+                Collection<File> csvTMPFilesQueue = new LinkedList<>();
                 for (File file : mapFileStringIP.keySet()) {
                     if (file.getName().contains("_") & file.getName().contains(ip)) {
                         csvTMPFilesQueue.add(file);
@@ -86,21 +85,19 @@ public class InetStatSorter implements Runnable {
         return sb.toString();
     }
     
-    private void makeCSV(String ip, Queue<File> queueCSVFilesFromRoot) {
-        String fileSepar = System.getProperty("file.separator");
-        String pathInetStats = Paths.get(".").toAbsolutePath().normalize() + fileSepar + ConstantsFor.STR_INETSTATS + fileSepar;
+    private void makeCSV(String ip, Collection<File> queueCSVFilesFromRoot) {
+        String fileSeparator = System.getProperty(ConstantsFor.PRSYS_SEPARATOR);
+        String pathInetStats = Paths.get(".").toAbsolutePath().normalize() + fileSeparator + ConstantsFor.STR_INETSTATS + fileSeparator;
         File finalFile = new File(pathInetStats + ip + ".csv");
         
-        Set<String> toWriteStatsSet = new TreeSet<>();
+        Set<String> toWriteStatsSet = new HashSet<>();
         
         if (finalFile.exists() & queueCSVFilesFromRoot.size() > 0) {
             toWriteStatsSet.addAll(FileSystemWorker.readFileToSet(finalFile.toPath()));
         }
         if (queueCSVFilesFromRoot.size() > 0) {
             System.out.println("Adding statistics to: " + finalFile.getAbsolutePath());
-            Iterator<File> fileIterator = queueCSVFilesFromRoot.iterator();
-            while (fileIterator.hasNext()) {
-                File nextFile = fileIterator.next();
+            for (File nextFile : queueCSVFilesFromRoot) {
                 toWriteStatsSet.addAll(FileSystemWorker.readFileToSet(nextFile.toPath()));
                 nextFile.deleteOnExit();
             }
