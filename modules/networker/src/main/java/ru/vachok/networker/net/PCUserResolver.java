@@ -6,6 +6,7 @@ package ru.vachok.networker.net;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.ad.user.DataBaseADUsersSRV;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -51,8 +52,6 @@ public class PCUserResolver extends ADSrv implements InfoWorker {
     
     private String pcName;
     
-    private boolean pcIsOnline;
-    
     
     public PCUserResolver(String pcName) {
         this.pcName = pcName;
@@ -69,12 +68,6 @@ public class PCUserResolver extends ADSrv implements InfoWorker {
     }
     
     @Override public void setInfo() {
-        try {
-            this.pcIsOnline = InetAddress.getByName(pcName).isReachable((int) (ConstantsFor.DELAY * 5));
-        }
-        catch (IOException e) {
-            messageToUser.error(e.getMessage());
-        }
         getInfoAbout();
     }
     
@@ -114,8 +107,11 @@ public class PCUserResolver extends ADSrv implements InfoWorker {
                     .append(lastUsersDirFileUsedName);
             }
         }
-        catch (IOException | ArrayIndexOutOfBoundsException | NullPointerException ignored) {
+        catch (IOException | ArrayIndexOutOfBoundsException ignored) {
             //
+        }
+        catch (NullPointerException n) {
+            System.err.println(new TForms().fromArray(n, false));
         }
         if (lastUsersDirFileUsedName != null) {
             recAutoDB(pcName, lastUsersDirFileUsedName); //fixme 23.06.2019 (15:56) не запускается метод
@@ -174,7 +170,7 @@ public class PCUserResolver extends ADSrv implements InfoWorker {
     private String getLastTimeUse(String pathAsStr) {
         PCUserResolver.WalkerToUserFolder walkerToUserFolder = new PCUserResolver.WalkerToUserFolder();
         try {
-            if (pcIsOnline) {
+            if (InetAddress.getByName(pcName).isReachable(ConstantsFor.TIMEOUT_650)) {
                 Files.walkFileTree(Paths.get(pathAsStr), Collections.singleton(FOLLOW_LINKS), 2, walkerToUserFolder);
             }
             List<String> timePath = walkerToUserFolder.getTimePath();
