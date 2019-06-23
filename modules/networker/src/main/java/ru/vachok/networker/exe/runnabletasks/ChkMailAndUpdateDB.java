@@ -1,8 +1,9 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.exe.runnabletasks;
 
 
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.messenger.email.ESender;
 import ru.vachok.mysqlandprops.EMailAndDB.MailMessages;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
@@ -14,6 +15,7 @@ import javax.mail.Flags;
 import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.MessagingException;
+import java.io.File;
 import java.io.IOException;
 import java.sql.*;
 import java.time.DayOfWeek;
@@ -50,11 +52,6 @@ class ChkMailAndUpdateDB {
         this.checker = checker;
     }
     
-    /**
-     {@link String} {@code msg}
-     <p>
-     msg = {@link #chechMail()} + new {@link Date}({@link #rtLong}).
-     */
     void runCheck() {
         String msg = "NO MSG";
         try {
@@ -64,7 +61,11 @@ class ChkMailAndUpdateDB {
             msg = e.getMessage();
         }
         msg = msg + "\n" + new Date(checker.getRtLong());
-        messageToUser.info(msg);
+        File chkMailFile = new File("ChkMailAndUpdateDB.chechMail");
+        if (chkMailFile.exists()) {
+            msg = msg + " see: " + chkMailFile.getAbsolutePath();
+        }
+        System.out.println(msg);
     }
     
     /**
@@ -116,41 +117,16 @@ class ChkMailAndUpdateDB {
         return stringBuilder.toString();
     }
     
-    /**
-     Сверяет почту и базу.
-     <p>
-     1. {@link #checkDB()} преобразуем в строку. 2. {@link TForms#fromArray(java.util.Map, boolean)}. <br>
-     3. {@link FileSystemWorker#writeFile(String, List)} запишем в файл. <br>
-     4. {@link #parseMsg(javax.mail.Message, String)} сверка наличия.
-     
-     @return строку из {@link #checkDB()} .
-     
-     @see #run()
-     */
     private String chechMail() {
         Message[] messagesBot = mailMessages.call();
         String chDB = new TForms().fromArray(checkDB(), false);
-        FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".chechMail", Collections.singletonList(chDB));
+        boolean isWriteFile = FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".chechMail", Collections.singletonList(chDB));
         for (Message m : messagesBot) {
             parseMsg(m, chDB);
         }
-        return chDB;
+        return chDB + " file written - " + isWriteFile;
     }
     
-    /**
-     Проверяет базу данных.
-     <p>
-     DB name - {@link ConstantsFor#DBBASENAME_U0466446_LIFERPG} speed.
-     <p>
-     <b>{@link SQLException}:</b> <br>
-     {@link TForms#fromArray(Exception, boolean)} запишем исключение в файл. <br><br>
-     <b>Далее:</b><br>
-     {@link #todayInfo()} вывод через {@link #LOGGER} <br>
-     
-     @return {@link Map}. {@link ConstantsFor#DBFIELD_TIMESTAMP} - значения.
-     
-     @see #chechMail()
-     */
     private Map<String, String> checkDB() {
         Map<String, String> retMap = new HashMap<>();
         final String sql = ConstantsFor.DBQUERY_SELECTFROMSPEED;
@@ -174,20 +150,6 @@ class ChkMailAndUpdateDB {
         return retMap;
     }
     
-    /**
-     Парсинг сообщений от бота.
-     <p>
-     {@link ESender} ({@link ConstantsFor#MAILADDR_143500GMAILCOM}). <br>
-     Если тема сообщения содержит {@code speed:}, берётся дата отправки {@link Message#getSentDate()}.
-     <p>
-     Если {@link #writeDB(String, int, long)}, удалим сообщение {@link #delMessage(Message)}.
-     <p>
-     Отправить почту - {@link #todayInfo()}.
-     
-     @param m {@link Message}
-     @param chDB инфо из БД
-     @see #chechMail()
-     */
     private void parseMsg(Message m, String chDB) {
         try {
             String subjMail = m.getSubject();

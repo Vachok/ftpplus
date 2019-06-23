@@ -4,7 +4,6 @@ package ru.vachok.networker.exe.schedule;
 
 
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.abstr.DataBaseRegSQL;
 import ru.vachok.networker.services.MessageLocal;
@@ -13,6 +12,7 @@ import ru.vachok.networker.statistics.PCStats;
 import ru.vachok.networker.statistics.StatsOfNetAndUsers;
 import ru.vachok.networker.systray.MessageToTray;
 
+import java.time.LocalDate;
 import java.util.List;
 
 
@@ -20,6 +20,9 @@ import java.util.List;
  Сбор статы по-недельно
  <p>
  Устойчивость (in/(in+out)): 2/(2+6) = 0.25 (устойчив на 75%);
+ 
+ @see InteretStats
+ @see PCStats
  @since 08.12.2018 (0:12) */
 public class WeekStats implements Runnable, StatsOfNetAndUsers {
     
@@ -43,6 +46,13 @@ public class WeekStats implements Runnable, StatsOfNetAndUsers {
     public WeekStats(String sql) {
         this.sql = sql;
         this.fileName = ConstantsFor.FILENAME_VELKOMPCUSERAUTOTXT;
+    }
+    
+    @Override public String toString() {
+        final StringBuilder sb = new StringBuilder("WeekStats{");
+        sb.append(LocalDate.now().getDayOfWeek());
+        sb.append('}');
+        return sb.toString();
     }
     
     public WeekStats() {
@@ -75,7 +85,6 @@ public class WeekStats implements Runnable, StatsOfNetAndUsers {
     
     @Override
     public void run() {
-        AppComponents.threadConfig().thrNameSet("week");
         final long stArt = System.currentTimeMillis();
         getPCStats();
         getInetStats();

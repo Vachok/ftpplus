@@ -106,10 +106,10 @@ public class MatrixCtr {
      */
     public static void setCurrentProvider() {
         try {
-            MatrixCtr.currentProvider = new Tracerouting().call();
+            currentProvider = new Tracerouting().call();
         }
         catch (Exception e) {
-            MatrixCtr.currentProvider = "<br><a href=\"/makeok\">" + e.getMessage() + "</a><br>";
+            currentProvider = "<br><a href=\"/makeok\">" + e.getMessage() + "</a><br>";
             Thread.currentThread().interrupt();
         }
     }
@@ -142,7 +142,7 @@ public class MatrixCtr {
             timeStamp(new SimpleCalculator(), model, workPos);
         }
         else {
-            return matrixAccess(workPos);
+            return matrixAccess(workPos, model);
         }
         return ConstantsFor.BEANNAME_MATRIX;
     }
@@ -273,7 +273,7 @@ public class MatrixCtr {
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
         if (getUserPC(request).toLowerCase().contains(ConstantsFor.HOSTNAME_DO213) ||
             getUserPC(request).toLowerCase().contains("0:0:0:0")) {
-            model.addAttribute(ConstantsFor.ATT_VISIT, new VersionInfo().toString());
+            model.addAttribute(ConstantsFor.ATT_VISIT, AppComponents.versionInfo().toString());
         }
     }
     
@@ -303,23 +303,12 @@ public class MatrixCtr {
         return ConstantsFor.BEANNAME_MATRIX;
     }
     
-    
-    /**
-     Запрос к матрице доступа.
-     <p>
-     <b>SQL - </b> select * from matrix where Doljnost like '%%%s%%
-     <p>
-     1. {@link MatrixSRV#getWorkPosition(java.lang.String)} проверим базу на наличие позиции. <br>
-     2. {@link MatrixSRV#setWorkPos(java.lang.String)}.
-     <p>
-     
-     @param workPos {@link MatrixSRV#getWorkPos()}
-     @return {@link #REDIRECT_MATRIX}
-     */
-    private String matrixAccess(String workPos) {
-        String workPosition = this.matrixSRV.getWorkPosition(String.format("select * from matrix where Doljnost like '%%%s%%';", workPos));
+    private String matrixAccess(String workPos, Model model) {
+        String workPosition = this.matrixSRV.searchAccessPrincipals(workPos);
         this.matrixSRV.setWorkPos(workPosition);
-        LOGGER.info(workPosition);
-        return REDIRECT_MATRIX;
+        model.addAttribute("ok", workPosition);
+        model.addAttribute(ConstantsFor.ATT_HEAD, new PageFooter().getHeaderUtext());
+        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
+        return "ok";
     }
 }

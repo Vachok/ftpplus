@@ -1,9 +1,8 @@
 package ru.vachok.networker.accesscontrol.common;
 
 
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
@@ -30,7 +29,8 @@ public class CommonScan2YOlder extends SimpleFileVisitor<Path> implements Callab
     private String fileName = "files_2.5_years_old_25mb.csv";
 
     private String date;
-
+    
+    @NotNull
     private String startPath;
     
     private long dirsCounter;
@@ -38,20 +38,20 @@ public class CommonScan2YOlder extends SimpleFileVisitor<Path> implements Callab
     private long filesCounter;
 
     private StringBuilder msgBuilder = new StringBuilder();
-
-    public CommonScan2YOlder() {
+    
+    public CommonScan2YOlder(String fileName) {
+        super();
+        this.startPath = fileName;
+        Thread.currentThread().setName(getClass().getSimpleName() + " " + fileName);
+    }
+    
+    private CommonScan2YOlder() {
         try (OutputStream outputStream = new FileOutputStream(fileName)) {
             printWriter = new PrintWriter(outputStream, true);
         } catch (IOException e) {
             LOGGER.warn(e.getMessage(), e);
         }
         AppComponents.threadConfig().thrNameSet("2YOld");
-    }
-
-    CommonScan2YOlder(String fileName) {
-        super();
-        this.startPath = fileName;
-        Thread.currentThread().setName(getClass().getSimpleName() + " " + fileName);
     }
 
     public String getStartPath() {
@@ -70,22 +70,14 @@ public class CommonScan2YOlder extends SimpleFileVisitor<Path> implements Callab
     public String call() {
         LOGGER.warn("CommonScan2YOlder.call");
         try {
-            Files.walkFileTree(Paths.get(startPath), archivesSorter());
-        } catch (IOException e) {
+            Files.walkFileTree(Paths.get(startPath), this);
+        }
+        catch (IOException | NullPointerException e) {
             LOGGER.error(e.getMessage(), e);
         }
         String msg = dirsCounter + " dirs scanned";
         LOGGER.warn(msg);
         return fileRead();
-    }
-
-    /**
-     @return new instance
-     */
-    @Bean
-    @Scope (ConstantsFor.SINGLETON)
-    public static CommonScan2YOlder archivesSorter() {
-        return new CommonScan2YOlder();
     }
 
     /**

@@ -4,10 +4,10 @@ package ru.vachok.ostpst.usermenu;
 
 
 import com.pff.PSTException;
-import ru.vachok.messenger.MessageCons;
-import ru.vachok.messenger.MessageToUser;
 import ru.vachok.ostpst.ConstantsOst;
 import ru.vachok.ostpst.MakeConvertOrCopy;
+import ru.vachok.ostpst.api.MessageToUser;
+import ru.vachok.ostpst.api.MessengerOST;
 import ru.vachok.ostpst.fileworks.ConverterImpl;
 import ru.vachok.ostpst.utils.FileSystemWorkerOST;
 import ru.vachok.ostpst.utils.TFormsOST;
@@ -31,7 +31,7 @@ public class MenuItemsConsoleImpl implements MenuItems {
     
     private static long folderID;
     
-    private MessageToUser messageToUser = new MessageCons(getClass().getSimpleName());
+    private MessageToUser messageToUser = new MessengerOST(getClass().getSimpleName());
     
     private String fileName;
     

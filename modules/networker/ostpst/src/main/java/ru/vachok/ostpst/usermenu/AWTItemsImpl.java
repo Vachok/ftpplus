@@ -4,10 +4,11 @@ package ru.vachok.ostpst.usermenu;
 
 
 import com.pff.PSTException;
-import ru.vachok.messenger.MessageSwing;
-import ru.vachok.messenger.MessageToUser;
 import ru.vachok.ostpst.ConstantsOst;
 import ru.vachok.ostpst.MakeConvertOrCopy;
+import ru.vachok.ostpst.api.InitProperties;
+import ru.vachok.ostpst.api.MessageToUser;
+import ru.vachok.ostpst.api.MessengerOST;
 import ru.vachok.ostpst.fileworks.ConverterImpl;
 import ru.vachok.ostpst.fileworks.nopst.Downloader;
 import ru.vachok.ostpst.usermenu.traymenu.TrayMenu;
@@ -23,13 +24,15 @@ import java.util.prefs.Preferences;
 public class AWTItemsImpl implements MenuItems {
     
     
-    private final MessageToUser messageToUser = new MessageSwing();
+    private final MessageToUser messageToUser = new MessengerOST(getClass().getSimpleName());
     
     private static String fileName;
     
     private static String userInput;
     
     private static AWTItemsImpl awtItems = new AWTItemsImpl();
+    
+    private static InitProperties initProperties;
     
     private AWTItemsImpl() {
         initIcon();
@@ -56,7 +59,8 @@ public class AWTItemsImpl implements MenuItems {
     
     private MakeConvertOrCopy makeConvertOrCopy;
     
-    public static AWTItemsImpl getI() {
+    public static AWTItemsImpl getI(InitProperties initProperties) {
+        AWTItemsImpl.initProperties = initProperties;
         return getAwtItems(fileName);
     }
     
@@ -96,7 +100,7 @@ public class AWTItemsImpl implements MenuItems {
     }
     
     private void copyFile() {
-        Downloader downloader = new Downloader(fileName, "tmp_" + Paths.get(fileName).toAbsolutePath().normalize().getFileName());
+        Downloader downloader = new Downloader(fileName, "tmp_" + Paths.get(fileName).toAbsolutePath().normalize().getFileName(), initProperties);
         downloader.setBufLen(ConstantsOst.KBYTE_BYTES * ConstantsOst.KBYTE_BYTES * 42);
         downloader.continuousCopy();
     }

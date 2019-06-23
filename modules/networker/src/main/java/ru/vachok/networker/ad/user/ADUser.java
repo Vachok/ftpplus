@@ -242,6 +242,8 @@ public class ADUser {
     @Override public String toString() {
         final StringBuilder sb = new StringBuilder("ADUser{");
         sb.append("samAccountName='").append(samAccountName).append('\'');
+        sb.append("distinguishedName='").append(distinguishedName).append('\'');
+        sb.append("enabled='").append(enabled).append('\'');
         sb.append('}');
         return sb.toString();
     }

@@ -13,8 +13,8 @@ import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.accesscontrol.PfLists;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.AccessListsCheckUniq;
+import ru.vachok.networker.net.enums.SwitchesWiFi;
 import ru.vachok.networker.services.MessageLocal;
-import ru.vachok.networker.services.SystemRuntime;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -22,16 +22,16 @@ import java.io.FileNotFoundException;
 
 /**
  Список-выгрузка с сервера доступа в интернет
- 
+
  @since 10.09.2018 (11:49) */
 @Service
 public class PfListsSrv {
     
     
     private static final String DEFAULT_CONNECT_SRV = whatSrv();
-    
+
     private static MessageToUser messageToUser = new MessageLocal(PfListsSrv.class.getSimpleName());
-    
+
     /**
      {@link PfLists}
      */
@@ -41,7 +41,7 @@ public class PfListsSrv {
      SSH-команда.
      <p>
      При инициализации: {@code uname -a && exit}.
- 
+     
      @see PfListsCtr#runCommand(org.springframework.ui.Model, PfListsSrv)
      @see #runCom()
      */
@@ -50,8 +50,8 @@ public class PfListsSrv {
     /**
      {@code this.builderInst}
      <p>
-     new {@link SSHFactory.Builder} ({@link ConstantsFor#IPADDR_SRVNAT} , {@link #commandForNatStr}).
- 
+     new {@link SSHFactory.Builder} ({@link SwitchesWiFi#IPADDR_SRVNAT} , {@link #commandForNatStr}).
+
      @param pfLists {@link #pfListsInstAW}
      */
     @Autowired
@@ -70,7 +70,6 @@ public class PfListsSrv {
         return commandForNatStr;
     }
     
-    
     /**
      @param commandForNatStr {@link #commandForNatStr}
      */
@@ -84,7 +83,7 @@ public class PfListsSrv {
             return new SSHFactory.Builder(DEFAULT_CONNECT_SRV, commandForNatStr, getClass().getSimpleName()).build().call();
         }
         else {
-            return new SystemRuntime(commandForNatStr).call();
+            return "22.06.2019 (8:01)";
         }
     }
     
@@ -114,7 +113,7 @@ public class PfListsSrv {
     
     private static String whatSrv() {
         if (ConstantsFor.thisPC().toLowerCase().contains("rups")) {
-            return ConstantsFor.IPADDR_SRVNAT;
+            return SwitchesWiFi.IPADDR_SRVNAT;
         }
         else {
             return ConstantsFor.IPADDR_SRVGIT;

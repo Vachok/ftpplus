@@ -154,6 +154,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         catch (IOException e) {
             messageToUser.error(FileSystemWorker.class.getSimpleName(), e.getMessage(), new TForms().fromArray(e, false));
         }
+        messageToUser.info(FileSystemWorker.class.getSimpleName(), fileName, "is written");
         return new File(fileName).exists();
     }
     
@@ -229,6 +230,25 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
             messageToUser.error(e.getMessage());
         }
         return retSet;
+    }
+    
+    public static boolean writeFile(String path, Map<?, ?> map) {
+        List toWriteList = new ArrayList();
+        map.forEach((k, v)->{
+            String addToListString = new StringBuilder().append(k).append(" ").append(v).toString();
+            toWriteList.add(addToListString);
+        });
+        return writeFile(path, toWriteList.stream());
+    }
+    
+    public static void appendObjToFile(File fileForAppend, Object objectToAppend) {
+        try (OutputStream outputStream = new FileOutputStream(fileForAppend, true);
+             PrintStream printStream = new PrintStream(outputStream, true)) {
+            printStream.println(objectToAppend);
+        }
+        catch (IOException e) {
+            messageToUser.error(e.getMessage());
+        }
     }
     
     private static boolean printTo(OutputStream outputStream, Exception e) {

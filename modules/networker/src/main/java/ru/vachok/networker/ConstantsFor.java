@@ -29,6 +29,8 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.time.Year;
@@ -48,7 +50,7 @@ import java.util.concurrent.TimeUnit;
 public enum ConstantsFor {
     ;
     
-    public static String FILE_PREFIX_SEARCH_ = "search_";
+    public static final String FILE_PREFIX_SEARCH_ = "search_";
     
     public static final String METHNAME_STATIC_INITIALIZER = "static initializer";
     
@@ -246,11 +248,6 @@ public enum ConstantsFor {
     public static final String HOSTNAME_DO213 = "do0213";
     
     /**
-     IP srv-nat.eatmeat.ru
-     */
-    public static final String IPADDR_SRVNAT = "192.168.13.30";
-    
-    /**
      IP stv-git.eatmeat.ru
      */
     public static final String IPADDR_SRVGIT = "192.168.13.42";
@@ -404,7 +401,7 @@ public enum ConstantsFor {
     
     public static final String STR_BYTES = " bytes";
     
-    public static final String DBFIELB_RESPONSE = "response";
+    public static final String DBFIELD_RESPONSE = "response";
     
     public static final String DBFIELD_METHOD = "method";
     
@@ -423,7 +420,7 @@ public enum ConstantsFor {
     /**
      Файл уникальных записей из БД velkom-pcuserauto
      */
-    public static final String FILENAME_PCAUTODISTXT = "pcautodis.txt";
+    public static final String FILENAME_PCAUTOUSERSUNIQ = "pcusersauto.uniq";
     
     public static final String STR_ENCODING = "encoding";
     
@@ -469,6 +466,21 @@ public enum ConstantsFor {
     
     public static final String FILENAME_ONSCAN = ScanOnline.class.getSimpleName() + FILEEXT_ONLIST;
     
+    public static final String RETURN_ERROR = "error";
+    
+    public static final String FILENAME_BUILDGRADLE = "build.gradle";
+    
+    public static final String SQL_SELECTINETSTATS = "SELECT DISTINCT `ip` FROM `inetstats`";
+    
+    /**
+     Название настройки.
+     <p>
+     pingsleep. Сколько делать перерыв в пингах. В <b>миллисекундах</b>.
+     
+     @see AppComponents#getProps()
+     */
+    public static final String PR_PINGSLEEP = "pingsleep";
+    
     static final String STR_FINISH = " is finish";
     
     private static final String[] STRINGS_TODELONSTART = {"visit_", ".tmp", ".log", ".tv"};
@@ -485,11 +497,21 @@ public enum ConstantsFor {
      */
     private static final ConcurrentMap<Integer, MailRule> MAIL_RULES = new ConcurrentHashMap<>();
     
-    public static final String RETURN_ERROR = "error";
+    public static final String PR_ADPHOTOPATH = "adphotopath";
     
-    public static final String FILENAME_BUILDGRADLE = "build.gradle";
+    public static final String STR_INETSTATS = "inetstats";
     
-    public static final String SQL_SELECTINETSTATS = "SELECT DISTINCT `ip` FROM `inetstats`";
+    public static final String FILENAME_STATSZIP = "stats.zip";
+    
+    /**
+     Путь к архиву
+     */
+    public static final Path ARCHIVE_DIR = Paths.get("\\\\192.168.14.10\\IT-Backup\\Srv-Fs\\Archives\\");
+    
+    /**
+     Путь к продуктиву
+     */
+    public static final Path COMMON_DIR = Paths.get("\\\\srv-fs.eatmeat.ru\\common_new");
     
     /**
      @return {@link #MAIL_RULES}
@@ -505,7 +527,7 @@ public enum ConstantsFor {
      */
     public static boolean isPingOK() {
         try {
-            return InetAddress.getByName(PfListsSrv.getDefaultConnectSrv()).isReachable((int) (ConstantsFor.DELAY * 5));
+            return InetAddress.getByName(PfListsSrv.getDefaultConnectSrv()).isReachable((int) (DELAY * 5));
         }
         catch (IOException e) {
             LoggerFactory.getLogger(ConstantsFor.class.getSimpleName()).error(e.getMessage(), e);

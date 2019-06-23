@@ -17,6 +17,7 @@ public class IntoApplicationTest {
             IntoApplication.reloadConfigurableApplicationContext();
         }
         catch (BeanCreationException e) {
+            System.err.println(e.getBeanName() + " " + e.getResourceDescription() + " " + e.getResourceDescription());
             Assert.assertNotNull(e, e.getMessage());
         }
     }

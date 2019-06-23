@@ -54,16 +54,7 @@ public enum ConstantsNet { ;
     public static final int APC = 350;
 
     public static final int DOPC = 250;
-
-    /**
-     Название настройки.
-     <p>
-     pingsleep. Сколько делать перерыв в пингах. В <b>миллисекундах</b>.
- 
-     @see AppComponents#getProps()
-     */
-    public static final String PROP_PINGSLEEP = "pingsleep";
-
+    
     public static final int PPPC = 70;
 
     /**

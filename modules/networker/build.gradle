@@ -1,4 +1,6 @@
 
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 buildscript {
 	ext {
 		springBootVersion = '2.0.4.RELEASE'
@@ -21,10 +23,7 @@ plugins {
 }
 
 group = 'ru.vachok.networker'
-// Copyright (c) all rights. http://networker.vachok.ru 2019.
-
-//noinspection SpellCheckingInspection
-version = '8.0.1924'
+version = '8.0.1925'
 sourceCompatibility = 1.8
 
 repositories {
@@ -48,6 +47,21 @@ dependencies {
     testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: '2.1.2.RELEASE'
 // https://mvnrepository.com/artifact/org.testng/testng
     testCompile group: 'org.testng', name: 'testng', version: '7.0.0-beta3'
+}
+
+sourceSets {
+    main {
+        resources {
+            srcDirs = ["src/main/java", "src/main/resources"]
+            includes = ["**/*.css", "**/*.properties", "**/*.png", "**/*.html", "**/*.sql", "**/*.jar", "**/*.txt","**/*.puml","application.properties","**/*.js"]
+        }
+    }
+    test {
+        resources {
+            srcDirs = ["src/test/java", "src/test/resources"]
+            includes = ["**/*.css", "**/*.properties", "**/*.png", "**/*.jar", "**/*.txt"]
+        }
+    }
 }
 
 buildScan {

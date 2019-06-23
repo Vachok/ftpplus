@@ -11,11 +11,13 @@ import ru.vachok.networker.exe.schedule.WeekStats;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
 
+import java.awt.*;
 import java.io.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.*;
 import java.util.concurrent.Callable;
 
@@ -46,12 +48,27 @@ public class PCStats implements DataBaseRegSQL, Callable<String> {
         return PC_NAMES_IN_TABLE;
     }
     
+    /**
+     {@link ru.vachok.networker.statistics.PCStatsTest#testCall()}
+     <p>
+     
+     @return {@link #toString()}
+     */
     @Override public String call() {
         this.inetStats = statsOfNetAndUsers.getPCStats();
         this.countUni = countStat();
         return toString();
     }
     
+    /**
+     {@code sql = select * from pcuserauto} <br>
+     this.{@link #fileName} = velkom_pcuserauto.txt <br>
+     Connecting to: <a href="jdbc:mysql://server202.hosting.reg.ru:3306/u0466446_velkom" target=_blank>u0466446_velkom</a>
+     <p>
+     
+     @see ru.vachok.networker.statistics.PCStatsTest#testSelectFrom()
+     @return кол-во срязок ПК-Пользователь в таблице <b>pcuserauto</b>
+     */
     @Override public int selectFrom() {
         final long stArt = System.currentTimeMillis();
         int retInt = 0;
@@ -60,15 +77,7 @@ public class PCStats implements DataBaseRegSQL, Callable<String> {
         try (Connection c = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
             try (PreparedStatement p = c.prepareStatement(sql)) {
                 try (ResultSet r = p.executeQuery()) {
-                    try (OutputStream outputStream = new FileOutputStream(file)) {
-                        try (PrintStream printStream = new PrintStream(outputStream, true)) {
-                            while (r.next()) {
-                                if (sql.equals(ConstantsFor.SQL_SELECTFROM_PCUSERAUTO)) {
-                                    pcUserAutoSelect(r, printStream);
-                                }
-                            }
-                        }
-                    }
+                    printResultsToFile(file, r);
                 }
             }
         }
@@ -84,31 +93,15 @@ public class PCStats implements DataBaseRegSQL, Callable<String> {
     }
     
     @Override public int insertTo() {
-        return 0;
+        throw new IllegalComponentStateException("20.06.2019 (11:50)");
     }
     
     @Override public int deleteFrom() {
-        return 0;
+        throw new IllegalComponentStateException("20.06.2019 (11:52)");
     }
     
     @Override public int updateTable() {
-        return 0;
-    }
-    
-    private void pcUserAutoSelect(ResultSet r, PrintStream prStream) throws SQLException {
-        String toPrint = r.getString(2) + " " + r.getString(3);
-        PC_NAMES_IN_TABLE.add(toPrint);
-        prStream.println(toPrint);
-    }
-    
-    private String countStat() {
-        List<String> readFileAsList = FileSystemWorker.readFileToList(ConstantsFor.FILENAME_VELKOMPCUSERAUTOTXT);
-        FileSystemWorker.writeFile(ConstantsFor.FILENAME_PCAUTODISTXT, readFileAsList.parallelStream().distinct());
-        if (ConstantsFor.thisPC().toLowerCase().contains("home")) {
-            String toCopy = "\\\\10.10.111.1\\Torrents-FTP\\" + ConstantsFor.FILENAME_PCAUTODISTXT;
-            FileSystemWorker.copyOrDelFile(new File(ConstantsFor.FILENAME_PCAUTODISTXT), toCopy, false);
-        }
-        return countFreqOfUsers();
+        throw new IllegalComponentStateException("20.06.2019 (11:53)");
     }
     
     @Override public String toString() {
@@ -119,15 +112,62 @@ public class PCStats implements DataBaseRegSQL, Callable<String> {
         return sb.toString();
     }
     
-    private String countFreqOfUsers() {
-        List<String> pcAutoThisList = FileSystemWorker.readFileToList(new File(ConstantsFor.FILENAME_PCAUTODISTXT).getAbsolutePath());
-        Collections.sort(pcAutoThisList);
-        Collection<String> stringCollect = new LinkedList<>();
-        for (String pcUser : pcAutoThisList) {
-            stringCollect.add(Collections.frequency(pcAutoThisList, pcUser) + "times = " + pcUser);
+    private void printResultsToFile(File file, ResultSet r) throws IOException, SQLException {
+        try (OutputStream outputStream = new FileOutputStream(file)) {
+            try (PrintStream printStream = new PrintStream(outputStream, true)) {
+                while (r.next()) {
+                    if (sql.equals(ConstantsFor.SQL_SELECTFROM_PCUSERAUTO)) {
+                        String toPrint = r.getString(2) + " " + r.getString(3);
+                        PC_NAMES_IN_TABLE.add(toPrint);
+                        printStream.println(toPrint);
+                    }
+                }
+            }
         }
-        String absolutePath = new File("possible_users.txt").getAbsolutePath();
-        boolean fileWritten = FileSystemWorker.writeFile(absolutePath, stringCollect.stream());
+    }
+    
+    /**
+     Writes file: {@link ConstantsFor#FILENAME_PCAUTOUSERSUNIQ} from {@link ConstantsFor#FILENAME_VELKOMPCUSERAUTOTXT}
+     <p>
+     
+     @return {@link #countFreqOfUsers()}
+     */
+    private String countStat() {
+        List<String> readFileAsList = FileSystemWorker.readFileToList(ConstantsFor.FILENAME_VELKOMPCUSERAUTOTXT);
+        FileSystemWorker.writeFile(ConstantsFor.FILENAME_PCAUTOUSERSUNIQ, readFileAsList.parallelStream().distinct());
+        if (ConstantsFor.thisPC().toLowerCase().contains("home")) {
+            String toCopy = "\\\\10.10.111.1\\Torrents-FTP\\" + ConstantsFor.FILENAME_PCAUTOUSERSUNIQ;
+            FileSystemWorker.copyOrDelFile(new File(ConstantsFor.FILENAME_PCAUTOUSERSUNIQ), toCopy, false);
+        }
+        return countFreqOfUsers();
+    }
+    
+    /**
+     {@code PcUser like: } a115.eatmeat.ru \e.v.drozhzhina\ntuser.dat.LOG1 <br>
+     
+     @return кол-во уникальных записей в файле <b>possible_users.txt</b>
+     */
+    private String countFreqOfUsers() {
+        List<String> pcAutoThisList = FileSystemWorker.readFileToList(new File(ConstantsFor.FILENAME_PCAUTOUSERSUNIQ).getAbsolutePath());
+        Collections.sort(pcAutoThisList);
+        List<String> stringCollect = new ArrayList<>();
+        Map<String, String> countFreqMap = new TreeMap<>();
+        for (String pcUser : pcAutoThisList) {
+            try {
+                String userPC = pcUser.toLowerCase().split("\\Q \\\\E")[0];
+                pcUser = pcUser.toLowerCase().split("\\Q \\\\E")[1].split("\\Q\\\\E")[0];
+                String addToList = pcUser + ":" + userPC;
+                stringCollect.add(addToList);
+                int frequency = Collections.frequency(stringCollect, addToList);
+                countFreqMap.put(addToList, "      times = " + frequency);
+            }
+            catch (IndexOutOfBoundsException ignore) {
+                //20.06.2019 (11:09)
+            }
+        }
+        String possibleUsers = "user_login_counter.txt";
+        String absolutePath = new File(possibleUsers).getAbsolutePath();
+        boolean fileWritten = FileSystemWorker.writeFile(absolutePath, countFreqMap);
         if (fileWritten) {
             return stringCollect.size() + " unique records.";
         }

@@ -32,8 +32,7 @@ public class AppInfoOnLoadTest {
     public void testGetBuildStamp() {
         long stampBuild = AppInfoOnLoad.getBuildStamp();
         long currentTimeMS = System.currentTimeMillis();
-        Assert.assertTrue(currentTimeMS > stampBuild);
-        System.out.println("\n\n" + (currentTimeMS - stampBuild) + " MS diff between build and test\n\n\n");
+        Assert.assertTrue((currentTimeMS >= stampBuild), "\n\n" + (currentTimeMS - stampBuild) + " MS diff between build and test\n\n\n");
     }
     
     @Test()
@@ -43,7 +42,7 @@ public class AppInfoOnLoadTest {
         apOnLoad.run();
         List<String> loggerAppInfo = AppInfoOnLoad.MINI_LOGGER;
         Assert.assertNotNull(loggerAppInfo);
-        Assert.assertTrue(loggerAppInfo.size() == 11, loggerAppInfo.size() + " is loggerAppInfo.size()");
+        Assert.assertTrue(loggerAppInfo.size() >= 4, loggerAppInfo.size() + " is loggerAppInfo.size()");
     }
     
     private static int getScansDelay() {

@@ -12,10 +12,14 @@ import ru.vachok.networker.net.enums.OtherKnownDevices;
 
 
 /**
+ @see InetIPUser
  @since 09.06.2019 (21:24) */
-public class InetIPUserTest {
+@SuppressWarnings("ALL") public class InetIPUserTest {
     
     
+    /**
+     @see InetIPUser#getUsage(String)
+     */
     @Test
     public void testGetUsage() {
         InternetUse internetUse = new InetIPUser();
@@ -23,6 +27,9 @@ public class InetIPUserTest {
         Assert.assertTrue(usageInet.contains("DENIED SITES:"), usageInet);
     }
     
+    /**
+     @see InetIPUser#showLog()
+     */
     @Test(enabled = false)
     public void testShowLog() {
         SaveLogsToDB dbSaver = new AppComponents().saveLogsToDB();

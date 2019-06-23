@@ -3,7 +3,6 @@ package ru.vachok.networker.exe.runnabletasks;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.TForms;
@@ -16,7 +15,7 @@ import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Queue;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
 
@@ -33,6 +32,9 @@ import java.util.regex.Pattern;
         new TemporaryFullInternet("8.8.8.8", System.currentTimeMillis(), "add").run();
     }
     
+    /**
+     @see TemporaryFullInternet#sshChecker()
+     */
     @Test
     public void sshCheckerCopy() {
         final SSHFactory SSH_FACTORY = new SSHFactory.Builder("192.168.13.42", "ls", TemporaryFullInternet.class.getSimpleName()).build();
@@ -42,9 +44,6 @@ import java.util.regex.Pattern;
         final Pattern PATTERN = Pattern.compile(".list", Pattern.LITERAL);
         final Pattern COMPILE1 = Pattern.compile("<br>\n");
         final Pattern COMPILE2 = Pattern.compile(" #");
-        final Pattern COMPILE3 = Pattern.compile(" #");
-        final Pattern COMPILE4 = Pattern.compile(" #");
-        final Pattern COMPILE5 = Pattern.compile(" #");
         
         SSH_FACTORY.setCommandSSH(ConstantsNet.COM_CAT24HRSLIST);
         String tempFile = SSH_FACTORY.call();
@@ -59,10 +58,10 @@ import java.util.regex.Pattern;
             List<String> stringList = Arrays.asList(strings);
             stringList.forEach(x->{
                 if (COMPILE2.split(x).length > 2) {
-                    chkWithList(COMPILE3.split(x), MINI_LOGGER, SSH_CHECKER_MAP);
+                    chkWithList(COMPILE2.split(x), MINI_LOGGER, SSH_CHECKER_MAP);
                 }
                 try {
-                    Long ifAbsent = sshCheckerMap.putIfAbsent(COMPILE4.split(x)[0].trim(), Long.valueOf(COMPILE5.split(x)[1]));
+                    Long ifAbsent = sshCheckerMap.putIfAbsent(COMPILE2.split(x)[0].trim(), Long.valueOf(COMPILE2.split(x)[1]));
                     MINI_LOGGER.add("Added to map = " + x + " " + ifAbsent);
                 }
                 catch (ArrayIndexOutOfBoundsException e) {
@@ -77,15 +76,9 @@ import java.util.regex.Pattern;
             Long y = entry.getValue();
             mapEntryParse(x, y, atomicTimeLong, MINI_LOGGER, SSH_CHECKER_MAP);
         }
-        Future<?> setMapAsStringHTML = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor()
-            .submit(()->ConstantsNet.setSshMapStr(new TForms().sshCheckerMapWithDates(sshCheckerMap, true)));
-        try {
-            setMapAsStringHTML.get(ConstantsFor.DELAY, TimeUnit.SECONDS);
-        }
-        catch (InterruptedException | TimeoutException | ExecutionException e) {
-            Assert.assertNull(e, e.getMessage());
-            Thread.currentThread().interrupt();
-        }
+        ConstantsNet.setSshMapStr(new TForms().sshCheckerMapWithDates(sshCheckerMap, true));
+        String mapStr = ConstantsNet.getSshMapStr();
+        Assert.assertTrue(mapStr.contains("8.8.8.8"), mapStr);
     }
     
     private void chkWithList(String[] x, Queue<String> MINI_LOGGER, Map<String, Long> SSH_CHECKER_MAP) {

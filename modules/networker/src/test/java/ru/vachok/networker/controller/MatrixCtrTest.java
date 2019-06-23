@@ -27,7 +27,7 @@ public class MatrixCtrTest {
     
     @Test
     public void testSetCurrentProvider() {
-        VersionInfo versionInfo = new VersionInfo();
+        VersionInfo versionInfo = AppComponents.versionInfo();
         MatrixSRV matrixSRV = new MatrixSRV();
         MatrixCtr matrixCtr = new MatrixCtr(matrixSRV);
         MatrixCtr.setCurrentProvider();
@@ -58,7 +58,10 @@ public class MatrixCtrTest {
         HttpServletResponse response = new MockHttpServletResponse();
         
         matrixSRV.setWorkPos("адми");
-        matrixCtr.getWorkPosition(matrixSRV, model);
+        String matrixCtrWorkPosition = matrixCtr.getWorkPosition(matrixSRV, model);
+        assertEquals(matrixCtrWorkPosition, "ok");
+        assertTrue(model.asMap().size() >= 1);
+        assertTrue(model.asMap().get("ok").toString().contains("адми"));
     }
     
     @Test
@@ -86,7 +89,7 @@ public class MatrixCtrTest {
             assertTrue(showResultsStr.equals(ConstantsFor.BEANNAME_MATRIX));
             assertTrue(response.getStatus() == 200);
             assertTrue(showResultsStr.equals("matrix"));
-            assertTrue(model.asMap().get("workPos").toString().equals("whois: "));
+            assertTrue(model.asMap().get("workPos").toString().equals("whois: ya.ru"));
         }
         catch (IOException e) {
             assertNull(e, e.getMessage());

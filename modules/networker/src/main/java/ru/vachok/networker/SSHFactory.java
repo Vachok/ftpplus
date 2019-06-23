@@ -203,6 +203,7 @@ public class SSHFactory implements Callable<String> {
         }
         Objects.requireNonNull(session).setConfig(properties);
         try {
+            System.out.println("Connecting to: " + connectToSrv + "\nUsing command(s): \n" + commandSSH.replace(";", "\n") + ".\nClass: " + classCaller);
             session.connect(LocalTime.now().toSecondOfDay());
         }
         catch (JSchException e) {

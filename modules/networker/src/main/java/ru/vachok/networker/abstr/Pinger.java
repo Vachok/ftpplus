@@ -7,7 +7,6 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 
 import java.io.IOException;
@@ -33,18 +32,19 @@ public interface Pinger {
         MessageToUser messageToUser = new MessageLocal(Pinger.class.getSimpleName() + " SAFE!");
         String classMeth = "Pinger.pingDev";
         Properties properties = AppComponents.getProps();
-        long pingSleep = ConstantsFor.TIMEOUT_650;
+        long pingSleep = ConstantsFor.DELAY;
         try {
-            pingSleep = Long.parseLong(properties.getProperty(ConstantsNet.PROP_PINGSLEEP));
+            pingSleep = Long.parseLong(properties.getProperty(ConstantsFor.PR_PINGSLEEP));
         } catch (Exception e) {
-            System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".pingDev");
+            pingSleep = ConstantsFor.TIMEOUT_650;
         }
         List<String> resList = new ArrayList<>();
-        properties.setProperty(ConstantsNet.PROP_PINGSLEEP, String.valueOf(pingSleep));
         long finalPingSleep = pingSleep;
+        long finalPingSleep1 = pingSleep;
+        //noinspection OverlyLongLambda
         devicesDeq.forEach((devAdr, devName)->{
             try {
-                boolean reachable = devAdr.isReachable(ConstantsFor.TIMEOUT_650);
+                boolean reachable = devAdr.isReachable((int) finalPingSleep1);
                 String msg;
                 if (reachable) {
                     msg = "<font color=\"#00ff69\">" + devName + " = " + devAdr + " is " + true + "</font>";

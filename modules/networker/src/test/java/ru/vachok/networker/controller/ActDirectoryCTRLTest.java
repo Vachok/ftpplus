@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.controller;
 
 
@@ -6,7 +8,7 @@ import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
 import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.services.PhotoConverterSRV;
+import ru.vachok.networker.ad.PhotoConverterSRV;
 
 import javax.servlet.http.HttpServletRequest;
 

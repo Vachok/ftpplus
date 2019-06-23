@@ -5,44 +5,37 @@ package ru.vachok.networker.sysinfo;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.ConstantsFor;
 
 
 /**
+ @see VersionInfo
  @since 15.06.2019 (14:00) */
-public class VersionInfoTest {
+@SuppressWarnings("ALL") public class VersionInfoTest {
     
     
-    @Test
-    public void testGetPropertiesFrom() {
-    }
-    
-    @Test
-    public void testSetPropertiesFrom() {
-    }
-    
-    @Test
-    public void testGetAppBuild() {
-    }
-    
-    @Test
-    public void testGetAppVersion() {
-    }
-    
-    @Test
-    public void testGetBuildTime() {
-    }
-    
+    /**
+     @see VersionInfo#setParams()
+     */
     @Test
     public void testSetParams() {
-        String setParamsString = new VersionInfo().setParams();
-        System.out.println(setParamsString);
-        Assert.assertTrue(setParamsString.contains("is SET"), setParamsString);
+        String setParamsString = AppComponents.versionInfo().toString();
+        Assert.assertTrue(setParamsString.contains(ConstantsFor.thisPC()), setParamsString);
+        VersionInfo setParamsTry = AppComponents.versionInfo("rups00.eatmeat.ru");
+        Assert.assertFalse(setParamsTry.getAppBuild().contains("rups00"), setParamsTry.toString());
     }
     
+    /**
+     @see VersionInfo#getParams()
+     */
     @Test
     public void getParamsTEST() {
-        String getParamsStr = new VersionInfo().getParams();
-        System.out.println(getParamsStr);
-        Assert.assertTrue(getParamsStr.contains("is GET"), getParamsStr);
+        VersionInfo infoVers = AppComponents.versionInfo();
+        String versString = infoVers.toString();
+        Assert.assertFalse(versString.contains("rups00"), versString);
+        Assert.assertFalse(infoVers.getAppBuild().isEmpty());
+        Assert.assertFalse(infoVers.getBuildTime().isEmpty());
+        Assert.assertFalse(infoVers.getAppVersion().isEmpty());
     }
 }

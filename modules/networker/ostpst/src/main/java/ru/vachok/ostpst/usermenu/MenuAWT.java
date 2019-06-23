@@ -3,8 +3,8 @@
 package ru.vachok.ostpst.usermenu;
 
 
-import ru.vachok.messenger.MessageSwing;
-import ru.vachok.messenger.MessageToUser;
+import ru.vachok.ostpst.api.MessageToUser;
+import ru.vachok.ostpst.api.MessengerOST;
 import ru.vachok.ostpst.usermenu.traymenu.TrayMenu;
 
 import javax.swing.*;
@@ -23,7 +23,7 @@ import java.util.prefs.Preferences;
 public class MenuAWT implements UserMenu, Runnable {
     
     
-    private MessageToUser messageToUser = new MessageSwing();
+    private MessageToUser messageToUser = new MessengerOST(getClass().getSimpleName());
     
     private String userInput;
     

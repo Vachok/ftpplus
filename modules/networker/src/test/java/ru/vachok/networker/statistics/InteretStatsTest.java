@@ -11,6 +11,8 @@ import ru.vachok.networker.exe.schedule.WeekStats;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
@@ -20,11 +22,16 @@ import static org.testng.Assert.assertFalse;
 @SuppressWarnings("ALL") public class InteretStatsTest {
     
     
-    @Test()
+    @Test
     public void testInetStat() {
         StatsOfNetAndUsers statsOfNetAndUsers = new WeekStats();
-        String inetStats = statsOfNetAndUsers.getInetStats();
-        assertFalse(inetStats.contains("does not exists!"), inetStats);
+        if (LocalDate.now().getDayOfWeek().equals(DayOfWeek.SUNDAY)) {
+            String inetStats = statsOfNetAndUsers.getInetStats();
+            assertFalse(inetStats.contains("does not exists!"), inetStats);
+        }
+        else {
+            Assert.assertTrue(statsOfNetAndUsers.toString().contains(LocalDate.now().getDayOfWeek().toString()), statsOfNetAndUsers.toString());
+        }
     }
     
     @Test
@@ -37,9 +44,20 @@ import static org.testng.Assert.assertFalse;
     @Test
     public void testRun() {
         InteretStats interetStats = new InteretStats();
-        interetStats.run();
-        String sql = interetStats.getSql();
-        Assert.assertTrue(sql.equals(ConstantsFor.SQL_SELECTINETSTATS), sql);
+        if (LocalDate.now().getDayOfWeek().equals(DayOfWeek.SUNDAY)) {
+            interetStats.run();
+            String sql = interetStats.getSql();
+            Assert.assertTrue(sql.contains(ConstantsFor.SQL_SELECTINETSTATS), sql);
+        }
+        else {
+            try {
+                Assert.assertTrue(interetStats.toString().contains("inetstatsIP.csv"), interetStats.toString());
+            }
+            catch (AssertionError e) {
+                System.err.println(e.getMessage());
+                Assert.assertTrue(interetStats.toString().contains("Bytes in stream:"), interetStats.toString());
+            }
+        }
     }
     
     @Test

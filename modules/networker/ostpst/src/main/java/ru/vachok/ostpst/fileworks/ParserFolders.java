@@ -7,9 +7,9 @@ import com.pff.PSTException;
 import com.pff.PSTFile;
 import com.pff.PSTFolder;
 import com.pff.PSTObject;
-import ru.vachok.messenger.MessageCons;
-import ru.vachok.messenger.MessageToUser;
 import ru.vachok.ostpst.ConstantsOst;
+import ru.vachok.ostpst.api.MessageToUser;
+import ru.vachok.ostpst.api.MessengerOST;
 import ru.vachok.ostpst.utils.FileSystemWorkerOST;
 import ru.vachok.ostpst.utils.TFormsOST;
 
@@ -31,7 +31,15 @@ class ParserFolders {
     
     private PSTFile pstFile;
     
-    private MessageToUser messageToUser = new MessageCons(getClass().getSimpleName());
+    private MessageToUser messageToUser = new MessengerOST(getClass().getSimpleName());
+    
+    public MessageToUser getMessageToUser() {
+        return messageToUser;
+    }
+    
+    public void setMessageToUser(MessageToUser messageToUser) {
+        this.messageToUser = messageToUser;
+    }
     
     private PSTFolder rootFolder;
     

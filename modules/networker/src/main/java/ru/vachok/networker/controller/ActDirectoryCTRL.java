@@ -17,6 +17,7 @@ import ru.vachok.networker.abstr.InternetUse;
 import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
 import ru.vachok.networker.accesscontrol.sshactions.SshActs;
 import ru.vachok.networker.ad.ADComputer;
+import ru.vachok.networker.ad.PhotoConverterSRV;
 import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
@@ -24,7 +25,6 @@ import ru.vachok.networker.exe.runnabletasks.NetScannerSvc;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.ADSrv;
 import ru.vachok.networker.services.MessageLocal;
-import ru.vachok.networker.services.PhotoConverterSRV;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;

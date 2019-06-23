@@ -19,6 +19,8 @@ import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Map;
@@ -34,8 +36,8 @@ import java.util.prefs.Preferences;
     
     @Test
     public void testGetProps() {
-        Properties appProps = AppComponentsTest.getPropsTESTCOPY();
-        Assert.assertTrue(appProps.size() > 10, "AppProps size = " + appProps.size());
+        Properties appProps = new AppComponents().getProps();
+        Assert.assertTrue(appProps.size() > 5, "AppProps size = " + appProps.size());
         Assert.assertTrue(appProps.getProperty("server.port").equals("8880"));
         Assert.assertTrue(appProps.getProperty("application.name").equals("ru.vachok.networker-"));
     }
@@ -93,14 +95,16 @@ import java.util.prefs.Preferences;
         }
     }
     
-    @Test
+    @Test(enabled = false)
     public void testUpdateProps() {
         InitProperties initProperties = new FileProps(ConstantsFor.class.getSimpleName());
         Properties props = initProperties.getProps();
         Assert.assertTrue(props.size() > 5, new TForms().fromArray(props, false));
+        Path libsPath = Paths.get("lib/stats-8.0.1920.jar").toAbsolutePath().normalize();
         try {
             boolean isUpdate = new AppComponents().updateProps(props);
             Assert.assertTrue(isUpdate);
+            
         }
         catch (IOException e) {
             Assert.assertNull(e, e.getMessage());

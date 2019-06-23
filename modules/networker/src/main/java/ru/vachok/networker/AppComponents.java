@@ -2,7 +2,6 @@
 
 package ru.vachok.networker;
 
-
 import com.jcraft.jsch.JSch;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.slf4j.Logger;
@@ -56,8 +55,6 @@ import java.util.prefs.Preferences;
 public class AppComponents {
     
     
-    private static MessageToUser messageToUser = new MessageLocal(AppComponents.class.getSimpleName());
-    
     /**
      <i>Boiler Plate</i>
      */
@@ -68,6 +65,8 @@ public class AppComponents {
     private static final String DB_JAVA_ID = ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName();
     
     private static final ThreadConfig THREAD_CONFIG = ThreadConfig.getI();
+    
+    private static MessageToUser messageToUser = new MessageLocal(AppComponents.class.getSimpleName());
     
     public static String ipFlushDNS() throws UnsupportedOperationException {
         StringBuilder stringBuilder = new StringBuilder();
@@ -128,7 +127,8 @@ public class AppComponents {
     @Bean(STR_VISITOR)
     public Visitor visitor(HttpServletRequest request) {
         Visitor visitor = new Visitor(request);
-        return ExitApp.getVisitsMap().putIfAbsent(request.getSession().getCreationTime(), visitor);
+        ExitApp.getVisitsMap().putIfAbsent(request.getSession().getCreationTime(), visitor);
+        return visitor;
     }
     
     @Bean
@@ -155,14 +155,7 @@ public class AppComponents {
     @Bean(ConstantsFor.STR_VERSIONINFO)
     @Scope(ConstantsFor.SINGLETON)
     public static VersionInfo versionInfo() {
-        VersionInfo versionInfo = new VersionInfo();
-        if (ConstantsFor.thisPC().toLowerCase().contains("home") || ConstantsFor.thisPC().toLowerCase().contains(ConstantsFor.HOSTNAME_DO213)) {
-            versionInfo.setParams();
-        }
-        else {
-            versionInfo.getParams();
-        }
-        return versionInfo;
+        return new VersionInfo(getProps(), ConstantsFor.thisPC());
     }
     
     /**
@@ -188,11 +181,8 @@ public class AppComponents {
             System.out.println("constantsForProps.delete() = " + constantsForProps.delete());
             propertiesToUpdate.store(new FileOutputStream(ConstantsFor.PROPS_FILE_JAVA_ID), getClass().getSimpleName() + ".updateProps");
         }
-        InitProperties initProperties = new DBRegProperties(ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName());
-        boolean isDel = initProperties.delProps();
-        boolean isSet = initProperties.setProps(propertiesToUpdate);
-        System.out.println("Props from DB DEL = " + isDel + "\nProps in DB update = " + isSet);
-        return isDel & isSet;
+        int updTable = new DBPropsCallable(propertiesToUpdate).updateTable();
+        return updTable > 0;
     }
     
     @SuppressWarnings("AssignmentOrReturnOfFieldWithMutableType") public static Properties getProps() {
@@ -208,11 +198,9 @@ public class AppComponents {
             }
         }
         else {
-            threadConfig().execByThreadConfig(()->{
-                APP_PR.putAll(new AppComponents().getAppProps());
-                APP_PR.setProperty(ConstantsFor.PR_DBSTAMP, String.valueOf(System.currentTimeMillis()));
-                APP_PR.setProperty(ConstantsFor.PR_THISPC, ConstantsFor.thisPC());
-            });
+            APP_PR.putAll(new AppComponents().getAppProps());
+            APP_PR.setProperty(ConstantsFor.PR_DBSTAMP, String.valueOf(System.currentTimeMillis()));
+            APP_PR.setProperty(ConstantsFor.PR_THISPC, ConstantsFor.thisPC());
         }
         return APP_PR;
     }
@@ -257,6 +245,10 @@ public class AppComponents {
         return NetListKeeper.getI();
     }
     
+    public static VersionInfo versionInfo(String pcName) {
+        return new VersionInfo(getProps(), pcName);
+    }
+    
     static DiapazonScan diapazonScan() {
         return DiapazonScan.getInstance();
     }
@@ -292,10 +284,7 @@ public class AppComponents {
     }
     
     private Properties getAppProps() {
-    
-        MysqlDataSource mysqlDataSource = new DBRegProperties(DB_JAVA_ID).getRegSourceForProperties();
-        mysqlDataSource.setRelaxAutoCommit(true);
-        Callable<Properties> theProphecy = new DBPropsCallable(mysqlDataSource, APP_PR);
+        Callable<Properties> theProphecy = new DBPropsCallable(APP_PR);
         try {
             APP_PR.putAll(theProphecy.call());
         }

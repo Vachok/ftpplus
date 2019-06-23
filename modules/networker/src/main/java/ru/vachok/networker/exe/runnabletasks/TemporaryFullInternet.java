@@ -24,7 +24,9 @@ import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Queue;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -253,16 +255,9 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
             Long y = entry.getValue();
             mapEntryParse(x, y, atomicTimeLong);
         }
-        Future<?> setMapAsStringHTML = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor()
-            .submit(()->ConstantsNet.setSshMapStr(new TForms().sshCheckerMapWithDates(sshCheckerMap, true)));
-        try {
-            setMapAsStringHTML.get(ConstantsFor.DELAY, TimeUnit.SECONDS);
-            messageToUser.info(getClass().getSimpleName() + ".sshChecker", "ConstantsNet.getSshMapStr()", " = " + ConstantsNet.getSshMapStr());
-        }
-        catch (InterruptedException | TimeoutException | ExecutionException e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".sshChecker is interrupted.\n", e));
-            Thread.currentThread().interrupt();
-        }
+        ConstantsNet.setSshMapStr(new TForms().sshCheckerMapWithDates(sshCheckerMap, true));
+        messageToUser.info(getClass().getSimpleName() + ".sshChecker", "ConstantsNet.getSshMapStr()", " = " + ConstantsNet.getSshMapStr());
+        
     }
     
     private void chkWithList(String[] x) {

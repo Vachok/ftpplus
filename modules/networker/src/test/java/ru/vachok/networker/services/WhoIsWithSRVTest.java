@@ -12,7 +12,7 @@ import org.testng.annotations.Test;
 public class WhoIsWithSRVTest {
     
     
-    @Test
+    @Test(timeOut = 6000)
     public void testWhoIs() {
         WhoIsWithSRV whoIsWithSRV = new WhoIsWithSRV();
         String whoIsString = whoIsWithSRV.whoIs("ya.ru");

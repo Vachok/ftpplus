@@ -77,7 +77,7 @@ public class InetIPUser implements InternetUse {
         }catch(ArrayIndexOutOfBoundsException ingore){
             //
         }
-        String responseString = r.getString(ConstantsFor.DBFIELB_RESPONSE) + " " + r.getString(ConstantsFor.DBFIELD_METHOD);
+        String responseString = r.getString(ConstantsFor.DBFIELD_RESPONSE) + " " + r.getString(ConstantsFor.DBFIELD_METHOD);
         siteResponseMap.putIfAbsent(siteString , responseString + " when: " + date);
     }
     

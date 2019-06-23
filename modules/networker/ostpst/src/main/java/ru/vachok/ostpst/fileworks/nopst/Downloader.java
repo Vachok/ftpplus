@@ -3,11 +3,9 @@
 package ru.vachok.ostpst.fileworks.nopst;
 
 
-import ru.vachok.messenger.MessageCons;
-import ru.vachok.messenger.MessageToUser;
-import ru.vachok.mysqlandprops.props.DBRegProperties;
-import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.ostpst.ConstantsOst;
+import ru.vachok.ostpst.api.InitProperties;
+import ru.vachok.ostpst.api.MessageToUser;
 import ru.vachok.ostpst.fileworks.FileWorker;
 import ru.vachok.ostpst.utils.TFormsOST;
 
@@ -34,33 +32,43 @@ public class Downloader implements FileWorker {
     
     private String writeFileName;
     
-    private MessageToUser messageToUser = new MessageCons(getClass().getSimpleName());
+    private InitProperties initProperties;
     
-    private int bufLen = 8192 * ConstantsOst.KBYTE_BYTES;
+    private MessageToUser messageToUser;
     
-    public Downloader(String readFileName, String writeFileName) {
+    public Downloader(String readFileName, String writeFileName, InitProperties initProperties) {
         this.readFileName = readFileName;
         this.writeFileName = writeFileName;
         try {
-            initMethod(writeFileName);
+            initMethod(writeFileName, initProperties);
         }
         catch (IllegalStateException e) {
             System.err.println(e.getMessage() + STR_RESPREFS + clearCopy());
         }
     }
     
-    public Downloader(String readFileName) {
+    public Downloader(String readFileName, InitProperties initProperties) {
         this.readFileName = readFileName;
         this.writeFileName = new StringBuilder()
             .append(Paths.get(".").normalize().toAbsolutePath())
             .append("tmp_")
             .append(Paths.get(readFileName).toFile().getName()).toString();
         try {
-            initMethod(writeFileName);
+            initMethod(writeFileName, initProperties);
         }
         catch (IllegalStateException e) {
             System.err.println(e.getMessage() + STR_RESPREFS + clearCopy());
         }
+    }
+    
+    private int bufLen = 8192 * ConstantsOst.KBYTE_BYTES;
+    
+    public MessageToUser getMessageToUser() {
+        return messageToUser;
+    }
+    
+    public void setMessageToUser(MessageToUser messageToUser) {
+        this.messageToUser = messageToUser;
     }
     
     public void setBufLen(int bufLen) {
@@ -97,7 +105,6 @@ public class Downloader implements FileWorker {
             return "Using PREFERENCES_USER_ROOT - true";
         }
         catch (BackingStoreException e) {
-            InitProperties initProperties = new DBRegProperties(ConstantsOst.APPNAME_OSTPST + getClass().getSimpleName());
             initProperties.delProps();
             new File(writeFileName).deleteOnExit();
             return "Using PREFERENCES_USER_ROOT - false";
@@ -214,7 +221,6 @@ public class Downloader implements FileWorker {
             }
         }
         catch (BackingStoreException e) {
-            InitProperties initProperties = new DBRegProperties(ConstantsOst.APPNAME_OSTPST + getClass().getSimpleName());
             Properties properties = new Properties();
             properties.putAll(PREF_MAP);
             initProperties.setProps(properties);

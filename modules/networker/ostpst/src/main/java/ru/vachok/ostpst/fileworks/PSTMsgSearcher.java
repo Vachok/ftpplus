@@ -4,10 +4,9 @@ package ru.vachok.ostpst.fileworks;
 
 
 import com.pff.*;
-import ru.vachok.messenger.MessageCons;
-import ru.vachok.messenger.MessageSwing;
-import ru.vachok.messenger.MessageToUser;
 import ru.vachok.ostpst.ConstantsOst;
+import ru.vachok.ostpst.api.MessageToUser;
+import ru.vachok.ostpst.api.MessengerOST;
 import ru.vachok.ostpst.utils.FileSystemWorkerOST;
 import ru.vachok.ostpst.utils.TFormsOST;
 
@@ -31,7 +30,15 @@ class PSTMsgSearcher {
     
     private long folderID;
     
-    private MessageToUser messageToUser = new MessageCons(getClass().getSimpleName());
+    private MessageToUser messageToUser = new MessengerOST(getClass().getSimpleName());
+    
+    public MessageToUser getMessageToUser() {
+        return messageToUser;
+    }
+    
+    public void setMessageToUser(MessageToUser messageToUser) {
+        this.messageToUser = messageToUser;
+    }
     
     public PSTMsgSearcher(String fileName, String srcThing) {
         this.srcThing = srcThing;
@@ -138,7 +145,6 @@ class PSTMsgSearcher {
         String fileNameSrch = ConstantsOst.FILE_PREFIX_SEARCH_ + (System.currentTimeMillis() / 1000) + ".txt";
         Path writeStringToFile = FileSystemWorkerOST.writeStringToFile(fileNameSrch, searchByThing);
         String attachFolder = writeStringToFile.getParent() + ConstantsOst.SYSTEM_SEPARATOR + ConstantsOst.STR_ATTACHMENTS;
-        messageToUser = new MessageSwing();
         String confirm = messageToUser.confirm(getClass().getSimpleName(), "Search complete!", "Open folders?");
         if (confirm.equals("ok")) {
             try {
@@ -150,7 +156,7 @@ class PSTMsgSearcher {
             }
         }
         else {
-            messageToUser = new MessageCons(getClass().getSimpleName());
+            messageToUser = new MessengerOST(getClass().getSimpleName());
             System.out.println(fileNameSrch);
         }
     }

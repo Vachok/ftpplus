@@ -66,7 +66,7 @@ import java.util.regex.Pattern;
                 String connectTo = uploadLibs();
                 messageToUser.infoTimer(Math.toIntExact(ConstantsFor.DELAY * 2), connectTo);
             }
-            catch (AccessDeniedException e) {
+            catch (AccessDeniedException | NullPointerException e) {
                 messageToUser.error(e.getMessage() + " " + getClass().getSimpleName() + ".run");
             }
         }
@@ -81,7 +81,7 @@ import java.util.regex.Pattern;
             try {
                 return makeConnectionAndStoreLibs();
             }
-            catch (IOException e) {
+            catch (IOException | NullPointerException e) {
                 return FileSystemWorker.error(getClass().getSimpleName() + ".uploadLibs", e);
             }
         }

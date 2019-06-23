@@ -73,6 +73,7 @@ public class FileSearcher extends FileSystemWorker {
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
         this.totalFiles += 1;
+        patternToSearch = patternToSearch.toLowerCase();
         if (attrs.isRegularFile() && file.toFile().getName().toLowerCase().contains(patternToSearch)) {
             resList.add(file.toFile().getAbsolutePath());
         }

@@ -17,52 +17,60 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Properties;
+import java.util.prefs.Preferences;
 
 
 /**
-
  @since 24.09.2018 (9:44) */
 public class VersionInfo {
     
     
     /**
+     {@link AppComponents#getProps()}
+     */
+    private final Properties PROPERTIES;
+    
+    /**
      Билд
      */
-    private String appBuild = "null";
+    private String appBuild = PREF_USER.get(ConstantsFor.PR_APP_BUILD, ALERT_DNE);
+    
+    /**
+     Версия
+     */
+    private String appVersion = PREF_USER.get(ConstantsFor.PR_APP_VERSION, ALERT_DNE);
+    
+    /**
+     Время сборки
+     */
+    private String buildTime = PREF_USER.get(ConstantsFor.PR_APP_BUILDTIME, ALERT_DNE);
+    
+    private String propertiesFrom = ConstantsFor.DBPREFIX + ConstantsFor.STR_PROPERTIES;
     
     /**
      Ссылка на /doc/index.html
      */
     private static final String DOC_URL = "<a href=\"/doc/index.html\">DOC</a>";
-
-    /**
-     {@link AppComponents#getProps()}
-     */
-    private static final Properties PROPERTIES = AppComponents.getProps();
     
-    /**
-     {@link ConstantsFor#thisPC()}
-     */
-    private final String thisPCNameStr = ConstantsFor.thisPC();
-
     private static final MessageToUser messageToUser = new MessageLocal(VersionInfo.class.getSimpleName());
-    /**
-     Версия
-     */
-    private String appVersion = "No version";
     
     private static final String PR_APP_BUILD = "appBuild";
     
-    /**
-     Время сборки
-     */
-    private String buildTime = getBuildTime();
-    
-    private String propertiesFrom = ConstantsFor.DBPREFIX + ConstantsFor.STR_PROPERTIES;
+    private static final Preferences PREF_USER = AppComponents.getUserPref();
     
     private static final String ALERT_DNE = "Property does not exists";
     
     private static final String REPLACEPATTERN_VERSION = "version = '";
+    
+    public VersionInfo(Properties properties, String thisPC) {
+        PROPERTIES = (Properties) properties.clone();
+        if (thisPC.toLowerCase().contains("home") || thisPC.toLowerCase().contains(ConstantsFor.HOSTNAME_DO213)) {
+            setParams();
+        }
+        else {
+            getParams();
+        }
+    }
     
     public String getPropertiesFrom() {
         return propertiesFrom;
@@ -78,14 +86,14 @@ public class VersionInfo {
     public String getAppBuild() {
         return appBuild;
     }
-
+    
     /**
      @return {@link #appVersion}
      */
     public String getAppVersion() {
         return appVersion;
     }
-
+    
     /**
      @return {@link #buildTime}
      */
@@ -111,10 +119,30 @@ public class VersionInfo {
             catch (IOException e) {
                 messageToUser.error(e.getMessage());
             }
-        } else {
-                stringBuilder.append(getParams()).append(" is GET");
+        }
+        else {
+            stringBuilder.append(getParams()).append(" is GET");
         }
         return stringBuilder.toString();
+    }
+    
+    public String getParams() {
+        try {
+            DateFormat format = new SimpleDateFormat("yyw");
+            this.appVersion = PROPERTIES.getProperty(ConstantsFor.PR_APP_VERSION, "8.0." + format.format(new Date()));
+            this.buildTime = PROPERTIES.getProperty(ConstantsFor.PR_APP_BUILDTIME, String.valueOf(ConstantsFor.START_STAMP));
+            format = new SimpleDateFormat("E");
+            this.appBuild = PROPERTIES.getProperty(ConstantsFor.PR_APP_BUILD, format.format(new Date()));
+            
+            PREF_USER.put(ConstantsFor.PR_APP_VERSION, appVersion);
+            PREF_USER.put(ConstantsFor.PR_APP_BUILDTIME, buildTime);
+            PREF_USER.put(ConstantsFor.PR_APP_BUILD, appBuild);
+            PREF_USER.sync();
+        }
+        catch (Exception e) {
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".getParams", e));
+        }
+        return this.appVersion + " version from props, " + this.buildTime + " " + this.appBuild + " is GET";
     }
     
     @Override public String toString() {
@@ -123,28 +151,20 @@ public class VersionInfo {
         sb.append(", appVersion='").append(appVersion).append('\'');
         sb.append(", buildTime='").append(buildTime).append('\'');
         sb.append(", propertiesFrom='").append(propertiesFrom).append('\'');
-        sb.append(", thisPCNameStr='").append(thisPCNameStr).append('\'');
         sb.append('}');
         return sb.toString();
     }
     
-    public String getParams() {
-        this.appVersion = PROPERTIES.getProperty(ConstantsFor.PR_APP_VERSION, ALERT_DNE);
-        this.appBuild = PROPERTIES.getProperty(ConstantsFor.PR_APP_BUILD, ALERT_DNE);
-        this.buildTime = PROPERTIES.getProperty(ConstantsFor.PR_APP_BUILDTIME, ALERT_DNE);
-        return this.appVersion + " version from props, " + this.buildTime + " " + this.appBuild + " is GET";
-    }
-
     /**
      Usages: {@link #setParams()} <br> Uses: - <br>
-
+ 
      @param file gradle.build
      */
     private String setterVersionFromFiles(File file) throws IOException {
         DateFormat dateFormat = new SimpleDateFormat("E", Locale.ENGLISH);
-        for (String s : FileSystemWorker.readFileToList(file.getAbsolutePath())) {
-            if (s.toLowerCase().contains(REPLACEPATTERN_VERSION)) {
-                this.appVersion = s.replace(REPLACEPATTERN_VERSION, "").replace("\'", "").trim();
+        for (String stringFromBuildGradle : FileSystemWorker.readFileToList(file.getAbsolutePath())) {
+            if (stringFromBuildGradle.toLowerCase().contains(REPLACEPATTERN_VERSION)) {
+                this.appVersion = stringFromBuildGradle.replace(REPLACEPATTERN_VERSION, "").replace("\'", "").trim();
             }
             this.buildTime = new Date().toString();
         }

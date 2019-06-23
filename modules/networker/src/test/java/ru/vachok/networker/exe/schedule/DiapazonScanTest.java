@@ -47,9 +47,9 @@ public class DiapazonScanTest {
         try {
             List<String> pingSWList = DiapazonScan.pingSwitch();
             Assert.assertNotNull(pingSWList);
-            Assert.assertTrue(pingSWList.size() == 40);
+            Assert.assertTrue(pingSWList.size() == 43, pingSWList.size() + " devices in " + pingSWList.getClass().getSimpleName());
             Collections.sort(pingSWList);
-            Assert.assertTrue(pingSWList.get(1).equals("10.200.200.253"));
+            Assert.assertTrue(pingSWList.get(1).equals("10.1.1.228"));
         }
         catch (IllegalAccessException e) {
             Assert.assertNull(e, e.getMessage());

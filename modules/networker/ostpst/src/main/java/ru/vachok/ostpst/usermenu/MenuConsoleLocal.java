@@ -3,9 +3,9 @@
 package ru.vachok.ostpst.usermenu;
 
 
-import ru.vachok.messenger.MessageCons;
-import ru.vachok.messenger.MessageToUser;
 import ru.vachok.ostpst.ConstantsOst;
+import ru.vachok.ostpst.api.MessageToUser;
+import ru.vachok.ostpst.api.MessengerOST;
 import ru.vachok.ostpst.fileworks.FileChecker;
 import ru.vachok.ostpst.fileworks.FileWorker;
 import ru.vachok.ostpst.utils.CharsetEncoding;
@@ -18,16 +18,26 @@ import java.util.Scanner;
 public class MenuConsoleLocal implements UserMenu {
     
     
-    private MessageToUser messageToUser = new MessageCons(getClass().getSimpleName());
-    
-    private String fileName;
+    private MessageToUser messageToUser;
     
     public MenuConsoleLocal(String fileName) {
         this.fileName = fileName;
+        this.messageToUser = new MessengerOST(getClass().getSimpleName());
     }
     
     public MenuConsoleLocal() {
         this.fileName = null;
+        this.messageToUser = new MessengerOST(getClass().getSimpleName());
+    }
+    
+    private String fileName;
+    
+    public MessageToUser getMessageToUser() {
+        return messageToUser;
+    }
+    
+    public void setMessageToUser(MessageToUser messageToUser) {
+        this.messageToUser = messageToUser;
     }
     
     @Override public void showMenu() {

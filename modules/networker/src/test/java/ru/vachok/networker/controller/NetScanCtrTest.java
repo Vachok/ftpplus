@@ -3,6 +3,7 @@
 package ru.vachok.networker.controller;
 
 
+import org.springframework.core.task.TaskRejectedException;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.ui.ExtendedModelMap;
@@ -39,20 +40,16 @@ import static org.testng.Assert.assertTrue;
         HttpServletRequest request = new MockHttpServletRequest();
         HttpServletResponse response = new MockHttpServletResponse();
         Model model = new ExtendedModelMap();
-        
-        String netScanStr = netScanCtr.netScan(request, response, model);
-        Assert.assertNotNull(netScanStr);
-        assertTrue(netScanStr.equals(ConstantsNet.ATT_NETSCAN));
-        assertTrue(model.asMap().size() >= 7, showModel(model.asMap()));
-        assertTrue(model.asMap().get(ConstantsFor.ATT_FOOTER).toString().contains("Only Allow Domains"), showModel(model.asMap()));
-    }
-    
-    private String showModel(Map<String, Object> map) {
-        StringBuilder stringBuilder = new StringBuilder();
-        for (Map.Entry<String, Object> entry : map.entrySet()) {
-            stringBuilder.append(entry.getKey()).append(" : ").append(entry.getValue()).append("\n");
+        try {
+            String netScanStr = netScanCtr.netScan(request, response, model);
+            Assert.assertNotNull(netScanStr);
+            assertTrue(netScanStr.equals(ConstantsNet.ATT_NETSCAN));
+            assertTrue(model.asMap().size() >= 7, showModel(model.asMap()));
+            assertTrue(model.asMap().get(ConstantsFor.ATT_FOOTER).toString().contains("Only Allow Domains"), showModel(model.asMap()));
         }
-        return stringBuilder.toString();
+        catch (TaskRejectedException e) {
+            Assert.assertNotNull(e);
+        }
     }
     
     @Test
@@ -63,7 +60,7 @@ import static org.testng.Assert.assertTrue;
         try {
             String pingAddrString = new NetScanCtr(AppComponents.netScannerSvc(), new NetPinger(), new AppComponents().scanOnline()).pingAddr(model, request, response);
             Assert.assertTrue(pingAddrString.contains("ping"));
-            Assert.assertTrue(model.asMap().get("pingResult").toString().contains("Bytes in stream:"), model.asMap().get("pingResult").toString());
+            Assert.assertTrue(model.asMap().get("pingTest").toString().contains("ptv"), model.asMap().get("pingTest").toString());
         }
         catch (RejectedExecutionException e) {
             Assert.assertNotNull(e, e.getMessage());
@@ -89,21 +86,31 @@ import static org.testng.Assert.assertTrue;
         try {
             String pcNameInfoStr = NetScanCtr.pcNameForInfo(AppComponents.netScannerSvc(), model);
             Assert.assertTrue(pcNameInfoStr.contains("redirect:/ad"));
-        
+    
         }
         catch (RejectedExecutionException e) {
             Assert.assertNotNull(e, e.getMessage());
         }
     }
     
+    /**
+     @see NetScanCtr#allDevices(Model, HttpServletRequest, HttpServletResponse)
+     */
     @Test
     public void testAllDevices() {
         Model model = new ExtendedModelMap();
         HttpServletRequest request = new MockHttpServletRequest();
         HttpServletResponse response = new MockHttpServletResponse();
-        String allDevStr = new NetScanCtr(AppComponents.netScannerSvc(), new NetPinger(), new AppComponents().scanOnline()).allDevices(model, request, response);
+        NetScanCtr netScanCtr = new NetScanCtr(AppComponents.netScannerSvc(), new NetPinger(), new AppComponents().scanOnline());
+        String allDevStr = netScanCtr.allDevices(model, request, response);
         Assert.assertTrue(allDevStr.equals("ok"), allDevStr);
         Assert.assertTrue(model.asMap().get("ok").toString().contains("DiapazonScan"));
+        Assert.assertTrue(model.asMap().get("pcs").toString().contains("Since"));
+        ((MockHttpServletRequest) request).setQueryString("needsopen");
+        allDevStr = netScanCtr.allDevices(model, request, response);
+        Assert.assertEquals(allDevStr, "ok");
+        Assert.assertTrue(model.asMap().size() >= 5);
+        Assert.assertFalse(model.asMap().get("pcs").toString().contains("Since"));
     }
     
     @Test
@@ -114,5 +121,13 @@ import static org.testng.Assert.assertTrue;
         catch (IllegalComponentStateException e) {
             assertNotNull(e, e.getMessage());
         }
+    }
+    
+    private String showModel(Map<String, Object> map) {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
+            stringBuilder.append(entry.getKey()).append(" : ").append(entry.getValue()).append("\n");
+        }
+        return stringBuilder.toString();
     }
 }

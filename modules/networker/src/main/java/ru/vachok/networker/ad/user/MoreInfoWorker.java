@@ -211,8 +211,14 @@ public class MoreInfoWorker implements InfoWorker {
             buildEr.append("</font> ");
         }
         else {
-            InfoWorker infoWorker = new ConditionChecker("select * from pcuser where pcName like ?", aboutWhat + ":false");
-            buildEr.append(infoWorker.getInfoAbout());
+            try {
+                InfoWorker infoWorker = new ConditionChecker("select * from pcuser where pcName like ?", aboutWhat + ":false");
+                buildEr.append(infoWorker.getInfoAbout());
+            }
+            catch (NoClassDefFoundError e) {
+                e.printStackTrace();
+            }
+            
         }
         return buildEr.toString();
     }

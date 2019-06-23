@@ -4,8 +4,8 @@ package ru.vachok.ostpst.fileworks;
 import com.pff.PSTException;
 import com.pff.PSTFile;
 import com.pff.PSTObject;
-import ru.vachok.messenger.MessageCons;
-import ru.vachok.messenger.MessageToUser;
+import ru.vachok.ostpst.api.MessageToUser;
+import ru.vachok.ostpst.api.MessengerOST;
 import ru.vachok.ostpst.utils.FileSystemWorkerOST;
 import ru.vachok.ostpst.utils.TFormsOST;
 
@@ -20,7 +20,15 @@ class ParserObjects {
     
     private String fileName;
     
-    private MessageToUser messageToUser = new MessageCons(getClass().getSimpleName());
+    private MessageToUser messageToUser = new MessengerOST(getClass().getSimpleName());
+    
+    public MessageToUser getMessageToUser() {
+        return messageToUser;
+    }
+    
+    public void setMessageToUser(MessageToUser messageToUser) {
+        this.messageToUser = messageToUser;
+    }
     
     public ParserObjects(String fileName, long objID) {
         this.fileName = fileName;

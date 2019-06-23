@@ -3,17 +3,13 @@
 package ru.vachok.networker.accesscontrol;
 
 
-import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.ResoCache;
-import ru.vachok.networker.config.ResLoader;
 import ru.vachok.networker.controller.MatrixCtr;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
@@ -30,7 +26,9 @@ import java.util.concurrent.ConcurrentHashMap;
  <p>
  Сервис-класс для {@link MatrixCtr}.
  
- @since 07.09.2018 (9:45) */
+ @see ru.vachok.networker.accesscontrol.MatrixSRVTest
+ @since 07.09.2018 (9:45)
+ */
 @Service(ConstantsFor.BEANNAME_MATRIX)
 public class MatrixSRV {
     
@@ -54,7 +52,7 @@ public class MatrixSRV {
      
      @see MatrixCtr
      */
-    private String workPos = "whois: ";
+    private String workPos = "whois: ya.ru";
     
     /**
      Header
@@ -105,32 +103,26 @@ public class MatrixSRV {
      {@link TForms#fromArray(java.util.Map, boolean)}. Переделываем из мапы с результатом в строку для возврата для WEB. <br>
      this.{@link #workPos} = returned {@link String}
      
-     @param sql запрос
      @return {@link #workPos}
      
-     @see MatrixCtr#matrixAccess(java.lang.String)
+     @see ru.vachok.networker.accesscontrol.MatrixSRVTest#testSearchAccessPrincipals()
      */
-    public String getWorkPosition(final String sql) {
+    public String searchAccessPrincipals(String patternToSearch) {
+        final String sql = new StringBuilder().append("SELECT * FROM `matrix` WHERE `Doljnost` LIKE '%").append(patternToSearch).append("%'").toString();
         Map<String, String> doljAndAccess = new ConcurrentHashMap<>();
         DataConnectTo dataConnectTo = new RegRuMysql();
-        MysqlDataSource connectToDataSource = dataConnectTo.getDataSource(); //fixme 14.06.2019 (15:06).
-        connectToDataSource.setUser("u0466446_default");
-        connectToDataSource.setPassword("5xN_QlJG");
-        connectToDataSource.setDatabaseName("u0466446_velkom");
-        connectToDataSource.setUseSSL(false);
-        connectToDataSource.setContinueBatchOnError(true);
-        
-        try (Connection c = connectToDataSource.getConnection();
-             PreparedStatement statement = c.prepareStatement(sql);
-             ResultSet r = statement.executeQuery()
-        ) {
-            while (r.next()) {
-                getInfo(r, doljAndAccess);
+        try (Connection c = dataConnectTo.getDefaultConnection("u0466446_velkom")) {
+            try (PreparedStatement statement = c.prepareStatement(sql)) {
+                try (ResultSet r = statement.executeQuery()) {
+                    while (r.next()) {
+                        getInfo(r, doljAndAccess);
+                    }
+                }
             }
         }
         catch (SQLException e) {
-            LOGGER.error("MatrixSRV", "getWorkPosition", e.getMessage());
-            FileSystemWorker.error("MatrixSRV.getWorkPosition", e);
+            LOGGER.error("MatrixSRV", "searchAccessPrincipals", e.getMessage());
+            FileSystemWorker.error("MatrixSRV.searchAccessPrincipals", e);
         }
         String s = new TForms().fromArray(doljAndAccess, true);
         this.workPos = s;
@@ -146,23 +138,7 @@ public class MatrixSRV {
         catch (IOException e) {
             LOGGER.warn(e.getMessage(), e);
         }
-        ResoCache resoCache = ResoCache.getResoCache();
-        resoCache.setFilePath(file.getAbsolutePath());
-        resoCache.setBytes(bytes);
-        resoCache.setFile(file);
-        resoCache.setLastModif(System.currentTimeMillis());
-        resoCache.setFileName(file.getName());
-        
-        ResLoader resLoader = new ResLoader();
-        Map<Resource, ResoCache> resourceCache = resLoader.getResourceCache(ResoCache.class);
-        StringBuilder stringBuilder = new StringBuilder();
-        
-        resourceCache.forEach((x, y)->stringBuilder
-            .append(x)
-            .append("<br>")
-            .append(y));
-        
-        return stringBuilder.toString();
+        throw new IllegalStateException("22.06.2019 (8:00)");
     }
     
     private void getInfo(ResultSet r, Map<String, String> doljAndAccess) throws SQLException {

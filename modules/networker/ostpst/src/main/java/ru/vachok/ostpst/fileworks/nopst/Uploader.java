@@ -2,10 +2,8 @@
 
 package ru.vachok.ostpst.fileworks.nopst;
 
-
-import ru.vachok.mysqlandprops.props.DBRegProperties;
-import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.ostpst.ConstantsOst;
+import ru.vachok.ostpst.api.InitProperties;
 import ru.vachok.ostpst.fileworks.FileWorker;
 import ru.vachok.ostpst.utils.CharsetEncoding;
 
@@ -46,7 +44,9 @@ public class Uploader implements FileWorker {
     
     private int bytesBuffer = ConstantsOst.KBYTE_BYTES * ConstantsOst.KBYTE_BYTES * 42;
     
-    public Uploader(String readFileName, String writeFileName) throws FileNotFoundException, InvalidPathException {
+    private InitProperties initProperties;
+    
+    public Uploader(String readFileName, String writeFileName, InitProperties initProperties) throws FileNotFoundException, InvalidPathException {
         this.readFileName = readFileName;
         boolean isFile = Paths.get(readFileName).toAbsolutePath().normalize().toFile().isFile();
         if (!isFile) {
@@ -58,15 +58,15 @@ public class Uploader implements FileWorker {
         this.writeFileName = writeFileName;
         PREFERENCES_USER_ROOT.put(ConstantsOst.PR_WRITEFILENAME, this.writeFileName);
         PREFERENCES_USER_ROOT.put(ConstantsOst.PR_READFILENAME, this.readFileName);
-        initMethod(writeFileName);
+        initMethod(writeFileName, initProperties);
     }
     
-    protected Uploader(String readFileName) {
+    protected Uploader(String readFileName, InitProperties initProperties) {
         this.readFileName = readFileName;
         this.writeFileName = "tmp_" + new File(readFileName).getName();
         PREFERENCES_USER_ROOT.put(ConstantsOst.PR_WRITEFILENAME, writeFileName);
         PREFERENCES_USER_ROOT.put(ConstantsOst.PR_READFILENAME, readFileName);
-        initMethod(writeFileName);
+        initMethod(writeFileName, initProperties);
     }
     
     public String getReadFileName() {
@@ -120,14 +120,13 @@ public class Uploader implements FileWorker {
             Files.deleteIfExists(Paths.get(writeFileName));
         }
         catch (BackingStoreException e) {
-            InitProperties initProperties = new DBRegProperties("ostpst-" + getClass().getSimpleName());
             boolean delProps = initProperties.delProps();
             return e.getMessage();
         }
         catch (IOException e) {
             return e.getMessage();
         }
-        initMethod(writeFileName);
+        initMethod(writeFileName, initProperties);
         return "clear ok";
     }
     
@@ -184,7 +183,6 @@ public class Uploader implements FileWorker {
             PREFERENCES_USER_ROOT.sync();
         }
         catch (BackingStoreException e) {
-            InitProperties initProperties = new DBRegProperties("ostpst-" + getClass().getSimpleName());
             Properties properties = initProperties.getProps();
             properties.putAll(PREF_MAP);
             boolean setProps = initProperties.setProps(properties);

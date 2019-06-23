@@ -26,7 +26,9 @@ import java.util.concurrent.Executors;
 
 
 /**
- @since 20.05.2019 (9:36) */
+ @see InetStatSorter
+ @since 20.05.2019 (9:36)
+ */
 public class InteretStats implements Runnable, DataBaseRegSQL {
     
     
@@ -92,9 +94,14 @@ public class InteretStats implements Runnable, DataBaseRegSQL {
     }
     
     @Override public void run() {
+        DateFormat format = new SimpleDateFormat("E");
+        String weekDay = format.format(new Date());
         long iPsWithInet = readIPsWithInet();
-        messageToUser.info(getClass().getSimpleName() + "in kbytes. ", new File(FILENAME_INETSTATSIPCSV).getAbsolutePath(), " = " + iPsWithInet);
-        readInetStatsRSetToCSV();
+        messageToUser.info(getClass().getSimpleName() + "in kbytes. ", new File(FILENAME_INETSTATSIPCSV).getAbsolutePath(), " = " + iPsWithInet + " size in kb");
+    
+        if (weekDay.equals("вс")) {
+            readStatsToCSVAndDeleteFromDB();
+        }
         Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(new InetStatSorter());
     }
     
@@ -104,23 +111,7 @@ public class InteretStats implements Runnable, DataBaseRegSQL {
                 try (ResultSet r = p.executeQuery()) {
                     try (OutputStream outputStream = new FileOutputStream(fileName)) {
                         try (PrintStream printStream = new PrintStream(outputStream, true)) {
-                            while (r.next()) {
-                                if (sql.contains("SELECT * FROM `inetstats` WHERE `ip` LIKE")) {
-                                    printStream.print(new java.util.Date(Long.parseLong(r.getString("Date"))));
-                                    printStream.print(",");
-                                    printStream.print(r.getString(ConstantsFor.DBFIELB_RESPONSE));
-                                    printStream.print(",");
-                                    printStream.print(r.getString("bytes"));
-                                    printStream.print(",");
-                                    printStream.print(r.getString(ConstantsFor.DBFIELD_METHOD));
-                                    printStream.print(",");
-                                    printStream.print(r.getString("site"));
-                                    printStream.println();
-                                }
-                                if (sql.equals(SQL_DISTINCTIPSWITHINET)) {
-                                    printStream.println(r.getString("ip"));
-                                }
-                            }
+                            printToFile(r, printStream);
                         }
                     }
                 }
@@ -131,6 +122,26 @@ public class InteretStats implements Runnable, DataBaseRegSQL {
     
         }
         return -1;
+    }
+    
+    private void printToFile(ResultSet r, PrintStream printStream) throws SQLException {
+        while (r.next()) {
+            if (sql.contains("SELECT * FROM `inetstats` WHERE `ip` LIKE")) {
+                printStream.print(new java.util.Date(Long.parseLong(r.getString("Date"))));
+                printStream.print(",");
+                printStream.print(r.getString(ConstantsFor.DBFIELD_RESPONSE));
+                printStream.print(",");
+                printStream.print(r.getString("bytes"));
+                printStream.print(",");
+                printStream.print(r.getString(ConstantsFor.DBFIELD_METHOD));
+                printStream.print(",");
+                printStream.print(r.getString("site"));
+                printStream.println();
+            }
+            if (sql.equals(SQL_DISTINCTIPSWITHINET)) {
+                printStream.println(r.getString("ip"));
+            }
+        }
     }
     
     @Override public int deleteFrom() {
@@ -188,20 +199,18 @@ public class InteretStats implements Runnable, DataBaseRegSQL {
         return new File(FILENAME_INETSTATSIPCSV).length() / ConstantsFor.KBYTE;
     }
     
-    private void readInetStatsRSetToCSV() {
+    private void readStatsToCSVAndDeleteFromDB() {
         List<String> chkIps = FileSystemWorker.readFileToList(new File(FILENAME_INETSTATSIPCSV).getPath());
-        DateFormat format = new SimpleDateFormat("E");
-        String weekDay = format.format(new Date());
         long totalBytes = 0;
         for (String ip : chkIps) {
-            this.fileName = FILENAME_INETSTATSCSV.replace("inetstats", ip).replace(".csv", "_" + LocalTime.now().toSecondOfDay() + ".csv");
+            this.fileName = FILENAME_INETSTATSCSV.replace(ConstantsFor.STR_INETSTATS, ip).replace(".csv", "_" + LocalTime.now().toSecondOfDay() + ".csv");
             File file = new File(fileName);
             this.sql = new StringBuilder().append("SELECT * FROM `inetstats` WHERE `ip` LIKE '").append(ip).append("'").toString();
             selectFrom();
             totalBytes += file.length();
             new MessageLocal(getClass().getSimpleName())
                 .info(fileName, file.length() / ConstantsFor.KBYTE + " kb", "total kb: " + totalBytes / ConstantsFor.KBYTE);
-            if (weekDay.equals("вс") && file.length() > 10) {
+            if (file.length() > 10) {
                 this.sql = new StringBuilder().append("DELETE FROM `inetstats` WHERE `ip` LIKE '").append(ip).append("'").toString();
                 System.out.println(deleteFrom() + " rows deleted.");
             }

@@ -12,13 +12,13 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.controller.ExCTRL;
 
-import java.io.*;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Consumer;
 
@@ -28,7 +28,12 @@ import java.util.function.Consumer;
 public class ExSRV {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ExSRV.class.getSimpleName());
-
+    
+    /**
+     Файл правил-транспорта.
+     <p>
+     {@code Get-TransportRule | fl > this.file )}
+     */
     private MultipartFile file;
 
     public MultipartFile getFile() {
@@ -36,12 +41,11 @@ public class ExSRV {
     }
 
     private ConcurrentMap<Integer, MailRule> localMap = ConstantsFor.getMailRules();
-
-    private List<String> fileAsList = new ArrayList<>();
-
+    
+    private Queue<String> fileAsQueue = new LinkedList<>();
+    
     public void setFile(MultipartFile file) {
         this.file = file;
-        fileAsStrings();
     }
 
     /**
@@ -71,42 +75,37 @@ public class ExSRV {
         } catch (NullPointerException e) {
             return e.getMessage();
         }
-        return new String(new TForms().fromArray(fileAsList, false).getBytes(), StandardCharsets.UTF_8) + "<p>";
+        return new String(new TForms().fromArray(fileAsQueue, false).getBytes(), StandardCharsets.UTF_8) + "<p>";
     }
 
     /**
      <b>Преобразование файла в {@link List}</b>
-
-     @see #fileAsList
+ 
+     @see #fileAsQueue
      */
     private void getRulesFromFile() {
         Charset charset = StandardCharsets.UTF_16;
         localMap.clear();
-        fileAsList.clear();
+        fileAsQueue.clear();
         try (InputStream inputStream = file.getInputStream();
-             DataInputStream dataInputStream = new DataInputStream(inputStream);
-             InputStreamReader inputStreamReader = new InputStreamReader(dataInputStream)) {
-            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-            while (bufferedReader.ready()) {
-                byte[] bytes = bufferedReader.readLine().getBytes();
-                ByteBuffer wrap = ByteBuffer.wrap(bytes);
-                CharBuffer decode = charset.decode(wrap);
-
-                fileAsList.add(new String(decode.array()).trim());
+             InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+             BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
+            while (inputStreamReader.ready()) {
+                fileAsQueue.add(bufferedReader.readLine());
+                readRule();
             }
-            readRule();
         } catch (IOException | NullPointerException e) {
             LOGGER.error(e.getMessage(), e);
         }
     }
-
-    /**<b>Чтение и парсинг {@link #fileAsList}</b>
+    
+    /**<b>Чтение и парсинг {@link #fileAsQueue}</b>
      */
     private void readRule() {
-        for (String s : fileAsList) {
-            int index = fileAsList.indexOf(s);
-            if (s.contains("Priority")) {
-                setRule(index);
+        while (fileAsQueue.iterator().hasNext()) {
+            String stringFromFile = fileAsQueue.poll();
+            if (Objects.requireNonNull(stringFromFile).contains("Priority")) {
+                throw new IllegalStateException("22.06.2019 (17:14)");
             }
         }
         String msg = MailRule.fromArrayRules(localMap, false);
@@ -125,7 +124,9 @@ public class ExSRV {
         MailRule newRule = new MailRule();
         List<String> otherFields = new ArrayList<>();
         newRule.setRuleID(start);
-        List<String> ruleList = fileAsList.subList(start, fileAsList.size());
+        throw new IllegalStateException("22.06.2019 (17:15)");
+        
+        /* 22.06.2019 (17:15)
         for (int i = 0; i < ruleList.size(); i++) {
             String s = new String(ruleList.get(i).getBytes());
             try {
@@ -149,6 +150,6 @@ public class ExSRV {
         String msg = newRule.getRuleID() + " ID. End rule.\nRULE name IS " + newRule.getName() +
             ", rules size is " + ConstantsFor.getMailRules().size() + "/" + localMap.size();
         LOGGER.warn(msg);
-        newRule.setOtherFields(otherFields);
+        newRule.setOtherFields(otherFields);*/
     }
 }

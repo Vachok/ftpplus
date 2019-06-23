@@ -3,9 +3,7 @@
 package ru.vachok.networker.componentsrepo;
 
 
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -15,7 +13,9 @@ import java.util.List;
 
 
 /**
- @since 12.08.2018 1:19 */
+ @since 12.08.2018 1:19
+ @see ru.vachok.networker.componentsrepo.VisitorTest
+ */
 public class Visitor {
 
     /**
@@ -36,8 +36,8 @@ public class Visitor {
         .append(" сек. идёт сессия.")
         .append("\n")
         .toString();
-
-    private int clickCounter = 0;
+    
+    private int clickCounter;
 
     private String visitPlace;
 
@@ -57,9 +57,6 @@ public class Visitor {
         this.remAddr = request.getRemoteAddr();
         this.userId = session.getId();
         visitList.add(new Date(System.currentTimeMillis()).toString());
-        visitList.add(this.toString());
-        visitList.add(AppComponents.versionInfo().toString());
-        FileSystemWorker.writeFile(STR_VISIT + userId , visitList);
     }
 
 

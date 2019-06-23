@@ -195,7 +195,7 @@ public class NetScanCtr {
         model.addAttribute(ConstantsFor.ATT_TITLE, npEq);
         model.addAttribute("ok", FileSystemWorker.readFile(ConstantsNet.PINGRESULT_LOG));
         messageToUser.infoNoTitles("npEq = " + npEq);
-        response.addHeader(ConstantsFor.HEAD_REFRESH, PROPERTIES.getProperty(ConstantsNet.PROP_PINGSLEEP, "60"));
+        response.addHeader(ConstantsFor.HEAD_REFRESH, PROPERTIES.getProperty(ConstantsFor.PR_PINGSLEEP, "60"));
         return "ok";
     }
     

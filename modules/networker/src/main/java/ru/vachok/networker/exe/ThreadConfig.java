@@ -1,4 +1,3 @@
-
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
 package ru.vachok.networker.exe;
@@ -28,6 +27,7 @@ import java.util.concurrent.*;
  Конфигуратор для {@link ThreadPoolTaskExecutor}
  <p>
  
+ @see ru.vachok.networker.exe.ThreadConfigTest
  @since 11.09.2018 (11:41) */
 @SuppressWarnings("MagicNumber")
 @EnableAsync
@@ -38,12 +38,13 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
     /**
      {@link ThreadPoolTaskScheduler}
      */
-    private static final ThreadPoolTaskScheduler TASK_SCHEDULER = new ThreadPoolTaskScheduler();
+    private static final ThreadPoolTaskScheduler TASK_SCHEDULER;
     
     /**
      {@link ThreadPoolTaskExecutor}
      */
-    private static final ThreadPoolTaskExecutor TASK_EXECUTOR = new ThreadPoolTaskExecutor();
+    private static final ThreadPoolTaskExecutor TASK_EXECUTOR;
+    
     
     /**
      Instance
@@ -66,6 +67,14 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
     
     private Runnable r;
     
+    
+    static {
+        TASK_SCHEDULER = new ThreadPoolTaskScheduler();
+        TASK_EXECUTOR = new ThreadPoolTaskExecutor();
+        TASK_SCHEDULER.initialize();
+        TASK_EXECUTOR.initialize();
+    }
+    
     private ThreadConfig() {
     }
     
@@ -84,15 +93,13 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
         TASK_EXECUTOR.setQueueCapacity(1800);
         TASK_EXECUTOR.setWaitForTasksToCompleteOnShutdown(true);
         TASK_EXECUTOR.setAwaitTerminationSeconds(7);
-        TASK_EXECUTOR.setThreadPriority(4);
+        TASK_EXECUTOR.setThreadPriority(5);
         TASK_EXECUTOR.setThreadNamePrefix("EX");
     
         return TASK_EXECUTOR;
     }
     
     public static ThreadConfig getI() {
-        TASK_SCHEDULER.initialize();
-        TASK_EXECUTOR.initialize();
         return THREAD_CONFIG_INST;
     }
     
@@ -101,7 +108,7 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
         scThreadPoolExecutor.setCorePoolSize(20);
         scThreadPoolExecutor.setMaximumPoolSize(50);
         TASK_SCHEDULER.setThreadNamePrefix("TS");
-        TASK_SCHEDULER.setThreadPriority(4);
+        TASK_SCHEDULER.setThreadPriority(3);
         TASK_SCHEDULER.setWaitForTasksToCompleteOnShutdown(false);
         TASK_SCHEDULER.setDaemon(true);
         return TASK_SCHEDULER;
@@ -110,7 +117,7 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
     /**
      Killer
      */
-    @SuppressWarnings("MethodWithMultipleLoops") public void killAll() {
+    @SuppressWarnings("MethodWithMultipleLoops") public boolean killAll() {
         TASK_SCHEDULER.shutdown();
         final StringBuilder builder = new StringBuilder();
         for (Runnable runnable : TASK_SCHEDULER.getScheduledThreadPoolExecutor().shutdownNow()) {
@@ -121,13 +128,13 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
             builder.append(runnable).append("\n");
         }
         messageToUser.warn(builder.toString());
-        ThreadGroup threadGroup = new ASExec().getSimpleAsyncExecutor().getThreadGroup();
-        if (threadGroup != null) {
-            threadGroup.destroy();
-        }
+        SimpleAsyncTaskExecutor simpleAsyncExecutor = new ASExec().getSimpleAsyncExecutor();
+        ThreadGroup threadGroup = null;
+        boolean threadGroupDestroyed = true;
+        return TASK_EXECUTOR.getThreadPoolExecutor().isShutdown() & TASK_SCHEDULER.getScheduledThreadPoolExecutor().isShutdown();
     }
     
-    public void thrNameSet(String className) {
+    public String thrNameSet(String className) {
         float localUptime = (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN;
         String delaysCount = String.format("%.01f", (localUptime / ConstantsFor.DELAY));
         String upStr = String.format("%.01f", localUptime);
@@ -140,16 +147,16 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
         }
         String thrName = className + ";" + upStr + ";" + delaysCount;
         Thread.currentThread().setName(thrName);
+        return thrName;
     }
     
     public boolean execByThreadConfig(Runnable runnable) {
         this.r = runnable;
         try {
-            boolean isExecByThreadConfig = execByThreadConfig();
-            messageToUser.warn(getClass().getSimpleName(), runnable.toString(), " = " + isExecByThreadConfig);
-            return isExecByThreadConfig;
+            return execByThreadConfig();
         }
         catch (Exception e) {
+            e.printStackTrace();
             TASK_EXECUTOR.initialize();
             TASK_EXECUTOR.execute(r);
             return false;
@@ -158,6 +165,9 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
     
     @Override public String toString() {
         final StringBuilder sb = new StringBuilder("ThreadConfig{");
+        sb.append(TASK_EXECUTOR.getThreadPoolExecutor().toString()).append(" TASK EXECUTOR, ");
+        sb.append(TASK_SCHEDULER.getScheduledExecutor().toString()).append(" TASK SCHEDULER.\n <p>");
+        sb.append(MX_BEAN_THREAD.getObjectName()).append(" object name, ");
         sb.append(MX_BEAN_THREAD.getTotalStartedThreadCount()).append(" total threads started, ");
         sb.append(MX_BEAN_THREAD.getThreadCount()).append(" current threads live, ");
         sb.append(MX_BEAN_THREAD.getPeakThreadCount()).append(" peak live. <br>");
@@ -176,25 +186,22 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
         }
     }
     
+    /**
+     @return executed or not
+     
+     @see ru.vachok.networker.exe.ThreadConfigTest#testExecByThreadConfig()
+     */
     private boolean execByThreadConfig() {
         SimpleAsyncTaskExecutor simpleAsyncExecutor = new ASExec().getSimpleAsyncExecutor();
-        Thread thread = simpleAsyncExecutor.getThreadFactory().newThread(r);
-    
-        messageToUser.errorAlert(getClass().getSimpleName(), "asyncExecutor is " + null, thread.getName());
-    
-        if (simpleAsyncExecutor != null) {
-            System.out.println(A_EXECUTOR + simpleAsyncExecutor.getClass().getSimpleName());
+        
+        if (!(simpleAsyncExecutor == null)) {
             simpleAsyncExecutor.execute(r);
             return true;
         }
         else {
-            thread.setName("ALONG...");
-            thread.start();
-            messageToUser.error(EXECUTE_AS_THREAD_METH_NAME, "thread.isAlive()", " = " + thread.isAlive());
             return false;
         }
     }
-    
     
     /**
      Асинхронный {@link ThreadPoolTaskExecutor}
@@ -212,12 +219,12 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
         public Executor getAsyncExecutor() {
             Executor executorServiceAdapter = new ExecutorServiceAdapter(simpleAsyncExecutor);
             simpleAsyncExecutor.setConcurrencyLimit(50);
-            simpleAsyncExecutor.setThreadPriority(8);
+            simpleAsyncExecutor.setThreadPriority(6);
             simpleAsyncExecutor.setTaskDecorator(runnable->{
                 runnable = r;
                 ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
                 long threadCpuTime = threadMXBean.getCurrentThreadCpuTime();
-                System.out.println(TimeUnit.NANOSECONDS.toMillis(threadCpuTime) + " CPU time in ms");
+                System.out.println(TimeUnit.NANOSECONDS.toMillis(threadCpuTime) + " CPU time in ms of thread " + runnable.getClass().getSimpleName());
                 return runnable;
             });
             return executorServiceAdapter;
@@ -226,14 +233,6 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
         private SimpleAsyncTaskExecutor getSimpleAsyncExecutor() {
             return simpleAsyncExecutor;
         }
-
-// --Commented out by Inspection START (13.06.2019 9:30):
-//        private void setSimpleAsyncExecutor(SimpleAsyncTaskExecutor simpleAsyncExecutor) {
-//            this.simpleAsyncExecutor = simpleAsyncExecutor;
-//        }
-// --Commented out by Inspection STOP (13.06.2019 9:30)
+    
     }
-    
-    
-    
 }

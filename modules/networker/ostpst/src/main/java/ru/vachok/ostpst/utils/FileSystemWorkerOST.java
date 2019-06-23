@@ -3,9 +3,9 @@
 package ru.vachok.ostpst.utils;
 
 
-import ru.vachok.messenger.MessageCons;
-import ru.vachok.messenger.MessageToUser;
 import ru.vachok.ostpst.ConstantsOst;
+import ru.vachok.ostpst.api.MessageToUser;
+import ru.vachok.ostpst.api.MessengerOST;
 import ru.vachok.ostpst.fileworks.RNDPSTFileCopy;
 
 import java.io.*;
@@ -22,7 +22,7 @@ import java.util.stream.Stream;
 public abstract class FileSystemWorkerOST {
     
     
-    private static MessageToUser messageToUser = new MessageCons(FileSystemWorkerOST.class.getSimpleName());
+    private static MessageToUser messageToUser = new MessengerOST(FileSystemWorkerOST.class.getSimpleName());
     
     public static String error(String fileName, Exception e) {
         Path rootPath = Paths.get(".").toAbsolutePath().normalize();
