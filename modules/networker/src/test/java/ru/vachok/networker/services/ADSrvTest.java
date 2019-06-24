@@ -8,6 +8,7 @@ import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.user.ADUser;
+import ru.vachok.networker.net.enums.OtherKnownDevices;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -61,7 +62,7 @@ import java.util.List;
         ADComputer adComputer = new ADComputer();
         adComputer.setEnabled(String.valueOf(true));
         adComputer.setName("do0213");
-        adComputer.setDnsHostName("do0213.eatmeat.ru");
+        adComputer.setDnsHostName(OtherKnownDevices.DO0213_KUDR);
         adComputer.setSamAccountName("DO0213");
         List<ADComputer> adComputers = new ArrayList<>();
         adComputers.add(adComputer);

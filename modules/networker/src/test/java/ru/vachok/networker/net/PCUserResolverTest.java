@@ -5,6 +5,7 @@ package ru.vachok.networker.net;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
+import ru.vachok.networker.net.enums.OtherKnownDevices;
 
 
 /**
@@ -14,7 +15,7 @@ import org.testng.annotations.Test;
     
     @Test
     public void testRun() {
-        PCUserResolver pcUserResolver = new PCUserResolver("do0213.eatmeat.ru");
+        PCUserResolver pcUserResolver = new PCUserResolver(OtherKnownDevices.DO0213_KUDR);
         pcUserResolver.setInfo();
         String resolverInfoAbout = pcUserResolver.getInfoAbout();
         Assert.assertFalse(resolverInfoAbout.isEmpty(), resolverInfoAbout);
@@ -23,7 +24,7 @@ import org.testng.annotations.Test;
     }
     
     private void resolverDO0004() {
-        PCUserResolver pcUserResolver = new PCUserResolver("do0004.eatmeat.ru");
+        PCUserResolver pcUserResolver = new PCUserResolver(OtherKnownDevices.DO0045_KIRILL);
         pcUserResolver.setInfo();
     }
 }

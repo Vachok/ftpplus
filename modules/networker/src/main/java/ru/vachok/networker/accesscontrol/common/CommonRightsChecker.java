@@ -24,7 +24,6 @@ import java.util.List;
 
 /**
  @see ru.vachok.networker.accesscontrol.common.CommonRightsCheckerTest */
-@SuppressWarnings ("DuplicateStringLiteralInspection")
 public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runnable {
     
     
@@ -34,7 +33,11 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
     
     long countFiles = 0;
     
-    private Path toCheckPath;
+    private Path toCheckPath = null;
+    
+    private static final String STR_FILES_IS_NOT_EXISTS = " is not exists!";
+    
+    private static final String STR_KILOBYTES = " kilobytes";
     
     public CommonRightsChecker() {
     }
@@ -50,7 +53,16 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
      */
     @Override public void run() {
         try {
-            messageToUser.info(getClass().getSimpleName() + ".run", "true", " = " + isDelete());
+            String commonOwnExistsStr = "File " + commonOwn.getName() + STR_FILES_IS_NOT_EXISTS;
+            String commonRghExistsStr = "File " + commonRgh.getName() + STR_FILES_IS_NOT_EXISTS;
+    
+            if (commonOwn.exists()) {
+                commonOwnExistsStr = commonOwn.getName() + " is OK. Size = " + commonOwn.length() / ConstantsFor.KBYTE + STR_KILOBYTES;
+            }
+            if (commonRgh.exists()) {
+                commonRghExistsStr = commonRgh.getName() + " is OK. Size = " + commonRgh.length() / ConstantsFor.KBYTE + STR_KILOBYTES;
+            }
+            messageToUser.info(getClass().getSimpleName() + ".run", commonOwnExistsStr + ", " + commonRghExistsStr, "\nFiles deleted = " + isDelete());
             if (toCheckPath != null) {
                 Files.walkFileTree(toCheckPath, this);
             }
@@ -94,16 +106,15 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
     }
     
     private String isDelete() throws IOException {
-        boolean b1 = Files.deleteIfExists(commonOwn.toPath());
-        boolean b = Files.deleteIfExists(new File(ConstantsFor.FILENAME_COMMONRGH).toPath());
-        String msg = new StringBuilder()
+        boolean isOWNFileDeleted = Files.deleteIfExists(commonOwn.toPath().toAbsolutePath().normalize());
+        boolean isRGHFileDeleted = Files.deleteIfExists(new File(ConstantsFor.FILENAME_COMMONRGH).toPath().toAbsolutePath().normalize());
+        return new StringBuilder()
             .append("Starting a new instance of ")
             .append(getClass().getSimpleName())
             .append(" at ").append(new Date())
             .append("\ncommon.rgh and common.own deleted : ")
-            .append(b)
+            .append(isRGHFileDeleted)
             .append(" ")
-            .append(b1).toString();
-        return msg;
+            .append(isOWNFileDeleted).toString();
     }
 }

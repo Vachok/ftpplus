@@ -12,6 +12,7 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.InternetUse;
 import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
 import ru.vachok.networker.net.enums.ConstantsNet;
+import ru.vachok.networker.net.enums.OtherKnownDevices;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.systray.MessageToTray;
 import ru.vachok.networker.systray.actions.ActionCloseMsg;
@@ -43,7 +44,7 @@ import java.util.stream.Collectors;
         String aboutTV = new MoreInfoWorker().getInfoAbout();
         Assert.assertTrue(aboutTV.contains("ptv1.eatmeat.ru"), aboutTV);
     
-        aboutTV = new MoreInfoWorker("do0213.eatmeat.ru").getInfoAbout();
+        aboutTV = new MoreInfoWorker(OtherKnownDevices.DO0213_KUDR).getInfoAbout();
         Assert.assertTrue(aboutTV.contains("ikudryashov"), aboutTV);
     }
     

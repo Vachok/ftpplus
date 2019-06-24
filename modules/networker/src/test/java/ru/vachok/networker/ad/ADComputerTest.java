@@ -1,7 +1,10 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.ad;
 
 
 import org.testng.annotations.Test;
+import ru.vachok.networker.net.enums.OtherKnownDevices;
 
 import static org.testng.Assert.assertTrue;
 
@@ -14,7 +17,7 @@ public class ADComputerTest {
     @Test
     public void testToString1() {
         ADComputer adComputer = new ADComputer();
-        adComputer.setDnsHostName("do0213.eatmeat.ru");
-        assertTrue(adComputer.toString().contains("do0213.eatmeat.ru"));
+        adComputer.setDnsHostName(OtherKnownDevices.DO0213_KUDR);
+        assertTrue(adComputer.toString().contains(OtherKnownDevices.DO0213_KUDR));
     }
 }

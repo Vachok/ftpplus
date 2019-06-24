@@ -16,6 +16,7 @@ import ru.vachok.networker.exe.schedule.MailIISLogsCleaner;
 import ru.vachok.networker.exe.schedule.SquidAvailabilityChecker;
 import ru.vachok.networker.exe.schedule.WeekStats;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.enums.OtherKnownDevices;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.MyCalen;
 
@@ -39,7 +40,8 @@ import java.util.concurrent.TimeUnit;
  Информация и шедулеры.
  <p>
  Перемещено из {@link IntoApplication}.
- 
+ <p>
+ @see ru.vachok.networker.AppInfoOnLoadTest
  @since 19.12.2018 (9:40) */
 public class AppInfoOnLoad implements Runnable {
     
@@ -128,6 +130,8 @@ public class AppInfoOnLoad implements Runnable {
      Старт
      <p>
      {@link #infoForU()}
+     <p>
+     @see ru.vachok.networker.AppInfoOnLoadTest#testRun()
      */
     @Override
     public void run() {
@@ -213,22 +217,27 @@ public class AppInfoOnLoad implements Runnable {
     private static void runCommonScan() {
         try {
             FileVisitor<Path> commonRightsChecker = new CommonRightsChecker();
-            File commonOwn = new File(ConstantsFor.FILENAME_COMMONOWN);
-            Path absPathToCopyCommonOwn = Paths.get(commonOwn.toPath().toAbsolutePath().normalize().toString()
-                .replace(commonOwn.getName(), "lan" + System.getProperty(ConstantsFor.PRSYS_SEPARATOR) + commonOwn.getName())).toAbsolutePath().normalize();
-    
-            File commonRgh = new File(ConstantsFor.FILENAME_COMMONRGH);
-            Path absPathToCopyCommonRgh = Paths.get(commonRgh.toPath().toAbsolutePath().normalize().toString()
-                .replace(commonRgh.getName(), "lan" + System.getProperty(ConstantsFor.PRSYS_SEPARATOR) + commonRgh.getName())).toAbsolutePath().normalize();
-    
-            FileSystemWorker.copyOrDelFile(commonOwn, absPathToCopyCommonOwn, true);
-            FileSystemWorker.copyOrDelFile(commonRgh, absPathToCopyCommonRgh, true);
-            Files.deleteIfExists(new File(ConstantsFor.FILENAME_COMMONRGH).toPath());
-            Files.walkFileTree(Paths.get("\\\\srv-fs.eatmeat.ru\\common_new"), commonRightsChecker);
+            if (checkExistsFiles()) {
+                Files.walkFileTree(Paths.get("\\\\srv-fs.eatmeat.ru\\common_new"), commonRightsChecker);
+            }
         }
         catch (IOException e) {
             MESSAGE_LOCAL.error(e.getMessage());
         }
+    }
+    
+    private static boolean checkExistsFiles() {
+        File commonOwn = new File(ConstantsFor.FILENAME_COMMONOWN);
+        Path absPathToCopyCommonOwn = Paths.get(commonOwn.toPath().toAbsolutePath().normalize().toString()
+            .replace(commonOwn.getName(), "lan" + System.getProperty(ConstantsFor.PRSYS_SEPARATOR) + commonOwn.getName())).toAbsolutePath().normalize();
+        File commonRgh = new File(ConstantsFor.FILENAME_COMMONRGH);
+        
+        Path absPathToCopyCommonRgh = Paths.get(commonRgh.toPath().toAbsolutePath().normalize().toString()
+            .replace(commonRgh.getName(), "lan" + System.getProperty(ConstantsFor.PRSYS_SEPARATOR) + commonRgh.getName())).toAbsolutePath().normalize();
+        
+        boolean isOWNCopied = FileSystemWorker.copyOrDelFile(commonOwn, absPathToCopyCommonOwn, true);
+        boolean isRGHCopied = FileSystemWorker.copyOrDelFile(commonRgh, absPathToCopyCommonRgh, true);
+        return isOWNCopied & isRGHCopied;
     }
     
     /**
@@ -264,7 +273,7 @@ public class AppInfoOnLoad implements Runnable {
         
         System.out.println("new AppComponents().launchRegRuFTPLibsUploader() = " + new AppComponents().launchRegRuFTPLibsUploader());
     
-        if (thisPC.toLowerCase().contains("rups00")) {
+        if (thisPC.toLowerCase().contains(OtherKnownDevices.SRV_RUPS00.replace(ConstantsFor.DOMAIN_EATMEATRU, "").toLowerCase())) {
             scheduledExecutorService.scheduleWithFixedDelay(AppInfoOnLoad::runCommonScan, ConstantsFor.INIT_DELAY, TimeUnit.DAYS.toSeconds(1),
                 TimeUnit.SECONDS);
             AppInfoOnLoad.MINI_LOGGER.add("runCommonScan init delay " + ConstantsFor.INIT_DELAY + ", delay " + TimeUnit.DAYS.toSeconds(1) + ". SECONDS");

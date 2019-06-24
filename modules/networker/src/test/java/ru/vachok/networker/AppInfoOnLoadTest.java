@@ -13,6 +13,7 @@ import java.util.List;
 
 
 /**
+ @see AppInfoOnLoad
  @since 09.06.2019 (20:49) */
 public class AppInfoOnLoadTest {
     
@@ -38,7 +39,10 @@ public class AppInfoOnLoadTest {
         Assert.assertTrue((currentTimeMS >= stampBuild), "\n\n" + (currentTimeMS - stampBuild) + " MS diff between build and test\n\n\n");
     }
     
-    @Test()
+    /**
+     @see AppInfoOnLoad#run()
+     */
+    @Test
     public void testRun() {
         AppInfoOnLoad.MINI_LOGGER.clear();
         Runnable apOnLoad = new AppInfoOnLoad();

@@ -7,6 +7,7 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.net.enums.OtherKnownDevices;
 
 
 /**
@@ -22,8 +23,8 @@ import ru.vachok.networker.ConstantsFor;
     public void testSetParams() {
         String setParamsString = ConstantsFor.APP_VERSION;
         Assert.assertTrue(setParamsString.contains(ConstantsFor.thisPC()), setParamsString);
-        VersionInfo setParamsTry = AppComponents.versionInfo("rups00.eatmeat.ru");
-        Assert.assertFalse(setParamsTry.getAppBuild().contains("rups00"), setParamsTry.toString());
+        VersionInfo setParamsTry = AppComponents.versionInfo(OtherKnownDevices.SRV_RUPS00);
+        Assert.assertFalse(setParamsTry.getAppBuild().contains(OtherKnownDevices.SRV_RUPS00), setParamsTry.toString());
     }
     
     /**
@@ -33,7 +34,7 @@ import ru.vachok.networker.ConstantsFor;
     public void getParamsTEST() {
         VersionInfo infoVers = new VersionInfo(AppComponents.getProps(), ConstantsFor.thisPC());
         String versString = ConstantsFor.APP_VERSION;
-        Assert.assertFalse(versString.contains("rups00"), versString);
+        Assert.assertFalse(versString.contains(OtherKnownDevices.SRV_RUPS00), versString);
         Assert.assertFalse(infoVers.getAppBuild().isEmpty());
         Assert.assertFalse(infoVers.getBuildTime().isEmpty());
         Assert.assertFalse(infoVers.getAppVersion().isEmpty());
