@@ -1,8 +1,22 @@
 package ru.vachok.networker.exe.runnabletasks;
 
 
+import org.testng.Assert;
 import org.testng.annotations.Test;
-import ru.vachok.networker.componentsrepo.IllegalInvokeEx;
+import ru.vachok.mysqlandprops.DataConnectTo;
+import ru.vachok.mysqlandprops.RegRuMysql;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Random;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -16,7 +30,8 @@ public class NetScannerSvcTest {
      */
     @Test
     public void testToString1() {
-        throw new IllegalInvokeEx("24.06.2019 (11:13)");
+        NetScannerSvc netScannerSvc = NetScannerSvc.getInst();
+        Assert.assertTrue(netScannerSvc.toString().contains(String.valueOf(netScannerSvc.hashCode())));
     }
     
     /**
@@ -24,7 +39,9 @@ public class NetScannerSvcTest {
      */
     @Test
     public void testTheSETOfPcNames() {
-        throw new IllegalInvokeEx("24.06.2019 (11:19)");
+        NetScannerSvc netScannerSvc = NetScannerSvc.getInst();
+        Set<String> setOfPcNames = netScannerSvc.theSETOfPcNames();
+        Assert.assertNotNull(setOfPcNames);
     }
     
     /**
@@ -32,7 +49,34 @@ public class NetScannerSvcTest {
      */
     @Test
     public void testTheSETOfPCNamesPref() {
-        throw new IllegalInvokeEx("24.06.2019 (11:20)");
+        NetScannerSvc netScannerSvc = NetScannerSvc.getInst();
+        Set<String> namesPref = netScannerSvc.theSETOfPCNamesPref("no");
+        Assert.assertTrue(namesPref.size() > 3);
+        Assert.assertTrue(namesPref.toArray()[new Random().nextInt(3)].toString().contains("<b"));
+        DataConnectTo dataConnectTo = new RegRuMysql();
+        final String sql = "SELECT * FROM `pcuserauto` ORDER BY `whenQueried` DESC LIMIT 1";
+        try (Connection defaultConnection = dataConnectTo.getDefaultConnection("u0466446_velkom");
+             PreparedStatement preparedStatement = defaultConnection.prepareStatement(sql);
+             ResultSet resultSet = preparedStatement.executeQuery();
+        ) {
+            while (resultSet.next()) {
+                long stampLong = resultSet.getLong("stamp");
+                Assert.assertTrue(stampLong > (System.currentTimeMillis() - TimeUnit.DAYS.toMillis(7)), new Date(stampLong).toString());
+            }
+            try (PreparedStatement ps2 = defaultConnection.prepareStatement("SELECT * FROM `velkompc` ORDER BY `velkompc`.`TimeNow` DESC LIMIT 1");
+                 ResultSet resultSet1 = ps2.executeQuery()
+            ) {
+                while (resultSet1.next()) {
+                    DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+                    String resultSet1String = resultSet1.getString("TimeNow");
+                    Date parsedDate = dateFormat.parse(resultSet1String);
+                    Assert.assertTrue(parsedDate.getTime() > (System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(2)), parsedDate.toString());
+                }
+            }
+        }
+        catch (SQLException | ParseException e) {
+            Assert.assertNull(e, e.getMessage());
+        }
     }
     
     /**
@@ -40,6 +84,12 @@ public class NetScannerSvcTest {
      */
     @Test
     public void testTheInfoFromDBGetter() {
-        throw new IllegalInvokeEx("24.06.2019 (11:17)");
+        NetScannerSvc netScannerSvc = NetScannerSvc.getInst();
+        String fromDBGetterResult = netScannerSvc.theInfoFromDBGetter();
+        Assert.assertEquals(fromDBGetterResult, "ok");
+        Assert.assertTrue(netScannerSvc.getThePc().contains("Index -1"), netScannerSvc.getThePc());
+        netScannerSvc.setThePc("do0045");
+        fromDBGetterResult = netScannerSvc.theInfoFromDBGetter();
+        Assert.assertTrue(netScannerSvc.toString().contains("do0045.eatmeat.ru/10.200.213.200"), netScannerSvc.toString());
     }
 }
