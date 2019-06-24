@@ -213,7 +213,16 @@ public class AppInfoOnLoad implements Runnable {
     private static void runCommonScan() {
         try {
             FileVisitor<Path> commonRightsChecker = new CommonRightsChecker();
-            Files.deleteIfExists(new File(ConstantsFor.FILENAME_COMMONOWN).toPath());
+            File commonOwn = new File(ConstantsFor.FILENAME_COMMONOWN);
+            Path absPathToCopyCommonOwn = Paths.get(commonOwn.toPath().toAbsolutePath().normalize().toString()
+                .replace(commonOwn.getName(), "lan" + System.getProperty(ConstantsFor.PRSYS_SEPARATOR) + commonOwn.getName())).toAbsolutePath().normalize();
+    
+            File commonRgh = new File(ConstantsFor.FILENAME_COMMONRGH);
+            Path absPathToCopyCommonRgh = Paths.get(commonRgh.toPath().toAbsolutePath().normalize().toString()
+                .replace(commonRgh.getName(), "lan" + System.getProperty(ConstantsFor.PRSYS_SEPARATOR) + commonRgh.getName())).toAbsolutePath().normalize();
+    
+            FileSystemWorker.copyOrDelFile(commonOwn, absPathToCopyCommonOwn, true);
+            FileSystemWorker.copyOrDelFile(commonRgh, absPathToCopyCommonRgh, true);
             Files.deleteIfExists(new File(ConstantsFor.FILENAME_COMMONRGH).toPath());
             Files.walkFileTree(Paths.get("\\\\srv-fs.eatmeat.ru\\common_new"), commonRightsChecker);
         }

@@ -6,6 +6,9 @@ package ru.vachok.networker;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 
@@ -43,6 +46,9 @@ public class AppInfoOnLoadTest {
         List<String> loggerAppInfo = AppInfoOnLoad.MINI_LOGGER;
         Assert.assertNotNull(loggerAppInfo);
         Assert.assertTrue(loggerAppInfo.size() >= 4, loggerAppInfo.size() + " is loggerAppInfo.size()");
+        File commonOwn = new File(ConstantsFor.FILENAME_COMMONOWN);
+        Path absPathToCopyCommonOwn = Paths.get(commonOwn.toPath().toAbsolutePath().normalize().toString()
+            .replace(commonOwn.getName(), "lan" + System.getProperty(ConstantsFor.PRSYS_SEPARATOR) + commonOwn.getName())).toAbsolutePath().normalize();
     }
     
     private static int getScansDelay() {
