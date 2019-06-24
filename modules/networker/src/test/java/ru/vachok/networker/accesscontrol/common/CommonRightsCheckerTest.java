@@ -11,7 +11,6 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 
 
@@ -32,9 +31,6 @@ public class CommonRightsCheckerTest {
         rightsChecker.run();
         Assert.assertFalse(ownFile.exists());
         Assert.assertFalse(rghtFile.exists());
-        Path absPathToCopyCommonOwn = Paths.get(ownFile.toPath().toAbsolutePath().normalize().toString()
-            .replace(ownFile.getName(), "lan" + System.getProperty(ConstantsFor.PRSYS_SEPARATOR) + ownFile.getName())).toAbsolutePath().normalize();
-        Assert.assertTrue(absPathToCopyCommonOwn.toFile().exists());
     
         try {
             Files.walkFileTree(Paths.get("\\\\srv-fs.eatmeat.ru\\it$$\\_AdminTools\\ru_vachok_inet_inetor_main\\ru.vachok.inet.inetor.main\\app\\inetor_main\\"), rightsChecker);
