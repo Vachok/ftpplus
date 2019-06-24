@@ -215,7 +215,10 @@ public class AppInfoOnLoad implements Runnable {
      {@link FileSystemWorker#error(String, Exception)}
      */
     private static void runCommonScan() {
-        FileVisitor<Path> commonRightsChecker = new CommonRightsChecker(Paths.get("\\\\srv-fs.eatmeat.ru\\common_new"), Paths.get("\\\\srv-fs.eatmeat.ru\\it$$"));
+        FileVisitor<Path> commonRightsChecker = new CommonRightsChecker(Paths.get("\\\\srv-fs.eatmeat.ru\\common_new"), Paths
+            .get("\\\\srv-fs.eatmeat.ru\\Common_new\\14_ИТ_служба\\Внутренняя"));
+        Runnable checkerRun = (Runnable) commonRightsChecker;
+        thrConfig.execByThreadConfig(checkerRun);
     }
     
     /**
