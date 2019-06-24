@@ -3,34 +3,43 @@
 package ru.vachok.networker.ad.user;
 
 
+import org.testng.Assert;
 import org.testng.annotations.Test;
-import ru.vachok.networker.componentsrepo.IllegalInvokeEx;
 import ru.vachok.networker.net.InfoWorker;
 
 
 /**
  @see ConditionChecker
  @since 23.06.2019 (15:11) */
-public class ConditionCheckerTest {
+@SuppressWarnings("ALL") public class ConditionCheckerTest {
     
     
     @Test
     public void testGetInfoAbout() {
-        
-        InfoWorker infoWorker = new ConditionChecker("select * from velkompc where NamePP like ?", "do0213.eatmeat.ru:false");
+    
+        InfoWorker infoWorker = new ConditionChecker("select * from velkompc where NamePP like ?", "do0045.eatmeat.ru:true");
         String infoWorkerString = infoWorker.getInfoAbout();
-        System.out.println(infoWorkerString);
-        infoWorker = new ConditionChecker("select * from pcuser where pcName like ?", "do0004.eatmeat.ru:true");
-        System.out.println(infoWorker.getInfoAbout());
+        Assert.assertTrue(infoWorkerString.contains("kpivovarov"));
+    
+        infoWorker = new ConditionChecker("select * from pcuser where pcName like ?", "do0213.eatmeat.ru:false");
+        infoWorkerString = infoWorker.getInfoAbout();
+        Assert.assertTrue(infoWorkerString.contains("ikudryashov"));
     }
     
     @Test
     public void testSetInfo() {
-        throw new IllegalInvokeEx("23.06.2019 (15:11)");
+        InfoWorker infoWorker = new ConditionChecker("select * from pcuser where pcName like ?", "do0213.eatmeat.ru:false");
+        try {
+            infoWorker.setInfo();
+        }
+        catch (UnsupportedOperationException e) {
+            Assert.assertNotNull(e);
+        }
     }
     
     @Test
     public void testToString1() {
-        throw new IllegalInvokeEx("23.06.2019 (15:11)");
+        InfoWorker infoWorker = new ConditionChecker("select * from pcuser where pcName like ?", "do0213.eatmeat.ru:false");
+        Assert.assertEquals(infoWorker.toString().getBytes(), "ConditionChecker{}".getBytes());
     }
 }
