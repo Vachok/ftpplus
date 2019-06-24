@@ -5,6 +5,7 @@ package ru.vachok.networker.accesscontrol.common;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.io.File;
@@ -25,8 +26,8 @@ public class CommonRightsCheckerTest {
     @Test
     public void testRun() {
         CommonRightsChecker rightsChecker = new CommonRightsChecker();
-        File ownFile = new File("common.own");
-        File rghtFile = new File("common.rgh");
+        File ownFile = new File(ConstantsFor.FILENAME_COMMONOWN);
+        File rghtFile = new File(ConstantsFor.FILENAME_COMMONRGH);
         rightsChecker.run();
         Assert.assertFalse(ownFile.exists());
         Assert.assertFalse(rghtFile.exists());
@@ -47,5 +48,10 @@ public class CommonRightsCheckerTest {
         rightsChecker.run();
         Assert.assertTrue(FileSystemWorker.readFile(ownFile.getAbsolutePath()).contains("BUILTIN\\Администраторы"));
         Assert.assertTrue(FileSystemWorker.readFile(rghtFile.getAbsolutePath()).contains("ХЛАМ"));
+        final long currentMillis = System.currentTimeMillis();
+        FileSystemWorker.appendObjToFile(ownFile, currentMillis);
+        FileSystemWorker.appendObjToFile(rghtFile, currentMillis);
+        Assert.assertTrue(FileSystemWorker.readFile(ownFile.getAbsolutePath()).contains(String.valueOf(currentMillis)));
+        Assert.assertTrue(FileSystemWorker.readFile(rghtFile.getAbsolutePath()).contains(String.valueOf(currentMillis)));
     }
 }

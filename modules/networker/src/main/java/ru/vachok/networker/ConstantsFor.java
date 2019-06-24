@@ -499,6 +499,8 @@ public enum ConstantsFor {
      */
     public static final Path COMMON_DIR = Paths.get("\\\\srv-fs.eatmeat.ru\\common_new");
     
+    public static final String FILENAME_COMMONRGH = "common.rgh";
+    
     static final String STR_FINISH = " is finish";
     
     private static final String[] STRINGS_TODELONSTART = {"visit_", ".tmp", ".log", ".tv"};
@@ -514,6 +516,8 @@ public enum ConstantsFor {
      {@link ExCTRL#uplFile(MultipartFile, Model)}, {@link ExSRV#getOFields()},
      */
     private static final ConcurrentMap<Integer, MailRule> MAIL_RULES = new ConcurrentHashMap<>();
+    
+    public static final String FILENAME_COMMONOWN = "common.own";
     
     /**
      @return {@link #MAIL_RULES}

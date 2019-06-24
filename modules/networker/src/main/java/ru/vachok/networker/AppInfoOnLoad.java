@@ -213,6 +213,8 @@ public class AppInfoOnLoad implements Runnable {
     private static void runCommonScan() {
         try {
             FileVisitor<Path> commonRightsChecker = new CommonRightsChecker();
+            Files.deleteIfExists(new File(ConstantsFor.FILENAME_COMMONOWN).toPath());
+            Files.deleteIfExists(new File(ConstantsFor.FILENAME_COMMONRGH).toPath());
             Files.walkFileTree(Paths.get("\\\\srv-fs.eatmeat.ru\\common_new"), commonRightsChecker);
         }
         catch (IOException e) {

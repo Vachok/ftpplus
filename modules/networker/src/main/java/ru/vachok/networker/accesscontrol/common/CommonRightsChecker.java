@@ -5,6 +5,7 @@ package ru.vachok.networker.accesscontrol.common;
 
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.io.File;
@@ -21,13 +22,15 @@ import java.util.Date;
 import java.util.List;
 
 
+/**
+ @see ru.vachok.networker.accesscontrol.common.CommonRightsCheckerTest */
 @SuppressWarnings ("DuplicateStringLiteralInspection")
 public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runnable {
     
     
-    private final File commonOwn = new File("common.own");
+    private final File commonOwn = new File(ConstantsFor.FILENAME_COMMONOWN);
     
-    private final File commonRgh = new File("common.rgh");
+    private final File commonRgh = new File(ConstantsFor.FILENAME_COMMONRGH);
     
     long countFiles = 0;
     
@@ -42,6 +45,9 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
         this.toCheckPath = toCheckPath;
     }
     
+    /**
+     @see ru.vachok.networker.accesscontrol.common.CommonRightsCheckerTest#testRun()
+     */
     @Override public void run() {
         try {
             messageToUser.info(getClass().getSimpleName() + ".run", "true", " = " + isDelete());
@@ -75,7 +81,7 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
         }
         return FileVisitResult.CONTINUE;
     }
-
+    
     @Override
     public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
         System.out.println("visited = " + dir + " files total scanned: " + countFiles);
@@ -89,7 +95,7 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
     
     private String isDelete() throws IOException {
         boolean b1 = Files.deleteIfExists(commonOwn.toPath());
-        boolean b = Files.deleteIfExists(new File("common.rgh").toPath());
+        boolean b = Files.deleteIfExists(new File(ConstantsFor.FILENAME_COMMONRGH).toPath());
         String msg = new StringBuilder()
             .append("Starting a new instance of ")
             .append(getClass().getSimpleName())
