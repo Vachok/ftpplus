@@ -13,10 +13,8 @@ import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.LocalTime;
-import java.util.Date;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
@@ -49,6 +47,9 @@ public class CountSizeOfWorkDir extends SimpleFileVisitor<Path> implements Progr
         }
     }
     
+    protected CountSizeOfWorkDir() {
+    }
+    
     @Override public String call() throws Exception {
         return getSizeOfDir();
     }
@@ -64,9 +65,10 @@ public class CountSizeOfWorkDir extends SimpleFileVisitor<Path> implements Progr
         }
         if (attrs.isRegularFile()) {
             this.sizeBytes += file.toFile().length();
-            if (attrs.lastAccessTime().toMillis() < System.currentTimeMillis() - TimeUnit.DAYS.toMillis(3)) {
+            long lastAccessLong = attrs.lastAccessTime().toMillis();
+            if (lastAccessLong < System.currentTimeMillis() - TimeUnit.DAYS.toMillis(3)) {
                 longStrPathMap.putIfAbsent(file.toFile().length(),
-                    file.toAbsolutePath() + "<b> 3 days old...</b>");
+                    file.toAbsolutePath() + "<b> " + TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis() - lastAccessLong) + " days old...</b>");
             }
             else {
                 longStrPathMap.putIfAbsent(file.toFile().length(), file.toAbsolutePath().toString());
@@ -139,10 +141,12 @@ public class CountSizeOfWorkDir extends SimpleFileVisitor<Path> implements Progr
     }
     
     private String getSizeOfDir() throws IOException {
-        StringBuilder stringBuilder = new StringBuilder();
+        List<String> dirsSizes = new ArrayList<>();
         Files.walkFileTree(Paths.get(".").normalize(), this);
-        stringBuilder.append("Total size = ").append(sizeBytes / ConstantsFor.KBYTE / ConstantsFor.KBYTE).append(" MB<br>\n");
-        longStrPathMap.forEach((x, y)->stringBuilder.append(String.format("%.02f", (float) x / ConstantsFor.KBYTE)).append(" kb in: ").append(y).append("<br>\n"));
-        return stringBuilder.toString();
+        dirsSizes.add("Total size = " + sizeBytes / ConstantsFor.KBYTE / ConstantsFor.KBYTE + " MB<br>\n");
+        longStrPathMap.forEach((x, y)->dirsSizes.add(String.format("%.02f", (float) x / ConstantsFor.KBYTE) + " kb in: " + y + "<br>\n"));
+        Collections.sort(dirsSizes);
+        Collections.reverse(dirsSizes);
+        return new TForms().fromArray(dirsSizes, false);
     }
 }
