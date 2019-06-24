@@ -10,10 +10,7 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
+import java.nio.file.*;
 import java.nio.file.attribute.AclEntry;
 import java.nio.file.attribute.AclFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -33,43 +30,37 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
     
     long countFiles = 0;
     
-    private Path toCheckPath = null;
+    private Path toCheckPath;
+    
+    private Path logsCopyPath = null;
     
     private static final String STR_FILES_IS_NOT_EXISTS = " is not exists!";
     
     private static final String STR_KILOBYTES = " kilobytes";
     
-    public CommonRightsChecker() {
-    }
-    
     private MessageToUser messageToUser = new MessageCons(getClass().getSimpleName());
     
-    public CommonRightsChecker(Path toCheckPath) {
+    public CommonRightsChecker(Path toCheckPath, Path logsCopyPath) {
         this.toCheckPath = toCheckPath;
+        if (logsCopyPath == null || !logsCopyPath.toFile().isDirectory()) {
+            this.logsCopyPath = Paths.get("\\\\srv-fs.eatmeat.ru\\it$$");
+        }
     }
     
     /**
      @see ru.vachok.networker.accesscontrol.common.CommonRightsCheckerTest#testRun()
      */
     @Override public void run() {
+        boolean isFilesCopied = copyExistsFiles();
         try {
-            String commonOwnExistsStr = "File " + commonOwn.getName() + STR_FILES_IS_NOT_EXISTS;
-            String commonRghExistsStr = "File " + commonRgh.getName() + STR_FILES_IS_NOT_EXISTS;
-    
-            if (commonOwn.exists()) {
-                commonOwnExistsStr = commonOwn.getName() + " is OK. Size = " + commonOwn.length() / ConstantsFor.KBYTE + STR_KILOBYTES;
-            }
-            if (commonRgh.exists()) {
-                commonRghExistsStr = commonRgh.getName() + " is OK. Size = " + commonRgh.length() / ConstantsFor.KBYTE + STR_KILOBYTES;
-            }
-            messageToUser.info(getClass().getSimpleName() + ".run", commonOwnExistsStr + ", " + commonRghExistsStr, "\nFiles deleted = " + isDelete());
-            if (toCheckPath != null) {
+            if (toCheckPath != null & isFilesCopied) {
                 Files.walkFileTree(toCheckPath, this);
             }
         }
         catch (IOException e) {
             System.err.println(e.getMessage());
         }
+        System.out.println("copyExistsFiles() = " + copyExistsFiles());
     }
     
     @Override
@@ -116,5 +107,15 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
             .append(isRGHFileDeleted)
             .append(" ")
             .append(isOWNFileDeleted).toString();
+    }
+    
+    private boolean copyExistsFiles() {
+        Path cRGHCopyPath = Paths.get(logsCopyPath.toAbsolutePath().normalize() + System.getProperty(ConstantsFor.PRSYS_SEPARATOR) + commonRgh.getName());
+        Path cOWNCopyPath = Paths.get(logsCopyPath.toAbsolutePath().normalize() + System.getProperty(ConstantsFor.PRSYS_SEPARATOR) + commonOwn.getName());
+        
+        boolean isOWNCopied = FileSystemWorker.copyOrDelFile(commonOwn, cOWNCopyPath, true);
+        boolean isRGHCopied = FileSystemWorker.copyOrDelFile(commonRgh, cRGHCopyPath, true);
+        
+        return isOWNCopied & isRGHCopied;
     }
 }

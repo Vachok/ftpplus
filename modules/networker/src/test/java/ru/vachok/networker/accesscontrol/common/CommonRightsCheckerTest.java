@@ -9,9 +9,8 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -25,33 +24,30 @@ public class CommonRightsCheckerTest {
      */
     @Test
     public void testRun() {
-        CommonRightsChecker rightsChecker = new CommonRightsChecker();
+        CommonRightsChecker rightsChecker = new CommonRightsChecker(Paths
+            .get("\\\\srv-fs.eatmeat.ru\\it$$\\_AdminTools\\ru_vachok_inet_inetor_main\\ru.vachok.inet.inetor.main\\app\\inetor_main\\"), null);
         File ownFile = new File(ConstantsFor.FILENAME_COMMONOWN);
         File rghtFile = new File(ConstantsFor.FILENAME_COMMONRGH);
         rightsChecker.run();
-        Assert.assertFalse(ownFile.exists());
-        Assert.assertFalse(rghtFile.exists());
+        File rghCopyFile = new File("\\\\srv-fs.eatmeat.ru\\it$$\\common.rgh");
+        File ownCopyFile = new File("\\\\srv-fs.eatmeat.ru\\it$$\\common.own");
     
-        try {
-            Files.walkFileTree(Paths.get("\\\\srv-fs.eatmeat.ru\\it$$\\_AdminTools\\ru_vachok_inet_inetor_main\\ru.vachok.inet.inetor.main\\app\\inetor_main\\"), rightsChecker);
-        }
-        catch (IOException e) {
-            Assert.assertNull(e, e.getMessage());
-        }
-        Assert.assertTrue(ownFile.exists());
-        Assert.assertTrue(rghtFile.exists());
-        Assert.assertTrue(FileSystemWorker.readFile(ownFile.getAbsolutePath()).contains("BUILTIN\\Администраторы"));
-        
-        Assert.assertTrue(FileSystemWorker.readFile(rghtFile.getAbsolutePath()).contains("app"));
-        
-        rightsChecker = new CommonRightsChecker(Paths.get("\\\\srv-fs.eatmeat.ru\\it$$\\ХЛАМ\\"));
+        Assert.assertTrue(rghCopyFile.exists());
+        Assert.assertTrue(rghCopyFile.lastModified() > System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(2));
+        Assert.assertTrue(ownCopyFile.exists());
+        Assert.assertTrue(ownCopyFile.lastModified() > System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(2));
+    
+        Assert.assertTrue(FileSystemWorker.readFile(ownCopyFile.getAbsolutePath()).contains("BUILTIN\\Администраторы"));
+        Assert.assertTrue(FileSystemWorker.readFile(rghCopyFile.getAbsolutePath()).contains("app"));
+    
+        rightsChecker = new CommonRightsChecker(Paths.get("\\\\srv-fs.eatmeat.ru\\it$$\\ХЛАМ\\"), null);
         rightsChecker.run();
-        Assert.assertTrue(FileSystemWorker.readFile(ownFile.getAbsolutePath()).contains("BUILTIN\\Администраторы"));
-        Assert.assertTrue(FileSystemWorker.readFile(rghtFile.getAbsolutePath()).contains("ХЛАМ"));
+        Assert.assertTrue(FileSystemWorker.readFile(ownCopyFile.getAbsolutePath()).contains("BUILTIN\\Администраторы"));
+        Assert.assertTrue(FileSystemWorker.readFile(rghCopyFile.getAbsolutePath()).contains("ХЛАМ"));
         final long currentMillis = System.currentTimeMillis();
-        FileSystemWorker.appendObjToFile(ownFile, currentMillis);
-        FileSystemWorker.appendObjToFile(rghtFile, currentMillis);
-        Assert.assertTrue(FileSystemWorker.readFile(ownFile.getAbsolutePath()).contains(String.valueOf(currentMillis)));
-        Assert.assertTrue(FileSystemWorker.readFile(rghtFile.getAbsolutePath()).contains(String.valueOf(currentMillis)));
+        FileSystemWorker.appendObjToFile(ownCopyFile, currentMillis);
+        FileSystemWorker.appendObjToFile(rghCopyFile, currentMillis);
+        Assert.assertTrue(FileSystemWorker.readFile(ownCopyFile.getAbsolutePath()).contains(String.valueOf(currentMillis)));
+        Assert.assertTrue(FileSystemWorker.readFile(rghCopyFile.getAbsolutePath()).contains(String.valueOf(currentMillis)));
     }
 }

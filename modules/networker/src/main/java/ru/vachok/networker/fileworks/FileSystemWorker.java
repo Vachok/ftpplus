@@ -64,10 +64,18 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
      @return удача/нет
      */
     public static boolean copyOrDelFile(File origFile, Path absolutePathToCopy, boolean needDel) {
-        File toCpFile = absolutePathToCopy.toFile();
+        File toCpFile = absolutePathToCopy.toAbsolutePath().normalize().toFile();
+        
         try {
-            Path directories = Files.createDirectories(absolutePathToCopy.getParent());
-            Path copy = Files.copy(origFile.toPath(), absolutePathToCopy, StandardCopyOption.REPLACE_EXISTING);
+            Path parentPath = absolutePathToCopy.getParent();
+            Path directories;
+            if (!parentPath.toFile().exists()) {
+                directories = Files.createDirectories(parentPath);
+            }
+            else {
+                directories = parentPath;
+            }
+            Path copy = Files.copy(origFile.toPath().toAbsolutePath().normalize(), absolutePathToCopy, StandardCopyOption.REPLACE_EXISTING);
     
             if (needDel && !Files.deleteIfExists(origFile.toPath().toAbsolutePath().normalize())) {
                 origFile.deleteOnExit();
@@ -77,9 +85,6 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         }
         catch (IOException | NullPointerException e) {
             messageToUser.error(e.getMessage());
-            if (e instanceof NoSuchFileException) {
-                return true;
-            }
         }
         return toCpFile.exists();
     }

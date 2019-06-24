@@ -215,29 +215,7 @@ public class AppInfoOnLoad implements Runnable {
      {@link FileSystemWorker#error(String, Exception)}
      */
     private static void runCommonScan() {
-        try {
-            FileVisitor<Path> commonRightsChecker = new CommonRightsChecker();
-            if (checkExistsFiles()) {
-                Files.walkFileTree(Paths.get("\\\\srv-fs.eatmeat.ru\\common_new"), commonRightsChecker);
-            }
-        }
-        catch (IOException e) {
-            MESSAGE_LOCAL.error(e.getMessage());
-        }
-    }
-    
-    private static boolean checkExistsFiles() {
-        File commonOwn = new File(ConstantsFor.FILENAME_COMMONOWN);
-        Path absPathToCopyCommonOwn = Paths.get(commonOwn.toPath().toAbsolutePath().normalize().toString()
-            .replace(commonOwn.getName(), "lan" + System.getProperty(ConstantsFor.PRSYS_SEPARATOR) + commonOwn.getName())).toAbsolutePath().normalize();
-        File commonRgh = new File(ConstantsFor.FILENAME_COMMONRGH);
-        
-        Path absPathToCopyCommonRgh = Paths.get(commonRgh.toPath().toAbsolutePath().normalize().toString()
-            .replace(commonRgh.getName(), "lan" + System.getProperty(ConstantsFor.PRSYS_SEPARATOR) + commonRgh.getName())).toAbsolutePath().normalize();
-        
-        boolean isOWNCopied = FileSystemWorker.copyOrDelFile(commonOwn, absPathToCopyCommonOwn, true);
-        boolean isRGHCopied = FileSystemWorker.copyOrDelFile(commonRgh, absPathToCopyCommonRgh, true);
-        return isOWNCopied & isRGHCopied;
+        FileVisitor<Path> commonRightsChecker = new CommonRightsChecker(Paths.get("\\\\srv-fs.eatmeat.ru\\common_new"), Paths.get("\\\\srv-fs.eatmeat.ru\\it$$"));
     }
     
     /**
