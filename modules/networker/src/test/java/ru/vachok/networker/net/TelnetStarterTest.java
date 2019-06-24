@@ -3,23 +3,31 @@
 package ru.vachok.networker.net;
 
 
+import org.testng.Assert;
 import org.testng.annotations.Test;
-import ru.vachok.networker.abstr.ConnectToMe;
+import ru.vachok.networker.exe.runnabletasks.TelnetStarter;
+
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.util.concurrent.Executors;
 
 
 public class TelnetStarterTest {
     
     
-    @Test(enabled = false)
+    @Test(timeOut = 20000, enabled = false)
     public void startServer() {
-        ConnectToMe connectToMe = new TestServer(9990);
-        try {
-            connectToMe.runSocket();
+        TelnetStarter telnetStarter = new TelnetStarter();
+        Executors.newSingleThreadExecutor().execute(telnetStarter);
+        try (Socket socket = new Socket()) {
+            InetSocketAddress inetSocketAddress = InetSocketAddress.createUnresolved(InetAddress.getLocalHost().getCanonicalHostName(), 9990);
+            socket.connect(inetSocketAddress);
+            Assert.assertTrue(socket.isConnected(), socket.toString());
         }
         catch (Exception e) {
-            e.printStackTrace();
+            Assert.assertNull(e, e.getMessage());
         }
     }
-    
     
 }
