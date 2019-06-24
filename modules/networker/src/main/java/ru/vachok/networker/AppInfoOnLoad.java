@@ -18,7 +18,6 @@ import ru.vachok.networker.exe.schedule.WeekStats;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.MyCalen;
-import ru.vachok.networker.sysinfo.VersionInfo;
 
 import java.io.File;
 import java.io.IOException;
@@ -226,13 +225,12 @@ public class AppInfoOnLoad implements Runnable {
      */
     private void infoForU() throws Exception {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(AppComponents.versionInfo()).append("\n");
+        stringBuilder.append(ConstantsFor.APP_VERSION).append("\n");
         stringBuilder.append(getBuildStamp());
         MESSAGE_LOCAL.info("AppInfoOnLoad.infoForU", ConstantsFor.STR_FINISH, " = " + stringBuilder);
         MINI_LOGGER.add("infoForU ends. now schedStarter(). Result: " + stringBuilder);
-        VersionInfo versionInfo = AppComponents.versionInfo();
         try {
-            MESSAGE_LOCAL.info(getClass().getSimpleName() + ".run", versionInfo.toString(), " = " + getIISLogSize());
+            MESSAGE_LOCAL.info(getClass().getSimpleName() + ".run", ConstantsFor.APP_VERSION, " = " + getIISLogSize());
         }
         catch (NullPointerException e) {
             System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".infoForU");
@@ -254,8 +252,8 @@ public class AppInfoOnLoad implements Runnable {
         AppInfoOnLoad.MINI_LOGGER.add(thisPC);
         
         System.out.println("new AppComponents().launchRegRuFTPLibsUploader() = " + new AppComponents().launchRegRuFTPLibsUploader());
-        
-        if (!thisPC.toLowerCase().contains("home")) {
+    
+        if (thisPC.toLowerCase().contains("rups00")) {
             scheduledExecutorService.scheduleWithFixedDelay(AppInfoOnLoad::runCommonScan, ConstantsFor.INIT_DELAY, TimeUnit.DAYS.toSeconds(1),
                 TimeUnit.SECONDS);
             AppInfoOnLoad.MINI_LOGGER.add("runCommonScan init delay " + ConstantsFor.INIT_DELAY + ", delay " + TimeUnit.DAYS.toSeconds(1) + ". SECONDS");

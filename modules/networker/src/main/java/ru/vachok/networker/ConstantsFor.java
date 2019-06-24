@@ -52,6 +52,8 @@ public enum ConstantsFor {
     
     public static final String FILE_PREFIX_SEARCH_ = "search_";
     
+    public static final String APP_VERSION = AppComponents.versionInfo().toString();
+    
     public static final String METHNAME_STATIC_INITIALIZER = "static initializer";
     
     public static final String HEAD_REFERER = "referer";
@@ -481,22 +483,6 @@ public enum ConstantsFor {
      */
     public static final String PR_PINGSLEEP = "pingsleep";
     
-    static final String STR_FINISH = " is finish";
-    
-    private static final String[] STRINGS_TODELONSTART = {"visit_", ".tmp", ".log", ".tv"};
-    
-    private static final int MIN_DELAY = 17;
-    
-    /**
-     {@link MessageLocal}
-     */
-    private static final MessageToUser messageToUser = new MessageLocal(ConstantsFor.class.getSimpleName());
-    
-    /**
-     {@link ExCTRL#uplFile(MultipartFile, Model)}, {@link ExSRV#getOFields()},
-     */
-    private static final ConcurrentMap<Integer, MailRule> MAIL_RULES = new ConcurrentHashMap<>();
-    
     public static final String PR_ADPHOTOPATH = "adphotopath";
     
     public static final String STR_INETSTATS = "inetstats";
@@ -512,6 +498,22 @@ public enum ConstantsFor {
      Путь к продуктиву
      */
     public static final Path COMMON_DIR = Paths.get("\\\\srv-fs.eatmeat.ru\\common_new");
+    
+    static final String STR_FINISH = " is finish";
+    
+    private static final String[] STRINGS_TODELONSTART = {"visit_", ".tmp", ".log", ".tv"};
+    
+    private static final int MIN_DELAY = 17;
+    
+    /**
+     {@link MessageLocal}
+     */
+    private static final MessageToUser messageToUser = new MessageLocal(ConstantsFor.class.getSimpleName());
+    
+    /**
+     {@link ExCTRL#uplFile(MultipartFile, Model)}, {@link ExSRV#getOFields()},
+     */
+    private static final ConcurrentMap<Integer, MailRule> MAIL_RULES = new ConcurrentHashMap<>();
     
     /**
      @return {@link #MAIL_RULES}

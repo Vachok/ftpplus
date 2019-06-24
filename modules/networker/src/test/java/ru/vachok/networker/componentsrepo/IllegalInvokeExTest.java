@@ -8,9 +8,9 @@ import org.testng.annotations.Test;
 
 
 /**
- @see IllegalInvoceEx
+ @see IllegalInvokeEx
  @since 23.06.2019 (0:28) */
-public class IllegalInvoceExTest {
+public class IllegalInvokeExTest {
     
     
     @Test
@@ -18,13 +18,13 @@ public class IllegalInvoceExTest {
         try {
             throwMyThrowable();
         }
-        catch (IllegalInvoceEx e) {
+        catch (IllegalInvokeEx e) {
             Assert.assertNotNull(e);
-            Assert.assertEquals(e.getMessage(), "THIS IS ME 23.06.2019 (0:34)");
+            Assert.assertTrue(e.getMessage().contains("THIS IS ME 23.06.2019 (0:34)"), e.getMessage());
         }
     }
     
     private void throwMyThrowable() {
-        throw new IllegalInvoceEx("THIS IS ME 23.06.2019 (0:34)");
+        throw new IllegalInvokeEx("THIS IS ME 23.06.2019 (0:34)");
     }
 }

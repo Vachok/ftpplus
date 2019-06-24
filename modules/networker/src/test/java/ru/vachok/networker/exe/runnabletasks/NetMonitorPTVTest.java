@@ -5,164 +5,88 @@ package ru.vachok.networker.exe.runnabletasks;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
-import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.enums.OtherKnownDevices;
-import ru.vachok.networker.net.enums.SwitchesWiFi;
-import ru.vachok.networker.services.DBMessenger;
 
 import java.io.*;
-import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.LocalDateTime;
+import java.nio.file.Paths;
 import java.util.Date;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
 
-/**
- Периодический мониторинг телевизоров и WiFi.
- <p>
- Точки : <br>
- {@link SwitchesWiFi#C_204_2_UPAK} ; {@link SwitchesWiFi#C_204_3_UPAK} ;
- {@link SwitchesWiFi#C_204_10_GP} ; {@link OtherKnownDevices}
- 
- @since 05.02.2019 (9:00) */
-@SuppressWarnings("ALL") public class NetMonitorPTVTest implements Runnable {
+@SuppressWarnings("ALL") public class NetMonitorPTVTest {
     
+    
+    private String pingResultLast = "No pings yet.";
+    
+    private File pingTv = new File(ConstantsFor.FILENAME_PTV);
+    
+    private OutputStream outputStream;
     
     private PrintStream printStream;
     
-    private MessageToUser messageToUser = new DBMessenger(NetMonitorPTVTest.class.getSimpleName());
-    
-    private String pingResultLast = "TEST";
-    
-    private static final String CLASS_NAME = NetMonitorPTVTest.class.getSimpleName();
-    
-    public NetMonitorPTVTest() {
-        
-        try (OutputStream outputStream = new FileOutputStream(ConstantsFor.FILENAME_PTV)) {
-            this.printStream = new PrintStream(outputStream, true);
-        }
-        catch (IOException e) {
-            messageToUser.error(e.getMessage());
-        }
-    }
+    private Preferences preferences = AppComponents.getUserPref();
     
     @Test
     public void testRun() {
-        new NetMonitorPTV().run();
-    }
-    
-    @Override
-    public void run() {
-        createFile();
+        Path ptvFilePath = Paths.get(ConstantsFor.FILENAME_PTV);
         try {
-            pingIPTV();
+            Files.deleteIfExists(ptvFilePath);
         }
         catch (IOException e) {
-            messageToUser.error(e.getMessage());
+            ptvFilePath.toFile().deleteOnExit();
         }
+        new NetMonitorPTV().run();
+        Assert.assertTrue(ptvFilePath.toFile().exists() && ptvFilePath.toFile().isFile());
+        Assert.assertTrue(FileSystemWorker.readFile(ptvFilePath.toAbsolutePath().normalize().toString()).contains("ptv1."), ptvFilePath.toString());
     }
     
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("NetMonitorPTVTEST{");
-        sb.append(pingResultLast).append('\'');
+    @Test
+    public void testToString1() {
+        NetMonitorPTV netMonitorPTV = new NetMonitorPTV();
+        netMonitorPTV.run();
+        this.pingResultLast = netMonitorPTV.getPingResultLast();
+        final StringBuilder sb = new StringBuilder("NetMonitorPTV{");
+        sb.append("pingResultLast='").append(pingResultLast).append('\'');
         sb.append('}');
-        return sb.toString();
+        Assert.assertTrue(sb.toString().contains("ptv1."));
     }
     
-    private void createFile() {
-        File ptvFile = new File(ConstantsFor.FILENAME_PTV);
-        Path filePath = ptvFile.toPath();
-        Preferences preferences = Preferences.userRoot();
-        try {
-            preferences.sync();
-            if (!ptvFile.exists()) {
-                Files.createFile(ptvFile.toPath());
-                preferences.put(ConstantsFor.FILENAME_PTV, new Date().toString());
+    /**
+     @see NetMonitorPTV#ifPingTVIsBig()
+     */
+    @Test
+    public void ptvIfBigTest() {
+        String fileCopyPathString = "." + ConstantsFor.FILESYSTEM_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + "tv_" + System.currentTimeMillis() / 1000 + ".ping";
+        Path pathToCopy = Paths.get(fileCopyPathString).toAbsolutePath().normalize();
+        boolean isPingTvCopied = FileSystemWorker.copyOrDelFile(pingTv, pathToCopy, true);
+        Assert.assertTrue(isPingTvCopied, fileCopyPathString);
+        
+        if (isPingTvCopied) {
+            try {
+                this.outputStream = new FileOutputStream(pingTv);
             }
-            else if (filePath.toAbsolutePath().normalize().toFile().isFile()) {
+            catch (FileNotFoundException e) {
+                Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
+            }
+            this.printStream = new PrintStream(outputStream, true);
+            preferences.put(ConstantsFor.FILENAME_PTV, new Date().toString() + "_renewed");
+            try {
                 preferences.sync();
             }
-            else {
-                System.err.println(filePath);
-                preferences.put(ConstantsFor.FILENAME_PTV, "7-JAN-1984 )");
+            catch (BackingStoreException e) {
+                Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
             }
-            AppComponents.getProps().setProperty(ConstantsFor.FILENAME_PTV, new Date().toString());
-        }
-        catch (IOException e) {
-            Assert.assertNull(e, e.getMessage());
-        }
-        catch (BackingStoreException e) {
-            AppComponents.getProps().setProperty(ConstantsFor.FILENAME_PTV, new Date().toString());
-        }
-    }
-    
-    private void checkSize() throws IOException {
-        File pingTv = new File(ConstantsFor.FILENAME_PTV);
-        printStream.print(pingResultLast + " " + LocalDateTime.now());
-        printStream.println();
-        if (pingTv.length() > ConstantsFor.MBYTE) {
-            ifPingTVIsBig(pingTv);
         }
         else {
-            this.pingResultLast = pingResultLast + " (" + pingTv.length() / ConstantsFor.KBYTE + " KB)";
+            System.out.println(pingTv.getAbsolutePath() + " size in kb = " + pingTv.length() / ConstantsFor.KBYTE);
         }
-    }
-    
-    private void ifPingTVIsBig(File pingTv) throws IOException {
-        boolean isPingTvCopied = FileSystemWorker
-            .copyOrDelFile(pingTv, ConstantsFor.FILESYSTEM_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + "tv_" + System.currentTimeMillis() / 1000 + ".ping", true);
-        if (isPingTvCopied) {
-            AppComponents.getProps().setProperty(this.getClass().getSimpleName(), new Date().toString());
-            AppComponents.threadConfig().thrNameSet(getClass().getSimpleName());
-            printStream.println(new File(ConstantsFor.FILENAME_PTV).getAbsolutePath() + " as at : " + new Date());
-        }
-        else {
-            messageToUser.info(ConstantsFor.FILENAME_PTV, "creating", AppComponents.getProps().getProperty(this.getClass().getSimpleName(), new Date().toString()));
-        }
-    }
-    
-    private void pingIPTV() throws IOException {
-        StringBuilder stringBuilder = new StringBuilder();
-        
-        byte[] upakCisco2042b = InetAddress.getByName(SwitchesWiFi.C_204_2_UPAK).getAddress();
-        byte[] upakCisco2043b = InetAddress.getByName(SwitchesWiFi.C_204_3_UPAK).getAddress();
-        byte[] gpCisco20410b = InetAddress.getByName(SwitchesWiFi.C_204_3_UPAK).getAddress();
-        
-        InetAddress ptv1 = InetAddress.getByName(OtherKnownDevices.PTV1_EATMEAT_RU);
-        InetAddress ptv2 = InetAddress.getByName(OtherKnownDevices.PTV2_EATMEAT_RU);
-        
-        InetAddress upakCisco2042 = InetAddress.getByAddress(upakCisco2042b);
-        InetAddress upakCisco2043 = InetAddress.getByAddress(upakCisco2043b);
-        InetAddress gpCisco20410 = InetAddress.getByAddress(gpCisco20410b);
-        
-        boolean ptv1Reachable = ptv1.isReachable(ConstantsFor.TIMEOUT_650);
-        boolean ptv2Reachable = ptv2.isReachable(ConstantsFor.TIMEOUT_650);
-        boolean upakCisco2042Reachable = upakCisco2042.isReachable(ConstantsFor.TIMEOUT_650);
-        boolean upakCisco2043Reachable = upakCisco2043.isReachable(ConstantsFor.TIMEOUT_650);
-        boolean gpCisco2042Reachable = gpCisco20410.isReachable(ConstantsFor.TIMEOUT_650);
-        
-        stringBuilder.append(ptv1);
-        stringBuilder.append(" is ");
-        stringBuilder.append(ptv1Reachable);
-        stringBuilder.append(", ");
-        stringBuilder.append(ptv2);
-        stringBuilder.append(" is ");
-        stringBuilder.append(ptv2Reachable);
-        
-        stringBuilder.append("<br>");
-        stringBuilder.append("\n***Wi-Fi points:");
-        
-        stringBuilder.append(upakCisco2042).append(" is ").append(upakCisco2042Reachable).append(", ");
-        stringBuilder.append(upakCisco2043).append(" is ").append(upakCisco2043Reachable).append(", ");
-        stringBuilder.append(gpCisco20410).append(" is ").append(gpCisco2042Reachable).append("<br>***");
-        this.pingResultLast = stringBuilder.toString();
-        checkSize();
+        Assert.assertTrue(pathToCopy.toFile().exists());
+        Assert.assertTrue(pingTv.exists());
     }
 }

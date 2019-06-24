@@ -154,8 +154,8 @@ public class AppComponents {
      */
     @Bean(ConstantsFor.STR_VERSIONINFO)
     @Scope(ConstantsFor.SINGLETON)
-    public static VersionInfo versionInfo() {
-        return new VersionInfo(getProps(), ConstantsFor.thisPC());
+    static VersionInfo versionInfo() {
+        return new VersionInfo(APP_PR, ConstantsFor.thisPC());
     }
     
     /**
@@ -289,7 +289,7 @@ public class AppComponents {
             APP_PR.putAll(theProphecy.call());
         }
         catch (Exception e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".getAppProps", e));
+            messageToUser.error(e.getMessage());
         }
         return APP_PR;
     }

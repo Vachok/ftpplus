@@ -48,7 +48,7 @@ public class PCUserResolver extends ADSrv implements InfoWorker {
      
      @see #getLastTimeUse(String)
      */
-    private String lastUsersDirFileUsedName = null;
+    private String lastUsersDirFileUsedName;
     
     private String pcName;
     
@@ -59,9 +59,7 @@ public class PCUserResolver extends ADSrv implements InfoWorker {
     
     @Override public String getInfoAbout() {
         System.out.println();
-        System.out.println();
-        System.out.println(namesToFile()); //fixme 23.06.2019 (15:56)
-        System.out.println();
+        System.out.println(namesToFile());
         System.out.println();
         File file = new File(pcName);
         return file.getAbsolutePath() + " " + file.length() + ConstantsFor.STR_BYTES;
@@ -114,11 +112,11 @@ public class PCUserResolver extends ADSrv implements InfoWorker {
             System.err.println(new TForms().fromArray(n, false));
         }
         if (lastUsersDirFileUsedName != null) {
-            recAutoDB(pcName, lastUsersDirFileUsedName); //fixme 23.06.2019 (15:56) не запускается метод
+            recAutoDB(pcName, lastUsersDirFileUsedName);
             return lastUsersDirFileUsedName;
         }
         pcNameFile.deleteOnExit();
-        return pcNameFile.toPath().toAbsolutePath().normalize().toString() + " exists " + pcNameFile.exists();
+        return pcNameFile.toPath().toAbsolutePath().normalize() + " exists " + pcNameFile.exists();
     }
     
     /**

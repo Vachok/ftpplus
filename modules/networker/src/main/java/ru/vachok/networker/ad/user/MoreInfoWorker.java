@@ -199,7 +199,7 @@ public class MoreInfoWorker implements InfoWorker {
      @param isOnlineNow онлайн = true
      @return выдержка из БД (когда последний раз был онлайн + кол-во проверок) либо хранимый в БД юзернейм (для offlines)
  
-     @see NetScannerSvc#getPCNamesPref(String)
+     @see NetScannerSvc#theSETOfPCNamesPref(String)
      */
     private String getSomeMore(boolean isOnlineNow) {
         StringBuilder buildEr = new StringBuilder();

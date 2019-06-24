@@ -59,27 +59,26 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
      Простое копирование файла.
 
      @param origFile файл, для копирования
-     @param pathToCopyWithFileName строка путь
+     @param absolutePathToCopy строка путь
      @param needDel удалить или нет исходник
      @return удача/нет
      */
-    public static boolean copyOrDelFile(File origFile, String pathToCopyWithFileName, boolean needDel) {
-        File toCpFile = new File(pathToCopyWithFileName);
+    public static boolean copyOrDelFile(File origFile, Path absolutePathToCopy, boolean needDel) {
+        File toCpFile = absolutePathToCopy.toFile();
         try {
-            Path targetPath = toCpFile.toPath();
-            Path directories = Files.createDirectories(targetPath.getParent());
-            toCpFile = targetPath.toFile();
-            Path copy = Files.copy(origFile.toPath(), targetPath, StandardCopyOption.REPLACE_EXISTING);
-            if (needDel && !Files.deleteIfExists(origFile.toPath())) {
+            Path directories = Files.createDirectories(absolutePathToCopy.getParent());
+            Path copy = Files.copy(origFile.toPath(), absolutePathToCopy, StandardCopyOption.REPLACE_EXISTING);
+    
+            if (needDel && !Files.deleteIfExists(origFile.toPath().toAbsolutePath().normalize())) {
                 origFile.deleteOnExit();
             }
             String msg = directories + " getParent directory. " + copy + " " + toCpFile.exists();
             messageToUser.info(msg);
         }
         catch (IOException | NullPointerException e) {
-            if (toCpFile.exists()) {
-                toCpFile.deleteOnExit();
-                messageToUser.warn(toCpFile.getName(), "will be delete On Exit", " = " + e.getMessage());
+            messageToUser.error(e.getMessage());
+            if (e instanceof NoSuchFileException) {
+                return true;
             }
         }
         return toCpFile.exists();
@@ -207,7 +206,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         catch (IOException exIO) {
             messageToUser.errorAlert(CLASS_NAME, ConstantsFor.RETURN_ERROR, exIO.getMessage());
         }
-        boolean isCp = copyOrDelFile(fileClassMeth, ".\\err\\" + fileClassMeth.getName(), true);
+        boolean isCp = copyOrDelFile(fileClassMeth, Paths.get(".\\err\\" + fileClassMeth.getName()).toAbsolutePath().normalize(), true); //todo check 24.06.2019 (11:01)
         return classMeth + " threw Exception: " + e.getMessage() + ": <p>\n\n" + new TForms().fromArray(e, true);
     }
     

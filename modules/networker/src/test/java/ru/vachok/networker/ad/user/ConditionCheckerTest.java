@@ -4,7 +4,7 @@ package ru.vachok.networker.ad.user;
 
 
 import org.testng.annotations.Test;
-import ru.vachok.networker.componentsrepo.IllegalInvoceEx;
+import ru.vachok.networker.componentsrepo.IllegalInvokeEx;
 import ru.vachok.networker.net.InfoWorker;
 
 
@@ -26,11 +26,11 @@ public class ConditionCheckerTest {
     
     @Test
     public void testSetInfo() {
-        throw new IllegalInvoceEx("23.06.2019 (15:11)");
+        throw new IllegalInvokeEx("23.06.2019 (15:11)");
     }
     
     @Test
     public void testToString1() {
-        throw new IllegalInvoceEx("23.06.2019 (15:11)");
+        throw new IllegalInvokeEx("23.06.2019 (15:11)");
     }
 }

@@ -13,6 +13,7 @@ import ru.vachok.networker.services.MessageLocal;
 
 import java.awt.*;
 import java.io.*;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -88,7 +89,7 @@ public class PCStats implements DataBaseRegSQL, Callable<String> {
         if (!ConstantsFor.thisPC().toLowerCase().contains("home")) {
             toCopy = file.getName() + "_cp";
         }
-        FileSystemWorker.copyOrDelFile(file, toCopy, false);
+        FileSystemWorker.copyOrDelFile(file, Paths.get(toCopy).toAbsolutePath().normalize(), false);
         return PC_NAMES_IN_TABLE.size();
     }
     
@@ -137,7 +138,7 @@ public class PCStats implements DataBaseRegSQL, Callable<String> {
         FileSystemWorker.writeFile(ConstantsFor.FILENAME_PCAUTOUSERSUNIQ, readFileAsList.parallelStream().distinct());
         if (ConstantsFor.thisPC().toLowerCase().contains("home")) {
             String toCopy = "\\\\10.10.111.1\\Torrents-FTP\\" + ConstantsFor.FILENAME_PCAUTOUSERSUNIQ;
-            FileSystemWorker.copyOrDelFile(new File(ConstantsFor.FILENAME_PCAUTOUSERSUNIQ), toCopy, false);
+            FileSystemWorker.copyOrDelFile(new File(ConstantsFor.FILENAME_PCAUTOUSERSUNIQ), Paths.get(toCopy).toAbsolutePath().normalize(), false);
         }
         return countFreqOfUsers();
     }

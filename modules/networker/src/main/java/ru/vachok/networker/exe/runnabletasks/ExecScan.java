@@ -19,6 +19,7 @@ import ru.vachok.networker.services.MessageLocal;
 
 import java.io.*;
 import java.net.InetAddress;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Map;
@@ -116,7 +117,7 @@ public class ExecScan extends DiapazonScan {
         String newFileName = vlanFile.getAbsolutePath()
             .replace(vlanFile.getName(), "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + COMPILE.matcher(vlanFile.getName())
                 .replaceAll(Matcher.quoteReplacement("_" + (System.currentTimeMillis() / 1000))) + ".scan");
-        return FileSystemWorker.copyOrDelFile(vlanFile, newFileName, true);
+        return FileSystemWorker.copyOrDelFile(vlanFile, Paths.get(newFileName).toAbsolutePath().normalize(), true);
     }
     
     private void setSpend() throws IOException {

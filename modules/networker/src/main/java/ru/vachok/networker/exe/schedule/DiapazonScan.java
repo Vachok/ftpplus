@@ -237,7 +237,7 @@ public class DiapazonScan implements Runnable {
                 String newName = ROOT_PATH_STR + ConstantsFor.FILESYSTEM_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + COMPILE.matcher(x.getName())
                     .replaceAll(Matcher.quoteReplacement("_" + (System.currentTimeMillis() / 1000))) + ".scan";
                 File newFile = new File(newName);
-                FileSystemWorker.copyOrDelFile(x, newFile.getAbsolutePath(), true);
+                FileSystemWorker.copyOrDelFile(x, Paths.get(newFile.getAbsolutePath()).toAbsolutePath().normalize(), true);
                 messageToUser.info(getClass().getSimpleName() + ".startDo", "newFile", " = " + newFile.getAbsolutePath());
             });
             allDevLocalDeq.clear();

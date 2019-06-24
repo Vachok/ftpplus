@@ -20,7 +20,7 @@ import ru.vachok.networker.ConstantsFor;
      */
     @Test
     public void testSetParams() {
-        String setParamsString = AppComponents.versionInfo().toString();
+        String setParamsString = ConstantsFor.APP_VERSION;
         Assert.assertTrue(setParamsString.contains(ConstantsFor.thisPC()), setParamsString);
         VersionInfo setParamsTry = AppComponents.versionInfo("rups00.eatmeat.ru");
         Assert.assertFalse(setParamsTry.getAppBuild().contains("rups00"), setParamsTry.toString());
@@ -31,8 +31,8 @@ import ru.vachok.networker.ConstantsFor;
      */
     @Test
     public void getParamsTEST() {
-        VersionInfo infoVers = AppComponents.versionInfo();
-        String versString = infoVers.toString();
+        VersionInfo infoVers = new VersionInfo(AppComponents.getProps(), ConstantsFor.thisPC());
+        String versString = ConstantsFor.APP_VERSION;
         Assert.assertFalse(versString.contains("rups00"), versString);
         Assert.assertFalse(infoVers.getAppBuild().isEmpty());
         Assert.assertFalse(infoVers.getBuildTime().isEmpty());
