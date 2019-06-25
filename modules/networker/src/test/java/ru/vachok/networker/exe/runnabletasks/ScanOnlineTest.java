@@ -78,7 +78,8 @@ import java.util.concurrent.*;
         }
         Set<String> availabilityOkIP = switchesAvailability.getOkIP();
         availabilityOkIP.forEach(x->onLinesResolve.put(x, LocalDateTime.now().toString()));
-        Assert.assertTrue(new TForms().fromArray(availabilityOkIP, false).contains("10.200.200.1"));
+        String availOk = new TForms().fromArray(availabilityOkIP, false);
+        Assert.assertTrue(availOk.contains("10.200.200.1"), availOk);
         String swAvailResultsStr = switchesAvailability.getPingResultStr();
         File fileSwAvLog = new File("sw.list.log");
         Assert.assertTrue(fileSwAvLog.exists() & fileSwAvLog.lastModified() > (System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(1)));

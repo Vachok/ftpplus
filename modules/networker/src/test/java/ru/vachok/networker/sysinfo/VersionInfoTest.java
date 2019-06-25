@@ -22,7 +22,7 @@ import ru.vachok.networker.net.enums.OtherKnownDevices;
     @Test
     public void testSetParams() {
         String setParamsString = ConstantsFor.APP_VERSION;
-        Assert.assertTrue(setParamsString.contains(ConstantsFor.thisPC()), setParamsString);
+        Assert.assertTrue(setParamsString.contains("propertiesFrom='u0466446_properties'"), setParamsString);
         VersionInfo setParamsTry = AppComponents.versionInfo(OtherKnownDevices.SRV_RUPS00);
         Assert.assertFalse(setParamsTry.getAppBuild().contains(OtherKnownDevices.SRV_RUPS00), setParamsTry.toString());
     }

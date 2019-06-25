@@ -46,7 +46,7 @@ public class SquidAvailabilityChecker implements Callable<String>, Runnable {
         if (callChk.contains("ssl_crtd")) {
             messageToUser.info(FileSystemWorker.writeFile(getClass().getSimpleName() + ".log", callChk));
         }
-        else if (srvNatInetAddress.isReachable(1000)) {
+        else if (srvNatInetAddress.isReachable(ConstantsFor.TIMEOUT_650)) {
             builder.setCommandSSH("sudo squid && sudo ps ax | grep squid && exit");
             submitSSH = executorService.submit(builder.build());
             callChk = submitSSH.get(ConstantsFor.DELAY, TimeUnit.SECONDS);

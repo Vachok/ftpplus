@@ -8,6 +8,7 @@ import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
 import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ad.PhotoConverterSRV;
 
 import javax.servlet.http.HttpServletRequest;
@@ -41,7 +42,9 @@ public class ActDirectoryCTRLTest {
         
         String adFotoStr = actDirectoryCTRL.adFoto(photoConverterSRV, model, request);
         assertTrue(adFotoStr.equals("adphoto"));
-        assertTrue(model.asMap().size() == 5);
-        assertTrue(model.asMap().get("title").toString().contains("PowerShell"));
+        int modelSize = model.asMap().size();
+        assertTrue((modelSize == 5), modelSize + " model.asMap().size()");
+        String attTitle = model.asMap().get(ConstantsFor.ATT_TITLE).toString();
+        assertTrue(attTitle.contains("PowerShell"), attTitle);
     }
 }

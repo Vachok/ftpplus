@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.net;
 
 
@@ -48,7 +50,7 @@ public class NetPingerTest {
             }
         }
         List<String> pingDevList = netPinger.pingDev(testMap);
-        Assert.assertTrue(pingDevList.size() == 17);
+        Assert.assertTrue((pingDevList.size() == 17), pingDevList.size() + " pingDevList size.");
     }
     
     @Test

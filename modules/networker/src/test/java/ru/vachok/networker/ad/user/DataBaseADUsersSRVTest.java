@@ -29,7 +29,7 @@ public class DataBaseADUsersSRVTest {
         dataBaseADUsersSRV.fileParser(fileAsList);
         List<ADUser> adUsers = dataBaseADUsersSRV.getAdUsers();
         String outString = "new TForms().fromArray(adUsers, false) = " + new TForms().fromArray(adUsers, false);
-        Assert.assertTrue(outString.contains("kudr"));
+        Assert.assertTrue(outString.contains("kudr"), outString);
     }
     
     @Test
