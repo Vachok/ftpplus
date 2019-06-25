@@ -19,7 +19,8 @@ import static ru.vachok.networker.ConstantsFor.FILEEXT_LOG;
 
 /**
  Вспомогательная работа с файлами.
- 
+ <p>
+ @see ru.vachok.networker.fileworks.FileSystemWorkerTest
  @since 19.12.2018 (9:57) */
 public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     
@@ -256,43 +257,47 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         }
     }
     
+    /**
+     Подсчёт строк в файле
+     <p>
+     
+     @param filePath путь к файлу
+     @return кол-во строк
+     
+     @see ru.vachok.networker.fileworks.FileSystemWorkerTest#testCountStringsInFile()
+     */
     public static int countStringsInFile(Path filePath) {
         int stringsCounter = 0;
         try (InputStream is = new BufferedInputStream(new FileInputStream(filePath.toAbsolutePath().normalize().toString()))) {
-            try {
-                byte[] c = new byte[ConstantsFor.KBYTE];
-                int readChars = is.read(c);
-                if (readChars == -1) {
-                    // bail out if nothing to read
-                    return 0;
-                }
-                
-                // make it easy for the optimizer to tune this loop
-                while (readChars == ConstantsFor.KBYTE) {
-                    for (int i = 0; i < ConstantsFor.KBYTE; ) {
-                        if (c[i++] == '\n') {
-                            ++stringsCounter;
-                        }
-                    }
-                    readChars = is.read(c);
-                }
-                
-                // stringsCounter remaining characters
-                while (readChars != -1) {
-                    System.out.println(readChars);
-                    for (int i = 0; i < readChars; ++i) {
-                        if (c[i] == '\n') {
-                            ++stringsCounter;
-                        }
-                    }
-                    readChars = is.read(c);
-                }
-                
-                return stringsCounter == 0 ? 1 : stringsCounter;
+            byte[] bufferBytes = new byte[ConstantsFor.KBYTE];
+            int readChars = is.read(bufferBytes);
+            if (readChars == -1) {
+                // bail out if nothing to read
+                return 0;
             }
-            finally {
-                is.close();
+            
+            // make it easy for the optimizer to tune this loop
+            while (readChars == ConstantsFor.KBYTE) {
+                for (int i = 0; i < ConstantsFor.KBYTE; ) {
+                    if (bufferBytes[i++] == '\n') {
+                        ++stringsCounter;
+                    }
+                }
+                readChars = is.read(bufferBytes);
             }
+            
+            // stringsCounter remaining characters
+            while (readChars != -1) {
+                System.out.println(readChars);
+                for (int i = 0; i < readChars; ++i) {
+                    if (bufferBytes[i] == '\n') {
+                        ++stringsCounter;
+                    }
+                }
+                readChars = is.read(bufferBytes);
+            }
+            
+            return stringsCounter == 0 ? 1 : stringsCounter;
         }
         catch (IOException e) {
             messageToUser.error(e.getMessage());
