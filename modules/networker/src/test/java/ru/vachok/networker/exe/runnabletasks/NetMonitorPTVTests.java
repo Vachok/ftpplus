@@ -19,7 +19,9 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
 
-@SuppressWarnings("ALL") public class NetMonitorPTVTest {
+/**
+ @see NetMonitorPTV */
+@SuppressWarnings("ALL") public class NetMonitorPTVTests {
     
     
     private String pingResultLast = "No pings yet.";
@@ -32,6 +34,9 @@ import java.util.prefs.Preferences;
     
     private Preferences preferences = AppComponents.getUserPref();
     
+    /**
+     @see NetMonitorPTV#run()
+     */
     @Test
     public void testRun() {
         Path ptvFilePath = Paths.get(ConstantsFor.FILENAME_PTV);
@@ -46,6 +51,9 @@ import java.util.prefs.Preferences;
         Assert.assertTrue(FileSystemWorker.readFile(ptvFilePath.toAbsolutePath().normalize().toString()).contains("ptv1."), ptvFilePath.toString());
     }
     
+    /**
+     * @see NetMonitorPTV#toString()
+     */
     @Test
     public void testToString1() {
         NetMonitorPTV netMonitorPTV = new NetMonitorPTV();

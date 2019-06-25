@@ -21,9 +21,10 @@ import java.util.concurrent.TimeUnit;
  @see ru.vachok.networker.accesscontrol.common.CommonScan2YOlderTest
  @since 22.11.2018 (14:53) */
 @Service
-public class CommonScan2YOlder extends SimpleFileVisitor<Path> implements Callable<String> {
+public class Common2Years25MbytesInfoCollector extends SimpleFileVisitor<Path> implements Callable<String> {
     
-    private static final Logger LOGGER = AppComponents.getLogger(CommonScan2YOlder.class.getSimpleName());
+    
+    private static final Logger LOGGER = AppComponents.getLogger(Common2Years25MbytesInfoCollector.class.getSimpleName());
     
     private PrintWriter printWriter;
     
@@ -44,7 +45,7 @@ public class CommonScan2YOlder extends SimpleFileVisitor<Path> implements Callab
     
     private StringBuilder msgBuilder = new StringBuilder();
     
-    public CommonScan2YOlder(String fileName) {
+    public Common2Years25MbytesInfoCollector(String fileName) {
         super();
         this.startPath = "\\\\srv-fs.eatmeat.ru\\common_new";
     }
@@ -57,12 +58,12 @@ public class CommonScan2YOlder extends SimpleFileVisitor<Path> implements Callab
      @param startPath стартовая папка
      @see ru.vachok.networker.accesscontrol.common.CommonScan2YOlderTest
      */
-    protected CommonScan2YOlder(String logName, boolean isTest) {
+    protected Common2Years25MbytesInfoCollector(String logName, boolean isTest) {
         this.fileName = logName;
         this.startPath = "\\\\srv-fs.eatmeat.ru\\common_new\\14_ИТ_служба\\Общая";
     }
     
-    private CommonScan2YOlder() {
+    private Common2Years25MbytesInfoCollector() {
     }
     
     public String getStartPath() {

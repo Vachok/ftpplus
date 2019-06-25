@@ -10,15 +10,15 @@ import java.io.IOException;
 
 /**
  @since 17.06.2019 (14:41) */
-public class CommonScan2YOlderTest {
+public class Common2Years25MbytesInfoCollectorTest {
     
     
     @Test
     public void testCall() {
-        CommonScan2YOlder commonScan2YOlder = new CommonScan2YOlder(getClass().getSimpleName() + ".csv", true);
+        Common2Years25MbytesInfoCollector common2Years25MbytesInfoCollector = new Common2Years25MbytesInfoCollector(getClass().getSimpleName() + ".csv", true);
         String callY2K = null;
         try {
-            callY2K = commonScan2YOlder.call();
+            callY2K = common2Years25MbytesInfoCollector.call();
         }
         catch (IOException e) {
             Assert.assertNull(e, e.getMessage());

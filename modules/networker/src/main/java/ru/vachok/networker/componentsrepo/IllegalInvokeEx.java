@@ -23,7 +23,11 @@ public class IllegalInvokeEx extends IllegalStateException {
         this.message = message;
     }
     
+    public IllegalInvokeEx() {
+        this.message = "This functional is not ready yet.";
+    }
+    
     @Override public String getMessage() {
-        return message + " this is " + APP_VERSION + " app";
+        return message + " this is " + APP_VERSION + " :" + getStackTrace()[0];
     }
 }

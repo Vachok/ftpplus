@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.accesscontrol.common.CommonScan2YOlder;
+import ru.vachok.networker.accesscontrol.common.Common2Years25MbytesInfoCollector;
 import ru.vachok.networker.componentsrepo.PageFooter;
 
 import javax.servlet.http.HttpServletResponse;
@@ -23,12 +23,12 @@ import java.util.concurrent.Future;
 public class FileCleanerCTRL {
 
     private static final String MAPPING_CLEANER = "/cleaner";
-
-    private CommonScan2YOlder commonScan2YOlder;
+    
+    private Common2Years25MbytesInfoCollector common2Years25MbytesInfoCollector;
 
     @Autowired
-    public FileCleanerCTRL(CommonScan2YOlder commonScan2YOlder) {
-        this.commonScan2YOlder = commonScan2YOlder;
+    public FileCleanerCTRL(Common2Years25MbytesInfoCollector common2Years25MbytesInfoCollector) {
+        this.common2Years25MbytesInfoCollector = common2Years25MbytesInfoCollector;
         Thread.currentThread().setName("FileCleanerCTRL.FileCleanerCTRL");
     }
 
@@ -36,16 +36,16 @@ public class FileCleanerCTRL {
     public String getFilesInfo(Model model, HttpServletResponse response) {
         Thread.currentThread().setName(getClass().getSimpleName() + "GET");
         model.addAttribute(ConstantsFor.ATT_TITLE, "Инфо о файлах");
-        model.addAttribute("commonScan2YOlder", commonScan2YOlder);
+        model.addAttribute("common2Years25MbytesInfoCollector", common2Years25MbytesInfoCollector);
         return "cleaner";
     }
 
     @PostMapping (MAPPING_CLEANER)
-    public String postFile(Model model, @ModelAttribute CommonScan2YOlder commonScan2YOlder) {
+    public String postFile(Model model, @ModelAttribute Common2Years25MbytesInfoCollector common2Years25MbytesInfoCollector) {
         Thread.currentThread().setName(getClass().getSimpleName() + "POST");
-        this.commonScan2YOlder = commonScan2YOlder;
-        model.addAttribute("commonScan2YOlder", commonScan2YOlder);
-        String startPath = commonScan2YOlder.getStartPath();
+        this.common2Years25MbytesInfoCollector = common2Years25MbytesInfoCollector;
+        model.addAttribute("common2Years25MbytesInfoCollector", common2Years25MbytesInfoCollector);
+        String startPath = common2Years25MbytesInfoCollector.getStartPath();
         model.addAttribute(ConstantsFor.ATT_TITLE, startPath);
         model.addAttribute("call", callMe());
         model.addAttribute("header", new PageFooter().getHeaderUtext());
@@ -55,7 +55,7 @@ public class FileCleanerCTRL {
 
     private String callMe() {
         Thread.currentThread().setName(getClass().getSimpleName() + "CALL");
-        Future<String> submit = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(commonScan2YOlder);
+        Future<String> submit = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(common2Years25MbytesInfoCollector);
         try {
             return submit.get();
         } catch (ExecutionException | InterruptedException e) {
