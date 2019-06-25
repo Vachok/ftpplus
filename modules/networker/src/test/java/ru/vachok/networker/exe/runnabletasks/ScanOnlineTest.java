@@ -59,16 +59,18 @@ import java.util.concurrent.*;
     public void testRun() {
         ScanOnline scanOnline = new ScanOnline();
         scanOnline.run();
+        Assert.assertTrue(new File("ScanOnline.onList").exists());
     }
     
-    @Test(enabled = false)
+    @Test()
     public void offlineNotEmptTEST() {
         NetListKeeper NET_LIST_KEEPER = NetListKeeper.getI();
         ConcurrentMap<String, String> onLinesResolve = NET_LIST_KEEPER.getOnLinesResolve();
         SwitchesAvailability switchesAvailability = new SwitchesAvailability();
         Future<?> submit = AppComponents.threadConfig().getTaskExecutor().submit(switchesAvailability);
         try {
-            submit.get(ConstantsFor.DELAY * 2, TimeUnit.SECONDS);
+            Object swAvailObj = submit.get(ConstantsFor.DELAY * 2, TimeUnit.SECONDS);
+            Assert.assertNull(swAvailObj);
         }
         catch (InterruptedException | ExecutionException | TimeoutException e) {
             Assert.assertNull(e, e.getMessage());
@@ -78,6 +80,9 @@ import java.util.concurrent.*;
         Set<String> availabilityOkIP = switchesAvailability.getOkIP();
         availabilityOkIP.forEach(x->onLinesResolve.put(x, LocalDateTime.now().toString()));
         Assert.assertTrue(new TForms().fromArray(availabilityOkIP, false).contains("10.200.200.1"));
+        String swAvailResultsStr = switchesAvailability.getPingResultStr();
+        File fileSwAvLog = new File("sw.list.log");
+        Assert.assertTrue(fileSwAvLog.exists() & fileSwAvLog.lastModified() > (System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(1)));
     }
     
     @Test

@@ -18,7 +18,6 @@ import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.sysinfo.ServiceInfoCtrl;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -38,7 +37,8 @@ import static ru.vachok.networker.net.enums.ConstantsNet.*;
 
 /**
  Скан диапазона адресов
- 
+ <p>
+ @see ru.vachok.networker.exe.schedule.DiapazonScanTest
  @since 19.12.2018 (11:35) */
 @SuppressWarnings("MagicNumber")
 public class DiapazonScan implements Runnable {
@@ -213,20 +213,15 @@ public class DiapazonScan implements Runnable {
     
     private void setScanInMin() {
         if (allDevLocalDeq.remainingCapacity() > 0 && TimeUnit.MILLISECONDS.toMinutes(getRunMin()) > 0 && allDevLocalDeq.size() > 0) {
-            
             long scansItMin = allDevLocalDeq.size() / TimeUnit.MILLISECONDS.toMinutes(getRunMin());
-            
-            AppComponents.getProps().setProperty(ConstantsFor.PR_SCANSINMIN, String.valueOf(scansItMin));
             Preferences pref = AppComponents.getUserPref();
             pref.put(ConstantsFor.PR_SCANSINMIN, String.valueOf(scansItMin));
-            
             messageToUser.warn(getClass().getSimpleName(), "scansItMin", " = " + scansItMin);
             try {
-                new AppComponents().updateProps();
                 pref.sync();
             }
-            catch (IOException | BackingStoreException e) {
-                messageToUser.error(e.getMessage());
+            catch (BackingStoreException e) {
+                messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".setScanInMin", e));
             }
         }
     }

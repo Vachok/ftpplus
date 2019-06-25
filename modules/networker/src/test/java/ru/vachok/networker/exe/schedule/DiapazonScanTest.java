@@ -26,12 +26,20 @@ import java.util.prefs.Preferences;
 import static ru.vachok.networker.net.enums.ConstantsNet.*;
 
 
-public class DiapazonScanTest {
+@SuppressWarnings("ALL") public class DiapazonScanTest {
     
     
+    /**
+     @see DiapazonScan#run()
+     */
     @Test
     public void testRun() {
-        DiapazonScan.getInstance().run();
+        DiapazonScan instanceDS = DiapazonScan.getInstance();
+        instanceDS.run();
+        String instToString = instanceDS.toString();
+        Assert.assertTrue(instToString.contains("last ExecScan:"));
+        Assert.assertTrue(instToString.contains("size in bytes:"));
+        Assert.assertTrue(instToString.contains("<a href=\"/showalldev\">ALL_DEVICES"));
     }
     
     @Test
@@ -59,6 +67,11 @@ public class DiapazonScanTest {
     @Test
     public void testTheInfoToString() {
         System.out.println(new DiapazonScan().theInfoToString());
+    }
+    
+    @Test
+    public void testToString1() {
+        System.out.println("DiapazonScan.getInstance().toString() = " + DiapazonScan.getInstance().toString());
     }
     
     private Map<String, File> copyOfMakeMap() {

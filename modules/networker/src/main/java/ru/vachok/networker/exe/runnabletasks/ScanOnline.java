@@ -38,6 +38,7 @@ import java.util.regex.Pattern;
  <p>
  
  @see DiapazonScan
+ @see ru.vachok.networker.exe.runnabletasks.ScanOnlineTest
  @since 26.01.2019 (11:18) */
 @Service
 public class ScanOnline implements Runnable, Pinger {
