@@ -28,6 +28,7 @@ public class DataBaseADUsersSRVTest {
         Queue<String> fileAsList = FileSystemWorker.readFileToQueue(new File("users.csv").toPath());
         dataBaseADUsersSRV.fileParser(fileAsList);
         List<ADUser> adUsers = dataBaseADUsersSRV.getAdUsers();
+        Assert.assertTrue(adUsers.size() == 0);
         String outString = "new TForms().fromArray(adUsers, false) = " + new TForms().fromArray(adUsers, false);
         Assert.assertTrue(outString.contains("kudr"), outString);
     }
