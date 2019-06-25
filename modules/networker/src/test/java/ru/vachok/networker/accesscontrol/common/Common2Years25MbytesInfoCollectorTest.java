@@ -16,7 +16,8 @@ public class Common2Years25MbytesInfoCollectorTest {
     
     @Test
     public void testCall() {
-        Common2Years25MbytesInfoCollector common2Years25MbytesInfoCollector = new Common2Years25MbytesInfoCollector(getClass().getSimpleName() + ".csv", true);
+        File resultFileCSV = new File(getClass().getSimpleName() + ".csv");
+        Common2Years25MbytesInfoCollector common2Years25MbytesInfoCollector = new Common2Years25MbytesInfoCollector(resultFileCSV.getAbsolutePath(), true);
         String startPath = common2Years25MbytesInfoCollector.getStartPath();
         Assert.assertEquals(startPath, "\\\\srv-fs.eatmeat.ru\\common_new\\14_ИТ_служба\\Общая");
         String callY2K = null;
@@ -26,8 +27,10 @@ public class Common2Years25MbytesInfoCollectorTest {
         catch (IOException e) {
             Assert.assertNull(e, e.getMessage());
         }
-        if (new File(getClass().getSimpleName() + ".csv").exists()) {
+    
+        if (resultFileCSV.exists()) {
             Assert.assertTrue(callY2K.contains("See: Common2Years25MbytesInfoCollectorTest.csv"), callY2K);
+            FileSystemWorker.readFile(resultFileCSV.getAbsolutePath());
         }
         else {
             String logAbsolutePathString = FileSystemWorker.writeFile(getClass().getSimpleName() + ".log", callY2K);

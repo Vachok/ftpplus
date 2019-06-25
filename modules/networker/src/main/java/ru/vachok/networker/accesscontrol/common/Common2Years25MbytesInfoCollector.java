@@ -10,7 +10,7 @@ import ru.vachok.networker.ConstantsFor;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.PrintWriter;
+import java.io.PrintStream;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
@@ -30,7 +30,7 @@ public class Common2Years25MbytesInfoCollector extends SimpleFileVisitor<Path> i
     
     private static final Logger LOGGER = AppComponents.getLogger(Common2Years25MbytesInfoCollector.class.getSimpleName());
     
-    private PrintWriter printWriter;
+    private PrintStream printStream;
     
     private String fileName = "files_2.5_years_old_25mb.csv";
     
@@ -83,8 +83,8 @@ public class Common2Years25MbytesInfoCollector extends SimpleFileVisitor<Path> i
     
     /**
      @return {@link #fileRead()}
-     
-     @see ru.vachok.networker.accesscontrol.common.CommonScan2YOlderTest#testCall()
+ 
+     @see ru.vachok.networker.accesscontrol.common.Common2Years25MbytesInfoCollectorTest#testCall()
      */
     @Override
     public String call() throws IOException {
@@ -95,7 +95,7 @@ public class Common2Years25MbytesInfoCollector extends SimpleFileVisitor<Path> i
             Files.createFile(Paths.get(fileName));
         }
         try (OutputStream outputStream = new FileOutputStream(fileName, true)) {
-            this.printWriter = new PrintWriter(outputStream, true);
+            this.printStream = new PrintStream(outputStream, true, "UTF-8");
             Files.walkFileTree(Paths.get(startPath), this);
         }
         catch (IOException | NullPointerException e) {
@@ -113,7 +113,7 @@ public class Common2Years25MbytesInfoCollector extends SimpleFileVisitor<Path> i
         if (more2MBOld(attrs)) {
             Files.setAttribute(file, ConstantsFor.DOS_ARCHIVE, true);
             this.filesSize += attrs.size();
-            printWriter.println(file.toAbsolutePath()
+            printStream.println(file.toAbsolutePath()
                 + ", ,"
                 + (float) filesSize / ConstantsFor.MBYTE + ""
                 + "," +
