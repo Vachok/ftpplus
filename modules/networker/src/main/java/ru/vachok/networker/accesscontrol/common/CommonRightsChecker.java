@@ -51,9 +51,7 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
     
     public CommonRightsChecker(Path toCheckPath, Path logsCopyPath) {
         this.toCheckPath = toCheckPath;
-        if (logsCopyPath == null || !logsCopyPath.toFile().isDirectory()) {
-            this.logsCopyPath = Paths.get("\\\\srv-fs.eatmeat.ru\\it$$");
-        }
+        this.logsCopyPath = logsCopyPath;
     }
     
     /**
@@ -121,10 +119,16 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
     private boolean copyExistsFiles() {
         Path cRGHCopyPath = Paths.get(logsCopyPath.toAbsolutePath().normalize() + System.getProperty(ConstantsFor.PRSYS_SEPARATOR) + commonRgh.getName());
         Path cOWNCopyPath = Paths.get(logsCopyPath.toAbsolutePath().normalize() + System.getProperty(ConstantsFor.PRSYS_SEPARATOR) + commonOwn.getName());
-        
-        boolean isOWNCopied = FileSystemWorker.copyOrDelFile(commonOwn, cOWNCopyPath, true);
-        boolean isRGHCopied = FileSystemWorker.copyOrDelFile(commonRgh, cRGHCopyPath, true);
-        
+    
+        boolean isOWNCopied = true;
+        if (commonOwn.exists()) {
+            isOWNCopied = FileSystemWorker.copyOrDelFile(commonOwn, cOWNCopyPath, true);
+        }
+        boolean isRGHCopied = true;
+        if (commonRgh.exists()) {
+            isRGHCopied = FileSystemWorker.copyOrDelFile(commonRgh, cRGHCopyPath, true);
+        }
+    
         return isOWNCopied & isRGHCopied;
     }
 }
