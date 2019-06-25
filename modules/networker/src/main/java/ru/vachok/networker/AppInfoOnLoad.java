@@ -17,6 +17,7 @@ import ru.vachok.networker.exe.schedule.MailIISLogsCleaner;
 import ru.vachok.networker.exe.schedule.SquidAvailabilityChecker;
 import ru.vachok.networker.exe.schedule.WeekStats;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.MyCalen;
 
@@ -197,11 +198,12 @@ public class AppInfoOnLoad implements Runnable {
     }
     
     private static int getScansDelay() {
-        int parseInt = Integer.parseInt(AppComponents.getUserPref().get(ConstantsFor.PR_SCANSINMIN, "111"));
-        if (parseInt <= 0) {
-            parseInt = 85;
+        int scansInOneMin = Integer.parseInt(AppComponents.getUserPref().get(ConstantsFor.PR_SCANSINMIN, "111"));
+        if (scansInOneMin <= 0) {
+            scansInOneMin = 85;
         }
-        return parseInt;
+    
+        return ConstantsNet.IPS_IN_VELKOM_VLAN / scansInOneMin;
     }
     
     /**
