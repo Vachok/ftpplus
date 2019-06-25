@@ -66,7 +66,7 @@ import java.util.concurrent.*;
         NetListKeeper NET_LIST_KEEPER = NetListKeeper.getI();
         ConcurrentMap<String, String> onLinesResolve = NET_LIST_KEEPER.getOnLinesResolve();
         SwitchesAvailability switchesAvailability = new SwitchesAvailability();
-        Future<?> submit = AppComponents.threadConfig().getTaskExecutor().submit(switchesAvailability);
+        Future<?> submit = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(switchesAvailability);
         try {
             Object swAvailObj = submit.get(ConstantsFor.DELAY * 2, TimeUnit.SECONDS);
             Assert.assertNull(swAvailObj);

@@ -12,11 +12,11 @@ import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
 import ru.vachok.networker.controller.MatrixCtr;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.NetMonitorPTV;
+import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.exe.schedule.MailIISLogsCleaner;
 import ru.vachok.networker.exe.schedule.SquidAvailabilityChecker;
 import ru.vachok.networker.exe.schedule.WeekStats;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.enums.OtherKnownDevices;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.MyCalen;
 
@@ -31,6 +31,7 @@ import java.nio.file.Paths;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -196,9 +197,6 @@ public class AppInfoOnLoad implements Runnable {
     private static int getScansDelay() {
         int parseInt = Integer.parseInt(AppComponents.getUserPref().get(ConstantsFor.PR_SCANSINMIN, "111"));
         if (parseInt <= 0) {
-            parseInt = 1;
-        }
-        if (parseInt < 80 | parseInt > 112) {
             parseInt = 85;
         }
         return parseInt;
@@ -215,10 +213,15 @@ public class AppInfoOnLoad implements Runnable {
      {@link FileSystemWorker#error(String, Exception)}
      */
     private static void runCommonScan() {
-        FileVisitor<Path> commonRightsChecker = new CommonRightsChecker(Paths.get("\\\\srv-fs.eatmeat.ru\\common_new"), Paths
-            .get("\\\\srv-fs.eatmeat.ru\\Common_new\\14_ИТ_служба\\Внутренняя"));
-        Runnable checkerRun = (Runnable) commonRightsChecker;
-        thrConfig.execByThreadConfig(checkerRun);
+        CommonRightsChecker commonRightsChecker = new CommonRightsChecker(
+            Paths.get("\\\\srv-fs.eatmeat.ru\\common_new"),
+            Paths.get("\\\\srv-fs.eatmeat.ru\\Common_new\\14_ИТ_служба\\Внутренняя"));
+        if (ConstantsFor.thisPC().toLowerCase().contains("rups")) {
+            Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(commonRightsChecker);
+        }
+        else {
+            MESSAGE_LOCAL.warn(commonRightsChecker + " NOT RUN ON: " + ConstantsFor.thisPC());
+        }
     }
     
     /**
@@ -251,15 +254,7 @@ public class AppInfoOnLoad implements Runnable {
         ScheduledThreadPoolExecutor scheduledExecutorService = thrConfig.getTaskScheduler().getScheduledThreadPoolExecutor();
         String thisPC = ConstantsFor.thisPC();
         AppInfoOnLoad.MINI_LOGGER.add(thisPC);
-        
         System.out.println("new AppComponents().launchRegRuFTPLibsUploader() = " + new AppComponents().launchRegRuFTPLibsUploader());
-    
-        if (thisPC.toLowerCase().contains(OtherKnownDevices.SRV_RUPS00.replace(ConstantsFor.DOMAIN_EATMEATRU, "").toLowerCase())) {
-            scheduledExecutorService.scheduleWithFixedDelay(AppInfoOnLoad::runCommonScan, ConstantsFor.INIT_DELAY, TimeUnit.DAYS.toSeconds(1),
-                TimeUnit.SECONDS);
-            AppInfoOnLoad.MINI_LOGGER.add("runCommonScan init delay " + ConstantsFor.INIT_DELAY + ", delay " + TimeUnit.DAYS.toSeconds(1) + ". SECONDS");
-        }
-    
         schedWithService(scheduledExecutorService);
     }
     
@@ -269,7 +264,7 @@ public class AppInfoOnLoad implements Runnable {
         Runnable tmpFullInetRun = new AppComponents().temporaryFullInternet();
         Runnable scanOnlineRun = new AppComponents().scanOnline();
         Runnable logsSaverRun = AppInfoOnLoad::squidLogsSave;
-        Runnable diapazonScanRun = AppComponents.diapazonScan();
+        Runnable diapazonScanRun = DiapazonScan.getInstance();
         Runnable istranetOrFortexRun = MatrixCtr::setCurrentProvider;
         
         scheduledExecService.scheduleWithFixedDelay(netMonPTVRun, 0, 10, TimeUnit.SECONDS);

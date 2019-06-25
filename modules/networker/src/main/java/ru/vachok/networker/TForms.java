@@ -219,15 +219,37 @@ public class TForms {
         }
     }
     
-    public String fromArray(Map<?, ?> mapDefObj, boolean isHTML) {
-        this.nStringBuilder = new StringBuilder();
-        this.brStringBuilder = new StringBuilder();
-        brStringBuilder.append(BR_STR);
-        for (Map.Entry<?, ?> entry : mapDefObj.entrySet()) {
-            brStringBuilder.append(entry.getKey()).append(" : ").append(entry.getValue()).append(BR_STR);
-            nStringBuilder.append(entry.getKey()).append(" : ").append(entry.getValue()).append(N_STR);
+    /* 25.06.2019 (16:58)
+           public String fromArray(Map<?, ?> mapDefObj, boolean isHTML) {
+           this.nStringBuilder = new StringBuilder();
+           this.brStringBuilder = new StringBuilder();
+           brStringBuilder.append(BR_STR);
+           for (Map.Entry<?, ?> entry : mapDefObj.entrySet()) {
+               brStringBuilder.append(entry.getKey()).append(" : ").append(entry.getValue()).append(BR_STR);
+               nStringBuilder.append(entry.getKey()).append(" : ").append(entry.getValue()).append(N_STR);
+           }
+           if (isHTML) {
+               return brStringBuilder.toString();
+           }
+           else {
+               return nStringBuilder.toString();
+           }
+       }*/
+    public String fromArray(Map<?, ?> mapDefObj, boolean br) {
+        brStringBuilder = new StringBuilder();
+        nStringBuilder = new StringBuilder();
+        brStringBuilder.append(P_STR);
+        Set<?> keySet = mapDefObj.keySet();
+        List<String> list = new ArrayList<>(keySet.size());
+        keySet.forEach(x->list.add(x.toString()));
+        Collections.sort(list);
+        for (String keyMap : list) {
+            String valueMap = mapDefObj.get(keyMap).toString();
+            brStringBuilder.append(keyMap).append(" ").append(valueMap).append("<br>");
+            nStringBuilder.append(keyMap).append(" ").append(valueMap).append("\n");
         }
-        if (isHTML) {
+        if (br) {
+            brStringBuilder.append(P_STR);
             return brStringBuilder.toString();
         }
         else {

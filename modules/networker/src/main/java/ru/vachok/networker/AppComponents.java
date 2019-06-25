@@ -249,10 +249,6 @@ public class AppComponents {
         return new VersionInfo(getProps(), pcName);
     }
     
-    static DiapazonScan diapazonScan() {
-        return DiapazonScan.getInstance();
-    }
-    
     @Bean
     @Scope(ConstantsFor.SINGLETON)
     TemporaryFullInternet temporaryFullInternet() {

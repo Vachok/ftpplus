@@ -44,7 +44,7 @@ import ru.vachok.networker.TForms;
         }
     }
     
-    @Test
+    @Test(enabled = false)
     public void testRun() {
         SaveLogsToDB saveLogsToDB = new SaveLogsToDB();
         saveLogsToDB.run();

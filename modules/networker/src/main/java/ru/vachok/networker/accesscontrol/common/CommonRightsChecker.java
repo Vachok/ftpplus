@@ -28,17 +28,26 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
     
     private final File commonRgh = new File(ConstantsFor.FILENAME_COMMONRGH);
     
-    long countFiles = 0;
+    long countFiles;
     
     private Path toCheckPath;
     
-    private Path logsCopyPath = null;
+    private Path logsCopyPath;
     
     private static final String STR_FILES_IS_NOT_EXISTS = " is not exists!";
     
     private static final String STR_KILOBYTES = " kilobytes";
     
     private MessageToUser messageToUser = new MessageCons(getClass().getSimpleName());
+    
+    @Override public String toString() {
+        final StringBuilder sb = new StringBuilder("CommonRightsChecker{");
+        sb.append("commonOwn=").append(commonOwn);
+        sb.append(", commonRgh=").append(commonRgh);
+        sb.append(", countFiles=").append(countFiles);
+        sb.append('}');
+        return sb.toString();
+    }
     
     public CommonRightsChecker(Path toCheckPath, Path logsCopyPath) {
         this.toCheckPath = toCheckPath;

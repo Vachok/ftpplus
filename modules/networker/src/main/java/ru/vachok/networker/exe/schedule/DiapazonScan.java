@@ -178,7 +178,7 @@ public class DiapazonScan implements Runnable {
     
     private Map<String, File> makeFilesMap() {
         Path absolutePath = Paths.get("").toAbsolutePath();
-        Map<String, File> scanMap = new ConcurrentHashMap<>();
+        Map<String, File> scanLanNamesFilesMap = new ConcurrentHashMap<>();
         try {
             for (File scanFile : Objects.requireNonNull(new File(absolutePath.toString()).listFiles())) {
                 if (scanFile.getName().contains("lan_")) {
@@ -190,15 +190,15 @@ public class DiapazonScan implements Runnable {
             messageToUser.error(e.getMessage());
         }
     
-        scanMap.putIfAbsent(FILENAME_NEWLAN220, new File(FILENAME_NEWLAN220));
-        scanMap.putIfAbsent(FILENAME_NEWLAN210, new File(FILENAME_NEWLAN210));
-        scanMap.putIfAbsent(FILENAME_NEWLAN213, new File(FILENAME_NEWLAN213));
-        scanMap.putIfAbsent(FILENAME_OLDLANTXT0, new File(FILENAME_OLDLANTXT0));
-        scanMap.putIfAbsent(FILENAME_OLDLANTXT1, new File(FILENAME_OLDLANTXT1));
-        scanMap.putIfAbsent(FILENAME_SERVTXT_10SRVTXT, new File(FILENAME_SERVTXT_10SRVTXT));
-        scanMap.putIfAbsent(FILENAME_SERVTXT_21SRVTXT, new File(FILENAME_SERVTXT_21SRVTXT));
-        scanMap.putIfAbsent(FILENAME_SERVTXT_31SRVTXT, new File(FILENAME_SERVTXT_31SRVTXT));
-        return scanMap;
+        scanLanNamesFilesMap.putIfAbsent(FILENAME_NEWLAN220, new File(FILENAME_NEWLAN220));
+        scanLanNamesFilesMap.putIfAbsent(FILENAME_NEWLAN210, new File(FILENAME_NEWLAN210));
+        scanLanNamesFilesMap.putIfAbsent(FILENAME_NEWLAN213, new File(FILENAME_NEWLAN213));
+        scanLanNamesFilesMap.putIfAbsent(FILENAME_OLDLANTXT0, new File(FILENAME_OLDLANTXT0));
+        scanLanNamesFilesMap.putIfAbsent(FILENAME_OLDLANTXT1, new File(FILENAME_OLDLANTXT1));
+        scanLanNamesFilesMap.putIfAbsent(FILENAME_SERVTXT_10SRVTXT, new File(FILENAME_SERVTXT_10SRVTXT));
+        scanLanNamesFilesMap.putIfAbsent(FILENAME_SERVTXT_21SRVTXT, new File(FILENAME_SERVTXT_21SRVTXT));
+        scanLanNamesFilesMap.putIfAbsent(FILENAME_SERVTXT_31SRVTXT, new File(FILENAME_SERVTXT_31SRVTXT));
+        return scanLanNamesFilesMap;
     }
     
     private void theNewLan() {
