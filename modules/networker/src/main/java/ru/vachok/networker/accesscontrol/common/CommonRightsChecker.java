@@ -3,9 +3,11 @@
 package ru.vachok.networker.accesscontrol.common;
 
 
+import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.componentsrepo.IllegalInvokeEx;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.io.File;
@@ -34,11 +36,16 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
     
     private Path logsCopyPath;
     
+    private MessageToUser messageToUser = new MessageCons(getClass().getSimpleName());
+    
     private static final String STR_FILES_IS_NOT_EXISTS = " is not exists!";
     
     private static final String STR_KILOBYTES = " kilobytes";
     
-    private MessageToUser messageToUser = new MessageCons(getClass().getSimpleName());
+    public CommonRightsChecker(Path toCheckPath, @NotNull Path logsCopyPath) {
+        this.toCheckPath = toCheckPath;
+        this.logsCopyPath = logsCopyPath;
+    }
     
     @Override public String toString() {
         final StringBuilder sb = new StringBuilder("CommonRightsChecker{");
@@ -47,11 +54,6 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
         sb.append(", countFiles=").append(countFiles);
         sb.append('}');
         return sb.toString();
-    }
-    
-    public CommonRightsChecker(Path toCheckPath, Path logsCopyPath) {
-        this.toCheckPath = toCheckPath;
-        this.logsCopyPath = logsCopyPath;
     }
     
     /**
@@ -83,7 +85,7 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
     
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-        if(attrs.isRegularFile()){
+        if (attrs.isRegularFile()) {
             AclFileAttributeView fileAttributeView = Files.getFileAttributeView(file, AclFileAttributeView.class);
             FileSystemWorker.appendObjToFile(commonOwn, file.toAbsolutePath().normalize() + " owned by: " + Files.getOwner(file));
             FileSystemWorker.appendObjToFile(commonRgh, file.toAbsolutePath().normalize() + " | ACL: " + Arrays.toString(fileAttributeView.getAcl().toArray()));
@@ -120,15 +122,25 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
         Path cRGHCopyPath = Paths.get(logsCopyPath.toAbsolutePath().normalize() + System.getProperty(ConstantsFor.PRSYS_SEPARATOR) + commonRgh.getName());
         Path cOWNCopyPath = Paths.get(logsCopyPath.toAbsolutePath().normalize() + System.getProperty(ConstantsFor.PRSYS_SEPARATOR) + commonOwn.getName());
     
-        boolean isOWNCopied = true;
-        if (commonOwn.exists()) {
-            isOWNCopied = FileSystemWorker.copyOrDelFile(commonOwn, cOWNCopyPath, true);
+        if (copyDoesNotNeed(cOWNCopyPath, cRGHCopyPath)) {
+            throw new IllegalInvokeEx(getClass().getTypeName() + " copy files with common rights does not need");
         }
-        boolean isRGHCopied = true;
-        if (commonRgh.exists()) {
-            isRGHCopied = FileSystemWorker.copyOrDelFile(commonRgh, cRGHCopyPath, true);
+        else {
+            boolean isOWNCopied = true;
+            boolean isRGHCopied = true;
+        
+            if (commonOwn.exists()) {
+                isOWNCopied = FileSystemWorker.copyOrDelFile(commonOwn, cOWNCopyPath, true);
+            }
+            if (commonRgh.exists()) {
+                isRGHCopied = FileSystemWorker.copyOrDelFile(commonRgh, cRGHCopyPath, true);
+            }
+        
+            return isOWNCopied & isRGHCopied;
         }
+    }
     
-        return isOWNCopied & isRGHCopied;
+    private boolean copyDoesNotNeed(Path cOWNCopyPath, Path cRGHCopyPath) {
+        return (cOWNCopyPath.toFile().length() > commonOwn.length()) & (cRGHCopyPath.toFile().length() > commonRgh.length());
     }
 }

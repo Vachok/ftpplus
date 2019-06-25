@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.accesscontrol.common;
 
 
@@ -11,10 +13,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -50,11 +49,15 @@ public class CommonCleaner extends FileSystemWorker implements Callable<String> 
             List<String> remainFiles = fillMapFromFile();
             if (makeDeletions()) {
                 if (writeFile(fileWithInfoAboutOldCommon.getAbsolutePath(), remainFiles.stream())) {
-                    fileWithInfoAboutOldCommon.setLastModified(lastModifiedLog);
+                    boolean isLastModifiedSet = fileWithInfoAboutOldCommon.setLastModified(lastModifiedLog);
+                    System.out.println(new StringBuilder()
+                        .append(fileWithInfoAboutOldCommon.getName()).append(" is Last Modified Set = ")
+                        .append(isLastModifiedSet).append(" (")
+                        .append(new Date(fileWithInfoAboutOldCommon.lastModified())).append(")").toString());
                 }
             }
             else {
-                throw new IllegalInvokeEx();
+                throw new IllegalInvokeEx(getClass().getTypeName() + ".call");
             }
         }
         return "Remain in " + fileWithInfoAboutOldCommon + " " + FileSystemWorker.countStringsInFile(fileWithInfoAboutOldCommon.toPath().toAbsolutePath().normalize()) + " positions.";
