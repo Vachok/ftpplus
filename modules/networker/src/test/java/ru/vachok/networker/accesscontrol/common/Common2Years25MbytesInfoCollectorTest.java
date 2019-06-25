@@ -29,7 +29,7 @@ public class Common2Years25MbytesInfoCollectorTest {
         }
     
         if (resultFileCSV.exists()) {
-            Assert.assertTrue(callY2K.contains("See: Common2Years25MbytesInfoCollectorTest.csv"), callY2K);
+            Assert.assertTrue(callY2K.contains("Common2Years25MbytesInfoCollectorTest.csv"), callY2K);
             FileSystemWorker.readFile(resultFileCSV.getAbsolutePath());
         }
         else {
