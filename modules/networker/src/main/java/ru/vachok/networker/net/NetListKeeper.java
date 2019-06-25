@@ -8,6 +8,7 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ExitApp;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.net.enums.OtherKnownDevices;
 import ru.vachok.networker.services.MessageLocal;
 
@@ -16,11 +17,11 @@ import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.util.Deque;
 import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.prefs.Preferences;
 
 
 /**
@@ -36,21 +37,27 @@ public final class NetListKeeper {
      */
     private static final MessageToUser messageToUser = new MessageLocal(NetListKeeper.class.getSimpleName());
     
+    private final ThreadConfig threadConfig = AppComponents.threadConfig();
+    
     private static NetListKeeper netListKeeper = new NetListKeeper();
     
     private ConcurrentMap<String, String> onLinesResolve = new ConcurrentHashMap<>();
     
     private Map<String, String> offLines = new ConcurrentHashMap<>();
     
-    public Map<String, String> getOffLines() {
-        return offLines;
-    }
-    
     private Map<String, String> inetUniqMap = new ConcurrentHashMap<>();
     
     private String nameOfExtObject = getClass().getSimpleName() + "onLinesResolve.map";
     
     private NetListKeeper() {
+    }
+    
+    public Map<String, String> getOffLines() {
+        return offLines;
+    }
+    
+    public void setOffLines(Map<String, String> offLines) {
+        this.offLines = offLines;
     }
     
     public Map<String, String> getInetUniqMap() {
@@ -97,16 +104,12 @@ public final class NetListKeeper {
     public ConcurrentMap<String, String> getOnLinesResolve() {
         readMap();
         try {
-            AppComponents.threadConfig().getTaskScheduler().scheduleAtFixedRate(new ChkOnlinePCsSizeChange(), TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY));
+            threadConfig.getTaskScheduler().scheduleAtFixedRate(new ChkOnlinePCsSizeChange(), TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY));
         }
         catch (RejectedExecutionException e) {
             System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".getOnLinesResolve");
         }
         return this.onLinesResolve;
-    }
-    
-    public void setOffLines(Map<String, String> offLines) {
-        this.offLines = offLines;
     }
     
     @Override
@@ -132,22 +135,24 @@ public final class NetListKeeper {
     }
     
     private class ChkOnlinePCsSizeChange implements Runnable {
-        
+    
+    
+        private Preferences userPref = AppComponents.getUserPref();
         
         private int currentSize = onLinesResolve.size();
         
         private int wasSize;
         
         ChkOnlinePCsSizeChange() {
-            Properties properties = AppComponents.getProps();
-            this.wasSize = Integer.parseInt(properties.getProperty("onsize", "0"));
+            this.wasSize = Integer.parseInt(userPref.get("onLinesResolve", "0"));
         }
         
         @Override
         public void run() {
-            AppComponents.threadConfig().thrNameSet(String.valueOf(new File(nameOfExtObject).exists()) + nameOfExtObject.substring(0, 3));
+            threadConfig.thrNameSet(String.valueOf(new File(nameOfExtObject).exists()) + nameOfExtObject.substring(0, 3));
             if (wasSize < currentSize) {
                 boolean ownObject = new ExitApp(nameOfExtObject, onLinesResolve).writeOwnObject();
+                userPref.put("onLinesResolve", String.valueOf(onLinesResolve.size()));
             }
             else {
                 readMap();

@@ -229,7 +229,6 @@ public class ScanOnline implements Runnable, Pinger {
      * Проверка доступности свичей.
      */
     private void checkSwitchesAvail() {
-//        messageToUser.info("ПИНГ СВИЧЕЙ");
         Pinger switchesAvailability = new SwitchesAvailability();
         Future<?> submit = threadConfig.getTaskExecutor().submit((Runnable) switchesAvailability);
         try {
