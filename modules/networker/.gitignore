@@ -894,11 +894,11 @@ possible_users.txt
 /modules/networker/ostpst/obj/
 ostpst/build/
 ostpst/out/
-/modules/networker/thrInformation
+/modules/networker/memoryInfo
 DeleterTemp.txt
 *.log.lck
 modules/networker/ostpst/out/
-modules/networker/thrInformation
+modules/networker/memoryInfo
 *.map
 modules/networker/24hrs.list
 *.chechMail
@@ -1821,11 +1821,11 @@ possible_users.txt
 /modules/networker/ostpst/obj/
 ostpst/build/
 ostpst/out/
-/modules/networker/thrInformation
+/modules/networker/memoryInfo
 DeleterTemp.txt
 *.log.lck
 modules/networker/ostpst/out/
-modules/networker/thrInformation
+modules/networker/memoryInfo
 *.map
 modules/networker/24hrs.list
 *.chechMail
@@ -1851,7 +1851,7 @@ users.set
 ost.jar
 /cpnsole.txt
 
-/thrInformation
+/memoryInfo
 1.xml
 lan_200210.txt
 lan_210213.txt

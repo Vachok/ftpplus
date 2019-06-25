@@ -96,7 +96,7 @@ public class NetScannerSvc {
     
     private static String inputWithInfoFromDB = "";
     
-    private String thrInformation = "null";
+    private String memoryInfo = ConstantsFor.getMemoryInfo();
     
     
     /**
@@ -132,16 +132,16 @@ public class NetScannerSvc {
     }
     
     
-    public String getThrInformation() {
-        return thrInformation;
+    public String getMemoryInfo() {
+        return memoryInfo;
     }
     
-    public void setThrInformation(String thrInformation) {
-        this.thrInformation = thrInformation;
-        try (OutputStream outputStream = new FileOutputStream("thrInformation", true)) {
+    public void setMemoryInfo(String memoryInfo) {
+        this.memoryInfo = memoryInfo;
+        try (OutputStream outputStream = new FileOutputStream("memoryInfo", true)) {
             outputStream.write(new Date().toString().getBytes());
             outputStream.write("\n".getBytes());
-            outputStream.write(thrInformation.getBytes());
+            outputStream.write(memoryInfo.getBytes());
             outputStream.write("\n\n\n".getBytes());
         }
         catch (IOException e) {
@@ -414,8 +414,7 @@ public class NetScannerSvc {
         boolean isFile = fileScanTMPCreate(false);
         File file = new File(ConstantsFor.FILENAME_ALLDEVMAP);
         String bodyMsg = "Online: " + onLinePCsNum + ".\n"
-            + upTime + " min uptime. \n" + isFile + " = scan.tmp\n" +
-            this.thrInformation;
+            + upTime + " min uptime. \n" + isFile + " = scan.tmp\n";
         try {
             new AppComponents().updateProps(LOCAL_PROPS);
             new MessageSwing().infoTimer(40, bodyMsg);

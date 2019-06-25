@@ -48,7 +48,7 @@ public class NetPingerTest {
             }
         }
         List<String> pingDevList = netPinger.pingDev(testMap);
-        Assert.assertTrue(pingDevList.size() == 13);
+        Assert.assertTrue(pingDevList.size() == 17);
     }
     
     @Test

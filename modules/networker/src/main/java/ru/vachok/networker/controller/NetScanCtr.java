@@ -335,7 +335,7 @@ public class NetScanCtr {
             String threadsInfoInit = getInformationForThreads(threadMXBean);
             messageToUser.warn(getClass().getSimpleName(), ".scanIt", " = " + threadsInfoInit);
             scanIt(request, model, new Date(lastScanEpoch * 1000));
-            netScannerSvcInstAW.setThrInformation(getInformationForThreads(threadMXBean));
+            netScannerSvcInstAW.setMemoryInfo(getInformationForThreads(threadMXBean));
         };
         LocalTime lastScanLocalTime = LocalDateTime.ofEpochSecond(lastScanEpoch, 0, ZoneOffset.ofHours(3)).toLocalTime();
         boolean isSystemTimeBigger = (System.currentTimeMillis() > lastScanEpoch * 1000);
@@ -391,7 +391,7 @@ public class NetScanCtr {
             String threadsInfoInit = getInformationForThreads(threadMXBean);
             messageToUser.warn(getClass().getSimpleName(), ".scanIt", " = " + threadsInfoInit);
             scanIt(request, model, new Date(lastSt));
-            netScannerSvcInstAW.setThrInformation(getInformationForThreads(threadMXBean));
+            netScannerSvcInstAW.setMemoryInfo(getInformationForThreads(threadMXBean));
         };
         int thisTotpc = Integer.parseInt(PROPERTIES.getProperty(ConstantsFor.PR_TOTPC, "259"));
         
