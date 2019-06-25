@@ -34,7 +34,7 @@ class ActionReloadCTX extends AbstractAction {
     
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("ActionReloadCTX{");
+        final StringBuilder sb = new StringBuilder("ActionMakeInfoAboutOldCommonFiles{");
         sb.append("ARGS=").append(Arrays.toString(ARGS));
         sb.append('}');
         return sb.toString();

@@ -7,7 +7,10 @@ import org.springframework.stereotype.Service;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 
-import java.io.*;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
@@ -16,9 +19,10 @@ import java.util.concurrent.TimeUnit;
 
 
 /**
- Удаление файлов, в которые не заходили более 2 лет
- 
- @see ru.vachok.networker.accesscontrol.common.CommonScan2YOlderTest
+ Сбор информации о файла, в которые не заходили более 2 лет, и которые имеют размер более 25 мб.
+ <p>
+ Список папок-исключений: {@link ConstantsFor#EXCLUDED_FOLDERS_FOR_CLEANER}
+ @see ru.vachok.networker.accesscontrol.common.Common2Years25MbytesInfoCollectorTest
  @since 22.11.2018 (14:53) */
 @Service
 public class Common2Years25MbytesInfoCollector extends SimpleFileVisitor<Path> implements Callable<String> {
@@ -33,7 +37,7 @@ public class Common2Years25MbytesInfoCollector extends SimpleFileVisitor<Path> i
     private String date;
     
     @NotNull
-    private String startPath;
+    private String startPath = "\\\\srv-fs.eatmeat.ru\\common_new";
     
     private long dirsCounter;
     
@@ -47,7 +51,6 @@ public class Common2Years25MbytesInfoCollector extends SimpleFileVisitor<Path> i
     
     public Common2Years25MbytesInfoCollector(String fileName) {
         super();
-        this.startPath = "\\\\srv-fs.eatmeat.ru\\common_new";
     }
     
     /**
@@ -100,7 +103,7 @@ public class Common2Years25MbytesInfoCollector extends SimpleFileVisitor<Path> i
         }
         String msg = dirsCounter + " total dirs scanned";
         LOGGER.warn(msg);
-        return fileRead();
+        return msg + "\nSee: " + fileName;
     }
     
     @Override
@@ -111,7 +114,7 @@ public class Common2Years25MbytesInfoCollector extends SimpleFileVisitor<Path> i
             Files.setAttribute(file, ConstantsFor.DOS_ARCHIVE, true);
             this.filesSize += attrs.size();
             printWriter.println(file.toAbsolutePath()
-                + ","
+                + ", ,"
                 + (float) filesSize / ConstantsFor.MBYTE + ""
                 + "," +
                 Files.readAttributes(file, "dos:*"));
@@ -123,8 +126,7 @@ public class Common2Years25MbytesInfoCollector extends SimpleFileVisitor<Path> i
     @Override
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
         this.dirsCounter += 1;
-        String[] s = {"01_Дирекция", "Положения_должностные_инструкции"};
-        if (Arrays.stream(s).anyMatch(tabooDir->dir.toAbsolutePath().normalize().toString().contains(tabooDir))) {
+        if (Arrays.stream(ConstantsFor.EXCLUDED_FOLDERS_FOR_CLEANER).anyMatch(tabooDir->dir.toAbsolutePath().normalize().toString().contains(tabooDir))) {
             return FileVisitResult.SKIP_SUBTREE;
         }
         else {
@@ -144,26 +146,6 @@ public class Common2Years25MbytesInfoCollector extends SimpleFileVisitor<Path> i
     public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
         LOGGER.info("Parsed " + filesCounter + " total files parsed, matched: " + filesMatched + " files. Total size in gigabytes: " + (float) filesSize / ConstantsFor.GBYTE);
         return FileVisitResult.CONTINUE;
-    }
-    
-    /**
-     Usages: {@link #call()} <br> Uses: - <br>
-     
-     @return {@link #fileName} как строки
-     */
-    private String fileRead() {
-        try (InputStream inputStream = new FileInputStream(fileName);
-             InputStreamReader reader = new InputStreamReader(inputStream);
-             BufferedReader bufferedReader = new BufferedReader(reader)
-        ) {
-            while (bufferedReader.ready()) {
-                msgBuilder.append("<br>").append(bufferedReader.readLine());
-            }
-            return msgBuilder.toString();
-        }
-        catch (IOException e) {
-            return e.getMessage();
-        }
     }
     
     /**

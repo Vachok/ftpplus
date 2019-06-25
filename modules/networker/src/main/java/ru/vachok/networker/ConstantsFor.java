@@ -519,6 +519,8 @@ public enum ConstantsFor {
     
     public static final String FILENAME_COMMONOWN = "common.own";
     
+    public static final String[] EXCLUDED_FOLDERS_FOR_CLEANER = {"01_Дирекция", "Положения_должностные_инструкции"};
+    
     /**
      @return {@link #MAIL_RULES}
      */
