@@ -138,6 +138,8 @@ public class AppInfoOnLoad implements Runnable {
     public void run() {
         try {
             infoForU();
+    
+            runCommonScan();
             getWeekPCStats();
         }
         catch (Exception e) {
