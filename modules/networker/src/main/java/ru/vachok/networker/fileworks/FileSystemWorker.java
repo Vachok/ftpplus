@@ -7,6 +7,7 @@ import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.IllegalInvokeEx;
 
 import java.io.*;
 import java.nio.file.*;
@@ -303,6 +304,19 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
             messageToUser.error(e.getMessage());
         }
         return stringsCounter;
+    }
+    
+    public static Stream<String> readFileAsStream(Path normalize) {
+        try (InputStream inputStream = new FileInputStream(normalize.toFile());
+             InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+             BufferedReader bufferedReader = new BufferedReader(inputStreamReader)
+        ) {
+            return bufferedReader.lines();
+        }
+        catch (IOException e) {
+            messageToUser.error(e.getMessage());
+        }
+        throw new IllegalInvokeEx("Can't read file");
     }
     
     private static boolean printTo(OutputStream outputStream, Exception e) {
