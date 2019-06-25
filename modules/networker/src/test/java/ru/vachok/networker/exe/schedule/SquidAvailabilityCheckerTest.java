@@ -28,7 +28,7 @@ import java.util.concurrent.TimeUnit;
         Assert.assertTrue(new File("SquidAvailabilityChecker.log").lastModified() > System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(1));
     }
     
-    @Test(timeOut = 30000)
+    @Test(timeOut = 60000)
     public void testCall() {
         SquidAvailabilityChecker squidAvailabilityChecker = new SquidAvailabilityChecker();
         try {
