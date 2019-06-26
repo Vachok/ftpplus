@@ -306,12 +306,15 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         return stringsCounter;
     }
     
-    public static Stream<String> readFileAsStream(Path normalize) {
+    public static Stream<String> readFileAsStream(Path normalize, long stringsLimit) {
         try (InputStream inputStream = new FileInputStream(normalize.toFile());
              InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
              BufferedReader bufferedReader = new BufferedReader(inputStreamReader)
         ) {
-            return bufferedReader.lines();
+            if (stringsLimit <= 0) {
+                stringsLimit = Long.MAX_VALUE;
+            }
+            return bufferedReader.lines().limit(stringsLimit);
         }
         catch (IOException e) {
             messageToUser.error(e.getMessage());

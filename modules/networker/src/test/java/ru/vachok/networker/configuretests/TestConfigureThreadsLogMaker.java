@@ -21,8 +21,8 @@ public class TestConfigureThreadsLogMaker implements TestConfigure {
     
     private ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
     
-    public TestConfigureThreadsLogMaker(String callingClass, final long startTime) {
-        this.startTime = startTime;
+    public TestConfigureThreadsLogMaker(String callingClass, final long startNANOTime) {
+        this.startTime = startNANOTime;
         this.callingClass = callingClass;
     }
     
