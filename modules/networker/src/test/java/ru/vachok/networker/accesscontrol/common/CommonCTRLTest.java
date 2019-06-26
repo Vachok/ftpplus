@@ -5,8 +5,11 @@ package ru.vachok.networker.accesscontrol.common;
 
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TestConfigure;
 
 import java.io.File;
 import java.util.concurrent.TimeUnit;
@@ -16,11 +19,24 @@ import static org.testng.Assert.assertTrue;
 
 
 /**
- @since 17.06.2019 (10:57)
  @see CommonCTRL
- */
+ @since 17.06.2019 (10:57) */
 @SuppressWarnings("ALL") public class CommonCTRLTest {
     
+    
+    private final TestConfigure testConfigure = new TestConfigure(getClass().getSimpleName(), System.nanoTime());
+    
+    @BeforeClass
+    public void setUp() {
+        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
+        testConfigure.beforeClass();
+    }
+    
+    @AfterClass
+    public void tearDown() {
+        testConfigure.afterClass();
+    }
+
     
     @Test
     public void testCommonGET() {

@@ -28,6 +28,8 @@ public class IllegalInvokeEx extends IllegalStateException {
     }
     
     @Override public String getMessage() {
+        System.out.println("ConstantsFor.thisPC() = " + ConstantsFor.thisPC());
+        System.out.println("ConstantsFor.getMemoryInfo() = " + ConstantsFor.getMemoryInfo());
         return message + " this is " + APP_VERSION + " :" + getStackTrace()[0];
     }
 }

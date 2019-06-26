@@ -4,7 +4,10 @@ package ru.vachok.networker.fileworks;
 
 
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import ru.vachok.networker.TestConfigure;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -13,15 +16,29 @@ import java.nio.file.Paths;
 /**
  @see FileSystemWorker
  @since 23.06.2019 (9:44) */
-public class FileSystemWorkerTest {
+@SuppressWarnings("ALL") public class FileSystemWorkerTest extends FileSystemWorker {
     
+    
+    private final TestConfigure testConfigure = new TestConfigure(getClass().getSimpleName(), System.nanoTime());
+    
+    @BeforeClass
+    public void setUp() {
+        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
+        testConfigure.beforeClass();
+    }
+    
+    @AfterClass
+    public void tearDown() {
+        testConfigure.afterClass();
+    }
     /**
      @see FileSystemWorker#countStringsInFile(Path)
      */
     @Test
     public void testCountStringsInFile() {
         String fileSeparator = System.getProperty("file.separator");
-        int stringsInMaxOnline = FileSystemWorker.countStringsInFile(Paths.get("." + fileSeparator + "lan" + fileSeparator + "max.online").normalize());
-        Assert.assertTrue(stringsInMaxOnline > 50, stringsInMaxOnline + " strings in max.online");
+        Path fileToCount = Paths.get("\\\\srv-fs\\Common_new\\14_ИТ_служба\\Внутренняя\\common.own").normalize();
+        int stringsInMaxOnline = FileSystemWorker.countStringsInFile(fileToCount);
+        Assert.assertTrue(stringsInMaxOnline > 50, stringsInMaxOnline + " strings in " + fileToCount.toFile().getName());
     }
 }

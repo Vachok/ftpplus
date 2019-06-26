@@ -4,8 +4,11 @@ package ru.vachok.networker.accesscontrol.inetstats;
 
 
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.TestConfigure;
 import ru.vachok.networker.abstr.InternetUse;
 import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
 import ru.vachok.networker.net.enums.OtherKnownDevices;
@@ -16,6 +19,19 @@ import ru.vachok.networker.net.enums.OtherKnownDevices;
  @since 09.06.2019 (21:24) */
 @SuppressWarnings("ALL") public class InetIPUserTest {
     
+    
+    private final TestConfigure testConfigure = new TestConfigure(getClass().getSimpleName(), System.nanoTime());
+    
+    @BeforeClass
+    public void setUp() {
+        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
+        testConfigure.beforeClass();
+    }
+    
+    @AfterClass
+    public void tearDown() {
+        testConfigure.afterClass();
+    }
     
     /**
      @see InetIPUser#getUsage(String)
