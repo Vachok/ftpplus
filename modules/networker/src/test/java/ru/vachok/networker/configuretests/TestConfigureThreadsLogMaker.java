@@ -1,4 +1,4 @@
-package ru.vachok.networker;
+package ru.vachok.networker.configuretests;
 
 
 import java.io.FileOutputStream;
@@ -14,15 +14,16 @@ import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
 
 
-public class TestConfigure {
+public class TestConfigureThreadsLogMaker implements TestConfigure {
     
     
     private final long startTime;
     
     private ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
     
-    public PrintStream getPrintStream() {
-        return printStream;
+    public TestConfigureThreadsLogMaker(String callingClass, final long startTime) {
+        this.startTime = startTime;
+        this.callingClass = callingClass;
     }
     
     private PrintStream printStream;
@@ -31,11 +32,12 @@ public class TestConfigure {
     
     private ThreadInfo threadInfo;
     
-    public TestConfigure(String callingClass, final long startTime) {
-        this.startTime = startTime;
-        this.callingClass = callingClass;
+    @Override
+    public PrintStream getPrintStream() {
+        return printStream;
     }
     
+    @Override
     public void beforeClass() {
         threadMXBean.setThreadCpuTimeEnabled(true);
         threadMXBean.setThreadContentionMonitoringEnabled(true);
@@ -60,6 +62,7 @@ public class TestConfigure {
         }
     }
     
+    @Override
     public void afterClass() {
         long cpuTime = threadMXBean.getThreadCpuTime(threadInfo.getThreadId());
         long realTime = System.nanoTime() - startTime;
@@ -70,8 +73,9 @@ public class TestConfigure {
         printStream.println("End ***");
         printStream.println();
         printStream.println();
-        
         printStream.close();
+        Thread.currentThread().checkAccess();
+        Thread.currentThread().interrupt();
     }
     
 }

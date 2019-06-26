@@ -13,6 +13,7 @@ import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.sysinfo.VersionInfo;
 
@@ -36,17 +37,17 @@ import java.util.prefs.Preferences;
 @SuppressWarnings("ALL") public class AppComponentsTest {
     
     
-    private final TestConfigure testConfigure = new TestConfigure(getClass().getSimpleName(), System.nanoTime());
+    private final TestConfigureThreadsLogMaker testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
-        testConfigure.beforeClass();
+        testConfigureThreadsLogMaker.beforeClass();
     }
     
     @AfterClass
     public void tearDown() {
-        testConfigure.afterClass();
+        testConfigureThreadsLogMaker.afterClass();
     }
     
     

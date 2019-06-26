@@ -11,6 +11,7 @@ import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.abstr.DataBaseRegSQL;
+import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
 import java.awt.*;
 import java.io.File;
@@ -21,17 +22,17 @@ import java.util.Properties;
 @SuppressWarnings("ALL") public class DBPropsCallableTest {
     
     
-    private final TestConfigure testConfigure = new TestConfigure(getClass().getSimpleName(), System.nanoTime());
+    private final TestConfigureThreadsLogMaker testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
-        testConfigure.beforeClass();
+        testConfigureThreadsLogMaker.beforeClass();
     }
     
     @AfterClass
     public void tearDown() {
-        testConfigure.afterClass();
+        testConfigureThreadsLogMaker.afterClass();
     }
     
     @Test(enabled = false)

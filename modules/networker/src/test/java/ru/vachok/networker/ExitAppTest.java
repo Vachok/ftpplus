@@ -7,6 +7,7 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
 import java.io.File;
 import java.io.Serializable;
@@ -17,17 +18,17 @@ import java.io.Serializable;
 public class ExitAppTest implements Serializable {
     
     
-    private final TestConfigure testConfigure = new TestConfigure(getClass().getSimpleName(), System.nanoTime());
+    private final TestConfigureThreadsLogMaker testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
-        testConfigure.beforeClass();
+        testConfigureThreadsLogMaker.beforeClass();
     }
     
     @AfterClass
     public void tearDown() {
-        testConfigure.afterClass();
+        testConfigureThreadsLogMaker.afterClass();
     }
     
     
@@ -39,7 +40,12 @@ public class ExitAppTest implements Serializable {
     @Test
     public void testWriteOwnObject() {
         boolean isWritten = new ExitApp("test", this).writeOwnObject();
-        Assert.assertTrue(isWritten);
+        try {
+            Assert.assertTrue(isWritten);
+        }
+        catch (AssertionError e) {
+            testConfigureThreadsLogMaker.getPrintStream().println(e.getMessage() + "\n" + new TForms().fromArray(e.getStackTrace(), false));
+        }
         File fileWritten = new File("test");
         Assert.assertTrue(fileWritten.exists());
         fileWritten.deleteOnExit();

@@ -13,7 +13,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.TestConfigure;
+import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -30,17 +30,17 @@ import static org.testng.Assert.*;
 public class ServiceInfoCtrlTest {
     
     
-    private final TestConfigure testConfigure = new TestConfigure(getClass().getSimpleName(), System.nanoTime());
+    private final TestConfigureThreadsLogMaker testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
-        testConfigure.beforeClass();
+        testConfigureThreadsLogMaker.beforeClass();
     }
     
     @AfterClass
     public void tearDown() {
-        testConfigure.afterClass();
+        testConfigureThreadsLogMaker.afterClass();
     }
     
     

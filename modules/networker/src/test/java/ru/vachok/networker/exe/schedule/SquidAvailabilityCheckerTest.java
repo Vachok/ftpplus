@@ -8,7 +8,8 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.TestConfigure;
+import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.io.File;
 import java.util.concurrent.TimeUnit;
@@ -19,17 +20,17 @@ import java.util.concurrent.TimeUnit;
 @SuppressWarnings("ALL") public class SquidAvailabilityCheckerTest {
     
     
-    private final TestConfigure testConfigure = new TestConfigure(getClass().getSimpleName(), System.nanoTime());
+    private final TestConfigureThreadsLogMaker testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
-        testConfigure.beforeClass();
+        testConfigureThreadsLogMaker.beforeClass();
     }
     
     @AfterClass
     public void tearDown() {
-        testConfigure.afterClass();
+        testConfigureThreadsLogMaker.afterClass();
     }
     
     
@@ -42,7 +43,9 @@ import java.util.concurrent.TimeUnit;
         catch (Exception e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
         }
-        Assert.assertTrue(new File("SquidAvailabilityChecker.log").lastModified() > System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(1));
+        File squidAvailabilityCheckerLog = new File("SquidAvailabilityChecker.log");
+        Assert.assertTrue(squidAvailabilityCheckerLog.lastModified() > System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(1));
+        testConfigureThreadsLogMaker.getPrintStream().println(new TForms().fromArray(FileSystemWorker.readFileToList("SquidAvailabilityChecker.log"), false));
     }
     
     @Test(timeOut = 60000)

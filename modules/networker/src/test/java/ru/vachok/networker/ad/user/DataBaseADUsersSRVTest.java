@@ -8,7 +8,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.TestConfigure;
+import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.io.File;
@@ -22,17 +22,17 @@ import java.util.Queue;
 @SuppressWarnings("ALL") public class DataBaseADUsersSRVTest {
     
     
-    private final TestConfigure testConfigure = new TestConfigure(getClass().getSimpleName(), System.nanoTime());
+    private final TestConfigureThreadsLogMaker testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
-        testConfigure.beforeClass();
+        testConfigureThreadsLogMaker.beforeClass();
     }
     
     @AfterClass
     public void tearDown() {
-        testConfigure.afterClass();
+        testConfigureThreadsLogMaker.afterClass();
     }
     
     
@@ -48,7 +48,7 @@ import java.util.Queue;
     
         String outString = "new TForms().fromArray(adUsers, false) = " + new TForms().fromArray(adUsers, false);
         Assert.assertTrue(outString.contains("kudr"), outString);
-        testConfigure.getPrintStream().println(outString);
+        testConfigureThreadsLogMaker.getPrintStream().println(outString);
     }
     
     @Test
