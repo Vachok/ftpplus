@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.accesscontrol.common;
 
 
@@ -38,18 +40,22 @@ public class CommonRightsParsingTest {
     @Test
     public void testUserRightsGetter() {
         List<String> builtinAdministrators = new ArrayList<>();
-        Path pathToRead = Paths.get("\\\\srv-fs\\Common_new\\14_ИТ_служба\\Внутренняя\\common.rgh");
+        Path pathToRead = Paths.get("\\\\srv-fs\\Common_new\\14_ИТ_служба\\Внутренняя\\common.own");
         
         try (InputStream inputStream = new FileInputStream(pathToRead.toAbsolutePath().normalize().toString());
              InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
              BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
         ) {
-            bufferedReader.lines().allMatch(builtinAdministrators::add);
+            bufferedReader.lines().limit(2000).forEach(owner->{
+                if (owner.contains("Админ")) {
+                    builtinAdministrators.add(owner);
+                }
+            });
         }
         catch (IOException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
         }
         Assert.assertTrue(builtinAdministrators.size() > 0);
-        System.out.println("new TForms().fromArray(builtinAdministrators, false) = " + new TForms().fromArray(builtinAdministrators, false));
+        testConfigure.getPrintStream().println("new TForms().fromArray(builtinAdministrators, false) = " + new TForms().fromArray(builtinAdministrators, false));
     }
 }

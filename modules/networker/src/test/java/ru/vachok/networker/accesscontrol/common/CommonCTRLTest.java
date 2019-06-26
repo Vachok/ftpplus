@@ -54,7 +54,7 @@ import static org.testng.Assert.assertTrue;
     /**
      @see CommonCTRL#commonArchPOST(CommonSRV, Model)
      */
-    @Test(timeOut = 350000)
+    @Test
     public void testCommonArchPOST() {
         Model model = new ExtendedModelMap();
         CommonSRV commonSRV = new CommonSRV();
@@ -78,7 +78,7 @@ import static org.testng.Assert.assertTrue;
     /**
      @see CommonCTRL#commonSearch(CommonSRV, Model)
      */
-    @Test(timeOut = 90000)
+    @Test
     public void testCommonSearch() {
         Model model = new ExtendedModelMap();
         CommonSRV commonSRV = new CommonSRV();
