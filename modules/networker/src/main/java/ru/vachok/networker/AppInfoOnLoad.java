@@ -197,12 +197,14 @@ public class AppInfoOnLoad implements Runnable {
         MESSAGE_LOCAL.info(CLASS_NAME + " = " + isWrite);
     }
     
-    private static int getScansDelay() {
+    @SuppressWarnings("MagicNumber") private static int getScansDelay() {
         int scansInOneMin = Integer.parseInt(AppComponents.getUserPref().get(ConstantsFor.PR_SCANSINMIN, "111"));
         if (scansInOneMin <= 0) {
             scansInOneMin = 85;
         }
-    
+        if (scansInOneMin > 800) {
+            scansInOneMin = 800;
+        }
         return ConstantsNet.IPS_IN_VELKOM_VLAN / scansInOneMin;
     }
     
