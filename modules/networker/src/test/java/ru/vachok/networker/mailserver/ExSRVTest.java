@@ -6,8 +6,11 @@ package ru.vachok.networker.mailserver;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.TestConfigure;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -17,6 +20,20 @@ import java.io.IOException;
  @see ExSRV
  @since 22.06.2019 (16:51) */
 @SuppressWarnings("ALL") public class ExSRVTest {
+    
+    
+    private final TestConfigure testConfigure = new TestConfigure(getClass().getSimpleName(), System.nanoTime());
+    
+    @BeforeClass
+    public void setUp() {
+        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
+        testConfigure.beforeClass();
+    }
+    
+    @AfterClass
+    public void tearDown() {
+        testConfigure.afterClass();
+    }
     
     
     /**

@@ -21,6 +21,10 @@ public class TestConfigure {
     
     private ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
     
+    public PrintStream getPrintStream() {
+        return printStream;
+    }
+    
     private PrintStream printStream;
     
     private String callingClass;

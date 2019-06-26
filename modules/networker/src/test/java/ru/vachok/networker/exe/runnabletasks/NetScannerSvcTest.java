@@ -2,9 +2,12 @@ package ru.vachok.networker.exe.runnabletasks;
 
 
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.RegRuMysql;
+import ru.vachok.networker.TestConfigure;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -23,6 +26,20 @@ import java.util.concurrent.TimeUnit;
  @see NetScannerSvc
  @since 24.06.2019 (11:11) */
 public class NetScannerSvcTest {
+    
+    
+    private final TestConfigure testConfigure = new TestConfigure(getClass().getSimpleName(), System.nanoTime());
+    
+    @BeforeClass
+    public void setUp() {
+        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
+        testConfigure.beforeClass();
+    }
+    
+    @AfterClass
+    public void tearDown() {
+        testConfigure.afterClass();
+    }
     
     
     /**

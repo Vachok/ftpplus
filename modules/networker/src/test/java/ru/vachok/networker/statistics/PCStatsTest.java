@@ -2,7 +2,10 @@ package ru.vachok.networker.statistics;
 
 
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import ru.vachok.networker.TestConfigure;
 
 import java.awt.*;
 import java.io.File;
@@ -13,6 +16,20 @@ import java.util.concurrent.TimeUnit;
  @see PCStats
  @since 20.06.2019 (10:26) */
 public class PCStatsTest {
+    
+    
+    private final TestConfigure testConfigure = new TestConfigure(getClass().getSimpleName(), System.nanoTime());
+    
+    @BeforeClass
+    public void setUp() {
+        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
+        testConfigure.beforeClass();
+    }
+    
+    @AfterClass
+    public void tearDown() {
+        testConfigure.afterClass();
+    }
     
     
     /**

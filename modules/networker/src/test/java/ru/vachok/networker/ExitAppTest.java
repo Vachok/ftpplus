@@ -4,6 +4,8 @@ package ru.vachok.networker;
 
 
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import java.io.File;
@@ -13,6 +15,20 @@ import java.io.Serializable;
 /**
  @since 09.06.2019 (21:10) */
 public class ExitAppTest implements Serializable {
+    
+    
+    private final TestConfigure testConfigure = new TestConfigure(getClass().getSimpleName(), System.nanoTime());
+    
+    @BeforeClass
+    public void setUp() {
+        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
+        testConfigure.beforeClass();
+    }
+    
+    @AfterClass
+    public void tearDown() {
+        testConfigure.afterClass();
+    }
     
     
     @Test(enabled = false)
@@ -28,4 +44,5 @@ public class ExitAppTest implements Serializable {
         Assert.assertTrue(fileWritten.exists());
         fileWritten.deleteOnExit();
     }
+    
 }
