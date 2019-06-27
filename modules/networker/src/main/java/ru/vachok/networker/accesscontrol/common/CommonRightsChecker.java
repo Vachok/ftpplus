@@ -60,9 +60,8 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
      @see ru.vachok.networker.accesscontrol.common.CommonRightsCheckerTest#testRun()
      */
     @Override public void run() {
-        boolean isFilesCopied = copyExistsFiles();
         try {
-            if (toCheckPath != null & isFilesCopied) {
+            if (toCheckPath != null) {
                 Files.walkFileTree(toCheckPath, this);
             }
         }
@@ -141,6 +140,6 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
     }
     
     private boolean copyDoesNotNeed(Path cOWNCopyPath, Path cRGHCopyPath) {
-        return (cOWNCopyPath.toFile().length() > commonOwn.length()) & (cRGHCopyPath.toFile().length() > commonRgh.length());
+        return (cOWNCopyPath.toFile().lastModified() > commonOwn.lastModified()) & (cRGHCopyPath.toFile().lastModified() > commonRgh.lastModified());
     }
 }
