@@ -44,7 +44,6 @@ import java.util.concurrent.*;
         testConfigureThreadsLogMaker.afterClass();
     }
     
-    
     @Test
     public void testGetTimeToEndStr() {
         String timeToEnd = new AppInfoOnLoad().toString();
@@ -78,7 +77,7 @@ import java.util.concurrent.*;
         Assert.assertTrue(new File("ScanOnline.onList").exists());
     }
     
-    @Test()
+    @Test
     public void offlineNotEmptTEST() {
         NetListKeeper NET_LIST_KEEPER = NetListKeeper.getI();
         ConcurrentMap<String, String> onLinesResolve = NET_LIST_KEEPER.getOnLinesResolve();

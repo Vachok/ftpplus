@@ -20,7 +20,7 @@ import java.util.List;
 
 /**
  @since 26.06.2019 (17:09) */
-public class CommonRightsParsingTest {
+@SuppressWarnings("ALL") public class CommonRightsParsingTest {
     
     
     private TestConfigure testConfigure = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
@@ -43,11 +43,11 @@ public class CommonRightsParsingTest {
         Path pathToRead = Paths.get("\\\\srv-fs\\Common_new\\14_ИТ_служба\\Внутренняя\\common.own");
         
         try (InputStream inputStream = new FileInputStream(pathToRead.toAbsolutePath().normalize().toString());
-             InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+             InputStreamReader inputStreamReader = new InputStreamReader(inputStream, "windows-1251");
              BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
         ) {
-            bufferedReader.lines().limit(2000).forEach(owner->{
-                if (owner.contains("Админ")) {
+            bufferedReader.lines().forEach(owner->{
+                if (owner.contains("BUILTIN\\Administrators")) {
                     builtinAdministrators.add(owner);
                 }
             });
