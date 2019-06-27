@@ -219,22 +219,6 @@ public class TForms {
         }
     }
     
-    /* 25.06.2019 (16:58)
-           public String fromArray(Map<?, ?> mapDefObj, boolean isHTML) {
-           this.nStringBuilder = new StringBuilder();
-           this.brStringBuilder = new StringBuilder();
-           brStringBuilder.append(BR_STR);
-           for (Map.Entry<?, ?> entry : mapDefObj.entrySet()) {
-               brStringBuilder.append(entry.getKey()).append(" : ").append(entry.getValue()).append(BR_STR);
-               nStringBuilder.append(entry.getKey()).append(" : ").append(entry.getValue()).append(N_STR);
-           }
-           if (isHTML) {
-               return brStringBuilder.toString();
-           }
-           else {
-               return nStringBuilder.toString();
-           }
-       }*/
     public String fromArray(Map<?, ?> mapDefObj, boolean br) {
         brStringBuilder = new StringBuilder();
         nStringBuilder = new StringBuilder();
@@ -522,6 +506,14 @@ public class TForms {
         else {
             return nStringBuilder.toString();
         }
+    }
+    
+    public String fromArray(Address[] from) {
+        this.nStringBuilder = new StringBuilder();
+        for (Address address : from) {
+            nStringBuilder.append(address.toString()).append(", ");
+        }
+        return nStringBuilder.toString();
     }
     
     @Override

@@ -58,7 +58,7 @@ public class AppInfoOnLoadTest {
     /**
      @see AppInfoOnLoad#run()
      */
-    @Test
+    @Test(enabled = false)
     public void testRun() {
         AppInfoOnLoad.MINI_LOGGER.clear();
         Runnable apOnLoad = new AppInfoOnLoad();

@@ -17,6 +17,7 @@ import ru.vachok.networker.exe.schedule.MailIISLogsCleaner;
 import ru.vachok.networker.exe.schedule.SquidAvailabilityChecker;
 import ru.vachok.networker.exe.schedule.WeekStats;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.mailserver.testserver.MailPOPTester;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.MyCalen;
@@ -272,9 +273,11 @@ public class AppInfoOnLoad implements Runnable {
         Runnable logsSaverRun = AppInfoOnLoad::squidLogsSave;
         Runnable diapazonScanRun = DiapazonScan.getInstance();
         Runnable istranetOrFortexRun = MatrixCtr::setCurrentProvider;
+        Runnable popSmtpTest = new MailPOPTester();
         
         scheduledExecService.scheduleWithFixedDelay(netMonPTVRun, 0, 10, TimeUnit.SECONDS);
         scheduledExecService.scheduleWithFixedDelay(istranetOrFortexRun, ConstantsFor.DELAY, ConstantsFor.DELAY * thisDelay, TimeUnit.SECONDS);
+        scheduledExecService.scheduleWithFixedDelay(popSmtpTest, ConstantsFor.DELAY * 2, (ConstantsFor.DELAY * 2) * thisDelay, TimeUnit.SECONDS);
         scheduledExecService.scheduleWithFixedDelay(tmpFullInetRun, 1, ConstantsFor.DELAY, TimeUnit.MINUTES);
         scheduledExecService.scheduleWithFixedDelay(diapazonScanRun, 2, AppInfoOnLoad.thisDelay, TimeUnit.MINUTES);
         scheduledExecService.scheduleWithFixedDelay(scanOnlineRun, 3, 2, TimeUnit.MINUTES);

@@ -69,6 +69,12 @@ public class MatrixCtr {
     
     private static String currentProvider = "Unknown yet";
     
+    private static String mailIsOk = "false";
+    
+    public static void setMailIsOk(String mailIsOk) {
+        MatrixCtr.mailIsOk = mailIsOk;
+    }
+    
     /**
      {@link MatrixSRV}
      */
@@ -114,7 +120,6 @@ public class MatrixCtr {
         }
     }
     
-    
     @GetMapping("/")
     public String getFirst(final HttpServletRequest request, Model model, HttpServletResponse response) {
         this.visitorInst = ConstantsFor.getVis(request);
@@ -122,7 +127,7 @@ public class MatrixCtr {
         qIsNull(model, request);
         model.addAttribute(ConstantsFor.ATT_HEAD, new PageFooter().getHeaderUtext());
         model.addAttribute(ConstantsFor.ATT_DEVSCAN,
-            "Since: " + AppComponents.getUserPref().get(ConstantsFor.FILENAME_PTV, "No date") + infoWorker.getInfoAbout() + currentProvider);
+            "Since: " + AppComponents.getUserPref().get(ConstantsFor.FILENAME_PTV, "No date") + infoWorker.getInfoAbout() + currentProvider + "<br>" + mailIsOk);
         response.addHeader(ConstantsFor.HEAD_REFRESH, "120");
         return "starting";
     }
