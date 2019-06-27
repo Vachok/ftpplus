@@ -140,8 +140,6 @@ public class AppInfoOnLoad implements Runnable {
     public void run() {
         try {
             infoForU();
-    
-            runCommonScan();
             getWeekPCStats();
         }
         catch (Exception e) {
@@ -173,7 +171,6 @@ public class AppInfoOnLoad implements Runnable {
     @SuppressWarnings("MagicNumber")
     private static void dateSchedulers(ScheduledExecutorService scheduledExecService) {
         long delay = TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY_HOURS * 7);
-    
         String exitLast = "No file";
         thrConfig.thrNameSet("dateSch");
         Date nextStartDay = MyCalen.getNextDayofWeek(23, 57, DayOfWeek.SUNDAY);
@@ -190,11 +187,11 @@ public class AppInfoOnLoad implements Runnable {
         if (new File("exit.last").exists()) {
             exitLast = new TForms().fromArray(FileSystemWorker.readFileToList("exit.last"), false);
         }
-    
         exitLast = exitLast + "\n" + MyCalen.checkDay(scheduledExecService) + "\n" + stringBuilder;
         MINI_LOGGER.add(exitLast);
         MESSAGE_LOCAL.info(AppInfoOnLoad.class.getSimpleName() + ConstantsFor.STR_FINISH);
         boolean isWrite = FileSystemWorker.writeFile(CLASS_NAME + ".mini", MINI_LOGGER.stream());
+        scheduledExecService.schedule(AppInfoOnLoad::runCommonScan, thisDelay * 2, TimeUnit.SECONDS);
         MESSAGE_LOCAL.info(CLASS_NAME + " = " + isWrite);
     }
     
@@ -277,7 +274,7 @@ public class AppInfoOnLoad implements Runnable {
         
         scheduledExecService.scheduleWithFixedDelay(netMonPTVRun, 0, 10, TimeUnit.SECONDS);
         scheduledExecService.scheduleWithFixedDelay(istranetOrFortexRun, ConstantsFor.DELAY, ConstantsFor.DELAY * thisDelay, TimeUnit.SECONDS);
-        scheduledExecService.scheduleWithFixedDelay(popSmtpTest, ConstantsFor.DELAY * 2, (ConstantsFor.DELAY * 2) * thisDelay, TimeUnit.SECONDS);
+        scheduledExecService.scheduleWithFixedDelay(popSmtpTest, ConstantsFor.DELAY * 2, ConstantsFor.DELAY * 4, TimeUnit.SECONDS);
         scheduledExecService.scheduleWithFixedDelay(tmpFullInetRun, 1, ConstantsFor.DELAY, TimeUnit.MINUTES);
         scheduledExecService.scheduleWithFixedDelay(diapazonScanRun, 2, AppInfoOnLoad.thisDelay, TimeUnit.MINUTES);
         scheduledExecService.scheduleWithFixedDelay(scanOnlineRun, 3, 2, TimeUnit.MINUTES);

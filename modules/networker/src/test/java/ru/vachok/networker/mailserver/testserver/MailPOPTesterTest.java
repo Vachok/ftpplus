@@ -40,7 +40,7 @@ public class MailPOPTesterTest {
         testConfigure.afterClass();
     }
     
-    @Test
+    @Test(enabled = false)
     public void realTesting() {
         MailTester mailTester = new MailPOPTester();
         try {
@@ -51,13 +51,13 @@ public class MailPOPTesterTest {
         }
     }
     
-    @Test(enabled = false)
+    @Test()
     public void testTestInput() throws MessagingException {
         
         Store mailSessionStore = null;
         try {
             mailSessionStore = MAIL_SESSION.getStore();
-            mailSessionStore.connect("srv-mail3.eatmeat.ru", "ikudryashov", "netzero0912");
+            mailSessionStore.connect("srv-mail3.eatmeat.ru", "ad", "1qaz@WSX");
         }
         catch (MessagingException e) {
             Assert.assertNull(e, e.getMessage());
@@ -86,17 +86,18 @@ public class MailPOPTesterTest {
         }
     }
     
-    @Test(enabled = false)
+    @Test()
     public void testTestOutput() throws MessagingException {
         Transport sessionTransport = MAIL_SESSION.getTransport();
         SMTPMessage testMessage = new SMTPMessage(MAIL_SESSION);
+        testMessage.setFrom("kusok@govna.kto");
         testMessage.setSubject("test SMTP " + new Date());
         testMessage.setText(sessionTransport.toString());
         sessionTransport.connect();
-        sessionTransport.sendMessage(testMessage, new InternetAddress[]{new InternetAddress("scanner@eatmeat.ru")});
+        sessionTransport.sendMessage(testMessage, new InternetAddress[]{new InternetAddress("m.v.spirin@velkomfood.ru"), new InternetAddress("netvisor@eatmeat.ru")});
     }
     
-    @Test(enabled = false)
+    @Test(invocationCount = 10)
     public void testTestComplex() throws MessagingException {
         testTestOutput();
         testTestInput();
