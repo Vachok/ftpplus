@@ -8,7 +8,7 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import ru.vachok.mysqlandprops.props.FileProps;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -26,7 +26,7 @@ public class MailPOPTesterTest {
     
     private TestConfigure testConfigure = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
-    private static final Session MAIL_SESSION = Session.getDefaultInstance(new FileProps("mail").getProps());
+    private static final Session MAIL_SESSION = Session.getDefaultInstance(AppComponents.getMailProps());
     
     private String userName;
     

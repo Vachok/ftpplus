@@ -1,7 +1,9 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.mailserver.testserver;
 
 
-import ru.vachok.mysqlandprops.props.FileProps;
+import ru.vachok.networker.AppComponents;
 
 import javax.mail.MessagingException;
 import javax.mail.Session;
@@ -12,7 +14,7 @@ import javax.mail.Session;
 public interface MailTester {
     
     
-    Session MAIL_SESSION = Session.getDefaultInstance(new FileProps("mail").getProps());
+    Session MAIL_SESSION = Session.getDefaultInstance(AppComponents.getMailProps());
     
     
     String testInput() throws MessagingException;

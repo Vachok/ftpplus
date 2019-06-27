@@ -50,6 +50,12 @@ import java.util.prefs.Preferences;
         testConfigureThreadsLogMaker.afterClass();
     }
     
+    @Test
+    public void testGetMailProps() {
+        Properties props = AppComponents.getMailProps();
+        Assert.assertTrue(props.size() > 3);
+        Assert.assertEquals(props.getProperty("host"), "srv-mail3.eatmeat.ru");
+    }
     
     @Test
     public void testGetProps() {
