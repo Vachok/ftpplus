@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.exe.schedule;
 
 
@@ -36,6 +38,6 @@ public class DeadLockMonitorTest {
     public void testCall() {
         DeadLockMonitor deadLockMonitor = new DeadLockMonitor();
         String call = deadLockMonitor.call();
-        Assert.assertTrue(call.contains("java.lang.NullPointerException: No deadlocks, good!") | call == null);
+        Assert.assertTrue(call == null || call.contains("java.lang.NullPointerException: No deadlocks, good!"));
     }
 }

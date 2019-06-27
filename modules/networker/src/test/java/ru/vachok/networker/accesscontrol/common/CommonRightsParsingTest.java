@@ -46,7 +46,7 @@ import java.util.List;
              InputStreamReader inputStreamReader = new InputStreamReader(inputStream, "windows-1251");
              BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
         ) {
-            bufferedReader.lines().forEach(owner->{
+            bufferedReader.lines().limit(4000).forEach(owner->{
                 if (owner.contains("BUILTIN\\Administrators")) {
                     builtinAdministrators.add(owner);
                 }

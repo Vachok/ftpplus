@@ -14,7 +14,7 @@ import javax.mail.Session;
 public interface MailTester {
     
     
-    Session MAIL_SESSION = Session.getDefaultInstance(AppComponents.getMailProps());
+    Session MAIL_SESSION = Session.getInstance(AppComponents.getMailProps());
     
     
     String testInput() throws MessagingException;

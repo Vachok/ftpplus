@@ -26,7 +26,7 @@ public class MailPOPTesterTest {
     
     private TestConfigure testConfigure = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
-    private static final Session MAIL_SESSION = Session.getDefaultInstance(AppComponents.getMailProps());
+    private static final Session MAIL_SESSION = Session.getInstance(AppComponents.getMailProps());
     
     private String userName;
     
