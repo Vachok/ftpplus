@@ -151,7 +151,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
     private void fileIsWritableOrNotExists() throws IOException {
         InitProperties initProperties = new DBRegProperties(ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName());
         retProps.putAll(initProperties.getProps());
-        retProps.setProperty("loadedFromFile", "false");
+        retProps.setProperty("loadedFromFile", ConstantsFor.STR_FALSE);
         new AppComponents().updateProps(retProps);
     }
     

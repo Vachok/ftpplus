@@ -98,7 +98,7 @@ import java.util.Properties;
         Properties retProps = new Properties();
         InitProperties initProperties = new DBRegProperties(ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName());
         retProps.putAll(initProperties.getProps());
-        retProps.setProperty("loadedFromFile", "false");
+        retProps.setProperty("loadedFromFile", ConstantsFor.STR_FALSE);
         try {
             boolean isUp = new AppComponents().updateProps(retProps);
             Assert.assertTrue(isUp);

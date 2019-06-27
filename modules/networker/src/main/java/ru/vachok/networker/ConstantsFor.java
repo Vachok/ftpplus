@@ -521,6 +521,12 @@ public enum ConstantsFor {
     
     public static final String[] EXCLUDED_FOLDERS_FOR_CLEANER = {"01_Дирекция", "Положения_должностные_инструкции"};
     
+    public static final String SRV_MAIL3 = "srv-mail3.eatmeat.ru";
+    
+    public static final String USER_SCANNER = "Scanner";
+    
+    public static final String STR_FALSE = "false";
+    
     /**
      @return {@link #MAIL_RULES}
      */

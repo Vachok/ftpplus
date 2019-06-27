@@ -1,9 +1,12 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.mailserver.testserver;
 
 
 import com.sun.mail.smtp.SMTPMessage;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.controller.MatrixCtr;
 import ru.vachok.networker.services.MessageLocal;
@@ -27,7 +30,12 @@ public class MailPOPTester implements MailTester, Runnable {
     
     private StringBuilder stringBuilder = new StringBuilder();
     
-    @Override public void run() {
+    protected static final String MAIL_IKUDRYASHOV = "ikudryashov@eatmeat.ru";
+    
+    protected static final String INBOX_FOLDER = "inbox";
+    
+    @SuppressWarnings("FeatureEnvy") @Override
+    public void run() {
         try {
             String complexResult = testComplex();
             if (complexResult.contains("from: ikudryashov@eatmeat.ru, ; Subj: test SMTP")) {
@@ -48,32 +56,35 @@ public class MailPOPTester implements MailTester, Runnable {
         Store mailSessionStore = null;
         try {
             mailSessionStore = MAIL_SESSION.getStore();
-            mailSessionStore.connect("srv-mail3.eatmeat.ru", "Scanner", "Scanner");
+            mailSessionStore.connect(ConstantsFor.SRV_MAIL3, ConstantsFor.USER_SCANNER, ConstantsFor.USER_SCANNER);
         }
         catch (MessagingException e) {
             messageToUser.error(e.getMessage());
         }
-        
-        Folder defaultFolder = mailSessionStore.getDefaultFolder();
-        URLName folderURLName = defaultFolder.getURLName();
+        Folder defaultFolder = mailSessionStore != null ? mailSessionStore.getDefaultFolder() : null;
+        URLName folderURLName = defaultFolder != null ? defaultFolder.getURLName() : null;
         stringBuilder.append(folderURLName).append("\n");
-        Folder[] folders = defaultFolder.list();
+        Folder[] folders = defaultFolder != null ? defaultFolder.list() : new Folder[0];
         for (Folder folder : folders) {
-            if (folder.getName().equalsIgnoreCase("inbox")) {
+            if (folder.getName().equalsIgnoreCase(MailPOPTester.INBOX_FOLDER)) {
                 defaultFolder = folder;
             }
         }
-        
-        defaultFolder.open(Folder.READ_WRITE);
-        for (Message message : defaultFolder.getMessages()) {
-            if (new TForms().fromArray(message.getFrom()).contains("ikudryashov@eatmeat.ru")) {
+    
+        if (defaultFolder != null) {
+            defaultFolder.open(Folder.READ_WRITE);
+        }
+        for (Message message : defaultFolder != null ? defaultFolder.getMessages() : new Message[0]) {
+            if (new TForms().fromArray(message.getFrom()).contains(MAIL_IKUDRYASHOV)) {
                 stringBuilder.append(message.getSentDate()).append("; from: ").append(new TForms().fromArray(message.getFrom())).append("; Subj: ")
                     .append(message.getSubject()).append("\n");
             }
             message.setFlag(Flags.Flag.DELETED, true);
         }
-        
-        defaultFolder.close(true);
+    
+        if (defaultFolder != null) {
+            defaultFolder.close(true);
+        }
         return stringBuilder.append("\n\n").toString();
     }
     
@@ -87,8 +98,8 @@ public class MailPOPTester implements MailTester, Runnable {
                 stringBuilder.append(e.getSource()).append(" : ").append(e.getMessage()).append("\n");
             }
         });
-        
-        testMessage.setFrom("ikudryashov@eatmeat.ru");
+    
+        testMessage.setFrom(MAIL_IKUDRYASHOV);
         testMessage.setSubject("test SMTP " + new Date());
         testMessage.setText(stringBuilder.toString());
         stringBuilder.append(testMessage.getSender()).append("\n");
@@ -112,5 +123,14 @@ public class MailPOPTester implements MailTester, Runnable {
         stringBuilder.append(testOutput()).append(" ***SMTP").append("\n\n");
         stringBuilder.append(testInput()).append(" ***POP3").append("\n\n");
         return stringBuilder.toString();
+    }
+    
+    @Override public String toString() {
+        final StringBuilder sb = new StringBuilder("MailPOPTester{");
+        sb.append("MAIL_IKUDRYASHOV=").append(MAIL_IKUDRYASHOV);
+        sb.append(", INBOX_FOLDER=").append(INBOX_FOLDER);
+        sb.append(", stringBuilder=").append(stringBuilder);
+        sb.append('}');
+        return sb.toString();
     }
 }

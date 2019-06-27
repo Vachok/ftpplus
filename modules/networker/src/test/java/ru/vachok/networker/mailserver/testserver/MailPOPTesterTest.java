@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.mailserver.testserver;
 
 
@@ -7,6 +9,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.mysqlandprops.props.FileProps;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
@@ -40,7 +43,7 @@ public class MailPOPTesterTest {
         testConfigure.afterClass();
     }
     
-    @Test(enabled = false)
+    @Test
     public void realTesting() {
         MailTester mailTester = new MailPOPTester();
         try {
@@ -51,13 +54,13 @@ public class MailPOPTesterTest {
         }
     }
     
-    @Test()
+    @Test(enabled = false)
     public void testTestInput() throws MessagingException {
         
         Store mailSessionStore = null;
         try {
             mailSessionStore = MAIL_SESSION.getStore();
-            mailSessionStore.connect("srv-mail3.eatmeat.ru", "ad", "1qaz@WSX");
+            mailSessionStore.connect(ConstantsFor.SRV_MAIL3, "ad", "1qaz@WSX");
         }
         catch (MessagingException e) {
             Assert.assertNull(e, e.getMessage());
@@ -69,7 +72,7 @@ public class MailPOPTesterTest {
             URLName folderURLName = defaultFolder.getURLName();
             Folder[] folders = defaultFolder.list();
             for (Folder folder : folders) {
-                if (folder.getName().equalsIgnoreCase("inbox")) {
+                if (folder.getName().equalsIgnoreCase(MailPOPTester.INBOX_FOLDER)) {
                     inboxFolder = folder;
                 }
             }
@@ -86,7 +89,7 @@ public class MailPOPTesterTest {
         }
     }
     
-    @Test()
+    @Test(enabled = false)
     public void testTestOutput() throws MessagingException {
         Transport sessionTransport = MAIL_SESSION.getTransport();
         SMTPMessage testMessage = new SMTPMessage(MAIL_SESSION);
@@ -97,7 +100,7 @@ public class MailPOPTesterTest {
         sessionTransport.sendMessage(testMessage, new InternetAddress[]{new InternetAddress("m.v.spirin@velkomfood.ru"), new InternetAddress("netvisor@eatmeat.ru")});
     }
     
-    @Test(invocationCount = 10)
+    @Test(enabled = false)
     public void testTestComplex() throws MessagingException {
         testTestOutput();
         testTestInput();

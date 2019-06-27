@@ -69,7 +69,7 @@ public class MatrixCtr {
     
     private static String currentProvider = "Unknown yet";
     
-    private static String mailIsOk = "false";
+    private static String mailIsOk = ConstantsFor.STR_FALSE;
     
     public static void setMailIsOk(String mailIsOk) {
         MatrixCtr.mailIsOk = mailIsOk;
