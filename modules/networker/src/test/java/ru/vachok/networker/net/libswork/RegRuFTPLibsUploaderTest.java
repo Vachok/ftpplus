@@ -10,6 +10,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
@@ -35,14 +36,14 @@ public class RegRuFTPLibsUploaderTest extends RegRuFTPLibsUploader {
     }
     
     
-    @Test()
+    @Test
     public void ftpTest() {
         LibsHelp libsHelp = new RegRuFTPLibsUploader();
         try {
             libsHelp.uploadLibs();
         }
         catch (AccessDeniedException | ConnectException | NullPointerException e) {
-            System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".ftpTest");
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
         }
     }
     
@@ -56,7 +57,7 @@ public class RegRuFTPLibsUploaderTest extends RegRuFTPLibsUploader {
             ftpClient.configure(config);
         }
         catch (IOException e) {
-            Assert.assertNull(e, e.getMessage());
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
         }
     }
 }

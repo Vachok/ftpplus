@@ -37,11 +37,11 @@ import ru.vachok.networker.net.enums.OtherKnownDevices;
         pcUserResolver.setInfo();
         String resolverInfoAbout = pcUserResolver.getInfoAbout();
         Assert.assertFalse(resolverInfoAbout.isEmpty(), resolverInfoAbout);
-        resolverDO0004();
+        resolverDO0045();
         
     }
     
-    private void resolverDO0004() {
+    private void resolverDO0045() {
         PCUserResolver pcUserResolver = new PCUserResolver(OtherKnownDevices.DO0045_KIRILL);
         pcUserResolver.setInfo();
     }
