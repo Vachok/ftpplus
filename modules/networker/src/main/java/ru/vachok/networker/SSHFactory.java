@@ -162,7 +162,7 @@ public class SSHFactory implements Callable<String> {
     private InputStream connect() throws IOException, JSchException {
         boolean isConnected;
         chanRespChannel();
-        respChannel.connect(1500);
+        respChannel.connect(5000);
         isConnected = respChannel.isConnected();
         if (!isConnected) {
             messageToUser.out("SSHFactory_67", ("Channel is NULL!" + "\n\n" + "\nSSHFactory.connect, and ID (lineNum) is 67").getBytes());
