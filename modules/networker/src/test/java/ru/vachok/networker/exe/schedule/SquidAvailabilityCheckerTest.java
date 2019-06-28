@@ -50,7 +50,7 @@ import java.util.concurrent.TimeUnit;
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
         }
         File squidAvailabilityCheckerLog = new File("SquidAvailabilityChecker.log");
-        Assert.assertTrue(squidAvailabilityCheckerLog.lastModified() > System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(1));
+        Assert.assertTrue(squidAvailabilityCheckerLog.lastModified() > System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(1), squidAvailabilityCheckerLog.getAbsolutePath());
         testConfigureThreadsLogMaker.getPrintStream().println(new TForms().fromArray(FileSystemWorker.readFileToList("SquidAvailabilityChecker.log"), false));
     }
     
