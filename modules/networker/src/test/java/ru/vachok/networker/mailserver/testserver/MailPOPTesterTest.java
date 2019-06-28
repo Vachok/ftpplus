@@ -18,6 +18,8 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Date;
 
 
@@ -117,9 +119,15 @@ public class MailPOPTesterTest {
         try {
             String objectToFileResult = FileSystemWorker.appendObjectToFile(fileForAppend, mailTester.testComplex());
             Assert.assertTrue(objectToFileResult.contains(fileForAppend.getName()));
+            Files.deleteIfExists(fileForAppend.toPath().toAbsolutePath().normalize());
+            
         }
         catch (MessagingException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
+        }
+        catch (IOException e) {
+            System.err.println(e.getMessage());
+            fileForAppend.deleteOnExit();
         }
     }
 }
