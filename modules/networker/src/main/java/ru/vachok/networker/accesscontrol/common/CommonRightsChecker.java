@@ -76,8 +76,8 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
         if (attrs.isDirectory()) {
             AclFileAttributeView fileAttributeView = Files.getFileAttributeView(dir, AclFileAttributeView.class);
             List<AclEntry> acl = fileAttributeView.getAcl();
-            FileSystemWorker.appendObjToFile(commonRgh, acl);
-            FileSystemWorker.appendObjToFile(commonOwn, Files.getOwner(dir));
+            FileSystemWorker.appendObjectToFile(commonRgh, acl);
+            FileSystemWorker.appendObjectToFile(commonOwn, Files.getOwner(dir));
         }
         return FileVisitResult.CONTINUE;
     }
@@ -86,8 +86,8 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
         if (attrs.isRegularFile()) {
             AclFileAttributeView fileAttributeView = Files.getFileAttributeView(file, AclFileAttributeView.class);
-            FileSystemWorker.appendObjToFile(commonOwn, file.toAbsolutePath().normalize() + " owned by: " + Files.getOwner(file));
-            FileSystemWorker.appendObjToFile(commonRgh, file.toAbsolutePath().normalize() + " | ACL: " + Arrays.toString(fileAttributeView.getAcl().toArray()));
+            FileSystemWorker.appendObjectToFile(commonOwn, file.toAbsolutePath().normalize() + " owned by: " + Files.getOwner(file));
+            FileSystemWorker.appendObjectToFile(commonRgh, file.toAbsolutePath().normalize() + " | ACL: " + Arrays.toString(fileAttributeView.getAcl().toArray()));
             this.countFiles++;
         }
         return FileVisitResult.CONTINUE;

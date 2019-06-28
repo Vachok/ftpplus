@@ -10,11 +10,14 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
+import java.io.File;
 import java.util.Date;
 
 
@@ -32,6 +35,8 @@ public class MailPOPTesterTest {
     
     private char[] passChars;
     
+    private File fileForAppend = new File("err" + System.getProperty("file.separator") + "mail.err");
+    
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
@@ -43,11 +48,11 @@ public class MailPOPTesterTest {
         testConfigure.afterClass();
     }
     
-    @Test
+    @Test(enabled = false)
     public void realTesting() {
         MailTester mailTester = new MailPOPTester();
         try {
-            System.out.println("mailTester = " + mailTester.testComplex());
+            mailTester.testComplex();
         }
         catch (MessagingException e) {
             Assert.assertNull(e, e.getMessage());
@@ -104,5 +109,17 @@ public class MailPOPTesterTest {
     public void testTestComplex() throws MessagingException {
         testTestOutput();
         testTestInput();
+    }
+    
+    @Test
+    public void logFileReader() {
+        MailTester mailTester = new MailPOPTester();
+        try {
+            String objectToFileResult = FileSystemWorker.appendObjectToFile(fileForAppend, mailTester.testComplex());
+            Assert.assertTrue(objectToFileResult.contains(fileForAppend.getName()));
+        }
+        catch (MessagingException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
+        }
     }
 }

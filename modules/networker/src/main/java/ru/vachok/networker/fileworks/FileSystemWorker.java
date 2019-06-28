@@ -247,15 +247,18 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         return writeFile(path, toWriteList.stream());
     }
     
-    public static void appendObjToFile(File fileForAppend, Object objectToAppend) {
+    public static String appendObjectToFile(File fileForAppend, Object objectToAppend) {
+        StringBuilder stringBuilder = new StringBuilder();
         try (OutputStream outputStream = new FileOutputStream(fileForAppend, true);
              PrintStream printStream = new PrintStream(outputStream, true)
         ) {
             printStream.println(objectToAppend);
+            stringBuilder.append(fileForAppend.getAbsolutePath());
         }
         catch (IOException e) {
-            messageToUser.error(e.getMessage());
+            stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false));
         }
+        return stringBuilder.toString();
     }
     
     /**

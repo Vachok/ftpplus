@@ -9,12 +9,14 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.controller.MatrixCtr;
+import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
 
 import javax.mail.*;
 import javax.mail.event.TransportAdapter;
 import javax.mail.event.TransportEvent;
 import javax.mail.internet.InternetAddress;
+import java.io.File;
 import java.util.Date;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
@@ -34,20 +36,27 @@ public class MailPOPTester implements MailTester, Runnable {
     
     protected static final String INBOX_FOLDER = "inbox";
     
+    private File fileForAppend = new File("err" + System.getProperty("file.separator") + "mail.err");
+    
     @SuppressWarnings("FeatureEnvy") @Override
     public void run() {
+        String mailIsNotOk = "<center><font color=\"red\">MailServer isn't ok</font></center> Tested at: " + new Date();
+        
         try {
             String complexResult = testComplex();
             if (complexResult.contains("from: ikudryashov@eatmeat.ru, ; Subj: test SMTP")) {
                 MatrixCtr.setMailIsOk("<center><font color=\"green\">MailServer is ok</font></center> Tested at: " + new Date());
             }
             else {
-                MatrixCtr.setMailIsOk("<center><font color=\"red\">MailServer isn't ok</font></center> Tested at: " + new Date());
+                MatrixCtr.setMailIsOk(mailIsNotOk);
+                FileSystemWorker.appendObjectToFile(fileForAppend, mailIsNotOk);
             }
         }
         catch (MessagingException e) {
             messageToUser.error(e.getMessage());
-            MatrixCtr.setMailIsOk("<center><font color=\"red\">MailServer isn't ok</font></center> Tested at: " + new Date());
+            MatrixCtr.setMailIsOk(mailIsNotOk);
+            mailIsNotOk = mailIsNotOk + e.getMessage() + "\n" + new TForms().fromArray(e, false);
+            FileSystemWorker.appendObjectToFile(fileForAppend, mailIsNotOk);
         }
     }
     
@@ -126,10 +135,14 @@ public class MailPOPTester implements MailTester, Runnable {
     }
     
     @Override public String toString() {
+    
         final StringBuilder sb = new StringBuilder("MailPOPTester{");
         sb.append("MAIL_IKUDRYASHOV=").append(MAIL_IKUDRYASHOV);
         sb.append(", INBOX_FOLDER=").append(INBOX_FOLDER);
         sb.append(", stringBuilder=").append(stringBuilder);
+        if (fileForAppend.exists()) {
+            sb.append(", mailLog=").append(FileSystemWorker.readFile(fileForAppend.getAbsolutePath()));
+        }
         sb.append('}');
         return sb.toString();
     }
