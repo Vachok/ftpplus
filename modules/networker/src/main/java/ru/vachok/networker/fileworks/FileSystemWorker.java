@@ -21,6 +21,7 @@ import static ru.vachok.networker.ConstantsFor.FILEEXT_LOG;
 /**
  Вспомогательная работа с файлами.
  <p>
+ 
  @see ru.vachok.networker.fileworks.FileSystemWorkerTest
  @since 19.12.2018 (9:57) */
 public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
@@ -163,7 +164,6 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         messageToUser.info(FileSystemWorker.class.getSimpleName(), fileName, "is written");
         return new File(fileName).exists();
     }
-    
     
     public static List<String> readFileToList(String absolutePath) {
         List<String> retList = new ArrayList<>();

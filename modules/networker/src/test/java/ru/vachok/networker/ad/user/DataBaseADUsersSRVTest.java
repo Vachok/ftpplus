@@ -42,23 +42,22 @@ import java.util.Queue;
     @Test
     public void testFileParser() {
         DataBaseADUsersSRV dataBaseADUsersSRV = new DataBaseADUsersSRV();
-        Queue<String> fileAsList = FileSystemWorker.readFileToQueue(new File("users.csv").toPath());
-        dataBaseADUsersSRV.fileParser(fileAsList);
+        Queue<String> usersCsv = FileSystemWorker.readFileToQueue(new File("users.csv").toPath());
+        dataBaseADUsersSRV.fileParser(usersCsv);
+        
         List<ADUser> adUsers = dataBaseADUsersSRV.getAdUsers();
-    
         String outString = "new TForms().fromArray(adUsers, false) = " + new TForms().fromArray(adUsers, false);
+    
         Assert.assertTrue(outString.contains("kudr"), outString);
         testConfigureThreadsLogMaker.getPrintStream().println(outString);
     }
     
     @Test
-    public void testFileRead() {
+    public void adUsersFromFileGetter() {
         DataBaseADUsersSRV dataBaseADUsersSRV = new DataBaseADUsersSRV();
-        try {
-            dataBaseADUsersSRV.fileRead(null);
-        }
-        catch (UnsupportedOperationException e) {
-            Assert.assertNotNull(e);
-        }
+        List<ADUser> adUsers = dataBaseADUsersSRV.getAdUsers();
+        Assert.assertTrue(adUsers.size() == 0);
+        adUsers = dataBaseADUsersSRV.getAdUsers(new File("users.csv"));
+        Assert.assertTrue(adUsers.size() > 500);
     }
 }

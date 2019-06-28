@@ -82,7 +82,6 @@ public class IntoApplication {
         catch (ApplicationContextException e) {
             System.err.println(FileSystemWorker.error(IntoApplication.class.getSimpleName() + ".reloadConfigurableApplicationContext", e));
         }
-        
         return configurableApplicationContext.isRunning();
     }
     

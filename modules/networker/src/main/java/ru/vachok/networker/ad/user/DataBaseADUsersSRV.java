@@ -9,17 +9,16 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ad.ADAttributeNames;
+import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
 
-import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.concurrent.ConcurrentMap;
 
 
 /**
@@ -48,11 +47,15 @@ public class DataBaseADUsersSRV {
         return adUsers;
     }
     
+    public List<ADUser> getAdUsers(File usersCsv) {
+        fileParser(FileSystemWorker.readFileToQueue(usersCsv.toPath().toAbsolutePath().normalize()));
+        return adUsers;
+    }
+    
     /**
-     @param adUsersFileAsQueue файл-выгрузка из AD
-     @return {@link Map} имя параметра - значение.
-     
      @see ru.vachok.networker.ad.user.DataBaseADUsersSRVTest#testFileParser()
+     @param adUsersFileAsQueue файл-выгрузка из AD
+     @return aduser parameters as map
      */
     public Map<String, String> fileParser(Queue<String> adUsersFileAsQueue) {
         Map<String, String> paramNameValue = new HashMap<>();
@@ -67,7 +70,6 @@ public class DataBaseADUsersSRV {
         String SID;
         String surname;
         String userPrincipalName;
-        
         while (adUsersFileAsQueue.iterator().hasNext()) {
             String parameterValueString = adUsersFileAsQueue.poll();
             if (parameterValueString.contains("IsSecurityPrincipal")) {
@@ -133,17 +135,10 @@ public class DataBaseADUsersSRV {
         return paramNameValue;
     }
 
-    ConcurrentMap<String, String> fileRead(BufferedReader bufferedReader) {
-        throw new UnsupportedOperationException();
-    }
-
     private boolean dbUploader() {
-
-        try (Connection defaultConnection = new AppComponents().connection(ConstantsFor.DBPREFIX + ConstantsFor.STR_VELKOM);
-             InputStream resourceAsStream = getClass().getResourceAsStream(ConstantsFor.FILEPATHSTR_USERSTXT)) {
-            InputStreamReader inputStreamReader = new InputStreamReader(resourceAsStream);
-            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-            ConcurrentMap<String, String> paramNameValueMap = fileRead(bufferedReader);
+    
+        try (Connection defaultConnection = new AppComponents().connection(ConstantsFor.DBPREFIX + ConstantsFor.STR_VELKOM)) {
+            Map<String, String> paramNameValueMap = fileParser(FileSystemWorker.readFileToQueue(Paths.get("users.csv").toAbsolutePath().normalize()));
             try (PreparedStatement p = defaultConnection.prepareStatement("")) {
                 p.executeUpdate();
             }
