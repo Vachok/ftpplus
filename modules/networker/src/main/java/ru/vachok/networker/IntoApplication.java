@@ -9,6 +9,7 @@ import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ApplicationContextException;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.Lifecycle;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -75,7 +76,12 @@ public class IntoApplication {
             configurableApplicationContext.stop();
             configurableApplicationContext.close();
         }
-        configurableApplicationContext = SpringApplication.run(IntoApplication.class);
+        try {
+            configurableApplicationContext = SpringApplication.run(IntoApplication.class);
+        }
+        catch (ApplicationContextException e) {
+            System.err.println(FileSystemWorker.error(IntoApplication.class.getSimpleName() + ".reloadConfigurableApplicationContext", e));
+        }
         
         return configurableApplicationContext.isRunning();
     }
