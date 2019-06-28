@@ -108,7 +108,7 @@ import java.util.prefs.Preferences;
         Assert.assertFalse(versionInfo.toString().isEmpty());
     }
     
-    @Test
+    @Test(enabled = false)
     public void testConfigurableApplicationContext() {
         try {
             AppComponents.configurableApplicationContext();

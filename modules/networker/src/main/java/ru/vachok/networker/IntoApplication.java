@@ -75,7 +75,6 @@ public class IntoApplication {
             configurableApplicationContext.stop();
             configurableApplicationContext.close();
         }
-        configurableApplicationContext = null;
         configurableApplicationContext = SpringApplication.run(IntoApplication.class);
         
     }
