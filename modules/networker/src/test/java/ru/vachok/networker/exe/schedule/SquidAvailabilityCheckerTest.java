@@ -7,6 +7,7 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -38,7 +39,12 @@ import java.util.concurrent.TimeUnit;
     public void testRun() {
         SquidAvailabilityChecker squidAvailabilityChecker = new SquidAvailabilityChecker();
         try {
-            squidAvailabilityChecker.call();
+            if (ConstantsFor.thisPC().contains("do0213")) {
+                squidAvailabilityChecker.run();
+            }
+            else {
+                System.out.println("ConstantsFor.thisPC() = " + ConstantsFor.thisPC());
+            }
         }
         catch (Exception e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
@@ -48,12 +54,17 @@ import java.util.concurrent.TimeUnit;
         testConfigureThreadsLogMaker.getPrintStream().println(new TForms().fromArray(FileSystemWorker.readFileToList("SquidAvailabilityChecker.log"), false));
     }
     
-    @Test(timeOut = 60000)
+    @Test
     public void testCall() {
         SquidAvailabilityChecker squidAvailabilityChecker = new SquidAvailabilityChecker();
         try {
-            String call = squidAvailabilityChecker.call();
-            Assert.assertTrue(call.contains("/usr/local/etc/squid/squid.conf (squid)"));
+            if (ConstantsFor.thisPC().contains("do0213")) {
+                String call = squidAvailabilityChecker.call();
+                Assert.assertTrue(call.contains("/usr/local/etc/squid/squid.conf (squid)"));
+            }
+            else {
+                System.out.println("ConstantsFor.thisPC() = " + ConstantsFor.thisPC());
+            }
         }
         catch (Exception e) {
             Assert.assertNull(e, e.getMessage());

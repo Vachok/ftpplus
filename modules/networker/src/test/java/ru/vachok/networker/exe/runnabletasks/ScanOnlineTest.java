@@ -75,9 +75,10 @@ import java.util.concurrent.*;
         ScanOnline scanOnline = new ScanOnline();
         scanOnline.run();
         Assert.assertTrue(new File("ScanOnline.onList").exists());
+        Assert.assertTrue(FileSystemWorker.readFile("ScanOnline.onList").contains("Checked:"));
     }
     
-    @Test
+    @Test(enabled = false)
     public void offlineNotEmptTEST() {
         NetListKeeper NET_LIST_KEEPER = NetListKeeper.getI();
         ConcurrentMap<String, String> onLinesResolve = NET_LIST_KEEPER.getOnLinesResolve();

@@ -30,7 +30,7 @@ public class WhoIsWithSRVTest {
     }
     
     
-    @Test(timeOut = 20000)
+    @Test
     public void testWhoIs() {
         WhoIsWithSRV whoIsWithSRV = new WhoIsWithSRV();
         String whoIsString = whoIsWithSRV.whoIs("ya.ru");

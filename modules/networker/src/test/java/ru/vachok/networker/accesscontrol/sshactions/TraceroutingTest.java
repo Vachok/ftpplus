@@ -38,7 +38,7 @@ public class TraceroutingTest {
             Assert.assertNotNull(call);
             Assert.assertTrue(call.contains("<br><a href=\"/makeok\">"));
         }
-        catch (TaskRejectedException ignore) {
+        catch (TaskRejectedException | InterruptedException ignore) {
             //26.06.2019 (1:49)
         }
         catch (Exception e) {

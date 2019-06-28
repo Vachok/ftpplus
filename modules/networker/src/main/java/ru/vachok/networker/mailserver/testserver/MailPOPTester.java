@@ -4,6 +4,7 @@ package ru.vachok.networker.mailserver.testserver;
 
 
 import com.sun.mail.smtp.SMTPMessage;
+import org.jetbrains.annotations.Nullable;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
@@ -28,13 +29,13 @@ import java.util.prefs.Preferences;
 public class MailPOPTester implements MailTester, Runnable {
     
     
-    private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
-    
-    private StringBuilder stringBuilder = new StringBuilder();
-    
     protected static final String MAIL_IKUDRYASHOV = "ikudryashov@eatmeat.ru";
     
     protected static final String INBOX_FOLDER = "inbox";
+    
+    private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
+    
+    private StringBuilder stringBuilder = new StringBuilder();
     
     private File fileForAppend = new File("err" + System.getProperty("file.separator") + "mail.err");
     
@@ -62,37 +63,22 @@ public class MailPOPTester implements MailTester, Runnable {
     
     @Override public String testInput() throws MessagingException {
         stringBuilder.append("POP3").append("\n\n");
-        Store mailSessionStore = null;
-        try {
-            mailSessionStore = MAIL_SESSION.getStore();
-            mailSessionStore.connect(ConstantsFor.SRV_MAIL3, ConstantsFor.USER_SCANNER, ConstantsFor.USER_SCANNER);
-        }
-        catch (MessagingException e) {
-            messageToUser.error(e.getMessage());
-        }
-        Folder defaultFolder = mailSessionStore != null ? mailSessionStore.getDefaultFolder() : null;
-        URLName folderURLName = defaultFolder != null ? defaultFolder.getURLName() : null;
-        stringBuilder.append(folderURLName).append("\n");
-        Folder[] folders = defaultFolder != null ? defaultFolder.list() : new Folder[0];
-        for (Folder folder : folders) {
-            if (folder.getName().equalsIgnoreCase(MailPOPTester.INBOX_FOLDER)) {
-                defaultFolder = folder;
-            }
-        }
+        Folder defaultFolder = getInboxFolder();
     
         if (defaultFolder != null) {
             defaultFolder.open(Folder.READ_WRITE);
-        }
-        for (Message message : defaultFolder != null ? defaultFolder.getMessages() : new Message[0]) {
-            if (new TForms().fromArray(message.getFrom()).contains(MAIL_IKUDRYASHOV)) {
-                stringBuilder.append(message.getSentDate()).append("; from: ").append(new TForms().fromArray(message.getFrom())).append("; Subj: ")
-                    .append(message.getSubject()).append("\n");
-            }
-            message.setFlag(Flags.Flag.DELETED, true);
-        }
     
-        if (defaultFolder != null) {
+            for (Message message : defaultFolder != null ? defaultFolder.getMessages() : new Message[0]) {
+                if (new TForms().fromArray(message.getFrom()).contains(MAIL_IKUDRYASHOV)) {
+                    stringBuilder.append(message.getSentDate()).append("; from: ").append(new TForms().fromArray(message.getFrom())).append("; Subj: ")
+                        .append(message.getSubject()).append("\n");
+                }
+                message.setFlag(Flags.Flag.DELETED, true);
+            }
             defaultFolder.close(true);
+        }
+        else {
+            stringBuilder.append("Inbox is null");
         }
         return stringBuilder.append("\n\n").toString();
     }
@@ -145,5 +131,49 @@ public class MailPOPTester implements MailTester, Runnable {
         }
         sb.append('}');
         return sb.toString();
+    }
+    
+    @Nullable
+    private Folder getInboxFolder() {
+        Store mailSessionStore = getMailStore();
+        Folder defaultFolder = null;
+        try {
+            defaultFolder = mailSessionStore != null ? mailSessionStore.getDefaultFolder() : null;
+        }
+        catch (MessagingException e) {
+            stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false));
+        }
+        URLName folderURLName = null;
+        try {
+            folderURLName = defaultFolder != null ? defaultFolder.getURLName() : null;
+        }
+        catch (MessagingException e) {
+            stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false));
+        }
+        stringBuilder.append(folderURLName).append("\n");
+        try {
+            for (Folder folder : defaultFolder.list()) {
+                if (folder.getName().equalsIgnoreCase(MailPOPTester.INBOX_FOLDER)) {
+                    defaultFolder = folder;
+                }
+            }
+        }
+        catch (MessagingException e) {
+            stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false));
+        }
+        return defaultFolder;
+    }
+    
+    @Nullable
+    private Store getMailStore() {
+        try {
+            Store mailSessionStore = MAIL_SESSION.getStore();
+            mailSessionStore.connect(ConstantsFor.SRV_MAIL3, ConstantsFor.USER_SCANNER, ConstantsFor.USER_SCANNER);
+            return mailSessionStore;
+        }
+        catch (MessagingException e) {
+            messageToUser.error(e.getMessage());
+            return null;
+        }
     }
 }

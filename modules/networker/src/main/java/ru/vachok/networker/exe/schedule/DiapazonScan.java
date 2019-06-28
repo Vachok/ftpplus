@@ -69,7 +69,7 @@ public class DiapazonScan implements Runnable {
      */
     private static DiapazonScan thisInst = new DiapazonScan();
     
-    private static final Pattern COMPILE = Pattern.compile(".txt", Pattern.LITERAL);
+    private static final Pattern COMPILE = Pattern.compile("\\Q.txt\\E", Pattern.LITERAL);
     
     protected DiapazonScan() {
     }

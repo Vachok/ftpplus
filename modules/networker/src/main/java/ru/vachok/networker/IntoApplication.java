@@ -68,7 +68,7 @@ public class IntoApplication {
     
     private static ConfigurableApplicationContext configurableApplicationContext;
     
-    public static void reloadConfigurableApplicationContext() {
+    public static boolean reloadConfigurableApplicationContext() {
         AppComponents.threadConfig().killAll();
     
         if (configurableApplicationContext != null && configurableApplicationContext.isActive()) {
@@ -77,6 +77,7 @@ public class IntoApplication {
         }
         configurableApplicationContext = SpringApplication.run(IntoApplication.class);
         
+        return configurableApplicationContext.isRunning();
     }
     
     public static void main(String[] args) throws IOException {

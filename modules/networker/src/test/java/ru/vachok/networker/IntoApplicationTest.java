@@ -31,11 +31,10 @@ public class IntoApplicationTest {
     @Test
     public void testGetConfigurableApplicationContext() {
         try {
-            IntoApplication.reloadConfigurableApplicationContext();
+            Assert.assertTrue(IntoApplication.reloadConfigurableApplicationContext());
         }
         catch (BeanCreationException e) {
-            System.err.println(e.getBeanName() + " " + e.getResourceDescription() + " " + e.getResourceDescription());
-            Assert.assertNotNull(e, e.getMessage());
+            Assert.assertNull(e, e.getBeanName() + " " + e.getResourceDescription() + " " + e.getResourceDescription());
         }
     }
 }

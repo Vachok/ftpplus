@@ -38,7 +38,7 @@ import java.nio.file.Paths;
     @Test
     public void testCountStringsInFile() {
         String fileSeparator = System.getProperty("file.separator");
-        Path fileToCount = Paths.get("G:\\My_Proj\\FtpClientPlus\\modules\\networker\\.gitignore").normalize();
+        Path fileToCount = Paths.get(".gitignore").toAbsolutePath().normalize();
         int stringsInMaxOnline = FileSystemWorker.countStringsInFile(fileToCount);
         Assert.assertTrue(stringsInMaxOnline > 50, stringsInMaxOnline + " strings in " + fileToCount.toFile().getName());
     }

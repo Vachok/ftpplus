@@ -38,6 +38,6 @@ public class DeadLockMonitorTest {
     public void testCall() {
         DeadLockMonitor deadLockMonitor = new DeadLockMonitor();
         String call = deadLockMonitor.call();
-        Assert.assertTrue(call == null || call.contains("java.lang.NullPointerException: No deadlocks, good!"));
+        Assert.assertTrue(call.contains("null") || call.contains("java.lang.NullPointerException: No deadlocks, good!"));
     }
 }
