@@ -527,6 +527,8 @@ public enum ConstantsFor {
     
     public static final String STR_FALSE = "false";
     
+    public static final String SITENAME_VELKOMFOODRU = "http://www.velkomfood.ru";
+    
     /**
      @return {@link #MAIL_RULES}
      */

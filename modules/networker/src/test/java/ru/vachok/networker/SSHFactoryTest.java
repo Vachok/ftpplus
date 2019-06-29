@@ -7,6 +7,7 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
 
@@ -15,7 +16,7 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 public class SSHFactoryTest {
     
     
-    private final TestConfigureThreadsLogMaker testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
     @BeforeClass
     public void setUp() {
@@ -32,7 +33,13 @@ public class SSHFactoryTest {
     @Test
     public void testCall() {
         SSHFactory sshFactory = new SSHFactory.Builder("192.168.13.42", "ls", getClass().getSimpleName()).build();
-        String sshCall = sshFactory.call();
-        Assert.assertTrue(sshCall.contains("!_passwords.xlsx"), sshCall);
+        try {
+            String sshCall = sshFactory.call();
+            Assert.assertTrue(sshCall.contains("!_passwords.xlsx"), sshCall);
+        }
+        catch (Exception e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
+        }
+        
     }
 }

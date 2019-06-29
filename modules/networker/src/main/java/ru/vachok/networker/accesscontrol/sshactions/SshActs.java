@@ -333,7 +333,7 @@ public class SshActs {
             this.allowDomain = COMPILE.matcher(allowDomain).replaceAll(Matcher.quoteReplacement("."));
         }
         catch (NullPointerException e) {
-            this.allowDomain = "http://www.velkomfood.ru";
+            this.allowDomain = ConstantsFor.SITENAME_VELKOMFOODRU;
             this.allowDomain = COMPILE.matcher(allowDomain).replaceAll(Matcher.quoteReplacement("."));
         }
         if (allowDomain.contains("https")) {
@@ -396,7 +396,7 @@ public class SshActs {
             this.delDomain = delDomain.replace("http://", ".");
         }
         catch (NullPointerException e) {
-            this.delDomain = "http://www.velkomfood.ru";
+            this.delDomain = ConstantsFor.SITENAME_VELKOMFOODRU;
             this.delDomain = delDomain.replace("http://", ".");
         }
         if (delDomain.contains(STR_HTTPS)) {
