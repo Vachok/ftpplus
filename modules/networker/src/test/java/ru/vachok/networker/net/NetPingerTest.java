@@ -89,7 +89,7 @@ public class NetPingerTest {
         }
         MultipartFile multipartFile = null;
         try {
-            multipartFile = new MockMultipartFile("ping2ping.txt", getClass().getResourceAsStream("ping2ping.txt"));
+            multipartFile = new MockMultipartFile("ping2ping.txt", getClass().getResourceAsStream("/static/ping2ping.txt"));
         }
         catch (IOException e) {
             Assert.assertNull(e, e.getMessage());

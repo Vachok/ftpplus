@@ -27,8 +27,7 @@ public class IntoApplicationTest {
         testConfigureThreadsLogMaker.afterClass();
     }
     
-    
-    @Test
+    @Test(enabled = false)
     public void testGetConfigurableApplicationContext() {
         try {
             Assert.assertTrue(IntoApplication.reloadConfigurableApplicationContext());
