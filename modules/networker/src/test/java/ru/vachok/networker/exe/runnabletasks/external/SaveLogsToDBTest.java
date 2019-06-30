@@ -51,7 +51,7 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
         }
     }
     
-    @Test
+    @Test(enabled = false) //to long
     public void testShowInfo() {
         try {
             String showInfoStr = SaveLogsToDB.showInfo();
