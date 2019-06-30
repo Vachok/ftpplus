@@ -529,6 +529,8 @@ public enum ConstantsFor {
     
     public static final String SITENAME_VELKOMFOODRU = "http://www.velkomfood.ru";
     
+    public static final String FILENAME_INETSTATSIPCSV = "inetstatsIP.csv";
+    
     /**
      @return {@link #MAIL_RULES}
      */

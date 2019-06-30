@@ -7,7 +7,7 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.abstr.DataBaseRegSQL;
 import ru.vachok.networker.services.MessageLocal;
-import ru.vachok.networker.statistics.InteretStats;
+import ru.vachok.networker.statistics.InternetStats;
 import ru.vachok.networker.statistics.PCStats;
 import ru.vachok.networker.statistics.StatsOfNetAndUsers;
 import ru.vachok.networker.systray.MessageToTray;
@@ -21,7 +21,7 @@ import java.util.List;
  <p>
  Устойчивость (in/(in+out)): 2/(2+6) = 0.25 (устойчив на 75%);
  
- @see InteretStats
+ @see InternetStats
  @see PCStats
  @since 08.12.2018 (0:12) */
 public class WeekStats implements Runnable, StatsOfNetAndUsers {
@@ -78,7 +78,7 @@ public class WeekStats implements Runnable, StatsOfNetAndUsers {
     }
     
     @Override public String getInetStats() {
-        InteretStats dataBaseRegSQL = new InteretStats();
+        InternetStats dataBaseRegSQL = new InternetStats();
         dataBaseRegSQL.run();
         return dataBaseRegSQL.toString();
     }

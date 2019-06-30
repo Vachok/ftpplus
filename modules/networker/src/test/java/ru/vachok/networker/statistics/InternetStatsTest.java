@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit;
 import static org.testng.Assert.assertFalse;
 
 
-@SuppressWarnings("ALL") public class InteretStatsTest {
+@SuppressWarnings("ALL") public class InternetStatsTest {
     
     
     private final TestConfigureThreadsLogMaker testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
@@ -59,44 +59,44 @@ import static org.testng.Assert.assertFalse;
     
     @Test
     public void testRun() {
-        InteretStats interetStats = new InteretStats();
+        InternetStats internetStats = new InternetStats();
         if (LocalDate.now().getDayOfWeek().equals(DayOfWeek.SUNDAY)) {
-            interetStats.run();
-            String sql = interetStats.getSql();
+            internetStats.run();
+            String sql = internetStats.getSql();
             Assert.assertTrue(sql.contains(ConstantsFor.SQL_SELECTINETSTATS), sql);
         }
         else {
             try {
-                Assert.assertTrue(interetStats.toString().contains("inetstatsIP.csv"), interetStats.toString());
+                Assert.assertTrue(internetStats.toString().contains(ConstantsFor.FILENAME_INETSTATSIPCSV), internetStats.toString());
             }
             catch (AssertionError e) {
                 System.err.println(e.getMessage());
-                Assert.assertTrue(interetStats.toString().contains("Bytes in stream:"), interetStats.toString());
+                Assert.assertTrue(internetStats.toString().contains("Bytes in stream:"), internetStats.toString());
             }
         }
     }
     
     @Test
     public void testSelectFrom() {
-        InteretStats interetStats = new InteretStats();
-        interetStats.setSql(ConstantsFor.SQL_SELECTINETSTATS);
-        interetStats.setFileName("inetstatsIP.csv");
-        int selectFromRows = interetStats.selectFrom();
+        InternetStats internetStats = new InternetStats();
+        internetStats.setSql(ConstantsFor.SQL_SELECTINETSTATS);
+        internetStats.setFileName(ConstantsFor.FILENAME_INETSTATSIPCSV);
+        int selectFromRows = internetStats.selectFrom();
         System.out.println(selectFromRows);
     }
     
     @Test
     public void testDeleteFrom() {
-        InteretStats interetStats = new InteretStats();
-        int i = interetStats.deleteFrom();
+        InternetStats internetStats = new InternetStats();
+        int i = internetStats.deleteFrom();
         Assert.assertTrue(i == -1);
     }
     
     @Test
     public void testInsertTo() {
-        InteretStats interetStats = new InteretStats();
+        InternetStats internetStats = new InternetStats();
         try {
-            int i = interetStats.insertTo();
+            int i = internetStats.insertTo();
         }
         catch (IllegalStateException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
@@ -105,9 +105,9 @@ import static org.testng.Assert.assertFalse;
     
     @Test
     public void testUpdateTable() {
-        InteretStats interetStats = new InteretStats();
+        InternetStats internetStats = new InternetStats();
         try {
-            int i = interetStats.insertTo();
+            int i = internetStats.insertTo();
         }
         catch (IllegalStateException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));

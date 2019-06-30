@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.exe.schedule;
 
 
@@ -5,6 +7,7 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
 import java.io.File;
@@ -57,6 +60,6 @@ import java.util.concurrent.TimeUnit;
     public void testRun() {
         WeekStats weekStats = new WeekStats();
         weekStats.run();
-        Assert.assertTrue(new File("inetstatsIP.csv").lastModified() > System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(1));
+        Assert.assertTrue(new File(ConstantsFor.FILENAME_INETSTATSIPCSV).lastModified() > System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(1));
     }
 }
