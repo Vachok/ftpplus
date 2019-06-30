@@ -38,19 +38,20 @@ import java.util.concurrent.TimeUnit;
     @Test
     public void testRun() {
         SquidAvailabilityChecker squidAvailabilityChecker = new SquidAvailabilityChecker();
+        File squidAvailabilityCheckerLog = new File("SquidAvailabilityChecker.log");
         try {
             if (ConstantsFor.thisPC().contains("do0213")) {
                 squidAvailabilityChecker.run();
+                Assert.assertTrue(squidAvailabilityCheckerLog.lastModified() > System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(1), squidAvailabilityCheckerLog.getAbsolutePath());
             }
             else {
                 System.out.println("ConstantsFor.thisPC() = " + ConstantsFor.thisPC());
+                Assert.assertFalse(squidAvailabilityCheckerLog.exists());
             }
         }
         catch (Exception e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
         }
-        File squidAvailabilityCheckerLog = new File("SquidAvailabilityChecker.log");
-        Assert.assertTrue(squidAvailabilityCheckerLog.lastModified() > System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(1), squidAvailabilityCheckerLog.getAbsolutePath());
         testConfigureThreadsLogMaker.getPrintStream().println(new TForms().fromArray(FileSystemWorker.readFileToList("SquidAvailabilityChecker.log"), false));
     }
     

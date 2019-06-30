@@ -36,6 +36,7 @@ public class SSHFactoryTest {
         try {
             String sshCall = sshFactory.call();
             Assert.assertTrue(sshCall.contains("!_passwords.xlsx"), sshCall);
+            testConfigureThreadsLogMaker.getPrintStream().println(sshCall);
         }
         catch (Exception e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));

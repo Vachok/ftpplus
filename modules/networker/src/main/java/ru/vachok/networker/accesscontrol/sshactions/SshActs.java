@@ -343,7 +343,7 @@ public class SshActs {
             allowDomain = allowDomain.split("/")[0];
         }
         this.allowDomain = allowDomain;
-        SSHFactory.Builder allowDomainsBuilder = new SSHFactory.Builder(whatSrvNeed(), "sudo cat /etc/pf/allowdomain", getClass().getSimpleName());
+        SSHFactory.Builder allowDomainsBuilder = new SSHFactory.Builder(whatSrvNeed(), ConstantsFor.SSH_COM_CATALLOWDOMAIN, getClass().getSimpleName());
         String[] domainNamesFromSSH = allowDomainsBuilder.build().call().split("\n");
         for (String domainNameFromSSH : domainNamesFromSSH) {
             if (domainNameFromSSH.contains(allowDomain)) {
@@ -406,7 +406,7 @@ public class SshActs {
         if (delDomain.contains("/")) {
             this.delDomain = delDomain.split("/")[0];
         }
-        SSHFactory.Builder delDomBuilder = new SSHFactory.Builder(whatSrvNeed(), "sudo cat /etc/pf/allowdomain", getClass().getSimpleName());
+        SSHFactory.Builder delDomBuilder = new SSHFactory.Builder(whatSrvNeed(), ConstantsFor.SSH_COM_CATALLOWDOMAIN, getClass().getSimpleName());
         for (String domainNameFromSSH : delDomBuilder.build().call().split("\n")) {
             if (domainNameFromSSH.toLowerCase().contains(delDomain) || delDomain.toLowerCase().contains(domainNameFromSSH)) {
                 return delDomain;

@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.controller;
 
 
@@ -10,6 +12,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.accesscontrol.PfLists;
 import ru.vachok.networker.accesscontrol.sshactions.SshActs;
+import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
 import javax.servlet.http.HttpServletRequest;
@@ -22,7 +25,7 @@ import java.nio.file.AccessDeniedException;
 public class SshActsCTRLTest {
     
     
-    private final TestConfigureThreadsLogMaker testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
     @BeforeClass
     public void setUp() {
@@ -157,5 +160,12 @@ public class SshActsCTRLTest {
         catch (NullPointerException e) {
             Assert.assertNotNull(e);
         }
+    }
+    
+    @Test
+    public void testWhatSrvNeed() {
+        SshActs sshActs = new SshActs();
+        String neededSrvToConnect = sshActs.whatSrvNeed();
+        Assert.assertTrue(neededSrvToConnect.contains("13.42"), neededSrvToConnect);
     }
 }

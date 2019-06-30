@@ -531,6 +531,8 @@ public enum ConstantsFor {
     
     public static final String FILENAME_INETSTATSIPCSV = "inetstatsIP.csv";
     
+    public static final String SSH_COM_CATALLOWDOMAIN = "sudo cat /etc/pf/allowdomain";
+    
     /**
      @return {@link #MAIL_RULES}
      */
